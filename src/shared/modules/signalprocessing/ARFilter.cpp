@@ -82,7 +82,7 @@ ARFilter::Preflight( const SignalProperties& Input,
                            SignalProperties& Output ) const
 {
   // Parameter consistency checks.
-  double windowLength = MeasurementUnits::ReadAsTime( Parameter( "WindowLength" ) ),
+  double windowLength = Parameter( "WindowLength" ).InBlocks(),
          samplesInWindow = windowLength * Input.Elements();
   if( samplesInWindow < Parameter( "ModelOrder" ) )
     bcierr << "WindowLength parameter must be large enough"
@@ -95,9 +95,9 @@ ARFilter::Preflight( const SignalProperties& Input,
     case ARparms::SpectralAmplitude:
     case ARparms::SpectralPower:
     {
-      double firstBinCenter = MeasurementUnits::ReadAsFreq( Parameter( "FirstBinCenter" ) ),
-             lastBinCenter = MeasurementUnits::ReadAsFreq( Parameter( "LastBinCenter" ) ),
-             binWidth = MeasurementUnits::ReadAsFreq( Parameter( "BinWidth" ) );
+      double firstBinCenter = Parameter( "FirstBinCenter" ).AsRelativeFreq( Input ),
+             lastBinCenter = Parameter( "LastBinCenter" ).AsRelativeFreq( Input ),
+             binWidth = Parameter( "BinWidth" ).AsRelativeFreq( Input );
 
       if( firstBinCenter > 0.5 || firstBinCenter < 0
          || lastBinCenter > 0.5 || lastBinCenter < 0 )
@@ -114,7 +114,7 @@ ARFilter::Preflight( const SignalProperties& Input,
         Output.SetElements( numBins );
       }
       Output.ElementUnit().SetOffset( -firstBinCenter / binWidth )
-                          .SetGain( binWidth * Parameter( "SamplingRate" ) )
+                          .SetGain( Parameter( "BinWidth" ).InHertz() )
                           .SetSymbol( "Hz" );
       Output.ValueUnit().SetRawMin( 0 );
       double inputAmplitude = Input.ValueUnit().RawMax() - Input.ValueUnit().RawMin(),
@@ -161,7 +161,6 @@ ARFilter::Preflight( const SignalProperties& Input,
   Parameter( "FirstBinCenter" );
   Parameter( "LastBinCenter" );
   Parameter( "BinWidth" );
-  Parameter( "SamplingRate" );
 }
 
 
@@ -170,15 +169,15 @@ ARFilter::Initialize( const SignalProperties& Input,
                       const SignalProperties& /*Output*/ )
 {
   ARparms parms;
-  parms.binWidth = MeasurementUnits::ReadAsFreq( Parameter( "BinWidth" ) );
+  parms.binWidth = Parameter( "BinWidth" ).AsRelativeFreq( Input );
   parms.detrend = Parameter( "Detrend" );
   parms.evalsPerBin = Parameter( "EvaluationsPerBin" );
-  parms.firstBinCenter = MeasurementUnits::ReadAsFreq( Parameter( "FirstBinCenter" ));
-  parms.lastBinCenter = MeasurementUnits::ReadAsFreq( Parameter( "LastBinCenter" ));
+  parms.firstBinCenter = Parameter( "FirstBinCenter" ).AsRelativeFreq( Input );
+  parms.lastBinCenter = Parameter( "LastBinCenter" ).AsRelativeFreq( Input );
   parms.modelOrder = Parameter( "ModelOrder" );
   parms.SBS = Input.Elements();
   parms.outputType = Parameter( "OutputType" );
-  parms.numWindows = MeasurementUnits::ReadAsTime( Parameter( "WindowLength" ) );
+  parms.numWindows = Parameter( "WindowLength" ).InBlocks();
 
   delete mpAR;
   mpAR = new ARGroup;

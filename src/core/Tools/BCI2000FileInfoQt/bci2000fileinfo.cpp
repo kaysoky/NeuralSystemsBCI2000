@@ -142,7 +142,7 @@ void BCI2000FileInfo::OpenFile( QString filename )
         {
             ui->blockSize->setText( mFile.Parameter( "SampleBlockSize" ).c_str() );
             ui->feedback->setText( QString::number( mFile.SamplingRate() / blockSize ).append( QString( " Hz" ) ) );
-            ui->samplingRate->setText( QString::number( float( mFile.Parameter( "SamplingRate" ) ) ).append( QString( " Hz" ) ) );
+            ui->samplingRate->setText( QString::number( mFile.SamplingRate() ).append( QString( " Hz" ) ) );
             ui->formatVer->setText( mFile.FileFormatVersion().c_str() );
             ui->dataFormat->setText( mFile.SignalProperties().Type().Name() );
         }

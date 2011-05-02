@@ -86,7 +86,7 @@ for (files=0; files<fPathArr.size(); files++)
 
 	// Check the Sampling Rate
 	if (CurrentFile->Parameters()->Exists("SamplingRate"))
-		SamplingRate.push_back(CurrentFile->Parameter("SamplingRate"));
+    SamplingRate.push_back(static_cast<int>(CurrentFile->SamplingRate()));
 	else
 	{
 		printf("The sampling rate of file %s does not exist", fPathArr[files].c_str());

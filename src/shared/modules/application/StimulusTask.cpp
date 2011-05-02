@@ -127,12 +127,12 @@ StimulusTask::Preflight( const SignalProperties& Input, SignalProperties& Output
     "ISIMinDuration",
     "ISIMaxDuration",
   };
-  float oneMillisecond = MeasurementUnits::ReadAsTime( "1ms" );
+  float oneMillisecond = MeasurementUnits::TimeInBlocks( "1ms" );
   for( size_t i = 0; i < sizeof( timeParams ) / sizeof( *timeParams ); ++i )
   {
     for( int j = 0; j < Parameter( timeParams[ i ] )->NumValues(); ++j )
     {
-      float value = MeasurementUnits::ReadAsTime( Parameter( timeParams[ i ] )( j ) );
+      float value = Parameter( timeParams[ i ] )( j ).InBlocks();
       if( ( value > numeric_limits<float>::epsilon() && value < 1.0f ) || ::fmod( value, 1.0f ) > oneMillisecond )
         bciout << "Due to a sample block duration of "
                << 1.0f / oneMillisecond << "ms,"
@@ -145,16 +145,16 @@ StimulusTask::Preflight( const SignalProperties& Input, SignalProperties& Output
     }
   }
 
-  float preRunDuration = MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) );
+  float preRunDuration = Parameter( "PreRunDuration" ).InBlocks();
   if( preRunDuration < 1 )
     bcierr << "PreRunDuration must be >= 1 data block" << endl;
 
-  double epochLength = MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", 0 ) );
+  double epochLength = OptionalParameter( "EpochLength", 0 ).InBlocks();
   if( Parameter( "InterpretMode" ) != InterpretModes::None )
   {
-    double stimulusDuration = MeasurementUnits::ReadAsTime( Parameter( "StimulusDuration" ) ),
-           isiMinDuration = MeasurementUnits::ReadAsTime( Parameter( "ISIMinDuration" ) ),
-           postSequenceDuration = MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) ),
+    double stimulusDuration = Parameter( "StimulusDuration" ).InBlocks(),
+           isiMinDuration = Parameter( "ISIMinDuration" ).InBlocks(),
+           postSequenceDuration = Parameter( "PostSequenceDuration" ).InBlocks(),
            minStimToClassInterval =
               stimulusDuration
             + isiMinDuration
@@ -189,15 +189,15 @@ StimulusTask::Initialize( const SignalProperties& Input,
   mDisplay.SetHeight( Parameter( "WindowHeight" ) );
   mDisplay.SetColor( RGBColor( Parameter( "WindowBackgroundColor" ) ) );
 
-  mPreRunDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) ) );
-  mPostRunDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PostRunDuration" ) ) );
-  mPreSequenceDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreSequenceDuration" ) ) );
-  mPostSequenceDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) ) );
-  mStimulusDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "StimulusDuration" ) ) );
-  mISIMinDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "ISIMinDuration" ) ) );
-  mISIMaxDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "ISIMaxDuration" ) ) );
+  mPreRunDuration = static_cast<int>( Parameter( "PreRunDuration" ).InBlocks() );
+  mPostRunDuration = static_cast<int>( Parameter( "PostRunDuration" ).InBlocks() );
+  mPreSequenceDuration = static_cast<int>( Parameter( "PreSequenceDuration" ).InBlocks() );
+  mPostSequenceDuration = static_cast<int>( Parameter( "PostSequenceDuration" ).InBlocks() );
+  mStimulusDuration = static_cast<int>( Parameter( "StimulusDuration" ).InBlocks() );
+  mISIMinDuration = static_cast<int>( Parameter( "ISIMinDuration" ).InBlocks() );
+  mISIMaxDuration = static_cast<int>( Parameter( "ISIMaxDuration" ).InBlocks() );
   mStimToClassDuration = 2 * ( mStimulusDuration + mISIMinDuration );
-  mStimToClassDuration = static_cast<int>( ::ceil( MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", mStimToClassDuration ) ) ) );
+  mStimToClassDuration = static_cast<int>( ::ceil( OptionalParameter( "EpochLength", mStimToClassDuration ).InBlocks() ) );
 
   mInterpretMode = Parameter( "InterpretMode" );
 

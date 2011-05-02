@@ -168,7 +168,10 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
     }
   }
   
-  int sampleBlockSize = atoi( parameters[ "SampleBlockSize" ].Value().c_str() );
+  int sampleBlockSize = static_cast<int>( PhysicalUnit()
+                                         .SetGain( 1.0 ).SetOffset( 0.0 ).SetSymbol( "" )
+                                         .PhysicalToRaw( parameters[ "SampleBlockSize" ].Value() )
+                                        );
   legalInput &= ( sampleBlockSize > 0 );
   if( !legalInput )
   {
@@ -187,10 +190,15 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
     }
     if( calibrateData && parameters.Exists( "SamplingRate" ) )
     {
+      double samplingRate = PhysicalUnit()
+                           .SetOffset( 0.0 )
+                           .SetGain( 1.0 )
+                           .SetSymbol( "Hz" )
+                           .PhysicalToRaw( parameters[ "SamplingRate" ].Value() );
       inputProperties
         .ElementUnit().SetOffset( 0 )
-        .SetGain( 1.0 / ::atof( parameters[ "SamplingRate" ].Value().c_str() ) )
-        .SetSymbol( "s" );
+                      .SetGain( 1.0 / samplingRate )
+                      .SetSymbol( "s" );
     }
     vector<double> offsets( sourceCh, 0 ),
                    gains( sourceCh, 1 );

@@ -36,7 +36,6 @@
 #pragma hdrstop
 
 #include "FeedbackTask.h"
-#include "MeasurementUnits.h"
 #include "PrecisionTime.h"
 
 using namespace std;
@@ -113,12 +112,12 @@ FeedbackTask::Initialize( const SignalProperties& Input, const SignalProperties&
   if(!string(Parameter("NumberOfTrials")).empty())
     mNumberOfTrials = Parameter("NumberOfTrials");
 
-  mPreRunDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) ) );
-  mPreFeedbackDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreFeedbackDuration" ) ) );
-  mFeedbackDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) ) );
-  mPostFeedbackDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PostFeedbackDuration" ) ) );
-  mITIDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "ITIDuration" ) ) );
-  mMinRunLength = static_cast<long long>( MeasurementUnits::ReadAsTime( Parameter( "MinRunLength" ) ) );
+  mPreRunDuration = static_cast<int>( Parameter( "PreRunDuration" ).InBlocks() );
+  mPreFeedbackDuration = static_cast<int>( Parameter( "PreFeedbackDuration" ).InBlocks() );
+  mFeedbackDuration = static_cast<int>( Parameter( "FeedbackDuration" ).InBlocks() );
+  mPostFeedbackDuration = static_cast<int>( Parameter( "PostFeedbackDuration" ).InBlocks() );
+  mITIDuration = static_cast<int>( Parameter( "ITIDuration" ).InBlocks() );
+  mMinRunLength = static_cast<long long>( Parameter( "MinRunLength" ).InBlocks() );
   bcidbg( 2 ) << "Event: Initialize" << endl;
   OnInitialize( Input );
 }

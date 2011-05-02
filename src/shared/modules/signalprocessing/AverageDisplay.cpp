@@ -27,7 +27,6 @@
 #pragma hdrstop
 
 #include "AverageDisplay.h"
-#include "MeasurementUnits.h"
 #include "defines.h"
 #include "Color.h"
 #include "Label.h"
@@ -78,14 +77,13 @@ AverageDisplay::Preflight( const SignalProperties& Input, SignalProperties& Outp
       Parameter( "AvgDisplayCh" )( i, 0 ) > 0
       && Parameter( "AvgDisplayCh" )( i, 0 ) <= Input.Channels()
     );
-  PreflightCondition( Parameter( "SamplingRate" ) > 0 );
   PreflightCondition( Input.Elements() > 0 );
   State( "TargetCode" );
   Output = Input;
 }
 
 void
-AverageDisplay::Initialize( const SignalProperties&, const SignalProperties& )
+AverageDisplay::Initialize( const SignalProperties& Input, const SignalProperties& )
 {
   for( size_t i = 0; i < mVisualizations.size(); ++i )
     mVisualizations[ i ].Send( CfgID::Visible, false );
@@ -102,9 +100,7 @@ AverageDisplay::Initialize( const SignalProperties&, const SignalProperties& )
   for( int i = 0; i < Parameter( "AvgDisplayMarkers" )->NumRows(); ++i )
   {
     string markerName = Parameter( "AvgDisplayMarkers" )( i, 0 );
-    int position = static_cast<int>(
-      MeasurementUnits::ReadAsTime( OptionalParameter( markerName, -1 ) ) * Parameter( "SampleBlockSize" )
-    );
+    int position = static_cast<int>( OptionalParameter( markerName, -1 ).InBlocks() * Input.Elements() );
     if( position >= 0 )
       markerLabels.push_back( Label( position, markerName ) );
   }
@@ -245,7 +241,7 @@ AverageDisplay::Process( const GenericSignal& Input, GenericSignal& Output )
       }
       mVisualizations[ channel ].Send( CfgID::ChannelLabels, labels );
       ostringstream oss;
-      oss << ( Parameter( "SampleBlockSize" )  / Input.Elements() / Parameter( "SamplingRate" ) ) << "s";
+      oss << ( 1.0 / MeasurementUnits::SamplingRate( Input.Properties() ) ) << "s";
       mVisualizations[ channel ].Send( CfgID::SampleUnit, oss.str() );
       mVisualizations[ channel ].Send( average );
     }

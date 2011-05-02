@@ -88,13 +88,6 @@ void PeakDetector::Preflight( const SignalProperties& inSignalProperties,
   // Resource availability checks.
   /* The P3 temporal filter seems not to depend on external resources. */
 
-  // Input signal checks.
-  PreflightCondition( inSignalProperties.Accommodates( SignalProperties(
-    Parameter( "SpatialFilteredChannels" ),
-    Parameter( "SampleBlockSize" ),
-    SignalType::int16 )
-  ) );
-
   // Requested output signal properties.
   outSignalProperties = SignalProperties( 2, Parameter( "HistoryLength" ) );
 }
@@ -108,11 +101,11 @@ void PeakDetector::Preflight( const SignalProperties& inSignalProperties,
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-void PeakDetector::Initialize( const SignalProperties&, const SignalProperties& )
+void PeakDetector::Initialize( const SignalProperties& Input, const SignalProperties& /*Output*/ )
 {
-  samples=     Parameter( "SampleBlockSize" );
+  samples=     Input.Elements();
   visualize=   ( int )Parameter("VisualizePeakDetector");
-  hz=          Parameter("SamplingRate");
+  hz=          static_cast<int>( MeasurementUnits::SamplingRate( Input ) );
   posthresh=   Parameter("PosPeakThreshold");
   negthresh=   Parameter("NegPeakThreshold");
   nBins=       Parameter("HistoryLength");

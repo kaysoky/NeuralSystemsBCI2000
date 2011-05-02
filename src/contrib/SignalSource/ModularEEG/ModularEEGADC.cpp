@@ -120,11 +120,11 @@ void ModularEEGADC::Preflight( const SignalProperties&,
   char comname[5];
 
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
-  PreflightCondition( Parameter( "SamplingRate" ) == 256 );
+  PreflightCondition( MeasurementUnits::SamplingRate() == 256 );
   PreflightCondition( Parameter( "SourceCh" ) == 6 );
   PreflightCondition( Parameter( "Protocol" ) <= 2 );
-  PreflightCondition( Parameter( "SampleBlockSize" ) >= 1 );
-  PreflightCondition( Parameter( "SampleBlockSize" ) <= 64 );
+  PreflightCondition( MeasurementUnits::SampleBlockSize() >= 1 );
+  PreflightCondition( MeasurementUnits::SampleBlockSize() <= 64 );
 
   // Resource availability checks.
   strcpy(comname,"COM ");comname[3]='0'+(int)Parameter("ComPort");
@@ -134,7 +134,7 @@ void ModularEEGADC::Preflight( const SignalProperties&,
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
-       Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), SignalType::int16 );
+    Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(), SignalType::int16 );
 
 }
 
@@ -155,7 +155,7 @@ void ModularEEGADC::Initialize( const SignalProperties&, const SignalProperties&
   char comname[5];
 
   // store the value of the needed parameters
-  samplerate = Parameter( "SamplingRate" );
+  samplerate = static_cast<int>( MeasurementUnits::SamplingRate() );
   comport = Parameter( "ComPort" );
   protocol = Parameter( "Protocol" );
   mCount=0;

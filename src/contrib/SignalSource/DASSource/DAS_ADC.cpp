@@ -69,8 +69,8 @@ TDAS_ADC::Preflight( const SignalProperties&, SignalProperties& Output ) const
   DASQueue::DASInfo boardInfo =
   {
     Parameter( "BoardNumber" ),
-    Parameter( "SamplingRate" ),
-    Parameter( "SampleBlockSize" ),
+    static_cast<int>( MeasurementUnits::SamplingRate() ),
+    MeasurementUnits::SampleBlockSize(),
     Parameter( "SourceCh" ),
     Parameter( "ADRange" )( "min" ), Parameter( "ADRange" )( "max" ),
   };
@@ -92,8 +92,8 @@ TDAS_ADC::Initialize( const SignalProperties&, const SignalProperties& )
   DASQueue::DASInfo boardInfo =
   {
     Parameter( "BoardNumber" ),
-    Parameter( "SamplingRate" ),
-    Parameter( "SampleBlockSize" ),
+    static_cast<int>( MeasurementUnits::SamplingRate() ),
+    MeasurementUnits::SampleBlockSize(),
     Parameter( "SourceCh" ),
     Parameter( "ADRange" )( "min" ), Parameter( "ADRange" )( "max" ),
   };

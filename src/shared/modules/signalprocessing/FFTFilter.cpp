@@ -27,7 +27,6 @@
 #pragma hdrstop
 
 #include "FFTFilter.h"
-#include "MeasurementUnits.h"
 #include <vector>
 #include <cassert>
 #include <cmath>
@@ -95,7 +94,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
     {
       FFTLibWrapper preflightFFT;
       int fftWindowLength =
-        static_cast<int>( Parameter( "SampleBlockSize" ) * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) ) );
+        static_cast<int>( Input.Elements() * Parameter( "FFTWindowLength" ).InBlocks() );
       if( !preflightFFT.Initialize( fftWindowLength ) )
         bcierr << "Requested parameters are not supported by FFT library" << endl;
     }
@@ -118,7 +117,7 @@ void
 FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*Output*/ )
 {
   mFFTOutputSignal = ( eFFTOutputSignal )( int )Parameter( "FFTOutputSignal" );
-  mFFTWindowLength = static_cast<int>( Input.Elements() * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) ) );
+  mFFTWindowLength = static_cast<int>( Input.Elements() * Parameter( "FFTWindowLength" ).InBlocks() );
   mFFTWindow = ( eFFTWindow )( int )Parameter( "FFTWindow" );
 
   mFFTInputChannels.clear();
@@ -267,7 +266,7 @@ void
 FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTType ) const
 {
   int numChannels = Parameter( "FFTInputChannels" )->NumValues(),
-      fftWindowLength = static_cast<int>( Parameter( "SampleBlockSize" ) * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) ) );
+      fftWindowLength = static_cast<int>( ioProperties.Elements() * Parameter( "FFTWindowLength" ).InBlocks() );
   if( numChannels > 0 && fftWindowLength == 0 )
     bcierr << "FFTWindowLength must exceed a single sample's duration" << endl;
 
@@ -281,7 +280,7 @@ FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTT
       ioProperties.SetName( "FFT Power Spectrum" )
                   .SetChannels( numChannels )
                   .SetElements( fftWindowLength / 2 + 1 );
-      double freqScale = Parameter( "SamplingRate" ) / 2.0 / ioProperties.Elements();
+      double freqScale = MeasurementUnits::SamplingRate( ioProperties ) / 2.0;
       ioProperties.ElementUnit().SetOffset( freqScale / 2 )
                                 .SetGain( freqScale )
                                 .SetSymbol( "Hz" );

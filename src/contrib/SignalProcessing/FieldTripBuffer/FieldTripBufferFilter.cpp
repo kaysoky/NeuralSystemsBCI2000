@@ -93,9 +93,6 @@ FieldTripBufferFilter::Preflight( const SignalProperties& Input,
   PreflightCondition( sizeof(datasel_t)    == 8  );
   PreflightCondition( sizeof(eventsel_t)   == 8  );
 
-  Parameter( "SamplingRate" );
-  Parameter( "SampleBlockSize" );
-
   if( Parameter( "FTBufferAddress" ) != mFTBufferAddress )
     bcierr << "Cannot change FTBufferAddress after startup. "
            << "Please use --FTBufferAddress=<address:port> to specify "
@@ -137,7 +134,7 @@ FieldTripBufferFilter::Initialize( const SignalProperties& Input,
   mHeaderdef.nchans    = numChannels;
   mHeaderdef.nsamples  = numSamples;
   mHeaderdef.nevents   = 0;
-  mHeaderdef.fsample   = static_cast<FLOAT32_T>( Parameter( "SamplingRate" ) * numSamples / Parameter( "SampleBlockSize" ) );
+  mHeaderdef.fsample   = static_cast<FLOAT32_T>( MeasurementUnits::SamplingRate( Input ) );
   mHeaderdef.data_type = DATATYPE_FLOAT32;
   mHeaderdef.bufsize   = 0;
 

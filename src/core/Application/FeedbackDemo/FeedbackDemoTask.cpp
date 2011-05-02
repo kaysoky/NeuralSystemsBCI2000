@@ -28,7 +28,6 @@
 
 #include "FeedbackDemoTask.h"
 #include "Color.h"
-#include "MeasurementUnits.h"
 #include "Localization.h"
 #ifdef __BORLANDC__
 #include <vcl.h>
@@ -147,7 +146,7 @@ FeedbackDemoTask::OnPreflight( const SignalProperties& Input ) const
   if( RGBColor( Parameter( "CursorColor" ) ) == RGBColor( RGBColor::NullColor ) )
     bcierr << "Invalid RGB value in CursorColor" << endl;
 
-  if( MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) ) <= 0 )
+  if( Parameter( "FeedbackDuration" ).InBlocks() <= 0 )
     bcierr << "FeedbackDuration must be greater 0" << endl;
 
   if( Input.IsEmpty() )
@@ -180,7 +179,7 @@ FeedbackDemoTask::OnInitialize( const SignalProperties& /*Input*/ )
   mpTarget->Left = mpForm->Width - mpTarget->Width;
 
   // Cursor speed in pixels per signal block duration:
-  float feedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
+  float feedbackDuration = Parameter( "FeedbackDuration" ).InBlocks();
   mCursorSpeedX = ( mpForm->Width - mpTarget->Width ) / feedbackDuration;
   // In Y direction, we need only cross half the screen height during a trial.
   mCursorSpeedY = mpForm->Height / feedbackDuration / 2;
@@ -214,7 +213,7 @@ FeedbackDemoTask::OnInitialize( const SignalProperties& /*Input*/ )
   mpTarget->setRect( targetRect );
 
   // Cursor speed in pixels per signal block duration:
-  float feedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
+  float feedbackDuration = Parameter( "FeedbackDuration" ).InBlocks();
   mCursorSpeedX = ( mpForm->width() - mpTarget->rect().width() ) / feedbackDuration;
   // In Y direction, we need only cross half the screen height during a trial.
   mCursorSpeedY = mpForm->height() / feedbackDuration / 2;

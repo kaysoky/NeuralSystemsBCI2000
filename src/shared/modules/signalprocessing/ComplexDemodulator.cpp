@@ -62,17 +62,16 @@ ComplexDemodulator::Preflight( const SignalProperties& Input,
   bool error = false;
   for( int i = 0; i < DemodulatorFrequencies->NumValues(); ++i )
   {
-    double frequency = MeasurementUnits::ReadAsFreq( DemodulatorFrequencies( i ) );
+    double frequency = DemodulatorFrequencies( i ).AsRelativeFreq( Input );
     error |= ( frequency < 0 );
     error |= ( frequency > 0.5 );
   }
   if( error )
     bcierr << "DemodulatorFrequencies must be greater 0 and less than half the "
            << "sampling rate "
-           << "(currently " << Parameter( "SamplingRate" ) << "Hz)"
+           << "(currently " << MeasurementUnits::SamplingRate() << "Hz)"
            << endl;
-  double FrequencyResolution
-    = MeasurementUnits::ReadAsFreq( Parameter( "FrequencyResolution" ) );
+  double FrequencyResolution = Parameter( "FrequencyResolution" ).AsRelativeFreq( Input );
   PreflightCondition( FrequencyResolution > 0 );
 
   // Request output signal properties:
@@ -88,7 +87,7 @@ void
 ComplexDemodulator::Initialize( const SignalProperties& Input,
                                 const SignalProperties& Output )
 {
-  double FrequencyResolution = MeasurementUnits::ReadAsFreq( Parameter( "FrequencyResolution" ) );
+  double FrequencyResolution = Parameter( "FrequencyResolution" ).AsRelativeFreq( Input );
   size_t numCoefficients = static_cast<size_t>( ::floor( 1.0 / FrequencyResolution ) + 1 );
   ParamRef DemodulatorFrequencies = Parameter( "DemodulatorFrequencies" );
   mCoefficients.clear();
@@ -98,7 +97,7 @@ ComplexDemodulator::Initialize( const SignalProperties& Input,
   );
   for( int i = 0; i < DemodulatorFrequencies->NumValues(); ++i )
   {
-    double freq = MeasurementUnits::ReadAsFreq( DemodulatorFrequencies( i ) );
+    double freq = DemodulatorFrequencies( i ).AsRelativeFreq( Input );
     for( size_t j = 0; j < numCoefficients; ++j )
       mCoefficients[ i ][ j ] = polar( 0.5 / numCoefficients, freq * j * 2.0 * M_PI );
   }

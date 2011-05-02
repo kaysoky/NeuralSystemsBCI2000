@@ -198,7 +198,6 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   // Parameter existence and range.
   Parameter( "SignalSourceIP" );
   Parameter( "ApplicationIP" );
-  PreflightCondition( Parameter( "SamplingRate" ) > 0 );
 
 
   if( Parameter( "SourceChOffset" )->NumValues() != Parameter( "SourceCh" ) )
@@ -230,7 +229,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
 
   if( Parameter( "VisualizeSource" ) == 1 )
   {
-    int SampleBlockSize = Parameter( "SampleBlockSize" );
+    int SampleBlockSize = MeasurementUnits::SampleBlockSize();
     PreflightCondition( SampleBlockSize > 0 );
 
     if( Parameter( "VisualizeSourceDecimation" ) != string( "auto" ) )
@@ -320,9 +319,9 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   // We output calibrated signals in float32 format.
   Output.SetType( SignalType::float32 );
   Output.ElementUnit().SetOffset( 0 )
-                      .SetGain( 1.0 / Parameter( "SamplingRate" ) )
+                      .SetGain( 1.0 / MeasurementUnits::SamplingRate() )
                       .SetSymbol( "s" );
-  double numSamplesInDisplay = Parameter( "VisualizeSourceTime" ) * Parameter( "SamplingRate" );
+  double numSamplesInDisplay = Parameter( "VisualizeSourceTime" ) * MeasurementUnits::SamplingRate();
   Output.ElementUnit().SetRawMin( 0 )
                       .SetRawMax( numSamplesInDisplay - 1 );
   Output.ValueUnit().SetOffset( 0 )
@@ -339,7 +338,7 @@ void
 DataIOFilter::Initialize( const SignalProperties& Input,
                           const SignalProperties& Output )
 {
-  mBlockDuration = 1.0 / MeasurementUnits::ReadAsTime( "1ms" );
+  mBlockDuration = 1.0 / MeasurementUnits::TimeInBlocks( "1ms" );
   mSampleBlockSize = Statevector->Samples() - 1;
 
   const SignalProperties& adcOutput = mInputBuffer.Properties();
@@ -384,10 +383,10 @@ DataIOFilter::Initialize( const SignalProperties& Input,
 
   if( Parameter( "VisualizeSourceDecimation" ) == string( "auto" ) )
   {
-    mVisualizeSourceDecimation = static_cast<int>( ::floor( Parameter( "SamplingRate" ) / 256.0 ) );
+    mVisualizeSourceDecimation = static_cast<int>( ::floor( MeasurementUnits::SamplingRate() / 256.0 ) );
     if( mVisualizeSourceDecimation < 1 )
       mVisualizeSourceDecimation = 1;
-    int numSamplesBuffered = static_cast<int>( mVisualizeSourceBufferSize * Parameter( "SampleBlockSize" ) );
+    int numSamplesBuffered = static_cast<int>( mVisualizeSourceBufferSize * MeasurementUnits::SampleBlockSize() );
     while( numSamplesBuffered % mVisualizeSourceDecimation )
       --mVisualizeSourceDecimation;
     bcidbg( 5 ) << "Choosing a VisualizeSourceDecimation value of "
@@ -461,7 +460,7 @@ DataIOFilter::StartRun()
 
   // Reset timing evaluation buffer.
   mTimingBuffer.resize( 0 );
-  mTimingBuffer.resize( static_cast<size_t>( MeasurementUnits::ReadAsTime( "10s" ) ), 0 );
+  mTimingBuffer.resize( static_cast<size_t>( MeasurementUnits::TimeInBlocks( "10s" ) ), 0 );
   mTimingBufferCursor = 0;
 }
 

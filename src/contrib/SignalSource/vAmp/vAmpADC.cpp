@@ -99,7 +99,7 @@ void vAmpADC::Preflight( const SignalProperties&,
   bool tHighSpeed = Parameter("AcquisitionMode") == 1 || Parameter("AcquisitionMode") == 4;
   SignalType signalType = SignalType::float32;
   outSignalProperties = SignalProperties(
-     Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), signalType );
+    Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(), signalType );
 
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
   if ( Parameter("SourceChList")->NumValues() > 0 )
@@ -153,7 +153,7 @@ void vAmpADC::Preflight( const SignalProperties&,
   faGetInformation(tDevId, &tDeviceInfo);
     bciout << "Device found with serial: "<< tDeviceInfo.SerialNumber << endl;
 
-  if (Parameter("SamplingRate") < 200)
+  if (MeasurementUnits::SamplingRate() < 200)
   {
     bcierr << "The sample rate must be >= 200 Hz (2000Hz in high-speed)" << endl;
     return;
@@ -237,7 +237,7 @@ void vAmpADC::Preflight( const SignalProperties&,
 int vAmpADC::getDecimation() const
 {
   bool tHighSpeed = Parameter("AcquisitionMode") == 1 || Parameter("AcquisitionMode") == 4;
-  float reqFs = Parameter("SamplingRate");
+  float reqFs = MeasurementUnits::SamplingRate();
   if (mHighSpeed){
     int dec = int(20000.0/reqFs);
     if (abs(float(dec) - 20000.0/reqFs) < .02)
@@ -333,14 +333,14 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
   }
 
   int decimate = 1;
-  float fs = Parameter("SamplingRate");
+  float fs = MeasurementUnits::SamplingRate();
   decimate= getDecimation();
   float hpCorner = 0;
   if (Parameter("HPFilterCorner")->NumValues() == 1)
     hpCorner = Parameter("HPFilterCorner");
     
   mAcquire = new vAmpThread(
-            Parameter("SampleBlockSize"),
+            MeasurementUnits::SampleBlockSize(),
             fs,
             decimate,
             mChList,

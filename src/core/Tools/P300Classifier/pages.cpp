@@ -883,7 +883,7 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
 
     // Check the Sampling Rate
     if (CurrentFile->Parameters()->Exists("SamplingRate"))
-      SamplingRate.push_back(CurrentFile->Parameter("SamplingRate"));
+      SamplingRate.push_back(CurrentFile->SamplingRate());
     else
     {
       ostringstream oss;
@@ -1369,7 +1369,7 @@ bool DataPage::ValidateTestingDataFiles(vector<string> &fPathArr, int &numSample
 
     // Check the Sampling Rate
     if (CurrentFile->Parameters()->Exists("SamplingRate"))
-      SamplingRate.push_back(CurrentFile->Parameter("SamplingRate"));
+      SamplingRate.push_back(CurrentFile->SamplingRate());
     else
     {
       ostringstream oss;

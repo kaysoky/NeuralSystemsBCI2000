@@ -30,6 +30,7 @@
 #include "PrecisionTime.h"
 #include "Expression.h"
 #include "RandomGenerator.h"
+#include <vector>
 
 class SignalGeneratorADC : public GenericADC
 {
@@ -45,11 +46,12 @@ class SignalGeneratorADC : public GenericADC
 
  private:
   // Configuration
-  double mSamplingRate,
-         mSineFrequency,
+  double mSineFrequency,
          mSineAmplitude,
          mNoiseAmplitude,
          mDCOffset;
+  std::vector<double> mSourceChGain,
+                      mSourceChOffset;
   Expression mOffsetMultiplier;
   int    mSineChannelX,
          mSineChannelY,

@@ -124,8 +124,8 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
     State("MK2");
 
 
-    if( Parameter("SampleBlockSize") < 1 ){
-        bcierr << "Sample block Size of " << Parameter("SampleBlockSize")
+    if( MeasurementUnits::SampleBlockSize() < 1 ){
+        bcierr << "Sample block Size of " << MeasurementUnits::SampleBlockSize()
                << " is less than 1" << endl;
     }
 
@@ -146,8 +146,8 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
                << endl;
     }
 
-    mBiosemi.initialize(Parameter("SamplingRate"),
-            Parameter("SampleBlockSize"), reqChannels);
+    mBiosemi.initialize(MeasurementUnits::SamplingRate(),
+                        MeasurementUnits::SampleBlockSize(), reqChannels);
 
     int eegChannelsAvailable = mBiosemi.getNumEEGChannels();
     for( int i = 0 ; i < nEegRequested ; ++i ) {
@@ -188,8 +188,8 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
         } 
     }
 
-    if( 0 != (mBiosemi.getSamplingRate() % (int)Parameter("SamplingRate")) ){
-        bcierr << "Sampling rate requested: " << Parameter("SamplingRate")
+    if( 0 != (mBiosemi.getSamplingRate() % (int)MeasurementUnits::SamplingRate()) ){
+        bcierr << "Sampling rate requested: " << MeasurementUnits::SamplingRate()
             << " does not evenly divide biosemi sampling rate: "
             << mBiosemi.getSamplingRate() << endl;
 
@@ -198,7 +198,7 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
 // Requested output signal properties.
 
    Output = SignalProperties(
-        Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ),
+     Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(),
             SignalType::float32);
 }
 
@@ -216,9 +216,9 @@ void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
 
 // store the value of the needed parameters
 
-    mSamplingRate = Parameter( "SamplingRate" );
+    mSamplingRate = MeasurementUnits::SamplingRate();
     mSourceCh = Parameter("SourceCh");
-    mSampleBlockSize = Parameter("SampleBlockSize");
+    mSampleBlockSize = MeasurementUnits::SampleBlockSize();
 
     delete [] mChInd;
     mChInd = new int[mSourceCh];

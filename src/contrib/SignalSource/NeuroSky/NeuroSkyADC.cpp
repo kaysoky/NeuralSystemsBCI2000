@@ -94,8 +94,8 @@ void NeuroSkyADC::Preflight( const SignalProperties&,
 {
   // Grab important parameters
   int sourceCh = Parameter( "SourceCh" ),
-      sampleBlockSize = Parameter( "SampleBlockSize" ),
-      samplingRate = Parameter( "SamplingRate" ),
+      sampleBlockSize = MeasurementUnits::SampleBlockSize(),
+      samplingRate = static_cast<int>( MeasurementUnits::SamplingRate() ),
       COMport = Parameter( "COMport" );
      
   // Check that the user is only asking for one channel
@@ -152,7 +152,7 @@ void NeuroSkyADC::Initialize( const SignalProperties&,
   Halt();
   
   // Grab New Parameters
-  int samplingRate = Parameter( "SamplingRate" );
+  int samplingRate = static_cast<int>( MeasurementUnits::SamplingRate() );
   int COMport = Parameter( "COMport" );
   
   // Calculate Sampling Time

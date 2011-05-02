@@ -36,7 +36,6 @@
 #include "SWFilter.h"
 
 #include "BCIError.h"
-#include "MeasurementUnits.h"
 #include <cmath>
 
 #define SECTION "Filtering"
@@ -88,7 +87,6 @@ TSWFilter::Preflight( const SignalProperties& Input,
   if( Parameter( "YGain" ) < 300 || Parameter( "YGain" ) > 400 )
     bciout << "YGain should be set to 327.68 for Slow Waves" << endl;
 #endif
-  PreflightCondition( Parameter( "SampleBlockSize" ) > 0 );
   Parameter( "FeedbackEnd" );
   State( itiStateName );
 
@@ -99,20 +97,20 @@ TSWFilter::Preflight( const SignalProperties& Input,
     PreflightCondition( Parameter( "SWInChList" )( i ) > 0 && Parameter( "SWInChList" )( i ) <= Input.Channels() );
   for( int i = 0; i < Parameter( "SWOutChList" )->NumValues(); ++i )
     PreflightCondition( Parameter( "SWOutChList" )( i ) > 0 && Parameter( "SWOutChList" )( i ) <= Input.Channels() );
-  PreflightCondition( MeasurementUnits::ReadAsTime( Parameter( "Tc" ) ) >= 0.0 );
+  PreflightCondition( Parameter( "Tc" ).InBlocks() >= 0.0 );
   PreflightCondition( Parameter( "SpatialFilteredChannels" ) == Input.Channels() );
   Output = SignalProperties( Input.Channels(), 1 );
   Output.SetName( "SWFiltered" );
 }
 
 void
-TSWFilter::Initialize( const SignalProperties&, const SignalProperties& )
+TSWFilter::Initialize( const SignalProperties& Input, const SignalProperties& )
 {
-  mBlockSize = Parameter( "SampleBlockSize" );
-  mBlocksInTrial = static_cast<unsigned int>( MeasurementUnits::ReadAsTime( Parameter( "FeedbackEnd" ) ) );
+  mBlockSize = Input.Elements();
+  mBlocksInTrial = static_cast<unsigned int>( Parameter( "FeedbackEnd" ).InBlocks() );
   mBufferOffset = mBlocksInTrial;
   mAvgBufferSize = mBufferOffset + mBlocksInTrial + 1;
-  mAvgSpan = static_cast<unsigned int>( MeasurementUnits::ReadAsTime( Parameter( "SWAvgSpan" ) ) );
+  mAvgSpan = static_cast<unsigned int>( Parameter( "SWAvgSpan" ).InBlocks() );
 
   mSWCh = Parameter( "SWInChList" )->NumValues();
   mSWInChList.resize( mSWCh );
@@ -137,7 +135,7 @@ TSWFilter::Initialize( const SignalProperties&, const SignalProperties& )
   mPosInBuffer = mBufferOffset - 1;
 
   // Tc-correction variables:
-  double timeConstant = MeasurementUnits::ReadAsTime( Parameter( "Tc" ) );
+  double timeConstant = Parameter( "Tc" ).InBlocks();
   if( timeConstant == 0 )
     mTcFactor = 0;
   else

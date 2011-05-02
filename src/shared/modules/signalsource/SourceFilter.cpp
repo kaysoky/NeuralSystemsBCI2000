@@ -52,7 +52,7 @@ SourceFilter::DesignFilter( const SignalProperties& inSignalProperties,
                             ComplexVector& outZeros,
                             ComplexVector& outPoles ) const
 {
-  Real samplingRate = MeasurementUnits::ReadAsTime( "1s" ) * inSignalProperties.Elements();
+  Real samplingRate = MeasurementUnits::TimeInBlocks( "1s" ) * inSignalProperties.Elements();
 
   outGain = 1.0;
   outZeros.clear();

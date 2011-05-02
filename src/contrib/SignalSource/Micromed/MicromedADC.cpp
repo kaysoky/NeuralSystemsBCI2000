@@ -170,8 +170,8 @@ void MicromedADC::Preflight( const SignalProperties&,
   PreflightCondition( Parameter( "SubjectName" ) != "" );
   PreflightCondition( Parameter( "SubjectSession" ) > 0 );
   PreflightCondition( Parameter( "SubjectRun" ) > 0 );
-  PreflightCondition( int( Parameter( "SamplingRate" ) ) % MICROMED_PACKET_RATE==0 );
-  PreflightCondition( int( Parameter( "SampleBlockSize" ) ) % ( int(Parameter( "SamplingRate" )) / MICROMED_PACKET_RATE)==0);
+  PreflightCondition( int( MeasurementUnits::SamplingRate() ) % MICROMED_PACKET_RATE==0 );
+  PreflightCondition( int( MeasurementUnits::SampleBlockSize() ) % ( int(MeasurementUnits::SamplingRate()) / MICROMED_PACKET_RATE)==0);
   PreflightCondition( int( Parameter( "SignalType" ) )== 0 || int(Parameter( "SignalType" ) )== 3);
   // Resource availability checks.
 
@@ -180,7 +180,7 @@ void MicromedADC::Preflight( const SignalProperties&,
   // Requested output signal properties.
   signalType=Parameter( "SignalType" );
   outSignalProperties = SignalProperties(
-  Parameter( "SourceCh" ),Parameter( "SampleBlocksize" ),SignalType::Type( signalType ));
+    Parameter( "SourceCh" ),MeasurementUnits::SampleBlockSize(),SignalType::Type( signalType ));
 
   num_notes=0;
   waitforconn = false;
@@ -202,10 +202,10 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
   // store the value of the needed parameters
   MICROMED_PACKET_RATE = Parameter( "PacketRate");
-  samplerate = Parameter( "SamplingRate" );
+  samplerate = static_cast<int>( MeasurementUnits::SamplingRate() );
   mSignalType = Parameter( "SignalType" );
-  MMblocksize=static_cast<int>( Parameter( "SamplingRate" ) / MICROMED_PACKET_RATE );
-  BCIblocksize=Parameter( "SampleBlocksize" );
+  MMblocksize=static_cast<int>( MeasurementUnits::SamplingRate() / MICROMED_PACKET_RATE );
+  BCIblocksize=MeasurementUnits::SampleBlockSize();
   conditionmask = Parameter( "ConditionMask" );
   num_channels = Parameter( "SourceCh" );
   switch(mSignalType)
@@ -221,7 +221,7 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
                 break;
             }
   const int blocksToWait = 10;
-  mTimerDelay = static_cast<int>( blocksToWait * 1000 * Parameter( "SampleBlockSize" )/ Parameter( "SamplingRate" ) );
+  mTimerDelay = static_cast<int>( blocksToWait * 1000 * MeasurementUnits::SampleBlockDuration() );
   // Micromed systemPLUS is the client, BCI is the server, it passively listens.
 
   // start the server
@@ -427,7 +427,7 @@ unsigned int nbyte;
                   long byteVal = *pData++;
                   samplerate |= byteVal << ( 8 * byte );
                 }
-            if (samplerate!=Parameter("SamplingRate"))
+            if (samplerate!=MeasurementUnits::SamplingRate())
             bcierr << "wrong sample rate in Header: " << samplerate << endl;
 
             //read bytespersample (int16)

@@ -365,13 +365,23 @@ BCI2000FileReader::ReadHeader()
   mpStatevector = new ( class StateVector )( mStatelist );
   if( !mParamlist.Exists( "SamplingRate" ) )
     return;
-  mSamplingRate = ::atof( mParamlist[ "SamplingRate" ].Value().c_str() );
+  mSamplingRate = PhysicalUnit()
+                 .SetGain( 1.0 )
+                 .SetOffset( 0.0 )
+                 .SetSymbol( "Hz" )
+                 .PhysicalToRaw( mParamlist[ "SamplingRate" ].Value() );
 
   // Read information about signal dimensions.
   int sampleBlockSize = 1;
   if( mParamlist.Exists( "SampleBlockSize" ) )
-    sampleBlockSize = ::atoi( mParamlist[ "SampleBlockSize" ].Value().c_str() );
+    sampleBlockSize = static_cast<int>( PhysicalUnit()
+                                       .SetGain( 1.0 )
+                                       .SetOffset( 0.0 )
+                                       .SetSymbol( "" )
+                                       .PhysicalToRaw( mParamlist[ "SampleBlockSize" ].Value().c_str() )
+                                      );
   mSignalProperties = ::SignalProperties( mChannels, sampleBlockSize, mSignalType );
+  mSignalProperties.ElementUnit().SetGain( 1.0 / mSamplingRate ).SetOffset( 0.0 ).SetSymbol( "s" );
 
   const float defaultOffset = 0.0;
   mSourceOffsets.clear();

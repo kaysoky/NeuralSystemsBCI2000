@@ -172,7 +172,7 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
   if( Parameter( "SignalType" ) == 1 )
     signalType = SignalType::float32;
   outSignalProperties = SignalProperties(
-       Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), signalType );
+    Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(), signalType );
 
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
     if ( Parameter("SourceChList")->NumValues() > 0 )
@@ -315,7 +315,7 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
          // let's check whether the driver complains if we use a wrong sampling rate
          // according to the documentation, it should
          // it looks like in practise, it does not
-         int samplerate=Parameter("SamplingRate");
+         int samplerate=static_cast<int>(MeasurementUnits::SamplingRate());
          if (!GT_SetSampleRate(hdev, samplerate))
          {
            WORD wErrorCode;
@@ -402,12 +402,12 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
     mpAcquireThread = new AcquireThread(this);
 
     mTotalChs        =           Parameter( "SourceCh" );
-    int samplingrate =           Parameter( "SamplingRate" );
+    int samplingrate =           static_cast<int>(MeasurementUnits::SamplingRate());
     mMasterDeviceID  = ( string )Parameter( "DeviceIDMaster" );
     mFloatOutput     =         ( Parameter( "SignalType" ) == 1 );
     NUM_BUFS         =           Parameter( "NumBuffers" );
     //NUM_BUFS = 5; //overwriting for now
-    mSampleBlockSize = Parameter("SampleBlockSize");
+    mSampleBlockSize = MeasurementUnits::SampleBlockSize();
     // if we set DeviceIDs to auto and we only have one device, we can autoconfigure
     if ((Parameter("DeviceIDs")->NumValues() == 1) && (Parameter("DeviceIDs")=="auto"))
         autoconfigure=true;
@@ -471,7 +471,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
     // thus, we set the timeout to be small, e.g., 1.5 times the size of
     // one sample block and simply give a warning
     // this is not perfect but I simply can't do it better at the moment
-    m_timeoutms=(int)(float(mSampleBlockSize)/float(Parameter("SamplingRate"))*1000*5);
+    m_timeoutms=(int)(MeasurementUnits::SampleBlockDuration())*1000*5;
 
     // determine the number of devices and allocate the buffers accordingly
     m_numdevices=Parameter("DeviceIDs")->NumValues();
@@ -562,7 +562,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         else
             GT_SetMode(m_hdev.at(dev), M_NORMAL);
 
-        GT_SetBufferSize(m_hdev.at(dev), Parameter( "SampleBlockSize" ));
+        GT_SetBufferSize(m_hdev.at(dev), MeasurementUnits::SampleBlockSize());
         // set all devices to slave except the one master
         // externally, the master needs to have its SYNC OUT wired to the SYNC IN
         // of the first slave (whos SYNC OUT is connected to the next slave's SYNC IN)
@@ -968,7 +968,7 @@ int gUSBampADC::DetermineFilterNumber() const
 int     nof;
 FILT    *filt;
 
- int samplingrate=Parameter("SamplingRate");
+ int samplingrate=static_cast<int>(MeasurementUnits::SamplingRate());
  int filternumber = -1;
 
  GT_GetNumberOfFilter(&nof);
@@ -1002,7 +1002,7 @@ int gUSBampADC::DetermineNotchNumber() const
 int     nof;
 FILT    *filt;
 
- int samplingrate=Parameter("SamplingRate");
+ int samplingrate=static_cast<int>(MeasurementUnits::SamplingRate());
  int notchnumber = -1;
 
  GT_GetNumberOfNotch(&nof);

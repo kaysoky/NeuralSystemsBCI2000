@@ -172,7 +172,7 @@ void TDTADC::Preflight(const SignalProperties&,	SignalProperties& outputProperti
 	RPcoX1->Halt();
     //RPcoX2->Halt();
 
-	outputProperties = SignalProperties(Parameter( "SourceCh"	), Parameter( "SampleBlockSize"	), SignalType::float32);
+  outputProperties = SignalProperties(Parameter( "SourceCh"	), static_cast<int>( MeasurementUnits::SampleBlockSize() ), SignalType::float32);
 }
 
 void TDTADC::Initialize(const SignalProperties&, const SignalProperties&)
@@ -188,12 +188,12 @@ void TDTADC::Initialize(const SignalProperties&, const SignalProperties&)
 	mpAcquireThread = new AcquireThread(this);
 
 	mSourceCh	= Parameter("SourceCh");
-	mSampleBlockSize = Parameter("SampleBlockSize");
-	mSamplingRate =	Parameter("SamplingRate");
+  mSampleBlockSize = MeasurementUnits::SampleBlockSize();
+  mSamplingRate =    static_cast<int>( MeasurementUnits::SamplingRate() );
 	LPFfreq	= Parameter("LPFfreq");
 	HPFfreq	= Parameter("HPFfreq");
 	notchBW	= Parameter("notchBW");
-	blockSize =	Parameter("SampleBlockSize");
+  blockSize =	mSampleBlockSize;
     TDTgain = Parameter("TDTgain");
 	mDigitalGain = (float)Parameter("DigitalGain");
     mFrontPanelGain = (float)Parameter("FrontPanelGain");

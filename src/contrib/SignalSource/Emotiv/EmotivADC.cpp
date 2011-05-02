@@ -154,7 +154,7 @@ void EmotivADC::Preflight( const SignalProperties&,
 {
   // Grab important parameters
   int sourceCh = Parameter( "SourceCh" ),
-      sampleBlockSize = Parameter( "SampleBlockSize" );
+      sampleBlockSize = MeasurementUnits::SampleBlockSize();
 
   // Connect to the Emotiv Engine
   EmotivConnect();
@@ -222,7 +222,7 @@ void EmotivADC::Preflight( const SignalProperties&,
   else
     for( int i = 0; i < sizeof( targetChannelList ) / sizeof( EE_DataChannel_t ); i++ )
       if( Parameter( "ChannelNames" )( i ) != mChannelNames[i] )
-        bciout << "Entry number " << i+1 << " in ChannelNames should be " << mChannelNames[i] << endl;
+        bciout << "Entry number " << (i+1) << " in ChannelNames should be " << mChannelNames[i] << endl;
 
   // Check the number of channels
   if( ( int )Parameter( "SourceCh" ) != sizeof( targetChannelList ) / sizeof( EE_DataChannel_t ) )
@@ -232,7 +232,7 @@ void EmotivADC::Preflight( const SignalProperties&,
   unsigned int samplingRate = 0;
   if( EE_DataGetSamplingRate( userID, &samplingRate ) == EDK_OK )
   {
-    if( ( int )Parameter( "SamplingRate" ) != samplingRate )
+    if( static_cast<int>( MeasurementUnits::SamplingRate() ) != samplingRate )
       bcierr << "Set SamplingRate = " << samplingRate << endl;
   }
   else
@@ -245,7 +245,7 @@ void EmotivADC::Preflight( const SignalProperties&,
     // Check individual entries
     for( int i = 0; i < sizeof( targetChannelList ) / sizeof( EE_DataChannel_t ); i++ )
       if( Parameter( "SourceChOffset" )( i ) != 0 )
-        bcierr << "Entry number " << i+1 << " in SourceChOffset should be 0." << endl;
+        bcierr << "Entry number " << (i+1) << " in SourceChOffset should be 0." << endl;
 
   // Get Resolution List, Set Param
   if( Parameter( "SourceChGain" )->NumValues() != sizeof( targetChannelList ) / sizeof( EE_DataChannel_t ) )

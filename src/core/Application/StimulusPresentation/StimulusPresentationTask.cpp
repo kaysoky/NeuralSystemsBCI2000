@@ -34,8 +34,6 @@
 #include "AudioStimulus.h"
 #include "Localization.h"
 
-#include "MeasurementUnits.h"
-
 #include <algorithm>
 
 using namespace std;
@@ -194,12 +192,10 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
       presentFocusOn = false;
       presentResult = false;
   }
-  int focusDuration = static_cast<int>( MeasurementUnits::ReadAsTime(
-        StimulusProperty( Parameter( "FocusOn" ), 0, "StimulusDuration" ) ) ),
-      resultDuration = static_cast<int>( MeasurementUnits::ReadAsTime(
-        StimulusProperty( Parameter( "Result" ), 0, "StimulusDuration" ) ) ),
-      preSequenceDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreSequenceDuration" ) ) ),
-      postSequenceDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) ) );
+  int focusDuration = static_cast<int>( StimulusProperty( Parameter( "FocusOn" ), 0, "StimulusDuration" ).InBlocks() ),
+      resultDuration = static_cast<int>( StimulusProperty( Parameter( "Result" ), 0, "StimulusDuration" ).InBlocks() ),
+      preSequenceDuration = static_cast<int>( Parameter( "PreSequenceDuration" ).InBlocks() ),
+      postSequenceDuration = static_cast<int>( Parameter( "PostSequenceDuration" ).InBlocks() );
 
   if( presentFocusOn && preSequenceDuration < 2 * focusDuration )
     bcierr << "When FocusOn message and target stimulus are presented, "
@@ -227,28 +223,24 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
     "ISIMinDuration",
     "ISIMaxDuration",
   };
-  double oneMillisecond = MeasurementUnits::ReadAsTime( "1ms" );
+  double oneMillisecond = MeasurementUnits::TimeInBlocks( "1ms" );
   int minStimDuration = 0,
       minISIDuration = 0,
-      epochLength = static_cast<int>( MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", 0 ) ) );
+      epochLength = static_cast<int>( OptionalParameter( "EpochLength", 0 ).InBlocks() );
 
   enum { caption, icon, audio };
   for( size_t i = 0; i < stimParams.size(); ++i )
     for( int j = 0; j < Parameter( stimParams[ i ] )->NumColumns(); ++j )
     {
-      int stimDuration = static_cast<int>( MeasurementUnits::ReadAsTime(
-        StimulusProperty( Parameter( stimParams[ i ] ), j, "StimulusDuration" ) ) ),
-      isiDuration = static_cast<int>( MeasurementUnits::ReadAsTime(
-        StimulusProperty( Parameter( stimParams[ i ] ), j, "ISIMinDuration" ) ) );
+      int stimDuration = static_cast<int>( StimulusProperty( Parameter( stimParams[ i ] ), j, "StimulusDuration" ).InBlocks() ),
+          isiDuration = static_cast<int>( StimulusProperty( Parameter( stimParams[ i ] ), j, "ISIMinDuration" ).InBlocks() );
       if( minStimDuration > stimDuration )
         minStimDuration = stimDuration;
       if( minISIDuration > isiDuration )
         minISIDuration = isiDuration;
       for( size_t k = 0; k < sizeof( timeParams ) / sizeof( *timeParams ); ++k )
       { // Check individual stimulus durations.
-        double value = MeasurementUnits::ReadAsTime(
-          StimulusProperty( Parameter( stimParams[ i ] ), j, timeParams[ k ] )
-        );
+        double value = StimulusProperty( Parameter( stimParams[ i ] ), j, timeParams[ k ] ).InBlocks();
         if( value < 1.0 || ::fmod( value, 1.0 ) > oneMillisecond )
           bciout << "Due to a sample block duration of "
                  << 1.0f / oneMillisecond << "ms,"
@@ -343,12 +335,9 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
   ParamRef Stimuli = Parameter( "Stimuli" );
   for( int i = 0; i < Stimuli->NumColumns(); ++i )
   {
-    Associations()[ i + 1 ].SetStimulusDuration(
-      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( Stimuli, i, "StimulusDuration" ) ) ) );
-    Associations()[ i + 1 ].SetISIMinDuration(
-      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( Stimuli, i, "ISIMinDuration" ) ) ) );
-    Associations()[ i + 1 ].SetISIMaxDuration(
-      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( Stimuli, i, "ISIMaxDuration" ) ) ) );
+    Associations()[ i + 1 ].SetStimulusDuration( static_cast<int>( StimulusProperty( Stimuli, i, "StimulusDuration" ).InBlocks() ) );
+    Associations()[ i + 1 ].SetISIMinDuration( static_cast<int>( StimulusProperty( Stimuli, i, "ISIMinDuration" ).InBlocks() ) );
+    Associations()[ i + 1 ].SetISIMaxDuration( static_cast<int>( StimulusProperty( Stimuli, i, "ISIMaxDuration" ).InBlocks() ) );
 
     double stimulusWidth = StimulusProperty( Stimuli, i, "StimulusWidth" ) / 100.0,
            captionHeight = StimulusProperty( Stimuli, i, "CaptionHeight" ) / 100.0,
@@ -411,8 +400,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
   if( presentFocusOn )
   {
     ParamRef FocusOn = Parameter( "FocusOn" );
-    mFocusAnnouncement.SetStimulusDuration(
-      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( FocusOn, 0, "StimulusDuration" ) ) ) );
+    mFocusAnnouncement.SetStimulusDuration( static_cast<int>( StimulusProperty( FocusOn, 0, "StimulusDuration" ).InBlocks() ) );
     for( int i = 0; i < FocusOn->NumColumns(); ++i )
     {
       float stimulusWidth = StimulusProperty( FocusOn, i, "StimulusWidth" ) / 100.0,
@@ -469,8 +457,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
   if( presentResult )
   {
     ParamRef Result = Parameter( "Result" );
-    mResultAnnouncement.SetStimulusDuration(
-      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( Result, 0, "StimulusDuration" ) ) ) );
+    mResultAnnouncement.SetStimulusDuration( static_cast<int>( StimulusProperty( Result, 0, "StimulusDuration" ).InBlocks() ) );
     for( int i = 0; i < Result->NumColumns(); ++i )
     {
       float stimulusWidth = StimulusProperty( Result, i, "StimulusWidth" ) / 100.0,

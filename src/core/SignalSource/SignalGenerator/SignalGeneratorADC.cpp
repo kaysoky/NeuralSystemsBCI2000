@@ -29,13 +29,11 @@
 #include "SignalGeneratorADC.h"
 #include "BCIError.h"
 #include "GenericSignal.h"
-#include "MeasurementUnits.h"
+#include "OSThread.h"
 
 #include <cmath>
 #ifdef _WIN32
 # include <windows.h>
-#else
-# include <sys/socket.h>
 #endif
 
 using namespace std;
@@ -44,8 +42,7 @@ using namespace std;
 RegisterFilter( SignalGeneratorADC, 1 );
 
 SignalGeneratorADC::SignalGeneratorADC()
-: mSamplingRate( 1 ),
-  mSineFrequency( 0 ),
+: mSineFrequency( 0 ),
   mSineAmplitude( 0 ),
   mNoiseAmplitude( 0 ),
   mDCOffset( 0 ),
@@ -105,13 +102,14 @@ SignalGeneratorADC::~SignalGeneratorADC()
 
 void
 SignalGeneratorADC::Preflight( const SignalProperties&,
-                                  SignalProperties& Output ) const
+                                     SignalProperties& Output ) const
 {
-  PreflightCondition( Parameter( "SamplingRate" ) > 0 );
-  MeasurementUnits::ReadAsFreq( Parameter( "SineFrequency" ) );
-  MeasurementUnits::ReadAsVoltage( Parameter( "SineAmplitude" ) );
-  MeasurementUnits::ReadAsVoltage( Parameter( "NoiseAmplitude" ) );
-  if( MeasurementUnits::ReadAsVoltage( Parameter( "DCOffset" ) ) != 0 )
+  Parameter( "SourceChGain" );
+  Parameter( "SourceChOffset" );
+  Parameter( "SineFrequency" ).InHertz();
+  Parameter( "SineAmplitude" ).InMicrovolts();
+  Parameter( "NoiseAmplitude" ).InMicrovolts();
+  if( Parameter( "DCOffset" ).InMicrovolts() != 0 )
     Expression( Parameter( "OffsetMultiplier" ) ).Evaluate();
   Parameter( "RandomSeed" );
 
@@ -138,19 +136,24 @@ SignalGeneratorADC::Preflight( const SignalProperties&,
       bcierr << "Unknown SignalType value" << endl;
   }
   Output = SignalProperties(
-    Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), signalType );
+    Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(), signalType );
 }
 
 
 void
 SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
-  mSamplingRate = Parameter( "SamplingRate" );
-  mSineFrequency = MeasurementUnits::ReadAsFreq( Parameter( "SineFrequency" ) );
-  mSineAmplitude = MeasurementUnits::ReadAsVoltage( Parameter( "SineAmplitude" ) );
+  mSourceChGain.resize( Parameter( "SourceChGain" )->NumValues() );
+  for( size_t i = 0; i < mSourceChGain.size(); ++i )
+    mSourceChGain[i] = Parameter( "SourceChGain" )( i );
+  mSourceChOffset.resize( Parameter( "SourceChOffset" )->NumValues() );
+  for( size_t i = 0; i < mSourceChOffset.size(); ++i )
+    mSourceChOffset[i] = Parameter( "SourceChOffset" )( i );
+  mSineFrequency = Parameter( "SineFrequency" ).AsSystemRelativeFrequency();
+  mSineAmplitude = Parameter( "SineAmplitude" ).InMicrovolts();
   mSinePhase = M_PI / 2;
-  mNoiseAmplitude = MeasurementUnits::ReadAsVoltage( Parameter( "NoiseAmplitude" ) );
-  mDCOffset = MeasurementUnits::ReadAsVoltage( Parameter( "DCOffset" ) );
+  mNoiseAmplitude = Parameter( "NoiseAmplitude" ).InMicrovolts();
+  mDCOffset = Parameter( "DCOffset" ).InMicrovolts();
   if( mDCOffset == 0 )
     mOffsetMultiplier = Expression( "" );
   else
@@ -217,6 +220,9 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
       if( mSineChannelZ == ch + 1 )
         value += sineValue * mAmplitudeZ;
 
+      value /= mSourceChGain[ch];
+      value += mSourceChOffset[ch];
+
       value = max( value, minVal );
       value = min( value, maxVal );
 
@@ -226,19 +232,14 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
 
   // Wait for the amount of time that corresponds to the length of a data block.
   PrecisionTime now = PrecisionTime::Now();
-  double blockDuration = 1e3 * Output.Elements() / mSamplingRate,
+  double blockDuration = 1e3 * Output.Elements() / MeasurementUnits::SamplingRate(),
          time2wait = blockDuration - ( now - mLasttime );
   if( time2wait < 0 )
     time2wait = 0;
-#ifdef _WIN32
   const float timeJitter = 5;
-  ::Sleep( static_cast<int>( ::floor( time2wait / timeJitter ) * timeJitter ) );
+  OSThread::Sleep( static_cast<int>( ::floor( time2wait / timeJitter ) * timeJitter ) );
   while( PrecisionTime::Now() - mLasttime < blockDuration - 1 )
-    ::Sleep( 0 );
-#else
-  struct timeval tv = { 0, 1e3 * time2wait };
-  ::select( 0, NULL, NULL, NULL, &tv );
-#endif
+    OSThread::Sleep( 0 );
   mLasttime = PrecisionTime::Now();
 }
 

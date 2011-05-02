@@ -195,32 +195,21 @@ BioRadioADC::Preflight( const SignalProperties&,
 
   // Check to see if the specified sampling frequency is equal to one that
   // is available on the bioradio150
-  if(Parameter("SamplingRate") != 768 &&   // 768 Hz
-     Parameter("SamplingRate") != 600 &&   // 600 Hz
-     Parameter("SamplingRate") != 480 &&   // 480 Hz
-     Parameter("SamplingRate") != 384 &&   // 384 Hz
-     Parameter("SamplingRate") != 256 &&   // 256 Hz
-     Parameter("SamplingRate") != 128 )    // 128 Hz
+  double samplingRate = MeasurementUnits::SamplingRate();
+  if(samplingRate != 768 &&   // 768 Hz
+     samplingRate != 600 &&   // 600 Hz
+     samplingRate != 480 &&   // 480 Hz
+     samplingRate != 384 &&   // 384 Hz
+     samplingRate != 256 &&   // 256 Hz
+     samplingRate != 128 )    // 128 Hz
   {
     bcierr<<"Sampling frequency must exist in the following set: { 768, 600, 480, 384, 256, 128}"<<endl;
     errorFlag = XERROR;
   }
   // Check to see is the sample block size is a multiple of 10
-  if(     Parameter("SampleBlockSize") != 10  &&
-          Parameter("SampleBlockSize") != 20  &&
-          Parameter("SampleBlockSize") != 30  &&
-          Parameter("SampleBlockSize") != 40  &&
-          Parameter("SampleBlockSize") != 50  &&
-          Parameter("SampleBlockSize") != 60  &&
-          Parameter("SampleBlockSize") != 70  &&
-          Parameter("SampleBlockSize") != 80  &&
-          Parameter("SampleBlockSize") != 90  &&
-          Parameter("SampleBlockSize") != 100 &&
-          Parameter("SampleBlockSize") != 110 &&
-          Parameter("SampleBlockSize") != 120
-          )
+  if( MeasurementUnits::SampleBlockSize() % 10 != 0
+      || MeasurementUnits::SampleBlockSize() > 120 )
   {
-    bcierr<<Parameter("SampleBlockSize")<<endl;
     bcierr<<"The value of the sample block size must be be a multiple of 10, and <= 120."<<endl;
     errorFlag = XERROR;
   }
@@ -238,7 +227,7 @@ BioRadioADC::Preflight( const SignalProperties&,
   {
 
     double vRange = GetBioRadioRangeValue(Parameter("VoltageRange"));
-    if(WriteBioRadioConfig( Parameter("SamplingRate"),
+    if(WriteBioRadioConfig( MeasurementUnits::SamplingRate(),
                             BIT_RES,
                             vRange,
                             pathFileName.c_str()))
@@ -299,7 +288,7 @@ BioRadioADC::Preflight( const SignalProperties&,
 
   outSignalProperties = SignalProperties(
        Parameter( "SourceCh" ),
-       Parameter( "SampleBlockSize" ),
+       MeasurementUnits::SampleBlockSize(),
        SignalType::float32
   );
 }
@@ -324,13 +313,13 @@ BioRadioADC::Initialize( const SignalProperties&, const SignalProperties& )
   mFileLocation = path + CONFIG_FILE;
   // Obtain all value from params
   ClearSampleIndices();
-  mSamplerate = Parameter( "SamplingRate" );
+  mSamplerate = MeasurementUnits::SamplingRate();
   mSourceCh = Parameter("SourceCh");
-  mSampleBlockSize = Parameter("SampleBlockSize");
+  mSampleBlockSize = MeasurementUnits::SampleBlockSize();
   mComPort = Parameter("ComPort");
 
   // Write a new config file from the params obtained
-  WriteBioRadioConfig( Parameter("SamplingRate"),
+  WriteBioRadioConfig( mSamplerate,
                        BIT_RES,
                        vRange,
                        mFileLocation.c_str());

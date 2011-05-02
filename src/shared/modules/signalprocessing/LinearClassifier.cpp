@@ -131,8 +131,7 @@ LinearClassifier::Preflight( const SignalProperties& Input,
   Output.ValueUnit().SetRawMin( Input.ValueUnit().RawMin() )
                     .SetRawMax( Input.ValueUnit().RawMax() );
 
-  double secsPerBlock = Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" );
-  Output.ElementUnit().SetOffset( 0 ).SetGain( secsPerBlock ).SetSymbol( "s" );
+  Output.ElementUnit().SetOffset( 0 ).SetGain( MeasurementUnits::SampleBlockDuration() ).SetSymbol( "s" );
   double visualizationTime = Output.ElementUnit().PhysicalToRaw( "15s" );
   Output.ElementUnit().SetRawMin( 0 ).SetRawMax( visualizationTime - 1 );
 }

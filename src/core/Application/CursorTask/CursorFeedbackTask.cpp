@@ -27,7 +27,6 @@
 #pragma hdrstop
 
 #include "CursorFeedbackTask.h"
-#include "MeasurementUnits.h"
 #include "Localization.h"
 #include "BCIDirectory.h"
 #include "FeedbackScene2D.h"
@@ -220,7 +219,7 @@ CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
            << Parameter( "NumberTargets" )
            << endl;
 
-  if( MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) ) <= 0 )
+  if( Parameter( "FeedbackDuration" ).InBlocks() <= 0 )
     bcierr << "FeedbackDuration must be greater 0" << endl;
 }
 
@@ -228,12 +227,12 @@ void
 CursorFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
 {
   // Cursor speed in pixels per signal block duration:
-  float feedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
+  float feedbackDuration = Parameter( "FeedbackDuration" ).InBlocks();
   // On average, we need to cross half the workspace during a trial.
   mCursorSpeedX = 100.0 / feedbackDuration / 2;
   mCursorSpeedY = 100.0 / feedbackDuration / 2;
   mCursorSpeedZ = 100.0 / feedbackDuration / 2;
-  mMaxFeedbackDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "MaxFeedbackDuration" ) ) );
+  mMaxFeedbackDuration = static_cast<int>( Parameter( "MaxFeedbackDuration" ).InBlocks() );
 
   mWindow.SetLeft( Parameter( "WindowLeft" ) );
   mWindow.SetTop( Parameter( "WindowTop" ) );

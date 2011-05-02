@@ -126,7 +126,7 @@ Normalizer::Preflight( const SignalProperties& Input,
       for( int col = 0; col < BufferConditions->NumColumns(); ++col )
         Expression( BufferConditions( row, col ) ).Evaluate( &preflightSignal );
 
-    double bufferSize = MeasurementUnits::ReadAsTime( Parameter( "BufferLength" ) );
+    double bufferSize = Parameter( "BufferLength" ).InBlocks();
     if( bufferSize < 1 )
       bciout << "The BufferLength parameter specifies a zero-sized buffer"
              << endl;
@@ -172,8 +172,7 @@ Normalizer::Initialize( const SignalProperties& Input,
     if( !UpdateTrigger.empty() )
       mpUpdateTrigger = new Expression( UpdateTrigger );
 
-    size_t bufferSize = static_cast<size_t>( 
-       MeasurementUnits::ReadAsTime( Parameter( "BufferLength" ) ) * Input.Elements() );
+    size_t bufferSize = static_cast<size_t>( Parameter( "BufferLength" ).InBlocks() * Input.Elements() );
     ParamRef BufferConditions = Parameter( "BufferConditions" );
     mBufferConditions.resize( BufferConditions->NumColumns() );
     for( int col = 0; col < BufferConditions->NumColumns(); ++col )

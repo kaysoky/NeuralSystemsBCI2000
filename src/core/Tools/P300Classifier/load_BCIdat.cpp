@@ -107,7 +107,7 @@ for (int j=0; j<NumChannels; j++)
 // Section: Get parameters
 
 // Get the Sampling Rate
-parms.SamplingRate = CurrentFile->Parameter("SamplingRate");
+parms.SamplingRate = static_cast<int>(CurrentFile->SamplingRate());
 
 // Get the Number of Sequences
 parms.NumberOfSequences = CurrentFile->Parameter("NumberOfSequences");

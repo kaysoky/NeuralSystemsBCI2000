@@ -62,7 +62,7 @@ void
 LPFilter::Preflight( const SignalProperties& Input,
                            SignalProperties& Output ) const
 {
-  double LPTimeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
+  double LPTimeConstant = Parameter( "LPTimeConstant" ).InBlocks();
   LPTimeConstant *= Input.Elements();
   // The PreflightCondition macro will automatically generate an error
   // message if its argument evaluates to false.
@@ -84,7 +84,7 @@ LPFilter::Initialize( const SignalProperties& Input,
                       const SignalProperties& /*Output*/ )
 {
   // Get the time constant in units of a sample block's duration:
-  double timeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
+  double timeConstant = Parameter( "LPTimeConstant" ).InBlocks();
   // Convert it into units of a sample's duration:
   timeConstant *= Input.Elements();
 

@@ -420,9 +420,9 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
 
   // Samples are always 4-byte floats.
   outSignalProperties = SignalProperties(
-       Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), SignalType::float32);
-  nScanRes = sscanf(Parameter( "SampleBlockSize" ).c_str(), "%d", &nBlockSize);
-  if(nScanRes <= 0 || nScanRes == EOF)
+    Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(), SignalType::float32);
+  nBlockSize = MeasurementUnits::SampleBlockSize();
+  if( nBlockSize < 1 )
   {
     bcierr << "Invalid value specified for SampleBlockSize.  Please choose a positive integer value." << endl;
     Halt(&oCmdConn, &oNotifConn, &oDataConn, nAmpId);
@@ -466,7 +466,8 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
 #ifndef STANDALONE
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
   // cross check the parameters as received from the server with the BCI2000 parameters
-  PreflightCondition( Parameter( "SamplingRate" ) == 1000 );
+  if( MeasurementUnits::SamplingRate() != 1000.0 )
+    bcierr << "Parameter \"SamplingRate\" needs to be set to 1000" << endl;
 
   // also cross check SourceChGain and SourceChOffset
   for (int ch=0; ch<Parameter( "SourceCh" ); ch++)
@@ -595,7 +596,7 @@ void AmpServerProADC::Initialize( const SignalProperties&, const SignalPropertie
   sscanf(Parameter("NotificationPort").c_str(), "%d", &m_nNotifPort);
   sscanf(Parameter("StreamPort").c_str(), "%d", &m_nDataPort);
   sscanf(Parameter("SourceCh").c_str(), "%d", &m_nNumChans);
-  sscanf(Parameter("SampleBlockSize").c_str(), "%d", &m_nBlockSize);
+  m_nBlockSize = MeasurementUnits::SampleBlockSize();
   sscanf(m_sAmpState, Parameter("AmpState").c_str());
 #endif
 

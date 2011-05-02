@@ -271,6 +271,7 @@ CoreModule::MainMessageLoop()
   while( !mTerminated )
   {
     mMessageEvent.Wait( bciMessageTimeout );
+    mMessageEvent.Reset();
     ProcessBCIAndGUIMessages();
     mConnectionLock.Acquire();
     bool operatorOpen = mOperator.is_open();
@@ -759,7 +760,10 @@ CoreModule::HandleSysCommand( istream& is )
   {
     int sampleBlockSize = 1;
     if( mParamlist.Exists( "SampleBlockSize" ) )
-      sampleBlockSize = ::atoi( mParamlist[ "SampleBlockSize" ].Value().c_str() );
+      sampleBlockSize = static_cast<int>( PhysicalUnit()
+                                         .SetOffset( 0.0 ).SetGain( 1.0 ).SetSymbol( "" )
+                                         .PhysicalToRaw( mParamlist[ "SampleBlockSize" ].Value() )
+                                        );
     if( sampleBlockSize < 1 )
       sampleBlockSize = 1;
     mSampleBlockSize = sampleBlockSize;

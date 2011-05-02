@@ -44,6 +44,7 @@
 #include "BCIError.h"
 #include "MeasurementUnits.h"
 #include "ClassName.h"
+#include "PhysicalUnit.h"
 #include <sstream>
 #include <typeinfo>
 
@@ -138,37 +139,6 @@ EnvironmentBase::ObjectContext()
 
 // Convenient accessor functions.
 
-// Iteration over parameters.
-#if 0
-EnvironmentBase::ParamIterator
-EnvironmentBase::FirstParameter() const
-{
-  return NextParameter( NULL );
-}
-
-EnvironmentBase::ParamIterator
-EnvironmentBase::NextParameter( ParamIterator inIterator ) const
-{
-  ParamIterator i = inIterator + 1;
-  return ( i < 1 || i > Parameters->Size() ) ? NULL : i;
-}
-
-ParamRef
-EnvironmentBase::Parameter( ParamIterator inIterator ) const
-{
-  Param* pParam = NULL;
-  if( inIterator < 1 || inIterator > Parameters->Size() )
-    bcierr_ << "Invalid parameter iterator specified."
-            << endl;
-  else
-  {
-    pParam = &( *Parameters )[ inIterator - 1 ];
-    ParamAccess( pParam->Name() );
-  }
-  return ParamRef( pParam );
-}
-#endif
-
 // Read/write access to a parameter by its name.
 // Use an additional pair of brackets for indices.
 ParamRef
@@ -258,44 +228,6 @@ EnvironmentBase::PreflightCondition_( const char* inConditionString,
   return inConditionValue;
 }
 
-// Iteration over states.
-#if 0
-EnvironmentBase::StateIterator
-EnvironmentBase::FirstState() const
-{
-  return NextState( NULL );
-}
-
-EnvironmentBase::StateIterator
-EnvironmentBase::NextState( StateIterator inIterator ) const
-{
-  StateIterator i = inIterator + 1;
-  return ( i < 1 || i > States->Size() ) ? NULL : i;
-}
-
-StateRef
-EnvironmentBase::State( StateIterator inIterator ) const
-{
-  class State* pState = NULL;
-  const class StateList* pStatelist = StateListAccess();
-
-  if( pStatelist != NULL )
-  {
-    if( inIterator < 1 || inIterator > States->Size() )
-      bcierr_ << "Invalid state iterator specified."
-              << endl;
-    else
-    {
-      pState = &( *States )[ inIterator - 1 ];
-      StateAccess( pState->Name() );
-      if( pState->Length() < 1 )
-        bcierr_ << "State \"" << pState->Name() << "\" has zero length."
-                << endl;
-    }
-  }
-  return StateRef( pState, Statevector, 0 );
-}
-#endif
 
 // Read/write access to a state by its name.
 StateRef
@@ -531,26 +463,8 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
   ParamsAccessedDuringPreflight().clear();
   StatesAccessedDuringPreflight().clear();
 
-  double SamplingRate = 0,
-         SampleBlockSize = 0,
-         SourceChGain = 0;
-
   if( Parameters != NULL )
-  {
-    if( Parameters->Exists( "SamplingRate" ) )
-      SamplingRate = ::atof( ( *Parameters )[ "SamplingRate" ].Value().c_str() );
-    if( Parameters->Exists( "SampleBlockSize" ) )
-      SampleBlockSize = ::atof( ( *Parameters )[ "SampleBlockSize" ].Value().c_str() );
-    if( Parameters->Exists( "SourceChGain" ) )
-      SourceChGain = ::atof( ( *Parameters )[ "SourceChGain" ].Value( 0 ).c_str() );
-  }
-
-  if( SampleBlockSize > 0 )
-    MeasurementUnits::InitializeTimeUnit( SamplingRate / SampleBlockSize );
-  if( SamplingRate > 0 )
-    MeasurementUnits::InitializeFreqUnit( 1.0 / SamplingRate );
-  if( SourceChGain > 0 )
-    MeasurementUnits::InitializeVoltageUnit( 1e6 / SourceChGain );
+    MeasurementUnits::Initialize( *Parameters );
 
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
   {
@@ -691,6 +605,7 @@ Environment::OnParamAccess( const string& inName ) const
                 << " consistency during preflight phase."
                 << endl;
   }
+  MeasurementUnits::OnParamAccess( inName );
 }
 
 void

@@ -27,35 +27,66 @@
 #define MEASUREMENT_UNITS_H
 
 #include "PhysicalUnit.h"
+#include "SignalProperties.h"
+#include "ParamList.h"
 #include <string>
+
+#define MEASUREMENT_UNITS_BACK_COMPAT 1
 
 // This class converts strings such as "123.3" or "12ms" to plain numbers that
 // represent values in global units.
 class MeasurementUnits
 {
   public:
-    static double ReadAsTime( const std::string& value )
+    // Use these functions to convert values forth and back into "natural" BCI2000 units:
+    static double TimeInBlocks( const std::string& value )
     { return sTimeUnit.PhysicalToRaw( value ); }
+    static double TimeInSeconds( const std::string& value )
+    { return TimeInBlocks( value ) * sSampleBlockSize / sSamplingRate; }
+    static double TimeInMilliseconds( const std::string& value )
+    { return TimeInSeconds( value ) * 1e3; }
+
+    // Use the following function to obtain a frequency value in terms of a signal's sampling frequency:
+    static double RelativeFreq( const std::string& inValue, const SignalProperties& inProperties )
+    { return sFreqUnit.PhysicalToRaw( inValue ) * sSampleBlockSize / static_cast<double>( inProperties.Elements() ); }
+    static double SystemRelativeFreq( const std::string& value )
+    { return sFreqUnit.PhysicalToRaw( value ); }
+    static double FreqInHertz( const std::string& value )
+    { return SystemRelativeFreq( value ) * sSamplingRate; }
+
+    static double VoltageInMicrovolts( const std::string& value )
+    { return sVoltageUnit.PhysicalToRaw( value ); }
+    static double VoltageInVolts( const std::string& value )
+    { return VoltageInMicrovolts( value ) * 1e-6; }
+
     static std::string TimeUnit()
     { return sTimeUnit.RawToPhysical( 1 ); }
-    static void InitializeTimeUnit( double inUnitsPerSec )
-    { sTimeUnit.SetOffset( 0 ).SetGain( 1.0 / inUnitsPerSec ).SetSymbol( "s" ); }
-
-    static double ReadAsFreq( const std::string& value )
-    { return sFreqUnit.PhysicalToRaw( value ); }
     static std::string FreqUnit()
     { return sFreqUnit.RawToPhysical( 1 ); }
-    static void InitializeFreqUnit( double inUnitsPerHertz )
-    { sFreqUnit.SetOffset( 0 ).SetGain( 1.0 / inUnitsPerHertz ).SetSymbol( "Hz" ); }
-
-    static double ReadAsVoltage( const std::string& value )
-    { return sVoltageUnit.PhysicalToRaw( value ); }
     static std::string VoltageUnit()
     { return sVoltageUnit.RawToPhysical( 1 ); }
-    static void InitializeVoltageUnit( double inUnitsPerVolt )
-    { sVoltageUnit.SetOffset( 0 ).SetGain( 1.0 / inUnitsPerVolt ).SetSymbol( "V" ); }
+
+    static double SamplingRate()
+    { return sSamplingRate; }
+    static double SamplingRate( const SignalProperties& inProperties )
+    { return sSamplingRate / sSampleBlockSize * static_cast<double>( inProperties.Elements() ); }
+    static int SampleBlockSize()
+    { return static_cast<int>( sSampleBlockSize ); }
+    static double SampleBlockDuration()
+    { return sSampleBlockSize / sSamplingRate; }
+
+    static void Initialize( const ParamList& );
+    static void OnParamAccess( const std::string& name );
+
+#if MEASUREMENT_UNITS_BACK_COMPAT
+    // These functions are deprecated, as their names are ambiguous:
+    static double ReadAsTime( const std::string& value );
+    static double ReadAsFreq( const std::string& value );
+#endif // MEASUREMENT_UNITS_BACK_COMPAT
 
   private:
+    static double sSamplingRate;
+    static double sSampleBlockSize;
     static PhysicalUnit sTimeUnit;
     static PhysicalUnit sFreqUnit;
     static PhysicalUnit sVoltageUnit;

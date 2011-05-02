@@ -27,10 +27,78 @@
 #pragma hdrstop
 
 #include "MeasurementUnits.h"
+#include "BCIError.h"
 
 using namespace std;
 
+double MeasurementUnits::sSamplingRate = 1.0;
+double MeasurementUnits::sSampleBlockSize = 1.0;
 PhysicalUnit MeasurementUnits::sTimeUnit;
 PhysicalUnit MeasurementUnits::sFreqUnit;
 PhysicalUnit MeasurementUnits::sVoltageUnit;
 
+void
+MeasurementUnits::Initialize( const ParamList& inParams )
+{
+  if( inParams.Exists( "SamplingRate" ) )
+  {
+    sSamplingRate = PhysicalUnit()
+                   .SetGain( 1.0 )
+                   .SetOffset( 0.0 )
+                   .SetSymbol( "Hz" )
+                   .PhysicalToRaw( inParams[ "SamplingRate" ].Value() );
+    if( sSamplingRate <= 0.0 )
+      bcierr << "Parameter SamplingRate needs to be greater zero" << endl;
+  }
+
+  if( inParams.Exists( "SampleBlockSize" ) )
+  {
+    sSampleBlockSize = PhysicalUnit()
+                      .SetGain( 1.0 )
+                      .SetOffset( 0.0 )
+                      .SetSymbol( "" )
+                      .PhysicalToRaw( inParams[ "SampleBlockSize" ].Value().c_str() );
+    if( sSampleBlockSize < 1 )
+      bcierr << "Parameter SampleBlockSize needs to be >= 1" << endl;
+  }
+  // Set the unit for raw numbers representing time to multiples of sample block duration.
+  sTimeUnit.SetOffset( 0 ).SetGain( sSampleBlockSize / sSamplingRate ).SetSymbol( "s" );
+  // Set the unit for raw numbers representing frequencies to multiples of the sampling rate.
+  sFreqUnit.SetOffset( 0 ).SetGain( sSamplingRate ).SetSymbol( "Hz" );
+  // Set the unit for raw numbers representing voltages to Microvolts.
+  sVoltageUnit.SetOffset( 0 ).SetGain( 1e-6 ).SetSymbol( "V" );
+}
+
+void
+MeasurementUnits::OnParamAccess( const string& inName )
+{
+  const char* deprecatedParms[] =
+  {
+    "SamplingRate",
+    "SampleBlockSize",
+  };
+  for( size_t i = 0; i < sizeof( deprecatedParms ) / sizeof( *deprecatedParms ); ++i )
+    if( inName == deprecatedParms[i] )
+      bciout << "Direct access to parameter \"" << inName << "\" is deprecated. "
+             << "Please use MeasurementUnits::" << inName << "() instead."
+             << endl;
+}
+
+#if MEASUREMENT_UNITS_BACK_COMPAT
+// These functions are deprecated, as their names are ambiguous:
+double 
+MeasurementUnits::ReadAsTime( const std::string& value )
+{
+  bciout << "MeasurementUnits::ReadAsTime() is deprecated. Please call MeasurementUnits::TimeInBlocks() instead."
+         << endl;
+  return TimeInBlocks( value );
+}
+
+double 
+MeasurementUnits::ReadAsFreq( const std::string& value )
+{
+  bciout << "MeasurementUnits::ReadAsFreq() is deprecated. Please call MeasurementUnits::SystemRelativeFreq() instead."
+         << endl;
+  return SystemRelativeFreq( value );
+}
+#endif // MEASUREMENT_UNITS_BACK_COMPAT

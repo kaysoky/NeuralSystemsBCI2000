@@ -30,7 +30,6 @@
 #pragma hdrstop
 
 #include "P3TemporalFilter.h"
-#include "MeasurementUnits.h"
 
 using namespace std;
 
@@ -86,7 +85,7 @@ P3TemporalFilter::Preflight( const SignalProperties& Input,
            << "greater than or equal to the EpochsToAverage parameter."
            << endl;
 
-  double outputSamples = MeasurementUnits::ReadAsTime( Parameter( "EpochLength" ) );
+  double outputSamples = Parameter( "EpochLength" ).InBlocks();
   outputSamples *= Input.Elements();
   outputSamples = ::ceil( outputSamples );
   // Requested output signal properties.

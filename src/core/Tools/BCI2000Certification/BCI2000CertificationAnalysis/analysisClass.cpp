@@ -94,7 +94,7 @@ bool analysis::open(string file, Tasks &taskTypes)
 		cout << "The data file must contain the SampleBlockSize, SamplingRate, and SubjectName parameters." << endl;
 		return false;
 	}
-	blockSize = dFile->Parameter("SampleBlockSize");
+	blockSize = dFile->SignalProperties().Elements();
 	SubjectName = (string)dFile->Parameter("SubjectName");
 	sampleRate = dFile->SamplingRate();
 

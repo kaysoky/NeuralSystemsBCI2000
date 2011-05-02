@@ -46,6 +46,7 @@
 
 #include "JoystickLogger.h"
 #include "BCIEvent.h"
+#include "OSEvent.h"
 
 #define MAXJOYSTICK 32768
 
@@ -193,9 +194,9 @@ void JoystickLogger::StopRun()
 {
   if( mpJoystickThread )
   {
-    mpJoystickThread->Terminate();
-    while( !mpJoystickThread->IsTerminated() )
-      ::Sleep(1);
+    OSEvent terminationEvent;
+    mpJoystickThread->Terminate( &terminationEvent );
+    terminationEvent.Wait();
     delete mpJoystickThread;
     mpJoystickThread = NULL;
   }
