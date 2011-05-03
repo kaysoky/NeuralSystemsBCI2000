@@ -105,7 +105,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
 
   if( int( Parameter( "VisualizeFFT" ) ) || int( Parameter( "FFTOutputSignal" ) ) == ePower )
   {
-    SignalProperties temp;
+    SignalProperties temp( Input );
     DetermineSignalProperties( temp, ePower );
   }
 
@@ -132,7 +132,8 @@ FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*
     DetermineSignalProperties( mVisProperties, ePower );
     PhysicalUnit elementUnit = mVisProperties.ElementUnit();
     mVisProperties.SetChannels( mVisProperties.Elements() );
-    mVisProperties.ChannelUnit() = elementUnit;
+    for( int i = 0; i < mVisProperties.Channels(); ++i )
+      mVisProperties.ChannelLabels()[i] = elementUnit.RawToPhysical( mVisProperties.Channels() - i - 1 );
     mVisProperties.SetElements( 1 );
     mVisProperties.ElementUnit() = Input.ElementUnit();
     mVisProperties.ElementUnit().SetGain( mVisProperties.ElementUnit().Gain() * Input.Elements() );
@@ -140,7 +141,8 @@ FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*
   }
   for( int i = 0; i < Parameter( "FFTInputChannels" )->NumValues(); ++i )
   {
-    mFFTInputChannels.push_back( static_cast<size_t>( Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) ) ) );
+    size_t ch = static_cast<size_t>( Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) ) );
+    mFFTInputChannels.push_back( ch );
     if( mVisualizeFFT )
     {
       ostringstream oss_i;
@@ -149,10 +151,10 @@ FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*
 
       ostringstream oss_ch;
       oss_ch << "FFT for Ch ";
-      if( Parameter( "FFTInputChannels" )->Labels().IsTrivial() )
+      if( Input.ChannelLabels().IsTrivial() )
         oss_ch << i + 1;
       else
-        oss_ch << Parameter( "FFTInputChannels" )->Labels()[ i ];
+        oss_ch << Input.ChannelLabels()[ch];
 
       mVisualizations.back().Send( mVisProperties )
                             .Send( CfgID::WindowTitle, oss_ch.str().c_str() )
@@ -269,6 +271,7 @@ FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTT
       fftWindowLength = static_cast<int>( ioProperties.Elements() * Parameter( "FFTWindowLength" ).InBlocks() );
   if( numChannels > 0 && fftWindowLength == 0 )
     bcierr << "FFTWindowLength must exceed a single sample's duration" << endl;
+  double freqRange = MeasurementUnits::SamplingRate( ioProperties ) / 2.0;
 
   switch( inFFTType )
   {
@@ -280,9 +283,8 @@ FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTT
       ioProperties.SetName( "FFT Power Spectrum" )
                   .SetChannels( numChannels )
                   .SetElements( fftWindowLength / 2 + 1 );
-      double freqScale = MeasurementUnits::SamplingRate( ioProperties ) / 2.0;
-      ioProperties.ElementUnit().SetOffset( freqScale / 2 )
-                                .SetGain( freqScale )
+      ioProperties.ElementUnit().SetOffset( 0.0 )
+                                .SetGain( freqRange / ( ioProperties.Elements() - 1 ) )
                                 .SetSymbol( "Hz" );
       double amplitude = ioProperties.ValueUnit().RawMax() - ioProperties.ValueUnit().RawMin();
       ioProperties.ValueUnit().SetRawMin( 0 )
