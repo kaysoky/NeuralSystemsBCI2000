@@ -13,11 +13,13 @@ MESSAGE( "-- Adding Signal Source Project: " ${NAME} )
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/DefaultSigSrcFramework.cmake )
 
 # Add the required signal processing files into the framework for this project
-SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${BCI2000_SIGSRCSOURCES}" )
-SET( HDR_BCI2000_FRAMEWORK "${HDR_BCI2000_FRAMEWORK}" "${BCI2000_SIGSRCHEADERS}" )
+SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${BCI2000_SIGSRCSOURCES}" "${BCI2000_SIGSRCSOURCES_LOGGING}" )
+SET( HDR_BCI2000_FRAMEWORK "${HDR_BCI2000_FRAMEWORK}" "${BCI2000_SIGSRCHEADERS}" "${BCI2000_SIGSRCHEADERS_LOGGING}" )
 
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\signalsource FILES ${BCI2000_SIGSRCSOURCES} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\signalsource FILES ${BCI2000_SIGSRCHEADERS} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\signalsource\\logging FILES ${BCI2000_SIGSRCSOURCES_LOGGING} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\signalsource\\logging FILES ${BCI2000_SIGSRCHEADERS_LOGGING} )
 
 # Set the Project Source Groups
 SOURCE_GROUP( Source\\Project FILES ${SOURCES} )
