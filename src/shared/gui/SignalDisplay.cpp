@@ -419,19 +419,7 @@ SignalDisplay::SyncLabelWidth()
           mChannelNameCache.resize( address + 1, "" );
         const string& label = mChannelLabels[ i ].Text();
         mChannelNameCache[ address ] = label;
-        if( address < mData.Channels() - mMarkerChannels )
-        {
-#ifdef __BORLANDC__
-          if( ::GetTextExtentPoint32( dc, label.c_str(), label.length(), &size )
-              && size.cx > mLabelWidth )
-            mLabelWidth = size.cx;
-#else // __BORLANDC__
-          size = fontMetrics.size( 0, label.c_str() );
-          if( size.width() > mLabelWidth )
-            mLabelWidth = size.width();
-#endif // __BORLANDC__
-        }
-        else
+        if( address >= mData.Channels() - mMarkerChannels )
           mChannelNameCache[ address ] += " ";
       }
     }
@@ -442,9 +430,23 @@ SignalDisplay::SyncLabelWidth()
       if( mChannelNameCache[ i ].empty() )
       {
         ostringstream oss;
-        oss << i + cChannelBase;
+        if( mChannelUnit.empty() )
+          oss << i + cChannelBase;
+        else
+          oss << fixed << setprecision( 1 ) 
+              << i * mUnitsPerChannel << mChannelUnit;
         mChannelNameCache[ i ] = oss.str();
       }
+      const string& label = mChannelNameCache[i];
+#ifdef __BORLANDC__
+      if( ::GetTextExtentPoint32( dc, label.c_str(), label.length(), &size )
+          && size.cx > mLabelWidth )
+        mLabelWidth = size.cx;
+#else // __BORLANDC__
+      size = fontMetrics.size( 0, label.c_str() );
+      if( size.width() > mLabelWidth )
+        mLabelWidth = size.width();
+#endif // __BORLANDC__
     }
 #ifdef __BORLANDC__
     ::DeleteObject( font );
@@ -575,11 +577,12 @@ SignalDisplay::Paint( void* inUpdateRgn )
   {
     case polyline:
       DrawSignalPolyline( p );
-      DrawYTicks( p );
+      DrawYLabels( p, true );
       DrawValueUnit( p );
       break;
     case field2d:
       DrawSignalField2d( p );
+      DrawYLabels( p, false );
       break;
     default:
       assert( false );
@@ -1189,7 +1192,7 @@ SignalDisplay::DrawXTicks( const PaintInfo& p )
 }
 
 void
-SignalDisplay::DrawYTicks( const PaintInfo& p )
+SignalDisplay::DrawYLabels( const PaintInfo& p, bool inDrawTicks )
 {
 #ifdef __BORLANDC__
   ::SetTextColor( p.dc, p.labelColor );
@@ -1222,25 +1225,28 @@ SignalDisplay::DrawYTicks( const PaintInfo& p )
         cTickWidth
     );
 #endif
-    if( mDisplayColors && mChannelGroupSize == 1 )
+    if( inDrawTicks )
     {
+      if( mDisplayColors && mChannelGroupSize == 1 )
+      {
 #ifdef __BORLANDC__
-      tickRect.top -= 1;
-      tickRect.bottom += 1;
-      ::FillRect( p.dc, &tickRect, p.signalBrushes[ channelNumber ] );
+        tickRect.top -= 1;
+        tickRect.bottom += 1;
+        ::FillRect( p.dc, &tickRect, p.signalBrushes[ channelNumber ] );
 #else
-      tickRect.setTop( tickRect.top() - 1 );
-      tickRect.setBottom( tickRect.bottom() + 1 );
-      p.painter->fillRect( tickRect, p.signalBrushes[ channelNumber ] );
+        tickRect.setTop( tickRect.top() - 1 );
+        tickRect.setBottom( tickRect.bottom() + 1 );
+        p.painter->fillRect( tickRect, p.signalBrushes[ channelNumber ] );
 #endif // __BORLANDC__
-    }
-    else
-    {
+      }
+      else
+      {
 #ifdef __BORLANDC__
-      ::FillRect( p.dc, &tickRect, p.axisBrush );
+        ::FillRect( p.dc, &tickRect, p.axisBrush );
 #else
-      p.painter->fillRect( tickRect, p.axisBrush );
+        p.painter->fillRect( tickRect, p.axisBrush );
 #endif // __BORLANDC__
+      }
     }
     if( tickY >= nextLabelPos )
     {
@@ -1351,9 +1357,8 @@ SignalDisplay::DrawMarkers( const PaintInfo& p )
 void
 SignalDisplay::DrawChannelLabels( const PaintInfo& p )
 {
-  // Draw channel labels if channels don't coincide with groups.
   if( mShowChannelLabels && mChannelGroupSize > 1 )
-  {
+  {  // Draw channel labels when channels don't coincide with groups.
 #ifdef __BORLANDC__
     ::SetBkColor( p.dc, p.backgroundColor );
     ::SetBkMode( p.dc, OPAQUE );

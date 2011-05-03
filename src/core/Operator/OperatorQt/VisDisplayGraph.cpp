@@ -217,9 +217,18 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
   if( inConfig.Get( CfgID::NotchFilter, notchFilter ) )
     SetNotch( notchFilter );
 
+  ShowStatusBar( Filter_Enabled() );
+
   // Sanity checks.
   if( mDisplay.MinValue() == mDisplay.MaxValue() )
     mDisplay.SetMaxValue( mDisplay.MinValue() + 1 );
+}
+
+void
+VisDisplayGraph::ShowStatusBar( bool inVisible )
+{
+  mpStatusBar->setVisible( inVisible );
+  SyncDisplay();
 }
 
 void
@@ -842,10 +851,14 @@ VisDisplayGraph::NextMenuItem( QMenu* inpMenu, QAction* inpItem )
 void
 VisDisplayGraph::SyncDisplay()
 {
+  int heightReduction = 0;
+  if( mpStatusBar->isVisible() )
+    heightReduction = mpStatusBar->height();
+
   GUI::DrawContext dc =
   {
     this,
-    { 0, 0, this->width(), this->height() - mpStatusBar->height() }
+    { 0, 0, this->width(), this->height() - heightReduction }
   };
   mDisplay.SetContext( dc );
 }

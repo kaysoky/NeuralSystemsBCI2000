@@ -64,6 +64,7 @@ class VisDisplayGraph : public VisDisplayBase
   // User interaction.
  private:
   void BuildStatusBar();
+  void ShowStatusBar( bool );
   void BuildContextMenu();
 
   QMenu*   mpContextMenu,

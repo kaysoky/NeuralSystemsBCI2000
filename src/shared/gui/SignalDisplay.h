@@ -298,7 +298,7 @@ class SignalDisplay
   void DrawMarkerChannels( const PaintInfo& );
   void DrawCursor( const PaintInfo& );
   void DrawXTicks( const PaintInfo& );
-  void DrawYTicks( const PaintInfo& );
+  void DrawYLabels( const PaintInfo&, bool inDrawTicks );
   void DrawAxes( const PaintInfo& );
   void DrawMarkers( const PaintInfo& );
   void DrawChannelLabels( const PaintInfo& );
