@@ -25,6 +25,7 @@ SET ( CMAKE_LIBRARY_OUTPUT_DIRECTORY
   CACHE PATH
   "Single Directory for all Libraries"
 )
+MARK_AS_ADVANCED( CMAKE_LIBRARY_OUTPUT_DIRECTORY )
 
 # Setup Executable Output Directory
 SET ( CMAKE_RUNTIME_OUTPUT_DIRECTORY
@@ -32,6 +33,7 @@ SET ( CMAKE_RUNTIME_OUTPUT_DIRECTORY
   CACHE PATH
   "Single Directory for all Executables."
 )
+MARK_AS_ADVANCED( CMAKE_RUNTIME_OUTPUT_DIRECTORY )
 
 # Setup Static Library Output Directory
 SET ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -39,6 +41,7 @@ SET ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY
   CACHE PATH
   "Single Directory for all static libraries."
 )
+MARK_AS_ADVANCED( CMAKE_ARCHIVE_OUTPUT_DIRECTORY )
 
 # Set directory paths
 SET( BCI2000_SRC_DIR ${BCI2000_ROOT_DIR}/src )
@@ -66,6 +69,8 @@ ADD_DEFINITIONS(
 # Tell the user what we're about to setup
 MESSAGE( "-- Creating Project files for BCI2000 Version " ${BCI2000_VERSION} )
 
+INCLUDE( "${BCI2000_SRC_DIR}/contrib/Extensions/Extensions.cmake" )
+
 # Recurse down into all project subdirectories
 
 # src/private : stuff we use that is not released yet
@@ -86,3 +91,6 @@ ENDIF( EXISTS ${BCI2000_SRC_DIR}/custom )
 
 
 INCLUDE( ${BCI2000_CMAKE_DIR}/BCI2000Package.cmake )
+
+MARK_AS_ADVANCED( CMAKE_INSTALL_PREFIX )
+

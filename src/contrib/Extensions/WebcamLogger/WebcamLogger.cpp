@@ -458,7 +458,7 @@ int WebcamLogger::WebcamThread::Execute()
 
 void WebcamLogger::WebcamThread::GetFrame()
 {
-	int key, ret;
+	int ret;
 	mFrame = cvQueryFrame( mCapture );
 	if( mFrame ){		
 		if ((mCnt % mDecimation)==0){

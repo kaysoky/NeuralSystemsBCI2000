@@ -31,7 +31,7 @@
 #ifndef WEBCAM_LOGGER_H
 #define WEBCAM_LOGGER_H
 
-#include "opencv2/highgui/highgui.hpp"
+#include <opencv2/highgui/highgui.hpp>
 //#include "cv.h"
 #include <string>
 #include <iostream>

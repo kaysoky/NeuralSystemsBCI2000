@@ -8,6 +8,12 @@ ADD_SUBDIRECTORY( SignalProcessing )
 ADD_SUBDIRECTORY( SignalSource )
 ADD_SUBDIRECTORY( Application )
 ADD_SUBDIRECTORY( Operator )
+
+SET( BUILD_TOOLS
+     FALSE CACHE BOOL
+	 "Whether to build BCI2000 tools"
+)
+
 IF( BUILD_TOOLS )
   ADD_SUBDIRECTORY( Tools )
-ENDIF()
+ENDIF( BUILD_TOOLS )
