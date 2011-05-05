@@ -226,8 +226,7 @@ Parameters = new ParamList;
 </p>
 <ul><li><tt>Parameter(Name)[(Index 1[, Index 2])</tt> 
 </li></ul>
-<p>This symbol stands for the value of the named parameter.  Indices may be given in numerical or textual form; if omitted, they default to 0. The type of the symbol <tt>Parameter()</tt> may be numerical or a string type, depending on its use.(If the compiler complains about ambiguities, use explicit typecasts as in the second example.) If a parameter with the given name does not exist, an error message is written into <tt>bcierr</tt>. If the specified indices do not exist, no error is reported. In both cases, on read access, the string constant <tt>"0"</tt> resp. the number 0 is returned.
-(If the compiler complains about ambiguities, use explicit typecasts as in the second example.)
+<p>This symbol stands for the value of the named parameter.  Indices may be given in numerical or textual form; if omitted, they default to 0. The type of the symbol <tt>Parameter()</tt> may be numerical or a string type, depending on its use. (If the compiler complains about ambiguities, use explicit typecasts.) If a parameter with the given name does not exist, an error message is written into <tt>bcierr</tt>. If the specified indices do not exist, no error is reported. In both cases, on read access, the string constant <tt>"0"</tt> resp. the number 0 is returned.
 </p><p>Examples: 
 </p>
 <pre>int myValue = Parameter( "MyParam" ); 

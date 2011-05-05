@@ -53,7 +53,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>Source files should provide a file header containing the following information:
 </p>
 <ul><li> an SVN file Id tag, 
-</li><li> the file's original author(s), preferably identified by their email address,
+</li><li> the file's original author(s), preferably identified by their email addresses,
 </li><li> a description of the file's contents, i.e. typically a short information about the class declared/defined in the file,
 </li><li> a copyright note.
 </li></ul>
@@ -64,16 +64,18 @@ a.new, #quickbar a.new { color: #CC2200; }
 // Author: gerd.gurke@gemuesenet.de
 // Description: A file header example. The header contains
 //      an SVN Id tag, the author's email address, a short
-//      description of the file's content. and a copyright notice.
+//      description of the file's content, and a copyright notice.
 //
-// (C) 2000-2010, BCI2000 Project
+// (C) 2000-2011, BCI2000 Project
 // <a href="http://www.bci2000.org" class='external free' title="http://www.bci2000.org" rel="nofollow">http://www.bci2000.org</a>
 ///////////////////////////////////////////////////////////////////////
 </pre>
 <a name="Line_Formatting"></a><h2> Line Formatting </h2>
-<ul><li> <b>No tab characters</b> (please configure your editor to insert spaces instead).
-</li><li> Indentation in steps of 2 or 3 space characters.
+<ul><li> Use tabs or spaces for <b>indentation</b>. Please stay consistent within one file.
+</li><li> Always use spaces for <b>alignment</b>; tab alignment will break when viewed with a different tab size.
+</li><li> When using spaces for indentation, indent in steps of 2 or 3 space characters.
 </li><li> Opening braces have their own line, aligned with the previous line; corresponding closing braces are placed on their own lines, at the same character position as the opening brace.
+</li><li> Consider giving single statements in if, while, or for clauses their own pair of braces.
 </li><li> For function definitions, return types appear on their own line, such that the function name is first in its line.
 </li></ul>
 <a name="Naming"></a><h2> Naming </h2>
@@ -90,8 +92,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Name_prefixes"></a><h3> Name prefixes </h3>
 <p>Prefixes should carry information about the <i>scope and usage</i> of a variable but <i>not its type</i>.
 </p>
-<ul><li>The rationale behind representing <i>scope</i> is to avoid accidental hiding of names from a wider scope by names with a narrower scope, which may lead to difficult-to-detect bugs.
-</li><li>Representing <i>usage</i> makes it easier to maintain an overview over householding tasks, such as calling <tt>delete</tt> on pointers whose objects are owned by the code under review.
+<ul><li>In terms of <i>scope</i>, we discriminate between class members, static variables, global variables, and constants. The rationale behind representing <i>scope</i> is to avoid accidental hiding of names from a wider scope by names with a narrower scope, which may lead to difficult-to-detect bugs.
+</li><li>Representing <i>usage</i> shows whether a variable is a pointer, or an input or output argument to a function. This makes it easier to maintain an overview over householding tasks, such as calling <tt>delete</tt> on pointers whose objects are owned by the code under review.
 </li><li><i>Not</i> representing <i>type</i> avoids name and type going out of sync--a variable's type is more likely to change than its scope and usage, and unreliable type information is less desirable than having no type information at all.
 </li></ul>
 <p>Suggested prefixes are
@@ -107,7 +109,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li> <b>io</b> for function arguments used for input and output.
 </li></ul>
 <a name="Variable_Declaration"></a><h2>Variable Declaration</h2>
-<ul><li> Always use the narrowest possible scope for a name to avoid side effects. E.g., this means to declare variables immediately before their first use, and to define loop counter variables within the loop's &lt;for&gt; statement.
+<ul><li> Always use the narrowest possible scope for a name to avoid side effects. E.g., this means to declare variables immediately before their first use, and to define loop counter variables within the loop's <tt>for</tt> statement.
 </li><li> Always initialize variables of elementary type at declaration resp. constructor to avoid reading from uninitialized memory. Examples of elementary types are <tt>int</tt>, <tt>float</tt>, and <tt>const char*</tt>.
 </li></ul>
 <a name="Memory_Allocation"></a><h2>Memory Allocation</h2>
@@ -136,7 +138,9 @@ MyClass::MyFunction( const SomeClass&amp; inTheInput, int&amp; outTheResult )
   {
     int k = 4;
     while( --k &gt; 0 )
+    {
       outTheResult -= k;
+    }
   }
 }
 </pre>

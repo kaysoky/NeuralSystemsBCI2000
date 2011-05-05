@@ -48,7 +48,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </td></tr></table>
 <a name="Build_and_copy_MSVC_libraries_and_auxiliary_files"></a><h2>Build and copy MSVC libraries and auxiliary files</h2>
-<ul><li>In the file <tt>qt/mkspecs/win32-msvc2008/qmake.conf</tt>, add <tt>-Fd$(DESTDIR)$(QMAKE_TARGET).pdb</tt> as a compiler option to  <tt>QMAKE_CFLAGS_DEBUG</tt>.
+<ul><li>In the file <tt>qt/mkspecs/win32-msvc2008/qmake.conf</tt>, add <tt>-Fd$(DESTDIR)$(QMAKE_TARGET).pdb</tt> as a compiler option to  <tt>QMAKE_CFLAGS_DEBUG</tt>. In <tt>QMAKE_CFLAGS_RELEASE</tt> and <tt>QMAKE_CFLAGS_DEBUG</tt>, replace the <tt>-MD</tt> and <tt>-MDd</tt> with <tt>-MT</tt> and  <tt>-MTd</tt>, respectively.
 </li><li>Open the VS2008 console window from the start menu, and from the Qt installation's <tt>qt</tt> directory, run <tt>configure</tt> with the following options:
 </li></ul>
 <pre>-platform win32-msvc2008 
@@ -105,8 +105,9 @@ QtOpenGL.lib
 QtOpenGLd.lib
 QtOpenGLd.pdb
 </pre>
-<ul><li>From <tt>qt/mkspecs</tt>, copy the file <tt>qconfig.pri</tt>, and recursively copy the contents of the <tt>features</tt> directory and all the <tt>win32-msvc*</tt> directories to <tt>BCI2000/src/extlib/qt/msvc/mkspecs</tt>.
+<ul><li>From <tt>qt/mkspecs</tt>, copy the file <tt>qconfig.pri</tt>, and recursively copy the contents of the <tt>features</tt> and the <tt>win32-msvc2008</tt> directories to <tt>BCI2000/src/extlib/qt/msvc/mkspecs</tt>.
 </li><li>In <tt>BCI2000/src/extlib/qt/msvc/mkspecs/win32-msvc2008/qmake.conf</tt>, remove the <tt>-Fd$(DESTDIR)$(QMAKE_TARGET).pdb</tt> compiler option from <tt>QMAKE_CFLAGS_DEBUG</tt>.
+</li><li>Repeat the entire process with MSVC2010, with results going into the <tt>msvc10</tt> directory rather than the <tt>msvc</tt> directory.
 </li></ul>
 <a name="Note:_Why_do_we_need_debug_libraries_and_pdb_files.3F"></a><h3>Note: Why do we need debug libraries and pdb files?</h3>
 <p>For the stripped-down version of Qt provided in the BCI2000 source tree, no source code is available, and debugging information in the Qt libraries cannot be used for debugging. Thus, it appears that always linking to the release version of the Qt libraries would be sufficient, saving considerable space in the SVN data base, and download time for the user. Unfortunately, it turns out that this is not sufficient, and that both debugging versions of the Qt libraries, and associated pdb files, are required in the BCI2000 source tree.
@@ -166,13 +167,9 @@ mingwm10.dll
 <ul><li>From <tt>qt/lib</tt>, copy the following files to <tt>BCI2000/src/extlib/qt/mingw/lib</tt>:
 </li></ul>
 <pre>libQtCore.a
-libQtCored.a
 libQtGui.a
-libQtGuid.a
 libqtmain.a
-libqtmaind.a
 libQtOpenGL.a
-libQtOpenGLd.a
 </pre>
 <ul><li>From <tt>qt/mkspecs</tt>, copy the file <tt>qconfig.pri</tt>, and recursively copy the contents of directories <tt>features</tt>, <tt>common</tt>, and <tt>win32-g++</tt> to <tt>BCI2000/src/extlib/qt/mingw/mkspecs</tt>.
 </li></ul>

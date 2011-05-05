@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:OSThread Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:OSThread Class" />
+<meta name="keywords" content="Programming Reference:OSThread Class,Programming Reference::OSEvent Class,Programming Reference:OSEvent Class,Programming Reference:OSMutex Class" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -39,7 +39,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#OSThread.28.29"><span class="tocnumber">3.1</span> <span class="toctext">OSThread()</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#.7EOSThread.28.29"><span class="tocnumber">3.2</span> <span class="toctext">~OSThread()</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#Start.28.29"><span class="tocnumber">3.3</span> <span class="toctext">Start()</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#Terminate.28.29"><span class="tocnumber">3.4</span> <span class="toctext">Terminate()</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#Terminate.28.5BOSEvent.2A.5D.29"><span class="tocnumber">3.4</span> <span class="toctext">Terminate([OSEvent*])</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Programming_Reference%253AOSThread_Class.html#Static_Methods"><span class="tocnumber">4</span> <span class="toctext">Static Methods</span></a>
@@ -77,8 +77,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Start.28.29"></a><h3>Start()</h3>
 <p>Starts thread execution.
 </p>
-<a name="Terminate.28.29"></a><h3>Terminate()</h3>
-<p>Initiates thread termination by setting the <tt>Terminating</tt> property to <i>true</i>.
+<a name="Terminate.28.5BOSEvent.2A.5D.29"></a><h3>Terminate([OSEvent*])</h3>
+<p>Initiates thread termination by setting the <tt>Terminating</tt> property to <i>true</i>. When a pointer to an <a href="Programming_Reference%253A%253AOSEvent_Class.html" title="Programming Reference::OSEvent Class"><tt>OSEvent</tt></a> object is specified as an argument, the  <a href="Programming_Reference%253A%253AOSEvent_Class.html" title="Programming Reference::OSEvent Class"><tt>OSEvent</tt></a> object will be set to signaled state as soon as thread execution has terminated.
 </p>
 <a name="Static_Methods"></a><h2>Static Methods</h2>
 <a name="Sleep.28_int_ms_.29"></a><h3>Sleep( int ms )</h3>
@@ -107,6 +107,7 @@ int MyThread::Execute()
 </p>
 <a name="int_Result_.28r.29"></a><h3>int Result (r)</h3>
 <p>The return code of the thread's <tt>Execute()</tt> function on termination of the thread.
+</p><p><a href="Programming_Reference%253AOSEvent_Class.html" title="Programming Reference:OSEvent Class">Programming Reference:OSEvent Class</a>, <a href="Programming_Reference%253AOSMutex_Class.html" title="Programming Reference:OSMutex Class">Programming Reference:OSMutex Class</a>
 </p>
 <div class="printfooter">
 </div>

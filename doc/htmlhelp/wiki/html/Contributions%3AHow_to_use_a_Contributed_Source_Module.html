@@ -43,11 +43,11 @@ Alternatively, you can build contributed source modules from the BCI2000 source 
 <p>BCI2000 consists of a number of modules that need to be started up in a certain sequence. Typically, this is done using scripts (batch files) located in <tt>BCI2000/batch</tt> (see <a href="User_Reference%253ABCI2000Launcher.html" title="User Reference:BCI2000Launcher">User Reference:BCI2000Launcher</a> for a graphical alternative to batch files).
 </p><p>There is one such batch file for each combination of a source module, and a BCI paradigm. In order to use a contributed source module with a certain BCI paradigm, perform these steps:
 </p>
-<ul><li>Identify the batch file in <tt>BCI2000/parms</tt> that provides the desired paradigm using the <i>SignalGenerator</i> source module. For the cursor feedback paradigm, this would be <tt>CursorTask_SignalGenerator.bat</tt>.
+<ul><li>Identify the batch file in <tt>BCI2000/batch</tt> that provides the desired paradigm using the <i>SignalGenerator</i> source module. For the cursor feedback paradigm, this would be <tt>CursorTask_SignalGenerator.bat</tt>.
 </li><li>Create a copy of that batch file, and rename it to reflect the name of the source module you would like to use, e.g. <tt>CursorTask_Neuroscan.bat</tt>.
 </li><li>Open the newly created file in a text editor.
 </li><li>Identify the line that refers to <tt>SignalGenerator.exe</tt>.
-</li><li>There, replace <tt>SignalGenerator.exe</tt> with your source module's executable name, e.g. <tt>Neuroscan.exe</tt>.
+</li><li>There, replace <tt>SignalGenerator.exe</tt> with your source module's executable name, e.g. <tt>NeuroscanClient.exe</tt>.
 </li><li>Save the batch file, and run it to start BCI2000 in the desired configuration.
 </li><li>Repeat these steps for all paradigms you intend to use.
 </li></ul>

@@ -36,9 +36,12 @@ BCI2000Certification.html
 BCI2000_Binaries.html
 2 Access Access
 2 Latest_Version Latest Version
+2 Dependencies Dependencies
 2 Contributed_Code Contributed Code
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
+3 Version_3_Builds Version 3 Builds
+4 February_2011_Version_3_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" rel="nofollow">February 2011 Version 3 Release Build</a>
 3 Version_2_Builds Version 2 Builds
 4 November_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_101124.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_101124.exe" rel="nofollow">November 2010 Build</a>
 4 August_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100805.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100805.exe" rel="nofollow">August 2010 Build</a>
@@ -337,6 +340,24 @@ Contributions%253AFilePlayback.html
 3 Data_Storage Data Storage
 3 Random_Sequences Random Sequences
 3 Data_Format Data Format
+2 See_also See also
+
+Contributions%253AFilePlaybackADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+2 Functional_Description Functional Description
+2 Parameters Parameters
+3 SourceCh SourceCh
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 SourceChList SourceChList
+3 Speedup Speedup
+3 FileName FileName
+3 SuspendAtEnd SuspendAtEnd
+3 StartTime StartTime
+2 States States
 2 See_also See also
 
 Contributions%253AFileWriters.html
@@ -789,7 +810,8 @@ Contributions%253AvAmpADC.html
 2 See_also See also
 
 Creating_a_User_Account.html
-2 Do-it_yourself_Account_Management Do-it yourself Account Management
+2 Agreeing_to_the_GPL Agreeing to the GPL
+2 Creating_additional_accounts_for_your_lab Creating additional accounts for your lab
 3 Creating_a_new_account Creating a new account
 3 .22Upgrading.22_bciro "Upgrading" bciro
 2 Restrictions Restrictions
@@ -840,14 +862,6 @@ Mu_Rhythm_Off-line_Analysis_Tutorial.html
 2 Conclusions Conclusions
 2 Troubleshooting Troubleshooting
 
-Obtaining_or_creating_a_User_Account.html
-2 Do-it_yourself_Account_Management Do-it yourself Account Management
-3 Creating_a_new_account Creating a new account
-3 .22Upgrading.22_bciro "Upgrading" bciro
-2 Restrictions Restrictions
-3 Default_user_rights Default user rights
-3 Resetting.2Frecovering_a_password Resetting/recovering a password
-
 P300_GUI_Guide.html
 2 Introduction Introduction
 2 Using_the_GUI Using the GUI
@@ -896,6 +910,18 @@ Programming_Howto%253ABuilding_BCI2000.html
 2 Platforms_tested_successfully_so_far  Platforms tested successfully so far 
 2 See_also See also
 
+Programming_Howto%253AQuickstart_Guide.html
+2 Prerequisites Prerequisites
+2 Setup Setup
+2 Creating_a_project_for_a_new_BCI2000_module.2C_from_a_template Creating a project for a new BCI2000 module, from a template
+2 Adding_a_new_filter_to_a_BCI2000_module.2C_from_a_template Adding a new filter to a BCI2000 module, from a template
+2 Running_and_testing_the_result Running and testing the result
+2 Exercises Exercises
+3 Exercise_1:__RMSFilter Exercise 1:  RMSFilter
+3 Exercise_2:__Debugging Exercise 2:  Debugging
+3 Exercise_3:__Assembling_a_filter_chain Exercise 3:  Assembling a filter chain
+2 Further_reading Further reading
+
 Programming_Howto%253ASVN_Client_Setup.html
 2 Setting_up_TortoiseSVN_to_access_the_BCI2000_code_repository  Setting up TortoiseSVN to access the BCI2000 code repository 
 2 Checking_out_older_versions  Checking out older versions 
@@ -914,6 +940,17 @@ Programming_Howto%253AUsing_TortoiseSVN.html
 3 SVN_vs._CVS  SVN vs. CVS 
 2 See_also See also
 
+Programming_Reference%253A%3AOSEvent_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 OSEvent.28.29 OSEvent()
+3 .7EOSEvent.28.29 ~OSEvent()
+3 bool_Set.28.29 bool Set()
+3 bool_Reset.28.29 bool Reset()
+3 bool_Wait.28.5Bnumber_timeout.5D.29 bool Wait([number timeout])
+2 See_also See also
+
 Programming_Reference%253A3D_API.html
 2 Introduction Introduction
 2 The_3D_Environment The 3D Environment
@@ -926,6 +963,23 @@ Programming_Reference%253A3D_API.html
 4 Overlay_Picture Overlay Picture
 4 2D_Text 2D Text
 4 2D_Cursor 2D Cursor
+2 See_also See also
+
+Programming_Reference%253AAccessing_Parameters_and_States.html
+2 Low_Level_Access Low Level Access
+2 High-level_Access High-level Access
+3 Parameter.28Name.29.5B.28Index_1.5B.2C_Index_2.5D.29 <tt>Parameter(Name)[(Index 1[, Index 2])</tt> 
+3 OptionalParameter.28Name.5B.2C_Default_Value.5D.29.28Index_1.5B.2C_Index_2.5D.29 <tt>OptionalParameter(Name[, Default Value])(Index 1[, Index 2])</tt>
+3 Conversion_Functions Conversion Functions
+4 InBlocks.28.29.2C_InSampleBlocks.28.29 <tt>InBlocks(), InSampleBlocks()</tt>
+4 InSeconds.28.29.2C_InMilliseconds.28.29 <tt>InSeconds(), InMilliseconds()</tt>
+4 RelativeFreq.28_SignalProperties_.29 <tt>RelativeFreq( SignalProperties )</tt>
+4 SystemRelativeFreq.28.29 <tt>SystemRelativeFreq()</tt>
+4 InHertz.28.29 <tt>InHertz()</tt>
+4 InVolts.28.29.2C_inMicrovolts.28.29 <tt>InVolts(), inMicrovolts()</tt>
+3 State.28Name.29 <tt>State(Name)</tt>
+3 OptionalState.28Name.5B.2C_Default_Value.5D.29 <tt>OptionalState(Name[, Default Value])</tt>
+3 Converters_to_and_from_numeric_types Converters to and from numeric types
 2 See_also See also
 
 Programming_Reference%253AApplicationBase_Class.html
@@ -1055,10 +1109,12 @@ Programming_Reference%253ABCI2000_Source_Code.html
 2 Downloading_the_BCI2000_source_as_an_archive Downloading the BCI2000 source as an archive
 2 Howto_Pages Howto Pages
 2 Directory_Layout Directory Layout
-3 src.2Fbuildutils <tt>src/buildutils</tt>
-3 src.2Fbuildutils.2Ftests <tt>src/buildutils/tests</tt>
+3 build <tt>build</tt>
+3 build.2Fbuildutils <tt>build/buildutils</tt>
+3 build.2Fbuildutils.2Ftests <tt>build/buildutils/tests</tt>
 3 src.2Fcontrib <tt>src/contrib</tt>
 3 src.2Fcore <tt>src/core</tt>
+3 src.2Fcustom <tt>src/custom</tt>
 3 src.2Fshared <tt>src/shared</tt>
 3 src.2Fextlib <tt>src/extlib</tt>
 3 src.2Fdoc <tt>src/doc</tt>
@@ -1421,6 +1477,18 @@ Programming_Reference%253AGraphObject_Class.html
 2 Descendants Descendants
 2 See_also See also
 
+Programming_Reference%253AHello_World.html
+2 Prerequisites Prerequisites
+2 Setup Setup
+2 Creating_a_project_for_a_new_BCI2000_module.2C_from_a_template Creating a project for a new BCI2000 module, from a template
+2 Adding_a_new_filter_to_a_BCI2000_module.2C_from_a_template Adding a new filter to a BCI2000 module, from a template
+2 Running_and_testing_the_result Running and testing the result
+2 Exercises Exercises
+3 Exercise_1:__RMSFilter Exercise 1:  RMSFilter
+3 Exercise_2:__Debugging Exercise 2:  Debugging
+3 Exercise_3:__Assembling_a_filter_chain Exercise 3:  Assembling a filter chain
+2 Further_reading Further reading
+
 Programming_Reference%253AIIRFilterBase_Class.html
 2 Location Location
 2 Synopsis Synopsis
@@ -1550,6 +1618,30 @@ Programming_Reference%253AMidiPlayer_Class.html
 2 Remarks Remarks
 2 See_also See also
 
+Programming_Reference%253AOSEvent_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 OSEvent.28.29 OSEvent()
+3 .7EOSEvent.28.29 ~OSEvent()
+3 bool_Set.28.29 bool Set()
+3 bool_Reset.28.29 bool Reset()
+3 bool_Wait.28.5Bnumber_timeout.5D.29 bool Wait([number timeout])
+2 See_also See also
+
+Programming_Reference%253AOSMutex_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 OSMutex.28.29 OSMutex()
+3 .7EOSMutex.28.29 ~OSMutex()
+3 bool_Acquire.28.29 bool Acquire()
+3 bool_Release.28.29 bool Release()
+2 Sub-classes Sub-classes
+3 OSMutex::Lock.28OSMutex.29 OSMutex::Lock(OSMutex)
+3 OSMutex::Unlock.28OSMutex.29 OSMutex::Unlock(OSMutex)
+2 See_also See also
+
 Programming_Reference%253AOSThread_Class.html
 2 Location Location
 2 Synopsis Synopsis
@@ -1557,7 +1649,7 @@ Programming_Reference%253AOSThread_Class.html
 3 OSThread.28.29 OSThread()
 3 .7EOSThread.28.29 ~OSThread()
 3 Start.28.29 Start()
-3 Terminate.28.29 Terminate()
+3 Terminate.28.5BOSEvent.2A.5D.29 Terminate([OSEvent*])
 2 Static_Methods Static Methods
 3 Sleep.28_int_ms_.29 Sleep( int ms )
 2 Events Events
@@ -2171,6 +2263,11 @@ Programming_Tutorial%253AWorking_with_the_FieldTrip_buffer.html
 2 Closing_the_loop.2C_writing_a_control_signal_from_Matlab_to_BCI2000 Closing the loop, writing a control signal from Matlab to BCI2000
 2 See_also See also
 
+SVN_V3_Suggestions.html
+2 When_you_are_in_the_midst_of_performing_experiments When you are in the midst of performing experiments
+2 If_you_already_have_a_pre-release_working-copy_of_version_3.0.2C If you already have a pre-release working-copy of version 3.0,
+2 When_you_want_to_upgrade_your_existing_v2_source_directory_to_v3.2C When you want to upgrade your existing v2 source directory to v3,
+
 Special%253AAllpages.html
 
 System_Features.html
@@ -2744,7 +2841,6 @@ User_Reference%253AExpression_Syntax.html
 
 User_Reference%253AFFTFilter.html
 2 Function Function
-3 Obtaining_FFTW3 Obtaining FFTW3
 2 Parameters Parameters
 3 FFTOutputSignal FFTOutputSignal
 3 FFTInputChannels FFTInputChannels

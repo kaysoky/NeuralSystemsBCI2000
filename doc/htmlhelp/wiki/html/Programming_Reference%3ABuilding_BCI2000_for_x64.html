@@ -30,7 +30,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Building BCI2000 for Win64</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p>In oder to build BCI2000 for the Win64 target, you will need to manually perform a number of steps.
+<h1 class="pagetitle">Building BCI2000 for Win64</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p>This information applies if you intend to build 64-bit executables. Alternatively, you may build 32-bit executables and run them on 64-bit platforms as well. In oder to build BCI2000 for the Win64 target, you will need to manually perform a number of steps.
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
@@ -68,11 +68,13 @@ The following steps have been tested with Qt 4.6.3.
 <p>5. Compile Qt by executing <tt>nmake</tt>.
 </p>
 <a name="Generate_the_Visual_Studio_Solution_file"></a><h2>Generate the Visual Studio Solution file</h2>
-<p>From your BCI2000 installation's <tt>src/build</tt> directory, execute the "Make VS2008 Win64 Project Files" batch file.
+<p>Edit the file <tt>build/cmake/FindQt.cmake</tt> to read SET( USE_STD_QT TRUE ) in line 10.
+</p><p>Then, from your BCI2000 installation's <tt>build</tt> directory, execute the "Make VS2008 Win64 Project Files" batch file.
 After successful execution, you will have a Visual Studio solution file ready to compile BCI2000.
 </p>
 <a name="Limitations"></a><h2>Limitations</h2>
 <p>You cannot build BCI2000 modules that depend on 32-bit libraries, as do most source modules.
+Consider building 32-bit executables instead--these will run fine on Win64.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Programming_Reference%253ABuild_System.html" title="Programming Reference:Build System">Programming Reference:Build System</a>

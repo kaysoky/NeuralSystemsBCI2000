@@ -32,11 +32,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <div id='article'>
 <h1 class="pagetitle">FFTFilter</h1><p class="subtitle">User Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
-<li class='toclevel-1'><a href="User_Reference%253AFFTFilter.html#Function"><span class="tocnumber">1</span> <span class="toctext">Function</span></a>
-<ul>
-<li class='toclevel-2'><a href="User_Reference%253AFFTFilter.html#Obtaining_FFTW3"><span class="tocnumber">1.1</span> <span class="toctext">Obtaining FFTW3</span></a></li>
-</ul>
-</li>
+<li class='toclevel-1'><a href="User_Reference%253AFFTFilter.html#Function"><span class="tocnumber">1</span> <span class="toctext">Function</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253AFFTFilter.html#Parameters"><span class="tocnumber">2</span> <span class="toctext">Parameters</span></a>
 <ul>
 <li class='toclevel-2'><a href="User_Reference%253AFFTFilter.html#FFTOutputSignal"><span class="tocnumber">2.1</span> <span class="toctext">FFTOutputSignal</span></a></li>
@@ -54,14 +50,6 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>The FFTFilter applies a <a href="http://en.wikipedia.org/wiki/Short-time_Fourier_transform" class='external text' title="http://en.wikipedia.org/wiki/Short-time_Fourier_transform" rel="nofollow">short-term Fast Fourier Transformation (FFT)</a> to selected channels of its input signal, resulting in a time series of frequency spectra.
 The computed spectra may be displayed in visualization windows. 
 </p><p>Typically, the FFTFilter is used for spectral estimation and demodulation, instead of the <a href="User_Reference%253AARFilter.html" title="User Reference:ARFilter">ARFilter</a>.
-</p>
-<a name="Obtaining_FFTW3"></a><h3>Obtaining FFTW3</h3>
-<p>The FFTFilter requires the FFTW3 library which, for licensing reasons, you need to <b>obtain separately</b> from BCI2000. 
-</p><p>The FFTFilter uses the <a href="http://www.fftw.org/" class='external text' title="http://www.fftw.org/" rel="nofollow">FFTW3</a> library to do the actual FFT computation, which is released under the <a href="http://www.gnu.org/copyleft/gpl.html" class='external text' title="http://www.gnu.org/copyleft/gpl.html" rel="nofollow">GNU public license (GPL)</a>.
-This makes it impossible for us to distribute the FFTW3 library along with BCI2000. Instead, please download the windows version of FFTW 3.01 from <a href="http://www.fftw.org/install/windows.html" class='external free' title="http://www.fftw.org/install/windows.html" rel="nofollow">http://www.fftw.org/install/windows.html</a>.
-</p><p>In order to make the FFTW library available to BCI2000, put <tt>FFTW3.DLL</tt> into your BCI2000 installation's <tt>prog</tt> directory.
-When using the command line version of the FFTFilter, put a copy of <tt>FFTW3.DLL</tt> into your BCI2000 installation's <tt>tools/cmdline</tt> directory.
-</p><p>For recent Windows builds of FFTW 3, the naming scheme has been changed. If you would like to use such a build with BCI2000, put a copy of the file <tt>libfftw3-3.dll</tt> into <tt>BCI2000/prog</tt> and rename it to <tt>FFTW3.DLL</tt> (untested so far).
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <a name="FFTOutputSignal"></a><h3>FFTOutputSignal</h3>

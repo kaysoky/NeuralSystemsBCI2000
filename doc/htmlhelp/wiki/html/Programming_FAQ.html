@@ -4,7 +4,7 @@
 <head>
 <title>Programming FAQ - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming FAQ,Contributions:Contents,Programming Howto:SVN Client Setup,Programming Tutorial:Implementing a Signal Processing Filter,Technical Reference:App Connector,Technical Reference:Core Modules,User Reference:Filters" />
+<meta name="keywords" content="Programming FAQ,Contributions:Contents,Programming Howto:SVN Client Setup,Programming Reference:Build System,Programming Tutorial:Implementing a Signal Processing Filter,Technical Reference:App Connector,Technical Reference:Core Modules,User Reference:Filters" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -85,19 +85,8 @@ ConnectorInput and ConnectorOutput filter as a minimum configuration.
 </p>
 <a name="Getting_Started_with_a_new_Module"></a><h2>Getting Started with a new Module</h2>
 <p>Q: How should I begin working on a new BCI2000 module?
-</p><p>A: BCI2000 modules share a large number of source files, and should have identical compiler settings. Thus, it is best to begin with a copy of an existing module's project, choosing the one that is most similar to your planned module. Then, follow these steps:
+</p><p>A: BCI2000 provides a mechanism to create new BCI2000 modules from templates. To create a new BCI2000 module, run <tt>BCI2000/build/NewBCI2000Module</tt>; for a new filter, run <tt>BCI2000/build/NewBCI2000Filter</tt>. Both executables will only be present when you have built BCI2000 first as described <a href="Programming_Reference%253ABuild_System.html" title="Programming Reference:Build System">here</a>.
 </p>
-<ol><li>Create a new, empty directory inside the appropriate BCI2000/src/contrib/ subdirectory, using a name that fits your new module. 
-</li><li>Create an empty directory "obj" inside the newly created directory. 
-</li><li>Copy the template project file (e.g., SignalGenerator.bpr), and the identically named cpp file (e.g., SignalGenerator.cpp) to the new project directory. 
-</li><li>Rename the bpr and the cpp file to what you want to be the name of the executable. 
-</li><li>Using a text editor, do a search-and-replace within the bpr and the cpp files, replacing all occurrences of the original name (e.g., "SignalGenerator") with the new name. 
-</li><li>Create a new cpp file for the new filter or ADC component, or copy an existing one as a template.
-</li><li>Open the bpr file using the Borland IDE. 
-</li><li>In the IDE, choose View->Project Manager to get a list of project files, and check whether your filter or ADC class cpp file is listed there; if not, add your new cpp file to the list. 
-</li><li>Add any required .lib files or auxiliary cpp files to the list of project files. 
-</li><li>Compile and link using the IDE. When this works, do a command-line "make clean &amp;&amp; make prepare", open the file <tt>src/makefiles</tt>, and remove the leading # character from your new project's entry. Then, doing a "make all" should include your new project.
-</li></ol>
 <a name="Writing_Filter_Components"></a><h2>Writing Filter Components</h2>
 <p>Q: I would like to write my own signal processing filter. Where is a good place to start?
 </p><p>A: Writing your own signal processing filter itself is described at: 
