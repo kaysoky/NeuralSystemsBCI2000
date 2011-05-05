@@ -36,8 +36,8 @@
 #include "BCIEvent.h"
 #include "BCIDirectory.h"
 #include "PrecisionTime.h"
-#include "MeasurementUnits.h"
 #include "ClassName.h"
+#include "MeasurementUnits.h"
 
 #include <fstream>
 #include <iostream>
@@ -121,7 +121,7 @@ DataIOFilter::DataIOFilter()
       "// decimation factor for raw brain signal",
     "Visualize:Source%20Signal int VisualizeSourceBufferSize= auto auto % % "
       "// number of blocks to aggregate before sending to operator",
-    "Visualize:Source%20Signal int VisualizeSourceTime= 2 2 0 % "
+    "Visualize:Source%20Signal int VisualizeSourceTime= 2s 2s 0 % "
       "// how much time in Source visualization",
     "Visualize:Source%20Signal int SourceMin= -100muV -100muV % % "
       "// raw signal vis Min Value",
@@ -198,7 +198,8 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   // Parameter existence and range.
   Parameter( "SignalSourceIP" );
   Parameter( "ApplicationIP" );
-
+  PreflightCondition( Parameter( "SamplingRate" ).InHertz() > 0 );
+  PreflightCondition( Parameter( "SampleBlockSize" ).InHertz() > 0 );
 
   if( Parameter( "SourceChOffset" )->NumValues() != Parameter( "SourceCh" ) )
   {
@@ -219,6 +220,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
            << ")"
            << endl;
   }
+
 #ifndef TIME_IS_REAL
 #define TIME_IS_REAL 1
 #endif // #ifndef TIME_IS_REAL
@@ -229,7 +231,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
 
   if( Parameter( "VisualizeSource" ) == 1 )
   {
-    int SampleBlockSize = MeasurementUnits::SampleBlockSize();
+    int SampleBlockSize = Parameter( "SampleBlockSize" );
     PreflightCondition( SampleBlockSize > 0 );
 
     if( Parameter( "VisualizeSourceDecimation" ) != string( "auto" ) )
@@ -269,10 +271,24 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   // Sub-filter preflight/signal properties.
   // The ADC and file writer filters must have a position string greater than
   // that of the DataIOFilter.
+  SignalProperties adcInput;
+  adcInput.SetChannels( Parameter( "SourceCh" ) )
+          .SetElements( Parameter( "SampleBlockSize" ) )
+          .SetUpdateRate( Parameter( "SamplingRate" ).InHertz() / Parameter( "SampleBlockSize" ) );
+  for( int ch = 0; ch < adcInput.Channels(); ++ch )
+    adcInput.ValueUnit( ch ).SetGain( Parameter( "SourceChGain" ) * 1e-6 )
+                            .SetOffset( Parameter( "SourceChOffset" ) )
+                            .SetSymbol( "V" );
+  adcInput.ElementUnit().SetOffset( 0 )
+                        .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
+                        .SetSymbol( "s" );
+  Output = adcInput;
+  mADCInput.SetProperties( adcInput );
+
   if( !mpADC )
     bcierr << "Expected an ADC filter instance to be present" << endl;
   else
-    mpADC->CallPreflight( Input, Output );
+    mpADC->CallPreflight( adcInput, Output );
 
   if( mpSourceFilter )
   {
@@ -286,7 +302,9 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   }
 
   if( !mpFileWriter )
+  {
     bcierr << "Expected a file writer filter instance to be present" << endl;
+  }
   else
   {
     SignalProperties writerOutput;
@@ -319,9 +337,15 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   // We output calibrated signals in float32 format.
   Output.SetType( SignalType::float32 );
   Output.ElementUnit().SetOffset( 0 )
-                      .SetGain( 1.0 / MeasurementUnits::SamplingRate() )
+                      .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
                       .SetSymbol( "s" );
-  double numSamplesInDisplay = Parameter( "VisualizeSourceTime" ) * MeasurementUnits::SamplingRate();
+
+  if( !PhysicalUnit().SetSymbol( "s" ).IsPhysical( Parameter( "VisualizeSourceTime" ) ) )
+    bciout << "The VisualizeSourceTime parameter is specified without a trailing \"s\". "
+           << "This will lead to undesired results in future versions of BCI2000. "
+           << "Please update your parameter files to prepare for the change."
+           << endl;
+  double numSamplesInDisplay = Parameter( "VisualizeSourceTime" )/*.InSeconds()*/ * Parameter( "SamplingRate" ).InHertz();
   Output.ElementUnit().SetRawMin( 0 )
                       .SetRawMax( numSamplesInDisplay - 1 );
   Output.ValueUnit().SetOffset( 0 )
@@ -338,13 +362,15 @@ void
 DataIOFilter::Initialize( const SignalProperties& Input,
                           const SignalProperties& Output )
 {
-  mBlockDuration = 1.0 / MeasurementUnits::TimeInBlocks( "1ms" );
-  mSampleBlockSize = Statevector->Samples() - 1;
+  const SignalProperties& adcInput = mADCInput.Properties(),
+                        & adcOutput = mInputBuffer.Properties();
 
-  const SignalProperties& adcOutput = mInputBuffer.Properties();
+  mBlockDuration = 1e3 / adcInput.UpdateRate();
+  mSampleBlockSize = adcInput.Elements();
+
   State( "Recording" ) = 0;
   mOutputBuffer = GenericSignal( 0, 0 );
-  mpADC->CallInitialize( Input, adcOutput );
+  mpADC->CallInitialize( adcInput, adcOutput );
   if( mpSourceFilter )
   {
     mpSourceFilter->CallInitialize( adcOutput, adcOutput );
@@ -383,10 +409,10 @@ DataIOFilter::Initialize( const SignalProperties& Input,
 
   if( Parameter( "VisualizeSourceDecimation" ) == string( "auto" ) )
   {
-    mVisualizeSourceDecimation = static_cast<int>( ::floor( MeasurementUnits::SamplingRate() / 256.0 ) );
+    mVisualizeSourceDecimation = static_cast<int>( ::floor( adcInput.SamplingRate() / 256.0 ) );
     if( mVisualizeSourceDecimation < 1 )
       mVisualizeSourceDecimation = 1;
-    int numSamplesBuffered = static_cast<int>( mVisualizeSourceBufferSize * MeasurementUnits::SampleBlockSize() );
+    int numSamplesBuffered = static_cast<int>( mVisualizeSourceBufferSize * mSampleBlockSize );
     while( numSamplesBuffered % mVisualizeSourceDecimation )
       --mVisualizeSourceDecimation;
     bcidbg( 5 ) << "Choosing a VisualizeSourceDecimation value of "
@@ -460,7 +486,7 @@ DataIOFilter::StartRun()
 
   // Reset timing evaluation buffer.
   mTimingBuffer.resize( 0 );
-  mTimingBuffer.resize( static_cast<size_t>( MeasurementUnits::TimeInBlocks( "10s" ) ), 0 );
+  mTimingBuffer.resize( static_cast<size_t>( MeasurementUnits::TimeInSampleBlocks( "10s" ) ), 0 );
   mTimingBufferCursor = 0;
 }
 
@@ -495,7 +521,7 @@ DataIOFilter::Process( const GenericSignal& Input,
       mpFileWriter->CallWrite( mOutputBuffer, mStatevectorBuffer );
     visualizeTiming = mVisualizeTiming;
   }
-  mpADC->CallProcess( Input, mInputBuffer );
+  mpADC->CallProcess( mADCInput, mInputBuffer );
   PrecisionTime now = PrecisionTime::Now();
   if( mpSourceFilter )
   {
@@ -539,8 +565,7 @@ DataIOFilter::Process( const GenericSignal& Input,
 void
 DataIOFilter::Resting()
 {
-  static GenericSignal adcInput( 0, 0 );
-  mpADC->CallProcess( adcInput, mInputBuffer );
+  mpADC->CallProcess( mADCInput, mInputBuffer );
   if( mpSourceFilter )
   {
     GenericSignal sourceFilterInput( mInputBuffer );

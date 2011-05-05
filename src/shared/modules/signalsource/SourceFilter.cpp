@@ -28,7 +28,6 @@
 
 #include "SourceFilter.h"
 #include "FilterDesign.h"
-#include "MeasurementUnits.h"
 
 using namespace std;
 
@@ -52,7 +51,7 @@ SourceFilter::DesignFilter( const SignalProperties& inSignalProperties,
                             ComplexVector& outZeros,
                             ComplexVector& outPoles ) const
 {
-  Real samplingRate = MeasurementUnits::TimeInBlocks( "1s" ) * inSignalProperties.Elements();
+  Real samplingRate = inSignalProperties.SamplingRate();
 
   outGain = 1.0;
   outZeros.clear();

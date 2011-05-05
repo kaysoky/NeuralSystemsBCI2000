@@ -61,7 +61,6 @@
 #include "TMSiADC.h"
 #include "BCIError.h"
 #include "GenericSignal.h"
-#include "MeasurementUnits.h"
 
 #include <tchar.h>
 
@@ -209,7 +208,7 @@ TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties 
          bcierr << "Trying to read more channels than available" << std::endl;
         }
         outputProperties        = SignalProperties( softwareCh,
-                                                    MeasurementUnits::SampleBlockSize(),
+                                                    Parameter( "SampleBlockSize" ),
                                                     SignalType::float32 );
         if ( Parameter("PhysicalChannels")->NumValues() != softwareCh )
         {
@@ -263,11 +262,11 @@ TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties 
         if ( mMeasureImpedance )
         {
             int trueSamplingRate = 8;
-            if (int(MeasurementUnits::SamplingRate()) != trueSamplingRate){
-              bcierr << "For impedance checking sampling rate must be " << trueSamplingRate << "Hz, yours is " << int(MeasurementUnits::SamplingRate()) << "Hz." << std::endl;
+            if (int(Parameter("SamplingRate").InHertz()) != trueSamplingRate){
+              bcierr << "For impedance checking sampling rate must be " << trueSamplingRate << "Hz, yours is " << int(Parameter("SamplingRate").InHertz()) << "Hz." << std::endl;
             }
-            if (int(MeasurementUnits::SampleBlockSize()) > 8){
-              bciout << "SampleBlockSize=" << int(MeasurementUnits::SampleBlockSize()) << " is very big for a SamplingRate of " << int(MeasurementUnits::SamplingRate()) << "\n";
+            if (int(Parameter("SampleBlockSize")) > 8){
+              bciout << "SampleBlockSize=" << int(Parameter("SampleBlockSize")) << " is very big for a SamplingRate of " << int(Parameter("SamplingRate").InHertz()) << "\n";
             }
         }
         else {
@@ -296,8 +295,8 @@ void
 TMSiADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
         mSoftwareCh           = Parameter( "SourceCh" );
-        mSampleBlockSize      = MeasurementUnits::SampleBlockSize();
-        mSampleRate           = MeasurementUnits::SamplingRate();
+        mSampleBlockSize      = Parameter( "SampleBlockSize" );
+        mSampleRate           = Parameter( "SamplingRate" ).InHertz();
 
         mBufferSize           = mBufferMulti*mSampleBlockSize; // in samples!: in waitfordata endblock is linked to this...
         mSrate                = 1000*mSampleRate;           // samplerate in mHz

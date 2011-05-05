@@ -34,7 +34,6 @@
 
 #include "ARFilter.h"
 #include "Detrend.h"
-#include "MeasurementUnits.h"
 #include <limits>
 
 using namespace std;
@@ -60,11 +59,11 @@ ARFilter::ARFilter()
         " (enumeration)",
 
   "Filtering float FirstBinCenter= 0Hz 0Hz % % "
-      "// Center of first frequency bin (as a fraction of sampling rate or in Hz)",
+      "// Center of first frequency bin (in Hz)",
   "Filtering float LastBinCenter= 30Hz 30Hz % % "
-      "// Center of last frequency bin (as a fraction of sampling rate or in Hz)",
+      "// Center of last frequency bin (in Hz)",
   "Filtering float BinWidth= 3Hz 3Hz % % "
-      "// Width of spectral bins (as a fraction of sampling rate or in Hz)",
+      "// Width of spectral bins (in Hz)",
   "Filtering int EvaluationsPerBin= 15 15 1 % "
       "// Number of uniformly spaced evaluation points entering into a single bin value",
  END_PARAMETER_DEFINITIONS
@@ -82,7 +81,7 @@ ARFilter::Preflight( const SignalProperties& Input,
                            SignalProperties& Output ) const
 {
   // Parameter consistency checks.
-  double windowLength = Parameter( "WindowLength" ).InBlocks(),
+  double windowLength = Parameter( "WindowLength" ).InSampleBlocks(),
          samplesInWindow = windowLength * Input.Elements();
   if( samplesInWindow < Parameter( "ModelOrder" ) )
     bcierr << "WindowLength parameter must be large enough"
@@ -95,47 +94,54 @@ ARFilter::Preflight( const SignalProperties& Input,
     case ARparms::SpectralAmplitude:
     case ARparms::SpectralPower:
     {
-      double firstBinCenter = Parameter( "FirstBinCenter" ).AsRelativeFreq( Input ),
-             lastBinCenter = Parameter( "LastBinCenter" ).AsRelativeFreq( Input ),
-             binWidth = Parameter( "BinWidth" ).AsRelativeFreq( Input );
-
-      if( firstBinCenter > 0.5 || firstBinCenter < 0
-         || lastBinCenter > 0.5 || lastBinCenter < 0 )
-        bcierr << "FirstBinCenter and LastBinCenter must be greater zero and"
-               << " less than half the sampling rate"
-               << endl;
-      if( firstBinCenter > lastBinCenter )
-        bcierr << "FirstBinCenter cannot be greater than LastBinCenter" << endl;
-      if( binWidth <= 0 )
-        bcierr << "BinWidth must be greater zero" << endl;
+      if( Input.SamplingRate() < eps )
+      {
+        bcierr << "Zero input sampling rate" << endl;
+      }
       else
       {
-        int numBins = static_cast<int>( ::floor( ( lastBinCenter - firstBinCenter + eps ) / binWidth + 1 ) );
-        Output.SetElements( numBins );
-      }
-      Output.ElementUnit().SetOffset( -firstBinCenter / binWidth )
-                          .SetGain( Parameter( "BinWidth" ).InHertz() )
-                          .SetSymbol( "Hz" );
-      Output.ValueUnit().SetRawMin( 0 );
-      double inputAmplitude = Input.ValueUnit().RawMax() - Input.ValueUnit().RawMin(),
-             whiteNoisePowerPerBin = inputAmplitude * inputAmplitude / binWidth / 10;
-      switch( int( Parameter( "OutputType" ) ) )
-      {
-        case ARparms::SpectralAmplitude:
-          Output.SetName( "AR Amplitude Spectrum" );
-          Output.ValueUnit().SetOffset( 0 )
-                            .SetGain( 1e-6 )
-                            .SetSymbol( "V/sqrt(Hz)" )
-                            .SetRawMax( ::sqrt( whiteNoisePowerPerBin ) );
-          break;
+        double firstBinCenter = Parameter( "FirstBinCenter" ).InHertz() / Input.SamplingRate(),
+               lastBinCenter = Parameter( "LastBinCenter" ).InHertz() / Input.SamplingRate(),
+               binWidth = Parameter( "BinWidth" ).InHertz() / Input.SamplingRate();
 
-        case ARparms::SpectralPower:
-          Output.SetName( "AR Power Spectrum" );
-          Output.ValueUnit().SetOffset( 0 )
-                            .SetGain( 1 )
-                            .SetSymbol( "(muV)^2/Hz" )
-                            .SetRawMax( whiteNoisePowerPerBin );
-          break;
+        if( firstBinCenter > 0.5 || firstBinCenter < 0
+           || lastBinCenter > 0.5 || lastBinCenter < 0 )
+          bcierr << "FirstBinCenter and LastBinCenter must be greater zero and"
+                 << " less than half the sampling rate"
+                 << endl;
+        if( firstBinCenter > lastBinCenter )
+          bcierr << "FirstBinCenter cannot be greater than LastBinCenter" << endl;
+        if( binWidth <= 0 )
+          bcierr << "BinWidth must be greater zero" << endl;
+        else
+        {
+          int numBins = static_cast<int>( ::floor( ( lastBinCenter - firstBinCenter + eps ) / binWidth + 1 ) );
+          Output.SetElements( numBins );
+        }
+        Output.ElementUnit().SetOffset( -firstBinCenter / binWidth )
+                            .SetGain( Parameter( "BinWidth" ).InHertz() )
+                            .SetSymbol( "Hz" );
+        Output.ValueUnit().SetRawMin( 0 );
+        double inputAmplitude = Input.ValueUnit().RawMax() - Input.ValueUnit().RawMin(),
+               whiteNoisePowerPerBin = inputAmplitude * inputAmplitude / binWidth / 10;
+        switch( int( Parameter( "OutputType" ) ) )
+        {
+          case ARparms::SpectralAmplitude:
+            Output.SetName( "AR Amplitude Spectrum" );
+            Output.ValueUnit().SetOffset( 0 )
+                              .SetGain( 1e-6 )
+                              .SetSymbol( "V/sqrt(Hz)" )
+                              .SetRawMax( ::sqrt( whiteNoisePowerPerBin ) );
+            break;
+
+          case ARparms::SpectralPower:
+            Output.SetName( "AR Power Spectrum" );
+            Output.ValueUnit().SetOffset( 0 )
+                              .SetGain( 1 )
+                              .SetSymbol( "(muV)^2/Hz" )
+                              .SetRawMax( whiteNoisePowerPerBin );
+            break;
+        }
       }
     } break;
 
@@ -169,15 +175,15 @@ ARFilter::Initialize( const SignalProperties& Input,
                       const SignalProperties& /*Output*/ )
 {
   ARparms parms;
-  parms.binWidth = Parameter( "BinWidth" ).AsRelativeFreq( Input );
+  parms.binWidth = Parameter( "BinWidth" ).InHertz() / Input.SamplingRate();
   parms.detrend = Parameter( "Detrend" );
   parms.evalsPerBin = Parameter( "EvaluationsPerBin" );
-  parms.firstBinCenter = Parameter( "FirstBinCenter" ).AsRelativeFreq( Input );
-  parms.lastBinCenter = Parameter( "LastBinCenter" ).AsRelativeFreq( Input );
+  parms.firstBinCenter = Parameter( "FirstBinCenter" ).InHertz() / Input.SamplingRate();
+  parms.lastBinCenter = Parameter( "LastBinCenter" ).InHertz() / Input.SamplingRate();
   parms.modelOrder = Parameter( "ModelOrder" );
   parms.SBS = Input.Elements();
   parms.outputType = Parameter( "OutputType" );
-  parms.numWindows = Parameter( "WindowLength" ).InBlocks();
+  parms.numWindows = Parameter( "WindowLength" ).InSampleBlocks();
 
   delete mpAR;
   mpAR = new ARGroup;

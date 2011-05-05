@@ -100,7 +100,7 @@ AverageDisplay::Initialize( const SignalProperties& Input, const SignalPropertie
   for( int i = 0; i < Parameter( "AvgDisplayMarkers" )->NumRows(); ++i )
   {
     string markerName = Parameter( "AvgDisplayMarkers" )( i, 0 );
-    int position = static_cast<int>( OptionalParameter( markerName, -1 ).InBlocks() * Input.Elements() );
+    int position = static_cast<int>( OptionalParameter( markerName, -1 ).InSampleBlocks() * Input.Elements() );
     if( position >= 0 )
       markerLabels.push_back( Label( position, markerName ) );
   }
@@ -241,7 +241,7 @@ AverageDisplay::Process( const GenericSignal& Input, GenericSignal& Output )
       }
       mVisualizations[ channel ].Send( CfgID::ChannelLabels, labels );
       ostringstream oss;
-      oss << ( 1.0 / MeasurementUnits::SamplingRate( Input.Properties() ) ) << "s";
+      oss << ( 1.0 / Input.Properties().SamplingRate() ) << "s";
       mVisualizations[ channel ].Send( CfgID::SampleUnit, oss.str() );
       mVisualizations[ channel ].Send( average );
     }

@@ -93,9 +93,9 @@ void gMOBIlabPlusADC::Preflight( const SignalProperties& inSignalProperties,
                                        SignalProperties& Output ) const
 {
   int sourceCh = Parameter( "SourceCh" ),
-      sampleBlockSize = static_cast<int>( MeasurementUnits::SampleBlockSize() );
+      sampleBlockSize = Parameter( "SampleBlockSize" );
       
-  if ( MeasurementUnits::SamplingRate() != 256 )
+  if ( Parameter("SamplingRate").InHertz() != 256 )
      bcierr << "MOBIlab sampling rate is fixed at 256 Hz. Change SamplingRate parameter to 256." << endl;
   if ( Parameter("SourceCh") < 1 )
      bcierr << "Number of channels (SourceCh) has to be at least 1." << endl;

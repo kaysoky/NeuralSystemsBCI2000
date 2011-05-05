@@ -28,7 +28,6 @@
 #pragma hdrstop
 
 #include "AlignmentFilter.h"
-#include "MeasurementUnits.h"
 
 using namespace std;
 

@@ -88,15 +88,16 @@ GrapeVineADC::~GrapeVineADC() { Halt(); }
 void
 GrapeVineADC::Preflight( const SignalProperties&,SignalProperties& Output ) const
 {
-    if (MeasurementUnits::SamplingRate()==200) bciout << "Verify Grapevine set to deliver 200 Samples/Sec" << endl;
-    else if (MeasurementUnits::SamplingRate()==500)  bciout << "Verify Grapevine set to deliver 500 Samples/Sec"  << endl;
-    else if (MeasurementUnits::SamplingRate()==1000) bciout << "Verify Grapevine set to deliver 1000 Samples/Sec" << endl;
-    else if (MeasurementUnits::SamplingRate()==2000) bciout << "Verify Grapevine set to deliver 2000 Samples/Sec" << endl;
+    double samplingRate = Parameter( "SamplingRate" ).InHertz();
+    if (samplingRate==200) bciout << "Verify Grapevine set to deliver 200 Samples/Sec" << endl;
+    else if (samplingRate==500)  bciout << "Verify Grapevine set to deliver 500 Samples/Sec"  << endl;
+    else if (samplingRate==1000) bciout << "Verify Grapevine set to deliver 1000 Samples/Sec" << endl;
+    else if (samplingRate==2000) bciout << "Verify Grapevine set to deliver 2000 Samples/Sec" << endl;
     else { bcierr << "Source Module only supports Grapevine Sample rates of 200, 1000, and 2000 sps." << endl; return; }
 
     if ( Parameter("SourceCh") > 128 ) { bcierr << "Source Module supports maximum of 128 channels" << endl; return; }
 
-    Output = SignalProperties( Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(), SignalType::float32 );
+    Output = SignalProperties( Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), SignalType::float32 );
 }
 
 void
@@ -105,7 +106,7 @@ GrapeVineADC::Initialize( const SignalProperties&, const SignalProperties& )
     this->Halt();
 
     mSourceCh = Parameter("SourceCh");
-    mSampleBlockSize = MeasurementUnits::SampleBlockSize();
+    mSampleBlockSize = Parameter("SampleBlockSize");
 
     // set packet buffer to all zeros, also provides flat traces if un-filled parts of buffer are sent on
     mGvBciPacket.sequence  = 0;

@@ -112,6 +112,21 @@ class SignalProperties
                       { return mValueUnits.size() <= ch
                         ? *mValueUnits.rbegin() : mValueUnits[ ch ]; }
 
+    // The SamplingRate property is constructed from the ElementUnit gain if the ElementUnit's symbol is "s",
+    // and is zero otherwise.
+    // SamplingRate in Hz
+    double SamplingRate() const
+           { return mElementUnit.Symbol() == "s" ? 1.0 / mElementUnit.Gain() : 0.0; }
+    // The UpdateRate property represents how often a signal is updated in the online system.
+#ifdef TODO
+# error Add update rate to the SignalProperties stream representation.
+#endif // TODO
+    // UpdateRate in Hz
+    double            UpdateRate() const
+                      { return mUpdateRate; }
+    SignalProperties& SetUpdateRate( double r )
+                      { mUpdateRate = r; return *this; }
+
     bool IsEmpty() const
                       { return Channels() == 0 || Elements() == 0; }
 
@@ -136,6 +151,7 @@ class SignalProperties
     PhysicalUnit                       mChannelUnit,
                                        mElementUnit;
     ValueList<PhysicalUnit>            mValueUnits;
+    double                             mUpdateRate;
 };
 
 inline

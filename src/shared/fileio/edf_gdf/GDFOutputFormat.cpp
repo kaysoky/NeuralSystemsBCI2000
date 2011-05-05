@@ -177,8 +177,8 @@ GDFOutputFormat::StartRun( ostream& os, const string& inFileName )
   PutField< Num<GDF::float32,3> >( os, cNaN );
   PutField< Num<GDF::float32,3> >( os, cNaN );
   PutField< Num<GDF::int64>     >( os, -1 );
-  PutField< Num<GDF::uint32>    >( os, MeasurementUnits::SampleBlockSize() );
-  PutField< Num<GDF::uint32>    >( os, static_cast<int>( MeasurementUnits::SamplingRate() ) );
+  PutField< Num<GDF::uint32>    >( os, int( Parameter( "SampleBlockSize" ) ) );
+  PutField< Num<GDF::uint32>    >( os, int( Parameter( "SamplingRate" ).InHertz() ) );
   PutField< Num<GDF::uint16>    >( os, Channels().size() );
   PutField< Num<GDF::uint16>    >( os, 0 );
 
@@ -220,7 +220,7 @@ GDFOutputFormat::StopRun( ostream& os )
     PutField< Num<GDF::uint8>   >( os, mEvents.size() & 0xff );
     PutField< Num<GDF::uint8>   >( os, mEvents.size() >> 8 & 0xff );
     PutField< Num<GDF::uint8>   >( os, mEvents.size() >> 16 & 0xff );
-    PutField< Num<GDF::float32> >( os, static_cast<float>( MeasurementUnits::SamplingRate() ) );
+    PutField< Num<GDF::float32> >( os, float( Parameter( "SamplingRate" ).InHertz() ) );
     PutArray< Num<GDF::uint32>  >( os, mEvents, &EventInfo::SamplePosition );
     PutArray< Num<GDF::uint16>  >( os, mEvents, &EventInfo::Code );
   }

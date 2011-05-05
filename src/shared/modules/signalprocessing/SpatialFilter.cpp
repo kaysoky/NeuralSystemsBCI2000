@@ -32,7 +32,6 @@
 
 #include <numeric>
 #include "SpatialFilter.h"
-#include "MeasurementUnits.h"
 
 using namespace std;
 

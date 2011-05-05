@@ -146,7 +146,7 @@ FieldTripBufferADC::Preflight( const SignalProperties&,
 		if( Parameter( "SourceCh" ) != hdr.nchans )
           bcierr << "The number of channels in the FT buffer does not match the SourceCh parameter" << endl;
 
-    size_t sampleBlockSize = MeasurementUnits::SampleBlockSize();
+    size_t sampleBlockSize = Parameter( "SampleBlockSize" );
         
 		outSignalProperties = SignalProperties(hdr.nchans, sampleBlockSize, sType);
 	}

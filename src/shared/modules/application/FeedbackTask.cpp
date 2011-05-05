@@ -112,12 +112,12 @@ FeedbackTask::Initialize( const SignalProperties& Input, const SignalProperties&
   if(!string(Parameter("NumberOfTrials")).empty())
     mNumberOfTrials = Parameter("NumberOfTrials");
 
-  mPreRunDuration = static_cast<int>( Parameter( "PreRunDuration" ).InBlocks() );
-  mPreFeedbackDuration = static_cast<int>( Parameter( "PreFeedbackDuration" ).InBlocks() );
-  mFeedbackDuration = static_cast<int>( Parameter( "FeedbackDuration" ).InBlocks() );
-  mPostFeedbackDuration = static_cast<int>( Parameter( "PostFeedbackDuration" ).InBlocks() );
-  mITIDuration = static_cast<int>( Parameter( "ITIDuration" ).InBlocks() );
-  mMinRunLength = static_cast<long long>( Parameter( "MinRunLength" ).InBlocks() );
+  mPreRunDuration = static_cast<int>( Parameter( "PreRunDuration" ).InSampleBlocks() );
+  mPreFeedbackDuration = static_cast<int>( Parameter( "PreFeedbackDuration" ).InSampleBlocks() );
+  mFeedbackDuration = static_cast<int>( Parameter( "FeedbackDuration" ).InSampleBlocks() );
+  mPostFeedbackDuration = static_cast<int>( Parameter( "PostFeedbackDuration" ).InSampleBlocks() );
+  mITIDuration = static_cast<int>( Parameter( "ITIDuration" ).InSampleBlocks() );
+  mMinRunLength = static_cast<long long>( Parameter( "MinRunLength" ).InSampleBlocks() );
   bcidbg( 2 ) << "Event: Initialize" << endl;
   OnInitialize( Input );
 }

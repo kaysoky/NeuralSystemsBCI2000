@@ -141,7 +141,7 @@ EDFOutputFormat::StartRun( ostream& os, const string& inFileName )
   PutField< Str<8>  >( os, 256 * ( Channels().size() + 1 ) );
   PutField< Str<44> >( os );
   PutField< Str<8>  >( os, -1 );
-  PutField< Str<8>  >( os, MeasurementUnits::SampleBlockDuration() );
+  PutField< Str<8>  >( os, Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" ) );
   PutField< Str<4>  >( os, Channels().size() );
 
   PutArray< Str<16> >( os, Channels(), &ChannelInfo::Label );

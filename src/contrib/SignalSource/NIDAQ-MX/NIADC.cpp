@@ -145,7 +145,7 @@ void NIADC::Preflight( const SignalProperties&,
  char devName[6]="Dev",devNum[3]="";
 
    //Parameter consistency checks: Existence/Ranges and mutual Ranges.
-//    if( (MeasurementUnits::SampleBlockSize()%2) != 0)
+//    if( (Parameter("SampleBlockSize")%2) != 0)
   //      bcierr << "Sample block Size must be a power of 2" << endl;
 
 	//if( (Parameter("SourceCh") > 32) ){
@@ -170,7 +170,7 @@ void NIADC::Preflight( const SignalProperties&,
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
 	   Parameter( "SourceCh" ),
-	   MeasurementUnits::SampleBlockSize(),
+	   Parameter( "SampleBlockSize" ),
 	   SignalType::int16 );
 }
 
@@ -195,8 +195,8 @@ char devNum[3]="";
 // float   checkbackground;
 
  channels=Parameter("SourceCh");
- samplingRate=static_cast<int>(MeasurementUnits::SamplingRate());
- blocksize=MeasurementUnits::SampleBlockSize();
+ samplingRate=static_cast<int>(Parameter("SamplingRate").InHertz());
+ blocksize=Parameter("SampleBlockSize");
  iDevice=Parameter("BoardNumber");
 
  sprintf(devNum, "%i",iDevice);

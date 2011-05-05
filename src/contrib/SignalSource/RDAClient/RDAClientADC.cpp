@@ -139,14 +139,14 @@ RDAClientADC::Preflight( const SignalProperties&,
     else
     {
       double sourceSamplingRate = 1e6 / preflightQueue.info().samplingInterval;
-      if( MeasurementUnits::SamplingRate() != sourceSamplingRate )
+      if( Parameter( "SamplingRate" ).InHertz() != sourceSamplingRate )
         bcierr << "The SamplingRate parameter must match "
                << "the setting in the recording software "
                << "(" << sourceSamplingRate << ")"
                << endl;
 
       // Check whether block sizes are sub-optimal.
-      size_t sampleBlockSize = MeasurementUnits::SampleBlockSize(),
+      size_t sampleBlockSize = Parameter( "SampleBlockSize" ),
              sourceBlockSize = static_cast<size_t>( preflightQueue.info().blockDuration / preflightQueue.info().samplingInterval );
       if( sampleBlockSize % sourceBlockSize != 0 && sourceBlockSize % sampleBlockSize != 0 )
         bciout << "Non-integral ratio between source block size (" << sourceBlockSize << ")"
@@ -159,12 +159,12 @@ RDAClientADC::Preflight( const SignalProperties&,
   // Requested output signal properties.
 #if RDA_FLOAT
   outSignalProperties = SignalProperties(
-    numInputChannels, MeasurementUnits::SampleBlockSize(), SignalType::float32 );
+    numInputChannels, Parameter( "SampleBlockSize" ), SignalType::float32 );
 #else
   bciout << "You are using the 16 bit variant of the RDA protocol, which is"
          << " considered unreliable. Switching to float is recommended" << endl;
   outSignalProperties = SignalProperties(
-    numInputChannels, MeasurementUnits::SampleBlockSize(), SignalType::int16 );
+    numInputChannels, Parameter( "SampleBlockSize" ), SignalType::int16 );
 #endif // RDA_FLOAT
 }
 

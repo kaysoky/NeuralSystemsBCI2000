@@ -15,7 +15,7 @@ Storage:Documentation string ID_Montage= % // BCI2000 Cap Montage Code
 Visualize:Timing int VisualizeTiming= 1 1 0 1 // visualize system timing (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal int VisualizeSourceDecimation= 1 1 0 % // decimation factor for raw brain signal
-Visualize:Source%20Signal int VisualizeSourceTime= 2 2 0 % // how much time in Source visualization
+Visualize:Source%20Signal int VisualizeSourceTime= 2s 2 0 % // how much time in Source visualization
 Visualize:Source%20Signal int SourceMin= -100muV -100muV % % // raw signal vis Min Value
 Visualize:Source%20Signal int SourceMax= 100muV 100muV % % // raw signal vis Max Value
 Source:SignalGeneratorADC int ModulateAmplitude= 1 0 0 1 // Modulate the amplitude with the mouse (0=no, 1=yes) (boolean)

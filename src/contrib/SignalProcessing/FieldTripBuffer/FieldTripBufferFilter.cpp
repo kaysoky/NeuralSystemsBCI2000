@@ -134,7 +134,7 @@ FieldTripBufferFilter::Initialize( const SignalProperties& Input,
   mHeaderdef.nchans    = numChannels;
   mHeaderdef.nsamples  = numSamples;
   mHeaderdef.nevents   = 0;
-  mHeaderdef.fsample   = static_cast<FLOAT32_T>( MeasurementUnits::SamplingRate( Input ) );
+  mHeaderdef.fsample   = static_cast<FLOAT32_T>( Input.SamplingRate() );
   mHeaderdef.data_type = DATATYPE_FLOAT32;
   mHeaderdef.bufsize   = 0;
 

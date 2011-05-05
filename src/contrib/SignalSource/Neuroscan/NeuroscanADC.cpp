@@ -201,8 +201,8 @@ float LSB;
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
   // cross check the parameters as received from the server with the BCI2000 parameters
   PreflightCondition( Parameter( "SourceCh" ) == num_channels );
-  PreflightCondition( MeasurementUnits::SampleBlockSize() == blocksize );
-  PreflightCondition( MeasurementUnits::SamplingRate() == samplingrate );
+  PreflightCondition( Parameter( "SampleBlockSize" ) == blocksize );
+  PreflightCondition( Parameter( "SamplingRate" ).InHertz() == samplingrate );
 
   // also cross check SourceChGain and SourceChOffset
   for (int ch=0; ch<Parameter( "SourceCh" ); ch++)
@@ -233,7 +233,7 @@ float LSB;
              << endl;
   }
   outSignalProperties = SignalProperties(
-    Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(), outSignalType );
+    Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), outSignalType );
 }
 
 

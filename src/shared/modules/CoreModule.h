@@ -166,7 +166,8 @@ class CoreModule : private MessageHandler
   StateList        mStatelist;
   StateVector*     mpStatevector;
   std::string      mInitialStatevector;
-  GenericSignal    mOutputSignal;
+  GenericSignal    mInputSignal,
+                   mOutputSignal;
   client_tcpsocket mOperatorSocket,
                    mNextModuleSocket;
   server_tcpsocket mPreviousModuleSocket;

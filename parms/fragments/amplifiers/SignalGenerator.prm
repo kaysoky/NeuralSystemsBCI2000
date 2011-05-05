@@ -7,7 +7,7 @@ Source:Signal%20Properties floatlist SourceChGain= 8 0.008 0.008 0.008 0.008 0.0
 Visualize:DataIOFilter int VisualizeRoundtrip= 1 1 0 1 // visualize roundtrip time (0=no, 1=yes) (boolean)
 Visualize:DataIOFilter int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
 Visualize:DataIOFilter int VisualizeSourceDecimation= 1 1 0 % // decimation factor for raw brain signal
-Visualize:DataIOFilter int VisualizeSourceTime= 2 2 0 % // how much time in Source visualization
+Visualize:DataIOFilter int VisualizeSourceTime= 2s 2 0 % // how much time in Source visualization
 Visualize:DataIOFilter int SourceMin= -100muV -100muV % % // raw signal vis Min Value
 Visualize:DataIOFilter int SourceMax= 100muV 100muV % % // raw signal vis Max Value
 Source:RandomNumberADC int ModulateAmplitude= 1 0 0 1 // Modulate the amplitude with the mouse (0=no, 1=yes) (boolean)

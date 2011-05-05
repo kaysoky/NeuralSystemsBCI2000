@@ -31,7 +31,6 @@
 
 #include "ComplexDemodulator.h"
 
-#include "MeasurementUnits.h"
 #include <numeric>
 
 using namespace std;
@@ -62,16 +61,16 @@ ComplexDemodulator::Preflight( const SignalProperties& Input,
   bool error = false;
   for( int i = 0; i < DemodulatorFrequencies->NumValues(); ++i )
   {
-    double frequency = DemodulatorFrequencies( i ).AsRelativeFreq( Input );
+    double frequency = DemodulatorFrequencies( i ).InHertz() / Input.SamplingRate();
     error |= ( frequency < 0 );
     error |= ( frequency > 0.5 );
   }
   if( error )
     bcierr << "DemodulatorFrequencies must be greater 0 and less than half the "
-           << "sampling rate "
-           << "(currently " << MeasurementUnits::SamplingRate() << "Hz)"
+           << "input's sampling rate "
+           << "(currently " << Input.SamplingRate() << "Hz)"
            << endl;
-  double FrequencyResolution = Parameter( "FrequencyResolution" ).AsRelativeFreq( Input );
+  double FrequencyResolution = Parameter( "FrequencyResolution" ).InHertz() / Input.SamplingRate();
   PreflightCondition( FrequencyResolution > 0 );
 
   // Request output signal properties:
@@ -87,7 +86,7 @@ void
 ComplexDemodulator::Initialize( const SignalProperties& Input,
                                 const SignalProperties& Output )
 {
-  double FrequencyResolution = Parameter( "FrequencyResolution" ).AsRelativeFreq( Input );
+  double FrequencyResolution = Parameter( "FrequencyResolution" ).InHertz() / Input.SamplingRate();
   size_t numCoefficients = static_cast<size_t>( ::floor( 1.0 / FrequencyResolution ) + 1 );
   ParamRef DemodulatorFrequencies = Parameter( "DemodulatorFrequencies" );
   mCoefficients.clear();
@@ -97,7 +96,7 @@ ComplexDemodulator::Initialize( const SignalProperties& Input,
   );
   for( int i = 0; i < DemodulatorFrequencies->NumValues(); ++i )
   {
-    double freq = DemodulatorFrequencies( i ).AsRelativeFreq( Input );
+    double freq = DemodulatorFrequencies( i ).InHertz() / Input.SamplingRate();
     for( size_t j = 0; j < numCoefficients; ++j )
       mCoefficients[ i ][ j ] = polar( 0.5 / numCoefficients, freq * j * 2.0 * M_PI );
   }

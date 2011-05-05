@@ -125,7 +125,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   channel.TransducerType = string( Parameter( "TransducerType" ) );
   channel.PhysicalDimension = string( Parameter( "SignalUnit" ) );
   channel.PhysicalDimensionCode = GDF::PhysicalUnitToGDFUnit( channel.PhysicalDimension );
-  channel.SamplesPerRecord = MeasurementUnits::SampleBlockSize();
+  channel.SamplesPerRecord = inProperties.Elements();
   channel.DataType = typeCode;
   channel.DigitalMinimum = digitalMin;
   channel.DigitalMaximum = digitalMax;
@@ -182,7 +182,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   markerChannel.TransducerType = "Marker";
   markerChannel.PhysicalDimension = "";
   markerChannel.PhysicalDimensionCode = GDF::PhysicalUnitToGDFUnit( "" );
-  markerChannel.SamplesPerRecord = MeasurementUnits::SampleBlockSize();
+  markerChannel.SamplesPerRecord = inProperties.Elements();
   markerChannel.DataType = GDF::int16::Code;
   for( size_t i = 0; i < sizeof( channel.ElectrodePosition ) / sizeof( *channel.ElectrodePosition ); ++i )
     markerChannel.ElectrodePosition[ i ] = static_cast<float>( cNaN );

@@ -80,7 +80,8 @@ class DataIOFilter: public GenericFilter
                          mTimingVis;
   GenericSignal          mDecimatedSignal,
                          mTimingSignal;
-  mutable GenericSignal  mInputBuffer,
+  mutable GenericSignal  mADCInput,
+                         mInputBuffer,
                          mVisSourceBuffer;
   mutable int            mBlockCount;
   std::vector<double>    mSourceChOffset,

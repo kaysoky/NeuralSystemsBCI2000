@@ -605,7 +605,6 @@ Environment::OnParamAccess( const string& inName ) const
                 << " consistency during preflight phase."
                 << endl;
   }
-  MeasurementUnits::OnParamAccess( inName );
 }
 
 void

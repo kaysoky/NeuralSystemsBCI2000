@@ -89,7 +89,7 @@ void ENOBIOADC::Preflight( const SignalProperties&,
 {
 	int LastErrorId;
 	if(CEnobioIsInitialized(mEnobio)==false){
-    if(CEnobioInitialize(mEnobio,MeasurementUnits::SampleBlockSize())==false){
+    if(CEnobioInitialize(mEnobio,Parameter("SampleBlockSize"))==false){
 			LastErrorId=   CEnobioGetLastError(mEnobio);
 			if(LastErrorId>0)
 				bcierr<<CEnobioStrError(LastErrorId,mEnobio)<<endl;
@@ -104,7 +104,7 @@ void ENOBIOADC::Preflight( const SignalProperties&,
 		bcierr<<CEnobioStrError(LastErrorId,mEnobio)<<endl;
 	}else{
 		Output = SignalProperties( Parameter( "SourceCh" ),
-		                           MeasurementUnits::SampleBlockSize(),
+		                           Parameter( "SampleBlockSize" ),
 		                           SignalType::int32 );
 	}
 }
@@ -119,7 +119,7 @@ Returns:    N/A
 void ENOBIOADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
 	mSourceCh = Parameter( "SourceCh" );
-  mSampleBlockSize = MeasurementUnits::SampleBlockSize();
+  mSampleBlockSize = Parameter( "SampleBlockSize" );
 }
 
 

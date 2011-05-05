@@ -85,7 +85,7 @@ P3TemporalFilter::Preflight( const SignalProperties& Input,
            << "greater than or equal to the EpochsToAverage parameter."
            << endl;
 
-  double outputSamples = Parameter( "EpochLength" ).InBlocks();
+  double outputSamples = Parameter( "EpochLength" ).InSampleBlocks();
   outputSamples *= Input.Elements();
   outputSamples = ::ceil( outputSamples );
   // Requested output signal properties.

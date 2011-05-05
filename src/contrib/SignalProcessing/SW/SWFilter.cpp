@@ -97,7 +97,7 @@ TSWFilter::Preflight( const SignalProperties& Input,
     PreflightCondition( Parameter( "SWInChList" )( i ) > 0 && Parameter( "SWInChList" )( i ) <= Input.Channels() );
   for( int i = 0; i < Parameter( "SWOutChList" )->NumValues(); ++i )
     PreflightCondition( Parameter( "SWOutChList" )( i ) > 0 && Parameter( "SWOutChList" )( i ) <= Input.Channels() );
-  PreflightCondition( Parameter( "Tc" ).InBlocks() >= 0.0 );
+  PreflightCondition( Parameter( "Tc" ).InSampleBlocks() >= 0.0 );
   PreflightCondition( Parameter( "SpatialFilteredChannels" ) == Input.Channels() );
   Output = SignalProperties( Input.Channels(), 1 );
   Output.SetName( "SWFiltered" );
@@ -107,10 +107,10 @@ void
 TSWFilter::Initialize( const SignalProperties& Input, const SignalProperties& )
 {
   mBlockSize = Input.Elements();
-  mBlocksInTrial = static_cast<unsigned int>( Parameter( "FeedbackEnd" ).InBlocks() );
+  mBlocksInTrial = static_cast<unsigned int>( Parameter( "FeedbackEnd" ).InSampleBlocks() );
   mBufferOffset = mBlocksInTrial;
   mAvgBufferSize = mBufferOffset + mBlocksInTrial + 1;
-  mAvgSpan = static_cast<unsigned int>( Parameter( "SWAvgSpan" ).InBlocks() );
+  mAvgSpan = static_cast<unsigned int>( Parameter( "SWAvgSpan" ).InSampleBlocks() );
 
   mSWCh = Parameter( "SWInChList" )->NumValues();
   mSWInChList.resize( mSWCh );
@@ -135,7 +135,7 @@ TSWFilter::Initialize( const SignalProperties& Input, const SignalProperties& )
   mPosInBuffer = mBufferOffset - 1;
 
   // Tc-correction variables:
-  double timeConstant = Parameter( "Tc" ).InBlocks();
+  double timeConstant = Parameter( "Tc" ).InSampleBlocks();
   if( timeConstant == 0 )
     mTcFactor = 0;
   else

@@ -172,7 +172,7 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
   if( Parameter( "SignalType" ) == 1 )
     signalType = SignalType::float32;
   outSignalProperties = SignalProperties(
-    Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(), signalType );
+    Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), signalType );
 
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
     if ( Parameter("SourceChList")->NumValues() > 0 )
@@ -315,7 +315,7 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
          // let's check whether the driver complains if we use a wrong sampling rate
          // according to the documentation, it should
          // it looks like in practise, it does not
-         int samplerate=static_cast<int>(MeasurementUnits::SamplingRate());
+         int samplerate=static_cast<int>(Parameter("SamplingRate").InHertz());
          if (!GT_SetSampleRate(hdev, samplerate))
          {
            WORD wErrorCode;
@@ -402,12 +402,12 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
     mpAcquireThread = new AcquireThread(this);
 
     mTotalChs        =           Parameter( "SourceCh" );
-    int samplingrate =           static_cast<int>(MeasurementUnits::SamplingRate());
+    int samplingrate =           Parameter( "SamplingRate" ).InHertz();
     mMasterDeviceID  = ( string )Parameter( "DeviceIDMaster" );
     mFloatOutput     =         ( Parameter( "SignalType" ) == 1 );
     NUM_BUFS         =           Parameter( "NumBuffers" );
     //NUM_BUFS = 5; //overwriting for now
-    mSampleBlockSize = MeasurementUnits::SampleBlockSize();
+    mSampleBlockSize = Parameter( "SampleBlockSize" );
     // if we set DeviceIDs to auto and we only have one device, we can autoconfigure
     if ((Parameter("DeviceIDs")->NumValues() == 1) && (Parameter("DeviceIDs")=="auto"))
         autoconfigure=true;
@@ -562,7 +562,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         else
             GT_SetMode(m_hdev.at(dev), M_NORMAL);
 
-        GT_SetBufferSize(m_hdev.at(dev), MeasurementUnits::SampleBlockSize());
+        GT_SetBufferSize(m_hdev.at(dev), Parameter("SampleBlockSize"));
         // set all devices to slave except the one master
         // externally, the master needs to have its SYNC OUT wired to the SYNC IN
         // of the first slave (whos SYNC OUT is connected to the next slave's SYNC IN)
@@ -968,7 +968,7 @@ int gUSBampADC::DetermineFilterNumber() const
 int     nof;
 FILT    *filt;
 
- int samplingrate=static_cast<int>(MeasurementUnits::SamplingRate());
+ int samplingrate=Parameter("SamplingRate").InHertz();
  int filternumber = -1;
 
  GT_GetNumberOfFilter(&nof);
@@ -1002,7 +1002,7 @@ int gUSBampADC::DetermineNotchNumber() const
 int     nof;
 FILT    *filt;
 
- int samplingrate=static_cast<int>(MeasurementUnits::SamplingRate());
+ int samplingrate=Parameter("SamplingRate").InHertz();
  int notchnumber = -1;
 
  GT_GetNumberOfNotch(&nof);

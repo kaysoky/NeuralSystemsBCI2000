@@ -207,32 +207,20 @@ class ParamRef
   // Conversions involving units.
   // The following functions convert the parameter's value into the unit specified,
   // honoring physical units when present.
-  double InBlocks() const
-  { return MeasurementUnits::TimeInBlocks( (const std::string&)( *this ) ); }
   double InSampleBlocks() const
-  { return InBlocks(); }
+    { return MeasurementUnits::TimeInSampleBlocks( (const std::string&)( *this ) ); }
   double InSeconds() const
-  { return MeasurementUnits::TimeInSeconds( (const std::string&)( *this ) ); }
+    { return MeasurementUnits::TimeInSeconds( (const std::string&)( *this ) ); }
   double InMilliseconds() const
-  { return MeasurementUnits::TimeInMilliseconds( (const std::string&)( *this ) ); }
+    { return MeasurementUnits::TimeInMilliseconds( (const std::string&)( *this ) ); }
 
-  // Relative frequency in terms of the global sampling rate.
-  double AsSystemRelativeFreq() const
-  { return MeasurementUnits::SystemRelativeFreq( (const std::string&)( *this ) ); }
-  double AsSystemRelativeFrequency() const
-  { return AsSystemRelativeFreq(); }
-  // Relative frequency in terms of the given signal's sampling rate.
-  double AsRelativeFreq( const SignalProperties& s ) const
-  { return MeasurementUnits::RelativeFreq( (const std::string&)( *this ), s ); }
-  double AsRelativeFrequency( const SignalProperties& s ) const
-  { return AsRelativeFreq( s ); }
   double InHertz() const
-  { return MeasurementUnits::FreqInHertz( (const std::string&)( *this ) ); }
+    { return MeasurementUnits::FreqInHertz( (const std::string&)( *this ) ); }
 
   double InVolts() const
-  { return MeasurementUnits::VoltageInVolts( (const std::string&)( *this ) ); }
+    { return MeasurementUnits::VoltageInVolts( (const std::string&)( *this ) ); }
   double InMicrovolts() const
-  { return MeasurementUnits::VoltageInMicrovolts( (const std::string&)( *this ) ); }
+    { return MeasurementUnits::VoltageInMicrovolts( (const std::string&)( *this ) ); }
 
 
   // Dereferencing operators for access to Param members.
@@ -249,7 +237,7 @@ class ParamRef
 
  private:
   static size_t index( int idx )
-  { return idx == none ? 0 : idx; }
+    { return idx == none ? 0 : idx; }
 
  private:
   Param* mpParam;

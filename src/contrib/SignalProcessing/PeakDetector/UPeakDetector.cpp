@@ -105,7 +105,7 @@ void PeakDetector::Initialize( const SignalProperties& Input, const SignalProper
 {
   samples=     Input.Elements();
   visualize=   ( int )Parameter("VisualizePeakDetector");
-  hz=          static_cast<int>( MeasurementUnits::SamplingRate( Input ) );
+  hz=          static_cast<int>( Input.SamplingRate() );
   posthresh=   Parameter("PosPeakThreshold");
   negthresh=   Parameter("NegPeakThreshold");
   nBins=       Parameter("HistoryLength");

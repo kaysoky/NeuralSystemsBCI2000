@@ -82,12 +82,12 @@ NeuroscanADC::~NeuroscanADC()
 // Returns:    N/A
 // **************************************************************************
 void NeuroscanADC::Preflight( const SignalProperties&,
-                                   SignalProperties& Output ) const
+                                    SignalProperties& Output ) const
 {
   // Pull parameters
   int sourceCh = Parameter( "SourceCh" ),
-      sampleBlockSize = MeasurementUnits::SampleBlockSize(),
-      sampleRate = static_cast<int>( MeasurementUnits::SamplingRate() ),
+      sampleBlockSize = Parameter( "SampleBlockSize" ),
+      sampleRate = static_cast<int>( Parameter( "SamplingRate" ).InHertz() ),
       type = Parameter( "Device" );
    
   // Grab a Connection string
@@ -202,8 +202,8 @@ void NeuroscanADC::Initialize( const SignalProperties&,
   Halt();
   
   // Pull parameters
-  int sampleBlockSize = MeasurementUnits::SampleBlockSize(),
-      sampleRate = static_cast<int>( MeasurementUnits::SamplingRate() );
+  int sampleBlockSize = Parameter( "SampleBlockSize" ),
+      sampleRate = static_cast<int>( Parameter( "SamplingRate" ).InHertz() );
       
   mChannels = Parameter( "SourceCh" );
   mType = ( int )Parameter( "Device" );

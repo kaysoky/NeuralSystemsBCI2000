@@ -94,7 +94,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
     {
       FFTLibWrapper preflightFFT;
       int fftWindowLength =
-        static_cast<int>( Input.Elements() * Parameter( "FFTWindowLength" ).InBlocks() );
+        static_cast<int>( Input.Elements() * Parameter( "FFTWindowLength" ).InSampleBlocks() );
       if( !preflightFFT.Initialize( fftWindowLength ) )
         bcierr << "Requested parameters are not supported by FFT library" << endl;
     }
@@ -117,7 +117,7 @@ void
 FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*Output*/ )
 {
   mFFTOutputSignal = ( eFFTOutputSignal )( int )Parameter( "FFTOutputSignal" );
-  mFFTWindowLength = static_cast<int>( Input.Elements() * Parameter( "FFTWindowLength" ).InBlocks() );
+  mFFTWindowLength = static_cast<int>( Input.Elements() * Parameter( "FFTWindowLength" ).InSampleBlocks() );
   mFFTWindow = ( eFFTWindow )( int )Parameter( "FFTWindow" );
 
   mFFTInputChannels.clear();
@@ -268,10 +268,10 @@ void
 FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTType ) const
 {
   int numChannels = Parameter( "FFTInputChannels" )->NumValues(),
-      fftWindowLength = static_cast<int>( ioProperties.Elements() * Parameter( "FFTWindowLength" ).InBlocks() );
+      fftWindowLength = static_cast<int>( ioProperties.Elements() * Parameter( "FFTWindowLength" ).InSampleBlocks() );
   if( numChannels > 0 && fftWindowLength == 0 )
     bcierr << "FFTWindowLength must exceed a single sample's duration" << endl;
-  double freqRange = MeasurementUnits::SamplingRate( ioProperties ) / 2.0;
+  double freqRange = ioProperties.SamplingRate() / 2.0;
 
   switch( inFFTType )
   {

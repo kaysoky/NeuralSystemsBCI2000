@@ -219,7 +219,7 @@ CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
            << Parameter( "NumberTargets" )
            << endl;
 
-  if( Parameter( "FeedbackDuration" ).InBlocks() <= 0 )
+  if( Parameter( "FeedbackDuration" ).InSampleBlocks() <= 0 )
     bcierr << "FeedbackDuration must be greater 0" << endl;
 }
 
@@ -227,12 +227,12 @@ void
 CursorFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
 {
   // Cursor speed in pixels per signal block duration:
-  float feedbackDuration = Parameter( "FeedbackDuration" ).InBlocks();
+  float feedbackDuration = Parameter( "FeedbackDuration" ).InSampleBlocks();
   // On average, we need to cross half the workspace during a trial.
   mCursorSpeedX = 100.0 / feedbackDuration / 2;
   mCursorSpeedY = 100.0 / feedbackDuration / 2;
   mCursorSpeedZ = 100.0 / feedbackDuration / 2;
-  mMaxFeedbackDuration = static_cast<int>( Parameter( "MaxFeedbackDuration" ).InBlocks() );
+  mMaxFeedbackDuration = static_cast<int>( Parameter( "MaxFeedbackDuration" ).InSampleBlocks() );
 
   mWindow.SetLeft( Parameter( "WindowLeft" ) );
   mWindow.SetTop( Parameter( "WindowTop" ) );

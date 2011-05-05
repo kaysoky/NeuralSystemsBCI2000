@@ -38,7 +38,6 @@
 #include "AudioSpellerTarget.h"
 
 #include "Localization.h"
-#include "MeasurementUnits.h"
 #include "BCIDirectory.h"
 #include <algorithm>
 #include <iomanip>

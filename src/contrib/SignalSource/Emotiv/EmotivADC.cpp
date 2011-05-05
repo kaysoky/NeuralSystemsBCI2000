@@ -154,7 +154,7 @@ void EmotivADC::Preflight( const SignalProperties&,
 {
   // Grab important parameters
   int sourceCh = Parameter( "SourceCh" ),
-      sampleBlockSize = MeasurementUnits::SampleBlockSize();
+      sampleBlockSize = Parameter( "SampleBlockSize" );
 
   // Connect to the Emotiv Engine
   EmotivConnect();
@@ -232,7 +232,7 @@ void EmotivADC::Preflight( const SignalProperties&,
   unsigned int samplingRate = 0;
   if( EE_DataGetSamplingRate( userID, &samplingRate ) == EDK_OK )
   {
-    if( static_cast<int>( MeasurementUnits::SamplingRate() ) != samplingRate )
+    if( static_cast<int>( Parameter( "SamplingRate" ).InHertz() ) != samplingRate )
       bcierr << "Set SamplingRate = " << samplingRate << endl;
   }
   else

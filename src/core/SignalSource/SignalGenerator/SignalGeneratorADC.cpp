@@ -136,7 +136,7 @@ SignalGeneratorADC::Preflight( const SignalProperties&,
       bcierr << "Unknown SignalType value" << endl;
   }
   Output = SignalProperties(
-    Parameter( "SourceCh" ), MeasurementUnits::SampleBlockSize(), signalType );
+    Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), signalType );
 }
 
 
@@ -149,7 +149,7 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
   mSourceChOffset.resize( Parameter( "SourceChOffset" )->NumValues() );
   for( size_t i = 0; i < mSourceChOffset.size(); ++i )
     mSourceChOffset[i] = Parameter( "SourceChOffset" )( i );
-  mSineFrequency = Parameter( "SineFrequency" ).AsSystemRelativeFrequency();
+  mSineFrequency = Parameter( "SineFrequency" ).InHertz() / Parameter( "SamplingRate" ).InHertz();
   mSineAmplitude = Parameter( "SineAmplitude" ).InMicrovolts();
   mSinePhase = M_PI / 2;
   mNoiseAmplitude = Parameter( "NoiseAmplitude" ).InMicrovolts();
@@ -232,7 +232,7 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
 
   // Wait for the amount of time that corresponds to the length of a data block.
   PrecisionTime now = PrecisionTime::Now();
-  double blockDuration = 1e3 * Output.Elements() / MeasurementUnits::SamplingRate(),
+  double blockDuration = 1e3 * MeasurementUnits::SampleBlockDuration(),
          time2wait = blockDuration - ( now - mLasttime );
   if( time2wait < 0 )
     time2wait = 0;

@@ -28,6 +28,7 @@
 
 #include "MeasurementUnits.h"
 #include "BCIError.h"
+#include <limits>
 
 using namespace std;
 
@@ -63,25 +64,10 @@ MeasurementUnits::Initialize( const ParamList& inParams )
   }
   // Set the unit for raw numbers representing time to multiples of sample block duration.
   sTimeUnit.SetOffset( 0 ).SetGain( sSampleBlockSize / sSamplingRate ).SetSymbol( "s" );
-  // Set the unit for raw numbers representing frequencies to multiples of the sampling rate.
-  sFreqUnit.SetOffset( 0 ).SetGain( sSamplingRate ).SetSymbol( "Hz" );
+  // Set the unit for raw numbers representing frequencies to 1Hz.
+  sFreqUnit.SetOffset( 0 ).SetGain( 1.0 ).SetSymbol( "Hz" );
   // Set the unit for raw numbers representing voltages to Microvolts.
   sVoltageUnit.SetOffset( 0 ).SetGain( 1e-6 ).SetSymbol( "V" );
-}
-
-void
-MeasurementUnits::OnParamAccess( const string& inName )
-{
-  const char* deprecatedParms[] =
-  {
-    "SamplingRate",
-    "SampleBlockSize",
-  };
-  for( size_t i = 0; i < sizeof( deprecatedParms ) / sizeof( *deprecatedParms ); ++i )
-    if( inName == deprecatedParms[i] )
-      bciout << "Direct access to parameter \"" << inName << "\" is deprecated. "
-             << "Please use MeasurementUnits::" << inName << "() instead."
-             << endl;
 }
 
 #if MEASUREMENT_UNITS_BACK_COMPAT
@@ -89,16 +75,16 @@ MeasurementUnits::OnParamAccess( const string& inName )
 double 
 MeasurementUnits::ReadAsTime( const std::string& value )
 {
-  bciout << "MeasurementUnits::ReadAsTime() is deprecated. Please call MeasurementUnits::TimeInBlocks() instead."
+  bciout << "MeasurementUnits::ReadAsTime() is deprecated. Please call MeasurementUnits::TimeInSampleBlocks() instead."
          << endl;
-  return TimeInBlocks( value );
+  return TimeInSampleBlocks( value );
 }
 
 double 
 MeasurementUnits::ReadAsFreq( const std::string& value )
 {
-  bciout << "MeasurementUnits::ReadAsFreq() is deprecated. Please call MeasurementUnits::SystemRelativeFreq() instead."
+  bciout << "MeasurementUnits::ReadAsFreq() is deprecated. Please use MeasurementUnits::FreqInHertz() / Input.SamplingRate() instead."
          << endl;
-  return SystemRelativeFreq( value );
+  return FreqInHertz( value ) / SamplingRate();
 }
 #endif // MEASUREMENT_UNITS_BACK_COMPAT

@@ -39,20 +39,15 @@ class MeasurementUnits
 {
   public:
     // Use these functions to convert values forth and back into "natural" BCI2000 units:
-    static double TimeInBlocks( const std::string& value )
+    static double TimeInSampleBlocks( const std::string& value )
     { return sTimeUnit.PhysicalToRaw( value ); }
     static double TimeInSeconds( const std::string& value )
-    { return TimeInBlocks( value ) * sSampleBlockSize / sSamplingRate; }
+    { return TimeInSampleBlocks( value ) * sSampleBlockSize / sSamplingRate; }
     static double TimeInMilliseconds( const std::string& value )
     { return TimeInSeconds( value ) * 1e3; }
 
-    // Use the following function to obtain a frequency value in terms of a signal's sampling frequency:
-    static double RelativeFreq( const std::string& inValue, const SignalProperties& inProperties )
-    { return sFreqUnit.PhysicalToRaw( inValue ) * sSampleBlockSize / static_cast<double>( inProperties.Elements() ); }
-    static double SystemRelativeFreq( const std::string& value )
-    { return sFreqUnit.PhysicalToRaw( value ); }
     static double FreqInHertz( const std::string& value )
-    { return SystemRelativeFreq( value ) * sSamplingRate; }
+    { return sFreqUnit.PhysicalToRaw( value ); }
 
     static double VoltageInMicrovolts( const std::string& value )
     { return sVoltageUnit.PhysicalToRaw( value ); }
@@ -68,15 +63,12 @@ class MeasurementUnits
 
     static double SamplingRate()
     { return sSamplingRate; }
-    static double SamplingRate( const SignalProperties& inProperties )
-    { return sSamplingRate / sSampleBlockSize * static_cast<double>( inProperties.Elements() ); }
     static int SampleBlockSize()
     { return static_cast<int>( sSampleBlockSize ); }
     static double SampleBlockDuration()
     { return sSampleBlockSize / sSamplingRate; }
 
     static void Initialize( const ParamList& );
-    static void OnParamAccess( const std::string& name );
 
 #if MEASUREMENT_UNITS_BACK_COMPAT
     // These functions are deprecated, as their names are ambiguous:

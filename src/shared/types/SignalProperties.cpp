@@ -97,6 +97,7 @@ SignalProperties::InitMembers( int inChannels, int inElements )
                .SetRawMax( inElements - 1 );
   ChannelLabels().Resize( inChannels );
   ElementLabels().Resize( inElements );
+  SetUpdateRate( 0.0 );
 }
 
 double

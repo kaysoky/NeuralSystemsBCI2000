@@ -20,8 +20,8 @@ Visualize:DataIOFilter int SourceMax= 100muV 100muV % % // raw signal vis Max Va
 Source:RandomNumberADC int ModulateAmplitude= 1 0 0 1 // Modulate the amplitude with the mouse (0=no, 1=yes) (boolean)
 Source:RandomNumberADC int SineChannelX= 0 0 0 % // Channel number of sinewave controlled by mouse x position
 Source:RandomNumberADC int SineChannelY= 0 0 0 % // Channel number of sinewave controlled by mouse y position (0 for all)
-Source:RandomNumberADC float SineFrequency= 10 10Hz % % // Frequency of sine wave
-Source:RandomNumberADC int SineAmplitude= 100muV 100muV % % // Amplitude of sine wave
+Source:RandomNumberADC float SineFrequency= 0 10Hz % % // Frequency of sine wave
+Source:RandomNumberADC int SineAmplitude= 0 100muV % % // Amplitude of sine wave
 Source:RandomNumberADC int NoiseAmplitude= 30muV 30muV % % // Amplitude of white noise (common to all channels)
 Source:RandomNumberADC int DCOffset= 60muV 0muV % % // DC offset (common to all channels)
 Source:RandomNumberADC string OffsetMultiplier= StimulusType StimulusType % % // Expression to multiply offset by

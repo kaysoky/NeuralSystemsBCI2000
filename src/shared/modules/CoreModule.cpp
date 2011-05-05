@@ -676,17 +676,18 @@ CoreModule::HandleVisSignal( istream& is )
   VisSignal s;
   if( s.ReadBinary( is ) && s.SourceID() == "" )
   {
-  const GenericSignal& inputSignal = s;
-  if( !mFiltersInitialized )
-    bcierr << "Unexpected VisSignal message" << endl;
-  else
-  {
-    if( mStartRunPending )
-    StartRunFilters();
-    ProcessFilters( inputSignal );
-    if( mStopRunPending )
-    StopRunFilters();
-  }
+    mInputSignal.AssignValues( s );
+
+    if( !mFiltersInitialized )
+      bcierr << "Unexpected VisSignal message" << endl;
+    else
+    {
+      if( mStartRunPending )
+        StartRunFilters();
+      ProcessFilters( mInputSignal );
+      if( mStopRunPending )
+        StopRunFilters();
+    }
   }
   return is ? true : false;
 }
@@ -697,8 +698,18 @@ CoreModule::HandleVisSignalProperties( istream& is )
 {
   VisSignalProperties s;
   if( s.ReadBinary( is ) && s.SourceID() == "" )
+  {
     if( !mFiltersInitialized )
-      InitializeFilters( s );
+    {
+      SignalProperties sp = s.SignalProperties();
+#ifdef TODO
+# error The following line may be removed once SignalProperties read/write their update rate through streams.
+#endif // TODO
+      sp.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
+      mInputSignal = GenericSignal( sp );
+      InitializeFilters( mInputSignal.Properties() );
+    }
+  }
   return is ? true : false;
 }
 

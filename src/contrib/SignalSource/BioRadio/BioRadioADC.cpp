@@ -42,7 +42,6 @@
 #include "BioRadioADC.h"
 #include "BCIError.h"
 #include "GenericSignal.h"
-#include "MeasurementUnits.h"
 #include "bioutils.h"
 
 using namespace std;
@@ -195,7 +194,7 @@ BioRadioADC::Preflight( const SignalProperties&,
 
   // Check to see if the specified sampling frequency is equal to one that
   // is available on the bioradio150
-  double samplingRate = MeasurementUnits::SamplingRate();
+  double samplingRate = Parameter( "SamplingRate" ).InHertz();
   if(samplingRate != 768 &&   // 768 Hz
      samplingRate != 600 &&   // 600 Hz
      samplingRate != 480 &&   // 480 Hz
@@ -207,8 +206,8 @@ BioRadioADC::Preflight( const SignalProperties&,
     errorFlag = XERROR;
   }
   // Check to see is the sample block size is a multiple of 10
-  if( MeasurementUnits::SampleBlockSize() % 10 != 0
-      || MeasurementUnits::SampleBlockSize() > 120 )
+  if( int(Parameter( "SampleBlockSize" )) % 10 != 0
+      || Parameter( "SampleBlockSize" ) > 120 )
   {
     bcierr<<"The value of the sample block size must be be a multiple of 10, and <= 120."<<endl;
     errorFlag = XERROR;
@@ -227,7 +226,7 @@ BioRadioADC::Preflight( const SignalProperties&,
   {
 
     double vRange = GetBioRadioRangeValue(Parameter("VoltageRange"));
-    if(WriteBioRadioConfig( MeasurementUnits::SamplingRate(),
+    if(WriteBioRadioConfig( static_cast<int>(Parameter( "SamplingRate" ).InHertz()),
                             BIT_RES,
                             vRange,
                             pathFileName.c_str()))
@@ -288,7 +287,7 @@ BioRadioADC::Preflight( const SignalProperties&,
 
   outSignalProperties = SignalProperties(
        Parameter( "SourceCh" ),
-       MeasurementUnits::SampleBlockSize(),
+       Parameter( "SampleBlockSize" ),
        SignalType::float32
   );
 }
@@ -313,9 +312,9 @@ BioRadioADC::Initialize( const SignalProperties&, const SignalProperties& )
   mFileLocation = path + CONFIG_FILE;
   // Obtain all value from params
   ClearSampleIndices();
-  mSamplerate = MeasurementUnits::SamplingRate();
+  mSamplerate = static_cast<int>(Parameter("SamplingRate").InHertz());
   mSourceCh = Parameter("SourceCh");
-  mSampleBlockSize = MeasurementUnits::SampleBlockSize();
+  mSampleBlockSize = Parameter("SampleBlockSize");
   mComPort = Parameter("ComPort");
 
   // Write a new config file from the params obtained

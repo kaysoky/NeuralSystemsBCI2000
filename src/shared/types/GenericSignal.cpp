@@ -74,6 +74,15 @@ GenericSignal::SetValue( size_t inChannel, size_t inElement, ValueType inValue )
   return *this;
 }
 
+GenericSignal&
+GenericSignal::AssignValues( const GenericSignal& s )
+{
+  mProperties.SetChannels( s.Channels() );
+  mProperties.SetElements( s.Elements() );
+  mValues = s.mValues;
+  return *this;
+}
+
 const GenericSignal::ValueType&
 GenericSignal::operator() ( size_t inChannel, size_t inElement ) const
 {

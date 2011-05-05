@@ -63,6 +63,7 @@ class GenericSignal
     // Value Accessors
     const ValueType&  Value( size_t inChannel, size_t inElement ) const;
     GenericSignal&    SetValue( size_t inChannel, size_t inElement, ValueType inValue );
+    GenericSignal&    AssignValues( const GenericSignal& );
     // Read access
     const ValueType&  operator() ( size_t inChannel, size_t inElement ) const;
     // Write access

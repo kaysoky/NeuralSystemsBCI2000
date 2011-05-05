@@ -296,13 +296,16 @@ FilterWrapper::HandleVisSignal( istream& arIn )
             && inputSignal.Channels() == mpInputProperties->Channels()
             && inputSignal.Elements() == mpInputProperties->Elements() )
         {
+          mpInputProperties->SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
           GenericFilter::PreflightFilters( *mpInputProperties, outputProperties );
         }
         else
         {
           delete mpInputProperties;
           mpInputProperties = NULL;
-          GenericFilter::PreflightFilters( inputSignal.Properties(), outputProperties );
+          SignalProperties inputProperties( inputSignal.Properties() );
+          inputProperties.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
+          GenericFilter::PreflightFilters( inputProperties, outputProperties );
         }
         mOutputSignal.SetProperties( outputProperties );
         if( bcierr__.Flushes() > 0 )

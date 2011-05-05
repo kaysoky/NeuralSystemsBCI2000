@@ -16,7 +16,7 @@ Storage:Documentation:DataIOFilter string ID_Montage= % // BCI2000 Cap Montage C
 Visualize:Timing:DataIOFilter int VisualizeTiming= 1 1 0 1 // visualize system timing (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal:DataIOFilter int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal:DataIOFilter int VisualizeSourceDecimation= 1 1 1 % // decimation factor for raw brain signal
-Visualize:Source%20Signal:DataIOFilter int VisualizeSourceTime= 2 2 0 % // how much time in Source visualization
+Visualize:Source%20Signal:DataIOFilter int VisualizeSourceTime= 2s 2s 0 % // how much time in Source visualization
 Visualize:Source%20Signal:DataIOFilter int SourceMin= -100muV -100muV % % // raw signal vis Min Value
 Visualize:Source%20Signal:DataIOFilter int SourceMax= 100muV 100muV % % // raw signal vis Max Value
 Source:SignalGeneratorADC int ModulateAmplitude= 0 0 0 1 // Modulate the amplitude with the mouse (0=no, 1=yes) (boolean)

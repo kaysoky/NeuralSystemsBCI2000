@@ -29,7 +29,6 @@
 
 #include "LPFilter.h"
 
-#include "MeasurementUnits.h"
 #include "BCIError.h"
 #include "defines.h"
 #include <vector>
@@ -62,7 +61,7 @@ void
 LPFilter::Preflight( const SignalProperties& Input,
                            SignalProperties& Output ) const
 {
-  double LPTimeConstant = Parameter( "LPTimeConstant" ).InBlocks();
+  double LPTimeConstant = Parameter( "LPTimeConstant" ).InSampleBlocks();
   LPTimeConstant *= Input.Elements();
   // The PreflightCondition macro will automatically generate an error
   // message if its argument evaluates to false.
@@ -84,7 +83,7 @@ LPFilter::Initialize( const SignalProperties& Input,
                       const SignalProperties& /*Output*/ )
 {
   // Get the time constant in units of a sample block's duration:
-  double timeConstant = Parameter( "LPTimeConstant" ).InBlocks();
+  double timeConstant = Parameter( "LPTimeConstant" ).InSampleBlocks();
   // Convert it into units of a sample's duration:
   timeConstant *= Input.Elements();
 
