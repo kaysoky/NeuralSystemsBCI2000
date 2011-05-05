@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Author: Adam Wilson
+// Author: Adam Wilson, Jeremy Hill
 // Description: An ADC class for testing purposes.
 //
 // $BEGIN_BCI2000_LICENSE$
@@ -34,34 +34,59 @@
 #include <string>
 #include <vector>
 
+
 class FilePlaybackADC : public GenericADC
 {
- public:
-               FilePlaybackADC();
-  virtual      ~FilePlaybackADC();
+	public:
+				   FilePlaybackADC();
+		virtual      ~FilePlaybackADC();
 
-  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
-  virtual void Initialize( const SignalProperties&, const SignalProperties& );
-  virtual void StartRun();
-  virtual void Process( const GenericSignal&, GenericSignal& );
-  virtual void Halt();
+		virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+		virtual void Initialize( const SignalProperties&, const SignalProperties& );
+		virtual void StartRun();
+		virtual void Process( const GenericSignal&, GenericSignal& );
+		virtual void Halt();
+		virtual void MatchChannels( const BCI2000FileReader& dataFile, std::vector<int>& chList ) const;
 
- private:
-  // Configuration
-  float  mSamplingRate;
-  int mBlockSize;
-  float mSpeedup;
-  std::string mFileName;
-  std::vector<int> mChList;
-  float mUpdatePeriod;
-  BCI2000FileReader *mDataFile;
-  int mCurBlock;
-  int mMaxBlock;
-  bool mSuspendAtEnd;
-  int mStartTime;
-  int mNumSamples;
-  
-  PrecisionTime   mLasttime;
+	private:
+		void CheckFile( std::string& fname, BCI2000FileReader& dataFile ) const;
+
+		// Configuration
+		float  mSamplingRate;
+		int mBlockSize;
+		float mSpeedup;
+		std::string mFileName;
+		std::string mTemplateFileName;
+		std::vector<int> mChList;
+		float mUpdatePeriod;
+		BCI2000FileReader *mDataFile;
+		int mCurBlock;
+		int mMaxBlock;
+		bool mSuspendAtEnd;
+		int mStartTime;
+		long long mNumSamples;
+
+		class StateMapping {
+			public:
+				StateMapping(size_t srcLoc, size_t srcLen, size_t dstLoc, size_t dstLen) {mSrcLoc=srcLoc; mSrcLen=srcLen; mDstLoc=dstLoc; mDstLen=dstLen; mPrevVal=0;}
+				void Reset() { mPrevVal = 0; }
+				void Copy(const StateVector* srcVec, size_t srcSampleOffset, StateVector* dstVec, size_t dstSampleOffset )
+				{
+					State::ValueType val = srcVec->StateValue( mSrcLoc, mSrcLen, srcSampleOffset );
+					if( val == mPrevVal ) return;
+					mPrevVal = val;
+					dstVec->SetStateValue( mDstLoc, mDstLen, dstSampleOffset, val );
+				}
+			private:
+				size_t mSrcLoc;
+				size_t mSrcLen;
+				size_t mDstLoc;
+				size_t mDstLen;
+				State::ValueType mPrevVal;
+		};
+		std::vector<StateMapping> mStateMappings;
+
+		PrecisionTime   mLasttime;
 };
 
 #endif // SIGNAL_GENERATOR_ADC_H
