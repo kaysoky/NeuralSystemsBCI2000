@@ -16,7 +16,7 @@
 #include <sstream>
 using namespace std;
 
-RegisterFilter(NIDAQFilter,2);
+RegisterFilter(NIDAQFilter,1.01);
 
 // The default constructor (overloaded) //
 NIDAQFilter::NIDAQFilter()
@@ -204,7 +204,7 @@ NIDAQFilter::~NIDAQFilter()
 void
 NIDAQFilter::Preflight(const SignalProperties& Input, SignalProperties& Output) const
 {
-	Output = SignalProperties(Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ));
+	Output = Input;
 	if (OptionalParameter("LogNIDAQout") > 0) // is the filter being used?
 	{
 		if (!mLines.empty()) // is mLines empty()?
@@ -304,7 +304,7 @@ NIDAQFilter::Initialize(const SignalProperties& Input, const SignalProperties& O
 			{
 				localMin = mRanges[(int)OptionalParameter(string(mDevs[1]).append("OVRanges").c_str())*2];
 				localMax = mRanges[((int)OptionalParameter(string(mDevs[1]).append("OVRanges").c_str())*2)+1];
-			}	
+			}
 			else
 			{
 				localMin = mRanges[0];
@@ -354,6 +354,7 @@ NIDAQFilter::Process(const GenericSignal& Input, GenericSignal& Output)
 		bcierr << "Failed to write to task \"Analog_Output\"" << endl;
 		return;
 	}
+    Output = Input;
 }
 // Begin running the main loop //
 void

@@ -15,8 +15,6 @@
 #include <sstream>
 using namespace std;
 Extension( NIDAQLogger );
-// Set the static context //
-NIDAQLogger* NIDAQLogger::mCurrentObject = NULL;
 // The constructor for the NIDAQLogger //
 NIDAQLogger::NIDAQLogger()
 {
@@ -25,7 +23,6 @@ NIDAQLogger::NIDAQLogger()
 	mAnalog = mDigital = NULL;
 	mDevs[0] = mDevs[1] = "NULL";
 	mActive[0] = mActive[1] = "";
-	mCurrentObject = this;
 }
 // the destructor for the NIDAQLogger //
 NIDAQLogger::~NIDAQLogger()
@@ -43,7 +40,6 @@ NIDAQLogger::~NIDAQLogger()
 		delete mDigiBuff;
 	if (mAnaBuff)
 		delete mAnaBuff;
-	mCurrentObject = NULL;
 }
 // Report any NIDAQmx errors that may occur //
 int
@@ -196,11 +192,12 @@ NIDAQLogger::CollectDeviceNames()
 int32
 NIDAQLogger::DigitalCallback(TaskHandle handle, int32 everyNSamplesEventType, uInt32 nSamples, void *callbackData)
 {
-		int lCounter = 0;
-		mCurrentObject->GetDigitalData();
-		for (int lLoop = 0; lLoop < mCurrentObject->mFound[0]; lLoop++)
-			if (mCurrentObject->mLines[lLoop])
-				bcievent << "NI" << mCurrentObject->mDevs[0] << "DINPUT" << lLoop << " " << mCurrentObject->mAnaBuff[lCounter++];
+	NIDAQLogger* pLogger = static_cast<NIDAQLogger*>(callbackData);
+	int lCounter = 0;
+	pLogger->GetDigitalData();
+	for (int lLoop = 0; lLoop < pLogger->mFound[0]; lLoop++)
+		if (pLogger->mLines[lLoop])
+			bcievent << "NI" << pLogger->mDevs[0] << "DINPUT" << lLoop << " " << pLogger->mAnaBuff[lCounter++];
 	return DAQmxSuccess;
 }
 // Grab data for digital lines //
@@ -216,11 +213,12 @@ NIDAQLogger::GetDigitalData()
 int32
 NIDAQLogger::AnalogCallback(TaskHandle handle, int32 everyNSamplesEventType, uInt32 nSamples, void *callbackData)
 {
+	NIDAQLogger* pLogger = static_cast<NIDAQLogger*>(callbackData);
 	int lCounter = 0;
-	mCurrentObject->GetAnalogData();
-	for (int lLoop = 0; lLoop < mCurrentObject->mFound[1]; lLoop++)
-		if (mCurrentObject->mLines[lLoop+mCurrentObject->mFound[0]])
-  			bcievent << "NI" << mCurrentObject->mDevs[1] << "AINPUT" << lLoop << " " << mCurrentObject->mAnaBuff[lCounter++];
+	pLogger->GetAnalogData();
+	for (int lLoop = 0; lLoop < pLogger->mFound[1]; lLoop++)
+		if (pLogger->mLines[lLoop+pLogger->mFound[0]])
+  			bcievent << "NI" << pLogger->mDevs[1] << "AINPUT" << lLoop << " " << pLogger->mAnaBuff[lCounter++];
 	return DAQmxSuccess;
 }
 // Grab data for analog lines //
@@ -462,7 +460,7 @@ NIDAQLogger::Initialize()
 				bcierr << "Unable to create task \"Digital_Input\" " << endl;
 			if (ReportError(DAQmxCreateDIChan(mDigital,mActive[0].c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
 				bcierr << "Failed to create channel operating on the following lines:\n" << mActive[0] << endl;
-			if (ReportError(DAQmxRegisterEveryNSamplesEvent(mDigital,DAQmx_Val_Acquired_Into_Buffer,mCounter[0],0,(DAQmxEveryNSamplesEventCallbackPtr) &DigitalCallback,NULL)) < 0)
+			if (ReportError(DAQmxRegisterEveryNSamplesEvent(mDigital,DAQmx_Val_Acquired_Into_Buffer,mCounter[0],0,(DAQmxEveryNSamplesEventCallbackPtr) &DigitalCallback,this)) < 0)
 					bcierr << "Failed to associate \"Digital_Input\" task with callback function DigitalCallback() " << endl;
 		}
 		for (int lLoop = mFound[0]; lLoop < (int)mLines.size(); lLoop++)
@@ -481,7 +479,7 @@ NIDAQLogger::Initialize()
 				bcierr << "Failed to create channel operating on the following lines:\n" << mActive[1] << endl;
 			if (ReportError(DAQmxCfgSampClkTiming(mAnalog,"ai/SampleClockTimebase",mSampleRate,DAQmx_Val_Rising,DAQmx_Val_ContSamps,16384)) < 0)
 				bcierr << "Failed to set sampling rate on device " << mDevs[1] << endl;
-			if (ReportError(DAQmxRegisterEveryNSamplesEvent(mAnalog,DAQmx_Val_Acquired_Into_Buffer,mCounter[1],0,(DAQmxEveryNSamplesEventCallbackPtr) &AnalogCallback,NULL)) < 0)
+			if (ReportError(DAQmxRegisterEveryNSamplesEvent(mAnalog,DAQmx_Val_Acquired_Into_Buffer,mCounter[1],0,(DAQmxEveryNSamplesEventCallbackPtr) &AnalogCallback,this)) < 0)
 					bcierr << "Failed to associate \"Analog_Input\" task with callback function AnalogCallback() " << endl;
 		}
 	}

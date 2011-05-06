@@ -64,6 +64,5 @@ class NIDAQLogger : public EnvironmentExtension
 		// Buffer Variables //
 		uInt8		*mDigiBuff;						//	buffer for digital input
 		float64		*mAnaBuff;						//	buffer for analog input (scaled)
-		static		NIDAQLogger	*mCurrentObject;	//	static context of the "this" object (to access data inside static functions)
 };
 #endif // NIDAQ_LOGGER_H
