@@ -10,10 +10,14 @@ SET( EXECUTABLE_NAME NIDAQ_mx_Source )
 SET( SRC_PROJECT
   NIDAQ_mx_Source.cpp
   NIADC.cpp
+  NIDAQ-Logging/NIDAQFilter.cpp
+  NIDAQ-Logging/NIDAQLogger.cpp
 )
 SET( HDR_PROJECT
   NIDAQmxADC.h
   nidaq/NIDAQmx.h
+  NIDAQ-Logging/NIDAQFilter.h
+  NIDAQ-Logging/NIDAQLogger.h
 )
 
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/NIDAQ-MX/nidaq )
