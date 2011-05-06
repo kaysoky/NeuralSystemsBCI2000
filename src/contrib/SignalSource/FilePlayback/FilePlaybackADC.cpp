@@ -141,8 +141,8 @@ mDataFile(NULL)
 		"Source:Playback int PlaybackStates= 0 "
 		" 0 0 1 // play back state variable values (except timestamps)? (boolean)",
 
-		"Source:Playback int SuspendAtEnd= 1 "
-		" 1 0 1 // suspend execution when the end of the data file is reached (boolean)",
+		"Source:Playback int PlaybackLooped= 0 "
+		" 0 0 1 // loop playback at the end of the data file instead of suspending execution (boolean)",
 
 	END_PARAMETER_DEFINITIONS
 	mChList.clear();
@@ -178,7 +178,7 @@ FilePlaybackADC::Preflight( const SignalProperties&,
 	PreflightCondition( Parameter( "SamplingRate" ) > 0 );
 	PreflightCondition( Parameter("PlaybackSpeed") >= 0.0f );
 	PreflightCondition(Parameter("SampleBlockSize") > 0);
-	Parameter("SuspendAtEnd");
+	Parameter("PlaybackLooped");
 	Parameter("PlaybackStartTime");
 	State("Running");
 	std::string fname = Parameter("PlaybackFileName");
@@ -302,7 +302,7 @@ FilePlaybackADC::Initialize( const SignalProperties&, const SignalProperties& )
 	mStartTime = (int)floor( startTime );
 	if( startTime != (float)mStartTime ) bciout << "PlaybackStartTime " << (string)Parameter( "PlaybackStartTime" ) << " has been rounded down to a whole number of SampleBlocks (" << mStartTime << ")" << endl;
 	mCurBlock = mStartTime;
-	mSuspendAtEnd = (Parameter("SuspendAtEnd") != 0);
+	mSuspendAtEnd = (Parameter("PlaybackLooped") == 0);
 	
 	mStateMappings.clear();
 	if( Parameter("PlaybackStates") != 0 )
