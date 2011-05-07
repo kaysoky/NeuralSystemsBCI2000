@@ -1,9 +1,11 @@
 function settings = loadSettings()
-settings = load('settings.mat');
+
+matFile = which('settings.mat');
+settings = load(matFile);
 settings = settings.settings;
 
 %see if this is the first time this function is being called
-initFile = fullfile(cd, 'settings.ini');
+initFile = fullfile(fileparts(matFile), 'settings.ini');
 if exist(initFile, 'file') == 0
   %this is the first time this is being called
   %remove some of the fields in settings left over from dev.
@@ -12,10 +14,10 @@ if exist(initFile, 'file') == 0
   };
 
   params2Del = setdiff(fieldnames(settings), acceptedFields);
-  settings = rmfield(settings, params2Del);
-
-  save('settings.mat', 'settings');
-
+  if ~isempty(params2Del)
+    settings = rmfield(settings, params2Del);
+    save(matFile, 'settings');
+  end
   %now create the file to indicate that we have performed initialization
   fclose(fopen(initFile, 'w'));
 end

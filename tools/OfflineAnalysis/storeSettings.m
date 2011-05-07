@@ -1,2 +1,3 @@
 function storeSettings(settings)
-save settings.mat settings;
+matFile = which('settings.mat');
+save(matFile, 'settings');
