@@ -80,8 +80,7 @@ void
 TaskFilter::Initialize( const SignalProperties& Input,
 					    const SignalProperties& Output )
 {
-	
-  mCursorSpeed = 1.0 / MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
+  mCursorSpeed = 1.0 / Parameter( "FeedbackDuration" ).InSampleBlocks();
   mWindow.MoveWindow(
     Parameter( "WinXPos" ),
     Parameter( "WinYPos" ),
