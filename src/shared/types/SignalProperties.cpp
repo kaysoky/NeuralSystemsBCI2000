@@ -101,6 +101,17 @@ SignalProperties::InitMembers( int inChannels, int inElements )
 }
 
 double
+SignalProperties::SamplingRate() const
+{
+  if( mElementUnit.Symbol() == "s" )
+    return 1.0 / mElementUnit.Gain();
+  if( Elements() == 1 )
+    return mUpdateRate;
+  return 0.0;
+}
+
+
+double
 SignalProperties::AddressToIndex( const string& inAddress,
                                   const LabelIndex& inLabelIndex,
                                   const PhysicalUnit& inUnit ) const
