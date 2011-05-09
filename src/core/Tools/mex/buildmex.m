@@ -117,6 +117,8 @@ INCLUDEPATHS = { ...
     [ '-I' BCIFRM '/utils/Expression' ], ...
     };
 
+LIBRARIES = { ...
+    };
 LIBPATHS = { ...
     };
 
@@ -126,22 +128,18 @@ DEFINES = { ...
     '-DBCI_TOOL', ...
     '-DBCI_MEX', ...
     '-DNO_STRICT', ...
-    '-D_NO_VCL', ...
     '-DNO_PCHINCLUDES', ...
     '-D_USE_MATH_DEFINES', ...
     '-v',...
     };
-
-CXXFLAGS = 'CXXFLAGS="\$CXXFLAGS"';
-LDFLAGS = 'LDFLAGS="\$LDFLAGS"';
 
 switch( computer )
   case { 'PCWIN', 'PCWIN64' }
     build_version_header = 'cmd /c "cd ..\..\..\shared\config && "%ProgramFiles%\TortoiseSVN\bin\SubWCRev" ..\.. Version.h.in Version.h"';
   otherwise % we assume gcc on all other platforms
     build_version_header = '(cd ../../../buildutils && ./update_version_header.sh)';
-    CXXFLAGS = 'CXXFLAGS="\$CXXFLAGS" -fPIC -include gccprefix.h';
-    LDFLAGS = 'LDFLAGS="\$LDFLAGS" -dead_strip';
+    CXXFLAGS = '-fPIC -include gccprefix.h';
+    LDFLAGS = '-dead_strip';
 end;
 
 options = {};
@@ -188,14 +186,19 @@ if( ~strcmp( target, 'all' ) && ~strcmp( target, 'test' ) )
                          'and may not run on machines without Qt installed.\n'] );
         else
             fprintf( 1, ['No Qt installation found.\n' ...
+                         'Note that the Qt installation coming with BCI2000 cannot' ...
+                         ' be used to build mex files.\n' ...
                          'No multithreading will be available for the MEM mex file.\n'] );
         end
         if( QT_FOUND )    
-            INCLUDEPATHS = { INCLUDEPATHS{:} [ '-I' QT_INSTALL_HEADERS ] };
+            INCLUDEPATHS = { INCLUDEPATHS{:} ...
+                [ '-I' strtrim( QT_INSTALL_HEADERS ) ] ...
+                [ '-I' strtrim( QT_INSTALL_HEADERS ) '/QtCore' ] ...
+            };
             if( strncmp( computer, 'MAC', 3 ) )
                 LDFLAGS = [ LDFLAGS ' -framework QtCore' ];
             else
-                LDFLAGS = [ LDFLAGS ' -lQtCore' ];
+                LIBRARIES = { LIBRARIES{:} '-lQtCore' '-lws2_32' };
                 LIBPATHS = { LIBPATHS{:} [ '-L' QT_INSTALL_LIBS ] };
             end
             DEFINES = { DEFINES{:} [ '-DUSE_QT' ] };
@@ -258,7 +261,15 @@ switch( target )
         
     otherwise
         fprintf( 1, [ 'Building ' target ' ...\n' ] );
-        args = { options{:}, CXXFLAGS, LDFLAGS, INCLUDEPATHS{:}, LIBPATHS{:}, DEFINES{:}, [target '.cpp'], MEXSRC{:} };
+        args = { options{:}, INCLUDEPATHS{:}, LIBRARIES{:}, LIBPATHS{:}, DEFINES{:}, [target '.cpp'], MEXSRC{:} };
+        if( exist( 'CXXFLAGS' ) )
+          CXXFLAGS = [ 'CXXFLAGS="\$CXXFLAGS ' CXXFLAGS '"' ];
+          args = { args{:}, CXXFLAGS };
+        end
+        if( exist( 'LDFLAGS' ) )
+          LDFLAGS =  [ 'LDFLAGS="\$LDFLAGS ' LDFLAGS '"' ];
+          args = { args{:}, LDFLAGS };
+        end
         mex( args{:} );
         if( ~exist( BINDIR ) )
             mkdir( BINDIR );
