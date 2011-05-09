@@ -94,3 +94,10 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/BCI2000Package.cmake )
 
 MARK_AS_ADVANCED( CMAKE_INSTALL_PREFIX )
 
+
+IF( NOT CMAKE_BUILD_TYPE )
+  SET( CMAKE_BUILD_TYPE Release CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE )
+ENDIF( NOT CMAKE_BUILD_TYPE )
+MARK_AS_ADVANCED( CMAKE_BUILD_TYPE )
