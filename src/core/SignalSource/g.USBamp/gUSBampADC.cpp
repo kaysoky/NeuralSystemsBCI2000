@@ -166,11 +166,22 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
                                   SignalProperties& outSignalProperties ) const
 {
   // Requested output signal properties.
-  SignalType signalType = SignalType::int16;
   FLOAT driVer = GT_GetDriverVersion();
   bciout << "g.USBamp driver version = " << driVer <<endl;
+#ifdef TODO
+# error Remove support for int16 SignalType, including division of the signal by SourceChGain.
+#endif // TODO
+  SignalType signalType = SignalType::int16;
   if( Parameter( "SignalType" ) == 1 )
+  {
     signalType = SignalType::float32;
+  }
+  else
+  {
+    bciout << "A SignalType of int16 is deprecated, and will not be supported in future versions of BCI2000."
+           << " Please use float32 as SignalType."
+           << endl;
+  }
   outSignalProperties = SignalProperties(
     Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), signalType );
 
@@ -402,7 +413,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
     mpAcquireThread = new AcquireThread(this);
 
     mTotalChs        =           Parameter( "SourceCh" );
-    int samplingrate =           Parameter( "SamplingRate" ).InHertz();
+    int samplingrate =           static_cast<int>(Parameter( "SamplingRate" ).InHertz());
     mMasterDeviceID  = ( string )Parameter( "DeviceIDMaster" );
     mFloatOutput     =         ( Parameter( "SignalType" ) == 1 );
     NUM_BUFS         =           Parameter( "NumBuffers" );
@@ -968,7 +979,7 @@ int gUSBampADC::DetermineFilterNumber() const
 int     nof;
 FILT    *filt;
 
- int samplingrate=Parameter("SamplingRate").InHertz();
+ int samplingrate=static_cast<int>(Parameter("SamplingRate").InHertz());
  int filternumber = -1;
 
  GT_GetNumberOfFilter(&nof);
@@ -1002,7 +1013,7 @@ int gUSBampADC::DetermineNotchNumber() const
 int     nof;
 FILT    *filt;
 
- int samplingrate=Parameter("SamplingRate").InHertz();
+ int samplingrate=static_cast<int>(Parameter("SamplingRate").InHertz());
  int notchnumber = -1;
 
  GT_GetNumberOfNotch(&nof);
