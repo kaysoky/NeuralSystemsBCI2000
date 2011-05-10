@@ -733,7 +733,6 @@ CoreModule::HandleStateVector( istream& is )
   if( success )
   {
     mpStatevector->CommitStateChanges();
-    bool running = mpStatevector->StateValue( "Running" );
     // The source module does not receive a signal, so handling must take place
     // on arrival of a StateVector message.
     if( mLastRunning ) // For the first "Running" block, Process() is called from
@@ -746,6 +745,8 @@ CoreModule::HandleStateVector( istream& is )
       static GenericSignal nullSignal( 0, 0 );
       ProcessFilters( nullSignal );
     }
+    // One of the filters might have set Running to 0 during ProcessFilters().
+    bool running = mpStatevector->StateValue( "Running" );
     if( !running && mLastRunning )
       StopRunFilters();
     mLastRunning = running;
