@@ -132,25 +132,29 @@ void vAmpADC::Preflight( const SignalProperties&,
   if( !goodSourceChOffset )
     bcierr << "SourceChOffset is supposed to be zero" << endl;
 
-  //get the number of devices
-  int tNumDevices = FA_ID_INVALID;
-  tNumDevices = faGetCount();
-  if (tNumDevices < 1) {
-    bcierr <<"No vAmp devices were found."<<endl;
-  }
-  if (tNumDevices > 1) {
-    bcierr << "Only one device can be present on the system at a time."<<endl;
-    return;     
-  }
+	//get the number of devices
+	int tNumDevices = FA_ID_INVALID;
+	tNumDevices = faGetCount();
+	if (tNumDevices < 1) {
+	  bcierr <<"No vAmp devices were found."<<endl;
+	}
+	if (tNumDevices > 1) {
+		bcierr << "Only one device can be present on the system at a time."<<endl;
+		return;     
+	}
 
   //get device ID
-  int tDevId;
-  t_faInformation tDeviceInfo;
-  tDevId = faGetId(0);
-  if (tDevId == FA_ID_INVALID)
-      bcierr << "Invalid device ID reported" << endl;
-  faGetInformation(tDevId, &tDeviceInfo);
-    bciout << "Device found with serial: "<< tDeviceInfo.SerialNumber << endl;
+	int tDevIds[1];
+	t_faInformation tDeviceInfo[1];
+	
+	tDevIds[0] = faGetId(0);
+	if (tDevIds[0] == FA_ID_INVALID)
+	{
+		bcierr << "Invalid device ID reported: "<< tDevIds[0] << endl;
+	}
+	faGetInformation(tDevIds[0], &(tDeviceInfo[0]));
+	bciout << "Device found with serial: "<< tDeviceInfo[0].SerialNumber << endl;
+	
 
   if (Parameter("SamplingRate").InHertz() < 200)
   {
@@ -190,7 +194,7 @@ void vAmpADC::Preflight( const SignalProperties&,
   {
     if (tHighSpeed)
     {
-      if (Parameter("SourceChDevices")(dev) > 5)
+      if (Parameter("SourceChList")(dev) > 5)
       {
         bcierr << "In high-speed acquisition mode, devices can have at most 5 channels (4 EEG + 1 Dig)." <<endl;
         return;
@@ -263,72 +267,92 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
   this->Halt();
   mHighSpeed = Parameter("AcquisitionMode") == 1 || Parameter("AcquisitionMode") == 4;
     mImpedanceMode = ( Parameter( "AcquisitionMode" ) == 3 );
-  int tNumDevices = FA_ID_INVALID;
-  tNumDevices = faGetCount();
-  if (tNumDevices < 1)
-      bcierr <<"No vAmp devices were found."<<endl;
-  if (tNumDevices > 1)
-  {
-    bcierr << "Only one device may be present on the system at a time."<<endl;
-    return;
-  }
+	int tNumDevices = FA_ID_INVALID;
+	tNumDevices = faGetCount();
+	if (tNumDevices < 1) {
+		bcierr <<"No vAmp devices were found."<<endl;
+	}
+	if (tNumDevices >  1) {
+		bcierr << "A maximum of " <<  1 << " devices can be present on the system at a time."<<endl;
+		return;     
+	}
+	t_faInformation tDeviceInfo[1];
+	
+	faGetInformation(faGetId(0), &(tDeviceInfo[0]));
+	
 
-  mDevID = faGetId( 0 );
-  t_faInformation tDeviceInfo;
-  faGetInformation(mDevID, &tDeviceInfo);
-
-  int sourceChListOffset = 0;
-  mChList.clear();
-
-  if (Parameter("SourceChList")->NumValues() == 0)
-  {
-    int nChsTmp;
-    switch (tDeviceInfo.Model)
-    {
-      case FA_MODEL_8:
-        nChsTmp = FA_MODEL_8_CHANNELS_MAIN + FA_MODEL_8_CHANNELS_AUX;
-        break;
-      case FA_MODEL_16:
-        nChsTmp = FA_MODEL_16_CHANNELS_MAIN + FA_MODEL_16_CHANNELS_AUX;
-        break;
-      default:
-        if (mHighSpeed)
-          nChsTmp = 5;
-        break;
-    }
-    for (int i = 0; i < nChsTmp; i++)
-      mChList.push_back(i);
-  }
-  else
-  {
-    for (int i = 0; i < Parameter( "SourceChList" )->NumValues(); i++)
-    {
-      int curCh = Parameter("SourceChList")(i);
-      mChList.push_back(curCh-1);
-    }
-  }
+	int sourceChListOffset = 0;
+	mChList.clear();
+	mDevList.clear();
+	
+	
+	
+	mDevList.push_back(faGetId(0));
+	if( tNumDevices == 1 && mDevList.empty() )
+	{
+		bciout << "No device Id found"	<< endl;
+		return;
+		
+	}	
+	
+	if (Parameter("SourceChList")->NumValues() == 0)
+	{
+		int nChsTmp = 0;
+		switch (tDeviceInfo[0].Model)
+		{
+			case FA_MODEL_8:
+				nChsTmp = FA_MODEL_8_CHANNELS_MAIN + FA_MODEL_8_CHANNELS_AUX;
+				break;
+			case FA_MODEL_16:
+				nChsTmp = FA_MODEL_16_CHANNELS_MAIN + FA_MODEL_16_CHANNELS_AUX;
+				break;
+			default:
+				if (mHighSpeed) nChsTmp = 5;
+				break;
+		}		
+		for (int i = 0; i < nChsTmp; i++)
+		{
+			mChList.push_back(i);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < Parameter("SourceChList")->NumValues(); i++)
+		{
+			int curCh = Parameter("SourceChList")(i);
+			mChList.push_back(curCh-1);
+		}
+	}
+	
 
   ParamRef Impedances = Parameter( "Impedances" );
-  if( mImpedances.empty() )
+  if( mImpedances.empty())
   {
     Impedances->SetDimensions( 1, 1 );
     Impedances = "not measured";
   }
   else
   {
-    Impedances->SetDimensions( 1, mImpedances.size() );
-    for( size_t j = 0; j < mImpedances.size(); ++j )
-    {
-      float value = mImpedances[j];
-      ostringstream oss;
-      if( value < 1e3 )
-        oss << value << "Ohm";
-      else if( value < 1e6 )
-        oss << value / 1e3 << "kOhm";
-      else
-        oss << ">1MOhm";
-      Impedances( 0, j ) = oss.str();
-    }
+		size_t maxChannels = 0;		
+		if( mImpedances[0].size() > maxChannels ) maxChannels = mImpedances[0/*i*/].size();		
+        Impedances->SetDimensions( 1, mImpedances[0].size());
+		
+		for( size_t j = 0; j < mImpedances[0].size(); ++j )
+		{
+			float value = mImpedances[0][j];
+			ostringstream oss;
+			if( value < 1e3 )
+				oss << value << "Ohm";
+			else if( value < 1e6 )
+			    oss << value / 1e3 << "kOhm";
+			else
+				oss << ">1MOhm";
+			Impedances( 0, j ) = oss.str();
+		}
+		for( size_t j = mImpedances[0].size(); j < maxChannels; ++j )
+		{
+			Impedances( 0, j ) = "";
+		}    
   }
 
   int decimate = 1;
@@ -343,7 +367,7 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
             fs,
             decimate,
             mChList,
-            mDevID,
+						mDevList,
             Parameter("AcquisitionMode"),
             hpCorner/fs);
   if (!mAcquire->ok())
@@ -356,7 +380,7 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
   }
 
   ResetEvent( mAcquire->acquireEventRead );
-  mAcquire->Start();
+	mAcquire->Start();
 }
 
 
@@ -370,53 +394,56 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
 // **************************************************************************
 void vAmpADC::Process( const GenericSignal&, GenericSignal& signal )
 {
-  if (mAcquire == NULL)
-  {
-    bcierr << "Invalid acquisition thread! " << endl;
-    State("Running") = 0;
-    return;
-  }
-  if (!mAcquire->ok())
-  {
-    bcierr << mAcquire->GetLastErr() << endl;
-    State("Running") = 0;
-    return;
-  }
+	if (mAcquire == NULL)
+	{
+	bcierr << "Invalid acquisition thread! " << endl;
+	State("Running") = 0;
+	return;
+	}
+	if (!mAcquire->ok())
+	{
+	bcierr << mAcquire->GetLastErr() << endl;
+	State("Running") = 0;
+	return;
+	}
 
     string s = mAcquire->GetLastWarning();
-    if( !s.empty() )
+    if(!s.empty())
       bciout << s << flush;
 
     if( mImpedanceMode )
-      mImpedances = mAcquire->GetImpedances();
-      
-  if (mAcquire->IsTerminating())
-  {
-    for (int sample = 0; sample < signal.Elements(); sample++)
-      for (int ch = 0; ch < signal.Channels(); ch++)
-        signal(ch, sample) = 0;
-    ResetEvent( mAcquire->acquireEventRead );
-    return;
-  }
+	{
+		mImpedances = mAcquire->GetImpedances();
+	}
+	if (mAcquire->IsTerminating())
+	{
+		for (int sample = 0; sample < signal.Elements(); sample++)
+			for (int ch = 0; ch < signal.Channels(); ch++)
+				signal(ch, sample) = 0;
+		ResetEvent( mAcquire->acquireEventRead );
+		return;
+	}
 
+	if (WaitForSingleObject(mAcquire->acquireEventRead, 1000) != WAIT_OBJECT_0)
+	{
+	for (int sample = 0; sample < signal.Elements(); sample++)
+		for (int ch = 0; ch < signal.Channels(); ch++)
+		signal(ch, sample) = 0;
+	ResetEvent( mAcquire->acquireEventRead );
+	return;
+	}
 
-  if (WaitForSingleObject(mAcquire->acquireEventRead, 1000) != WAIT_OBJECT_0)
-  {
-    for (int sample = 0; sample < signal.Elements(); sample++)
-      for (int ch = 0; ch < signal.Channels(); ch++)
-        signal(ch, sample) = 0;
-    ResetEvent( mAcquire->acquireEventRead );
-    return;
-  }
-
-  mAcquire->Lock();
-  for (int sample = 0; sample < signal.Elements(); sample++)
-    for (int ch = 0; ch < signal.Channels(); ch++)
-      signal(ch, sample) = mAcquire->ExtractData(ch, sample);
-  mAcquire->AdvanceReadBlock();
-  mAcquire->Unlock();
-  ResetEvent( mAcquire->acquireEventRead );
-
+	mAcquire->Lock();
+	for (int sample = 0; sample < signal.Elements(); sample++)
+	{
+		for (int ch = 0; ch < signal.Channels(); ch++)
+		{
+			signal(ch, sample) = mAcquire->ExtractData(ch, sample);
+		}
+	}
+	mAcquire->AdvanceReadBlock();
+	mAcquire->Unlock();
+	ResetEvent( mAcquire->acquireEventRead );
 }
 
 
@@ -429,13 +456,12 @@ void vAmpADC::Process( const GenericSignal&, GenericSignal& signal )
 
 void vAmpADC::Halt()
 {
-  if (mAcquire != NULL)
-  {
-    mAcquire->Terminate();
-    while (!mAcquire->IsTerminated())
-      Sleep(10);
-    delete mAcquire;
-    mAcquire = NULL;
-  }
-
+	if (mAcquire != NULL)
+	{
+		mAcquire->Terminate();
+		while (!mAcquire->IsTerminated())
+		Sleep(10);
+		delete mAcquire;
+		mAcquire = NULL;
+	}
 }

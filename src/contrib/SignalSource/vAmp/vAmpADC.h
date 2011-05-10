@@ -53,9 +53,9 @@ class vAmpADC : public GenericADC
   int mNumEEGchannels;
   std::vector<int> mChList;
   int mTimeoutMs;
-  int mDevID;
+  std::vector<int> mDevList;
   bool mHighSpeed;
-  std::vector<float> mImpedances;
+  std::vector< std::vector<float>> mImpedances;
   bool mImpedanceMode;
 
   float getSampleRate(float);

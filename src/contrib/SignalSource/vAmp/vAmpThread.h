@@ -49,22 +49,23 @@
 class vAmpThread : public OSThread
 {
   static const int cBlocksInRingBuffer = 10;
-  static const unsigned short cDisplayUpdateTime = 333;
+  static const unsigned short cDisplayUpdateTime = 333;// Update interval for impedance display (3x a second)
+
 
  public:
   vAmpThread(
     int inBlockSize,
     float sampleRate,
     int decimate,
-    const std::vector<int>& chList,
-    int devID,
+    const std::vector<int>& chList,    
+    const std::vector<int>& devList,
     int mode,
     float hpCorner
   );
   virtual ~vAmpThread();
 
   float ExtractData(int ch, int sample);
-  std::vector<float> GetImpedances();
+  std::vector< std::vector<float>> GetImpedances();
   std::string GetLastErr() const {return mLastErr.str();}
   std::string GetLastWarning();
   bool ok() const {return mOk;}
@@ -96,12 +97,13 @@ class vAmpThread : public OSThread
     std::ostringstream mLastErr,
                        mWarnings;
     std::vector<int> mChList;
+    std::vector<unsigned int> mImpBuf;
     int mMode;
-    int mDevChs;
+  
     GenericSignal mDataBuffer, mDataOutput;
 
-    std::vector<float> mImpArray;
-    std::valarray<float> mTrigBuffer; //mdatabuffer[device][ch][sample]
+    std::vector< std::vector<float>> mImpArray;
+    std::valarray< std::valarray<float>> mTrigBuffer; //mdatabuffer[device][ch][sample]
     float *mBuffer;
 
     HANDLE mEvent,
@@ -109,7 +111,7 @@ class vAmpThread : public OSThread
     bool mOk;
     bool mIs8Channel;
     unsigned int mNumDevices;
-    int mDevID;
+    
     int m_nChannelMode;
     int m_nEEGChannels;
     int m_nAUXChannels;
@@ -118,17 +120,28 @@ class vAmpThread : public OSThread
     int mStartMode;
     int mBufferSize;
     int m_nMaxPoints;
-    t_faInformation m_DeviceInfo;      // Device info.
-    t_faProperty    m_DeviceProp;      // Channel properties.
-    std::vector<CChannelInfo> m_tblChanInfo;
-
-    t_faDataFormatMode20kHz* m_tblMaxBuf4;     // 1 read cycle buffer (highspeed, 4 ch) + 2 add. samples.
-    t_faDataModel8*          m_tblMaxBuf8;     // 1 read cycle buffer of 8 channel system + 2 add. samples.
-    t_faDataModel16*         m_tblMaxBuf16;    // 1 read cycle buffer of 16 channel system + 2 add. samples.
+	int mDevIds[1];
+    std::vector<int> mDevList;
+	// ********************************************************************************************************************************************************
+	// ATTENTION: Even though only one V-AMP is allowed at one time, please keep the following definition as an array of devices.
+	//**********************************************************************************************************************************************************
+    t_faInformation m_DeviceInfo[1];      // Device info.
+    t_faProperty    m_DeviceProp[ 1];      // Channel properties.
+    std::vector<CChannelInfo>
+                    m_tblChanInfo[ 1];
+	// ********************************************************************************************************************************************************
+	// ATTENTION: Even though only one V-AMP is allowed at one time, it is absolutely vital to keep the following buffers in the shape of 2-dimensional arrays!
+	// If the shape is changed, the V-Amp Source module will NOT WORK ANYMORE!!!
+	//**********************************************************************************************************************************************************
+    t_faDataFormatMode20kHz* m_tblMaxBuf4[1];     // 1 read cycle buffer (highspeed, 4 ch) + 2 add. samples.
+    t_faDataModel8*          m_tblMaxBuf8[1];     // 1 read cycle buffer of 8 channel system + 2 add. samples.
+    t_faDataModel16*         m_tblMaxBuf16[1];    // 1 read cycle buffer of 16 channel system + 2 add. samples.
+	t_faDataModeSettings     mFastSettings[1];
+	//**********************************************************************************************************************************************************
     std::vector<float>   m_tblEEGData;      // 1 read cycle of only EEG and AUX signals.
     std::vector<float>   m_tblTrigger;      // 1 read cycle of only Trigger signals.
     std::vector<float>   m_tblPacket;       // 1 read cycle of EEG, AUX, Trigger signals.
-    t_faDataModeSettings mFastSettings;
+  
     t_faDataMode mDataMode;
     bool mHighSpeed;
     std::set<int> mDigChs;
