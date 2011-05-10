@@ -32,13 +32,14 @@
 #include "GenericSignal.h"
 #include "Param.h"
 
-// BCB2009 defines char16_t but not __STDC_UTF_16__.
+// BCB2009 and MSVC10 define char16_t but not __STDC_UTF_16__.
 // This leads to problems with recent Matlab headers.
-#if defined( __BORLANDC__ ) && ( __BORLANDC__ > 0x0600 )
+// MSVC10 has a similar problem.
+#if ( __BORLANDC__ > 0x0600 ) || ( _MSC_VER >= 1600 )
 # ifndef __STDC_UTF_16__
 #  define __STDC_UTF_16__ true
 # endif // __STDC_UTF_16__
-#endif // __BORLANDC__
+#endif // ( __BORLANDC__ > 0x0600 ) || ( _MSC_VER >= 1600 )
 
 #include "engine.h"
 
