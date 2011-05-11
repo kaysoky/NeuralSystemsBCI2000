@@ -265,7 +265,7 @@ arguments: Object to be released, or NULL.
 returns:   1 if successful, 0 otherwise.
 */
 DLLEXPORT int
-STDCALL BCI_ReleaseObject( const char* );
+STDCALL BCI_ReleaseObject( char* );
 
 /*
 Enumeration of callback events.
