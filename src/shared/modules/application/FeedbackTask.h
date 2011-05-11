@@ -61,6 +61,8 @@
 #include "ApplicationBase.h"
 #include "BlockRandSeq.h"
 
+#include <vector>
+
 class FeedbackTask : public ApplicationBase
 {
  private:
@@ -128,6 +130,7 @@ class FeedbackTask : public ApplicationBase
   long long mMinRunLength;
 
   BlockRandSeq    mBlockRandSeq;
+  std::vector<int> mFixedTargetSequence;
 };
 
 #endif // FEEDBACK_TASK_H

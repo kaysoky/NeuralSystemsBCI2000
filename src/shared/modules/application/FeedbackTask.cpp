@@ -75,6 +75,8 @@ FeedbackTask::FeedbackTask( const GUI::GraphDisplay* inDisplay )
      " // number of trials; if blank, MinRunLength is used",
    "Application:Targets int NumberTargets= 2 2 0 255 "
      " // number of targets",
+   "Application:Targets intlist TargetSequence= 0    1 % % "
+     " // fixed sequence in which targets should be presented (leave empty for random)",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -98,6 +100,16 @@ FeedbackTask::Preflight( const SignalProperties& Input, SignalProperties& Output
   if (!string(Parameter("MinRunLength" )).empty() && !string(Parameter("NumberOfTrials")).empty())
     bcierr << "Either MinRunLength or NumberOfTrials must be blank" << endl;
 
+  int nTargets = Parameter( "NumberTargets" );
+  for(int i = 0; i < Parameter( "TargetSequence" )->NumValues(); i++ )
+  {
+    int val = Parameter( "TargetSequence" )( i );
+    if( val < 1 || val > nTargets )
+      bcierr << "TargetSequence contains illegal value " << val
+             << ": values must be integers from 1 to " << nTargets
+             << " (because NumberTargets=" << nTargets << ")" << endl;
+  }
+
   bcidbg( 2 ) << "Event: Preflight" << endl;
   OnPreflight( Input );
   Output = Input;
@@ -107,6 +119,10 @@ void
 FeedbackTask::Initialize( const SignalProperties& Input, const SignalProperties& /*Output*/ )
 {
   mBlockRandSeq.SetBlockSize( Parameter( "NumberTargets" ) );
+
+  mFixedTargetSequence.clear();
+  for(int i = 0; i < Parameter( "TargetSequence" )->NumValues(); i++ )
+    mFixedTargetSequence.push_back( Parameter( "TargetSequence" )( i ) );
 
   mNumberOfTrials = 0;
   if(!string(Parameter("NumberOfTrials")).empty())
@@ -213,7 +229,10 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
       {
         case preRun:
         case ITI:
-          State( "TargetCode" ) = mBlockRandSeq.NextElement();
+          if( mFixedTargetSequence.size() )
+            State( "TargetCode" ) = mFixedTargetSequence[ mCurrentTrial % mFixedTargetSequence.size() ];
+          else
+            State( "TargetCode" ) = mBlockRandSeq.NextElement();
           ++mCurrentTrial;
           bcidbg( 2 ) << "Event: TrialBegin" << endl;
           OnTrialBegin();
