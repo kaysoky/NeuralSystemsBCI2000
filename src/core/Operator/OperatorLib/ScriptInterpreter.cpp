@@ -102,7 +102,7 @@ ScriptInterpreter::ScriptInterpreter( StateMachine& s )
 {
   Param p(
     "Visualize:Property%20Sets matrix " PROPERTY_SETS_PARAM "= 0 1 % % % "
-    "// row titles are properties in the form \"SRCD.Left\"), columns are property sets"
+    "// row titles are properties in the form \"SRCD.Left\", columns are property sets"
   );
   mrStateMachine.Parameters()[PROPERTY_SETS_PARAM] = p;
 }

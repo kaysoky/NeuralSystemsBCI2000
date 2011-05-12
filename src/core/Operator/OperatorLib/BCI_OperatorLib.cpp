@@ -28,6 +28,7 @@
 
 #include <sstream>
 #include <cstring>
+#include <set>
 #include "BCI_OperatorLib.h"
 #include "StateMachine.h"
 #include "ScriptInterpreter.h"
@@ -39,19 +40,21 @@ using namespace std;
 
 StateMachine* gpStateMachine = NULL;
 static ScriptInterpreter* spInterpreter = NULL;
-static const uint32 sMagic = 'BCI2';
+
+typedef set<const char*> MemorySet;
+static MemorySet sAllocatedMemory;
 
 // An internal helper function that allocates output string buffers.
 static const char* AllocateCopy( const char* inString )
 {
   int len = ::strlen( inString );
-  char* pCopy = new char[ len + 1 + sizeof( sMagic ) ];
+  char* pCopy = new char[ len + 1 ];
   if( pCopy != NULL )
   {
-    ::strncpy( pCopy + sizeof( sMagic ), inString, len + 1 );
-    *reinterpret_cast<uint32*>( pCopy ) = sMagic;
+    ::strncpy( pCopy, inString, len + 1 );
+    sAllocatedMemory.insert( pCopy );
   }
-  return pCopy + sizeof( sMagic );
+  return pCopy;
 }
 
 /*
@@ -62,15 +65,17 @@ arguments: Object to be released, or NULL.
 returns:   1 if successful, 0 otherwise.
 */
 DLLEXPORT int
-STDCALL BCI_ReleaseObject( char* inObject )
+STDCALL BCI_ReleaseObject( const char* inObject )
 {
   if( inObject == NULL )
     return 1;
 
-  if( *reinterpret_cast<uint32*>( inObject - sizeof( sMagic ) ) != sMagic )
+  MemorySet::iterator i = sAllocatedMemory.find( inObject );
+  if( i == sAllocatedMemory.end() )
     return 0;
 
-  delete[] ( inObject - sizeof( sMagic ) );
+  sAllocatedMemory.erase( i );
+  delete[] inObject;
   return 1;
 }
 
