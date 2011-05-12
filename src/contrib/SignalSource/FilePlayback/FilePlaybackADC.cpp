@@ -33,6 +33,7 @@
 #include "OSThread.h"
 
 #include <cmath>
+#include <cctype>
 
 using namespace std;
 
@@ -61,12 +62,16 @@ mDataFile(NULL)
 		for(int i = 0; i < pl->Size(); i++)
 		{
 			const Param p = (*pl)[i];
+			stringstream ss;
+			ss << p;
+
+			string name = p.Name();
+			// watch out: cannot access Value() here: might be an empty list, in which case access causes an exception
 
 			bool skipParam = ( p.Section() == "System" ); // skip anything in the "System" tab
 			const HierarchicalLabel& hl = p.Sections();
 			if( hl.size() >= 3 )
 			{
-				const string name = p.Name();
 				const string blame = hl[2];
 				if( blame.size() > 6 && blame.substr( blame.size()-6 ) == "Logger" )
 					if( name.size() > 3 && name.substr( 0, 3 ) == "Log" )
@@ -77,22 +82,42 @@ mDataFile(NULL)
 				                          //      if the original had --LogMouse=1,     and playback has --LogMouse=1, and PlaybackStates is 1, there will be havoc: played-back and logged states will conflict.
 				                          //      if the original had no mouse logging, and playback has --LogMouse=1, the new mouse movements (during playback) are logged (and it's OK even if PlaybackStates is 1, because the original had no MousePosX and MousePosY states to play back)
 			}
+			if( name == "StorageTime" )
+				skipParam = true;
+
+			// Smoother legacy support
+			if( name == "SoftwareCh" )
+			{
+				// we know it's not a list or matrix parameter: safe to access Value()
+				Param juggle( "SourceCh", p.Section(), p.Type(), p.Value(), p.DefaultValue(), p.LowRange(), p.HighRange(), p.Comment() );
+				ss.str("");
+				ss << juggle;
+			}
+			if( name == "VisualizeSourceTime" )
+			{
+				string value = p.Value();  // we know it's not a list or matrix parameter: safe to access Value()
+				if( value.size() && ::isdigit( value[value.size()-1] ) )
+				{
+					Param juggle( name, p.Section(), p.Type(), value+"s", p.DefaultValue(), p.LowRange(), p.HighRange(), p.Comment() );
+					ss.str("");
+					ss << juggle;
+				}
+			}
+			Param p_new( ss.str() );
 
 			if( skipParam )
 			{
-				//bciout << "Skipping " << p.Name() << endl;
+				//bciout << "Skipping " << name << endl;
 			}
-			else if( already->Exists( p.Name() ) )
+			else if( already->Exists( name ) )
 			{
-				//bciout << "Updating " << p << endl;
-				(*already)[p.Name()] = p;
+				//bciout << "Updating " << p_new << endl;
+				(*already)[name] = p_new;
 			}
 			else
 			{
-				//bciout << "Setting " << p << endl;
-				stringstream ss;
-				ss << p;
 				string s = ss.str();
+				//bciout << "Setting " << s << endl;
 				BEGIN_PARAMETER_DEFINITIONS
 					s.c_str(),
 				END_PARAMETER_DEFINITIONS
