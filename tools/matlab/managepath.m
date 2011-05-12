@@ -126,9 +126,9 @@ switch cmd
 	case {'-addtomatlabpath', '-add', '-addpath'}
 		doit = 0;
 		if ~isd &  isf
-			err = sprintf('is a file, not a directory: %s', d);
+			err = sprintf('cannot add to matlab path, since it is a file, not a directory: %s', d);
 		elseif ~isd
-			err = sprintf('directory does not exist: %s', d);
+			err = sprintf('cannot add to matlab path, since it does not exist: %s', d);
 		elseif isempty(mpmatch)
 			fprintf('adding to the Matlab path:  %s\n', d);
 			doit = 1;
@@ -155,9 +155,9 @@ switch cmd
 	case {'-addtosystempath', '-addsys', '-addsyspath'}
 		doit = 0;
 		if ~isd &  isf
-			err = sprintf('is a file, not a directory: %s', d);
+			err = sprintf('cannot add to operating-system PATH, since it is a file, not a directory: %s', d);
 		elseif ~isd
-			err = sprintf('directory does not exist: %s', d);
+			err = sprintf('cannot add to operating-system PATH, since it does not exist: %s', d);
 		elseif isempty(spmatch)
 			fprintf('adding to the operating-system PATH:  %s\n', d);
 			doit = 1;
