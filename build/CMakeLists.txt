@@ -3,13 +3,8 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for BCI2000 and CMake
 
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required( VERSION 2.8.3 )
 cmake_policy( VERSION 2.8 )
-
-# Set a library searching policy for linking purposes
-#IF( COMMAND cmake_policy )
-#  cmake_policy( SET CMP0003 NEW )
-#ENDIF( COMMAND cmake_policy )
 
 # Define the project name
 PROJECT( BCI2000 )
@@ -18,30 +13,6 @@ PROJECT( BCI2000 )
 IF ( NOT DEFINED BCI2000_ROOT_DIR )
     SET ( BCI2000_ROOT_DIR ${BCI2000_SOURCE_DIR}/.. )
 ENDIF( NOT DEFINED BCI2000_ROOT_DIR )
-
-# Setup Output Directories
-SET ( CMAKE_LIBRARY_OUTPUT_DIRECTORY
-  ${BCI2000_ROOT_DIR}/prog
-  CACHE PATH
-  "Single Directory for all Libraries"
-)
-MARK_AS_ADVANCED( CMAKE_LIBRARY_OUTPUT_DIRECTORY )
-
-# Setup Executable Output Directory
-SET ( CMAKE_RUNTIME_OUTPUT_DIRECTORY
-  ${BCI2000_ROOT_DIR}/prog
-  CACHE PATH
-  "Single Directory for all Executables."
-)
-MARK_AS_ADVANCED( CMAKE_RUNTIME_OUTPUT_DIRECTORY )
-
-# Setup Static Library Output Directory
-SET ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-  ${BCI2000_ROOT_DIR}/prog
-  CACHE PATH
-  "Single Directory for all static libraries."
-)
-MARK_AS_ADVANCED( CMAKE_ARCHIVE_OUTPUT_DIRECTORY )
 
 # Set directory paths
 SET( BCI2000_SRC_DIR ${BCI2000_ROOT_DIR}/src )
@@ -65,6 +36,9 @@ SET( BCI2000_VERSION "${BCI2000_VER_MAJOR}.${BCI2000_VER_MINOR}.${BCI2000_VER_PA
 ADD_DEFINITIONS(
   -DBCI2000_VERSION_STRING="${BCI2000_VERSION}"
   )
+
+# Initialize CMake output directory variables
+SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
 
 # Tell the user what we're about to setup
 MESSAGE( "-- Creating Project files for BCI2000 Version " ${BCI2000_VERSION} )
