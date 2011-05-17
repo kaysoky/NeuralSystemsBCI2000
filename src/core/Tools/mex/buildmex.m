@@ -261,15 +261,16 @@ switch( target )
         
     otherwise
         fprintf( 1, [ 'Building ' target ' ...\n' ] );
-        args = { options{:}, INCLUDEPATHS{:}, LIBRARIES{:}, LIBPATHS{:}, DEFINES{:}, [target '.cpp'], MEXSRC{:} };
+        args = { options{:}, INCLUDEPATHS{:}, LIBRARIES{:}, LIBPATHS{:}, DEFINES{:} };
         if( exist( 'CXXFLAGS' ) )
-          CXXFLAGS = [ 'CXXFLAGS="\$CXXFLAGS ' CXXFLAGS '"' ];
+          CXXFLAGS = [ 'CXXFLAGS=""\$CXXFLAGS ' CXXFLAGS '""' ];
           args = { args{:}, CXXFLAGS };
         end
         if( exist( 'LDFLAGS' ) )
-          LDFLAGS =  [ 'LDFLAGS="\$LDFLAGS ' LDFLAGS '"' ];
+          LDFLAGS =  [ 'LDFLAGS=""\$LDFLAGS ' LDFLAGS '""' ];
           args = { args{:}, LDFLAGS };
         end
+        args = { args{:}, [target '.cpp'], MEXSRC{:} };
         mex( args{:} );
         if( ~exist( BINDIR ) )
             mkdir( BINDIR );
