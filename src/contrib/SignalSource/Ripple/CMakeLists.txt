@@ -8,11 +8,11 @@ SET( EXECUTABLE_NAME Grapevine )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  Grapevine.cpp
-  GrapevineADC.cpp 
+  GrapeVine.cpp
+  GrapeVineADC.cpp 
 )
 SET( HDR_PROJECT
-  GrapevineADC.h
+  GrapeVineADC.h
   XippLegacy.h
 )
 

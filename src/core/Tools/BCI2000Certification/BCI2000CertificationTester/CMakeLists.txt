@@ -14,15 +14,15 @@ SET( SRC_GROUP
   certificationGUI.cpp
   certificationMain.cpp
   certLauncher.cpp
-  ../taskType.cpp
-  ../functions.cpp
+  ../TaskType.cpp
+  ../Functions.cpp
   ../progressClass.cpp
 )
 SET( HDR_GROUP
   certificationGUI.h
   certLauncher.h
-  ../taskType.h
-  ../functions.h
+  ../TaskType.h
+  ../Functions.h
   ../progressClass.h
 )
 

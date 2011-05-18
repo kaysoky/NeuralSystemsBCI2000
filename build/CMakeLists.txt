@@ -3,7 +3,7 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for BCI2000 and CMake
 
-cmake_minimum_required( VERSION 2.8.3 )
+cmake_minimum_required( VERSION 2.8.2 )
 cmake_policy( VERSION 2.8 )
 
 # Define the project name

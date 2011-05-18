@@ -14,11 +14,11 @@ MESSAGE( "-- Adding Example Project: " ${NAME} )
 SET( SRC_PROJECT
   main.cpp
   mainUI.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/Sockstream.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
 )
 SET( HDR_PROJECT
   mainUI.h
-  ${BCI2000_SRC_DIR}/shared/utils/Sockstream.h
+  ${BCI2000_SRC_DIR}/shared/utils/SockStream.h
 )
 
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/utils )

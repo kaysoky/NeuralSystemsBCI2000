@@ -115,7 +115,7 @@ FOREACH( USE ${BCI2000_USING} )
 
   # Setup Matlab
   ELSEIF( "${USE}" STREQUAL "MATLAB" )
-    INCLUDE( ${BCI2000_CMAKE_DIR}/extlib/MATLAB.cmake )
+    INCLUDE( ${BCI2000_CMAKE_DIR}/extlib/Matlab.cmake )
     IF( MATLAB_OK )
       SET( ${SOURCES}
         ${${SOURCES}}

@@ -44,7 +44,7 @@ SET( HDR_PROJECT
   in_out_variable.h
   load_BCIdat.h
   nrerror.h
-  P300_classify.h
+  P300_Classify.h
   pages.h
   ReadIniParameters.h
   resource.h
