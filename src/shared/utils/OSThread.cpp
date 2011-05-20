@@ -99,13 +99,21 @@ OSThread::OSThread()
 OSThread::~OSThread()
 {
   if( !mTerminated )
-    ::pthread_kill( mThread, SIGHUP );
+    ::pthread_cancel( mThread );
 }
 
 void
 OSThread::Start()
 {
-  ::pthread_create( &mThread, NULL, OSThread::StartThread, this );
+  ::pthread_attr_t attributes;
+  if( !::pthread_attr_init( &attributes ) )
+  {
+    // Create a thread in detached mode, i.e. thread resources are
+    // auto-released when the thread terminates.
+    ::pthread_attr_setdetachstate( &attributes, PTHREAD_CREATE_DETACHED );
+    ::pthread_create( &mThread, &attributes, OSThread::StartThread, this );
+    ::pthread_attr_destroy( &attributes );
+  }
 }
 
 void
@@ -156,6 +164,9 @@ OSThread::StartThread( void* inInstance )
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
   this_->mTerminating = false;
   this_->mTerminated = false;
+  // Set the cancel state to asynchronous, so pthread_cancel() will 
+  // immediately cancel thread execution.
+  ::pthread_setcancelstate( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
   this_->mResult = this_->Execute();
   this_->mTerminated = true;
   if( this_->mpTerminationEvent )

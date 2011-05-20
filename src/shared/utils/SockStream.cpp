@@ -69,6 +69,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <cstring>
 
 #ifdef EMULATE_TRAITS_TYPE
 # define traits_type char_traits

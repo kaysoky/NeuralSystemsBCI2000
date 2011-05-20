@@ -278,14 +278,14 @@ MatlabEngine::GetMatrix( const string& inExp )
   if( ans )
   {
     int numDims = mxGetNumberOfDimensions( ans );
-    const int* dims = mxGetDimensions( ans );
+    const mwSize* dims = mxGetDimensions( ans );
     if( numDims != 2 )
       bcierr << "Can only handle two dimensions" << endl;
     result.resize( dims[ 0 ], vector<double>( dims[ 1 ] ) );
     double* value = mxGetPr( ans );
     if( value )
     {
-      int indices[] = { 0, 0 };
+      mwIndex indices[] = { 0, 0 };
       for( size_t i = 0; i < result.size(); ++i )
       {
         indices[ 0 ] = i;
@@ -309,7 +309,7 @@ MatlabEngine::PutMatrix( const string& inExp, const DoubleMatrix& inValue )
   double* data = mxGetPr( val );
   if( data )
   {
-    int indices[] = { 0, 0 };
+    mwIndex indices[] = { 0, 0 };
     for( size_t i = 0; i < inValue.size(); ++i )
     {
       indices[ 0 ] = i;
@@ -333,18 +333,18 @@ MatlabEngine::GetCells( const string& inExp )
   if( ans )
   {
     int numDims = mxGetNumberOfDimensions( ans );
-    const int* dims = mxGetDimensions( ans );
+    const mwSize* dims = mxGetDimensions( ans );
     if( numDims != 2 )
       bcierr << "Can only handle two dimensions" << endl;
     result.resize( dims[ 0 ], vector<string>( dims[ 1 ] ) );
-    int indices[] = { 0, 0 };
+    mwIndex indices[] = { 0, 0 };
     for( size_t i = 0; i < result.size(); ++i )
     {
       indices[ 0 ] = i;
       for( size_t j = 0; j < result[ i ].size(); ++j )
       {
         indices[ 1 ] = j;
-        int idx = mxCalcSingleSubscript( ans, 2, indices );
+        mwIndex idx = mxCalcSingleSubscript( ans, 2, indices );
         mxArray* cell = mxGetCell( ans, idx );
         if( cell )
         {
@@ -369,14 +369,14 @@ MatlabEngine::PutCells( const string& inExp, const StringMatrix& inValue )
 {
   int sizeDim2 = inValue.empty() ? 0 : inValue[ 0 ].size();
   mxArray* mat = mxCreateCellMatrix( inValue.size(), sizeDim2 );
-  int indices[] = { 0, 0 };
+  mwIndex indices[] = { 0, 0 };
   for( size_t i = 0; i < inValue.size(); ++i )
   {
     indices[ 0 ] = i;
     for( size_t j = 0; j < inValue[ i ].size(); ++j )
     {
       indices[ 1 ] = j;
-      int idx = mxCalcSingleSubscript( mat, 2, indices );
+      mwIndex idx = mxCalcSingleSubscript( mat, 2, indices );
       mxDestroyArray( mxGetCell( mat, idx ) );
       mxArray* val = mxCreateString( inValue[ i ][ j ].c_str() );
       mxSetCell( mat, idx, val );

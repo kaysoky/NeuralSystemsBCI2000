@@ -199,4 +199,7 @@ ENDIF( BORLAND )
 # Dependencies of the framework
 IF( WIN32 )
   SET( LIBS ${LIBS} ws2_32 winmm )
-ENDIF( WIN32 )
+ENDIF() 
+IF( NOT APPLE AND NOT WIN32 )
+  SET( LIBS ${LIBS} rt pthread )
+ENDIF()
