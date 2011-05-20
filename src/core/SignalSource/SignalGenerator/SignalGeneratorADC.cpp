@@ -161,6 +161,9 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
   mSineChannelX = Parameter( "SineChannelX" );
   mSineChannelY = Parameter( "SineChannelY" );
   mSineChannelZ = Parameter( "SineChannelZ" );
+  mAmplitudeX = 1.0;
+  mAmplitudeY = 1.0;
+  mAmplitudeZ = 1.0;
 
 #ifdef _WIN32
   mModulateAmplitude = ( Parameter( "ModulateAmplitude" ) != 0 );
