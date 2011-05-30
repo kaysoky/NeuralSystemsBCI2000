@@ -20,17 +20,6 @@ SET( HDR_PROJECT
   # MyNewCustomFilter.h      # Don't forget the corresponding headers
 )
 
-# You may find it useful to produce a command-line version of your filters, for offline processing:
-# BCI2000_ADD_CMDLINE_FILTER( MyNewCustomFilter )
-# BCI2000_ADD_CMDLINE_FILTER( MyOtherCustomFilter   # a more compilicated example, with dependencies
-#                             USING "FFT" "MATH"
-#                             EXTRA_SOURCES ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARChannel.cpp
-#                                           ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARGroup.cpp
-#                             EXTRA_HEADERS ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARChannel.h
-#                                           ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARGroup.h
-#                           )
-
-
 
 # Uncomment/add the required parts of the existing BCI2000 signal-processing framework:
 
@@ -71,3 +60,13 @@ BCI2000_ADD_SIGNAL_PROCESSING_MODULE(
   "${SRC_SIGNALPROCESSING}" "${HDR_SIGNALPROCESSING}" 
   "${INC_EXTLIB}"
 )
+
+# You may also find it useful to produce a command-line version of your filters, for offline processing:
+# BCI2000_ADD_CMDLINE_FILTER( MyNewCustomFilter )
+# BCI2000_ADD_CMDLINE_FILTER( MyOtherCustomFilter   # a more compilicated example, with dependencies
+#                             USING "FFT" "MATH"
+#                             EXTRA_SOURCES ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARChannel.cpp
+#                                           ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARGroup.cpp
+#                             EXTRA_HEADERS ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARChannel.h
+#                                           ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARGroup.h
+#                           )
