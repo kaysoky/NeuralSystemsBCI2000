@@ -61,6 +61,7 @@ VisDisplayGraph::VisDisplayGraph( const std::string& inSourceID )
   mpActMoreChannels( NULL ),
   mpActFewerChannels( NULL ),
   mpActToggleDisplayMode( NULL ),
+  mpActToggleNumericValues( NULL ),
   mpActToggleBaselines( NULL ),
   mpActToggleValueUnit( NULL ),
   mpActToggleChannelLabels( NULL ),
@@ -136,6 +137,10 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
         mDisplay.SetDisplayMode( SignalDisplay::field2d );
         break;
     }
+  bool showNumericValues = mDisplay.NumericValuesVisible();
+  if( inConfig.Get( CfgID::ShowNumericValues, showNumericValues ) )
+    mDisplay.SetNumericValuesVisible( showNumericValues );
+
   bool showBaselines = mDisplay.BaselinesVisible();
   if( inConfig.Get( CfgID::ShowBaselines, showBaselines ) )
     mDisplay.SetBaselinesVisible( showBaselines );
@@ -308,6 +313,8 @@ VisDisplayGraph::BuildContextMenu()
   mpActChooseColors = mpContextMenu->addAction( tr("Choose Channel Colors..."), this, SLOT(ChooseColors()) );
   mpContextMenu->addSeparator();
 
+  mpActToggleNumericValues = mpContextMenu->addAction( tr("Show Numeric Values"), this, SLOT(ToggleNumericValues()) );
+  mpActToggleNumericValues->setCheckable( true );
   mpActToggleBaselines = mpContextMenu->addAction( tr("Show Baselines"), this, SLOT(ToggleBaselines()) );
   mpActToggleBaselines->setCheckable( true );
   mpActToggleValueUnit = mpContextMenu->addAction( tr("Show Unit"), this, SLOT(ToggleValueUnit()) );
@@ -390,6 +397,9 @@ VisDisplayGraph::ContextMenu( const QPoint& inP )
 
   mpActChooseColors->setEnabled( ChooseColors_Enabled() );
 
+  mpActToggleNumericValues->setEnabled( ToggleNumericValues_Enabled() );
+  mpActToggleNumericValues->setChecked( ToggleNumericValues_Checked() );
+
   mpActToggleBaselines->setEnabled( ToggleBaselines_Enabled() );
   mpActToggleBaselines->setChecked( ToggleBaselines_Checked() );
 
@@ -412,6 +422,25 @@ VisDisplayGraph::ToggleDisplayMode()
   mDisplay.SetDisplayMode(
     ( mDisplay.DisplayMode() + 1 ) % SignalDisplay::numDisplayModes
   );
+}
+
+void
+VisDisplayGraph::ToggleNumericValues()
+{
+  mDisplay.SetNumericValuesVisible( !mDisplay.NumericValuesVisible() );
+  Visconfigs()[ mSourceID ].Put( CfgID::ShowNumericValues, mDisplay.NumericValuesVisible(), UserDefined );
+}
+
+bool
+VisDisplayGraph::ToggleNumericValues_Enabled() const
+{
+  return mDisplay.DisplayMode() == SignalDisplay::polyline;
+}
+
+bool
+VisDisplayGraph::ToggleNumericValues_Checked() const
+{
+  return mDisplay.NumericValuesVisible();
 }
 
 void

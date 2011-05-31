@@ -88,6 +88,8 @@ namespace CfgID
       HPFilter,
       LPFilter,
       NotchFilter,
+
+      ShowNumericValues,
   };
 };
 

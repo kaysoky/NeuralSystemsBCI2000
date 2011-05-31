@@ -175,8 +175,12 @@ class SignalDisplay
   int            DisplayMode() const
                  { return mDisplayMode; }
 
+  SignalDisplay& SetNumericValuesVisible( bool b )
+                 { mShowNumericValues = b; return Invalidate(); }
   SignalDisplay& SetBaselinesVisible( bool b )
                  { mShowBaselines = b; return Invalidate(); }
+  bool           NumericValuesVisible() const
+                 { return mShowNumericValues; }
   bool           BaselinesVisible() const
                  { return mShowBaselines; }
   SignalDisplay& SetChannelLabelsVisible( bool b )
@@ -259,6 +263,7 @@ class SignalDisplay
   bool          mShowCursor,
                 mWrapAround,
                 mTimeLabels,
+                mShowNumericValues,
                 mShowBaselines,
                 mShowChannelLabels,
                 mShowValueUnit,
@@ -271,7 +276,8 @@ class SignalDisplay
                 mNumDisplayChannels,
                 mTopGroup,
                 mChannelGroupSize,
-                mMarkerChannels;
+                mMarkerChannels,
+                mNumericValueWidth;
   float         mMinValue,
                 mMaxValue;
   std::string   mSampleUnit,
@@ -299,6 +305,7 @@ class SignalDisplay
   void DrawCursor( const PaintInfo& );
   void DrawXTicks( const PaintInfo& );
   void DrawYLabels( const PaintInfo&, bool inDrawTicks );
+  void DrawNumericValues( const PaintInfo& p );
   void DrawAxes( const PaintInfo& );
   void DrawMarkers( const PaintInfo& );
   void DrawChannelLabels( const PaintInfo& );
@@ -307,6 +314,7 @@ class SignalDisplay
 
   // Qt graphics.
   QFont          AxisFont();
+  QFont          MonoFont();
   QPaintDevice*  mTargetDC;
   QRect          mDisplayRect,
                  mDataRect,
@@ -327,7 +335,8 @@ class SignalDisplay
               cursorBrush,
               axisBrush,
               markerBrush;
-    QFont     labelFont;
+    QFont     labelFont,
+              monoFont;
     QPen      baselinePen;
     int       cursorWidth,
               markerWidth,

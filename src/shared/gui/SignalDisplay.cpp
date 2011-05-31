@@ -62,6 +62,7 @@ SignalDisplay::SignalDisplay()
   mShowCursor( false ),
   mWrapAround( false ),
   mTimeLabels( false ),
+  mShowNumericValues( false ),
   mShowBaselines( false ),
   mShowChannelLabels( false ),
   mShowValueUnit( false ),
@@ -75,6 +76,7 @@ SignalDisplay::SignalDisplay()
   mTopGroup( 0 ),
   mChannelGroupSize( 1 ),
   mMarkerChannels( 0 ),
+  mNumericValueWidth( 0 ),
   mMinValue( cMinValueDefault ),
   mMaxValue( cMaxValueDefault ),
   mSampleOffset( 0 ),
@@ -226,6 +228,14 @@ SignalDisplay::WrapForward( const GenericSignal& inSignal )
     invalidRect.setRight( min<int>( firstValidPixel - mDataWidth, mDataRect.right() ) );
     if( invalidRect.left() < invalidRect.right() )
       pWindow->repaint( invalidRect );
+    
+    if( mShowNumericValues )
+    {
+      invalidRect.setLeft( mDataRect.right() - mNumericValueWidth );
+      invalidRect.setRight( mDataRect.right() );
+      if( invalidRect.left() < invalidRect.right() )
+        pWindow->repaint( invalidRect );
+    }
   }
   return *this;
 }
@@ -294,6 +304,11 @@ QFont
 SignalDisplay::AxisFont()
 {
   return QFont( "Helvetica", 9 );
+}
+QFont
+SignalDisplay::MonoFont()
+{
+  return QFont( "Courier", 9 );
 }
 
 void
@@ -439,6 +454,8 @@ SignalDisplay::Paint( void* inUpdateRgn )
       DrawSignalPolyline( p );
       DrawYLabels( p, true );
       DrawValueUnit( p );
+      if( mShowNumericValues )
+        DrawNumericValues( p );
       break;
     case field2d:
       DrawSignalField2d( p );
@@ -498,6 +515,7 @@ SignalDisplay::SetupPainting( PaintInfo& p, void* inUpdateRgn )
   p.markerBrush = QBrush( p.markerColor );
   p.labelColor = qAxisColor;
   p.labelFont = AxisFont();
+  p.monoFont = MonoFont();
 
 
   // Signal properties
@@ -826,6 +844,51 @@ SignalDisplay::DrawYLabels( const PaintInfo& p, bool inDrawTicks )
         p.painter->drawText( tickRect,
           Qt::AlignVCenter | Qt::TextSingleLine | Qt::AlignRight | Qt::TextDontClip,
           labelText );
+      nextLabelPos = tickY + p.painter->fontMetrics().height();
+    }
+  }
+}
+
+void
+SignalDisplay::DrawNumericValues( const PaintInfo& p )
+{
+  p.painter->setPen( p.labelColor );
+  p.painter->setFont( p.monoFont );
+  //p.painter->setBackgroundMode( Qt::TransparentMode );
+  int nextLabelPos = mDataRect.top();
+
+  for( int i = 0; i < mNumDisplayGroups; ++i )
+  {
+    size_t channelNumber = ( mTopGroup + i ) * mChannelGroupSize;
+    int    tickY = ( GroupTop( i ) + GroupBottom( i ) ) / 2;
+    stringstream ss;
+    ss.setf( ios::fixed );
+    ss.precision( 10 );
+    int sampleNumber = mSampleCursor - 1;
+    if( sampleNumber < 0 ) sampleNumber += mData.Elements();
+    ss << mData( channelNumber, sampleNumber ) << " ";
+    string s = ss.str();
+    const char* labelText = s.c_str();
+    QFontMetrics metrics( p.monoFont );
+    int w = metrics.width( labelText );
+    int h = metrics.height( );
+    if( mNumericValueWidth < w ) mNumericValueWidth = w; 
+    QRect tickRect(
+        mDisplayRect.width() - w,
+        tickY - h * 1.5,
+        w,
+        h
+    );
+
+    if( tickY >= nextLabelPos )
+    {
+      if( mChannelGroupSize == 1 )
+      {
+        p.painter->fillRect( tickRect, p.backgroundColor );
+        p.painter->drawText( tickRect,
+          Qt::AlignVCenter | Qt::TextSingleLine | Qt::AlignRight,
+          labelText );
+      }
       nextLabelPos = tickY + p.painter->fontMetrics().height();
     }
   }

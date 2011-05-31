@@ -78,6 +78,7 @@ class VisDisplayGraph : public VisDisplayBase
          * mpActMoreChannels,
          * mpActFewerChannels,
          * mpActToggleDisplayMode,
+         * mpActToggleNumericValues,
          * mpActToggleBaselines,
          * mpActToggleValueUnit,
          * mpActToggleChannelLabels,
@@ -98,6 +99,7 @@ class VisDisplayGraph : public VisDisplayBase
   void MoreChannels();
   void FewerChannels();
   void ToggleDisplayMode();
+  void ToggleNumericValues();
   void ToggleBaselines();
   void ToggleValueUnit();
   void ToggleChannelLabels();
@@ -123,6 +125,8 @@ class VisDisplayGraph : public VisDisplayBase
   bool MoreSamples_Enabled() const;
   bool MoreChannels_Enabled() const;
   bool FewerChannels_Enabled() const;
+  bool ToggleNumericValues_Enabled() const;
+  bool ToggleNumericValues_Checked() const;
   bool ToggleBaselines_Enabled() const;
   bool ToggleBaselines_Checked() const;
   bool ToggleValueUnit_Enabled() const;
