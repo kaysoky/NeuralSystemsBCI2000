@@ -27,6 +27,10 @@
 #ifndef SIGNAL_DISPLAY_H
 #define SIGNAL_DISPLAY_H
 
+#ifdef __BORLANDC__
+# error Borland specific code has been removed from the SignalDisplay class.
+#endif // __BORLANDC__
+
 #include "GUI.h"
 #include "GenericSignal.h"
 #include "Color.h"
@@ -35,18 +39,14 @@
 #include <set>
 #include <vector>
 
-#ifdef __BORLANDC__
-# include <windows.h>
-#else
-# include <QFont>
-# include <QPoint>
-# include <QPaintDevice>
-# include <QRect>
-# include <QRegion>
-# include <QColor>
-# include <QFont>
-# include <QPen>
-#endif // __BORLANDC__
+#include <QFont>
+#include <QPoint>
+#include <QPaintDevice>
+#include <QRect>
+#include <QRegion>
+#include <QColor>
+#include <QFont>
+#include <QPen>
 
 class SignalDisplay
 {
@@ -305,37 +305,6 @@ class SignalDisplay
   void DrawValueUnit( const PaintInfo& );
   void CleanupPainting( PaintInfo& );
 
- #ifdef __BORLANDC__
-  // Win32 Graphics details.
-  HFONT    AxisFont();
-  HDC      mTargetDC;
-  RECT     mDisplayRect,
-           mDataRect;
-  HRGN     mDisplayRgn,
-           mRedrawRgn;
-  POINT*   mpSignalPoints;
-
-  struct PaintInfo
-  {
-    HDC      dc;
-    COLORREF backgroundColor,
-             cursorColor,
-             axisColor,
-             markerColor,
-             labelColor;
-    HBRUSH   backgroundBrush,
-             cursorBrush,
-             axisBrush,
-             markerBrush;
-    HFONT    labelFont;
-    HPEN     baselinePen;
-    int      cursorWidth,
-             markerWidth,
-             axisY;
-    std::vector<HPEN>   signalPens;
-    std::vector<HBRUSH> signalBrushes;
-  };
- #else // __BORLANDC__
   // Qt graphics.
   QFont          AxisFont();
   QPaintDevice*  mTargetDC;
@@ -366,7 +335,6 @@ class SignalDisplay
     std::vector<QPen>   signalPens;
     std::vector<QBrush> signalBrushes;
   };
- #endif // __BORLANDC__
 };
 
 #endif // SIGNAL_DISPLAY_H
