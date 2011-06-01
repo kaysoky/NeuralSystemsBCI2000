@@ -282,7 +282,10 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
             }
             tmpChList.push_back(curCh);
         }
-        sourceChListOffset += devChs;
+        //sourceChListOffset += devChs;
+		// yes this fix is logically necessary, but other corrections to the
+		// logic are also necessary.  the module *only* works with multiple
+		// amps because of this "mistake"
     }
 
 
