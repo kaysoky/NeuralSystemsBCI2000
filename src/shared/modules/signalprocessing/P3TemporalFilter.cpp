@@ -214,7 +214,7 @@ P3TemporalFilter::Process( const GenericSignal& Input, GenericSignal& Output )
         bcidbg( 2 ) << "Clearing buffer for stimulus code #" << i->first
                     << endl;
         *i->second = DataSum( mOutputProperties );
-  }
-}
+      }
+    }
   }
 }

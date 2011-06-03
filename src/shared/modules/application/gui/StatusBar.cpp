@@ -264,27 +264,29 @@ StatusBar::OnPaint( const DrawContext& dc )
     }
   }
 
+  QString line1_ = QString::fromLocal8Bit( line1.c_str() );
   QRect line1Rect(
     static_cast<int>( dc.rect.left ),
     static_cast<int>( dc.rect.top ),
     static_cast<int>( dc.rect.right - dc.rect.left ),
     static_cast<int>( dividerPos - dc.rect.top )
   );
-  int size = fm.width( QString( line1.c_str() ) );
+  int size = fm.width( line1_ );
   while( size > line1Rect.width() - 2 * charWidth )
-    size = fm.width( QString( line1.substr( 2, line1.size() ).c_str() ) );
-  p.drawText( line1Rect, QString( line1.c_str() ) );
+    size = fm.width( line1_.mid( 2 ) );
+  p.drawText( line1Rect, line1_ );
 
+  QString line2_ = QString::fromLocal8Bit( line2.c_str() );
   QRect line2Rect(
     static_cast<int>( dc.rect.left ),
     dividerPos,
     static_cast<int>( dc.rect.right - dc.rect.left ),
     static_cast<int>( dividerPos - dc.rect.top )
   );
-  size = fm.width( QString( line2.c_str() ) );
+  size = fm.width( line2_ );
   while( size > line2Rect.width() - 2 * charWidth )
-    size = fm.width( QString( line2.substr( 2, line2.size() ).c_str() ) );
-  p.drawText( line2Rect, QString( line2.c_str() ) );
+    size = fm.width( line2_.mid( 2 ) );
+  p.drawText( line2Rect, line2_ );
 #endif // __BORLANDC__
 }
 

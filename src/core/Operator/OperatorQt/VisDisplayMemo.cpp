@@ -87,16 +87,16 @@ VisDisplayMemo::HandleMemo( const QString& inText )
 #ifdef TODO
 # error Remove lines when their number exceeds the numlines property.
 #endif
-  string s = inText.toStdString();
+  string s = inText.toLocal8Bit();
   size_t pos = 0;
   while( ( pos = s.find_first_of( "\n\r" ) ) != s.npos )
   {
-    mpTextDisplay->append( s.substr( 0, pos ).c_str() );
+    mpTextDisplay->append( QString::fromLocal8Bit( s.substr( 0, pos ).c_str() ) );
     s.erase( 0, pos + 1 );
   }
   if( !s.empty() )
   {
-    mpTextDisplay->append( s.c_str() );
+    mpTextDisplay->append( QString::fromLocal8Bit( s.c_str() ) );
   }
   mpTextDisplay->ensureCursorVisible();
 }

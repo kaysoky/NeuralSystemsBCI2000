@@ -145,7 +145,7 @@ ConfigWindow::Initialize( ParamList* inParameters, Preferences* inPreferences )
   if( curTabIdx != tabNames.size() )
     m_ui->cfgTabControl->setCurrentIndex( curTabIdx );
   mUserSwitchedTabs = true;
-  mCurTab = m_ui->cfgTabControl->tabText( curTabIdx ).toStdString();
+  mCurTab = m_ui->cfgTabControl->tabText( curTabIdx ).toLocal8Bit();
   RenderParameters( mCurTab );
   return 0;
 }
@@ -290,7 +290,7 @@ ConfigWindow::OnCfgTabControlChange()
 
   UpdateParameters();
   int curTabIdx = m_ui->cfgTabControl->currentIndex();
-  mCurTab = m_ui->cfgTabControl->tabText( curTabIdx ).toStdString();
+  mCurTab = m_ui->cfgTabControl->tabText( curTabIdx ).toLocal8Bit();
   RenderParameters( mCurTab );
 }
 
@@ -339,15 +339,15 @@ ConfigWindow::LoadParameters( const QString& inName )
       tempdir = "/tmp";
     QString name = tempdir;
     name = name + "/" + ::tmpnam( NULL );
-    BCI2000FileReader file( inName.toAscii() );
+    BCI2000FileReader file( inName.toLocal8Bit() );
     if( file.IsOpen() )
-      file.Parameters()->Save( name.toStdString() );
+      file.Parameters()->Save( name.toLocal8Bit().constData() );
     // do not import non-existing parameters
-    result = paramsFromFile.Load( name.toStdString(), false );
-    ::unlink( name.toAscii() );
+    result = paramsFromFile.Load( name.toLocal8Bit().constData(), false );
+    ::unlink( name.toLocal8Bit() );
   }
   else
-    result = paramsFromFile.Load( inName.toStdString(), false );
+    result = paramsFromFile.Load( inName.toLocal8Bit().constData(), false );
 
   for( int i = 0; i < paramsFromFile.Size(); ++i )
     if( 0 == OperatorUtils::GetFilterStatus( paramsFromFile[ i ].Name().c_str(), OperatorUtils::loadFilter ) )

@@ -175,7 +175,7 @@ TextField::OnChange( GUI::DrawContext& ioDC )
     font.setBold( true );
     QFontMetrics fm( font );
     QSize size;
-    QString text( mText.c_str() );
+    QString text = QString::fromLocal8Bit( mText.c_str() );
     text.append( " " ).prepend( " " );
     size.setWidth( fm.width( text ) );
     size.setHeight( fm.height() );
@@ -281,7 +281,7 @@ TextField::DoPaint( const GUI::DrawContext& inDC,
   p.setBrush( brush );
   p.setFont( font );
 
-  QString text( mText.c_str() );
+  QString text = QString::fromLocal8Bit( mText.c_str() );
   text.append( " " ).prepend( " " );
   p.drawText( rect, Qt::AlignCenter, text );
 

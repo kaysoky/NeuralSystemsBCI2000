@@ -215,7 +215,7 @@ Localization::ApplyLocalizations( void* inObject )
       GUIObjectStrings()[ inObject ].resize( numLocalizableProperties );
       for( int i = 0; i < numLocalizableProperties; ++i )
         if( Typinfo::IsPublishedProp( vclObject, localizableProperties[ i ] ) )
-		  GUIObjectStrings()[ inObject ][ i ] = AnsiString( Typinfo::GetStrProp( vclObject,
+          GUIObjectStrings()[ inObject ][ i ] = AnsiString( Typinfo::GetStrProp( vclObject,
                                                             localizableProperties[ i ] ) ).c_str();
     }
     for( int i = 0; i < numLocalizableProperties; ++i )
@@ -257,7 +257,7 @@ Localization::ApplyLocalizations( void* inObject )
     {
       if( obj->property( localizableProperties[i] ).isValid() )
       {
-        QVariant val( QString( LocalizableString( obj->property( localizableProperties[i] ).toString().toStdString().c_str() ) ) );
+        QVariant val( QString::fromLocal8Bit( LocalizableString( obj->property( localizableProperties[i] ).toString().toLocal8Bit() ) ) );
         obj->setProperty( localizableProperties[i], val );
       }
     }

@@ -323,7 +323,7 @@ void MainWindow::on_actionQuit_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-  AboutBox().SetApplicationName( QApplication::applicationName().toStdString() )
+  AboutBox().SetApplicationName( QApplication::applicationName().toLocal8Bit() )
             .Display();
 }
 
@@ -613,7 +613,7 @@ void MainWindow::on_subjectSessionEdit_textChanged(QString )
 
 void MainWindow::on_launchButton_clicked()
 {
-  string progdir = QApplication::applicationDirPath().toStdString() + "/";
+  string progdir = QApplication::applicationDirPath().toLocal8Bit() + "/";
 
   ui->statusEdit->clear();
   ui->statusEdit->append( tr( "Launching %1..." ).arg( "Operator" ) );
@@ -627,7 +627,7 @@ void MainWindow::on_launchButton_clicked()
     command << " --OnConnect \"-";
     for( int i = 0; i < mParameterFiles.size(); ++i )
       command << "LOAD PARAMETERFILE "
-              << EncodedString( mParameterFiles.at( i ).toStdString() )
+              << EncodedString( mParameterFiles.at( i ).toLocal8Bit() )
               << "; ";
     command << " SETCONFIG;\"";
   }
@@ -648,13 +648,13 @@ void MainWindow::on_launchButton_clicked()
     QListWidgetItem* item = ui->sourceList->selectedItems().first();
     ui->statusEdit->append( tr( "Launching %1..." ).arg( item->text() ) );
     ui->statusEdit->repaint();
-    command << "\"" << progdir << item->text().toStdString() << "\"";
+    command << "\"" << progdir << item->text().toLocal8Bit() << "\"";
     if( !ui->saveDirEdit->text().isEmpty() )
-      command << " --DataDirectory-" << EncodedString( ui->saveDirEdit->text().toStdString() );
+      command << " --DataDirectory-" << EncodedString( ui->saveDirEdit->text().toLocal8Bit() );
     if( !ui->subjectNameEdit->text().isEmpty() )
-      command << " --SubjectName-" << EncodedString( ui->subjectNameEdit->text().toStdString() );
+      command << " --SubjectName-" << EncodedString( ui->subjectNameEdit->text().toLocal8Bit() );
     if( !ui->subjectSessionEdit->text().isEmpty() )
-      command << " --SubjectSession-" << EncodedString( ui->subjectSessionEdit->text().toStdString() );
+      command << " --SubjectSession-" << EncodedString( ui->subjectSessionEdit->text().toLocal8Bit() );
     if( !ExecuteCommand( command.str().c_str(), progdir.c_str() ) )
       return;
   }
@@ -670,7 +670,7 @@ void MainWindow::on_launchButton_clicked()
     QListWidgetItem* item = ui->sigprocList->selectedItems().first();
     ui->statusEdit->append( tr( "Launching %1..." ).arg( item->text() ) );
     ui->statusEdit->repaint();
-    command << "\"" << progdir << item->text().toStdString() << "\"";
+    command << "\"" << progdir << item->text().toLocal8Bit() << "\"";
     if( !ExecuteCommand( command.str().c_str(), progdir.c_str() ) )
       return;
   }
@@ -686,7 +686,7 @@ void MainWindow::on_launchButton_clicked()
     QListWidgetItem* item = ui->applicationList->selectedItems().first();
     ui->statusEdit->append( tr( "Launching %1..." ).arg( item->text() ) );
     ui->statusEdit->repaint();
-    command << "\"" << progdir << item->text().toStdString() << "\"";
+    command << "\"" << progdir << item->text().toLocal8Bit() << "\"";
     if( !ExecuteCommand( command.str().c_str(), progdir.c_str() ) )
       return;
   }
@@ -696,7 +696,7 @@ void MainWindow::on_launchButton_clicked()
     ui->statusEdit->append( tr( "Launching %1..." ).arg( item->text() ) );
     ui->statusEdit->repaint();
     command.str( "" );
-    command << "\"" << progdir << item->text().toStdString() << "\"";
+    command << "\"" << progdir << item->text().toLocal8Bit() << "\"";
     if( !ExecuteCommand( command.str().c_str(), progdir.c_str() ) )
       return;
   }

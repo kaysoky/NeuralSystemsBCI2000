@@ -167,7 +167,7 @@ TextWindow::SetText( const std::string& inText )
 #if __BORLANDC__
   mpEditField->Text = inText.c_str();
 #else // __BORLANDC__
-  mpEditField->setText( QString( inText.c_str() ) );
+  mpEditField->setText( QString::fromLocal8Bit( inText.c_str() ) );
   mpEditField->moveCursor( QTextCursor::End );
 #endif // __BORLANDC__
   return *this;
@@ -179,7 +179,7 @@ TextWindow::Text() const
 #if __BORLANDC__
   mTextBuf = AnsiString( mpEditField->Text ).c_str();
 #else // __BORLANDC__
-  mTextBuf = mpEditField->toPlainText().toStdString();
+  mTextBuf = mpEditField->toPlainText().toLocal8Bit();
 #endif // __BORLANDC__
   return mTextBuf;
 }
@@ -191,7 +191,7 @@ TextWindow::SetFontName( const std::string& inFontName )
 #if __BORLANDC__
   mpEditField->Font->Name = inFontName.c_str();
 #else // __BORLANDC__
-  mpEditField->setFontFamily( QString( inFontName.c_str() ) );
+  mpEditField->setFontFamily( QString::fromLocal8Bit( inFontName.c_str() ) );
 #endif // __BORLANDC__
   return *this;
 }
@@ -202,7 +202,7 @@ TextWindow::FontName() const
 #if __BORLANDC__
   mTextBuf = AnsiString( mpEditField->Font->Name ).c_str();
 #else // __BORLANDC__
-  mTextBuf = mpEditField->font().family().toStdString();
+  mTextBuf = mpEditField->font().family().toLocal8Bit();
 #endif // __BORLANDC__
   return mTextBuf;
 }

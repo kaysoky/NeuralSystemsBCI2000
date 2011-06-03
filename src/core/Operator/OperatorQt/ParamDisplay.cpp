@@ -234,11 +234,11 @@ DisplayBase::DisplayBase( const ParsedComment& inParam, QWidget* inParent )
   // render the parameter's name
   ParamLabel* pLabel = new ParamLabel( inParent, inParam );
   pLabel->move( labelsOffsetX, labelsOffsetY );
-  pLabel->setText( inParam.Name().c_str() );
+  pLabel->setText( QString::fromLocal8Bit( inParam.Name().c_str() ) );
   QFont font = pLabel->font();
   font.setWeight( QFont::Bold );
   pLabel->setFont( font );
-  pLabel->setToolTip( inParam.Comment().c_str() );
+  pLabel->setToolTip( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
   AddWidget( pLabel );
 
   // render the parameter's User Level track bar
@@ -340,11 +340,11 @@ SeparateComment::SeparateComment( const ParsedComment& inParam, QWidget* inParen
   // render the parameter's comment
   QLabel* pComment = new QLabel( inParent );
   pComment->move( commentOffsetX, commentOffsetY );
-  pComment->setText( inParam.Comment().c_str() );
+  pComment->setText( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
   QFont font = pComment->font();
   font.setItalic( true );
   pComment->setFont( font );
-  pComment->setToolTip( inParam.Comment().c_str() );
+  pComment->setToolTip( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
 
   static const QString ellipsis = "...";
   while( pComment->text() != ellipsis
@@ -378,14 +378,14 @@ SingleEntryEdit::SingleEntryEdit( const ParsedComment& inParam, QWidget* inParen
 void
 SingleEntryEdit::WriteValuesTo( Param& outParam ) const
 {
-  outParam.Value() = mpEdit->text().toStdString();
+  outParam.Value() = mpEdit->text().toLocal8Bit();
   DisplayBase::WriteValuesTo( outParam );
 }
 
 void
 SingleEntryEdit::ReadValuesFrom( const Param& inParam )
 {
-  mpEdit->setText( inParam.Value().c_str() );
+  mpEdit->setText( QString::fromLocal8Bit( inParam.Value().c_str() ) );
   DisplayBase::ReadValuesFrom( inParam );
 }
 
@@ -407,7 +407,7 @@ List::List( const ParsedComment& inParam, QWidget* inParent )
 void
 List::WriteValuesTo( Param& outParam ) const
 {
-  istringstream is( mpEdit->text().toStdString() );
+  istringstream is( mpEdit->text().toLocal8Bit().constData() );
   EncodedString value;
   int index = 0;
   outParam.SetNumValues( 0 );
@@ -430,7 +430,7 @@ List::ReadValuesFrom( const Param& inParam )
     for( int i = 1; i < inParam.NumValues(); ++i )
       oss << ' ' << EncodedString( inParam.Value( i ) );
   }
-  mpEdit->setText( oss.str().c_str() );
+  mpEdit->setText( QString::fromLocal8Bit( oss.str().c_str() ) );
   
   DisplayBase::ReadValuesFrom( inParam );
 }
@@ -578,7 +578,7 @@ SingleEntryInputFile::ButtonClick()
 {
   QString fileName = QFileDialog::getOpenFileName(
     mpEdit->parentWidget(),
-    tr( "Choosing %1" ).arg( mComment.c_str() ),
+    tr( "Choosing %1" ).arg( QString::fromLocal8Bit( mComment.c_str() ) ),
     OperatorUtils::AppRelativeToAbsolutePath( mpEdit->text() ).filePath(),
     ALLFILES_FILTER );
   if( !fileName.isEmpty() )
@@ -599,7 +599,7 @@ SingleEntryOutputFile::ButtonClick()
 {
   QString fileName = QFileDialog::getSaveFileName( 
     mpEdit->parentWidget(),
-    tr( "Choosing %1" ).arg( mComment.c_str() ),
+    tr( "Choosing %1" ).arg( QString::fromLocal8Bit( mComment.c_str() ) ),
     OperatorUtils::AppRelativeToAbsolutePath( mpEdit->text() ).filePath(),
     ALLFILES_FILTER );
   if( !fileName.isEmpty() )
@@ -620,7 +620,7 @@ SingleEntryDirectory::ButtonClick()
 {
   QString dirName = QFileDialog::getExistingDirectory( 
     mpEdit->parentWidget(),
-    tr( "Choosing %1" ).arg( mComment.c_str() ),
+    tr( "Choosing %1" ).arg( QString::fromLocal8Bit( mComment.c_str() ) ),
     OperatorUtils::AppRelativeToAbsolutePath( mpEdit->text() ).filePath() 
   );
   if( !dirName.isEmpty() )
@@ -640,17 +640,17 @@ void
 SingleEntryColor::ButtonClick()
 {
   RGBColor color;
-  istringstream iss( mpEdit->text().toStdString() );
+  istringstream iss( mpEdit->text().toLocal8Bit().constData() );
   if( !( iss >> color ) )
     color = RGBColor::Black;
   QColor c = QRgb( color );
-  c = QColorDialog::getColor( c, NULL, tr( "Choosing %1" ).arg( mComment.c_str() ) );
+  c = QColorDialog::getColor( c, NULL, tr( "Choosing %1" ).arg( QString::fromLocal8Bit( mComment.c_str() ) ) );
   if( c.isValid() )
   {
     color = c.rgb();
     ostringstream oss;
     oss << color;
-    mpEdit->setText( oss.str().c_str() );
+    mpEdit->setText( QString::fromLocal8Bit( oss.str().c_str() ) );
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -666,8 +666,8 @@ SingleEntryEnum::SingleEntryEnum( const ParsedComment& inParam,
   mpComboBox->move( valueOffsetX, valueOffsetY );
   mpComboBox->resize( valueWidth, valueHeight );
   for( size_t i = 0; i < inParam.Values().size(); ++i )
-    mpComboBox->addItem( inParam.Values()[ i ].c_str() );
-  mpComboBox->setToolTip( inParam.Comment().c_str() );
+    mpComboBox->addItem( QString::fromLocal8Bit( inParam.Values()[ i ].c_str() ) );
+  mpComboBox->setToolTip( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
   connect( mpComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnContentChange()) );
   AddWidget( mpComboBox );
 }
@@ -699,8 +699,8 @@ SingleEntryBoolean::SingleEntryBoolean( const ParsedComment& inParam,
   mpCheckBox = new QCheckBox( inParent );
   mpCheckBox->move( valueOffsetX, valueOffsetY );
   mpCheckBox->resize( valueWidth, valueHeight );
-  mpCheckBox->setToolTip( inParam.Comment().c_str() );
-  mpCheckBox->setText( inParam.Comment().c_str() );
+  mpCheckBox->setToolTip( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
+  mpCheckBox->setText( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
   connect( mpCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnContentChange()) );
   AddWidget( mpCheckBox );
 }

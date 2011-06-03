@@ -363,7 +363,7 @@ void ParametersPage::ChSetTextHasChanged()
 void DataPage::LoadSettings()
 {
   QString inicfgFile = this->inicfgFileLineEdit->text();
-  string szFile = this->inicfgFileLineEdit->text().toStdString();
+  string szFile = this->inicfgFileLineEdit->text().toLocal8Bit();
   char format = 'f';
   int precision = 4;
 
@@ -430,7 +430,7 @@ void DataPage::LoadTrainingButton()
     for (int i=0; i<files.count(); i++)
     {
       openFilesPath = files[i];
-      fPathArr_TrainingData.push_back(openFilesPath.toStdString());
+      fPathArr_TrainingData.push_back(openFilesPath.toLocal8Bit().constData());
       this->TrainingDataFilesList->addItem(openFilesPath);
     }
     this->IfTrueTrainingDataFiles = ValidateTrainingDataFiles(fPathArr_TrainingData,
@@ -463,7 +463,7 @@ void DataPage::LoadTestingButton()
     for (int i=0; i<files.count(); i++)
     {
       openFilesPath = files[i];
-      fPathArr_TestingData.push_back(openFilesPath.toStdString());
+      fPathArr_TestingData.push_back(openFilesPath.toLocal8Bit().constData());
       this->TestingDataFilesList->addItem(openFilesPath);
     }
 
@@ -734,7 +734,7 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
   for (files=0; files<this->TrainingDataFilesList->count(); files++)
   {
     item = this->TrainingDataFilesList->item(files);
-    fPathArr.push_back(item->text().toStdString());
+    fPathArr.push_back(item->text().toLocal8Bit().constData());
     CurrentFile->Open(fPathArr[files].c_str());
     if( !CurrentFile->IsOpen() )
     {
@@ -1227,7 +1227,7 @@ bool DataPage::ValidateTestingDataFiles(vector<string> &fPathArr, int &numSample
   for (files=0; files<this->TestingDataFilesList->count(); files++)
   {
     item = this->TestingDataFilesList->item(files);
-    fPathArr.push_back(item->text().toStdString());
+    fPathArr.push_back(item->text().toLocal8Bit().constData());
     CurrentFile->Open(fPathArr[files].c_str());
     if( !CurrentFile->IsOpen() )
     {
@@ -2215,7 +2215,7 @@ void DataPage::WriteParameterFragment()
   {
     WritePRMLineEdit->setText(fileName);
     // Write PRM
-    WritePRM(fileName.toStdString().c_str(), tMUD, IniParam.SF);
+    WritePRM(fileName.toLocal8Bit().constData(), tMUD, IniParam.SF);
   }
 }
 

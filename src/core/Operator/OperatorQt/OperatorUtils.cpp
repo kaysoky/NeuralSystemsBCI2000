@@ -179,7 +179,7 @@ OperatorUtils::LoadMatrix( const QString& inFileName, Param& outParam )
   if( QFileInfo( inFileName ).suffix() == MATRIX_EXTENSION )
   {
     ParamList paramsFromFile;
-    paramsFromFile.Load( inFileName.toStdString(), true );
+    paramsFromFile.Load( inFileName.toLocal8Bit().constData(), true );
     if( paramsFromFile.Size() == 0 )
       return MatNotFound;
     if( paramsFromFile.Size() > 1 )
@@ -194,7 +194,7 @@ OperatorUtils::LoadMatrix( const QString& inFileName, Param& outParam )
   }
   else
   {
-    ifstream input( inFileName.toStdString().c_str() );
+    ifstream input( inFileName.toLocal8Bit() );
     input.clear();
     vector<vector<string> > matrix;
     string line;
@@ -246,7 +246,7 @@ OperatorUtils::SaveMatrix( const QString& inFileName, const Param& inParam )
       return CannotWriteNestedMatrixAsText;
   }
 
-  ofstream output( inFileName.toStdString().c_str() );
+  ofstream output( inFileName.toLocal8Bit() );
   if( saveAsMatrix )
   {
     output << inParam;

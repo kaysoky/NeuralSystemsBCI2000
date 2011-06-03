@@ -291,7 +291,7 @@ MainWindow::SetFunctionButtons()
 void
 MainWindow::ExecuteScript( const QString& inScript )
 {
-  string s = inScript.toStdString();
+  string s = inScript.toLocal8Bit();
   if( !s.empty() )
   {
     if( s[ 0 ] == '-' )
@@ -654,23 +654,23 @@ MainWindow::on_actionStates_triggered()
 void
 MainWindow::on_pushButton_Btn1_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[0].Cmd.toStdString().c_str() );
+  BCI_ExecuteScript( gpPreferences->mButtons[0].Cmd.toLocal8Bit() );
 }
 
 void
 MainWindow::on_pushButton_Btn2_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[1].Cmd.toStdString().c_str() );
+  BCI_ExecuteScript( gpPreferences->mButtons[1].Cmd.toLocal8Bit() );
 }
 
 void
 MainWindow::on_pushButton_Btn3_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[2].Cmd.toStdString().c_str() );
+  BCI_ExecuteScript( gpPreferences->mButtons[2].Cmd.toLocal8Bit() );
 }
 
 void
 MainWindow::on_pushButton_Btn4_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[3].Cmd.toStdString().c_str() );
+  BCI_ExecuteScript( gpPreferences->mButtons[3].Cmd.toLocal8Bit() );
 }

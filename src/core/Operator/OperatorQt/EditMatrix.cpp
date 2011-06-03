@@ -103,7 +103,7 @@ EditMatrix::SetDisplayedParam( Param* inParam )
 {
   Lock();
   mpMatrixParam = inParam;
-  mMatrixParamName = mpMatrixParam->Name().c_str();
+  mMatrixParamName = QString::fromLocal8Bit( mpMatrixParam->Name().c_str() );
   m_ui->rowsSpinBox->setValue( mpMatrixParam->NumRows() );
   m_ui->colsSpinBox->setValue( mpMatrixParam->NumColumns() );
   UpdateDisplay();
@@ -124,9 +124,9 @@ EditMatrix::UpdateDisplay()
     mpSubEditor->close();
 
   // set the window title and comment
-  this->setWindowTitle( tr( "Edit Matrix " ) + mpMatrixParam->Name().c_str() );
-  m_ui->label->setText( mpMatrixParam->Comment().c_str() );
-  m_ui->label->setToolTip( mpMatrixParam->Comment().c_str() );
+  this->setWindowTitle( tr( "Edit Matrix " ) + QString::fromLocal8Bit( mpMatrixParam->Name().c_str() ) );
+  m_ui->label->setText( QString::fromLocal8Bit( mpMatrixParam->Comment().c_str() ) );
+  m_ui->label->setToolTip( QString::fromLocal8Bit( mpMatrixParam->Comment().c_str() ) );
 
   // given the pointer, write the parameter's data into the spread sheet
   QTableWidget* t = m_ui->tableWidget;
@@ -137,14 +137,14 @@ EditMatrix::UpdateDisplay()
   while( col < mpMatrixParam->NumColumns() )
   {
     QTableWidgetItem* item = new QTableWidgetItem;
-    item->setText( mpMatrixParam->ColumnLabels()[ col ].c_str() );
+    item->setText( QString::fromLocal8Bit( mpMatrixParam->ColumnLabels()[ col ].c_str() ) );
     t->setHorizontalHeaderItem( col, item );
     ++col;
   }
   while( col < t->columnCount() )
   {
     QTableWidgetItem* item = new QTableWidgetItem;
-    item->setText( LabelIndex::TrivialLabel( col ).c_str() );
+    item->setText( QString::fromLocal8Bit( LabelIndex::TrivialLabel( col ).c_str() ) );
     t->setHorizontalHeaderItem( col, item );
     ++col;
   }
@@ -152,14 +152,14 @@ EditMatrix::UpdateDisplay()
   while( row < mpMatrixParam->NumRows() )
   {
     QTableWidgetItem* item = new QTableWidgetItem;
-    item->setText( mpMatrixParam->RowLabels()[ row ].c_str() );
+    item->setText( QString::fromLocal8Bit( mpMatrixParam->RowLabels()[ row ].c_str() ) );
     t->setVerticalHeaderItem( row, item );
     ++row;
   }
   while( row < t->rowCount() )
   {
     QTableWidgetItem* item = new QTableWidgetItem;
-    item->setText( LabelIndex::TrivialLabel( row ).c_str() );
+    item->setText( QString::fromLocal8Bit( LabelIndex::TrivialLabel( row ).c_str() ) );
     t->setVerticalHeaderItem( row, item );
     ++row;
   }
@@ -174,7 +174,7 @@ EditMatrix::UpdateDisplay()
         SetSubmatrixProperties( item );
       else
       {
-        item->setText( mpMatrixParam->Value( row, col ).c_str() );
+        item->setText( QString::fromLocal8Bit( mpMatrixParam->Value( row, col ).c_str() ) );
         SetNormalEntryProperties( item );
       }
       t->setItem( row, col, item );
@@ -195,15 +195,15 @@ EditMatrix::UpdateParam()
   QTableWidget* t = m_ui->tableWidget;
   // set column and row labels
   for( int col = 0; col < mpMatrixParam->NumColumns(); ++col )
-    mpMatrixParam->ColumnLabels()[ col ] = t->horizontalHeaderItem( col )->text().toStdString();
+    mpMatrixParam->ColumnLabels()[ col ] = t->horizontalHeaderItem( col )->text().toLocal8Bit();
   for( int row = 0; row < mpMatrixParam->NumRows(); ++row )
-    mpMatrixParam->RowLabels()[ row ] = t->verticalHeaderItem( row )->text().toStdString();
+    mpMatrixParam->RowLabels()[ row ] = t->verticalHeaderItem( row )->text().toLocal8Bit();
 
   // set the values in the parameter according to the values in the spreadsheet
   for( int row = 0; row < mpMatrixParam->NumRows(); ++row )
     for( int col = 0; col < mpMatrixParam->NumColumns(); ++col )
       if( !IsSubmatrix( t->item( row, col ) ) )
-        mpMatrixParam->Value( row, col ) = t->item( row, col )->text().toStdString();
+        mpMatrixParam->Value( row, col ) = t->item( row, col )->text().toLocal8Bit();
 
   Unlock();
 }
@@ -278,10 +278,10 @@ EditMatrix::EditItem( QTableWidgetItem* inItem )
     mpSubEditor->move( this->x() + 20, this->y() + 20 );
     mpSubEditor->SetDisplayedParam( mpMatrixParam->Value( row, col ) );
     mpSubEditor->setWindowTitle( this->windowTitle() + "("
-                           + mpMatrixParam->RowLabels()[ row ].c_str() + ","
-                           + mpMatrixParam->ColumnLabels()[ col ].c_str() + ")"
+                           + QString::fromLocal8Bit( mpMatrixParam->RowLabels()[ row ].c_str() ) + ","
+                           + QString::fromLocal8Bit( mpMatrixParam->ColumnLabels()[ col ].c_str() ) + ")"
                            );
-    mpSubEditor->m_ui->label->setText( mpMatrixParam->Comment().c_str() );
+    mpSubEditor->m_ui->label->setText( QString::fromLocal8Bit( mpMatrixParam->Comment().c_str() ) );
     mpSubEditor->exec();
     delete mpSubEditor;
     mpSubEditor = NULL;
@@ -305,7 +305,7 @@ EditMatrix::PlainCellToMatrix( int inRow, int inCol )
   {
     QTableWidgetItem* item = m_ui->tableWidget->item( inRow, inCol );
     Param p( "{ matrix 1 1 0 }" );
-    p.Value( 0, 0 ) = item->text().toStdString();
+    p.Value( 0, 0 ) = item->text().toLocal8Bit();
     mpMatrixParam->Value( inRow, inCol ) = p;
     SetSubmatrixProperties( item );
     AdaptColumnWidths();
@@ -355,7 +355,7 @@ EditMatrix::MatrixToPlainCell( int inRow, int inCol )
     mpMatrixParam->Value( inRow, inCol ) = *val;
     QTableWidgetItem* item = m_ui->tableWidget->item( inRow, inCol );
     SetNormalEntryProperties( item );
-    item->setText( mpMatrixParam->Value( inRow, inCol ).c_str() );
+    item->setText( QString::fromLocal8Bit( mpMatrixParam->Value( inRow, inCol ).c_str() ) );
     AdaptColumnWidths();
   }
 }

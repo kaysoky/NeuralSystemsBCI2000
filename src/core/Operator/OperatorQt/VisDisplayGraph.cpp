@@ -853,7 +853,7 @@ VisDisplayGraph::SyncFilterMenu( const string& inCaption, QMenu* inpMenu )
   for( int i = 0; i < inpMenu->actions().size(); ++i )
   {
     QAction* pAction = inpMenu->actions()[i];
-    bool isCurrent = ( pAction->text().toStdString() == inCaption );
+    bool isCurrent = ( inCaption == pAction->text().toLocal8Bit().constData() );
     if( isCurrent )
       result = pAction;
     pAction->setChecked( isCurrent );

@@ -578,7 +578,7 @@ void BCI2000Viewer::on_editPosition_editingFinished()
   if( mPositionEdited )
   {
     TimeValue t;
-    istringstream iss( ui->editPosition->text().toStdString().c_str() );
+    istringstream iss( ui->editPosition->text().toLocal8Bit().constData() );
     if( iss >> t )
       SetSamplePos( static_cast<int>( t * mFile.SamplingRate() - ui->signalDisplay->Display().NumSamples() / 2 ) );
   }
@@ -663,7 +663,7 @@ void BCI2000Viewer::HelpOpenHelp()
 
 void BCI2000Viewer::HelpAbout()
 {
-  AboutBox().SetApplicationName( QApplication::applicationName().toStdString() )
+  AboutBox().SetApplicationName( QApplication::applicationName().toLocal8Bit() )
             .Display();
 }
 
@@ -777,7 +777,7 @@ void BCI2000Viewer::ChooseChannelColors()
 {
   // The dialog's "custom colors" are used to hold channel colors.
   ColorList channelColors = ui->signalDisplay->Display().ChannelColors();
-  ColorListChooser().SetPrompt( tr("Choose channel colors").toStdString() )
+  ColorListChooser().SetPrompt( tr("Choose channel colors").toLocal8Bit() )
                     .Display( channelColors );
   ui->signalDisplay->Display().SetChannelColors( channelColors );
 }
@@ -859,7 +859,7 @@ void BCI2000Viewer::HelpOnState()
   QListWidgetItem* pItem = ui->channelList->currentItem();
   if( pItem )
   {
-    string name = pItem->text().toStdString();
+    string name = pItem->text().toLocal8Bit();
     if( ExecutableHelp().StateHelp().Exists( name ) )
       ExecutableHelp().StateHelp().Open( name );
     else
@@ -898,7 +898,7 @@ bool BCI2000Viewer::StateSelected() const
 void
 BCI2000Viewer::DoFileOpen( const QString& inName )
 {
-  mFile.Open( inName.toStdString().c_str() );
+  mFile.Open( inName.toLocal8Bit() );
   if( !mFile.IsOpen() )
   {
     if( !inName.isEmpty() )
@@ -999,7 +999,7 @@ BCI2000Viewer::ReadSettings()
   ui->splitter->restoreState( settings.value( "Splitter" ).toByteArray() );
   QDir::setCurrent( settings.value( "WorkingDirectory" ).toString() );
   istringstream iss;
-  iss.str( settings.value( "ChannelColors" ).toString().toStdString() );
+  iss.str( settings.value( "ChannelColors" ).toString().toLocal8Bit().constData() );
   ColorList colors;
   if( iss >> colors )
     ui->signalDisplay->Display().SetChannelColors( colors );
@@ -1071,7 +1071,7 @@ BCI2000Viewer::UpdateChannelLabels()
         channelLabels.push_back(
           Label(
             channelLabels.size(),
-            ui->channelList->item( i )->text().toStdString().c_str()
+            ui->channelList->item( i )->text().toLocal8Bit()
           )
         );
         ++numMarkerChannels;
@@ -1127,7 +1127,7 @@ BCI2000Viewer::ConstructDisplaySignal( long inPos, long inLength )
     vector<StateRef> states;
     for( ; i < ui->channelList->count() && ( ui->channelList->item( i )->flags() & Qt::ItemIsUserCheckable ); ++i )
       if( ui->channelList->item( i )->checkState() == Qt::Checked )
-        states.push_back( mFile.State( ui->channelList->item( i )->text().toStdString().c_str() ) );
+        states.push_back( mFile.State( ui->channelList->item( i )->text().toLocal8Bit() ) );
     vector<size_t> channels;
     int base = ++i;
     for( ; i < ui->channelList->count() && ( ui->channelList->item( i )->flags() & Qt::ItemIsUserCheckable ); ++i )

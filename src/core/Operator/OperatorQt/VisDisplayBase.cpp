@@ -87,7 +87,7 @@ VisDisplayBase::ConfigContainer::Restore()
   QStringList visIDs = settings.childGroups();
   for( QStringList::iterator i = visIDs.begin(); i != visIDs.end(); ++i )
   {
-    string visID = i->toStdString();
+    string visID = i->toLocal8Bit();
     settings.beginGroup( *i );
     QStringList cfgIDs = settings.childKeys();
     for( QStringList::iterator j = cfgIDs.begin(); j != cfgIDs.end(); ++j )
