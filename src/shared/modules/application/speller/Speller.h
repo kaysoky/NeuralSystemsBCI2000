@@ -34,9 +34,11 @@
 #include "Target.h"
 #include <string>
 #include <set>
+#include <vector>
 
 class SpellerTarget;
 typedef std::set<SpellerTarget*> SetOfSpellerTargets;
+typedef std::vector<SpellerTarget*> SequenceOfSpellerTargets;
 
 class Speller
 {
@@ -47,10 +49,13 @@ class Speller
   Speller& Add( SpellerTarget* );
   Speller& Remove( SpellerTarget* );
   Speller& DeleteObjects();
+  const SetOfSpellerTargets& Targets() const;
 
   // Target suggestion
   virtual SpellerTarget* SuggestTarget( const std::string& from,
                                         const std::string& to ) const;
+  bool TrySpelling( const std::string& inText, 
+                    SequenceOfSpellerTargets* pOutSequence = 0 );
   // Event triggering
   Speller& Enter( const std::string& );
 

@@ -69,6 +69,12 @@ Speller::DeleteObjects()
   return *this;
 }
 
+const SetOfSpellerTargets&
+Speller::Targets() const
+{
+  return mTargets;
+}
+
 // Target suggestion
 SpellerTarget*
 Speller::SuggestTarget( const string& inFrom, const string& inTo ) const
@@ -94,6 +100,37 @@ Speller::SuggestTarget( const string& inFrom, const string& inTo ) const
     sortedTargets[ Distance( inFrom + ( *i )->EntryText(), inTo ) ] = *i;
   return sortedTargets.empty() ? NULL : sortedTargets.begin()->second;
 }
+
+bool
+Speller::TrySpelling( const string& inText, SequenceOfSpellerTargets* pOutSequence )
+{ 
+  // Check whether it is possible to spell a given text, 
+  // using targets available in the speller.
+  if( pOutSequence )
+    pOutSequence->clear();
+
+  if( inText.empty() )
+    return true;
+
+  string remainingText = inText;
+  SpellerTarget* pSuggestedTarget = NULL;
+  do
+  { pSuggestedTarget = SuggestTarget( "", remainingText );
+    if( pSuggestedTarget != NULL )
+    {
+      const string& entryText = pSuggestedTarget->EntryText();
+      if( remainingText.find( entryText ) != 0 )
+        pSuggestedTarget = NULL;
+      else
+        remainingText = remainingText.substr( entryText.length() );
+    }
+    if( pOutSequence )
+      pOutSequence->push_back( pSuggestedTarget );
+  } while( pSuggestedTarget != NULL && remainingText.length() > 0 );
+
+  return ( pSuggestedTarget != NULL );
+}
+
 
 // Event triggering
 Speller&

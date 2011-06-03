@@ -221,24 +221,33 @@ P3SpellerTask::OnPreflight( const SignalProperties& /*Input*/ ) const
       preflightAssociations,
       preflightSpeller
     );
-    if( interpretMode == InterpretModes::Copy
-        && i + 1 == Parameter( "FirstActiveMenu" ) )
-    { // Check whether it is possible to spell the predefined text.
-      string remainingText = Parameter( "TextToSpell" );
-      SpellerTarget* pSuggestedTarget = NULL;
-      do
-      { pSuggestedTarget = preflightSpeller.SuggestTarget( "", remainingText );
-        if( pSuggestedTarget != NULL )
-        {
-          const string& entryText = pSuggestedTarget->EntryText();
-          if( remainingText.find( entryText ) != 0 )
-            pSuggestedTarget = NULL;
-          else
-            remainingText = remainingText.substr( entryText.length() );
-        }
-      } while( pSuggestedTarget != NULL && remainingText.length() > 0 );
-      if( pSuggestedTarget == NULL )
-        bcierr << "TextToSpell contains characters that are not available "
+    if( interpretMode == InterpretModes::Copy && i + 1 == Parameter( "FirstActiveMenu" ) )
+    {
+      string commands;
+      for( SetOfSpellerTargets::const_iterator j = preflightSpeller.Targets().begin(); j != preflightSpeller.Targets().end(); ++j )
+      {
+        istringstream iss( ( *j )->EntryText() );
+        SpellerCommand command;
+        while( iss >> command )
+          if( !command.Code().empty() )
+            commands += string( " " ) + command.Code();
+      }
+      if( !commands.empty() )
+        bciout << "Speller commands are not supported in copy spelling "
+               << "mode, and may result in inconsistent target suggestions. "
+               << "Menu " << i + 1
+               << " contains the following speller commands: "
+               << commands
+               << "."
+               << endl;
+
+      if( !preflightSpeller.TrySpelling( Parameter( "TextToSpell" ) ) )
+        bcierr << "TextToSpell cannot be spelled using TargetDefinitions "
+               << "in menu " << i + 1
+               << endl;
+
+      if( !preflightSpeller.TrySpelling( Parameter( "TextResult" ) ) )
+        bcierr << "TextResult cannot be spelled using TargetDefinitions "
                << "in menu " << i + 1
                << endl;
     }
@@ -249,7 +258,7 @@ P3SpellerTask::OnPreflight( const SignalProperties& /*Input*/ ) const
   if( interpretMode == InterpretModes::Copy )
   {
     if( Parameter( "TextToSpell" ) == "" )
-      bciout << "Empty text to spell in copy spelling mode" << endl;
+      bciout << "Empty TextToSpell parameter in copy spelling mode" << endl;
   }
   if( interpretMode != InterpretModes::None )
   {
@@ -868,14 +877,12 @@ P3SpellerTask::DetermineAttendedTarget()
   if( mInterpretMode_ == InterpretModes::Copy )
   {
     SpellerTarget* pSuggestedTarget = NULL;
-    size_t curResultLength = mTextHistory.top().length();
-    if( mTextToSpell.length() > curResultLength )
-    {
-      string remainingText = mTextToSpell.substr( curResultLength );
-      pSuggestedTarget = SuggestTarget( "", remainingText );
-      if( pSuggestedTarget && remainingText.find( pSuggestedTarget->EntryText() ) != 0 )
-        pSuggestedTarget = NULL;
-    }
+    SequenceOfSpellerTargets currentlySpelled,
+                             toBeSpelled;
+    Speller::TrySpelling( mTextHistory.top(), &currentlySpelled );
+    Speller::TrySpelling( mTextToSpell, &toBeSpelled );
+    if( toBeSpelled.size() > currentlySpelled.size() )
+      pSuggestedTarget = toBeSpelled[ currentlySpelled.size() ];
 
     if( pSuggestedTarget == NULL )
     {
