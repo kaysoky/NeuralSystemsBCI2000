@@ -34,6 +34,7 @@
 
 #include "Normalizer.h"
 #include <numeric>
+#include <fstream>
 
 using namespace std;
 
@@ -72,6 +73,17 @@ Normalizer::Normalizer()
     "(use empty string for continuous update)",
 
  END_PARAMETER_DEFINITIONS
+
+  mOutputPrmFile = OptionalParameter( "NormalizerOutputPrm", "" );
+  if( mOutputPrmFile.size() )
+  {
+    ofstream prmFile;
+    prmFile.open( mOutputPrmFile.c_str(), ios::app );
+    if( prmFile.is_open() )
+      prmFile.close();
+    else
+      bciout << "failed to open NormalizerOutputPrm file \"" << mOutputPrmFile << "\" for appending" << endl;
+  }
 }
 
 
@@ -234,6 +246,33 @@ Normalizer::StopRun()
       Parameter( "NormalizerOffsets" )( channel ) = mOffsets[ channel ];
       Parameter( "NormalizerGains" )( channel ) = mGains[ channel ];
     }
+
+  if( mOutputPrmFile.size() )
+  {
+    ofstream prmFile;
+    prmFile.open( mOutputPrmFile.c_str(), ios::app );
+    if( prmFile.is_open() )
+    {
+      time_t now = ::time( NULL );
+      struct tm* timeinfo = ::localtime( &now );
+      char timeBuffer[20];
+      ::strftime( timeBuffer, sizeof( timeBuffer ), "%Y-%m-%d   %H:%M:%S", timeinfo );
+
+      ParamRef p = Parameter( "NormalizerOffsets" );
+      prmFile << p->Section() << " " << p->Type() << " " << p->Name() << "= " << p->NumValues() << "      ";
+      for( int i = 0; i < p->NumValues(); i++ ) prmFile << (string)p( i ) << "  ";
+      prmFile << " // written " << timeBuffer << endl;
+      ParamRef q = Parameter( "NormalizerGains" );
+      prmFile << q->Section() << " " << q->Type() << " " << q->Name() << "= " << q->NumValues() << "      ";
+      for( int i = 0; i < q->NumValues(); i++ ) prmFile << (string)q( i ) << "  ";
+      prmFile << " // written " << timeBuffer << endl;
+      prmFile.close(); 
+    }
+    else
+    {
+      bciout << "failed to write NormalizerOffsets and NormalizerGains to file " << mOutputPrmFile << endl;
+    }
+  }
 }
 
 void

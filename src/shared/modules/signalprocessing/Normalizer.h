@@ -102,5 +102,6 @@ class Normalizer : public GenericFilter
    std::vector<double> mOffsets,
                        mGains;
    bool mDoAdapt;
+   std::string mOutputPrmFile;
 };
 #endif // NORMALIZER_H
