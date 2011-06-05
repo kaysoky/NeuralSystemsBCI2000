@@ -256,7 +256,7 @@ Normalizer::StopRun()
       time_t now = ::time( NULL );
       struct tm* timeinfo = ::localtime( &now );
       char timeBuffer[20];
-      ::strftime( timeBuffer, sizeof( timeBuffer ), "%Y-%m-%d   %H:%M:%S", timeinfo );
+      ::strftime( timeBuffer, sizeof( timeBuffer ), "%Y-%m-%d %H:%M:%S", timeinfo );
 
       ParamRef p = Parameter( "NormalizerOffsets" );
       prmFile << p->Section() << " " << p->Type() << " " << p->Name() << "= " << p->NumValues() << "      ";
