@@ -52,13 +52,14 @@ StimulusPresentationTask::StimulusPresentationTask()
   BEGIN_PARAMETER_DEFINITIONS
     "Application:Sequencing intlist Sequence= 4 1 3 4 2 % % % // "
       "Sequence in which stimuli are presented (deterministic mode)/"
-      " Stimulus frequencies for each stimulus (random mode)",
+      " Stimulus frequencies for each stimulus (random mode)/"
+      " Ignored (P3Speller compatible mode)",
 
-    "Application:Sequencing int SequenceType= 0 0 0 1 // "
-      "Sequence of stimuli is 0 deterministic, 1 random (enumeration)",
+    "Application:Sequencing int SequenceType= 0 0 0 2 // "
+      "Sequence of stimuli is 0 deterministic, 1 random, 2 P3Speller compatible (enumeration)",
 
     "Application:Sequencing int NumberOfSequences= 3 1 0 % // "
-      "number of sequence repetitions in a run",
+      "number of sequence repetitions",
 
     "Application:Sequencing intlist ToBeCopied= 3 1 2 3 1 1 % // "
       "Sequence in which stimuli need to be copied (only used in copy mode)",
@@ -155,6 +156,9 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
                  << "(" << Sequence( i ) << ") "
                  << "at Sequence(" << i << ")"
                  << endl;
+      break;
+
+    case SequenceTypes::P3Speller:
       break;
 
     default:
@@ -547,6 +551,10 @@ StimulusPresentationTask::OnStartRun()
         }
       }
       break;
+
+    case SequenceTypes::P3Speller:
+      // start with an empty sequence
+      break;
   }
   mSequencePos = mSequence.begin();
   mToBeCopiedPos = mToBeCopied.begin();
@@ -635,6 +643,25 @@ StimulusPresentationTask::DoPostSequence( const GenericSignal&, bool& /*doProgre
 int
 StimulusPresentationTask::OnNextStimulusCode()
 {
+  // When in P3Speller compatible mode, create a new sequence each time we have come to end of the previous one.
+  // Also, in P3Speller compatible mode, do not terminate the run except when we are in copy mode.
+  if( mSequenceType == SequenceTypes::P3Speller
+      && mSequencePos == mSequence.end()
+      && !( int( Parameter( "InterpretMode" ) ) == InterpretModes::Copy && mToBeCopiedPos == mToBeCopied.end() )
+    )
+  {
+    mSequence.clear();
+    for( int i = 0; i < mNumberOfSequences; ++i )
+    {
+      vector<int> seq;
+      for( int j = 0; j < Parameter( "Stimuli" )->NumColumns(); ++j )
+        seq.push_back( j + 1 );
+      random_shuffle( seq.begin(), seq.end(), RandomNumberGenerator );
+      mSequence.insert( mSequence.end(), seq.begin(), seq.end() );
+    }
+    mSequence.push_back( 0 );
+    mSequencePos = mSequence.begin();
+  }
   return mSequencePos == mSequence.end() ? 0 : *mSequencePos++;
 }
 

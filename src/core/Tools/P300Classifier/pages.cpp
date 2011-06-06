@@ -2260,6 +2260,11 @@ bool DataPage::ValidateStimulusFrequencies( BCI2000FileReader& ioFile, string& i
     for( int i = 0; i < min( numStimuli, Sequence->NumValues() ); ++i )
       stimulusFrequencies[i] = Sequence( i );
   }
+  else if( ioFile.Parameter( "SequenceType" ) == 2 ) // P3Speller compatible
+  {
+    for( int i = 0; i < numStimuli; ++i )
+      stimulusFrequencies[i] = 1;
+  }
   else // unknown sequence type
   {
     ioErrors << "Unknown sequence type in file " << inFileName << ".\n";

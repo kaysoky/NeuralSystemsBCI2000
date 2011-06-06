@@ -36,6 +36,7 @@ namespace SequenceTypes
   {
     Deterministic = 0,
     Random,
+    P3Speller,
   };
 }
 
@@ -71,7 +72,9 @@ class StimulusPresentationTask : public StimulusTask
       mSequenceType;
 
   // Internal state.
-  int mBlockCount;
+  int mBlockCount,
+      mSequenceCount,
+      mSequenceRepetitions;
 
   std::vector<int> mToBeCopied;
   std::vector<int>::const_iterator mToBeCopiedPos;

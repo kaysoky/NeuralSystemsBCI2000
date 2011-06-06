@@ -275,21 +275,34 @@ if (mode == 3 || mode == 4)
 	}
 }
 #else // jm
-  int trial = 1,
-      sequence = 0;
-
-  for( int i = 1; i < NumSamples; ++i )
+  if( CurrentFile->Parameters()->Exists( "SequenceType" ) && CurrentFile->Parameter( "SequenceType" ) == 2 ) // P3Speller compatible
   {
-    state.trialnr( i - 1 ) = trial;
-    if( (statePhaseInSequence[ i - 1 ] == 1 ) && ( statePhaseInSequence[i] == 2 ) )
+    int trial = 0;
+    for( int i = 1; i < NumSamples; ++i )
     {
-      if( ++sequence == parms.NumberOfSequences + 1 )
-      {
-        sequence = 1;
+      state.trialnr( i - 1 ) = trial;
+      if( ( statePhaseInSequence[i - 1] == 1 ) && ( statePhaseInSequence[i] == 2 ) )
         ++trial;
+    }
+  }
+  else
+  {
+    int trial = 1,
+        sequence = 0;
+
+    for( int i = 1; i < NumSamples; ++i )
+    {
+      state.trialnr( i - 1 ) = trial;
+      if( ( statePhaseInSequence[ i - 1 ] == 1 ) && ( statePhaseInSequence[i] == 2 ) )
+      {
+        if( ++sequence == parms.NumberOfSequences + 1 )
+        {
+          sequence = 1;
+          ++trial;
+        }
       }
     }
-	}
+  }
 #endif // jm
 }
 
