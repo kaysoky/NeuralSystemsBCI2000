@@ -53,10 +53,13 @@ FileWriterBase::~FileWriterBase()
 void
 FileWriterBase::Publish() const
 {
-  BEGIN_PARAMETER_DEFINITIONS
-    "Storage:Documentation int SavePrmFile= 0 1 0 1 "
-      "// save additional parameter file (0=no, 1=yes) (boolean)",
-  END_PARAMETER_DEFINITIONS
+  if( ( OptionalParameter( "SavePrmFile" ) != 0 ) )
+  {
+    BEGIN_PARAMETER_DEFINITIONS
+      "Storage:Documentation int SavePrmFile= 0 1 0 1 "
+        "// save additional parameter file for each run (0=no, 1=yes) (boolean)",
+    END_PARAMETER_DEFINITIONS
+  }
 
   mrOutputFormat.Publish();
 }
@@ -101,7 +104,7 @@ FileWriterBase::Preflight( const SignalProperties& Input,
       }
     }
   }
-  if( Parameter( "SavePrmFile" ) == 1 )
+  if( OptionalParameter( "SavePrmFile" ) == 1 )
   {
     string paramFileName =  baseFileName + bciParameterExtension;
     ifstream paramRead( paramFileName.c_str() );
@@ -156,7 +159,7 @@ FileWriterBase::StartRun()
   mOutputFile.clear();
   mOutputFile.open( mFileName.c_str(), ios::out | ios::binary );
 
-  if( Parameter( "SavePrmFile" ) == 1 )
+  if( OptionalParameter( "SavePrmFile" ) == 1 )
   {
     string paramFileName =  baseFileName + bciParameterExtension;
     ofstream file( paramFileName.c_str() );
