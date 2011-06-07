@@ -120,14 +120,21 @@ class GenericFilter : protected Environment
       priority( inPriority ),
       instance( createdInstances++ )
     {
+      int maxPriority = inPriority;
       RegistrarSet_::iterator i = Registrars().begin();
       while( i != Registrars().end() )
       {
         RegistrarSet_::iterator j = i++;
+        // Determine max priority present.
+        if( (*j)->priority > maxPriority )
+          maxPriority = (*j)->priority;
+        // Remove all registrars with lower priority.
         if( (*j)->priority < inPriority )
           Registrars().erase( j );
       }
-      Registrars().insert( this ); 
+      // Only insert if priority is high enough.
+      if( inPriority >= maxPriority )
+        Registrars().insert( this ); 
     }
     virtual ~Registrar()
     {
