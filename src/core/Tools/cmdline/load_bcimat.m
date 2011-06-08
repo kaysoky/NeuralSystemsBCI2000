@@ -60,7 +60,8 @@ if( num_states ~= nargout - 1 )
   return;
 end
 
-if( char( who( '-file', filename ) ) ~= [ 'Data '; 'Index' ] )
+filevars = who( '-file', filename );
+if( isempty( find( ismember( filevars, 'Data' ) == 1, 1 ) ) || isempty( find( ismember( filevars, 'Index' ) == 1, 1 ) ) )
   error( 'Input file is not a bci_stream2mat file.' );
   return;
 end
