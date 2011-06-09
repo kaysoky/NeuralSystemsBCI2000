@@ -663,7 +663,7 @@ void BCI2000Viewer::HelpOpenHelp()
 
 void BCI2000Viewer::HelpAbout()
 {
-  AboutBox().SetApplicationName( QApplication::applicationName().toLocal8Bit() )
+  AboutBox().SetApplicationName( QApplication::applicationName().toLocal8Bit().constData() )
             .Display();
 }
 
@@ -777,7 +777,7 @@ void BCI2000Viewer::ChooseChannelColors()
 {
   // The dialog's "custom colors" are used to hold channel colors.
   ColorList channelColors = ui->signalDisplay->Display().ChannelColors();
-  ColorListChooser().SetPrompt( tr("Choose channel colors").toLocal8Bit() )
+  ColorListChooser().SetPrompt( tr("Choose channel colors").toLocal8Bit().constData() )
                     .Display( channelColors );
   ui->signalDisplay->Display().SetChannelColors( channelColors );
 }
@@ -1071,7 +1071,7 @@ BCI2000Viewer::UpdateChannelLabels()
         channelLabels.push_back(
           Label(
             channelLabels.size(),
-            ui->channelList->item( i )->text().toLocal8Bit()
+            ui->channelList->item( i )->text().toLocal8Bit().constData()
           )
         );
         ++numMarkerChannels;
@@ -1127,7 +1127,7 @@ BCI2000Viewer::ConstructDisplaySignal( long inPos, long inLength )
     vector<StateRef> states;
     for( ; i < ui->channelList->count() && ( ui->channelList->item( i )->flags() & Qt::ItemIsUserCheckable ); ++i )
       if( ui->channelList->item( i )->checkState() == Qt::Checked )
-        states.push_back( mFile.State( ui->channelList->item( i )->text().toLocal8Bit() ) );
+        states.push_back( mFile.State( ui->channelList->item( i )->text().toLocal8Bit().constData() ) );
     vector<size_t> channels;
     int base = ++i;
     for( ; i < ui->channelList->count() && ( ui->channelList->item( i )->flags() & Qt::ItemIsUserCheckable ); ++i )

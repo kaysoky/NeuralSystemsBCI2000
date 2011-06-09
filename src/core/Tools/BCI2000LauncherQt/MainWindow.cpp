@@ -323,7 +323,7 @@ void MainWindow::on_actionQuit_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-  AboutBox().SetApplicationName( QApplication::applicationName().toLocal8Bit() )
+  AboutBox().SetApplicationName( QApplication::applicationName().toLocal8Bit().constData() )
             .Display();
 }
 
@@ -648,7 +648,7 @@ void MainWindow::on_launchButton_clicked()
     QListWidgetItem* item = ui->sourceList->selectedItems().first();
     ui->statusEdit->append( tr( "Launching %1..." ).arg( item->text() ) );
     ui->statusEdit->repaint();
-    command << "\"" << progdir << item->text().toLocal8Bit() << "\"";
+    command << "\"" << progdir << item->text().toLocal8Bit().constData() << "\"";
     if( !ui->saveDirEdit->text().isEmpty() )
       command << " --DataDirectory-" << EncodedString( ui->saveDirEdit->text().toLocal8Bit() );
     if( !ui->subjectNameEdit->text().isEmpty() )
@@ -670,7 +670,7 @@ void MainWindow::on_launchButton_clicked()
     QListWidgetItem* item = ui->sigprocList->selectedItems().first();
     ui->statusEdit->append( tr( "Launching %1..." ).arg( item->text() ) );
     ui->statusEdit->repaint();
-    command << "\"" << progdir << item->text().toLocal8Bit() << "\"";
+    command << "\"" << progdir << item->text().toLocal8Bit().constData() << "\"";
     if( !ExecuteCommand( command.str().c_str(), progdir.c_str() ) )
       return;
   }
@@ -686,7 +686,7 @@ void MainWindow::on_launchButton_clicked()
     QListWidgetItem* item = ui->applicationList->selectedItems().first();
     ui->statusEdit->append( tr( "Launching %1..." ).arg( item->text() ) );
     ui->statusEdit->repaint();
-    command << "\"" << progdir << item->text().toLocal8Bit() << "\"";
+    command << "\"" << progdir << item->text().toLocal8Bit().constData() << "\"";
     if( !ExecuteCommand( command.str().c_str(), progdir.c_str() ) )
       return;
   }
@@ -696,7 +696,7 @@ void MainWindow::on_launchButton_clicked()
     ui->statusEdit->append( tr( "Launching %1..." ).arg( item->text() ) );
     ui->statusEdit->repaint();
     command.str( "" );
-    command << "\"" << progdir << item->text().toLocal8Bit() << "\"";
+    command << "\"" << progdir << item->text().toLocal8Bit().constData() << "\"";
     if( !ExecuteCommand( command.str().c_str(), progdir.c_str() ) )
       return;
   }

@@ -203,7 +203,7 @@ MainWindow::ImportStates_handleFiles( const QStringList& inFiles )
       for( int i = 0; i < states.Size(); ++i )
         newStates.insert( states[i].Name() );
       for( int j = 0; j < mpImportStates->count(); ++j )
-        newStates.erase( mpImportStates->item( j )->text().toLocal8Bit() );
+        newStates.erase( mpImportStates->item( j )->text().toLocal8Bit().constData() );
       for( StringSet::const_iterator i = newStates.begin(); i != newStates.end(); ++i )
       {
         mpImportStates->insertItem( 0, i->c_str() );
@@ -228,10 +228,10 @@ MainWindow::DropArea_handleFiles( const QStringList& inFiles )
   StringSet statesToIgnore;
   for( int i = 0; i < mpImportStates->count(); ++i )
     if( mpImportStates->item( i )->checkState() != Qt::Checked )
-      statesToIgnore.insert( mpImportStates->item( i )->text().toLocal8Bit() );
+      statesToIgnore.insert( mpImportStates->item( i )->text().toLocal8Bit().constData() );
 
   StringList channelNames;
-  istringstream iss( mpChannelNames->document()->toPlainText().toLocal8Bit() );
+  istringstream iss( mpChannelNames->document()->toPlainText().toLocal8Bit().constData() );
   string line;
   while( getline( iss, line ) )
     channelNames.push_back( line );
@@ -283,7 +283,7 @@ MainWindow::on_HelpBCI2000Help()
 void
 MainWindow::on_HelpAbout()
 {
-  AboutBox().SetApplicationName( QApplication::applicationName().toLocal8Bit() )
+  AboutBox().SetApplicationName( QApplication::applicationName().toLocal8Bit().constData() )
             .Display();
 }
 

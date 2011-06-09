@@ -103,7 +103,7 @@ void BCI2000FileInfo::on_actionAbout_triggered()
 {
     //Do stuff for About
     AboutBox()
-    .SetApplicationName( QApplication::applicationName().toLocal8Bit() )
+    .SetApplicationName( QApplication::applicationName().toLocal8Bit().constData() )
     .Display();
 }
 
@@ -121,7 +121,7 @@ void BCI2000FileInfo::OpenFile( QString filename )
     {
         QMessageBox msgBox;
         ostringstream oss;
-        oss << "Could not open \"" << filename.toLocal8Bit() << "\" as a BCI2000 data file.";
+        oss << "Could not open \"" << filename.toLocal8Bit().constData() << "\" as a BCI2000 data file.";
         msgBox.setText( QString::fromLocal8Bit( oss.str().c_str() ) );
         msgBox.setIcon( QMessageBox::Warning );
         msgBox.exec();
