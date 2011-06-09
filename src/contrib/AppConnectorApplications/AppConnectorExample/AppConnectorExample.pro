@@ -4,26 +4,25 @@
 
 TEMPLATE = app
 
-DEPENDPATH += . src
-INCLUDEPATH += . src
+DEPENDPATH += . src ../../../shared/utils
+INCLUDEPATH += . src ../../../shared/utils
 
 CONFIG += qt 
 # Input
-HEADERS += src/mainUI.h ../../../src/shared/TCPStream.h
-SOURCES += src/main.cpp src/mainUI.cpp ../../../src/shared/TCPStream.cpp
+HEADERS += src/mainUI.h ../../../shared/utils/SockStream.h
+SOURCES += src/main.cpp src/mainUI.cpp ../../../shared/utils/SockStream.cpp
 OBJECTS_DIR += src/obj/
 MOC_DIR += src/moc/
 
+TARGET = AppConnectorExample
+
 win32 {
 	SUBDIRS = 
-	CONFIG += windows release
+  CONFIG += windows
 	LIBS += -lwsock32
-	TARGET = ../../../../tools/AppConnectorExample/AppConnectorExample
 }
 
 unix {
-#any *nix-specific stuff should go here
-	TARGET = ../../../tools/AppConnectorExample/AppConnectorExample
 }
 
 mac {
