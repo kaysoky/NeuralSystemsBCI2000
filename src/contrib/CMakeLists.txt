@@ -20,6 +20,7 @@ IF( BUILD_CONTRIB )
   ADD_SUBDIRECTORY( SignalSource )
   ADD_SUBDIRECTORY( SignalProcessing )
   ADD_SUBDIRECTORY( Application )
+  ADD_SUBDIRECTORY( Extensions )
 ENDIF( BUILD_CONTRIB )
 
 

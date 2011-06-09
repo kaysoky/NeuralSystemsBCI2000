@@ -1,0 +1,106 @@
+{\rtf1\ansi\ansicpg1252\deff0\deftab709{\fonttbl{\f0\froman\fprq2\fcharset0 Times New Roman;}}
+{\*\generator Msftedit 5.41.15.1515;}\viewkind4\uc1\pard\lang1033\b\f0\fs24 General Information\par
+\b0 In many cases, an experiment may require data about where the participant is looking.  In these experiments, an eyetracker is the only way to gather data relating to gaze position and eye location.  There are many eyetracking methods currently on the market, but many of these require the experiment participant to hold their head steady, in many times, actually strapped to a structure of some sort to steady the head.  The Tobii eyetrackers require no such restriction, so they were a natural choice when it came to interfacing with BCI.  The following documentation describes how to compile the provided code, connect to the Tobii eyetracker, and usage parameters and examples for using this extension within BCI 2000.  \par
+\par
+\b Files\par
+\b0\tab EyetrackerLogger.rtf   (this document)\par
+\tab EyetrackerLogger.cpp\par
+\tab EyetrackerLogger.h\par
+\tab ../../../extlib/tobii/include/tet.h\par
+\tab ../../../extlib/tobii/dylib/tet.dll\par
+\tab ../../../extlib/tobii/dylib/ttime.dll\par
+\par
+The DLLs must be accessible (installed in a system directory, or in the same directory as the source module .exe).\par
+If the environment variable \b BCI2000_ADD_EyetrackerLogger\b0  is set to \b TRUE\b0 ,  the cmake process will call IncludeExtension.cmake and add EyetrackerLogger and its dependencies automatically to the SignalSource framework when creating the Makefile or Visual Studio project file.\par
+\page\b Connecting the Eyetracker\par
+\b0 In order to connect to the eyetracker, it must be set up correctly.  Although the documentation provided with the eyetracker details how to set it up, there are a few simple instructions provided here as well.\par
+\i If you have the Tobii x60/x120 series\par
+\pard\fi-360\li720\i0 1.\tab Set up the eyetracker in one of the setup configurations detailed in the Tobii Documentation\par
+2.\tab Connect the eyetracker to power and the Ethernet cable from the eyetracker to the Ethernet port on your computer (If your computer does not have a free Ethernet port, you may use an Ethernet to USB adapter)\par
+3.\tab Install the provided software and drivers for the eyetracker, specifically the Tobii eyetracker Browser utility\par
+4.\tab Turn off all wireless network devices, and unplug any other Ethernet cables from network cards on your computer.\line\par
+\pard\i If you have the Tobii T60/T120 series\par
+\pard\fi-360\li720\i0 1.\tab Connect the VGA or DVI cable from the monitor to the VGA or DVI port on your computer.\par
+2.\tab Connect the monitor to power and the Ethernet cable from the eyetracker to the Ethernet port on your computer (If  your computer does not have a free Ethernet port, you may use an Ethernet to USB adapter)\par
+3.\tab Install the provided software and drivers for the eyetracker, specifically the Tobii Eyetracker Browser utility.\par
+4.\tab Turn off all wireless network devices, an unplug any other Ethernet cables from network cards on your computer.\par
+5.\tab If a laptop is being used, be sure to clone the display on both screens, or disable the laptop screen and display primarily on the eyetracker screen (The provided calibration utility does not function with multiple monitors)\line\par
+\pard\b Calibrating the Eyetracker\par
+\b0 The EyetrackerLogger Extension is not capable of calibrating the device while running in BCI 2000.  Thus, calibration must be performed offline, before BCI 2000 has started.  In order to calibrate the device, use the provided Tobii Calibration Utility, located in the folder of the same name.  Use \ldblquote Tobii Calibration Utility.exe\rdblquote .\par
+To calibrate for a test subject:\par
+\pard\fi-360\li720 1.\tab Place the subject at a comfortable distance from the eyetracker, within three feet of the device, but not closer than one and a half feet.\par
+2.\tab Execute the Tobii Calibration Utility\par
+3.\tab Execute the Tobii Eyetracker Browser which should have been installed when you set up the eyetracker.\par
+4.\tab Locate the eyetracker in the list of found eyetrackers, and select it.\par
+5.\tab Click the copy button next to it's hostname.\par
+6.\tab Close the Tobii Eyetracker Browser.\par
+7.\tab Paste the copied network address into the text field at the top of the Tobii Calibration Utility\par
+8.\tab Click the \ldblquote Start\rdblquote  button within the Track Status group, and verify that both of the test subject's eyes are seen.\par
+9.\tab Click the \ldblquote Calibrate\rdblquote  button, and calibrate the device using 9 points for the best calibration.\par
+10.\tab Have the test subject watch the blue dot as it moves across the screen.\par
+11.\tab Once the procedure has completed, click the Recalibrate button to ensure that all calibration points are satisfactory.\par
+12.\tab Click the Test button and have the test subject confirm that the green box is placed where they are looking\par
+13.\tab If the test subject does not report that the box follows their gaze, close the application, and follow steps 1 \endash  12 again.\par
+14.\tab If the test subject does report that the box follows their gaze, click the Save button at the bottom of the application.  A Message box should appear stating that calibout.cal has been successfully saved.\par
+15.\tab You can locate the saved calibration file in the same directory as the Tobii Calibration Utility executable, and it will be named \ldblquote calibout.cal\rdblquote .  It would be advisable to place this file in a separate folder, perhaps in the same folder as the user's saved parameter file, as it will be overwritten the next time the calibration utility is run, if it still resides in the same directory.\par
+16.\tab To use the calibration file in a BCI 2000 experiment, find the CalibrationData Parameter in the source pane, and click the \ldblquote ...\rdblquote  button next to the text field to locate the calibration file.\par
+\pard\par
+A Calibration file should hold constant for an individual test subject for a specific lighting situation.  If the subject is going to be tested in a different lighting situation, it would be advisable to recalibrate and use the resulting calibration file in that setting.  Other changes, such as application or removal of glasses/contact lenses require a new calibration.  The calibration file can be renamed anything, and have any file extension desired.\par
+\par
+\b Parameters\par
+\b0 These parameters set up details regarding to the setup and operation of the EyetrackerLogger class.\par
+\par
+\i LogEyetracker (Boolean)\par
+\i0  Enables logging from the eyetracker.  Eyetracker logging is enabled from the command line adding \ldblquote --LogEyetracker=1\rdblquote  as a command line option.\par
+\par
+\i CalibrationData (Filepath)\par
+\i0 Filepath for a premade calibration file\par
+\par
+\i NetworkLocation (String)\par
+\i0 Network address of eyetracker (Given using the Tobii Eyetracker Browser Utility)\par
+\par
+\i Port (Int)\par
+\i0 Incoming port for eyetracker traffic (Tobii Default is 4455)\par
+\par
+\i Interval (Int - ms)\par
+\i0 Used to set the desired interval in ms between polls\par
+\par
+\i LogGazeData (Boolean)\par
+\i0 Set to true to record gaze data to states. (Where on the screen the user is looking)\par
+\par
+\i LogEyePosition (Boolean)\par
+\i0 Set to true to record eye position to states. (Where the user's eyes are currently located in 2d Space)\par
+\par
+\i LogPupilSize (Boolean)\par
+\i0 Set to true to record pupil size to states.\par
+\par
+\i LogEyeDist (Boolean)\par
+\i0 Set to true to record distance between eye and tracker to states.\par
+\par
+\page\b States\par
+\b0 The eyetracker logs each state separately for each eye.  They are grouped together in pairs.  Estimates of error in these measurements are beyond the scope of this documentation.\par
+\par
+\i EyetrackerLeftEyeGazeX/EyetrackerRightEyeGazeX\par
+\i0 Eye Gaze Position, X Coordinate (0 = leftmost, 65535 = rightmost)\par
+\par
+\i EyetrackerLeftEyeGazeY/EyetrackerRightEyeGazeY\par
+\i0 Eye Gaze Position, Y Coordinate (0 = topmost, 65535 = bottommost)\par
+\par
+\i EyetrackerLeftEyePosX/EyetrackerRightEyePosX\par
+\i0 Eye Position Relative to Camera in 2d Space, X Coordinate (0 = leftmost, 65535 = rightmost)\par
+\par
+\i EyetrackerLeftEyePosY/EyetrackerRightEyePosY\par
+\i0 Eye Position Relative to Camera in 2d Space, Y Coordinate (0 = topmost, 65535 = bottommost)\par
+\par
+\i EyetrackerLeftPupilSize/EyetrackerRightPupilSize\par
+\i0 Eye Pupil Diameter (mm), The length of the longest chord drawn from one side of the pupil to the other. This size will change depending on the eye position and distance from screen.  Although it is given in mm, it would be best to use this as a relative measurement.\par
+\par
+\i EyetrackerLeftEyeDist/EyetrackerRightEyeDist\par
+\i0 Distance from Screen to Eye (mm).  This measurement is an approximation.  The actual measurement will depend on whether or not the test subject is wearing glasses or contact lenses, or obstructions between the user's eye and the camera.\par
+\par
+\b Setup Example\par
+\b0 John would like to use the eyetracker to gather information about Sally during a BCI 2000 experiment.  John has already compiled the extension into his executable, and has setup his eyetracker as detailed earlier in this document.  On the day of the experiment, Sally arrives at the lab and is seated in front of the eyetracker.  John makes sure that the room is well lit, and that Sally is sitting between 3 and 1.5 feet from the eyetracker.  John runs \ldblquote Tobii Calibration Utility.exe\rdblquote  and asks Sally to watch the dot move across the screen.  Once the calibration has concluded, Sally realizes that her glasses are uncomfortable and un-necessary for objects this close to her, and removes them.  John is clever and realizes that he has to recalibrate the eyetracker.  After recalibrating the eyetracker, John takes calibout.cal, and renames it to Sally.cal and puts it in a new folder within his data folder named \ldblquote Sally\rdblquote .\par
+\par
+John is a bit of a nerd, so he starts his application using the command prompt, remembering to append \ldblquote --LogEyetracker=1\rdblquote  when he starts his application.  With the BCI2000 application running, he hits the \ldblquote Config\rdblquote  button to configure his experiment.  He loads up his base experiment parameter file, then inputs his subject's name into \ldblquote SubjectName\rdblquote .  John then goes over to the Source Tab, and scrolls to the bottom to find the \ldblquote Eyetracker\rdblquote  group.  He clicks the \ldblquote ...\rdblquote  button next to the CalibrationData text field and locates \ldblquote Sally.cal\rdblquote  in the Sally folder, where he also plans to save her data log.  John hasn't done anything fancy to the network, so he uses the default port for Eyetracker communications.  John then opens the \ldblquote Tobii Eyetracker Browser\rdblquote  utility and locates the eyetracker.  He presses the \ldblquote Copy\rdblquote  button next to the hostname, and pastes it in the \ldblquote NetworkLocation\rdblquote  text field.  John has a slow computer, so he decides that 100 samples per second from the eyetracker is about what his computer can handle, and sets the interval to 10 ms.  John only needs Gaze data for his experiment, so he unchecks \ldblquote LogEyePos\rdblquote , \ldblquote LogPupilSize\rdblquote , and \ldblquote LogEyeDist\rdblquote .  He saves the parameters to Sally's data folder, then initiates his experiment.  John's experiment is successful, and two years later, he wins the Nobel Prize in his field.\par
+}
+ 
