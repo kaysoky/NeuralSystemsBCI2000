@@ -191,6 +191,10 @@ void EyetrackerLogger::Publish()
   " // record pupil size to states (boolean)",
   "Source:Eyetracker int LogEyeDist= 1 0 0 1"
   " // record eye distances to states (boolean)",
+  "Source:Eyetracker float GazeScale= 0.9 0 % %"
+  " // Value to scale gaze data by",
+  "Source:Eyetracker float GazeOffset= 0 0 % %"
+  " // Value to offset gaze data after scaled",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_EVENT_DEFINITIONS
@@ -362,6 +366,8 @@ void EyetrackerLogger::Preflight() const
   bool logEyePos = false;
   bool logPupilSize = false;
   bool logEyeDist = false;
+  float gazeScale = 0.0f;
+  float gazeOffset = 0.0f;
   
   eyetrackerEnable = ( ( int )OptionalParameter( "LogEyetracker" ) != 0 );
 
@@ -373,6 +379,8 @@ void EyetrackerLogger::Preflight() const
     logEyePos = ( int )Parameter( "LogEyePos" );
     logPupilSize = ( int )Parameter( "LogPupilSize" );
     logEyeDist = ( int )Parameter( "LogEyeDist" );
+    gazeScale = ( float )Parameter( "GazeScale" );
+    gazeOffset = ( float )Parameter( "GazeOffset" );
 
     //Attempt to connect...
     if(Connect(eyetrackerAddress, eyetrackerPort))
@@ -415,6 +423,8 @@ void EyetrackerLogger::Initialize()
     m_logEyePos = ( int )Parameter( "LogEyePos" );
     m_logPupilSize = ( int )Parameter( "LogPupilSize" );
     m_logEyeDist = ( int )Parameter( "LogEyeDist" );
+    m_gazeScale = ( float )Parameter( "GazeScale" );
+    m_gazeOffset = ( float )Parameter( "GazeOffset" );
   }
 }
 
@@ -691,9 +701,11 @@ void __stdcall EyetrackerLogger::EyetrackerThread::EyetrackerCallback(ETet_Callb
           //Get Gaze Data...
           if(obj->m_eyetracker->logGazeData())
           {
-            //Grab the Data,
-            obj->m_LeftEyeGazeX = (int)(data->x_gazepos_lefteye * 65535);
-            obj->m_LeftEyeGazeY = (int)(data->y_gazepos_lefteye * 65535);
+            // *** HACK ***
+            //Grab the Data, scale it because BCI2000 doesn't support typed states yet.
+            obj->m_LeftEyeGazeX = (int)( ( ( data->x_gazepos_lefteye * obj->m_eyetracker->gazeScale() ) + obj->m_eyetracker->gazeOffset() ) * 65535 );
+            obj->m_LeftEyeGazeY = (int)( ( ( data->y_gazepos_lefteye * obj->m_eyetracker->gazeScale() ) + obj->m_eyetracker->gazeOffset() ) * 65535 );
+            // *** ENDHACK ***
 
             //Feed the new data into the bcievent stream if necessary
             if(obj->m_LeftEyeGazeX != obj->m_prevLeftEyeGazeX)
@@ -767,9 +779,11 @@ void __stdcall EyetrackerLogger::EyetrackerThread::EyetrackerCallback(ETet_Callb
           //Get Gaze Data...
           if(obj->m_eyetracker->logGazeData())
           {
-            //Grab the Data,
-            obj->m_RightEyeGazeX = (int)(data->x_gazepos_righteye * 65535);
-            obj->m_RightEyeGazeY = (int)(data->y_gazepos_righteye * 65535);
+            // *** HACK ***
+            //Grab the Data, scale it because BCI2000 doesn't support typed states yet.
+            obj->m_RightEyeGazeX = (int)( ( ( data->x_gazepos_righteye * obj->m_eyetracker->gazeScale() ) + obj->m_eyetracker->gazeOffset() ) * 65535 );
+            obj->m_RightEyeGazeY = (int)( ( ( data->y_gazepos_righteye * obj->m_eyetracker->gazeScale() ) + obj->m_eyetracker->gazeOffset() ) * 65535 );
+            // *** ENDHACK ***
 
             //Feed the new data into the bcievent stream if necessary
             if(obj->m_RightEyeGazeX != obj->m_prevRightEyeGazeX)

@@ -81,6 +81,8 @@ class EyetrackerLogger : public EnvironmentExtension
   bool logEyePos() const { return m_logEyePos; }
   bool logPupilSize() const { return m_logPupilSize; }
   bool logEyeDist() const { return m_logEyeDist; }
+  float gazeScale() const { return m_gazeScale; }
+  float gazeOffset() const { return m_gazeOffset; }
 
   //Logging Interface
   ostringstream m_log;
@@ -96,7 +98,8 @@ class EyetrackerLogger : public EnvironmentExtension
   bool         m_logEyePos;
   bool         m_logPupilSize;
   bool         m_logEyeDist;
-  int          m_preview;
+  float        m_gazeScale;
+  float        m_gazeOffset;
 
   //Visualizations
   GenericVisualization m_eyetrackerLog;
