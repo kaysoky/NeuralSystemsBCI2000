@@ -169,14 +169,7 @@ class StateMachine : public CallbackBase, private OSThread
       Address( "" ),
       Status( "no status available" ),
       MessagesSent( 0 ),
-      MessagesRecv( 0 ),
-      StatesSent( 0 ),
-      StatesRecv( 0 ),
-      StateVecsSent( 0 ),
-      StateVecsRecv( 0 ),
-      ParametersSent( 0 ),
-      ParametersRecv( 0 ),
-      DataRecv( 0 )
+      MessagesRecv( 0 )
     {}
 
     ProtocolVersion Version;
@@ -184,14 +177,7 @@ class StateMachine : public CallbackBase, private OSThread
                     Address,
                     Status;
     long MessagesSent,
-         MessagesRecv,
-         StatesSent,
-         StatesRecv,
-         StateVecsSent,
-         StateVecsRecv,
-         ParametersSent,
-         ParametersRecv,
-         DataRecv;
+         MessagesRecv;
   };
 
  private:
@@ -305,30 +291,6 @@ class StateMachine : public CallbackBase, private OSThread
  private:
   bool CheckInitializeVis( const std::string& sourceID, const std::string& kind );
 };
-
-template<> inline bool StateMachine::CoreConnection::PutMessage<Param>( const Param& t )
-{
-  bool result = MessageHandler::PutMessage<Param>( mStream, t ).flush();
-  if( result )
-  {
-    OSMutex::Lock lock( mInfoMutex );
-    ++mInfo.MessagesSent;
-    ++mInfo.ParametersSent;
-  }
-  return result;
-}
-
-template<> inline bool StateMachine::CoreConnection::PutMessage<State>( const State& t )
-{
-  bool result = MessageHandler::PutMessage<State>( mStream, t ).flush();
-  if( result )
-  {
-    OSMutex::Lock lock( mInfoMutex );
-    ++mInfo.MessagesSent;
-    ++mInfo.StatesSent;
-  }
-  return result;
-}
 
 #endif // STATE_MACHINE_H
 

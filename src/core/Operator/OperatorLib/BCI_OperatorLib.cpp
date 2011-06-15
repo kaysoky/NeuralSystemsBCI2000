@@ -330,14 +330,7 @@ STDCALL BCI_GetConnectionInfo( int inIndex )
       << "Name: " << info.Name << "\n"
       << "Address: " << info.Address << "\n"
       << "Messages received: " << info.MessagesRecv << "\n"
-      << "Messages sent: " << info.MessagesSent << "\n"
-      << "Parameters received: " << info.ParametersRecv << "\n"
-      << "Parameters sent: " << info.ParametersSent << "\n"
-      << "States received: " << info.StatesRecv << "\n"
-      << "States sent: " << info.StatesSent << "\n"
-      << "State vectors received: " << info.StateVecsRecv << "\n"
-      << "State vectors sent: " << info.StateVecsSent << "\n"
-      << "Data received: " << info.DataRecv << "\n";
+      << "Messages sent: " << info.MessagesSent << "\n";
   return AllocateCopy( oss.str().c_str() );
 }
 

@@ -293,12 +293,7 @@ StateMachine::BroadcastParameters()
   int numParams = mParameters.Size();
   for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
     if( ( *i )->PutMessage( mParameters ) )
-    {
       OSThread::Sleep( 0 );
-      OSMutex::Lock lock( ( *i )->mInfoMutex );
-      ( *i )->mInfo.ParametersSent += numParams;
-      ( *i )->mInfo.MessagesSent += numParams - 1;
-    }
 }
 
 void
@@ -314,12 +309,7 @@ StateMachine::BroadcastStates()
   int numStates = mStates.Size();
   for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
     if( ( *i )->PutMessage( mStates ) )
-    {
       OSThread::Sleep( 0 );
-      OSMutex::Lock lock( ( *i )->mInfoMutex );
-      ( *i )->mInfo.MessagesSent += numStates;
-      ( *i )->mInfo.StatesSent += numStates;
-    }
 }
 
 void
@@ -738,10 +728,6 @@ StateMachine::CoreConnection::HandleParam( istream& is )
   Param param;
   if( param.ReadBinary( is ) )
   {
-    {
-      OSMutex::Lock lock( mInfoMutex );
-      ++mInfo.ParametersRecv;
-    }
     mrParent.mParameters.Add( param, mTag );
     ostringstream oss;
     mrParent.mParameters[param.Name()].WriteToStream( oss );
@@ -757,10 +743,6 @@ StateMachine::CoreConnection::HandleState( istream& is )
   class State state;
   if( state.ReadBinary( is ) )
   {
-    {
-      OSMutex::Lock lock( mInfoMutex );
-      ++mInfo.StatesRecv;
-    }
     mrParent.mStates.Delete( state.Name() );
     mrParent.mStates.Add( state );
     ostringstream oss;
@@ -777,10 +759,6 @@ StateMachine::CoreConnection::HandleVisSignal( istream& is )
   VisSignal v;
   if( v.ReadBinary( is ) )
   {
-    {
-      OSMutex::Lock lock( mInfoMutex );
-      ++mInfo.DataRecv;
-    }
     const string kind = "Graph";
     mrParent.CheckInitializeVis( v.SourceID(), kind );
     int channels = v.Signal().Channels(),
@@ -801,10 +779,6 @@ StateMachine::CoreConnection::HandleVisSignalProperties( istream& is )
   VisSignalProperties v;
   if( v.ReadBinary( is ) )
   {
-    {
-      OSMutex::Lock lock( mInfoMutex );
-      ++mInfo.DataRecv;
-    }
     // We treat a VisSignalProperties message as a set of VisCfg
     // messages.
 #ifdef TODO
@@ -963,10 +937,6 @@ StateMachine::CoreConnection::HandleVisMemo( istream& is )
   VisMemo v;
   if( v.ReadBinary( is ) )
   {
-    {
-      OSMutex::Lock lock( mInfoMutex );
-      ++mInfo.DataRecv;
-    }
     const string kind = "Memo";
     mrParent.CheckInitializeVis( v.SourceID(), kind );
     mrParent.ExecuteCallback( BCI_OnVisMemo, v.SourceID().c_str(), v.MemoText().c_str() );
@@ -980,10 +950,6 @@ StateMachine::CoreConnection::HandleVisBitmap( istream& is )
   VisBitmap v;
   if( v.ReadBinary( is ) )
   {
-    {
-      OSMutex::Lock lock( mInfoMutex );
-      ++mInfo.DataRecv;
-    }
     const string kind = "Bitmap";
     mrParent.CheckInitializeVis( v.SourceID(), kind );
     const BitmapImage& b = v.BitmapImage();
@@ -998,10 +964,6 @@ StateMachine::CoreConnection::HandleVisCfg( istream& is )
   VisCfg v;
   if( v.ReadBinary( is ) )
   {
-    {
-      OSMutex::Lock lock( mInfoMutex );
-      ++mInfo.DataRecv;
-    }
     mrParent.mVisualizations[v.SourceID()][v.CfgID()] = v.CfgValue();
     mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, v.SourceID().c_str(), v.CfgID(), v.CfgValue().c_str() );
   }
