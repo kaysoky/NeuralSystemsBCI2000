@@ -347,6 +347,7 @@ P3SpellerTask::OnInitialize( const SignalProperties& /*Input*/ )
   mpStatusBar->SetGoalText( mGoalText );
 
   delete mpTextWindow;
+  mpTextWindow = NULL;
   if( Parameter( "TextWindowEnabled" ) == 1 )
   {
     mpTextWindow = new TextWindow;
