@@ -156,7 +156,7 @@ vAmpDisplay::DisplayImpedances( int inID, const vector<float>& inImpedances )
 
   for( int i = 0; i < numRects; ++i )
   {
-    TColor c;
+    RGBColor c;
     string s;
     if( idx[i] >= 0 )
     {
@@ -164,7 +164,7 @@ vAmpDisplay::DisplayImpedances( int inID, const vector<float>& inImpedances )
     }
     else
     {
-      c = clGray;
+      c = RGBColor::Gray;
       s = "n/a";
     }
 
@@ -173,7 +173,7 @@ vAmpDisplay::DisplayImpedances( int inID, const vector<float>& inImpedances )
     r.top += frame;
     r.right -= frame;
     r.bottom -= frame;
-    pBitmap->Canvas->Brush->Color = c;
+	pBitmap->Canvas->Brush->Color = c.R() | c.G() << 8 | c.B() << 16;
     pBitmap->Canvas->FillRect( r );
     pBitmap->Canvas->TextRect(
       r,

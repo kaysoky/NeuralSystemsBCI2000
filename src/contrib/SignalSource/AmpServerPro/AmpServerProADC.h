@@ -105,7 +105,7 @@ class AmpServerProADC
   unsigned int m_nCmdPort, m_nNotifPort, m_nDataPort;
   bool m_bListening;
 
-  time_t m_nLastEnd;
+  // time_t m_nLastEnd;
 
   char m_sCmdResp[ASP_CMD_RESP_SIZE];
 

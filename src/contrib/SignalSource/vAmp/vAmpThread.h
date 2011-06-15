@@ -65,7 +65,7 @@ class vAmpThread : public OSThread
   virtual ~vAmpThread();
 
   float ExtractData(int ch, int sample);
-  std::vector< std::vector<float>> GetImpedances();
+  std::vector< std::vector<float> > GetImpedances();
   std::string GetLastErr() const {return mLastErr.str();}
   std::string GetLastWarning();
   bool ok() const {return mOk;}
@@ -102,8 +102,8 @@ class vAmpThread : public OSThread
   
     GenericSignal mDataBuffer, mDataOutput;
 
-    std::vector< std::vector<float>> mImpArray;
-    std::valarray< std::valarray<float>> mTrigBuffer; //mdatabuffer[device][ch][sample]
+    std::vector< std::vector<float> > mImpArray;
+    std::valarray< std::valarray<float> > mTrigBuffer; //mdatabuffer[device][ch][sample]
     float *mBuffer;
 
     HANDLE mEvent,

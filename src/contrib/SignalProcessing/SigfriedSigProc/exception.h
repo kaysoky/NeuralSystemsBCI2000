@@ -38,7 +38,7 @@ typedef struct SIGFRIED_ERROR_STRUCT{
 
 #define _LC_AS_STRING(x)               #x
 #define LC_AS_STRING(x)    _LC_AS_STRING(x)
-#define __FUNCTION__      __FILE__ ":" LC_AS_STRING(__LINE__) 
+#define SIGFRIED_FUNCTION  __FUNCTION__ __FILE__ ":" LC_AS_STRING(__LINE__)
 
 
 /**
@@ -52,20 +52,20 @@ typedef struct SIGFRIED_ERROR_STRUCT{
  **/ 
 #define SIGFRIED_CATCH()                                                 \
   } catch (CSIGFRIEDException Exception) {                               \
-    throw CSIGFRIEDException(Exception,__FUNCTION__);                    \
+	throw CSIGFRIEDException(Exception,SIGFRIED_FUNCTION);                    \
   } catch (...) {                                                     \
-    throw CSIGFRIEDException(__FUNCTION__,SIGFRIED_EXCEPTION,"SIGFRIED_EXCEPTION"); \
+	throw CSIGFRIEDException(SIGFRIED_FUNCTION,SIGFRIED_EXCEPTION,"SIGFRIED_EXCEPTION"); \
   }                                                                  
 
 
 #define SIGFRIED_THROW(ErrorCode)                                        \
-  throw CSIGFRIEDException(__FUNCTION__,ErrorCode,#ErrorCode);    
+  throw CSIGFRIEDException(SIGFRIED_FUNCTION,ErrorCode,#ErrorCode);
 
 #define SIGFRIED_CHECK_MIN_MAX(Value,Min,Max,ErrorCode)                        \
-  if (Value < Min || Value > Max) throw CSIGFRIEDException(__FUNCTION__,ErrorCode,#ErrorCode);    
+  if (Value < Min || Value > Max) throw CSIGFRIEDException(SIGFRIED_FUNCTION,ErrorCode,#ErrorCode);
 
 #define SIGFRIED_CHECK(Expression,ErrorCode)                        \
-  if (!(Expression)) throw CSIGFRIEDException(__FUNCTION__,ErrorCode,#ErrorCode);    
+  if (!(Expression)) throw CSIGFRIEDException(SIGFRIED_FUNCTION,ErrorCode,#ErrorCode);
 
 #define SIGFRIED_CATCH_RETURN()                                          \
   } catch (CSIGFRIEDException Exception) {                               \

@@ -55,7 +55,7 @@ class vAmpADC : public GenericADC
   int mTimeoutMs;
   std::vector<int> mDevList;
   bool mHighSpeed;
-  std::vector< std::vector<float>> mImpedances;
+  std::vector< std::vector<float> > mImpedances;
   bool mImpedanceMode;
 
   float getSampleRate(float);

@@ -20,7 +20,7 @@
       obj\BCIEvent.obj obj\tcpserver.obj obj\util.obj obj\clientrequest.obj 
       obj\dmarequest.obj obj\tcprequest.obj obj\tcpsocket.obj 
       obj\printstruct.obj obj\cleanup.obj obj\endianutil.obj obj\extern.obj 
-      obj\gettimeofday.obj obj\OSMutex.obj obj\OSEvent.obj obj\MessageQueue.obj 
+      obj\OSMutex.obj obj\OSEvent.obj obj\MessageQueue.obj 
       obj\OSError.obj obj\OSThread.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
@@ -30,7 +30,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalprocessing;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src\win32;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalprocessing;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -40,8 +40,8 @@
     <USERDEFINES value="MODTYPE=2;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="FieldTripBuffer.cpp"/>
-    <INCLUDEPATH value="..\..\..\extlib\fieldtrip\buffer\src\win32;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\pthreads-win32\include;..\..\..\shared;..\..\..\shared\modules\signalprocessing;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\..\extlib\fieldtrip\buffer\src\win32;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\pthreads-win32\lib;..\..\..\shared\modules\signalprocessing;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <INCLUDEPATH value="..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\pthreads-win32\include;..\..\..\shared;..\..\..\shared\modules\signalprocessing;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\pthreads-win32\lib;..\..\..\shared\modules\signalprocessing;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -113,7 +113,6 @@
       <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\cleanup.c" FORMNAME="" UNITNAME="cleanup" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\endianutil.c" FORMNAME="" UNITNAME="endianutil" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\extern.c" FORMNAME="" UNITNAME="extern" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\win32\gettimeofday.c" FORMNAME="" UNITNAME="gettimeofday" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\fieldtrip\pthreads-win32\lib\pthreadVC2.bcb.lib" FORMNAME="" UNITNAME="pthreadVC2.bcb.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

@@ -22,7 +22,8 @@
       obj\ArithmeticExpression.obj obj\EventQueue.obj obj\OSError.obj 
       obj\OSThread.obj obj\JoystickLogger.obj obj\KeyLogger.obj obj\BCIEvent.obj 
       obj\StateVectorSample.obj obj\GenericFileWriter.obj obj\EDFOutputBase.obj 
-      obj\EDFOutputFormat.obj obj\GDFOutputFormat.obj obj\BCI2000OutputFormat.obj"/>
+      obj\EDFOutputFormat.obj obj\GDFOutputFormat.obj obj\BCI2000OutputFormat.obj
+      obj\OSEvent.obj obj\OSMutex.obj obj\MessageQueue.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -31,7 +32,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat"/>
+    <PATHCPP value=".;..\..\..\shared\modules\signalsource\logging;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -41,7 +42,7 @@
     <USERDEFINES value="_DEBUG;MODTYPE=1"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="NeuroscanClient.cpp"/>
-    <INCLUDEPATH value="..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..;$(BCB)\include;$(BCB)\include\vcl"/>
+    <INCLUDEPATH value="..\..\..\shared\modules\signalsource\logging;..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..;$(BCB)\include;$(BCB)\include\vcl"/>
     <LIBPATH value="..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
@@ -113,8 +114,8 @@
       <FILE FILENAME="..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\modules\signalsource\JoystickLogger.cpp" FORMNAME="" UNITNAME="JoystickLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\modules\signalsource\KeyLogger.cpp" FORMNAME="" UNITNAME="KeyLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalsource\logging\JoystickLogger.cpp" FORMNAME="" UNITNAME="JoystickLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalsource\logging\KeyLogger.cpp" FORMNAME="" UNITNAME="KeyLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\GenericFileWriter.cpp" FORMNAME="" UNITNAME="GenericFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -122,6 +123,9 @@
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFOutputFormat.cpp" FORMNAME="" UNITNAME="EDFOutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\GDFOutputFormat.cpp" FORMNAME="" UNITNAME="GDFOutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\dat\BCI2000OutputFormat.cpp" FORMNAME="" UNITNAME="BCI2000OutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

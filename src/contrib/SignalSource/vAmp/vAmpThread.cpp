@@ -298,11 +298,11 @@ vAmpThread::~vAmpThread()
 	delete[] m_tblMaxBuf16[0];
 }
 
-std::vector< std::vector<float>>
+std::vector< std::vector<float> >
 vAmpThread::GetImpedances()
 {
 	Lock();
-	std::vector< std::vector<float>> impedances = mImpArray;
+	std::vector< std::vector<float> > impedances = mImpArray;
 	Unlock();
 	return impedances;
 }

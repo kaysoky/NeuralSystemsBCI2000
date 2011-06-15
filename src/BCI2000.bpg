@@ -31,7 +31,7 @@ gMOBIlab.exe: core\SignalSource\g.MOBIlab\gMOBIlab.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-USBampgetinfo.exe: core\SignalSource\g.USBamp\getinfo\USBampgetinfo.bpr
+USBampgetinfo.exe: core\SignalSource\g.USBamp\getinfo\gUSBampgetinfo.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
