@@ -39,11 +39,13 @@
 # include "Scene.h"
 #endif // QT_OPENGL_LIB
 
+#include <algorithm>
+
 using namespace GUI;
+using namespace std;
 
 GraphDisplay::GraphDisplay()
-: mColor( RGBColor::Gray ),
-  mNeedReorder( true )
+: mColor( RGBColor::Gray )
 {
   mContext.handle = NULL;
   mContext.rect.left = 0;
@@ -182,8 +184,9 @@ GraphDisplay::Paint( void* inRegionHandle )
 
 #endif // __BORLANDC__
 
-    Reorder();
-    for( SetOfGraphObjects::iterator i = mObjects.begin(); i != mObjects.end(); ++i )
+    vector<GraphObject*> objects( mObjects.begin(), mObjects.end() );
+    sort( objects.begin(), objects.end(), GraphObject::CompareByZOrder() );
+    for( vector<GraphObject*>::iterator i = objects.begin(); i != objects.end(); ++i )
       ( *i )->Paint();
 
 #ifdef __BORLANDC__
@@ -238,8 +241,9 @@ GraphDisplay::Click( int inX, int inY )
     ( inX - mContext.rect.left ) / width,
     ( inY - mContext.rect.top ) / height
   };
-  Reorder();
-  for( SetOfGraphObjects::iterator i = mObjects.begin(); i != mObjects.end(); ++i )
+  vector<GraphObject*> objects( mObjects.begin(), mObjects.end() );
+  sort( objects.begin(), objects.end(), GraphObject::CompareByZOrder() );
+  for( vector<GraphObject*>::iterator i = objects.begin(); i != objects.end(); ++i )
     if( ( *i )->Visible() && ( *i )->Click( p ) )
       mObjectsClicked.push( *i );
 }
@@ -318,19 +322,6 @@ GraphDisplay::PixelToNormalizedCoords( const GUI::Rect& inRect ) const
     ( inRect.bottom - mContext.rect.top ) / height
   };
   return result;
-}
-
-void
-GraphDisplay::Reorder()
-{
-  if( mNeedReorder )
-  {
-    SetOfGraphObjects tmp;
-    for( SetOfGraphObjects::const_iterator i = mObjects.begin(); i != mObjects.end(); ++i )
-      tmp.insert( *i );
-    mObjects = tmp;
-    mNeedReorder = false;
-  }
 }
 
 const class BitmapImage&

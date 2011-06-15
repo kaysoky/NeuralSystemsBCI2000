@@ -45,7 +45,7 @@ class BitmapImage;
 
 namespace GUI {
 
-typedef std::set<GraphObject*, GraphObject::CompareByZOrder> SetOfGraphObjects;
+typedef std::set<GraphObject*>   SetOfGraphObjects;
 typedef std::queue<GraphObject*> QueueOfGraphObjects;
 
 class GraphDisplay
@@ -69,9 +69,9 @@ class GraphDisplay
     { return mObjectsClicked; }
   // Management of GraphObjects
   GraphDisplay& Add( GraphObject* obj )
-    { mObjects.insert( obj ); mNeedReorder = true; return *this; }
+    { mObjects.insert( obj ); return *this; }
   GraphDisplay& Remove( GraphObject* obj )
-    { obj->Invalidate(); mObjects.erase( obj ); mNeedReorder = true; return *this; }
+    { obj->Invalidate(); mObjects.erase( obj ); return *this; }
   GraphDisplay& DeleteObjects()
     { while( !mObjects.empty() ) delete *mObjects.begin(); return *this; }
   // Read bitmap data, resampled to target resolution
@@ -93,12 +93,9 @@ class GraphDisplay
   Rect PixelToNormalizedCoords( const Rect& ) const;
 
  private:
-  void Reorder();
-
   DrawContext         mContext;
   RGBColor            mColor;
   SetOfGraphObjects   mObjects;
-  bool                mNeedReorder;
   QueueOfGraphObjects mObjectsClicked;
 
   void ClearOffscreenBuffer();
