@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -22,8 +24,11 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__version__   = '17374'
+__version__   = '21596'
 __author__    = 'Jeremy Hill, Thomas Schreiner, Christian Puzicha, Jason Farquhar'
-__copyright__ = 'Copyright (c) 2007-9'
+__copyright__ = 'Copyright (c) 2007-11'
 __email__     = 'bcpy2000@bci2000.org'
+
+import Generic
+Generic.register_framework_dir()
 

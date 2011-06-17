@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -114,9 +116,16 @@ class VisionEggRenderer(BciGenericRenderer):
 		Tries to find a system font file corresponding to one of the
 		supplied list of names. Returns None if no match is found.
 		"""###
+		def matchfont(fontname):
+			bold = italic = False
+			for i in range(0,1):
+				if fontname.lower().endswith(' italic'): italic = True; fontname = fontname[:-len(' italic')]
+				if fontname.lower().endswith(' bold'): bold = True; fontname = fontname[:-len(' bold')]
+			return pygame.font.match_font(fontname, bold=int(bold), italic=int(italic))
+			
 		if not isinstance(fontnames, (list,tuple)): fontnames = [fontnames]
 		fontnames = [f for f in fontnames if f != None]
-		f = (filter(None, map(pygame.font.match_font, fontnames)) + [None])[0]
+		f = (filter(None, map(matchfont, fontnames)) + [None])[0]
 		if f == None and sys.platform == 'darwin': # pygame on OSX doesn't seem even to try to find fonts...
 			f = (filter(os.path.isfile, map(lambda x:os.path.realpath('/Library/Fonts/%s.ttf'%x),fontnames)) + [None])[0]
 		return f
@@ -200,6 +209,11 @@ class VisionEggRenderer(BciGenericRenderer):
 	#############################################################
 
 	def GetFrameRate(self):
+		if sys.platform == 'darwin':
+			import platform
+			if platform.architecture()[0].startswith('64'):
+				print "query_refresh_rate is broken under darwin on 64bit architectures"
+				return float(VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ)
 		try: return float(self._screen.query_refresh_rate())
 		except:
 			print "VisionEgg failed to query refresh rate"

@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -26,6 +28,12 @@ import os,sys,re
 import numpy
 from BCI2000Tools.FileReader import bcistream
 
+try:                from BCI2000PythonSource    import BciGenericSource, EndUserError
+except ImportError: from BCPy2000.GenericSource import BciGenericSource, EndUserError
+
+#################################################################
+#################################################################
+
 class PlaybackError(EndUserError): pass
 
 #################################################################
@@ -36,21 +44,17 @@ class BciSource(BciGenericSource):
 	#############################################################
 
 	def Description(self):
-		return 'plays back a pre-recorded .dat file in "slave" mode'
+		return 'plays back a pre-recorded .dat file, with or without state variables'
 	
 	#############################################################
 
 	def Construct(self):
-		parameters = [
-			"Source:Playback string PlaybackFileName= % % % % // play back the named BCI2000 file (inputfile)",
-			"Source:Playback string PlaybackStart= 00:00:00.000 % % % // offset at which to start",
-			"Source:Playback matrix TestSignals= 0 { Channel Frequency Amplitude } % % % // sinusoidal signals may be added to the source signal here",
-		]
-		states = [
-			"SignalStopRun 1 0 0 0",
-		]
-				
-		return (parameters, states)
+		self.define_param("Source:Playback string PlaybackFileName= % % % % // play back the named BCI2000 file (inputfile)")
+		self.define_param("Source:Playback string PlaybackStart= 00:00:00.000 % % % // offset at which to start")
+		self.define_param("Source:Playback matrix TestSignals= 0 { Channel Frequency Amplitude } % % % // sinusoidal signals may be added to the source signal here")
+
+		self.define_state("SignalStopRun 1 0 0 0")
+		
 		
 	#############################################################
 	def Preflight(self, inprop):

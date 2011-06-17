@@ -1,15 +1,15 @@
 //   $Id$
-//
+//  
 //   This file is part of the BCPy2000 foundation, a set of modules for
 //   the BCI2000 <http://bci2000.org/> that allow communication with a
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
-//
-//   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+// 
+//   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
-//
+//   
 //   bcpy2000@bci2000.org
-//
+//   
 //   The BCPy2000 foundation is free software: you can redistribute it
 //   and/or modify it under the terms of the GNU Lesser General Public
 //   License as published by the Free Software Foundation, either
@@ -53,10 +53,10 @@
 #include <time.h>
 void Sleep(long msec)
 {
-    struct timeval t;
-    t.tv_sec = msec / 1000L;
-    t.tv_usec = (msec % 1000L) * 1000L;
-    select(0,0,0,0,&t);
+	struct timeval t;
+	t.tv_sec = msec / 1000L;
+	t.tv_usec = (msec % 1000L) * 1000L;
+	select(0,0,0,0,&t);
 }
 
 #endif // _WIN32
@@ -461,7 +461,7 @@ FILTER_NAME::SendParametersToPython() const
 			for( int i = 0; i < nrows; i++) {
 				PyObject* tempRow = PyList_New(ncols);
 				for( int j = 0; j < ncols; j++) {
-					PyObject* val =  PyString_FromString(((std::string)p.Value(i,j)).c_str());
+					PyObject* val = PyString_FromString(((std::string)p.Value(i,j)).c_str());
 					PyList_SetItem(tempRow, j, val);
 				}
 				PyList_SetItem(list, i, tempRow);
@@ -475,7 +475,7 @@ FILTER_NAME::SendParametersToPython() const
 			PyObject* list = PyList_New(entries);
 
 			for( int i = 0; i < entries; i++) {
-				PyObject* val =  PyString_FromString(((std::string)p.Value(i)).c_str());
+				PyObject* val = PyString_FromString(((std::string)p.Value(i)).c_str());
 				PyList_SetItem(list, i, val);
 			}
 			PyDict_SetItemString(params, p.Name().c_str(), list);
@@ -980,7 +980,7 @@ FILTER_NAME::CallModuleMember(std::string module, std::string member, PyObject* 
 	HandlePythonError("PyModule_GetDict on " + module);
 	if(!dict){FAIL("dict object for module " + module + " is NULL"); return NULL;}
 
-	PyObject* func  = PyDict_GetItemString(dict, member.c_str());
+	PyObject* func = PyDict_GetItemString(dict, member.c_str());
 	HandlePythonError("PyDict_GetItemString on " + member + " from " + module);
 	if(!func){FAIL("item " + member + " from module " + module + " is NULL"); return NULL;}
 
@@ -1031,7 +1031,7 @@ FILTER_NAME::HandlePythonError(std::string msg, bool errorCodeReturned) const
 		}
 		if(error) {
 			PyObject* py_error_info = PyObject_CallMethod(bci2000_instance, (char*)"_flush_error_info", NULL);
-			report =  PyString_AsString(PyTuple_GetItem(py_error_info, 0));
+			report = PyString_AsString(PyTuple_GetItem(py_error_info, 0));
 			isForEndUser = PyInt_AsLong(PyTuple_GetItem(py_error_info, 1));
 			Py_DECREF(py_error_info);
 		}

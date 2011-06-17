@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -35,7 +37,7 @@ from Displays import main_coordinate_frame
 from CurrentRenderer import VisualStimuli
 
 class bcibar(object):
-	def __init__(self, color=(0,0,1), font_size=26, pos=None, thickness=10, fliplr=False, fac=200.0/10.0, horiz=False, fmt='%+.2f', font_name=None):
+	def __init__(self, color=(0,0,1), font_size=26, pos=None, thickness=10, fliplr=False, baseline=0.0, fac=200.0/10.0, horiz=False, fmt='%+.2f', font_name=None):
 		
 		if font_name == None:
 			font_name = getattr(VisualStimuli.screen, 'monofont', None)
@@ -51,12 +53,15 @@ class bcibar(object):
 		else:     baranchor = 'bottom'
 		textobj = VisualStimuli.Text(position=txtpos,  anchor=txtanchor, on=True, text=' ??? ', font_size=font_size, color=color, font_name=font_name)
 		rectobj = VisualStimuli.Block(position=barpos, anchor=baranchor, on=True, size=(1,1), color=color)
-		self.__dict__.update({'fac':fac, 'horiz':horiz, 'fmt':fmt, 'thickness':thickness, 'length':0, 'textobj':textobj, 'rectobj':rectobj})  # fac is pixels/maxval
+		self.__dict__.update({'baseline':baseline, 'fac':fac, 'horiz':horiz, 'fmt':fmt, 'thickness':thickness, 'length':0, 'textobj':textobj, 'rectobj':rectobj})  # fac is pixels/maxval
 		self.set(val=0, text=' ??? ')
 
 	def __setattr__(self, key, val):
 		tp = getattr(self.textobj, 'parameters', self.textobj) # .parameters would be for VisionEgg objects
 		rp = getattr(self.rectobj, 'parameters', self.rectobj) # .parameters would be for VisionEgg objects
+		if key == 'val':
+			key = 'length'
+			val = (val - self.baseline) * self.fac
 		if key == 'thickness':
 			if self.horiz: rp.size = (rp.size[0], val)
 			else:          rp.size = (val, rp.size[1])
@@ -77,18 +82,28 @@ class bcibar(object):
 			if hasattr(rp, key): setattr(rp, key, val); good=True
 			if not good: raise AttributeError, 'Object has no attribute' + key
 		
+	def	__getattr__(self, key):
+		if key == 'val': return float(self.length) / float(self.fac) + self.baseline
+		raise AttributeError("%s object has no attribute '%s'" % self.__class__.__name__, key)
+
+	def _getAttributeNames(self):
+		return ['val']
+
 	def set(self, val, text=None):
 		if val==None:  length = self.length
-		else:          length = float(val) * float(self.fac)
+		else:          length = float(val - self.baseline) * float(self.fac)
 		self.thickness = self.thickness # updates underlying stimulus object's parameter value
 		self.length = length  # updates underlying stimulus object's parameter value
 		if text==None: text = val
 		if text != None:
-			if not isinstance(text, str): text = self.fmt % text
+			if self.fmt in ('', None): text = ' '
+			elif not isinstance(text, str): text = self.fmt % text
 			tp = getattr(self.textobj, 'parameters', self.textobj) # .parameters would be for VisionEgg objects
 			tp.text = text
-		
+	
+	
 def addbar(bci, *pargs, **kwargs):
+	z = kwargs.pop('z', 0)
 	defaultfontsize = 20
 	if hasattr(bci.screen, 'monofont') and not kwargs.has_key('font_name'):
 		kwargs['font_name'] = bci.screen.monofont
@@ -98,17 +113,18 @@ def addbar(bci, *pargs, **kwargs):
 	b = bcibar(*pargs, **kwargs)
 	if not hasattr(bci, 'bars'): bci.bars = []
 	ind = len(bci.bars) + 1
-	bci.stimulus('bartext_'+str(ind), b.textobj)
-	bci.stimulus('barrect_'+str(ind), b.rectobj)
+	bci.stimulus('bartext_'+str(ind), b.textobj, z=z)
+	bci.stimulus('barrect_'+str(ind), b.rectobj, z=z)
 	bci.bars.append(b)
 	return b
 	
-def updatebars(bci, vals):
-	if not hasattr(bci, 'bars'): return
+def updatebars(bci, vals, barlist=None):
+	if barlist == None: barlist = getattr(bci, 'bars', bci)
+	if barlist == None or not hasattr(barlist, '__len__') or len(barlist) == 0: return
 	if isinstance(vals, (float,int)): vals = [vals]
 	if isinstance(vals, numpy.matrix): vals = vals.A
 	if isinstance(vals, numpy.ndarray): vals = vals.ravel().tolist()
-	for i in range(min(len(bci.bars), len(vals))): bci.bars[i].set(vals[i])
+	for i in range(min(len(barlist), len(vals))): barlist[i].set(vals[i])
 
 
 class EQBars(object):
@@ -188,8 +204,8 @@ class EQBars(object):
 			self.bars[side][i].set(val=max(0.0,min(self.maxval,val)), text=text)
 
 try:
-	try: from BCI2000PythonApplication import BciGenericApplication
-	except: from BCPy2000.GenericApplication import BciGenericApplication
+	try: from BCI2000PythonApplication import BciGenericApplication, BciStimulus
+	except: from BCPy2000.GenericApplication import BciGenericApplication, BciStimulus
 except:
 	pass
 else:

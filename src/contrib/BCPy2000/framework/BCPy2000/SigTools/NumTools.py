@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -26,7 +28,7 @@ __all__ = [
 	'whoami', 
 	'isnumpyarray', 
 	'disp', 'cat', 'mad', 
-	'project', 'trimtrailingdims', 'isequal', 
+	'project', 'trimtrailingdims', 'isequal', 'unwrapdiff', 
 	'summarize', 'sdict', 'reportstruct', 'sstruct',
 	'loadmat', 'savemat', 'pickle', 'unpickle', 
 ]
@@ -212,9 +214,47 @@ def isequal(a, b):
 		for ai,bi in zip(a,b):
 			if not isequal(ai,bi): return False
 		return True
-	floats = (float,numpy.float32,numpy.float64,numpy.float96)
+	floats = (float,numpy.float32,numpy.float64,getattr(numpy,'float96',numpy.float),getattr(numpy,'float128',numpy.float))
 	if isinstance(a, floats) and isinstance(b, floats) and numpy.isnan(a) and numpy.isnan(b): return True
 	return a == b
+
+def unwrapdiff(x, base=2*numpy.pi, axis=None, startval=None, dtype=None):
+	"""
+	Assume X is a wrapped version of an underlying value Y we're interested
+	in. For example, it's a 16-bit value that wraps around at 65536, or it's
+	an angle which wraps back to 0 at 2*pi.
+	
+	<base> is the value (65536 or 2*pi in the above examples) such that
+	X = Y % base.  The default value of <base> is 2*pi.
+	
+	Let dY be the numeric diff of Y in dimension <axis>, computed from X
+	by unwrapping in order to avoid jumps larger than base/2.  Thus if
+	base=65536, a jump from 65535 to 1 is considered as a step of +2.
+	If  base=360, a jump from 10 to 350 is considered as a step of -20.
+	
+	Y is then reconstructed based on dY and <startval> (which defaults to
+	the actual initial value(s) of Y).
+	
+	Return value is (dY,Y).
+	"""###
+	if dtype != None: x = numpy.asarray(x, dtype=dtype)
+	if axis == None:
+		axis, = numpy.where(numpy.array(x.shape) != 1)
+		if len(axis): axis = axis[0]
+		else: axis = 0
+	x = x % base
+	d = numpy.diff(x, axis=axis)
+	nj = d < -base/2.0
+	d[nj] += base
+	pj = d > base/2.0
+	d[pj] -= base
+	d[numpy.isnan(d)] = 0
+	sub = [slice(None) for i in x.shape]
+	sub[axis] = [0]
+	sv = x[sub]
+	if startval != None: sv = sv*0 + startval
+	x = numpy.cumsum(numpy.concatenate((sv,d), axis=axis), axis=axis)
+	return d,x
 
 def summarize(a):
 	"""
@@ -515,6 +555,7 @@ class sstruct(object):
 		"""###
 		if field != None:
 			if isinstance(field, basestring): field = field.strip('.').split('.')
+			if not isinstance(field, (tuple,list)): raise TypeError('invalid field type')
 			if len(field) == 1: setattr(self, field[0], val);  return self
 			if field[0] not in self._fields: setattr(self, field[0], sstruct())
 			sub = self.__dict__[field[0]]
@@ -532,7 +573,8 @@ class sstruct(object):
 		The field name may be (dot-delimited) sub-field names.
 		"""###
 		if len(pargs) > 1: raise TypeError("_getfield() takes at most 3 arguments (%d given)" % len(pargs)+2)
-		field = field.strip('.').split('.')
+		if isinstance(field, basestring): field = field.strip('.').split('.')
+		if not isinstance(field, (tuple,list)): raise TypeError('invalid field type')
 		if field[0] not in self._fields:
 			if len(pargs): return pargs[0]
 			raise AttributeError("no such field '%s'" % field[0])

@@ -1,15 +1,15 @@
 //   $Id$
-//
+//  
 //   This file is part of the BCPy2000 foundation, a set of modules for
 //   the BCI2000 <http://bci2000.org/> that allow communication with a
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
-//
-//   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+// 
+//   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
-//
+//   
 //   bcpy2000@bci2000.org
-//
+//   
 //   The BCPy2000 foundation is free software: you can redistribute it
 //   and/or modify it under the terms of the GNU Lesser General Public
 //   License as published by the Free Software Foundation, either
@@ -64,7 +64,7 @@ namespace PyAPI26 {void Macros2Functions(void);};
 
 int LoadPythonLinks(const char *dllname)
 {
-	static char trynames[32] = "python25\0python24\0\0";
+	static char trynames[32] = "python25\0python24\0python26\0\0";
 	HINSTANCE dll = NULL;
 	if(dllname && *dllname) {
 		dll = ::LoadLibrary(dllname);

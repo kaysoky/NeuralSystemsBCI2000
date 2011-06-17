@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -215,7 +217,8 @@ def load_pylab():
 def make_cmap(cmap, name, n=256):
 	pylab = load_pylab(); import matplotlib
 	cmap = matplotlib.colors.LinearSegmentedColormap(name, cmap, n)
-	matplotlib.cm.register_cmap(name=name, cmap=cmap)
+	try: matplotlib.cm.register_cmap(name=name, cmap=cmap)
+	except: print "failed to register colormap '%s'" % name
 	return cmap
 
 def complement_cmap(cmap, name=None, n=256):

@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -100,6 +102,9 @@ def init_screen(b, **kwargs):
 		b = Boxes.box(rect=(0,0,screen.size[0],screen.size[1]))
 	else:
 		b = Boxes.box(b) # makes a copy
+		for k in ['left', 'top', 'right', 'bottom', 'width', 'height', 'x', 'y']:
+			v = kwargs.pop(k, None)
+			if v != None: setattr(b, k, v)
 		b.width = int(round(b.width))
 		b.height = int(round(b.height))
 		b.left = int(round(b.left))

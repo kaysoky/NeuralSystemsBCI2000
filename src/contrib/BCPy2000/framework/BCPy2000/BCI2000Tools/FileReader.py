@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -22,20 +24,33 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__all__ = ['bcistream', 'ParseState', 'ParseParam', 'ReadPrmFile', 'FormatPrmList', 'unescape']
+__all__ = ['ListDatFiles', 'bcistream', 'ParseState', 'ParseParam', 'ReadPrmFile', 'FormatPrmList', 'unescape']
 
 import os
+import sys
 import struct
+import time
 try: import numpy
 except: pass
 
 class DatFileError(Exception): pass
 
+
+def nsorted(x, width=20):
+	import re; return zip(*sorted(zip([re.sub('[0-9]+', lambda m: m.group().rjust(width,'0'), xi) for xi in x], x)))[1]
+
+def ListDatFiles(d='.'):
+	return nsorted([os.path.realpath(os.path.join(d,f)) for f in os.listdir(d) if f.lower().endswith('.dat')]);
+
 class bcistream(object):
 	
-	def __init__(self, filename):
+	def __init__(self, filename, ind=-1):
 		import numpy
 		
+		if os.path.isdir(filename):
+			filename = ListDatFiles(filename)[ind]
+			sys.stderr.write("file at index %d is %s\n" % (ind, filename))
+
 		self.filename        = filename
 		self.headerlen       = 0
 		self.stateveclen     = 0
@@ -52,7 +67,6 @@ class bcistream(object):
 		self.offsets         = None
 		self.params          = {}
 		
-		if os.path.isdir(self.filename): raise IOError, self.filename+" is a directory"
 		self.file = open(self.filename, 'r')
 		self.readHeader()
 		self.file.close()
@@ -61,11 +75,11 @@ class bcistream(object):
 
 		self.gains = self.params.get('SourceChGain')
 		if self.gains != None:
-			self.gains = numpy.array([float(x) for x in self.gains])
+			self.gains = numpy.array([float(x) for x in self.gains], dtype=numpy.float32)
 			self.gains.shape = (self.nchan,1)
 		self.offsets = self.params.get('SourceChOffset')
 		if self.offsets != None:
-			self.offsets = numpy.array([float(x) for x in self.offsets])
+			self.offsets = numpy.array([float(x) for x in self.offsets], dtype=numpy.float32)
 			self.offsets.shape = (self.nchan,1)
 		
 		for k,v in self.statedefs.items():
@@ -102,7 +116,9 @@ class bcistream(object):
 		nsamp = self.samples()
 		s = ["<%s.%s instance at 0x%08X>" % (self.__class__.__module__,self.__class__.__name__,id(self))]
 		s.append('file ' + self.filename.replace('\\', '/'))
-		s.append('recorded ' + self.params['StorageTime'])
+		d = self.datestamp
+		if not isinstance(d, basestring): d = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.datestamp))
+		s.append('recorded ' + d)
 		s.append('%d samples @ %gHz = %s' % (nsamp, self.samplingfreq_hz, self.sample2time(nsamp),) )
 		s.append('%d channels, total %.3g MB' % (self.nchan, self.datasize()/1024.0**2,) )
 		if not self.file.closed:
@@ -163,7 +179,19 @@ class bcistream(object):
 			self.params[name] = rec.get('scaled', rec['val'])
 
 		self.samplingfreq_hz = float(str(self.params['SamplingRate']).rstrip('Hz'))
+
+		def fixdate(d):
+			try: import datetime; d = time.mktime(time.strptime(d, '%a %b %d %H:%M:%S %Y'))
+			except: pass
+			else: return d
+
+			try: import datetime; d = time.mktime(time.strptime(d, '%Y-%m-%dT%H:%M:%S'))
+			except: pass
+			else: return d
 			
+			return d
+
+		self.datestamp = fixdate(self.params.get('StorageTime'))
 	
 	def read(self, nsamp=1, apply_gains=True):
 		if nsamp==-1:
@@ -172,17 +200,25 @@ class bcistream(object):
 			self.rewind(); nsamp = self.samples()
 		if isinstance(nsamp, str):
 			nsamp = self.time2sample(nsamp)
+
 		raw = self.file.read(self.bytesperframe*nsamp)
 		nsamp = len(raw) / self.bytesperframe
+			
 		sig = numpy.zeros((self.nchan,nsamp),dtype=numpy.float32)
-		fmt = '<' + self.unpacksig * nsamp
-		sig.T.flat = struct.unpack(fmt, raw)
 		rawstates = numpy.zeros((self.stateveclen,nsamp), dtype=numpy.uint8)
-		fmt = '<' + self.unpackstates * nsamp
-		rawstates.T.flat = struct.unpack(fmt, raw)
+		S1 = struct.Struct('<' + self.framefmt[:self.nchan]); n1 = S1.size
+		S2 = struct.Struct('<' + self.framefmt[self.nchan:]); n2 = S2.size
+		xT = sig.T; rT = rawstates.T; start = 0
+		for i in range(nsamp):
+			mid = start + n1; end = mid + n2
+			xT[i].flat = S1.unpack(raw[start:mid])   # multiple calls to precompiled Struct.unpack seem to be better than
+			rT[i].flat = S2.unpack(raw[mid:end])     # a single call to struct.unpack('ffffff...bbb') on the whole data
+			start = end                              # since time efficiency is <= and the latter caused *massive* memory leaks on the apple's python 2.6.1 (snow leopard 64-bit)
+			
 		if apply_gains:
-			if self.gains != None: sig = sig * self.gains
-			if self.offsets != None: sig = sig + self.offsets
+			if self.gains != None: sig *= self.gains
+			if self.offsets != None: sig += self.offsets
+
 		sig = numpy.asmatrix(sig)
 		return sig,rawstates
 	
@@ -235,6 +271,14 @@ class bcistream(object):
 		mins,secs  = divmod(int(secs), 60)
 		hours,mins  = divmod(int(mins), 60)
 		return '%02d:%02d:%02d.%03d' % (hours,mins,secs,msecs)
+
+	def msec2samples(self, msec):
+		if msec == None: return None
+		return numpy.round(self.samplingfreq_hz * msec / 1000.0)
+
+	def samples2msec(self, samples):
+		if samples == None: return None
+		return numpy.round(1000.0 * samples / self.samplingfreq_hz)
 
 	def plotstates(self, states): # TODO:  choose which states to plot
 		labels = states.keys()
@@ -346,9 +390,11 @@ def ParseParam(param):
 
 	scaled = None
 	if datatype in ('int', 'float'):
+		datatypestr = datatype
 		datatype = {'float':float, 'int':int}.get(datatype)
 		val = param[0]
 		unscaled,units,scaled = DecodeUnits(val, datatype)
+		if isinstance(unscaled, (str,type(None))): sys.stderr.write('WARNING: failed to interpret "%s" as type %s in parameter "%s"\n' % (val,datatypestr,name))
 		rec.update({
 			'valstr'     : val,
 			'val'        : unscaled,
@@ -364,6 +410,7 @@ def ParseParam(param):
 		
 	elif datatype.endswith('list'):
 		valtype = datatype[:-4]
+		valtypestr = valtype
 		valtype = {'float':float, 'int':int, '':str, 'string':str, 'variant':str}.get(valtype, valtype)
 		if isinstance(valtype,str): raise DatFileError, 'Unknown list type "%s"' % valtype			
 		numel,labels,labelstr = ParseDim(param)
@@ -376,6 +423,8 @@ def ParseParam(param):
 			val = [DecodeUnits(x,valtype) for x in val]
 			if len(val): unscaled,units,scaled = zip(*val)[:3]
 			else: unscaled,units,scaled = [],[],[]
+			for u,v in zip(unscaled,val):
+				if isinstance(u, (str,type(None))): print 'WARNING: failed to interpret "%s" as type %s in parameter "%s"' % (v,valtypestr,name)
 		rec.update({
 			'valstr'     : valstr,
 			'valtype'    : valtype,
@@ -439,12 +488,16 @@ def ParseDim(param):
 	return extent,labels,labelstr
 
 def DecodeUnits(s, datatype=float):
+	if s.lower().startswith('0x'): return int(s,16),None,None
 	units = ''
 	while len(s) and not s[-1] in '0123456789.':
 		units = s[-1] + units
 		s = s[:-1]
+	if len(s) == 0: return None, None, None
 	try: unscaled = datatype(s)
-	except: unscaled = float(s)
+	except:
+		try: unscaled = float(s)
+		except: return s,None,None
 	scaled = unscaled * {
 		                 'hz':1, 'khz':1000, 'mhz':1000000,
 		                'muv':1,  'mv':1000,   'v':1000000,
@@ -529,7 +582,7 @@ def FormatPrmList(p, sort=False):
 
 def load_pylab():
 	try:
-		import matplotlib,sys
+		import matplotlib
 		if not 'matplotlib.backends' in sys.modules: matplotlib.interactive(True)
 		import pylab
 		return pylab

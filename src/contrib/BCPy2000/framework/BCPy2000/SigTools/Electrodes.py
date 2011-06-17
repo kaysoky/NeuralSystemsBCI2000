@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -23,7 +25,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 __all__ = [
-	'channelset',
+	'ChannelSet',
 	'channel',
 	'trodeplot',
 ]
@@ -151,12 +153,13 @@ class channel:
 	def copy(self):
 		return copy.deepcopy(self)
 
-class channelset(numpy.matrix):
+class ChannelSet(numpy.matrix):
 	
 	def __new__(cls, s=None):
 		if s == None: self = []
 		self = cls.cparse(s)
 		self = numpy.matrix(self, dtype=numpy.object).view(cls)
+		if self.size == 0: self.shape = (0,1)
 		return self
 		
 	def plot(self, *pargs, **kwargs):
@@ -243,36 +246,42 @@ class channelset(numpy.matrix):
 
 		out,ind = [],0
 		for si in s:
-			if not isinstance(si, basestring): raise ValueError("inputs are expected to be strings")
-			if len(si.strip()) == 0: continue
-			
-			import re
-			b = [
-				re.compile(r'^\s*\{(.*)\}\s*'),
-				re.compile(r'^\s*\[(.*)\]\s*'),
-				re.compile(r'^\s*\((.*)\)\s*'),
-				re.compile(r'^\s*([^\{\[\(\)\]\}\s]+)\s*'),
-			]
-			r = re.compile(r'[\s,:;]+')
-			(x,n) = r.subn(' ', si.strip())
-			row = []
-			while len(x):
-				for r in b:
-					m = r.match(x)
-					if m != None:
-						row.append(m.groups()[0].split())
-						x = r.sub('', x)
-						break
-				else:
-					raise RuntimeError('could not parse channel definition string "%s"' % x)
+			if isinstance(si, (tuple,list)):
+				row = list(si)
+			else:
+				if not isinstance(si, basestring): raise ValueError("inputs are expected to be strings")
+				if len(si.strip()) == 0: continue
+				
+				import re
+				b = [
+					re.compile(r'^\s*\{(.*)\}\s*'),
+					re.compile(r'^\s*\[(.*)\]\s*'),
+					re.compile(r'^\s*\((.*)\)\s*'),
+					re.compile(r'^\s*([^\{\[\(\)\]\}\s]+)\s*'),
+				]
+				r = re.compile(r'[\s,:;]+')
+				(x,n) = r.subn(' ', si.strip())
+				row = []
+				while len(x):
+					for r in b:
+						m = r.match(x)
+						if m != None:
+							row.append(m.groups()[0].split())
+							x = r.sub('', x)
+							break
+					else:
+						raise RuntimeError('could not parse channel definition string "%s"' % x)
 			if len(row) == 4:
 				ind = ' '.join(row.pop(0))
 				try: ind = int(ind)
 				except: raise RuntimeError('failed to interpret string "%s" as an index' % ind)		
 
 			if len(row) == 1: row.append('REF?')
+			if row[1] == None: row[1] = 'REF?'
 			if len(row) == 2: row.append('GND?')
+			if row[2] == None: row[2] = 'GND?'
 			if len(row) != 3: raise RuntimeError('channel definition string "%s" should have 3 or 4 fields' % si)
+			
 			ch = channel(pos=row[0], neg=row[1], gnd=row[2])
 			out.append((ind,ch))
 			ind += 1
@@ -287,7 +296,7 @@ def trodeplot(channels=(), act='connected',
 		surf=70, contour='auto', scheme='auto',
 		head=True, eegbg='auto', ears='auto', nose='auto',
 		color='k', facecolor='auto', cmap='jet', clim='auto', balance=0.0,
-		labels='auto', indices='auto', one_based=True, fontsize='auto',
+		labels='auto', indices='auto', one_based=False, fontsize='auto',
 		ax=None, layout=None, title=None, hold=False, drawnow=True, use_pcolor=False,
 	):
 	"""

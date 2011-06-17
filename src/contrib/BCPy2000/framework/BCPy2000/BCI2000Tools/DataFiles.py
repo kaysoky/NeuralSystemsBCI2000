@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -144,7 +146,7 @@ def scan(f, catdim=0, discard=True):
 
 #############################################################
 
-def load(f, catdim=0, maxcount=None, discard=True):
+def load(f, catdim=0, maxcount=None, discard=True, ignore=None):
 	"""
 	Load the contents of a file dumped by dump()
 	"""###
@@ -156,9 +158,11 @@ def load(f, catdim=0, maxcount=None, discard=True):
 	#	print "hdrs[%d]"%i
 	#	for k,v in h['indices'].items(): print "%s: %d" %(k,len(v))
 	totals = {}
-	dims    = hdrs[0]['dims']
-	dtypes  = hdrs[0]['dtypes']	
+	dims    = dict(hdrs[0]['dims'])
+	dtypes  = dict(hdrs[0]['dtypes'])
 	for h in hdrs[1:]:
+		dims.update(h['dims'])
+		dtypes.update(h['dtypes'])
 		for k,v in h['indices'].items():
 			if len(v) == 1 and len(hdrs[0]['indices'][k]) == 1:
 				h['indices'][k] = [] # if a variable appears only once in the current file, and also only once in the first file, ignore it in the current file
@@ -167,6 +171,7 @@ def load(f, catdim=0, maxcount=None, discard=True):
 	#	for k,v in h['indices'].items(): print "%s: %d" %(k,len(v))
 	for h in hdrs:
 		for k,v in h['indices'].items():
+			if ignore != None and k in ignore: continue
 			sofar = totals.get(k, 0)
 			if maxcount == None: trim = 0
 			else: trim = max(0, sofar + len(v) - maxcount)
@@ -179,6 +184,7 @@ def load(f, catdim=0, maxcount=None, discard=True):
 	
 	content = {}
 	for k,siz in sorted(dims.items()):
+		if ignore != None and k in ignore: continue
 		n = totals[k]
 		if n == 1:
 			content[k] = None
@@ -211,6 +217,7 @@ def load(f, catdim=0, maxcount=None, discard=True):
 		while 1:
 			try: k,v = pickle.load(f)
 			except EOFError: break
+			if ignore != None and k in ignore: continue
 
 			if k == 'discard': continue
 				
@@ -266,8 +273,19 @@ def dumpmethod(self, *pargs, **kwargs):
 	self._dumpfilehandle = getattr(self, '_dumpfilehandle', None)
 	self._dumphistory = getattr(self, '_dumphistory', {})		
 
+	flushmode = len(kwargs)==0 and pargs == ('flush',)
 	if self._dumpfilename == None:
-		if self.data_file == None or len(self.data_file) == 0: raise RuntimeError("self.data_file has not been assigned")
+		if flushmode: return
+		if self.data_file in (None,0) or len(self.data_file) == 0:
+			msec_timeout = 4
+			for i in range(msec_timeout):
+				df = self._find_newest_file()
+				if df not in (None, 0, ''): self.data_file = df; break
+				time.sleep(0.001)
+			else:
+				raise RuntimeError("self.data_file has not been assigned")
+			print "current data file is assumed to be %s" % self.data_file
+			
 		self._dumpfilename = os.path.realpath(os.path.splitext(self.data_file)[0] + '.pk') # NB: using .pk.gz sometimes results in 'CRC check failed' exceptions while trying to load after a trigger-trap error occurred
 
 	dh = self._dumphistory[self._dumpfilename] = self._dumphistory.get(self._dumpfilename, {})	
@@ -282,14 +300,14 @@ def dumpmethod(self, *pargs, **kwargs):
 		
 #############################################################
 
-def loadmethod(self, f=None, catdim=-1):
+def loadmethod(self, f=None, catdim=0):
 	if f == None:
 		f = os.path.splitext(self.data_file)[0] + '.pk'
 		if not os.path.isfile(f) and os.path.isfile(f + '.gz'): f += '.gz'
 	elif isinstance(f, basestring) and not os.path.isfile(f) and len(os.path.split(f)[0])==0:
 		f = os.path.join(self.data_dir, f)
 	if isinstance(f, basestring): f = os.path.realpath(f)
-	if f == getattr(self,'_dumpfilename'):
+	if f != None and f == getattr(self,'_dumpfilename', None):
 		try: self._dumpfilehandle.close()
 		except: print "\nWARNING: failed to close current dump file: %s may still be open\n" % f
 		else: self._dumpfilehandle = self._dumpfilename = None

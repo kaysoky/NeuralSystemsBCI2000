@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -22,7 +24,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#!/cygdrive/c/Python25/python.exe
+#!/usr/bin/python
 # This file was generated automatically by the 'freeze' script.
 import sys
 args = sys.argv[1:]
@@ -42,11 +44,11 @@ from distutils.core import setup, Extension
 dependencies = {
 	    'numpy': '>=1.3',
 	  'IPython': '>=0.8.1',
-	'VisionEgg': '>=1.1',
+	#'VisionEgg': '>=1.1',
 }
 setup(
 	name = 'BCPy2000',
-	version = '17374',
+	version = '21596',
 	packages = [
 		'BCPy2000',
 		'BCPy2000.AppTools',

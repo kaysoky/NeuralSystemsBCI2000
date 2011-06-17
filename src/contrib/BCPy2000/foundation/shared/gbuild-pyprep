@@ -14,13 +14,13 @@ uname | grep -iq '^linux'  && test -d obj_linux  && OBJDIR=obj_linux
 # force recompilation of CoreModule.o so that BCI_VERSION includes the __TIME__
 rm -f "$OBJDIR"/CoreModule.o
 
-uname | grep -iq '^darwin' && CPPFLAGS="$CPPFLAGS -DSUPPORT_PY24=0 -DSUPPORT_PY26=0" # support these as and when you can manage to install them...
+#uname | grep -iq '^darwin' && CPPFLAGS="$CPPFLAGS -DSUPPORT_PY24=0 -DSUPPORT_PY26=0" # support these as and when you can manage to install them...
 uname | grep -iq '^darwin' && CPPFLAGS="$CPPFLAGS -DDYNAMIC_PYTHON=0"
 # TODO: dynamic linking doesn't work on MacOS yet (product crashes with "Illegal Instruction" message)
 #       comment out the line above to try it
 
 test -z "$FINK" && FINK=0
-test -z "$OSXVER" && OSXVER="10.5"
+test -z "$OSXVER" && OSXVER="10.6"
 
 if (echo "$CPPFLAGS" | grep -q '\-DDYNAMIC_PYTHON=0')
 then
@@ -38,11 +38,15 @@ then
 		/sw/lib/python$PYVER/site-packages/numpy/core/include \
 		"
 	else
-		LIBS_MACOS="$LIBS_MACOS -L/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/config"
-		#LIBS_MACOS="$LIBS_MACOS -L/System/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/config"
+		#LIBS_MACOS="$LIBS_MACOS -L/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/config"
+		#INCS_MACOS="$INCS_MACOS \
+		#/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER \
+		#/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/site-packages/numpy/core/include \
+		#"
+
+		LIBS_MACOS="$LIBS_MACOS -L/System/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/config"
 		INCS_MACOS="$INCS_MACOS \
-		/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER \
-		/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/site-packages/numpy/core/include \
+		/Library/Python/$PYVER/site-packages/numpy/core/include/ \
 		/System/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER \
 		/System/Library/Frameworks/Python.framework/Versions/$PYVER/Extras/lib/python/numpy/core/include \
 		"
@@ -58,12 +62,13 @@ else
 		"
 	else
 		INCS_MACOS="$INCS_MACOS \
+		/Library/Python/2.6/site-packages/numpy/core/include/ \
+		/System/Library/Frameworks/Python.framework/Versions/2.6/include \
+		/System/Library/Frameworks/Python.framework/Versions/2.6/Extras/lib/python/numpy/core/include \
 		/Library/Frameworks/Python.framework/Versions/2.5/include \
 		/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/include \
 		/Library/Frameworks/Python.framework/Versions/2.4/include \
 		/Library/Frameworks/Python.framework/Versions/2.4/lib/python2.4/site-packages/numpy/core/include \
-		/System/Library/Frameworks/Python.framework/Versions/2.6/include \
-		/System/Library/Frameworks/Python.framework/Versions/2.6/Extras/lib/python/numpy/core/include \
 		"
 	fi
 fi

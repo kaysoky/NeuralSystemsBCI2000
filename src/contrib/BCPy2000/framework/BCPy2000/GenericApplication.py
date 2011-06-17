@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -803,13 +805,16 @@ class BciGenericApplication(Core.BciCore):
 			if len(t) > 3: t = [0]
 			t = [float(ti) for ti in t] + [0.0]*(3-len(t))
 			
+			bgcol = sum(getattr(self.screen, 'color', (0,0,0))[:3])/3.0
+			if bgcol > 0.7: color = (0,0,0)
+			else: color = (1,1,1)
 			try:
 				# This relies on VisionEggRenderer classes and conventions for creating text stimuli
 				window_width = self.screen.size[0]                 # must be available
 				Text = VisualStimuli.Text                                # must be available, and must accept keyword args as below
 				font_name = getattr(self.screen, 'monofont', None) # used if available (initialized in VisionEggRenderer.Construct): None must be valid if not
-				stim1 = Text(text=' ', color=(1,1,1), on=False, position=(window_width-5,5),  anchor='lowerright', font_name=font_name, font_size=20)
-				stim2 = Text(text=' ', color=(1,1,1), on=False, position=(window_width-5,25), anchor='lowerright', font_name=font_name, font_size=20)
+				stim1 = Text(text=' ', color=color, on=False, position=(window_width-5,5),  anchor='lowerright', font_name=font_name, font_size=20)
+				stim2 = Text(text=' ', color=color, on=False, position=(window_width-5,25), anchor='lowerright', font_name=font_name, font_size=20)
 			except:
 				print "cannot honour ShowSignalTime: VisionEggRenderer conventions for text implementation are not available"
 			else:
@@ -829,7 +834,7 @@ class BciGenericApplication(Core.BciCore):
 				# This relies on VisionEggRenderer classes and conventions for creating text stimuli
 				Text = VisualStimuli.Text                                # must be available, and must accept keyword args as below
 				font_name = getattr(self.screen, 'monofont', None) # used if available (initialized in VisionEggRenderer.Construct): None must be valid if not
-				stim3 = Text(text='REPLAY', color=(1,1,1), on=False, position=(5,5), anchor='lowerleft', font_name=font_name, font_size=35)
+				stim3 = Text(text='REPLAY', color=color, on=False, position=(5,5), anchor='lowerleft', font_name=font_name, font_size=35)
 			except:
 				pass # no message. really this is just an easter egg
 			else:
@@ -1524,7 +1529,7 @@ class BciStimulus(object):
 	#############################################################
 
 	def set(self, **kwargs):
-		z = kwargs.pop('z')
+		z = kwargs.pop('z', None)
 		if z != None: self.z = float(z)
 		if len(kwargs) == 0: return
 		v = self.__dict__.get('obj')

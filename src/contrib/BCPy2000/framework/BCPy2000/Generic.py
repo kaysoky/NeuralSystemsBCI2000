@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -46,9 +48,9 @@ if __name__.startswith('BCPy2000.'):
 	from BCPy2000 import __version__,__author__,__copyright__,__email__
 else:
 	__copyright__ = None
-	__version__ = '$Revision: 17369 $'.split(' ')[-2] # development version (NB: this is not so definitive: 
-	                                                  # it only tracks changes to this particular file - see
-	                                                  # http://subversion.tigris.org/faq.html#version-value-in-source
+	__version__ = '$Revision unknown, so let us use 21596 $'.split(' ')[-2] # development version (NB: this is not so definitive: 
+	                                                  #  it only tracks changes to this particular file - see
+	                                                  #  http://subversion.tigris.org/faq.html#version-value-in-source
 
 #################################################################
 ### exception types
@@ -482,7 +484,10 @@ SUCH DAMAGES.
 			
 	def _Preflight(self, in_signal_props):
 		if self.verbose: print "calling Preflight hook"
-		self.data_dir = os.path.realpath(os.path.join(self.installation_dir, self.params['DataDirectory'], self.params['SubjectName']+ self.params['SubjectSession']))
+		dd = self.params['DataDirectory'].replace('\\', os.path.sep).replace('/', os.path.sep)
+		if not os.path.isabs(dd): dd = os.path.join(self.installation_dir, dd)
+		dd = os.path.join(dd, self.params['SubjectName']+ self.params['SubjectSession'])
+		self.data_dir = os.path.realpath(dd)
 		self.in_signal_props = BciDict(in_signal_props, lazy=True).recurse()
 		self.out_signal_props = copy.deepcopy(in_signal_props)
 		self._sigprop_to_sigdim()
@@ -1266,30 +1271,30 @@ SUCH DAMAGES.
 	##########################################################
 		
 	def StopRun(self):
- 		"""
- 		This is the usual BCI2000 hook, which you can overshadow
- 		in your subclass implementation. It is called when the
- 		system drops out of the 'Running' state.
- 		"""###
+		"""
+		This is the usual BCI2000 hook, which you can overshadow
+		in your subclass implementation. It is called when the
+		system drops out of the 'Running' state.
+		"""###
 		pass
 
 	##########################################################
 
 	def Resting(self):
- 		"""
- 		This is the usual BCI2000 Resting hook, which you can
- 		overshadow in your subclass implementation.
- 		"""###
+		"""
+		This is the usual BCI2000 Resting hook, which you can
+		overshadow in your subclass implementation.
+		"""###
 		pass
 
 	##########################################################
 
 	def Destruct(self):
- 		"""
- 		This is a hook that you can overshadow in your subclass
- 		implementation. It is called when the module is
- 		terminated.
- 		"""###
+		"""
+		This is a hook that you can overshadow in your subclass
+		implementation. It is called when the module is
+		terminated.
+		"""###
 		pass
 
 #################################################################

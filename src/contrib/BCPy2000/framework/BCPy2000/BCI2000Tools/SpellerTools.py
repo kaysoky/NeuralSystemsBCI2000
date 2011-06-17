@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -79,7 +81,7 @@ def ConstructRowOfCodebooksParam(c, pages=None, order=None, name=None):
 	if c['RandomizeTime'] not in [0, 1] and len(c['RandomizeTime']) != m.shape[1]:
 		raise IndexError('RandomizeTime failed because the number of columns in codebook and parameter do not match')
 		
-	if c['RandomizeSpace'] not in [0, 1] and sum(c['RandomizeSpace']) != m.shape[0]:
+	if c['RandomizeSpace'] not in [0, 1] and len(c['RandomizeSpace']) != m.shape[0]:
 		raise IndexError('RandomizeSpace failed because the number of rows in codebook and parameter do not match')
 		
 	mstr = ConstructMatrixSubparam(m) # m could be a space/newline-delimited string,  or an actual numpy array of numeric 1's and 0's

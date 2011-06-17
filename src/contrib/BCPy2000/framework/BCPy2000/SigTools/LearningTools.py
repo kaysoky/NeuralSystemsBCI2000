@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+# 
 #   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 #                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -1645,10 +1647,10 @@ class predictor(sstruct):
 		if 'weights' in self.model._fields: self.model.weights *= fac
 		self.model.bias *= fac
 		self.output.f *= fac
-		# f' = k f'
+		# f' = k f
 		# f  = a x + b  = a (x - s)
 		# f' = a'x + b' = a'(x - s')
-		# where f' = kf', so a' = ka and  b' = kb,  so  s' = s = -b/a,   so the inflection point (x=s,f=0) hasn't moved (x=s, f still=0).
+		# where f' = kf, so a' = ka and  b' = kb,  so  s' = s = -b/a,   so the inflection point (x=s,f=0) hasn't moved (x=s, f still=0).
 		# you may think this obvious, but somehow it took me a while to wrap my head around it: the "bias" is not the same as the shift.
 		if 'p' in self.output._fields: self.output.p = link(self.output.f)
 		self.update_loss()
@@ -1918,7 +1920,7 @@ class foldguide(object):
 		if ntrain != None:  foldsize = float(ntrain); swap = True
 		elif ntest != None: foldsize = float(ntest)
 		else:
-			if folds == None: folds = 10
+			if folds == None: folds = min(len(ids),10)
 			foldsize = float(self.n) / folds
 		if folds == None: folds = int(round( numpy.ceil(self.n / float(foldsize)) ))
 
