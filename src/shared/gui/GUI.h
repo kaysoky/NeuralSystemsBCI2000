@@ -73,15 +73,20 @@ bool EmptyRect( const Rect& r );
 // rectangle in that device's coordinates.
 // For Win32, the GUI device handle is a HDC (device context handle), not a
 // window handle.
-// If we're using Qt, we rather pass around a QPaintDevice, as that
-// is the equivalent of an HDC for a QWidget (our main window), and we can
-// get a DC from this QPaintDevice.
+// If we're using Qt, we need to pass around a QPaintDevice, as that
+// is the equivalent of an HDC for a QWidget (our main window), _and_
+// a QPainter because this is the only way to implement clipping when drawing
+// to an offscreen buffer.
 struct DrawContext
 {
 #ifdef __BORLANDC__
   void* handle;
 #else // __BORLANDC__
-  QPaintDevice* handle;
+  struct
+  {
+    QPaintDevice* device;
+    QPainter*     painter;
+  } handle;
 #endif // __BORLANDC__
   Rect  rect;
 };
@@ -149,7 +154,7 @@ GUI::GraphicResource::Render( const T& inGraphic, const GUI::DrawContext& inDC )
   }
   delete pCanvas;
 #else // __BORLANDC__
-  if( inDC.handle != NULL )
+  if( inDC.handle.device != NULL )
   {
     if( Mode != RenderingMode::Opaque )
       throw "GUI::GraphicsResource::Render: Unsupported rendering mode.";
@@ -180,8 +185,15 @@ GUI::GraphicResource::Render( const T& inGraphic, const GUI::DrawContext& inDC )
       static_cast<int>( inDC.rect.right - inDC.rect.left ),
       static_cast<int>( inDC.rect.bottom - inDC.rect.top )
     );
-    QPainter p( inDC.handle );
-    p.drawImage( targetRect, image );
+    if( inDC.handle.painter != NULL )
+    {
+      inDC.handle.painter->drawImage( targetRect, image );
+    }
+    else
+    {
+      QPainter p( inDC.handle.device );
+      p.drawImage( targetRect, image );
+    }
   }
 #endif // __BORLANDC__
 }

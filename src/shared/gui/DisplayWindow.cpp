@@ -51,7 +51,7 @@ DisplayForm::DisplayForm( GraphDisplay& inDisplay )
 void
 DisplayForm::paintEvent( QPaintEvent* iopEvent )
 {
-  mDisplay.Paint( iopEvent->region().handle() );
+  mDisplay.Paint( &iopEvent->region() );
   iopEvent->accept();
 }
 
@@ -261,7 +261,7 @@ DisplayWindow::UpdateContext()
 #else // __BORLANDC__
   DrawContext dc =
   {
-    mpForm,
+    { mpForm, NULL },
     { 0, 0, mWidth, mHeight }
   };
 #endif // __BORLANDC__

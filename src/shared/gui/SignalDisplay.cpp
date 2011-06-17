@@ -105,7 +105,7 @@ SignalDisplay::SetContext( const GUI::DrawContext& dc )
     static_cast<int>( dc.rect.bottom - dc.rect.top )
   );
   mDisplayRgn = mDisplayRect;
-  mTargetDC = dc.handle;
+  mTargetDC = dc.handle.device;
   return Invalidate();
 }
 
@@ -437,7 +437,7 @@ SignalDisplay::SetNumSamples( int inNumSamples )
 }
 
 SignalDisplay&
-SignalDisplay::Paint( void* inUpdateRgn )
+SignalDisplay::Paint( const void* inUpdateRgn )
 {
   if( mTargetDC == NULL )
     return *this;
@@ -478,7 +478,7 @@ SignalDisplay::Paint( void* inUpdateRgn )
 }
 
 void
-SignalDisplay::SetupPainting( PaintInfo& p, void* inUpdateRgn )
+SignalDisplay::SetupPainting( PaintInfo& p, const void* inUpdateRgn )
 {
   SyncGraphics();
 

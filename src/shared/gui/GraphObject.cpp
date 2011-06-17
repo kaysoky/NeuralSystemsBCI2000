@@ -84,7 +84,13 @@ GraphObject::Paint()
       { 0, 0, 0, 0 }
     };
     dc.rect = mDisplay.NormalizedToPixelCoords( mDisplayRect );
+#ifndef __BORLANDC__
+    dc.handle.painter->save();
+#endif // __BORLANDC__
     OnPaint( dc );
+#ifndef __BORLANDC__
+    dc.handle.painter->restore();
+#endif // __BORLANDC__
   }
 }
 

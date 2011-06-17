@@ -66,7 +66,7 @@ Scene::Scene( GraphDisplay& inDisplay )
 {
 #ifndef __BORLANDC__
   QWidget* parentWidget = NULL;
-  parentWidget = dynamic_cast<QWidget*>( Display().Context().handle );
+  parentWidget = dynamic_cast<QWidget*>( Display().Context().handle.device );
   if( parentWidget )
   {
     mpGLScene = new class GLScene( parentWidget );

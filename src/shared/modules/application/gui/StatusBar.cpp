@@ -215,14 +215,14 @@ StatusBar::OnPaint( const DrawContext& dc )
   }
 #else // __BORLANDC__
   // Create the painter
-  QPainter p( dc.handle );
+  QPainter* p = dc.handle.painter;
 
   // Paint the background if it exists
   if( backgroundColor != RGBColor( RGBColor::NullColor ) )
   {
     QColor colorBackground( backgroundColor.R(), backgroundColor.G(), backgroundColor.B() );
     QBrush brushBackground( colorBackground );
-    p.fillRect(
+    p->fillRect(
       static_cast<int>( dc.rect.left ),
       static_cast<int>( dc.rect.top ),
       static_cast<int>( dc.rect.right - dc.rect.left ),
@@ -236,12 +236,12 @@ StatusBar::OnPaint( const DrawContext& dc )
   font.fromString( QString( "Arial" ) );
   font.setPixelSize( static_cast<int>( mTextHeight * ( dc.rect.bottom - dc.rect.top ) ) );
   font.setBold( true );
-  p.setFont( font );
+  p->setFont( font );
 
   // Color the font
   QPen fontPen;
   fontPen.setColor( QColor( textColor.R(), textColor.G(), textColor.B() ) );
-  p.setPen( fontPen );
+  p->setPen( fontPen );
 
   QFontMetrics fm( font );
   int charWidth = fm.width( QString( "x" ) );
@@ -260,7 +260,7 @@ StatusBar::OnPaint( const DrawContext& dc )
     {
       QColor colorDivider( dividerColor.R(), dividerColor.G(), dividerColor.B() );
       QBrush brushDivider( colorDivider );
-      p.fillRect( dividerRect, brushDivider );
+      p->fillRect( dividerRect, brushDivider );
     }
   }
 
@@ -274,7 +274,7 @@ StatusBar::OnPaint( const DrawContext& dc )
   int size = fm.width( line1_ );
   while( size > line1Rect.width() - 2 * charWidth )
     size = fm.width( line1_.mid( 2 ) );
-  p.drawText( line1Rect, line1_ );
+  p->drawText( line1Rect, line1_ );
 
   QString line2_ = QString::fromLocal8Bit( line2.c_str() );
   QRect line2Rect(
@@ -286,7 +286,7 @@ StatusBar::OnPaint( const DrawContext& dc )
   size = fm.width( line2_ );
   while( size > line2Rect.width() - 2 * charWidth )
     size = fm.width( line2_.mid( 2 ) );
-  p.drawText( line2Rect, line2_ );
+  p->drawText( line2Rect, line2_ );
 #endif // __BORLANDC__
 }
 

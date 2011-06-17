@@ -39,6 +39,7 @@
 # include "VCL.h"
 #else // __BORLANDC__
 # include <QPixmap>
+# include <QRegion>
 #endif // __BORLANDC__
 
 class BitmapImage;
@@ -78,13 +79,13 @@ class GraphDisplay
   const BitmapImage& BitmapData( int width = 0, int height = 0 ) const;
   // Graphics functions
   //  Invalidate the display's entire area
-  virtual const GraphDisplay& Invalidate() const;
+  virtual GraphDisplay& Invalidate();
   //  Invalidate a rectangle given in normalized coordinates
-  virtual const GraphDisplay& InvalidateRect( const Rect& ) const;
+  virtual GraphDisplay& InvalidateRect( const Rect& );
   //  Force immediate (i.e., synchronous) redrawing of invalidated window areas
   virtual const GraphDisplay& Update() const;
   // Events
-  void Paint( void* RegionHandle = NULL );
+  void Paint( const void* RegionHandle = NULL );
   void Change();
   void Click( int x, int y );
 
@@ -103,7 +104,8 @@ class GraphDisplay
   HDC                 mOffscreenDC;
   HBITMAP             mOffscreenBmp;
 #else // __BORLANDC__
-  QPixmap*             mOffscreenBmp;
+  QPixmap*            mOffscreenBmp;
+  QRegion             mInvalidRegion;
 #endif // __BORLANDC__
 };
 

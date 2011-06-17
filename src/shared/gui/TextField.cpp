@@ -110,89 +110,48 @@ TextField::Color() const
 void
 TextField::OnChange( GUI::DrawContext& ioDC )
 {
-  if( ioDC.handle != NULL )
-  {
+#ifdef __BORLANDC__
+  if( ioDC.handle == NULL )
+    return;
+#else // __BORLANDC__
+  if( ioDC.handle.device == NULL )
+    return;
+#endif // __BORLANDC__
+
 #ifdef __BORLANDC__
 
-    TCanvas* pCanvas = new TCanvas;
-    try
-    {
-      int width = ioDC.rect.right - ioDC.rect.left,
-          height = ioDC.rect.bottom - ioDC.rect.top,
-          hCenter = ( ioDC.rect.right + ioDC.rect.left ) / 2,
-          vCenter = ( ioDC.rect.bottom + ioDC.rect.top ) / 2;
+  TCanvas* pCanvas = new TCanvas;
+  try
+  {
+    int width = ioDC.rect.right - ioDC.rect.left,
+        height = ioDC.rect.bottom - ioDC.rect.top,
+        hCenter = ( ioDC.rect.right + ioDC.rect.left ) / 2,
+        vCenter = ( ioDC.rect.bottom + ioDC.rect.top ) / 2;
 
-      pCanvas->Handle = ( HDC )ioDC.handle;
+    pCanvas->Handle = ( HDC )ioDC.handle;
 
-      pCanvas->Font->Name = "Arial";
-      pCanvas->Font->Height = -mTextHeight * height;
-      pCanvas->Font->Style = pCanvas->Font->Style << fsBold;
+    pCanvas->Font->Name = "Arial";
+    pCanvas->Font->Height = -mTextHeight * height;
+    pCanvas->Font->Style = pCanvas->Font->Style << fsBold;
 
-      AnsiString text = AnsiString( " " ) + mText.c_str() + " ";
-      TSize size = pCanvas->TextExtent( text );
-
-      switch( AspectRatioMode() )
-      {
-        case AspectRatioModes::AdjustWidth:
-          width = size.cx;
-          break;
-
-        case AspectRatioModes::AdjustHeight:
-          height = ( height * width ) / size.cx;
-          break;
-
-        case AspectRatioModes::AdjustBoth:
-          pCanvas->Font->Height = -mTextHeight;
-          size = pCanvas->TextExtent( text );
-          height = size.cx;
-          width = size.cy;
-          break;
-
-        case AspectRatioModes::AdjustNone:
-        default:
-          ;
-      }
-      ioDC.rect.left = hCenter - width / 2;
-      ioDC.rect.right = hCenter + width / 2;
-      ioDC.rect.top = vCenter - height / 2;
-      ioDC.rect.bottom = vCenter + height / 2;
-    }
-    __finally
-    {
-      delete pCanvas;
-    }
-
-#else // __BORLANDC__
-
-    int width = static_cast<int>( ioDC.rect.right - ioDC.rect.left ),
-        height = static_cast<int>( ioDC.rect.bottom - ioDC.rect.top ),
-        hCenter = static_cast<int>( ( ioDC.rect.right + ioDC.rect.left ) / 2 ),
-        vCenter = static_cast<int>( ( ioDC.rect.bottom + ioDC.rect.top ) / 2 );
-
-    QFont font;
-    font.fromString( QString( "Arial" ) );
-    font.setPixelSize( static_cast<int>( mTextHeight * height ) );
-    font.setBold( true );
-    QFontMetrics fm( font );
-    QSize size;
-    QString text = QString::fromLocal8Bit( mText.c_str() );
-    text.append( " " ).prepend( " " );
-    size.setWidth( fm.width( text ) );
-    size.setHeight( fm.height() );
+    AnsiString text = AnsiString( " " ) + mText.c_str() + " ";
+    TSize size = pCanvas->TextExtent( text );
 
     switch( AspectRatioMode() )
     {
       case AspectRatioModes::AdjustWidth:
-        width = size.width();
+        width = size.cx;
         break;
 
       case AspectRatioModes::AdjustHeight:
-        height = ( height * width ) / size.width();
+        height = ( height * width ) / size.cx;
         break;
 
       case AspectRatioModes::AdjustBoth:
-        height = size.width();
-        width = size.height();
+        pCanvas->Font->Height = -mTextHeight;
+        size = pCanvas->TextExtent( text );
+        height = size.cx;
+        width = size.cy;
         break;
 
       case AspectRatioModes::AdjustNone:
@@ -203,9 +162,54 @@ TextField::OnChange( GUI::DrawContext& ioDC )
     ioDC.rect.right = hCenter + width / 2;
     ioDC.rect.top = vCenter - height / 2;
     ioDC.rect.bottom = vCenter + height / 2;
+  }
+  __finally
+  {
+    delete pCanvas;
+  }
+
+#else // __BORLANDC__
+
+  int width = static_cast<int>( ioDC.rect.right - ioDC.rect.left ),
+      height = static_cast<int>( ioDC.rect.bottom - ioDC.rect.top ),
+      hCenter = static_cast<int>( ( ioDC.rect.right + ioDC.rect.left ) / 2 ),
+      vCenter = static_cast<int>( ( ioDC.rect.bottom + ioDC.rect.top ) / 2 );
+
+  QFont font;
+  font.fromString( QString( "Arial" ) );
+  font.setPixelSize( static_cast<int>( mTextHeight * height ) );
+  font.setBold( true );
+  QFontMetrics fm( font );
+  QString text = QString::fromLocal8Bit( mText.c_str() );
+  text.append( " " ).prepend( " " );
+  QSize size = fm.size( 0, text );
+
+  switch( AspectRatioMode() )
+  {
+    case AspectRatioModes::AdjustWidth:
+      width = size.width();
+      break;
+
+    case AspectRatioModes::AdjustHeight:
+      height = ( height * width ) / size.width();
+      break;
+
+    case AspectRatioModes::AdjustBoth:
+      height = size.width();
+      width = size.height();
+      break;
+
+    case AspectRatioModes::AdjustNone:
+    default:
+      ;
+  }
+  ioDC.rect.left = hCenter - width / 2;
+  ioDC.rect.right = hCenter + width / 2;
+  ioDC.rect.top = vCenter - height / 2;
+  ioDC.rect.bottom = vCenter + height / 2;
 
 #endif // __BORLANDC__
-  }
+
   GraphObject::OnChange( ioDC );
 }
 
@@ -253,7 +257,7 @@ TextField::DoPaint( const GUI::DrawContext& inDC,
 
 #else // __BORLANDC__
 
-  QPainter p( inDC.handle );
+  QPainter* p = inDC.handle.painter;
   QRect rect(
     static_cast<int>( inDC.rect.left ),
     static_cast<int>( inDC.rect.top ),
@@ -266,7 +270,7 @@ TextField::DoPaint( const GUI::DrawContext& inDC,
   {
     QColor backColor( mColor.R(), mColor.G(), mColor.B() );
     brush.setColor( backColor );
-    p.fillRect( rect, brush );
+    p->fillRect( rect, brush );
   }
 
   QFont font;
@@ -277,13 +281,13 @@ TextField::DoPaint( const GUI::DrawContext& inDC,
   QPen pen;
   brush.setColor( textColor );
   pen.setColor( textColor );
-  p.setPen( pen );
-  p.setBrush( brush );
-  p.setFont( font );
+  p->setPen( pen );
+  p->setBrush( brush );
+  p->setFont( font );
 
   QString text = QString::fromLocal8Bit( mText.c_str() );
   text.append( " " ).prepend( " " );
-  p.drawText( rect, Qt::AlignCenter, text );
+  p->drawText( rect, Qt::AlignCenter, text );
 
 #endif // __BORLANDC__
 }

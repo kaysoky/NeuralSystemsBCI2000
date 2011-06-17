@@ -158,8 +158,7 @@ ImageStimulus::OnPaint( const DrawContext& inDC )
                     mpImageBufferNormal;
   if( pBuffer != NULL )
   {
-    QPainter painter( inDC.handle );
-    painter.drawPixmap( int( inDC.rect.left ), int( inDC.rect.top ), *pBuffer );
+    inDC.handle.painter->drawPixmap( int( inDC.rect.left ), int( inDC.rect.top ), *pBuffer );
   }
 
 #endif // __BORLANDC__

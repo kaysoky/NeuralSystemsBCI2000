@@ -886,7 +886,7 @@ VisDisplayGraph::SyncDisplay()
 
   GUI::DrawContext dc =
   {
-    this,
+    { this, NULL },
     { 0, 0, this->width(), this->height() - heightReduction }
   };
   mDisplay.SetContext( dc );
@@ -896,7 +896,7 @@ void
 VisDisplayGraph::paintEvent( QPaintEvent* iopEvent )
 {
   VisDisplayBase::paintEvent( iopEvent );
-  mDisplay.Paint( ( void* )&iopEvent->region() );
+  mDisplay.Paint( &iopEvent->region() );
   iopEvent->accept();
 }
 

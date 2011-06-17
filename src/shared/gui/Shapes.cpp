@@ -194,7 +194,7 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
   }
 #else // __BORLANDC__
   // Prepare the brush
-  QPainter p( inDC.handle );
+  QPainter* p = inDC.handle.painter;
   QRect drawRect(
     static_cast<int>( inDC.rect.left ),
     static_cast<int>( inDC.rect.top ),
@@ -210,7 +210,7 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
     fillBrush.setStyle( Qt::SolidPattern );
     fillBrush.setColor( fillColor );
   }
-  p.setBrush( fillBrush );
+  p->setBrush( fillBrush );
 
   // Prepare the pen
   QPen outlinePen;
@@ -223,10 +223,10 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
     outlinePen.setColor( outlineColor );
     outlinePen.setWidth( static_cast<int>( this->LineWidth() ) );
   }
-  p.setPen( outlinePen );
+  p->setPen( outlinePen );
 
   // Draw the rectangle
-  p.drawRect( drawRect );
+  p->drawRect( drawRect );
 #endif // __BORLANDC__
 }
 
@@ -367,7 +367,7 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
   }
 #else // __BORLANDC__
   // Prepare the Brush
-  QPainter p( inDC.handle );
+  QPainter* p = inDC.handle.painter;
   QRect drawRect(
     static_cast<int>( inDC.rect.left ),
     static_cast<int>( inDC.rect.top ),
@@ -383,7 +383,7 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
     fillBrush.setStyle( Qt::SolidPattern );
     fillBrush.setColor( fillColor );
   }
-  p.setBrush( fillBrush );
+  p->setBrush( fillBrush );
 
   // Prepare the Pen
   QPen outlinePen;
@@ -396,10 +396,10 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
     outlinePen.setColor( outlineColor );
     outlinePen.setWidth( static_cast<int>( this->LineWidth() ) );
   }
-  p.setPen( outlinePen );
+  p->setPen( outlinePen );
 
   // Draw the rectangle
-  p.drawEllipse( drawRect );
+  p->drawEllipse( drawRect );
 #endif // __BORLANDC__
 }
 

@@ -92,7 +92,7 @@ vAmpDisplay::DisplayLogo( int inID )
       logoHeight = GraphicResource::Height( Resources::BCI2000logo_small );
   int left = ( pImage->width() - logoWidth ) / 2,
       top = ( pImage->height() - logoHeight ) / 2;
-  DrawContext dc = { pImage, { left, top, left + logoWidth, top + logoHeight } };
+  DrawContext dc = { { pImage, NULL }, { left, top, left + logoWidth, top + logoHeight } };
   GraphicResource::Render<RenderingMode::Opaque>( Resources::BCI2000logo_small, dc );
   HBITMAP bmp = QImageToHBITMAP( *pImage );
   faSetBitmap( inID, bmp );

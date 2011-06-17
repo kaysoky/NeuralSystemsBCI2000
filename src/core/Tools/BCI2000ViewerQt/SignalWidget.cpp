@@ -77,7 +77,7 @@ SignalWidget::UpdateDrawContext()
 {
   GUI::DrawContext dc =
   {
-    this,
+    { this, NULL },
     { 0, 0, this->width(), this->height() }
   };
   mDisplay.SetContext( dc );

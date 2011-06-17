@@ -90,7 +90,7 @@ class SignalDisplay
  public:
   SignalDisplay& SetContext( const GUI::DrawContext& );
   SignalDisplay& Invalidate();
-  SignalDisplay& Paint( void* RegionHandle = NULL );
+  SignalDisplay& Paint( const void* RegionHandle = NULL );
 
   SignalDisplay& WrapForward( const GenericSignal& );
   SignalDisplay& ScrollForward( const GenericSignal& );
@@ -297,7 +297,7 @@ class SignalDisplay
 
  private:
   struct PaintInfo;
-  void SetupPainting( PaintInfo&, void* );
+  void SetupPainting( PaintInfo&, const void* );
   void ClearBackground( const PaintInfo& );
   void DrawSignalPolyline( const PaintInfo& );
   void DrawSignalField2d( const PaintInfo& );

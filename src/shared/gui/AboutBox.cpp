@@ -72,7 +72,7 @@ AboutBox::Display() const
       logoHeight = GraphicResource::Height( Resources::BCI2000logo_mini );
   QPixmap logo( logoWidth + 16, logoHeight + 16 );
   logo.fill( Qt::white );
-  DrawContext dc = { &logo, { 8, 8, logoWidth + 8, logoHeight + 8 } };
+  DrawContext dc = { { &logo, NULL }, { 8, 8, logoWidth + 8, logoHeight + 8 } };
   GraphicResource::Render<RenderingMode::Opaque>( Resources::BCI2000logo_mini, dc );
 
   QLabel* pVersionLabel = new QLabel( versionDetails.c_str() );

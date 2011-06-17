@@ -47,14 +47,16 @@ using namespace std;
 GraphDisplay::GraphDisplay()
 : mColor( RGBColor::Gray )
 {
-  mContext.handle = NULL;
   mContext.rect.left = 0;
   mContext.rect.top = 0;
   mContext.rect.right = 0;
   mContext.rect.bottom = 0;
 #ifdef __BORLANDC__
+  mContext.handle = NULL;
   mOffscreenDC = NULL;
 #endif // __BORLANDC__
+  mContext.handle.device = NULL;
+  mContext.handle.painter = NULL;
   mOffscreenBmp = NULL;
 }
 
@@ -71,9 +73,9 @@ GraphDisplay::Update() const
 #endif // _WIN32
   }
 #else // __BORLANDC__
-  QWidget* pWindow = dynamic_cast< QWidget* >( mContext.handle );
-  if( pWindow )
-    pWindow->repaint();
+  QWidget* pWidget = dynamic_cast< QWidget* >( mContext.handle.device );
+  if( pWidget )
+    pWidget->repaint( mInvalidRegion );
 #endif // __BORLANDC__
   return *this;
 }
@@ -82,154 +84,163 @@ void
 GraphDisplay::Change()
 {
   ClearOffscreenBuffer();
+  Invalidate();
 
   for( SetOfGraphObjects::iterator i = mObjects.begin(); i != mObjects.end(); ++i )
     ( *i )->Change();
 }
 
 void
-GraphDisplay::Paint( void* inRegionHandle )
+GraphDisplay::Paint( const void* inRegionHandle )
 {
-  if( mContext.handle != NULL )
-  {
+#ifdef __BORLANDC__
+  if( mContext.handle == NULL )
+    return;
+#else // __BORLANDC__
+  if( mContext.handle.device == NULL )
+    return;
+#endif // __BORLANDC__
+
 #ifdef __BORLANDC__
 
-    int formatFlags = PFD_SUPPORT_GDI;
-    HDC outputDC = (HDC)mContext.handle,
-        drawDC = outputDC;
-    int width = mContext.rect.right - mContext.rect.left,
-        height = mContext.rect.bottom - mContext.rect.top;
-    switch( ::GetObjectType( outputDC ) )
-    {
-      case OBJ_METADC:
-      case OBJ_ENHMETADC:
-        break;
+  int formatFlags = PFD_SUPPORT_GDI;
+  HDC outputDC = (HDC)mContext.handle,
+      drawDC = outputDC;
+  int width = mContext.rect.right,
+      height = mContext.rect.bottom;
+  switch( ::GetObjectType( outputDC ) )
+  {
+    case OBJ_METADC:
+    case OBJ_ENHMETADC:
+      break;
 
-      default:
-      { // Adapt to various aspects of the DC's pixel format.
-        int formatID = ::GetPixelFormat( outputDC );
-        PIXELFORMATDESCRIPTOR pfd;
-        if( formatID > 0 && ::DescribePixelFormat( outputDC, formatID, sizeof( pfd ), &pfd ) )
-          formatFlags = pfd.dwFlags;
+    default:
+    { // Adapt to various aspects of the DC's pixel format.
+      int formatID = ::GetPixelFormat( outputDC );
+      PIXELFORMATDESCRIPTOR pfd;
+      if( formatID > 0 && ::DescribePixelFormat( outputDC, formatID, sizeof( pfd ), &pfd ) )
+        formatFlags = pfd.dwFlags;
 
-        if( ( formatFlags & PFD_SUPPORT_GDI ) && !( formatFlags & PFD_DOUBLEBUFFER ) )
-        {
-          if( mOffscreenDC == NULL )
-            mOffscreenDC = ::CreateCompatibleDC( outputDC );
-          if( mOffscreenBmp == NULL )
-            mOffscreenBmp = ::CreateCompatibleBitmap( outputDC, width, height );
-          ::DeleteObject( ::SelectObject( mOffscreenDC, mOffscreenBmp ) );
-          if( inRegionHandle != NULL )
-            ::SelectClipRgn( mOffscreenDC, (HRGN)inRegionHandle );
+      if( ( formatFlags & PFD_SUPPORT_GDI ) && !( formatFlags & PFD_DOUBLEBUFFER ) )
+      {
+        if( mOffscreenDC == NULL )
+          mOffscreenDC = ::CreateCompatibleDC( outputDC );
+        if( mOffscreenBmp == NULL )
+          mOffscreenBmp = ::CreateCompatibleBitmap( outputDC, width, height );
+        ::DeleteObject( ::SelectObject( mOffscreenDC, mOffscreenBmp ) );
+        if( inRegionHandle != NULL )
+          ::SelectClipRgn( mOffscreenDC, (HRGN)inRegionHandle );
 
-          if( formatFlags & PFD_SUPPORT_OPENGL )
-            ::SetPixelFormat( mOffscreenDC, formatID, &pfd );
+        if( formatFlags & PFD_SUPPORT_OPENGL )
+          ::SetPixelFormat( mOffscreenDC, formatID, &pfd );
 
-          drawDC = mOffscreenDC;
-        }
+        drawDC = mOffscreenDC;
       }
     }
-    if( inRegionHandle != NULL )
-      ::SelectClipRgn( outputDC, (HRGN)inRegionHandle );
+  }
+  if( inRegionHandle != NULL )
+    ::SelectClipRgn( outputDC, (HRGN)inRegionHandle );
 
-    if( ( formatFlags & PFD_SUPPORT_GDI ) && !( formatFlags & PFD_SUPPORT_OPENGL ) )
+  if( ( formatFlags & PFD_SUPPORT_GDI ) && !( formatFlags & PFD_SUPPORT_OPENGL ) )
+  {
+    RECT winRect =
     {
-      RECT winRect =
-      {
-        mContext.rect.left,
-        mContext.rect.top,
-        mContext.rect.right,
-        mContext.rect.bottom
-      };
-      HBRUSH brush = ::CreateSolidBrush( mColor.ToWinColor() );
-      ::FillRect( drawDC, &winRect, brush );
-      ::DeleteObject( brush );
-    }
+      mContext.rect.left,
+      mContext.rect.top,
+      mContext.rect.right,
+      mContext.rect.bottom
+    };
+    HBRUSH brush = ::CreateSolidBrush( mColor.ToWinColor() );
+    ::FillRect( drawDC, &winRect, brush );
+    ::DeleteObject( brush );
+  }
 
-    mContext.handle = drawDC;
+  mContext.handle = drawDC;
 
 #else // __BORLANDC__
 
-    // Create the QPixmap for the background buffer
-    if( mOffscreenBmp == NULL )
-    {
-      int width = static_cast<int>( mContext.rect.right - mContext.rect.left ),
-          height = static_cast<int>( mContext.rect.bottom - mContext.rect.top );
-      mOffscreenBmp = new QPixmap( width, height );
-    }
+  // Create the QPixmap for the background buffer
+  if( mOffscreenBmp == NULL )
+  {
+    int width = static_cast<int>( mContext.rect.right - mContext.rect.left ),
+        height = static_cast<int>( mContext.rect.bottom - mContext.rect.top );
+    mOffscreenBmp = new QPixmap( width, height );
+  }
 
-    // Create a rect for the background color
-    QRect rect;
-    rect.setLeft( static_cast<int>( mContext.rect.left ) );
-    rect.setTop( static_cast<int>( mContext.rect.top ) );
-    rect.setRight( static_cast<int>( mContext.rect.right ) );
-    rect.setBottom( static_cast<int>( mContext.rect.bottom ) );
+  // Set up the painter object used by the objects' drawing code.
+  QPainter* pOffscreenPainter = new QPainter( mOffscreenBmp );
+  pOffscreenPainter->translate( -mContext.rect.left, -mContext.rect.top );
+  pOffscreenPainter->setClipping( true );
+  pOffscreenPainter->setClipRegion( mInvalidRegion );
 
-    // Create the color to brush
-    QColor brushColor( mColor.R(), mColor.G(), mColor.B() );
+  // Create a rect for the background color
+  QRect rect;
+  rect.setLeft( static_cast<int>( mContext.rect.left ) );
+  rect.setTop( static_cast<int>( mContext.rect.top ) );
+  rect.setRight( static_cast<int>( mContext.rect.right ) );
+  rect.setBottom( static_cast<int>( mContext.rect.bottom ) );
 
-    // Create a brush to color
-    QBrush brush( brushColor );
-    brush.setStyle( Qt::SolidPattern );
+  // Create the color to brush
+  QColor brushColor( mColor.R(), mColor.G(), mColor.B() );
 
-    // Paint the background color
-    QPainter* offscreenPainter = new QPainter( mOffscreenBmp );
-    offscreenPainter->fillRect( rect, brush );
-    delete offscreenPainter;
-    offscreenPainter = NULL;
+  // Create a brush to color
+  QBrush brush( brushColor );
+  brush.setStyle( Qt::SolidPattern );
 
-    // Set the backbuffer draw context
-    QPaintDevice* output = mContext.handle;
-    mContext.handle = mOffscreenBmp;
+  // Paint the background color
+  pOffscreenPainter->fillRect( rect, brush );
+
+  // Set the backbuffer draw context
+  mContext.handle.painter = pOffscreenPainter;
 
 #endif // __BORLANDC__
 
-    vector<GraphObject*> objects( mObjects.begin(), mObjects.end() );
-    sort( objects.begin(), objects.end(), GraphObject::CompareByZOrder() );
-    for( vector<GraphObject*>::iterator i = objects.begin(); i != objects.end(); ++i )
-      ( *i )->Paint();
+  vector<GraphObject*> objects( mObjects.begin(), mObjects.end() );
+  sort( objects.begin(), objects.end(), GraphObject::CompareByZOrder() );
+  for( vector<GraphObject*>::iterator i = objects.begin(); i != objects.end(); ++i )
+    ( *i )->Paint();
+
+#ifndef __BORLANDC__
+
+  mContext.handle.painter = NULL;
+  delete pOffscreenPainter;
+
+#endif // __BORLANDC__
 
 #ifdef __BORLANDC__
 
-    // Copy the data from the buffer into the target device context (usually a window).
-    if( mOffscreenBmp )
-    {
-      ::BitBlt( outputDC,
-                mContext.rect.left,
-                mContext.rect.top,
-                mContext.rect.right - mContext.rect.left,
-                mContext.rect.bottom - mContext.rect.top,
-                drawDC,
-                0,
-                0,
-                SRCCOPY
-      );
-    }
-    if( formatFlags & PFD_DOUBLEBUFFER )
-      ::SwapBuffers( outputDC );
+  // Copy the data from the buffer into the target device context (usually a window).
+  if( mOffscreenBmp )
+  {
+    ::BitBlt( outputDC,
+              0,
+              0,
+              mContext.rect.right,
+              mContext.rect.bottom,
+              drawDC,
+              0,
+              0,
+              SRCCOPY
+    );
+  }
+  if( formatFlags & PFD_DOUBLEBUFFER )
+    ::SwapBuffers( outputDC );
 
-    mContext.handle = outputDC;
+  mContext.handle = outputDC;
 
 #else // __BORLANDC__
 
-    // Output the offscreen pixmap to the screen
-    QPainter outputPainter( output );
-    outputPainter.drawPixmap( static_cast<int>( mContext.rect.left ),
-                              static_cast<int>( mContext.rect.top ),
-                              static_cast<int>( mContext.rect.right - mContext.rect.left ),
-                              static_cast<int>( mContext.rect.bottom - mContext.rect.top ),
-                              *mOffscreenBmp,
-                              0,
-                              0,
-                              mOffscreenBmp->width(),
-                              mOffscreenBmp->height()
-    );
+  // Output the offscreen pixmap to the screen
+  QPainter outputPainter( mContext.handle.device );
+  outputPainter.drawPixmap( static_cast<int>( mContext.rect.left ),
+                            static_cast<int>( mContext.rect.top ),
+                            *mOffscreenBmp
+  );
 
-    // Reset the output device
-    mContext.handle = output;
+  // Clear the invalid region.
+  mInvalidRegion = QRegion();
 
 #endif // __BORLANDC__
-  }
 }
 
 void
@@ -248,15 +259,15 @@ GraphDisplay::Click( int inX, int inY )
       mObjectsClicked.push( *i );
 }
 
-const GraphDisplay&
-GraphDisplay::Invalidate() const
+GraphDisplay&
+GraphDisplay::Invalidate()
 {
   Rect rect = { 0, 0, 1, 1 };
   return InvalidateRect( rect );
 }
 
-const GraphDisplay&
-GraphDisplay::InvalidateRect( const GUI::Rect& inRect ) const
+GraphDisplay&
+GraphDisplay::InvalidateRect( const GUI::Rect& inRect )
 {
 #ifdef __BORLANDC__
   if( mContext.handle != NULL )
@@ -275,17 +286,18 @@ GraphDisplay::InvalidateRect( const GUI::Rect& inRect ) const
 #endif // _WIN32
   }
 #else // __BORLANDC__
-  QWidget* pWindow = dynamic_cast< QWidget* >( mContext.handle );
-  if( pWindow )
-  {
-    Rect rt = NormalizedToPixelCoords( inRect );
-    pWindow->update(
+  Rect rt = NormalizedToPixelCoords( inRect );
+  QRegion rgn(
       static_cast<int>( rt.left ),
       static_cast<int>( rt.top ),
       static_cast<int>( rt.right - rt.left ),
       static_cast<int>( rt.bottom - rt.top )
-    );
-  }
+  );
+  mInvalidRegion += rgn;
+
+  QWidget* pWidget = dynamic_cast< QWidget* >( mContext.handle.device );
+  if( pWidget )
+    pWidget->update( rgn );
 #endif // __BORLANDC__
   return *this;
 }
@@ -440,6 +452,5 @@ GraphDisplay::ClearOffscreenBuffer()
     delete mOffscreenBmp;
     mOffscreenBmp = NULL;
   }
-
 #endif // __BORLANDC__
 }
