@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # 
-#   $Id: __init__.py 3326 2011-06-17 23:56:38Z jhill $
+#   $Id$
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
