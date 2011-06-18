@@ -670,7 +670,7 @@ class BciGenericApplication(Core.BciCore):
 			if fr == None or fr == 0.0:
 				print "WARNING: self.screen.GetFrameRate() is returning nonsense"
 				fr = 1.0  # obviously not a sensible value (renderer developer should have overshadowed this)
-		                  # but not None and not 0 (so nothing will break) 
+				          # but not None and not 0 (so nothing will break) 
 			self.nominal['FramesPerSecond'] = float(fr)
 			self.nominal['SecondsPerFrame'] = 1.0 / self.nominal['FramesPerSecond']
 			self._estimate_rate('FramesPerSecond', init=2.0) # will be re-initialized at StartRun
@@ -1762,6 +1762,25 @@ class BciGenericRenderer(object):
 		close the window and clean up.		
 		"""###
 		pass
+	
+	def HardWait(self):
+		"""
+		An experimental utility that may be useful in FinishFrame() implementations,
+		depending on your graphics drivers and CPU configuration.
+		"""###
+		bci = getattr(self, '_bci', None)
+		sync = getattr(self, '_framesync', None)
+		if sync == None:
+			self._framesync = sync = {'t0':PrecisionTiming.prectime(), 'frame_count':0}
+			if bci and bci._display_sleep_msec: bci._display_sleep_msec = 0
+		else:
+			msec_per_frame = 1000.0 / self._setup['framerate']
+			#nframes = int( (PrecisionTiming.prectime() - sync['t0']) / msec_per_frame );
+			nframes = sync['frame_count']
+			nframes += 1
+			deadline = sync['t0'] + msec_per_frame * nframes
+			sync['frame_count'] = nframes
+			while PrecisionTiming.prectime() < deadline: pass # ;-)
 
 #################################################################
 #################################################################
