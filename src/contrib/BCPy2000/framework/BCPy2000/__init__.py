@@ -29,6 +29,3 @@ __author__    = 'Jeremy Hill, Thomas Schreiner, Christian Puzicha, Jason Farquha
 __copyright__ = 'Copyright (c) 2007-11'
 __email__     = 'bcpy2000@bci2000.org'
 
-import Generic
-Generic.register_framework_dir()
-
