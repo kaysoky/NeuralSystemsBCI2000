@@ -634,10 +634,6 @@ class BciApplication(BciGenericApplication):
 			m = self.addstatemonitor('TargetCode', color=self.colors['High'])
 			m = self.addstatemonitor('TargetBitValue', color=self.colors['High'])
 		
-		self.pages[0] = self.pages[1] #TODO
-		self.codebooks[0] = self.codebooks[1] #TODO
-		print "TODO: get rid of this scary hack and find the reason why self.states.Page and self.states.Codebook go to 0 after a few packets please Collin"
-		
 		self.transient('ResultCode', manual=True)
 		self.ResetOutput()
 
@@ -706,7 +702,7 @@ class BciApplication(BciGenericApplication):
 
 	def Transition(self, phase):
 
-		#print 'Transitioning to ',phase,'Page is', self.states.Page
+		#print 'Transitioning to ',phase,'; packet_count is ',self.packet_count,'; Page is', self.states.Page,'; time is',self.prectime()
 		self.penultimate = False
 
 		if self.changed('CurrentBlock') and self.states['CurrentBlock'] == 1 and self.states['CurrentTrial'] == 1:
@@ -824,7 +820,14 @@ class BciApplication(BciGenericApplication):
 	##########################################################################################
 	
 	def Process(self, sig):
-		#print self.packet_count, self.current_presentation_phase, 'Page',self.states.Page
+		#print 'Process call #', self.packet_count, 'phase is ',self.current_presentation_phase, 'Page is',self.states.Page,'time is',self.prectime()
+		
+  		# work around the bug whereby states go to zero on the second packet (probably a C++ framework "feature"?)
+		pgid = self.states['Page']
+		if pgid == 0: pgid = self.states['Page'] = self.startpage
+		cbid = self.states['Codebook']
+		if cbid == 0: cbid = self.states['Codebook'] = self.alternatives[pgid][0]
+
 		if self.states.get('Ready', 0):
 			p,msec = sig.flat
 			if self.previous_result_arrived:
