@@ -3,6 +3,8 @@ import re
 import random
 import numpy
 import pygame, pygame.locals
+import thread
+import socket
 import AppTools.Displays
 from AppTools.CurrentRenderer import VisualStimuli
 
@@ -82,25 +84,34 @@ class BciCodebook(object):
 		self.ColumnOrder = []
 		self.RowOrder = []
 
-	def	step(self):
-		if len(self.ColumnOrder) == 0:
+	def	step(self, reset = False):
+		if len(self.ColumnOrder) == 0 or reset:
 			self.ColumnOrder = range(1, 1+self.L)
 			if self.RandomizeTime != None and self.L > 1:
-				for rpt in range(100): # repeatedly shuffle, accepting only when the first column is different from the previously highlighted one (but time out after 100 tries)
-					done = {}
-					self.ColumnOrder = numpy.array(range(1, 1+self.L))
-					for ident in self.RandomizeTime:
-						if ident in done: continue
-						done[ident] = 1
-						mask = numpy.array([i==ident for i in self.RandomizeTime])
-						subset = self.ColumnOrder[mask]
-						numpy.random.shuffle(subset)
-						self.ColumnOrder[mask] = subset
-					self.ColumnOrder = self.ColumnOrder.tolist()
-					if self.ColumnOrder[0] != self.LastColumn: break
-					if rpt == 99: print "WARNING: failed to shuffle without consecutive flash"
+				done = {}
+				self.ColumnOrder = numpy.array(range(1, 1+self.L))
+				for ident in self.RandomizeTime:
+					if ident in done: continue
+					done[ident] = 1
+					mask = numpy.array([i==ident for i in self.RandomizeTime])
+					if mask[0]:
+						# This means that the first column is a candidate to be shuffled. Therefore, make sure that it is not equal to the LastColumn.
+						new_mask = mask & (self.ColumnOrder != self.LastColumn) # Exclude LastColumn.
+						subset = self.ColumnOrder[new_mask] # This subset does not contain the LastColumn.
+						random_index = numpy.random.random_integers(len(subset))-1 # Randomly select a value to switch with the first column.
+						if new_mask[0]:
+							subset[0], subset[random_index] = subset[random_index], self.ColumnOrder[0] # Swap.
+						else:
+							self.ColumnOrder[0], subset[random_index] = subset[random_index], self.ColumnOrder[0] # Swap.
+						# These two cases are necessary because depending on the mask, subset will either write over the first element of self.ColumnOrder, or it won't.
+						self.ColumnOrder[new_mask] = subset # Write swapped values back to ColumnOrder, unmasking.
+						mask[0] = False # Remove first column from mask.
+					subset = self.ColumnOrder[mask]
+					numpy.random.shuffle(subset)
+					self.ColumnOrder[mask] = subset
+				self.ColumnOrder = self.ColumnOrder.tolist()
 					
-			if self.RandomizeSpace !=None and self.N > 1:
+			if self.RandomizeSpace != None and self.N > 1:
 				# NB: spatial randomization breaks playbackability and entails loss of information
 				# (TODO: to fix this, maybe record numpy's random seed as a state var and then set
 				# it back from that state variable?)
@@ -132,6 +143,7 @@ class BciApplication(BciGenericApplication):
 
 		self.require_version(17374)
 		
+		# import codebook definitions
 		import mpiCodes
 
 		if AppTools.Displays.number_of_monitors() == 1: defaultsize = 0.8
@@ -172,30 +184,45 @@ class BciApplication(BciGenericApplication):
 		
 			str(grid),
 
-			"PythonApp:Stimulus int    StimulusEvent=        1     1     1   3   // stimulus event type: 1 flash, 2 horizontal-vertical rectangle flip, 3 h-v rect flip with change-blindness (enumeration)",
-			"PythonApp:Stimulus int    FlashFrames=         10    10     1   %   // number of frames to stay highlighted during \"flash\" stimulus event",
-			"PythonApp:Stimulus float  SOAMsec=            250   250     1   %   // stimulus onset asynchrony (period of stimulus events) in msec",
-			"PythonApp:Stimulus int    TransitionTimeLock=   0     0     0   2   // timelock presentation phases?: 0 no, 1 to packets, 2 to frames (enumeration)",
-			"PythonApp:Stimulus int    StartPage=            1     1     %   %   // ",
-			"PythonApp:Stimulus float  SoundVolume=          1.0   1.0   0   1   // master sound volume from 0.0 to 1.0",
-			"PythonApp:Stimulus matrix Colors= { Background Low High } {Red Green Blue } 0.0 0.0 0.0   0.2 0.2 0.2    1.0 1.0 1.0    0.0 0.0 1.0 // colour scheme",
-			"PythonApp:Stimulus string TargetFont=           %     %     %   %   // target font name (leave blank for default monospaced)",
-			"PythonApp:Stimulus float  ScaleText=            1.0   1.0   0.0 %   // scaling factor for text stimuli on the grid",
-			"PythonApp:Stimulus float  ScaleImages=          1.0   1.0   0.0 %   // scaling factor for image stimuli on the grid",
-			"PythonApp:Window   int    ScreenId=            -1    -1     %   %   // on which screen should the stimulus window be opened (zero-based: use -1 for last)",
-			"PythonApp:Window   float  WindowSize=           "+str(defaultsize)+"   1.0   0.0 1.0 // size of the stimulus window, proportional to the screen",
-			"PythonApp:Debug    int    SoundTest=            0     0     0   3   // use sound to test the pipeline?: 0 no, 1 mono, 2 stereo, 3 surround (enumeration)",
-			"PythonApp:Debug    float  SpatialSensitivity=   0.5   0.5   0   %   // the extent to which neighbouring grid locations cause false alarms in the sound test",
-			"PythonApp:Task     int    BlocksPerRun=         1     1     1   %   // number of times to repeat the exercise",
-			"PythonApp:Task     int    TrialsPerBlock=    1000  1000     1   %   // maximum number of letters to spell",
-			"PythonApp:Task     string TextToSpell=          THE%20QUICK%20BROWN%20FOX%20JUMPS%20OVER%20THE%20LAZY%20DOG     %     %   %   // string to copy-spell (leave blank for free-spelling)",
-			"PythonApp:Task     string TextResult=           %     %     %   %   // initial content of the text result field",
-			
+			"PythonApp:Stimulus int     StartPage=            1     1     %   %   // ",
+			"PythonApp:Stimulus int     StimulusEvent=        1     1     1   4   // stimulus event type: 1 flash, 2 horizontal-vertical rectangle flip, 3 h-v rect flip with change-blindness, 4 rainbow (enumeration)",
+			"PythonApp:Stimulus matrix  Colors= { Background Low High } {Red Green Blue } 0.0 0.0 0.0   0.2 0.2 0.2    1.0 1.0 1.0    0.0 0.0 1.0 // colour scheme",
+			"PythonApp:Stimulus matrix  RainbowColors= {Color1 Color2 Color3 Color4 Color5 Color6 Color7} {Name Red Green Blue}  Red 1.0 0.0 0.0   Orange 1.0 0.65 0.0   Yellow 1.0 1.0 0.0   Green 0.0 0.5 0.0   Blue 0.0 0.0 1.0  Indigo 0.29 0.0 0.51   Violet 0.93 0.51 0.93   0.0 0.0 1.0 // colour scheme for rainbow stimulus type",
+			"PythonApp:Stimulus string  TargetFont=           %     %     %   %   // target font name (leave blank for default monospaced)",
+			"PythonApp:Stimulus float   ScaleText=            1.0   1.0   0.0 %   // scaling factor for text stimuli on the grid",
+			"PythonApp:Stimulus float   ScaleImages=          1.0   1.0   0.0 %   // scaling factor for image stimuli on the grid",
+			"PythonApp:Stimulus int     FlashFrames=         10    10     1   %   // number of frames to stay highlighted during \"flash\" stimulus event",
+			"PythonApp:Stimulus float   SOAMsec=            250   250     1   %   // stimulus onset asynchrony (period of stimulus events) in msec",
+			"PythonApp:Stimulus int     PreTrialMsec=       500   500     1   %   // pre-trial (stimulus sequence) pause in msec",
+			"PythonApp:Stimulus int     PostTrialMsec=     3500  3500     1   %   // post-trial (stimulus sequence) pause in msec",
+			"PythonApp:Stimulus int     TransitionTimeLock=   0     0     0   2   // timelock presentation phases?: 0 no, 1 to packets, 2 to frames (enumeration)",
+			"PythonApp:Stimulus float   SoundVolume=          1.0   1.0   0   1   // master sound volume from 0.0 to 1.0",
+			#"PythonApp:Window   int     ScreenId=            -1    -1     %   %   // on which screen should the stimulus window be opened (zero-based: use -1 for last)",
+			#"PythonApp:Window   float   WindowSize=           "+str(defaultsize)+"   1.0   0.0 1.0 // size of the stimulus window, proportional to the screen",
+			"PythonApp:Window   float   WindowWidth=        800   800     1   %   // Width of the stimulus window",
+			"PythonApp:Window   float   WindowHeight=       600   600     1   %   // Height of the stimulus window",
+			"PythonApp:Window   float   WindowLeft=           0     0     0   %   // Left position of the stimulus window",
+			"PythonApp:Window   float   WindowTop=            0     0     0   %   // Top position of the stimulus window",
+			"PythonApp:Debug    int     SoundTest=            0     0     0   3   // use sound to test the pipeline?: 0 no, 1 mono, 2 stereo, 3 surround (enumeration)",
+			"PythonApp:Debug    float   SpatialSensitivity=   0.5   0.5   0   %   // the extent to which neighbouring grid locations cause false alarms in the sound test",
+			"PythonApp:Task     int     BlocksPerRun=         1     1     1   %   // number of times to repeat the exercise",
+			"PythonApp:Task     int     TrialsPerBlock=    1000  1000     1   %   // maximum number of letters to spell",
+			"PythonApp:Task     string  TextToSpell=          THE%20QUICK%20BROWN%20FOX%20JUMPS%20OVER%20THE%20LAZY%20DOG     %     %   %   // string to copy-spell (leave blank for free-spelling)",
+			"PythonApp:Task     string  TextResult=           %     %     %   %   // initial content of the text result field",
+			#"PythonApp:Task     int     ForReal=              0     0     0   1   // emit keystrokes? (boolean)",
+			"PythonApp:Task     int     VisualCue=            0     0     0   1   // Display a visual cue in the matrix for the next letter to spell (boolean)",
+			"PythonApp:Task     int     VisualCueDuration= 3000  3000    0 3000   // Time/ms to display visual cue",
+			"PythonApp:Task     matrix  VisualCueColor= {High} {Red Green Blue} 1.0 1.0 0.0 // Color for visual cue in RGB values",
+			"PythonApp:Task     string  DestinationAddress=   %     %     %   %   // network address for speller output in IP:port format",
+
+
 			# default (showcase) sets of codebooks
 			str(
 				BCI2000Tools.SpellerTools.CodebooksParam(mpiCodes.codes36).set('Pages', 1) +
 				BCI2000Tools.SpellerTools.CodebooksParam(mpiCodes.codes20).set('Pages', 2) +
-				BCI2000Tools.SpellerTools.CodebooksParam(mpiCodes.codes72).set('Pages', [])
+				BCI2000Tools.SpellerTools.CodebooksParam(mpiCodes.codes72).set('Pages', []) +
+				BCI2000Tools.SpellerTools.CodebooksParam(mpiCodes.codes4).set('Pages', []) +
+				BCI2000Tools.SpellerTools.CodebooksParam(mpiCodes.codes9).set('Pages', [])
 			) + "  % % %  // ",
 				
 			"EncDec:Encoding    int    MinEpochsPerTrial=    4     4     1   %   // minimum number of epochs per attempt to transmit/receive one letter",
@@ -208,32 +235,54 @@ class BciApplication(BciGenericApplication):
 		]
 	
 		states = [
-			"Repetition      5  0 0 0",
-			"Epoch           8  0 0 0",
-			"Codebook        5  0 0 0",
-			"CodebookColumn  8  0 0 0",
-			"Page            3  0 0 0",
-			"TargetBitValue  2  0 0 0",
-			"TargetCode      8  0 0 0",
-			"ResultCode      8  0 0 0",
+			"Repetition       5  0 0 0",
+			"Epoch            8  0 0 0",
+			"Codebook         5  0 0 0",
+			"CodebookColumn   8  0 0 0",
+			"Page             3  0 0 0",
+			"TargetBitValue   2  0 0 0",
+			"TargetCode       8  0 0 0",
+			"ResultCode       8  0 0 0",
+			"RainbowColorCode 8  0 0 0",
 		]
 		
+		self.udp_socket = socket.socket(type=socket.SOCK_DGRAM)
 			
 		return params,states
 		
 	##########################################################################################
 	
 	def Preflight(self, in_signal_props):
+		#print "Preflight"
 		
 		self.bci2000_dialog_encoding = 'latin-1'
 		
+		self.event_type = {'1':'donchin', '2':'hvrect', '3':'hvrect_cb', '4':'rainbow'}[self.params['StimulusEvent']]
+
 		self.assert_matrixlabels('Colors', ('Red', 'Green', 'Blue'), 'column')
-		self.assert_matrixlabels('Colors', ('Background', 'Low', 'High'), 'row')
+		if self.event_type == 'rainbow':
+			if not self.params['Colors'].matrixlabels()[0][:2] == ['Background', 'Low']:
+				raise EndUserError("Colors parameter must have at least 2 rows with headings 'Background' and 'Low'")
+			self.assert_matrixlabels('RainbowColors', ('Name', 'Red', 'Green', 'Blue'), 'column')
+			if len(self.params['RainbowColors']) < 1:
+				raise EndUserError('At least one color in the RainbowColors matrix parameter must be defined for StimulusEvent type rainbow')
+			self.rainbowcolors = {}
+			for item in self.params['RainbowColors'].matrixlabels()[0]:
+				cname = self.params['RainbowColors'][item][0]
+				self.rainbowcolors[cname] = [max(0.0, min(1.0, float(x))) for x in self.params['RainbowColors'][item][1:]]
+		else:
+			self.assert_matrixlabels('Colors', ('Background', 'Low', 'High'), 'row')
+
 		self.colors = {}
 		for lab in self.params['Colors'].matrixlabels()[0]:
 			self.colors[lab] = [max(0.0, min(1.0, float(x))) for x in self.params['Colors'][lab,:]]
 
-		self.event_type = {'1':'donchin', '2':'hvrect', '3':'hvrect_cb'}[self.params['StimulusEvent']]
+		self.visual_cue = (int(self.params['VisualCue']) == 1)
+		if self.visual_cue:
+			self.assert_matrixlabels('VisualCueColor', ('High',), 'row')
+			self.assert_matrixlabels('VisualCueColor', ('Red', 'Green', 'Blue'), 'column')
+			self.visual_cue_color = [max(0.0, min(1.0, float(x))) for x in self.params['VisualCueColor']['High']]
+			self.visual_cue_msec = int(self.params['VisualCueDuration'])
 
 		self.flashframes = int(self.params['FlashFrames'])
 
@@ -326,15 +375,25 @@ class BciApplication(BciGenericApplication):
 		# self.alternatives is now a dictionary whose keys are 1-based integer page numbers (entries in the "Page" column of the Grid parameter)
 		# and whose values are lists of 1-based integers corresponding to row numbers in the Codebooks parameter
 	
-		siz = float(self.params['WindowSize'])
-		screenid = int(self.params['ScreenId'])  # ScreenId 0 is the first screen, 1 the second, -1 the last
-		AppTools.Displays.fullscreen(scale=siz, id=screenid, frameless_window=(siz==1), hide_mouse=not int(self.params['SoundTest']))
-		# only use a borderless window if the window is set to fill the whole screen
+		#siz = float(self.params['WindowSize'])
+		#screenid = int(self.params['ScreenId'])  # ScreenId 0 is the first screen, 1 the second, -1 the last
+		##AppTools.Displays.fullscreen(scale=siz, id=screenid, frameless_window=(siz==1), hide_mouse=not int(self.params['SoundTest']))
+		## only use a borderless window if the window is set to fill the whole screen
+		screenid = -1  # ScreenId 0 is the first screen, 1 the second, -1 the last
+		m = AppTools.monitor(screenid)
+		w_width  = int(self.params['WindowWidth'])
+		w_height = int(self.params['WindowHeight'])
+		w_left   = int(self.params['WindowLeft'])
+		w_top    = int(self.params['WindowTop'])
+		m.rect = (w_left, m.height-w_height-w_top, w_width+w_left, m.height-w_top)
+		AppTools.init_screen(m, frameless_window=False, hide_mouse=not int(self.params['SoundTest']))
 
 		self.soa_msec = float(self.params['SOAMsec'])
 		maxpacketsize = int(0.4 * self.samplingrate() * self.soa_msec / 1000.0)
 		if int(self.params['SampleBlockSize']) > maxpacketsize:
 			raise EndUserError('For SOAMsec=%g and SamplingRate=%g, SampleBlockSize should not exceed %d' % (self.soa_msec, self.samplingrate(), maxpacketsize))
+		self.pre_trial_msec  = int(self.params['PreTrialMsec'])
+		self.post_trial_msec = int(self.params['PostTrialMsec'])
 
 		self.copyspelling = len(self.params['TextToSpell']) > 0
 		w = self.params.get('ERPClassifierWeights',[])
@@ -392,10 +451,30 @@ class BciApplication(BciGenericApplication):
 			for pgid in self.pages:
 				subset = self.pages[pgid]
 				self.mappings[pgid] = [leadsto[targetid] for targetid in subset]
-										
+		
+		#if int(self.params.get('ForReal', False)): import SendKeys; self.SendKeys = SendKeys.SendKeys
+		if self.params['DestinationAddress'].find(':') > 0:
+			self.udp_host,self.udp_port = self.params['DestinationAddress'].split(':')
+			self.udp_port = int(self.udp_port)
+		else:
+			self.udp_host,self.udp_port = ('',0)
+
+		def setCaptionThread():
+			import win32gui as w, time
+			hwnd = None
+			while not hwnd:
+				try:
+					hwnd=w.FindWindow('pygame', 'Vision Egg')
+				except Exception, e:
+					hwnd=None
+					time.sleep(1)
+			w.SetWindowText(hwnd, 'PySpeller')
+		thread.start_new_thread(setCaptionThread,())
+
 	##########################################################################################
 
 	def Initialize(self, in_signal_dims, out_signal_dims):
+		#print "Initialize"
 		
 		self.screen.color = self.colors['Background']
 		
@@ -415,16 +494,29 @@ class BciApplication(BciGenericApplication):
 		ttsbounds.anchor = 'top'
 		ttsbounds.height /= 8
 		gridbounds.anchor = 'lower right'
+		#gridbounds.anchor = 'bottom'
 		gridbounds.height -= ttsbounds.height		
-		gridbounds.width  = min(gridbounds.width,  gridbounds.height * aspect)
-		gridbounds.height = min(gridbounds.height, gridbounds.width  / aspect)
+		if len(self.params.get('TriggerChannel','')) > 0:
+			if gridbounds.width < 200:
+				raise EndUserError('Window not wide enough to add optical sync patch; increase window width to >= 200 pixels')
+			gridbounds.width -= 100
+			#ttsbounds.width -= 100
+			ttsbounds.left += 100
+		if int(self.params['ShowSignalTime']):
+			gridbounds.width  -= 200
+			gridbounds.height -= 50
+			gridbounds.bottom += 50
+		#gridbounds.width  = min(gridbounds.width,  gridbounds.height * aspect)
+		#gridbounds.height = min(gridbounds.height, gridbounds.width  / aspect)
 		self.tilesize = (gridbounds.width / ncols, gridbounds.height / nrows)
-		gridbounds.anchor = 'center'
-		gridbounds.width  *= (ncols - 2.0) / ncols
-		gridbounds.height *= (nrows - 2.0) / nrows
+		#gridbounds.anchor = 'center'
+		#gridbounds.width  *= (ncols - 2.0) / ncols
+		#gridbounds.height *= (nrows - 2.0) / nrows
 		
-		row = numpy.array(row); row -= row.min(); row /= row.max()
-		col = numpy.array(col); col -= col.min(); col /= col.max()
+		#row = numpy.array(row); row -= row.min(); row /= row.max()
+		#col = numpy.array(col); col -= col.min(); col /= col.max()
+		row = numpy.array(row); row -= row.min(); row /= (row.max() + 1)
+		col = numpy.array(col); col -= col.min(); col /= (col.max() + 1)
 		
 		scale_images = float(self.params['ScaleImages'])
 		scale_text = float(self.params['ScaleText'])
@@ -438,9 +530,12 @@ class BciApplication(BciGenericApplication):
 		
 		self.basefontsize = self.tilesize[1] * 0.35 * scale_text
 		
+		tsz=tuple([int(i) for i in self.tilesize])
+		tile_width=self.tilesize[0]
+		tile_height=self.tilesize[1]
 		for i in range(self.ntargets):
 			key = 'target%03d' % (i+1)
-			pos = (gridbounds.left + gridbounds.width * col[i], gridbounds.top - gridbounds.height * row[i])
+			pos = (gridbounds.left + gridbounds.width * col[i] + tile_width/2, gridbounds.top - gridbounds.height * row[i] - tile_height/2)
 			size = int(round(self.basefontsize*scale[i]))
 			visible = page[i]==self.startpage
 			
@@ -452,10 +547,13 @@ class BciApplication(BciGenericApplication):
 				width  = min(width,  height * aspect)
 				height = min(height, width  / aspect)
 				size = (width*0.3*scale[i]*scale_images, height*0.3*scale[i]*scale_images)
+				#print "creating image stimulus, content=",content,"pos=",pos
 				s = self.stimulus(key, VisualStimuli.ImageStimulus, texture=content, position=pos, size=size, anchor='center', color=self.colors['Low'], on=visible)
 			else:
 				textpos = list(pos)
+				# move period and comma up 15% in its space
 				if content in ('.', ','): textpos[1] += self.tilesize[1] * 0.15
+				#print "creating text stimulus, content=",content,"pos=",textpos
 				s = self.stimulus(key, VisualStimuli.Text, text=content, position=textpos, font_name=gridfont, font_size=size, anchor='center', color=self.colors['Low'], on=visible)
 			self.grid['Stimulus'][i] = s
 			if self.event_type in ['hvrect', 'hvrect_cb']:
@@ -467,12 +565,19 @@ class BciApplication(BciGenericApplication):
 				if 'Rectangle' not in self.grid: self.grid['Rectangle'] = [None] * self.ntargets
 				self.grid['Rectangle'][i] = s
 					
+		#for i in range(nrows):
+			#for j in range(ncols):
+				#pos = (gridbounds.left + j * tile_width + tile_width/2, gridbounds.top - i * tile_height - tile_height/2)
+				#c = (random.random()/10+0.1, random.random()/10+0.1, random.random()/10+0.1)
+				#key = 'tile%02d%02d' %(i+1,j+1)
+				#s = self.stimulus(key, VisualStimuli.Block, z=-1, size=tsz, position=pos, anchor='center', color=c, on=True)
+
 		self.current_target = None
 		self.selections = []
 		self.abort = False
 		
 		ttsbounds.anchor='center'
-		ttsbounds.height -= 4;  ttsbounds.width -= 4
+		ttsbounds.height -= 1;  ttsbounds.width -= 1
 		linespacing = ttsbounds.height / 2
 		fontsize = int(round(linespacing * 0.8))
 		pos = ttsbounds.top - linespacing
@@ -529,6 +634,10 @@ class BciApplication(BciGenericApplication):
 			m = self.addstatemonitor('TargetCode', color=self.colors['High'])
 			m = self.addstatemonitor('TargetBitValue', color=self.colors['High'])
 		
+		self.pages[0] = self.pages[1] #TODO
+		self.codebooks[0] = self.codebooks[1] #TODO
+		print "TODO: get rid of this scary hack and find the reason why self.states.Page and self.states.Codebook go to 0 after a few packets please Collin"
+		
 		self.transient('ResultCode', manual=True)
 		self.ResetOutput()
 
@@ -544,6 +653,7 @@ class BciApplication(BciGenericApplication):
 	##########################################################################################
 	
 	def StartRun(self):
+		#print "StartRun"
 		#numpy.random.seed(1234) # &&&
 		#print 'remember to remove all parts marked &&& in BciApplication.py and TextPrediction.py '
 		
@@ -554,8 +664,10 @@ class BciApplication(BciGenericApplication):
 		self.penultimate = False
 		
 		self.previous_trialsperblock = self.params['TrialsPerBlock']
-		nchars = len(self.params['TextToSpell']) - len(self.params['TextResult'])
-		if nchars: self.params['TrialsPerBlock'] = min(int(self.params['TrialsPerBlock']), nchars)
+		if self.copyspelling: nchars = len(self.params['TextToSpell']) - len(self.params['TextResult'])
+		else:                 nchars = int(self.params['TrialsPerBlock']) - len(self.params['TextResult'])
+		self.params['TrialsPerBlock'] = min(int(self.params['TrialsPerBlock']), nchars if nchars > 0 else 0)
+		print "setting TrialsPerBlock to",self.params['TrialsPerBlock']
 		
 		self.decoder = None
 		self.previous_result_arrived = 0.0
@@ -566,32 +678,41 @@ class BciApplication(BciGenericApplication):
 	##########################################################################################
 	
 	def StopRun(self):
+		#print "StopRun, params['TrialsPerBlock']=",self.params['TrialsPerBlock']
 		self.params['TrialsPerBlock'] = self.previous_trialsperblock
 		if not self.weightless: self.params['TextResult'] = self.output.encode(self.bci2000_dialog_encoding)
 		
 	##########################################################################################
 	
 	def Phases(self):
-		
+		#print "Phases"
+
 		if self.penultimate or self.abort: next='grace'
 		else: next = 'highlight'
-		
-		self.phase(name='pre',       duration=2000,             next='highlight')
-		self.phase(name='highlight', duration=self.soa_msec,    next=next)
-		self.phase(name='grace',     duration=1000,             next='post')
-		self.phase(name='post',      duration=2000,             next='pre')
-		
+
+		cue = True if (self.copyspelling and self.visual_cue) else False
+
+		self.phase(name='pre',        duration=self.pre_trial_msec,   next='cue' if cue else 'highlight')
+		if cue:
+			self.phase(name='cue',      duration=self.visual_cue_msec,  next='post_cue')
+			self.phase(name='post_cue', duration=500,                  next='highlight')
+		self.phase(name='highlight',  duration=self.soa_msec,         next=next)
+		self.phase(name='grace',      duration=500,                  next='post')
+		self.phase(name='post',       duration=self.post_trial_msec,  next='pre')
+
 		self.design(start='pre', new_trial='pre')
-		
+
 	##########################################################################################
 
 	def Transition(self, phase):
 
+		#print 'Transitioning to ',phase,'Page is', self.states.Page
 		self.penultimate = False
-		
+
 		if self.changed('CurrentBlock') and self.states['CurrentBlock'] == 1 and self.states['CurrentTrial'] == 1:
 			self.ResetOutput()
-								
+
+
 		if phase == 'highlight':
 			pgid = self.states['Page']
 			subset = self.pages[pgid]
@@ -602,8 +723,12 @@ class BciApplication(BciGenericApplication):
 			self.penultimate = self.states['Epoch'] >= self.maxEpochs - 1
 			self.states['Repetition'] = (self.states['Epoch']-1) // cb.L + 1
 
-			self.states['CodebookColumn'] = cb.step()
-			col = cb.Matrix[:, self.states['CodebookColumn']-1]
+			if self.states['Epoch'] == 1:
+				reset_codebook = True
+			else:
+				reset_codebook = False
+			self.states['CodebookColumn'] = cb.step(reset_codebook) # Get next column index from (possibly randomized) codebook. If the columns have been exhausted, a new (possibly randomized) codebook is generated.
+			col = cb.Matrix[:, self.states['CodebookColumn']-1] # Get column from index.
 			self.decoder.new_column(col)
 			tc = self.states['TargetCode']
 			if tc and (tc-1) in subset:
@@ -620,6 +745,10 @@ class BciApplication(BciGenericApplication):
 						stim = self.grid['Rectangle'][target]
 						stim.orientation = 90 - stim.orientation
 		
+			if self.event_type in ['rainbow']:
+				self.rainbowcolor_idx = int(random.random() * len(self.rainbowcolors))
+				self.states['RainbowColorCode'] = self.rainbowcolor_idx
+				
 			if self.sound != None:
 				dot = self.stimuli['MouseFocus']
 				if dot.on:
@@ -633,6 +762,7 @@ class BciApplication(BciGenericApplication):
 					amp = d.sum() * scale_factor
 				else:
 					amp = 0
+				amp *= 20
 				self.sound[0].play(w=self.triggersound + amp * self.p3sound)
 				self.sound.append(self.sound.pop(0))
 
@@ -644,9 +774,14 @@ class BciApplication(BciGenericApplication):
 			self.codebook = []
 			self.ComputeGridStates()
 		
-
+		if phase == 'cue':
+			if self.target != None:
+				#print "giving visual cue for target %d ..."%(self.target)
+				self.grid['Stimulus'][self.target].color=tuple([float(i) for i in self.visual_cue_color])
+		
 		if phase == 'pre':
 			self.UpdateOutput()
+			self.udp_queue = []
 			self.abort = False
 			self.previous_result_arrived = 0.0
 			pgid = self.states['Page']
@@ -681,10 +816,15 @@ class BciApplication(BciGenericApplication):
 				for command,kwargs in self.grid['Action'][result]: command(**kwargs)
 				self.acknowledge('ResultCode')
 			self.UpdateOutput()
+			self.ProcessUdpQueue()
+			
+		#print 'Transitioned to ',phase,'Page is', self.states.Page
+		#print
 
 	##########################################################################################
 	
 	def Process(self, sig):
+		#print self.packet_count, self.current_presentation_phase, 'Page',self.states.Page
 		if self.states.get('Ready', 0):
 			p,msec = sig.flat
 			if self.previous_result_arrived:
@@ -723,9 +863,14 @@ class BciApplication(BciGenericApplication):
 					#if t['frames'] <= self.flashframes: r.size = (r.size[0], r.size[0])
 					#else:                               r.size = (r.size[0], r.size[0] / 1.618)
 			
-			if self.event_type in ['donchin']:
-				if status == 'highlighted' and t['frames'] <= self.flashframes:   stim.color = self.colors['High']
-				else:                                                              stim.color = self.colors['Low']
+			elif self.event_type in ['donchin', 'rainbow'] and phase != 'cue':
+				if status == 'highlighted' and t['frames'] <= self.flashframes:
+					if self.event_type == 'donchin':
+						stim.color = self.colors['High']
+					else:
+						stim.color = self.rainbowcolors.values()[self.rainbowcolor_idx]
+				else:
+					stim.color = self.colors['Low']
 
 		sync = self.stimuli.get('SyncPatch')
 		if sync != None:
@@ -843,6 +988,10 @@ class BciApplication(BciGenericApplication):
 			return {'text':text}
 
 		self.output += text
+		#sk = getattr(self, 'SendKeys', None)
+		#if sk != None: sk(str(text))
+		#self.UdpSend(text)
+		self.udp_queue.append(text)
 		
 	##########################################################################################
 	
@@ -852,6 +1001,7 @@ class BciApplication(BciGenericApplication):
 			return {}
 
 		self.output = self.output[:-1]
+		self.UdpSend('{BS}')
 				
 	##########################################################################################
 	
@@ -864,6 +1014,20 @@ class BciApplication(BciGenericApplication):
 
 		self.history.append(self.states['Page'])
 		self.states['Page'] = page
+
+	##########################################################################################
+	
+	def ProcessUdpQueue(self):
+		if len(self.udp_queue) > 0:
+			self.UdpSend(self.udp_queue)
+			self.udp_queue = []
+
+	def UdpSend(self, data):
+		if self.udp_port:
+			for item in data:
+				d = "P3Speller_Output "+item
+				self.udp_socket.sendto(d,(self.udp_host,self.udp_port))
+				print "UdpSend to (%s,%d): %s"%(self.udp_host,self.udp_port,d)
 
 ##############################################################################################
 ##############################################################################################

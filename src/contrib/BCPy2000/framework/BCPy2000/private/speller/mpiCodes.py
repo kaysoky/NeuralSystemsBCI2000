@@ -597,7 +597,7 @@ codes72 = [
 ]
 codes4 = [
 	{
-		'Name':           'RC_mix 2x2 (4,16,2)',
+		'Name':           'RC_mix 2x2 (4,4,2)',
 		'RandomizeTime':  1,
 		'RandomizeSpace': 0,
 		'Matrix': r"""  
@@ -610,7 +610,7 @@ codes4 = [
 ]
 codes9 = [
 	{
-		'Name':           'RC_sep 3x3 (9,54,2)',
+		'Name':           'RC_sep 3x3 (9,6,2)',
 		'RandomizeTime':  1,
 		'RandomizeSpace': 0,
 		'Matrix': r"""    

@@ -66,8 +66,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 
 		# initialize some useful constants
 		self.eegfs = self.nominal['SamplesPerSecond']
-		self.epoch_samples    = SigTools.msec2samples(self.params['EpochDurationMsec'],   self.eegfs)
-		self.trapgap          = SigTools.msec2samples(self.params['EpochLowerBoundMsec'], self.eegfs)
+		self.epoch_samples    = SigTools.msec2samples(self.params['EpochDurationMsec'],   self.eegfs) # samples per epoch
+		self.trapgap          = SigTools.msec2samples(self.params['EpochLowerBoundMsec'], self.eegfs) # min. num samples gap between 2 traps
 		
 		# set up the bandpass filter
 		band  = self.params['ERPFilterFreqHz'].val
@@ -212,6 +212,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	#############################################################
 	
 	def CheckEpochs(self):
+	  # Check if the number of Epochs processed equals the number trapped
 		if int(self.params['CheckNumberOfEpochs']) and self.nEpochsExpected != self.nEpochsTrapped:
 			if self.saving:
 				self.dump(discard={
