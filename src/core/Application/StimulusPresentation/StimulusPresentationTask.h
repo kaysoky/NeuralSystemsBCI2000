@@ -73,8 +73,7 @@ class StimulusPresentationTask : public StimulusTask
 
   // Internal state.
   int mBlockCount,
-      mSequenceCount,
-      mSequenceRepetitions;
+      mSequenceCount;
 
   std::vector<int> mToBeCopied;
   std::vector<int>::const_iterator mToBeCopiedPos;

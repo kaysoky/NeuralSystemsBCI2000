@@ -45,6 +45,7 @@ StimulusPresentationTask::StimulusPresentationTask()
 : mNumberOfSequences( 0 ),
   mSequenceType( SequenceTypes::Deterministic ),
   mBlockCount( 0 ),
+  mSequenceCount( 0 ),
   mToBeCopiedPos( mToBeCopied.begin() ),
   mSequencePos( mSequence.begin() )
 {
@@ -553,6 +554,7 @@ StimulusPresentationTask::OnStartRun()
       break;
 
     case SequenceTypes::P3Speller:
+      mSequenceCount = 0;
       // start with an empty sequence
       break;
   }
@@ -647,9 +649,10 @@ StimulusPresentationTask::OnNextStimulusCode()
   // Also, in P3Speller compatible mode, do not terminate the run except when we are in copy mode.
   if( mSequenceType == SequenceTypes::P3Speller
       && mSequencePos == mSequence.end()
-      && !( int( Parameter( "InterpretMode" ) ) == InterpretModes::Copy && mToBeCopiedPos == mToBeCopied.end() )
+      && !( int( Parameter( "InterpretMode" ) ) == InterpretModes::Copy && mSequenceCount == mToBeCopied.size() )
     )
   {
+    ++mSequenceCount;
     mSequence.clear();
     for( int i = 0; i < mNumberOfSequences; ++i )
     {
