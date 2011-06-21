@@ -1,17 +1,15 @@
+@set SPELLERDIR=%CD%
 @set PROG=..\..\..\..\..\..\..\BCI2000\prog
-@if exist %PROG% goto SkipStandalone
-:Standalone
-@set PROG=.
-@cd ..\prog
-:SkipStandalone
+@if exist %PROG% cd %PROG%
 
-call %PROG%\portable.bat
+cd ..\prog
+call portable.bat
 
-start           %PROG%\operat.exe  --OnConnect "-LOAD PARAMETERFILE ..\speller\wadsworth.prm"
+start           operat.exe  --OnConnect "-LOAD PARAMETERFILE %SPELLERDIR%\wadsworth.prm"
 
-::start           %PROG%\PythonSource.exe           --PythonSrcWD=..\speller --PythonSrcClassFile=BCI2000Tools/AudioSourceModule.py
-start           %PROG%\gUSBAmpSource.exe
+::start           PythonSource.exe           --PythonSrcWD=%SPELLERDIR% --PythonSrcClassFile=BCI2000Tools/AudioSourceModule.py
+start           gUSBAmpSource.exe
 
-start           %PROG%\PythonSignalProcessing.exe --PythonSigWD=..\speller
+start           PythonSignalProcessing.exe --PythonSigWD=%SPELLERDIR%
 
-start /REALTIME %PROG%\PythonApplication.exe      --PythonAppWD=..\speller
+start /REALTIME /D%SPELLERDIR% PythonApplication.exe      --PythonAppWD=%SPELLERDIR%
