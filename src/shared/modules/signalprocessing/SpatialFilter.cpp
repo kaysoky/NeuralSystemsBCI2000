@@ -55,9 +55,9 @@ SpatialFilter::SpatialFilter()
      "0 1 0 0 "
      "0 0 1 0 "
      "0 0 0 1 "
-   "0 % % // columns represent input channels, rows represent output channels",
+     "0 % % // columns represent input channels, rows represent output channels",
    "Filtering:SpatialFilter int SFUseThreading= 1 0 0 1 "
-	"//Use threading to calculate spatial filter (boolean)",
+     "//Use threading to calculate spatial filter (boolean)",
 
  END_PARAMETER_DEFINITIONS
 }

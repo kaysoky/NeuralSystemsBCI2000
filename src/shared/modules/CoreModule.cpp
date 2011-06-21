@@ -479,9 +479,16 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
   bcierr__.clear();
   GenericFilter::HaltFilters();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );
-  SignalProperties outputProperties( 0, 0 );
   EnvironmentBase::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
-  GenericFilter::PreflightFilters( inputProperties, outputProperties );
+#ifdef TODO
+# error The inputPropertiesFixed variable may be removed once property messages contain an UpdateRate field.
+#endif // TODO
+  SignalProperties inputPropertiesFixed( inputProperties );
+  // MeasurementUnits gets initialized in Environment::EnterPreflightPhase
+  inputPropertiesFixed.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
+  mInputSignal = GenericSignal( inputPropertiesFixed );
+  SignalProperties outputProperties( 0, 0 );
+  GenericFilter::PreflightFilters( inputPropertiesFixed, outputProperties );
   EnvironmentBase::EnterNonaccessPhase();
   errorOccurred |= ( bcierr__.Flushes() > 0 );
   OSMutex::Lock lock( mConnectionLock );
@@ -700,15 +707,7 @@ CoreModule::HandleVisSignalProperties( istream& is )
   if( s.ReadBinary( is ) && s.SourceID() == "" )
   {
     if( !mFiltersInitialized )
-    {
-      SignalProperties sp = s.SignalProperties();
-#ifdef TODO
-# error The following line may be removed once SignalProperties read/write their update rate through streams.
-#endif // TODO
-      sp.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
-      mInputSignal = GenericSignal( sp );
-      InitializeFilters( mInputSignal.Properties() );
-    }
+      InitializeFilters( s.SignalProperties() );
   }
   return is ? true : false;
 }
