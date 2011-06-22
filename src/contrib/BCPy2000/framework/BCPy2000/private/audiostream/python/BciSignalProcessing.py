@@ -140,6 +140,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.seq.append(s)
 
 		self.prediction, self.prediction_se = 0.0, 1.0
+		
+		self.Last10SecondsTrigger = SigTools.Buffering.trap(nsamples=SigTools.msec2samples(10000, self.eegfs), nchannels=2, leaky=True)
 
 	#############################################################
 	
@@ -148,13 +150,14 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.y = []
 		self.nbeats = [0] * self.nstreams
 		self.streamstates = [0] * self.nstreams
+		self.TriggerTrouble = [None] * self.nstreams
 		
 	#############################################################
 	
 	def StopRun(self):
 		if int(self.params['CheckNumberOfEpochs']) == 0:
 			print "features not saved (traps not verified)"
-		elif len(self.x):
+		elif len(self.x) and self.x[0] != None:
 			if not isinstance(self.data_file, str): raise RuntimeError,'StopRun failed in PythonSig because self.data_file is not valid'
 			x = [numpy.matrix(numpy.asarray(xi).T.flatten()).A for xi in self.x]
 			xsiz = numpy.matrix((len(x),) + self.x[0].shape, dtype=numpy.float64)
@@ -178,6 +181,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if self.triggerfilter != None:
 			sig[self.trigchan,:] = self.triggerfilter(sig[self.trigchan,:], axis=1)
 		
+		self.Last10SecondsTrigger.process(sig[self.trigchan,:])
 		
 		collected = False
 		collecting = False
@@ -207,12 +211,17 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				seq = self.seq[istream]
 				if int(self.params['CheckNumberOfEpochs']):
 					if seq.ndelivered != self.nbeats[istream]:
-						raise RuntimeError, "expected %d beats in stream %d, but trapped %d" % (self.nbeats[istream], istream+1, seq.ndelivered)
+						self.TriggerTrouble[istream] = "expected %d beats in stream %d, but trapped %d" % (self.nbeats[istream], istream+1, seq.ndelivered)
 					if True in [t.collected() and not t.full() for t in seq.active]:
 						raise RuntimeError, "not all traps are full"
 				else:
 					print "warning: traps not verified"
 				del self.seq[istream].active[:]
+			
+			trouble = [x for x in self.TriggerTrouble if x != None]
+			if len(trouble):
+				raise RuntimeError('\n'.join(['']+trouble))
+
 			
 			xi = self.UpdatePrediction()
 			yi = self.states['TargetStream']
@@ -293,6 +302,14 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		SigTools.plot(t, y)
 		import pylab
 		pylab.grid()
-		
+	
+	def PlotTrigger(self, msg=None, stream=None):
+		import pylab
+		for i,trig in enumerate(self.Last10SecondsTrigger.read()):
+			pylab.subplot(self.nstreams, 1, i+1)
+			SigTools.plot(trig.T)
+			if self.TriggerTrouble[i]: pylab.title(self.TriggerTrouble[i])
+			pylab.grid('on')
+	
 #################################################################
 #################################################################

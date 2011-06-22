@@ -2,8 +2,8 @@ Storage:Session:DataIOFilter                  string    SubjectSession=         
 PythonApp                                     string    ApplicationDescription=             pulses        // Identifies the stimulus presentation module
 
 PythonApp:Streams  int       NumberOfStreams=                                                 2                                                                                 // number of streams
-PythonApp:Streams  floatlist PeriodMsec=                                              2     504      546                                                                        // period of stimuli for each stream in msec
-PythonApp:Streams  floatlist OffsetMsec=                                              2     504      598                                                                        // offset of each stimulus stream in msec
+PythonApp:Streams  floatlist PeriodMsec=                                              2     492.118      546.875                                                                        // period of stimuli for each stream in msec
+PythonApp:Streams  floatlist OffsetMsec=                                              2     492.118      602.000                                                                        // offset of each stimulus stream in msec
 PythonApp:Streams  floatlist InitialStandards=                                        2       3        3                                                                        // how many stimuli at the beginning of each stream are guaranteed to be standards
 PythonApp:Streams  intlist   NumberOfDeviants=                                        2       0        0                                                                        // number of deviants in each stream
                                                                                                                                                                             
@@ -21,9 +21,9 @@ PythonApp:Streams  matrix    DurationMsec=     { Background Standard Target Devi
 PythonApp:Streams  matrix    AttackMsec=       { Background Standard Target Deviant } 2     250.0    250.0          5.0      5.0          5.0      5.0          5.0      5.0    // rise time of each stimulus pulse (types by streams)
 PythonApp:Streams  matrix    DecayMsec=        { Background Standard Target Deviant } 2     100.0    100.0         50.0     50.0         50.0     50.0         50.0     50.0    // fall time of each stimulus pulse (types by streams)
 PythonApp:Streams  matrix    CarrierType=      { Background Standard Target Deviant } 2  sawtooth sawtooth     sawtooth sawtooth     sawtooth sawtooth     sawtooth sawtooth    // (types by streams)
-PythonApp:Streams  matrix    CarrierFreqHz=    { Background Standard Target Deviant } 2     500.0  769.231        500.0  769.231        500.0  769.231        500.0  769.231    // (types by streams)
+PythonApp:Streams  matrix    CarrierFreqHz=    { Background Standard Target Deviant } 2     512.0    768.000      512.0    768.000      512.0    768.000      512.0    768.000  // (types by streams)
 PythonApp:Streams  matrix    ModulationType=   { Background Standard Target Deviant } 2      sine     sine         sine     sine         sine     sine         sine     sine    // (types by streams)
-PythonApp:Streams  matrix    ModulationFreqHz= { Background Standard Target Deviant } 2  41.66667   38.462     41.66667   38.462     41.66667   38.462     41.66667   38.462    // (types by streams)
+PythonApp:Streams  matrix    ModulationFreqHz= { Background Standard Target Deviant } 2      42.667   36.571       42.667   36.571       42.667   36.571       42.667   36.571         // (types by streams)
 PythonApp:Streams  matrix    ModulationDepth=  { Background Standard Target Deviant } 2       0.9      0.9          0.9      0.9          0.9      0.9          0.9      0.9    // (types by streams)
 
 PythonApp:Streams  int       RoundPeriods=                                                    2                                                                                 // stream period rounding: 0 no rounding, 1 adjust to an integer number of carrier cycles, 2 adjust to an integer number of modulation cycles (enumeration)
