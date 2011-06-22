@@ -122,6 +122,7 @@ class CoreModule : private MessageHandler
   CoreModule( const CoreModule& );
   CoreModule& operator=( const CoreModule& );
 
+  bool Run_( int argc, char** argv );
   bool Initialize( int argc, char** argv );
   void MainMessageLoop();
   void ProcessBCIAndGUIMessages();

@@ -90,9 +90,32 @@ CoreModule::~CoreModule()
   }
 }
 
-
 bool
 CoreModule::Run( int inArgc, char** inArgv )
+{
+  // This wrapper function exists because MSVC does not allow
+  // C++ and Win32 Exceptions to be handled in the same function.
+  bool result = false;
+#if _MSC_VER
+  __try
+#endif // _MSC_VER
+  {
+    result = Run_( inArgc, inArgv );
+  }
+#if _MSC_VER
+  __except( EXCEPTION_EXECUTE_HANDLER )
+  {
+    bcierr << "unhandled Win32 exception 0x"
+           << hex << ::GetExceptionCode() << ",\n"
+           << "terminating " THISMODULE " module"
+           << endl;
+  }
+#endif // _MSC_VER
+  return result;
+}
+
+bool
+CoreModule::Run_( int inArgc, char** inArgv )
 {
   try
   {
