@@ -45,10 +45,10 @@ RegisterFilter( CoherenceFilter, 2.C );
 CoherenceFilter::CoherenceFilter()
 {
  BEGIN_PARAMETER_DEFINITIONS
-   "Filtering:CoherenceFilter float CohBufferLength= 3s % % % // length of buffer over which coherence is computed, in seconds or blocks",
-   "Filtering:CoherenceFilter float CohWindowLength= 0.5s % % % // length of moving window for frequency analysis, in seconds or blocks",
-   "Filtering:CoherenceFilter float CohWindowOverlap= 0.25s % % % // overlap between windows, in seconds or blocks",
-   "Filtering:CoherenceFilter floatlist CohFrequencies= 2 10Hz 20Hz % % % // list of frequencies where coherence is analyzed, corresponds to output elements",
+   "Filtering:CoherenceFilter float CohBufferLength= 3s 0 % % // length of buffer over which coherence is computed, in seconds or blocks",
+   "Filtering:CoherenceFilter float CohWindowLength= 0.5s 0 % % // length of moving window for frequency analysis, in seconds or blocks",
+   "Filtering:CoherenceFilter float CohWindowOverlap= 0.25s 0 % % // overlap between windows, in seconds or blocks",
+   "Filtering:CoherenceFilter floatlist CohFrequencies= 2 10Hz 20Hz 0 % % // list of frequencies where coherence is analyzed, corresponds to output elements",
  END_PARAMETER_DEFINITIONS
 }
 
@@ -121,9 +121,10 @@ CoherenceFilter::Initialize( const SignalProperties& Input, const SignalProperti
   mInputBuffer.resize( Input.Channels(), valarray<real>( bufferLength ) );
 
   // Configure FIR coefficients.
-  int windowLength = static_cast<int>( Parameter( "CohWindowLength" ).InSampleBlocks() * Input.Elements() );
+  int windowLength = static_cast<int>( Parameter( "CohWindowLength" ).InSampleBlocks() * Input.Elements() ),
+      numBins = Parameter( "CohFrequencies" )->NumValues();
   mFIRCoefficients.clear();
-  mFIRCoefficients.resize( Parameter( "CohFrequencies" )->NumValues(), valarray<complex>( windowLength ) );
+  mFIRCoefficients.resize( numBins, valarray<complex>( windowLength ) );
   for( size_t bin = 0; bin < mFIRCoefficients.size(); ++bin )
   {
     real frequency = Parameter( "CohFrequencies" )( bin ).InHertz() / Input.SamplingRate();
@@ -142,12 +143,14 @@ CoherenceFilter::Initialize( const SignalProperties& Input, const SignalProperti
 
   // Configure the FIR convolution buffer.
   mFIRConvolution.clear();
-  mFIRConvolution.resize( Input.Channels(), vector< valarray<complex> >( mFIRCoefficients.size() ) );
+  mFIRConvolution.resize( Input.Channels(), vector< valarray<complex> >( numBins ) );
   for( size_t ch = 0; ch < mFIRConvolution.size(); ++ch )
   {
     for( size_t bin = 0; bin < mFIRConvolution[ch].size(); ++bin )
     {
-      int numConvolutionSamples = ( mInputBuffer[ch].size() - mFIRCoefficients[bin].size() ) / mConvolutionStep;
+      int numConvolutionSamples = 0;
+      for( size_t sample = 0; sample < mInputBuffer[ch].size() - mFIRCoefficients[bin].size(); sample += mConvolutionStep )
+        ++numConvolutionSamples;
       mFIRConvolution[ch][bin].resize( numConvolutionSamples );
     }
   }
@@ -180,11 +183,11 @@ CoherenceFilter::Process( const GenericSignal& Input, GenericSignal& Output )
       int i = 0;
       for( size_t sample = 0; sample < mInputBuffer[ch].size() - mFIRCoefficients[bin].size(); sample += mConvolutionStep )
         mFIRConvolution[ch][bin][i++] = inner_product( 
-                                       &mFIRCoefficients[bin][0], 
-                                       &mFIRCoefficients[bin][mFIRCoefficients[bin].size() - 1], 
-                                       &mInputBuffer[ch][sample], 
-                                       complex( 0.0 )
-                                      );
+                                          &mFIRCoefficients[bin][0], 
+                                          &mFIRCoefficients[bin][mFIRCoefficients[bin].size() - 1], 
+                                          &mInputBuffer[ch][sample], 
+                                          complex( 0.0 )
+                                        );
     }
   }
   // Compute coherences between pairs of channels.
