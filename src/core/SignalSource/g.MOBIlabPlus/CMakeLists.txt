@@ -10,10 +10,23 @@ SET( EXECUTABLE_NAME gMOBIlabPlus )
 SET( SRC_PROJECT
   gMOBIlabPlus.cpp
   gMOBIlabPlusADC.cpp 
+  ${BCI2000_SRC_DIR}/shared/modules/signalsource/SourceFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.cpp
+  ${BCI2000_SRC_DIR}/extlib/math/FilterDesign.cpp
 )
 SET( HDR_PROJECT
   gMOBIlabPlusADC.h
   gMOBIlabDriver.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalsource/SourceFilter.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.h
+  ${BCI2000_SRC_DIR}/extlib/math/FilterDesign.h
+  ${BCI2000_SRC_DIR}/extlib/math/IIRFilter.h
+)
+
+SET( INC_EXTLIB
+  ${INC_EXTLIB}
+  ${BCI2000_SRC_DIR}/extlib/math
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing
 )
 
 # Tell the macro to link against the gMOBIlabPlus API found in EXTLIB
