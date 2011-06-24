@@ -16,14 +16,14 @@ call portable.bat
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_perception.prm 
 
 @set OnConnect=%OnConnect% ; SETCONFIG
-@set OnSetConfig=- SET STATE Running 1
+::@set OnSetConfig=- SET STATE Running 1
 
 start           operat                   --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
 start           gUSBampSource
 ::start           PythonSource             --PythonSrcWD=%WD%\python --PythonSrcShell=1 --PythonSrcLog=%WD%\log\###-src.txt
 
 ::start           DummySignalProcessing
-start           PythonSignalProcessing   --PythonSigWD=%WD%\python &&:: --PythonSigShell=1 --PythonSigLog=%WD%\log\###-sig.txt &&::--PythonSigClassFile=
+start           PythonSignalProcessing   --PythonSigWD=%WD%\python &&:: --PythonSigLog=%WD%\log\###-sig.txt
 
 ::start           DummyApplication
-start /REALTIME PythonApplication        --PythonAppWD=%WD%\python &&:: --PythonAppShell=1 --PythonAppLog=%WD%\log\###-app.txt &&::--PythonAppClassFile=
+start /REALTIME PythonApplication        --PythonAppWD=%WD%\python &&:: --PythonAppLog=%WD%\log\###-app.txt
