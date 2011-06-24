@@ -72,7 +72,10 @@ LinearClassifier::Preflight( const SignalProperties& Input,
                                    SignalProperties& Output ) const
 {
   // Determine the classifier matrix format:
-  int controlSignalChannels = 0;
+  map<int, double> outputMax,
+                   outputMin;
+  double totalOutputMax = 0.0,
+         totalOutputMin = 0.0;
   const ParamRef& Classifier = Parameter( "Classifier" );
   if( Classifier->NumColumns() != 4 )
     bcierr << "Classifier parameter must have 4 columns "
@@ -121,15 +124,30 @@ LinearClassifier::Preflight( const SignalProperties& Input,
                << endl;
 
       int outputChannel = Classifier( row, 2 );
-      controlSignalChannels = max( controlSignalChannels, outputChannel );
+      double weight = Classifier( row, 3 );
+      if( weight > 0 )
+      {
+        outputMax[outputChannel] += max( weight * Input.ValueUnit().RawMax(), 0.0 );
+        outputMin[outputChannel] += min( weight * Input.ValueUnit().RawMin(), 0.0 );
+      }
+      else
+      {
+        outputMax[outputChannel] += max( weight * Input.ValueUnit().RawMin(), 0.0 );
+        outputMin[outputChannel] += min( weight * Input.ValueUnit().RawMax(), 0.0 );
+      }
+      if( outputMax[outputChannel] > totalOutputMax )
+        totalOutputMax = outputMax[outputChannel];
+      if( outputMin[outputChannel] < totalOutputMin )
+        totalOutputMin = outputMin[outputChannel];
     }
   }
   // Requested output signal properties.
+  int controlSignalChannels = outputMax.empty() ? 0 : outputMax.rbegin()->first;
   Output = SignalProperties( controlSignalChannels, 1, Input.Type() );
   // Output description.
   Output.ChannelUnit() = Input.ChannelUnit();
-  Output.ValueUnit().SetRawMin( Input.ValueUnit().RawMin() )
-                    .SetRawMax( Input.ValueUnit().RawMax() );
+  Output.ValueUnit().SetRawMin( totalOutputMin )
+                    .SetRawMax( totalOutputMax );
 
   if( Input.UpdateRate() > 0.0 )
   {
