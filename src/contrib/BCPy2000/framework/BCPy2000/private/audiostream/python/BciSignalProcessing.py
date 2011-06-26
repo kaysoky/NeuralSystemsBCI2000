@@ -1,5 +1,6 @@
 import numpy
 import SigTools
+import WavTools
 
 class BciTrapSequence(SigTools.TrapSequence):
 	
@@ -96,6 +97,16 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.otherchan = [chn.index(x) for x in ['VMRK'] if x in chn]
 		self.sigchan = list(set(range(len(chn))).difference(self.trigchan + self.otherchan))
 		self.trigthresh = numpy.asarray(self.params['TriggerThreshold'].val)
+		
+		#self.trigthresh *= float(self.params.get('SystemMasterVolume', 1.0))
+		#if not int(self.params.get('SurroundSoundTrigger', 1)):
+		#	if 'ChannelVolumesDB' in self.params:
+		#		vc = 10.0**(numpy.array(self.params['ChannelVolumesDB'].val)/20.0)
+		#		if vc.shape == self.trigthresh.shape:
+		#			self.trigthresh[:] *= vc[:]
+		#			print "scaled TriggerThreshold by " + ' '.join(["%.3g"%x for x in vc.flat]) + " according to ChannelVolumesDB"
+		#		else:
+		#			print "failed to use ChannelVolumesDB to scale TriggerThreshold"
 
 		self.weights = self.params['ERPClassifierWeights'].val
 		self.weights2 = numpy.multiply(self.weights, self.weights)
@@ -142,7 +153,17 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.prediction, self.prediction_se = 0.0, 1.0
 		
 		self.Last10SecondsTrigger = SigTools.Buffering.trap(nsamples=SigTools.msec2samples(10000, self.eegfs), nchannels=2, leaky=True)
-
+		self.Last10SecondsMic     = SigTools.Buffering.trap(nsamples=SigTools.msec2samples(10000, 44100), nchannels=2, leaky=True)
+		self.LastPacketMic        = SigTools.Buffering.trap(nsamples=1+int(self.nominal.SecondsPerPacket*44100), nchannels=2, leaky=True)
+		self.recorder = WavTools.recorder(seconds=0, fs=44100, nchan=2, callback=self.HandleMicData)
+		
+	#############################################################
+	
+	def HandleMicData(self, packet):
+		if WavTools.across_samples == 0: packet = packet.T
+		self.Last10SecondsMic.process(packet)
+		self.LastPacketMic.process(numpy.abs(packet))
+		
 	#############################################################
 	
 	def StartRun(self):
@@ -152,9 +173,13 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.streamstates = [0] * self.nstreams
 		self.TriggerTrouble = [None] * self.nstreams
 		
+		#if self.recorder: self.recorder.record()
+		
 	#############################################################
 	
 	def StopRun(self):
+		#if self.recorder: self.recorder.stop()
+		
 		if int(self.params['CheckNumberOfEpochs']) == 0:
 			print "features not saved (traps not verified)"
 		elif len(self.x) and self.x[0] != None:
@@ -179,10 +204,24 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if self.bandpass != None:
 			sig[self.sigchan,:] = self.bandpass(sig[self.sigchan,:], axis=1)
 		if self.triggerfilter != None:
-			sig[self.trigchan,:] = self.triggerfilter(sig[self.trigchan,:], axis=1)
-		
+			sig[self.trigchan,:] = self.triggerfilter(sig[self.trigchan,:], axis=1)				
+
+		if self.recorder: # mic-trigger
+			if self.recorder.going and self.LastPacketMic.full():
+				micdata = self.LastPacketMic.read()
+				trigdata = sig[self.trigchan, :]
+				prevsample = None
+				for trigsample in range(trigdata.shape[0]):
+					micstart = self.recorder.wav.fs * float(trigsample)   / self.eegfs
+					micstop  = self.recorder.wav.fs * float(trigsample+1) / self.eegfs
+					trigdata[:, -1-trigsample] = numpy.expand_dims(numpy.max( micdata[:, -1-micstop:-1-micstart], axis=1 ), 1)
+			else:
+				sig[self.trigchan, :] = 0
+			if self.changed('CueOn', only=1):   self.recorder.record()
+			if self.changed('Stream1', only=0): self.recorder.stop()
+			
 		self.Last10SecondsTrigger.process(sig[self.trigchan,:])
-		
+					
 		collected = False
 		collecting = False
 		for istream in xrange(self.nstreams):
@@ -209,18 +248,17 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if give_answer:
 			for istream in xrange(self.nstreams):
 				seq = self.seq[istream]
-				if int(self.params['CheckNumberOfEpochs']):
-					if seq.ndelivered != self.nbeats[istream]:
-						self.TriggerTrouble[istream] = "expected %d beats in stream %d, but trapped %d" % (self.nbeats[istream], istream+1, seq.ndelivered)
-					if True in [t.collected() and not t.full() for t in seq.active]:
-						raise RuntimeError, "not all traps are full"
-				else:
-					print "warning: traps not verified"
+				if seq.ndelivered != self.nbeats[istream]:
+					self.TriggerTrouble[istream] = "expected %d beats in stream %d, but trapped %d" % (self.nbeats[istream], istream+1, seq.ndelivered)
+				elif True in [t.collected() and not t.full() for t in seq.active]:
+					self.TriggerTrouble[istream] = "not all traps are full in stream %d" % (istream+1)
 				del self.seq[istream].active[:]
 			
-			trouble = [x for x in self.TriggerTrouble if x != None]
-			if len(trouble):
-				raise RuntimeError('\n'.join(['']+trouble))
+			trouble = '\n'.join( [''] + [x for x in self.TriggerTrouble if x != None] )
+			if int( self.params['CheckNumberOfEpochs'] ):
+				if len(trouble): raise RuntimeError(trouble)
+			else:
+				print 'warning: traps not verified, so features will not be saved' + trouble.replace('\n', '\n   ')
 
 			
 			xi = self.UpdatePrediction()
@@ -305,11 +343,16 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	
 	def PlotTrigger(self, msg=None, stream=None):
 		import pylab
-		for i,trig in enumerate(self.Last10SecondsTrigger.read()):
-			pylab.subplot(self.nstreams, 1, i+1)
-			SigTools.plot(trig.T)
-			if self.TriggerTrouble[i]: pylab.title(self.TriggerTrouble[i])
-			pylab.grid('on')
+		
+		for fig,buf in enumerate([self.Last10SecondsTrigger, self.Last10SecondsMic]):
+			pylab.figure(fig+1)
+			for i,trig in enumerate(buf.read()):
+				pylab.subplot(self.nstreams, 1, i+1)
+				SigTools.plot(trig.T)
+				if self.TriggerTrouble[i]: pylab.title(self.TriggerTrouble[i])
+				pylab.xlim([0, trig.size])
+				pylab.grid('on')
+			pylab.draw()
 	
 #################################################################
 #################################################################

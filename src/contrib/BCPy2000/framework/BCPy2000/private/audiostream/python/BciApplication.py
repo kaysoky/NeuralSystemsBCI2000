@@ -1,5 +1,6 @@
 #import ConsoleRenderer
 
+import os
 import sys
 import random
 import numpy
@@ -27,7 +28,9 @@ class BciApplication(BciGenericApplication):
 	def Construct(self):
 		self.maxstreams = 2
 		params = [
-			"PythonApp         float     SystemMasterVolume=                       1.0                    1.0   0 1 // operating-system volume setting",
+			"PythonApp         float     WindowSize=                               1.0                    1.0   0 1 // subject window size from 0 to 1",
+			"PythonApp         float     SystemMasterVolume=                       1.0                    1.0   0 1 // operating-system volume setting from 0 to 1",
+			"PythonApp         floatlist ChannelVolumesDB=                  1    -18                      0.0   % 0 // per-audio-channel stimulus attenuation in dB",
 			"PythonApp         int       HeadPhones=                               0                      0     0 1 // use headphones or not? (boolean)",
 			"PythonApp         int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
 			"PythonApp:Task    int       FreeChoice=                               0                      0     0 1 // allow user to choose freely (boolean)",
@@ -65,10 +68,10 @@ class BciApplication(BciGenericApplication):
 		
 		self.StimulusMaker = AudioStream.Maker(self.params)
 		
-		if AppTools.Displays.number_of_monitors() > 1:
-			AppTools.Displays.fullscreen(id=-1)
-		else:
-			self.screen.setup(frameless_window=0)
+		windowsize = float(self.params['WindowSize'])
+		if AppTools.Displays.number_of_monitors() > 1: windowsize = 1.0
+		AppTools.Displays.fullscreen(id=-1, scale=windowsize)
+		self.screen.setup(frameless_window=(windowsize==1.0))
 
 		if 'ConsoleRenderer' in sys.modules: self.screen.fake()
 
@@ -76,7 +79,19 @@ class BciApplication(BciGenericApplication):
 			import DirectSoundInterface
 		elif 'DirectSoundInterface' in sys.modules and sys.modules['DirectSoundInterface'].loaded:
 			raise EndUserError, "once turned on, the DirectSound setting cannot be turned off without restarting BCI2000"
-					
+		
+		self.audiofs = 44100
+		self.audiobits = 16
+		self.audiochannels = self.params['AudioMixingMatrix'].val.shape[0]
+		
+		self.chanvol = [float(x) for x in self.params['ChannelVolumesDB']]
+		if len(self.chanvol) == 1:
+			self.chanvol = self.chanvol * self.audiochannels
+		if len(self.chanvol) != self.audiochannels:
+			raise EndUserError("ChannelVolumesDB parameter must have either one element, or one element per audio channel (= number of rows of AudioMixingMatrix parameter = %d)" % self.audiochannels)
+		for x in self.chanvol:
+			if x > 0.0: raise EndUserError("elements of the ChannelVolumesDB parameter must be negative, or zero")
+
 	#############################################################
 
 	def Initialize(self, indim, outdim):
@@ -116,14 +131,12 @@ class BciApplication(BciGenericApplication):
 			self.addstatemonitor('CurrentTrial')
 			self.addstatemonitor('TargetStream')
 			self.addstatemonitor('PredictedStream')
-		
-		self.audiofs = 44100
-		self.audiobits = 16
-		self.audiochannels = self.params['AudioMixingMatrix'].val.shape[0]
-		
+				
 		self.player = WavTools.player(WavTools.wav(fs=self.audiofs, bits=self.audiobits, nchan=self.audiochannels))
 		self.player.set_preplay_hook(self.start_stimulus)
 		self.player.set_postplay_hook(self.finish_stimulus)
+		self.UpdateChannelVolumes()
+		
 		
 		self.ding = WavTools.player('ding.wav')
 		self.chimes = WavTools.player('chimes.wav')
@@ -143,7 +156,7 @@ class BciApplication(BciGenericApplication):
 		self.arm()
 		self.last.pop('stream', None) # AAA
 		#self.streamstart = None       # BBB
- 			
+
 	#############################################################
 	
 	def Phases(self):
@@ -153,13 +166,13 @@ class BciApplication(BciGenericApplication):
 		
 		self.phase(  duration=None,   name='stimprep',       next='cue',       )
 		self.phase(  duration=cuelen, name='cue',            next='stimulus',  )
- 		self.phase(  duration=None,   name='stimulus',       next='classify',  )
- 		self.phase(  duration=1000,   name='classify',       next='respond',   )
- 		self.phase(  duration=5000,   name='respond',        next='feedback',  )
- 		self.phase(  duration=2000,   name='feedback',       next='stimprep',  )
- 		
- 		self.design(start='stimprep', new_trial='stimprep')
- 		
+		self.phase(  duration=None,   name='stimulus',       next='classify',  )
+		self.phase(  duration=1000,   name='classify',       next='respond',   )
+		self.phase(  duration=5000,   name='respond',        next='feedback',  )
+		self.phase(  duration=2000,   name='feedback',       next='stimprep',  )
+		
+		self.design(start='stimprep', new_trial='stimprep')
+		
 	#############################################################
 
 	def Transition(self, phase):
@@ -265,11 +278,24 @@ class BciApplication(BciGenericApplication):
 
 	def Event(self, phase, event):
 		if phase == 'respond' and event.type == pygame.locals.KEYUP:
-			val = event.key
-			if val in range(256, 266): self.states['Response'] = val - 256
-			elif val in range(48,58):  self.states['Response'] = val - 48
+			key = event.key
+			if key in range(256, 266): self.states['Response'] = key - 256
+			elif key in range(48,58):  self.states['Response'] = key - 48
 			#print self.states['Response']
 			self.change_phase()
+		
+		if phase != 'respond' and event.type == pygame.locals.KEYUP:
+			key = event.key
+			vc = self.volctrl = getattr(self, 'volctrl', {})
+			chan = vc['channel'] = vc.get('channel', 0)
+			if key in (pygame.locals.K_LEFT, pygame.locals.K_RIGHT, pygame.locals.K_UP, pygame.locals.K_DOWN):
+				if key == pygame.locals.K_LEFT:  vc['channel'] = max(0, vc['channel'] - 1)
+				if key == pygame.locals.K_RIGHT: vc['channel'] = min(self.nstreams, vc['channel'] + 1)
+				if key == pygame.locals.K_UP:    self.chanvol[chan] = min(   0.0, self.chanvol[chan] + 3.0 )
+				if key == pygame.locals.K_DOWN:  self.chanvol[chan] = max(-100.0, self.chanvol[chan] - 3.0 )
+				vc['string'] = "PythonApp  floatlist ChannelVolumesDB= %d    %s  // adjusting channel %d" % ( len(self.chanvol),  '  '.join(["%g"%x for x in self.chanvol]), vc['channel']+1 )
+				print vc['string']
+				self.UpdateChannelVolumes()
 			
 	#############################################################
 
@@ -286,8 +312,24 @@ class BciApplication(BciGenericApplication):
 		m = m.replace('], [', '],\n\t[').replace('[[', '[\n\t[').replace(']]', '],\n]\n')
 		f = open(fn, 'w'); f.write(m); f.close()
 		
+		
+		vcstring = getattr(self, 'volctrl', {}).get('string', None)
+		if vcstring != None:
+			fn = os.path.realpath("ChannelVolumesDB.prm")
+			print "writing ChannelVolumesDB parameter to "+fn
+			open(fn, 'w').write(vcstring + '\n')
+			
+			
 		self.chimes.play()
 			
+	#############################################################
+	
+	def UpdateChannelVolumes(self):
+		self.player.pan = [1.0 for x in self.chanvol]
+		for i,x in enumerate(self.chanvol):
+			if x <= 0.0: x = 10.0**(x/20.0)
+			self.player.pan[i] = x
+
 	#############################################################
 	
 	def start_stimulus(self):
@@ -311,7 +353,10 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 
 	def make(self, store=False):
-		a = AudioStream.Stimulus(self.StimulusMaker, self.nexttarget(pop=False))
+		import cProfile, pstats
+		prof = cProfile.Profile()
+		a = prof.runcall(AudioStream.Stimulus, self.StimulusMaker, self.nexttarget(pop=False))
+		self.lastprof = pstats.Stats(prof).sort_stats('time', 'cumulative')
 		if store: self.streams.append(a)
 		return a
 		
