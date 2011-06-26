@@ -190,7 +190,7 @@ class Maker(object):
 					ww = w.copy()
 					while ww.duration() < duration/1000.0: ww %= w
 					self.samplewavs[stimtype] = ww[:duration/1000.0]
-					sampletrack[stimtype] = silent.copy()
+					#sampletrack[stimtype] = silent.copy()
 				
 	#############################################################
 
@@ -203,8 +203,10 @@ class Maker(object):
 	
 	#############################################################
 
-	def waves(self, freq, wavetypes, paramname, sampletrack={}):
-
+	def waves(self, freq, wavetypes, paramname, sampletrack=None):
+		
+		if sampletrack == None: sampletrack = {}
+		
 		theta =  numpy.cumsum(freq * (2.0 * numpy.pi / self.soundfs), axis=WavTools.across_samples)
 		antialias = True
 

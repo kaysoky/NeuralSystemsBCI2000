@@ -847,7 +847,7 @@ SUCH DAMAGES.
 	#### useful callbacks for the developer
 	#############################################################
 
-	def changed(self, statename, only=None, ignore=()):
+	def changed(self, statename, only=None, ignore=(), fromVals=None):
 		"""
 		Return whether the state <statename> has changed since the
 		last packet.  If <only> is supplied, only accept changes
@@ -856,11 +856,18 @@ SUCH DAMAGES.
 		"""###
 		if self.prevstates == None or len(self.prevstates) == 0: return False
 		val = self.states[statename]
-		if val == self.prevstates[statename]: return False
+		prev = self.prevstates[statename]
+		if val == prev: return False
+		
+		if isinstance(fromVals, (bool,int,float)): fromVals = (int(fromVals),)
+		if fromVals != None and prev not in fromVals: return False
+
 		if isinstance(only, (bool,int,float)): only = (int(only),)
-		if isinstance(ignore, (bool,int,float)): ignore = (int(ignore),)
-		if val in ignore: return False
 		if only != None and val not in only: return False
+			
+		if isinstance(ignore, (bool,int,float)): ignore = (int(ignore),)
+		if ignore != None and val in ignore: return False
+		
 		return True
 		
 	#############################################################

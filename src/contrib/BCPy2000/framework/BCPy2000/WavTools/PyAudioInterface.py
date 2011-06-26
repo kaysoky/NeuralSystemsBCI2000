@@ -24,7 +24,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__all__ = ['record', 'player']
+__all__ = ['record', 'recorder', 'player']
 import Base
 from Base import across_channels,across_samples
 import Background
@@ -66,7 +66,7 @@ def record(seconds=None, nchan=None, fs=None, bits=None, w=None):
 	
 	if isinstance(w,player): w = p.wav
 	if w == None:
-		if not seconds: raise TypeError, "please specify number of seconds for which to record"
+		if not seconds: raise ValueError, "please specify number of seconds for which to record"
 		if not nchan: nchan = 2
 		if not fs: fs = 44100
 		if not bits: bits = 16
@@ -81,7 +81,7 @@ def record(seconds=None, nchan=None, fs=None, bits=None, w=None):
 	interface = grab_interface()
 	format = interface.get_format_from_width(w.nbytes)	
 	nsamp = int(0.5 + seconds * float(fs))
-	recorder = interface.open(format=format, channels=nchan, rate=fs, input=True)
+	recorder = interface.open(format=format, channels=nchan, rate=fs, input=True)				
 	print "recording"
 	strdat = recorder.read(nsamp)
 	print "done"
@@ -90,6 +90,87 @@ def record(seconds=None, nchan=None, fs=None, bits=None, w=None):
 	w.y = w.str2dat(strdat, nsamp, nchan)
 	#if w.bits==8: w.__dict__.update({'signed':True, 'dtype':'<i1',})
 	return w
+
+class recorder(Background.ongoing):
+	def __init__(self, seconds=None, nchan=None, fs=None, bits=None, w=None, callback=None, packetRateHz=100):
+		Background.ongoing.__init__(self)
+		if isinstance(w,player): w = p.wav
+		if w == None:
+			if not nchan: nchan = 2
+			if not fs: fs = 44100
+			if not bits: bits = 16
+			w = Base.wav(fs=fs,bits=bits,nchan=nchan)
+		else:
+			if not seconds: seconds = w.duration()
+			if not nchan: nchan = w.channels()
+			if not fs: fs = int(w.fs)
+			if not bits: bits = w.bits
+			w.fs = fs
+			w.bits = bits # nbytes should be updated automatically	
+		
+		self.wav = w
+		self.seconds = seconds
+		self.nchan = nchan
+		self.packetRateHz = packetRateHz
+		
+		if callback != None:
+			self.handle_data = callback
+			
+		self.samples_recorded = 0
+		self.packets_recorded = 0
+	
+	def record(self, bg=True, seconds=None, nchan=None):
+		self.kwargs = {'seconds':seconds, 'nchan':nchan}
+		if seconds==None and self.seconds==None:
+			raise ValueError("please specify a number of seconds to record, either in the constructor or the record() call")
+		self.go(bg=bg)
+	
+	def core(self, seconds=None, nchan=None):
+		interface = grab_interface()
+		
+		fs = self.wav.fs
+		if nchan == None: nchan = self.nchan
+		if seconds == None: seconds = self.seconds
+		if nchan != self.wav.channels() or seconds != self.wav.duration():
+			print "resizing recorder's internal wav object"
+			siz = [0,0]
+			siz[across_samples] = int(round(seconds * fs))
+			siz[across_channels] = nchan
+			self.wav.y = numpy.zeros(siz, dtype=numpy.float64)
+		
+		self.samples_recorded = 0
+		self.packets_recorded = 0
+				
+		format = interface.get_format_from_width(self.wav.nbytes)	
+		pipe = interface.open(format=format, channels=nchan, rate=fs, input=True)
+		
+		while self.keepgoing and not self.timedout():
+			aimfor = float(self.packets_recorded + 1) * float(fs) / float(self.packetRateHz)
+			nsamp = int(round(aimfor - self.samples_recorded))
+			strdat = pipe.read(nsamp)
+			packet = self.wav.str2dat(strdat, nsamp, nchan)
+			result = self.handle_data(packet)
+			if result != None:
+				if result < nsamp: keepgoing = False
+				nsamp = result
+			self.samples_recorded += nsamp
+			if nsamp: self.packets_recorded += 1
+			
+		pipe.close()
+		release_interface(interface)
+		
+	def handle_data(self, packet):
+		start = self.samples_recorded
+		stop = start + packet.shape[across_samples]
+		stop = min(stop, self.wav.y.shape[across_samples])
+		nsamp = stop - start
+		if nsamp:
+			if across_samples == 0:   self.wav.y[start:stop,:] = packet[:nsamp,:]
+			elif across_samples == 1: self.wav.y[:,start:stop] = packet[:,:nsamp]
+			else: raise RuntimeError, "well, which dimension is the sample dimension?"
+		if stop >= self.wav.y.shape[across_samples]:
+			self.keepgoing = False
+		return nsamp
 
 class player(Background.ongoing):
 	def __init__(self, w=None, verbose=False,buffersize=None, dev=None):
