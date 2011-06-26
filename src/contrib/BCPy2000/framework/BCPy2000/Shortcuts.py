@@ -281,7 +281,8 @@ especially useful for numpy arrays.
 		try:
 			exec 'import WavTools,SigTools' in ipython
 		except ImportError:	
-			exec 'import BCPy2000.WavTools as WavTools, BCPy2000.SigTools as SigTools' in ipython
+			exec 'import BCPy2000.Paths'    in ipython
+			exec 'import WavTools,SigTools' in ipython
 			
 		def magic_pp(name=''):
 			if name == None: return

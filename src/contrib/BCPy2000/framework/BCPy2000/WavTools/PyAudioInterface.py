@@ -124,6 +124,7 @@ class recorder(Background.ongoing):
 		if seconds==None and self.seconds==None:
 			raise ValueError("please specify a number of seconds to record, either in the constructor or the record() call")
 		self.go(bg=bg)
+		return self
 	
 	def core(self, seconds=None, nchan=None):
 		interface = grab_interface()
