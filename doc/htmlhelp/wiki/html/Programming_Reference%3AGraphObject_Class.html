@@ -49,8 +49,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-2'><a href="Programming_Reference%253AGraphObject_Class.html#GraphDisplay_Display_.28r.29"><span class="tocnumber">4.1</span> <span class="toctext">GraphDisplay Display (r)</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AGraphObject_Class.html#bool_Visible_.28r.29"><span class="tocnumber">4.2</span> <span class="toctext">bool Visible (r)</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AGraphObject_Class.html#enum_AspectRatioMode_.28rw.29"><span class="tocnumber">4.3</span> <span class="toctext">enum AspectRatioMode (rw)</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AGraphObject_Class.html#GUI::Rect_DisplayRect_.28rw.29"><span class="tocnumber">4.4</span> <span class="toctext">GUI::Rect DisplayRect (rw)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AGraphObject_Class.html#float_ZOrder_.28rw.29"><span class="tocnumber">4.3</span> <span class="toctext">float ZOrder (rw)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AGraphObject_Class.html#enum_AspectRatioMode_.28rw.29"><span class="tocnumber">4.4</span> <span class="toctext">enum AspectRatioMode (rw)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AGraphObject_Class.html#GUI::Rect_DisplayRect_.28rw.29"><span class="tocnumber">4.5</span> <span class="toctext">GUI::Rect DisplayRect (rw)</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Programming_Reference%253AGraphObject_Class.html#Events"><span class="tocnumber">5</span> <span class="toctext">Events</span></a>
@@ -105,7 +106,10 @@ You do not instantiate <tt>GraphObjects</tt> directly; rather, you create object
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:GraphObjectProperties&amp;action=edit&amp;section=2" title="Template:GraphObjectProperties">edit</a>]</div><a name="bool_Visible_.28r.29"></a><h3>bool Visible (r)</h3>
 <p><i>True</i> if the object is visible, <i>false</i> if it is hidden. Use the <i>Hide()</i> and <i>Show()</i> methods to set this property.
 </p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:GraphObjectProperties&amp;action=edit&amp;section=3" title="Template:GraphObjectProperties">edit</a>]</div><a name="enum_AspectRatioMode_.28rw.29"></a><h3>enum AspectRatioMode (rw)</h3>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:GraphObjectProperties&amp;action=edit&amp;section=3" title="Template:GraphObjectProperties">edit</a>]</div><a name="float_ZOrder_.28rw.29"></a><h3>float ZOrder (rw)</h3>
+<p>Determines the order in which GraphObjects are drawn. GraphObjects with smaller values of ZOrder are drawn on top of those with larger values, hiding these.
+</p>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:GraphObjectProperties&amp;action=edit&amp;section=4" title="Template:GraphObjectProperties">edit</a>]</div><a name="enum_AspectRatioMode_.28rw.29"></a><h3>enum AspectRatioMode (rw)</h3>
 <p>One of the following options:
 </p>
 <dl><dt>AdjustNone
@@ -119,7 +123,7 @@ You do not instantiate <tt>GraphObjects</tt> directly; rather, you create object
 </dd></dl>
 <p>The exact behavior of aspect ratio adjustment depends on the object's type. E.g., for bitmap images, <i>AdjustBoth</i> will size the image such that one image pixel corresponds to one screen pixel; <i>AdjustHeight</i> and <i>AdjustWidth</i> will adjust such that the original aspect ratio is preserved.
 </p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:GraphObjectProperties&amp;action=edit&amp;section=4" title="Template:GraphObjectProperties">edit</a>]</div><a name="GUI::Rect_DisplayRect_.28rw.29"></a><h3>GUI::Rect DisplayRect (rw)</h3>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:GraphObjectProperties&amp;action=edit&amp;section=5" title="Template:GraphObjectProperties">edit</a>]</div><a name="GUI::Rect_DisplayRect_.28rw.29"></a><h3>GUI::Rect DisplayRect (rw)</h3>
 <p>The bounding rectangle of the space that is occupied by the object. This is given in coordinates relative to the size of the object's <tt>GraphDisplay</tt>; there, the upper left corner corresponds to (0,0), the lower right corner to (1,1).
 When a <tt>GraphObject</tt> is created, its display rectangle is empty.
 </p>

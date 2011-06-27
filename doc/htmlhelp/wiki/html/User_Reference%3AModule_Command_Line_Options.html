@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Module Command Line Options - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Module Command Line Options,Programming Reference:Debug Output,Technical Reference:Core Modules,Technical Reference:Parameter Definition,Technical Reference:States of Operation,User Reference:Data File Formats,User Reference:Logging Input,User Reference:Operator Module Scripting" />
+<meta name="keywords" content="User Reference:Module Command Line Options,Programming Reference:Debug Output,Technical Reference:Core Modules,Technical Reference:Parameter Definition,Technical Reference:Parameter File,Technical Reference:States of Operation,User Reference:Data File Formats,User Reference:Logging Input,User Reference:Operator Module Scripting" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -56,7 +56,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Core_Modules"></a><h2>Core Modules</h2>
 <p><a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">Core modules</a> (i.e., Data Acquisition, Signal Processing, and Application Module), share the same command line syntax:
 </p>
-<pre>&lt;ModuleName&gt; &lt;operator IP&gt;:&lt;operator port&gt; --&lt;option1&gt;-&lt;value1&gt; --&lt;option2&gt;-&lt;value2&gt; ...
+<pre>&lt;ModuleName&gt; &lt;operator IP&gt;:&lt;operator port&gt; --&lt;option1&gt;=&lt;value1&gt; --&lt;option2&gt;=&lt;value2&gt; ...
 </pre>
 <p>All arguments are optional.
 </p>
@@ -77,6 +77,7 @@ Parameter values must not contain white spaces on the command line; however, whi
 </li><li>The <i>FileFormat</i> option will switch between <a href="User_Reference%253AData_File_Formats.html" title="User Reference:Data File Formats">File Formats</a> used for data recording. The output file format is determined at module startup, and cannot be changed by modifying the FileFormat parameter from the operator module's parameter dialog.
 </li><li>The <i>Debug</i> option will make a module send <a href="Programming_Reference%253ADebug_Output.html" title="Programming Reference:Debug Output">Debug Messages</a> that appear in the operator module's log window.
 </li><li>The <i>LogKeyboard</i>, <i>LogMouse</i>, and <i>LogJoystick</i> options will enable <a href="User_Reference%253ALogging_Input.html" title="User Reference:Logging Input">recording of key presses, mouse and joystick position</a>.
+</li><li>The <i>SavePrmFile</i> option will save a <a href="Technical_Reference%253AParameter_File.html" title="Technical Reference:Parameter File">parameter file</a> for each run.
 </li></ul>
 <a name="Operator_Module"></a><h2>Operator Module</h2>
 <p>The operator module allows to specify scripts from the command line.

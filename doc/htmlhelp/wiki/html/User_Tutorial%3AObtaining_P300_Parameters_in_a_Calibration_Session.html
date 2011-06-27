@@ -127,11 +127,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 <div class="center"><div class="floatnone"><span><a href="../images/thumb/1/1d/Waveform.PNG/800px-Waveform.PNG" class="image" title=""><img src="../images/thumb/1/1d/Waveform.PNG/800px-Waveform.PNG" alt="" width="800" height="391" longdesc="/wiki/index.php/Image:Waveform.PNG" /></a></span></div></div>
 <a name="Creating_a_subject-specific_parameter_file"></a><h2>Creating a subject-specific parameter file</h2>
-<p>Now we will save these customizations to a subject-specific parameter file that will allow the subject to free-spell with very high accuracy.
+<p>Now we will save these customizations to a subject-specific parameter file that will allow the subject to free-spell with good accuracy.
 </p>
 <ul><li>Start BCI2000 using <tt>batch/P3Speller_&lt;Your_Amplifier&gt;.bat</tt> file
 </li><li>Click <b>Config</b>, and load the configuration file you saved previously
 </li><li>Under the <b>Storage</b> tab, set the <i>SubjectSession</i> parameter to "002", and the <b>SubjectName</b> parameter to the subject's initials.
+</li><li>Under the <b>Source</b> tab, set the <i>TransmitChList</i> parameter to a list of channels from 1 to the number of channels recorded.
 </li><li>Under the <b>Filtering</b> tab, click the <b>Edit Matrix</b> button by <i>Classifier</i> near the bottom
 </li><li>Change this matrix to have 4 columns and as many rows as values you are using, and click <b>Set New Matrix Size</b>
 <ul><li>In the first column, labeled <i>Input Channel</i>, enter the channel of the first value you use

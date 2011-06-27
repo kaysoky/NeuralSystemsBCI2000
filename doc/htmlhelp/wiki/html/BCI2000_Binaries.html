@@ -4,7 +4,7 @@
 <head>
 <title>BCI2000 Binaries - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="BCI2000 Binaries,Contributions:ADCs,Contributions:BCPy2000,Contributions:Contents,Creating a User Account,Programming Reference:GenericFilter Class,User Reference:BCI2000 Offline Analysis,User Reference:CursorTask,User Reference:Logging Input,User Reference:Normalizer,User Reference:Operator Module" />
+<meta name="keywords" content="BCI2000 Binaries,Contributions:ADCs,Contributions:BCPy2000,Contributions:Contents,Contributions:NIDAQFilter,Contributions:NIDAQLogger,Creating a User Account,Programming Reference:GenericFilter Class,User Reference:BCI2000 Offline Analysis,User Reference:CursorTask,User Reference:Logging Input" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -41,7 +41,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-2'><a href="BCI2000_Binaries.html#Version_3_Builds"><span class="tocnumber">6.1</span> <span class="toctext">Version 3 Builds</span></a>
 <ul>
-<li class='toclevel-3'><a href="BCI2000_Binaries.html#February_2011_Version_3_Release_Build"><span class="tocnumber">6.1.1</span> <span class="toctext">February 2011 Version 3 Release Build</span></a></li>
+<li class='toclevel-3'><a href="BCI2000_Binaries.html#May_2011_Version_3.0.1"><span class="tocnumber">6.1.1</span> <span class="toctext">May 2011 Version 3.0.1</span></a></li>
+<li class='toclevel-3'><a href="BCI2000_Binaries.html#February_2011_Version_3_Release_Build"><span class="tocnumber">6.1.2</span> <span class="toctext">February 2011 Version 3 Release Build</span></a></li>
 </ul>
 </li>
 <li class='toclevel-2'><a href="BCI2000_Binaries.html#Version_2_Builds"><span class="tocnumber">6.2</span> <span class="toctext">Version 2 Builds</span></a>
@@ -83,8 +84,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p><p><a href="http://bci2000.org/downloads/bin/BCI2000Setup.exe" class='external free' title="http://bci2000.org/downloads/bin/BCI2000Setup.exe" rel="nofollow">http://bci2000.org/downloads/bin/BCI2000Setup.exe</a>
 </p>
 <a name="Dependencies"></a><h2>Dependencies</h2>
-<p>Since version 3, BCI2000 requires VisualC++ runtime libraries to run. An installer for the runtime libraries may be downloaded from here:
-</p><p><a href="http://bci2000.org/downloads/bin/vcredist_x86.exe" class='external free' title="http://bci2000.org/downloads/bin/vcredist_x86.exe" rel="nofollow">http://bci2000.org/downloads/bin/vcredist_x86.exe</a>
+<p>The original version 3 release build required VisualC++ runtime libraries to run. An installer for the runtime libraries may be downloaded from here:
+<a href="http://bci2000.org/downloads/bin/vcredist_x86.exe" class='external free' title="http://bci2000.org/downloads/bin/vcredist_x86.exe" rel="nofollow">http://bci2000.org/downloads/bin/vcredist_x86.exe</a>
+</p><p>Newer builds of BCI2000 don't have this dependency any more.
 </p>
 <a name="Contributed_Code"></a><h2>Contributed Code</h2>
 <p>BCI2000 modules from the <a href="Contributions%253AContents.html" title="Contributions:Contents">contribution section</a> are not part of the BCI2000 core distribution.
@@ -98,6 +100,39 @@ For convenience, we provide an extended binary distribution that includes binary
 </p>
 <a name="Version_History"></a><h2>Version History</h2>
 <a name="Version_3_Builds"></a><h3>Version 3 Builds</h3>
+<a name="May_2011_Version_3.0.1"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" rel="nofollow">May 2011 Version 3.0.1</a></h4>
+<p><a href="http://bci2000.org/tracproj/changeset/3261" class='external text' title="http://bci2000.org/tracproj/changeset/3261" rel="nofollow">Latest changeset: 3261</a>
+</p><p><b>New features in this version:</b>
+</p>
+<ul><li>SignalGenerator, FilePlayback and PythonSource all now have the option of *not* checking realtime operation,  since they may be used to play artificial signals in non-real time.  (J. Hill)
+</li><li>Visualization windows now have a status bar; keyboard shortcuts to toggle filters between on and off (h, l, and n); keyboard shortcuts cycle through available filter settings (H, L, N). 
+</li><li>Operator and tools now use application-local ini files rather than the registry to store settings. 
+</li><li>bci_stream2mat now outputs ChannelLabels, ElementLabels, ElementValues, and ElementUnit in Matlab format (J. Hill)
+</li><li>bci_dat2stream now has a -p option: parameters are optionally read from a parameter file, overshadowing the ones previously read from the dat file   (J. Hill)
+</li><li>bci_stream2mat now outputs a string containing all the parameters found at the *beginning* of the stream (J. Hill)
+</li><li>Custom-development bootstrapping for new source, sigproc and application modules (J. Hill)
+</li><li>Source modules now use a separate thread for writing data, avoiding data loss when the file is locked by another process (A. Wilson)
+</li><li>A change in the filter registration mechanism: Rather than being restricted to signal processing modules, Filter() statements (as well as PipeDefinition.cpp files) may now appear in any type of module, and will override all RegisterFilter() statements present in the module. 
+</li><li>FFTFilter now displays frequency labels in its visualization windows. 
+</li></ul>
+<p><b>Bug fixes in this version:</b>
+</p>
+<ul><li>Updated buildmex to repair missing linker symbols, and to work with Matlab 2010b. (A. Wilson)
+</li><li>Fixed Preflight in gUSBampADC: Now SourceChList is checked properly when multiple amplifiers are connected. 
+</li><li>P300Classifier is now able to deal with files recorded with StimulusPresentation. 
+</li><li>ARFilter now allows a single frequency bin. (J. Hilll)
+</li><li>Fixed a bug in bci_filtertool: parameter properties would be read from the input stream rather than from the filter present in the tool. 
+</li><li>Fixed compilation of mex files using Qt.
+</li><li>Made filter registration mechanism more stable when compiling with gcc.
+</li><li>Removed mex files from OfflineAnalysis directory; OfflineAnalysis now adds the BCI2000 mex file directory to its path. This is to avoid "function not found"-errors on non-win32 systems. 
+</li><li>Visualization displays now show labels in field2d visualizations. 
+</li></ul>
+<p><b>Changes to contributed code:</b>
+</p>
+<ul><li>ModularEEG is now present in v3 (J. Hill)
+</li><li>Changed executable name for NeuroscanAccessSDK source module from "Neuroscan.exe" to "NeuroscanAccess.exe" in order to avoid confusion with the Neuroscan Acquire client source module (which is called NeuroscanClient.exe). 
+</li><li>NIDAQ-MX source module now includes NIDAQ logging components written by J. Renga: <a href="Contributions%253ANIDAQLogger.html" title="Contributions:NIDAQLogger">Contributions:NIDAQLogger</a> and <a href="Contributions%253ANIDAQFilter.html" title="Contributions:NIDAQFilter">Contributions:NIDAQFilter</a>
+</li></ul>
 <a name="February_2011_Version_3_Release_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" rel="nofollow">February 2011 Version 3 Release Build</a></h4>
 <p><a href="http://bci2000.org/tracproj/changeset/3113" class='external text' title="http://bci2000.org/tracproj/changeset/3113" rel="nofollow">Latest changeset: 3113</a>
 </p>

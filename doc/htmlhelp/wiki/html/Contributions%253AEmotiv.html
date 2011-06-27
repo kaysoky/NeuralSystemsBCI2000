@@ -42,11 +42,10 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </li>
 <li class='toclevel-1'><a href="Contributions%253AEmotiv.html#Functional_Description"><span class="tocnumber">4</span> <span class="toctext">Functional Description</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253AEmotiv.html#Installation"><span class="tocnumber">5</span> <span class="toctext">Installation</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253AEmotiv.html#Parameters"><span class="tocnumber">6</span> <span class="toctext">Parameters</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253AEmotiv.html#States"><span class="tocnumber">7</span> <span class="toctext">States</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253AEmotiv.html#Future_Work"><span class="tocnumber">8</span> <span class="toctext">Future Work</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253AEmotiv.html#See_also"><span class="tocnumber">9</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AEmotiv.html#Parameters"><span class="tocnumber">5</span> <span class="toctext">Parameters</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AEmotiv.html#States"><span class="tocnumber">6</span> <span class="toctext">States</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AEmotiv.html#Future_Work"><span class="tocnumber">7</span> <span class="toctext">Future Work</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AEmotiv.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Synopsis"></a><h2>Synopsis</h2>
@@ -65,11 +64,7 @@ Rensselaer Polytechnic Institute
 <a name="Functional_Description"></a><h2>Functional Description</h2>
 <p>Acquires signal data from the Emotiv device.  Also captures gyro data and writes it to states.
 </p><p>The output from the Emotiv is in muV, however it has quite a large DC Offset of about 4000~4200 units.  The remaining DC offset comes from such factors as stored potential in the subject, and offsets added in the library to facilitate plotting.  As such, a 0.1 Hz high pass filter is applied in the source module to the output signal.  This effectively eliminates extra DC Offset.  You will notice a "Settling Time" before the signals all reach an approximate 0 DC Offset.  This time is about 10 to 15 seconds.  It would be advisable to wait until the signal has settled out before proceeding.  
-</p>
-<a name="Installation"></a><h2>Installation</h2>
-<p>Compile the Emotiv module using CMake and your compiler.  Currently only Visual Studio libraries for the Emotiv API are provided.  The resulting Emotiv.exe should be placed in the prog directory automatically.
-Copy the <b>edk.dll</b> and <b>edk_utils.dll</b> found in <a href="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/Emotiv/dll" class='external free' title="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/Emotiv/dll" rel="nofollow">http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/Emotiv/dll</a> to the prog directory for the module to work.
-</p><p><b>It is advisable to run the "Emotiv Testbench" alongside the BCI2000 module for a realtime visualization of the Emotiv Contact Quality and other important states.</b>
+</p><p><br />
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <ul><li> <b>SourceCh</b> must be set to 14.  The Emotiv has 14 channels not counting the ground and ref.

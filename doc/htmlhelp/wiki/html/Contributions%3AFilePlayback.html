@@ -32,60 +32,77 @@ a.new, #quickbar a.new { color: #CC2200; }
 <div id='article'>
 <h1 class="pagetitle">FilePlayback</h1><p class="subtitle">Contributions</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
-<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Function"><span class="tocnumber">1</span> <span class="toctext">Function</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Parameters"><span class="tocnumber">2</span> <span class="toctext">Parameters</span></a>
+<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Synopsis"><span class="tocnumber">1</span> <span class="toctext">Synopsis</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Location"><span class="tocnumber">2</span> <span class="toctext">Location</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Authors"><span class="tocnumber">3</span> <span class="toctext">Authors</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Function"><span class="tocnumber">4</span> <span class="toctext">Function</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Parameters"><span class="tocnumber">5</span> <span class="toctext">Parameters</span></a>
 <ul>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#SourceCh"><span class="tocnumber">2.1</span> <span class="toctext">SourceCh</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#SampleBlockSize"><span class="tocnumber">2.2</span> <span class="toctext">SampleBlockSize</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#SamplingRate"><span class="tocnumber">2.3</span> <span class="toctext">SamplingRate</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#SourceChList"><span class="tocnumber">2.4</span> <span class="toctext">SourceChList</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#Speedup"><span class="tocnumber">2.5</span> <span class="toctext">Speedup</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#FileName"><span class="tocnumber">2.6</span> <span class="toctext">FileName</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#SuspendAtEnd"><span class="tocnumber">2.7</span> <span class="toctext">SuspendAtEnd</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#StartTime"><span class="tocnumber">2.8</span> <span class="toctext">StartTime</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#SourceCh"><span class="tocnumber">5.1</span> <span class="toctext">SourceCh</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#SampleBlockSize"><span class="tocnumber">5.2</span> <span class="toctext">SampleBlockSize</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#SamplingRate"><span class="tocnumber">5.3</span> <span class="toctext">SamplingRate</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#PlaybackFileName"><span class="tocnumber">5.4</span> <span class="toctext">PlaybackFileName</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#PlaybackStartTime"><span class="tocnumber">5.5</span> <span class="toctext">PlaybackStartTime</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#PlaybackChList"><span class="tocnumber">5.6</span> <span class="toctext">PlaybackChList</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#PlaybackSpeed"><span class="tocnumber">5.7</span> <span class="toctext">PlaybackSpeed</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#PlaybackStates"><span class="tocnumber">5.8</span> <span class="toctext">PlaybackStates</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#PlaybackLooped"><span class="tocnumber">5.9</span> <span class="toctext">PlaybackLooped</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Additional_Information"><span class="tocnumber">3</span> <span class="toctext">Additional Information</span></a>
+<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Additional_Information"><span class="tocnumber">6</span> <span class="toctext">Additional Information</span></a>
 <ul>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#Data_Storage"><span class="tocnumber">3.1</span> <span class="toctext">Data Storage</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#Random_Sequences"><span class="tocnumber">3.2</span> <span class="toctext">Random Sequences</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#Data_Format"><span class="tocnumber">3.3</span> <span class="toctext">Data Format</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#Data_Storage"><span class="tocnumber">6.1</span> <span class="toctext">Data Storage</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#Random_Sequences"><span class="tocnumber">6.2</span> <span class="toctext">Random Sequences</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AFilePlayback.html#Data_Format"><span class="tocnumber">6.3</span> <span class="toctext">Data Format</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#Known_Issues"><span class="tocnumber">7</span> <span class="toctext">Known Issues</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AFilePlayback.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
+<a name="Synopsis"></a><h2>Synopsis</h2>
+<p>A source module that replays EEG data from BCI2000 .dat files.
+</p>
+<a name="Location"></a><h2>Location</h2>
+<p><a href="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/FilePlayback" class='external free' title="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/FilePlayback" rel="nofollow">http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/FilePlayback</a>
+</p>
+<a name="Authors"></a><h2>Authors</h2>
+<p>Adam Wilson, Jeremy Hill
+</p>
 <a name="Function"></a><h2>Function</h2>
-<p>The <i>FilePlayback</i> filter allows previously recorded BCI2000 data to be "acquired" into BCI2000 as though it was acquired from an amplifier. This functionality could be useful for testing new algorithms, or generating screenshots or video captures after an experiment. 
+<p>The <i>FilePlaybackADC</i> allows previously recorded BCI2000 data to be "acquired" into BCI2000 as though it was acquired from an amplifier. This functionality could be useful for testing new algorithms, debugging, or generating screenshots or video captures after an experiment.   The file will begin to be played back as soon as <i>Set Config</i> is pressed. However, it will jump back and play from the beginning (or other specified time-point) when the run starts.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
-<p>The <i>FilePlayback</i> provides the following parameters:
+<p>The <i>FilePlayback</i> module can be started using a command-line parameter, <code>--PlaybackFileName=FOO.DAT</code>. In this case, the named file (<code>FOO.DAT</code> in this example) is used as a template for the session: this means that all the file's recorded states are declared as states of the <i>FilePlayback</i> module, and all the file's parameters are read and declared as parameters of the <i>FilePlayback</i> module, with default values equal to the values they had in the file.  Exceptions to this are parameters from the <i>System</i> tab (which are set by the operator as appropriate for the playback session), and flags for enabling loggers (such as <i>LogMouse</i>), which are set to 0 by default.   To turn on logging, specify (for example) <code>--LogMouse=1</code> on the command-line as usual.  To play back logged mouse data from the file, leave <i>LogMouse</i> as 0 and set <i>PlaybackStates</i> to 1.
+</p><p>Without the command-line switch, the <i>FilePlayback</i> module provides just three basic parameters for recreating the original conditions: <i>SourceCh</i>, <i>SampleBlockSize</i> and <i>SamplingRate</i>.
+</p><p>In either case, the module declares several additional playback-specific parameters, whose names all start with "Playback" to avoid possible name conflicts.
 </p>
 <a name="SourceCh"></a><h3>SourceCh</h3>
-<p>The number of digitized and stored channels that should be read from the file. This should be equal to or less than the <i>SourceCh</i>parameter in the dat file.
+<p>The number of digitized and stored channels that should be read from the file. This should be equal to or less than the <i>SourceCh</i> parameter in the dat file.
 </p>
 <a name="SampleBlockSize"></a><h3>SampleBlockSize</h3>
-<p>The number of samples transmitted at a time. This value does NOT need to match the value stored in the dat file. However, it should be noted that the timing of events during the file playback may change relative to the event timing in the saved file, particularly if the event timing is specified in blocks, and not seconds.
+<p>The number of samples transmitted at a time. This value does not need to match the value stored in the dat file. However, it should be noted that the timing of events during the file playback may change relative to the event timing in the saved file, particularly if the event timing is specified in blocks, and not seconds.
 </p>
 <a name="SamplingRate"></a><h3>SamplingRate</h3>
-<p>The data sampling rate. This must match the value in the dat file.
+<p>The data sampling rate in Hz. This must match the value in the dat file.
 </p>
-<a name="SourceChList"></a><h3>SourceChList</h3>
-<p>The list of channels that should be acquired from each device.
-The total number of channels listed should correspond to <i>SourceCh</i>, and should be less than or equal to <i>SourceCh</i>.
+<a name="PlaybackFileName"></a><h3>PlaybackFileName</h3>
+<p>The path to the BCI2000 data file to be played back. Note that this parameter may also be given as a command-line option when starting the module:  in this case, the file is also used as a template for the session (its recorded parameters and states are declared as parameters and states of the <i>FilePlayback</i> module).
 </p>
-<a name="Speedup"></a><h3>Speedup</h3>
-<p>An integer factor indicating the acquisition speed. For example, if a value of <i>2</i> is specified, then the data will be read back twice as fast. Additionally, a value of <i>0</i> indicates that there should be no pause in-between blocks of data, and that the data should be acquired as quickly as possible. This playback speed will be limited by the processing capabilities of the computer, including the time required to read the data from the file, and to do any signal processing required by the SignalProcessing module.
+<a name="PlaybackStartTime"></a><h3>PlaybackStartTime</h3>
+<p>The starting time of the file (in blocks if no units or given, or in time units which you specify explicitly). This allows playback to begin at an arbitrary point in the file.
 </p>
-<a name="FileName"></a><h3>FileName</h3>
-<p>The path to the BCI2000 data file.
+<a name="PlaybackChList"></a><h3>PlaybackChList</h3>
+<p>Leave this list empty to play back all available channels (default behavior).   Or populate it, to specify a subset or re-ordering of the channels for playback. The length of the list must correspond to the value of <i>SourceCh</i> (and hence you must also adjust the lengths of your <i>ChannelNames</i>, <i>SourceChGain</i> and <i>SourceChOffset</i> parameters to match). Each element of the list must either be a valid index to a channel in the file that is being played back, or the label of a channel as given in the file's recorded ChannelNames parameter.
 </p>
-<a name="SuspendAtEnd"></a><h3>SuspendAtEnd</h3>
-<p>This value indicates whether BCI2000 should Suspend at the end of the file, or if it should loop around to the beginning of the file.
+<a name="PlaybackSpeed"></a><h3>PlaybackSpeed</h3>
+<p>A factor indicating the acquisition speed. For example, if a value of 2 is specified, then the data will be read back at double the speed implied by SamplingRate, if CPU resources allow. A factor of 0.5 slows the data playback to half speed (start the module with <code>--EvaluateTiming=0</code> to avoid any resulting error from violating the realtime constraint).  As a special case, a value of 0 indicates that there should be no pause in-between blocks of data, and that the data should be acquired as quickly as possible. This playback speed will be limited by the processing capabilities of the computer, including the time required to read the data from the file, and to do any signal processing required by the SignalProcessing module.
 </p>
-<a name="StartTime"></a><h3>StartTime</h3>
-<p>The starting time of the file, allowing playback to begin in the middle of the file.
-</p><p><br />
+<a name="PlaybackStates"></a><h3>PlaybackStates</h3>
+<p>This boolean value indicates whether the state variables recorded in the file should also be played back, along with the data. Playback is limited to state variables that are declared in both the file and  the current BCI2000 session. (You can specify the <code>--PlaybackFileName</code> parameter as a command-line argument in order to ensure that all the file's states are declared in the current session.) Furthermore, <i>SourceTime</i> and <i>StimulusTime</i> are not played back, but set according to the timing of the playback session, as usual.
+</p>
+<a name="PlaybackLooped"></a><h3>PlaybackLooped</h3>
+<p>This boolean value indicates whether BCI2000 should loop around to the beginning of the file when reaching the end of the file, or Suspend at the end of the file.
 </p>
 <a name="Additional_Information"></a><h2>Additional Information</h2>
 <a name="Data_Storage"></a><h3>Data Storage</h3>
@@ -93,10 +110,13 @@ The total number of channels listed should correspond to <i>SourceCh</i>, and sh
 </p>
 <a name="Random_Sequences"></a><h3>Random Sequences</h3>
 <p>The Application module typically generates a random sequence of events, such as the target number in the cursor task, or the stimulus number in the stimulus presentation task. When playing back a file, there is no guarantee that the same sequence will be displayed during the playback as was stored in the file.
-</p><p>However, BCI2000 allows a RandomSeed parameter to be specified, that will ensure that the same sequences are generated each time. To do so, pass <code>--RandomSeed=10</code> to the Application module at the command line. Note, though, that the same seed must be used in both the original data file and the FilePlayback run. For more information on using this parameter, see <b>Random Sequences</b> in the <a href="User_FAQ.html" title="User FAQ">User FAQ</a>.
+</p><p>However, BCI2000 allows a RandomSeed parameter to be specified, that will ensure that the same sequences are generated each time. To do so, pass <code>--RandomSeed=10</code> to the Application module at the command line. Note, though, that the same seed must be used in both the original data file and the <i>FilePlayback</i> run. For more information on using this parameter, see <b>Random Sequences</b> in the <a href="User_FAQ.html" title="User FAQ">User FAQ</a>.
 </p>
 <a name="Data_Format"></a><h3>Data Format</h3>
 <p>The data is acquired from the file uncalibrated; therefore, it is still necessary to enter appropriate SourceChGain and SourceChOffset values for correct processing.
+</p>
+<a name="Known_Issues"></a><h2>Known Issues</h2>
+<p>The trick of specifying a template file on the command-line, and thereby making every parameter default to the value it had in the file, only works if the <i>FilePlayback</i> module is the last module to connect to the operator.  To make this more likely to happen, when a command-line template file is specified, the <i>FilePlayback</i> module waits for 2 seconds before connecting to the operator. However, if the SignalProcessing or Application module is started 2 sec or more later than the <i>FilePlayback</i> module, their parameter declarations may overwrite the default values from the template.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>, <a href="Programming_Reference%253AGenericADC_Class.html" title="Programming Reference:GenericADC Class">Programming Reference:GenericADC Class</a>

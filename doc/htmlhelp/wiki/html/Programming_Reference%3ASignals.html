@@ -73,8 +73,10 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#SignalType_Type_.28rw.29"><span class="tocnumber">2.4.2</span> <span class="toctext">SignalType Type (rw)</span></a></li>
 <li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#string_Name_.28rw.29"><span class="tocnumber">2.4.3</span> <span class="toctext">string Name (rw)</span></a></li>
 <li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#LabelIndex_ChannelLabels.2C_ElementLabels_.28rw.29"><span class="tocnumber">2.4.4</span> <span class="toctext">LabelIndex ChannelLabels, ElementLabels (rw)</span></a></li>
-<li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#PhysicalUnit_ChannelUnit.2C_ElementUnit.2C_ValueUnit_.28rw.29"><span class="tocnumber">2.4.5</span> <span class="toctext">PhysicalUnit ChannelUnit, ElementUnit, ValueUnit (rw)</span></a></li>
-<li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#bool_IsEmpty"><span class="tocnumber">2.4.6</span> <span class="toctext">bool IsEmpty</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#float_SamplingRate_.28r.29"><span class="tocnumber">2.4.5</span> <span class="toctext">float SamplingRate (r)</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#float_UpdateRate_.28rw.29"><span class="tocnumber">2.4.6</span> <span class="toctext">float UpdateRate (rw)</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#PhysicalUnit_ChannelUnit.2C_ElementUnit.2C_ValueUnit_.28rw.29"><span class="tocnumber">2.4.7</span> <span class="toctext">PhysicalUnit ChannelUnit, ElementUnit, ValueUnit (rw)</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#bool_IsEmpty"><span class="tocnumber">2.4.8</span> <span class="toctext">bool IsEmpty</span></a></li>
 </ul>
 </li>
 </ul>
@@ -189,6 +191,12 @@ The signal type argument may be one of
 </p>
 <a name="LabelIndex_ChannelLabels.2C_ElementLabels_.28rw.29"></a><h4>LabelIndex ChannelLabels, ElementLabels (rw)</h4>
 <p>Labels of channels and elements, represented as <a href="Programming_Reference%253ALabelIndex_Class.html" title="Programming Reference:LabelIndex Class">LabelIndex</a> objects.
+</p>
+<a name="float_SamplingRate_.28r.29"></a><h4>float SamplingRate (r)</h4>
+<p>The sampling rate of the signal, given in Hz, or 0 when the dimension in element direction is not time. SamplingRate is a readonly property; to adapt a signal's sampling rate, set its ElementUnit's Gain property to the inverse of the desired sampling rate.
+</p>
+<a name="float_UpdateRate_.28rw.29"></a><h4>float UpdateRate (rw)</h4>
+<p>The update rate of the signal, given in Hz. This number shows how often a signal is updated with new values, irrespective of its dimensions. Note that in general SamplingRate is not equal to UpdateRate*Elements.
 </p>
 <a name="PhysicalUnit_ChannelUnit.2C_ElementUnit.2C_ValueUnit_.28rw.29"></a><h4>PhysicalUnit ChannelUnit, ElementUnit, ValueUnit (rw)</h4>
 <p>Physical units associated with respective dimensions. Typically, there is no physical unit in the channel dimension; in the element dimension, the physical unit would be temporal, measured in seconds, or a frequency, measured in Hz; in the value dimension, the physical unit would be a voltage, or a power thereof. Physical units are represented as objects of type <a href="Programming_Reference%253APhysicalUnit_Class.html" title="Programming Reference:PhysicalUnit Class"><tt>PhysicalUnit</tt></a>.

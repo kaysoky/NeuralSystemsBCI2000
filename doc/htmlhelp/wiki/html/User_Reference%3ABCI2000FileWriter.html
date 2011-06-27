@@ -91,6 +91,7 @@ Within a session directory, data file names are constructed according to
 <a name="SavePrmFile"></a><h4>SavePrmFile</h4>
 <p>Specifies whether parameters are to be stored in a parameter file separate from the data file.
 The additional parameter file will be redundant, as native BCI2000 data files always contain the complete set of parameters.
+This parameter is optional, and will not appear in the parameter configuration dialog by default. To use it, specify <tt>--SavePrmFile=1</tt> on the command line when starting up the source module.
 </p>
 <a name="StorageTime"></a><h4>StorageTime</h4>
 <p>At the beginning of the recording, this parameter's content is overwritten with a string describing the current date and time.

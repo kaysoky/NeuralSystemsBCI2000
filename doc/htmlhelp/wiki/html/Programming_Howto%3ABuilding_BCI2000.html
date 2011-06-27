@@ -30,19 +30,25 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Build System</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p><b>This documentation only applies to BCI2000 Ver 3.0</b>
+<h1 class="pagetitle">Build System</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p><b>This documentation only applies to BCI2000 Ver 3.0 (Now current HEAD)</b>
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
 <li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Introduction"><span class="tocnumber">1</span> <span class="toctext">Introduction</span></a></li>
 <li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Supported_Environments"><span class="tocnumber">2</span> <span class="toctext">Supported Environments</span></a></li>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#How_To_Build_Using_CMake"><span class="tocnumber">3</span> <span class="toctext">How To Build Using CMake</span></a></li>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_against_a_Qt_distribution_outside_the_BCI2000_source_tree"><span class="tocnumber">4</span> <span class="toctext">Building against a Qt distribution outside the BCI2000 source tree</span></a></li>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#How_To_Test"><span class="tocnumber">5</span> <span class="toctext">How To Test</span></a></li>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Known_Issues"><span class="tocnumber">6</span> <span class="toctext">Known Issues</span></a></li>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Conclusions"><span class="tocnumber">7</span> <span class="toctext">Conclusions</span></a></li>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Platforms_tested_successfully_so_far"><span class="tocnumber">8</span> <span class="toctext">Platforms tested successfully so far</span></a></li>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#See_also"><span class="tocnumber">9</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Setting_up_MinGW_to_build_BCI2000"><span class="tocnumber">3</span> <span class="toctext">Setting up MinGW to build BCI2000</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#How_To_Build_Using_CMake"><span class="tocnumber">4</span> <span class="toctext">How To Build Using CMake</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_against_a_Qt_distribution_outside_the_BCI2000_source_tree"><span class="tocnumber">5</span> <span class="toctext">Building against a Qt distribution outside the BCI2000 source tree</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#How_To_Test"><span class="tocnumber">6</span> <span class="toctext">How To Test</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Known_Issues"><span class="tocnumber">7</span> <span class="toctext">Known Issues</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Conclusions"><span class="tocnumber">8</span> <span class="toctext">Conclusions</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Windows_platforms_tested_successfully_so_far"><span class="tocnumber">9</span> <span class="toctext">Windows platforms tested successfully so far</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Status_on_other_OSes"><span class="tocnumber">10</span> <span class="toctext">Status on other OSes</span></a>
+<ul>
+<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#OS_X"><span class="tocnumber">10.1</span> <span class="toctext">OS X</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#See_also"><span class="tocnumber">11</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Introduction"></a><h2> Introduction </h2>
@@ -70,9 +76,16 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>Other IDEs supported by CMake generators (Eclipse CDT, ...), as long as these use the compilers listed above
 </li></ul>
 </li></ul>
+<a name="Setting_up_MinGW_to_build_BCI2000"></a><h2> Setting up MinGW to build BCI2000 </h2>
+<p>This section only applies when you want to use MinGW as a compiler to build BCI2000. If you are using a different compiler/IDE, please proceed to the next section.
+</p>
+<ul><li>If you don't care whether your BCI2000 executables are statically linked against Qt libraries, you may use any recent version of MinGW. You will need to install Qt separately from BCI2000, and you will need to follow the instructions in the next section, "Building against a Qt distribution outside the BCI2000 source tree".
+</li><li>If you want to statically link BCI2000 against Qt libraries using any version of MinGW, you will need to install Qt separately from BCI2000, and recompile it from source with the "static" configuration flag as described <a href="http://developer.qt.nokia.com/wiki/How_to_build_a_static_Qt_version_for_Windows_with_gcc" class='external text' title="http://developer.qt.nokia.com/wiki/How_to_build_a_static_Qt_version_for_Windows_with_gcc" rel="nofollow">here</a>. Then, follow the instructions in the next section, "Building against a Qt distribution outside the BCI2000 source tree".
+</li><li>If you want to use the pre-compiled static Qt libraries in the BCI2000 source tree, you will need to install a compatible version of MinGW. Currently, this is MinGW with gcc 4.4.0, which can be downloaded from <a href="http://www.bci2000.org/downloads/bin/mingw_440.zip" class='external autonumber' title="http://www.bci2000.org/downloads/bin/mingw_440.zip" rel="nofollow">[1]</a>. Extract this file into any path on your local hard drive, and add its "bin" subdirectory to your system path variable so MinGW commands are recognized when entering them from the command line.
+</li></ul>
 <a name="How_To_Build_Using_CMake"></a><h2> How To Build Using CMake </h2>
 <ol><li>Ensure that your compiler and IDE are installed on the computer.  This means that Visual Studio is installed if you intend to use Visual Studio, or that MinGW and Code::Blocks are installed if you intend to use Code::Blocks as your IDE and MinGW as your compiler.  
-</li><li>Download and install cmake (Version 2.8 or higher!) from <a href="http://www.cmake.org/" class='external free' title="http://www.cmake.org/" rel="nofollow">http://www.cmake.org/</a> - <b>Add to path for all users.</b> -- If you experience a problem with a version of cmake newer than 2.8.1, download cmake 2.8.1 from <a href="http://www.bci2000.org/downloads/bin/cmake-2.8.1-win32-x86.exe" class='external text' title="http://www.bci2000.org/downloads/bin/cmake-2.8.1-win32-x86.exe" rel="nofollow">here</a>.
+</li><li>Download and install cmake (Version 2.8.2 or higher!) from <a href="http://www.cmake.org/" class='external free' title="http://www.cmake.org/" rel="nofollow">http://www.cmake.org/</a> - <b>Add to path for all users.</b> -- If you experience a problem with a version of cmake newer than 2.8.3, download cmake 2.8.3 from <a href="http://www.bci2000.org/downloads/bin/cmake-2.8.3-win32-x86.exe" class='external text' title="http://www.bci2000.org/downloads/bin/cmake-2.8.3-win32-x86.exe" rel="nofollow">here</a>.
 </li><li>Go to the BCI2000/build directory and double-click the "Make ... .bat" file which best describes your intended platform.  (for example, if you plan to use Visual Studio 2008, you would run the "Make VS2008 Project Files.bat"). These batch files will ask you a few questions about which parts of the BCI2000 distribution you want to make, and will then call CMake with the appropriate options.
 </li><li>Wait while cmake examines your computer, finds Qt and your compiler, and generates applicable project files for your system
 </li><li>Open the generated project/solution (for Visual Studio, this is called "BCI2000.sln") in the IDE of your choice.  Or, if you are using MinGW make, run the make command from the command prompt using the Makefile in the top-level "build" directory.  Refer to your IDE's help for IDE-specific instructions on how to build an application.
@@ -80,7 +93,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li> If you build the targets"NewBCI2000Module"  and "NewBCI2000Filter", this will create two new binary executables with these names. They will be found in the top-level "build" directory (and, in common with CMake and make, they should be launched only from this location). Launch NewBCI2000Module to create a new project in order to compile your own custom module.  Launch NewBCI2000Filter to create a new filter and add it to a project you have already created.  In either case, you may need to re-run CMake (step 3) in order to ensure these changes are reflected in the project file.
 </li></ol>
 <a name="Building_against_a_Qt_distribution_outside_the_BCI2000_source_tree"></a><h2> Building against a Qt distribution outside the BCI2000 source tree </h2>
-<p>BCI2000 may be built against a standard Qt distribution. Depending on your compiler and desired configuration (e.g., when using Visual Studio), you might need to re-build that distribution from source before building BCI2000.
+<p>BCI2000 may be built against a standard Qt distribution rather than the stripped-down, precompiled version of Qt coming with the BCI2000 source code. Depending on your compiler and desired configuration (e.g., when using Visual Studio), you might need to re-build that distribution from source before building BCI2000.
 </p><p>To enable the BCI2000 build system to use the external Qt distribution, open the file <tt>BCI2000/build/cmake/FindQt.cmake</tt>
 in a text editor.
 There, in line 10, replace
@@ -112,7 +125,7 @@ There, in line 10, replace
 <p>Now that BCI2000 is open to other compilers - and soon - other platforms, support may not exist for every possible compiler/platform available. Certain compilers do not optimize code as well as others, and this behavior may lead to poor system latencies during BCI2000 experiments. The supported compilers have been rigorously tested and confirmed to be adequate for compiling the BCI2000 sources.  If you wish to use a different compiler,
 be sure to run tools/BCI2000Certification in order to confirm your setup.  CMake is a powerful tool, but in the end, ability to compile the sources is completely up to the IDE/compiler choice.  If your IDE/compiler choice is not listed above, it is strongly urged that you to consider using one which is supported.  If you run into problems using an unsupported IDE/compiler combination, you can try to find help at the BBS - <a href="http://www.bci2000.org/phpbb/index.php" class='external free' title="http://www.bci2000.org/phpbb/index.php" rel="nofollow">http://www.bci2000.org/phpbb/index.php</a>.  BCI2000 should compile as effortlessly as possible on supported platforms.
 </p>
-<a name="Platforms_tested_successfully_so_far"></a><h2> Platforms tested successfully so far </h2>
+<a name="Windows_platforms_tested_successfully_so_far"></a><h2> Windows platforms tested successfully so far </h2>
 <table border="1" cellspacing="0" cellpadding="2">
 <tr>
 <th>Compiler</th><th>OS</th><th>Processors</th><th>Qt linkage
@@ -142,6 +155,11 @@ be sure to run tools/BCI2000Certification in order to confirm your setup.  CMake
 <td>C++ Builder 2010*</td><td>Win XP SP3</td><td>2</td><td>n/a
 </td></tr></table>
 <p>*In version 3, the Operator module cannot be built with Borland C++ Builder (BCB). For the test, an MSVC-compiled Operator module was used in conjunction with BCB-compiled core modules.
+</p>
+<a name="Status_on_other_OSes"></a><h2>Status on other OSes</h2>
+<a name="OS_X"></a><h3>OS X</h3>
+<p>BCI2000 builds successfully in OS X Leopard and Snow Leopard using the CMake generating script at <tt>build/Make Xcode Project.sh</tt>. Note that the Qt libraries provided in the BCI2000 source tree are for Windows only, so you need to separately install Qt on your OS X system.
+</p><p>Using the BCI2000Launcher, the online system can be started up and runs. This works fine when Qt 4.5 is installed on the machine. With Qt 4.7.3, core modules run but have a high CPU usage, and don't quit when the Operator module is shut down. It appears that QCoreApplication::hasPendingEvents() always returns true, such that core modules always try to process messages. It is not clear whether this is a bug in Qt, or a problem on the BCI2000 side.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Programming_Reference%253ABuilding_Qt_for_BCI2000.html" title="Programming Reference:Building Qt for BCI2000">Programming Reference:Building Qt for BCI2000</a>

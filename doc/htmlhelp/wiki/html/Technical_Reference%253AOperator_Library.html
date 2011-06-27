@@ -104,7 +104,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_Initialize.28_void_.29"><span class="tocnumber">4.6</span> <span class="toctext">int BCI_Initialize( void )</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_Dispose.28_void_.29"><span class="tocnumber">4.7</span> <span class="toctext">int BCI_Dispose( void )</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_ExecuteScript.28_const_char.2A_script_.29"><span class="tocnumber">4.8</span> <span class="toctext">int BCI_ExecuteScript( const char* script )</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_ReleaseObject.28_const_char.2A_.29"><span class="tocnumber">4.9</span> <span class="toctext">int BCI_ReleaseObject( const char* )</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_ReleaseObject.28_char.2A_.29"><span class="tocnumber">4.9</span> <span class="toctext">int BCI_ReleaseObject( char* )</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Technical_Reference%253AOperator_Library.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
@@ -352,7 +352,7 @@ the state of operation of the BCI2000 system.
 <dl><dt>arguments</dt><dd> Null-terminated string specifying script commands.
 </dd><dt>returns</dt><dd>   0 if a syntax error is present, 1 otherwise.
 </dd></dl>
-<a name="int_BCI_ReleaseObject.28_const_char.2A_.29"></a><h3>int BCI_ReleaseObject( const char* )</h3>
+<a name="int_BCI_ReleaseObject.28_char.2A_.29"></a><h3>int BCI_ReleaseObject( char* )</h3>
 <p>Indicate that an object that has been allocated by the library is no longer needed by the library's client.
 </p>
 <dl><dt>arguments</dt><dd> Object to be released, or NULL.

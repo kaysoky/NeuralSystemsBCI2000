@@ -199,9 +199,9 @@ We will use the event interface to record the wheel's position into a state call
  {
    if( mpThumbWheelThread&nbsp;!= NULL )
    {
-     mpThumbWheelThread-&gt;Terminate();
-     while(&nbsp;!mpThumbWheelThread-&gt;IsTerminated() )
-       Sleep( 1 );
+     OSEvent terminateEvent;
+     mpThumbWheelThread-&gt;Terminate( &amp;terminateEvent );
+     terminateEvent-&gt;Wait();
      delete mpThumbWheelThread;
      mpThumbWheelThread = NULL;
    }

@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Parameters - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Parameters,BCI2000 Glossary,Contributions:AmpServerProADC,Contributions:BCPy2000,Contributions:BioRadioADC,Contributions:Biosemi2ADC,Contributions:DAS ADC,Contributions:DTADC,Contributions:EnobioADC,Contributions:FIRFilter,Contributions:FieldTripBuffer" />
+<meta name="keywords" content="User Reference:Parameters,BCI2000 Glossary,Contributions:AmpServerProADC,Contributions:BCPy2000,Contributions:BioRadioADC,Contributions:Biosemi2ADC,Contributions:Coherence,Contributions:DAS ADC,Contributions:DTADC,Contributions:EnobioADC,Contributions:FIRFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -135,6 +135,18 @@ help for.
 </dd></dl>
 <dl><dt>Classifier
 </dt><dd><a href="User_Reference%253ALinearClassifier.html#Classifier" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>
+</dd></dl>
+<dl><dt>CohBufferLength
+</dt><dd><a href="Contributions%253ACoherence.html#CohBufferLength" title="Contributions:Coherence">Contributions:Coherence</a>
+</dd></dl>
+<dl><dt>CohFrequencies
+</dt><dd><a href="Contributions%253ACoherence.html#CohFrequencies" title="Contributions:Coherence">Contributions:Coherence</a>
+</dd></dl>
+<dl><dt>CohWindowLength
+</dt><dd><a href="Contributions%253ACoherence.html#CohWindowLength" title="Contributions:Coherence">Contributions:Coherence</a>
+</dd></dl>
+<dl><dt>CohWindowOverlap
+</dt><dd><a href="Contributions%253ACoherence.html#CohWindowOverlap" title="Contributions:Coherence">Contributions:Coherence</a>
 </dd></dl>
 <dl><dt>CommandPort
 </dt><dd><a href="Contributions%253AAmpServerProADC.html#CommandPort" title="Contributions:AmpServerProADC">Contributions:AmpServerProADC</a>
@@ -286,11 +298,6 @@ help for.
 </dd></dl>
 <dl><dt>FFTWindowLength
 </dt><dd><a href="User_Reference%253AFFTFilter.html#FFTWindowLength" title="User Reference:FFTFilter">User Reference:FFTFilter</a>
-</dd></dl>
-<dl><dt>FileName
-</dt><dd><a href="User_Reference%253AFilePlayback.html#FileName" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
-</dd><dd><a href="Contributions%253AFilePlaybackADC.html#FileName" title="Contributions:FilePlaybackADC">Contributions:FilePlaybackADC</a>
-</dd><dd><a href="Contributions%253AFilePlayback.html#FileName" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
 </dd></dl>
 <dl><dt>FilterEnabled
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#FilterEnabled" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
@@ -547,6 +554,30 @@ help for.
 <dl><dt>PhysicalChannels
 </dt><dd><a href="Contributions%253ATMSiADC.html#PhysicalChannels" title="Contributions:TMSiADC">Contributions:TMSiADC</a>
 </dd></dl>
+<dl><dt>PlaybackChList
+</dt><dd><a href="http://www.bci2000.org/wiki/index.php?title=User_Reference:FilePlayback&amp;action=edit" class="new" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
+</dd><dd><a href="Contributions%253AFilePlayback.html#PlaybackChList" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
+</dd></dl>
+<dl><dt>PlaybackFileName
+</dt><dd><a href="http://www.bci2000.org/wiki/index.php?title=User_Reference:FilePlayback&amp;action=edit" class="new" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
+</dd><dd><a href="Contributions%253AFilePlayback.html#PlaybackFileName" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
+</dd></dl>
+<dl><dt>PlaybackLooped
+</dt><dd><a href="http://www.bci2000.org/wiki/index.php?title=User_Reference:FilePlayback&amp;action=edit" class="new" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
+</dd><dd><a href="Contributions%253AFilePlayback.html#PlaybackLooped" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
+</dd></dl>
+<dl><dt>PlaybackSpeed
+</dt><dd><a href="http://www.bci2000.org/wiki/index.php?title=User_Reference:FilePlayback&amp;action=edit" class="new" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
+</dd><dd><a href="Contributions%253AFilePlayback.html#PlaybackSpeed" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
+</dd></dl>
+<dl><dt>PlaybackStartTime
+</dt><dd><a href="http://www.bci2000.org/wiki/index.php?title=User_Reference:FilePlayback&amp;action=edit" class="new" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
+</dd><dd><a href="Contributions%253AFilePlayback.html#PlaybackStartTime" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
+</dd></dl>
+<dl><dt>PlaybackStates
+</dt><dd><a href="http://www.bci2000.org/wiki/index.php?title=User_Reference:FilePlayback&amp;action=edit" class="new" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
+</dd><dd><a href="Contributions%253AFilePlayback.html#PlaybackStates" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
+</dd></dl>
 <dl><dt>Port
 </dt><dd><a href="Contributions%253AFieldTripBufferSource.html#Port" title="Contributions:FieldTripBufferSource">Contributions:FieldTripBufferSource</a>
 </dd></dl>
@@ -605,13 +636,12 @@ help for.
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#SampleBlockSize" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
 </dd><dd><a href="User_Reference%253AgMOBIlabPlusADC.html#SampleBlockSize" title="User Reference:gMOBIlabPlusADC">User Reference:gMOBIlabPlusADC</a>
 </dd><dd><a href="User_Reference%253AgMOBIlabADC.html#SampleBlockSize" title="User Reference:gMOBIlabADC">User Reference:gMOBIlabADC</a>
-</dd><dd><a href="User_Reference%253AFilePlayback.html#SampleBlockSize" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
+</dd><dd><a href="http://www.bci2000.org/wiki/index.php?title=User_Reference:FilePlayback&amp;action=edit" class="new" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
 </dd><dd><a href="User_Reference%253ADataIOFilter.html#SampleBlockSize" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>
 </dd><dd><a href="Contributions%253AvAmpADC.html#SampleBlockSize" title="Contributions:vAmpADC">Contributions:vAmpADC</a>
 </dd><dd><a href="Contributions%253ARDAClientADC.html#SampleBlockSize" title="Contributions:RDAClientADC">Contributions:RDAClientADC</a>
 </dd><dd><a href="Contributions%253AModularEEG.html#SampleBlockSize" title="Contributions:ModularEEG">Contributions:ModularEEG</a>
 </dd><dd><a href="Contributions%253AMicromedADC.html#SampleBlockSize" title="Contributions:MicromedADC">Contributions:MicromedADC</a>
-</dd><dd><a href="Contributions%253AFilePlaybackADC.html#SampleBlockSize" title="Contributions:FilePlaybackADC">Contributions:FilePlaybackADC</a>
 </dd><dd><a href="Contributions%253AFilePlayback.html#SampleBlockSize" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
 </dd><dd><a href="Contributions%253AFieldTripBufferSource.html#SampleBlockSize" title="Contributions:FieldTripBufferSource">Contributions:FieldTripBufferSource</a>
 </dd><dd><a href="Contributions%253AEnobioADC.html#SampleBlockSize" title="Contributions:EnobioADC">Contributions:EnobioADC</a>
@@ -620,14 +650,13 @@ help for.
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#SamplingRate" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
 </dd><dd><a href="User_Reference%253AgMOBIlabPlusADC.html#SamplingRate" title="User Reference:gMOBIlabPlusADC">User Reference:gMOBIlabPlusADC</a>
 </dd><dd><a href="User_Reference%253AgMOBIlabADC.html#SamplingRate" title="User Reference:gMOBIlabADC">User Reference:gMOBIlabADC</a>
-</dd><dd><a href="User_Reference%253AFilePlayback.html#SamplingRate" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
+</dd><dd><a href="http://www.bci2000.org/wiki/index.php?title=User_Reference:FilePlayback&amp;action=edit" class="new" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
 </dd><dd><a href="User_Reference%253ADataIOFilter.html#SamplingRate" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>
 </dd><dd><a href="Contributions%253AvAmpADC.html#SamplingRate" title="Contributions:vAmpADC">Contributions:vAmpADC</a>
 </dd><dd><a href="Contributions%253ATDTADC.html#SamplingRate" title="Contributions:TDTADC">Contributions:TDTADC</a>
 </dd><dd><a href="Contributions%253ARDAClientADC.html#SamplingRate" title="Contributions:RDAClientADC">Contributions:RDAClientADC</a>
 </dd><dd><a href="Contributions%253AModularEEG.html#SamplingRate" title="Contributions:ModularEEG">Contributions:ModularEEG</a>
 </dd><dd><a href="Contributions%253AMicromedADC.html#SamplingRate" title="Contributions:MicromedADC">Contributions:MicromedADC</a>
-</dd><dd><a href="Contributions%253AFilePlaybackADC.html#SamplingRate" title="Contributions:FilePlaybackADC">Contributions:FilePlaybackADC</a>
 </dd><dd><a href="Contributions%253AFilePlayback.html#SamplingRate" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
 </dd><dd><a href="Contributions%253AEnobioADC.html#SamplingRate" title="Contributions:EnobioADC">Contributions:EnobioADC</a>
 </dd></dl>
@@ -702,13 +731,12 @@ help for.
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#SourceCh" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
 </dd><dd><a href="User_Reference%253AgMOBIlabPlusADC.html#SourceCh" title="User Reference:gMOBIlabPlusADC">User Reference:gMOBIlabPlusADC</a>
 </dd><dd><a href="User_Reference%253AgMOBIlabADC.html#SourceCh" title="User Reference:gMOBIlabADC">User Reference:gMOBIlabADC</a>
-</dd><dd><a href="User_Reference%253AFilePlayback.html#SourceCh" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
+</dd><dd><a href="http://www.bci2000.org/wiki/index.php?title=User_Reference:FilePlayback&amp;action=edit" class="new" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
 </dd><dd><a href="User_Reference%253ADataIOFilter.html#SourceCh" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>
 </dd><dd><a href="Contributions%253AvAmpADC.html#SourceCh" title="Contributions:vAmpADC">Contributions:vAmpADC</a>
 </dd><dd><a href="Contributions%253ARDAClientADC.html#SourceCh" title="Contributions:RDAClientADC">Contributions:RDAClientADC</a>
 </dd><dd><a href="Contributions%253AModularEEG.html#SourceCh" title="Contributions:ModularEEG">Contributions:ModularEEG</a>
 </dd><dd><a href="Contributions%253AMicromedADC.html#SourceCh" title="Contributions:MicromedADC">Contributions:MicromedADC</a>
-</dd><dd><a href="Contributions%253AFilePlaybackADC.html#SourceCh" title="Contributions:FilePlaybackADC">Contributions:FilePlaybackADC</a>
 </dd><dd><a href="Contributions%253AFilePlayback.html#SourceCh" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
 </dd><dd><a href="Contributions%253AEnobioADC.html#SourceCh" title="Contributions:EnobioADC">Contributions:EnobioADC</a>
 </dd></dl>
@@ -717,10 +745,7 @@ help for.
 </dd></dl>
 <dl><dt>SourceChList
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#SourceChList" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
-</dd><dd><a href="User_Reference%253AFilePlayback.html#SourceChList" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
 </dd><dd><a href="Contributions%253AvAmpADC.html#SourceChList" title="Contributions:vAmpADC">Contributions:vAmpADC</a>
-</dd><dd><a href="Contributions%253AFilePlaybackADC.html#SourceChList" title="Contributions:FilePlaybackADC">Contributions:FilePlaybackADC</a>
-</dd><dd><a href="Contributions%253AFilePlayback.html#SourceChList" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
 </dd></dl>
 <dl><dt>SourceChOffset, SourceChGain
 </dt><dd><a href="User_Reference%253ADataIOFilter.html#SourceChOffset.2C_SourceChGain" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>
@@ -743,16 +768,6 @@ help for.
 </dd></dl>
 <dl><dt>SpatialFilterType
 </dt><dd><a href="User_Reference%253ASpatialFilter.html#SpatialFilterType" title="User Reference:SpatialFilter">User Reference:SpatialFilter</a>
-</dd></dl>
-<dl><dt>Speedup
-</dt><dd><a href="User_Reference%253AFilePlayback.html#Speedup" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
-</dd><dd><a href="Contributions%253AFilePlaybackADC.html#Speedup" title="Contributions:FilePlaybackADC">Contributions:FilePlaybackADC</a>
-</dd><dd><a href="Contributions%253AFilePlayback.html#Speedup" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
-</dd></dl>
-<dl><dt>StartTime
-</dt><dd><a href="User_Reference%253AFilePlayback.html#StartTime" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
-</dd><dd><a href="Contributions%253AFilePlaybackADC.html#StartTime" title="Contributions:FilePlaybackADC">Contributions:FilePlaybackADC</a>
-</dd><dd><a href="Contributions%253AFilePlayback.html#StartTime" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
 </dd></dl>
 <dl><dt>StateTransforms
 </dt><dd><a href="User_Reference%253AStateTransform.html#StateTransforms" title="User Reference:StateTransform">User Reference:StateTransform</a>
@@ -809,11 +824,6 @@ help for.
 </dt><dd><a href="User_Reference%253AGDFFileWriter.html#SubjectYearOfBirth" title="User Reference:GDFFileWriter">User Reference:GDFFileWriter</a>
 </dd><dd><a href="User_Reference%253AEDFFileWriter.html#SubjectYearOfBirth" title="User Reference:EDFFileWriter">User Reference:EDFFileWriter</a>
 </dd></dl>
-<dl><dt>SuspendAtEnd
-</dt><dd><a href="User_Reference%253AFilePlayback.html#SuspendAtEnd" title="User Reference:FilePlayback">User Reference:FilePlayback</a>
-</dd><dd><a href="Contributions%253AFilePlaybackADC.html#SuspendAtEnd" title="Contributions:FilePlaybackADC">Contributions:FilePlaybackADC</a>
-</dd><dd><a href="Contributions%253AFilePlayback.html#SuspendAtEnd" title="Contributions:FilePlayback">Contributions:FilePlayback</a>
-</dd></dl>
 <dl><dt>TargetChannelNeg
 </dt><dd><a href="Contributions%253APeakDetector.html#TargetChannelNeg" title="Contributions:PeakDetector">Contributions:PeakDetector</a>
 </dd></dl>
@@ -831,6 +841,10 @@ help for.
 </dd></dl>
 <dl><dt>Targets
 </dt><dd><a href="User_Reference%253ACursorTask.html#Targets" title="User Reference:CursorTask">User Reference:CursorTask</a>
+</dd></dl>
+<dl><dt>TargetSequence
+</dt><dd><a href="User_Reference%253ACursorTask.html#TargetSequence" title="User Reference:CursorTask">User Reference:CursorTask</a>
+</dd><dd><a href="Programming_Reference%253AFeedbackTask_Class.html#TargetSequence" title="Programming Reference:FeedbackTask Class">Programming Reference:FeedbackTask Class</a>
 </dd></dl>
 <dl><dt>TargetTextHeight
 </dt><dd><a href="User_Reference%253AP3SpellerTask.html#TargetTextHeight" title="User Reference:P3SpellerTask">User Reference:P3SpellerTask</a>

@@ -95,7 +95,7 @@ In BCI2000, this value is corresponds to the <b>DebugLevel</b> parameter. This p
 <pre>FeedbackDemo 127.0.0.1 --DebugLevel=10
 </pre>
 <p>will start the FeedbackDemo module with a debug level of 10.
-</p><p>Note that the debug level parameter will propagate to the other modules only after "Set Config" has been pressed from the operator module. Thus, other modules must be started with the DebugLevel argument, as well, if you need to view debugging messages from operation phases prior to the Initialization Phase.
+</p><p>Note that the debug level parameter will propagate to the other modules only after "Set Config" has been pressed from the operator module. Thus, other modules must be started with the DebugLevel argument as well, if you need to view debugging messages from operation phases prior to the Initialization Phase.
 </p>
 <a name="Logging_into_Files"></a><h2>Logging into Files</h2>
 <p>Debug messages may be logged into files residing in data directories, along with data files. This behavior is governed by the <b>DebugLog</b> parameter. As in the case of the <b>DebugLevel</b> parameter, this parameter must be specified from the command line when starting a module:

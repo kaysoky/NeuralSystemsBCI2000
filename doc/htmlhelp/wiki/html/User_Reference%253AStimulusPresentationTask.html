@@ -44,6 +44,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-3'><a href="User_Reference%253AStimulusPresentationTask.html#Deterministic_Sequence:"><span class="tocnumber">2.2.1</span> <span class="toctext">Deterministic Sequence:</span></a></li>
 <li class='toclevel-3'><a href="User_Reference%253AStimulusPresentationTask.html#Random_Sequence:"><span class="tocnumber">2.2.2</span> <span class="toctext">Random Sequence:</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AStimulusPresentationTask.html#P3Speller_Compatible"><span class="tocnumber">2.2.3</span> <span class="toctext">P3Speller Compatible</span></a></li>
 </ul>
 </li>
 <li class='toclevel-2'><a href="User_Reference%253AStimulusPresentationTask.html#Stimulus_Delivery"><span class="tocnumber">2.3</span> <span class="toctext">Stimulus Delivery</span></a></li>
@@ -157,6 +158,9 @@ entering a list of stimulus IDs to be presented. As an example:
 </p><p>defines a sequence of 11 stimulus presentations with stimulus 1 being presented 6 times, stimulus 2, 2 times, and stimulus 3, 3 times. The resulting sequence <span class="texhtml"><i>S</i><sub>1</sub></span> will be a permutation of <span class="texhtml"><i>S</i><sub>0</sub> = [1,1,1,1,1,1,2,2,3,3,3]</span>, and the probability for <span class="texhtml"><i>S</i><sub>1</sub></span> to equal <span class="texhtml"><i>S</i><sub>0</sub></span> will be <img class='tex' src="../images/math/9/7/7/9778a30627450db8b7b42a1925e490ca.png" alt="\frac{6!\times2!\times3!}{(6+2+3)!}=1/4620" />.
 </p><p>Multiple sequences can be generated from the given frequencies. The investigator can define how many sequences are generated and presented.
 </p>
+<a name="P3Speller_Compatible"></a><h4>P3Speller Compatible</h4>
+<p>Sequences are random, with each stimulus being presented <i>NumberOfSequences</i> times, in a block-randomized fashion. When in copy mode, each entry in the <i>ToBeCopied</i> parameter corresponds to a <i>NumberOfSequences</i>-times repetition of all stimulus codes. In other <i>InterpretMode</i>s, stimulus presentation is repeated indefinitely. This mode is intended as a compatibility mode for transitioning experiments from or to the <a href="User_Reference%253AP3SpellerTask.html" title="User Reference:P3SpellerTask">P3SpellerTask</a>.
+</p>
 <a name="Stimulus_Delivery"></a><h3>Stimulus Delivery</h3>
 <p>For any stimulus, delivery occurs simultaneously for caption, icon, and audio. 
 When both caption and icon are defined, the caption appears overlaying the icon.
@@ -256,10 +260,12 @@ In the P3Speller, setting <i>DisplayResults</i> to 'off' will disable execution 
 </p>
 <ul><li>0 deterministic sequence mode: the sequence is explicitly defined in the <i>Sequence</i> parameter; 
 </li><li>1 random sequence mode: the sequence is random, with pre-defined stimulus frequencies.
+</li><li>2 P3Speller compatible mode: the sequence is random, with each stimulus being presented exactly <i>NumberOfSequences</i> times, in a block-randomized fashion. In copy spelling mode, one such sequence is presented for each entry in the <i>ToBeCopied</i> parameter. In other <i>InterpretMode</i>s, such sequences are repeated indefinitely; the current run must be stopped manually.
 </li></ul>
 <a name="Sequence"></a><h4>Sequence</h4>
 <p>In deterministic mode, a list of stimulus codes defining the sequence of presentations.
-In random mode, a list of integer stimulus frequencies. 
+In random mode, a list of integer stimulus frequencies.
+In P3Speller compatible mode, this parameter is ignored.
 </p>
 <a name="NumberOfSequences"></a><h4>NumberOfSequences</h4>
 <p>The number of sequence repetitions in a run (a run corresponds to a single data file).

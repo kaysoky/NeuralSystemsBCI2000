@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Logging Input - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Logging Input,BCI2000 Glossary,Programming Reference:Events,Programming Tutorial:Implementing an Input Logger,Technical Reference:Core Modules,User Reference:KeystrokeFilter,User Reference:Module Command Line Options" />
+<meta name="keywords" content="User Reference:Logging Input,BCI2000 Glossary,Contributions:Extensions,Programming Howto:Quickstart Guide,Programming Reference:Events,Programming Tutorial:Implementing an Input Logger,Technical Reference:Core Modules,User Reference:KeystrokeFilter,User Reference:Module Command Line Options" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,8 +30,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Logging Input</h1><p class="subtitle">User Reference</p><hr class="sep" /><p>BCI2000 allows you to record input from keyboard, mouse, and joystick at sample resolution.
-This information is recorded into <a href="BCI2000_Glossary.html#State_variables" title="BCI2000 Glossary">state variables</a>, and recording is enabled by specifying appropriate <a href="User_Reference%253AModule_Command_Line_Options.html" title="User Reference:Module Command Line Options">command line options</a> when starting a source module.
+<h1 class="pagetitle">Logging Input</h1><p class="subtitle">User Reference</p><hr class="sep" /><p>BCI2000 allows you to record input from various input devices at sample resolution. Support for the mouse, keyboard and joystick is provided in the BCI2000 SignalSource framework by default, and is available in the downloadable binaries. Various other (more manufacturer-specific) loggers are also available, as listed on the <a href="Contributions%253AExtensions.html" title="Contributions:Extensions">Extensions</a> page: integration of these optional loggers into your framework requires <a href="Programming_Howto%253AQuickstart_Guide.html" title="Programming Howto:Quickstart Guide">the use of CMake and a supported C++ compiler to rebuild your source module</a>.
+</p><p>Device information is recorded into <a href="BCI2000_Glossary.html#State_variables" title="BCI2000 Glossary">state variables</a>, and recording is enabled by specifying appropriate <a href="User_Reference%253AModule_Command_Line_Options.html" title="User Reference:Module Command Line Options">command line options</a> when starting a source module.
 </p><p>Input from keyboard, mouse, or joystick will occur asynchronously with respect to BCI2000's data processing. To account for this, input events are associated with time stamps, stored in a <a href="Programming_Reference%253AEvents.html" title="Programming Reference:Events">BCI2000 event queue</a>, and assigned sample positions once data samples have been acquired.
 </p><p>When BCI2000 is distributed across multiple machines in a network, input devices must be attached to the machine that runs the <a href="Technical_Reference%253ACore_Modules.html#Data_Acquisition_Module" title="Technical Reference:Core Modules">data acquisition module</a>. This is because time stamps of data acquisition and input events must refer to a common physical time base to allow associating input events with sample positions.
 </p><p>In Microsoft Windows, keyboard, mouse and joystick devices attached via USB are limited to a polling rate of 125Hz, corresponding to a temporal resolution of 8ms. When better timing resolution is required, you might consider recording into an additional analog channel, or using the amplifier's trigger input when available.

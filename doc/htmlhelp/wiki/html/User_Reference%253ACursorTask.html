@@ -53,7 +53,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-3'><a href="User_Reference%253ACursorTask.html#NumberOfTrials"><span class="tocnumber">3.1.6</span> <span class="toctext">NumberOfTrials</span></a></li>
 <li class='toclevel-3'><a href="User_Reference%253ACursorTask.html#MinRunLength"><span class="tocnumber">3.1.7</span> <span class="toctext">MinRunLength</span></a></li>
 <li class='toclevel-3'><a href="User_Reference%253ACursorTask.html#NumberTargets"><span class="tocnumber">3.1.8</span> <span class="toctext">NumberTargets</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253ACursorTask.html#MaxFeedbackDuration"><span class="tocnumber">3.1.9</span> <span class="toctext">MaxFeedbackDuration</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ACursorTask.html#TargetSequence"><span class="tocnumber">3.1.9</span> <span class="toctext">TargetSequence</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ACursorTask.html#MaxFeedbackDuration"><span class="tocnumber">3.1.10</span> <span class="toctext">MaxFeedbackDuration</span></a></li>
 </ul>
 </li>
 <li class='toclevel-2'><a href="User_Reference%253ACursorTask.html#Visual_Appearance"><span class="tocnumber">3.2</span> <span class="toctext">Visual Appearance</span></a>
@@ -184,6 +185,9 @@ Given in <a href="BCI2000_Glossary.html#Sample_Block" title="BCI2000 Glossary">s
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:FeedbackTaskParams&amp;action=edit&amp;section=8" title="Template:FeedbackTaskParams">edit</a>]</div><a name="NumberTargets"></a><h4>NumberTargets</h4>
 <p>The number of targets on the feedback screen.
+</p>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:FeedbackTaskParams&amp;action=edit&amp;section=9" title="Template:FeedbackTaskParams">edit</a>]</div><a name="TargetSequence"></a><h4>TargetSequence</h4>
+<p>A list of indices, each one being from 1 to NumberTargets.  This list specifies an optional fixed sequence of stimuli, through which the presentation will cycle.   Leave this parameter blank if you want the default behavior, which is for stimuli to be selected randomly.
 </p>
 <a name="MaxFeedbackDuration"></a><h4>MaxFeedbackDuration</h4>
 <p>Abort a trial after this amount of feedback time has expired.
