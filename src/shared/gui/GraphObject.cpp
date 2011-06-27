@@ -36,7 +36,7 @@
 
 using namespace GUI;
 
-GraphObject::GraphObject( GraphDisplay& display, int zOrder )
+GraphObject::GraphObject( GraphDisplay& display, float zOrder )
 : mDisplay( display ),
   mVisible( true ),
   mRectSet( false ),

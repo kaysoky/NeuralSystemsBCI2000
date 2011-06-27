@@ -71,7 +71,7 @@ class GraphObject
   };
 
  public:
-  GraphObject( GraphDisplay&, int zOrder );
+  GraphObject( GraphDisplay&, float zOrder );
   virtual ~GraphObject();
 
   // Properties
@@ -84,6 +84,10 @@ class GraphObject
     { if( !mVisible ) Invalidate(); mVisible = true; return *this; }
   bool Visible() const
     { return mVisible; }
+  GraphObject& SetZOrder( float z )
+    { Invalidate(); mZOrder = z; return *this; }
+  float ZOrder() const
+    { return mZOrder; }
   GraphObject& SetAspectRatioMode( int m )
     { Invalidate(); mAspectRatioMode = m; Change(); return *this; }
   int AspectRatioMode() const
@@ -127,8 +131,8 @@ class GraphObject
   GraphDisplay& mDisplay;
   bool          mVisible,
                 mRectSet;
-  int           mZOrder,
-                mAspectRatioMode;
+  float         mZOrder;
+  int           mAspectRatioMode;
   Rect          mDisplayRect;
 };
 
