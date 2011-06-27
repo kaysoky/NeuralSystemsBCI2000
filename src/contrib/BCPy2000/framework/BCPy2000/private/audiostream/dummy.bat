@@ -4,6 +4,13 @@
 
 @set PROG=..\..\..\..\..\..\..\BCI2000\prog
 @if exist %PROG% cd %PROG%
+@if exist %PROG% goto start
+
+@set PROG=%PYTHONHOME%\..\..\BCI2000\prog
+@if exist %PROG% cd %PROG%
+@if exist %PROG% goto start
+
+:start
 
 cd ..\prog
 call portable.bat
