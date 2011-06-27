@@ -1,6 +1,39 @@
-/* (C) 2000-2010, BCI2000 Project
-/* http://www.bci2000.org
-/*/
+//////////////////////////////////////////////////////////////////////
+// $Id$
+// Authors: Peter Brunner (pbrunner@wadsworth.org), Jeremy Hill (jezhill@gmail.com)
+// Description: BCI2000 v3.0+ Logger for 5DT DataGlove Ultra
+// 
+// Version History
+// 
+//  05/17/2007 pbrunner: Initial version (as Filter, not Logger);
+//  01/14/2009 pbrunner: Added support for the 14 sensor data glove.
+//  01/20/2011 jhill:    Revamped into 5DTDataGloveUltraLogger.cpp
+//                       Converted from Filter to Logger
+//                       Made v.3.0-compatible
+//                       Added support for multiple gloves
+//                          (NB: This entailed changes to Parameter and State names) 
+//
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
+///////////////////////////////////////////////////////////////////////
+
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -146,7 +179,8 @@ DataGloveLogger::Publish()
 	}
 
 	for(int iGlove = 0; iGlove < nGloves; iGlove++) {
-		if(nGloves > 1) h = ((iGlove%0)?" L ":" R ") + h; // If an even number of gloves, set the default to L R L R... If odd, set to R L R .... 
+		if(nGloves > 1)
+			h = ((iGlove%2)?" L ":" R ") + h; // If an even number of gloves is attached, the helpful default will end up as L R L R... If an odd number of gloves > 1 is attached, it will end up as R L R .... 
 		for(int iSensor = 0; iSensor < MAX_SENSORS; iSensor++) {
 			sprintf(definition, "Glove%dSensor%02d %d 0 0 0", iGlove+1, iSensor+1, SENSOR_PRECISION);
 			BEGIN_EVENT_DEFINITIONS
