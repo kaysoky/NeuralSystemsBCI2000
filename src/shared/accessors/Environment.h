@@ -202,8 +202,6 @@ class EnvironmentBase
  // Opaque references to environment objects.
  // These symbols have the syntax of pointers but allow for intercepting
  // access to the underlying objects.
- // The typecast operators will be removed as soon as there is no more code
- // depending on true object pointers.
  protected:
   class paramlistAccessor;
   friend class paramlistAccessor;
