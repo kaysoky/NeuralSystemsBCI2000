@@ -100,6 +100,7 @@ class recorder(Background.ongoing):
 			if not fs: fs = 44100
 			if not bits: bits = 16
 			w = Base.wav(fs=fs,bits=bits,nchan=nchan)
+			if seconds: w.y = Base.silence(round(seconds*w.fs), nchan)
 		else:
 			if not seconds: seconds = w.duration()
 			if not nchan: nchan = w.channels()
@@ -133,7 +134,7 @@ class recorder(Background.ongoing):
 		if nchan == None: nchan = self.nchan
 		if seconds == None: seconds = self.seconds
 		if nchan != self.wav.channels() or seconds != self.wav.duration():
-			print "resizing recorder's internal wav object"
+			print "resizing recorder's internal wav object from (%s channels x %s seconds) to (%s channels x %s seconds)" % (str(self.wav.channels()), str(self.wav.duration()), str(nchan), str(seconds))
 			siz = [0,0]
 			siz[across_samples] = int(round(seconds * fs))
 			siz[across_channels] = nchan

@@ -145,6 +145,7 @@ class BciApplication(BciGenericApplication):
 		self.last_prediction = 0
 		vol = float(self.params['SystemMasterVolume'])
 		self.init_volume(vol)
+		self.arm()
 		
 	#############################################################
 	
@@ -197,7 +198,8 @@ class BciApplication(BciGenericApplication):
 			self.stimuli['cue'].text = {0:'CHOOSE', 1:'LEFT', 2:'RIGHT'}.get(self.target, 'stream #%d'%self.target)
 			self.stimuli['cue'].on = True
 		elif phase == 'respond':
-			self.arm() # stimulus preparation happens here, later than originally scheduled at line marked CCCC - may ease CPU bottleneck and allow increase in number of eeg channels?
+			if self.states['CurrentTrial'] < int(self.params['TrialsPerBlock']):
+				self.arm() # stimulus preparation happens here, later than originally scheduled at line marked CCCC - may ease CPU bottleneck and allow increase in number of eeg channels?
 			if self.freechoice and self.last_prediction:
 				self.stimuli['cue'].text = {1:'interpreted as LEFT', 2:'interpreted as RIGHT'}.get(self.last_prediction, '?')
 			else:
@@ -348,7 +350,8 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 
 	def arm(self):
-		self.factory.append(self.make, store=True)
+		if len(self.streams) == 0:
+			self.factory.append(self.make, store=True)
 	
 	#############################################################
 

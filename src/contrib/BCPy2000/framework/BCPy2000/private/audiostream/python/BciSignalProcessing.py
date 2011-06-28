@@ -45,6 +45,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Epoch   floatlist EpochLowerBoundMsec=                2   100     100            100     0 % // after springing, each ERP trap will not spring again for this many milliseconds",
 			"PythonSig:Epoch   list      TriggerChannels=                    2  LAUD    RAUD              %     % % // ",
 			"PythonSig:Epoch   floatlist TriggerThreshold=                   2     0.1     0.1            %     0 % // ",
+			"PythonSig:Epoch   int       PyAudioMicTrigger=                        0                      1     0 1 // replace trigger signal with pyaudio sound recording (boolean)",
 			"PythonSig:Epoch   float     TriggerHPCutoff=                          0.0                    0.0   0 % // ",
 			"PythonSig:Epoch   floatlist ERPFilterFreqHz=                    2     0.1     8              %     0 % // lower and upper frequencies of bandpass filter for ERP feature set",
 			"PythonSig:Epoch   int       ERPFilterOrder=                           8                      8     0 % // order of bandpass filter for ERP feature set",
@@ -52,6 +53,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Epoch   matrix    ERPClassifierWeights=             0 0                            %     % % // ",
 			"PythonSig:Epoch   int       DiffFeatureSets=                          1                      1     0 1 // for 2-stream designs, whether to use the difference between the two feature sets (boolean)",
 			"PythonSig:Epoch   intlist   DiscardEpochs=                      2     2       2              2     0 % // for classification, discard this many epochs at the beginning",
+
 		]
 		states = [
 		]
@@ -153,15 +155,16 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.prediction, self.prediction_se = 0.0, 1.0
 		
 		self.Last10SecondsTrigger = SigTools.Buffering.trap(nsamples=SigTools.msec2samples(10000, self.eegfs), nchannels=2, leaky=True)
-		self.Last10SecondsMic     = SigTools.Buffering.trap(nsamples=SigTools.msec2samples(10000, 44100), nchannels=2, leaky=True)
 		self.LastPacketMic        = SigTools.Buffering.trap(nsamples=1+int(self.nominal.SecondsPerPacket*44100), nchannels=2, leaky=True)
-		self.recorder = WavTools.recorder(seconds=0, fs=44100, nchan=2, callback=self.HandleMicData)
+		if int(self.params['PyAudioMicTrigger']):
+			self.recorder = WavTools.recorder(seconds=0, fs=44100, nchan=2, callback=self.HandleMicData)
+		else:
+			self.recorder = None
 		
 	#############################################################
 	
 	def HandleMicData(self, packet):
 		if WavTools.across_samples == 0: packet = packet.T
-		self.Last10SecondsMic.process(packet)
 		self.LastPacketMic.process(numpy.abs(packet))
 		
 	#############################################################
@@ -172,13 +175,10 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.nbeats = [0] * self.nstreams
 		self.streamstates = [0] * self.nstreams
 		self.TriggerTrouble = [None] * self.nstreams
-		
-		#if self.recorder: self.recorder.record()
-		
+				
 	#############################################################
 	
 	def StopRun(self):
-		#if self.recorder: self.recorder.stop()
 		
 		if int(self.params['CheckNumberOfEpochs']) == 0:
 			print "features not saved (traps not verified)"
@@ -206,17 +206,16 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if self.triggerfilter != None:
 			sig[self.trigchan,:] = self.triggerfilter(sig[self.trigchan,:], axis=1)				
 
-		if self.recorder: # mic-trigger
-			if self.recorder.going and self.LastPacketMic.full():
+		if self.recorder: # mic-trigger   # TODO: remove this
+			sig[self.trigchan, :] = 0
+			if self.recorder.going: # and self.LastPacketMic.full():
 				micdata = self.LastPacketMic.read()
-				trigdata = sig[self.trigchan, :]
 				prevsample = None
-				for trigsample in range(trigdata.shape[0]):
-					micstart = self.recorder.wav.fs * float(trigsample)   / self.eegfs
-					micstop  = self.recorder.wav.fs * float(trigsample+1) / self.eegfs
-					trigdata[:, -1-trigsample] = numpy.expand_dims(numpy.max( micdata[:, -1-micstop:-1-micstart], axis=1 ), 1)
-			else:
-				sig[self.trigchan, :] = 0
+				for trigsample in range(sig.shape[1]):
+					micstart = int(round( self.recorder.wav.fs * float(trigsample)   / self.eegfs ))
+					micstop  = int(round( self.recorder.wav.fs * float(trigsample+1) / self.eegfs ))
+					if micstart >= micdata.shape[1]: break
+					sig[self.trigchan, -1-trigsample].flat = (numpy.mean( micdata[:, -1-micstop:-1-micstart]**2, axis=1 )**0.5).flat
 			if self.changed('CueOn', only=1):   self.recorder.record()
 			if self.changed('Stream1', only=0): self.recorder.stop()
 			
@@ -344,7 +343,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	def PlotTrigger(self, msg=None, stream=None):
 		import pylab
 		
-		for fig,buf in enumerate([self.Last10SecondsTrigger, self.Last10SecondsMic]):
+		buffers = [self.Last10SecondsTrigger]
+		for fig,buf in enumerate(buffers):
 			pylab.figure(fig+1)
 			for i,trig in enumerate(buf.read()):
 				pylab.subplot(self.nstreams, 1, i+1)
