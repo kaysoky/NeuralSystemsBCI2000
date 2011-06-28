@@ -61,6 +61,8 @@ class DisplayWindow : public GraphDisplay
   virtual ~DisplayWindow();
 
   // Properties
+  DisplayWindow& SetTitle( const std::string& );
+  const std::string& Title() const;
   DisplayWindow& SetLeft( int );
   int Left() const;
   DisplayWindow& SetTop( int );
@@ -73,16 +75,16 @@ class DisplayWindow : public GraphDisplay
   DisplayWindow& Hide();
   bool Visible() const;
 
-
  private:
   DisplayWindow& Restore();
   DisplayWindow& Clear();
   DisplayWindow& UpdateContext();
   
-  int   mTop,
-        mLeft,
-        mWidth,
-        mHeight;
+  std::string mTitle;
+  int mTop,
+      mLeft,
+      mWidth,
+      mHeight;
 
 #ifdef __BORLANDC__
   HDC mWinDC;

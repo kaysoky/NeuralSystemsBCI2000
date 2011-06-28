@@ -36,6 +36,7 @@
 #include "DisplayWindow.h"
 
 using namespace GUI;
+using namespace std;
 
 // Constructor for DisplayForm (QtWidget)
 #ifndef __BORLANDC__
@@ -45,7 +46,6 @@ DisplayForm::DisplayForm( GraphDisplay& inDisplay )
 {
   //Set the window flags
   this->setWindowFlags( Qt::FramelessWindowHint );
-  this->setWindowTitle( qApp->applicationName() );
 }
 
 void
@@ -73,6 +73,9 @@ DisplayWindow::DisplayWindow()
 {
 #ifdef __BORLANDC__
   mWinDC = NULL;
+  mTitle = Application->Title;
+#else // __BORLANDC__
+  mTitle = qApp->applicationName().toLocal8Bit().constData();
 #endif // __BORLANDC__
   Restore();
   UpdateContext();
@@ -81,6 +84,27 @@ DisplayWindow::DisplayWindow()
 DisplayWindow::~DisplayWindow()
 {
   Clear();
+}
+
+DisplayWindow&
+DisplayWindow::SetTitle( const string& inTitle )
+{
+  mTitle = inTitle;
+  if( mpForm != NULL )
+  {
+#ifdef __BORLANDC__
+    mpForm->Caption = VCLSTR( mTitle.c_str() );
+#else // __BORLANDC__
+    mpForm->setWindowTitle( QString::fromLocal8Bit( mTitle.c_str() ) );
+#endif // __BORLANDC__
+  }
+  return *this;
+}
+
+const string&
+DisplayWindow::Title() const
+{
+  return mTitle;
 }
 
 DisplayWindow&
@@ -224,10 +248,12 @@ DisplayWindow::Restore()
   mpForm->Top = mTop;
   mpForm->Height = mHeight;
   mpForm->Width = mWidth;
+  mpForm->Caption = VCLSTR( mTitle.c_str() );
 #else // __BORLANDC__
   mpForm = new DisplayForm( *this );
   mpForm->move( mLeft, mTop );
   mpForm->resize( mWidth, mHeight );
+  mpForm->setWindowTitle( QString::fromLocal8Bit( mTitle.c_str() ) );
 #endif // __BORLANDC__
   return *this;
 }
