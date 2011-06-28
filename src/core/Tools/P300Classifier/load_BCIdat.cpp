@@ -139,7 +139,12 @@ if (CurrentFile->Parameters()->Exists("TargetDefinitions"))
 	const ParamRef parameter = CurrentFile->Parameter("TargetDefinitions");
 
 	for (int i=0; i<parameter->NumRows(); i++)
-		state.TargetDefinitions.push_back(CurrentFile->Parameter("TargetDefinitions")(i,0));
+	{
+		enum { Display = 0, Enter = 1 };
+		state.TargetDefinitions.push_back(CurrentFile->Parameter("TargetDefinitions")(i,Display));
+		if( state.TargetDefinitions.back().empty() ) // jm: use the "Enter" value if the "Display" value is empty
+			state.TargetDefinitions.back() = CurrentFile->Parameter("TargetDefinitions")(i,Enter);
+	}
 }
 else
 {
