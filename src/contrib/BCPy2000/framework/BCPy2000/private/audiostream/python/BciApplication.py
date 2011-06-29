@@ -121,6 +121,7 @@ class BciApplication(BciGenericApplication):
 			t = VisualStimuli.Text(text='?', position=(x,h/2), anchor='center', on=False)
 			stim = self.stimulus('count%d'%(istream+1), t)
 			self.count_feedback_stimuli.append(stim)
+			self.stimulus('StreamVolume%d'%(istream+1), VisualStimuli.Text, text='?', position=(x,h), anchor='top', on=False)
 		
 		self.factory = WavTools.background_queue()
 		self.streams = []
@@ -145,6 +146,7 @@ class BciApplication(BciGenericApplication):
 		self.last_prediction = 0
 		vol = float(self.params['SystemMasterVolume'])
 		self.init_volume(vol)
+		
 		self.arm()
 		
 	#############################################################
@@ -157,6 +159,7 @@ class BciApplication(BciGenericApplication):
 		self.arm()
 		self.last.pop('stream', None) # AAA
 		#self.streamstart = None       # BBB
+		self.remember('volchange')
 
 	#############################################################
 	
@@ -276,6 +279,10 @@ class BciApplication(BciGenericApplication):
 				self.states['TargetStream'] = 0
 				self.change_phase()
 		
+		for i in range(self.nstreams):
+			stim = self.stimuli['StreamVolume%d'%(i+1)]
+			stim.on = (self.since('volchange')['msec'] < 1000)
+		
 	#############################################################
 
 	def Event(self, phase, event):
@@ -297,6 +304,12 @@ class BciApplication(BciGenericApplication):
 				if key == pygame.locals.K_DOWN:  self.chanvol[chan] = max(-100.0, self.chanvol[chan] - 3.0 )
 				vc['string'] = "PythonApp  floatlist ChannelVolumesDB= %d    %s  // adjusting channel %d" % ( len(self.chanvol),  '  '.join(["%g"%x for x in self.chanvol]), vc['channel']+1 )
 				print vc['string']
+				for i in range(self.nstreams):
+					stim = self.stimuli['StreamVolume%d'%(i+1)]
+					if i == vc['channel']: stim.color = (1, 1, 1)
+					else: stim.color = (0.75,0.75,0.75)
+					stim.text = '%gdB' % self.chanvol[i]
+				self.remember('volchange')
 				self.UpdateChannelVolumes()
 			
 	#############################################################

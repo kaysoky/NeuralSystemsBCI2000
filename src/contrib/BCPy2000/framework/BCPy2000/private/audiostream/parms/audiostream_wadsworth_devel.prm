@@ -1,0 +1,18 @@
+Filtering:SpatialFilter                       int       SpatialFilterType=        0             // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)
+Visualize:Processing%20Stages                 int       VisualizeSource=          1             // Visualize TransmissionFilter output (boolean)
+PythonApp:Streams                             int       RoundModFreq=             2             // modulation frequency rounding: 0 no rounding, 1 integer number of cycles per beat (enumeration)
+PythonApp                                     float     SystemMasterVolume=       0.5           // 
+PythonApp                                     float     WindowSize=               0.5           // 
+PythonApp                                     int       SurroundSoundTrigger=     0             // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
+Visualize:Source%20Signal:DataIOFilter        int       SourceMin=               -5mV           // raw signal vis Min Value
+Visualize:Source%20Signal:DataIOFilter        int       SourceMax=                5mV           // raw signal vis Max Value
+
+PythonApp                                     int       TrialsPerBlock=           3             // 
+
+PythonSig:Epoch                               int       CheckNumberOfEpochs=      0             // 
+PythonSig:Epoch                               list      TriggerChannels=  2     AUDL    AUDR    // 
+PythonSig:Epoch                               floatlist TriggerThreshold= 2     1200    1800    // 
+PythonSig:Epoch                               float     TriggerHPCutoff=          0.0           // 
+PythonSig:Epoch                               int       PyAudioMicTrigger=        0             // replace trigger signal with pyaudio sound recording (boolean)
+
+Source:AudioInputFilter                       string    MicName=                  Realtek%20HD%20Audio%20Input      // 
