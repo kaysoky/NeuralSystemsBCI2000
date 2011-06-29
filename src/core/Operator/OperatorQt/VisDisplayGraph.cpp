@@ -43,13 +43,14 @@
 #include <QLayout>
 #include <QStatusBar>
 #include <QLabel>
+#include <QStyle>
 
 #define OFF "off"
 
 using namespace std;
 
 VisDisplayGraph::VisDisplayGraph( const std::string& inSourceID )
-: VisDisplayBase( inSourceID ),
+: VisDisplayLayer( inSourceID ),
   mpContextMenu( NULL ),
   mpHPMenu( NULL ),
   mpLPMenu( NULL ),
@@ -273,13 +274,15 @@ VisDisplayGraph::HandleSignal( const GenericSignal& s )
   mSignalElements = s.Elements();
 
   if( curChannels != mNumChannels || curSamples != mDisplay.NumSamples() )
-    SetConfig( Visconfigs()[ mSourceID ] );
+    SetConfig( Visconfigs()[ mVisID ] );
 }
 
 void
 VisDisplayGraph::BuildStatusBar()
 {
   mpStatusBar = new QStatusBar( this );
+  mpStatusBar->setPalette( mpStatusBar->style()->standardPalette() );
+  mpStatusBar->setAutoFillBackground( true );
   mpStatusLabel = new QLabel( mpStatusBar );
   mpStatusBar->addPermanentWidget( mpStatusLabel );
   QVBoxLayout* pLayout = new QVBoxLayout( this );
@@ -428,7 +431,7 @@ void
 VisDisplayGraph::ToggleNumericValues()
 {
   mDisplay.SetNumericValuesVisible( !mDisplay.NumericValuesVisible() );
-  Visconfigs()[ mSourceID ].Put( CfgID::ShowNumericValues, mDisplay.NumericValuesVisible(), UserDefined );
+  Visconfigs()[ mVisID ].Put( CfgID::ShowNumericValues, mDisplay.NumericValuesVisible(), UserDefined );
 }
 
 bool
@@ -447,7 +450,7 @@ void
 VisDisplayGraph::ToggleBaselines()
 {
   mDisplay.SetBaselinesVisible( !mDisplay.BaselinesVisible() );
-  Visconfigs()[ mSourceID ].Put( CfgID::ShowBaselines, mDisplay.BaselinesVisible(), UserDefined );
+  Visconfigs()[ mVisID ].Put( CfgID::ShowBaselines, mDisplay.BaselinesVisible(), UserDefined );
 }
 
 bool
@@ -466,7 +469,7 @@ void
 VisDisplayGraph::ToggleValueUnit()
 {
   mDisplay.SetValueUnitVisible( !mDisplay.ValueUnitVisible() );
-  Visconfigs()[ mSourceID ].Put( CfgID::ShowValueUnit, mDisplay.ValueUnitVisible(), UserDefined );
+  Visconfigs()[ mVisID ].Put( CfgID::ShowValueUnit, mDisplay.ValueUnitVisible(), UserDefined );
 }
 
 bool
@@ -522,7 +525,7 @@ void
 VisDisplayGraph::InvertDisplay()
 {
   mDisplay.SetInverted( !mDisplay.Inverted() );
-  Visconfigs()[ mSourceID ].Put( CfgID::InvertedDisplay, mDisplay.Inverted(), UserDefined );
+  Visconfigs()[ mVisID ].Put( CfgID::InvertedDisplay, mDisplay.Inverted(), UserDefined );
 }
 
 bool
@@ -539,7 +542,7 @@ VisDisplayGraph::ChooseColors()
   ColorListChooser().SetPrompt( "Choose channel colors" )
                     .Display( channelColors );
   mDisplay.SetChannelColors( channelColors );
-  Visconfigs()[ mSourceID ].Put( CfgID::ChannelColors, channelColors, UserDefined );
+  Visconfigs()[ mVisID ].Put( CfgID::ChannelColors, channelColors, UserDefined );
 }
 
 bool
@@ -718,7 +721,7 @@ VisDisplayGraph::SetHP( const string& inCaption, bool inWriteToConfig )
   }
   mpCurrentHPItem = SyncFilterMenu( inCaption, mpHPMenu );
   if( inWriteToConfig )
-    Visconfigs()[mSourceID].Put( CfgID::HPFilter, inCaption, UserDefined );
+    Visconfigs()[mVisID].Put( CfgID::HPFilter, inCaption, UserDefined );
   UpdateStatusBar();
 }
 
@@ -760,7 +763,7 @@ VisDisplayGraph::SetLP( const string& inCaption, bool inWriteToConfig )
   }
   mpCurrentLPItem = SyncFilterMenu( inCaption, mpLPMenu );
   if( inWriteToConfig )
-    Visconfigs()[mSourceID].Put( CfgID::LPFilter, inCaption, UserDefined );
+    Visconfigs()[mVisID].Put( CfgID::LPFilter, inCaption, UserDefined );
   UpdateStatusBar();
 }
 
@@ -802,7 +805,7 @@ VisDisplayGraph::SetNotch( const string& inCaption, bool inWriteToConfig )
   }
   mpCurrentNotchItem = SyncFilterMenu( inCaption, mpNotchMenu );
   if( inWriteToConfig )
-    Visconfigs()[mSourceID].Put( CfgID::NotchFilter, inCaption, UserDefined );
+    Visconfigs()[mVisID].Put( CfgID::NotchFilter, inCaption, UserDefined );
   UpdateStatusBar();
 }
 

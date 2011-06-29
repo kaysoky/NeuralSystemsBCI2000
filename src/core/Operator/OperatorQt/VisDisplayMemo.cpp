@@ -38,7 +38,7 @@
 using namespace std;
 
 VisDisplayMemo::VisDisplayMemo( const std::string& inSourceID )
-: VisDisplayBase( inSourceID ),
+: VisDisplayLayer( inSourceID ),
   mNumLines( 0 ),
   mpTextDisplay( new QTextEdit )
 {
@@ -78,7 +78,7 @@ void
 VisDisplayMemo::Save() const
 {
   VisDisplayBase::Save();
-  Visconfigs()[ mSourceID ].Put( CfgID::NumLines, mNumLines, MessageDefined );
+  Visconfigs()[ mVisID ].Put( CfgID::NumLines, mNumLines, MessageDefined );
 }
 
 void

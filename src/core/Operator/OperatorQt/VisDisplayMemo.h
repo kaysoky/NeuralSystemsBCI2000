@@ -26,12 +26,12 @@
 #ifndef VIS_DISPLAY_MEMO_H
 #define VIS_DISPLAY_MEMO_H
 
-#include "VisDisplayBase.h"
+#include "VisDisplayLayer.h"
 
 class QString;
 class QTextEdit;
 
-class VisDisplayMemo : public VisDisplayBase
+class VisDisplayMemo : public VisDisplayLayer
 {
   Q_OBJECT
 

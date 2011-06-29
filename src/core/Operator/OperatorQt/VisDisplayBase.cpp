@@ -28,6 +28,7 @@
 #pragma hdrstop
 
 #include "VisDisplayBase.h"
+#include "VisDisplayWindow.h"
 #include "VisDisplayGraph.h"
 #include "VisDisplayMemo.h"
 #include "VisDisplayBitmap.h"
@@ -37,8 +38,6 @@
 #include <QtGui>
 
 using namespace std;
-
-QWidget* VisDisplayBase::spParentWindow = NULL;
 
 VisDisplayBase::VisContainer&
 VisDisplayBase::Visuals()
@@ -104,21 +103,26 @@ VisDisplayBase::ConfigContainer::Restore()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-VisDisplayBase::VisDisplayBase( const std::string& inSourceID )
-: QWidget( spParentWindow ),
-  mSourceID( inSourceID ),
-  mUserIsMoving( true )
+VisDisplayBase::VisDisplayBase( const std::string& inVisID )
+: QWidget( NULL ),
+  mVisID( inVisID )
 {
-  VisDisplayBase* visual = Visuals()[ mSourceID ];
+  size_t idx = mVisID.find( ":" );
+  if( idx != string::npos )
+  {
+    string base = mVisID.substr( 0, idx );
+    if( !Visuals()[ base ] )
+      new VisDisplayWindow( base );
+    this->setParent( Visuals()[ base ] );
+  }
+  VisDisplayBase* visual = Visuals()[ mVisID ];
   delete visual;
-  Visuals()[ mSourceID ] = this;
-
-  this->setWindowFlags( Qt::Tool );
-  this->setAttribute( Qt::WA_MacAlwaysShowToolWindow, true );
+  Visuals()[ mVisID ] = this;
 }
 
 VisDisplayBase::~VisDisplayBase()
 {
+  Visuals()[ mVisID ] = NULL;
 }
 
 void
@@ -132,72 +136,15 @@ VisDisplayBase::VisContainer::Clear()
 void
 VisDisplayBase::SetConfig( ConfigSettings& inConfig )
 {
-  mUserIsMoving = false;
-  mTitle = inConfig[ CfgID::WindowTitle ];
-  if( !mTitle.empty() )
-    this->setWindowTitle( mTitle.c_str() );
-  else
-    this->setWindowTitle( mSourceID.c_str() );
-
-  // The static variables make each new window appear a little down right
-  // from the previous one.
-  static int newTop = 10,
-             newLeft = 10;
-  int formTop = 10,
-      formLeft = 10,
-      formHeight = 100,
-      formWidth = 100;
-  bool posDefault  = !inConfig.Get( CfgID::Top, formTop ) ||
-                     !inConfig.Get( CfgID::Left, formLeft ),
-       sizeDefault = !inConfig.Get( CfgID::Height, formHeight ) ||
-                     !inConfig.Get( CfgID::Width, formWidth );
-  if( posDefault )
-  {
-    formTop = newTop;
-    newTop += 10;
-    formLeft = newLeft;
-    newLeft += 10;
-  }
-  if( formWidth <= 10 || formHeight <= 10 )
-  {
-    sizeDefault = true;
-    formHeight = 100;
-    formWidth = 100;
-  }
-  int desktopWidth = QApplication::desktop()->width(),
-      desktopHeight = QApplication::desktop()->height();
-  if( formTop < 0 || formLeft < 0 
-      || formTop >= desktopHeight || formLeft >= desktopWidth )
-  {
-    posDefault = true;
-    formTop = newTop;
-    newTop += 10;
-    formLeft = newLeft;
-    newLeft += 10;
-  }
-  this->move( formLeft, formTop );
-  this->resize( formWidth, formHeight );
-  if( posDefault )
-  {
-    Visconfigs()[ mSourceID ].Put( CfgID::Top, formTop, Default );
-    Visconfigs()[ mSourceID ].Put( CfgID::Left, formLeft, Default );
-  }
-  if( sizeDefault )
-  {
-    Visconfigs()[ mSourceID ].Put( CfgID::Width, formWidth, Default );
-    Visconfigs()[ mSourceID ].Put( CfgID::Height, formHeight, Default );
-  }
-
   bool visible = true;
   inConfig.Get( CfgID::Visible, visible );
   this->setVisible( visible );
-  mUserIsMoving = true;
 }
 
 void
 VisDisplayBase::Restore()
 {
-  SetConfig( Visconfigs()[ mSourceID ] );
+  SetConfig( Visconfigs()[ mVisID ] );
 }
 
 void
@@ -247,28 +194,5 @@ VisDisplayBase::HandleProperty( const char* inVisID, VisDisplay::IDType inCfgID,
   Visconfigs()[ inVisID ].Put( inCfgID, inValue, inState );
   if( Visuals()[ inVisID ] != NULL )
     Visuals()[ inVisID ]->SetConfig( Visconfigs()[ inVisID ] );
-}
-
-void
-VisDisplayBase::moveEvent( QMoveEvent* iopEvent )
-{
-  if( mUserIsMoving )
-  {
-    Visconfigs()[ mSourceID ].Put( CfgID::Top, this->pos().y(), UserDefined );
-    Visconfigs()[ mSourceID ].Put( CfgID::Left, this->pos().x(), UserDefined );
-  }
-  QWidget::moveEvent( iopEvent );
-}
-
-void
-VisDisplayBase::resizeEvent( QResizeEvent* iopEvent )
-{
-  this->update();
-  if( mUserIsMoving )
-  {
-    Visconfigs()[ mSourceID ].Put( CfgID::Width, this->size().width(), UserDefined );
-    Visconfigs()[ mSourceID ].Put( CfgID::Height, this->size().height(), UserDefined );
-  }
-  QWidget::resizeEvent( iopEvent );
 }
 

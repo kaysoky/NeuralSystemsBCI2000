@@ -39,9 +39,8 @@
 using namespace std;
 
 VisDisplayBitmap::VisDisplayBitmap( const std::string& inSourceID )
-: VisDisplayBase( inSourceID )
+: VisDisplayLayer( inSourceID )
 {
-  this->setAttribute( Qt::WA_NoSystemBackground, true );
   Restore();
 }
 
@@ -73,19 +72,19 @@ void
 VisDisplayBitmap::HandleBitmap( const BitmapImage& inImage )
 {
   if( inImage.Empty() )
-  { // An empty image precedes a reference frame (rather than a difference frame).
-    mImageBuffer.SetBlack();
+  {
+    mImageBuffer.SetTransparent();
   }
   else
   {
     if( ( mImageBuffer.Width() != inImage.Width() ) || ( mImageBuffer.Height() != inImage.Height() ) )
     {
-      mImageBuffer = inImage;
+      mImageBuffer = inImage + BitmapImage( inImage.Width(), inImage.Height() );
       // Adapt the window's aspect ratio without changing its width.
       if( inImage.Width() > 0 )
       {
         this->resize( this->width(), ( inImage.Height() * this->width() ) / inImage.Width() );
-        Visconfigs()[ mSourceID ].Put( CfgID::Height, this->height(), UserDefined );
+        Visconfigs()[ mVisID ].Put( CfgID::Height, this->height(), UserDefined );
       }
     }
     else
@@ -102,25 +101,32 @@ VisDisplayBitmap::paintEvent( QPaintEvent* iopEvent )
   QPainter p( this );
   p.setRenderHint( QPainter::Antialiasing, false );
   p.setRenderHint( QPainter::TextAntialiasing, false );
+
+  // FIXME:  This hack ensures that the child bitmap 
+  // layer is the same size as it's parent at all times.
+  // This is done using an Expanding QSizePolicy elsewhere, but
+  // for some reason, it's impossible to ensure the correct size
+  // at systemstartup.
+  this->resize( this->parentWidget()->size() );
+
   int formWidth = this->width(),
       formHeight = this->height();
-  if( mImageBuffer.Empty() )
-  {
-    p.fillRect( 0, 0, formWidth, formHeight, Qt::black );
-  }
-  else
+  if( !mImageBuffer.Empty() )
   {
     for( int x = 0; x < mImageBuffer.Width(); ++x )
     {
       for( int y = 0; y < mImageBuffer.Height(); ++y )
       {
-        QRect pixelRect;
-        pixelRect.setLeft( ( x * formWidth ) / mImageBuffer.Width() );
-        pixelRect.setTop( ( y * formHeight ) / mImageBuffer.Height() );
-        pixelRect.setRight( ( ( x + 1 ) * formWidth ) / mImageBuffer.Width() );
-        pixelRect.setBottom( ( ( y + 1 ) * formHeight ) / mImageBuffer.Height() );
         RGBColor rgb = mImageBuffer( x, y );
-        p.fillRect( pixelRect, QColor( rgb.R(), rgb.G(), rgb.B() ) );
+        if( rgb != RGBColor::NullColor )
+        {
+          QRect pixelRect;
+          pixelRect.setLeft( ( x * formWidth ) / mImageBuffer.Width() );
+          pixelRect.setTop( ( y * formHeight ) / mImageBuffer.Height() );
+          pixelRect.setRight( ( ( x + 1 ) * formWidth ) / mImageBuffer.Width() );
+          pixelRect.setBottom( ( ( y + 1 ) * formHeight ) / mImageBuffer.Height() );
+          p.fillRect( pixelRect, QColor( rgb.R(), rgb.G(), rgb.B() ) );
+        }
       }
     }
 #ifdef _WIN32
@@ -134,6 +140,6 @@ VisDisplayBitmap::paintEvent( QPaintEvent* iopEvent )
 void
 VisDisplayBitmap::mousePressEvent( QMouseEvent* iopEvent )
 {
-  this->activateWindow();
+  this->parentWidget()->activateWindow();
   VisDisplayBase::mousePressEvent( iopEvent );
 }

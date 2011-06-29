@@ -60,7 +60,6 @@ class EyetrackerLogger : public EnvironmentExtension
   virtual void Publish();
   virtual void Preflight() const;
   virtual void Initialize();
-  virtual void Process();
   virtual void StartRun();
   virtual void StopRun();
   virtual void Halt();
@@ -84,11 +83,6 @@ class EyetrackerLogger : public EnvironmentExtension
   float gazeScale() const { return m_gazeScale; }
   float gazeOffset() const { return m_gazeOffset; }
 
-  //Logging Interface
-  ostringstream m_log;
-  bool m_logLocked;
-  void WriteToLog( string s );
-
  private:
   bool         m_eyetrackerEnable;
   string       m_eyetrackerAddress;
@@ -100,10 +94,6 @@ class EyetrackerLogger : public EnvironmentExtension
   bool         m_logEyeDist;
   float        m_gazeScale;
   float        m_gazeOffset;
-
-  //Visualizations
-  GenericVisualization m_eyetrackerLog;
-  GenericVisualization m_appPreview;
 
   class EyetrackerThread : public OSThread
   {

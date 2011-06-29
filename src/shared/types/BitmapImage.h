@@ -86,7 +86,7 @@ class BitmapImage
       mHeight( inHeight ),
       mpData( new uint16[ inWidth * inHeight ] )
     {
-      SetBlack();
+      SetTransparent();
     }
   BitmapImage( const BitmapImage& b )
     : mWidth( b.mWidth ),
@@ -141,6 +141,12 @@ class BitmapImage
   BitmapImage& SetBlack()
     {
       std::memset( mpData, 0, mWidth * mHeight * sizeof( *mpData ) );
+      return *this;
+    }
+
+  BitmapImage& SetTransparent()
+    {
+      std::memset( mpData, uint16( -1 ), mWidth * mHeight * sizeof( *mpData ) );
       return *this;
     }
 

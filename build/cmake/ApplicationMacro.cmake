@@ -3,6 +3,9 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Contains a macro for creating an application module
 
+# Setup Global Application Modules
+INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationModules.cmake )
+
 MACRO( BCI2000_ADD_APPLICATION_MODULE NAME SOURCES HEADERS APPSOURCES APPHEADERS INCLUDES )
 
 # DEBUG
@@ -11,12 +14,19 @@ MESSAGE( "-- Adding Application Project: " ${NAME} )
 # Generate the required framework
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/DefaultAppFramework.cmake )
 
-# Setup Global Application Modules
-INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationModules.cmake )
-
 # Add the global and specific application files into the framework for this project
-SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${APPSOURCES}" "${BCI2000_APPSOURCES}" )
-SET( HDR_BCI2000_FRAMEWORK "${HDR_BCI2000_FRAMEWORK}" "${APPHEADERS}" "${BCI2000_APPHEADERS}" )
+SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${APPSOURCES}" "${BCI2000_APPSOURCES}"
+"${BCI2000_APPSOURCES_EXT}" "${BCI2000_HID_SOURCES}" )
+SET( HDR_BCI2000_FRAMEWORK "${HDR_BCI2000_FRAMEWORK}" "${APPHEADERS}" "${BCI2000_APPHEADERS}"
+"${BCI2000_APPHEADERS_EXT}" "${BCI2000_HID_HEADERS}" )
+
+# Setup the extra signal source modules
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\application\\human_interface_devices FILES ${BCI2000_HIDSOURCES} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\application FILES ${BCI2000_APPSOURCES} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\application FILES ${BCI2000_APPSOURCES_EXT} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\application\\human_interface_devices FILES ${BCI2000_HIDHEADERS} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\application FILES ${BCI2000_APPHEADERS} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\application FILES ${BCI2000_APPHEADERS_EXT} )
 
 # Set the Project Source Groups
 SOURCE_GROUP( Source\\Project FILES ${SOURCES} )

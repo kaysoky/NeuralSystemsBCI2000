@@ -83,7 +83,7 @@ manual, a CD and a 3m USB cable.
     For each of the 5 (or 14) sensors of each 5DT Data Glove 5 (or 14) Ultra,
 	one state variable is stored with the data.
 	
-	Relative to the old BCI2000 v2.0 convention, note two changes. Firstly the
+	Relative to the old BCI2000 v2.0 DataGloveFilter, note two changes. Firstly the
 	state name encodes the glove number (examples are shown below for Glove1*;
 	additional gloves will have higher numbers). Secondly, the sensors numbers
 	are always 2 digits (Sensor01, Sensor02, etc).

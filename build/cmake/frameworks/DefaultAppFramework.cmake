@@ -121,6 +121,11 @@ INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared/gui
   ${BCI2000_SRC_DIR}/shared/modules/application
   ${BCI2000_SRC_DIR}/shared/modules/application/utils
+  ${BCI2000_SRC_DIR}/shared/modules/application/audio
+  ${BCI2000_SRC_DIR}/shared/modules/application/gui
+  ${BCI2000_SRC_DIR}/shared/modules/application/human_interface_devices
+  ${BCI2000_SRC_DIR}/shared/modules/application/speller
+  ${BCI2000_SRC_DIR}/shared/modules/application/stimuli
 )
 ELSE( BORLAND )
 INCLUDE_DIRECTORIES(
@@ -137,5 +142,10 @@ INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared/gui
   ${BCI2000_SRC_DIR}/shared/modules/application
   ${BCI2000_SRC_DIR}/shared/modules/application/utils
+  ${BCI2000_SRC_DIR}/shared/modules/application/audio
+  ${BCI2000_SRC_DIR}/shared/modules/application/gui
+  ${BCI2000_SRC_DIR}/shared/modules/application/human_interface_devices
+  ${BCI2000_SRC_DIR}/shared/modules/application/speller
+  ${BCI2000_SRC_DIR}/shared/modules/application/stimuli
 )
 ENDIF( BORLAND )

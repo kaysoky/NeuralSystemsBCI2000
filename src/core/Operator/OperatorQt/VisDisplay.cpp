@@ -29,6 +29,7 @@
 #include "VisDisplay.h"
 
 #include "VisDisplayBase.h"
+#include "VisDisplayWindow.h"
 #include "VisDisplayMemo.h"
 #include "VisDisplayGraph.h"
 #include "VisDisplayBitmap.h"
@@ -38,7 +39,7 @@ using namespace std;
 void
 VisDisplay::SetParentWindow( QWidget* inW )
 {
-  VisDisplayBase::SetParentWindow( inW );
+  VisDisplayWindow::SetParentWindow( inW );
 }
 
 void
@@ -48,49 +49,96 @@ VisDisplay::Clear()
 }
 
 void
-VisDisplay::CreateMemoWindow( const char* inVisID )
+VisDisplay::CreateMemo( const char* inVisID )
 {
-  new VisDisplayMemo( inVisID );
+  string visid = FormatID( inVisID );
+  new VisDisplayMemo( visid );
 }
 
 void
-VisDisplay::CreateGraphWindow( const char* inVisID )
+VisDisplay::CreateGraph( const char* inVisID )
 {
-  new VisDisplayGraph( inVisID );
+  string visid = FormatID( inVisID );
+  new VisDisplayGraph( visid );
 }
 
 void
-VisDisplay::CreateBitmapWindow( const char* inVisID )
+VisDisplay::CreateBitmap( const char* inVisID )
 {
-  new VisDisplayBitmap( inVisID );
+  string visid = FormatID( inVisID );
+  new VisDisplayBitmap( visid );
 }
 
 void
 VisDisplay::HandleSignal( const char* inVisID, const GenericSignal& inSignal )
 {
-  VisDisplayBase::HandleSignal( inVisID, inSignal );
+  string visid = FormatID( inVisID );
+  VisDisplayBase::HandleSignal( visid.c_str(), inSignal );
 }
 
 void
 VisDisplay::HandleMemo( const char* inVisID, const char* inText )
 {
-  VisDisplayBase::HandleMemo( inVisID, inText );
+  string visid = FormatID( inVisID );
+  VisDisplayBase::HandleMemo( visid.c_str(), inText );
 }
 
 void
 VisDisplay::HandleBitmap( const char* inVisID, const BitmapImage& inBitmap )
 {
-  VisDisplayBase::HandleBitmap( inVisID, inBitmap );
+  string visid = FormatID( inVisID );
+  VisDisplayBase::HandleBitmap( visid.c_str(), inBitmap );
 }
 
 void
 VisDisplay::HandlePropertyMessage( const char* inVisID, const IDType inCfgID, const char* inValue )
 {
-  VisDisplayBase::HandleProperty( inVisID, inCfgID, inValue, VisDisplayBase::MessageDefined );
+  string visid = FormatID( inVisID );
+  string layer = Layer( visid );
+  if( layer == "" )
+    VisDisplayBase::HandleProperty( Base( visid ).c_str(), inCfgID, inValue, VisDisplayBase::MessageDefined );
+  VisDisplayBase::HandleProperty( visid.c_str(), inCfgID, inValue, VisDisplayBase::MessageDefined );
 }
 
 void
 VisDisplay::HandleProperty( const char* inVisID, const IDType inCfgID, const char* inValue )
 {
-  VisDisplayBase::HandleProperty( inVisID, inCfgID, inValue, VisDisplayBase::UserDefined );
+  string visid = FormatID( inVisID );
+  string layer = Layer( visid );
+  if( layer == "" )
+    VisDisplayBase::HandleProperty( Base( visid ).c_str(), inCfgID, inValue, VisDisplayBase::UserDefined );
+  VisDisplayBase::HandleProperty( visid.c_str(), inCfgID, inValue, VisDisplayBase::UserDefined );
+}
+
+string
+VisDisplay::FormatID( const char* id )
+{
+  string ret( id );
+  return FormatID( ret );
+}
+
+string
+VisDisplay::FormatID( const string &id )
+{
+  string ret = id;
+  if( ret.find( ":" ) == string::npos )
+    ret.append( ":" );
+  return ret;
+}
+
+string
+VisDisplay::Layer( const string &id )
+{
+  string ret = "";
+  size_t idx = id.find( ":" );
+  if( idx == string::npos )
+    return ret;
+  ret = id.substr( idx ).substr( 1 );
+  return ret;
+}
+
+string
+VisDisplay::Base( const string &id )
+{
+  return id.substr( 0, id.find( ":" ) );
 }

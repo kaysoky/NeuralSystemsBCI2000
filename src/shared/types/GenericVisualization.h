@@ -210,6 +210,27 @@ class GenericVisualization : public std::ostream
     } mBuf;
 };
 
+class BitmapVisualization : public GenericVisualization
+{
+  public:
+    BitmapVisualization() { }
+    
+    BitmapVisualization( int inSourceID )
+    : GenericVisualization( inSourceID ) { }
+
+    BitmapVisualization( const std::string& inSourceID )
+    : GenericVisualization( inSourceID ) { }
+
+    BitmapVisualization( const BitmapVisualization& v )
+    : GenericVisualization( v ) { }
+
+    void SendReferenceFrame( const BitmapImage& );
+    void SendDifferenceFrame( const BitmapImage& );
+
+  private:
+    BitmapImage mImageBuffer;
+};
+
 template<typename T>
 GenericVisualization&
 GenericVisualization::Send( CfgID::CfgID cfgID, const T& cfgValue )

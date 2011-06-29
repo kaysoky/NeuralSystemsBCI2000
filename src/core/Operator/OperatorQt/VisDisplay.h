@@ -27,6 +27,7 @@
 #define VIS_DISPLAY_H
 
 #include "defines.h"
+#include <string>
 
 class GenericSignal;
 class BitmapImage;
@@ -39,15 +40,20 @@ class VisDisplay
   // This is the outside interface of the VisDisplay class hierarchy.
   static void SetParentWindow( QWidget* );
   static void DeleteWindow( const char* visID );
-  static void CreateMemoWindow( const char* visID );
-  static void CreateGraphWindow( const char* visID );
-  static void CreateBitmapWindow( const char* visID );
+  static void CreateMemo( const char* visID );
+  static void CreateGraph( const char* visID );
+  static void CreateBitmap( const char* visID );
   static void HandleSignal( const char* visID, const GenericSignal& );
   static void HandleMemo( const char* visID, const char* );
   static void HandleBitmap( const char* visID, const BitmapImage& );
   static void HandlePropertyMessage( const char* visID, const IDType, const char* );
   static void HandleProperty( const char* visID, const IDType, const char* );
   static void Clear();
+ private:
+  static std::string FormatID( const char* id );
+  static std::string FormatID( const std::string &id ); 
+  static std::string Layer( const std::string &id );
+  static std::string Base( const std::string &id );
 };
 
 #endif // VIS_DISPLAY_H

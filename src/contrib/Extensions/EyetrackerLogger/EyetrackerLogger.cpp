@@ -143,10 +143,8 @@ Extension( EyetrackerLogger );
 // Returns:    N/A
 // **************************************************************************
 EyetrackerLogger::EyetrackerLogger()
-:m_eyetrackerEnable( false ),
- m_logLocked( false )
+:m_eyetrackerEnable( false )
 {
-  m_log.flush();
 }
 
 // **************************************************************************
@@ -193,7 +191,7 @@ void EyetrackerLogger::Publish()
   " // record eye distances to states (boolean)",
   "Source:Eyetracker float GazeScale= 0.9 0 % %"
   " // Value to scale gaze data by",
-  "Source:Eyetracker float GazeOffset= 0 0 % %"
+  "Source:Eyetracker float GazeOffset= 0.05 0.05 % %"
   " // Value to offset gaze data after scaled",
   END_PARAMETER_DEFINITIONS
 
@@ -224,7 +222,6 @@ void EyetrackerLogger::Publish()
 // **************************************************************************
 bool EyetrackerLogger::Connect(string &address, int port) const
 {
-
   //Ugly, yes, but I need a non-const c style string. (c_str() won't do it.)
   char *addy = new char[address.size() + 1];
   strcpy(addy, address.c_str());
@@ -412,10 +409,6 @@ void EyetrackerLogger::Initialize()
   m_eyetrackerEnable = ( ( int )OptionalParameter( "LogEyetracker" ) != 0 );
   if(m_eyetrackerEnable)
   {
-    //Initialize the log
-    m_eyetrackerLog.Send( CfgID::WindowTitle, "Eyetracker Validity" );
-    m_eyetrackerLog.flush();
-
     //Initialize parameters
     m_eyetrackerAddress = ( string )Parameter( "NetworkLocation" );
     m_eyetrackerPort = ( int )Parameter( "Port" );
@@ -425,28 +418,6 @@ void EyetrackerLogger::Initialize()
     m_logEyeDist = ( int )Parameter( "LogEyeDist" );
     m_gazeScale = ( float )Parameter( "GazeScale" );
     m_gazeOffset = ( float )Parameter( "GazeOffset" );
-  }
-}
-
-// **************************************************************************
-// Function:   Process
-// Purpose:    Checks the thread and updates the Validity Log
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-void EyetrackerLogger::Process()
-{
-  if( mpEyetrackerThread )
-  {
-    while( m_logLocked )
-      ::Sleep( 1 );
-    m_logLocked = true;
-    if( m_log.str() != "" )
-    {
-      m_eyetrackerLog << m_log.str() << endl;
-      m_log.str("");
-    }
-    m_logLocked = false;
   }
 }
 
@@ -496,22 +467,6 @@ void EyetrackerLogger::StopRun()
 void EyetrackerLogger::Halt()
 {
   StopRun();
-}
-
-// **************************************************************************
-// Function:   WriteToLog
-// Purpose:    This is a thread safe locking procedure to pass messages.
-// Parameters: string, to write to the log.  Endl appended automatically
-// Returns:    N/A
-// **************************************************************************
-void EyetrackerLogger::WriteToLog( string s )
-{
-  //Lock and write to the log
-  while( m_logLocked )
-    ::Sleep( 1 );
-  m_logLocked = true;
-  m_log << s << " ";
-  m_logLocked = false;
 }
 
 // **************************************************************************
@@ -689,7 +644,6 @@ void __stdcall EyetrackerLogger::EyetrackerThread::EyetrackerCallback(ETet_Callb
         {
           if( data->validity_righteye < 2 && data->validity_lefteye < 2 )
           {
-            obj->m_eyetracker->WriteToLog( "Both Eyes Tracking Correctly" );
             obj->m_LostLeftEye = false;
             obj->m_LostRightEye = false;
           }
@@ -767,10 +721,7 @@ void __stdcall EyetrackerLogger::EyetrackerThread::EyetrackerCallback(ETet_Callb
         else
         {
           if( !obj->m_LostLeftEye )
-          {
-            obj->m_eyetracker->WriteToLog( "Lost Left Eye" );
             obj->m_LostLeftEye = true;
-          }
         }
 
         //Grab all the right eye states next
@@ -845,10 +796,7 @@ void __stdcall EyetrackerLogger::EyetrackerThread::EyetrackerCallback(ETet_Callb
         else
         {
           if( !obj->m_LostRightEye )
-          {
-            obj->m_eyetracker->WriteToLog( "Lost Right Eye" );
             obj->m_LostRightEye = true;
-          }
         }
         if( obj->m_DataOK != obj->m_prevDataOK )
           LogStateValue( "EyetrackerStatesOK", (obj->m_DataOK?1:0) );

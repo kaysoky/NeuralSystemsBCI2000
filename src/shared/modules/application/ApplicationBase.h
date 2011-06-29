@@ -123,11 +123,8 @@ class ApplicationBase : public GenericFilter
     virtual void PostProcess();
 
    private:
-    void SendReferenceFrame();
-    void SendDifferenceFrame();
-
     const GUI::GraphDisplay* mpDisplay;
-    GenericVisualization     mVis;
+    BitmapVisualization      mVis;
     BitmapImage              mImageBuffer;
     bool                     mDoVisualize;
     int                      mWidth,

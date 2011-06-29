@@ -20,19 +20,10 @@ SET( BCI2000_HIDHEADERS
   # Add extra Application modules here
 )
 
-# Setup the extra signal source modules
-SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\application\\human_interface_devices FILES ${BCI2000_HIDSOURCES} )
-SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\application FILES ${BCI2000_APPSOURCES} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\application\\human_interface_devices FILES ${BCI2000_HIDHEADERS} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\application FILES ${BCI2000_APPHEADERS} )
-
-# Update AppSources with new HID Files
-SET( BCI2000_APPSOURCES
-  ${BCI2000_APPSOURCES}
-  ${BCI2000_HIDSOURCES}
-)
-SET( BCI2000_APPHEADERS
-  ${BCI2000_APPHEADERS}
-  ${BCI2000_HIDHEADERS}
+SET( BCI2000_APPSOURCES_EXT
+  # Add Application Extensions here
 )
 
+SET( BCI2000_APPHEADERS_EXT
+  # Add Application Extensions here
+)

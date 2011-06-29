@@ -548,11 +548,11 @@ MainWindow::OnInitializeVis( void*, const char* inVisID, const char* inKind )
 {
   string kind = inKind;
   if( kind == "Memo" )
-    VisDisplay::CreateMemoWindow( inVisID );
+    VisDisplay::CreateMemo( inVisID );
   else if( kind == "Graph" )
-    VisDisplay::CreateGraphWindow( inVisID );
+    VisDisplay::CreateGraph( inVisID );
   else if( kind == "Bitmap" )
-    VisDisplay::CreateBitmapWindow( inVisID );
+    VisDisplay::CreateBitmap( inVisID );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

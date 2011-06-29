@@ -17,6 +17,8 @@ SET( SRC_PROJECT
   SysLog.cpp
   ShowStates.cpp
   VisDisplay.cpp
+  VisDisplayWindow.cpp
+  VisDisplayLayer.cpp
   VisDisplayBase.cpp
   VisDisplayMemo.cpp
   VisDisplayGraph.cpp
@@ -28,6 +30,8 @@ SET( HDR_PROJECT
   SysLog.h
   ShowStates.h
   VisDisplay.h
+  VisDisplayWindow.h
+  VisDisplayLayer.h
   VisDisplayBase.h
   VisDisplayMemo.h
   VisDisplayGraph.h
@@ -46,6 +50,8 @@ QT4_WRAP_CPP( GENERATED_MOC
   SysLog.h
   ShowStates.h
   VisDisplayBase.h
+  VisDisplayWindow.h
+  VisDisplayLayer.h
   VisDisplayMemo.h
   VisDisplayGraph.h
   VisDisplayBitmap.h

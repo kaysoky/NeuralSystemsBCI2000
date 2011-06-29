@@ -215,7 +215,7 @@ void EmotivADC::Preflight( const SignalProperties&,
     bciout << "Channel Names should have " << sizeof( targetChannelList ) / sizeof( EE_DataChannel_t ) <<
               " entries." << endl;
     bciout << "Channel Names should be: ";
-    for( int i = 0; i < mChannelNames.size(); i++ )
+    for( unsigned int i = 0; i < mChannelNames.size(); i++ )
       bciout << mChannelNames[i] << " ";
     bciout << endl;
   }
@@ -362,7 +362,7 @@ void EmotivADC::Process( const GenericSignal&, GenericSignal& Output )
   // We'll do a timeout check here as well
   PrecisionTime starttime = PrecisionTime::Now();
   int timeout = ( int )( ( 1000.0f / 128.0f ) * ( float )Output.Elements() ) * 10 ; // We'll wait 10 datablocks for the device to connect.
-  while( mData[0].size() < Output.Elements() && PrecisionTime::TimeDiff( starttime, PrecisionTime::Now() ) < timeout )
+  while( mData[0].size() < ( unsigned int )Output.Elements() && PrecisionTime::TimeDiff( starttime, PrecisionTime::Now() ) < timeout )
   {
     // Check for updated states
     state = EE_EngineGetNextEvent( mEvent );
@@ -441,7 +441,7 @@ void EmotivADC::Process( const GenericSignal&, GenericSignal& Output )
         if( err != EDK_OK )
           bcierr << "Emotiv Error.  Could be overbuffering." << endl;
         for ( unsigned int sampleIdx = 0; sampleIdx < nSamplesTaken; sampleIdx++ )
-          mData[i].push( data[ sampleIdx ] - mDCOffset );
+          mData[i].push( float( data[ sampleIdx ] ) - mDCOffset );
       }
 
       // Grab the most current gyro data
@@ -465,7 +465,7 @@ void EmotivADC::Process( const GenericSignal&, GenericSignal& Output )
   }
 
   // If we timed out, we need to error out
-  if( mData[0].size() < Output.Elements() )
+  if( mData[0].size() < ( unsigned int )Output.Elements() )
   {
     bcierr << "Device not reporting data anymore...  Could be disconnected or off." << endl;
     return;

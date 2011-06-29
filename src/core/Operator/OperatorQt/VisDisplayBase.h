@@ -53,11 +53,10 @@ class VisDisplayBase : public QWidget
   } ConfigState;
 
  protected:
-  VisDisplayBase( const std::string& visID );
+  VisDisplayBase( const std::string& inVisID );
  public:
   virtual ~VisDisplayBase();
 
-  static void SetParentWindow( QWidget* w ) { spParentWindow = w; }
   static void Clear() { Visuals().Clear(); }
   static void HandleSignal( const char* visID, const GenericSignal& );
   static void HandleMemo( const char* visID, const char* );
@@ -69,17 +68,7 @@ class VisDisplayBase : public QWidget
   virtual void Save() const;
 
  protected:
-  void moveEvent( QMoveEvent* );
-  void resizeEvent( QResizeEvent* );
-
- protected:
-  std::string mSourceID;
- private:
-  std::string mTitle;
-  bool mUserIsMoving;
-
- protected:
-  static QWidget* spParentWindow;
+  std::string mVisID;
 
  protected:
   // visID->display instance

@@ -26,10 +26,10 @@
 #ifndef VIS_DISPLAY_BITMAP_H
 #define VIS_DISPLAY_BITMAP_H
 
-#include "VisDisplayBase.h"
+#include "VisDisplayLayer.h"
 #include "BitmapImage.h"
 
-class VisDisplayBitmap : public VisDisplayBase
+class VisDisplayBitmap : public VisDisplayLayer
 {
   Q_OBJECT
 

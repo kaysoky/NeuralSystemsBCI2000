@@ -196,10 +196,10 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
   // Prepare the brush
   QPainter* p = inDC.handle.painter;
   QRect drawRect(
-    static_cast<int>( inDC.rect.left ),
-    static_cast<int>( inDC.rect.top ),
-    static_cast<int>( inDC.rect.right - inDC.rect.left ),
-    static_cast<int>( inDC.rect.bottom - inDC.rect.top )
+    static_cast<int>( inDC.rect.left + ( this->LineWidth() / 2.0f ) ),
+    static_cast<int>( inDC.rect.top + ( this->LineWidth() / 2.0f ) ),
+    static_cast<int>( inDC.rect.right - inDC.rect.left - ( 2.0f * this->LineWidth() ) - 1 ),
+    static_cast<int>( inDC.rect.bottom - inDC.rect.top - ( 2.0f * this->LineWidth() ) - 1 ) 
   );
   QBrush fillBrush;
   if( this->FillColor() == RGBColor( RGBColor::NullColor ) )
@@ -369,10 +369,10 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
   // Prepare the Brush
   QPainter* p = inDC.handle.painter;
   QRect drawRect(
-    static_cast<int>( inDC.rect.left ),
-    static_cast<int>( inDC.rect.top ),
-    static_cast<int>( inDC.rect.right - inDC.rect.left ),
-    static_cast<int>( inDC.rect.bottom - inDC.rect.top )
+    static_cast<int>( inDC.rect.left + ( this->LineWidth() / 2.0f ) ),
+    static_cast<int>( inDC.rect.top + ( this->LineWidth() / 2.0f ) ),
+    static_cast<int>( inDC.rect.right - inDC.rect.left - ( 2.0f * this->LineWidth() ) - 1 ),
+    static_cast<int>( inDC.rect.bottom - inDC.rect.top - ( 2.0f * this->LineWidth() ) - 1 ) 
   );
   QBrush fillBrush;
   if( this->FillColor() == RGBColor( RGBColor::NullColor ) )

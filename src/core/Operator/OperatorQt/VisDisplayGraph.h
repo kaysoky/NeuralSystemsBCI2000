@@ -26,7 +26,7 @@
 #ifndef VIS_DISPLAY_GRAPH_H
 #define VIS_DISPLAY_GRAPH_H
 
-#include "VisDisplayBase.h"
+#include "VisDisplayLayer.h"
 #include "DisplayFilter.h"
 #include "DecimationFilter.h"
 #include "SignalDisplay.h"
@@ -37,7 +37,7 @@ class QMouseEvent;
 class QLabel;
 class QStatusBar;
 
-class VisDisplayGraph : public VisDisplayBase
+class VisDisplayGraph : public VisDisplayLayer
 {
   Q_OBJECT
 
