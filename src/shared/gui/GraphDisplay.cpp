@@ -54,9 +54,10 @@ GraphDisplay::GraphDisplay()
 #ifdef __BORLANDC__
   mContext.handle = NULL;
   mOffscreenDC = NULL;
-#endif // __BORLANDC__
+#else // __BORLANDC__
   mContext.handle.device = NULL;
   mContext.handle.painter = NULL;
+#endif // __BORLANDC__
   mOffscreenBmp = NULL;
 }
 
@@ -234,7 +235,7 @@ GraphDisplay::Paint( const void* inRegionHandle )
   QPainter outputPainter( mContext.handle.device );
   outputPainter.drawPixmap( static_cast<int>( mContext.rect.left ),
                             static_cast<int>( mContext.rect.top ),
-                            *mOffscreenBmp
+							*mOffscreenBmp
   );
 
   // Clear the invalid region.

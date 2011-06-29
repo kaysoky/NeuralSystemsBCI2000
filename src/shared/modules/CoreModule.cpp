@@ -151,6 +151,7 @@ CoreModule::Run_( int inArgc, char** inArgv )
 bool
 CoreModule::Initialize( int inArgc, char** inArgv )
 {
+  OnInitialize( inArgc, inArgv );
   // Make sure there is only one instance of each module running at a time.
   // We create a mutex from the module name to encode that we are running.
 #ifdef _WIN32

@@ -98,6 +98,7 @@ class DisplayWindow : public GraphDisplay
         mDisplay( inDisplay )
       {
         Visible = false;
+        BorderStyle = bsNone;
         // accessing the Handle property works around an apparent form
         // positioning bug in some recent VCL versions
         Handle;

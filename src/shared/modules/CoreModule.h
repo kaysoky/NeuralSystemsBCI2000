@@ -112,6 +112,7 @@ class CoreModule : private MessageHandler
 
  protected:
   // Override to integrate with a GUI library.
+  virtual void OnInitialize( int argc, char** argv ) {}
   virtual void ProcessGUIMessages() {}
   virtual bool GUIMessagesPending() { return false; }
   // Calling Terminate() will end message processing.

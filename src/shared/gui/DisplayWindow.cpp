@@ -27,7 +27,9 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#ifndef __BORLANDC__
+#ifdef __BORLANDC__
+#include "VCLdefines.h"
+#else // __BORLANDC__
 #include <QPaintEvent>
 #include <QPainter>
 #include <QApplication>
@@ -73,7 +75,7 @@ DisplayWindow::DisplayWindow()
 {
 #ifdef __BORLANDC__
   mWinDC = NULL;
-  mTitle = Application->Title;
+  mTitle = AnsiString( Application->Title ).c_str();
 #else // __BORLANDC__
   mTitle = qApp->applicationName().toLocal8Bit().constData();
 #endif // __BORLANDC__
@@ -243,7 +245,6 @@ DisplayWindow::Restore()
 {
 #ifdef __BORLANDC__
   mpForm = new TDisplayForm( *this );
-  mpForm->BorderStyle = bsNone;
   mpForm->Left = mLeft;
   mpForm->Top = mTop;
   mpForm->Height = mHeight;
