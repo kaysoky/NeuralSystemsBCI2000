@@ -48,6 +48,10 @@ DisplayForm::DisplayForm( GraphDisplay& inDisplay )
 {
   //Set the window flags
   this->setWindowFlags( Qt::FramelessWindowHint );
+  // Disable double buffering (as of 4.7, Qt docs say this only works on X11)
+  this->setAttribute( Qt::WA_PaintOnScreen );
+  // Disable clearing of window background
+  this->setAttribute( Qt::WA_NoSystemBackground );
 }
 
 void
