@@ -47,7 +47,7 @@ VisDisplayLayer::VisDisplayLayer( const std::string& inVisID )
     if( vitr->first.find( base ) != string::npos )
       layers[ vitr->first.substr( vitr->first.find( ":" ) ).substr( 1 ) ] = vitr->second; 
   for( VisContainerBase::iterator sitr = layers.begin(); sitr != layers.end(); sitr++ )
-    sitr->second->raise();
+    if( sitr->second ) sitr->second->raise();
 }
 
 VisDisplayLayer::~VisDisplayLayer()
