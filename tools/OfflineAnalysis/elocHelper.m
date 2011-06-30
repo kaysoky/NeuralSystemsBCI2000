@@ -32,7 +32,7 @@
 function varargout = elocHelper(varargin)
 verNum = sscanf(version, '%d.%s');
 verNum = verNum(1);
-if ~strcmp(computer, 'PCWIN') || verNum < 7
+if ~strncmp(computer, 'PCWIN', 5) || verNum < 7
   error('Eloc Helper currently works only on windows-based systems with version 7.x or greater of MATLAB or the MATLAB Component Runtime.');
   return;
 end
