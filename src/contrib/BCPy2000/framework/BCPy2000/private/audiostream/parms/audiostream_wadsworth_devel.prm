@@ -1,18 +1,35 @@
-Filtering:SpatialFilter                       int       SpatialFilterType=        0             // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)
-Visualize:Processing%20Stages                 int       VisualizeSource=          1             // Visualize TransmissionFilter output (boolean)
-PythonApp:Streams                             int       RoundModFreq=             2             // modulation frequency rounding: 0 no rounding, 1 integer number of cycles per beat (enumeration)
-PythonApp                                     float     SystemMasterVolume=       0.5           // 
-PythonApp                                     float     WindowSize=               0.5           // 
-PythonApp                                     int       SurroundSoundTrigger=     0             // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
-Visualize:Source%20Signal:DataIOFilter        int       SourceMin=               -5mV           // raw signal vis Min Value
-Visualize:Source%20Signal:DataIOFilter        int       SourceMax=                5mV           // raw signal vis Max Value
+Filtering:SpatialFilter                       int       SpatialFilterType=                0             // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)
+Visualize:Processing%20Stages                 int       VisualizeTiming=                  0             // 
+Visualize:Processing%20Stages                 int       VisualizeSource=                  1             // Visualize TransmissionFilter output (boolean)
+Visualize:Source%20Signal:DataIOFilter        int       SourceMin=                       -5mV           // raw signal vis Min Value
+Visualize:Source%20Signal:DataIOFilter        int       SourceMax=                        5mV           // raw signal vis Max Value
+                
+PythonSig:Epoch                               int       PyAudioMicTrigger=                0             // replace trigger signal with pyaudio sound recording (boolean)
+PythonSig:Epoch                               int       CheckNumberOfEpochs=              1             // 
+PythonSig:Epoch                               list      TriggerChannels=          2    AUDL     AUDR    // 
+PythonSig:Epoch                               floatlist TriggerThreshold=         2     500      500    // 
+PythonSig:Epoch                               float     TriggerHPCutoff=                 10.0           // 
+PythonSig:Epoch                               int       ERPFilterOrder=                   6             // order of bandpass filter for ERP feature set
+PythonSig:Epoch                               floatlist ERPFilterFreqHz=          2       0.1    8.0    // lower and upper frequencies of bandpass filter for ERP feature set
+PythonSig:Epoch                               float     EpochDurationMsec=              600           // 
+PythonSig:Epoch                               intlist   DiscardEpochs=            2       2      2    // for classification, discard this many epochs at the beginning
+PythonSig:Epoch                               int       DiffFeatureSets=                  1           // for 2-stream designs, whether to use the difference between the two feature sets (boolean)
+PythonSig:Epoch                               float     ERPClassifierBias=                0.0         // 
+PythonSig:Epoch                               matrix    ERPClassifierWeights=   0 1       %           // 
 
-PythonApp                                     int       TrialsPerBlock=           3             // 
+Source:AudioInputFilter                       string    MicName=                          Realtek%20HD%20Audio%20Input      // 
+PythonApp                                     int       LowerStimulusThreadPriority=      1             // if checked, try to lower the priority of the stimulus factory thread (boolean)",
+  
+  
+Source:Playback                               int       EnslavePython=                    0             // force BCPy2000 modules to follow states supplied by the source module without being able to change them (boolean)
+PythonApp:Design                              int       TrialsPerBlock=                  20             // number of trials in one block
+PythonApp:Design                              int       BlocksPerRun=                     1             // number of sub-blocks in one run
+PythonApp                                     int       ShowSignalTime=                   0             // show a timestamp based on the number of processed samples (boolean)
+  
+PythonApp                                     float     SystemMasterVolume=               1.0           // 
+PythonApp                                     float     WindowSize=                       0.5           // 
+  
+PythonApp                                     int       SurroundSoundTrigger=             0             // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
+PythonApp                                     int       LPTSynch=                         0             // use parallel port synch or not? (boolean)
+PythonApp                                     int       FreeChoice=                       0             // allow user to choose freely (boolean)
 
-PythonSig:Epoch                               int       CheckNumberOfEpochs=      0             // 
-PythonSig:Epoch                               list      TriggerChannels=  2     AUDL    AUDR    // 
-PythonSig:Epoch                               floatlist TriggerThreshold= 2     1200    1800    // 
-PythonSig:Epoch                               float     TriggerHPCutoff=          0.0           // 
-PythonSig:Epoch                               int       PyAudioMicTrigger=        0             // replace trigger signal with pyaudio sound recording (boolean)
-
-Source:AudioInputFilter                       string    MicName=                  Realtek%20HD%20Audio%20Input      // 

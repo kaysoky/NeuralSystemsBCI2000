@@ -18,12 +18,12 @@ call portable.bat
 
 @set OnConnect=-
 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\audiostream_EEG67+EOG3+SYNC2+VMRK_Quickamp_500Hz.prm 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\explore_pulses.prm 
-::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\headphones001.prm
+::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\audiostream_EEG67+EOG3+SYNC2+VMRK_Quickamp_500Hz.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-SchalkCap64+Audio2.prm
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\drifting.prm 
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\fixed.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\audiostream_wadsworth_devel.prm
-::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm 
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm 
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_perception.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PYWD%\ChannelVolumesDB.prm
 

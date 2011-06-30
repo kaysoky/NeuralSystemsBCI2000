@@ -1,4 +1,4 @@
-Storage:Session:DataIOFilter   string    SubjectName=             XX_A_     // subject alias
+Storage:Session:DataIOFilter   string    SubjectName=  2011XXXX_85XX_A_     // subject alias
 
 PythonApp:Design               int       TrialsPerBlock=             20     // number of trials in one block
 PythonApp                      int       PerceptualOnly=              0     // if checked, mute non-target streams (boolean)

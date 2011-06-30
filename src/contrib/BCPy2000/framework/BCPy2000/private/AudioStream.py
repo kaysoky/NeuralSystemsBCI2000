@@ -126,6 +126,10 @@ class Maker(object):
 		RoundDurations = params['RoundDurations'].val
 		RoundOffsets   = params['RoundOffsets'].val
 
+		
+		self.modular = ((RoundModFreq == 1 or RoundPeriods == 2)  # either the modulator period or the pulse period is adjusted so that the former fits an integer number of times into the latter
+			and (RoundCarrierFreq == 1 or RoundCarrierFreq == 2)) # ...and the carrier period is adjusted so it fits an integer number of times into either one
+		
 		for istream in range(nstreams):
 
 			if RoundModFreq == 2:
@@ -243,6 +247,57 @@ class Maker(object):
 		f = numpy.concatenate(f, axis=WavTools.across_channels)
 		return f
 
+	#############################################################
+
+	def Disassemble(self, stim):
+		
+		if not self.modular: raise ValueError,"flatpacking is not possible since carrier and modulator rounding are not suitably enforced"
+		nstreams = stim.streams.channels()
+		w = WavTools.wav(fs=stim.streams.fs, bits=stim.streams.bits, nchan=1)
+		head_samples = self.bgrise.samples()
+		tail_samples = self.bgfall.samples()
+		self.flatpack = []
+		for istream in range(nstreams):
+			d = {}
+			sig = stim.streams.extractchannels(istream).y.flatten()
+			states = stim.states.extractchannels(istream).y.flatten()
+			seq = stim.seq[istream]
+			beatstart = 1 + numpy.flatnonzero(numpy.logical_and(states[:-1] == 1,  states[1:] != 1))
+			beatstop = numpy.r_[beatstart[1:], beatstart[-1]+beatstart[1]-beatstart[0]]
+			d['beatstart'] = beatstart
+			def combine(template, sig, states):
+				w = template.copy()
+				sig = numpy.expand_dims(sig, WavTools.across_channels)
+				states = numpy.expand_dims(states, WavTools.across_channels)
+				w.y = numpy.concatenate((sig,states), WavTools.across_channels)
+				return w
+			for key in ['s', 't', 'd']:
+				letter = key[0].lower()
+				if letter in seq:
+					i = seq.index(letter)
+					d[key] = combine(w, sig[beatstart[i]:beatstop[i]], states[beatstart[i]:beatstop[i]])
+			
+			d['Head'] = combine(w, sig[:beatstart[0]], states[:beatstart[0]])
+			d['Tail'] = combine(w, sig[beatstop[-1]:], states[beatstop[-1]:])
+			self.flatpack.append(d)
+			
+	#############################################################
+
+	def Assemble(self, stim):
+		stim.streams = []
+		stim.states = []
+		for istream,seq in enumerate(stim.seq):
+			d = self.flatpack[istream]
+			w = d['Head'].copy()
+			for stimtype in seq: w %= d[stimtype]
+			w %= d['Tail']
+			stim.streams.append(w.left())
+			stim.states.append(w.right())
+		stim.streams = WavTools.stack(stim.streams)
+		stim.states = WavTools.stack(stim.states)
+		
+	#############################################################
+		
 #################################################################
 #################################################################
 
@@ -253,6 +308,7 @@ class Stimulus(object):
 	def __init__(self, factory, nexttarget=None):
 		
 		params = factory.params
+		flatpacking = hasattr(factory, 'flatpack')
 		
 		if params['LowerStimulusThreadPriority'].val:
 			try: import PrecisionTiming; PrecisionTiming.SetThreadPriority(-3)
@@ -261,22 +317,23 @@ class Stimulus(object):
 		epoch = params['EpochDurationMsec'].val  / 1000.0
 
 		total_sec = numpy.asarray(params['DurationMsec']['Background',:].val) / 1000.0
-
-		silent       = factory.NewWav(max(total_sec),1)
-		self.states  = factory.NewWav()
-		self.streams = factory.NewWav() # before AudioMixingMatrix is applied
-		self.sound   = factory.NewWav() # after AudioMixingMatrix is applied
-
 		nstreams = params['NumberOfStreams'].val
 
-		if params['EnslavePython'].val:
-			self.streams.y = numpy.zeros((silent.samples(), nstreams))
-			self.sound.y = (numpy.random.rand(silent.samples(), 2)-0.5) * 0.3
-			self.states.y = self.streams.y * 0
-			self.nbeats = [0] * nstreams
-			self.ntargets = [0] * nstreams
-			self.seq = [''] * nstreams
-			return
+		if not flatpacking:
+			silent       = factory.NewWav(max(total_sec),1)
+			self.states  = factory.NewWav()
+			self.streams = factory.NewWav() # before AudioMixingMatrix is applied
+
+			if params['EnslavePython'].val:
+				self.streams.y = numpy.zeros((silent.samples(), nstreams))
+				self.sound.y = (numpy.random.rand(silent.samples(), 2)-0.5) * 0.3
+				self.states.y = self.streams.y * 0
+				self.nbeats = [0] * nstreams
+				self.ntargets = [0] * nstreams
+				self.seq = [''] * nstreams
+				return
+		
+		self.sound   = factory.NewWav() # after AudioMixingMatrix is applied
 		
 		leadin = params['InitialStandards'].val
 		ndev = params['NumberOfDeviants'].val
@@ -314,7 +371,7 @@ class Stimulus(object):
 				
 				nt = self.ntargets[istream] = random.randint(minntargets, maxntargets)
 				tt,t = t[:nt],t[nt:]
-				targettimes[istream] = sorted(tt)				
+				targettimes[istream] = sorted(tt)
 			else:
 				break # success
 		else: # tried too many times
@@ -323,19 +380,25 @@ class Stimulus(object):
 		self.seq = [''] * nstreams
 		for istream in range(nstreams):
 			
+			stimtypes = []
+			stimtimes[istream].sort()
+			for ibeat,t in enumerate(stimtimes[istream]):
+				if t in devtimes[istream]: stimtype = 'Deviant'
+				elif t in targettimes[istream]: stimtype = 'Target'
+				else: stimtype = 'Standard'
+				stimtypes.append(stimtype)
+				self.seq[istream] += stimtype[0].lower()
+				
+			if flatpacking: continue
+			
 			weighting = {}; sampletrack = {}
 			for stimtype in StimulusTypes[1:]:
 				weighting[stimtype] = silent.copy()
 				if stimtype in factory.samplewavs:
 					sampletrack[stimtype] = silent.copy()
-					
-			for ibeat in range(len(stimtimes[istream])):
-				t = stimtimes[istream][ibeat]
-				if t in devtimes[istream]: stimtype = 'Deviant'
-				elif t in targettimes[istream]: stimtype = 'Target'
-				else: stimtype = 'Standard'
-				self.seq[istream] += stimtype[0].lower()
 				
+			for ibeat,t in enumerate(stimtimes[istream]):
+				stimtype = stimtypes[ibeat]
 				pulse = factory.pulses[stimtype][istream]
 				weighting[stimtype][t:t+pulse.duration()] += pulse
 				s = factory.samplewavs.get(stimtype)
@@ -368,11 +431,7 @@ class Stimulus(object):
 			carrier_freq = (wt * params['CarrierFreqHz'].val[:,istream]).A
 			carrier = factory.waves(carrier_freq, params['CarrierType'][:,istream], 'CarrierType', sampletrack=sampletrack)
 			amp = params['Amplitude'].val[:, istream].A.T
-			if int(params['PerceptualOnly']):
-				nt = nexttarget - 1
-				amp = amp * float(istream == nt)
-				self.ntargets = [int(i==nt) * self.ntargets[i] for i in range(nstreams)]
-				
+							
 			carrier = carrier * amp
 			
 			# special case: adjust background carrier according to this individual stream's
@@ -389,6 +448,14 @@ class Stimulus(object):
 			# multiply carrier and modulator
 			self.streams &= carrier.A * modulation.A
 		
+		if flatpacking: factory.Assemble(self)
+		elif factory.modular: factory.Disassemble(self)
+			
+		if int(params['PerceptualOnly']):
+			nt = nexttarget - 1
+			self.streams = self.streams * [float(i==nt) for i in range(nstreams)]
+			self.ntargets = [int(i==nt) * self.ntargets[i] for i in range(nstreams)]
+				
 		mm = params['AudioMixingMatrix'].val.T
 		# AudioMixingMatrix is specified in the param spec as one row per outputs, one column per input.
 		# To post-multiply the samples-by-channels data in wav object self.streams, we need it transposed.
@@ -396,6 +463,7 @@ class Stimulus(object):
 		self.sound.y = (numpy.asmatrix(self.streams.y) * mm).A		
 		if int(params['SurroundSoundTrigger']):
 			self.sound &= (self.states-1) * SigTools.wavegen(freq_hz=1000, container=self.states.copy())
+			
 		
 	#############################################################
 	

@@ -33,6 +33,7 @@ class BciApplication(BciGenericApplication):
 			"PythonApp         floatlist ChannelVolumesDB=                  1    -18                      0.0   % 0 // per-audio-channel stimulus attenuation in dB",
 			"PythonApp         int       HeadPhones=                               0                      0     0 1 // use headphones or not? (boolean)",
 			"PythonApp         int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
+			"PythonApp         int       LPTSynch=                                 1                      0     0 1 // use parallel port synch or not? (boolean)",
 			"PythonApp:Task    int       FreeChoice=                               0                      0     0 1 // allow user to choose freely (boolean)",
 		]
 		params += AudioStream.ParameterDefinitions
@@ -47,8 +48,6 @@ class BciApplication(BciGenericApplication):
 		nbits = numpy.ceil(numpy.log2(len(AudioStream.StimulusTypes)))
 		for stream in range(1, self.maxstreams+1):
 			states.append("Stream%d %d 0 0 0"%(stream,nbits))
-
-		self.lpt = AppTools.ParallelPort.lpt()
 
 		return params,states
 
@@ -96,6 +95,9 @@ class BciApplication(BciGenericApplication):
 
 	def Initialize(self, indim, outdim):
 		
+		if int(self.params['LPTSynch']): self.lpt = AppTools.ParallelPort.lpt() # this used to be in the constructor. Was that for a reason?
+		else: self.lpt = None
+
 		self.transient('PredictedStream', manual=True)
 		self.transient('Response', manual=True)
 
@@ -114,6 +116,14 @@ class BciApplication(BciGenericApplication):
 		t = VisualStimuli.Text(text=starttext, position=(w/2,h/2), anchor='top', on=True)
 		self.stimulus('cue', t)
 		
+		self.ding = WavTools.player('ding.wav')
+		self.chimes = WavTools.player('chimes.wav')
+		
+		self.player = WavTools.player(WavTools.wav(fs=self.audiofs, bits=self.audiobits, nchan=self.audiochannels))
+		self.player.set_preplay_hook(self.start_stimulus)
+		self.player.set_postplay_hook(self.finish_stimulus)
+		self.UpdateChannelVolumes()
+
 		self.reset_count()
 		self.count_feedback_stimuli = []
 		for istream in range(self.nstreams):
@@ -121,7 +131,7 @@ class BciApplication(BciGenericApplication):
 			t = VisualStimuli.Text(text='?', position=(x,h/2), anchor='center', on=False)
 			stim = self.stimulus('count%d'%(istream+1), t)
 			self.count_feedback_stimuli.append(stim)
-			self.stimulus('StreamVolume%d'%(istream+1), VisualStimuli.Text, text='?', position=(x,h), anchor='top', on=False)
+			self.stimulus('StreamVolume%d'%(istream+1), VisualStimuli.Text, text='%gdB'%self.chanvol[istream], position=(x,h*0.9), anchor='top', on=True)
 		
 		self.factory = WavTools.background_queue()
 		self.streams = []
@@ -132,22 +142,15 @@ class BciApplication(BciGenericApplication):
 			self.addstatemonitor('CurrentTrial')
 			self.addstatemonitor('TargetStream')
 			self.addstatemonitor('PredictedStream')
-				
-		self.player = WavTools.player(WavTools.wav(fs=self.audiofs, bits=self.audiobits, nchan=self.audiochannels))
-		self.player.set_preplay_hook(self.start_stimulus)
-		self.player.set_postplay_hook(self.finish_stimulus)
-		self.UpdateChannelVolumes()
-		
-		
-		self.ding = WavTools.player('ding.wav')
-		self.chimes = WavTools.player('chimes.wav')
+						
 		
 		self.freechoice = int(self.params['FreeChoice'])
 		self.last_prediction = 0
 		vol = float(self.params['SystemMasterVolume'])
 		self.init_volume(vol)
 		
-		self.arm()
+		if self.StimulusMaker.modular: self.make( store=True )
+		self.enable_software_volume_adjustment = False
 		
 	#############################################################
 	
@@ -198,7 +201,7 @@ class BciApplication(BciGenericApplication):
 				self.states['CorrectResponse'] = self.current_stream.ntargets[self.target-1]
 			else:
 				self.states['CorrectResponse'] = 0
-			self.stimuli['cue'].text = {0:'CHOOSE', 1:'LEFT', 2:'RIGHT'}.get(self.target, 'stream #%d'%self.target)
+			self.stimuli['cue'].text = {0:'CHOOSE', 1:'<- LEFT', 2:'RIGHT ->'}.get(self.target, 'stream #%d'%self.target)
 			self.stimuli['cue'].on = True
 		elif phase == 'respond':
 			if self.states['CurrentTrial'] < int(self.params['TrialsPerBlock']):
@@ -293,22 +296,23 @@ class BciApplication(BciGenericApplication):
 			#print self.states['Response']
 			self.change_phase()
 		
-		if phase != 'respond' and event.type == pygame.locals.KEYUP:
+		if phase != 'respond' and event.type == pygame.locals.KEYUP and self.enable_software_volume_adjustment:
 			key = event.key
+			#print "key",key
 			vc = self.volctrl = getattr(self, 'volctrl', {})
 			chan = vc['channel'] = vc.get('channel', 0)
 			if key in (pygame.locals.K_LEFT, pygame.locals.K_RIGHT, pygame.locals.K_UP, pygame.locals.K_DOWN):
 				if key == pygame.locals.K_LEFT:  vc['channel'] = max(0, vc['channel'] - 1)
-				if key == pygame.locals.K_RIGHT: vc['channel'] = min(self.nstreams, vc['channel'] + 1)
+				if key == pygame.locals.K_RIGHT: vc['channel'] = min(self.nstreams-1, vc['channel'] + 1)
 				if key == pygame.locals.K_UP:    self.chanvol[chan] = min(   0.0, self.chanvol[chan] + 3.0 )
 				if key == pygame.locals.K_DOWN:  self.chanvol[chan] = max(-100.0, self.chanvol[chan] - 3.0 )
 				vc['string'] = "PythonApp  floatlist ChannelVolumesDB= %d    %s  // adjusting channel %d" % ( len(self.chanvol),  '  '.join(["%g"%x for x in self.chanvol]), vc['channel']+1 )
 				print vc['string']
 				for i in range(self.nstreams):
 					stim = self.stimuli['StreamVolume%d'%(i+1)]
-					if i == vc['channel']: stim.color = (1, 1, 1)
-					else: stim.color = (0.75,0.75,0.75)
-					stim.text = '%gdB' % self.chanvol[i]
+					if i == vc['channel']: extra = ' * '
+					else: extra = ''
+					stim.text = '%s%gdB%s' % (extra, self.chanvol[i], extra)
 				self.remember('volchange')
 				self.UpdateChannelVolumes()
 			
@@ -348,13 +352,13 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 	
 	def start_stimulus(self):
-		self.lpt(255)
+		if self.lpt: self.lpt(255)
 		self.remember('stream')
 		
 	#############################################################
 	
 	def finish_stimulus(self):
-		self.lpt(0)
+		if self.lpt: self.lpt(0)
 		self.change_phase()
 		self.last.pop('stream', None)  # AAA
 		#self.streamstart = None        # BBB
@@ -419,13 +423,16 @@ class BciApplication(BciGenericApplication):
 		if pop: return self.targetorder.pop(0)
 		else: return self.targetorder[0]
 		
-#################################################################
-	def play(self, snd, side=None):		
-		if side == None: side =random.choice(['left','right'])
-		
-		if   side == 'right': (snd.sound[:,:2] * [0,1]).play()
-		elif side == 'left':  (snd.sound[:,:2] * [1,0]).play() 
-		else:                 (snd.sound[:,:2] * [1,1]).play() 
+	#############################################################
+
+	def play(self, side=None, stim=None):
+		if stim == None: stim = self.make()
+		if side == None: side = random.choice(['left','right'])
+		p = WavTools.player(w=stim.sound[:,:2])
+		p.pan = self.player.pan[:2]
+		if   side == 'right': p.pan[0] = 0; p.play(); print "right side: %d targets" % stim.ntargets[1]
+		elif side == 'left':  p.pan[1] = 0; p.play(); print "left side:  %d targets" % stim.ntargets[0]
+		else:                               p.play(); print "targets:", stim.ntargets
 		
 #################################################################
 #################################################################
