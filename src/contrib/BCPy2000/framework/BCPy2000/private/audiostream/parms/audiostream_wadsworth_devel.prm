@@ -1,8 +1,9 @@
 Filtering:SpatialFilter                       int       SpatialFilterType=                0             // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)
 Visualize:Processing%20Stages                 int       VisualizeTiming=                  0             // 
-Visualize:Processing%20Stages                 int       VisualizeSource=                  1             // Visualize TransmissionFilter output (boolean)
-Visualize:Source%20Signal:DataIOFilter        int       SourceMin=                       -5mV           // raw signal vis Min Value
-Visualize:Source%20Signal:DataIOFilter        int       SourceMax=                        5mV           // raw signal vis Max Value
+Visualize:Processing%20Stages                 int       VisualizeSource=                  1             // Visualize raw brain signal (boolean)
+Visualize:Source%20Signal:DataIOFilter        int       SourceMin=                       -50muV           // raw signal vis Min Value
+Visualize:Source%20Signal:DataIOFilter        int       SourceMax=                        50muV           // raw signal vis Max Value
+Visualize:Processing%20Stages                 int       VisualizePythonSigFilter=         1             // Visualize PythonSigFilter output (boolean)
                 
 PythonSig:Epoch                               int       PyAudioMicTrigger=                0             // replace trigger signal with pyaudio sound recording (boolean)
 PythonSig:Epoch                               int       CheckNumberOfEpochs=              1             // 

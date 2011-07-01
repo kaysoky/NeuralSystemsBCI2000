@@ -1,0 +1,13 @@
+edit subject_attention.prm and input subjectname:   2011MMDD_85XX_A_
+
+plug out dataglove, plug in USB keyboard
+
+in audiostream_classify, be sure to choose the right condition (001 or 002) for the previous run
+
+when loading weights:  be VERY careful to choose from right condition directory (001 or 002) for the NEXT run
+
+
+plug out bluetooth dongle, plug in 5th amp
+
+
+edit subject_attention.prm and input subjectname (set back to generic Xs)
