@@ -36,16 +36,15 @@ VisDisplayLayer::VisDisplayLayer( const std::string& inVisID )
 : VisDisplayBase( inVisID )
 {
   // Set widget properties and add it to the window 
-  this->setSizePolicy( QSizePolicy::Maximum, QSizePolicy::Maximum );
+  this->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
   this->parentWidget()->layout()->addWidget( this );
   SetConfig( Visconfigs()[ mVisID ] );
 
   // Sort sibling layers
-  string base = mVisID.substr( 0, mVisID.find( ":" ) + 1 );
   VisContainerBase layers;
   for( VisContainerBase::iterator vitr = Visuals().begin(); vitr != Visuals().end(); vitr++ )
-    if( vitr->first.find( base ) != string::npos )
-      layers[ vitr->first.substr( vitr->first.find( ":" ) ).substr( 1 ) ] = vitr->second; 
+    if( vitr->first.find( mVisID.DominatingLayerVisID() ) != string::npos )
+      layers[ VisID( vitr->first ).LayerID() ] = vitr->second; 
   for( VisContainerBase::iterator sitr = layers.begin(); sitr != layers.end(); sitr++ )
     if( sitr->second ) sitr->second->raise();
 }

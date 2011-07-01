@@ -81,10 +81,10 @@ VisDisplayBitmap::HandleBitmap( const BitmapImage& inImage )
     {
       mImageBuffer = inImage + BitmapImage( inImage.Width(), inImage.Height() );
       // Adapt the window's aspect ratio without changing its width.
-      if( inImage.Width() > 0 )
+      if( VisID( mVisID ).DominatingLayerVisID() == mVisID && inImage.Width() > 0 )
       {
-        this->resize( this->width(), ( inImage.Height() * this->width() ) / inImage.Width() );
-        Visconfigs()[ mVisID ].Put( CfgID::Height, this->height(), UserDefined );
+        this->parentWidget()->resize( this->width(), ( inImage.Height() * this->width() ) / inImage.Width() );
+        Visconfigs()[ VisID( mVisID ).WindowID() ].Put( CfgID::Height, this->height(), UserDefined );
       }
     }
     else
@@ -101,13 +101,6 @@ VisDisplayBitmap::paintEvent( QPaintEvent* iopEvent )
   QPainter p( this );
   p.setRenderHint( QPainter::Antialiasing, false );
   p.setRenderHint( QPainter::TextAntialiasing, false );
-
-  // FIXME:  This hack ensures that the child bitmap 
-  // layer is the same size as it's parent at all times.
-  // This is done using an Expanding QSizePolicy elsewhere, but
-  // for some reason, it's impossible to ensure the correct size
-  // at systemstartup.
-  this->resize( this->parentWidget()->size() );
 
   int formWidth = this->width(),
       formHeight = this->height();

@@ -256,12 +256,11 @@ GraphDisplay::Paint( const void* inRegionHandle )
     QPainter outputPainter( mContext.handle.device );
     outputPainter.drawPixmap( static_cast<int>( mContext.rect.left ),
                               static_cast<int>( mContext.rect.top ),
-                              *mOffscreenBmp
-    );
-
-    // Clear the invalid region.
-    mInvalidRegion = QRegion();
+                              *mOffscreenBmp ); 
   }
+  
+  // Clear the invalid region.
+  mInvalidRegion = QRegion();
 
 #endif // __BORLANDC__
 }
@@ -437,8 +436,6 @@ GraphDisplay::BitmapData( int inWidth, int inHeight ) const
       }
     }
 #endif // QT_OPENGL_LIB
-    // TODO: Rework this to pull raw data from QPixmap.
-    // Conversion from QPixmap to QImage is expensive!
     QImage img = mOffscreenBmp->scaled( width, height ).toImage();
     for( int x = 0; x < width; x++ )
     {

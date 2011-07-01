@@ -40,11 +40,11 @@ VisDisplayWindow::VisDisplayWindow( const std::string& inVisID )
   this->setParent( spParentWindow, Qt::Tool );
   this->setAttribute( Qt::WA_MacAlwaysShowToolWindow, true );
   SetConfig( Visconfigs()[ mVisID ] );
-  mLayout = new QStackedLayout( this );
-  mLayout->setGeometry( QRect( 0, 0, this->width(), this->height() ) );
-  mLayout->setStackingMode( QStackedLayout::StackAll );
-  mLayout->setParent( this );
-  this->setLayout( mLayout );
+  mpLayout = new QStackedLayout( this );
+  mpLayout->setGeometry( QRect( 0, 0, this->width(), this->height() ) );
+  mpLayout->setStackingMode( QStackedLayout::StackAll );
+  mpLayout->setParent( this );
+  this->setLayout( mpLayout );
 
   // All VisDisplayWindows have a black background for backward compatibility
   // Note: This palette will propogate to child QWidgets.
@@ -57,12 +57,6 @@ VisDisplayWindow::VisDisplayWindow( const std::string& inVisID )
 
 VisDisplayWindow::~VisDisplayWindow()
 {
-  // When destructing a window, child QWidgets will be automatically deleted.
-  string base = mVisID.substr( 0, mVisID.find( ":" ) + 1 );
-  for( VisContainerBase::iterator vitr = Visuals().begin(); vitr != Visuals().end(); vitr++ )
-    if( vitr->first.find( base ) != string::npos )
-      vitr->second = NULL;  
-  delete mLayout; // May be automatically deleted...
 }
 
 void

@@ -38,7 +38,7 @@ class GazeMonitorFilter : public GenericFilter
 
  private:
   // Private methods
-  void InitSound( std::string &filename, WavePlayer* wp ) const; 
+  void InitSound( const std::string& inFilename, WavePlayer& ioPlayer) const; 
   void SetDisplayRect( GUI::GraphObject* obj, float cx, float cy, float rad );
   void DeleteStimuli();
   void ViolatedFixation();
@@ -49,7 +49,7 @@ class GazeMonitorFilter : public GenericFilter
   Expression mFixationX;
   Expression mFixationY;
   float mFixationRadius;
-  WavePlayer* mpViolationSound;
+  WavePlayer mViolationSound;
   bool mVisualizeGaze;
   bool mLogGazeInformation;
   bool mFixated;

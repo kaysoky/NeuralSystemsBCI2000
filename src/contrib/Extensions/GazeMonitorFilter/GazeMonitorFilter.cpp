@@ -19,21 +19,21 @@
 #define FIXATION_IMAGE_SIZE 0.02f
 #define CORRECTION_TIME "4.0s"
 
-#define CREATE_OBJ( _obj, _type ) \
-  for( int _i = 0; _i < NUM_DISPLAYS; _i++ ) \
-    _obj##[_i] = new _type##( *( mpDisplays[_i] ) )
+#define CREATE_OBJ( obj_, type_ ) \
+  for( int i_ = 0; i_ < NUM_DISPLAYS; i_++ ) \
+    obj_##[i_] = new type_##( *( mpDisplays[i_] ) )
 
-#define OBJ_METHOD( _obj, _method, ... ) \
-  for( int _i = 0; _i < NUM_DISPLAYS; _i++ ) \
-    _obj##[_i]->##_method##( __VA_ARGS__ ) \
+#define OBJ_METHOD( obj_, method_, ... ) \
+  for( int i_ = 0; i_ < NUM_DISPLAYS; i_++ ) \
+    obj_##[i_]->##method_##( __VA_ARGS__ ) \
 
-#define POSITION_OBJ( _obj, _cx, _cy, _rad ) \
-  for( int _i = 0; _i < NUM_DISPLAYS; _i++ ) \
-    SetDisplayRect( ( GUI::GraphObject* )##_obj##[_i], _cx, _cy, _rad ) \
+#define POSITION_OBJ( obj_, cx_, cy_, rad_ ) \
+  for( int i_ = 0; i_ < NUM_DISPLAYS; i_++ ) \
+    SetDisplayRect( obj_##[i_], cx_, cy_, rad_ ) \
 
-#define DELETE_OBJ( _obj ) \
-  for( int _i = 0; _i < NUM_DISPLAYS; _i++ ) { \
-    delete( _obj##[_i] ); _obj##[_i] = NULL; } \
+#define DELETE_OBJ( obj_ ) \
+  for( int i_ = 0; i_ < NUM_DISPLAYS; i_++ ) { \
+    delete( obj_##[i_] ); obj_##[i_] = NULL; } \
 
 using namespace std;
 
@@ -42,7 +42,6 @@ RegisterFilter( GazeMonitorFilter, 3.A );
 GazeMonitorFilter::GazeMonitorFilter() : 
   mEnforceFixation( false ),
   mFixationRadius( 0.0f ),
-  mpViolationSound( NULL ),
   mpFixationImage( NULL ),
   mpFixationViolationImage( NULL ),
   mpPrompt( NULL ),
@@ -88,8 +87,6 @@ GazeMonitorFilter::GazeMonitorFilter() :
       " // Sound to play when fixation violated (inputfile)",
     "Application:GazeMonitor int LogGazeInformation= 0 0 0 1 "
       " // Add Eyetracker information to applog (boolean)",
-    "Application:GazeMonitor int VisualizeGaze= 0 0 0 1 "
-      " // Preview gaze location on the Application Visualization (boolean)",
   END_PARAMETER_DEFINITIONS
 
   // Define the GazeMonitor States
@@ -157,7 +154,7 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
   State( "EyetrackerRightEyeValidity" );
 
   bool enforceFixation = ( int )Parameter( "EnforceFixation" );
-  bool vizGaze = ( int )Parameter( "VisualizeGaze" );
+  bool vizGaze = ( int )Parameter( "VisualizeGazeMonitorFilter" );
   if( vizGaze )
   {
     Parameter( "WindowWidth" );
@@ -197,10 +194,8 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
     if( string( Parameter( "FixationViolationSound" ) ) != "" )
     {
       string filename = string( Parameter( "FixationViolationSound" ) );
-      WavePlayer* wp = new WavePlayer();
+      WavePlayer wp;
       InitSound( filename, wp );
-      delete wp;
-      wp = NULL;
     }
     Parameter( "BlinkTime" );
     Parameter( "SaccadeTime" );
@@ -221,7 +216,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
   mLoggingEyePos = ( int )OptionalParameter( "LogEyePos", 0 ); 
   mLoggingEyeDist = ( int )OptionalParameter( "LogEyeDist", 0 );
   mEnforceFixation = ( int )Parameter( "EnforceFixation" );
-  mVisualizeGaze = ( int )Parameter( "VisualizeGaze" );
+  mVisualizeGaze = ( int )Parameter( "VisualizeGazeMonitorFilter" );
 
   // If we're logging gaze at all, we need extra information to process it.
   if( mLoggingGaze )
@@ -263,7 +258,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
       mpFixationImage->SetFile( string( Parameter( "FixationImage" ) ) );
       mpFixationImage->SetRenderingMode( GUI::RenderingMode::Transparent );
       mpFixationImage->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
-      SetDisplayRect( ( GUI::GraphObject* )mpFixationImage, cx, cy, FIXATION_IMAGE_SIZE );
+      SetDisplayRect( mpFixationImage, cx, cy, FIXATION_IMAGE_SIZE );
       mpFixationImage->SetPresentationMode( VisualStimulus::ShowHide );
       mpFixationImage->Present();
     }
@@ -275,7 +270,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
       mpFixationViolationImage->SetFile( string( Parameter( "FixationViolationImage" ) ) );
       mpFixationViolationImage->SetRenderingMode( GUI::RenderingMode::Transparent );
       mpFixationViolationImage->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
-      SetDisplayRect( ( GUI::GraphObject* )mpFixationViolationImage, cx, cy, FIXATION_IMAGE_SIZE );
+      SetDisplayRect( mpFixationViolationImage, cx, cy, FIXATION_IMAGE_SIZE );
       mpFixationViolationImage->SetPresentationMode( VisualStimulus::ShowHide );
       mpFixationViolationImage->Conceal();
     }
@@ -283,7 +278,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
     // Set up the violation sound
     string filename = string( Parameter( "FixationViolationSound" ) );
     if( filename != "" )
-	  InitSound( filename, mpViolationSound = new WavePlayer() );
+	  InitSound( filename, mViolationSound );
 
     // Set up fixation zone visualization
     CREATE_OBJ( mpZone, EllipticShape );
@@ -302,9 +297,9 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
     mpPrompt->SetTextHeight( 0.1f );
     mpPrompt->Hide();
 
-    mBlinkTime = MeasurementUnits::TimeInSampleBlocks( ( string )Parameter( "BlinkTime" ) );
+    mBlinkTime = Parameter( "BlinkTime" ).InSampleBlocks();
     mBlinkBlocks = 0;
-    mSaccadeTime = MeasurementUnits::TimeInSampleBlocks( ( string )Parameter( "SaccadeTime" ) );
+    mSaccadeTime = Parameter( "SaccadeTime" ).InSampleBlocks();
     mSaccadeBlocks = 0;
 
     //if( mLogGazeInformation ) AppLog << "Enforcing Fixation." << endl;
@@ -435,9 +430,9 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
 
     // Move visual stimuli to fixation
     if( mpFixationImage ) 
-      SetDisplayRect( ( GUI::GraphObject* )mpFixationImage, fx, fy, FIXATION_IMAGE_SIZE );
+      SetDisplayRect( mpFixationImage, fx, fy, FIXATION_IMAGE_SIZE );
     if( mpFixationViolationImage ) 
-      SetDisplayRect( ( GUI::GraphObject* )mpFixationViolationImage, fx, fy, FIXATION_IMAGE_SIZE );
+      SetDisplayRect( mpFixationViolationImage, fx, fy, FIXATION_IMAGE_SIZE );
     POSITION_OBJ( mpZone, fx, fy, mFixationRadius );
 
     // Calculate distance of gaze from fixation center
@@ -526,17 +521,14 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
 }
 
 void
-GazeMonitorFilter::InitSound( string &filename, WavePlayer *wp ) const
+GazeMonitorFilter::InitSound( const string& inFilename, WavePlayer& ioPlayer ) const
 {
-  if( wp )
-  {
-    if( wp->ErrorState() != WavePlayer::noError )
+    if( ioPlayer.ErrorState() != WavePlayer::noError )
       bcierr << "There was an issue creating a waveplayer object." << endl;
-	wp->SetFile( BCIDirectory::AbsolutePath( filename ) );
-	if( wp->ErrorState() != WavePlayer::noError )
-      bcierr << "Could not open file: " << BCIDirectory::AbsolutePath( filename ) << endl;
-    wp->SetVolume( 1.0f );
-  }
+	ioPlayer.SetFile( BCIDirectory::AbsolutePath( inFilename ) );
+	if( ioPlayer.ErrorState() != WavePlayer::noError )
+      bcierr << "Could not open file: " << BCIDirectory::AbsolutePath( inFilename ) << endl;
+    ioPlayer.SetVolume( 1.0f );
 }
 
 void
@@ -551,14 +543,9 @@ void
 GazeMonitorFilter::DeleteStimuli()
 {
   // Perform a bit of cleanup
-  if( mpViolationSound ) delete mpViolationSound;
-  mpViolationSound = NULL;
-  if( mpFixationImage ) delete mpFixationImage;
-  mpFixationImage = NULL;
-  if( mpFixationViolationImage ) delete mpFixationViolationImage;
-  mpFixationViolationImage = NULL;
-  if( mpPrompt ) delete mpPrompt;
-  mpPrompt = NULL;
+  delete mpFixationImage; mpFixationImage = NULL;
+  delete mpFixationViolationImage; mpFixationViolationImage = NULL;
+  delete mpPrompt; mpPrompt = NULL;
   DELETE_OBJ( mpRightEye );
   DELETE_OBJ( mpLeftEye );
   DELETE_OBJ( mpCursor );
@@ -569,7 +556,7 @@ void
 GazeMonitorFilter::ViolatedFixation()
 {
   //if( mLogGazeInformation ) AppLog << "Gaze Left Fixation." << endl;
-  if( mpViolationSound ) mpViolationSound->Play();
+  mViolationSound.Play();
   State( "FixationViolated" ) = true;
   if( mpFixationImage ) mpFixationImage->Conceal();
   if( mpFixationViolationImage ) mpFixationViolationImage->Present();

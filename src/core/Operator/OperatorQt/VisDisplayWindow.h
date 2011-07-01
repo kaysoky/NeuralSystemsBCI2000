@@ -48,7 +48,7 @@ class VisDisplayWindow : public VisDisplayBase
  private:
   bool mUserIsMoving;
   std::string mTitle;
-  QStackedLayout* mLayout;
+  QStackedLayout* mpLayout;
 
  protected:
   virtual void SetConfig( ConfigSettings& );

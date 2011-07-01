@@ -110,12 +110,14 @@ VisDisplay::HandleProperty( const char* inVisID, const IDType inCfgID, const cha
   VisDisplayBase::HandleProperty( visid.c_str(), inCfgID, inValue, VisDisplayBase::UserDefined );
 }
 
+/*
 string
 VisDisplay::FormatID( const char* id )
 {
   string ret( id );
   return FormatID( ret );
 }
+*/
 
 string
 VisDisplay::FormatID( const string &id )

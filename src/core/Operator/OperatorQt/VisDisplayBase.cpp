@@ -107,13 +107,11 @@ VisDisplayBase::VisDisplayBase( const std::string& inVisID )
 : QWidget( NULL ),
   mVisID( inVisID )
 {
-  size_t idx = mVisID.find( ":" );
-  if( idx != string::npos )
+  if( mVisID != mVisID.WindowID() )
   {
-    string base = mVisID.substr( 0, idx );
-    if( !Visuals()[ base ] )
-      new VisDisplayWindow( base );
-    this->setParent( Visuals()[ base ] );
+    if( !Visuals()[ mVisID.WindowID() ] )
+      new VisDisplayWindow( mVisID.WindowID() );
+    this->setParent( Visuals()[ mVisID.WindowID() ] );
   }
   VisDisplayBase* visual = Visuals()[ mVisID ];
   delete visual;

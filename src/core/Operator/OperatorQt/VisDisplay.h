@@ -50,7 +50,7 @@ class VisDisplay
   static void HandleProperty( const char* visID, const IDType, const char* );
   static void Clear();
  private:
-  static std::string FormatID( const char* id );
+  //static std::string FormatID( const char* id );
   static std::string FormatID( const std::string &id ); 
   static std::string Layer( const std::string &id );
   static std::string Base( const std::string &id );
