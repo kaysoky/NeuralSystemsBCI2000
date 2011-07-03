@@ -102,11 +102,11 @@ GazeMonitorFilter::GazeMonitorFilter() :
 
   // FIXME: When Application DisplayWindow is available, put it here!
   GUI::DisplayWindow* appwindow = new GUI::DisplayWindow();
-  appwindow->SetLeft( -1280 ); appwindow->SetTop( 0 );
-  appwindow->SetWidth( 1280 ); appwindow->SetHeight( 1024 );
-  appwindow->SetTitle( "Application Overlay" ); 
-  appwindow->SetColor( RGBColor::Black );
-  appwindow->Show(); appwindow->Update();
+  //appwindow->SetLeft( 0 ); appwindow->SetTop( 0 );
+  //appwindow->SetWidth( 1680 ); appwindow->SetHeight( 1050 );
+  //appwindow->SetTitle( "Application Overlay" ); 
+  //appwindow->SetColor( RGBColor::Black );
+  //appwindow->Show(); appwindow->Update();
   mpDisplays[APP] = appwindow;
 
   mpDisplays[VIS] = new GUI::GraphDisplay();
@@ -333,8 +333,11 @@ GazeMonitorFilter::StartRun()
   // Ensure We're not in "Correction" state
   State( "Correction" ) = 0;
   mCorrection = 0;
-  mpPrompt->Hide();
-  OBJ_METHOD( mpZone, SetColor, RGBColor::Gray );
+  if( mEnforceFixation )
+  {
+	mpPrompt->Hide();
+    OBJ_METHOD( mpZone, SetColor, RGBColor::Gray );
+  }
 
   if( mVisualizeGaze )
   {
