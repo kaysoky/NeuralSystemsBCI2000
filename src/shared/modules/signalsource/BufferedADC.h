@@ -49,7 +49,10 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#include "BufferedADC.h"
+#ifndef BUFFERED_ADC_H
+#define BUFFERED_ADC_H
+
+#include "GenericADC.h"
 #include "OSThread.h"
 #include "OSEvent.h"
 #include <vector>
