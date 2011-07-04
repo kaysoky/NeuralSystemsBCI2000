@@ -37,25 +37,9 @@
 
 using namespace std;
 
-ApplicationBase::ApplicationBase( const GUI::GraphDisplay* inDisplay )
-: mDisplayVis( inDisplay )
+ApplicationBase::ApplicationBase()
 {
   AppLog.Screen.Send( CfgID::WindowTitle, "Application Log" );
-
-  BEGIN_PARAMETER_DEFINITIONS
-    "Application:Window int WindowWidth= 640 640 0 % "
-      " // width of application window",
-    "Application:Window int WindowHeight= 480 480 0 % "
-      " // height of application window",
-    "Application:Window int WindowLeft= 0 0 % % "
-      " // screen coordinate of application window's left edge",
-    "Application:Window int WindowTop= 0 0 % % "
-      " // screen coordinate of application window's top edge",
-  END_PARAMETER_DEFINITIONS
-
-  BEGIN_STATE_DEFINITIONS
-    "StimulusTime 16 0 0 0",
-  END_STATE_DEFINITIONS
 }
 
 int
@@ -66,69 +50,4 @@ ApplicationBase::StreamBundle::BundleStringbuf::sync()
     ( **i << this->str() ).flush();
   str( "" );
   return result;
-}
-
-
-ApplicationBase::DisplayVisualization::DisplayVisualization( const GUI::GraphDisplay* inDisplay )
-: mpDisplay( inDisplay ),
-  mVis( "APSC" ),
-  mDoVisualize( false ),
-  mWidth( 0 ),
-  mHeight( 0 ),
-  mTemporalDecimation( 1 ),
-  mBlockCount( 0 )
-{
-  if( mpDisplay != NULL )
-  {
-    BEGIN_PARAMETER_DEFINITIONS
-      "Visualize:Application%20Window int VisualizeApplicationWindow= 0 0 0 1 "
-        "// Display miniature copy of application window (boolean)",
-      "Visualize:Application%20Window int AppWindowSpatialDecimation= 8 8 1 % "
-        "// Application window decimation (shrinking) factor",
-      "Visualize:Application%20Window int AppWindowTemporalDecimation= 4 16 1 % "
-        "// Application window time decimation factor",
-    END_PARAMETER_DEFINITIONS
-  }
-}
-
-void
-ApplicationBase::DisplayVisualization::Preflight() const
-{
-}
-
-void
-ApplicationBase::DisplayVisualization::PostInitialize()
-{
-  mDoVisualize = ( mpDisplay != NULL ) && ( Parameter( "VisualizeApplicationWindow" ) > 0 );
-  if( mDoVisualize )
-  {
-    mTemporalDecimation = Parameter( "AppWindowTemporalDecimation" );
-    int applicationWindowDecimation = Parameter( "AppWindowSpatialDecimation" );
-    mWidth = static_cast<int>( ( mpDisplay->Context().rect.right - mpDisplay->Context().rect.left ) / applicationWindowDecimation );
-    mHeight = static_cast<int>( ( mpDisplay->Context().rect.bottom - mpDisplay->Context().rect.top ) / applicationWindowDecimation );
-
-    mVis.Send( CfgID::WindowTitle, "Application Window" );
-    mVis.SendReferenceFrame( mpDisplay->BitmapData( mWidth, mHeight ) );
-  }
-  mVis.Send( CfgID::Visible, mDoVisualize );
-}
-
-void
-ApplicationBase::DisplayVisualization::StartRun()
-{
-  mBlockCount = mTemporalDecimation - 1;
-}
-
-void
-ApplicationBase::DisplayVisualization::PostStopRun()
-{
-  if( mDoVisualize )
-    mVis.SendReferenceFrame( mpDisplay->BitmapData( mWidth, mHeight ) );
-}
-
-void
-ApplicationBase::DisplayVisualization::PostProcess()
-{
-  if( mDoVisualize && ( ++mBlockCount %= mTemporalDecimation ) == 0 )
-    mVis.SendDifferenceFrame( mpDisplay->BitmapData( mWidth, mHeight ) );
 }

@@ -34,17 +34,15 @@
 #define APPLICATION_BASE_H
 
 #include "GenericFilter.h"
-#include "GenericVisualization.h"
 #include "LogFile.h"
 #include "RandomGenerator.h"
-#include "GraphDisplay.h"
 #include <iostream>
 #include <set>
 
 class ApplicationBase : public GenericFilter
 {
  protected:
-  ApplicationBase( const GUI::GraphDisplay* = NULL );
+  ApplicationBase();
 
  public:
   virtual ~ApplicationBase() {}
@@ -106,32 +104,6 @@ class ApplicationBase : public GenericFilter
     LogFile              File;
     GenericVisualization Screen;
   } AppLog;
-
- private:
-  class DisplayVisualization : public EnvironmentExtension
-  {
-   public:
-    DisplayVisualization( const GUI::GraphDisplay* );
-
-    virtual void Publish()
-      {}
-    virtual void Preflight() const;
-    virtual void Initialize() {}
-    virtual void PostInitialize();
-    virtual void StartRun();
-    virtual void PostStopRun();
-    virtual void PostProcess();
-
-   private:
-    const GUI::GraphDisplay* mpDisplay;
-    BitmapVisualization      mVis;
-    BitmapImage              mImageBuffer;
-    bool                     mDoVisualize;
-    int                      mWidth,
-                             mHeight,
-                             mTemporalDecimation,
-                             mBlockCount;
-  } mDisplayVis;
 };
 
 #endif // APPLICATION_BASE_H

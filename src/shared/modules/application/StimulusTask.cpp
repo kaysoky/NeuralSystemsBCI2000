@@ -37,7 +37,6 @@
 
 #include "StimulusTask.h"
 #include "MeasurementUnits.h"
-#include "PrecisionTime.h"
 
 #include <iomanip>
 #include <set>
@@ -47,8 +46,7 @@
 using namespace std;
 
 StimulusTask::StimulusTask()
-: ApplicationBase( &mDisplay ),
-  mPhase( none ),
+: mPhase( none ),
   mBlocksInPhase( 0 ),
   mBlocksSinceStimulus( 0 ),
   mISIDuration( 0 ),
@@ -64,9 +62,6 @@ StimulusTask::StimulusTask()
   mpAttendedTarget( NULL )
 {
   BEGIN_PARAMETER_DEFINITIONS
-   "Application:Window string WindowBackgroundColor= 0xFFFFFF 0x505050 % % "
-     "// background color (color)",
-
    "Application:Sequencing float PreRunDuration= 1 1 % % "
      "// pause preceding first sequence",
    "Application:Sequencing float PostRunDuration= 0 0 0 % "
@@ -93,7 +88,6 @@ StimulusTask::StimulusTask()
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
-   "StimulusTime   16 0 0 0",
    "StimulusCode   16 0 0 0",
    "StimulusType    1 0 0 0", // attended vs. non-attended
    "StimulusBegin   1 0 0 0", // 1: first block of stimulus presentation
@@ -109,12 +103,6 @@ StimulusTask::~StimulusTask()
 void
 StimulusTask::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
 {
-  Parameter( "WindowLeft" );
-  Parameter( "WindowTop" );
-  Parameter( "WindowWidth" );
-  Parameter( "WindowHeight" );
-  Parameter( "WindowBackgroundColor" );
-
   // For parameters defining a time value, issue a warning if limited temporal
   // resolution leads to a discrepancy greater than 1ms.
   const char* timeParams[] =
@@ -183,12 +171,6 @@ void
 StimulusTask::Initialize( const SignalProperties& Input,
                           const SignalProperties& /*Output*/ )
 {
-  mDisplay.SetLeft( Parameter( "WindowLeft" ) );
-  mDisplay.SetTop( Parameter( "WindowTop" ) );
-  mDisplay.SetWidth( Parameter( "WindowWidth" ) );
-  mDisplay.SetHeight( Parameter( "WindowHeight" ) );
-  mDisplay.SetColor( RGBColor( Parameter( "WindowBackgroundColor" ) ) );
-
   mPreRunDuration = static_cast<int>( Parameter( "PreRunDuration" ).InSampleBlocks() );
   mPostRunDuration = static_cast<int>( Parameter( "PostRunDuration" ).InSampleBlocks() );
   mPreSequenceDuration = static_cast<int>( Parameter( "PreSequenceDuration" ).InSampleBlocks() );
@@ -203,9 +185,6 @@ StimulusTask::Initialize( const SignalProperties& Input,
 
   bcidbg( 2 ) << "Event: Initialize" << endl;
   OnInitialize( Input );
-
-  mDisplay.Show();
-  mDisplay.Update();
 }
 
 void
@@ -253,7 +232,6 @@ StimulusTask::StopRun()
 
   bcidbg( 2 ) << "Event: StopRun" << endl;
   OnStopRun();
-  mDisplay.Update();
 }
 
 void
@@ -425,8 +403,6 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
       }
     }
   }
-  mDisplay.Update();
-  State( "StimulusTime" ) = PrecisionTime::Now();
   Output = Input;
   ++mBlocksInPhase;
   ++mBlocksSinceStimulus;

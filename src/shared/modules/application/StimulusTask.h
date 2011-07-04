@@ -72,7 +72,7 @@
 #define STIMULUS_TASK_H
 
 #include "ApplicationBase.h"
-#include "DisplayWindow.h"
+#include "ApplicationWindow.h"
 #include "Association.h"
 #include "TextField.h"
 
@@ -211,8 +211,8 @@ class StimulusTask : public ApplicationBase
       mStimToClassDuration;
 
   // Display elements.
-  GUI::DisplayWindow mDisplay;
-  TextField*         mpMessageField;
+  ApplicationWindow mDisplay;
+  TextField*        mpMessageField;
 
   // Stimulus/Target configuration
   AssociationMap mAssociations;

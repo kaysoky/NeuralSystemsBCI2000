@@ -41,6 +41,12 @@ SET( HDR_BCI2000_SHARED_MODULES_APPLICATION
   ${BCI2000_SRC_DIR}/shared/modules/application/ApplicationBase.h
   ${BCI2000_SRC_DIR}/shared/modules/application/ConnectorFilters.h
 )
+SET( SRC_BCI2000_SHARED_MODULES_APPLICATION_GUI
+  ${BCI2000_SRC_DIR}/shared/modules/application/gui/ApplicationWindow.cpp
+)
+SET( HDR_BCI2000_SHARED_MODULES_APPLICATION_GUI
+  ${BCI2000_SRC_DIR}/shared/modules/application/gui/ApplicationWindow.h
+)
 SET( SRC_BCI2000_SHARED_MODULES_APPLICATION_UTILS
   ${BCI2000_SRC_DIR}/shared/modules/application/utils/TrialStatistics.cpp
   ${BCI2000_SRC_DIR}/shared/modules/application/utils/BlockRandSeq.cpp
@@ -62,6 +68,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_SHARED_FILEIO}
   ${SRC_BCI2000_SHARED_GUI}
   ${SRC_BCI2000_SHARED_MODULES_APPLICATION}
+  ${SRC_BCI2000_SHARED_MODULES_APPLICATION_GUI}
   ${SRC_BCI2000_SHARED_MODULES_APPLICATION_UTILS}
 )
 
@@ -75,6 +82,7 @@ SET( HDR_BCI2000_FRAMEWORK
   ${HDR_BCI2000_SHARED_FILEIO}
   ${HDR_BCI2000_SHARED_GUI}
   ${HDR_BCI2000_SHARED_MODULES_APPLICATION}
+  ${HDR_BCI2000_SHARED_MODULES_APPLICATION_GUI}
   ${HDR_BCI2000_SHARED_MODULES_APPLICATION_UTILS}
 )
 
@@ -93,6 +101,7 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_BCI2000_S
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\fileio FILES ${SRC_BCI2000_SHARED_FILEIO} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES ${SRC_BCI2000_SHARED_GUI} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\application FILES ${SRC_BCI2000_SHARED_MODULES_APPLICATION} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\application\\gui FILES ${SRC_BCI2000_SHARED_MODULES_APPLICATION_GUI} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\application\\utils FILES ${SRC_BCI2000_SHARED_MODULES_APPLICATION_UTILS} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES ${HDR_BCI2000_SHARED_UTILS} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils\\expression FILES ${HDR_BCI2000_SHARED_UTILS_EXPRESSION} )
@@ -103,6 +112,7 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\bcistream FILES ${HDR_BCI2000_
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\fileio FILES ${HDR_BCI2000_SHARED_FILEIO} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\gui FILES ${HDR_BCI2000_SHARED_GUI} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\application FILES ${HDR_BCI2000_SHARED_MODULES_APPLICATION} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\application\\gui FILES ${HDR_BCI2000_SHARED_MODULES_APPLICATION_GUI} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\application\\utils FILES ${HDR_BCI2000_SHARED_MODULES_APPLICATION_UTILS} )
 
 # Define include directories

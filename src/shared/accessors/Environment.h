@@ -47,6 +47,12 @@
 #include <iostream>
 #include <sstream>
 
+#if MODTYPE == 3
+# include "DisplayWindow.h"
+#else // MODTYPE
+namespace GUI { class DisplayWindow; }
+#endif // MODTYPE
+
 class SignalProperties;
 class EnvironmentExtension;
 
@@ -54,6 +60,7 @@ class GenericVisualization;
 class CoreModule;
 class StatusMessage;
 class FilterWrapper;
+class ApplicationWindowList;
 
 // A macro to register extensions for automatic instantiation.
 #define Extension(x) static x x##instance_;
@@ -87,7 +94,7 @@ class FilterWrapper;
                    << "sorting by (" << -Instance() << ","               \
                    << p.Sections() << ")"                                \
                    << std::endl;                                         \
-      OwnedParams()[ this ].insert( p.Name() );                          \
+      OwnedParams()[static_cast<const EnvironmentBase*>( this )].insert( p.Name() ); \
     }                                                                    \
   }                                                                      \
 };
@@ -122,7 +129,7 @@ class FilterWrapper;
       }                                                                \
       else                                                             \
         States->Add( s );                                              \
-      OwnedStates()[ this ].insert( s.Name() );                        \
+      OwnedStates()[static_cast<const EnvironmentBase*>( this )].insert( s.Name() ); \
     }                                                                  \
   }                                                                    \
 };
@@ -159,7 +166,7 @@ class FilterWrapper;
       }                                                                \
       else                                                             \
         States->Add( s );                                              \
-      OwnedStates()[ this ].insert( s.Name() );                        \
+      OwnedStates()[static_cast<const EnvironmentBase*>( this )].insert( s.Name() ); \
     }                                                                  \
   }                                                                    \
 };
@@ -249,10 +256,10 @@ class EnvironmentBase
   } Operator;
 
  protected:
-  // Helper function to construct and set an error context string.
-  template<class T>
+  // Helper functions to construct and set an error context string.
+  template<typename T>
    static void ErrorContext( const std::string&, const T* );
-  static void ErrorContext( const std::string& s );
+  static void ErrorContext( const std::string& );
   static const void* ObjectContext();
 
  private:
@@ -288,6 +295,17 @@ class EnvironmentBase
   const StateList* StateListAccess() const;
   void StateAccess( const std::string& name ) const;
   virtual void OnStateAccess( const std::string& name ) const {}
+
+ protected:
+  // Access to application windows in application modules.
+  // When no name is given, ApplicationWindow::DefaultName is used.
+  // In Preflight(), use a line
+  //   Window( name );
+  // to make sure the required window exists.
+  void  Window( const std::string& name = "" ) const;               // will be used in Preflight()
+  class GUI::DisplayWindow& Window( const std::string& name = "" ); // will be used outside Preflight()
+  const class ApplicationWindowList* Windows() const;
+  class ApplicationWindowList* Windows();
 
  // Controlling functions to be called from framework friends only.
  // In the future, these functions will be used to perform a number of
@@ -364,6 +382,7 @@ class EnvironmentBase
  private:
   typedef std::set<EnvironmentExtension*> ExtensionsContainer;
   static ExtensionsContainer& Extensions();
+  static ExtensionsContainer& ExtensionsPublished();
 
  protected:
   typedef std::set<std::string, Param::NameCmp> NameSet;
@@ -374,6 +393,7 @@ class EnvironmentBase
   static NameSetMap& ParamsAccessedDuringPreflight();
   static NameSetMap& OwnedStates();
   static NameSetMap& StatesAccessedDuringPreflight();
+  static NameSetMap& WindowsAccessedDuringPreflight();
 
  private:
   static ParamList*     paramlist_;
@@ -395,7 +415,7 @@ class EnvironmentBase
 
 // Environment adds consistency checks for Preflight() vs.
 // later access to Parameters/States.
-class Environment : protected EnvironmentBase
+class Environment : public EnvironmentBase
 {
   // Friends from framework classes.
   friend class GenericVisualization;
@@ -446,21 +466,18 @@ class EnvironmentExtension : protected Environment
    virtual void Resting() {}
 };
 
-////////////////////////////////////////////////////////////////////////////////
 // Template function definition
-////////////////////////////////////////////////////////////////////////////////
-
-// Helper function to construct and set an error context string.
-template<class T>
+template<typename T>
 void
-EnvironmentBase::ErrorContext( const std::string& inQualifier, const T* inFilter )
+EnvironmentBase::ErrorContext( const std::string& inQualifier, const T* inObject )
 {
-  ObjectContext( inFilter );
-  std::string context = bci::ClassName( typeid( *inFilter ) );
+  ObjectContext( inObject );
+  std::string context = bci::ClassName( typeid( *inObject ) );
   context += "::";
   context += inQualifier;
   ErrorContext( context );
 }
+
 
 #endif // ENVIRONMENT_H
 

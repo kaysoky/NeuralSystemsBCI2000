@@ -12,7 +12,6 @@
 #include "GazeMonitorFilter.h"
 #include "BCIDirectory.h"
 #include "MeasurementUnits.h"
-#include "DisplayWindow.h"
 
 // Define visualization properties
 #define EYE_RADIUS 0.05f
@@ -63,7 +62,7 @@ GazeMonitorFilter::GazeMonitorFilter() :
   mSaccadeBlocks( 0 ),
   mTemporalDecimation( 1 ),
   mBlockCount( 0 ),
-  mVis( "APSC:1" )
+  mVis( "ApplicationWindow:1" )
 {
   // Define the GazeMonitor Parameters
   BEGIN_PARAMETER_DEFINITIONS
@@ -100,27 +99,22 @@ GazeMonitorFilter::GazeMonitorFilter() :
   mpLeftEye[APP] = NULL; mpLeftEye[VIS] = NULL;
   mpRightEye[APP] = NULL; mpRightEye[VIS] = NULL;
 
-  // FIXME: When Application DisplayWindow is available, put it here!
-  GUI::DisplayWindow* appwindow = new GUI::DisplayWindow();
-  //appwindow->SetLeft( 0 ); appwindow->SetTop( 0 );
-  //appwindow->SetWidth( 1680 ); appwindow->SetHeight( 1050 );
-  //appwindow->SetTitle( "Application Overlay" ); 
-  //appwindow->SetColor( RGBColor::Black );
-  //appwindow->Show(); appwindow->Update();
-  mpDisplays[APP] = appwindow;
-
+  mpDisplays[APP] = NULL;
   mpDisplays[VIS] = new GUI::GraphDisplay();
 }
 
 GazeMonitorFilter::~GazeMonitorFilter()
 {
   DeleteStimuli();
-  DELETE_OBJ( mpDisplays );
+  delete mpDisplays[VIS];
 }
 
 void 
 GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &Output ) const
 {
+
+  Window( "Application" );
+
   bool loggingGaze = false, loggingEyePos = false, loggingEyeDist = false;
 
   // See what we're logging and check states accordingly
@@ -206,6 +200,8 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
 void 
 GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProperties &Output )
 {
+  mpDisplays[APP] = &Window( "Application" );
+  
   DeleteStimuli();
   
   mLogGazeInformation = ( int )Parameter( "LogGazeInformation" );
@@ -278,7 +274,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
     // Set up the violation sound
     string filename = string( Parameter( "FixationViolationSound" ) );
     if( filename != "" )
-	  InitSound( filename, mViolationSound );
+      InitSound( filename, mViolationSound );
 
     // Set up fixation zone visualization
     CREATE_OBJ( mpZone, EllipticShape );
@@ -335,7 +331,7 @@ GazeMonitorFilter::StartRun()
   mCorrection = 0;
   if( mEnforceFixation )
   {
-	mpPrompt->Hide();
+    mpPrompt->Hide();
     OBJ_METHOD( mpZone, SetColor, RGBColor::Gray );
   }
 
@@ -526,12 +522,12 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
 void
 GazeMonitorFilter::InitSound( const string& inFilename, WavePlayer& ioPlayer ) const
 {
-    if( ioPlayer.ErrorState() != WavePlayer::noError )
-      bcierr << "There was an issue creating a waveplayer object." << endl;
-	ioPlayer.SetFile( BCIDirectory::AbsolutePath( inFilename ) );
-	if( ioPlayer.ErrorState() != WavePlayer::noError )
-      bcierr << "Could not open file: " << BCIDirectory::AbsolutePath( inFilename ) << endl;
-    ioPlayer.SetVolume( 1.0f );
+  if( ioPlayer.ErrorState() != WavePlayer::noError )
+    bcierr << "There was an issue creating a waveplayer object." << endl;
+  ioPlayer.SetFile( BCIDirectory::AbsolutePath( inFilename ) );
+  if( ioPlayer.ErrorState() != WavePlayer::noError )
+    bcierr << "Could not open file: " << BCIDirectory::AbsolutePath( inFilename ) << endl;
+  ioPlayer.SetVolume( 1.0f );
 }
 
 void

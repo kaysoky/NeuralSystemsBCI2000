@@ -45,6 +45,11 @@
 #include "MeasurementUnits.h"
 #include "ClassName.h"
 #include "PhysicalUnit.h"
+
+#if MODTYPE == 3
+# include "ApplicationWindow.h"
+#endif // MODTYPE == 3
+
 #include <sstream>
 #include <typeinfo>
 
@@ -80,6 +85,13 @@ EnvironmentBase::Extensions()
   return instance;
 }
 
+EnvironmentBase::ExtensionsContainer&
+EnvironmentBase::ExtensionsPublished()
+{
+  static EnvironmentBase::ExtensionsContainer instance;
+  return instance;
+}
+
 EnvironmentBase::NameSetMap&
 EnvironmentBase::OwnedParams()
 {
@@ -110,6 +122,13 @@ EnvironmentBase::ParamsAccessedDuringPreflight()
 
 EnvironmentBase::NameSetMap&
 EnvironmentBase::StatesAccessedDuringPreflight()
+{
+  static EnvironmentBase::NameSetMap instance;
+  return instance;
+}
+
+EnvironmentBase::NameSetMap&
+EnvironmentBase::WindowsAccessedDuringPreflight()
 {
   static EnvironmentBase::NameSetMap instance;
   return instance;
@@ -300,6 +319,106 @@ EnvironmentBase::StateAccess( const string& inName ) const
   OnStateAccess( inName );
 }
 
+void
+EnvironmentBase::Window( const string& inName ) const
+{
+#if MODTYPE == 3
+
+  string name = inName;
+  if( name.empty() )
+    name = ApplicationWindow::DefaultName;
+
+  const void* objectContext = ObjectContext() ? ObjectContext() : this;
+  NameSet& accessedWindows = WindowsAccessedDuringPreflight()[ objectContext ];
+  if( Phase() == preflight )
+    accessedWindows.insert( name );
+
+  if( !Windows()->Exists( name ) )
+    bcierr_ << "Trying to access non-existing application window \""
+            << name
+            << "\""
+            << endl;
+
+#else // MODTYPE == 3
+
+  bcierr_ << "Trying to access application window \""
+          << inName 
+          << "\" outside an application module" 
+          << endl;
+
+#endif // MODTYPE == 3
+}
+
+GUI::DisplayWindow&
+EnvironmentBase::Window( const string& inName )
+{
+#if MODTYPE == 3
+
+  string name = inName;
+  if( name.empty() )
+    name = ApplicationWindow::DefaultName;
+
+  const void* objectContext = ObjectContext() ? ObjectContext() : this;
+  NameSet& accessedWindows = WindowsAccessedDuringPreflight()[ objectContext ];
+  if( accessedWindows.find( name ) == accessedWindows.end() )
+    bcierr_ << "Application window \"" << name << "\" was accessed during"
+            << " initialization or processing, but not checked for"
+            << " existence during preflight phase."
+            << endl;
+
+  GUI::DisplayWindow* pWindow = ( *Windows() )[name];
+  if( pWindow == NULL )
+  {
+    bcierr_ << "Access to non-existing application window \""
+            << name
+            << "\""
+            << endl;
+    pWindow = new GUI::DisplayWindow;
+  }
+
+  return *pWindow;
+
+#else // MODTYPE == 3
+
+  ostringstream oss;
+  oss << typeid( *this ).name()
+      << ": Trying to access application window \""
+      << inName 
+      << "\" outside an application module" 
+      << endl;
+  static string s;
+  s = oss.str();
+  throw s.c_str();
+
+#endif // MODTYPE == 3
+}
+
+const ApplicationWindowList*
+EnvironmentBase::Windows() const
+{
+#if MODTYPE == 3
+  return &ApplicationWindow::Windows();
+#else // MODTYPE == 3
+  bcierr_ << "Trying to access list of application windows "
+          << "outside an application module"
+          << endl;
+  return NULL;
+#endif // MODTYPE == 3
+}
+
+ApplicationWindowList*
+EnvironmentBase::Windows()
+{
+#if MODTYPE == 3
+  return &ApplicationWindow::Windows();
+#else // MODTYPE == 3
+  bcierr_ << "Trying to access list of application windows "
+          << "outside an application module"
+          << endl;
+  return NULL;
+#endif // MODTYPE == 3
+}
+
 // Called to prevent access.
 void EnvironmentBase::EnterNonaccessPhase()
 {
@@ -311,6 +430,17 @@ void EnvironmentBase::EnterNonaccessPhase()
       bcierr << "Already in non-access phase" << endl;
       break;
     case construction:
+      for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
+      {
+        if( ExtensionsPublished().find( *i ) == ExtensionsPublished().end() )
+        {
+          ErrorContext( "Publish", *i );
+          ( *i )->Publish();
+          ExtensionsPublished().insert( *i );
+          ErrorContext( "" );
+        }
+      }
+      break;
     case preflight:
       break;
     case initialization:
@@ -391,10 +521,12 @@ void EnvironmentBase::EnterConstructionPhase( ParamList*   inParamList,
   OwnedParams().clear();
   OwnedStates().clear();
 
+  ExtensionsPublished().clear();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
   {
     ErrorContext( "Publish", *i );
     ( *i )->Publish();
+    ExtensionsPublished().insert( *i );
   }
   ErrorContext( "" );
 }
