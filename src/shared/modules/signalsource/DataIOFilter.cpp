@@ -276,8 +276,8 @@ DataIOFilter::Preflight( const SignalProperties& Input,
           .SetElements( Parameter( "SampleBlockSize" ) )
           .SetUpdateRate( Parameter( "SamplingRate" ).InHertz() / Parameter( "SampleBlockSize" ) );
   for( int ch = 0; ch < adcInput.Channels(); ++ch )
-    adcInput.ValueUnit( ch ).SetGain( Parameter( "SourceChGain" ) * 1e-6 )
-                            .SetOffset( Parameter( "SourceChOffset" ) )
+    adcInput.ValueUnit( ch ).SetGain( Parameter( "SourceChGain" )( ch ) * 1e-6 )
+                            .SetOffset( Parameter( "SourceChOffset" )( ch ) )
                             .SetSymbol( "V" );
   adcInput.ElementUnit().SetOffset( 0 )
                         .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
@@ -289,6 +289,13 @@ DataIOFilter::Preflight( const SignalProperties& Input,
     bcierr << "Expected an ADC filter instance to be present" << endl;
   else
     mpADC->CallPreflight( adcInput, Output );
+
+  // Fix update and sampling rates in case Output has been reset by the ADC's Preflight() function:
+  if( Output.ElementUnit().Symbol().empty() )
+    Output.ElementUnit().SetOffset( 0 )
+                        .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
+                        .SetSymbol( "s" );
+  Output.SetUpdateRate( Parameter( "SamplingRate" ).InHertz() / Parameter( "SampleBlockSize" ) );
 
   if( mpSourceFilter )
   {
@@ -334,12 +341,6 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   }
   mInputBuffer.SetProperties( Output );
 
-  // We output calibrated signals in float32 format.
-  Output.SetType( SignalType::float32 );
-  Output.ElementUnit().SetOffset( 0 )
-                      .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
-                      .SetSymbol( "s" );
-
   if( !PhysicalUnit().SetSymbol( "s" ).IsPhysical( Parameter( "VisualizeSourceTime" ) ) )
     bciout << "The VisualizeSourceTime parameter is specified without a trailing \"s\". "
            << "This will lead to undesired results in future versions of BCI2000. "
@@ -348,6 +349,8 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   double numSamplesInDisplay = Parameter( "VisualizeSourceTime" )/*.InSeconds()*/ * Parameter( "SamplingRate" ).InHertz();
   Output.ElementUnit().SetRawMin( 0 )
                       .SetRawMax( numSamplesInDisplay - 1 );
+  // We output calibrated signals in float32 format.
+  Output.SetType( SignalType::float32 );
   Output.ValueUnit().SetOffset( 0 )
                     .SetGain( 1e-6 )
                     .SetSymbol( "V" );
