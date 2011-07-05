@@ -30,7 +30,7 @@
 #include "TrialStatistics.h"
 #include "Color.h"
 #include "TextField.h"
-#include "DisplayWindow.h"
+#include "ApplicationWindow.h"
 
 #include "FeedbackScene.h"
 
@@ -70,7 +70,7 @@ class CursorFeedbackTask : public FeedbackTask
   void DisplayMessage( const std::string& );
 
   // Graphic objects
-  GUI::DisplayWindow mWindow;
+  ApplicationWindow  mWindow;
   FeedbackScene*     mpFeedbackScene;
   int                mRenderingQuality;
   TextField*         mpMessage;

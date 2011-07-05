@@ -102,7 +102,7 @@ class FeedbackTask : public ApplicationBase
   virtual void DoITI(          const GenericSignal&, bool& doProgress ) {}
 
  protected:
-  FeedbackTask( const GUI::GraphDisplay* = NULL );
+  FeedbackTask();
 
  public:
   virtual ~FeedbackTask();

@@ -66,7 +66,16 @@ FeedbackDemoTask::FeedbackDemoTask()
 #endif // __BORLANDC__
 {
   BEGIN_PARAMETER_DEFINITIONS
-    "Application:Cursor int CursorColor= 0xFF0000 0xFF0000 % % "
+    "Application:Window int WindowWidth= 640 640 0 % "
+      " // width of application window",
+    "Application:Window int WindowHeight= 480 480 0 % "
+      " // height of application window",
+    "Application:Window int WindowLeft= 0 0 % % "
+      " // screen coordinate of application window's left edge",
+    "Application:Window int WindowTop= 0 0 % % "
+      " // screen coordinate of application window's top edge",
+
+      "Application:Cursor int CursorColor= 0xFF0000 0xFF0000 % % "
       " // feedback cursor color (color)",
     "Application:Cursor float CursorWidth= 5 5 0.0 % "
       " // feedback cursor width in percent of screen width",

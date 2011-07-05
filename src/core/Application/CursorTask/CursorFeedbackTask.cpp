@@ -47,8 +47,7 @@ RegisterFilter( CursorFeedbackTask, 3 );
 using namespace std;
 
 CursorFeedbackTask::CursorFeedbackTask()
-: FeedbackTask( &mWindow ),
-  mpFeedbackScene( NULL ),
+: mpFeedbackScene( NULL ),
   mRenderingQuality( 0 ),
   mpMessage( NULL ),
   mCursorColorFront( RGBColor::Red ),
@@ -145,11 +144,6 @@ CursorFeedbackTask::~CursorFeedbackTask()
 void
 CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
 {
-  Parameter( "WindowHeight" );
-  Parameter( "WindowWidth" );
-  Parameter( "WindowLeft" );
-  Parameter( "WindowTop" );
-
   const char* vectorParams[] =
   {
     "CameraPos",
@@ -234,11 +228,6 @@ CursorFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
   mCursorSpeedZ = 100.0 / feedbackDuration / 2;
   mMaxFeedbackDuration = static_cast<int>( Parameter( "MaxFeedbackDuration" ).InSampleBlocks() );
 
-  mWindow.SetLeft( Parameter( "WindowLeft" ) );
-  mWindow.SetTop( Parameter( "WindowTop" ) );
-  mWindow.SetWidth( Parameter( "WindowWidth" ) );
-  mWindow.SetHeight( Parameter( "WindowHeight" ) );
-
   mCursorColorFront = RGBColor( Parameter( "CursorColorFront" ) );
   mCursorColorBack = RGBColor( Parameter( "CursorColorBack" ) );
 
@@ -258,7 +247,6 @@ CursorFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
 
   mWindow.Show();
   DisplayMessage( LocalizableString( "Timeout" ) );
-  mWindow.Update();
 }
 
 void
@@ -270,7 +258,6 @@ CursorFeedbackTask::OnStartRun()
   AppLog << "Run #" << mRunCount << " started" << endl;
 
   DisplayMessage( LocalizableString( "Be prepared ..." ) );
-  mWindow.Update();
 }
 
 void
@@ -287,7 +274,6 @@ CursorFeedbackTask::OnStopRun()
   AppLog   << "====================="  << endl;
 
   DisplayMessage( LocalizableString( "Timeout" ) );
-  mWindow.Update();
 }
 
 void
@@ -305,7 +291,6 @@ CursorFeedbackTask::OnTrialBegin()
     mpFeedbackScene->SetTargetColor( targetColor, i );
     mpFeedbackScene->SetTargetVisible( State( "TargetCode" ) == i + 1, i );
   }
-  mWindow.Update();
 }
 
 void
@@ -315,7 +300,6 @@ CursorFeedbackTask::OnTrialEnd()
   mpFeedbackScene->SetCursorVisible( false );
   for( int i = 0; i < mpFeedbackScene->NumTargets(); ++i )
     mpFeedbackScene->SetTargetVisible( false, i );
-  mWindow.Update();
 }
 
 void
@@ -327,7 +311,6 @@ CursorFeedbackTask::OnFeedbackBegin()
   ParamRef CursorPos = Parameter( "CursorPos" );
   MoveCursorTo( CursorPos( x ), CursorPos( y ), CursorPos( z ) );
   mpFeedbackScene->SetCursorVisible( true );
-  mWindow.Update();
 }
 
 void
@@ -352,7 +335,6 @@ CursorFeedbackTask::OnFeedbackEnd()
       AppLog.Screen << "-> miss" << endl;
     }
   }
-  mWindow.Update();
 }
 
 void
@@ -411,7 +393,6 @@ CursorFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProg
   }
   doProgress = ( ++mCurFeedbackDuration > mMaxFeedbackDuration );
   doProgress = doProgress || ( State( "ResultCode" ) != 0 );
-  mWindow.Update();
 }
 
 void

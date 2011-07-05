@@ -62,6 +62,7 @@ ApplicationWindow::ApplicationWindow( const std::string& inName )
     mParamNames.Visualize = string( "Visualize" ) + mName + "Window";
     mParamNames.SpatialDecimation = mName + "WindowSpatialDecimation";
     mParamNames.TemporalDecimation = mName + "WindowTemporalDecimation";
+    GUI::DisplayWindow::SetTitle( string( "BCI2000 " ) + mName );
   }
 
   if( Windows().find( mName ) != Windows().end() )

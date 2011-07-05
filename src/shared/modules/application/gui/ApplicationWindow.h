@@ -81,6 +81,10 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
   virtual void PostStopRun();
   virtual void PostProcess();
 
+  // Properties
+  const std::string& Name() const
+  { return mName; }
+
  private:
   std::string mName;
   struct

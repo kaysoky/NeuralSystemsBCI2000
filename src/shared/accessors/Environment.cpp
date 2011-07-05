@@ -46,9 +46,9 @@
 #include "ClassName.h"
 #include "PhysicalUnit.h"
 
-#if MODTYPE == 3
+#if IS_APP_MODULE
 # include "ApplicationWindow.h"
-#endif // MODTYPE == 3
+#endif // IS_APP_MODULE
 
 #include <sstream>
 #include <typeinfo>
@@ -127,12 +127,14 @@ EnvironmentBase::StatesAccessedDuringPreflight()
   return instance;
 }
 
+#if IS_APP_MODULE
 EnvironmentBase::NameSetMap&
 EnvironmentBase::WindowsAccessedDuringPreflight()
 {
   static EnvironmentBase::NameSetMap instance;
   return instance;
 }
+#endif // IS_APP_MODULE
 
 // Helper function to construct and set an error context string.
 void
@@ -319,11 +321,10 @@ EnvironmentBase::StateAccess( const string& inName ) const
   OnStateAccess( inName );
 }
 
+#if IS_APP_MODULE
 void
 EnvironmentBase::Window( const string& inName ) const
-{
-#if MODTYPE == 3
-
+{ // This function is called during the preflight phase.
   string name = inName;
   if( name.empty() )
     name = ApplicationWindow::DefaultName;
@@ -338,22 +339,11 @@ EnvironmentBase::Window( const string& inName ) const
             << name
             << "\""
             << endl;
-
-#else // MODTYPE == 3
-
-  bcierr_ << "Trying to access application window \""
-          << inName 
-          << "\" outside an application module" 
-          << endl;
-
-#endif // MODTYPE == 3
 }
 
 GUI::DisplayWindow&
 EnvironmentBase::Window( const string& inName )
-{
-#if MODTYPE == 3
-
+{ // This function is called outside the preflight phase.
   string name = inName;
   if( name.empty() )
     name = ApplicationWindow::DefaultName;
@@ -377,47 +367,15 @@ EnvironmentBase::Window( const string& inName )
   }
 
   return *pWindow;
-
-#else // MODTYPE == 3
-
-  ostringstream oss;
-  oss << typeid( *this ).name()
-      << ": Trying to access application window \""
-      << inName 
-      << "\" outside an application module" 
-      << endl;
-  static string s;
-  s = oss.str();
-  throw s.c_str();
-
-#endif // MODTYPE == 3
 }
 
 const ApplicationWindowList*
 EnvironmentBase::Windows() const
 {
-#if MODTYPE == 3
   return &ApplicationWindow::Windows();
-#else // MODTYPE == 3
-  bcierr_ << "Trying to access list of application windows "
-          << "outside an application module"
-          << endl;
-  return NULL;
-#endif // MODTYPE == 3
 }
+#endif IS_APP_MODULE
 
-ApplicationWindowList*
-EnvironmentBase::Windows()
-{
-#if MODTYPE == 3
-  return &ApplicationWindow::Windows();
-#else // MODTYPE == 3
-  bcierr_ << "Trying to access list of application windows "
-          << "outside an application module"
-          << endl;
-  return NULL;
-#endif // MODTYPE == 3
-}
 
 // Called to prevent access.
 void EnvironmentBase::EnterNonaccessPhase()

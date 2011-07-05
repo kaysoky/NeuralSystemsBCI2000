@@ -44,9 +44,8 @@ using namespace std;
 #define __FUNC__ __FUNCTION__
 #endif // _MSC_VER
 
-FeedbackTask::FeedbackTask( const GUI::GraphDisplay* inDisplay )
-: ApplicationBase( inDisplay ),
-  mPhase( none ),
+FeedbackTask::FeedbackTask()
+: mPhase( none ),
   mBlocksInPhase( 0 ),
   mBlocksInRun( 0 ),
   mPreFeedbackDuration( 0 ),
@@ -217,10 +216,10 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
         break;
 
       default:
-        string fun( __FUNC__ );
-        string err( ": Unknown phase value" );
-        fun.append( err );
-        throw fun.c_str();
+      {
+        static string msg = string( __FUNC__ ) + ": Unknown phase value";
+        throw msg.c_str();
+      }
     }
     if( doProgress )
     {
@@ -279,15 +278,14 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
           break;
         }
         default:
-          string fun( __FUNC__ );
-          string err( ": Unknown phase value" );
-          fun.append( err );
-          throw fun.c_str();
+        {
+          static string msg = string( __FUNC__ ) + ": Unknown phase value";
+          throw msg.c_str();
+        }
       }
     }
   }
   ++mBlocksInRun;
   ++mBlocksInPhase;
-  State( "StimulusTime" ) = PrecisionTime::Now();
   Output = Input;
 }

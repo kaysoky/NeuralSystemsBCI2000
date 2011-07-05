@@ -47,11 +47,12 @@
 #include <iostream>
 #include <sstream>
 
-#if MODTYPE == 3
+#define IS_SRC_MODULE ( MODTYPE == 1 )
+#define IS_APP_MODULE ( MODTYPE == 3 )
+
+#if IS_APP_MODULE
 # include "DisplayWindow.h"
-#else // MODTYPE
-namespace GUI { class DisplayWindow; }
-#endif // MODTYPE
+#endif // IS_APP_MODULE
 
 class SignalProperties;
 class EnvironmentExtension;
@@ -60,7 +61,6 @@ class GenericVisualization;
 class CoreModule;
 class StatusMessage;
 class FilterWrapper;
-class ApplicationWindowList;
 
 // A macro to register extensions for automatic instantiation.
 #define Extension(x) static x x##instance_;
@@ -139,7 +139,7 @@ class ApplicationWindowList;
   const char* states_[] =                                              \
   {
 
-#if( MODTYPE == 1 )
+#if IS_SRC_MODULE
 
 #define END_EVENT_DEFINITIONS                                          \
   };                                                                   \
@@ -171,14 +171,14 @@ class ApplicationWindowList;
   }                                                                    \
 };
 
-#else // MODTYPE
+#else // IS_SRC_MODULE
 
 #define END_EVENT_DEFINITIONS                                           \
   };                                                                    \
   bcierr << "Trying to define events outside a source module." << endl; \
 };
 
-#endif // MODTYPE
+#endif // IS_SRC_MODULE
 
 // This base class channels access to Parameter, State, and Communication
 // related objects that used to be arguments of member functions.
@@ -296,6 +296,7 @@ class EnvironmentBase
   void StateAccess( const std::string& name ) const;
   virtual void OnStateAccess( const std::string& name ) const {}
 
+#if IS_APP_MODULE
  protected:
   // Access to application windows in application modules.
   // When no name is given, ApplicationWindow::DefaultName is used.
@@ -305,7 +306,7 @@ class EnvironmentBase
   void  Window( const std::string& name = "" ) const;               // will be used in Preflight()
   class GUI::DisplayWindow& Window( const std::string& name = "" ); // will be used outside Preflight()
   const class ApplicationWindowList* Windows() const;
-  class ApplicationWindowList* Windows();
+#endif // IS_APP_MODULE
 
  // Controlling functions to be called from framework friends only.
  // In the future, these functions will be used to perform a number of
@@ -393,7 +394,9 @@ class EnvironmentBase
   static NameSetMap& ParamsAccessedDuringPreflight();
   static NameSetMap& OwnedStates();
   static NameSetMap& StatesAccessedDuringPreflight();
+#if IS_APP_MODULE
   static NameSetMap& WindowsAccessedDuringPreflight();
+#endif // IS_APP_MODULE
 
  private:
   static ParamList*     paramlist_;
