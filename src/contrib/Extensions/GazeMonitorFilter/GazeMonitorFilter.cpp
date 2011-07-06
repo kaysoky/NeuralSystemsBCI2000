@@ -12,6 +12,7 @@
 #include "GazeMonitorFilter.h"
 #include "BCIDirectory.h"
 #include "MeasurementUnits.h"
+#include "ApplicationWindow.h"
 
 // Define visualization properties
 #define EYE_RADIUS 0.05f
@@ -38,7 +39,7 @@ using namespace std;
 
 RegisterFilter( GazeMonitorFilter, 3.A );
 
-GazeMonitorFilter::GazeMonitorFilter() : 
+GazeMonitorFilter::GazeMonitorFilter() :
   mEnforceFixation( false ),
   mFixationRadius( 0.0f ),
   mpFixationImage( NULL ),
@@ -61,8 +62,7 @@ GazeMonitorFilter::GazeMonitorFilter() :
   mSaccadeTime( 0 ),
   mSaccadeBlocks( 0 ),
   mTemporalDecimation( 1 ),
-  mBlockCount( 0 ),
-  mVis( "ApplicationWindow:1" )
+  mBlockCount( 0 )
 {
   // Define the GazeMonitor Parameters
   BEGIN_PARAMETER_DEFINITIONS
@@ -109,7 +109,7 @@ GazeMonitorFilter::~GazeMonitorFilter()
   delete mpDisplays[VIS];
 }
 
-void 
+void
 GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &Output ) const
 {
 
@@ -168,7 +168,7 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
     if( string( Parameter( "FixationX" ) ) == "" )
       bcierr << "Requested fixation enforcement but specified no FixationX coordinate." << endl;
     else Expression( Parameter( "FixationX" ) ).Evaluate( &preflightInput );
-   
+
     if( string( Parameter( "FixationY" ) ) == "" )
       bcierr << "Requested fixation enforcement but specified no FixationY coordinate." << endl;
     else Expression( Parameter( "FixationY" ) ).Evaluate( &preflightInput );
@@ -197,19 +197,21 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
   Parameter( "LogGazeInformation" );
 }
 
-void 
+void
 GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProperties &Output )
 {
-  mpDisplays[APP] = &Window( "Application" );
-  
+  ApplicationWindow& window = Window( "Application" );
+  mVis.SetSourceID( window.VisualizationID() + ":1" );
+  mpDisplays[APP] = &window;
+
   DeleteStimuli();
-  
+
   mLogGazeInformation = ( int )Parameter( "LogGazeInformation" );
   //if( mLogGazeInformation ) AppLog << "GazeMonitorFilter Initialized." << endl;
   mLostLeftEye = false; mLostRightEye = false;
 
-  mLoggingGaze = ( int )OptionalParameter( "LogGazeData", 0 ); 
-  mLoggingEyePos = ( int )OptionalParameter( "LogEyePos", 0 ); 
+  mLoggingGaze = ( int )OptionalParameter( "LogGazeData", 0 );
+  mLoggingEyePos = ( int )OptionalParameter( "LogEyePos", 0 );
   mLoggingEyeDist = ( int )OptionalParameter( "LogEyeDist", 0 );
   mEnforceFixation = ( int )Parameter( "EnforceFixation" );
   mVisualizeGaze = ( int )Parameter( "VisualizeGazeMonitorFilter" );
@@ -309,7 +311,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
     OBJ_METHOD( mpCursor, SetColor, RGBColor::Black );
     OBJ_METHOD( mpCursor, SetAspectRatioMode, GUI::AspectRatioModes::AdjustWidth );
     OBJ_METHOD( mpCursor, Hide );
-  }     
+  }
   if( mLoggingEyePos )
   {
     CREATE_OBJ( mpRightEye, EllipticShape );
@@ -324,7 +326,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
 }
 
 void
-GazeMonitorFilter::StartRun() 
+GazeMonitorFilter::StartRun()
 {
   // Ensure We're not in "Correction" state
   State( "Correction" ) = 0;
@@ -344,7 +346,7 @@ GazeMonitorFilter::StartRun()
   }
 }
 
-void 
+void
 GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
 {
   // Determine gaze location
@@ -371,7 +373,7 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
   // Determine Eye Distance
   float eyedist = 256.0f;
   if( mLoggingEyeDist )
-    eyedist = ( ( float )State( "EyetrackerLeftEyeDist" ) 
+    eyedist = ( ( float )State( "EyetrackerLeftEyeDist" )
               + ( float )State( "EyetrackerRightEyeDist" ) ) / 2.0f;
 
   // Determine (and log) Validity
@@ -417,7 +419,7 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     if( leftEyeValid ) { OBJ_METHOD( mpLeftEye, Show ); }
     else { OBJ_METHOD( mpLeftEye, Hide ); }
     POSITION_OBJ( mpRightEye, prx, pry, EYE_RADIUS );
-    if( rightEyeValid ) { OBJ_METHOD( mpRightEye, Show ); } 
+    if( rightEyeValid ) { OBJ_METHOD( mpRightEye, Show ); }
     else { OBJ_METHOD( mpRightEye, Hide ); }
   }
 
@@ -428,9 +430,9 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     float fy = ( float )mFixationY.Evaluate( &Input );
 
     // Move visual stimuli to fixation
-    if( mpFixationImage ) 
+    if( mpFixationImage )
       SetDisplayRect( mpFixationImage, fx, fy, FIXATION_IMAGE_SIZE );
-    if( mpFixationViolationImage ) 
+    if( mpFixationViolationImage )
       SetDisplayRect( mpFixationViolationImage, fx, fy, FIXATION_IMAGE_SIZE );
     POSITION_OBJ( mpZone, fx, fy, mFixationRadius );
 
@@ -533,7 +535,7 @@ GazeMonitorFilter::InitSound( const string& inFilename, WavePlayer& ioPlayer ) c
 void
 GazeMonitorFilter::SetDisplayRect( GUI::GraphObject *obj, float cx, float cy, float rad )
 {
-  GUI::Rect rect = { cx - ( rad / mAspectRatio ), cy - rad, 
+  GUI::Rect rect = { cx - ( rad / mAspectRatio ), cy - rad,
                      cx + ( rad / mAspectRatio ), cy + rad };
   obj->SetDisplayRect( rect );
 }

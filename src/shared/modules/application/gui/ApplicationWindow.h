@@ -62,7 +62,10 @@
 #include "DisplayWindow.h"
 #include "Environment.h"
 #include "GenericVisualization.h"
+#include <string>
 #include <map>
+
+class ApplicationWindowList;
 
 class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtension
 {
@@ -72,6 +75,12 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
   ApplicationWindow( const std::string& = DefaultName );
   virtual ~ApplicationWindow();
 
+ private: // Forbid copying and assignment to make sure windows may be
+          // identified by their pointers.
+  ApplicationWindow( const ApplicationWindow& );
+  const ApplicationWindow& operator=( const ApplicationWindow& );
+
+ public:
   // EnvironmentExtension interface
   virtual void Publish();
   virtual void Preflight() const;
@@ -84,6 +93,8 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
   // Properties
   const std::string& Name() const
   { return mName; }
+  const std::string& VisualizationID() const
+  { return mVis.SourceID(); }
 
  private:
   std::string mName;

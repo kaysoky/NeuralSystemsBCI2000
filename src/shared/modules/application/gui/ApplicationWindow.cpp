@@ -24,11 +24,15 @@
 // 
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
+#include "PCHIncludes.h"
+#pragma hdrstop
+
 #include "ApplicationWindow.h"
 #include "PrecisionTime.h"
 #include "BCIError.h"
 
 using namespace std;
+using namespace GUI;
 
 string ApplicationWindow::DefaultName = "Application";
 
@@ -83,17 +87,17 @@ ApplicationWindow::~ApplicationWindow()
 void
 ApplicationWindow::Publish()
 {
-  const struct { string id, value; } variables[] =
+  struct { const char* id, * value; } variables[] =
   {
-    { "$name$", mName },
-    { "$width$", mParamNames.Width },
-    { "$height$", mParamNames.Height },
-    { "$left$", mParamNames.Left },
-    { "$top$", mParamNames.Top },
-    { "$background$", mParamNames.BackgroundColor },
-    { "$visualize$", mParamNames.Visualize },
-    { "$spatialdecimation$", mParamNames.SpatialDecimation },
-    { "$temporaldecimation$", mParamNames.TemporalDecimation },
+    { "$name$", mName.c_str() },
+    { "$width$", mParamNames.Width.c_str() },
+    { "$height$", mParamNames.Height.c_str() },
+    { "$left$", mParamNames.Left.c_str() },
+    { "$top$", mParamNames.Top.c_str() },
+    { "$background$", mParamNames.BackgroundColor.c_str() },
+    { "$visualize$", mParamNames.Visualize.c_str() },
+    { "$spatialdecimation$", mParamNames.SpatialDecimation.c_str() },
+    { "$temporaldecimation$", mParamNames.TemporalDecimation.c_str() },
   };
   const char* parameters[] =
   {
@@ -120,12 +124,12 @@ ApplicationWindow::Publish()
     string param = parameters[i];
     for( size_t j = 0; j < sizeof( variables ) / sizeof( *variables ); ++j )
     {
-      size_t pos = string::npos;
+      size_t pos;
       do
       {
         pos = param.find( variables[j].id );
         if( pos != string::npos )
-          param = param.substr( 0, pos ) + variables[j].value + param.substr( pos + variables[j].id.length() );
+          param = param.substr( 0, pos ) + variables[j].value + param.substr( pos + ::strlen( variables[j].id ) );
       } while( pos != string::npos );
     }
     BEGIN_PARAMETER_DEFINITIONS
