@@ -150,7 +150,7 @@ class BciApplication(BciGenericApplication):
 		self.init_volume(vol)
 		
 		if self.StimulusMaker.modular: self.make( store=True )
-		self.enable_software_volume_adjustment = False
+		self.enable_software_volume_adjustment = True
 		
 	#############################################################
 	

@@ -1,1 +1,1 @@
-matlab -nosplash -r "OfflineAnalysis"
+matlab -nosplash -r "addpath(cd); OfflineAnalysis"

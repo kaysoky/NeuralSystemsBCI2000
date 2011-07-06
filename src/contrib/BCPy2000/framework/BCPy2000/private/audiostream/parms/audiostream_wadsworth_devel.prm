@@ -8,7 +8,7 @@ Visualize:Processing%20Stages                 int       VisualizePythonSigFilter
 PythonSig:Epoch                               int       PyAudioMicTrigger=                0             // replace trigger signal with pyaudio sound recording (boolean)
 PythonSig:Epoch                               int       CheckNumberOfEpochs=              1             // 
 PythonSig:Epoch                               list      TriggerChannels=          2    AUDL     AUDR    // 
-PythonSig:Epoch                               floatlist TriggerThreshold=         2     500      500    // 
+PythonSig:Epoch                               floatlist TriggerThreshold=         2     200      200    // 
 PythonSig:Epoch                               float     TriggerHPCutoff=                 10.0           // 
 PythonSig:Epoch                               int       ERPFilterOrder=                   6             // order of bandpass filter for ERP feature set
 PythonSig:Epoch                               floatlist ERPFilterFreqHz=          2       0.1    8.0    // lower and upper frequencies of bandpass filter for ERP feature set

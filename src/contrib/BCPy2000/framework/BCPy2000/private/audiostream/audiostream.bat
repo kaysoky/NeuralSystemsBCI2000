@@ -23,7 +23,8 @@ call portable.bat
 
 @set OnConnect=-
 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-Cap16+Audio2.prm
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsAA-Cap16+Audio2.prm
+::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-Cap16+Audio2.prm
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-SchalkCap64+Audio2.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\drifting.prm 
 
@@ -37,11 +38,11 @@ call portable.bat
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_perception.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PYWD%\ChannelVolumesDB.prm
 
-@set OnConnect=%OnConnect% ; SETCONFIG
+::@set OnConnect=%OnConnect% ; SETCONFIG
 ::@set OnSetConfig=- SET STATE Running 1
 
 start           operat                   --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
-start           gUSBampSource --RecordMic=1
+start          gUSBampSource
 ::start           PythonSource             --PythonSrcWD=%WD%\python --PythonSrcShell=1 --PythonSrcLog=%WD%\log\###-src.txt
 
 ::start           DummySignalProcessing
