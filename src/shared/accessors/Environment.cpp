@@ -76,7 +76,7 @@ EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
 EnvironmentBase::operatorAccessor    EnvironmentBase::Operator;
 
 int EnvironmentBase::sNumInstances = 0;
-const void* EnvironmentBase::sObjectContext = NULL;
+const EnvironmentBase* EnvironmentBase::sObjectContext = NULL;
 
 EnvironmentBase::ExtensionsContainer&
 EnvironmentBase::Extensions()
@@ -136,26 +136,26 @@ EnvironmentBase::WindowsAccessedDuringPreflight()
 }
 #endif // IS_APP_MODULE
 
-// Helper function to construct and set an error context string.
+// Helper function to construct and set a context string for displaying errors.
 void
-EnvironmentBase::ErrorContext( const std::string& inContext )
+EnvironmentBase::ErrorContext( const std::string& inQualifier, const EnvironmentBase* inpObject )
 {
-  if( inContext.empty() )
-    ObjectContext( NULL );
-  BCIError::OutStream::SetContext( inContext );
+  sObjectContext = inpObject;
+  string context;
+  if( !inQualifier.empty() )
+  {
+    context = bci::ClassName( typeid( *inpObject ) );
+    context += "::";
+    context += inQualifier;
+  }
+  BCIError::OutStream::SetContext( context );
 }
 
 // Maintaining an object context to keep track of Parameter/State access.
-void
-EnvironmentBase::ObjectContext( const void* inContext )
+const EnvironmentBase*
+EnvironmentBase::ObjectContext() const
 {
-  sObjectContext = inContext;
-}
-
-const void*
-EnvironmentBase::ObjectContext()
-{
-  return sObjectContext;
+  return sObjectContext ? sObjectContext : this;
 }
 
 // Convenient accessor functions.
@@ -231,8 +231,7 @@ EnvironmentBase::DescribeValue( const Param& inParam, size_t inIdx1, size_t inId
 void
 EnvironmentBase::ParamAccess( const string& inName ) const
 {
-  const void* objectContext = ObjectContext() ? ObjectContext() : this;
-  NameSet& accessedParams = ParamsAccessedDuringPreflight()[ objectContext ];
+  NameSet& accessedParams = ParamsAccessedDuringPreflight()[ObjectContext()];
   if( Phase() == preflight )
     accessedParams.insert( inName );
   OnParamAccess( inName );
@@ -314,8 +313,7 @@ EnvironmentBase::StateListAccess() const
 void
 EnvironmentBase::StateAccess( const string& inName ) const
 {
-  const void* objectContext = ObjectContext() ? ObjectContext() : this;
-  NameSet& accessedStates = StatesAccessedDuringPreflight()[ objectContext ];
+  NameSet& accessedStates = StatesAccessedDuringPreflight()[ObjectContext()];
   if( Phase() == preflight )
     accessedStates.insert( inName );
   OnStateAccess( inName );
@@ -329,8 +327,7 @@ EnvironmentBase::Window( const string& inName ) const
   if( name.empty() )
     name = ApplicationWindow::DefaultName;
 
-  const void* objectContext = ObjectContext() ? ObjectContext() : this;
-  NameSet& accessedWindows = WindowsAccessedDuringPreflight()[ objectContext ];
+  NameSet& accessedWindows = WindowsAccessedDuringPreflight()[ObjectContext()];
   if( Phase() == preflight )
     accessedWindows.insert( name );
 
@@ -341,29 +338,28 @@ EnvironmentBase::Window( const string& inName ) const
             << endl;
 }
 
-GUI::DisplayWindow&
+ApplicationWindow&
 EnvironmentBase::Window( const string& inName )
 { // This function is called outside the preflight phase.
   string name = inName;
   if( name.empty() )
     name = ApplicationWindow::DefaultName;
 
-  const void* objectContext = ObjectContext() ? ObjectContext() : this;
-  NameSet& accessedWindows = WindowsAccessedDuringPreflight()[ objectContext ];
+  NameSet& accessedWindows = WindowsAccessedDuringPreflight()[ObjectContext()];
   if( accessedWindows.find( name ) == accessedWindows.end() )
     bcierr_ << "Application window \"" << name << "\" was accessed during"
             << " initialization or processing, but not checked for"
             << " existence during preflight phase."
             << endl;
 
-  GUI::DisplayWindow* pWindow = ( *Windows() )[name];
+  ApplicationWindow* pWindow = ( *Windows() )[name];
   if( pWindow == NULL )
   {
     bcierr_ << "Access to non-existing application window \""
             << name
             << "\""
             << endl;
-    pWindow = new GUI::DisplayWindow;
+    pWindow = new ApplicationWindow( name );
   }
 
   return *pWindow;
@@ -392,10 +388,8 @@ void EnvironmentBase::EnterNonaccessPhase()
       {
         if( ExtensionsPublished().find( *i ) == ExtensionsPublished().end() )
         {
-          ErrorContext( "Publish", *i );
-          ( *i )->Publish();
+          ( *i )->CallPublish();
           ExtensionsPublished().insert( *i );
-          ErrorContext( "" );
         }
       }
       break;
@@ -403,35 +397,19 @@ void EnvironmentBase::EnterNonaccessPhase()
       break;
     case initialization:
       for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-      {
-        ErrorContext( "PostInitialize", *i );
-        ( *i )->PostInitialize();
-        ErrorContext( "" );
-      }
+        ( *i )->CallPostInitialize();
       break;
     case startRun:
       for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-      {
-        ErrorContext( "PostStartRun", *i );
-        ( *i )->PostStartRun();
-        ErrorContext( "" );
-      }
+        ( *i )->CallPostStartRun();
       break;
     case processing:
       for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-      {
-        ErrorContext( "PostProcess", *i );
-        ( *i )->PostProcess();
-        ErrorContext( "" );
-      }
+        ( *i )->CallPostProcess();
       break;
     case stopRun:
       for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-      {
-        ErrorContext( "PostStopRun", *i );
-        ( *i )->PostStopRun();
-        ErrorContext( "" );
-      }
+        ( *i )->CallPostStopRun();
       if( paramlist_ && operator_ )
       {
         ParamList changedParameters;
@@ -482,11 +460,9 @@ void EnvironmentBase::EnterConstructionPhase( ParamList*   inParamList,
   ExtensionsPublished().clear();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
   {
-    ErrorContext( "Publish", *i );
-    ( *i )->Publish();
+    ( *i )->CallPublish();
     ExtensionsPublished().insert( *i );
   }
-  ErrorContext( "" );
 }
 
 // Called before any call to GenericFilter::Preflight().
@@ -557,11 +533,7 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
     MeasurementUnits::Initialize( *Parameters );
 
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-  {
-    ErrorContext( "Preflight", *i );
-    ( *i )->Preflight();
-  }
-  ErrorContext( "" );
+    ( *i )->CallPreflight();
 }
 
 // Called before any call to GenericFilter::Initialize().
@@ -578,11 +550,7 @@ void EnvironmentBase::EnterInitializationPhase( ParamList*   inParamList,
   statevector_ = inStateVector;
   operator_ = inOperator;
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-  {
-    ErrorContext( "Initialize", *i );
-    ( *i )->Initialize();
-  }
-  ErrorContext( "" );
+    ( *i )->CallInitialize();
 }
 
 // Called before any call to GenericFilter::StartRun().
@@ -599,11 +567,7 @@ void EnvironmentBase::EnterStartRunPhase( ParamList*   inParamList,
   statevector_ = inStateVector;
   operator_ = inOperator;
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-  {
-    ErrorContext( "StartRun", *i );
-    ( *i )->StartRun();
-  }
-  ErrorContext( "" );
+    ( *i )->CallStartRun();
 }
 
 // Called before any call to GenericFilter::Process().
@@ -620,11 +584,7 @@ void EnvironmentBase::EnterProcessingPhase( ParamList*   inParamList,
   statevector_ = inStateVector;
   operator_ = inOperator;
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-  {
-    ErrorContext( "Process", *i );
-    ( *i )->Process();
-  }
-  ErrorContext( "" );
+    ( *i )->CallProcess();
 }
 
 // Called before any call to GenericFilter::StopRun().
@@ -643,11 +603,7 @@ void EnvironmentBase::EnterStopRunPhase( ParamList*   inParamList,
   for( int i = 0; i < paramlist_->Size(); ++i )
     ( *paramlist_ )[ i ].Unchanged();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-  {
-    ErrorContext( "StopRun", *i );
-    ( *i )->StopRun();
-  }
-  ErrorContext( "" );
+    ( *i )->CallStopRun();
 }
 
 // Called before any call to GenericFilter::Resting().
@@ -666,11 +622,7 @@ void EnvironmentBase::EnterRestingPhase( ParamList*   inParamList,
   for( int i = 0; i < paramlist_->Size(); ++i )
     ( *paramlist_ )[ i ].Unchanged();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
-  {
-    ErrorContext( "Resting", *i );
-    ( *i )->Resting();
-  }
-  ErrorContext( "" );
+    ( *i )->CallResting();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -679,8 +631,7 @@ void EnvironmentBase::EnterRestingPhase( ParamList*   inParamList,
 void
 Environment::OnParamAccess( const string& inName ) const
 {
-  const void* objectContext = ObjectContext() ? ObjectContext() : this;
-  NameSet& accessedParams = ParamsAccessedDuringPreflight()[ objectContext ];
+  NameSet& accessedParams = ParamsAccessedDuringPreflight()[ObjectContext()];
   switch( EnvironmentBase::Phase() )
   {
     case construction:
@@ -700,9 +651,8 @@ Environment::OnParamAccess( const string& inName ) const
 void
 Environment::OnStateAccess( const string& inName ) const
 {
-  const void* objectContext = ObjectContext() ? ObjectContext() : this;
-  NameSet& accessedStates = StatesAccessedDuringPreflight()[ objectContext ],
-         & ownedStates = OwnedStates()[ objectContext ];
+  NameSet& accessedStates = StatesAccessedDuringPreflight()[ObjectContext()],
+         & ownedStates = OwnedStates()[ObjectContext()];
   switch( EnvironmentBase::Phase() )
   {
     case construction:
@@ -719,4 +669,33 @@ Environment::OnStateAccess( const string& inName ) const
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// EnvironmentExtension definitions
+////////////////////////////////////////////////////////////////////////////////
+#define CALL( x )                    \
+void EnvironmentExtension::Call##x() \
+{                                    \
+  ErrorContext( #x, this );          \
+  this->##x();                       \
+  ErrorContext( "" );                \
+}                                    \
 
+#define CONST_CALL( x )                    \
+void EnvironmentExtension::Call##x() const \
+{                                          \
+  ErrorContext( #x, this );                \
+  this->##x();                             \
+  ErrorContext( "" );                      \
+}                                          \
+
+CALL( Publish )
+CONST_CALL( Preflight )
+CALL( Initialize )
+CALL( PostInitialize )
+CALL( StartRun );
+CALL( PostStartRun )
+CALL( Process );
+CALL( PostProcess )
+CALL( StopRun );
+CALL( PostStopRun )
+CALL( Resting );

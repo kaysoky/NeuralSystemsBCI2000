@@ -50,10 +50,6 @@
 #define IS_SRC_MODULE ( MODTYPE == 1 )
 #define IS_APP_MODULE ( MODTYPE == 3 )
 
-#if IS_APP_MODULE
-# include "DisplayWindow.h"
-#endif // IS_APP_MODULE
-
 class SignalProperties;
 class EnvironmentExtension;
 
@@ -94,7 +90,7 @@ class FilterWrapper;
                    << "sorting by (" << -Instance() << ","               \
                    << p.Sections() << ")"                                \
                    << std::endl;                                         \
-      OwnedParams()[static_cast<const EnvironmentBase*>( this )].insert( p.Name() ); \
+      OwnedParams()[ObjectContext()].insert( p.Name() );                 \
     }                                                                    \
   }                                                                      \
 };
@@ -129,7 +125,7 @@ class FilterWrapper;
       }                                                                \
       else                                                             \
         States->Add( s );                                              \
-      OwnedStates()[static_cast<const EnvironmentBase*>( this )].insert( s.Name() ); \
+      OwnedStates()[ObjectContext()].insert( s.Name() );               \
     }                                                                  \
   }                                                                    \
 };
@@ -166,7 +162,7 @@ class FilterWrapper;
       }                                                                \
       else                                                             \
         States->Add( s );                                              \
-      OwnedStates()[static_cast<const EnvironmentBase*>( this )].insert( s.Name() ); \
+      OwnedStates()[ObjectContext()].insert( s.Name() );               \
     }                                                                  \
   }                                                                    \
 };
@@ -257,17 +253,14 @@ class EnvironmentBase
 
  protected:
   // Helper functions to construct and set an error context string.
-  template<typename T>
-   static void ErrorContext( const std::string&, const T* );
-  static void ErrorContext( const std::string& );
-  static const void* ObjectContext();
+  static void ErrorContext( const std::string&, const EnvironmentBase* = NULL );
+  const EnvironmentBase* ObjectContext() const;
 
  private:
-  static void ObjectContext( const void* );
-  static const void* sObjectContext;
+  static const EnvironmentBase* sObjectContext;
 
  // Convenient accessor functions. These are not static, so we can identify
- // the caller by its "this" pointer.
+ // the caller as an object.
  protected:
   // The Parameter()/OptionalParameter() functions allow access to parameters by name.
   ParamRef Parameter( const std::string& name ) const;
@@ -303,8 +296,8 @@ class EnvironmentBase
   // In Preflight(), use a line
   //   Window( name );
   // to make sure the required window exists.
-  void  Window( const std::string& name = "" ) const;               // will be used in Preflight()
-  class GUI::DisplayWindow& Window( const std::string& name = "" ); // will be used outside Preflight()
+  void  Window( const std::string& name = "" ) const;              // will be used in Preflight()
+  class ApplicationWindow& Window( const std::string& name = "" ); // will be used outside Preflight()
   const class ApplicationWindowList* Windows() const;
 #endif // IS_APP_MODULE
 
@@ -389,7 +382,7 @@ class EnvironmentBase
   typedef std::set<std::string, Param::NameCmp> NameSet;
   static NameSet& ParamsRangeChecked();
 
-  typedef std::map<const void*, NameSet> NameSetMap;
+  typedef std::map<const EnvironmentBase*, NameSet> NameSetMap;
   static NameSetMap& OwnedParams();
   static NameSetMap& ParamsAccessedDuringPreflight();
   static NameSetMap& OwnedStates();
@@ -450,37 +443,42 @@ class Environment : public EnvironmentBase
 
 class EnvironmentExtension : protected Environment
 {
-  protected:
-   EnvironmentExtension()          { Environment::RegisterExtension( this ); }
-   virtual ~EnvironmentExtension() { Environment::UnregisterExtension( this ); }
+ protected:
+  EnvironmentExtension()          { Environment::RegisterExtension( this ); }
+  virtual ~EnvironmentExtension() { Environment::UnregisterExtension( this ); }
 
-  // The virtual interface.
-  public:
-   virtual void Publish() = 0;
-   virtual void Preflight() const = 0;
-   virtual void Initialize() = 0;
-   virtual void PostInitialize() {}
-   virtual void StartRun() {}
-   virtual void PostStartRun() {}
-   virtual void StopRun() {}
-   virtual void PostStopRun() {}
-   virtual void Process() {}
-   virtual void PostProcess() {}
-   virtual void Resting() {}
+ // The extension interface. Extension descendants implement these functions.
+ // For an overview of the events handled by these functions, see the documentation
+ // of the GenericFilter function.
+ protected:
+  virtual void Publish() = 0;
+  virtual void Preflight() const = 0;
+  virtual void Initialize() = 0;
+  virtual void PostInitialize() {}
+  virtual void StartRun() {}
+  virtual void PostStartRun() {}
+  virtual void StopRun() {}
+  virtual void PostStopRun() {}
+  virtual void Process() {}
+  virtual void PostProcess() {}
+  virtual void Resting() {}
+
+ // The public calling interface to virtual functions.
+ // Each Call...() function sets up an error context, and calls its corresponding
+ // virtual function.
+ public:
+  void CallPublish();
+  void CallPreflight() const;
+  void CallInitialize();
+  void CallPostInitialize();
+  void CallStartRun();
+  void CallPostStartRun();
+  void CallStopRun();
+  void CallPostStopRun();
+  void CallProcess();
+  void CallPostProcess();
+  void CallResting();
 };
-
-// Template function definition
-template<typename T>
-void
-EnvironmentBase::ErrorContext( const std::string& inQualifier, const T* inObject )
-{
-  ObjectContext( inObject );
-  std::string context = bci::ClassName( typeid( *inObject ) );
-  context += "::";
-  context += inQualifier;
-  ErrorContext( context );
-}
-
 
 #endif // ENVIRONMENT_H
 
