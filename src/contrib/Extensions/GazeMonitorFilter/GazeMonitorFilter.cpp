@@ -198,7 +198,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
 {
   ApplicationWindow& window = Window( "Application" );
   mVis.SetSourceID( window.VisualizationID() + ":1" );
-  mpAppDisplay = &window
+  mpAppDisplay = &window;
 
   mpFixationImage = new ImageStimulus( *mpAppDisplay );
   mpFixationViolationImage = new ImageStimulus( *mpAppDisplay );
