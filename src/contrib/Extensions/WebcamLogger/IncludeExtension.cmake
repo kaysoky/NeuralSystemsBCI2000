@@ -6,10 +6,10 @@ IF( MSVC )
 	SET( OPENCV_LIBDIR
 		${BCI2000_SRC_DIR}/extlib/opencv/lib/msvc
 	)
-#ELSEIF( MINGW )
-#	SET( OPENCV_LIBDIR
-#		${BCI2000_SRC_DIR}/extlib/opencv/lib/mingw
-#	)
+ELSEIF( MINGW )
+	SET( OPENCV_LIBDIR
+		${BCI2000_SRC_DIR}/extlib/opencv/lib/mingw
+	)
 ELSE()
 	MESSAGE( "**** WebcamLogger failed: opencv libraries not found for this platform" )
 	RETURN()
@@ -19,6 +19,7 @@ SET( BCI2000_SIGSRCLIBS
    ${BCI2000_SIGSRCLIBS}
    opencv_core220
    opencv_highgui220
+   opencv_ffmpeg220
 )
 
 SET( BCI2000_SIGSRCLIBDIRS
@@ -45,8 +46,18 @@ SET( BCI2000_SIGSRCSOURCES_EXTENSIONS
    ${BCI2000_EXTENSION_DIR}/WebcamLogger.cpp
 )
 
+IF( MSVC )
 SET( BCI2000_SIGSRCDLLS
    ${BCI2000_SIGSRCDLLS}
    ${OPENCV_LIBDIR}/opencv_core220.dll
    ${OPENCV_LIBDIR}/opencv_highgui220.dll
+   ${OPENCV_LIBDIR}/opencv_ffmpeg220.dll
 )
+ELSEIF(MINGW)
+SET( BCI2000_SIGSRCDLLS
+   ${BCI2000_SIGSRCDLLS}
+   ${OPENCV_LIBDIR}/libopencv_core220.dll
+   ${OPENCV_LIBDIR}/libopencv_highgui220.dll
+   ${OPENCV_LIBDIR}/libopencv_ffmpeg220.dll
+)
+ENDIF(MSVC)
