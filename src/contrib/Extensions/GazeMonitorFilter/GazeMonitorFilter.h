@@ -35,6 +35,8 @@ class GazeMonitorFilter : public GenericFilter
   virtual void Process( const GenericSignal& Input,
                               GenericSignal& Output );
   virtual void StartRun();
+  virtual void StopRun();
+  virtual void Halt();
 
  private:
   // Private methods
@@ -45,46 +47,38 @@ class GazeMonitorFilter : public GenericFilter
   void AcquiredFixation();
 
   // Private member variables
-  bool mEnforceFixation;
-  Expression mFixationX;
-  Expression mFixationY;
+  bool mEnforceFixation, mVisualizeGaze;
+  Expression mFixationX, mFixationY;
   float mFixationRadius;
   WavePlayer mViolationSound;
-  bool mVisualizeGaze;
   bool mLogGazeInformation;
   bool mFixated;
-  float mOffset;
-  float mScale;
-  bool mLoggingGaze;
-  bool mLoggingEyePos;
-  bool mLoggingEyeDist;
+  float mOffset, mScale;
+  float mLastGazeX, mLastGazeY;
+  bool mLoggingEyetracker,
+       mLoggingGaze,
+       mLoggingEyePos,
+       mLoggingEyeDist;
   int mCorrection;
-  bool mLostLeftEye;
-  bool mLostRightEye;
+  bool mLostLeftEye, mLostRightEye;
   float mAspectRatio;
-  int mBlinkTime;
-  int mBlinkBlocks;
-  int mSaccadeTime;
-  int mSaccadeBlocks;
-  int mTemporalDecimation;
-  int mBlockCount;
-
-  enum Displays {
-    APP = 0,
-    VIS,
-    NUM_DISPLAYS
-  };
+  int mBlinkTime, mBlinkBlocks;
+  int mSaccadeTime, mSaccadeBlocks;
+  int mTemporalDecimation, mBlockCount;
 
   // Visual Elements
-  ImageStimulus* mpFixationImage;
-  ImageStimulus* mpFixationViolationImage;
-  TextField*     mpPrompt;
-  EllipticShape* mpRightEye[NUM_DISPLAYS];
-  EllipticShape* mpLeftEye[NUM_DISPLAYS]; 
-  EllipticShape* mpCursor[NUM_DISPLAYS];
-  EllipticShape* mpZone[NUM_DISPLAYS];
+  ImageStimulus* mpFixationImage;          // App screen only
+  ImageStimulus* mpFixationViolationImage; // App screen only
+  TextField*     mpPrompt;                 // App screen only
+  EllipticShape* mpCorrectionGaze;         // App screen only
+  EllipticShape* mpZone;                   // App screen only
 
-  GUI::GraphDisplay* mpDisplays[NUM_DISPLAYS]; 
+  EllipticShape* mpRightEye;               // Vis screen only
+  EllipticShape* mpLeftEye;                // Vis screen only
+  EllipticShape* mpGaze;                   // Vis screen only
+
+  GUI::GraphDisplay mVisDisplay;
+  GUI::GraphDisplay* mpAppDisplay;
   BitmapVisualization mVis;
 };
 
