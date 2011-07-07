@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
 //
-// File: GUI.cpp
+// File: SWGUI.cpp
 //
 // Date: Oct 22, 2001
 //
 // Author: Juergen Mellinger
 //
-// Description: This file contains the definitions for those objects from GUI.h
+// Description: This file contains the definitions for those objects from SWGUI.h
 //              that need them.
 //
 // Changes:
@@ -38,7 +38,7 @@
 #endif // __BORLANDC__
 
 #define GUI_DEFINE_OBJECTS
-#include "GUI.h"
+#include "SWGUI.h"
 #include "Param.h"
 #include "ParamList.h"
 

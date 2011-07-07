@@ -67,7 +67,7 @@ int                 TGUIView::TFBForm::lastHeight = 300;
 int                 TGUIView::TFBForm::lastLeft = invalidCoord;
 int                 TGUIView::TFBForm::lastTop = invalidCoord;
 TWindowState        TGUIView::TFBForm::lastWindowState = wsMinimized;
-// Initial values in the order given by the TGUIElements enumeration in GUI.h
+// Initial values in the order given by the TGUIElements enumeration in SWGUI.h
 TGUIView::TRGBColor TGUIView::ElementColors[ numGUIElements ] =
 {
   clNavy,     //  fbBackground
@@ -147,7 +147,7 @@ TGUIView::SetStyle( const char  *inStyleName )
 {
   // Load the colors and widths of view elements from a bitmap resource or file.
   // The rows of the bitmap represent the elements in the order given by
-  // the TGUIElements enumeration in GUI.h. An element's width is taken
+  // the TGUIElements enumeration in SWGUI.h. An element's width is taken
   // by counting the number of pixels in its row that have the same color
   // as the leftmost one.
 

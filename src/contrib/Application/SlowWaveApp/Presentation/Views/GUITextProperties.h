@@ -34,7 +34,7 @@
 #ifndef GUI_TEXT_PROPERTIES_H
 #define GUI_TEXT_PROPERTIES_H
 
-#include "GUI.h"
+#include "SWGUI.h"
 #include "OSIncludes.h"
 
 #ifndef VCL

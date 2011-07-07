@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 //
-// File: GUI.h
+// File: SWGUI.h
 //
 // Date: Oct 22, 2001
 //
@@ -32,8 +32,8 @@
 // $END_BCI2000_LICENSE$
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef GUI_H
-#define GUI_H
+#ifndef SWGUI_H
+#define SWGUI_H
 
 #include "PresErrors.h"
 class Param;
@@ -203,5 +203,5 @@ typedef enum TGUIElement
   numGUIElements
 } TGUIElement;
 
-#endif // GUI_H
+#endif // SWGUI_H
 

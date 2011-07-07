@@ -142,12 +142,12 @@ EnvironmentBase::ErrorContext( const std::string& inQualifier, const Environment
 {
   sObjectContext = inpObject;
   string context;
-  if( !inQualifier.empty() )
+  if( inpObject != NULL )
   {
-    context = bci::ClassName( typeid( *inpObject ) );
+    context += bci::ClassName( typeid( *inpObject ) );
     context += "::";
-    context += inQualifier;
   }
+  context += inQualifier;
   BCIError::OutStream::SetContext( context );
 }
 

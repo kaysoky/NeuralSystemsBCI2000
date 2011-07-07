@@ -255,6 +255,12 @@ class EnvironmentBase
   // Helper functions to construct and set an error context string.
   static void ErrorContext( const std::string&, const EnvironmentBase* = NULL );
   const EnvironmentBase* ObjectContext() const;
+  
+  // There is a bug in the Borland compiler that prevents casting the this
+  // pointer of a subclass that inherits "protected"ly from EnvironmentBase into
+  // an EnvironmentBase*. We fix this by providing an explicit conversion for
+  // that case.
+  const EnvironmentBase* Base() const { return this; }
 
  private:
   static const EnvironmentBase* sObjectContext;

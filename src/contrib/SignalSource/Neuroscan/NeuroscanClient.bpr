@@ -22,8 +22,9 @@
       obj\ArithmeticExpression.obj obj\EventQueue.obj obj\OSError.obj 
       obj\OSThread.obj obj\JoystickLogger.obj obj\KeyLogger.obj obj\BCIEvent.obj 
       obj\StateVectorSample.obj obj\GenericFileWriter.obj obj\EDFOutputBase.obj 
-      obj\EDFOutputFormat.obj obj\GDFOutputFormat.obj obj\BCI2000OutputFormat.obj
-      obj\OSEvent.obj obj\OSMutex.obj obj\MessageQueue.obj"/>
+      obj\EDFOutputFormat.obj obj\GDFOutputFormat.obj 
+      obj\BCI2000OutputFormat.obj obj\OSEvent.obj obj\OSMutex.obj 
+      obj\MessageQueue.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -32,7 +33,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\modules\signalsource\logging;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat"/>
+    <PATHCPP value=".;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\signalsource\logging;..\..\..\shared\modules\signalsource\logging;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -43,7 +44,7 @@
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="NeuroscanClient.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\modules\signalsource\logging;..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <LIBPATH value="..\..\..\shared\modules\signalsource\logging;..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>

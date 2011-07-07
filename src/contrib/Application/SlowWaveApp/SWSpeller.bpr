@@ -12,40 +12,41 @@
       SWSpeller.obj\PresSpellerModel.obj SWSpeller.obj\Util.obj 
       SWSpeller.obj\GUITextDialog.obj SWSpeller.obj\TextProperties.obj 
       SWSpeller.obj\BackgroundView.obj SWSpeller.obj\FeedbackView.obj 
-      SWSpeller.obj\GUI.obj SWSpeller.obj\MarkerView.obj 
-      SWSpeller.obj\ReinforcementView.obj SWSpeller.obj\ScoreView.obj 
-      SWSpeller.obj\StimulusView.obj SWSpeller.obj\TargetView.obj 
-      SWSpeller.obj\TextFrame.obj SWSpeller.obj\ArtifactView.obj 
-      SWSpeller.obj\GUIArtifactView.obj SWSpeller.obj\GUITextProperties.obj 
-      SWSpeller.obj\GUITextFrame.obj SWSpeller.obj\GUITargetView.obj 
-      SWSpeller.obj\GUIStimulusView.obj SWSpeller.obj\GUIScoreView.obj 
-      SWSpeller.obj\GUIReinforcementView.obj SWSpeller.obj\GUIMarkerView.obj 
-      SWSpeller.obj\GUIFeedbackView.obj SWSpeller.obj\GUIBackgroundView.obj 
-      SWSpeller.obj\GUIView.obj SWSpeller.obj\ParamRef.obj 
-      SWSpeller.obj\Environment.obj SWSpeller.obj\BCIError_module.obj 
-      SWSpeller.obj\BCIError.obj SWSpeller.obj\BCIDirectory.obj 
-      SWSpeller.obj\MessageHandler.obj SWSpeller.obj\CoreModule.obj 
-      SWSpeller.obj\CoreModuleVCL.obj SWSpeller.obj\SysCommand.obj 
-      SWSpeller.obj\Color.obj SWSpeller.obj\EncodedString.obj 
-      SWSpeller.obj\GenericSignal.obj SWSpeller.obj\GenericVisualization.obj 
-      SWSpeller.obj\Label.obj SWSpeller.obj\Param.obj 
-      SWSpeller.obj\ParamList.obj SWSpeller.obj\SignalProperties.obj 
-      SWSpeller.obj\SignalType.obj SWSpeller.obj\State.obj 
-      SWSpeller.obj\StateList.obj SWSpeller.obj\StateVector.obj 
-      SWSpeller.obj\Status.obj SWSpeller.obj\VersionInfo.obj 
-      SWSpeller.obj\ClassName.obj SWSpeller.obj\LogFile.obj 
-      SWSpeller.obj\MeasurementUnits.obj SWSpeller.obj\PrecisionTime.obj 
-      SWSpeller.obj\SockStream.obj SWSpeller.obj\ExpressionParser.obj 
-      SWSpeller.obj\Expression.obj SWSpeller.obj\Localization.obj 
-      SWSpeller.obj\TrialStatistics.obj SWSpeller.obj\MidiPlayer.obj 
-      SWSpeller.obj\WavePlayer.obj SWSpeller.obj\HierarchicalLabel.obj 
-      SWSpeller.obj\LabelIndex.obj SWSpeller.obj\BitmapImage.obj 
-      SWSpeller.obj\Brackets.obj SWSpeller.obj\PhysicalUnit.obj 
-      SWSpeller.obj\GenericFilter.obj SWSpeller.obj\ArithmeticExpression.obj 
-      SWSpeller.obj\EventQueue.obj SWSpeller.obj\OSError.obj 
-      SWSpeller.obj\OSThread.obj SWSpeller.obj\BCIEvent.obj 
-      SWSpeller.obj\StateVectorSample.obj SWSpeller.obj\OSMutex.obj 
-      SWSpeller.obj\OSEvent.obj SWSpeller.obj\MessageQueue.obj"/>
+      SWSpeller.obj\MarkerView.obj SWSpeller.obj\ReinforcementView.obj 
+      SWSpeller.obj\ScoreView.obj SWSpeller.obj\StimulusView.obj 
+      SWSpeller.obj\TargetView.obj SWSpeller.obj\TextFrame.obj 
+      SWSpeller.obj\ArtifactView.obj SWSpeller.obj\GUIArtifactView.obj 
+      SWSpeller.obj\GUITextProperties.obj SWSpeller.obj\GUITextFrame.obj 
+      SWSpeller.obj\GUITargetView.obj SWSpeller.obj\GUIStimulusView.obj 
+      SWSpeller.obj\GUIScoreView.obj SWSpeller.obj\GUIReinforcementView.obj 
+      SWSpeller.obj\GUIMarkerView.obj SWSpeller.obj\GUIFeedbackView.obj 
+      SWSpeller.obj\GUIBackgroundView.obj SWSpeller.obj\GUIView.obj 
+      SWSpeller.obj\ParamRef.obj SWSpeller.obj\Environment.obj 
+      SWSpeller.obj\BCIError_module.obj SWSpeller.obj\BCIError.obj 
+      SWSpeller.obj\BCIDirectory.obj SWSpeller.obj\MessageHandler.obj 
+      SWSpeller.obj\CoreModule.obj SWSpeller.obj\CoreModuleVCL.obj 
+      SWSpeller.obj\SysCommand.obj SWSpeller.obj\Color.obj 
+      SWSpeller.obj\EncodedString.obj SWSpeller.obj\GenericSignal.obj 
+      SWSpeller.obj\GenericVisualization.obj SWSpeller.obj\Label.obj 
+      SWSpeller.obj\Param.obj SWSpeller.obj\ParamList.obj 
+      SWSpeller.obj\SignalProperties.obj SWSpeller.obj\SignalType.obj 
+      SWSpeller.obj\State.obj SWSpeller.obj\StateList.obj 
+      SWSpeller.obj\StateVector.obj SWSpeller.obj\Status.obj 
+      SWSpeller.obj\VersionInfo.obj SWSpeller.obj\ClassName.obj 
+      SWSpeller.obj\LogFile.obj SWSpeller.obj\MeasurementUnits.obj 
+      SWSpeller.obj\PrecisionTime.obj SWSpeller.obj\SockStream.obj 
+      SWSpeller.obj\ExpressionParser.obj SWSpeller.obj\Expression.obj 
+      SWSpeller.obj\Localization.obj SWSpeller.obj\TrialStatistics.obj 
+      SWSpeller.obj\MidiPlayer.obj SWSpeller.obj\WavePlayer.obj 
+      SWSpeller.obj\HierarchicalLabel.obj SWSpeller.obj\LabelIndex.obj 
+      SWSpeller.obj\BitmapImage.obj SWSpeller.obj\Brackets.obj 
+      SWSpeller.obj\PhysicalUnit.obj SWSpeller.obj\GenericFilter.obj 
+      SWSpeller.obj\ArithmeticExpression.obj SWSpeller.obj\EventQueue.obj 
+      SWSpeller.obj\OSError.obj SWSpeller.obj\OSThread.obj 
+      SWSpeller.obj\BCIEvent.obj SWSpeller.obj\StateVectorSample.obj 
+      SWSpeller.obj\OSMutex.obj SWSpeller.obj\OSEvent.obj 
+      SWSpeller.obj\MessageQueue.obj SWSpeller.obj\ApplicationWindow.obj 
+      SWSpeller.obj\DisplayWindow.obj SWSpeller.obj\SWGUI.obj"/>
     <RESFILES value="SWSpeller.res Presentation\Views\Win32\Views.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -54,7 +55,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\audio;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules"/>
+    <PATHCPP value=".;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\audio;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\application\gui;..\..\..\shared\gui;Presentation\Views"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -64,8 +65,8 @@
     <USERDEFINES value="_DEBUG;BCI2000;BCI2000_SPELLER;PERUVIAN_BRIGHTNESS_HACK;MODTYPE=3"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SWSpeller.cpp"/>
-    <INCLUDEPATH value="..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <INCLUDEPATH value="..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -103,7 +104,6 @@
       <FILE FILENAME="Presentation\Views\TextProperties.cpp" FORMNAME="" UNITNAME="TextProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\BackgroundView.cpp" FORMNAME="" UNITNAME="BackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\FeedbackView.cpp" FORMNAME="" UNITNAME="FeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\Views\GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\MarkerView.cpp" FORMNAME="" UNITNAME="MarkerView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\ReinforcementView.cpp" FORMNAME="" UNITNAME="ReinforcementView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\ScoreView.cpp" FORMNAME="" UNITNAME="ScoreView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -172,6 +172,9 @@
       <FILE FILENAME="..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\application\gui\ApplicationWindow.cpp" FORMNAME="" UNITNAME="ApplicationWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\DisplayWindow.cpp" FORMNAME="" UNITNAME="DisplayWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\SWGUI.cpp" FORMNAME="" UNITNAME="SWGUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

@@ -8,7 +8,7 @@
       obj\PresParams.obj obj\StateAccessor.obj obj\TargetSeq.obj 
       obj\PresModel.obj obj\PresTaskModel.obj obj\Util.obj obj\GUITextDialog.obj 
       obj\ArtifactView.obj obj\BackgroundView.obj obj\FeedbackView.obj 
-      obj\GUI.obj obj\MarkerView.obj obj\ReinforcementView.obj obj\ScoreView.obj 
+      obj\MarkerView.obj obj\ReinforcementView.obj obj\ScoreView.obj 
       obj\StimulusView.obj obj\TargetView.obj obj\TextProperties.obj 
       obj\GUIView.obj obj\GUITextProperties.obj obj\GUITargetView.obj 
       obj\GUIStimulusView.obj obj\GUIScoreView.obj obj\GUIReinforcementView.obj 
@@ -28,7 +28,8 @@
       obj\ExpressionParser.obj obj\Expression.obj obj\ArithmeticExpression.obj 
       obj\EventQueue.obj obj\OSError.obj obj\OSThread.obj obj\BCIEvent.obj 
       obj\StateVectorSample.obj obj\OSMutex.obj obj\OSEvent.obj 
-      obj\MessageQueue.obj"/>
+      obj\MessageQueue.obj obj\ApplicationWindow.obj obj\DisplayWindow.obj 
+      obj\SWGUI.obj"/>
     <RESFILES value="SWApp.res Presentation\Views\Win32\Views.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -37,7 +38,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\audio;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules"/>
+    <PATHCPP value=".;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\audio;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\application\gui;..\..\..\shared\gui;Presentation\Views"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -47,8 +48,8 @@
     <USERDEFINES value="_DEBUG;BCI2000;PERUVIAN_BRIGHTNESS_HACK;MODTYPE=3"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SWApp.cpp"/>
-    <INCLUDEPATH value="..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\fileio;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Models;Presentation\Utils;Presentation\Utils\Win32;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views\Win32;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\audio"/>
-    <LIBPATH value="..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\fileio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Utils\Win32;Presentation\Views;Presentation\Views\Win32;..\..\..\Application\shared\audio;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <INCLUDEPATH value="..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\fileio;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Models;Presentation\Utils;Presentation\Utils\Win32;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views\Win32;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\audio"/>
+    <LIBPATH value="..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\fileio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Utils\Win32;Presentation\Views;Presentation\Views\Win32;..\..\..\Application\shared\audio;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -84,7 +85,6 @@
       <FILE FILENAME="Presentation\Views\ArtifactView.cpp" FORMNAME="" UNITNAME="ArtifactView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\BackgroundView.cpp" FORMNAME="" UNITNAME="BackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\FeedbackView.cpp" FORMNAME="" UNITNAME="FeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\Views\GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\MarkerView.cpp" FORMNAME="" UNITNAME="MarkerView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\ReinforcementView.cpp" FORMNAME="" UNITNAME="ReinforcementView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\ScoreView.cpp" FORMNAME="" UNITNAME="ScoreView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -151,6 +151,9 @@
       <FILE FILENAME="..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\application\gui\ApplicationWindow.cpp" FORMNAME="" UNITNAME="ApplicationWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\DisplayWindow.cpp" FORMNAME="" UNITNAME="DisplayWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\SWGUI.cpp" FORMNAME="" UNITNAME="SWGUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

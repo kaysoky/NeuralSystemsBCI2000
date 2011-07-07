@@ -36,7 +36,7 @@
 
 #include "PresErrors.h"
 #include "PresBroadcasting.h"
-#include "GUI.h"
+#include "SWGUI.h"
 
 class ParamList;
 

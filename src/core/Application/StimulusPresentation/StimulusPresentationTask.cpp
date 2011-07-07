@@ -649,7 +649,7 @@ StimulusPresentationTask::OnNextStimulusCode()
   // Also, in P3Speller compatible mode, do not terminate the run except when we are in copy mode.
   if( mSequenceType == SequenceTypes::P3Speller
       && mSequencePos == mSequence.end()
-      && !( int( Parameter( "InterpretMode" ) ) == InterpretModes::Copy && mSequenceCount == mToBeCopied.size() )
+      && !( int( Parameter( "InterpretMode" ) ) == InterpretModes::Copy && mSequenceCount == int( mToBeCopied.size() ) )
     )
   {
     ++mSequenceCount;

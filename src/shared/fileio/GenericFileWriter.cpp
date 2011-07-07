@@ -31,7 +31,7 @@
 void
 GenericFileWriter::CallPublish()
 {
-  Environment::ErrorContext( "Publish", this );
+  Environment::ErrorContext( "Publish", this->Base() );
   this->Publish();
   Environment::ErrorContext( "" );
 }
@@ -39,7 +39,7 @@ GenericFileWriter::CallPublish()
 void
 GenericFileWriter::CallWrite( const GenericSignal& inData, const StateVector& inStatevector )
 {
-  Environment::ErrorContext( "Write", this );
+  Environment::ErrorContext( "Write", this->Base() );
   this->Write( inData, inStatevector );
   Environment::ErrorContext( "" );
 }

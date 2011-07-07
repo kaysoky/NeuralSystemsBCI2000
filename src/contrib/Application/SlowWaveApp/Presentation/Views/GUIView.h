@@ -41,7 +41,7 @@
 #define GUI_VIEW_H
 
 #include "OSIncludes.h"
-#include "GUI.h"
+#include "SWGUI.h"
 
 #include <set>
 

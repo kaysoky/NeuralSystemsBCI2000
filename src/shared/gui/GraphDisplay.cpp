@@ -144,8 +144,6 @@ GraphDisplay::Paint( const void* inRegionHandle )
     if( mOffscreenBmp == NULL )
       mOffscreenBmp = ::CreateBitmap( width, height, 1, GetDeviceCaps( mOffscreenDC, BITSPIXEL ), NULL );
     ::DeleteObject( ::SelectObject( mOffscreenDC, mOffscreenBmp ) );
-    if( formatFlags & PFD_SUPPORT_OPENGL )
-      ::SetPixelFormat( mOffscreenDC, formatID, &pfd );
 
     drawDC = mOffscreenDC;
   }
