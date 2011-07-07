@@ -9,7 +9,7 @@
 #ifndef GAZE_MONITOR_FILTER_H
 #define GAZE_MONITOR_FILTER_H
 
-#include "GenericFilter.h"
+#include "ApplicationBase.h"
 #include "WavePlayer.h"
 #include "Expression/Expression.h"
 #include "GenericVisualization.h"
@@ -19,7 +19,7 @@
 #include "TextField.h"
 #include "Shapes.h"
 
-class GazeMonitorFilter : public GenericFilter
+class GazeMonitorFilter : public ApplicationBase
 {
  public:
   // Constructor/Destructor

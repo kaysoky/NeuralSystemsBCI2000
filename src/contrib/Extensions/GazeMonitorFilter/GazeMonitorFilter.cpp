@@ -63,6 +63,8 @@ GazeMonitorFilter::GazeMonitorFilter() :
 {
   // Define the GazeMonitor Parameters
   BEGIN_PARAMETER_DEFINITIONS
+    "Application:GazeMonitor int VisualizeGazeMonitorFilter= 0 0 0 1 "
+      " // Visualize the gaze data on the app visualization (boolean)",
     "Application:GazeMonitor int EnforceFixation= 0 0 0 1 "
       " // Enforce a fixation point on the screen (boolean)",
     "Application:GazeMonitor string FixationX= 0.5 0.5 % % "
@@ -218,6 +220,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
   }
   mEnforceFixation = ( int )Parameter( "EnforceFixation" );
   mVisualizeGaze = ( int )Parameter( "VisualizeGazeMonitorFilter" );
+  mLogGazeInformation = ( int )Parameter( "LogGazeInformation" );
   mLostLeftEye = false; mLostRightEye = false;
 
   // If we're logging gaze at all, we need extra information to process it.
@@ -311,7 +314,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
       mpPrompt->SetTextColor( RGBColor::White );
       GUI::Rect textRect = { 0.45f, 0.50f, 0.55f, 0.60f };
       mpPrompt->SetDisplayRect( textRect );
-      mpPrompt->SetTextHeight( 0.1f );
+      mpPrompt->SetTextHeight( 0.30f );
       mpPrompt->Hide();
 
       // Setup a visual gaze feedback for the application window
@@ -326,10 +329,10 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
       mSaccadeBlocks = 0;
       mFixated = true;
 
-      //if( mLogGazeInformation ) AppLog << "GazeMonitorFilter Enforcing Fixation." << endl;
+      if( mLogGazeInformation ) AppLog << "GazeMonitorFilter Enforcing Fixation." << endl;
     }
   }
-  //if( mLogGazeInformation ) AppLog << "GazeMonitorFilter Initialized." << endl;
+  if( mLogGazeInformation ) AppLog << "GazeMonitorFilter Initialized." << endl;
 }
 
 void
@@ -340,7 +343,6 @@ GazeMonitorFilter::StartRun()
     mpGaze->Show();
     mpLeftEye->Show();
     mpRightEye->Show();
-    mVisDisplay.Update();
     mVisDisplay.Paint();
     mVis.SendReferenceFrame( mVisDisplay.BitmapData() );
     mBlockCount = mTemporalDecimation - 1;
@@ -391,7 +393,6 @@ void
 GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
 {
   Output = Input;
-
   // Determine gaze location
   float gx = 0.0f, gy = 0.0f;
   if( mLoggingGaze )
@@ -423,14 +424,14 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
   bool leftEyeValid = true, rightEyeValid = true;
   if( mLoggingEyetracker )
   {
-    bool leftEyeValid = ( int )State( "EyetrackerLeftEyeValidity" ) < 2;
-    bool rightEyeValid = ( int )State( "EyetrackerRightEyeValidity" ) < 2;
+    leftEyeValid = ( int )State( "EyetrackerLeftEyeValidity" ) < 2;
+    rightEyeValid = ( int )State( "EyetrackerRightEyeValidity" ) < 2;
   }
   if( mLostLeftEye || mLostRightEye )
   {
     if( leftEyeValid && rightEyeValid )
     {
-      //if( mLogGazeInformation ) AppLog << "Both Eyes Tracking Correctly." << endl;
+      if( mLogGazeInformation ) AppLog << "Both Eyes Tracking Correctly." << endl;
       mLostLeftEye = false;
       mLostRightEye = false;
       mBlinkBlocks = 0;
@@ -441,13 +442,13 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
 
   if( !leftEyeValid && !mLostLeftEye )
   {
-    //if( mLogGazeInformation ) AppLog << "Lost Left Eye!" << endl;
+    if( mLogGazeInformation ) AppLog << "Lost Left Eye!" << endl;
     mLostLeftEye = true;
   }
 
   if( !rightEyeValid && !mLostRightEye )
   {
-    //if( mLogGazeInformation ) AppLog << "Lost Right Eye!" << endl;
+    if( mLogGazeInformation ) AppLog << "Lost Right Eye!" << endl;
     mLostRightEye = true;
   }
   bool eyesInvalid = ( mBlinkBlocks > mBlinkTime );
@@ -459,7 +460,7 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     float y = mLastGazeY + ( gy - mLastGazeY ) / 3.0f;
     mLastGazeX = x; mLastGazeY = y;  
     SetDisplayRect( mpGaze, gx, gy, ( ( eyedist - 400 ) / 400 ) * 0.06 );
-    SetDisplayRect( mpPrompt, x, y, 0.2f );
+    SetDisplayRect( mpPrompt, x, y, 0.07f );
     mpGaze->SetFillColor( RGBColor( ( int )eyedist % CLOSE_PLANE, 
       CLOSE_PLANE - ( ( int )eyedist % CLOSE_PLANE ), 50 ) );
     mpGaze->Show();
@@ -539,11 +540,13 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
             mpZone->SetColor( RGBColor::Gray );
           }
         } else if( mFixated && eyedist < CLOSE_PLANE ) {
-          prompt = "Move Away.";
+          prompt = "Further";
           mCorrection = 0;
+          mpZone->SetColor( RGBColor::Gray );
         } else if( mFixated && eyedist >= FAR_PLANE ) {
-          prompt = "Move Closer.";
+          prompt = "Closer";
           mCorrection = 0;
+          mpZone->SetColor( RGBColor::Gray );
         } else {
           mCorrection = 0;
           mpZone->SetColor( RGBColor::Gray );
@@ -591,7 +594,7 @@ GazeMonitorFilter::SetDisplayRect( GUI::GraphObject *obj, float cx, float cy, fl
 void
 GazeMonitorFilter::ViolatedFixation()
 {
-  //if( mLogGazeInformation ) AppLog << "Gaze Left Fixation." << endl;
+  if( mLogGazeInformation ) AppLog << "Gaze Left Fixation." << endl;
   mViolationSound.Play();
   State( "FixationViolated" ) = true;
   if( mpFixationImage ) mpFixationImage->Conceal();
@@ -602,7 +605,7 @@ GazeMonitorFilter::ViolatedFixation()
 void
 GazeMonitorFilter::AcquiredFixation()
 {
-  //if( mLogGazeInformation ) AppLog << "Gaze Fixation Acquired." << endl;
+  if( mLogGazeInformation ) AppLog << "Gaze Fixation Acquired." << endl;
   State( "FixationViolated" ) = false;
   if( mpFixationImage ) mpFixationImage->Present();
   if( mpFixationViolationImage ) mpFixationViolationImage->Conceal();

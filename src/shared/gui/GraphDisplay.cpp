@@ -171,9 +171,7 @@ GraphDisplay::Paint( const void* inRegionHandle )
   {
     int width = static_cast<int>( mContext.rect.right - mContext.rect.left ),
         height = static_cast<int>( mContext.rect.bottom - mContext.rect.top );
-    QImage im( width, height, QImage::Format_ARGB32_Premultiplied );
-    mOffscreenBmp = new QPixmap();
-    *mOffscreenBmp = QPixmap::fromImage( im );
+    mOffscreenBmp = new QPixmap( width, height );
   }
 
   if( mColor == RGBColor::NullColor )
@@ -254,7 +252,7 @@ GraphDisplay::Paint( const void* inRegionHandle )
     QPainter outputPainter( mContext.handle.device );
     outputPainter.drawPixmap( static_cast<int>( mContext.rect.left ),
                               static_cast<int>( mContext.rect.top ),
-                              *mOffscreenBmp ); 
+                              *mOffscreenBmp );
   }
   
   // Clear the invalid region.
