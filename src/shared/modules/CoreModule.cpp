@@ -103,8 +103,8 @@ CoreModule::Run( int inArgc, char** inArgv )
     result = Run_( inArgc, inArgv );
   }
 #if _MSC_VER
-  __except( EXCEPTION_EXECUTE_HANDLER )
-  {
+  __except( ::GetExceptionCode() == EXCEPTION_BREAKPOINT ? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER )
+  { // For breakpoint exceptions, we want to execute the default handler (which opens the debugger).
     bcierr << "unhandled Win32 exception 0x"
            << hex << ::GetExceptionCode() << ",\n"
            << "terminating " THISMODULE " module"
