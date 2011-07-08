@@ -213,15 +213,22 @@ BitmapVisualization::SendReferenceFrame( const BitmapImage& b )
   // An empty image indicates that the next frame is a reference frame
   Send( BitmapImage( 0, 0 ) ); 
   mImageBuffer = b;
-  Send( mImageBuffer - BitmapImage( mImageBuffer.Width(), mImageBuffer.Height() ) );
+  Send( mImageBuffer );
 }
 
 void
 BitmapVisualization::SendDifferenceFrame( const BitmapImage& b )
 {
-  BitmapImage curImage = b;
-  Send( curImage - mImageBuffer );
-  mImageBuffer = curImage;
+  if( b.Width() != mImageBuffer.Width() || b.Height() != mImageBuffer.Height() )
+  {
+    SendReferenceFrame( b );
+  }
+  else
+  {
+    BitmapImage curImage = b;
+    Send( curImage - mImageBuffer );
+    mImageBuffer = curImage;
+  }
 }
 
 

@@ -166,9 +166,7 @@ ApplicationWindow::Initialize()
     int spatialDecimation = Parameter( mParamNames.SpatialDecimation );
     mWidth = static_cast<int>( ( DisplayWindow::Context().rect.right - DisplayWindow::Context().rect.left ) / spatialDecimation );
     mHeight = static_cast<int>( ( DisplayWindow::Context().rect.bottom - DisplayWindow::Context().rect.top ) / spatialDecimation );
-
     mVis.Send( CfgID::WindowTitle, mName + " Window" );
-    mVis.SendReferenceFrame( DisplayWindow::BitmapData( mWidth, mHeight ) );
   }
   mVis.Send( CfgID::Visible, mDoVisualize );
 }
@@ -178,6 +176,8 @@ ApplicationWindow::PostInitialize()
 {
   DisplayWindow::Show();
   DisplayWindow::Update();
+  if( mDoVisualize )
+    mVis.SendReferenceFrame( DisplayWindow::BitmapData( mWidth, mHeight ) );
 }
 
 void

@@ -50,6 +50,7 @@ class VisDisplayBitmap : public VisDisplayLayer
   void mousePressEvent( QMouseEvent* );
 
  private:
+  bool mWaitForReferenceFrame;
   BitmapImage mImageBuffer;
 };
 

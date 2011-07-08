@@ -163,12 +163,14 @@ class BitmapImage
 
   BitmapImage& operator+=( const BitmapImage& b )
     {
+      DimensionCheck( b );
       for( int i = 0; i < mWidth * mHeight; ++i )
         mpData[ i ] += b.mpData[ i ];
       return *this;
     }
   BitmapImage& operator-=( const BitmapImage& b )
     {
+      DimensionCheck( b );
       for( int i = 0; i < mWidth * mHeight; ++i )
         mpData[ i ] -= b.mpData[ i ];
       return *this;
@@ -186,6 +188,7 @@ class BitmapImage
   // i.e. pixels outside the clipping region.
   BitmapImage& SetBackground( const BitmapImage& b )
     {
+      DimensionCheck( b );
       for( int i = 0; i < mWidth * mHeight; ++i )
         if( mpData[ i ] & 0x8000 )
           mpData[ i ] = b.mpData[ i ];
@@ -197,6 +200,8 @@ class BitmapImage
   std::istream& ReadBinary( std::istream& );
 
  private:
+  void DimensionCheck( const BitmapImage& ) const;
+
   int     mWidth,
           mHeight;
   uint16* mpData;

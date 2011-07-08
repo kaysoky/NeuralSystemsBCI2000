@@ -39,7 +39,8 @@
 using namespace std;
 
 VisDisplayBitmap::VisDisplayBitmap( const std::string& inSourceID )
-: VisDisplayLayer( inSourceID )
+: VisDisplayLayer( inSourceID ),
+  mWaitForReferenceFrame( false )
 {
   Restore();
 }
@@ -73,26 +74,30 @@ VisDisplayBitmap::HandleBitmap( const BitmapImage& inImage )
 {
   if( inImage.Empty() )
   {
-    mImageBuffer.SetTransparent();
+    mWaitForReferenceFrame = true;
+    return;
   }
-  else
+
+  if( mWaitForReferenceFrame )
   {
     if( ( mImageBuffer.Width() != inImage.Width() ) || ( mImageBuffer.Height() != inImage.Height() ) )
     {
-      mImageBuffer = inImage + BitmapImage( inImage.Width(), inImage.Height() );
       // Adapt the window's aspect ratio without changing its width.
       if( VisID( mVisID ).DominatingLayerVisID() == mVisID && inImage.Width() > 0 )
       {
-        this->parentWidget()->resize( this->width(), ( inImage.Height() * this->width() ) / inImage.Width() );
-        Visconfigs()[ VisID( mVisID ).WindowID() ].Put( CfgID::Height, this->height(), UserDefined );
+        QWidget* pParent = this->parentWidget();
+        pParent->resize( pParent->width(), ( inImage.Height() * pParent->width() ) / inImage.Width() );
+        Visconfigs()[ VisID( mVisID ).WindowID() ].Put( CfgID::Height, pParent->height(), UserDefined );
       }
     }
-    else
-    {
-      mImageBuffer += inImage;
-    }
-    this->update();
+    mImageBuffer = inImage;
+    mWaitForReferenceFrame = false;
   }
+  else
+  {
+    mImageBuffer += inImage;
+  }
+  this->update();
 }
 
 void

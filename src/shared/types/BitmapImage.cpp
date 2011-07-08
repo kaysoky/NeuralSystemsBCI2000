@@ -72,3 +72,10 @@ BitmapImage::ReadBinary( istream& is )
   return is;
 }
 
+void
+BitmapImage::DimensionCheck( const BitmapImage& b ) const
+{
+  if( mWidth != b.mWidth || mHeight != b.mHeight )
+    throw "BitmapImage dimension mismatch";
+}
+
