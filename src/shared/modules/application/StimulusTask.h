@@ -170,9 +170,9 @@ class StimulusTask : public ApplicationBase
 
   // Access to the Display property.
   GUI::GraphDisplay& Display()
-    { return mDisplay; }
+    { return mrDisplay; }
   const GUI::GraphDisplay& Display() const
-    { return mDisplay; }
+    { return mrDisplay; }
 
   // User message display.
   void DisplayMessage( const std::string& );
@@ -211,8 +211,8 @@ class StimulusTask : public ApplicationBase
       mStimToClassDuration;
 
   // Display elements.
-  ApplicationWindow mDisplay;
-  TextField*        mpMessageField;
+  ApplicationWindow& mrDisplay;
+  TextField*         mpMessageField;
 
   // Stimulus/Target configuration
   AssociationMap mAssociations;

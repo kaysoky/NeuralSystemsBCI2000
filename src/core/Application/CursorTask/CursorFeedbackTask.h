@@ -70,7 +70,7 @@ class CursorFeedbackTask : public FeedbackTask
   void DisplayMessage( const std::string& );
 
   // Graphic objects
-  ApplicationWindow  mWindow;
+  ApplicationWindow& mrWindow;
   FeedbackScene*     mpFeedbackScene;
   int                mRenderingQuality;
   TextField*         mpMessage;

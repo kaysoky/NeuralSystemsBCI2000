@@ -11,13 +11,14 @@
 //   * updating changed portions of the window after processing, and writing
 //     the StimulusTime time stamp immediately after updating.
 //
-//   ApplicationWindow instances are associated with names, and may be
-//   retrieved via the ApplicationWindow::Windows() container, specifying
-//   the name as a key: ApplicationWindow::Windows()["Application"].
-//   Names must be unique across instances of ApplicationWindow within an
-//   application module, but may be reused across application modules.
-//   An instance's name is specified as an argument to the ApplicationWindow
-//   constructor; when no name is given, it defaults to "Application".
+//   ApplicationWindow instances are associated with names, and may only be
+//   created by calling the Environment::Window() accessor function during
+//   the construction phase (typically, from a GenericFilter constructor).
+//   Access to existing ApplicationWindow instances is possible during other
+//   phases as well but requires that an Environment::Window() call was issued
+//   during the preflight or construction phase. Unlike the construction phase,
+//   a call during preflight will not create a functional ApplicationWindow 
+//   instance.
 //
 //   When multiple ApplicationWindow instances are present, the StimulusTime
 //   time stamp will reflect the time when the last window was updated.
@@ -69,10 +70,20 @@ class ApplicationWindowList;
 
 class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtension
 {
+  friend class EnvironmentBase;
+
  public:
   static std::string DefaultName;
 
-  ApplicationWindow( const std::string& = DefaultName );
+ private: // Forbid usage of ApplicationWindow objects as class members.
+          // Also, make it impossible to call "delete" on a pointer from the
+          // window list.
+          // Deriving from ApplicationWindow is forbidden as well to avoid issues
+          // arising from lifetime constraints for ApplicationWindow objects:
+          // - They must exist or be created when requested from an filter constructor,
+          //   or EnvironmentExtension::Publish();
+          // - their lifetime must exceed that of filters or extensions using them.
+  ApplicationWindow( const std::string& );
   virtual ~ApplicationWindow();
 
  private: // Forbid copying and assignment to make sure windows may be
@@ -80,8 +91,8 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
   ApplicationWindow( const ApplicationWindow& );
   const ApplicationWindow& operator=( const ApplicationWindow& );
 
- public:
   // EnvironmentExtension interface
+ protected:
   virtual void Publish();
   virtual void Preflight() const;
   virtual void Initialize();
@@ -91,10 +102,24 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
   virtual void PostProcess();
 
   // Properties
+ public:
   const std::string& Name() const
   { return mName; }
   const std::string& VisualizationID() const
   { return mVis.SourceID(); }
+
+ private:
+  // For use by the EnvironmentBase class:
+  // These methods keep track of objects using the window instance to allow for
+  // automatic deletion when last user instance gets destroyed.
+  void RegisterUser( const EnvironmentBase* p )
+  { mUsers.insert( p ); }
+  void UnregisterUser( const EnvironmentBase* p )
+  { mUsers.erase( p ); }
+  int Users() const
+  { return mUsers.size(); }
+ private:
+  std::set<const EnvironmentBase*> mUsers;
 
  private:
   std::string mName;
@@ -118,13 +143,19 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
                            mTemporalDecimation,
                            mBlockCount;
 
- public:
+ private:
   static ApplicationWindowList& Windows();
 };
 
-
 class ApplicationWindowList : public std::map<std::string, ApplicationWindow*>
 {
+  friend class ApplicationWindow;
+
+ private:
+  ApplicationWindowList() {}
+  ApplicationWindowList( const ApplicationWindowList& );
+  const ApplicationWindowList& operator=( const ApplicationWindowList& );
+
  public:
   bool IsEmpty() const
        { return empty(); }
@@ -136,6 +167,5 @@ class ApplicationWindowList : public std::map<std::string, ApplicationWindow*>
   ApplicationWindow* operator[]( const std::string& ) const;
   ApplicationWindow* operator[]( int ) const;
 };
-
 
 #endif // APPLICATION_WINDOW_H

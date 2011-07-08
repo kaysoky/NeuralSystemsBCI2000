@@ -51,10 +51,13 @@ typedef std::queue<GraphObject*> QueueOfGraphObjects;
 
 class GraphDisplay
 {
+  friend class GraphObject;
+
  public:
   GraphDisplay();
   virtual ~GraphDisplay()
     { DeleteObjects(); }
+
   // Properties
   GraphDisplay& SetContext( const DrawContext& dc )
     { mContext = dc; Change(); return *this; }
@@ -68,15 +71,25 @@ class GraphDisplay
     { while( !mObjectsClicked.empty() ) mObjectsClicked.pop(); return *this; }
   QueueOfGraphObjects& ObjectsClicked()
     { return mObjectsClicked; }
+
   // Management of GraphObjects
+ private:
+  // Add() and Remove() are only provided for GraphObject self registering
+  // and unregistering in the GraphObject constructor and destructor.
+  // Calling them from elsewhere will lead to inconsistency between
+  // a GraphObject's display reference, and the display it is attached to.
   GraphDisplay& Add( GraphObject* obj )
     { mObjects.insert( obj ); return *this; }
   GraphDisplay& Remove( GraphObject* obj )
     { obj->Invalidate(); mObjects.erase( obj ); return *this; }
+
+public:
   GraphDisplay& DeleteObjects()
     { while( !mObjects.empty() ) delete *mObjects.begin(); return *this; }
+
   // Read bitmap data, resampled to target resolution
   const BitmapImage& BitmapData( int width = 0, int height = 0 ) const;
+
   // Graphics functions
   //  Invalidate the display's entire area
   virtual GraphDisplay& Invalidate();

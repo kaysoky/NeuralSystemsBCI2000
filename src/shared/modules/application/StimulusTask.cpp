@@ -59,7 +59,8 @@ StimulusTask::StimulusTask()
   mISIMaxDuration( 0 ),
   mStimToClassDuration( 0 ),
   mpMessageField( NULL ),
-  mpAttendedTarget( NULL )
+  mpAttendedTarget( NULL ),
+  mrDisplay( Environment::Window() )
 {
   BEGIN_PARAMETER_DEFINITIONS
    "Application:Sequencing float PreRunDuration= 1 1 % % "
@@ -434,7 +435,7 @@ StimulusTask::DisplayMessage( const string& inMessage )
   mpMessageField = NULL;
   if( !inMessage.empty() )
   {
-    mpMessageField = new TextField( mDisplay );
+    mpMessageField = new TextField( mrDisplay );
     GUI::Rect rect = { 0.5f, 0.4f, 0.5f, 0.6f };
     mpMessageField->SetText( inMessage )
                    .SetTextHeight( 0.8f )

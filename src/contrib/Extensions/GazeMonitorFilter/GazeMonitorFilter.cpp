@@ -51,11 +51,13 @@ GazeMonitorFilter::GazeMonitorFilter() :
   mSaccadeBlocks( 0 ),
   mTemporalDecimation( 1 ),
   mBlockCount( 0 ),
-  mpAppDisplay( NULL ),
+  mrAppDisplay( Environment::Window() ),
   mpRightEye( NULL ),
   mpLeftEye( NULL ),
   mpGaze( NULL )
 {
+  mVis.SetSourceID( mrAppDisplay.VisualizationID() + ":1" );
+
   // Define the GazeMonitor Parameters
   BEGIN_PARAMETER_DEFINITIONS
     "Application:GazeMonitor int VisualizeGazeMonitorFilter= 0 0 0 1 "
@@ -84,19 +86,25 @@ GazeMonitorFilter::GazeMonitorFilter() :
 
   // Define the GazeMonitor States
   BEGIN_STATE_DEFINITIONS
-    "FixationViolated   1 0 0 0",
+    "FixationViolated 1 0 0 0",
     "GazeCorrectionMode 1 0 0 0", // Set this state true to enable user correction
   END_STATE_DEFINITIONS
 }
 
 GazeMonitorFilter::~GazeMonitorFilter()
 {
+  delete mpFixationImage;
+  delete mpFixationViolationImage;
+  delete mpZone;
+  delete mpPrompt;
+  delete mpRightEye;
+  delete mpLeftEye;
+  delete mpGaze;
 }
 
 void
 GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &Output ) const
 {
-  Window( "Application" );
   bool loggingEyetracker = false, loggingGaze = false, loggingEyePos = false, loggingEyeDist = false;
   if( ( int )OptionalParameter( "LogEyetracker", 0 ) )
   {
@@ -193,16 +201,19 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
 void
 GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProperties &Output )
 {
-  ApplicationWindow& window = Window( "Application" );
-  mVis.SetSourceID( window.VisualizationID() + ":1" );
-  mpAppDisplay = &window;
-
-  mpFixationImage = new ImageStimulus( *mpAppDisplay );
-  mpFixationViolationImage = new ImageStimulus( *mpAppDisplay );
-  mpZone = new EllipticShape( *mpAppDisplay );
-  mpPrompt = new TextField( *mpAppDisplay );
+  delete mpFixationImage;
+  mpFixationImage = new ImageStimulus( mrAppDisplay );
+  delete mpFixationViolationImage;
+  mpFixationViolationImage = new ImageStimulus( mrAppDisplay );
+  delete mpZone;
+  mpZone = new EllipticShape( mrAppDisplay );
+  delete mpPrompt;
+  mpPrompt = new TextField( mrAppDisplay );
+  delete mpRightEye;
   mpRightEye = new EllipticShape( mVisDisplay, 5 );
+  delete mpLeftEye;
   mpLeftEye = new EllipticShape( mVisDisplay, 5 );
+  delete mpGaze;
   mpGaze = new EllipticShape( mVisDisplay, 0 );
 
   mLoggingEyetracker = mLoggingGaze = mLoggingEyePos = mLoggingEyeDist = false;
@@ -310,7 +321,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
       mpPrompt->SetDisplayRect( textRect );
       mpPrompt->SetTextHeight( 0.30f );
       mpPrompt->Hide();
- 
+
       mBlinkTime = Parameter( "BlinkTime" ).InSampleBlocks();
       mBlinkBlocks = 0;
       mSaccadeTime = Parameter( "SaccadeTime" ).InSampleBlocks();
@@ -356,22 +367,6 @@ GazeMonitorFilter::StopRun()
 void
 GazeMonitorFilter::Halt()
 {
-  // Remove the added stimuli to avoid multiple deletion
-  if( mpAppDisplay )
-  {
-    if( mpFixationImage ) mpAppDisplay->Remove( mpFixationImage );
-    if( mpFixationViolationImage ) mpAppDisplay->Remove( mpFixationViolationImage );
-    if( mpPrompt ) mpAppDisplay->Remove( mpPrompt );
-    if( mpZone ) mpAppDisplay->Remove( mpZone );
-  }
-  delete mpFixationImage; mpFixationImage = NULL;
-  delete mpFixationViolationImage; mpFixationViolationImage = NULL;
-  delete mpPrompt; mpPrompt = NULL;
-  delete mpZone; mpZone = NULL;
-  delete mpGaze; mpGaze = NULL;
-  delete mpLeftEye; mpLeftEye = NULL;
-  delete mpRightEye; mpRightEye = NULL;
-  mpAppDisplay = NULL;
 }
 
 void

@@ -77,7 +77,7 @@ class GazeMonitorFilter : public ApplicationBase
   EllipticShape* mpGaze;                   // Vis screen only
 
   GUI::GraphDisplay mVisDisplay;
-  GUI::GraphDisplay* mpAppDisplay;
+  ApplicationWindow& mrAppDisplay;
   BitmapVisualization mVis;
 };
 

@@ -58,7 +58,8 @@ CursorFeedbackTask::CursorFeedbackTask()
   mMaxFeedbackDuration( 0 ),
   mCursorSpeedX( 1.0 ),
   mCursorSpeedY( 1.0 ),
-  mCursorSpeedZ( 1.0 )
+  mCursorSpeedZ( 1.0 ),
+  mrWindow( Environment::Window() )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Application:Window int RenderingQuality= 1 0 0 1 "
@@ -128,7 +129,7 @@ CursorFeedbackTask::CursorFeedbackTask()
   END_LOCALIZED_STRINGS
 
   GUI::Rect rect = { 0.5f, 0.4f, 0.5f, 0.6f };
-  mpMessage = new TextField( mWindow );
+  mpMessage = new TextField( mrWindow );
   mpMessage->SetTextColor( RGBColor::Lime )
             .SetTextHeight( 0.8f )
             .SetColor( RGBColor::Gray )
@@ -234,18 +235,18 @@ CursorFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
   int renderingQuality = Parameter( "RenderingQuality" );
   if( renderingQuality != mRenderingQuality )
   {
-    mWindow.Hide();
+    mrWindow.Hide();
     mRenderingQuality = renderingQuality;
   }
   delete mpFeedbackScene;
   if( renderingQuality == 0 )
-    mpFeedbackScene = new FeedbackScene2D( mWindow );
+    mpFeedbackScene = new FeedbackScene2D( mrWindow );
   else
-    mpFeedbackScene = new FeedbackScene3D( mWindow );
+    mpFeedbackScene = new FeedbackScene3D( mrWindow );
   mpFeedbackScene->Initialize();
   mpFeedbackScene->SetCursorColor( mCursorColorFront );
 
-  mWindow.Show();
+  mrWindow.Show();
   DisplayMessage( LocalizableString( "Timeout" ) );
 }
 

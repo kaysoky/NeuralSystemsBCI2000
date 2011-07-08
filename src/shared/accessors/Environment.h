@@ -197,8 +197,7 @@ class EnvironmentBase
   EnvironmentBase()
     : mInstance( ++sNumInstances )
     {}
-  virtual ~EnvironmentBase()
-    { --sNumInstances; }
+  virtual ~EnvironmentBase();
   int Instance() const
     { return mInstance; }
 
@@ -299,12 +298,14 @@ class EnvironmentBase
  protected:
   // Access to application windows in application modules.
   // When no name is given, ApplicationWindow::DefaultName is used.
-  // In Preflight(), use a line
-  //   Window( name );
-  // to make sure the required window exists.
-  void  Window( const std::string& name = "" ) const;              // will be used in Preflight()
-  class ApplicationWindow& Window( const std::string& name = "" ); // will be used outside Preflight()
-  const class ApplicationWindowList* Windows() const;
+  class ApplicationWindow& Window( const std::string& name = "" ) const;
+  static const class ApplicationWindowList* const Windows;
+
+ private:
+  // Keep track of accessed windows to allow for automatic deletion of
+  // unreferenced windows, and for error checking on window access.
+  typedef std::set<ApplicationWindow*> WindowSet;
+  mutable WindowSet mWindowsAccessed;
 #endif // IS_APP_MODULE
 
  // Controlling functions to be called from framework friends only.
@@ -393,9 +394,6 @@ class EnvironmentBase
   static NameSetMap& ParamsAccessedDuringPreflight();
   static NameSetMap& OwnedStates();
   static NameSetMap& StatesAccessedDuringPreflight();
-#if IS_APP_MODULE
-  static NameSetMap& WindowsAccessedDuringPreflight();
-#endif // IS_APP_MODULE
 
  private:
   static ParamList*     paramlist_;

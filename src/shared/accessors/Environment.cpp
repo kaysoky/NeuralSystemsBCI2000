@@ -75,6 +75,10 @@ EnvironmentBase::statelistAccessor   EnvironmentBase::States;
 EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
 EnvironmentBase::operatorAccessor    EnvironmentBase::Operator;
 
+#if IS_APP_MODULE
+const ApplicationWindowList* const EnvironmentBase::Windows = &ApplicationWindow::Windows();
+#endif // IS_APP_MODULE
+
 int EnvironmentBase::sNumInstances = 0;
 const EnvironmentBase* EnvironmentBase::sObjectContext = NULL;
 
@@ -127,14 +131,20 @@ EnvironmentBase::StatesAccessedDuringPreflight()
   return instance;
 }
 
-#if IS_APP_MODULE
-EnvironmentBase::NameSetMap&
-EnvironmentBase::WindowsAccessedDuringPreflight()
+// Destructor
+EnvironmentBase::~EnvironmentBase()
 {
-  static EnvironmentBase::NameSetMap instance;
-  return instance;
-}
+  --sNumInstances;
+#if IS_APP_MODULE
+  for( WindowSet::const_iterator i = mWindowsAccessed.begin(); i != mWindowsAccessed.end(); ++i )
+  {
+    ( *i )->UnregisterUser( this );
+    if( ( *i )->Users() == 0 )
+      delete *i;
+  }
 #endif // IS_APP_MODULE
+}
+
 
 // Helper function to construct and set a context string for displaying errors.
 void
@@ -320,55 +330,44 @@ EnvironmentBase::StateAccess( const string& inName ) const
 }
 
 #if IS_APP_MODULE
-void
-EnvironmentBase::Window( const string& inName ) const
-{ // This function is called during the preflight phase.
-  string name = inName;
-  if( name.empty() )
-    name = ApplicationWindow::DefaultName;
-
-  NameSet& accessedWindows = WindowsAccessedDuringPreflight()[ObjectContext()];
-  if( Phase() == preflight )
-    accessedWindows.insert( name );
-
-  if( !Windows()->Exists( name ) )
-    bcierr_ << "Trying to access non-existing application window \""
-            << name
-            << "\""
-            << endl;
-}
-
 ApplicationWindow&
-EnvironmentBase::Window( const string& inName )
-{ // This function is called outside the preflight phase.
+EnvironmentBase::Window( const string& inName ) const
+{
   string name = inName;
   if( name.empty() )
     name = ApplicationWindow::DefaultName;
 
-  NameSet& accessedWindows = WindowsAccessedDuringPreflight()[ObjectContext()];
-  if( accessedWindows.find( name ) == accessedWindows.end() )
-    bcierr_ << "Application window \"" << name << "\" was accessed during"
-            << " initialization or processing, but not checked for"
-            << " existence during preflight phase."
-            << endl;
-
-  ApplicationWindow* pWindow = ( *Windows() )[name];
+  ApplicationWindow* pWindow = ( *Windows )[name];
   if( pWindow == NULL )
-  {
-    bcierr_ << "Access to non-existing application window \""
-            << name
-            << "\""
-            << endl;
+  { // New Windows are legally created on access during the construction
+    // phase. Outside the construction phase, we report an error, but still
+    // return a valid reference to allow the caller to proceed.
     pWindow = new ApplicationWindow( name );
+    if( Phase() != construction )
+      bcierr_ << "Access to non-existent application window \""
+              << name
+              << "\""
+              << endl;
   }
+  pWindow->RegisterUser( this );
+
+  switch( Phase() )
+  {
+    case construction:
+    case preflight:
+      break;
+
+    default:
+      if( mWindowsAccessed.find( pWindow ) == mWindowsAccessed.end() )
+        bcierr_ << "Application window \""
+                << name
+                << "\" was neither declared during construction, "
+                << "nor tested for existence during preflight phase."
+                << endl;
+  }
+  mWindowsAccessed.insert( pWindow );
 
   return *pWindow;
-}
-
-const ApplicationWindowList*
-EnvironmentBase::Windows() const
-{
-  return &ApplicationWindow::Windows();
 }
 #endif IS_APP_MODULE
 
