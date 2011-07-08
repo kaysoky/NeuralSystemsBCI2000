@@ -2,10 +2,6 @@
 // $Id$
 // Author: griffin.milsap@gmail.com
 // Description: A helper filter which acts on Gaze data from an eyetracker
-//   Visualizes and Draws:
-//     Fixation cross on the Application Screen if EnforceFixation is enabled
-//     Fixation zone on the Application Screen if EnforceFixation is enabled
-//     EyeGaze information on 
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
@@ -35,7 +31,6 @@ GazeMonitorFilter::GazeMonitorFilter() :
   mpFixationImage( NULL ),
   mpFixationViolationImage( NULL ),
   mpPrompt( NULL ),
-  mpCorrectionGaze( NULL ),
   mpZone( NULL ),
   mVisualizeGaze( false ),
   mLogGazeInformation( false ),
@@ -89,8 +84,8 @@ GazeMonitorFilter::GazeMonitorFilter() :
 
   // Define the GazeMonitor States
   BEGIN_STATE_DEFINITIONS
-    "FixationViolated 1 0 0 0",
-    "Correction       1 0 0 0", // Set this state true to enable user correction
+    "FixationViolated   1 0 0 0",
+    "GazeCorrectionMode 1 0 0 0", // Set this state true to enable user correction
   END_STATE_DEFINITIONS
 }
 
@@ -192,7 +187,7 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
     }
   }
   Parameter( "LogGazeInformation" );
-  State( "Correction" );
+  State( "GazeCorrectionMode" );
 }
 
 void
@@ -206,7 +201,6 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
   mpFixationViolationImage = new ImageStimulus( *mpAppDisplay );
   mpZone = new EllipticShape( *mpAppDisplay );
   mpPrompt = new TextField( *mpAppDisplay );
-  mpCorrectionGaze = new EllipticShape( *mpAppDisplay );
   mpRightEye = new EllipticShape( mVisDisplay, 5 );
   mpLeftEye = new EllipticShape( mVisDisplay, 5 );
   mpGaze = new EllipticShape( mVisDisplay, 0 );
@@ -316,12 +310,6 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
       mpPrompt->SetDisplayRect( textRect );
       mpPrompt->SetTextHeight( 0.30f );
       mpPrompt->Hide();
-
-      // Setup a visual gaze feedback for the application window
-      mpCorrectionGaze->SetZOrder( 0 );
-      mpCorrectionGaze->SetColor( RGBColor::Black );
-      mpCorrectionGaze->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
-      mpCorrectionGaze->Hide();
  
       mBlinkTime = Parameter( "BlinkTime" ).InSampleBlocks();
       mBlinkBlocks = 0;
@@ -354,11 +342,10 @@ void
 GazeMonitorFilter::StopRun()
 {
   // Ensure We're not in "Correction" state
-  State( "Correction" ) = 0;
+  State( "GazeCorrectionMode" ) = 0;
   mCorrection = 0;
   mpPrompt->Hide();
   mpZone->SetColor( RGBColor::Gray );
-  mpCorrectionGaze->Hide();
 
   // Hide visualizations
   mpGaze->Hide();
@@ -376,13 +363,11 @@ GazeMonitorFilter::Halt()
     if( mpFixationViolationImage ) mpAppDisplay->Remove( mpFixationViolationImage );
     if( mpPrompt ) mpAppDisplay->Remove( mpPrompt );
     if( mpZone ) mpAppDisplay->Remove( mpZone );
-    if( mpCorrectionGaze ) mpAppDisplay->Remove( mpCorrectionGaze );
   }
   delete mpFixationImage; mpFixationImage = NULL;
   delete mpFixationViolationImage; mpFixationViolationImage = NULL;
   delete mpPrompt; mpPrompt = NULL;
   delete mpZone; mpZone = NULL;
-  delete mpCorrectionGaze; mpCorrectionGaze = NULL;
   delete mpGaze; mpGaze = NULL;
   delete mpLeftEye; mpLeftEye = NULL;
   delete mpRightEye; mpRightEye = NULL;
@@ -514,7 +499,7 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
         AcquiredFixation();
 
       // If we want the subject to correct their eyetracking behavior, show them eyetracker output
-      if( ( int )State( "Correction" ) )
+      if( ( int )State( "GazeCorrectionMode" ) )
       {
         // Give the subject a prompt
         mpPrompt->Show();
@@ -534,7 +519,7 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
           if( mCorrection >= correctionTime ) 
           {
             //Disable drawing to the subject's screen
-            State( "Correction" ) = 0;
+            State( "GazeCorrectionMode" ) = 0;
             mCorrection = 0;
             mpPrompt->Hide();
             mpZone->SetColor( RGBColor::Gray );
@@ -557,10 +542,10 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
   }
 
   // Using correction without fixation enforcement is a no-no.
-  if( ( int )State( "Correction" ) && !mEnforceFixation && mLoggingGaze )
+  if( ( int )State( "GazeCorrectionMode" ) && !mEnforceFixation && mLoggingGaze )
   {
     bciout << "Attempting to use eyetracker correction without full fixation enforcement." << endl;
-    State( "Correction" ) = 0;
+    State( "GazeCorrectionMode" ) = 0;
   }
 
   // Draw preview frame

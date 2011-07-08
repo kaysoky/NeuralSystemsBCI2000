@@ -70,7 +70,6 @@ class GazeMonitorFilter : public ApplicationBase
   ImageStimulus* mpFixationImage;          // App screen only
   ImageStimulus* mpFixationViolationImage; // App screen only
   TextField*     mpPrompt;                 // App screen only
-  EllipticShape* mpCorrectionGaze;         // App screen only
   EllipticShape* mpZone;                   // App screen only
 
   EllipticShape* mpRightEye;               // Vis screen only
