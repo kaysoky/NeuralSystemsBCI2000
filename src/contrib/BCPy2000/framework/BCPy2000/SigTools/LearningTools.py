@@ -2256,7 +2256,9 @@ def spcov(x, y=None, balance=True, spdim=1, return_trchvar=False):
 	be 0).
 	
 	If labels <y> are supplied and <balance> is set to True,
-	there is the opportunity to balance the computation: 
+	there is the opportunity to balance the computation: then,
+	covariance matrices are computed separately on each class,
+	and averaged at the end.
 	"""###
 	n = {}; c = {}
 	axes = None
@@ -2265,15 +2267,18 @@ def spcov(x, y=None, balance=True, spdim=1, return_trchvar=False):
 	if return_trchvar: trchvar = numpy.zeros((ntr,nch), x.dtype)
 	spdim -= 1 # since we will be operating on each x[i]
 	for i,xi in enumerate(x):
+		denom = 1.0
 		xim = xi = numpy.asarray(xi)
 		if axes == None: axes = [axis for axis in range(len(xi.shape)) if axis != spdim]
-		for axis in axes: xim = numpy.expand_dims(xim.mean(axis=axis), axis)
+		for axis in axes:
+			xim = numpy.expand_dims(xim.mean(axis=axis), axis)
+			denom *= xi.shape[axis]
 		xi = xi - xim
 		ci = numpy.tensordot(xi, xi, axes=(axes,axes))
 		if y == None or not balance: yi = 0
 		else: yi = y[i]
 		c[yi] = c.get(yi, 0.0) + ci
-		n[yi] = n.get(yi, 0) + 1
+		n[yi] = n.get(yi, 0) + denom
 		if return_trchvar: trchvar[i,:].flat = ci.diagonal().flat
 	if balance:
 		for k,v in c.items(): v /= float(n[k])

@@ -17,6 +17,12 @@
 @set SESSION=%1
 :SKIPSESSIONARG
 
+@set DEMO=
+@if [%2]==[] goto SKIPDEMOARG
+@set DEMO=%2
+:SKIPDEMOARG
+
+
 cd ..\prog
 call portable.bat
 
@@ -37,6 +43,12 @@ call portable.bat
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm 
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_perception.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PYWD%\ChannelVolumesDB.prm
+
+if [%DEMO%] == [] goto SKIPDEMO
+:DEMO
+@set OnConnect=%OnConnect% ; SET PARAMETER SubjectName 2011XXXX_85XX_A_
+@set OnConnect=%OnConnect% ; SET PARAMETER InteractiveVolumeAdjust 1
+:SKIPDEMO
 
 ::@set OnConnect=%OnConnect% ; SETCONFIG
 ::@set OnSetConfig=- SET STATE Running 1

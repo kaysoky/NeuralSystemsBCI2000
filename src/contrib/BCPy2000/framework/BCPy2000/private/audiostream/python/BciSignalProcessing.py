@@ -1,25 +1,30 @@
 import numpy
+import scipy.signal
 import SigTools
 import WavTools
+import BCI2000Tools.DataFiles  # adds self.load and self.dump methods
 
 class BciTrapSequence(SigTools.TrapSequence):
 	
-	def onreset(self, discard=None, remember=None, persistence=None, bci=None):
+	def onreset(self, discard=None, remember=None, persistence=None, detrend=None, bci=None):
 		if discard == None: discard = getattr(self, 'discard', 0)
 		if remember == None: remember = getattr(self, 'remember', 10)
 		if persistence == None: persistence = getattr(self, 'persistence', 1.0)
+		if detrend == None: detrend = getattr(self, 'detrend', None)
 		if bci == None: bci = getattr(self, 'bci', None)
-		
+				
 		self.discard = discard
-		self.remember = remember
-		self.persistence = persistence
+		self.remember = remember   # keep how many individual epochs in memory at any one time?
+		self.persistence = persistence  # for running mean
 		self.bci = bci
+		self.detrend = detrend  # None,  'constant' or 'linear'
 
 		self.avg = SigTools.running_mean(persistence=self.persistence)
 		self.ndelivered = 0
 		self.recent = []
 		
 	def oncollect(self, x, n):
+		if self.detrend != None: x = scipy.signal.detrend(x, axis=1, type=self.detrend)		
 		self.ndelivered += 1
 		if self.ndelivered > self.discard: self.avg += x   # keep a running average
 		self.recent.append(x)
@@ -49,11 +54,11 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Epoch   float     TriggerHPCutoff=                          0.0                    0.0   0 % // ",
 			"PythonSig:Epoch   floatlist ERPFilterFreqHz=                    2     0.1     8              %     0 % // lower and upper frequencies of bandpass filter for ERP feature set",
 			"PythonSig:Epoch   int       ERPFilterOrder=                           8                      8     0 % // order of bandpass filter for ERP feature set",
+			"PythonSig:Epoch   int       DetrendEpochs=                            2                      2     0 2 // Detrend data? 0: no, 1: mean, 2: linear (enumeration)",
 			"PythonSig:Epoch   float     ERPClassifierBias=                        0.0                    0.0   % % // ",
 			"PythonSig:Epoch   matrix    ERPClassifierWeights=             0 0                            %     % % // ",
 			"PythonSig:Epoch   int       DiffFeatureSets=                          1                      1     0 1 // for 2-stream designs, whether to use the difference between the two feature sets (boolean)",
 			"PythonSig:Epoch   intlist   DiscardEpochs=                      2     2       2              2     0 % // for classification, discard this many epochs at the beginning",
-
 		]
 		states = [
 		]
@@ -121,7 +126,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 		for istream in xrange(self.nstreams):
 			sn = 'Stream%d'%(istream+1)
-			if not sn in self.states: raise EndUserError, "state %s is not defined"%sn
+			if not sn in self.states: raise EndUserError, "state %s is not defined"%sn   # ZZZ
 		
 		if 1:  # turn back off in order to visualize temporally-filtered output
 			self.out_signal_props['ChannelLabels']         =  ['prediction']
@@ -148,6 +153,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 					discard=self.discard[istream],
 					remember=10,
 					persistence=1.0,
+					detrend={0:None, 1:'constant', 2:'linear'}.get(int(self.params['DetrendEpochs'])),
 					bci=self,
 			)
 			self.seq.append(s)
@@ -160,6 +166,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.recorder = WavTools.recorder(seconds=0, fs=44100, nchan=2, callback=self.HandleMicData)
 		else:
 			self.recorder = None
+			
+		self.saving = int(self.params['CheckNumberOfEpochs']) != 0       # are we gathering and dumping preprocessed data?
 		
 	#############################################################
 	
@@ -175,28 +183,34 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.nbeats = [0] * self.nstreams
 		self.streamstates = [0] * self.nstreams
 		self.TriggerTrouble = [None] * self.nstreams
+		
+		if self.saving:
+			self.dump(channels=list(self.inchannels()), fs=self.nominal['SamplesPerSecond'])
 				
 	#############################################################
 	
 	def StopRun(self):
 		
-		if int(self.params['CheckNumberOfEpochs']) == 0:
+		if self.saving:
+			self.dump('flush') # the newer, python way
+			# and now, the older, matlab way:
+			if len(self.x) and self.x[0] != None:
+				if not isinstance(self.data_file, str): raise RuntimeError,'StopRun failed in PythonSig because self.data_file is not valid'
+				x = [numpy.matrix(numpy.asarray(xi).T.flatten()).A for xi in self.x]
+				xsiz = numpy.matrix((len(x),) + self.x[0].shape, dtype=numpy.float64)
+				unexpected = [y-1 not in range(self.nstreams) for y in self.y]
+				if any(unexpected): print "WARNING: unexpected labels: self.y = ",self.y
+				a = {
+					'x':numpy.concatenate(x, axis=0),
+					'xsiz':xsiz,
+					'y':numpy.matrix(self.y).T,
+					'channels':'\n'.join(self.inchannels()),
+					'fs':self.eegfs,
+				}
+				SigTools.savemat(self.data_file.replace('.dat', '_features.mat'), a)
+		else:
 			print "features not saved (traps not verified)"
-		elif len(self.x) and self.x[0] != None:
-			if not isinstance(self.data_file, str): raise RuntimeError,'StopRun failed in PythonSig because self.data_file is not valid'
-			x = [numpy.matrix(numpy.asarray(xi).T.flatten()).A for xi in self.x]
-			xsiz = numpy.matrix((len(x),) + self.x[0].shape, dtype=numpy.float64)
-			unexpected = [y-1 not in range(self.nstreams) for y in self.y]
-			if any(unexpected): print "WARNING: unexpected labels: self.y = ",self.y
-			a = {
-				'x':numpy.concatenate(x, axis=0),
-				'xsiz':xsiz,
-				'y':numpy.matrix(self.y).T,
-				'channels':'\n'.join(self.inchannels()),
-				'fs':self.eegfs,
-			}
-			SigTools.savemat(self.data_file.replace('.dat', '_features.mat'), a)
-
+			
 	#############################################################
 
 	def Process(self, sig):
@@ -229,17 +243,17 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			if len(seq.active) > 0: collected=True
 			
 			statename = 'Stream%d'%(istream+1)
-			streamstate = self.states[statename]
+			streamstate = self.states[statename] # ZZZ
 			previous_streamstate,self.streamstates[istream] = self.streamstates[istream],streamstate
 			if streamstate == 0: continue
 			if previous_streamstate == 0:
 				self.nbeats[istream] = 0
-				self.seq[istream].reset()
+				self.seq[istream].reset() # ZZZ  reset when streamstate becomes non-zero
 				
-			if previous_streamstate <= 1 and streamstate > 1: self.nbeats[istream] += 1 
-			collecting = True
+			if previous_streamstate <= 1 and streamstate > 1: self.nbeats[istream] += 1   # ZZZ increment nbeats when streamstate indicates it
+			collecting = True # ZZZ only set collecting=True when streamstate != 0
 			
-			self.seq[istream].process(sig)
+			self.seq[istream].process(sig) # ZZZ only feed signal into trapsequence when streamstate != 0
 		
 		give_answer = False
 		if collected and not collecting:  give_answer = True
@@ -261,13 +275,15 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 
 			
 			xi = self.UpdatePrediction()
-			yi = self.states['TargetStream']
+			yi = self.states['TargetStream'] # ZZZ
 			
-			self.states['PredictedStream'] = {0:0, -1:1, +1:2}[int(numpy.sign(self.prediction))]
+			self.states['PredictedStream'] = {0:0, -1:1, +1:2}[int(numpy.sign(self.prediction))]   # ZZZ
 
-			self.x.append(xi)
-			self.y.append(yi)
-				
+			self.dump(x=xi,y=yi) # the new python way
+			self.x.append(xi) # the old matlab way
+			self.y.append(yi) # the old matlab way
+						
+			
 		if self.changed('PredictedStream',0): self.prediction, self.prediction_se = 0.0, 1.0
 		if max(self.out_signal_dim) == 1: return self.prediction / self.prediction_se
 		else: return sig
@@ -354,5 +370,17 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				pylab.grid('on')
 			pylab.draw()
 	
+	#################################################################
+	
+	def classify(self, runs=None, xtn='.pk', C=(1e-0,1e-2,1e-4,1e-6), gamma=0.0, rebias=False, save=True, plotopt=False, **kwargs):
+		from BCI2000Tools.Classification import ClassifyERPs
+		files = self.find_data_files(xtn=xtn, runs=runs)
+		u,c = ClassifyERPs(files, C=C, gamma=gamma, rebias=rebias, save=save, **kwargs)
+		import SigTools
+		u.channels = SigTools.ChannelSet(u.channels)
+		
+		print u.description
+		return u,c
+		
 #################################################################
 #################################################################

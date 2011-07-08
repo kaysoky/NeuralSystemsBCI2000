@@ -1,13 +1,46 @@
-edit subject_attention.prm and input subjectname:   2011MMDD_85XX_A_
-
 plug out dataglove, plug in USB keyboard
-
-in audiostream_classify, be sure to choose the right condition (001 or 002) for the previous run
-
-when loading weights:  be VERY careful to choose from right condition directory (001 or 002) for the NEXT run
-
-
 plug out bluetooth dongle, plug in 5th amp
 
+edit subject_attention.prm and ensure SubjectName contains generic Xs
 
-edit subject_attention.prm and input subjectname (set back to generic Xs)
+Launch audiostream.bat
+
+Config -> PythonApp -> Sound -> InteractiveVolumeAdjust: check
+
+SetConfig
+
+To demonstrate the stimulus, go to PythonApp terminal window and use
+
+	self.play('left')    # with speakers
+	self.play('left')    # with headphones (allow subj to adjust volume knob)
+	self.play('right')   # with headphones
+	self.play('both')
+
+Run a demo run.
+Given that InteractiveVolumeAdjust is set, it will not wait for a response,
+but the arrow keys will be enabled for adjusting relative left/right levels.
+
+Quit
+
+edit subject_attention.prm, adjust SubjectName to code the date and subject number as
+2011MMDD_85NN_A_   without spaces. Save.
+
+Launch audiostream.bat (condition 001) or audiostream_fixed.bat (condition 002)
+
+In Matlab, when using audiostream_classify, be sure to choose the right condition (001 or 002) for the previous run.
+When loading weights:  be VERY careful to choose from right condition directory (001 or 002) for the NEXT run
+
+
+end of session:
+	edit subject_attention.prm and change SubjectName back to generic Xs
+
+
+If there is an error ("expected 8 beats in stream 1 but trapped  [some other number]"   or   "not all traps are full")
+The run is good up until that point, but you must save out the features for classification:
+
+Quit BCI2000
+The PythonSig window will stay open (because it issued the error).
+Execute:
+	self.StopRun()
+Then you must close the PythonSig window manually before you can launch BCI2000 again.
+

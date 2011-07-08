@@ -29,12 +29,13 @@ class BciApplication(BciGenericApplication):
 		self.maxstreams = 2
 		params = [
 			"PythonApp         float     WindowSize=                               1.0                    1.0   0 1 // subject window size from 0 to 1",
-			"PythonApp         float     SystemMasterVolume=                       1.0                    1.0   0 1 // operating-system volume setting from 0 to 1",
-			"PythonApp         floatlist ChannelVolumesDB=                  1    -18                      0.0   % 0 // per-audio-channel stimulus attenuation in dB",
-			"PythonApp         int       HeadPhones=                               0                      0     0 1 // use headphones or not? (boolean)",
-			"PythonApp         int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
+			"PythonApp:Sound   float     SystemMasterVolume=                       1.0                    1.0   0 1 // operating-system volume setting from 0 to 1",
+			"PythonApp:Sound   floatlist ChannelVolumesDB=                  1    -18                      0.0   % 0 // per-audio-channel stimulus attenuation in dB",
+			"PythonApp:Sound   int       HeadPhones=                               0                      0     0 1 // use headphones or not? (boolean)",
+			"PythonApp:Sound   int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
 			"PythonApp         int       LPTSynch=                                 1                      0     0 1 // use parallel port synch or not? (boolean)",
 			"PythonApp:Task    int       FreeChoice=                               0                      0     0 1 // allow user to choose freely (boolean)",
+			"PythonApp:Sound   int       InteractiveVolumeAdjust=                  0                      0     0 1 // interactively adjust the volume (boolean)",
 		]
 		params += AudioStream.ParameterDefinitions
 		nbits = numpy.ceil(numpy.log2(self.maxstreams + 1.0))
@@ -90,6 +91,7 @@ class BciApplication(BciGenericApplication):
 			raise EndUserError("ChannelVolumesDB parameter must have either one element, or one element per audio channel (= number of rows of AudioMixingMatrix parameter = %d)" % self.audiochannels)
 		for x in self.chanvol:
 			if x > 0.0: raise EndUserError("elements of the ChannelVolumesDB parameter must be negative, or zero")
+		self.write_access('ChannelVolumesDB')
 
 	#############################################################
 
@@ -150,7 +152,7 @@ class BciApplication(BciGenericApplication):
 		self.init_volume(vol)
 		
 		if self.StimulusMaker.modular: self.make( store=True )
-		self.enable_software_volume_adjustment = True
+		self.enable_software_volume_adjustment = int(self.params['InteractiveVolumeAdjust'])
 		
 	#############################################################
 	
@@ -170,7 +172,7 @@ class BciApplication(BciGenericApplication):
 		
 		if self.freechoice: cuelen = 3000
 		else: cuelen = 2000
-		
+				
 		self.phase(  duration=None,   name='stimprep',       next='cue',       )
 		self.phase(  duration=cuelen, name='cue',            next='stimulus',  )
 		self.phase(  duration=None,   name='stimulus',       next='classify',  )
@@ -201,7 +203,7 @@ class BciApplication(BciGenericApplication):
 				self.states['CorrectResponse'] = self.current_stream.ntargets[self.target-1]
 			else:
 				self.states['CorrectResponse'] = 0
-			self.stimuli['cue'].text = {0:'CHOOSE', 1:'<- LEFT', 2:'RIGHT ->'}.get(self.target, 'stream #%d'%self.target)
+			self.stimuli['cue'].text = {0:'CHOOSE', 1:'<<< LEFT', 2:'RIGHT >>>'}.get(self.target, 'stream #%d'%self.target)
 			self.stimuli['cue'].on = True
 		elif phase == 'respond':
 			if self.states['CurrentTrial'] < int(self.params['TrialsPerBlock']):
@@ -237,8 +239,11 @@ class BciApplication(BciGenericApplication):
 				stim.on = True
 				stim.color = (1,1,1)
 				if istream+1 == self.target and correct != 0:
-					if response == correct: stim.color = (0,1,0)
-					else:                   stim.color = (1,0,0)
+					if response == correct:
+						stim.color = (0,1,0)
+					else: 
+						stim.color = (1,0,0)
+						if response: stim.text += ', not %d' % response
 		else:
 			for istream in range(self.nstreams):
 				self.count_feedback_stimuli[istream].on = False
@@ -285,6 +290,9 @@ class BciApplication(BciGenericApplication):
 		for i in range(self.nstreams):
 			stim = self.stimuli['StreamVolume%d'%(i+1)]
 			stim.on = (self.since('volchange')['msec'] < 1000)
+			
+		if self.enable_software_volume_adjustment and self.current_presentation_phase == 'respond' and self.since('transition')['packets'] > 10:
+			self.change_phase()
 		
 	#############################################################
 
@@ -334,6 +342,7 @@ class BciApplication(BciGenericApplication):
 		
 		vcstring = getattr(self, 'volctrl', {}).get('string', None)
 		if vcstring != None:
+			for i,val in enumerate(self.chanvol): self.params['ChannelVolumesDB'][i] = str(val)
 			fn = os.path.realpath("ChannelVolumesDB.prm")
 			print "writing ChannelVolumesDB parameter to "+fn
 			open(fn, 'w').write(vcstring + '\n')

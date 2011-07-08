@@ -319,6 +319,8 @@ class Stimulus(object):
 		total_sec = numpy.asarray(params['DurationMsec']['Background',:].val) / 1000.0
 		nstreams = params['NumberOfStreams'].val
 
+		self.sound   = factory.NewWav() # after AudioMixingMatrix is applied
+
 		if not flatpacking:
 			silent       = factory.NewWav(max(total_sec),1)
 			self.states  = factory.NewWav()
@@ -333,7 +335,6 @@ class Stimulus(object):
 				self.seq = [''] * nstreams
 				return
 		
-		self.sound   = factory.NewWav() # after AudioMixingMatrix is applied
 		
 		leadin = params['InitialStandards'].val
 		ndev = params['NumberOfDeviants'].val
