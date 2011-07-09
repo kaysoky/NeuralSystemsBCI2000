@@ -430,3 +430,6 @@ def union_of_boxes(*m):
 	mm = m[0].copy()
 	for i in range(1,len(m)): mm.union(m[i])
 	return mm
+
+# transitional duck-typing while debugging Coords.py:  import the newer Coords classes to overwrite those defined in this file
+#from Coords import Box as box, Point as point, Size as size, union_of_boxes

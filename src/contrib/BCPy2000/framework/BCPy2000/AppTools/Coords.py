@@ -200,7 +200,7 @@ class Size(Point):
 
 
 class Box(object):
-	def __init__(self, **k):		
+	def __init__(self, arg=None, **k):		
 		self.__size = Size(default_val=2.0)
 		self.__position = Point(default_val=0.0)
 		self.__anchor = Point(default_val=0.0)
@@ -214,10 +214,21 @@ class Box(object):
 			'left', 'right', 'top', 'bottom', 'near', 'far',
 			'internal',
 		]
+		
+		if isinstance(arg, (tuple,list)):
+			if 'rect' not in k: k['rect'] = arg
+			arg = None
+			
 		for key in keys:
+			if arg != None:
+				if key == 'internal' and hasattr(arg, 'internal_initialized'): gotit = arg.internal_initialized()
+				else: gotit = hasattr(arg, key)
+				if gotit: setattr(self, key, getattr(arg, key))
 			if key in k: setattr(self, key, k.pop(key))
-		if 'sticky' not in k:
+				
+		if 'sticky' not in k and not hasattr(arg, 'sticky'):
 			self.sticky = True
+			
 		for key,val in k.items():
 			setattr(self, key, val)
 			
@@ -226,8 +237,7 @@ class Box(object):
 	def copy(self, cls=None):
 		if cls == None: cls = self.__class__
 		b = cls(position=self.position.copy(), size=self.size.copy(), anchor=self.anchor.copy(), sticky=self.sticky)
-		internal = self.__dict__.get('internal', None)
-		if internal != None: b.internal = internal.copy()
+		if self.internal_initialized(): b.internal = self.internal.copy()
 		return b
 	
 	def through(self, other):
@@ -540,19 +550,27 @@ of windows-within-screens, panes-within-windows, etc.
 				ib = self.__internal = Box()
 				ib.sticky = True
 				ib.anchor = [0.0] * len(self)
-				ib.lims = [(-1.0,1.0)] * len(self)
+				ib.lims = [(-1.0,1.0)] * len(self) # do not change these: these absolute defaults are also assumed elsewhere
 			return self.__internal
 		def fset(self, val): self.__internal = val
 		return property(fget, fset, doc=doc)
 
-	def int2ext(self, obj):
+	def int2ext(self, obj, attr=None):
 		"""
 		Map the coordinates of <obj> from this Box's internal to its external
 		coordinate frame, the same as obj.through(self)
 		"""###
+		if not isinstance(obj, (Point,Box)) and attr != None and attr.lower() in ['position', 'point']: obj = Point(obj)
+		if not isinstance(obj, (Size, Box)) and attr != None and attr.lower() in ['size']: obj = Size(obj)
+		
 		if not isinstance(obj, (Point,Size,Box)): obj = Point(obj)
 		return obj.through(self)
+	
+	map = int2ext # transitional duck-typing form old AppTools.Boxes.box
 		
+	def internal_initialized(self):
+		return self.__internal != None
+	
 	def union(self, other):
 		"""
 		Return a new Box object whose coordinates encompass those of <self> and <other>.
@@ -579,7 +597,19 @@ of windows-within-screens, panes-within-windows, etc.
 			lother = other.__getlim(dim)
 			newself.__setlim(dim, [max(lself[0], lother[0]), min(lself[1], lother[1])])
 		return newself
-		
+	
+	def scale(self, xyz=None, x=None, y=None, z=None):
+		# TODO: doc
+		if xyz == None:  xyz = [x,y,z]
+		if not isinstance(xyz, (list,tuple)): xyz = [xyz] * len(self)
+		xyz = list(xyz)
+		print xyz
+		for i,val in enumerate(xyz):
+			if val == None: xyz[i] = 1.0
+		xyz += [1.0] * (len(self) - len(xyz))
+		xyz = xyz[:len(self)]
+		self.size *= xyz
+	
 def union(b, *pargs):
 	for other in pargs:
 		b = b.union(other)
