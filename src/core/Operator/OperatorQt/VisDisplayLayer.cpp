@@ -27,7 +27,6 @@
 #pragma hdrstop
 
 #include "VisDisplayLayer.h"
-#include "BciError.h"
 #include <QLayout>
 
 using namespace std;

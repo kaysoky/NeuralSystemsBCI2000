@@ -37,6 +37,9 @@
 #define CORRECTION_TIME "4.0s"
 #define CLOSE_PLANE 550
 #define FAR_PLANE 600
+#define DEFAULT_VIS_WIDTH 160
+#define DEFAULT_VIS_HEIGHT 120
+#define DEFAULT_TEMPORAL_DECIMATION 4
 
 using namespace std;
 
@@ -160,14 +163,14 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
 
   if( enforceFixation || visGaze )
   {
-    OptionalParameter( "WindowWidth" );
-    OptionalParameter( "WindowHeight" );
+    OptionalParameter( "WindowWidth", DEFAULT_VIS_WIDTH );
+    OptionalParameter( "WindowHeight", DEFAULT_VIS_HEIGHT );
   }
 
   if( visGaze )
   {
     OptionalParameter( "AppWindowSpatialDecimation" );
-    OptionalParameter( "AppWindowTemporalDecimation" );
+    OptionalParameter( "AppWindowTemporalDecimation", DEFAULT_TEMPORAL_DECIMATION );
   }
 
   // Do some preflight error checking
@@ -261,13 +264,16 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
 
   // We need an aspect ratio if we're going to do any rendering/fixation monitoring
   if( mVisualizeGaze || mEnforceFixation )
-    mAspectRatio = OptionalParameter( "WindowWidth", 1 ) / ( float )OptionalParameter( "WindowHeight", 1 );
+    mAspectRatio = OptionalParameter( "WindowWidth", DEFAULT_VIS_WIDTH ) 
+        / ( float )OptionalParameter( "WindowHeight", DEFAULT_VIS_HEIGHT );
 
   if( mVisualizeGaze )
   {
-    int visWidth = OptionalParameter( "WindowWidth", 320 ) / OptionalParameter( "AppWindowSpatialDecimation", 1 );
-    int visHeight = OptionalParameter( "WindowHeight", 240 ) / OptionalParameter( "AppWindowSpatialDecimation", 1 );
-    mTemporalDecimation = OptionalParameter( "AppWindowTemporalDecimation", 1 );
+    int visWidth = OptionalParameter( "WindowWidth", DEFAULT_VIS_WIDTH );
+    visWidth /= OptionalParameter( "AppWindowSpatialDecimation", 1 );
+    int visHeight = OptionalParameter( "WindowHeight", DEFAULT_VIS_HEIGHT );
+    visHeight /= OptionalParameter( "AppWindowSpatialDecimation", 1 );
+    mTemporalDecimation = OptionalParameter( "AppWindowTemporalDecimation", DEFAULT_TEMPORAL_DECIMATION );
     GUI::DrawContext dc = mVisDisplay.Context();
     GUI::Rect r = { 0, 0, visWidth, visHeight };
     dc.rect = r;
@@ -467,7 +473,7 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     float y = mLastGazeY + ( gy - mLastGazeY ) / 3.0f;
     mLastGazeX = x; mLastGazeY = y;  
     SetDisplayRect( mpGaze, gx, gy, ( ( eyedist - 400 ) / 400 ) * 0.06 );
-    SetDisplayRect( mpPrompt, x, y, 0.07f );
+    if( mpPrompt ) SetDisplayRect( mpPrompt, x, y, 0.07f );
     mpGaze->SetFillColor( RGBColor( ( int )eyedist % CLOSE_PLANE, 
       CLOSE_PLANE - ( ( int )eyedist % CLOSE_PLANE ), 50 ) );
     mpGaze->Show();
