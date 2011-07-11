@@ -68,13 +68,11 @@ GazeMonitorFilter::GazeMonitorFilter() :
   mSaccadeBlocks( 0 ),
   mTemporalDecimation( 1 ),
   mBlockCount( 0 ),
-  mrAppDisplay( Environment::Window() ),
+  mpAppDisplay( NULL ),
   mpRightEye( NULL ),
   mpLeftEye( NULL ),
   mpGaze( NULL )
 {
-  mVis.SetSourceID( mrAppDisplay.VisualizationID() + ":1" );
-
   // Define the GazeMonitor Parameters
   BEGIN_PARAMETER_DEFINITIONS
     "Application:GazeMonitor int VisualizeGazeMonitorFilter= 0 0 0 1 "
@@ -122,11 +120,13 @@ GazeMonitorFilter::~GazeMonitorFilter()
 void
 GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &Output ) const
 {
+  if( Windows->Exists( "Application" ) )
+    Window( "Application" );
+
   bool loggingEyetracker = false, loggingGaze = false, loggingEyePos = false, loggingEyeDist = false;
   if( ( int )OptionalParameter( "LogEyetracker", 0 ) )
   {
     loggingEyetracker = true;
-    // See what we're logging and check states accordingly
     if( ( int )OptionalParameter( "LogGazeData", 0 ) )
     {
       loggingGaze = true;
@@ -151,8 +151,6 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
       State( "EyetrackerLeftEyeDist" );
       State( "EyetrackerRightEyeDist" );
     }
-
-    // We can require eyetracker validity
     State( "EyetrackerLeftEyeValidity" );
     State( "EyetrackerRightEyeValidity" );
   }
@@ -162,14 +160,14 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
 
   if( enforceFixation || visGaze )
   {
-    Parameter( "WindowWidth" );
-    Parameter( "WindowHeight" );
+    OptionalParameter( "WindowWidth" );
+    OptionalParameter( "WindowHeight" );
   }
 
   if( visGaze )
   {
-    Parameter( "AppWindowSpatialDecimation" );
-    Parameter( "AppWindowTemporalDecimation" );
+    OptionalParameter( "AppWindowSpatialDecimation" );
+    OptionalParameter( "AppWindowTemporalDecimation" );
   }
 
   // Do some preflight error checking
@@ -218,14 +216,23 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
 void
 GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProperties &Output )
 {
+  mpAppDisplay = NULL;
+  if( Windows->Exists( "Application" ) )
+    mpAppDisplay = &Window( "Application" );
+  mVis.SetSourceID( ( mpAppDisplay ) ? ( mpAppDisplay->VisualizationID() + ":1" ) : "GAZE" );
+
   delete mpFixationImage;
-  mpFixationImage = new ImageStimulus( mrAppDisplay );
   delete mpFixationViolationImage;
-  mpFixationViolationImage = new ImageStimulus( mrAppDisplay );
   delete mpZone;
-  mpZone = new EllipticShape( mrAppDisplay );
   delete mpPrompt;
-  mpPrompt = new TextField( mrAppDisplay );
+  if( mpAppDisplay )
+  {
+    mpFixationImage = new ImageStimulus( *mpAppDisplay );
+    mpFixationViolationImage = new ImageStimulus( *mpAppDisplay );
+    mpZone = new EllipticShape( *mpAppDisplay );
+    mpPrompt = new TextField( *mpAppDisplay );
+  }
+
   delete mpRightEye;
   mpRightEye = new EllipticShape( mVisDisplay, 5 );
   delete mpLeftEye;
@@ -254,13 +261,13 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
 
   // We need an aspect ratio if we're going to do any rendering/fixation monitoring
   if( mVisualizeGaze || mEnforceFixation )
-    mAspectRatio = Parameter( "WindowWidth" ) / ( float )Parameter( "WindowHeight" );
+    mAspectRatio = OptionalParameter( "WindowWidth", 1 ) / ( float )OptionalParameter( "WindowHeight", 1 );
 
   if( mVisualizeGaze )
   {
-    int visWidth = Parameter( "WindowWidth" ) / Parameter( "AppWindowSpatialDecimation" );
-    int visHeight = Parameter( "WindowHeight" ) / Parameter( "AppWindowSpatialDecimation" );
-    mTemporalDecimation = Parameter( "AppWindowTemporalDecimation" );
+    int visWidth = OptionalParameter( "WindowWidth", 320 ) / OptionalParameter( "AppWindowSpatialDecimation", 1 );
+    int visHeight = OptionalParameter( "WindowHeight", 240 ) / OptionalParameter( "AppWindowSpatialDecimation", 1 );
+    mTemporalDecimation = OptionalParameter( "AppWindowTemporalDecimation", 1 );
     GUI::DrawContext dc = mVisDisplay.Context();
     GUI::Rect r = { 0, 0, visWidth, visHeight };
     dc.rect = r;
@@ -283,7 +290,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
     }
   }
 
-  if( mEnforceFixation )
+  if( mEnforceFixation && mpAppDisplay )
   {
     GenericSignal initInput( Input );
     mFixationX = Expression( string( Parameter( "FixationX" ) ) );
@@ -372,8 +379,11 @@ GazeMonitorFilter::StopRun()
   // Ensure We're not in "Correction" state
   State( "GazeCorrectionMode" ) = 0;
   mCorrection = 0;
-  mpPrompt->Hide();
-  mpZone->SetColor( RGBColor::Gray );
+  if( mpAppDisplay )
+  {
+    mpPrompt->Hide();
+    mpZone->SetColor( RGBColor::Gray );
+  }
 
   // Hide visualizations
   mpGaze->Hide();
@@ -473,7 +483,7 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     else { mpRightEye->Hide(); }
   }
 
-  if( mEnforceFixation )
+  if( mEnforceFixation && mpAppDisplay )
   {
     // Determine fixation center
     float fx = ( float )mFixationX.Evaluate( &Input );
