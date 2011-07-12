@@ -18,7 +18,8 @@
       obj\TrialStatistics.obj obj\BlockRandSeq.obj obj\Localization.obj 
       obj\GenericFilter.obj obj\ExpressionParser.obj obj\Expression.obj 
       obj\BCIDirectory.obj obj\KeystrokeFilter.obj obj\RandomGenerator.obj 
-      obj\BitmapImage.obj obj\GraphDisplay.obj obj\ArithmeticExpression.obj 
+      obj\BitmapImage.obj obj\GraphDisplay.obj obj\DisplayWindow.obj obj\GUI.obj 
+      obj\GraphObject.obj obj\ArithmeticExpression.obj 
       obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj 
       obj\OSEvent.obj obj\OSMutex.obj obj\MessageQueue.obj obj\OSThread.obj 
       obj\OSError.obj obj\ApplicationWindow.obj"/>
@@ -109,6 +110,9 @@
       <FILE FILENAME="..\..\..\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\gui\GraphDisplay.cpp" FORMNAME="" UNITNAME="GraphDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\DisplayWindow.cpp" FORMNAME="" UNITNAME="DisplayWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\GraphObject.cpp" FORMNAME="" UNITNAME="GraphObject" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
