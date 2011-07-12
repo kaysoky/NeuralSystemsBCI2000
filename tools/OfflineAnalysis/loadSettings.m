@@ -1,6 +1,10 @@
 function settings = loadSettings()
 
 matFile = which('settings.mat');
+if isempty( matFile )
+  copyfile(which('settings.mat.default'), strcat(fileparts('settings.mat.default'), 'settings.mat'));
+end
+matFile = which('settings.mat');
 settings = load(matFile);
 settings = settings.settings;
 

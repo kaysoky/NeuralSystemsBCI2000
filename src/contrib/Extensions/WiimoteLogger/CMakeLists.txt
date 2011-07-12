@@ -5,10 +5,15 @@
 
 IF( ${BUILD_WIIMOTELOGGER} )
 
-  # Set the executable name
-  SET( NAME MSAutoConnectWiimote )
+  # It is likely possible to compile this code on at least MinGW in addition
+  # to MSVC, but doing so would be a bit more of a task than its worth.  It
+  # comes down to a matter of symbol decoration in MS-compiled libraries.
+  # If you're interested in building this with MinGW, see here:
+  # http://www.daniweb.com/software-development/cpp/threads/365665
+  IF( MSVC )
 
-  IF( WIN32 )
+    # Set the executable name
+    SET( NAME MSAutoConnectWiimote )
 
     MESSAGE( "-- Adding Wiimote Tool: " ${NAME} )
 
@@ -25,6 +30,6 @@ IF( ${BUILD_WIIMOTELOGGER} )
     SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/tools/ )
     ADD_EXECUTABLE( ${NAME} ${SRC_PROJECT} ${HDR_PROJECT} )
 
-  ENDIF( WIN32 )
+  ENDIF( MSVC )
 
 ENDIF( ${BUILD_WIIMOTELOGGER} )
