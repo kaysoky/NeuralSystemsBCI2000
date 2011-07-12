@@ -4,23 +4,23 @@
 // Description: The Operator module's parameter configuration dialog.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #include "ConfigWindow.h"
@@ -145,7 +145,7 @@ ConfigWindow::Initialize( ParamList* inParameters, Preferences* inPreferences )
   if( curTabIdx != tabNames.size() )
     m_ui->cfgTabControl->setCurrentIndex( curTabIdx );
   mUserSwitchedTabs = true;
-  mCurTab = m_ui->cfgTabControl->tabText( curTabIdx ).toLocal8Bit();
+  mCurTab = m_ui->cfgTabControl->tabText( curTabIdx ).toLocal8Bit().constData();
   RenderParameters( mCurTab );
   return 0;
 }
@@ -290,7 +290,7 @@ ConfigWindow::OnCfgTabControlChange()
 
   UpdateParameters();
   int curTabIdx = m_ui->cfgTabControl->currentIndex();
-  mCurTab = m_ui->cfgTabControl->tabText( curTabIdx ).toLocal8Bit();
+  mCurTab = m_ui->cfgTabControl->tabText( curTabIdx ).toLocal8Bit().constData();
   RenderParameters( mCurTab );
 }
 
@@ -339,12 +339,12 @@ ConfigWindow::LoadParameters( const QString& inName )
       tempdir = "/tmp";
     QString name = tempdir;
     name = name + "/" + ::tmpnam( NULL );
-    BCI2000FileReader file( inName.toLocal8Bit() );
+    BCI2000FileReader file( inName.toLocal8Bit().constData() );
     if( file.IsOpen() )
       file.Parameters()->Save( name.toLocal8Bit().constData() );
     // do not import non-existing parameters
     result = paramsFromFile.Load( name.toLocal8Bit().constData(), false );
-    ::unlink( name.toLocal8Bit() );
+    ::unlink( name.toLocal8Bit().constData() );
   }
   else
     result = paramsFromFile.Load( inName.toLocal8Bit().constData(), false );

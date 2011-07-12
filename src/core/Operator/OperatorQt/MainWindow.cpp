@@ -4,23 +4,23 @@
 // Description: The Operator module's main window.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #include "MainWindow.h"
@@ -291,7 +291,7 @@ MainWindow::SetFunctionButtons()
 void
 MainWindow::ExecuteScript( const QString& inScript )
 {
-  string s = inScript.toLocal8Bit();
+  string s = inScript.toLocal8Bit().constData();
   if( !s.empty() )
   {
     if( s[ 0 ] == '-' )
@@ -654,23 +654,23 @@ MainWindow::on_actionStates_triggered()
 void
 MainWindow::on_pushButton_Btn1_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[0].Cmd.toLocal8Bit() );
+  BCI_ExecuteScript( gpPreferences->mButtons[0].Cmd.toLocal8Bit().constData() );
 }
 
 void
 MainWindow::on_pushButton_Btn2_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[1].Cmd.toLocal8Bit() );
+  BCI_ExecuteScript( gpPreferences->mButtons[1].Cmd.toLocal8Bit().constData() );
 }
 
 void
 MainWindow::on_pushButton_Btn3_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[2].Cmd.toLocal8Bit() );
+  BCI_ExecuteScript( gpPreferences->mButtons[2].Cmd.toLocal8Bit().constData() );
 }
 
 void
 MainWindow::on_pushButton_Btn4_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[3].Cmd.toLocal8Bit() );
+  BCI_ExecuteScript( gpPreferences->mButtons[3].Cmd.toLocal8Bit().constData() );
 }

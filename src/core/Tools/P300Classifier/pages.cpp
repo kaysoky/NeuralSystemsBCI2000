@@ -258,7 +258,7 @@ DetailsPage::DetailsPage(QWidget *parent)
 
   // Layouts
   OverAllProgressLayout  = new QVBoxLayout;
-  FileInfoLayout		   = new QGridLayout;
+  FileInfoLayout       = new QGridLayout;
 
   // wire them together
   OverAllProgressLayout ->addWidget(progressBarOverall);
@@ -363,7 +363,7 @@ void ParametersPage::ChSetTextHasChanged()
 void DataPage::LoadSettings()
 {
   QString inicfgFile = this->inicfgFileLineEdit->text();
-  string szFile = this->inicfgFileLineEdit->text().toLocal8Bit();
+  string szFile = this->inicfgFileLineEdit->text().toLocal8Bit().constData();
   char format = 'f';
   int precision = 4;
 
@@ -553,11 +553,11 @@ void DataPage::ValidateSettings()
 
   //result &= ValidateLineEdit(pParametersPage->MaxModFeaLineEdit);
 
-  QString MaxModFeat	= pParametersPage->MaxModFeaLineEdit->text();
-  QString penter		= pParametersPage->PenterLineEdit->text();
-  QString premove		= pParametersPage->PremoveLineEdit->text();
-  QString DecFre		= pParametersPage->DecFreLineEdit->text();
-  QString RespWind	= pParametersPage->RespWindLineEdit->text();
+  QString MaxModFeat  = pParametersPage->MaxModFeaLineEdit->text();
+  QString penter    = pParametersPage->PenterLineEdit->text();
+  QString premove   = pParametersPage->PremoveLineEdit->text();
+  QString DecFre    = pParametersPage->DecFreLineEdit->text();
+  QString RespWind  = pParametersPage->RespWindLineEdit->text();
 
 
   this->IniParam.SF = pParametersPage->SpatFilterComboBox->currentIndex() + 1;
@@ -756,12 +756,12 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
       }
     }
     // Check whether states are compatible. There is a bug in this code. Fix it!!!! May 12, 2010
-	// I need to check that all states are the same across all files. 
-	// try the following code
-	// if (files == 0)
-	//	const StateList* statelist = CurrentFile->States();
-	// end
-	// then for files>0, test it
+  // I need to check that all states are the same across all files.
+  // try the following code
+  // if (files == 0)
+  //  const StateList* statelist = CurrentFile->States();
+  // end
+  // then for files>0, test it
 
     const StateList* statelist = CurrentFile->States();
     for (i=0; i<statelist->Size(); i++ )
@@ -1124,7 +1124,7 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
   // Check that the channel set provided is a subset of the channels contained in the input files
   numChannels = channelsInFile[0];
   QVector<int> *ChannelSet = new QVector<int>;
-  QString Ch	= pParametersPage->ChSetLineEdit->text();
+  QString Ch  = pParametersPage->ChSetLineEdit->text();
   this->ReadVector(Ch, ChannelSet);
 
   for (i=0; i<ChannelSet->size(); i++)
@@ -1154,10 +1154,10 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
   this->GenerateFeatureWeights->setEnabled(true);
 
 // Set mode according to the Interpret Mode and Application Filter Chain parameters
-// mode = 1		->		P3SpellerTask/Online Free Mode
-// mode = 2		->		P3SpellerTask/Copy Mode
-// mode = 3		->		StimulusPresentationTask/Online Free Mode
-// mode = 4		->		StimulusPresentationTask/Copy Mode
+// mode = 1   ->    P3SpellerTask/Online Free Mode
+// mode = 2   ->    P3SpellerTask/Copy Mode
+// mode = 3   ->    StimulusPresentationTask/Online Free Mode
+// mode = 4   ->    StimulusPresentationTask/Copy Mode
 
   if ((Experiment[0] == ApplicationFilterChain[0]) && InterpretMode[0] == 1)
     mode = 1;
@@ -1608,10 +1608,10 @@ bool DataPage::ValidateTestingDataFiles(vector<string> &fPathArr, int &numSample
   }
   numChannels = channelsInFile[0];
 // Set mode according to the Interpret Mode and Application Filter Chain parameters
-// mode = 1		->		P3SpellerTask/Online Free Mode
-// mode = 2		->		P3SpellerTask/Copy Mode
-// mode = 3		->		StimulusPresentationTask/Online Free Mode
-// mode = 4		->		StimulusPresentationTask/Copy Mode
+// mode = 1   ->    P3SpellerTask/Online Free Mode
+// mode = 2   ->    P3SpellerTask/Copy Mode
+// mode = 3   ->    StimulusPresentationTask/Online Free Mode
+// mode = 4   ->    StimulusPresentationTask/Copy Mode
 
   if ((Experiment[0] == ApplicationFilterChain[0]) && InterpretMode[0] == 1)
     mode = 1;
@@ -1773,7 +1773,7 @@ void GenerateFeatureWeightsThread::run()
     // Concatenate signal and states
     // Cristhian modification, Sep 11, 2009
     //if (files == 0)
-    //	maxValue = state_tmp.trialnr(signal_tmp.gethighbound(1));
+    //  maxValue = state_tmp.trialnr(signal_tmp.gethighbound(1));
 
     for (int i=0; i<signal_tmp.gethighbound(1)+1; i++)
     {
@@ -1853,8 +1853,8 @@ void GenerateFeatureWeightsThread::run()
   if (!GetScore(signal_all_files, state.StimulusCode, g_pDataPage->tMUD, state.trialnr, windowlen, row_chset,
       parms.NumberOfSequences, NumberOfChoices, g_pDataPage->mode_TrainingData, pscore))
   {
-	// Cristhian modification April 17, 2010
-	oss << "Dataset is corrupted. Try another dataset." << endl;
+  // Cristhian modification April 17, 2010
+  oss << "Dataset is corrupted. Try another dataset." << endl;
     emit errorMessage(oss.str().c_str());
     g_pDataPage->IfGenerateFeatureWeightsThread = false;
     return;
@@ -1911,10 +1911,10 @@ if (!g_pDataPage->IfMultipleMenusTrainingData)
 }
   oss << "Done!\n\n";
   oss << "Time elapsed [s]: " << ((clock()-Clock0)/(float) CLOCKS_PER_SEC) << endl << endl;
-  
+
   QTextCodec* codec = QTextCodec::codecForLocale();
   // Cristhian Modification, May 04, 2010
-  // Modification to display classification results in unicode 
+  // Modification to display classification results in unicode
   //QTextCodec *codec = QTextCodec::codecForName("Shift-JIS");
   QString unicodeString = codec->toUnicode(oss.str().c_str());
   emit signalProgressText(unicodeString);
@@ -1957,12 +1957,12 @@ void DataPage::slotProgressBar(int done, int total, int stage)
 
   if (stage == 7)
   {
-    GenerateFeatureWeights	->setEnabled(true);
-    FileWritePRMButton		->setEnabled(true);
+    GenerateFeatureWeights  ->setEnabled(true);
+    FileWritePRMButton    ->setEnabled(true);
     IfMUD = true;
 
     if ((fPathArr_TestingData.size() > 0) & (IfTrueTestingDataFiles))
-      ApplyFeatureWeights		->setEnabled(true);
+      ApplyFeatureWeights   ->setEnabled(true);
   }
 }
 
@@ -2081,7 +2081,7 @@ void ApplyFeatureWeightsThread::run()
     // Cristhian modification, Sep 11, 2009
 
     //if (files == 0)
-    //	maxValue = state_tmp.trialnr(signal_tmp.gethighbound(1));
+    //  maxValue = state_tmp.trialnr(signal_tmp.gethighbound(1));
 
     for (int i=0; i<signal_tmp.gethighbound(1)+1; i++)
     {
@@ -2190,10 +2190,10 @@ if (!g_pDataPage->IfMultipleMenusTestingData)
 }
   oss << "Done!\n\n";
   oss << "Time elapsed [s]: " << ((clock()-Clock0)/(float) CLOCKS_PER_SEC) << endl << endl;
-  
+
   QTextCodec* codec = QTextCodec::codecForLocale();
   // Cristhian Modification, May 04, 2010
-  // Modification to display classification results in unicode 
+  // Modification to display classification results in unicode
   //QTextCodec *codec = QTextCodec::codecForName("Shift-JIS");
   QString unicodeString = codec->toUnicode(oss.str().c_str());
   emit signalProgressText(unicodeString);
@@ -2222,7 +2222,7 @@ void DataPage::WriteParameterFragment()
 bool DataPage::ValidateStimulusFrequencies( BCI2000FileReader& ioFile, string& inFileName, ostream& ioErrors )
 {
   bool errorOccurred = false;
-  const char* parameters[] = 
+  const char* parameters[] =
   {
     "Stimuli",
     "SequenceType",

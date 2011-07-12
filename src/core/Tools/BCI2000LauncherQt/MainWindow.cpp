@@ -4,23 +4,23 @@
 // Description: The main window of the BCI2000Launcher tool.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "MainWindow.h"
@@ -613,7 +613,7 @@ void MainWindow::on_subjectSessionEdit_textChanged(QString )
 
 void MainWindow::on_launchButton_clicked()
 {
-  string progdir = QApplication::applicationDirPath().toLocal8Bit() + "/";
+  string progdir = string( QApplication::applicationDirPath().toLocal8Bit().constData() ) + "/";
 
   ui->statusEdit->clear();
   ui->statusEdit->append( tr( "Launching %1..." ).arg( "Operator" ) );
@@ -627,7 +627,7 @@ void MainWindow::on_launchButton_clicked()
     command << " --OnConnect \"-";
     for( int i = 0; i < mParameterFiles.size(); ++i )
       command << "LOAD PARAMETERFILE "
-              << EncodedString( mParameterFiles.at( i ).toLocal8Bit() )
+              << EncodedString( mParameterFiles.at( i ).toLocal8Bit().constData() )
               << "; ";
     command << " SETCONFIG;\"";
   }
@@ -650,11 +650,11 @@ void MainWindow::on_launchButton_clicked()
     ui->statusEdit->repaint();
     command << "\"" << progdir << item->text().toLocal8Bit().constData() << "\"";
     if( !ui->saveDirEdit->text().isEmpty() )
-      command << " --DataDirectory-" << EncodedString( ui->saveDirEdit->text().toLocal8Bit() );
+      command << " --DataDirectory-" << EncodedString( ui->saveDirEdit->text().toLocal8Bit().constData() );
     if( !ui->subjectNameEdit->text().isEmpty() )
-      command << " --SubjectName-" << EncodedString( ui->subjectNameEdit->text().toLocal8Bit() );
+      command << " --SubjectName-" << EncodedString( ui->subjectNameEdit->text().toLocal8Bit().constData() );
     if( !ui->subjectSessionEdit->text().isEmpty() )
-      command << " --SubjectSession-" << EncodedString( ui->subjectSessionEdit->text().toLocal8Bit() );
+      command << " --SubjectSession-" << EncodedString( ui->subjectSessionEdit->text().toLocal8Bit().constData() );
     if( !ExecuteCommand( command.str().c_str(), progdir.c_str() ) )
       return;
   }
@@ -723,7 +723,7 @@ MainWindow::ExecuteCommand( const char* inCommand, const char* inWorkingDir )
   );
   delete[] command;
 #else // _WIN32
-	QStringList arglist = ParseCommand( inCommand );
+  QStringList arglist = ParseCommand( inCommand );
   QString program = arglist.first();
   arglist.pop_front();
   bool result = QProcess::startDetached( program, arglist, inWorkingDir );
@@ -739,27 +739,27 @@ MainWindow::ExecuteCommand( const char* inCommand, const char* inWorkingDir )
 QStringList
 MainWindow::ParseCommand( const char* inCommand )
 {
-	QStringList result;
-	const char* begin = inCommand;
-	while( *begin != '\0' )
-	{
-	  const char* end = begin;
-	  if( *end == '"' )
+  QStringList result;
+  const char* begin = inCommand;
+  while( *begin != '\0' )
+  {
+    const char* end = begin;
+    if( *end == '"' )
     {
       ++begin;
       ++end;
-		  while( *end != '"' && *end != '\0' )
-		  	++end;
+      while( *end != '"' && *end != '\0' )
+        ++end;
     }
-  	else
+    else
     {
-	  	while( *end != ' ' && *end != '\0' )
-		  	++end;
+      while( *end != ' ' && *end != '\0' )
+        ++end;
     }
-	  result.push_back( string( begin, end ).c_str() );
-	  begin = ++end;
-	  while( *begin == ' ' && *begin != '\0' )
-		  ++begin;
-	}
+    result.push_back( string( begin, end ).c_str() );
+    begin = ++end;
+    while( *begin == ' ' && *begin != '\0' )
+      ++begin;
+  }
   return result;
 }

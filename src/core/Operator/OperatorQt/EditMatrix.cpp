@@ -4,23 +4,23 @@
 // Description: An editor for matrix-valued parameters.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #include "EditMatrix.h"
@@ -195,15 +195,15 @@ EditMatrix::UpdateParam()
   QTableWidget* t = m_ui->tableWidget;
   // set column and row labels
   for( int col = 0; col < mpMatrixParam->NumColumns(); ++col )
-    mpMatrixParam->ColumnLabels()[ col ] = t->horizontalHeaderItem( col )->text().toLocal8Bit();
+    mpMatrixParam->ColumnLabels()[ col ] = t->horizontalHeaderItem( col )->text().toLocal8Bit().constData();
   for( int row = 0; row < mpMatrixParam->NumRows(); ++row )
-    mpMatrixParam->RowLabels()[ row ] = t->verticalHeaderItem( row )->text().toLocal8Bit();
+    mpMatrixParam->RowLabels()[ row ] = t->verticalHeaderItem( row )->text().toLocal8Bit().constData();
 
   // set the values in the parameter according to the values in the spreadsheet
   for( int row = 0; row < mpMatrixParam->NumRows(); ++row )
     for( int col = 0; col < mpMatrixParam->NumColumns(); ++col )
       if( !IsSubmatrix( t->item( row, col ) ) )
-        mpMatrixParam->Value( row, col ) = t->item( row, col )->text().toLocal8Bit();
+        mpMatrixParam->Value( row, col ) = t->item( row, col )->text().toLocal8Bit().constData();
 
   Unlock();
 }
@@ -305,7 +305,7 @@ EditMatrix::PlainCellToMatrix( int inRow, int inCol )
   {
     QTableWidgetItem* item = m_ui->tableWidget->item( inRow, inCol );
     Param p( "{ matrix 1 1 0 }" );
-    p.Value( 0, 0 ) = item->text().toLocal8Bit();
+    p.Value( 0, 0 ) = item->text().toLocal8Bit().constData();
     mpMatrixParam->Value( inRow, inCol ) = p;
     SetSubmatrixProperties( item );
     AdaptColumnWidths();

@@ -5,26 +5,26 @@
 //   input signals at a set of frequencies.
 //   Output channels correspond to pairs of input channels, output elements
 //   correspond to frequencies at which coherence is evaluated.
-//   
-//   
+//
+//
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -104,7 +104,7 @@ CoherenceFilter::Preflight( const SignalProperties& Input, SignalProperties& Out
   }
   Output.SetElements( CohFrequencies->NumValues() );
   for( int bin = 0; bin < CohFrequencies->NumValues(); ++bin )
-    Output.ElementLabels()[bin] = CohFrequencies( bin );
+    Output.ElementLabels()[bin] = string( CohFrequencies( bin ) );
   Output.ElementUnit().SetGain( 1.0 ).SetOffset( 0.0 ).SetSymbol( "" )
                       .SetRawMin( 0.0 ).SetRawMax( 1.0 );
   Output.ValueUnit().SetGain( 1.0 ).SetOffset( 0.0 ).SetSymbol( "" )
@@ -182,10 +182,10 @@ CoherenceFilter::Process( const GenericSignal& Input, GenericSignal& Output )
     {
       int i = 0;
       for( size_t sample = 0; sample < mInputBuffer[ch].size() - mFIRCoefficients[bin].size(); sample += mConvolutionStep )
-        mFIRConvolution[ch][bin][i++] = inner_product( 
-                                          &mFIRCoefficients[bin][0], 
-                                          &mFIRCoefficients[bin][mFIRCoefficients[bin].size() - 1], 
-                                          &mInputBuffer[ch][sample], 
+        mFIRConvolution[ch][bin][i++] = inner_product(
+                                          &mFIRCoefficients[bin][0],
+                                          &mFIRCoefficients[bin][mFIRCoefficients[bin].size() - 1],
+                                          &mInputBuffer[ch][sample],
                                           complex( 0.0 )
                                         );
     }
