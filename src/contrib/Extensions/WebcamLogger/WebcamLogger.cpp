@@ -125,7 +125,7 @@ void WebcamLogger::Preflight() const
 			return;
 		}
 		//calculate frame rate over 10 frames
-		
+
 		IplImage *frame;
 		frame = cvQueryFrame( capture );
 		int nFrames = 10;
@@ -143,7 +143,7 @@ void WebcamLogger::Preflight() const
 		Parameter("WebcamDecimation");
 		Parameter("WebcamDateTimeLocation");
 	}
-	
+
 	Parameter("DataDirectory");
 	Parameter("SubjectName");
 	Parameter("SubjectSession");
@@ -205,8 +205,8 @@ void WebcamLogger::StartRun()
 		ostringstream oss;
 		oss << setfill( '0' ) << setw( 2 ) << bciDirectory.RunNumber();
 		string baseFileName = bciDirectory.DirectoryPath();
-		mOutputFile = baseFileName + 
-			string(Parameter( "SubjectName" )) + 
+		mOutputFile = baseFileName +
+			string(Parameter( "SubjectName" )) +
 			"S" + string(Parameter( "SubjectSession" )) +
 			"R" + oss.str() + "_vid.avi";
 
@@ -273,7 +273,7 @@ mTextLocation(0)
 	mSourceHeight = 480;
 
 	mOutputFile = mWebcam->mOutputFile;
-	mDecimation = mWebcam->mDecimation;	
+	mDecimation = mWebcam->mDecimation;
 	mResting = true;
 
 	Initialize();
@@ -283,7 +283,7 @@ mTextLocation(0)
 
 	cvNamedWindow( "result", CV_WINDOW_NORMAL | CV_GUI_NORMAL );
 	mWinHandle = cvGetWindowHandle("result");
-	mTargetFps = mFps/mDecimation;	
+	mTargetFps = mFps/mDecimation;
 
 	this->Start();
 }
@@ -394,7 +394,7 @@ void WebcamLogger::WebcamThread::SetResting(bool val)
 			InitText();
 		}
 		mTextLocation = mWebcam->mTextLocation;
-		
+
 		if (mCamNum != mWebcam->mCamNum)
 		{
 			InitCam();
@@ -434,7 +434,7 @@ void WebcamLogger::WebcamThread::SetResting(bool val)
 		mFrameNum = 0;
 		mCnt = 0;
 	}
-	
+
 }
 
 // **************************************************************************
@@ -451,7 +451,7 @@ int WebcamLogger::WebcamThread::Execute()
 	while( !this->IsTerminating() && mRunning )
 	{
 		this->GetFrame();
-	}	
+	}
 
 	return 0;
 }
@@ -460,26 +460,24 @@ void WebcamLogger::WebcamThread::GetFrame()
 {
 	int ret;
 	mFrame = cvQueryFrame( mCapture );
-	if( mFrame ){		
+	if( mFrame ){
 		if ((mCnt % mDecimation)==0){
-			mFrameNum++;
-			
 			if (mTextLocation > 0)
 				AddDateTime();
 			if (mWriter && mFrame && !mResting){
 				mMutex.Acquire();
 				ret = cvWriteFrame(mWriter, mFrame);
 				mMutex.Release();
+				bcievent << "WebcamFrame " << ++mFrameNum;
 			}
-			bcievent << "WebcamFrame " << mFrameNum;
 			if (mIsVisible && mWinHandle)
 				cvShowImage( "result", mFrame );
-		}		
+		}
 		mCnt++;
 	}
 	else
 	{
-		bcievent << "WebcamFrame " << 0;
+		if( !mResting ) bcievent << "WebcamFrame " << 0;
 	}
 }
 
@@ -487,5 +485,5 @@ void WebcamLogger::WebcamThread::AddDateTime()
 {
 	QString dt = QDateTime::currentDateTime().toString("MM/dd/yy hh:mm:ss");
 	cvPutText(mFrame, dt.toStdString().c_str(), mTextLoc, &mFont, cvScalar(0,0,255,0));
-	
+
 }
