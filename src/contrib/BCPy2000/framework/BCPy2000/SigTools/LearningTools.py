@@ -40,6 +40,7 @@ __all__ = [
 	'overlapping',
 	'spcov', 'shrinkcov', 'spfilt', 'symwhiten', 'symwhitenkern',
 	'stfac', 'stfac_filters_and_patterns',
+	'correlate',
 ]
 import numpy
 import copy
@@ -2428,3 +2429,21 @@ def stfac_filters_and_patterns(u, D=None, S=None, B=None, Ss=None, St=None):
 	u.Gp = u_Ps_I * u.G * u_Pt_I.H
 	
 	return u
+
+
+def correlate(x, y, axis=0):
+	x = numpy.asarray(x, dtype=float)
+	y = numpy.asarray(y, dtype=float)
+	x.shape = list(x.shape) + [1] * (len(y.shape) - len(x.shape))
+	y.shape = list(y.shape) + [1] * (len(x.shape) - len(y.shape))
+	xm = numpy.expand_dims( x.mean(axis=axis), axis )
+	ym = numpy.expand_dims( y.mean(axis=axis), axis )
+	xs = numpy.expand_dims( x.std(axis=axis), axis )
+	ys = numpy.expand_dims( y.std(axis=axis), axis )
+	x = x - xm
+	y = y - ym
+	x = x / xs
+	y = y / ys
+	return (x * y).mean(axis=axis)
+	
+	
