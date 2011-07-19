@@ -33,7 +33,6 @@
 
 // Define visualization properties
 #define EYE_RADIUS 0.05f
-#define FIXATION_IMAGE_SIZE 0.02f
 #define CORRECTION_TIME "4.0s"
 #define CLOSE_PLANE 550
 #define FAR_PLANE 600
@@ -50,6 +49,7 @@ GazeMonitorFilter::GazeMonitorFilter() :
   mFixationRadius( 0.0f ),
   mpFixationImage( NULL ),
   mpFixationViolationImage( NULL ),
+  mFixationSize( 0 ),
   mpPrompt( NULL ),
   mpZone( NULL ),
   mVisualizeGaze( false ),
@@ -98,6 +98,8 @@ GazeMonitorFilter::GazeMonitorFilter() :
       " // Image to render at fixation when violated (inputfile)",
     "Application:GazeMonitor string FixationViolationSound= % % % % "
       " // Sound to play when fixation violated (inputfile)",
+    "Application:GazeMonitor float FixationImageSize= 0.04 0.04 0.01 1.0 "
+      " // Size in percentage of screen height of the fixation image",
     "Application:GazeMonitor int LogGazeInformation= 0 0 0 1 "
       " // Add Eyetracker information to applog (boolean)",
   END_PARAMETER_DEFINITIONS
@@ -189,6 +191,7 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
     ImageStimulus pimg( preflightDisplay );
     if( string( Parameter( "FixationImage" ) ) != "" )
       pimg.SetFile( string( Parameter( "FixationImage" ) ) );
+    Parameter( "FixationImageSize" );
 
     if( loggingGaze )
     {
@@ -307,12 +310,13 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
     float cy = mFixationY.Evaluate( &initInput );
 
     // Set up the fixation image
+    mFixationSize = Parameter( "FixationImageSize" ) / 2.0f;
     if( string( Parameter( "FixationImage" ) ) != "" )
     {
       mpFixationImage->SetFile( string( Parameter( "FixationImage" ) ) );
       mpFixationImage->SetRenderingMode( GUI::RenderingMode::Transparent );
       mpFixationImage->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
-      SetDisplayRect( mpFixationImage, cx, cy, FIXATION_IMAGE_SIZE );
+      SetDisplayRect( mpFixationImage, cx, cy, mFixationSize );
       mpFixationImage->SetPresentationMode( VisualStimulus::ShowHide );
       mpFixationImage->Present();
     }
@@ -327,7 +331,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
         mpFixationViolationImage->SetFile( string( Parameter( "FixationViolationImage" ) ) );
         mpFixationViolationImage->SetRenderingMode( GUI::RenderingMode::Transparent );
         mpFixationViolationImage->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
-        SetDisplayRect( mpFixationViolationImage, cx, cy, FIXATION_IMAGE_SIZE );
+        SetDisplayRect( mpFixationViolationImage, cx, cy, mFixationSize );
         mpFixationViolationImage->SetPresentationMode( VisualStimulus::ShowHide );
         mpFixationViolationImage->Conceal();
       }
@@ -497,12 +501,12 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
 
     // Move visual stimuli to fixation
     if( mpFixationImage )
-      SetDisplayRect( mpFixationImage, fx, fy, FIXATION_IMAGE_SIZE );
+      SetDisplayRect( mpFixationImage, fx, fy, mFixationSize );
 
     if( mLoggingGaze )
     {
       if( mpFixationViolationImage )
-        SetDisplayRect( mpFixationViolationImage, fx, fy, FIXATION_IMAGE_SIZE );
+        SetDisplayRect( mpFixationViolationImage, fx, fy, mFixationSize );
       SetDisplayRect( mpZone, fx, fy, mFixationRadius );
 
       // Calculate distance of gaze from fixation center
