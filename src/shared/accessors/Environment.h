@@ -294,7 +294,7 @@ class EnvironmentBase
   void StateAccess( const std::string& name ) const;
   virtual void OnStateAccess( const std::string& name ) const {}
 
-#if IS_APP_MODULE
+#if IS_APP_MODULE && !( defined NO_APP_WINDOW )
  protected:
   // Access to application windows in application modules.
   // When no name is given, ApplicationWindow::DefaultName is used.
@@ -306,7 +306,7 @@ class EnvironmentBase
   // unreferenced windows, and for error checking on window access.
   typedef std::set<ApplicationWindow*> WindowSet;
   mutable WindowSet mWindowsAccessed;
-#endif // IS_APP_MODULE
+#endif // IS_APP_MODULE && !( defined NO_APP_WINDOW )
 
  // Controlling functions to be called from framework friends only.
  // In the future, these functions will be used to perform a number of
