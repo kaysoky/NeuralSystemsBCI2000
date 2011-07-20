@@ -173,6 +173,7 @@ class bcistream(object):
 		while True:
 			line = self.file.readline()
 			if self.file.tell() >= self.headerlen: break
+			if not len(line.strip()): continue
 			rec = ParseParam(line)
 			name = rec.pop('name')
 			self.paramdefs[name] = rec
