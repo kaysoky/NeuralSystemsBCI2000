@@ -186,6 +186,12 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
     if( string( Parameter( "FixationY" ) ) == "" )
       bcierr << "Requested fixation enforcement but specified no FixationY coordinate." << endl;
     else Expression( Parameter( "FixationY" ) ).Evaluate( &preflightInput );
+
+    // We can't render fixation crosses just anywhere onto CursorTask 3D
+    if( Parameters->Exists( "RenderingQuality" ) )
+      if( Parameter( "RenderingQuality" ) == 1 )
+          if( string( Parameter( "FixationX" ) ) != "0.5" || string( Parameter( "FixationY" ) ) != "0.5" )
+              bcierr << "FixationX and FixationY must be set to 0.5 for CursorTask in 3D." << endl;
  
     GUI::GraphDisplay preflightDisplay;
     ImageStimulus pimg( preflightDisplay );
@@ -213,7 +219,8 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
       }
       Parameter( "BlinkTime" );
       Parameter( "SaccadeTime" );
-    }
+    } else
+      bciout << "Cannot actually enforce fixation due to lack of gaze data." << endl;
   }
   Parameter( "LogGazeInformation" );
   State( "GazeCorrectionMode" );

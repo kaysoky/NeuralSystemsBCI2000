@@ -36,7 +36,8 @@ FeedbackScene3D::FeedbackScene3D( GUI::DisplayWindow& inDisplay )
 : mDisplay( inDisplay ),
   mpScene( NULL ),
   mpCursor( NULL ),
-  mpBoundary( NULL )
+  mpBoundary( NULL ),
+  mpFixationCross( NULL )
 {
 }
 
@@ -155,6 +156,15 @@ FeedbackScene3D::Initialize()
     mTargets.push_back( pTarget );
   }
 
+  mpFixationCross = new threeDText( *mpScene );
+  mpFixationCross->setCaption( "+" );
+  mpFixationCross->setFontSize( 20 );
+  mpFixationCross->setOrigin( 50, 50, 50 );
+  mpFixationCross->setDirection( 1, 0, 0 );
+  mpFixationCross->setColor( 1.0, 1.0, 1.0 );
+  mpFixationCross->setTransparency( 0 );
+  mpFixationCross->setVisible( ( int )OptionalParameter( "EnforceFixation" ) );
+
   mpScene->SetBitDepth( Parameter( "WindowBitDepth" ) );
   mpScene->SetDoubleBuffering( true );
   mpScene->SetDisableVsync( true );
@@ -251,9 +261,9 @@ FeedbackScene3D::ClearObjects()
 {
   delete mpScene;
   mpScene = NULL;
+  mpFixationCross = NULL;
   mpCursor = NULL;
   mpBoundary = NULL;
   mTargets.clear();
 }
-
 

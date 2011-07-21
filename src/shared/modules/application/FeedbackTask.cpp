@@ -109,6 +109,8 @@ FeedbackTask::Preflight( const SignalProperties& Input, SignalProperties& Output
              << " (because NumberTargets=" << nTargets << ")" << endl;
   }
 
+  OptionalState( "FixationViolated" );
+
   bcidbg( 2 ) << "Event: Preflight" << endl;
   OnPreflight( Input );
   Output = Input;
@@ -199,6 +201,7 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
         doProgress = ( mBlocksInPhase >= mFeedbackDuration );
         bcidbg( 3 ) << "Feedback Signal: " << Input << endl;
         DoFeedback( Input, doProgress );
+        doProgress |= ( bool )OptionalState( "FixationViolated" );
         break;
 
       case postFeedback:
@@ -209,6 +212,7 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
       case ITI:
         doProgress = ( mBlocksInPhase >= mITIDuration );
         DoITI( Input, doProgress );
+        doProgress &= !OptionalState( "FixationViolated" );
         break;
 
       case postRun:

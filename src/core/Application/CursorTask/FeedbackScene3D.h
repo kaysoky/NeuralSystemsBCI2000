@@ -31,6 +31,7 @@
 #include "Scene.h"
 #include "Sphere.h"
 #include "Cuboids.h"
+#include "threeDText.h"
 #include "DisplayWindow.h"
 
 class FeedbackScene3D : public FeedbackScene
@@ -57,7 +58,7 @@ class FeedbackScene3D : public FeedbackScene
   virtual self& SetTargetVisible( bool, int );
   virtual self& SetTargetColor( RGBColor, int );
 
- private:
+private:
   void ClearObjects();
 
   GUI::DisplayWindow&  mDisplay;
@@ -65,6 +66,7 @@ class FeedbackScene3D : public FeedbackScene
   sphere*              mpCursor;
   invertedCuboid*      mpBoundary;
   std::vector<cuboid*> mTargets;
+  threeDText*          mpFixationCross;
 };
 
 #endif // FEEDBACK_SCENE_3D_H
