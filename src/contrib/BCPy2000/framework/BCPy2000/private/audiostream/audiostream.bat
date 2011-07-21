@@ -33,13 +33,18 @@ call portable.bat
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-Cap16+Audio2.prm
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-SchalkCap64+Audio2.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\drifting.prm 
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\audiostream_wadsworth_devel.prm
 
 @if [%SESSION%] == [001] goto SKIPFIXED
+@if [%SESSION%] == [002] goto FIXED
+:FIXEDFAST
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\fixedfast.prm 
+@goto SKIPFIXED
 :FIXED
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\fixed.prm 
+@goto SKIPFIXED
 :SKIPFIXED
 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\audiostream_wadsworth_devel.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm 
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_perception.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PYWD%\ChannelVolumesDB.prm

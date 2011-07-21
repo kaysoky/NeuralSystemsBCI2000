@@ -1,0 +1,10 @@
+Storage:Session:DataIOFilter                  string    SubjectSession=                     003           // three-digit session number
+PythonApp                                     string    ApplicationDescription=             fast%20pulses%20without%20phase%20drift        // Identifies the stimulus presentation module
+
+PythonApp:Streams  matrix    DurationMsec=     { Background Standard Target Deviant } 2    2675.0   2475.0        150.0    150.0        150.0    150.0        150.0    150.0    // duration of each stimulus pulse (types by streams)
+PythonApp:Streams  matrix    ModulationFreqHz= { Background Standard Target Deviant } 2      42.667   42.667       42.667   42.667       42.667   42.667       42.667   42.667         // (types by streams)
+PythonApp:Streams                             floatlist PeriodMsec=                   2     234.375      234.375                                                                        // period of stimuli for each stream in msec
+PythonApp:Streams                             floatlist OffsetMsec=                   2     234.375      351.563                                                                        // offset of each stimulus stream in msec
+
+PythonSig:Epoch                               floatlist EpochLowerBoundMsec=          2     200      185                                                                        // after springing, each ERP trap will not spring again for this many milliseconds",
+PythonSig:Epoch                               floatlist TriggerThreshold=             2     500     3000     // 

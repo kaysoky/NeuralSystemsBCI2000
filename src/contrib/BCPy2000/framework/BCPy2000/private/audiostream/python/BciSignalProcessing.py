@@ -363,10 +363,14 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		for fig,buf in enumerate(buffers):
 			pylab.figure(fig+1)
 			for i,trig in enumerate(buf.read()):
+				tt = float(self.params.TriggerThreshold[i])
+				msec = SigTools.samples2msec(numpy.arange(trig.shape[-1]), self.eegfs)
 				pylab.subplot(self.nstreams, 1, i+1)
-				SigTools.plot(trig.T)
+				SigTools.plot(msec.T, trig.T)
 				if self.TriggerTrouble[i]: pylab.title(self.TriggerTrouble[i])
-				pylab.xlim([0, trig.size])
+				pylab.plot(pylab.xlim(), [tt,tt])
+				pylab.plot(pylab.xlim(), [-tt,-tt])
+				pylab.xlim([0, msec[-1]])
 				pylab.grid('on')
 			pylab.draw()
 	

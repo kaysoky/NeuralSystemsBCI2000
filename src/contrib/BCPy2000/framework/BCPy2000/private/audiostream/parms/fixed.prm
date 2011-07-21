@@ -1,5 +1,5 @@
 Storage:Session:DataIOFilter                  string    SubjectSession=                     002           // three-digit session number
-PythonApp                                     string    ApplicationDescription=             pulses without phase drift        // Identifies the stimulus presentation module
+PythonApp                                     string    ApplicationDescription=             pulses%20without%20phase%20drift        // Identifies the stimulus presentation module
 
 PythonApp:Streams                             floatlist PeriodMsec=                   2     492.118      492.118                                                                        // period of stimuli for each stream in msec
 PythonApp:Streams                             floatlist OffsetMsec=                   2     492.118      738.177                                                                        // offset of each stimulus stream in msec

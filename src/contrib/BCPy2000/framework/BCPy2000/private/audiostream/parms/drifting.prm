@@ -1,5 +1,5 @@
 Storage:Session:DataIOFilter                  string    SubjectSession=                     001           // three-digit session number
-PythonApp                                     string    ApplicationDescription=             pulses with phase drift        // Identifies the stimulus presentation module
+PythonApp                                     string    ApplicationDescription=             pulses%20with%20phase%20drift        // Identifies the stimulus presentation module
 
 PythonApp:Streams  int       NumberOfStreams=                                         2                                                                                 // number of streams
 PythonSig:Epoch    floatlist EpochLowerBoundMsec=                                     2     400      400                                                                        // after springing, each ERP trap will not spring again for this many milliseconds",
