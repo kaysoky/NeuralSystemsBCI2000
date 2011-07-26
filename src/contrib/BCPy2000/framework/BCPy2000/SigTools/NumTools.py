@@ -586,7 +586,7 @@ class sstruct(object):
 			val = val._getfield('.'.join(field[1:]), *pargs)
 		return val
 	
-def loadmat(filename):
+def loadmat(filename, **kwargs):
 	"""
 	Wraps scipy.io.loadmat to understand '/' as a universal
 	file-separator, and to yield easier-to-inspect output (sdict
@@ -594,7 +594,9 @@ def loadmat(filename):
 	"""###
 	import os,scipy.io
 	if isinstance(filename,str): filename = filename.replace('/', os.path.sep)
-	return sdict(scipy.io.loadmat(filename, squeeze_me=False))
+	if 'struct_as_record' not in kwargs: kwargs['struct_as_record'] = False
+	if 'squeeze_me' not in kwargs: kwargs['squeeze_me'] = False
+	return sdict(scipy.io.loadmat(filename, **kwargs))
 
 def savemat(filename, d, append=False, oned_as='row'):
 	"""

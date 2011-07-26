@@ -1,6 +1,4 @@
-@set SPELLERDIR=%CD%
-@set PROG=..\..\..\..\..\..\..\BCI2000\prog
-@if exist %PROG% cd %PROG%
+@call GotoFullMontyBCI2000
 
 cd ..\prog
 call portable.bat
