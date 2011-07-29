@@ -23,7 +23,7 @@ call portable.bat
 
 @set OnConnect=-
 
-@set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession 003
+@set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession 999
 @set OnConnect=%OnConnect% ; SET PARAMETER PlayBackStates 1
 @set OnConnect=%OnConnect% ; SET PARAMETER EnslavePython 1
 

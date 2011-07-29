@@ -44,9 +44,10 @@ def applyfilter(x,b=1.0,a=1.0,axis=-1,zi=None):
 	The causalfilter object wraps this function more conveniently.
 	"""###
 	matrixformat = isinstance(x, numpy.matrix)
-	x = numpy.asarray(x, dtype=numpy.float64)
 	b = numpy.asarray(b, dtype=numpy.float64)
 	a = numpy.asarray(a, dtype=numpy.float64)
+	x = numpy.asarray(x, dtype=numpy.float64).view()
+	if len(x.shape) == 0: x.shape = [1]
 	shape = list(x.shape)
 	if axis < 0: axis = len(x.shape) + axis
 	if zi==None:
@@ -139,6 +140,7 @@ class causalfilter(object):
 
 		if reset: self.reset()
 		
+		if not isinstance(x, numpy.ndarray): x = numpy.array(x, dtype=numpy.float64, ndmin=1)
 		y, self.state = applyfilter(x=x, b=self.b, a=self.a, axis=axis, zi=self.state)
 		self.samples_filtered += x.shape[axis]
 		if obj != None: obj.y = y; y = obj

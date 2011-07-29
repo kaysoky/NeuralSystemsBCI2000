@@ -59,6 +59,10 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Epoch   matrix    ERPClassifierWeights=             0 0                            %     % % // ",
 			"PythonSig:Epoch   int       DiffFeatureSets=                          1                      1     0 1 // for 2-stream designs, whether to use the difference between the two feature sets (boolean)",
 			"PythonSig:Epoch   intlist   DiscardEpochs=                      2     2       2              2     0 % // for classification, discard this many epochs at the beginning",
+			
+			"PythonSig:Control float     EpochAveragingPersistence=                1.0                    1.0   0 % // persistence parameter for the running average of ERPs",
+			"PythonSig:Control int       ContinuousOutput=                         0                      0     0 1 // continuous output rather than trial-based feedback at the end of a defined period (boolean)",
+			"PythonSig:Control float     ControlFilterCutoffHz=                    0                      0     0 % // output low-pass cutoff in Hz (0 to disable)",
 		]
 		states = [
 		]
@@ -138,10 +142,17 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.out_signal_props['ValueUnit']['RawMin']   = -2.0
 			self.out_signal_props['ValueUnit']['RawMax']   = +2.0
 		
+		self.persistence = float(self.params['EpochAveragingPersistence'])
+		self.continuous = int(self.params['ContinuousOutput'])
+		ctrllp = float(self.params['ControlFilterCutoffHz'])
+		if ctrllp: self.controlfilter = SigTools.causalfilter(type='lowpass', order=8, freq_hz=ctrllp, samplingfreq_hz=self.eegfs)
+		else: self.controlfilter = None
+
+		
 	#############################################################
 
 	def Initialize(self, indim, outdim):
-
+		
 		self.seq = []
 		for istream in xrange(self.nstreams):
 			s = BciTrapSequence(
@@ -152,7 +163,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 					trigger_processing=self.ProcessTrigger,
 					discard=self.discard[istream],
 					remember=10,
-					persistence=1.0,
+					persistence=self.persistence,
 					detrend={0:None, 1:'constant', 2:'linear'}.get(int(self.params['DetrendEpochs'])),
 					bci=self,
 			)
@@ -243,7 +254,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			if len(seq.active) > 0: collected=True
 			
 			statename = 'Stream%d'%(istream+1)
-			streamstate = self.states[statename] # ZZZ
+			streamstate = self.states[statename] # ZZZ require states called Stream1, Stream2 etc
 			previous_streamstate,self.streamstates[istream] = self.streamstates[istream],streamstate
 			if streamstate == 0: continue
 			if previous_streamstate == 0:
@@ -257,7 +268,9 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 		give_answer = False
 		if collected and not collecting:  give_answer = True
-
+			
+		if self.continuous: give_answer = False
+		
 		if give_answer:
 			for istream in xrange(self.nstreams):
 				seq = self.seq[istream]
@@ -275,9 +288,9 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 
 			
 			xi = self.UpdatePrediction()
-			yi = self.states['TargetStream'] # ZZZ
+			yi = self.states['TargetStream']
 			
-			self.states['PredictedStream'] = {0:0, -1:1, +1:2}[int(numpy.sign(self.prediction))]   # ZZZ
+			self.states['PredictedStream'] = {0:0, -1:1, +1:2}[int(numpy.sign(self.prediction))]
 
 			self.dump(x=xi,y=yi) # the new python way
 			self.x.append(xi) # the old matlab way
@@ -285,8 +298,15 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 						
 			
 		if self.changed('PredictedStream',0): self.prediction, self.prediction_se = 0.0, 1.0
-		if max(self.out_signal_dim) == 1: return self.prediction / self.prediction_se
-		else: return sig
+		if max(self.out_signal_dim) == 1:
+			control_signal = self.prediction / self.prediction_se
+			if self.continuous:
+				if not collecting: control_signal = 0
+				if self.controlfilter: control_signal = self.controlfilter.apply([[control_signal]])
+				
+			return control_signal
+			
+		return sig
 		
 	#############################################################
 	
@@ -385,6 +405,21 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 		print u.description
 		return u,c
+		
+	#################################################################
+	
+	def stimulus(self, filename=None):
+		if getattr(self, 'player', None) == None:
+			if filename == None: filename = 'sample_wavs/fixed_long_leftAttenuated12dB_1.wav'
+				
+		if filename != None:
+			import WavTools
+			self.player = WavTools.player(filename)
+			self.player.set_preplay_hook( self.states.update, dict([('Stream%d'%(i+1), 1) for i in range(self.player.wav.channels())]))
+			self.player.set_postplay_hook(self.states.update, dict([('Stream%d'%(i+1), 0) for i in range(self.player.wav.channels())]))
+			print self.player.wav
+			
+		return self.player
 		
 #################################################################
 #################################################################
