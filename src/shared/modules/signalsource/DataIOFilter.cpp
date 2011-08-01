@@ -524,27 +524,31 @@ DataIOFilter::Process( const GenericSignal& Input,
       mpFileWriter->CallWrite( mOutputBuffer, mStatevectorBuffer );
     visualizeTiming = mVisualizeTiming;
   }
+
+  PrecisionTime prevSourceTime = static_cast<short>( State( "SourceTime" ) );
+
   mpADC->CallProcess( mADCInput, mInputBuffer );
-  PrecisionTime now = PrecisionTime::Now();
+  if( State( "SourceTime" ) == prevSourceTime ) // GenericADC::Process() did not set the time stamp
+    State( "SourceTime" ) = PrecisionTime::Now();
+
+  PrecisionTime sourceTime = static_cast<short>( State( "SourceTime" ) ),
+                stimulusTime = static_cast<short>( State( "StimulusTime" ) );
+  mTimingSignal( 0, 0 ) = sourceTime - prevSourceTime; // sample block duration
+  mTimingSignal( 1, 0 ) = functionEntry - prevSourceTime; // roundtrip
+  if( mTimingSignal.Channels() > 2 )
+    mTimingSignal( 2, 0 ) = stimulusTime - prevSourceTime; // source-to-stimulus delay
+  if( mEvaluateTiming )
+    EvaluateTiming( mTimingSignal( 1, 0 ) );
+  if( visualizeTiming )
+    mTimingVis.Send( mTimingSignal );
+
   if( mpSourceFilter )
   {
     GenericSignal sourceFilterInput( mInputBuffer );
     mpSourceFilter->CallProcess( sourceFilterInput, mInputBuffer );
   }
 
-  PrecisionTime sourceTime = static_cast<short>( State( "SourceTime" ) ),
-                stimulusTime = static_cast<short>( State( "StimulusTime" ) );
-  mTimingSignal( 0, 0 ) = now - sourceTime; // sample block duration
-  mTimingSignal( 1, 0 ) = functionEntry - sourceTime; // roundtrip
-  if( mTimingSignal.Channels() > 2 )
-    mTimingSignal( 2, 0 ) = stimulusTime - sourceTime; // source-to-stimulus delay
-  if( mEvaluateTiming )
-    EvaluateTiming( mTimingSignal( 1, 0 ) );
-  if( visualizeTiming )
-    mTimingVis.Send( mTimingSignal );
-
   ResetStates( State::EventKind );
-  State( "SourceTime" ) = now;
   ProcessBCIEvents();
   mStatevectorBuffer = *Statevector;
   mOutputBuffer = mInputBuffer;

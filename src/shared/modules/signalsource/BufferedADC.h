@@ -56,6 +56,7 @@
 #include "OSThread.h"
 #include "OSEvent.h"
 #include "OSMutex.h"
+#include "PrecisionTime.h"
 #include <vector>
 
 class BufferedADC : public GenericADC, private OSThread
@@ -89,6 +90,7 @@ class BufferedADC : public GenericADC, private OSThread
   virtual int Execute();
 
   std::vector<GenericSignal> mBuffer;
+  std::vector<PrecisionTime> mTimeStamps;
   size_t                     mReadCursor,
                              mWriteCursor;
   bool                       mOverflowOccurred;

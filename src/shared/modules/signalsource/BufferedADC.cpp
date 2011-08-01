@@ -53,6 +53,7 @@ BufferedADC::Preflight( const SignalProperties&,
     bcierr << "The SourceBufferSize parameter must be greater or"
            << " equal 2 sample blocks."
            << endl;
+  State( "SourceTime" );
   this->OnPreflight( output );
 }
 
@@ -61,8 +62,10 @@ BufferedADC::Initialize( const SignalProperties&,
                          const SignalProperties& output )
 {
   mBuffer.clear();
+  mTimeStamps.clear();
   size_t SourceBufferSize = static_cast<size_t>( Parameter( "SourceBufferSize" ).InSampleBlocks() );
   mBuffer.resize( SourceBufferSize, GenericSignal( output ) );
+  mTimeStamps.resize( SourceBufferSize );
   mReadCursor = 0;
   mWriteCursor = 0;
   mOverflowOccurred = false;
@@ -83,6 +86,7 @@ BufferedADC::Process( const GenericSignal&,
     mAcquisitionDone.Wait();
 
   output = mBuffer[mReadCursor];
+  State( "SourceTime" ) = mTimeStamps[mReadCursor];
   mMutex.Acquire();
   ++mReadCursor %= mBuffer.size();
   if( mOverflowOccurred ) // bciout may only be used from the main thread
@@ -109,6 +113,7 @@ BufferedADC::Execute()
   while( !OSThread::IsTerminating() )
   {
     this->DoAcquire( mBuffer[mWriteCursor] );
+    mTimeStamps[mWriteCursor] = PrecisionTime::Now();
     mMutex.Acquire();
     ++mWriteCursor %= mBuffer.size();
     mOverflowOccurred = ( mWriteCursor == mReadCursor );
