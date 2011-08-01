@@ -1,11 +1,3 @@
-
-try:
-	raise ImportError
-	import PygameRenderer2
-	print; print "PYGAME2ING IT"
-except ImportError:
-	print; print "VISIONEGGING IT"
-
 import os
 import re
 import random
