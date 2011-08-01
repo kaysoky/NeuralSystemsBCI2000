@@ -38,7 +38,7 @@ class WhackaMole(GridGame):
     def init(self, mole = None, hole = None, hammer = None, moles = -1):
         self.t1 = time.time()
         if mole == None:
-            self.mole = os.path.join(os.path.dirname(__file__), 'mole2.jpg')
+            self.mole = os.path.join(os.path.dirname(__file__), 'mole1.jpg')
         else:
             self.mole = mole
         self.mole = ImageSurf(self.mole)
