@@ -24,10 +24,10 @@
 //     DoAcquire( GenericSignal& output )
 //       Read data from the ADC into the GenericSignal object provided as an
 //       argument.
-//    The last three functions are called from a reading thread, whereas the
-//    others are called from the main thread. Still, it is guaranteed that
-//    they are never executed simultaneously, so you may read/write member
-//    variables of your derived class without using synchronizers.
+//    The latter three functions are called from a data acquisition thread, whereas 
+//    remaining ones are called from the main thread. Still, it is guaranteed that
+//    no two functions of this interface are ever executed concurrently, so you may 
+//    read/write member variables of your derived class without using synchronizers.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -58,7 +58,7 @@
 #include "OSMutex.h"
 #include <vector>
 
-class BufferedADC : public GenericADC, public OSThread
+class BufferedADC : public GenericADC, private OSThread
 {
  protected:
   BufferedADC();
@@ -91,6 +91,7 @@ class BufferedADC : public GenericADC, public OSThread
   std::vector<GenericSignal> mBuffer;
   size_t                     mReadCursor,
                              mWriteCursor;
+  bool                       mOverflowOccurred;
   OSMutex                    mMutex;
   OSEvent                    mAcquisitionDone;
 };

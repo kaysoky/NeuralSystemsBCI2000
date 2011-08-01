@@ -31,7 +31,8 @@ using namespace std;
 
 BufferedADC::BufferedADC()
 : mReadCursor( 0 ),
-  mWriteCursor( 0 )
+  mWriteCursor( 0 ),
+  mOverflowOccurred( false )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Buffering int SourceBufferSize= 2s "
@@ -48,9 +49,9 @@ void
 BufferedADC::Preflight( const SignalProperties&,
                               SignalProperties& output ) const
 {
-  if( Parameter( "SourceBufferSize" ).InSampleBlocks() < 1 )
+  if( Parameter( "SourceBufferSize" ).InSampleBlocks() < 2 )
     bcierr << "The SourceBufferSize parameter must be greater or"
-           << " equal 1 in terms of sample blocks."
+           << " equal 2 sample blocks."
            << endl;
   this->OnPreflight( output );
 }
@@ -59,11 +60,12 @@ void
 BufferedADC::Initialize( const SignalProperties&,
                          const SignalProperties& output )
 {
-  GenericSignal outputSignal( output );
   mBuffer.clear();
-  mBuffer.resize( ( int )Parameter( "SourceBufferSize" ).InSampleBlocks(), outputSignal );
+  size_t SourceBufferSize = static_cast<size_t>( Parameter( "SourceBufferSize" ).InSampleBlocks() );
+  mBuffer.resize( SourceBufferSize, GenericSignal( output ) );
   mReadCursor = 0;
   mWriteCursor = 0;
+  mOverflowOccurred = false;
   this->OnInitialize( output );
   OSThread::Start();
 }
@@ -81,7 +83,12 @@ BufferedADC::Process( const GenericSignal&,
     mAcquisitionDone.Wait();
 
   output = mBuffer[mReadCursor];
+  mMutex.Acquire();
   ++mReadCursor %= mBuffer.size();
+  if( mOverflowOccurred ) // bciout may only be used from the main thread
+    bciout << "Data acquisition buffer overflow" << endl;
+  mOverflowOccurred = false;
+  mMutex.Release();
 }
 
 void
@@ -93,8 +100,8 @@ BufferedADC::Halt()
   OnHalt();
 }
 
-// The Execute() function runs in its own (producer) thread, concurrently with repeated calls to
-// Process() from the main thread (which acts as a consumer).
+// The Execute() function runs in its own writer thread, concurrently with repeated calls to
+// Process() from the main thread, which is the reader thread.
 int
 BufferedADC::Execute()
 {
@@ -104,6 +111,7 @@ BufferedADC::Execute()
     this->DoAcquire( mBuffer[mWriteCursor] );
     mMutex.Acquire();
     ++mWriteCursor %= mBuffer.size();
+    mOverflowOccurred = ( mWriteCursor == mReadCursor );
     mAcquisitionDone.Set();
     mMutex.Release();
   }
