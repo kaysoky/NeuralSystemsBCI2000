@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
-temp = __import__('Tkinter').Tk()
-temp.title('Please Wait...')
-temp.update()
+if __name__ == '__main__':
+    temp = __import__('Tkinter').Tk()
+    temp.title('Please Wait...')
+    temp.update()
 
 import numpy as np
 import pylab
@@ -15,8 +16,9 @@ import swlda
 from iwafgui import Iwaf, FileList, Arguments, Action, Browse, Quit, Error, \
     Info, SaveAs
 
-temp.destroy()
-del temp
+if __name__ == '__main__':
+    temp.destroy()
+    del temp
 
 def exportToPRM(channels, weights, epoch_length):
     return ('Filtering:LinearClassifier matrix Classifier= %(lenweights)i {' + \
