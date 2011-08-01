@@ -46,9 +46,9 @@
 #include "ClassName.h"
 #include "PhysicalUnit.h"
 
-#if IS_APP_MODULE && !( defined NO_APP_WINDOW )
+#if WITH_APP_WINDOWS
 # include "ApplicationWindow.h"
-#endif // IS_APP_MODULE && !( defined NO_APP_WINDOW )
+#endif // WITH_APP_WINDOWS
 
 #include <sstream>
 #include <typeinfo>
@@ -75,9 +75,9 @@ EnvironmentBase::statelistAccessor   EnvironmentBase::States;
 EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
 EnvironmentBase::operatorAccessor    EnvironmentBase::Operator;
 
-#if IS_APP_MODULE && !( defined NO_APP_WINDOW )
+#if WITH_APP_WINDOWS
 const ApplicationWindowList* const EnvironmentBase::Windows = &ApplicationWindow::Windows();
-#endif // IS_APP_MODULE && !( defined NO_APP_WINDOW )
+#endif // WITH_APP_WINDOWS
 
 int EnvironmentBase::sNumInstances = 0;
 const EnvironmentBase* EnvironmentBase::sObjectContext = NULL;
@@ -135,14 +135,14 @@ EnvironmentBase::StatesAccessedDuringPreflight()
 EnvironmentBase::~EnvironmentBase()
 {
   --sNumInstances;
-#if IS_APP_MODULE && !( defined NO_APP_WINDOW )
+#if WITH_APP_WINDOWS
   for( WindowSet::const_iterator i = mWindowsAccessed.begin(); i != mWindowsAccessed.end(); ++i )
   {
     ( *i )->UnregisterUser( this );
     if( ( *i )->Users() == 0 )
       delete *i;
   }
-#endif // IS_APP_MODULE && !( defined NO_APP_WINDOW )
+#endif // WITH_APP_WINDOWS
 }
 
 
@@ -329,7 +329,7 @@ EnvironmentBase::StateAccess( const string& inName ) const
   OnStateAccess( inName );
 }
 
-#if IS_APP_MODULE && !( defined NO_APP_WINDOW )
+#if WITH_APP_WINDOWS
 ApplicationWindow&
 EnvironmentBase::Window( const string& inName ) const
 {
@@ -369,7 +369,7 @@ EnvironmentBase::Window( const string& inName ) const
 
   return *pWindow;
 }
-#endif // IS_APP_MODULE && !( defined NO_APP_WINDOW )
+#endif // WITH_APP_WINDOWS
 
 
 // Called to prevent access.
