@@ -55,9 +55,10 @@
 #include "GenericADC.h"
 #include "OSThread.h"
 #include "OSEvent.h"
+#include "OSMutex.h"
 #include <vector>
 
-class BufferedADC : public GenericADC, OSThread
+class BufferedADC : public GenericADC, public OSThread
 {
  protected:
   BufferedADC();
@@ -82,6 +83,7 @@ class BufferedADC : public GenericADC, OSThread
   virtual void OnStartAcquisition() = 0;
   virtual void OnStopAcquisition() = 0;
   virtual void DoAcquire( GenericSignal& ) = 0;
+  virtual void OnHalt() {}
 
  private:
   virtual int Execute();

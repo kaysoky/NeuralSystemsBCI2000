@@ -27,6 +27,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "BufferedADC.h"
 
+using namespace std;
+
 BufferedADC::BufferedADC()
 : mReadCursor( 0 ),
   mWriteCursor( 0 )
@@ -46,7 +48,7 @@ void
 BufferedADC::Preflight( const SignalProperties&,
                               SignalProperties& output ) const
 {
-  if( Parameter( "SourceBufferSize" ).InBlocks() < 1 )
+  if( Parameter( "SourceBufferSize" ).InSampleBlocks() < 1 )
     bcierr << "The SourceBufferSize parameter must be greater or"
            << " equal 1 in terms of sample blocks."
            << endl;
@@ -57,8 +59,9 @@ void
 BufferedADC::Initialize( const SignalProperties&,
                          const SignalProperties& output )
 {
+  GenericSignal outputSignal( output );
   mBuffer.clear();
-  mBuffer.resize( Parameter( "SourceBufferSize" ).InBlocks(), output );
+  mBuffer.resize( ( int )Parameter( "SourceBufferSize" ).InSampleBlocks(), outputSignal );
   mReadCursor = 0;
   mWriteCursor = 0;
   this->OnInitialize( output );
@@ -87,6 +90,7 @@ BufferedADC::Halt()
   OSEvent terminationEvent;
   OSThread::Terminate( &terminationEvent );
   terminationEvent.Wait();
+  OnHalt();
 }
 
 // The Execute() function runs in its own (producer) thread, concurrently with repeated calls to
@@ -95,7 +99,7 @@ int
 BufferedADC::Execute()
 {
   this->OnStartAcquisition();
-  while( !OSThread::Terminating() )
+  while( !OSThread::IsTerminating() )
   {
     this->DoAcquire( mBuffer[mWriteCursor] );
     mMutex.Acquire();
@@ -104,5 +108,6 @@ BufferedADC::Execute()
     mMutex.Release();
   }
   this->OnStopAcquisition();
+  return 0;
 }
 
