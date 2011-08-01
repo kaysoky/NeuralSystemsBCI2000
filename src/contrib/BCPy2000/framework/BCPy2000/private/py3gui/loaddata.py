@@ -128,7 +128,7 @@ def load_standard_data(fname, window, window_in_samples):
     else:
         sourcetimeoffset = 0
     for i in range(stimulusbegin.size):
-        index = stimulusbegin[i] - 8 #sampleblocksize
+        index = stimulusbegin[i] - int(samplingrate / 32) #sampleblocksize
         #print sampleblocksize
         #print index
         #timediff = stimulustime[index] - sourcetime[index + sourcetimeoffset]

@@ -77,7 +77,7 @@ def stepcalc(allx, y, inmodel):
 
     # Compute b and its standard error.
     Q, R, perm = qr(X, mode = "qrp+economic")
-    Rrank = (abs(np.diag(R)) > tol * abs(R.flatten()[0])).sum()
+    Rrank = (abs(np.diag(R)) > tol * abs(R.ravel()[0])).sum()
     if Rrank < nin:
         R = R[0:Rrank, 0:Rrank]
         Q = Q[:, 0:Rrank]
@@ -88,7 +88,7 @@ def stepcalc(allx, y, inmodel):
     b = np.zeros((nin, 1))
     Qb = np.dot(Q.conj().T, y)
     Qb[abs(Qb) < tol * max(abs(Qb))] = 0
-    b[perm] = linalg.lstsq(R, Qb)[0]
+    b[perm] = linalg.solve(R, Qb)
 
     r = y - np.dot(X, b)
     dfe = X.shape[0] - Rrank
@@ -102,7 +102,7 @@ def stepcalc(allx, y, inmodel):
         SSresid = 0
         r[:] = 0
     rmse = np.sqrt(np.divide(SSresid, dfe))
-    Rinv = linalg.lstsq(R, np.eye(max(R.shape))[0:R.shape[0], 0:R.shape[1]])[0]
+    Rinv = linalg.solve(R, np.eye(max(R.shape))[0:R.shape[0], 0:R.shape[1]])
     se = np.zeros((nin, 1))
     se[perm] = rmse * np.expand_dims(np.sqrt((Rinv ** 2).sum(axis = 1)), 1)
 
