@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import sys
 import random
 import time
 import thread
@@ -12,6 +13,8 @@ import numpy as np
 
 from udpcontrol import UdpControl
 from gridgame import ImageSurf, GridGame
+
+__file__ = os.path.abspath(sys.argv[0])
 
 class MyDialog(tkSimpleDialog.Dialog):
 
@@ -174,6 +177,12 @@ def editPrmFile(rows, cols):
 def main(argv = []):
     rows = 6
     cols = 6
+    if len(argv) == 1 and 'x' in argv[0].lower():
+        argv.extend(argv[0].lower().split('x'))
+        argv.pop(0)
+    if len(argv) == 2 and argv[0].isdigit() and argv[1].isdigit():
+        rows = int(argv[0])
+        cols = int(argv[1])
     editPrmFile(rows, cols)
     loc, shape = findP3SpellerWindow()
     if loc == None:
