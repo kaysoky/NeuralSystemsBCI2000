@@ -5,6 +5,8 @@ import os
 from distutils.core import setup
 import py2exe
 
+import pygame
+
 __file__ = os.path.abspath(__file__)
 this_dir = os.path.dirname(__file__)
 
@@ -25,9 +27,9 @@ def purgeDir(dirname):
         except:
             pass
 
-def copy(fname):
+def copy(fname, dir = this_dir):
     global this_dir
-    from_path = os.path.join(this_dir, fname)
+    from_path = os.path.join(dir, fname)
     to_path = os.path.join(this_dir, 'dist', fname)
     from_file = open(from_path, 'rb')
     to_file = open(to_path, 'wb')
@@ -41,14 +43,15 @@ def main(argv = []):
     purgeDir(os.path.join(this_dir, 'build'))
     purgeDir(os.path.join(this_dir, 'dist'))
     setup(
-        name = 'Py3GUI',
+        name = 'Whack-a-Mole',
         author = 'Collin Stocks',
         windows = [{'script': 'whackamole.py'}],
         zipfile = None,
         options = {
             'py2exe':{
                 'includes': [
-                    'pygame', 'numpy', 'numpy.lib', 'numpy.lib.io', 'Image'
+                    'pygame', 'pygame.font',
+                    'numpy', 'numpy.lib', 'numpy.lib.io', 'Image'
                 ],
                 'excludes': [
                     'IPython', 'OpenGL', 'VisionEgg',
@@ -66,6 +69,8 @@ def main(argv = []):
     copy('hole1.jpg')
     copy('hammer1.png')
     copy('whackamole.prm')
+    pygamedir = os.path.split(pygame.base.__file__)[0]
+    copy(pygame.font.get_default_font(), pygamedir)
     purgeDir(os.path.join(this_dir, 'dist/tcl/tk8.4/demos'))
     purgeDir(os.path.join(this_dir, 'dist/tcl/tk8.4/images'))
     purgeDir(os.path.join(this_dir, 'dist/tcl/tcl8.4/dde1.1'))

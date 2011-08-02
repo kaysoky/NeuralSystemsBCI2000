@@ -15,6 +15,7 @@ from udpcontrol import UdpControl
 from gridgame import ImageSurf, GridGame
 
 __file__ = os.path.abspath(sys.argv[0])
+os.chdir(os.path.dirname(__file__))
 
 class MyDialog(tkSimpleDialog.Dialog):
 
@@ -81,8 +82,9 @@ class WhackaMole(GridGame):
 
     def randomizeMoles(self):
         if self.mole_count == 0:
-            thread.start_new_thread(self.win, ())
-            MyDialog('Time: %f' % (time.time() - self.t1))
+            self.win()
+            #thread.start_new_thread(self.win, ())
+            #MyDialog('Time: %f' % (time.time() - self.t1))
             return
         indices = self.prng.sample(
             xrange(self.rows * self.cols),
@@ -190,7 +192,7 @@ def main(argv = []):
     if shape == None:
         shape = (800, 700)
     game = WhackaMole(rows = rows, cols = cols, shape = shape,
-        border = 3, moles = -1, loc = loc)
+        border = 3, moles = 1, loc = loc)
     clock = pygame.time.Clock()
     def on_func(game, spots):
         if game.won:
