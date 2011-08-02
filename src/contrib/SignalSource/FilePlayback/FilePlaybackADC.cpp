@@ -47,7 +47,8 @@ mBlockSize(1),
 mFileName(""),
 mTemplateFileName(""),
 mSpeedup(1),
-mDataFile(NULL)
+mDataFile(NULL),
+mReverse( false )
 {
   mTemplateFileName = string( OptionalParameter("PlaybackFileName", "") );
   if( mTemplateFileName.size() ) // --PlaybackFileName was given as a command-line option. Use this opportunity to declare all the parameters and states that are in the file, giving the file's parameter values as defaults (with a few exceptions, below).
@@ -168,6 +169,9 @@ mDataFile(NULL)
 
     "Source:Playback int PlaybackLooped= 0 "
     " 0 0 1 // loop playback at the end of the data file instead of suspending execution (boolean)",
+
+    "Source:Playback int PlaybackReverseData= 0 "
+    " 0 0 1 // play the biosignal data backwards - does not affect state playback (boolean)",
 
   END_PARAMETER_DEFINITIONS
   mChList.clear();
@@ -309,6 +313,7 @@ FilePlaybackADC::Initialize( const SignalProperties&, const SignalProperties& )
   mBlockSize = Parameter("SampleBlockSize");
   mSpeedup = Parameter("PlaybackSpeed");
   mFileName = string(Parameter("PlaybackFileName"));
+  mReverse = (int)Parameter("PlaybackReverseData");
 
   //use a buffer size of 10s
   int bufsize = (int)::ceil( 10*mSamplingRate*Parameter("SourceCh") );
@@ -362,16 +367,20 @@ void
 FilePlaybackADC::Process( const GenericSignal&, GenericSignal& Output )
 {
   int curCh;
-  long long curSample;
+  long long curSample, curDataSample;
   long long nSamples = mDataFile->NumSamples();
   bool playStates = ( mStateMappings.size() != 0 && State("Running") != 0 );
-  for (int el = 0; el < mBlockSize; el++){
+  for( int el = 0; el < mBlockSize; el++ )
+  {
     curSample = mBlockSize * mCurBlock + el;
     if (curSample >= mDataFile->NumSamples())
       break;
-    for (unsigned int ch = 0; ch < mChList.size(); ch++){
+	if( mReverse ) curDataSample = mDataFile->NumSamples() - 1 - curSample;
+	else curDataSample = curSample;
+    for (unsigned int ch = 0; ch < mChList.size(); ch++)
+	{
       curCh = mChList[ch];
-      Output(ch, el) = mDataFile->RawValue(curCh, curSample);
+      Output(ch, el) = mDataFile->RawValue(curCh, curDataSample);
     }
     if( playStates )
     {

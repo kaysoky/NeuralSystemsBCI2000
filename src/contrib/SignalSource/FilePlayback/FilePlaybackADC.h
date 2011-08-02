@@ -65,6 +65,7 @@ class FilePlaybackADC : public GenericADC
 		bool mSuspendAtEnd;
 		int mStartTime;
 		long long mNumSamples;
+		bool mReverse;
 
 		class StateMapping {
 			public:

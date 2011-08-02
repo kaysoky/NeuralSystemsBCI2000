@@ -63,6 +63,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Control float     EpochAveragingPersistence=                1.0                    1.0   0 % // persistence parameter for the running average of ERPs",
 			"PythonSig:Control int       ContinuousOutput=                         0                      0     0 1 // continuous output rather than trial-based feedback at the end of a defined period (boolean)",
 			"PythonSig:Control float     ControlFilterCutoffHz=                    0                      0     0 % // output low-pass cutoff in Hz (0 to disable)",
+			"PythonSig:Control int       NumberOfStreams=                          2                      2     2 % // ",
 		]
 		states = [
 		]
@@ -297,7 +298,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.y.append(yi) # the old matlab way
 						
 			
-		if self.changed('PredictedStream',0): self.prediction, self.prediction_se = 0.0, 1.0
+		if 'PredictedStream' in self.states and self.changed('PredictedStream',0):
+			self.prediction, self.prediction_se = 0.0, 1.0
 		if max(self.out_signal_dim) == 1:
 			control_signal = self.prediction / self.prediction_se
 			if self.continuous:

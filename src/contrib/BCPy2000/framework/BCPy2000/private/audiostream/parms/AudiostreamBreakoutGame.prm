@@ -1,0 +1,47 @@
+Application:Game                        matrix    VideoTheme= 8 { type texture } Block breakout/images/Block.bmp Block_2 breakout/images/Block_2.bmp Block_1 breakout/images/Block_1.bmp Ball breakout/images/basketball.png Paddle breakout/images/Paddle.bmp Background breakout/images/Background.bmp Reward breakout/images/coin.png Ineligible breakout/images/blank.png // Graphical theme for the game 
+Application:Game                        matrix    AudioTheme= 7 { event sound }  HitBlock breakout/sounds/tick.wav HitPaddle breakout/sounds/tack.wav HitSideOfPaddle breakout/sounds/tock.wav MissPaddle breakout/sounds/no.wav Reward breakout/sounds/kerching.wav HitBlockVariant breakout/sounds/tick_leftOnly.wav  HitPaddleVariant breakout/sounds/tack_leftOnly.wav // Audio theme for the game 
+
+Application:Game                        float     AudioVolume=               0.0      // Game sound volume 
+Application:Game                        float     VariantProportion=         0.0      // proportion of each eligible sound type to vary
+  
+Application:Game                        string    ClearColor=                0x224422 // Color to clear the gl screen to (color) 
+Application:Game                        string    TextColor=                 0xFFFFFF // Color for in game scoring text (color) 
+Application:Game                        int       TextSize=                 13        // Size for in game scoring text 
+  
+Application:Game%20Appearance           matrix    Level=            6 6      0.5 2 0.5 2 0.5 2  2 0.5 2 0.5 2 0.5   0.5 2 0.5 2 0.5 2  2 0.5 2 0.5 2 0.5   0.5 2 0.5 2 0.5 2  2 0.5 2 0.5 2 0.5 
+  
+Application:Game                        int       PointsRequiredForReward=   3        // Number of eligible points required for a reward (gold coin)
+Application:Game                        int       MaxPointsPerStroke=        2        // Maximum number of points that can be earned from striking the ball once
+  
+Application:Game%20Rewards              matrix    RewardStrings=      7 2    0 Better%20luck%20next%20time 1 Not%20bad... 2 Pretty%20good! 3 Great!! 4 Excellent!! 5 Amazing!! 6 Fantastic!!!   % % % // Mapping from number-of-rewards to feedback strings
+  
+  
+Application:Game                        float     PaddleWidth=               0.7      // Initial width of the paddle rectangle (0-2) 
+Application:Game                        float     PaddleWidthHitFactor=      1.0    // Multiplier for the paddle width when a hit occurs 
+  
+Application:Game                        float     BallRadius=                0.1      // Initial radius of the ball in game (0-2) 
+Application:Game                        float     BallRadiusHitFactor=       1.00     // Multiplier for the ball size when a hit occurs 
+  
+Application:Game                        float     BallSpeed=                 0.2      // Initial ball speed (distance per second) 
+Application:Game                        float     BallSpeedHitFactor=        1.00     // Multiplier for the ball speed when a hit occurs 
+  
+Application:Game%20Challenge            float     InitialGameDifficulty=     0.0      // Starting point for staircase GameDifficulty
+Application:Game                        float     TargetAccuracy=            0.75     // Weighted-up-down staircase's target proportion of hits
+  
+Application:Game                        float     MinSpawnTime=              1.0      // Minimum path duration in seconds for a respawned ball
+Application:Game                        float     MaxSpawnTime=              1.0      // Maximum path duration in seconds for a respawned ball
+  
+Application:Game%20Challenge            int       ShowPredictor=             0        // Show a guide (boolean)
+  
+Application:Game                        float     PaddleHeight=              0.1      // Height of the paddle rectangle (0-2) 
+Application:Game:BreakoutGame           string    PaddleExpressionY=        -0.8      // Expression for Y position of the paddle (-1:1) 
+Application:Game:BreakoutGame           int       IntegratePaddleY=          0        // 
+
+PythonSig:Control                       float     EpochAveragingPersistence= 0.5      // persistence parameter for the running average of ERPs
+PythonSig:Control                       int       ContinuousOutput=          1        // continuous output rather than trial-based feedback at the end of a defined period (boolean)
+PythonSig:Control                       float     ControlFilterCutoffHz=     3.0      // output low-pass cutoff in Hz (0 to disable)
+
+Application:Game                        string    PaddleExpressionX=         Signal(1,1) // Expression for X position of the paddle (-1:1) 
+Application:Game                        int       IntegratePaddleX=          1        // 
+
+
