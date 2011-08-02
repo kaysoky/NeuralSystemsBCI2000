@@ -9,8 +9,8 @@
 //   ClassResult and TargetClassification are auxiliary classes designed as
 //   input and output of the AssociationMap's ClassifyTargets() function.
 //   ClassResult represents accumulated classification output from signal
-//   processing, TargetClassification maps Target pointers to selection
-//   likelihood.
+//   processing, TargetClassification maps Target pointers to a per-target
+//   selection score.
 //
 // $BEGIN_BCI2000_LICENSE$
 // 
@@ -88,7 +88,7 @@ class Association
 // and stimulus code.
 typedef std::map<int, std::vector<GenericSignal> > ClassResult;
 
-// TargetClassification is a map connecting targets with likelihood values.
+// TargetClassification is a map connecting targets with scores.
 struct TargetClassification : public std::map<Target*, double>
 {
   Target* MostLikelyTarget() const;
@@ -97,7 +97,7 @@ struct TargetClassification : public std::map<Target*, double>
 struct AssociationMap : public std::map<int, Association>
 {
   // Given classifier outputs over stimulus codes, channels, and epochs,
-  // determine a likelihood value for each target.
+  // determine an average score value for each target.
   TargetClassification ClassifyTargets( const ClassResult& );
 
   // Intersection of all sets of stimuli that are associated with a given target.

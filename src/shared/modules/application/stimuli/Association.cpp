@@ -198,14 +198,14 @@ Target*
 TargetClassification::MostLikelyTarget() const
 {
   Target* result = empty() ? NULL : begin()->first;
-  double maxLikelihood = empty() ? 0 : begin()->second;
+  double maxValue = empty() ? 0 : begin()->second;
   const_iterator i = begin();
   while( i != end() )
   {
-    if( i->second > maxLikelihood )
+    if( i->second > maxValue )
     {
       result = i->first;
-      maxLikelihood = i->second;
+      maxValue = i->second;
     }
     ++i;
   }
@@ -215,9 +215,12 @@ TargetClassification::MostLikelyTarget() const
 // AssociationMap
 //
 // Given classifier output over stimulus codes, channels, and epochs,
-// determine a likelihood value for each target.
-// For each target, we compute the average likelihood value taken over all
+// determine a score value for each target.
+// For each target, we compute the average score value taken over all
 // stimulus codes, channels, and epoch results.
+// When scores are outputs of a linear classifier, they are linear
+// functions of log-likelihood ratios, so selecting the target with the
+// largest score minimizes overall misclassification risk.
 TargetClassification
 AssociationMap::ClassifyTargets( const ClassResult& inResult )
 {
