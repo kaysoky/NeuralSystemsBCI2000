@@ -9,6 +9,7 @@ import glob
 import matplotlib
 
 __file__ = os.path.abspath(__file__)
+this_dir = os.path.dirname(__file__)
 
 def purgeDir(dirname):
     for path, dirs, files in os.walk(dirname, topdown = False):
@@ -26,6 +27,17 @@ def purgeDir(dirname):
             os.rmdir(path)
         except:
             pass
+
+def copy(fname, dir = this_dir):
+    global this_dir
+    from_path = os.path.join(dir, fname)
+    to_path = os.path.join(this_dir, 'dist', fname)
+    from_file = open(from_path, 'rb')
+    to_file = open(to_path, 'wb')
+    data = None
+    while data != '':
+        data = from_file.read(4096)
+        to_file.write(data)
 
 def main(argv = []):
     this_dir = os.path.dirname(__file__)
@@ -56,6 +68,7 @@ def main(argv = []):
         },
         data_files = matplotlib.get_py2exe_datafiles(),
     )
+    copy('logo.gif')
     purgeDir(os.path.join(this_dir, 'dist/tcl/tk8.4/demos'))
     purgeDir(os.path.join(this_dir, 'dist/tcl/tk8.4/images'))
     purgeDir(os.path.join(this_dir, 'dist/tcl/tcl8.4/dde1.1'))

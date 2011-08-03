@@ -8,6 +8,40 @@ from tkMessageBox import showwarning
 import tkSimpleDialog
 from tkFileDialog import askopenfilename, askopenfilenames, asksaveasfilename
 
+class SplashScreen(Frame):
+
+    def __init__(self, master, image):
+        Frame.__init__(self, None)
+        self.pack(side = TOP, fill = BOTH, expand = YES)
+
+        self.image = PhotoImage(file = image)
+        width = self.image.width()
+        height = self.image.height()
+
+        left = (self.master.winfo_screenwidth() - width) // 2
+        top = (self.master.winfo_screenheight() - height) // 2
+
+        self.master.geometry('%ix%i+%i+%i' % (width, height, left, top))
+
+        self.master.overrideredirect(True)
+
+        Label(self, image = self.image, ).pack(side = TOP, expand = YES)
+
+        self.lift()
+
+SPLASHSCREEN = None
+def Splash(image):
+    global SPLASHSCREEN
+    SPLASHSCREEN = Tk()
+    SplashScreen(SPLASHSCREEN, image = image)
+    SPLASHSCREEN.update()
+
+def UnSplash():
+    global SPLASHSCREEN
+    if SPLASHSCREEN != None:
+        SPLASHSCREEN.destroy()
+        SPLASHSCREEN = None
+
 def SaveAs(filetypes = [('All Files', '.*')], defaultextension = ''):
     return asksaveasfilename(filetypes = filetypes,
         defaultextension = defaultextension)
@@ -234,6 +268,7 @@ class MultiBrowse(Widget):
 class Iwaf(Tk):
 
     def __init__(self, title = 'Iwaf', contents = [], size = (600, 400)):
+        UnSplash()
         Tk.__init__(self, None)
         self.geometry('%ix%i' % size)
         self.parent = None
