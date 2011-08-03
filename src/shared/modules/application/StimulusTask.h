@@ -22,9 +22,9 @@
 //   DoPreRun*
 //   Loop {
 //    OnNextStimulusCode        provide a stimulus code, or 0 to finish run
-//    OnPreSequence
+//    OnPreSequence             determine attended target
 //    DoPreSequence*
-//    OnSequenceBegin           determine attended target
+//    OnSequenceBegin
 //    Loop {
 //      OnStimulusBegin         present stimulus
 //      DoStimulus*

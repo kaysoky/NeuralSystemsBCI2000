@@ -44,7 +44,8 @@ RegisterFilter( StimulusPresentationTask, 3 );
 StimulusPresentationTask::StimulusPresentationTask()
 : mNumberOfSequences( 0 ),
   mSequenceType( SequenceTypes::Deterministic ),
-  mBlockCount( 0 ),
+  mPreSequenceBlockCount( 0 ),
+  mPostResultBlockCount( 0 ),
   mSequenceCount( 0 ),
   mToBeCopiedPos( mToBeCopied.begin() ),
   mSequencePos( mSequence.begin() )
@@ -560,7 +561,6 @@ StimulusPresentationTask::OnStartRun()
   }
   mSequencePos = mSequence.begin();
   mToBeCopiedPos = mToBeCopied.begin();
-  DetermineAttendedTarget();
 }
 
 void
@@ -572,29 +572,30 @@ StimulusPresentationTask::OnStopRun()
 void
 StimulusPresentationTask::OnPreSequence()
 {
+  DetermineAttendedTarget();
   DisplayMessage( "" );
   State( "SelectedStimulus" ) = 0;
   mFocusAnnouncement.Present();
-  mBlockCount = 0;
+  mPreSequenceBlockCount = 0;
 }
 
 void
 StimulusPresentationTask::DoPreSequence( const GenericSignal&, bool& /*doProgress*/ )
 {
-  if( mBlockCount == mFocusAnnouncement.StimulusDuration() )
+  if( mPreSequenceBlockCount == mFocusAnnouncement.StimulusDuration() )
   {
     mFocusAnnouncement.Conceal();
     if( AttendedTarget() != NULL )
       Associations()[ AttendedTarget()->Tag() ].Present();
   }
 
-  if( mBlockCount == 2 * mFocusAnnouncement.StimulusDuration() )
+  if( mPreSequenceBlockCount == 2 * mFocusAnnouncement.StimulusDuration() )
   {
     if( AttendedTarget() != NULL )
       Associations()[ AttendedTarget()->Tag() ].Conceal();
   }
 
-  ++mBlockCount;
+  ++mPreSequenceBlockCount;
 }
 
 void
@@ -617,8 +618,7 @@ StimulusPresentationTask::OnClassResult( const ClassResult& inResult )
   {
     State( "SelectedStimulus" ) = pTarget->Tag();
     mResultAnnouncement.Present();
-    mBlockCount = 0;
-    DetermineAttendedTarget();
+    mPostResultBlockCount = 0;
   }
   return pTarget;
 }
@@ -626,20 +626,20 @@ StimulusPresentationTask::OnClassResult( const ClassResult& inResult )
 void
 StimulusPresentationTask::DoPostSequence( const GenericSignal&, bool& /*doProgress*/ )
 {
-  if( mBlockCount == mResultAnnouncement.StimulusDuration() )
+  if( mPostResultBlockCount == mResultAnnouncement.StimulusDuration() )
   {
     mResultAnnouncement.Conceal();
     if( State( "SelectedStimulus" ) > 0 )
       Associations()[ State( "SelectedStimulus" ) ].Present();
   }
 
-  if( mBlockCount == 2 * mResultAnnouncement.StimulusDuration() )
+  if( mPostResultBlockCount == 2 * mResultAnnouncement.StimulusDuration() )
   {
     if( State( "SelectedStimulus" ) > 0 )
       Associations()[ State( "SelectedStimulus" ) ].Conceal();
   }
 
-  ++mBlockCount;
+  ++mPostResultBlockCount;
 }
 
 int

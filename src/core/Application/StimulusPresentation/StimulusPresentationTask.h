@@ -72,7 +72,8 @@ class StimulusPresentationTask : public StimulusTask
       mSequenceType;
 
   // Internal state.
-  int mBlockCount,
+  int mPreSequenceBlockCount,
+      mPostResultBlockCount,
       mSequenceCount;
 
   std::vector<int> mToBeCopied;
