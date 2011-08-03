@@ -13,9 +13,9 @@ import parsematlab
 import loaddata
 import testweights
 import swlda
-import pca_based
-from iwafgui import Iwaf, FileList, Arguments, Action, Browse, Quit, Error, \
-    Info, SaveAs
+#import pca_based
+from iwafgui import Iwaf, MultiBrowse, Arguments, Action, Browse, Quit, \
+    Error, Info, SaveAs
 
 if __name__ == '__main__':
     temp.destroy()
@@ -183,7 +183,8 @@ def generateFeatureWeights(name, values):
     channels, weights = result
     prm = exportToPRM(channels, weights, response_window[1])
     try:
-        fname = SaveAs()
+        fname = SaveAs(filetypes = [('Parameter Files', '.prm')],
+            defaultextension = 'prm')
         if fname:
             prmfile = open(fname, 'wb')
             prmfile.write(prm)
@@ -256,7 +257,8 @@ def main(argv = []):
         title = 'Py3GUI',
         size = (600, 600),
         contents = [
-            FileList('flist', 'Select Training Data'),
+            MultiBrowse('flist', 'Select Training Data',
+                [('Standard Data Files', '.dat'), ('Pickle Files', '.pk')]),
             Arguments(
                 'generation-args',
                 [

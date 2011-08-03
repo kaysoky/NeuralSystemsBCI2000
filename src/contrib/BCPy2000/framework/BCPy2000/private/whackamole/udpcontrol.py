@@ -72,6 +72,5 @@ class UdpControl(object):
                     data = sock.recv(4096)
                 except socket.timeout:
                     continue
-            # data should start with 'Conceal', but we don't really care.
             self.flip_func(*self.flip_args)
             data = None

@@ -8,7 +8,9 @@ from tkMessageBox import showwarning
 import tkSimpleDialog
 from tkFileDialog import askopenfilename, askopenfilenames, asksaveasfilename
 
-SaveAs = asksaveasfilename
+def SaveAs(filetypes = [('All Files', '.*')], defaultextension = ''):
+    return asksaveasfilename(filetypes = filetypes,
+        defaultextension = defaultextension)
 
 class Error(object):
 
@@ -166,12 +168,14 @@ class Browse(Widget):
     def getContents(self):
         return self.value.get()
 
-class FileList(Widget):
+class MultiBrowse(Widget):
 
-    def __init__(self, name, label = 'Select Files', fnames = []):
+    def __init__(self, name, label = 'Select Files',
+        filetypes = [('All Files', '.*')]):
         self.name = name
         self.label = label
-        self.fnames = sorted(set(fnames))
+        self.fnames = []
+        self.filetypes = filetypes
 
     def initialize(self, parent, row):
         parent.grid_rowconfigure(row, weight = 1)
@@ -213,7 +217,7 @@ class FileList(Widget):
             self.flist.insert(END, fname)
 
     def askopen(self):
-        fnames = askopenfilenames()
+        fnames = askopenfilenames(filetypes = self.filetypes)
         if isinstance(fnames, tuple) and len(fnames) != 0:
             os.chdir(os.path.dirname(fnames[-1]))
             self.fnames.extend(fnames)

@@ -1,4 +1,4 @@
-start .\dist\whackamole.exe 6x6
+start /MIN .\dist\whackamole.exe 6x6
 set WHACKAMOLEDIR=%CD%
 cd \BCIHomeSystemFiles\BCIAddons\games
 cd ..\..\VA_BCI2000\prog
@@ -11,3 +11,4 @@ rem ..\..\BCIAddons\games\PySpeller\pyspeller.pyw
 P3Speller.exe 127.0.0.1
 taskkill /IM whackamole.exe
 taskkill /F /IM whackamole.exe
+exit 0
