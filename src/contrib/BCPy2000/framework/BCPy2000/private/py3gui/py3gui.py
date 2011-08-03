@@ -13,6 +13,7 @@ import parsematlab
 import loaddata
 import testweights
 import swlda
+import pca_based
 from iwafgui import Iwaf, FileList, Arguments, Action, Browse, Quit, Error, \
     Info, SaveAs
 
@@ -118,7 +119,7 @@ def generateFeatureWeights(name, values):
     args = values['generation-args'][1]
     errors = []
     for key in args:
-        if key in ('filetype', 'removeanomalies'):
+        if key in ('filetype', 'removeanomalies', 'classificationmethod'):
             continue
         label, value = args[key]
         value = parsematlab.parse(value)
@@ -139,6 +140,7 @@ def generateFeatureWeights(name, values):
     filetype = args['filetype'][1]
     weightwidget = values['weightfile'][0]
     removeanomalies = args['removeanomalies'][1]
+    classificationmethod = args['classificationmethod'][1]
     data = []
     type = []
     samplingrate = None
@@ -169,8 +171,12 @@ def generateFeatureWeights(name, values):
     randomindices.sort()
     data = data[randomindices]
     type = type[randomindices]
-    result = swlda.swlda(data, type, samplingrate, response_window,
-        decimation_frequency, max_model_features, penter, premove)
+    if classificationmethod == 'SWLDA':
+        result = swlda.swlda(data, type, samplingrate, response_window,
+            decimation_frequency, max_model_features, penter, premove)
+    elif classificationmethod == 'PCA-based':
+        result = pca_based.pca_based(data, type, samplingrate, response_window,
+            decimation_frequency)
     if isinstance(result, str):
         Error(result)
         return
@@ -248,7 +254,7 @@ def plotWaveform(name, values):
 def main(argv = []):
     Iwaf(
         title = 'Py3GUI',
-        size = (600, 500),
+        size = (600, 600),
         contents = [
             FileList('flist', 'Select Training Data'),
             Arguments(
@@ -256,17 +262,20 @@ def main(argv = []):
                 [
                     ('responsewindow', 'Response Window [begin end] (ms): ',
                         '0 800'),
+                    ('channelset', 'Channel Set: ', '1:8'),
                     ('randompercent', '% Random Sample for Training: ',
                         '100'),
                     ('decimationfrequency', 'Decimation Frequency (Hz): ',
                         '20'),
+                    ('classificationmethod', 'Classification Method: ',
+                        ['SWLDA']),
+                        #['SWLDA', 'PCA-based']),
                     ('maxmodelfeatures', 'Max Model Features: ',
                         '60'),
-                    ('channelset', 'Channel Set: ', '1:8'),
                     ('penter', 'Threshold to Add Features: ', '0.1'),
                     ('premove', 'Threshold to Remove Features: ', '0.15'),
                     ('filetype', 'Data File Type: ', loaddata.SUPPORTED),
-                    ('removeanomalies', 'Attempt to Remove Anomalies', False),
+                    ('removeanomalies', 'Attempt to Remove Anomalies: ', False),
                 ]
             ),
             Action('Plot Waveform', plotWaveform),

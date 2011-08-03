@@ -2,25 +2,20 @@
 
 import numpy as np
 
-from stepwise import stepwisefit
+from pca_based_classifier import classify
 
-def swlda(responses, type, sampling_rate, response_window, decimation_frequency,
-    max_model_features = 60, penter = 0.1, premove = 0.15):
+def pca_based(responses, type, sampling_rate, response_window,
+    decimation_frequency):
     """
-    Stepwise Linear Discriminant Analysis
+    Principal Component Analysis-based Linear Classifier
     ``responses'' must be a (trials x samples x channels) array containing
     responses to a stimulus.
     ``type'' must be a one-dimensional array of bools of length trials.
     ``sampling_rate'' is the sampling rate of the data.
     ``response_window'' is of the form [begin, end] in milliseconds.
     ``decimation_frequency'' is the frequency at which to resample.
-    ``max_model_features'' is the maximum allowed number of features to be
-        chosen by stepwisefit.
-    ``penter'' and ``premove'' are the thresholds for adding and removing
-        features from the model.
 
     """
-
     # Housekeeping
     responses = np.asarray(responses, dtype = float)
     type = np.asarray(type, dtype = bool)
@@ -62,18 +57,21 @@ def swlda(responses, type, sampling_rate, response_window, decimation_frequency,
     unraveled_sorted = np.swapaxes(downsampled, 1, 2).reshape(
         (trials, indices.size * channels)
     )[target_then_nontarget]
-    labels = type[target_then_nontarget] * 2 - 1
+    labels = type[target_then_nontarget] > 0
 
     # ``unraveled_sorted'' is now (trials x (indices.size * channels)) and is
     # sorted into target and non-target stimuli.
-    # ``labels'' contains 1s and -1s in the order of ``unraveled_sorted''.
+    # ``labels'' contains bools in the order of ``unraveled_sorted''.
 
-    b, se, pval, inmodel, stats, nextstep, history = stepwisefit(
-        unraveled_sorted, labels, maxiter = max_model_features,
-        penter = penter, premove = premove
-    )
-    if not inmodel.any():
+    try:
+        classifier, bias = classify(unraveled_sorted.transpose(), labels)
+    except:
         return 'Could not find an appropriate model.'
+
+    b = classifier
+    inmodel = np.arange(classifier.size)
+    # The above two lines are so that the remainder of swlda.py can just be
+    # copied and pasted below with no changes.
 
     b = b * 10 / abs(b).max()
     b = b.reshape((channels, -1))
@@ -110,3 +108,4 @@ def main(argv = []):
 if __name__ == '__main__':
     import sys
     main(sys.argv[1:])
+

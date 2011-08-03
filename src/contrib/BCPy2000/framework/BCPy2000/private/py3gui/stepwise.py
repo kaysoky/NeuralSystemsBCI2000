@@ -7,7 +7,21 @@ import numpy as np
 import scipy
 import scipy.stats
 from scipy import linalg
-from qr import qr
+happy = False
+if int(scipy.__version__.split('.')[1]) >= 10:
+    from scipy.linalg import qr
+elif scipy.__version__ == '0.9.0':
+    from qr_09 import qr
+elif scipy.__version__ == '0.7.1':
+    from qr import qr
+else:
+    try:
+        from qr import qr
+    except:
+        try:
+            from qr_09 import qr
+        finally:
+            print 'It appears as though your scipy version is not supported.'
 
 class LazyDict(dict):
     __getattr__ = dict.__getitem__
@@ -76,7 +90,7 @@ def stepcalc(allx, y, inmodel):
     sumxsq = (x ** 2).sum(axis = 0)
 
     # Compute b and its standard error.
-    Q, R, perm = qr(X, mode = "qrp+economic")
+    Q, R, perm = qr(X, mode = "economic", pivoting = True)
     Rrank = (abs(np.diag(R)) > tol * abs(R.ravel()[0])).sum()
     if Rrank < nin:
         R = R[0:Rrank, 0:Rrank]
