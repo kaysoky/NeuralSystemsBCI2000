@@ -255,6 +255,17 @@ class MultiBrowse(Widget):
         if isinstance(fnames, tuple) and len(fnames) != 0:
             os.chdir(os.path.dirname(fnames[-1]))
             self.fnames.extend(fnames)
+            split = fnames[-1].split('.')
+            if len(split) > 1:
+                extension = split[-1]
+            best = 0
+            i = 0
+            for filetype, extensions in self.filetypes:
+                if ('.' + extension) in \
+                    extensions.replace('*', extension).split():
+                    best = i
+                i += 1
+            self.filetypes.insert(0, self.filetypes.pop(best))
         else:
             return
         self.fnames = sorted(set(self.fnames))

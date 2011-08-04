@@ -82,40 +82,45 @@ def testWeights(name, values):
     data = []
     type = []
     samplingrate = None
-    for fname in fnames:
-        result = loaddata.load_data(fname, [0, classifier.shape[0]],
-            filetype, True, removeanomalies = removeanomalies)
-        if isinstance(result, str):
-            Error(result)
+    try:
+        for fname in fnames:
+            result = loaddata.load_data(fname, [0, classifier.shape[0]],
+                filetype, True, removeanomalies = removeanomalies)
+            if isinstance(result, str):
+                Error(result)
+                return
+            if samplingrate == None:
+                samplingrate = result[2]
+            if samplingrate != result[2]:
+                Error('Not all data files have the same sampling rate.')
+                return
+            data.append(result[0])
+            type.append(result[1])
+        if len(data) == 0 or len(type) == 0:
+            Error('You must select some data upon which to test the weights.')
             return
-        if samplingrate == None:
-            samplingrate = result[2]
-        if samplingrate != result[2]:
-            Error('Not all data files have the same sampling rate.')
-            return
-        data.append(result[0])
-        type.append(result[1])
-    if len(data) == 0 or len(type) == 0:
-        Error('You must select some data upon which to test the weights.')
+        data = np.concatenate(data)
+        type = np.concatenate(type)
+        score, correctness = testweights.test_weights(data, type, classifier,
+            matrixshape, repetitions)
+        message = '\n'.join(fnames)
+        message += '\n\n%s\n\nExpected accuracy for a %s matrix:\n\n' % \
+            (
+                weightfile,
+                'x'.join(str(i) for i in matrixshape)
+            )
+        for i in range(len(repetitions)):
+            if repetitions[i] != 1:
+                message += '%i repetitions: %0.1f%%\n' % \
+                    (repetitions[i], correctness[i] * 100)
+            else:
+                message += '1 repetition: %0.1f%%\n' % (correctness[i] * 100)
+        message += '\nTarget STDEV: %f\nNontarget STDEV: %f\n' % score
+        Info(message)
+    except MemoryError:
+        Error('Could not fit all the selected data in memory.\n' + \
+            'Try loading fewer data files.')
         return
-    data = np.concatenate(data)
-    type = np.concatenate(type)
-    score, correctness = testweights.test_weights(data, type, classifier,
-        matrixshape, repetitions)
-    message = '\n'.join(fnames)
-    message += '\n\n%s\n\nExpected accuracy for a %s matrix:\n\n' % \
-        (
-            weightfile,
-            'x'.join(str(i) for i in matrixshape)
-        )
-    for i in range(len(repetitions)):
-        if repetitions[i] != 1:
-            message += '%i repetitions: %0.1f%%\n' % \
-                (repetitions[i], correctness[i] * 100)
-        else:
-            message += '1 repetition: %0.1f%%\n' % (correctness[i] * 100)
-    message += '\nTarget STDEV: %f\nNontarget STDEV: %f\n' % score
-    Info(message)
 
 def generateFeatureWeights(name, values):
     #reload(loaddata) #TODO!!!
@@ -147,54 +152,59 @@ def generateFeatureWeights(name, values):
     data = []
     type = []
     samplingrate = None
-    for fname in fnames:
-        result = loaddata.load_data(fname, response_window, filetype,
-            removeanomalies = removeanomalies)
+    try:
+        for fname in fnames:
+            result = loaddata.load_data(fname, response_window, filetype,
+                removeanomalies = removeanomalies)
+            if isinstance(result, str):
+                Error(result)
+                return
+            if samplingrate == None:
+                samplingrate = result[2]
+            if samplingrate != result[2]:
+                Error('Not all data files have the same sampling rate.')
+                return
+            try:
+                data.append(result[0][:, :, channelset])
+            except IndexError:
+                Error('"Channel Set" is not a subset of the available channels.')
+                return
+            type.append(result[1])
+        if len(data) == 0 or len(type) == 0:
+            return
+        data = np.concatenate(data)
+        type = np.concatenate(type)
+        randomindices = np.arange(data.shape[0], dtype = int)
+        np.random.shuffle(randomindices)
+        randomindices = randomindices[:data.shape[0] * random_sample_percent // 100]
+        randomindices.sort()
+        data = data[randomindices]
+        type = type[randomindices]
+        if classificationmethod == 'SWLDA':
+            result = swlda.swlda(data, type, samplingrate, response_window,
+                decimation_frequency, max_model_features, penter, premove)
+        elif classificationmethod == 'PCA-based':
+            result = pca_based.pca_based(data, type, samplingrate, response_window,
+                decimation_frequency)
         if isinstance(result, str):
             Error(result)
             return
-        if samplingrate == None:
-            samplingrate = result[2]
-        if samplingrate != result[2]:
-            Error('Not all data files have the same sampling rate.')
-            return
+        channels, weights = result
+        prm = exportToPRM(channels, weights, response_window[1])
         try:
-            data.append(result[0][:, :, channelset])
-        except IndexError:
-            Error('"Channel Set" is not a subset of the available channels.')
+            fname = SaveAs(filetypes = [('Parameter Files', '.prm')],
+                defaultextension = 'prm')
+            if fname:
+                prmfile = open(fname, 'wb')
+                prmfile.write(prm)
+                prmfile.close()
+                weightwidget.setContents(fname)
+        except:
+            Error('Could not write PRM file.')
             return
-        type.append(result[1])
-    if len(data) == 0 or len(type) == 0:
-        return
-    data = np.concatenate(data)
-    type = np.concatenate(type)
-    randomindices = np.arange(data.shape[0], dtype = int)
-    np.random.shuffle(randomindices)
-    randomindices = randomindices[:data.shape[0] * random_sample_percent // 100]
-    randomindices.sort()
-    data = data[randomindices]
-    type = type[randomindices]
-    if classificationmethod == 'SWLDA':
-        result = swlda.swlda(data, type, samplingrate, response_window,
-            decimation_frequency, max_model_features, penter, premove)
-    elif classificationmethod == 'PCA-based':
-        result = pca_based.pca_based(data, type, samplingrate, response_window,
-            decimation_frequency)
-    if isinstance(result, str):
-        Error(result)
-        return
-    channels, weights = result
-    prm = exportToPRM(channels, weights, response_window[1])
-    try:
-        fname = SaveAs(filetypes = [('Parameter Files', '.prm')],
-            defaultextension = 'prm')
-        if fname:
-            prmfile = open(fname, 'wb')
-            prmfile.write(prm)
-            prmfile.close()
-            weightwidget.setContents(fname)
-    except:
-        Error('Could not write PRM file.')
+    except MemoryError:
+        Error('Could not fit all the selected data in memory.\n' + \
+            'Try loading fewer data files.')
         return
 
 def plotWaveform(name, values):
@@ -220,40 +230,45 @@ def plotWaveform(name, values):
     data = []
     type = []
     samplingrate = None
-    for fname in fnames:
-        result = loaddata.load_data(fname, response_window, filetype,
-            removeanomalies = removeanomalies)
-        if isinstance(result, str):
-            Error(result)
+    try:
+        for fname in fnames:
+            result = loaddata.load_data(fname, response_window, filetype,
+                removeanomalies = removeanomalies)
+            if isinstance(result, str):
+                Error(result)
+                return
+            if samplingrate == None:
+                samplingrate = result[2]
+            if samplingrate != result[2]:
+                Error('Not all data files have the same sampling rate.')
+                return
+            try:
+                data.append(result[0][:, :, channelset])
+            except IndexError:
+                Error('"Channel Set" is not a subset of the available channels.')
+                return
+            type.append(result[1])
+        if len(data) == 0 or len(type) == 0:
             return
-        if samplingrate == None:
-            samplingrate = result[2]
-        if samplingrate != result[2]:
-            Error('Not all data files have the same sampling rate.')
-            return
-        try:
-            data.append(result[0][:, :, channelset])
-        except IndexError:
-            Error('"Channel Set" is not a subset of the available channels.')
-            return
-        type.append(result[1])
-    if len(data) == 0 or len(type) == 0:
+        data = np.concatenate(data)
+        type = np.concatenate(type)
+        target = data[type.nonzero()[0]].mean(axis = 0)
+        nontarget = data[(~type).nonzero()[0]].mean(axis = 0)
+        ylim = [min(target.min(), nontarget.min()),
+            max(target.max(), nontarget.max())]
+        pylab.figure()
+        ax = pylab.subplot(2, 1, 1)
+        pylab.title('Target')
+        pylab.plot(target)
+        pylab.ylim(ylim)
+        pylab.subplot(2, 1, 2, sharex = ax, sharey = ax)
+        pylab.title('Non-Target')
+        pylab.plot(nontarget)
+        pylab.ylim(ylim)
+    except MemoryError:
+        Error('Could not fit all the selected data in memory.\n' + \
+            'Try loading fewer data files.')
         return
-    data = np.concatenate(data)
-    type = np.concatenate(type)
-    target = data[type.nonzero()[0]].mean(axis = 0)
-    nontarget = data[(~type).nonzero()[0]].mean(axis = 0)
-    ylim = [min(target.min(), nontarget.min()),
-        max(target.max(), nontarget.max())]
-    pylab.figure()
-    ax = pylab.subplot(2, 1, 1)
-    pylab.title('Target')
-    pylab.plot(target)
-    pylab.ylim(ylim)
-    pylab.subplot(2, 1, 2, sharex = ax, sharey = ax)
-    pylab.title('Non-Target')
-    pylab.plot(nontarget)
-    pylab.ylim(ylim)
 
 def main(argv = []):
     Iwaf(
