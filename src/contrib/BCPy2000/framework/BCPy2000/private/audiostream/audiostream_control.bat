@@ -24,7 +24,7 @@ call portable.bat
 @set OnConnect=-
 
 :: Signal-processing parameters
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsAA-Cap16+Audio2.prm
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBB-Cap16+Audio2.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\fixed.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\audiostream_wadsworth_devel.prm
 
@@ -34,7 +34,7 @@ call portable.bat
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\AudiostreamBreakoutGame.prm
 
 :: MUST ALSO LOAD WEIGHTS
-::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE C:\BCPy2000-FullMonty254-20100708\BCI2000\data\20110801_8502_A_002\20110801_8502_A_S002R03_weights.prm
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE C:\BCPy2000-FullMonty254-20100708\BCI2000\data\20110802_8501_A_002\20110802_8501_A_S002R03_weights.prm
 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm
 @set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession 999

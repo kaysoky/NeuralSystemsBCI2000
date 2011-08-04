@@ -222,7 +222,10 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				SigTools.savemat(self.data_file.replace('.dat', '_features.mat'), a)
 		else:
 			print "features not saved (traps not verified)"
-			
+		
+		p = getattr(self, 'player', None)
+		if p: p.stop()
+		
 	#############################################################
 
 	def Process(self, sig):
@@ -410,7 +413,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 	#################################################################
 	
-	def stimulus(self, filename=None):
+	def stimulus(self, filename=None, pan=None):
 		if getattr(self, 'player', None) == None:
 			if filename == None: filename = 'sample_wavs/fixed_long_leftAttenuated12dB_1.wav'
 				
@@ -421,7 +424,19 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.player.set_postplay_hook(self.states.update, dict([('Stream%d'%(i+1), 0) for i in range(self.player.wav.channels())]))
 			print self.player.wav
 			
+		if pan != None: self.player.pan = pan
+			
 		return self.player
+		
+	#################################################################
+	
+	def play(self, *pargs, **kwargs):
+		self.stimulus(*pargs, **kwargs).play(-1)
+		
+	#################################################################
+	
+	def stop(self):
+		self.stimulus().stop()
 		
 #################################################################
 #################################################################

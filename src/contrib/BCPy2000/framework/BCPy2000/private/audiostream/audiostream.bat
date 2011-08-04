@@ -29,7 +29,7 @@ call portable.bat
 
 @set OnConnect=-
 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsAA-Cap16+Audio2.prm
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBB-Cap16+Audio2.prm
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-Cap16+Audio2.prm
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-SchalkCap64+Audio2.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\drifting.prm 

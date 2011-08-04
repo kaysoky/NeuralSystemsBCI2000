@@ -1,7 +1,7 @@
 Source:Signal%20Properties:DataIOFilter       int       SamplingRate=              256             // sample rate
 Source:Signal%20Properties:DataIOFilter       int       SampleBlockSize=             8             // number of samples transmitted at a time
    
-Source:gUSBampADC                             string    DeviceIDMaster=             UA-2009.04.10  // deviceID for the device whose SYNC goes to the slaves
+Source:gUSBampADC                             string    DeviceIDMaster=             UB-2009.04.10  // deviceID for the device whose SYNC goes to the slaves
 Source:gUSBampADC                             list      DeviceIDs=             2    UB-2009.04.10 UB-2009.04.11    // list of USBamps to be used (or auto)
 Source:gUSBampADC                             intlist   SourceChDevices=       2    16 2           // number of digitized channels per device
 Source:gUSBampADC                             int       DigitalInput=                0             // enable digital input: 0: disabled, 1: enabled (enumeration)

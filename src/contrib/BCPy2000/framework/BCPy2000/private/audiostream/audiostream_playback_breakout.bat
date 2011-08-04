@@ -19,6 +19,7 @@
 
 @set PLAYBACK=..\data\20110706_8503_A_002\20110706_8503_A_S002R02.dat
 @set PLAYBACK=..\data\20110801_8502_A_999\20110801_8502_A_S999R10.dat
+@set PLAYBACK=..\data\20110802_8501_A_999\20110802_8501_A_S999R08.dat
 @if [%1]==[] goto SKIPARG
 @set PLAYBACK=%1
 :SKIPARG
@@ -34,6 +35,8 @@ call portable.bat
 @set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession 555
 ::@set OnConnect=%OnConnect% ; SET PARAMETER PlayBackStates 0
 ::@set OnConnect=%OnConnect% ; SET PARAMETER EnslavePython 0
+::@set OnConnect=%OnConnect% ; SET PARAMETER PlaybackReverseData 1
+::@set OnConnect=%OnConnect% ; SET PARAMETER PlaybackSpeed 10
 
 start              operat                   --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
 
