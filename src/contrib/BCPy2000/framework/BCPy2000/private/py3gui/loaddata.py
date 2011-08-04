@@ -155,21 +155,27 @@ def load_pickle_data(fname, window, window_in_samples):
     type = pickle['y'] > 0
     data = np.swapaxes(pickle['x'], 1, 2)[:, :window, :]
     if data.shape[1] != window:
-        return 'Not enough data to fill window. Window is too big.'
+        largest_window = int((data.shape[1] + 1) * 1000 // samplingrate) + 1
+        while np.round(largest_window * samplingrate / 1000) > data.shape[1]:
+            largest_window -= 1
+        return 'Not enough data to fill window. Window is too big.\n' + \
+            'Maximum window size would be [0 %i].' % largest_window
     return data, type, samplingrate
 
 def load_data(fname, window, ftype = 'standard', window_in_samples = False,
     removeanomalies = False):
     reload(__import__('testweights')) #TODO!!!
+    if ftype == 'standard':
+        loader = load_standard_data
+    elif ftype == 'pickle':
+        loader = load_pickle_data
+    else:
+        return '%s file type not supported.' % str(ftype)
     try:
-        if ftype == 'standard':
-            data, type, samplingrate = load_standard_data(fname, window,
-                window_in_samples)
-        elif ftype == 'pickle':
-            data, type, samplingrate = load_pickle_data(fname, window,
-                window_in_samples)
-        else:
-            return '%s file type not supported.' % str(ftype)
+        result = loader(fname, window, window_in_samples)
+        if isinstance(result, str):
+            return result
+        data, type, samplingrate = result
         if removeanomalies:
             data, type = removeAnomalies(data, type)
         return data, type, samplingrate

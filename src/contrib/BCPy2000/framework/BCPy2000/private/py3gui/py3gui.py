@@ -1,10 +1,5 @@
 #!/usr/bin/python
 
-#if __name__ == '__main__':
-#    temp = __import__('Tkinter').Tk()
-#    temp.title('Please Wait...')
-#    temp.update()
-
 if __name__ == '__main__':
     __import__('iwafgui').Splash('logo.gif')
 
@@ -19,10 +14,6 @@ import swlda
 #import pca_based
 from iwafgui import Iwaf, MultiBrowse, Arguments, Action, Browse, Quit, \
     Error, Info, SaveAs
-
-#if __name__ == '__main__':
-#    temp.destroy()
-#    del temp
 
 def exportToPRM(channels, weights, epoch_length):
     return ('Filtering:LinearClassifier matrix Classifier= %(lenweights)i {' + \
@@ -252,6 +243,7 @@ def plotWaveform(name, values):
             return
         data = np.concatenate(data)
         type = np.concatenate(type)
+        x = np.arange(data.shape[1]) * 1000 / samplingrate
         target = data[type.nonzero()[0]].mean(axis = 0)
         nontarget = data[(~type).nonzero()[0]].mean(axis = 0)
         ylim = [min(target.min(), nontarget.min()),
@@ -259,11 +251,11 @@ def plotWaveform(name, values):
         pylab.figure()
         ax = pylab.subplot(2, 1, 1)
         pylab.title('Target')
-        pylab.plot(target)
+        pylab.plot(x, target)
         pylab.ylim(ylim)
         pylab.subplot(2, 1, 2, sharex = ax, sharey = ax)
         pylab.title('Non-Target')
-        pylab.plot(nontarget)
+        pylab.plot(x, nontarget)
         pylab.ylim(ylim)
     except MemoryError:
         Error('Could not fit all the selected data in memory.\n' + \
