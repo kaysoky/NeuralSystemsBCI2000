@@ -69,8 +69,6 @@ DataIOFilter::DataIOFilter()
   mTimingBufferCursor( 0 ),
   mEvaluateTiming( true )
 {
-  BCIEvent::SetEventQueue( mBCIEvents );
-
   BEGIN_PARAMETER_DEFINITIONS
     // Parameters required to interpret a data file are listed here
     // to enforce their presence:
@@ -477,6 +475,8 @@ DataIOFilter::Initialize( const SignalProperties& Input,
 void
 DataIOFilter::StartRun()
 {
+  BCIEvent::SetEventQueue( &mBCIEvents );
+
   mpADC->CallStartRun();
   mpFileWriter->CallStartRun();
 
@@ -501,6 +501,8 @@ DataIOFilter::StopRun()
   mpFileWriter->CallStopRun();
   mOutputBuffer = GenericSignal( 0, 0 );
   State( "Recording" ) = 0;
+
+  BCIEvent::SetEventQueue( NULL );
 }
 
 

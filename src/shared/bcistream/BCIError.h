@@ -31,6 +31,8 @@
 #define BCI_ERROR_H
 
 #include <sstream>
+#include "ClassName.h"
+#include "Lockable.h"
 
 // Context info added to output.
 // This is overridden with the context information
@@ -45,8 +47,11 @@
 #define bcierr      bcierr__( CONTEXT_ )
 #define bciout      bciout__( CONTEXT_ )
 #define bcidbg      bcidbg__( CONTEXT_ )( 1 )
-#define bcierr_     bcierr__( typeid( *this ).name() )
-#define bciout_     bciout__( typeid( *this ).name() )
+#define bcierr_     bcierr__( bci::ClassName( typeid( *this ) ) )
+#define bciout_     bciout__( bci::ClassName( typeid( *this ) ) )
+#define bcierr__    TemporaryLock( bcierr___ )()
+#define bciout__    TemporaryLock( bciout___ )()
+#define bcidbg__    TemporaryLock( bcidbg___ )()
 
 class EnvironmentBase;
 class CoreModule;
@@ -61,7 +66,9 @@ namespace BCIError
   void RuntimeError( const std::string& );
   void LogicError( const std::string& );
 
-  class OutStream : public std::ostream
+  void SetOperatorStream( std::ostream*, const OSMutex* = NULL );
+
+  class OutStream : public Lockable, public std::ostream
   {
    friend class ::EnvironmentBase;
    friend class ::CoreModule;
@@ -82,8 +89,6 @@ namespace BCIError
     int Flushes()
       { return mBuf.Flushes(); }
     void Clear()
-      { clear(); }
-    void clear()
       { std::ostream::clear(); mBuf.Clear(); }
     void Reset()
       { std::ostream::clear(); mBuf.Reset(); }
@@ -113,8 +118,6 @@ namespace BCIError
       int Flushes()
         { return mNumFlushes; }
       void Clear()
-        { clear(); }
-      void clear()
         { SetFlushHandler( mpOnFlush ); mNumFlushes = 0; }
       void Reset()
         { str( "" ); mNumFlushes = 0; }
@@ -132,12 +135,11 @@ namespace BCIError
     static std::string sContext;
     static int         sDebugLevel; // global debug level
   };
-
 }
 
-extern BCIError::OutStream bcierr__;
-extern BCIError::OutStream bciout__;
-extern BCIError::OutStream bcidbg__;
+extern BCIError::OutStream bcierr___;
+extern BCIError::OutStream bciout___;
+extern BCIError::OutStream bcidbg___;
 
 #endif // BCI_ERROR_H
 

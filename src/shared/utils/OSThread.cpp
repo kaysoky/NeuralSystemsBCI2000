@@ -41,6 +41,12 @@
 using namespace std;
 
 #if _WIN32
+DWORD OSThread::sMainThreadID = ::GetCurrentThreadId();
+#else // _WIN32
+pthread_t OSThread::sMainThread = ::pthread_self();
+#endif // _WIN32
+
+#if _WIN32
 
 OSThread::OSThread()
 : mHandle( NULL ),
@@ -54,7 +60,10 @@ OSThread::OSThread()
 OSThread::~OSThread()
 {
   if( mHandle != NULL )
+  {
     ::TerminateThread( mHandle, 0 );
+    ::CloseHandle( mHandle );
+  }
 }
 
 void
@@ -84,6 +93,12 @@ void
 OSThread::Sleep( int inMs )
 {
   ::Sleep( inMs );
+}
+
+bool
+OSThread::IsMainThread()
+{
+  return ::GetCurrentThreadId() == sMainThreadID;
 }
 
 #else // _WIN32
@@ -135,6 +150,12 @@ void
 OSThread::Sleep( int inMs )
 {
   ::usleep( inMs * 1000 );
+}
+
+bool
+OSThread::IsMainThread()
+{
+  return ::pthread_equal( pthread_self(), sMainThread );
 }
 
 #endif // _WIN32

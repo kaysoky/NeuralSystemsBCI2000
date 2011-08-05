@@ -30,6 +30,7 @@
 #include <set>
 #include <list>
 #include <map>
+#include "Uncopyable.h"
 #include "Environment.h"
 #include "GenericVisualization.h"
 // #includes needed for every filter, so they are put here for
@@ -51,7 +52,7 @@
   GenericFilter::FilterRegistrar<name> name##Registrar##priority(#pos, priority);
 #endif // __GNUC__
 
-class GenericFilter : protected Environment
+class GenericFilter : protected Environment, private Uncopyable
 {
  protected:
           GenericFilter();

@@ -32,6 +32,7 @@
 
 #include "BCIEvent.h"
 #include "PrecisionTime.h"
+#include "BCIError.h"
 
 using namespace std;
 
@@ -41,8 +42,16 @@ int
 BCIEvent::StringBuf::sync()
 {
   int result = stringbuf::sync();
-  if( BCIEvent::spQueue != NULL && !str().empty() )
-    spQueue->PushBack( str().c_str(), PrecisionTime::Now() );
+  if( BCIEvent::spQueue == NULL )
+  {
+    bcierr << "No event queue specified -- "
+           << "trying to record an event outside the \"running\" state?"
+           << endl;
+  }
+  else if( !str().empty() )
+  {
+    BCIEvent::spQueue->PushBack( str().c_str(), PrecisionTime::Now() );
+  }
   str( "" );
   return result;
 }

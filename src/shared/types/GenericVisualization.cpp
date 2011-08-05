@@ -27,8 +27,9 @@
 #pragma hdrstop
 
 #include "GenericVisualization.h"
-#include "Environment.h"
 #include "MessageHandler.h"
+#include "OSMutex.h"
+#include "BCIError.h"
 
 #include <iostream>
 #include <string>
@@ -152,48 +153,54 @@ VisBitmap::WriteBinarySelf( ostream& os ) const
   mBitmap.WriteBinary( os );
 }
 
+std::ostream* GenericVisualization::spOutputStream = NULL;
+const OSMutex* GenericVisualization::spOutputLock = NULL;
+
 GenericVisualization&
 GenericVisualization::SendCfgString( CfgID::CfgID inCfgID, const std::string& inCfgString )
 {
-  MessageHandler::PutMessage( *EnvironmentBase::Operator, VisCfg( mSourceID, inCfgID, inCfgString ) );
-  EnvironmentBase::Operator->flush();
-  this->flags( EnvironmentBase::Operator->flags() );
-  return *this;
+  return SendObject( VisCfg( mSourceID, inCfgID, inCfgString ) );
 }
 
 GenericVisualization&
 GenericVisualization::Send( const string& s )
 {
-  MessageHandler::PutMessage( *EnvironmentBase::Operator, VisMemo( mSourceID, s ) );
-  EnvironmentBase::Operator->flush();
-  this->flags( EnvironmentBase::Operator->flags() );
-  return *this;
+  return SendObject( VisMemo( mSourceID, s ) );
 }
 
 GenericVisualization&
 GenericVisualization::Send( const GenericSignal& s )
 {
-  MessageHandler::PutMessage( *EnvironmentBase::Operator, VisSignal( mSourceID, s ) );
-  EnvironmentBase::Operator->flush();
-  this->flags( EnvironmentBase::Operator->flags() );
-  return *this;
+  return SendObject( VisSignal( mSourceID, s ) );
 }
 
 GenericVisualization&
 GenericVisualization::Send( const SignalProperties& s )
 {
-  MessageHandler::PutMessage( *EnvironmentBase::Operator, VisSignalProperties( mSourceID, s ) );
-  EnvironmentBase::Operator->flush();
-  this->flags( EnvironmentBase::Operator->flags() );
-  return *this;
+  return SendObject( VisSignalProperties( mSourceID, s ) );
 }
 
 GenericVisualization&
 GenericVisualization::Send( const BitmapImage& b )
 {
-  MessageHandler::PutMessage( *EnvironmentBase::Operator, VisBitmap( mSourceID, b ) );
-  EnvironmentBase::Operator->flush();
-  this->flags( EnvironmentBase::Operator->flags() );
+  return SendObject( VisBitmap( mSourceID, b ) );
+}
+
+template<typename T>
+GenericVisualization&
+GenericVisualization::SendObject( const T& inObject )
+{
+  if( spOutputStream )
+  {
+    OSMutex::Lock lock( spOutputLock );
+    MessageHandler::PutMessage<T>( *spOutputStream, inObject );
+    spOutputStream->flush();
+    this->flags( spOutputStream->flags() );
+  }
+  else
+  {
+    bcierr << "No output stream specified." << endl;
+  }
   return *this;
 }
 
@@ -210,7 +217,7 @@ GenericVisualization::VisStringbuf::sync()
 void
 BitmapVisualization::SendReferenceFrame( const BitmapImage& b )
 {
-  // An empty image indicates that the next frame is a reference frame
+  // An empty image indicates that the next frame is a reference frame.
   Send( BitmapImage( 0, 0 ) ); 
   mImageBuffer = b;
   Send( mImageBuffer );

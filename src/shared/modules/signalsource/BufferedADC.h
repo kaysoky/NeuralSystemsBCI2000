@@ -93,7 +93,6 @@ class BufferedADC : public GenericADC, private OSThread
   std::vector<PrecisionTime> mTimeStamps;
   size_t                     mReadCursor,
                              mWriteCursor;
-  bool                       mOverflowOccurred;
   OSMutex                    mMutex;
   OSEvent                    mAcquisitionDone;
 };

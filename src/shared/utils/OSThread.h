@@ -53,6 +53,7 @@ class OSThread
     { return mResult; }
 
   static void Sleep( int ); // milliseconds
+  static bool IsMainThread();
 
  protected:
   virtual int Execute() = 0;
@@ -63,11 +64,13 @@ class OSThread
 
   HANDLE mHandle;
   DWORD  mThreadID;
+  static DWORD sMainThreadID;
 #else // _WIN32
   static void* StartThread( void* inInstance );
 
   pthread_t mThread;
   bool      mTerminated;
+  static pthread_t sMainThread;
 #endif // _WIN32
   int           mResult;
   OSEvent*      mpTerminationEvent;

@@ -30,31 +30,30 @@
 #include "BCIError.h"
 #include "Environment.h"
 #include "MessageHandler.h"
+#include "OSMutex.h"
 #include "Status.h"
 
 using namespace std;
 
-class StatusMessage
-{
-public:
- void operator()( const string& inText, int inCode )
- {
-  static ostream* op = NULL;
-  if( op == NULL )
-    op = ::EnvironmentBase::Operator;
+static ostream* spOutputStream = NULL;
+static const OSMutex* spOutputLock = NULL;
 
+void
+StatusMessage( const string& inText, int inCode )
+ {
   string text = inText;
   if( text.find_last_of( ".!?" ) != text.length() - 1 )
     text += '.';
 
   // If the connection to the operator does not work, fall back to a local
   // error display.
-  if( op != NULL )
+  if( spOutputStream != NULL )
   {
-    MessageHandler::PutMessage( *op, Status( text, inCode ) );
-    op->flush();
+    OSMutex::Lock lock( spOutputLock );
+    MessageHandler::PutMessage( *spOutputStream, Status( text, inCode ) );
+    spOutputStream->flush();
   }
-  if( !op || !*op )
+  if( !spOutputStream || !*spOutputStream )
   {
     if( inCode >= 400 )
     {
@@ -76,8 +75,6 @@ public:
     }
   }
  }
-} StatusMessage;
-
 
 void
 BCIError::DebugMessage( const string& message )
@@ -113,5 +110,12 @@ void
 BCIError::LogicError( const string& message )
 {
   StatusMessage( message.substr( 0, message.length() - 1 ), Status::logicError );
+}
+
+void
+BCIError::SetOperatorStream( ostream* pStream, const OSMutex* pLock )
+{
+  spOutputStream = pStream;
+  spOutputLock = pLock;
 }
 

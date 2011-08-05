@@ -1,7 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: schalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
-// Description: Classes that represent BCI2000 visualization messages.
+// Description: A class hierarchy descending from VisBase that represents 
+//   various types of BCI2000 visualization messages, and a GenericVisualization
+//   class that represents a channel for sending visualization messages.
 //
 // $BEGIN_BCI2000_LICENSE$
 // 
@@ -34,6 +36,8 @@
 #include "SignalProperties.h"
 #include "BitmapImage.h"
 
+class OSMutex;
+
 class VisBase
 {
   public:
@@ -48,6 +52,8 @@ class VisBase
 
     std::istream& ReadBinary( std::istream& );
     std::ostream& WriteBinary( std::ostream& ) const;
+
+  private:
     virtual void ReadBinarySelf( std::istream& ) = 0;
     virtual void WriteBinarySelf( std::ostream& ) const = 0;
 
@@ -62,11 +68,13 @@ class VisCfg : public VisBase
     : mCfgID( InvalidID ) {}
     VisCfg( const std::string& inSourceID, int inCfgID, const std::string& inCfgValue )
     : VisBase( inSourceID ), mCfgID( inCfgID ), mCfgValue( inCfgValue ) {}
-    virtual void ReadBinarySelf( std::istream& );
-    virtual void WriteBinarySelf( std::ostream& ) const;
 
     int CfgID() const { return mCfgID; }
     const std::string& CfgValue() const { return mCfgValue; }
+
+  private:
+    virtual void ReadBinarySelf( std::istream& );
+    virtual void WriteBinarySelf( std::ostream& ) const;
 
   private:
     int mCfgID;
@@ -79,10 +87,12 @@ class VisMemo : public VisBase
     VisMemo() {}
     VisMemo( const std::string& inSourceID, const std::string& inMemo )
     : VisBase( inSourceID ), mMemo( inMemo ) {}
-    virtual void ReadBinarySelf( std::istream& );
-    virtual void WriteBinarySelf( std::ostream& ) const;
 
     const std::string& MemoText() const { return mMemo; }
+
+  private:
+    virtual void ReadBinarySelf( std::istream& );
+    virtual void WriteBinarySelf( std::ostream& ) const;
 
   private:
     std::string mMemo;
@@ -96,11 +106,13 @@ class VisSignal : public VisBase
     : VisBase( inSourceID ), mSignal( inSignal ) {}
     VisSignal( const GenericSignal& inSignal )
     : mSignal( inSignal ) {}
-    virtual void ReadBinarySelf( std::istream& );
-    virtual void WriteBinarySelf( std::ostream& ) const;
 
     const GenericSignal& Signal() const   { return mSignal; }
     operator const GenericSignal&() const { return mSignal; }
+
+  private:
+    virtual void ReadBinarySelf( std::istream& );
+    virtual void WriteBinarySelf( std::ostream& ) const;
 
   private:
     GenericSignal mSignal;
@@ -114,11 +126,13 @@ class VisSignalProperties : public VisBase
     : VisBase( inSourceID ), mSignalProperties( inSignalProperties ) {}
     VisSignalProperties( const ::SignalProperties& inSignalProperties )
     : mSignalProperties( inSignalProperties ) {}
-    virtual void ReadBinarySelf( std::istream& );
-    virtual void WriteBinarySelf( std::ostream& ) const;
 
     const ::SignalProperties& SignalProperties() const { return mSignalProperties; }
     operator const ::SignalProperties&() const         { return mSignalProperties; }
+
+  private:
+    virtual void ReadBinarySelf( std::istream& );
+    virtual void WriteBinarySelf( std::ostream& ) const;
 
   private:
     ::SignalProperties mSignalProperties;
@@ -132,11 +146,13 @@ class VisBitmap : public VisBase
     : VisBase( inSourceID ), mBitmap( inBitmap ) {}
     VisBitmap( const ::BitmapImage& inBitmap )
     : mBitmap( inBitmap ) {}
-    virtual void ReadBinarySelf( std::istream& );
-    virtual void WriteBinarySelf( std::ostream& ) const;
 
     const ::BitmapImage& BitmapImage() const { return mBitmap; }
     operator const ::BitmapImage&() const    { return mBitmap; }
+
+  private:
+    virtual void ReadBinarySelf( std::istream& );
+    virtual void WriteBinarySelf( std::ostream& ) const;
 
   private:
     ::BitmapImage mBitmap;
@@ -193,8 +209,12 @@ class GenericVisualization : public std::ostream
     GenericVisualization& Send( const SignalProperties& );
     GenericVisualization& Send( const BitmapImage& );
 
+    static void SetOutputStream( std::ostream* pStream, const OSMutex* pLock = NULL )
+                { spOutputStream = pStream; spOutputLock = pLock; }
+
   private:
     GenericVisualization& SendCfgString( CfgID::CfgID, const std::string& );
+    template<typename T> GenericVisualization& SendObject( const T& );
 
     std::string  mSourceID;
     class VisStringbuf : public std::stringbuf
@@ -208,6 +228,9 @@ class GenericVisualization : public std::ostream
         virtual int sync();
         GenericVisualization* mpParent;
     } mBuf;
+
+    static std::ostream* spOutputStream;
+    static const OSMutex* spOutputLock;
 };
 
 class BitmapVisualization : public GenericVisualization

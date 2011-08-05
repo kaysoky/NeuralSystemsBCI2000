@@ -41,6 +41,7 @@
 #include "BCIError.h"
 #include "VersionInfo.h"
 #include "Version.h"
+#include "OSError.h"
 
 #include <string>
 #include <sstream>
@@ -103,16 +104,27 @@ CoreModule::Run( int inArgc, char** inArgv )
     result = Run_( inArgc, inArgv );
   }
 #if _MSC_VER
+  // For breakpoint exceptions, we want to execute the default handler (which opens the debugger).
   __except( ::GetExceptionCode() == EXCEPTION_BREAKPOINT ? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER )
-  { // For breakpoint exceptions, we want to execute the default handler (which opens the debugger).
-    bcierr << "unhandled Win32 exception 0x"
-           << hex << ::GetExceptionCode() << ",\n"
-           << "terminating " THISMODULE " module"
-           << endl;
+  {
+    ReportWin32Exception( ::GetExceptionCode() );
+    ShutdownSystem();
   }
 #endif // _MSC_VER
   return result;
 }
+
+#if _MSC_VER
+void
+CoreModule::ReportWin32Exception( int inCode )
+{
+  bcierr << "unhandled Win32 exception 0x"
+         << hex << inCode << ": "
+         << OSError( inCode ).Message() << ",\n"
+         << "terminating " THISMODULE " module"
+         << endl;
+}
+#endif // _MSC_VER
 
 bool
 CoreModule::Run_( int inArgc, char** inArgv )
@@ -349,6 +361,8 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
     BCIERR << "Could not connect to operator module" << endl;
     return;
   }
+  BCIError::SetOperatorStream( &mOperator, &mConnectionLock );
+  GenericVisualization::SetOutputStream( &mOperator, &mConnectionLock );
 
   if( mParamlist.Exists( THISMODULE "IP" ) )
     mPreviousModuleSocket.open( mParamlist[ THISMODULE "IP" ].Value().c_str() );
@@ -360,7 +374,7 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   mPreviousModule.clear();
   mPreviousModule.open( mPreviousModuleSocket );
 
-  EnvironmentBase::EnterConstructionPhase( &mParamlist, &mStatelist, NULL, &mOperator );
+  EnvironmentBase::EnterConstructionPhase( &mParamlist, &mStatelist, NULL );
   GenericFilter::InstantiateFilters();
   EnvironmentBase::EnterNonaccessPhase();
   if( bcierr__.Flushes() > 0 )
@@ -470,6 +484,9 @@ CoreModule::InitializeCoreConnections()
 void
 CoreModule::ShutdownSystem()
 {
+  BCIError::SetOperatorStream( NULL, NULL );
+  GenericVisualization::SetOutputStream( NULL, NULL );
+
   mOperatorSocket.close();
   mPreviousModuleSocket.close();
   mNextModuleSocket.close();
@@ -503,7 +520,7 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
   bcierr__.clear();
   GenericFilter::HaltFilters();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );
-  EnvironmentBase::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+  EnvironmentBase::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector );
 #ifdef TODO
 # error The inputPropertiesFixed variable may be removed once property messages contain an UpdateRate field.
 #endif // TODO
@@ -523,7 +540,7 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
       BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
 #endif // APP
     mOutputSignal = GenericSignal( outputProperties );
-    EnvironmentBase::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+    EnvironmentBase::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector );
     GenericFilter::InitializeFilters();
     EnvironmentBase::EnterNonaccessPhase();
     errorOccurred |= ( bcierr__.Flushes() > 0 );
@@ -557,7 +574,7 @@ CoreModule::StartRunFilters()
   ResetStatevector();
   mpStatevector->SetStateValue( "Running", 1 );
 
-  EnvironmentBase::EnterStartRunPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+  EnvironmentBase::EnterStartRunPhase( &mParamlist, &mStatelist, mpStatevector );
   GenericFilter::StartRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
   if( bcierr__.Flushes() == 0 )
@@ -574,11 +591,13 @@ CoreModule::StopRunFilters()
 {
   mStopRunPending = false;
   mStartRunPending = true;
-  EnvironmentBase::EnterStopRunPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+  EnvironmentBase::EnterStopRunPhase( &mParamlist, &mStatelist, mpStatevector );
   GenericFilter::StopRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
   if( bcierr__.Flushes() == 0 )
   {
+    BroadcastParameterChanges();
+
     OSMutex::Lock lock( mConnectionLock );
 #if( MODTYPE == SIGSRC ) // The operator wants an extra invitation from the source module.
     MessageHandler::PutMessage( mOperator, SysCommand::Suspend );
@@ -588,11 +607,28 @@ CoreModule::StopRunFilters()
   }
 }
 
+void
+CoreModule::BroadcastParameterChanges()
+{
+  ParamList changedParameters;
+  for( int i = 0; i < mParamlist.Size(); ++i )
+    if( mParamlist[ i ].Changed() )
+      changedParameters.Add( mParamlist[ i ] );
+
+  if( !changedParameters.Empty() )
+  {
+    OSMutex::Lock lock( mConnectionLock );
+    bool success = MessageHandler::PutMessage( mOperator, changedParameters )
+                && MessageHandler::PutMessage( mOperator, SysCommand::EndOfParameter );
+    if( !success )
+      BCIERR << "Could not publish changed parameters" << endl;
+  }
+}
 
 void
 CoreModule::ProcessFilters( const GenericSignal& input )
 {
-  EnvironmentBase::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+  EnvironmentBase::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector );
   GenericFilter::ProcessFilters( input, mOutputSignal );
   EnvironmentBase::EnterNonaccessPhase();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );
@@ -612,7 +648,7 @@ CoreModule::ProcessFilters( const GenericSignal& input )
 void
 CoreModule::RestingFilters()
 {
-  EnvironmentBase::EnterRestingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+  EnvironmentBase::EnterRestingPhase( &mParamlist, &mStatelist, mpStatevector );
   GenericFilter::RestingFilters();
   EnvironmentBase::EnterNonaccessPhase();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );

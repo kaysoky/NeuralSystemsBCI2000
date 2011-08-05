@@ -62,18 +62,15 @@ using namespace bci;
 #undef paramlist_
 #undef statelist_
 #undef statevector_
-#undef operator_
 #undef phase_
 ParamList*   EnvironmentBase::paramlist_ = NULL;
 StateList*   EnvironmentBase::statelist_ = NULL;
 StateVector* EnvironmentBase::statevector_ = NULL;
-ostream*     EnvironmentBase::operator_ = NULL;
 EnvironmentBase::ExecutionPhase EnvironmentBase::phase_ = EnvironmentBase::nonaccess;
 
 EnvironmentBase::paramlistAccessor   EnvironmentBase::Parameters;
 EnvironmentBase::statelistAccessor   EnvironmentBase::States;
 EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
-EnvironmentBase::operatorAccessor    EnvironmentBase::Operator;
 
 #if WITH_APP_WINDOWS
 const ApplicationWindowList* const EnvironmentBase::Windows = &ApplicationWindow::Windows();
@@ -409,19 +406,6 @@ void EnvironmentBase::EnterNonaccessPhase()
     case stopRun:
       for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
         ( *i )->CallPostStopRun();
-      if( paramlist_ && operator_ )
-      {
-        ParamList changedParameters;
-        for( int i = 0; i < paramlist_->Size(); ++i )
-          if( ( *paramlist_ )[ i ].Changed() )
-            changedParameters.Add( ( *paramlist_ )[ i ] );
-        if( !changedParameters.Empty() )
-          if( !(
-            MessageHandler::PutMessage( *operator_, changedParameters )
-            && MessageHandler::PutMessage( *operator_, SysCommand::EndOfParameter )
-          ) )
-            bcierr << "Could not publish changed parameters" << endl;
-      }
       break;
     case resting:
       break;
@@ -432,14 +416,12 @@ void EnvironmentBase::EnterNonaccessPhase()
   paramlist_ = NULL;
   statelist_ = NULL;
   statevector_ = NULL;
-  operator_ = NULL;
 }
 // Called from the framework before any Environment descendant class
 // is instantiated.
 void EnvironmentBase::EnterConstructionPhase( ParamList*   inParamList,
                                               StateList*   inStateList,
-                                              StateVector* inStateVector,
-                                              ostream*     inOperator )
+                                              StateVector* inStateVector )
 {
   bcierr__.SetFlushHandler( BCIError::LogicError );
   bciout__.SetFlushHandler( BCIError::Warning );
@@ -448,7 +430,6 @@ void EnvironmentBase::EnterConstructionPhase( ParamList*   inParamList,
   paramlist_ = inParamList;
   statelist_ = inStateList;
   statevector_ = inStateVector;
-  operator_ = inOperator;
   if( paramlist_->Exists( "DebugLevel" ) )
     BCIError::OutStream::SetDebugLevel(
       ::atoi( ( *paramlist_ )[ "DebugLevel" ].Value().c_str() )
@@ -467,8 +448,7 @@ void EnvironmentBase::EnterConstructionPhase( ParamList*   inParamList,
 // Called before any call to GenericFilter::Preflight().
 void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
                                            StateList*   inStateList,
-                                           StateVector* /*inStateVector*/,
-                                           ostream*     inOperator )
+                                           StateVector* /*inStateVector*/ )
 {
   bcierr__.SetFlushHandler( BCIError::ConfigurationError );
   bciout__.SetFlushHandler( BCIError::Warning );
@@ -476,7 +456,6 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
   paramlist_ = inParamList;
   statelist_ = inStateList;
   statevector_ = NULL;
-  operator_ = inOperator;
   if( paramlist_->Exists( "DebugLevel" ) )
     BCIError::OutStream::SetDebugLevel(
       ::atoi( ( *paramlist_ )[ "DebugLevel" ].Value().c_str() )
@@ -538,8 +517,7 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
 // Called before any call to GenericFilter::Initialize().
 void EnvironmentBase::EnterInitializationPhase( ParamList*   inParamList,
                                                 StateList*   inStateList,
-                                                StateVector* inStateVector,
-                                                ostream*     inOperator )
+                                                StateVector* inStateVector )
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
@@ -547,7 +525,6 @@ void EnvironmentBase::EnterInitializationPhase( ParamList*   inParamList,
   paramlist_ = inParamList;
   statelist_ = inStateList;
   statevector_ = inStateVector;
-  operator_ = inOperator;
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallInitialize();
 }
@@ -555,8 +532,7 @@ void EnvironmentBase::EnterInitializationPhase( ParamList*   inParamList,
 // Called before any call to GenericFilter::StartRun().
 void EnvironmentBase::EnterStartRunPhase( ParamList*   inParamList,
                                           StateList*   inStateList,
-                                          StateVector* inStateVector,
-                                          ostream*     inOperator )
+                                          StateVector* inStateVector )
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
@@ -564,7 +540,6 @@ void EnvironmentBase::EnterStartRunPhase( ParamList*   inParamList,
   paramlist_ = inParamList;
   statelist_ = inStateList;
   statevector_ = inStateVector;
-  operator_ = inOperator;
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallStartRun();
 }
@@ -572,8 +547,7 @@ void EnvironmentBase::EnterStartRunPhase( ParamList*   inParamList,
 // Called before any call to GenericFilter::Process().
 void EnvironmentBase::EnterProcessingPhase( ParamList*   inParamList,
                                             StateList*   inStateList,
-                                            StateVector* inStateVector,
-                                            ostream*     inOperator )
+                                            StateVector* inStateVector )
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
@@ -581,7 +555,6 @@ void EnvironmentBase::EnterProcessingPhase( ParamList*   inParamList,
   paramlist_ = inParamList;
   statelist_ = inStateList;
   statevector_ = inStateVector;
-  operator_ = inOperator;
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallProcess();
 }
@@ -589,8 +562,7 @@ void EnvironmentBase::EnterProcessingPhase( ParamList*   inParamList,
 // Called before any call to GenericFilter::StopRun().
 void EnvironmentBase::EnterStopRunPhase( ParamList*   inParamList,
                                          StateList*   inStateList,
-                                         StateVector* inStateVector,
-                                         ostream*     inOperator )
+                                         StateVector* inStateVector )
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
@@ -598,7 +570,6 @@ void EnvironmentBase::EnterStopRunPhase( ParamList*   inParamList,
   paramlist_ = inParamList;
   statelist_ = inStateList;
   statevector_ = inStateVector;
-  operator_ = inOperator;
   for( int i = 0; i < paramlist_->Size(); ++i )
     ( *paramlist_ )[ i ].Unchanged();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
@@ -608,8 +579,7 @@ void EnvironmentBase::EnterStopRunPhase( ParamList*   inParamList,
 // Called before any call to GenericFilter::Resting().
 void EnvironmentBase::EnterRestingPhase( ParamList*   inParamList,
                                          StateList*   inStateList,
-                                         StateVector* inStateVector,
-                                         ostream*     inOperator )
+                                         StateVector* inStateVector )
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
@@ -617,7 +587,6 @@ void EnvironmentBase::EnterRestingPhase( ParamList*   inParamList,
   paramlist_ = inParamList;
   statelist_ = inStateList;
   statevector_ = inStateVector;
-  operator_ = inOperator;
   for( int i = 0; i < paramlist_->Size(); ++i )
     ( *paramlist_ )[ i ].Unchanged();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )

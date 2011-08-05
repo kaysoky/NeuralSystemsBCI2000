@@ -42,6 +42,7 @@
 #include "MessageHandler.h"
 #include "ClassName.h"
 #include "Version.h"
+#include "SysCommand.h"
 
 #define FILTER_NAME "$FILTER$"
 
@@ -92,6 +93,7 @@ class FilterWrapper : public MessageHandler
   virtual bool HandleStateVector( istream& );
 
   void StopRun();
+  void OutputParameterChanges();
   void InitializeInputStatevector();
   void InitializeOutputStatevector();
   void DisposeStatevectors();
@@ -140,7 +142,7 @@ ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
   {
     bcierr << "caught exception "
            << typeid( e ).name() << " (" << e.what() << "),\n"
-           << "terminating module"
+           << "terminating filter tool"
            << endl;
   }
   if( bcierr__.Flushes() > 0 || !arIn )
@@ -155,6 +157,7 @@ FilterWrapper::FilterWrapper( ostream& arOut )
   mpOutputStatevector( NULL ),
   mSingleStatevector( true )
 {
+  GenericVisualization::SetOutputStream( &mOperator );
 }
 
 FilterWrapper::~FilterWrapper()
@@ -169,7 +172,7 @@ FilterWrapper::FilterName()
   const char* pName = NULL;
   ParamList paramlist;
   StateList statelist;
-  EnvironmentBase::EnterConstructionPhase( &paramlist, &statelist, NULL, NULL );
+  EnvironmentBase::EnterConstructionPhase( &paramlist, &statelist, NULL );
   GenericFilter::InstantiateFilters();
   EnvironmentBase::EnterNonaccessPhase();
   GenericFilter* pFilter = GenericFilter::GetFilter<GenericFilter>();
@@ -267,7 +270,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
 
           ParamList filterParams;
           mFilterStatelist.Clear();
-          EnvironmentBase::EnterConstructionPhase( &filterParams, &mFilterStatelist, NULL, &mOperator );
+          EnvironmentBase::EnterConstructionPhase( &filterParams, &mFilterStatelist, NULL );
           GenericFilter::InstantiateFilters();
           if( bcierr__.Flushes() > 0 )
           {
@@ -291,7 +294,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
         InitializeOutputStatevector();
         for( int i = 0; i < mOutputStatelist.Size(); ++i )
           PutMessage( mrOut, mOutputStatelist[ i ] );
-        EnvironmentBase::EnterPreflightPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
+        EnvironmentBase::EnterPreflightPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector );
         if( mpInputProperties != NULL
             && inputSignal.Channels() == mpInputProperties->Channels()
             && inputSignal.Elements() == mpInputProperties->Elements() )
@@ -315,7 +318,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
         }
         /* no break */
       case Environment::preflight:
-        EnvironmentBase::EnterInitializationPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
+        EnvironmentBase::EnterInitializationPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector );
         GenericFilter::InitializeFilters();
         for( int i = 0; i < mParamlist.Size(); ++i )
           PutMessage( mrOut, mParamlist[ i ] );
@@ -329,10 +332,10 @@ FilterWrapper::HandleVisSignal( istream& arIn )
       case Environment::initialization:
       case Environment::resting:
         /* no break */
-        EnvironmentBase::EnterStartRunPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
+        EnvironmentBase::EnterStartRunPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector );
         GenericFilter::StartRunFilters();
         EnvironmentBase::EnterNonaccessPhase();
-        EnvironmentBase::EnterProcessingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
+        EnvironmentBase::EnterProcessingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector );
         /* no break */
       case Environment::processing:
         {
@@ -357,13 +360,32 @@ FilterWrapper::HandleVisSignal( istream& arIn )
 void
 FilterWrapper::StopRun()
 {
-  EnvironmentBase::EnterStopRunPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mrOut );
+  EnvironmentBase::EnterStopRunPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector );
   GenericFilter::StopRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
-  EnvironmentBase::EnterRestingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mrOut );
+  OutputParameterChanges();
+  EnvironmentBase::EnterRestingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector );
   GenericFilter::RestingFilters();
   EnvironmentBase::EnterNonaccessPhase();
-  EnvironmentBase::EnterRestingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
+  OutputParameterChanges();
+  EnvironmentBase::EnterRestingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector );
+}
+
+void
+FilterWrapper::OutputParameterChanges()
+{
+  ParamList changedParameters;
+  for( int i = 0; i < mParamlist.Size(); ++i )
+    if( mParamlist[ i ].Changed() )
+      changedParameters.Add( mParamlist[ i ] );
+
+  if( !changedParameters.Empty() )
+  {
+    bool success = MessageHandler::PutMessage( mrOut, changedParameters )
+                && MessageHandler::PutMessage( mrOut, SysCommand::EndOfParameter );
+    if( !success )
+      bcierr << "Could not publish changed parameters" << endl;
+  }
 }
 
 void

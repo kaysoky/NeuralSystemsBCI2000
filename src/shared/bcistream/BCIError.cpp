@@ -31,6 +31,7 @@
 #pragma hdrstop
 
 #include "BCIError.h"
+#include "OSThread.h"
 
 using namespace std;
 
@@ -39,9 +40,9 @@ using namespace std;
 static ios_base::Init ios_base_Init_;
 
 // Definitions of the actual global objects.
-BCIError::OutStream bcierr__;
-BCIError::OutStream bciout__;
-BCIError::OutStream bcidbg__;
+BCIError::OutStream bcierr___;
+BCIError::OutStream bciout___;
+BCIError::OutStream bcidbg___;
 
 namespace BCIError
 {
@@ -52,7 +53,7 @@ int    OutStream::sDebugLevel = 0;
 OutStream&
 OutStream::operator()( const char* inContext )
 {
-  if( sContext.empty() )
+  if( !OSThread::IsMainThread() || sContext.empty() )
     mBuf.SetContext( inContext );
   else
     ( *this )();

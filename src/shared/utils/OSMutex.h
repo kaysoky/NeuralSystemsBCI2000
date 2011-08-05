@@ -8,13 +8,15 @@
 #ifndef OS_MUTEX_H
 #define OS_MUTEX_H
 
+#include <Uncopyable.h>
+
 #ifdef _WIN32
 # include <windows.h>
 #else
 # include <pthread.h>
 #endif // _WIN32
 
-class OSMutex
+class OSMutex : private Uncopyable
 {
  public:
   OSMutex();
@@ -23,8 +25,8 @@ class OSMutex
   bool Acquire() const;
   bool Release() const;
 
-  class Lock
-  { // An object that locks a mutex during its lifetime.
+  class Lock : private Uncopyable
+  { // A RAAI object that locks a mutex.
    public:
     Lock( const OSMutex& );
     Lock( const OSMutex* );
@@ -35,8 +37,8 @@ class OSMutex
     const OSMutex* mpMutex;
   };
 
-  class Unlock
-  { // An object that unlocks a mutex during its lifetime.
+  class Unlock : private Uncopyable
+  { // A RAAI object that unlocks a mutex.
    public:
     Unlock( const OSMutex& );
     Unlock( const OSMutex* );

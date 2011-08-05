@@ -54,8 +54,8 @@ class BCIEvent : public std::ostream
     { return *this << inDescriptor; }
 
  private:
-  static void SetEventQueue( EventQueue& inQueue )
-    { spQueue = &inQueue; }
+  static void SetEventQueue( EventQueue* inpQueue )
+    { spQueue = inpQueue; }
 
   static EventQueue* spQueue;
 

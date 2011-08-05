@@ -124,10 +124,12 @@ class CoreModule : private MessageHandler
   CoreModule& operator=( const CoreModule& );
 
   bool Run_( int argc, char** argv );
+#if _MSC_VER
+  void ReportWin32Exception( int code );
+#endif // _MSC_VER
   bool Initialize( int argc, char** argv );
   void MainMessageLoop();
   void ProcessBCIAndGUIMessages();
-  void ProcessBCIEvents();
 
   void InitializeOperatorConnection( const std::string& operatorAddress );
   void InitializeCoreConnections();
@@ -137,6 +139,7 @@ class CoreModule : private MessageHandler
   void InitializeFilters( const class SignalProperties& );
   void StartRunFilters();
   void StopRunFilters();
+  void BroadcastParameterChanges();
   void ProcessFilters( const class GenericSignal& );
   void RestingFilters();
 

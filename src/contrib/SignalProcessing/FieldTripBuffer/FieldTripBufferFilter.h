@@ -28,13 +28,13 @@
 #ifndef FIELDTRIP_BUFFER_FILTER_H
 #define FIELDTRIP_BUFFER_FILTER_H
 
-#include "GenericFilter.h"
-
 #include "buffer.h"
 #include <pthread.h>
 #include <set>
 #include <map>
 #include <string>
+
+#include "GenericFilter.h"
 
 class FieldTripBufferFilter : public GenericFilter
 {

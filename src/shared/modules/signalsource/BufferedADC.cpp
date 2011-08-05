@@ -31,8 +31,7 @@ using namespace std;
 
 BufferedADC::BufferedADC()
 : mReadCursor( 0 ),
-  mWriteCursor( 0 ),
-  mOverflowOccurred( false )
+  mWriteCursor( 0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Buffering int SourceBufferSize= 2s "
@@ -68,7 +67,6 @@ BufferedADC::Initialize( const SignalProperties&,
   mTimeStamps.resize( SourceBufferSize );
   mReadCursor = 0;
   mWriteCursor = 0;
-  mOverflowOccurred = false;
   this->OnInitialize( output );
   OSThread::Start();
 }
@@ -89,9 +87,6 @@ BufferedADC::Process( const GenericSignal&,
   State( "SourceTime" ) = mTimeStamps[mReadCursor];
   mMutex.Acquire();
   ++mReadCursor %= mBuffer.size();
-  if( mOverflowOccurred ) // bciout may only be used from the main thread
-    bciout << "Data acquisition buffer overflow" << endl;
-  mOverflowOccurred = false;
   mMutex.Release();
 }
 
@@ -116,7 +111,8 @@ BufferedADC::Execute()
     mTimeStamps[mWriteCursor] = PrecisionTime::Now();
     mMutex.Acquire();
     ++mWriteCursor %= mBuffer.size();
-    mOverflowOccurred = ( mWriteCursor == mReadCursor );
+    if( mWriteCursor == mReadCursor )
+      bciout << "Data acquisition buffer overflow" << endl;
     mAcquisitionDone.Set();
     mMutex.Release();
   }

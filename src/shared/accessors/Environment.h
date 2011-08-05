@@ -54,9 +54,7 @@
 class SignalProperties;
 class EnvironmentExtension;
 
-class GenericVisualization;
 class CoreModule;
-class StatusMessage;
 class FilterWrapper;
 
 // A macro to register extensions for automatic instantiation.
@@ -239,18 +237,6 @@ class EnvironmentBase
     StateVector* operator->() { return statevector_; }
   } Statevector;
 
- private:
-  class operatorAccessor;
-  friend class operatorAccessor;
-  static class operatorAccessor
-  {
-   private:
-    operatorAccessor* operator&();
-   public:
-    operator std::ostream*()   { return operator_; }
-    std::ostream* operator->() { return operator_; }
-  } Operator;
-
  protected:
   // Helper functions to construct and set an error context string.
   static void ErrorContext( const std::string&, const EnvironmentBase* = NULL );
@@ -344,38 +330,31 @@ class EnvironmentBase
   // is instantiated.
   static void EnterConstructionPhase(   ParamList*,
                                         StateList*,
-                                        StateVector*,
-                                        std::ostream* );
+                                        StateVector* );
   // Called before any call to GenericFilter::Preflight().
   static void EnterPreflightPhase(      ParamList*,
                                         StateList*,
-                                        StateVector*,
-                                        std::ostream* );
+                                        StateVector* );
   // Called before any call to GenericFilter::Initialize().
   static void EnterInitializationPhase( ParamList*,
                                         StateList*,
-                                        StateVector*,
-                                        std::ostream* );
+                                        StateVector* );
   // Called before any call to GenericFilter::StartRun().
   static void EnterStartRunPhase(       ParamList*,
                                         StateList*,
-                                        StateVector*,
-                                        std::ostream* );
+                                        StateVector* );
   // Called before any call to GenericFilter::Process().
   static void EnterProcessingPhase(     ParamList*,
                                         StateList*,
-                                        StateVector*,
-                                        std::ostream* );
+                                        StateVector* );
   // Called before any call to GenericFilter::StopRun().
   static void EnterStopRunPhase(        ParamList*,
                                         StateList*,
-                                        StateVector*,
-                                        std::ostream* );
+                                        StateVector* );
   // Called before any call to GenericFilter::Resting().
   static void EnterRestingPhase(        ParamList*,
                                         StateList*,
-                                        StateVector*,
-                                        std::ostream* );
+                                        StateVector* );
 
  protected:
   void RegisterExtension( EnvironmentExtension* p )   { Extensions().insert( p ); }
@@ -400,13 +379,11 @@ class EnvironmentBase
   static ParamList*     paramlist_;
   static StateList*     statelist_;
   static StateVector*   statevector_;
-  static std::ostream*  operator_;
   static ExecutionPhase phase_;
   // No direct use of those members, please.
   #define paramlist_    (void)
   #define statelist_    (void)
   #define statevector_  (void)
-  #define operator_     (void)
   #define phase_        (void)
 
  private:
@@ -419,10 +396,7 @@ class EnvironmentBase
 class Environment : public EnvironmentBase
 {
   // Friends from framework classes.
-  friend class GenericVisualization;
-
   friend class CoreModule;
-  friend class StatusMessage;
   friend class FilterWrapper;
 
  protected:

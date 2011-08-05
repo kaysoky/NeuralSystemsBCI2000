@@ -27,10 +27,11 @@
 #define FIELDTRIP_BUFFER_ADC_H
 
 #include <string>
-#include "GenericADC.h"
 
 #include "buffer.h"
 #include "FtBuffer.h"
+
+#include "GenericADC.h"
 
 class FieldTripBufferADC : public GenericADC
 {
