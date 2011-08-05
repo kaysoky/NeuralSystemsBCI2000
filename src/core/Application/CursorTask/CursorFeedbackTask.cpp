@@ -216,6 +216,8 @@ CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
 
   if( Parameter( "FeedbackDuration" ).InSampleBlocks() <= 0 )
     bcierr << "FeedbackDuration must be greater 0" << endl;
+
+  OptionalParameter( "EnforceFixation" );
 }
 
 void
