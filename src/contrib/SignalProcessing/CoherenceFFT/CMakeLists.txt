@@ -1,0 +1,79 @@
+###########################################################################
+## $Id:  $
+## Authors:
+## Description: Build information for the CoherenceFFTSignalProcessing project
+##              
+##              
+###########################################################################
+
+# Set the executable name
+SET( EXECUTABLE_NAME CoherenceFFTSignalProcessing )
+
+# Set the project specific sources
+SET( SRC_PROJECT
+  CoherenceFFTSignalProcessing.cpp            # You probably will not need to edit this file
+  PipeDefinition.cpp         # but you should certainly edit this one
+  # MyNewCustomFilter.cpp    # and presumably you will be writing custom filters. This is where they go.
+  CoherenceFFTFilter.cpp
+  ../Coherence/CoherenceFilter.cpp
+)
+
+SET( HDR_PROJECT
+  # MyNewCustomFilter.h      # Don't forget the corresponding headers
+  CoherenceFFTFilter.h
+  ../Coherence/CoherenceFilter.h
+)
+
+INCLUDE_DIRECTORIES( ../Coherence )
+
+# Uncomment/add the required parts of the existing BCI2000 signal-processing framework:
+
+SET( SRC_SIGNALPROCESSING 
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterCell.cpp
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.cpp
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.cpp
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.cpp
+  # ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.cpp
+  # ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARGroup.cpp
+  # ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARChannel.cpp
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LinearClassifier.cpp
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LPFilter.cpp
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ExpressionFilter.cpp
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/Normalizer.cpp 
+)
+SET( HDR_SIGNALPROCESSING 
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.h
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterCell.h
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.h
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.h
+  # ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.h
+  # ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARGroup.h
+  # ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARChannel.h
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LinearClassifier.h
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LPFilter.h
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ExpressionFilter.h
+   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/Normalizer.h
+)
+
+# Use the BCI2000_USE macro if you need to link with frameworks from /src/extlib:
+BCI2000_USE( "FFT" )
+# BCI2000_USE( "MATH" )
+# BCI2000_USE( "MATLAB" )
+
+# We're done. Add the signal processing module to the Makefile or compiler project file:
+BCI2000_ADD_SIGNAL_PROCESSING_MODULE( 
+  "${EXECUTABLE_NAME}" 
+  "${SRC_PROJECT}" "${HDR_PROJECT}" 
+  "${SRC_SIGNALPROCESSING}" "${HDR_SIGNALPROCESSING}" 
+  "${INC_EXTLIB}"
+)
+
+# You may also find it useful to produce a command-line version of your filters, for offline processing:
+BCI2000_ADD_CMDLINE_FILTER( CoherenceFFTFilter   # a more complicated example, with dependencies
+                            USING "FFT"
+                            EXTRA_SOURCES ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.cpp
+                                          ../Coherence/CoherenceFilter.cpp
+                            EXTRA_HEADERS ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.h
+                                          ../Coherence/CoherenceFilter.h
+)
+
