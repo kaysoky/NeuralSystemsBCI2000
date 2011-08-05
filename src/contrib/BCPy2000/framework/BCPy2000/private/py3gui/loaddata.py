@@ -99,48 +99,39 @@ def load_weights(fname):
     classifier[samples, channels] = params['Classifier'][:, 3]
     return classifier
 
-def get_state_changes(state_array, to_value = None):
+def get_state_changes(state_array, to_value = None, from_value = None):
     flattened = state_array.ravel()
-    if to_value == None:
-        return (flattened[1:] != flattened[:-1]).nonzero()[0]
-    else:
-        candidates = (flattened[1:] != flattened[:-1]).nonzero()[0]
+    candidates = (flattened[1:] != flattened[:-1]).nonzero()[0] + 1
+    if to_value != None:
         mask = (flattened[candidates] == to_value).nonzero()[0]
-        return candidates[mask]
+        candidates = candidates[mask]
+    if from_value != None:
+        mask = (flattened[candidates - 1] == from_value).nonzero()[0]
+        candidates = candidates[mask]
+    return candidates
 
 def load_standard_data(fname, window, window_in_samples):
     dat = bcistream(fname)
     signal, states = dat.decode('all')
     samplingrate = dat.samplingrate()
     sampleblocksize = dat.params['SampleBlockSize']
-    stimulustime = states['StimulusTime'].ravel()
-    sourcetime = states['SourceTime'].ravel()
-    sourcetimesize = dat.statedefs['SourceTime']['length']
     if window_in_samples:
         window = np.arange(int(window[1]))
     else:
         window = np.arange(int(np.round(window[1] * samplingrate / 1000)))
     signal = np.asarray(signal).transpose()
-    stimulusbegin = get_state_changes(states['StimulusBegin'], to_value = 1)
-    data = np.zeros((stimulusbegin.size, window.size, signal.shape[1]))
-    if (sourcetime >= stimulustime).all():
-        sourcetimeoffset = -sampleblocksize
+    if 'Flashing' in states:
+        begin_state = states['Flashing']
+    elif 'StimulusBegin' in states:
+        begin_state = states['StimulusBegin']
+    elif 'StimulusCode' in states:
+        begin_state = states['StimulusCode']
     else:
-        sourcetimeoffset = 0
+        return 'Data file does not seem to have a record of stimulus times.'
+    stimulusbegin = get_state_changes(begin_state, from_value = 0)
+    data = np.zeros((stimulusbegin.size, window.size, signal.shape[1]))
     for i in range(stimulusbegin.size):
-        index = stimulusbegin[i] - int(samplingrate / 32) #sampleblocksize
-        #print sampleblocksize
-        #print index
-        #timediff = stimulustime[index] - sourcetime[index + sourcetimeoffset]
-        #if timediff > 1 << (sourcetimesize // 2):
-        #    timediff -= 1 << sourcetimesize
-        #print timediff
-        #timediff = 0
-        #index += int(
-        #    np.round(
-        #        timediff * samplingrate / 1000.
-        #    )
-        #)
+        index = stimulusbegin[i] - 1
         data[i] = signal[window + index, :]
     type = states['StimulusType'].ravel()[stimulusbegin] > 0
     return data, type, samplingrate
@@ -164,7 +155,7 @@ def load_pickle_data(fname, window, window_in_samples):
 
 def load_data(fname, window, ftype = 'standard', window_in_samples = False,
     removeanomalies = False):
-    reload(__import__('testweights')) #TODO!!!
+    #reload(__import__('testweights')) #TODO!!!
     if ftype == 'standard':
         loader = load_standard_data
     elif ftype == 'pickle':

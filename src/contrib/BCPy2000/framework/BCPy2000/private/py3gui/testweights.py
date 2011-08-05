@@ -7,14 +7,6 @@ from convolution import convolve, max_gauss_pdf, max_gauss_cdf
 
 __all__ = ['test_weights']
 
-def accuracy(fitness, repetitions, required_correct = 2):
-    return stats.norm().cdf(np.sqrt(repetitions / fitness)) ** required_correct
-
-def score(t_mean, t_var, nt_mean, nt_var):
-    nt_mean += 1.9 * np.sqrt(nt_var)
-    nt_var *= 0.44 ** 2
-    return (t_var + nt_var) / (t_mean - nt_mean) ** 2
-
 def accuracy(nt_mean, nt_var, nt_count, t_mean, t_var, repetitions):
     nt_mean *= repetitions
     nt_var *= repetitions
@@ -29,7 +21,13 @@ def accuracy(nt_mean, nt_var, nt_count, t_mean, t_var, repetitions):
     )
 
 def test_weights(responses, type, classifier, matrixshape, repetitions):
-    responses = np.asarray(responses, dtype = float)[:, :classifier.shape[0], :]
+    responses = np.asarray(responses, dtype = float) \
+        [:, :classifier.shape[0], :classifier.shape[1]]
+        # If the weights do not include the last channel or two (or more),
+        # then the dense classifier matrix created will not be the right
+        # dimensions. Since this only occurs for the last channels, this
+        # can be corrected by throwing out the channels that are not in
+        # the classification matrix, as done by [..., :classifier.shape[1]]
     type = np.asarray(type, dtype = bool)
     if responses.shape[1] != classifier.shape[0]:
         return 'Response window not long enough.'
