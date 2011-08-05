@@ -66,7 +66,7 @@ def WaitWindow(pid):
 def main(argv = []):
     os.chdir(this_dir)
     Splash('logo.gif')
-    process = subprocess.Popen(argv[0])
+    process = subprocess.Popen(argv)
     WaitWindow(process.pid)
     UnSplash()
     process.wait()
