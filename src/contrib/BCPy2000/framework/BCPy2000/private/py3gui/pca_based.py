@@ -3,9 +3,11 @@
 import numpy as np
 
 from pca_based_classifier import classify
+from stepwise import stepwisefit
 
 def pca_based(responses, type, sampling_rate, response_window,
-    decimation_frequency):
+    decimation_frequency, max_model_features = 60,
+    penter = 0.1, premove = 0.15):
     """
     Principal Component Analysis-based Linear Classifier
     ``responses'' must be a (trials x samples x channels) array containing
@@ -64,7 +66,16 @@ def pca_based(responses, type, sampling_rate, response_window,
     # ``labels'' contains bools in the order of ``unraveled_sorted''.
 
     try:
-        classifier, bias = classify(unraveled_sorted.transpose(), labels)
+        classify = reload(__import__('pca_based_classifier')).classify #TODO!
+        classifier = classify(unraveled_sorted.transpose(), labels)[0]
+        #unraveled_sorted = np.dot(
+        #    classifier, unraveled_sorted.transpose()
+        #).transpose()
+        #b, se, pval, inmodel, stats, nextstep, history = stepwisefit(
+        #    unraveled_sorted, labels, maxiter = max_model_features,
+        #    penter = penter, premove = premove
+        #)
+        #classifier = (classifier[:, inmodel] * b).sum(axis = 1)
     except:
         return 'Could not find an appropriate model.'
 

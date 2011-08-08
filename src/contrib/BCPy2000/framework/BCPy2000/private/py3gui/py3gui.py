@@ -1,7 +1,13 @@
 #!/usr/bin/python
 
+import os
+import sys
+__file__ = os.path.abspath(sys.argv[0])
+
 if __name__ == '__main__':
-    __import__('iwafgui').Splash('logo.gif')
+    __import__('iwafgui').Splash(
+        os.path.join(os.path.dirname(__file__), 'logo.gif')
+    )
 
 import numpy as np
 import pylab
@@ -11,7 +17,7 @@ import parsematlab
 import loaddata
 import testweights
 import swlda
-#import pca_based
+import pca_based
 from iwafgui import Iwaf, MultiBrowse, Arguments, Action, Browse, Quit, \
     Error, Info, SaveAs
 
@@ -175,8 +181,9 @@ def generateFeatureWeights(name, values):
             result = swlda.swlda(data, type, samplingrate, response_window,
                 decimation_frequency, max_model_features, penter, premove)
         elif classificationmethod == 'PCA-based':
-            result = pca_based.pca_based(data, type, samplingrate, response_window,
-                decimation_frequency)
+            result = reload(pca_based).pca_based(data, type, samplingrate,
+                response_window, decimation_frequency, max_model_features,
+                penter, premove)
         if isinstance(result, str):
             Error(result)
             return
