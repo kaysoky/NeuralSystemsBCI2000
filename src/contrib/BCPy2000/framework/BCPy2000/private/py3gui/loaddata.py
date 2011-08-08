@@ -114,26 +114,39 @@ def load_standard_data(fname, window, window_in_samples):
     dat = bcistream(fname)
     signal, states = dat.decode('all')
     samplingrate = dat.samplingrate()
-    sampleblocksize = dat.params['SampleBlockSize']
     if window_in_samples:
         window = np.arange(int(window[1]))
     else:
         window = np.arange(int(np.round(window[1] * samplingrate / 1000)))
     signal = np.asarray(signal).transpose()
     if 'Flashing' in states:
-        begin_state = states['Flashing']
+        stimulusbegin = get_state_changes(states['Flashing'], from_value = 0)
     elif 'StimulusBegin' in states:
-        begin_state = states['StimulusBegin']
+        stimulusbegin = get_state_changes(states['StimulusBegin'],
+            from_value = 0)
     elif 'StimulusCode' in states:
-        begin_state = states['StimulusCode']
+        stimulusbegin = get_state_changes(states['StimulusCode'],
+            from_value = 0)
+    elif 'Epoch' in states:
+        stimulusbegin = get_state_changes(states['Epoch'])
+        stimulusbegin[(states['Epoch'][:, stimulusbegin] == 0).ravel()] = 0
     else:
         return 'Data file does not seem to have a record of stimulus times.'
-    stimulusbegin = get_state_changes(begin_state, from_value = 0)
+    if 'StimulusType' in states:
+        type = states['StimulusType'].ravel()[stimulusbegin] > 0
+    elif 'TargetBitValue' in states:
+        type = states['TargetBitValue'].ravel()[stimulusbegin] == 1
+    else:
+        return 'Data file does not seem to have a record of stimulus type.'
+    if 'EventOffset' in states:
+        #signal -= signal.mean(axis = 0)
+        zero = 1 << (dat.statedefs['EventOffset']['length'] - 1)
+        offsets = states['EventOffset'].ravel()[stimulusbegin] - zero
+        stimulusbegin -= offsets
     data = np.zeros((stimulusbegin.size, window.size, signal.shape[1]))
     for i in range(stimulusbegin.size):
         index = stimulusbegin[i] - 1
         data[i] = signal[window + index, :]
-    type = states['StimulusType'].ravel()[stimulusbegin] > 0
     return data, type, samplingrate
 
 def load_pickle_data(fname, window, window_in_samples):
@@ -153,9 +166,14 @@ def load_pickle_data(fname, window, window_in_samples):
             'Maximum window size would be [0 %i].' % largest_window
     return data, type, samplingrate
 
-def load_data(fname, window, ftype = 'standard', window_in_samples = False,
+def load_data(fname, window, ftype = None, window_in_samples = False,
     removeanomalies = False):
     #reload(__import__('testweights')) #TODO!!!
+    if ftype == None:
+        if fname.lower().endswith('.dat'):
+            ftype = 'standard'
+        elif fname.lower().endswith('.pk'):
+            ftype = 'pickle'
     if ftype == 'standard':
         loader = load_standard_data
     elif ftype == 'pickle':
@@ -170,7 +188,7 @@ def load_data(fname, window, ftype = 'standard', window_in_samples = False,
         if removeanomalies:
             data, type = removeAnomalies(data, type)
         return data, type, samplingrate
-    except KeyError:
+    except SyntaxError:
         return 'Data could not be loaded. Wrong file type selected?'
 
 def main(argv = []):

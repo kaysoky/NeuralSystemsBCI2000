@@ -56,7 +56,6 @@ def testWeights(name, values):
         Error('You must first generate weights or select a file from which ' + \
             'to load the weights.')
         return
-    filetype = values['generation-args'][1]['filetype'][1]
     errors = []
     label, value = values['test-args'][1]['matrixshape']
     matrixshape = parsematlab.parse(value.lower().replace('x', ' '))
@@ -82,7 +81,7 @@ def testWeights(name, values):
     try:
         for fname in fnames:
             result = loaddata.load_data(fname, [0, classifier.shape[0]],
-                filetype, True, removeanomalies = removeanomalies)
+                None, True, removeanomalies = removeanomalies)
             if isinstance(result, str):
                 Error(result)
                 return
@@ -124,7 +123,7 @@ def generateFeatureWeights(name, values):
     args = values['generation-args'][1]
     errors = []
     for key in args:
-        if key in ('filetype', 'removeanomalies', 'classificationmethod'):
+        if key in ('removeanomalies', 'classificationmethod'):
             continue
         label, value = args[key]
         value = parsematlab.parse(value)
@@ -142,7 +141,6 @@ def generateFeatureWeights(name, values):
     random_sample_percent = args['randompercent']
     channelset = args['channelset'] - 1
     fnames = values['flist'][1]
-    filetype = args['filetype'][1]
     weightwidget = values['weightfile'][0]
     removeanomalies = args['removeanomalies'][1]
     classificationmethod = args['classificationmethod'][1]
@@ -151,7 +149,7 @@ def generateFeatureWeights(name, values):
     samplingrate = None
     try:
         for fname in fnames:
-            result = loaddata.load_data(fname, response_window, filetype,
+            result = loaddata.load_data(fname, response_window, None,
                 removeanomalies = removeanomalies)
             if isinstance(result, str):
                 Error(result)
@@ -164,10 +162,13 @@ def generateFeatureWeights(name, values):
             try:
                 data.append(result[0][:, :, channelset])
             except IndexError:
-                Error('"Channel Set" is not a subset of the available channels.')
+                Error('"Channel Set" is not a subset of the available ' + \
+                    'channels.')
                 return
             type.append(result[1])
         if len(data) == 0 or len(type) == 0:
+            Error('You must select some data from which to generate ' + \
+                'the weights.')
             return
         data = np.concatenate(data)
         type = np.concatenate(type)
@@ -206,12 +207,10 @@ def generateFeatureWeights(name, values):
         return
 
 def plotWaveform(name, values):
-    #reload(loaddata) #TODO!!!
+    reload(loaddata) #TODO!!!
     args = values['generation-args'][1]
     errors = []
-    for key in ['responsewindow', 'channelset', 'filetype']:
-        if key == 'filetype':
-            continue
+    for key in ['responsewindow', 'channelset']:
         label, value = args[key]
         value = parsematlab.parse(value)
         if isinstance(value, str):
@@ -223,14 +222,13 @@ def plotWaveform(name, values):
     response_window = args['responsewindow']
     channelset = args['channelset'] - 1
     fnames = values['flist'][1]
-    filetype = args['filetype'][1]
     removeanomalies = args['removeanomalies'][1]
     data = []
     type = []
     samplingrate = None
     try:
         for fname in fnames:
-            result = loaddata.load_data(fname, response_window, filetype,
+            result = loaddata.load_data(fname, response_window, None,
                 removeanomalies = removeanomalies)
             if isinstance(result, str):
                 Error(result)
@@ -247,6 +245,7 @@ def plotWaveform(name, values):
                 return
             type.append(result[1])
         if len(data) == 0 or len(type) == 0:
+            Error('You must select some data to plot.')
             return
         data = np.concatenate(data)
         type = np.concatenate(type)
@@ -293,7 +292,6 @@ def main(argv = []):
                         '60'),
                     ('penter', 'Threshold to Add Features: ', '0.1'),
                     ('premove', 'Threshold to Remove Features: ', '0.15'),
-                    ('filetype', 'Data File Type: ', loaddata.SUPPORTED),
                     ('removeanomalies', 'Attempt to Remove Anomalies: ', False),
                 ]
             ),
