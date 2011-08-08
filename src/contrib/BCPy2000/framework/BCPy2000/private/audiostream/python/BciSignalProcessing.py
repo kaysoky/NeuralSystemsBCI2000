@@ -275,7 +275,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			
 		if self.continuous: give_answer = False
 		
-		if give_answer:
+		if give_answer: # ZZZ for continuous (non-trial-based) control, disable this
 			for istream in xrange(self.nstreams):
 				seq = self.seq[istream]
 				if seq.ndelivered != self.nbeats[istream]:
