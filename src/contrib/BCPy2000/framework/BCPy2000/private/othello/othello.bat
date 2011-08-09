@@ -1,4 +1,4 @@
-start /MIN .\dist\othello.exe
+start /MIN .\dist\othello.exe -c
 set OTHELLODIR=%CD%
 cd \BCIHomeSystemFiles\BCIAddons\games
 cd ..\..\VA_BCI2000\prog
