@@ -37,10 +37,13 @@ def UnSplash():
         SPLASHSCREEN = None
 
 def ListWindows():
-    from win32gui import EnumWindows
+    from win32gui import EnumWindows, IsWindowVisible
+    def accumulate(handle, windowlist):
+        if IsWindowVisible(handle):
+            windowlist.append(handle)
+        return True
     windowlist = []
-    EnumWindows((lambda handle, windowlist: windowlist.append(handle) or True),
-        windowlist)
+    EnumWindows(accumulate, windowlist)
     return windowlist
 
 def HasWindow(pid):
@@ -50,9 +53,11 @@ def HasWindow(pid):
             return True
     return False
 
-def WaitWindow(pid):
+def WaitWindow(process):
     import time
-    while not HasWindow(pid):
+    while not HasWindow(process.pid):
+        if process.returncode != None:
+            return process.returncode
         time.sleep(0.1)
 
 def main(argv = []):
@@ -60,7 +65,7 @@ def main(argv = []):
     Splash(os.path.abspath(argv[0]))
     import subprocess
     process = subprocess.Popen(argv[1:])
-    WaitWindow(process.pid)
+    WaitWindow(process)
     UnSplash()
     process.wait()
 
