@@ -1,4 +1,4 @@
-start /MIN .\dist\whackamole.exe 6x6
+start /MIN .\dist\whackamole.exe 6x6 20
 set WHACKAMOLEDIR=%CD%
 cd \BCIHomeSystemFiles\BCIAddons\games
 cd ..\..\VA_BCI2000\prog

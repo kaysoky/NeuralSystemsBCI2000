@@ -104,9 +104,6 @@ Application:Checkerboard:P3SpellerTask int NumInCycle= 100 100 10 % // Number of
 Application:Checkerboard:P3SpellerTask float Confidence= 0.0 5.0 0.0 % // Confidence in number of stdev's from mean
 Application:Checkerboard:P3SpellerTask int MaxTries= 1 100 1 % // Maximum tries before resetting confidence level
 Application:Sequencing:P3SpellerTask int NumberOfSequences= 1 15 1 % // number of sequences in a set of intensifications
-Application:Speller%20Targets:P3SpellerTask matrix TargetDefinitions= 36 5 1 1 1 % % 2 2 1 % % 3 3 1 % % 4 4 1 % % 5 5 1 % % 6 6 1 % % 7 7 1 % % 8 8 1 % % 9 9 1 % % 10 10 1 % % 11 11 1 % % 12 12 1 % % 13 13 1 % % 14 14 1 % % 15 15 1 % % 16 16 1 % % 17 17 1 % % 18 18 1 % % 19 19 1 % % 20 20 1 % % 21 21 1 % % 22 22 1 % % 23 23 1 % % 24 24 1 % % 25 25 1 % % 26 26 1 % % 27 27 1 % % 28 28 1 % % 29 29 1 % % 30 30 1 % % 31 31 1 % % 32 32 1 % % 33 33 1 % % 34 34 1 % % 35 35 1 % % 36 36 1 % % // speller target properties
-Application:Speller%20Targets:P3SpellerTask intlist NumMatrixColumns= 1 6 6 1 % // display matrices' column number(s)
-Application:Speller%20Targets:P3SpellerTask intlist NumMatrixRows= 1 6 6 0 % // display matrices' row number(s)
 Application:Audio%20Stimuli:P3SpellerTask int AudioStimuliOn= 0 0 0 1 // Audio Stimuli Mode (0=no, 1=yes) (boolean)
 Application:Audio%20Stimuli:P3SpellerTask matrix AudioStimuliRowsFiles= 6 { filename } ./voice/1.wav ./voice/2.wav ./voice/3.wav ./voice/4.wav ./voice/5.wav ./voice/6.wav // audio stimuli rows files 
 Application:Audio%20Stimuli:P3SpellerTask matrix AudioStimuliColsFiles= 6 { filename } ./voice/a.wav ./voice/b.wav ./voice/c.wav ./prog/voice/d.wav ./prog/voice/e.wav ./prog/voice/f.wav // audio stimuli column files 
@@ -140,3 +137,6 @@ System:Core%20Connections string ApplicationPort= 3029 4200 1024 65535 // the Ap
 System:Core%20Connections string ApplicationIP= 172.16.3.123 127.0.0.1 % % // the Application module's listening IP
 System:Configuration matrix ApplicationVersion= { Framework Revision Build } 1 2.0 2005,%20 Do%2015%20Mai%202008%2016:00:30%20CEST // Application version information
 System:Configuration matrix ApplicationFilterChain= 3 { Filter%20Name Position%20String } ConnectorInput 2.9999 P3SpellerTask 3 ConnectorOutput 3.9999 // Application filter chain
+Application:Speller%20Targets:P3SpellerTask matrix TargetDefinitions= 48 5 1 1 1 % % 2 2 1 % % 3 3 1 % % 4 4 1 % % 5 5 1 % % 6 6 1 % % 7 7 1 % % 8 8 1 % % 9 9 1 % % 10 10 1 % % 11 11 1 % % 12 12 1 % % 13 13 1 % % 14 14 1 % % 15 15 1 % % 16 16 1 % % 17 17 1 % % 18 18 1 % % 19 19 1 % % 20 20 1 % % 21 21 1 % % 22 22 1 % % 23 23 1 % % 24 24 1 % % 25 25 1 % % 26 26 1 % % 27 27 1 % % 28 28 1 % % 29 29 1 % % 30 30 1 % % 31 31 1 % % 32 32 1 % % 33 33 1 % % 34 34 1 % % 35 35 1 % % 36 36 1 % % 37 37 1 % % 38 38 1 % % 39 39 1 % % 40 40 1 % % 41 41 1 % % 42 42 1 % % 43 43 1 % % 44 44 1 % % 45 45 1 % % 46 46 1 % % 47 47 1 % % 48 48 1 % % // speller target properties
+Application:Speller%20Targets:P3SpellerTask intlist NumMatrixColumns= 1 6 6 1 % // display matrices' column number(s)
+Application:Speller%20Targets:P3SpellerTask intlist NumMatrixRows= 1 8 8 0 % // display matrices' row number(s)

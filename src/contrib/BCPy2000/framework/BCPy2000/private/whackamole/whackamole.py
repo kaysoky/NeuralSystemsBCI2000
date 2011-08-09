@@ -179,12 +179,16 @@ def editPrmFile(rows, cols):
 def main(argv = []):
     rows = 6
     cols = 6
-    if len(argv) == 1 and 'x' in argv[0].lower():
-        argv.extend(argv[0].lower().split('x'))
-        argv.pop(0)
-    if len(argv) == 2 and argv[0].isdigit() and argv[1].isdigit():
+    moles = -1
+    if len(argv) >= 1 and 'x' in argv[0].lower():
+        dims = argv.pop(0).lower().split('x')
+        argv.insert(0, dims[1])
+        argv.insert(0, dims[0])
+    if len(argv) >= 2 and argv[0].isdigit() and argv[1].isdigit():
         rows = int(argv[0])
         cols = int(argv[1])
+    if len(argv) >= 3 and argv[2].isdigit():
+        moles = int(argv[2])
     editPrmFile(rows, cols)
     loc, shape = findP3SpellerWindow()
     if loc == None:
@@ -192,7 +196,7 @@ def main(argv = []):
     if shape == None:
         shape = (800, 700)
     game = WhackaMole(rows = rows, cols = cols, shape = shape,
-        border = 3, moles = 1, loc = loc)
+        border = 3, moles = moles, loc = loc)
     clock = pygame.time.Clock()
     def on_func(game, spots):
         if game.won:
