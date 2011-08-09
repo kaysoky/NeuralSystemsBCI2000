@@ -1,17 +1,6 @@
 #!/usr/bin/python
 
-import sys
-import os
-import time
-import subprocess
-
-__file__ = os.path.abspath(sys.argv[0])
-this_dir = os.path.dirname(__file__)
-
 from Tkinter import *
-
-from win32process import GetWindowThreadProcessId
-from win32gui import EnumWindows
 
 class SplashScreen(Frame):
 
@@ -48,25 +37,29 @@ def UnSplash():
         SPLASHSCREEN = None
 
 def ListWindows():
+    from win32gui import EnumWindows
     windowlist = []
     EnumWindows((lambda handle, windowlist: windowlist.append(handle) or True),
         windowlist)
     return windowlist
 
 def HasWindow(pid):
+    from win32process import GetWindowThreadProcessId
     for window in ListWindows():
         if GetWindowThreadProcessId(window)[1] == pid:
             return True
     return False
 
 def WaitWindow(pid):
+    import time
     while not HasWindow(pid):
-        time.sleep(0.05)
+        time.sleep(0.1)
 
 def main(argv = []):
-    os.chdir(this_dir)
-    Splash('logo.gif')
-    process = subprocess.Popen(argv)
+    import os
+    Splash(os.path.abspath(argv[0]))
+    import subprocess
+    process = subprocess.Popen(argv[1:])
     WaitWindow(process.pid)
     UnSplash()
     process.wait()

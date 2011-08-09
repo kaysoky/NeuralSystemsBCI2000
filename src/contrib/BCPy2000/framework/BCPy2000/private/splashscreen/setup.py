@@ -47,7 +47,7 @@ def main(argv = []):
         zipfile = None,
         options = {
             'py2exe':{
-                'includes': [],
+                'includes': ['sys', 'os', 'time', 'subprocess'],
                 'excludes': [
                     'IPython', 'OpenGL', 'pygame', 'VisionEgg', 'Image',
                     'doctest', 'pdb', 'difflib', 'win32com', '_ssl',
@@ -61,7 +61,6 @@ def main(argv = []):
             }
         },
     )
-    copy('logo.gif')
     purgeDir(os.path.join(this_dir, 'dist/tcl/tk8.4/demos'))
     purgeDir(os.path.join(this_dir, 'dist/tcl/tk8.4/images'))
     purgeDir(os.path.join(this_dir, 'dist/tcl/tcl8.4/dde1.1'))
