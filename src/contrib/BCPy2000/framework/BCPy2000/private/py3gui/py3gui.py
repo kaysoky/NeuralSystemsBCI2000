@@ -10,6 +10,7 @@ if __name__ == '__main__':
     )
 
 import numpy as np
+from scipy import stats
 import pylab
 pylab.ion()
 
@@ -49,7 +50,6 @@ def exportToPRM(channels, weights, epoch_length):
         }
 
 def testWeights(name, values):
-    #reload(loaddata) #TODO!!!
     flistwidget, fnames = values['flist']
     weightfile = values['weightfile'][1]
     if not weightfile:
@@ -119,7 +119,6 @@ def testWeights(name, values):
         return
 
 def generateFeatureWeights(name, values):
-    #reload(loaddata) #TODO!!!
     args = values['generation-args'][1]
     errors = []
     for key in args:
@@ -207,7 +206,6 @@ def generateFeatureWeights(name, values):
         return
 
 def plotWaveform(name, values):
-    reload(loaddata) #TODO!!!
     args = values['generation-args'][1]
     errors = []
     for key in ['responsewindow', 'channelset']:
@@ -241,7 +239,8 @@ def plotWaveform(name, values):
             try:
                 data.append(result[0][:, :, channelset])
             except IndexError:
-                Error('"Channel Set" is not a subset of the available channels.')
+                Error('"Channel Set" is not a subset of the available ' + \
+                    'channels.')
                 return
             type.append(result[1])
         if len(data) == 0 or len(type) == 0:
@@ -249,20 +248,77 @@ def plotWaveform(name, values):
             return
         data = np.concatenate(data)
         type = np.concatenate(type)
+        r_squared = np.zeros(data.shape[1:])
+        for row in range(r_squared.shape[0]):
+            for col in range(r_squared.shape[1]):
+                r_squared[row, col] = stats.linregress(
+                    data[:, row, col], type
+                )[2] ** 2
+        r_squared_max = r_squared.max()
         x = np.arange(data.shape[1]) * 1000 / samplingrate
         target = data[type.nonzero()[0]].mean(axis = 0)
         nontarget = data[(~type).nonzero()[0]].mean(axis = 0)
-        ylim = [min(target.min(), nontarget.min()),
+        vmin, vmax = ylim = [min(target.min(), nontarget.min()),
             max(target.max(), nontarget.max())]
-        pylab.figure()
-        ax = pylab.subplot(2, 1, 1)
+        fig = pylab.figure()
+        fig.subplots_adjust(bottom = 0.06, top = 0.93, hspace = 0.45)
+        master_ax = ax = pylab.subplot(3, 1, 1)
+        ax.callbacks.connect(
+            'ylim_changed',
+            lambda ax: ax.set_ylim(-0.5, data.shape[2] - 0.5) if \
+                ax.get_ylim() != (-0.5, data.shape[2] - 0.5) else None
+        )
         pylab.title('Target')
-        pylab.plot(x, target)
-        pylab.ylim(ylim)
-        pylab.subplot(2, 1, 2, sharex = ax, sharey = ax)
+        pylab.imshow(target.transpose(), interpolation = 'nearest',
+            cmap = 'RdGy_r', aspect = 'auto', vmin = vmin, vmax = vmax,
+            origin = 'lower', extent = (
+                0,
+                data.shape[1] * 1000 / samplingrate,
+                -0.5,
+                data.shape[2] - 0.5
+            )
+        )
+        pylab.yticks(range(data.shape[2]),
+            [str(i) for i in range(1, data.shape[2] + 1)])
+        pylab.colorbar()
+        ax = pylab.subplot(3, 1, 2, sharex = master_ax)
+        ax.callbacks.connect(
+            'ylim_changed',
+            lambda ax: ax.set_ylim(-0.5, data.shape[2] - 0.5) if \
+                ax.get_ylim() != (-0.5, data.shape[2] - 0.5) else None
+        )
         pylab.title('Non-Target')
-        pylab.plot(x, nontarget)
-        pylab.ylim(ylim)
+        pylab.imshow(nontarget.transpose(), interpolation = 'nearest',
+            cmap = 'RdGy_r', aspect = 'auto', vmin = vmin, vmax = vmax,
+            origin = 'lower', extent = (
+                0,
+                data.shape[1] * 1000 / samplingrate,
+                -0.5,
+                data.shape[2] - 0.5
+            )
+        )
+        pylab.yticks(range(data.shape[2]),
+            [str(i) for i in range(1, data.shape[2] + 1)])
+        pylab.colorbar()
+        ax = pylab.subplot(3, 1, 3, sharex = master_ax)
+        ax.callbacks.connect(
+            'ylim_changed',
+            lambda ax: ax.set_ylim(-0.5, data.shape[2] - 0.5) if \
+                ax.get_ylim() != (-0.5, data.shape[2] - 0.5) else None
+        )
+        pylab.title('$R^2$')
+        pylab.imshow(r_squared.transpose(), interpolation = 'nearest',
+            cmap = 'RdGy_r', aspect = 'auto', vmin = 0, vmax = r_squared_max,
+            origin = 'lower', extent = (
+                0,
+                data.shape[1] * 1000 / samplingrate,
+                -0.5,
+                data.shape[2] - 0.5
+            )
+        )
+        pylab.yticks(range(data.shape[2]),
+            [str(i) for i in range(1, data.shape[2] + 1)])
+        pylab.colorbar()
     except MemoryError:
         Error('Could not fit all the selected data in memory.\n' + \
             'Try loading fewer data files.')
@@ -271,7 +327,7 @@ def plotWaveform(name, values):
 def main(argv = []):
     Iwaf(
         title = 'Py3GUI',
-        size = (600, 600),
+        size = (550, 500),
         contents = [
             MultiBrowse('flist', 'Select Training Data',
                 [('Standard Data Files', '.dat'), ('Pickle Files', '.pk')]),

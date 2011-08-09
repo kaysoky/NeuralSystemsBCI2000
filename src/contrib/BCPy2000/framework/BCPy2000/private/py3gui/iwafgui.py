@@ -100,7 +100,8 @@ class Quit(Widget):
         self.callback = callback
 
     def initialize(self, parent, row):
-        self.quit = parent.quit
+        self.parent_quit = parent.quit
+        parent.quit = self.process
         Button(parent, text = 'Quit', command = self.process). \
             grid(column = 0, row = row)
 
@@ -109,7 +110,7 @@ class Quit(Widget):
         if self.callback != None:
             do_quit = self.callback()
         if do_quit:
-            self.quit()
+            self.parent_quit()
 
 class Arguments(Widget):
 
