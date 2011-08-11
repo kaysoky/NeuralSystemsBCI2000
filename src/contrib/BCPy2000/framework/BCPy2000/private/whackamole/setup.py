@@ -69,6 +69,9 @@ def main(argv = []):
     copy('hole1.jpg')
     copy('hammer1.png')
     copy('whackamole.prm')
+    copy('hit.ogg')
+    copy('miss.ogg')
+    copy('win.ogg')
     pygamedir = os.path.split(pygame.base.__file__)[0]
     copy(pygame.font.get_default_font(), pygamedir)
     purgeDir(os.path.join(this_dir, 'dist/tcl/tk8.4/demos'))

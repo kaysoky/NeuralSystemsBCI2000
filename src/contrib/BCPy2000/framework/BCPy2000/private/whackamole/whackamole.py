@@ -9,6 +9,8 @@ import Tkinter, tkSimpleDialog
 
 import pygame
 from pygame.locals import *
+pygame.mixer.init()
+
 import numpy as np
 
 from udpcontrol import UdpControl
@@ -16,6 +18,15 @@ from gridgame import ImageSurf, GridGame
 
 __file__ = os.path.abspath(sys.argv[0])
 os.chdir(os.path.dirname(__file__))
+
+def play(fname):
+    if fname == None:
+        return
+    pygame.mixer.music.load(fname)
+    time.sleep(0.1)
+    while not pygame.mixer.music.get_busy():
+        pygame.mixer.music.play()
+        time.sleep(0.1)
 
 class MyDialog(tkSimpleDialog.Dialog):
 
@@ -39,7 +50,8 @@ class MyDialog(tkSimpleDialog.Dialog):
 
 class WhackaMole(GridGame):
 
-    def init(self, mole = None, hole = None, hammer = None, moles = -1):
+    def init(self, mole = None, hole = None, hammer = None, moles = -1,
+        hit_music = None, miss_music = None, win_music = None, cheat = False):
         self.t1 = time.time()
         if mole == None:
             self.mole = os.path.join(os.path.dirname(__file__), 'mole1.jpg')
@@ -56,6 +68,10 @@ class WhackaMole(GridGame):
         else:
             self.hammer = hammer
         self.hammer = ImageSurf(self.hammer)
+        self.hit_music = hit_music
+        self.miss_music = miss_music
+        self.win_music = win_music
+        self.cheat = cheat
         for row in range(self.rows):
             for col in range(self.cols):
                 im = ImageSurf(self.hole, self.getShape(row, col))
@@ -67,6 +83,10 @@ class WhackaMole(GridGame):
         self.prng = random.Random()
         self.prng.seed(0)
         self.randomizeMoles()
+
+    def win(self, *args, **kwds):
+        play(self.win_music)
+        GridGame.win(self, *args, **kwds)
 
     def invertImage(self, im):
         im = pygame.Surface(im.get_size())
@@ -111,9 +131,18 @@ class WhackaMole(GridGame):
         flash.blit(im, (0, 0))
         self.setImages(nonflash, flash, row, col)
         if (row, col) in self.mole_locs:
+            play(self.hit_music)
             self.mole_locs.remove((row, col))
             self.mole_count -= 1
             return True
+        if self.cheat and random.randrange(2) == 0:
+            play(self.hit_music)
+            row, col = self.mole_locs.pop(0)
+            im = ImageSurf(self.hole, self.getShape(row, col))
+            self.setImages(im, self.invertImage(im), row, col)
+            self.mole_count -= 1
+            return True
+        play(self.miss_music)
         return False
 
     def withdraw(self, row, col):
@@ -180,6 +209,11 @@ def main(argv = []):
     rows = 6
     cols = 6
     moles = -1
+    if 'cheat' in argv:
+        cheat = True
+        argv.remove('cheat')
+    else:
+        cheat = False
     if len(argv) >= 1 and 'x' in argv[0].lower():
         dims = argv.pop(0).lower().split('x')
         argv.insert(0, dims[1])
@@ -196,7 +230,11 @@ def main(argv = []):
     if shape == None:
         shape = (800, 700)
     game = WhackaMole(rows = rows, cols = cols, shape = shape,
-        border = 3, moles = moles, loc = loc)
+        border = 3, moles = moles, loc = loc, cheat = cheat,
+        hit_music = os.path.join(os.path.dirname(__file__), 'hit.ogg'),
+        miss_music = os.path.join(os.path.dirname(__file__), 'miss.ogg'),
+        win_music = os.path.join(os.path.dirname(__file__), 'win.ogg')
+    )
     clock = pygame.time.Clock()
     def on_func(game, spots):
         if game.won:
@@ -214,7 +252,7 @@ def main(argv = []):
         col = selection % game.cols
         row = selection // game.cols
         hit = game.hit(row, col)
-        time.sleep(1)
+        time.sleep(2)
         game.withdraw(row, col)
         if hit:
             game.randomizeMoles()
