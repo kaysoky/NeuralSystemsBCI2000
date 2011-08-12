@@ -517,7 +517,7 @@ void
 CoreModule::InitializeFilters( const SignalProperties& inputProperties )
 {
   mStartRunPending = true;
-  bcierr__.clear();
+  bcierr__.Clear();
   GenericFilter::HaltFilters();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );
   EnvironmentBase::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector );

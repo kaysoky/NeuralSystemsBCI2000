@@ -200,7 +200,7 @@ mexFunction( int nargout, mxArray* varargout[],
       files.rbegin()->end = end;
     }
     mxFree( stringArg );
-    bcierr__.clear();
+    bcierr__.Clear();
     ++i;
   }
 
@@ -274,7 +274,7 @@ mexFunction( int nargout, mxArray* varargout[],
     default:
       mexErrMsgTxt( "Unsupported class ID" );
   }
-  bcierr__.clear();
+  bcierr__.Clear();
   varargout[ 0 ] = signal;
 
   // Read state data if appropriate.
@@ -372,7 +372,7 @@ mexFunction( int nargout, mxArray* varargout[],
         }
       }
     }
-    bcierr__.clear();
+    bcierr__.Clear();
     varargout[ 1 ] = states;
   }
 
@@ -380,7 +380,7 @@ mexFunction( int nargout, mxArray* varargout[],
   if( nargout > 2 )
   {
     varargout[ 2 ] = ParamlistToStruct( *files[ 0 ].data->Parameters() );
-    bcierr__.clear();
+    bcierr__.Clear();
   }
   // Return the total number of samples if requested.
   if( nargout > 3 )

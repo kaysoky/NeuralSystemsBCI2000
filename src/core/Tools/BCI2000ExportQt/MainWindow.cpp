@@ -217,8 +217,8 @@ MainWindow::ImportStates_handleFiles( const QStringList& inFiles )
 void
 MainWindow::DropArea_handleFiles( const QStringList& inFiles )
 {
-  bcierr__.clear();
-  bciout__.clear();
+  bcierr__.Clear();
+  bciout__.Clear();
   DisableAll();
   mpStatusLabel->setText( tr( "Processing" ) );
   this->repaint();

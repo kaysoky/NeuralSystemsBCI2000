@@ -122,7 +122,7 @@ ExecutableHelp::Initialize()
   helpFile = buf;
   delete[] buf;
 #else // _WIN32
-  helpFile = QApplication::applicationFilePath().toLocal8Bit();
+  helpFile = (string)QApplication::applicationFilePath().toLocal8Bit();
 #endif // _WIN32
 
   size_t pos = helpFile.find_last_of( ".\\/" );
