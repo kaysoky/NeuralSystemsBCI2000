@@ -8,13 +8,13 @@
 #ifndef OS_MUTEX_H
 #define OS_MUTEX_H
 
-#include <Uncopyable.h>
-
 #ifdef _WIN32
 # include <windows.h>
 #else
 # include <pthread.h>
 #endif // _WIN32
+
+#include "Uncopyable.h"
 
 class OSMutex : private Uncopyable
 {

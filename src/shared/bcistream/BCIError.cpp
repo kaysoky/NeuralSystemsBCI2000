@@ -51,7 +51,7 @@ string OutStream::sContext = "";
 int    OutStream::sDebugLevel = 0;
 
 OutStream&
-OutStream::operator()( const char* inContext )
+OutStream::operator()( const string& inContext )
 {
   if( !OSThread::IsMainThread() || sContext.empty() )
     mBuf.SetContext( inContext );

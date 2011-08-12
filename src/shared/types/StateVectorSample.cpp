@@ -28,11 +28,11 @@
 #pragma hdrstop
 
 #include "StateVectorSample.h"
+#include "BCIException.h"
 
 #include <sstream>
 #include <iomanip>
 #include <climits>
-#include <cassert>
 
 using namespace std;
 
@@ -88,9 +88,9 @@ State::ValueType
 StateVectorSample::StateValue( size_t inLocation, size_t inLength ) const
 {
   if( inLength > 8 * sizeof( State::ValueType ) )
-    throw "Invalid state length";
+    throw bciexception( "Invalid state length: " << inLength );
   if( inLocation + inLength > 8 * mByteLength )
-    throw "Accessing non-existent state vector data";
+    throw bciexception( "Accessing non-existent state vector data, location: " << inLocation );
 
   State::ValueType result = 0;
   for( int bitIndex = inLocation + inLength - 1; bitIndex >= int( inLocation ); --bitIndex )
@@ -116,17 +116,18 @@ StateVectorSample::SetStateValue( size_t inLocation, size_t inLength, State::Val
 {
   State::ValueType valueMask = ( ULONG_MAX >> ( 8* sizeof( State::ValueType ) - inLength ) );
   if( inValue < 0 || ( inValue & valueMask ) != inValue )
-  {
-    ostringstream oss;
-    oss << "Illegal value " << inValue << " was passed to " << inLength << "-bit state at address " << inLocation;
-    static string s;
-    s = oss.str();
-    throw s.c_str();
-  }
+    throw bciexception(
+      "Illegal value " 
+      << inValue
+      << " was passed to "
+      << inLength
+      << "-bit state at address "
+      << inLocation
+      );
   if( inLength > 8 * sizeof( State::ValueType ) )
-    throw "Invalid state length";
+    throw bciexception( "Invalid state length of " << inLength );
   if( inLocation + inLength > 8 * mByteLength )
-    throw "Accessing non-existent state vector data";
+    throw bciexception( "Accessing non-existent state vector data, location: " << inLocation );
 
   State::ValueType value = inValue;
   for( size_t bitIndex = inLocation; bitIndex < inLocation + inLength; ++bitIndex )

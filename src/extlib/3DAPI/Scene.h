@@ -27,6 +27,7 @@
 #define SCENE_H
 
 #include "GraphObject.h"
+#include "Uncopyable.h"
 #include "primObj.h"
 #include "cameraNlight.h"
 
@@ -77,7 +78,7 @@ class GLScene : public QGLWidget
 };
 #endif // __BORLANDC__
 
-class Scene : public GUI::GraphObject
+class Scene : public GUI::GraphObject, private Uncopyable
 {
  public:
   Scene( GUI::GraphDisplay& );

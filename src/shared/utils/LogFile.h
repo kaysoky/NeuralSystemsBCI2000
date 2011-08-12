@@ -30,8 +30,9 @@
 #include <fstream>
 #include <string>
 #include "Environment.h"
+#include "Uncopyable.h"
 
-class LogFile: public std::ofstream, private EnvironmentExtension
+class LogFile: public std::ofstream, private EnvironmentExtension, private Uncopyable
 {
   public:
     LogFile()
@@ -40,10 +41,6 @@ class LogFile: public std::ofstream, private EnvironmentExtension
     explicit LogFile( const std::string& fileExtension )
       : mExtension( fileExtension )
       {}
-
-  private:
-    LogFile( const LogFile& );
-    LogFile& operator=( const LogFile& );
 
   public:
     void Publish()

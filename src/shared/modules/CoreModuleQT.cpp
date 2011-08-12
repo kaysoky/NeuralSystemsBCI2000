@@ -28,18 +28,27 @@
 #pragma hdrstop
 
 #include "CoreModuleQT.h"
+#include <QApplication>
 
-bool
-CoreModuleQT::Run( int argc, char *argv[])
+CoreModuleQT::CoreModuleQT()
+: mpApplication( NULL )
 {
-  // Create a QApplication
-  QApplication a( argc, argv );
-  // Run the BCI2000 Core loop
-  return CoreModule::Run( argc, argv );
+}
+
+CoreModuleQT::~CoreModuleQT()
+{
+  delete mpApplication;
+}
+
+void
+CoreModuleQT::OnInitialize( int inArgc, char** inArgv )
+{
+  // Maintain a QApplication object.
+  mpApplication = new QApplication( inArgc, inArgv );
 }
 
 void 
-CoreModuleQT::ProcessGUIMessages()
+CoreModuleQT::OnProcessGUIMessages()
 {
   if( qApp )
   {
@@ -49,7 +58,7 @@ CoreModuleQT::ProcessGUIMessages()
 }
 
 bool
-CoreModuleQT::GUIMessagesPending()
+CoreModuleQT::OnGUIMessagesPending()
 {
   if( qApp )
     return qApp->hasPendingEvents();

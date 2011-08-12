@@ -28,9 +28,9 @@
 #pragma hdrstop
 
 #include "StateVector.h"
+#include "BCIException.h"
 
 #include <sstream>
-#include <cassert>
 #include <iomanip>
 
 using namespace std;
@@ -133,7 +133,7 @@ void
 StateVector::PostStateChange( const string& inName, State::ValueType inValue )
 {
   if( !mpStateList->Exists( inName ) )
-    throw "PostStateChange() called for undeclared state";
+    throw bciexception( "Undeclared state " << inName );
 
   ( *mpStateList )[ inName ].SetValue( inValue ); // We use State::value as a buffer.
 }

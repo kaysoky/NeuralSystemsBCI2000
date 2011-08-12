@@ -35,7 +35,7 @@
 #include "RDAQueue.h"
 
 #include "BCIError.h"
-#include <cassert>
+#include "BCIAssert.h"
 #include <string>
 
 #if RDA_FLOAT
@@ -246,7 +246,7 @@ RDAQueue::ReceiveData()
             bcierr << "RDA server sent data block before start block" << endl;
             return;
           default:
-            assert( false ); // Only the named three values should ever be in lastMessageType.
+            bciassert( false ); // Only the named three values should ever be in lastMessageType.
         }
 
         // Check packet size for consistency to detect corrupt data packets.

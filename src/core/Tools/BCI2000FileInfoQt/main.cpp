@@ -1,6 +1,7 @@
 #include <QtGui/QApplication>
 #include "Settings.h"
 #include "bci2000fileinfo.h"
+#include "ExceptionCatcher.h"
 
 #ifdef _WIN32
 # include <Windows.h>
@@ -23,5 +24,17 @@ int main(int argc, char *argv[])
   Settings::SetFile();
   BCI2000FileInfo w;
   w.show();
-  return a.exec();
+
+  std::string message = "aborting ";
+  message += a.applicationName().toLocal8Bit().constData();
+  struct
+  {
+    QApplication& app;
+    int result;
+    void operator()()
+    { result = app.exec(); }
+  } functor = { a, -1 };
+  ExceptionCatcher().SetMessage( message )
+                    .Execute( functor );
+  return functor.result;
 }

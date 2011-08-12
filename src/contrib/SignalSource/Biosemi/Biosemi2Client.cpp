@@ -42,8 +42,8 @@
 #include <string>
 #include <iostream>
 
-#include <cassert>
 #include "BCIError.h"
+#include "BCIAssert.h"
 
 #include "Biosemi2Client.h"
 
@@ -66,8 +66,8 @@ Biosemi2Client::Biosemi2Client() :
 // All this code assumes 1 byte chars and 4 byte ints, For sanity sake
 // make sure that's what we are getting. All bets are off otherwise.
 
-    assert(sizeof(int) == 4);
-    assert(sizeof(char) == 1);
+    bciassert(sizeof(int) == 4);
+    bciassert(sizeof(char) == 1);
 
     mpDataAsInt = reinterpret_cast<int *>(mpData);
 

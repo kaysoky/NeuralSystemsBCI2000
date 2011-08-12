@@ -28,6 +28,7 @@
 
 #include "MessageQueue.h"
 #include "LengthField.h"
+#include "Lockable.h"
 
 using namespace std;
 
@@ -51,30 +52,24 @@ MessageQueue::QueueMessage( std::istream& is )
   }
   if( is )
   {
-    Lock();
+    ::Lock<MessageQueue> lock( *this );
     this->push( entry );
-    Unlock();
   }
 }
 
-
-void
-MessageQueue::Lock() const
-{
-  mMutex.Acquire();
-}
-
-void
-MessageQueue::Unlock() const
-{
-  mMutex.Release();
-}
-
 bool
-MessageQueue::empty() const
+MessageQueue::Empty() const
 {
-  Lock();
-  bool result = queue<MessageQueueEntry>::empty();
-  Unlock();
+  ::Lock<const MessageQueue> lock( *this );
+  return this->empty();
+}
+
+MessageQueueEntry
+MessageQueue::Next()
+{
+  ::Lock<MessageQueue> lock( *this );
+  MessageQueueEntry result = this->front();
+  this->pop();
   return result;
 }
+

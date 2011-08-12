@@ -55,7 +55,6 @@ class ScriptInterpreter
   bool Execute_Quit( std::istream& );
 
   bool ApplyVisPropertySet( const std::string& setID );
-  static IDType Resolve_VisCfg( const char* name );
 
 
   int mLine;

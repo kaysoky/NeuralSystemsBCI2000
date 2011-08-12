@@ -38,8 +38,8 @@
 #include "FBArteCorrection.h"
 
 #include "BCIError.h"
+#include "BCIAssert.h"
 #include <cmath>
-#include <cassert>
 
 #define SECTION "Filtering"
 
@@ -136,7 +136,7 @@ TFBArteCorrection::Process( const GenericSignal& inSignal, GenericSignal& outSig
             break;
 
           default:
-            assert( false );
+            bciassert( false );
         }
       }
 }

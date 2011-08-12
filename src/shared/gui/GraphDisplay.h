@@ -28,6 +28,7 @@
 #define GRAPH_DISPLAY_H
 
 #include "GraphObject.h"
+#include "Uncopyable.h"
 
 #include "Color.h"
 #include <set>
@@ -49,7 +50,7 @@ namespace GUI {
 typedef std::set<GraphObject*>   SetOfGraphObjects;
 typedef std::queue<GraphObject*> QueueOfGraphObjects;
 
-class GraphDisplay
+class GraphDisplay : private Uncopyable
 {
   friend class GraphObject;
 

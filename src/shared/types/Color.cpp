@@ -28,12 +28,12 @@
 #pragma hdrstop
 
 #include "Color.h"
+#include "BCIAssert.h"
 
 #include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <cassert>
 
 using namespace std;
 
@@ -137,7 +137,7 @@ RGBColor::FromHSV( float H, float S, float V )
       result = RGBColor( n, m, v );
       break;
     default:
-      assert( false );
+      bciassert( false );
   }
   return result;
 }

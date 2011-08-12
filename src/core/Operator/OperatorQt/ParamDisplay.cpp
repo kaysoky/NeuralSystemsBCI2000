@@ -36,6 +36,7 @@
 #include "EditMatrix.h"
 #include "ExecutableHelp.h"
 #include "ParsedComment.h"
+#include "BCIAssert.h"
 
 #include <QLabel>
 #include <QLineEdit>
@@ -50,7 +51,6 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <cassert>
 
 #define LOAD_MATRIX_FILTER tr("Matrix file (*.txt *." MATRIX_EXTENSION ")" \
                             ";;All files (*.*)")
@@ -103,7 +103,7 @@ ParamDisplay::ParamDisplay( const Param& inParam, QWidget* inParent )
       mpDisplay = new Matrix( parsedComment, inParent );
       break;
     default:
-      assert( false );
+      bciassert( false );
   }
   ++mpDisplay->mRefCount;
 }

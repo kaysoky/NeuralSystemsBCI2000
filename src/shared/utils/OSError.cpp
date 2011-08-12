@@ -34,10 +34,11 @@
 
 using namespace std;
 
-char* OSError::spMessageBuffer = NULL;
+const string OSError::cDefaultMessage = "<n/a>";
 
 OSError::OSError()
-: mCode( 0 )
+: mCode( 0 ),
+  mMessage( cDefaultMessage )
 {
 #ifdef _WIN32
   mCode = ::GetLastError();
@@ -47,8 +48,7 @@ OSError::OSError()
 const char*
 OSError::Message() const
 {
-  delete[] spMessageBuffer;
-  spMessageBuffer = NULL;
+  mMessage = cDefaultMessage;
 #ifdef _WIN32
   char* pMessage;
   bool success = ::FormatMessage(
@@ -62,15 +62,9 @@ OSError::Message() const
   );
   if( success )
   {
-    spMessageBuffer = new char[ ::strlen( pMessage ) + 1 ];
-    ::strcpy( pMessage, spMessageBuffer );
+    mMessage = pMessage;
     ::LocalFree( pMessage );
   }
-  else
-  {
-    spMessageBuffer = new char[ 1 ];
-    spMessageBuffer[ 0 ] = '\0';
-  }
 #endif // _WIN32
-  return spMessageBuffer;
+  return mMessage.c_str();
 }

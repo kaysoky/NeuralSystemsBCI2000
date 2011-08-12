@@ -49,7 +49,7 @@
 #define IIR_FILTER_H
 
 #include "FilterDesign.h"
-#include <cassert>
+#include "BCIAssert.h"
 
 template<typename Real>
 class IIRFilter
@@ -117,7 +117,7 @@ template<typename T>
 inline IIRFilter<Real>&
 IIRFilter<Real>::Process( const T& Input, T& Output )
 {
-  assert( mZeros.size() == mPoles.size() );
+  bciassert( mZeros.size() == mPoles.size() );
   size_t numStages = mZeros.size();
   if( numStages == 0 )
   {
@@ -127,7 +127,7 @@ IIRFilter<Real>::Process( const T& Input, T& Output )
   {
     for( int ch = 0; ch < Input.Channels(); ++ch )
     {
-      assert( mDelays[ch].size() == numStages + 1 );
+      bciassert( mDelays[ch].size() == numStages + 1 );
       for( int sample = 0; sample < Input.Elements(); ++sample )
       {
         // Implementing the filter as a sequence of complex-valued order 1

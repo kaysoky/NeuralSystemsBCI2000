@@ -245,7 +245,7 @@ StringType CCmdLine::GetArgument(const char *pSwitch, size_t iIdx)
       }
    }
 
-   throw (int)0;
+   throw std::runtime_error( "CCmdLine::GetArgument: error" );
 
    return "";
 }

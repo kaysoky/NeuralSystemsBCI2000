@@ -91,7 +91,7 @@ VisDisplay::HandleBitmap( const char* inVisID, const BitmapImage& inBitmap )
 }
 
 void
-VisDisplay::HandlePropertyMessage( const char* inVisID, const IDType inCfgID, const char* inValue )
+VisDisplay::HandlePropertyMessage( const char* inVisID, CfgID inCfgID, const char* inValue )
 {
   string visid = FormatID( inVisID );
   string layer = Layer( visid );
@@ -101,7 +101,7 @@ VisDisplay::HandlePropertyMessage( const char* inVisID, const IDType inCfgID, co
 }
 
 void
-VisDisplay::HandleProperty( const char* inVisID, const IDType inCfgID, const char* inValue )
+VisDisplay::HandleProperty( const char* inVisID, CfgID inCfgID, const char* inValue )
 {
   string visid = FormatID( inVisID );
   string layer = Layer( visid );

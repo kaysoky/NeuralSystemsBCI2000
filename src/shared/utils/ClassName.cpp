@@ -30,33 +30,55 @@
 #pragma hdrstop
 
 #include "ClassName.h"
+
+#ifdef __GNUC__
+# include <cxxabi.h>
+#endif
+#include <cstdlib>
 #include <ctype.h>
 
+using namespace std;
 using namespace bci;
 
-const char*
-bci::ClassName( const std::type_info& inTypeid )
+string
+bci::ClassName( const type_info& inTypeid )
 {
-  const char* result = inTypeid.name();
+  string result = inTypeid.name();
+
 #ifdef __GNUC__
-  static std::string nameBuffer;
   int err = 0;
   char* name = abi::__cxa_demangle( result, 0, 0, &err );
   if( name )
   {
-    nameBuffer = name;
-    free( name );
+    result = name;
+    ::free( name );
   }
-  else
+#endif // __GNUC__
+
+  // To obtain a useful representation of the class name, we need to do some
+  // processing that removes white space and compiler specific additions.
+
+  // First, remove white space between template arguments and <> brackets.
+  static struct
   {
-    nameBuffer = "<N/A>";
-  }
-  result = nameBuffer.c_str();
-#endif
-  const char* p = result;
-  while( *p != '\0' )
-    if( ::isspace( *p++ ) )
-      result = p;
+    const string original,
+                 replacement;
+  } replacementTable[] =
+  {
+    { ", ", "," },
+    { "< ", "<" },
+    { " >", ">" },
+  };
+  size_t pos;
+  for( size_t r = 0; r < sizeof( replacementTable ) / sizeof( *replacementTable ); ++r )
+    while( string::npos != ( pos = result.find( replacementTable[r].original ) ) )
+      result = result.replace( pos, replacementTable[r].original.length(), replacementTable[r].replacement );
+
+  // We assume that remaining space characters separate the actual class name from a qualifier such as "class",
+  // so we return the last space-separated substring.
+  if( string::npos != ( pos = result.rfind( " " ) ) )
+    result = result.substr( pos + 1 );
+
   return result;
 }
 

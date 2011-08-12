@@ -30,6 +30,7 @@
 
 // Not using borland, we'll use QT instead
 #include "CoreModuleQT.h"
+#include <QApplication>
 
 #endif // __BORLANDC__
 

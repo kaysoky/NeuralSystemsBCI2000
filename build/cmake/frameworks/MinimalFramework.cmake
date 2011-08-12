@@ -41,6 +41,8 @@ SET( SRC_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSError.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSEvent.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
   ${BCI2000_SRC_DIR}/shared/utils/ClassName.h
@@ -52,6 +54,10 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSError.h
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h
   ${BCI2000_SRC_DIR}/shared/utils/OSEvent.h
+  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
+  ${BCI2000_SRC_DIR}/shared/utils/Lockable.h
+  ${BCI2000_SRC_DIR}/shared/utils/Uncopyable.h
+  ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
   ${BCI2000_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp
@@ -66,6 +72,7 @@ SET( HDR_BCI2000_SHARED_UTILS_EXPRESSION
 SET( SRC_BCI2000_SHARED_TYPES
   ${BCI2000_SRC_DIR}/shared/types/BitmapImage.cpp
   ${BCI2000_SRC_DIR}/shared/types/Brackets.cpp
+  ${BCI2000_SRC_DIR}/shared/types/CfgID.cpp
   ${BCI2000_SRC_DIR}/shared/types/Color.cpp
   ${BCI2000_SRC_DIR}/shared/types/EncodedString.cpp
   ${BCI2000_SRC_DIR}/shared/types/GenericSignal.cpp
@@ -88,6 +95,7 @@ SET( SRC_BCI2000_SHARED_TYPES
 SET( HDR_BCI2000_SHARED_TYPES 
   ${BCI2000_SRC_DIR}/shared/types/BitmapImage.h
   ${BCI2000_SRC_DIR}/shared/types/Brackets.h
+  ${BCI2000_SRC_DIR}/shared/types/CfgID.h
   ${BCI2000_SRC_DIR}/shared/types/Color.h
   ${BCI2000_SRC_DIR}/shared/types/EncodedString.h
   ${BCI2000_SRC_DIR}/shared/types/GenericSignal.h
@@ -120,9 +128,12 @@ SET( HDR_BCI2000_SHARED_ACCESSORS
 )
 SET( SRC_BCI2000_SHARED_BCISTREAM
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.cpp
 )
 SET( HDR_BCI2000_SHARED_BCISTREAM
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError.h
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.h
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIAssert.h
 )
 set( SRC_BCI2000_SHARED_FILEIO
   ${BCI2000_SRC_DIR}/shared/fileio/BCIDirectory.cpp

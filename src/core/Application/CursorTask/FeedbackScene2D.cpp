@@ -28,6 +28,7 @@
 
 #include "FeedbackScene2D.h"
 #include "GraphDisplay.h"
+#include "BCIException.h"
 
 using namespace std;
 
@@ -231,7 +232,7 @@ FeedbackScene2D::SceneToObjectCoords( GUI::Point& ioPoint, int inKind ) const
       ioPoint.y = ( ioPoint.y / 100. - 0.5 ) * mScalingY + 0.5;
       break;
     default:
-      throw "Unexpected coordinate kind";
+      throw bciexception( "Unexpected coordinate kind: " << inKind );
   }
 }
 
@@ -249,7 +250,7 @@ FeedbackScene2D::ObjectToSceneCoords( GUI::Point& ioPoint, int inKind ) const
       ioPoint.y = ( ioPoint.y - 0.5 ) / mScalingY * 100. + 50.;
       break;
     default:
-      throw "Unexpected coordinate kind";
+      throw bciexception( "Unexpected coordinate kind: " << inKind );
   }
 }
 

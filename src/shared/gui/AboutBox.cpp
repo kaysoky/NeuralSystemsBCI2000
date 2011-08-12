@@ -55,11 +55,11 @@ AboutBox::SetVersionInfo( const std::string& s )
 const AboutBox&
 AboutBox::Display() const
 {
-  VersionInfo info = mVersionInfo;
+  VersionInfoBase info = mVersionInfo;
   string versionNumber = info[ "Version" ];
   info.erase( "Version" );
   string versionDetails;
-  for( VersionInfo::reverse_iterator i = info.rbegin(); i != info.rend(); ++i )
+  for( VersionInfoBase::reverse_iterator i = info.rbegin(); i != info.rend(); ++i )
     versionDetails += ", " + i->first + ": " + i->second;
   versionDetails.erase( 0, 2 );
 

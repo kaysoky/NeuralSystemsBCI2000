@@ -27,8 +27,8 @@
 #pragma hdrstop
 
 #include "FFTFilter.h"
+#include "BCIAssert.h"
 #include <vector>
-#include <cassert>
 #include <cmath>
 
 #ifndef M_PI
@@ -305,6 +305,6 @@ FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTT
       break;
 
     default:
-      assert( false );
+      bciassert( false );
   }
 }

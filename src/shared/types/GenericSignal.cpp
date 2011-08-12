@@ -30,12 +30,12 @@
 #include "GenericSignal.h"
 
 #include "LengthField.h"
+#include "BCIAssert.h"
 #include "defines.h"
 #include <iostream>
 #include <iomanip>
 #include <limits>
 #include <cmath>
-#include <cassert>
 
 #undef DEBUG_GENERIC_SIGNAL
 
@@ -342,7 +342,7 @@ template<>
 void
 GenericSignal::PutValueBinary<SignalType::float32>( std::ostream& os, size_t inChannel, size_t inElement ) const
 {
-  assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
+  bciassert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
   float floatvalue = static_cast<float>( Value( inChannel, inElement ) );
   unsigned int value = *reinterpret_cast<const uint32*>( &floatvalue );
   PutLittleEndian( os, value );
@@ -352,7 +352,7 @@ template<>
 void
 GenericSignal::GetValueBinary<SignalType::float32>( std::istream& is, size_t inChannel, size_t inElement )
 {
-  assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
+  bciassert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
   uint32 value = 0;
   GetLittleEndian( is, value );
   try

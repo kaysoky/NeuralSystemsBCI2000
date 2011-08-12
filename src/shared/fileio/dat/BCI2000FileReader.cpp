@@ -28,6 +28,7 @@
 #pragma hdrstop
 
 #include "BCI2000FileReader.h"
+#include "BCIException.h"
 #include "defines.h"
 
 #include <fstream>
@@ -198,9 +199,9 @@ BCI2000FileReader::Parameter( const std::string& name ) const
 {
   const Param* param = NULL;
   if( Parameters() != NULL && Parameters()->Exists( name ) )
-      param = &( *Parameters() )[ name ];
+    param = &( *Parameters() )[ name ];
   else
-    throw "BCI2000FileReader::Parameter: Parameter does not exist";
+    throw bciexception( "Parameter " << name << " does not exist" );
 
   return ParamRef( const_cast<Param*>( param ) );
 }
@@ -213,10 +214,10 @@ BCI2000FileReader::State( const std::string& name ) const
   {
     pState = &( *States() )[ name ];
     if( pState->Length() < 1 )
-      throw "BCI2000FileReader::State: Requested state has zero length";
+      throw bciexception( "Requested state " << name << " has zero length" );
   }
   else
-    throw "BCI2000FileReader::State: Requested state is not accessible";
+    throw bciexception( "Requested state " << name << " is not accessible" );
 
   return StateRef( const_cast<class State*>( pState ), const_cast<class StateVector*>( StateVector() ), 0 );
 }
@@ -440,13 +441,13 @@ const char*
 BCI2000FileReader::BufferSample( long long inSample )
 {
   if( inSample >= NumSamples() )
-    throw "BCI2000FileReader::BufferSample: Sample position exceeds file size";
+    throw bciexception( "Sample position " << inSample << " exceeds file size of " << NumSamples() );
   int numChannels = SignalProperties().Channels();
   long long filepos = HeaderLength() + inSample * ( mDataSize * numChannels + StateVectorLength() );
   if( filepos < mBufferBegin || filepos + mDataSize * numChannels + StateVectorLength() >= mBufferEnd )
   {
     if( 0 != ::fseeko64( mpFile, filepos, SEEK_SET ) )
-      throw "BCI2000FileReader::BufferSample: Could not seek to sample position";
+      throw bciexception( "Could not seek to sample position" );
 
     mBufferBegin = filepos;
     mBufferEnd = mBufferBegin;

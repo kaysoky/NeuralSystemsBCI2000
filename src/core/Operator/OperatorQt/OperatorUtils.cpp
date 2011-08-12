@@ -55,7 +55,7 @@ OperatorUtils::SaveWidget( const QWidget* inWidget )
 {
   Settings settings;
   settings.beginGroup( KEY_CONFIG );
-  settings.beginGroup( ClassName( typeid( *inWidget ) ) );
+  settings.beginGroup( ClassName( typeid( *inWidget ) ).c_str() );
   settings.setValue( "Size", inWidget->size() );
   settings.setValue( "Pos", inWidget->pos() );
 }
@@ -65,7 +65,7 @@ OperatorUtils::RestoreWidget( QWidget* inWidget )
 {
   Settings settings;
   settings.beginGroup( KEY_CONFIG );
-  settings.beginGroup( ClassName( typeid( *inWidget ) ) );
+  settings.beginGroup( ClassName( typeid( *inWidget ) ).c_str() );
   QSize size = settings.value( "Size", QSize( 0, 0 ) ).toSize();
   QPoint pos = settings.value( "Pos", QPoint( 0, 0 ) ).toPoint();
   // check whether there is at least a portion of the window visible

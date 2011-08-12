@@ -28,7 +28,7 @@
 
 #include <iostream>
 #include <queue>
-#include "OSMutex.h"
+#include "Lockable.h"
 
 struct MessageQueueEntry
 {
@@ -37,17 +37,12 @@ struct MessageQueueEntry
   char* message;
 };
 
-
-class MessageQueue : public std::queue<MessageQueueEntry>
+class MessageQueue : public Lockable, private std::queue<MessageQueueEntry>
 {
  public:
   void QueueMessage( std::istream& );
-  void Lock() const;
-  void Unlock() const;
-  bool empty() const;
-
- private:
-  mutable OSMutex mMutex;
+  bool Empty() const;
+  MessageQueueEntry Next();
 };
 
 #endif // MESSAGE_QUEUE_H

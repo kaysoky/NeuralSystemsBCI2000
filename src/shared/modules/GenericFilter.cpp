@@ -34,9 +34,8 @@ using namespace std;
 using namespace bci;
 
 // GenericFilter class definitions.
-size_t GenericFilter::Registrar::createdInstances = 0;
-const string emptyString = "";
-const string& emptyPos = emptyString;
+size_t GenericFilter::Registrar::sCreatedInstances = 0;
+static const string sEmptyPos = "";
 
 GenericFilter::GenericFilter()
 {
@@ -85,6 +84,42 @@ GenericFilter::VisParamName( const GenericFilter* inpFilter )
   return result;
 }
 
+GenericFilter::Registrar::Registrar( const char* inPos, int inPriority ) 
+: mPos( inPos ),
+  mPriority( inPriority ),
+  mInstance( sCreatedInstances++ )
+{
+  int maxPriority = inPriority;
+  RegistrarSet_::iterator i = Registrars().begin();
+  while( i != Registrars().end() )
+  {
+    RegistrarSet_::iterator j = i++;
+    // Determine max priority present.
+    if( (*j)->mPriority > maxPriority )
+      maxPriority = (*j)->mPriority;
+    // Remove all registrars with lower priority.
+    if( (*j)->mPriority < inPriority )
+      Registrars().erase( j );
+  }
+  // Only insert if priority is high enough.
+  if( inPriority >= maxPriority )
+    Registrars().insert( this ); 
+}
+
+GenericFilter::Registrar::~Registrar()
+{
+  Registrars().erase( this ); 
+}
+
+bool
+GenericFilter::Registrar::less::operator()( const Registrar* a, const Registrar* b ) const
+{ 
+  if( a->mPos != b->mPos ) 
+    return ( a->mPos < b->mPos );
+  return ( a->mInstance < b->mInstance );
+}
+
+
 GenericFilter::RegistrarSet&
 GenericFilter::Registrar::Registrars()
 {
@@ -96,7 +131,7 @@ const string&
 GenericFilter::GetFirstFilterPosition()
 {
   if( Registrar::Registrars().empty() )
-    return emptyPos;
+    return sEmptyPos;
   return ( *Registrar::Registrars().begin() )->Position();
 }
 
@@ -104,7 +139,7 @@ const string&
 GenericFilter::GetLastFilterPosition()
 {
   if( Registrar::Registrars().empty() )
-    return emptyPos;
+    return sEmptyPos;
   return ( *Registrar::Registrars().rbegin() )->Position();
 }
 

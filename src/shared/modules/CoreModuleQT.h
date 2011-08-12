@@ -29,19 +29,18 @@
 
 #include "CoreModule.h"
 
-#include <QApplication>
-#include <QTimer>
-#include <QPushButton>
-#include <QObject>
-
 class CoreModuleQT : public CoreModule
 {
-public:
-  bool Run( int argc, char *argv[] );
+ public:
+  CoreModuleQT();
+  ~CoreModuleQT();
 
-private:
-  virtual void ProcessGUIMessages();
-  virtual bool GUIMessagesPending();
+ private:
+  virtual void OnInitialize( int argc, char** argv );
+  virtual void OnProcessGUIMessages();
+  virtual bool OnGUIMessagesPending();
+
+  class QApplication* mpApplication;
 };
 
 #endif // CORE_MODULE_QT_H

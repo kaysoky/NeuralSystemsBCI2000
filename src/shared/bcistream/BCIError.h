@@ -78,7 +78,7 @@ namespace BCIError
       : std::ostream( 0 )
       { this->init( &mBuf ); }
 
-    OutStream& operator()( const char* );
+    OutStream& operator()( const std::string& );
     OutStream& operator()(); // in case CONTEXT_ is defined empty
     // Specifying a debug level with a message will result in filtering out all
     // messages above the global debug level variable.

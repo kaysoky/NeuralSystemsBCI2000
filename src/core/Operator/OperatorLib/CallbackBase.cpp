@@ -38,6 +38,7 @@
 
 #include "CallbackBase.h"
 #include "BCIError.h"
+#include "BCIException.h"
 
 using namespace std;
 
@@ -149,7 +150,7 @@ CallbackBase::DoExecute( Callback& inCallback )
       break;
 
     default:
-      throw  "CallbackBase::DoExecute: Unknown callback execution context";
+      throw bciexception( "Unknown callback execution context:" << context );
   }
   return inCallback.Result();
 }
@@ -206,7 +207,7 @@ void
 CallbackBase::Callback::SuspendThread()
 {
   if( !mpWaitEvent )
-    throw "CallbackBase::Callback::SuspendThread: trying to wait for NULL event";
+    throw bciexception( "trying to wait for NULL event" );
   mpWaitEvent->Wait();
 }
 

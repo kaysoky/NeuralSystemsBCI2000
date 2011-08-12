@@ -30,6 +30,8 @@
 # define USE_DLL 1
 #endif
 
+#include "BCIAssert.h"
+
 class FFTLibWrapper
 {
   public:
@@ -87,8 +89,7 @@ FFTLibWrapper::number&
 FFTLibWrapper::Input( int index )
 {
 #if !defined( _NDEBUG ) || defined( _DEBUG )
-  if( mInputData == 0 || index > mFFTSize )
-    throw "FFTLibWrapper::Input: Index out of bounds";
+  bciassert( mInputData != 0 && index < mFFTSize );
 #endif
   return mInputData[ index ];
 }
@@ -98,8 +99,7 @@ const FFTLibWrapper::number&
 FFTLibWrapper::Output( int index ) const
 {
 #if !defined( _NDEBUG ) || defined( _DEBUG )
-  if( mOutputData == 0 || index > mFFTSize )
-    throw "FFTLibWrapper::Output: Index out of bounds";
+  bciassert( mOutputData != 0 && index < mFFTSize );
 #endif
   return mOutputData[ index ];
 }

@@ -116,58 +116,27 @@ class GenericFilter : protected Environment, private Uncopyable
   class Registrar
   {
    public:
-    Registrar( const char* inPos, int inPriority ) 
-    : pos( inPos ),
-      priority( inPriority ),
-      instance( createdInstances++ )
-    {
-      int maxPriority = inPriority;
-      RegistrarSet_::iterator i = Registrars().begin();
-      while( i != Registrars().end() )
-      {
-        RegistrarSet_::iterator j = i++;
-        // Determine max priority present.
-        if( (*j)->priority > maxPriority )
-          maxPriority = (*j)->priority;
-        // Remove all registrars with lower priority.
-        if( (*j)->priority < inPriority )
-          Registrars().erase( j );
-      }
-      // Only insert if priority is high enough.
-      if( inPriority >= maxPriority )
-        Registrars().insert( this ); 
-    }
-    virtual ~Registrar()
-    {
-      Registrars().erase( this ); 
-    }
-    const std::string& Position() const { return pos; }
+    Registrar( const char* inPos, int inPriority );
+    virtual ~Registrar();
+    const std::string& Position() const { return mPos; }
     virtual const std::type_info& Typeid() const = 0;
     virtual GenericFilter* NewInstance() const = 0;
 
-   private:
-    std::string pos;
-    int         priority;
-
    public:
-    struct less;
-    friend struct less;
     struct less
     {
-      bool operator() ( const Registrar* a, const Registrar* b ) const
-      { 
-        if( a->pos != b->pos ) 
-          return ( a->pos < b->pos );
-        return ( a->instance < b->instance );
-      }
+      bool operator() ( const Registrar* a, const Registrar* b ) const;
     };
+    friend struct less;
 
     typedef std::set<Registrar*, Registrar::less> RegistrarSet_;
     static RegistrarSet_& Registrars();
 
    private:
-    size_t instance;
-    static size_t createdInstances;
+    std::string mPos;
+    int mPriority;
+    size_t mInstance;
+    static size_t sCreatedInstances;
   };
   typedef Registrar::RegistrarSet_ RegistrarSet;
 

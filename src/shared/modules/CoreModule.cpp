@@ -41,7 +41,7 @@
 #include "BCIError.h"
 #include "VersionInfo.h"
 #include "Version.h"
-#include "OSError.h"
+#include "ExceptionCatcher.h"
 
 #include <string>
 #include <sstream>
@@ -94,69 +94,35 @@ CoreModule::~CoreModule()
 bool
 CoreModule::Run( int inArgc, char** inArgv )
 {
-  // This wrapper function exists because MSVC does not allow
-  // C++ and Win32 Exceptions to be handled in the same function.
-  bool result = false;
-#if _MSC_VER
-  __try
-#endif // _MSC_VER
+  struct
   {
-    result = Run_( inArgc, inArgv );
-  }
-#if _MSC_VER
-  // For breakpoint exceptions, we want to execute the default handler (which opens the debugger).
-  __except( ::GetExceptionCode() == EXCEPTION_BREAKPOINT ? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER )
-  {
-    ReportWin32Exception( ::GetExceptionCode() );
-    ShutdownSystem();
-  }
-#endif // _MSC_VER
-  return result;
-}
+    int argc;
+    char** argv;
+    CoreModule& obj;
+    void ( CoreModule::*fn )( int, char** );
 
-#if _MSC_VER
-void
-CoreModule::ReportWin32Exception( int inCode )
-{
-  bcierr << "unhandled Win32 exception 0x"
-         << hex << inCode << ": "
-         << OSError( inCode ).Message() << ",\n"
-         << "terminating " THISMODULE " module"
-         << endl;
-}
-#endif // _MSC_VER
+    void operator()()
+    { ( obj.*fn )( argc, argv ); }
 
-bool
-CoreModule::Run_( int inArgc, char** inArgv )
-{
-  try
-  {
-    if( Initialize( inArgc, inArgv ) )
-      MainMessageLoop();
-  }
-  catch( const char* s )
-  {
-    bcierr << s << ", terminating " THISMODULE " module"
-           << endl;
-  }
-  catch( const exception& e )
-  {
-    bcierr << "unhandled exception "
-           << typeid( e ).name() << " (" << e.what() << "),\n"
-           << "terminating " THISMODULE " module"
-           << endl;
-  }
-#ifdef __BORLANDC__
-  catch( Exception& e )
-  {
-    bcierr << "unhandled exception "
-           << e.Message.c_str() << ",\n"
-           << "terminating " THISMODULE " module"
-           << endl;
-  }
-#endif // __BORLANDC__
+  } functionCall =
+  { 
+    inArgc, 
+    inArgv, 
+    *this, 
+    &CoreModule::DoRun
+  };
+  ExceptionCatcher()
+    .SetMessage( "terminating " THISMODULE " module" )
+    .Execute( functionCall );
   ShutdownSystem();
   return ( bcierr__.Flushes() == 0 );
+}
+
+void
+CoreModule::DoRun( int inArgc, char** inArgv )
+{
+  if( Initialize( inArgc, inArgv ) )
+    MainMessageLoop();
 }
 
 // Internal functions.
@@ -321,11 +287,11 @@ CoreModule::MainMessageLoop()
 void
 CoreModule::ProcessBCIAndGUIMessages()
 {
-  while( !mMessageQueue.empty()
+  while( !mMessageQueue.Empty()
         || mResting
-        || GUIMessagesPending() )
+        || OnGUIMessagesPending() )
   {
-    while( !mMessageQueue.empty() )
+    while( !mMessageQueue.Empty() )
       MessageHandler::HandleMessage( mMessageQueue );
     // The mResting flag is treated as a pending message from the module to itself.
     // For non-source modules, it is cleared from the HandleResting() function
@@ -337,7 +303,7 @@ CoreModule::ProcessBCIAndGUIMessages()
     mResting &= mOperator.is_open();
     mConnectionLock.Release();
     // Last of all, allow for the GUI to process messages from its message queue if there are any.
-    ProcessGUIMessages();
+    OnProcessGUIMessages();
   }
 }
 

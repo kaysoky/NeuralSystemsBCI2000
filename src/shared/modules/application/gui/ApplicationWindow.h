@@ -86,11 +86,6 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
   ApplicationWindow( const std::string& );
   virtual ~ApplicationWindow();
 
- private: // Forbid copying and assignment to make sure windows may be
-          // identified by their pointers.
-  ApplicationWindow( const ApplicationWindow& );
-  const ApplicationWindow& operator=( const ApplicationWindow& );
-
   // EnvironmentExtension interface
  protected:
   virtual void Publish();

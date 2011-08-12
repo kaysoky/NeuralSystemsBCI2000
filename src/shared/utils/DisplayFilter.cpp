@@ -29,7 +29,7 @@
 
 #include "DisplayFilter.h"
 #include "FilterDesign.h"
-#include <cassert>
+#include "BCIAssert.h"
 
 using namespace std;
 
@@ -140,7 +140,7 @@ DisplayFilter::DesignFilter()
     gain *= abs( notch.Evaluate( 1.0 ) ); // LF gain
   }
 
-  assert( gain > 0 );
+  bciassert( gain > 0 );
   mFilter.SetGain( 1 / gain )
          .SetZeros( tf.Numerator().Roots() )
          .SetPoles( tf.Denominator().Roots() );

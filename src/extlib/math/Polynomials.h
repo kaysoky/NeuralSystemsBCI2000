@@ -30,6 +30,7 @@
 #include <vector>
 #include <valarray>
 #include <algorithm>
+#include <stdexcept>
 
 template<class T>
 class Polynomial
@@ -64,7 +65,7 @@ class Polynomial
   T Evaluate( const T&, int derivative = 0 ) const;
 
  private:
-  void FindRoots() const { throw "Polynomial::FindRoots: Root finding not implemented."; }
+   void FindRoots() const { throw std::logic_error( "Polynomial::FindRoots: Root finding not implemented." ); }
 
   mutable bool   mRootsKnown;     //
   mutable T      mConstantFactor; // These may change during a call to Roots().

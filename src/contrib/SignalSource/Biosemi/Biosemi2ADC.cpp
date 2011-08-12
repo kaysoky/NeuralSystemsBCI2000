@@ -48,7 +48,6 @@
 
 #include <vector>
 #include <string>
-#include <cassert>
 #include "Biosemi2ADC.h"
 #include "BCIError.h"
 #include "GenericSignal.h"

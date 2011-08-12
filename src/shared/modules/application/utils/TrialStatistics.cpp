@@ -27,9 +27,8 @@
 #pragma hdrstop
 
 #include "TrialStatistics.h"
-
+#include "BCIAssert.h"
 #include <cmath>
-#include <cassert>
 
 using namespace std;
 
@@ -194,7 +193,7 @@ TrialStatistics::Bits() const
       // p log p = 0 for p = 0, so we may just drop the term in this case to avoid log(0).
       if( mTargetsResultsMatrix[ i ][ j ] > 0 )
       { // If the above is true, targetFrequencies[ i ] > 0 must also hold or something is messed up.
-        assert( targetFrequencies[ i ] > 0 );
+        bciassert( targetFrequencies[ i ] > 0 );
         bits += mTargetsResultsMatrix[ i ][ j ]
                 * ::log( mTargetsResultsMatrix[ i ][ j ] / targetFrequencies[ i ] );
       }

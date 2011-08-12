@@ -29,7 +29,7 @@
 #include "ScriptInterpreter.h"
 #include "StateMachine.h"
 #include "BCIDirectory.h"
-#include "defines.h"
+#include "CfgID.h"
 #include "BCI_OperatorLib.h"
 
 #include <sstream>
@@ -38,63 +38,6 @@
 using namespace std;
 
 #define PROPERTY_SETS_PARAM "VisPropertySets"
-
-static const struct
-{
-  const char* name;
-  uint8       value;
-}
-sCfgIDs[] =
-{
-  { "Top", CfgID::Top },
-  { "Left", CfgID::Left },
-  { "Width", CfgID::Width },
-  { "Height", CfgID::Height },
-  { "WindowTitle", CfgID::WindowTitle },
-  // Graph options
-  { "MinValue", CfgID::MinValue },
-  { "MaxValue", CfgID::MaxValue },
-  { "NumSamples", CfgID::NumSamples },
-  { "ChannelGroupSize", CfgID::ChannelGroupSize },
-  { "GraphType", CfgID::GraphType },
-  // Graph types
-  { "Polyline", CfgID::Polyline },
-    // Polyline options
-    { "ShowBaselines", CfgID::ShowBaselines },
-    { "ChannelColors", CfgID::ChannelColors },
-  { "Field2d", CfgID::Field2d },
-
-  // Units
-  { "SampleUnit", CfgID::SampleUnit },
-  { "ChannelUnit", CfgID::ChannelUnit },
-  { "ValueUnit", CfgID::ValueUnit },
-
-  // Memo options
-  { "NumLines", CfgID::NumLines },
-
-  // Label lists
-  { "ChannelLabels", CfgID::ChannelLabels },
-  { "GroupLabels", CfgID::GroupLabels },
-  { "XAxisLabels", CfgID::XAxisLabels },
-  { "YAxisLabels", CfgID::YAxisLabels },
-  // Marker lists
-  { "XAxisMarkers", CfgID::XAxisMarkers },
-  { "YAxisMarkers", CfgID::YAxisMarkers },
-  // Miscellaneous
-  { "ShowSampleUnit", CfgID::ShowSampleUnit },
-  { "ShowChannelUnit", CfgID::ShowChannelUnit },
-  { "ShowValueUnit", CfgID::ShowValueUnit },
-  { "SampleOffset", CfgID::SampleOffset },
-
-  { "Visible", CfgID::Visible },
-  { "InvertedDisplay", CfgID::InvertedDisplay },
-  // Filters: Set to "off" to disable a filter
-  { "HPFilter", CfgID::HPFilter },
-  { "LPFilter", CfgID::LPFilter },
-  { "NotchFilter", CfgID::NotchFilter },
-
-};
-
 
 ScriptInterpreter::ScriptInterpreter( StateMachine& s )
 : mLine( 0 ),
@@ -270,7 +213,7 @@ ScriptInterpreter::Execute_Set( istream& is )
     istringstream iss( visID_enc );
     EncodedString visID;
     iss >> visID;
-    IDType numCfgID = Resolve_VisCfg( cfgID.c_str() );
+    IDType numCfgID = CfgID( cfgID );
     mrStateMachine.LockData();
     if( numCfgID != static_cast<IDType>( CfgID::None ) )
     {
@@ -469,7 +412,7 @@ ScriptInterpreter::ApplyVisPropertySet( const std::string& inSetID )
           istringstream iss2( visID_enc );
           EncodedString visID;
           iss2 >> visID;
-          IDType numCfgID = Resolve_VisCfg( cfgID.c_str() );
+          IDType numCfgID = CfgID( cfgID );
           if( numCfgID != static_cast<IDType>( CfgID::None ) )
           {
             string value = p.Value( row, col ).ToString();
@@ -483,17 +426,6 @@ ScriptInterpreter::ApplyVisPropertySet( const std::string& inSetID )
     }
   }
   mrStateMachine.UnlockData();
-  return result;
-}
-
-IDType
-ScriptInterpreter::Resolve_VisCfg( const char* inName )
-{
-  IDType result = CfgID::None;
-  for( size_t i = 0; result == static_cast<IDType>( CfgID::None ) 
-                     && i < sizeof( sCfgIDs ) / sizeof( *sCfgIDs ); ++i )
-    if( 0 == ::stricmp( inName, sCfgIDs[i].name ) )
-      result = sCfgIDs[i].value;
   return result;
 }
 

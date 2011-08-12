@@ -33,6 +33,7 @@
 #include "BCIDirectory.h"
 #include "BCIError.h"
 #include "OSError.h"
+#include "BCIException.h"
 
 #if _MSC_VER
 # include <direct.h>
@@ -127,7 +128,7 @@ Scene::OnPaint( const DrawContext& inDC )
   // further to the top are drawn properly.
   ::SelectClipRgn( ( HDC )inDC.handle, NULL );
   if( !::wglMakeCurrent( ( HDC )inDC.handle, mGLRC ) )
-    throw OSError().Message();
+    bciexception << OSError().Message();
   GUI::Rect fullRect = { 0, 0, 1, 1 };
   fullRect = Display().NormalizedToPixelCoords( fullRect );
   int windowHeight = fullRect.bottom - fullRect.top;

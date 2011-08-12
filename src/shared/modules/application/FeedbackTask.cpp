@@ -37,12 +37,9 @@
 
 #include "FeedbackTask.h"
 #include "PrecisionTime.h"
+#include "BCIException.h"
 
 using namespace std;
-
-#ifdef _MSC_VER
-#define __FUNC__ __FUNCTION__
-#endif // _MSC_VER
 
 FeedbackTask::FeedbackTask()
 : mPhase( none ),
@@ -220,10 +217,7 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
         break;
 
       default:
-      {
-        static string msg = string( __FUNC__ ) + ": Unknown phase value";
-        throw msg.c_str();
-      }
+        throw bciexception( "Unknown phase value: " << mPhase );
     }
     if( doProgress )
     {
@@ -282,10 +276,7 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
           break;
         }
         default:
-        {
-          static string msg = string( __FUNC__ ) + ": Unknown phase value";
-          throw msg.c_str();
-        }
+          throw bciexception( "Unknown phase value: " << mPhase );
       }
     }
   }

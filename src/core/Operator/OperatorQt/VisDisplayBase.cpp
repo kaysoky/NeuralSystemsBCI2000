@@ -93,7 +93,7 @@ VisDisplayBase::ConfigContainer::Restore()
     {
       if( j->startsWith( cfgid_prefix ) )
       {
-        VisDisplay::IDType cfgID = j->mid( cfgid_prefix.length() ).toUInt();
+        CfgID cfgID = j->mid( cfgid_prefix.length() ).toUInt();
         QString value = settings.value( *j ).toString();
         ( *this )[ visID ].Put( cfgID, value.toStdString(), OnceUserDefined );
       }
@@ -187,7 +187,7 @@ VisDisplayBase::HandleBitmap( const char* inVisID, const BitmapImage& inBitmap )
 }
 
 void
-VisDisplayBase::HandleProperty( const char* inVisID, VisDisplay::IDType inCfgID, const char* inValue, ConfigState inState )
+VisDisplayBase::HandleProperty( const char* inVisID, CfgID inCfgID, const char* inValue, ConfigState inState )
 {
   Visconfigs()[ inVisID ].Put( inCfgID, inValue, inState );
   if( Visuals()[ inVisID ] != NULL )

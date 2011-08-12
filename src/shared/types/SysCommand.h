@@ -37,9 +37,8 @@ class SysCommand
 
   private:
     // The constructor which specifies the string content of
-    // a SysCommand should not be created ad hoc --
-    // instead, all existing SysCommands should be listed
-    // as static constants of this class.
+    // a SysCommand is private because all allowed SysCommands
+    // are defined as static constants of the SysCommand class.
     explicit SysCommand( const std::string& s )
       : mBuffer( s )
       {}

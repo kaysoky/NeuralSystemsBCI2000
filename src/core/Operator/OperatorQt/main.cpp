@@ -31,6 +31,7 @@
 #include "BitmapImage.h"
 #include "VisDisplay.h"
 #include "OSThread.h"
+#include "ExceptionCatcher.h"
 #if _WIN32
 # include "FPExceptMask.h"
 #endif // _WIN32
@@ -77,25 +78,36 @@ main(int argc, char *argv[])
   MainWindow w;
   VisDisplay::SetParentWindow( &w );
   w.show();
-  while( !w.Terminating() )
-  { // We use our own event loop to allow for processing pending
-    // callbacks from the BCI operator library.
-    // Qt docs suggest using a zero ms timer for doing idle processing,
-    // but this leads to high CPU usage.
-    a.sendPostedEvents();
-    a.processEvents();
-    OSThread::Sleep( 1 ); // avoid hogging the CPU
-    BCI_CheckPendingCallback();
-  }
-  while( !w.Terminated() )
+
+  struct
   {
-    OSThread::Sleep( 1 );
-    BCI_CheckPendingCallback();
-  }
-  // QWidget destructors assume a valid application object,
-  // so we delete visualization windows while the application
-  // object is still in scope.
-  VisDisplay::Clear();
+    QApplication& a;
+    MainWindow& w;
+    void operator()()
+    {
+      while( !w.Terminating() )
+      { // We use our own event loop to allow for processing pending
+        // callbacks from the BCI operator library.
+        // Qt docs suggest using a zero ms timer for doing idle processing,
+        // but this leads to high CPU usage.
+        a.sendPostedEvents();
+        a.processEvents();
+        OSThread::Sleep( 1 ); // avoid hogging the CPU
+        BCI_CheckPendingCallback();
+      }
+      while( !w.Terminated() )
+      {
+        OSThread::Sleep( 1 );
+        BCI_CheckPendingCallback();
+      }
+      // QWidget destructors assume a valid application object,
+      // so we delete visualization windows while the application
+      // object is still in scope.
+      VisDisplay::Clear();
+    }
+  } functor = { a, w };
+  ExceptionCatcher().SetMessage( "terminating Operator module" )
+                    .Execute( functor );
 #ifdef _WIN32
   ::ReleaseMutex( appMutex );
   ::CloseHandle( appMutex );

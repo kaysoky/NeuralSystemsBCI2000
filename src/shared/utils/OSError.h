@@ -27,13 +27,15 @@
 #define OS_ERROR_H
 
 #include <string>
+#include "Uncopyable.h"
 
-class OSError
+class OSError : private Uncopyable
 {
  public:
   OSError(); // This constructor obtains the last error code.
   OSError( long inErrorCode )
-  : mCode( inErrorCode )
+  : mCode( inErrorCode ),
+    mMessage( cDefaultMessage )
   {}
   // Properties
   long        Code() const
@@ -42,7 +44,9 @@ class OSError
 
  private:
   long mCode;
-  static char* spMessageBuffer;
+  mutable std::string mMessage;
+
+  static const std::string cDefaultMessage;
 };
 
 #endif // OS_ERROR_H

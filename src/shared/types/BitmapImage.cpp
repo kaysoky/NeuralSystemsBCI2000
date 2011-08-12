@@ -30,8 +30,87 @@
 #pragma hdrstop
 
 #include "BitmapImage.h"
+#include "BCIException.h"
+#include <string>
 
 using namespace std;
+
+BitmapImage::BitmapImage( int inWidth, int inHeight )
+: mWidth( inWidth ),
+  mHeight( inHeight ),
+  mpData( new uint16[ inWidth * inHeight ] )
+{
+  SetTransparent();
+}
+
+BitmapImage::BitmapImage( const BitmapImage& b )
+: mWidth( b.mWidth ),
+  mHeight( b.mHeight ),
+  mpData( new uint16[ mWidth * mHeight ] )
+{
+  std::memcpy( mpData, b.mpData, mWidth * mHeight * sizeof( *mpData ) );
+}
+
+BitmapImage::BitmapImage( int inWidth, int inHeight, uint16* inpData )
+: mWidth( inWidth ),
+  mHeight( inHeight ),
+  mpData( new uint16[ inWidth * inHeight ] )
+{
+  std::memcpy( mpData, inpData, mWidth * mHeight * sizeof( *mpData ) );
+}
+
+BitmapImage&
+BitmapImage::operator=( const BitmapImage& b )
+{
+  if( &b != this )
+  {
+    delete[] mpData;
+    mpData = NULL; // in case operator new throws
+    mWidth = b.mWidth;
+    mHeight = b.mHeight;
+    mpData = new uint16[ mWidth * mHeight ];
+    std::memcpy( mpData, b.mpData, mWidth * mHeight * sizeof( *mpData ) );
+  }
+  return *this;
+}
+
+BitmapImage&
+BitmapImage::operator+=( const BitmapImage& b )
+{
+  DimensionCheck( b );
+  for( int i = 0; i < mWidth * mHeight; ++i )
+    mpData[ i ] += b.mpData[ i ];
+  return *this;
+}
+
+BitmapImage&
+BitmapImage::operator-=( const BitmapImage& b )
+{
+  DimensionCheck( b );
+  for( int i = 0; i < mWidth * mHeight; ++i )
+    mpData[ i ] -= b.mpData[ i ];
+  return *this;
+}
+
+// For this function, negative values are interpreted as an inverted clipping
+// region. Input pixels will only replace existing pixels with negative values,
+// i.e. pixels outside the clipping region.
+BitmapImage&
+BitmapImage::SetBackground( const BitmapImage& b )
+{
+  DimensionCheck( b );
+  for( int i = 0; i < mWidth * mHeight; ++i )
+    if( mpData[ i ] & 0x8000 )
+      mpData[ i ] = b.mpData[ i ];
+  return *this;
+}
+
+void
+BitmapImage::DimensionCheck( const BitmapImage& b ) const
+{
+  if( mWidth != b.mWidth || mHeight != b.mHeight )
+    throw bciexception( "BitmapImage dimension mismatch" );
+}
 
 ostream&
 BitmapImage::WriteBinary( ostream& os ) const
@@ -70,12 +149,5 @@ BitmapImage::ReadBinary( istream& is )
       *pData++ = value;
   }
   return is;
-}
-
-void
-BitmapImage::DimensionCheck( const BitmapImage& b ) const
-{
-  if( mWidth != b.mWidth || mHeight != b.mHeight )
-    throw "BitmapImage dimension mismatch";
 }
 

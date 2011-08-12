@@ -29,6 +29,7 @@
 #else // __BORLANDC__
 
 // Not using borland, we'll use QT instead
+#include <QApplication>
 #include "CoreModuleQT.h"
 
 #endif // __BORLANDC__
@@ -56,9 +57,9 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 
 #else // __BORLANDC__
 
-	QApplication::setApplicationName( APP_TITLE );
-  	bool success = CoreModuleQT().Run( __argc, __argv );
-	return success ? 0 : -1;
+  QApplication::setApplicationName( APP_TITLE );
+  bool success = CoreModuleQT().Run( __argc, __argv );
+  return success ? 0 : -1;
 
 #endif // __BORLANDC__
 }

@@ -37,6 +37,7 @@
 
 #include "StimulusTask.h"
 #include "MeasurementUnits.h"
+#include "BCIException.h"
 
 #include <iomanip>
 #include <set>
@@ -317,7 +318,7 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
         break;
 
       default:
-        throw "StimulusTask::Process: Unknown phase value";
+        throw bciexception( "Unknown phase value: " << mPhase );
     }
     if( doProgress )
     {
@@ -400,7 +401,7 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
           break;
 
         default:
-          throw "StimulusTask::Process: Unknown phase value";
+          throw bciexception( "Unknown phase value: " << mPhase );
       }
     }
   }

@@ -42,11 +42,11 @@ class ParamRef
   enum { none = UINT_MAX / 2 };
 
  private:
+  ParamRef();
   ParamRef& operator=( const ParamRef& );
 
  public:
-  ParamRef();
-  ParamRef( Param* param, size_t row = none, size_t column = none );
+  explicit ParamRef( Param* param, size_t row = none, size_t column = none );
   bool IsNull() const
     { return mpParam == NULL; }
   // Assignment operators for write access.
@@ -370,12 +370,6 @@ std::istream& operator>>( std::istream& s, ParamRef& t )
 ////////////////////////////////////////////////////////////////////////////////
 // Definitions of inline functions
 ////////////////////////////////////////////////////////////////////////////////
-inline
-ParamRef::ParamRef()
-: mpParam( NULL ), mIdx1( none ), mIdx2( none )
-{
-}
-
 inline
 ParamRef::ParamRef( Param* param, size_t row, size_t column )
 : mpParam( param ), mIdx1( row ), mIdx2( column )

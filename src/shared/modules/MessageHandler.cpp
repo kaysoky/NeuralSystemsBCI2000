@@ -57,13 +57,10 @@ using namespace std;
 void
 MessageHandler::HandleMessage( MessageQueue& ioQueue )
 {
-  if( ioQueue.empty() )
+  if( ioQueue.Empty() )
     return;
 
-  ioQueue.Lock();
-  MessageQueueEntry entry = ioQueue.front();
-  ioQueue.pop();
-  ioQueue.Unlock();
+  MessageQueueEntry entry = ioQueue.Next();
 
   istringstream iss( string( entry.message, entry.length ) );
   switch( entry.descSupp )

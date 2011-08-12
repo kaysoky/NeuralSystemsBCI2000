@@ -31,7 +31,6 @@
 
 #include "RandomGenerator.h"
 #include <cstdlib>
-#include <cassert>
 
 using namespace std;
 

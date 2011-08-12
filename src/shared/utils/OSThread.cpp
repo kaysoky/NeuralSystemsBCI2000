@@ -33,6 +33,8 @@
 #include "OSEvent.h"
 #include "BCIError.h"
 #include "OSError.h"
+#include "ClassName.h"
+#include "ExceptionCatcher.h"
 
 #if !_WIN32
 # include <unistd.h>
@@ -72,15 +74,6 @@ OSThread::Start()
   mHandle = ::CreateThread( NULL, 0, OSThread::StartThread, this, 0, &mThreadID );
   if( mHandle == NULL )
     bcierr << OSError().Message() << endl;
-}
-
-void
-OSThread::Terminate( OSEvent* inpEvent )
-{
-  mpTerminationEvent = inpEvent;
-  mTerminating = true;
-  if( IsTerminated() && mpTerminationEvent )
-    mpTerminationEvent->Set();
 }
 
 bool 
@@ -131,15 +124,6 @@ OSThread::Start()
   }
 }
 
-void
-OSThread::Terminate( OSEvent* inpEvent )
-{
-  mpTerminationEvent = inpEvent;
-  mTerminating = true;
-  if( IsTerminated() && mpTerminationEvent )
-    mpTerminationEvent->Set();
-}
-
 bool 
 OSThread::IsTerminated() const
 {
@@ -160,6 +144,36 @@ OSThread::IsMainThread()
 
 #endif // _WIN32
 
+void
+OSThread::Terminate( OSEvent* inpEvent )
+{
+  mpTerminationEvent = inpEvent;
+  mTerminating = true;
+  if( IsTerminated() && mpTerminationEvent )
+    mpTerminationEvent->Set();
+}
+
+int
+OSThread::CallExecute()
+{
+  struct
+  {
+    OSThread& obj;
+    int ( OSThread::*fn )();
+    int result;
+
+    void operator()()
+    { result = ( obj.*fn )(); }
+
+  } functionCall = { *this, &OSThread::Execute, 0 };
+
+  ExceptionCatcher()
+    .SetMessage( string( "canceling thread of type " ) + bci::ClassName( typeid( *this ) ) )
+    .Execute( functionCall );
+
+  return functionCall.result;
+}
+
 
 #if _WIN32
 
@@ -168,7 +182,7 @@ OSThread::StartThread( void* inInstance )
 {
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
   this_->mTerminating = false;
-  this_->mResult = this_->Execute();
+  this_->mResult = this_->CallExecute();
   ::CloseHandle( this_->mHandle );
   this_->mHandle = NULL;
   if( this_->mpTerminationEvent )
@@ -188,7 +202,7 @@ OSThread::StartThread( void* inInstance )
   // Set the cancel state to asynchronous, so pthread_cancel() will 
   // immediately cancel thread execution.
   ::pthread_setcancelstate( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
-  this_->mResult = this_->Execute();
+  this_->mResult = this_->CallExecute();
   this_->mTerminated = true;
   if( this_->mpTerminationEvent )
     this_->mpTerminationEvent->Set();

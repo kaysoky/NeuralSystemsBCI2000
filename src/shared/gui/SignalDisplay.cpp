@@ -28,8 +28,8 @@
 #pragma hdrstop
 
 #include "SignalDisplay.h"
+#include "BCIAssert.h"
 
-#include <cassert>
 #include <cmath>
 #include <sstream>
 #include <iomanip>
@@ -191,7 +191,7 @@ SignalDisplay::WrapForward( const GenericSignal& inSignal )
       firstValidPixel = SampleLeft( firstValidSample );
       break;
     default:
-      assert( false );
+      bciassert( false );
   }
 
   QWidget* pWindow = dynamic_cast< QWidget* >( mTargetDC );
@@ -462,7 +462,7 @@ SignalDisplay::Paint( const void* inUpdateRgn )
       DrawYLabels( p, false );
       break;
     default:
-      assert( false );
+      bciassert( false );
   }
   DrawMarkerChannels( p );
   DrawMarkers( p );

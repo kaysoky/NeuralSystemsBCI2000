@@ -35,9 +35,11 @@
 # include <pthread.h>
 #endif // _WIN32
 
+#include "Uncopyable.h"
+
 class OSEvent;
 
-class OSThread
+class OSThread : private Uncopyable
 {
  public:
   OSThread();
@@ -55,8 +57,10 @@ class OSThread
   static void Sleep( int ); // milliseconds
   static bool IsMainThread();
 
- protected:
+ private:
   virtual int Execute() = 0;
+
+  int CallExecute();
 
  private:
 #ifdef _WIN32

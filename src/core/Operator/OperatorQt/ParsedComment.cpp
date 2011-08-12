@@ -27,9 +27,9 @@
 #include "ParsedComment.h"
 
 #include "Param.h"
+#include "BCIAssert.h"
 #include <sstream>
 #include <cstdlib>
-#include <cassert>
 
 using namespace std;
 
@@ -97,7 +97,7 @@ ParsedComment::ParsedComment( const Param& p )
       break;
 
     default:
-      assert( false );
+      bciassert( false );
   }
 }
 

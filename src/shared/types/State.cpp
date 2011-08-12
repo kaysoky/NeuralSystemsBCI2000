@@ -28,10 +28,11 @@
 
 #include "State.h"
 #include "StateVector.h"
+#include "BCIException.h"
+#include "BCIAssert.h"
 
 #include <sstream>
 #include <map>
-#include <cassert>
 
 using namespace std;
 
@@ -84,10 +85,13 @@ State::ReadFromStream( istream& is )
       bitLocation = 0;
   is >> mName >> mLength >> mValue >> byteLocation >> bitLocation;
   if( mLength > 8 * sizeof( ValueType ) )
-    throw "State length exceeds size of State::ValueType";
+    throw bciexception( "State " << mName << ": length of " << mLength << " exceeds size of State::ValueType" );
   SetByteLocation( byteLocation );
   SetBitLocation( bitLocation );
   mKind = StateKind;
+#ifdef TODO
+# error Add kind (and type?) field to state definition.
+#endif // TODO
   return is;
 }
 
@@ -171,7 +175,7 @@ State::Commit( StateVector* stateVector )
 {
   if( mModified )
   {
-    assert( stateVector != NULL );
+    bciassert( stateVector != NULL );
     stateVector->SetStateValue( mLocation, mLength, mValue );
     mModified = false;
   }

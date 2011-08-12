@@ -28,10 +28,11 @@
 
 #include "Param.h"
 #include "Brackets.h"
+#include "BCIException.h"
+#include "BCIAssert.h"
 
 #include <sstream>
 #include <cstdio>
-#include <cassert>
 
 using namespace std;
 
@@ -149,7 +150,7 @@ Param::Param( const std::string& line )
 {
   istringstream iss( line );
   if( !( iss >> *this ) )
-    throw "Invalid parameter line";
+    throw bciexception( "Invalid parameter line" );
 }
 
 // **************************************************************************
@@ -200,37 +201,38 @@ const Param::ParamValue&
 Param::Value( size_t idx ) const
 {
   if( idx >= mValues.size() )
-    throw "Index out of range when accessing a parameter value";
+    throw bciexception( "Index " << idx << " out of range when accessing parameter " << Name() );
   return mValues[idx];
 }
 
 Param::ParamValue&
 Param::Value( size_t idx )
 {
-  if( idx >= mValues.size() )
-    throw "Index out of range when accessing a parameter value";
   mChanged = true;
-  return mValues[idx];
+  return const_cast<Param::ParamValue&>( const_cast<const Param*>( this )->Value( idx ) );
 }
 
 const Param::ParamValue&
 Param::Value( int row, int col ) const
 {
-  if( row >= NumRows() )
-    throw "Row index out of range when accessing a parameter value";
-  if( col >= NumColumns() )
-    throw "Column index out of range when accessing a parameter value";
+  BoundsCheck( row, col );
   return Value( row * NumColumns() + col );
 }
 
 Param::ParamValue&
 Param::Value( int row, int col )
 {
-  if( row >= NumRows() )
-    throw "Row index out of range when accessing a parameter value";
-  if( col >= NumColumns() )
-    throw "Column index out of range when accessing a parameter value";
+  BoundsCheck( row, col );
   return Value( row * NumColumns() + col );
+}
+
+void
+Param::BoundsCheck( int row, int col ) const
+{
+  if( row >= NumRows() )
+    throw bciexception( "Row index " << row << " out of range when accessing parameter " << Name() );
+  if( col >= NumColumns() )
+    throw bciexception( "Column index" << col << " out of range when accessing parameter " << Name() );
 }
 
 // **************************************************************************
@@ -621,7 +623,7 @@ Param::ParamValue::ToParam()
 ostream&
 Param::ParamValue::WriteToStream( ostream& os ) const
 {
-  assert( !( mpString && mpParam ) );
+  bciassert( !( mpString && mpParam ) );
   if( mpParam )
     os << *mpParam;
   else if( mpString )

@@ -29,6 +29,7 @@
 #define FP_EXCEPT_MASK_H
 
 #include <float.h>
+#include "Uncopyable.h"
 
 #if __BORLANDC__
 # define _MCW_EM        MCW_EM
@@ -40,7 +41,7 @@
 # define _EM_INEXACT    EM_INEXACT
 #endif // __BORLANDC__
 
-class FPExceptMask
+class FPExceptMask : private Uncopyable
 {
  public:
   FPExceptMask( int inExceptions = _MCW_EM )

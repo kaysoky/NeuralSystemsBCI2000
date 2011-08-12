@@ -31,6 +31,7 @@
 #include "defines.h"
 #include "GUI.h"
 #include "images/BCI2000logo_small.h"
+#include "BCIAssert.h"
 
 #if !__BORLANDC__
 # include <QtGui>
@@ -38,7 +39,6 @@
 
 #include <sstream>
 #include <cstdio>
-#include <cassert>
 
 #include <windows.h> // FirstAmp.h depends on this
 #include "FirstAmp.h"
@@ -318,7 +318,7 @@ HBITMAP
 vAmpDisplay::QImageToHBITMAP( const QImage& inImage )
 { // It appears impossible to obtain a HBITMAP with a zeroed alpha channel
   // from QPixmap::toWinHBITMAP(), so we construct this ourselves.
-  assert( inImage.format() == QImage::Format_RGB32 );
+  bciassert( inImage.format() == QImage::Format_RGB32 );
   int w = inImage.width(),
       h = inImage.height();
   HDC displayDC = GetDC( NULL );

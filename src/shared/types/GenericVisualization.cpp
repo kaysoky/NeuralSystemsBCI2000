@@ -157,7 +157,7 @@ std::ostream* GenericVisualization::spOutputStream = NULL;
 const OSMutex* GenericVisualization::spOutputLock = NULL;
 
 GenericVisualization&
-GenericVisualization::SendCfgString( CfgID::CfgID inCfgID, const std::string& inCfgString )
+GenericVisualization::SendCfgString( CfgID inCfgID, const std::string& inCfgString )
 {
   return SendObject( VisCfg( mSourceID, inCfgID, inCfgString ) );
 }

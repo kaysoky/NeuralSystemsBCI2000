@@ -204,7 +204,10 @@ class Param
 
   const ParamValue&  Value( int row, int col ) const;
   ParamValue&        Value( int row, int col );
+ private:
+  void               BoundsCheck( int row, int col ) const;
 
+ public:
   const ParamValue&  Value( const std::string& label ) const
                      { return Value( mDim1Index[ label ] ); }
   ParamValue&        Value( const std::string& label )

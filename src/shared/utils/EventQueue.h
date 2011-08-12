@@ -31,10 +31,11 @@
 #ifndef EVENT_QUEUE_H
 #define EVENT_QUEUE_H
 
+#include "Uncopyable.h"
 #include "PrecisionTime.h"
 #include <cstddef>
 
-class EventQueue
+class EventQueue : private Uncopyable
 {
  public:
   EventQueue()

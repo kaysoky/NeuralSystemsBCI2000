@@ -61,7 +61,7 @@ class VisDisplayBase : public QWidget
   static void HandleSignal( const char* visID, const GenericSignal& );
   static void HandleMemo( const char* visID, const char* );
   static void HandleBitmap( const char* visID, const BitmapImage& );
-  static void HandleProperty( const char* visID, VisDisplay::IDType cfgID, const char* value, ConfigState );
+  static void HandleProperty( const char* visID, CfgID, const char* value, ConfigState );
 
  protected:
   virtual void Restore();
@@ -90,16 +90,16 @@ class VisDisplayBase : public QWidget
 
  protected:
   // configID->value
-  typedef std::map< VisDisplay::IDType, std::string > ConfigSettingsBase;
+  typedef std::map< CfgID, std::string > ConfigSettingsBase;
   class ConfigSettings : public ConfigSettingsBase
   {
    public:
-    template<typename T> bool Get( VisDisplay::IDType id, T& t, ConfigState minState = Default );
-    template<typename T> bool Put( VisDisplay::IDType id, const T& t, ConfigState state );
-    ConfigState& State( VisDisplay::IDType id ) { return mStates[ id ]; }
+    template<typename T> bool Get( CfgID id, T& t, ConfigState minState = Default );
+    template<typename T> bool Put( CfgID id, const T& t, ConfigState state );
+    ConfigState& State( CfgID id ) { return mStates[ id ]; }
 
    private:
-    std::map< VisDisplay::IDType, ConfigState > mStates;
+    std::map< CfgID, ConfigState > mStates;
   };
 
   // visID->config information
@@ -117,7 +117,7 @@ class VisDisplayBase : public QWidget
 
 template<typename T>
 bool
-VisDisplayBase::ConfigSettings::Get( VisDisplay::IDType id, T& t, ConfigState minState )
+VisDisplayBase::ConfigSettings::Get( CfgID id, T& t, ConfigState minState )
 {
   const_iterator i = find( id );
   if( i == end() )
@@ -136,7 +136,7 @@ VisDisplayBase::ConfigSettings::Get( VisDisplay::IDType id, T& t, ConfigState mi
 
 template<typename T>
 bool
-VisDisplayBase::ConfigSettings::Put( VisDisplay::IDType id, const T& t, ConfigState state )
+VisDisplayBase::ConfigSettings::Put( CfgID id, const T& t, ConfigState state )
 {
   if( State( id ) > state )
     return false;

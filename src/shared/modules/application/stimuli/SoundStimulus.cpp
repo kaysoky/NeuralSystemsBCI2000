@@ -28,6 +28,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "SoundStimulus.h"
 
+#include "BCIException.h"
+
 using namespace std;
 
 vector<SoundStimulus::WavePlayerEntry> SoundStimulus::sWavePlayerInstances;
@@ -65,8 +67,11 @@ SoundStimulus::FreeWavePlayer( WavePlayer* inpWavePlayer )
     if( i->instance == inpWavePlayer )
       break;
   if( i == sWavePlayerInstances.end() )
-    throw "SoundStimulus::FreeWavePlayer: Trying to deallocate a WavePlayer object"
-          " that has not been allocated with SoundStimulus::AllocateWavePlayer()";
+    throw bciexception(
+      "Trying to deallocate a WavePlayer object"
+      " that has not been allocated with"
+      " SoundStimulus::AllocateWavePlayer()"
+      );
   if( !i->instance->IsPlaying() )
   {
     delete i->instance;

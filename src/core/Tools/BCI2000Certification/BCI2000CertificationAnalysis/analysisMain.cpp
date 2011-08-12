@@ -30,6 +30,7 @@ $END_BCI2000_LICENSE$
 #include <QApplication>
 
 #include "analysisGUI.h"
+#include "ExceptionCatcher.h"
 
 using namespace std;
 
@@ -48,9 +49,21 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 
 int main(int argc, char* argv[])
 {
-	QApplication app(argc, argv);
-	analysisGUI GUI;
-	GUI.show();
-	return app.exec();
+  QApplication app(argc, argv);
+  analysisGUI GUI;
+  GUI.show();
+
+  std::string message = "aborting ";
+  message += app.applicationName().toLocal8Bit().constData();
+  struct
+  {
+    QApplication& app;
+    int result;
+    void operator()()
+    { result = app.exec(); }
+  } functor = { app, -1 };
+  ExceptionCatcher().SetMessage( message )
+                    .Execute( functor );
+  return functor.result;
 }
 //---------------------------------------------------------------------------

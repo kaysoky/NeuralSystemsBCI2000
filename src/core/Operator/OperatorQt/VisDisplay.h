@@ -26,7 +26,7 @@
 #ifndef VIS_DISPLAY_H
 #define VIS_DISPLAY_H
 
-#include "defines.h"
+#include "CfgID.h"
 #include <string>
 
 class GenericSignal;
@@ -36,7 +36,6 @@ class QWidget;
 class VisDisplay
 {
  public:
-  typedef uint8 IDType;
   // This is the outside interface of the VisDisplay class hierarchy.
   static void SetParentWindow( QWidget* );
   static void DeleteWindow( const char* visID );
@@ -46,8 +45,8 @@ class VisDisplay
   static void HandleSignal( const char* visID, const GenericSignal& );
   static void HandleMemo( const char* visID, const char* );
   static void HandleBitmap( const char* visID, const BitmapImage& );
-  static void HandlePropertyMessage( const char* visID, const IDType, const char* );
-  static void HandleProperty( const char* visID, const IDType, const char* );
+  static void HandlePropertyMessage( const char* visID, CfgID, const char* );
+  static void HandleProperty( const char* visID, CfgID, const char* );
   static void Clear();
  private:
   //static std::string FormatID( const char* id );

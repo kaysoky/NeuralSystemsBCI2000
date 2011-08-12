@@ -25,6 +25,7 @@
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////
 #include "ParamEnv.h"
+#include "BCIException.h"
 
 using namespace std;
 
@@ -32,6 +33,6 @@ ParamRef
 ParamEnv::operator()( const string& inName )
 {
   if( !Exists( inName ) )
-    throw "Parameter does not exist.";
+    throw bciexception( "Parameter " << inName << " does not exist" );
   return ParamRef( &( *this )[inName] );
 }

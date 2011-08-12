@@ -27,6 +27,7 @@
 #define GUI_H
 
 #include "Color.h"
+#include "BCIException.h"
 
 #ifdef __BORLANDC__
 # include <vcl.h>
@@ -157,7 +158,7 @@ GUI::GraphicResource::Render( const T& inGraphic, const GUI::DrawContext& inDC )
   if( inDC.handle.device != NULL )
   {
     if( Mode != RenderingMode::Opaque )
-      throw "GUI::GraphicsResource::Render: Unsupported rendering mode.";
+      throw bciexception( "Unsupported rendering mode: " << Mode );
 
     int width = Width( inGraphic ),
         height = Height( inGraphic );

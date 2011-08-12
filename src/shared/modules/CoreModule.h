@@ -16,20 +16,20 @@
 //
 //          For core modules that use GUI elements, the GUI's message loop must
 //          be replaced by the message loop implemented within the CoreModule
-//          class. To process GUI messages, override CoreModule::ProcessGUIMessages()
+//          class. To process GUI messages, override CoreModule::OnProcessGUIMessages()
 //          from a derived class:
 //
 //          class CoreModuleGUI : public CoreModule
 //          {
 //            public:
 //              CoreModuleGUI() {}
-//              virtual void ProcessGUIMessages()
+//              virtual void OnProcessGUIMessages()
 //              {
 //                // Example applying to Borland VCL
 //                Application->ProcessMessages();
 //                ::Sleep( 0 );
 //              }
-//              virtual bool GUIMessagesPending()
+//              virtual bool OnGUIMessagesPending()
 //              {
 //                return ::GetQueueStatus( QS_ALLINPUT );
 //              }
@@ -58,13 +58,14 @@
 #ifndef CORE_MODULE_H
 #define CORE_MODULE_H
 
-#include "Environment.h"
-#include "Param.h"
-#include "State.h"
-#include "GenericSignal.h"
-#include "SockStream.h"
+#include "Uncopyable.h"
 #include "MessageHandler.h"
+#include "Paramlist.h"
+#include "Statelist.h"
+#include "GenericSignal.h"
+
 #include "OSThread.h"
+#include "OSMutex.h"
 #include "OSEvent.h"
 
 #if _WIN32
@@ -98,7 +99,7 @@
 #endif
 
 
-class CoreModule : private MessageHandler
+class CoreModule : private Uncopyable, private MessageHandler
 {
   static const int cInitialConnectionTimeout = 20000; // ms
 #if _WIN32
@@ -113,20 +114,13 @@ class CoreModule : private MessageHandler
  protected:
   // Override to integrate with a GUI library.
   virtual void OnInitialize( int argc, char** argv ) {}
-  virtual void ProcessGUIMessages() {}
-  virtual bool GUIMessagesPending() { return false; }
+  virtual void OnProcessGUIMessages() {}
+  virtual bool OnGUIMessagesPending() { return false; }
   // Calling Terminate() will end message processing.
   void Terminate() { mTerminated = true; }
 
  private:
-  // No copying or assignment.
-  CoreModule( const CoreModule& );
-  CoreModule& operator=( const CoreModule& );
-
-  bool Run_( int argc, char** argv );
-#if _MSC_VER
-  void ReportWin32Exception( int code );
-#endif // _MSC_VER
+  void DoRun( int argc, char** argv );
   bool Initialize( int argc, char** argv );
   void MainMessageLoop();
   void ProcessBCIAndGUIMessages();

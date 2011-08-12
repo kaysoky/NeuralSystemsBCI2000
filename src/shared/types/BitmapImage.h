@@ -43,11 +43,9 @@ class BitmapImage
   class PixelRef
   {
    public:
-    PixelRef()
-      : mpData( NULL )
+    PixelRef( BitmapImage& b, int x, int y )
+      : mpData( b.mpData + b.mWidth * y + x )
       {}
-    PixelRef& PointTo( BitmapImage* pBitmapImage, int x, int y )
-      { mpData = pBitmapImage->mpData + pBitmapImage->mWidth * y + x; return *this; }
     bool IsBlack() const
       {
         return *mpData == 0;
@@ -81,42 +79,12 @@ class BitmapImage
   };
 
  public:
-  BitmapImage( int inWidth = 0, int inHeight = 0 )
-    : mWidth( inWidth ),
-      mHeight( inHeight ),
-      mpData( new uint16[ inWidth * inHeight ] )
-    {
-      SetTransparent();
-    }
-  BitmapImage( const BitmapImage& b )
-    : mWidth( b.mWidth ),
-      mHeight( b.mHeight ),
-      mpData( new uint16[ mWidth * mHeight ] )
-    {
-      std::memcpy( mpData, b.mpData, mWidth * mHeight * sizeof( *mpData ) );
-    }
-  BitmapImage( int inWidth, int inHeight, uint16* inpData )
-    : mWidth( inWidth ),
-      mHeight( inHeight ),
-      mpData( new uint16[ inWidth * inHeight ] )
-    {
-      std::memcpy( mpData, inpData, mWidth * mHeight * sizeof( *mpData ) );
-    }
+  BitmapImage( int inWidth = 0, int inHeight = 0 );
+  BitmapImage( const BitmapImage& );
+  BitmapImage( int inWidth, int inHeight, uint16* inpData );
   ~BitmapImage()
     { delete[] mpData; }
-
-  BitmapImage& operator=( const BitmapImage& b )
-    {
-      if( &b != this )
-      {
-        delete[] mpData;
-        mWidth = b.mWidth;
-        mHeight = b.mHeight;
-        mpData = new uint16[ mWidth * mHeight ];
-        std::memcpy( mpData, b.mpData, mWidth * mHeight * sizeof( *mpData ) );
-      }
-      return *this;
-    }
+  BitmapImage& operator=( const BitmapImage& );
 
   bool Empty() const
     {
@@ -150,31 +118,18 @@ class BitmapImage
       return *this;
     }
 
-  const PixelRef& operator()( int x, int y ) const
+  const PixelRef operator()( int x, int y ) const
     {
-      static PixelRef ref;
-      return ref.PointTo( const_cast<BitmapImage*>( this ), x, y );
+      return PixelRef( *const_cast<BitmapImage*>( this ), x, y );
     }
-  PixelRef& operator()( int x, int y )
+  PixelRef operator()( int x, int y )
     {
-      static PixelRef ref;
-      return ref.PointTo( this, x, y );
+      return PixelRef( *this, x, y );
     }
 
-  BitmapImage& operator+=( const BitmapImage& b )
-    {
-      DimensionCheck( b );
-      for( int i = 0; i < mWidth * mHeight; ++i )
-        mpData[ i ] += b.mpData[ i ];
-      return *this;
-    }
-  BitmapImage& operator-=( const BitmapImage& b )
-    {
-      DimensionCheck( b );
-      for( int i = 0; i < mWidth * mHeight; ++i )
-        mpData[ i ] -= b.mpData[ i ];
-      return *this;
-    }
+  BitmapImage& operator+=( const BitmapImage& );
+  BitmapImage& operator-=( const BitmapImage& );
+
   BitmapImage operator-( const BitmapImage& b ) const
     {
       return BitmapImage( *this ) -= b;
@@ -186,14 +141,7 @@ class BitmapImage
   // For this function, negative values are interpreted as an inverted clipping
   // region. Input pixels will only replace existing pixels with negative values,
   // i.e. pixels outside the clipping region.
-  BitmapImage& SetBackground( const BitmapImage& b )
-    {
-      DimensionCheck( b );
-      for( int i = 0; i < mWidth * mHeight; ++i )
-        if( mpData[ i ] & 0x8000 )
-          mpData[ i ] = b.mpData[ i ];
-      return *this;
-    }
+  BitmapImage& SetBackground( const BitmapImage& );
 
 
   std::ostream& WriteBinary( std::ostream& ) const;

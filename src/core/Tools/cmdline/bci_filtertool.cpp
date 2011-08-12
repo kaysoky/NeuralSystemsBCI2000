@@ -7,23 +7,23 @@
 //          standard output as a BCI2000 compliant binary stream.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
@@ -43,6 +43,8 @@
 #include "ClassName.h"
 #include "Version.h"
 #include "SysCommand.h"
+#include "Uncopyable.h"
+#include "ExceptionCatcher.h"
 
 #define FILTER_NAME "$FILTER$"
 
@@ -63,19 +65,34 @@ string ToolInfo[] =
 };
 
 
-class FilterWrapper : public MessageHandler
+class FilterWrapper : public MessageHandler, private Uncopyable
 {
  public:
-  FilterWrapper( ostream& arOut );
+  FilterWrapper( istream& in, ostream& out, ostream& op );
   ~FilterWrapper();
 
-  void RedirectOperator( string file ) { mOperator.open( file.c_str() ); }
-  void FinishProcessing();
-  static const char* FilterName();
+  static string FilterName();
+  void Run();
 
  private:
-  ostream& mrOut;
-  ofstream mOperator;
+  virtual bool HandleParam( istream& );
+  virtual bool HandleState( istream& );
+  virtual bool HandleVisSignalProperties( istream& );
+  virtual bool HandleVisSignal( istream& );
+  virtual bool HandleStateVector( istream& );
+
+  void FinishProcessing();
+  void StopRun();
+  void OutputParameterChanges();
+  void InitializeInputStatevector();
+  void InitializeOutputStatevector();
+  void DisposeStatevectors();
+  void SynchronizeStatevectors();
+
+ private:
+  istream& mrIn;
+  ostream& mrOut,
+         & mrOperator;
   SignalProperties* mpInputProperties;
   GenericSignal mOutputSignal;
   ParamList mParamlist;
@@ -86,32 +103,18 @@ class FilterWrapper : public MessageHandler
              * mpOutputStatevector;
   bool      mSingleStatevector;
 
-  virtual bool HandleParam( istream& );
-  virtual bool HandleState( istream& );
-  virtual bool HandleVisSignalProperties( istream& );
-  virtual bool HandleVisSignal( istream& );
-  virtual bool HandleStateVector( istream& );
-
-  void StopRun();
-  void OutputParameterChanges();
-  void InitializeInputStatevector();
-  void InitializeOutputStatevector();
-  void DisposeStatevectors();
-  void SynchronizeStatevectors();
 };
 
 
 ToolResult
 ToolInit()
 {
-  const char* pFilterName = FilterWrapper::FilterName();
-  if( pFilterName == NULL )
-    return genericError;
+  string filterName = FilterWrapper::FilterName();
   for( int i = 0; ToolInfo[ i ] != ""; ++i )
   {
     size_t namePos;
     while( ( namePos = ToolInfo[ i ].find( FILTER_NAME ) ) != string::npos )
-      ToolInfo[ i ].replace( namePos, string( FILTER_NAME ).length(), pFilterName );
+      ToolInfo[ i ].replace( namePos, string( FILTER_NAME ).length(), filterName );
   }
   return noError;
 }
@@ -120,44 +123,38 @@ ToolResult
 ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
   ToolResult result = noError;
-  try
+  ofstream operatorOut;
+  if( arOptions.size() == 1 )
   {
-    FilterWrapper wrapper( arOut );
-    if( arOptions.size() == 1 )
-    {
-      string operatorFile = arOptions.getopt( "-o|-O|--operator", "" );
-      if( operatorFile == "" )
-        return illegalOption;
-      wrapper.RedirectOperator( operatorFile.c_str() );
-    }
-    while( arIn && arIn.peek() != EOF )
-      wrapper.HandleMessage( arIn );
-    wrapper.FinishProcessing();
+    string operatorFile = arOptions.getopt( "-o|-O|--operator", "" );
+    if( operatorFile == "" )
+      return illegalOption;
+    operatorOut.open( operatorFile.c_str() );
   }
-  catch( const char* s )
+  FilterWrapper wrapper( arIn, arOut, operatorOut );
+  struct
   {
-    bcierr << s << endl;
-  }
-  catch( const exception& e )
-  {
-    bcierr << "caught exception "
-           << typeid( e ).name() << " (" << e.what() << "),\n"
-           << "terminating filter tool"
-           << endl;
-  }
+    FilterWrapper& wrapper;
+    void ( FilterWrapper::*fn )();
+    void operator()() { ( wrapper.*fn )(); }
+  } functor = { wrapper, &FilterWrapper::Run };
+  ExceptionCatcher().SetMessage( "aborting" )
+                    .Execute( functor );
   if( bcierr__.Flushes() > 0 || !arIn )
     result = illegalInput;
   return result;
 }
 
-FilterWrapper::FilterWrapper( ostream& arOut )
-: mrOut( arOut ),
+FilterWrapper::FilterWrapper( istream& arIn, ostream& arOut, ostream& arOp )
+: mrIn( arIn ),
+  mrOut( arOut ),
+  mrOperator( arOp ),
   mpInputProperties( NULL ),
   mpInputStatevector( NULL ),
   mpOutputStatevector( NULL ),
   mSingleStatevector( true )
 {
-  GenericVisualization::SetOutputStream( &mOperator );
+  GenericVisualization::SetOutputStream( &mrOperator );
 }
 
 FilterWrapper::~FilterWrapper()
@@ -166,10 +163,10 @@ FilterWrapper::~FilterWrapper()
   delete mpInputProperties;
 }
 
-const char*
+string
 FilterWrapper::FilterName()
 {
-  const char* pName = NULL;
+  string name = "<n/a>";
   ParamList paramlist;
   StateList statelist;
   EnvironmentBase::EnterConstructionPhase( &paramlist, &statelist, NULL );
@@ -182,8 +179,8 @@ FilterWrapper::FilterName()
          << "\"RegisterFilter\" statement linked into the executable."
          << endl;
   else
-    pName = ClassName( typeid( *pFilter ) );
-  return pName;
+    name = ClassName( typeid( *pFilter ) );
+  return name;
 }
 
 void
@@ -193,6 +190,14 @@ FilterWrapper::FinishProcessing()
     StopRun();
   if( Environment::Phase() != Environment::nonaccess )
     EnvironmentBase::EnterNonaccessPhase();
+}
+
+void
+FilterWrapper::Run()
+{
+  while( mrIn && mrIn.peek() != EOF )
+    HandleMessage( mrIn );
+  FinishProcessing();
 }
 
 bool

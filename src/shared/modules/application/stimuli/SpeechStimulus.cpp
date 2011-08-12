@@ -28,6 +28,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "SpeechStimulus.h"
 
+#include "BCIException.h"
+
 using namespace std;
 
 vector<SpeechStimulus::TTSEntry> SpeechStimulus::sTTSInstances;
@@ -65,8 +67,11 @@ SpeechStimulus::FreeTTS( TextToSpeech* inpTTS )
     if( i->instance == inpTTS )
       break;
   if( i == sTTSInstances.end() )
-    throw "SpeechStimulus::FreeTTS: Trying to deallocate a TextToSpeech object"
-          " that has not been allocated with SpeechStimulus::AllocateTTS()";
+    throw bciexception(
+      "Trying to deallocate a TextToSpeech object"
+      " that has not been allocated with"
+      " SpeechStimulus::AllocateTTS()"
+      );
   if( !i->instance->IsSpeaking() )
   {
     delete i->instance;

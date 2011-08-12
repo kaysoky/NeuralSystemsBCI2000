@@ -31,7 +31,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include "defines.h"
+#include "CfgID.h"
 #include "GenericSignal.h"
 #include "SignalProperties.h"
 #include "BitmapImage.h"
@@ -203,7 +203,7 @@ class GenericVisualization : public std::ostream
     const std::string&    SourceID() const
                           { return mSourceID; }
 
-    template<typename T> GenericVisualization& Send( CfgID::CfgID cfgID, const T& cfgValue );
+    template<typename T> GenericVisualization& Send( CfgID cfgID, const T& cfgValue );
     GenericVisualization& Send( const std::string& memo );
     GenericVisualization& Send( const GenericSignal& );
     GenericVisualization& Send( const SignalProperties& );
@@ -213,7 +213,7 @@ class GenericVisualization : public std::ostream
                 { spOutputStream = pStream; spOutputLock = pLock; }
 
   private:
-    GenericVisualization& SendCfgString( CfgID::CfgID, const std::string& );
+    GenericVisualization& SendCfgString( CfgID, const std::string& );
     template<typename T> GenericVisualization& SendObject( const T& );
 
     std::string  mSourceID;
@@ -256,7 +256,7 @@ class BitmapVisualization : public GenericVisualization
 
 template<typename T>
 GenericVisualization&
-GenericVisualization::Send( CfgID::CfgID cfgID, const T& cfgValue )
+GenericVisualization::Send( CfgID cfgID, const T& cfgValue )
 {
   std::ostringstream oss;
   oss << cfgValue;

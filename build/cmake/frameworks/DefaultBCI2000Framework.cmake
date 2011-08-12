@@ -66,6 +66,7 @@ SET( SRC_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSEvent.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
   ${BCI2000_SRC_DIR}/shared/utils/ClassName.h
@@ -79,6 +80,9 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSEvent.h
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
   ${BCI2000_SRC_DIR}/shared/utils/FPExceptMask.h
+  ${BCI2000_SRC_DIR}/shared/utils/Lockable.h
+  ${BCI2000_SRC_DIR}/shared/utils/Uncopyable.h
+  ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
   ${BCI2000_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp
@@ -146,10 +150,13 @@ SET( HDR_BCI2000_SHARED_ACCESSORS
   ${BCI2000_SRC_DIR}/shared/accessors/StateRef.h
 )
 SET( SRC_BCI2000_SHARED_BCISTREAM
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.cpp
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError.cpp
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_module.cpp
 )
 SET( HDR_BCI2000_SHARED_BCISTREAM
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.h
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIAssert.h
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError.h
 )
 SET( SRC_BCI2000_SHARED_FILEIO
