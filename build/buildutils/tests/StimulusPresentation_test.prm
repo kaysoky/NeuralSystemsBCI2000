@@ -37,7 +37,7 @@ Source:Online%20Processing intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of 
 Filtering:SpatialFilter matrix SpatialFilter= 4 4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 % % // columns represent input channels, rows represent output channels
 Visualize:SpatialFilter int VisualizeSpatialFiltering= 0 0 0 1 // visualize spatially filtered signals (0=no 1=yes) (boolean)
 Filtering:P3TemporalFilter int EpochLength= 500ms 500ms 0 % // Length of data epoch from stimulus onset
-Filtering:P3TemporalFilter int EpochsToAverage= 2 1 0 % // Number of epochs to average
+Filtering:P3TemporalFilter int EpochsToAverage= 1 1 0 % // Number of epochs to average
 Visualize:P3TemporalFilter int VisualizeP3TemporalFiltering= 1 0 0 1 // visualize Temporal filtered signals (0=no 1=yes) (boolean)
 Visualize:P3TemporalFilter int TargetERPChannel= 1 1 0 128 // Target Channel for ERP Display in order of SigProc transfer
 Visualize:P3TemporalFilter float ERPMinDispVal= 0 0 -16383 16384 // Minimum value for ERP display
