@@ -13,7 +13,7 @@ Storage:Session:DataIOFilter            string     SubjectName=         TRIANGLE
 
 Visualize:Source%20Signal:DataIOFilter  int        SourceMin=                  -2muV   // raw signal vis Min Value
 Visualize:Source%20Signal:DataIOFilter  int        SourceMax=                   2muV   // raw signal vis Max Value
-Visualize:Source%20Signal:DataIOFilter  int        VisualizeSourceTime=        10      // how much time in Source visualization
+Visualize:Source%20Signal:DataIOFilter  int        VisualizeSourceTime=        10s     // how much time in Source visualization
 Visualize:Source%20Signal:DataIOFilter  int        VisualizeSourceDecimation=   1      // decimation factor for raw brain signal
 Visualize:Source%20Signal:DataIOFilter  int        VisualizeSource=             0      // visualize raw brain signal (0=no, 1=yes) (boolean)
 Visualize:Processing%20Stages           int        VisualizeSpatialFilter=      0      // Visualize SpatialFilter output (boolean)

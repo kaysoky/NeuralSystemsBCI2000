@@ -212,7 +212,7 @@ class player(Background.ongoing):
 		self.norm = 'inf'
 		self.verbose = verbose
 		self.buffersize = buffersize
-		self.playing = False
+		self.__playing = False
 		self.preplay = None
 		self.postplay = None
 		self.reset_timestamps()
@@ -284,7 +284,7 @@ class player(Background.ongoing):
 		playing it at the sampling frequency and bit depth dictated by w.
 		"""###
 		if self.playing: return
-		self.playing = True
+		self.__playing = True
 		self.timestamps['play'] = prectime()
 		self.open(w)
 		w = self.wav
@@ -352,13 +352,18 @@ class player(Background.ongoing):
 
 		if self.postplay != None and self.postplay['func'] != None:
 			self.postplay['func'](*self.postplay['pargs'], **self.postplay['kwargs'])
-		self.playing = False
+		self.__playing = False
 		towrite = self.stream.get_write_available()	
 		bytes_per_frame = self.interface.get_sample_size(self.format) * self.stream._channels
 		if towrite > 0: self.stream.write('\0' * towrite * bytes_per_frame)
 		while self.stream.get_write_available() < self.stream._frames_per_buffer: sleep(0.001)
 		sleep(float(self.stream._frames_per_buffer) / float(self.stream._rate) + self.stream.get_output_latency())
 	
+	@apply
+	def playing():
+		def fget(self): return self.going or self.__playing
+		return property(fget)
+
 	def set_preplay_hook(self, func, *pargs, **kwargs):
 		# currently only one hook at a time. if changing this, also change the DirectSoundInterface overload of this method
 		self.preplay = {'func':func,'pargs':pargs,'kwargs':kwargs}

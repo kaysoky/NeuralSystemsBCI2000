@@ -25,7 +25,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #!/usr/bin/python
-# This file was generated automatically by the 'freeze' script.
+
 import sys
 args = sys.argv[1:]
 if args == []: args = ['install']
@@ -33,7 +33,7 @@ if args == ['installer']:
 	args = [
 		'bdist_wininst',
 		'--bitmap', 'installer.bmp',
-		'--install-script', 'BCPy2000_postinstall.py',
+		#'--install-script', 'BCPy2000_postinstall.py',
 	]
 sys.argv = sys.argv[:1] + args
 
@@ -48,7 +48,7 @@ dependencies = {
 }
 setup(
 	name = 'BCPy2000',
-	version = '21596',
+	version = '34600',
 	packages = [
 		'BCPy2000',
 		'BCPy2000.AppTools',
@@ -63,8 +63,9 @@ setup(
 		'BCPy2000.Documentation': ['*.*', 'styles/gears/*.*'],
 	},
 	scripts = [
-		'BCPy2000_postinstall.py',
+		#'BCPy2000_postinstall.py',
 	],
 	requires = [('%s (%s)' % (p,v)).replace(' ()','') for p,v in dependencies.items()],  # available in distutils from Python 2.5 onwards
 	install_requires = ['%s%s' % (p,v) for p,v in dependencies.items()], # available if using setuptools,  acted on by easy_install
 )
+
