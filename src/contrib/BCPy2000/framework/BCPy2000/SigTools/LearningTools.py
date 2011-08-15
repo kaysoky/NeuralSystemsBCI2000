@@ -271,7 +271,7 @@ class running_mean(object):
 		r = running_mean()
 		r += x
 
-	The object r has the following attributes:
+	The object r has the following properties:
 	    	
 	    r.n          : number of samples so far
 	    r.m          : mean of x so far (same shape as incoming x)
@@ -280,45 +280,111 @@ class running_mean(object):
 	    r.v_unbiased : a virtual attribute which returns the variance
 	                   normalized by (r.n - 1.0) instead of by r.n
 	                   
+	If r is created with fullcov=True, then elements x are flattened
+	as they are added (so, for one thing, the mean and variance will
+	be flat arrays with length equal to the number of elements of x)
+	and a full covariance matrix is also computed, and is accessible
+	using the properties r.C and r.C_unbiased (analogous to r.v and
+	r.v_unbiased).
+		                   
 	If r.persistence=1.0, then all previous samples are "remembered"
 	and each incoming exemplar counts as r.increment number of new
 	samples (the increment may be measured in any units you like -
 	seconds, for example). If r.persistence < 1.0,  then an
 	exponential forgetting factor of 1.0-r.persistence is used, and
-	although self.increment is added to s.n,  s.n is not used in
-	estimation.
+	although self.increment is added to s.n,  s.n does not fully
+	reflect the number of degrees of freedom in the estimation, which
+	is roughly equal to 1/(1.0-r.persistence)
 	
 	The reset() method zeroes everything.
 	"""###
-	def __init__(self, persistence=1.0, increment=1.0):
+	def __init__(self, persistence=1.0, increment=1.0, fullcov=False):
 		"""
 		The persistence and increment arguments initialize the
 		self.persistence and self.increment attributes.
 		"""###
 		self.increment = float(increment)
 		self.persistence = float(persistence)
+		self.fullcov = fullcov
 		self.reset()
+		
 	def reset(self):
+		self.sumx2 = 0.0
+		self.sumx1 = 0.0
+		self.denom = 0.0
 		self.n = 0.0
-		self.m = 0.0
-		self.v = 0.0
+		
 	def update(self, x, increment=None):
 		if increment == None: increment = self.increment
 		persistence = self.persistence
-		if persistence == 1.0: persistence = self.n / (self.n + increment)
 		if self.n == 0.0: persistence = 0.0
-		delta = x - self.m
+		
+		if self.fullcov:
+			x1 = numpy.asarray(x).flatten()
+			xM = numpy.asmatrix(x1)
+			x2 = xM.H * xM
+		else:
+			x1 = x
+			x2 = numpy.multiply(x, numpy.conj(x))
+			
+		self.sumx2 = persistence * self.sumx2 + x2
+		self.sumx1 = persistence * self.sumx1 + x1
+		self.denom = persistence * self.denom + increment
 		self.n += increment
-		self.m = persistence * self.m  +  (1.0 - persistence) * x
-		self.v = persistence * self.v  +  (1.0 - persistence) * persistence * numpy.multiply(delta, numpy.conj(delta))
+		
+	def get_mean(self):
+		if self.denom == 0.0: return numpy.nan
+		return self.sumx1 / self.denom
+
+	def get_variance_biased(self, return_fullcov=False):
+		if self.denom == 0.0: return numpy.nan
+		
+		if return_fullcov and not self.fullcov:
+			raise ValueError("full covariance matrices are not available from this object")
+			
+		if self.fullcov and not return_fullcov:
+			mean_xsquared = self.sumx2.diagonal().A.flatten() / self.denom
+		else:
+			mean_xsquared = self.sumx2 / self.denom
+			
+		meanx = self.sumx1 / self.denom
+		if self.fullcov and return_fullcov:
+			meanx = numpy.asmatrix(meanx)
+			squared_meanx = meanx.H * meanx
+		else:
+			squared_meanx = numpy.multiply(meanx, numpy.conj(meanx))
+			
+		return mean_xsquared - squared_meanx
+
+	def get_variance_unbiased(self, return_fullcov=False):
+		if self.denom <= self.increment: return numpy.nan
+		return self.get_variance_biased(return_fullcov=return_fullcov) * (self.denom / (self.denom - self.increment))
+		
+	@apply
+	def m():
+		def fget(self): return self.get_mean()
+		return property(fget=fget, doc="running mean estimate")
+	@apply
+	def v():
+		def fget(self): return self.get_variance_biased(return_fullcov=False)
+		return property(fget=fget, doc="running variance estimate normalized by n (see also v_unbiased)")
+	@apply
+	def v_unbiased():
+		def fget(self): return self.get_variance_unbiased(return_fullcov=False)
+		return property(fget=fget, doc="running variance estimate normalized by n-1 (see also v)")		
+	@apply
+	def C():
+		def fget(self): return self.get_variance_biased(return_fullcov=True)
+		return property(fget=fget, doc="running covariance estimate normalized by n (see also C_unbiased)")
+	@apply
+	def C_unbiased():
+		def fget(self): return self.get_variance_unbiased(return_fullcov=True)
+		return property(fget=fget, doc="running covariance estimate normalized by n-1 (see also C)")
+		
 	def __iadd__(self, x):
 		self.update(x)
 		return self
-	def __getattr__(self, key):
-		if key == 'v_unbiased': return self.v * (self.n / (self.n - self.increment))
-		raise AttributeError, key
-	def _getAttributeNames(self):
-		return ['v_unbiased']
+		
 	def run(self, x, axis=-1, reset=False):
 		"""
 		Test the running_mean object by adding <x> one sample at a time,
@@ -326,9 +392,14 @@ class running_mean(object):
 		
 		If <reset> is passed as True, the object is reset first.
 		
+			running_mean().run(x, axis=0).m
+				# should be the same as numpy.mean(x, axis=0)
+				
 			running_mean().run(x, axis=0).v
-		
-		should be the same as numpy.var(x, axis=0)
+				# should be the same as numpy.var(x, axis=0)
+				
+			running_mean(fullcov=True).run(x, axis=0).C_unbiased
+				# should be the same as numpy.cov(x, axis=0)
 		"""###
 		if reset: self.reset()
 		x = numpy.array(x, copy=False)
@@ -338,61 +409,7 @@ class running_mean(object):
 		sub = [slice(None)] * len(x.shape)
 		for i in range(x.shape[axis]): sub[axis] = i; self += x[sub]
 		return self
-
-class running_cov(object):
-	"""
-	Similar to running_mean, except that the x.flatten()ed content
-	of each  incoming exemplar x is used, instead of x in its original
-	shape. The additional attributes r.C and r.C_unbiased keep track
-	of the full covariance matrix between the elements of x.
-	"""###
-	def __init__(self, persistence=1.0, increment=1.0):
-		self.increment = float(increment)
-		self.persistence = float(persistence)
-		self.reset()
-	def reset(self):
-		self.n = 0.0
-		self.m = 0.0
-		self.C = 0.0
-	def __iadd__(self, x):
-		self.update(x)
-		return self
-	def update(self, x, increment=None):
-		if increment == None: increment = self.increment
-		persistence = self.persistence
-		if persistence == 1.0: persistence = self.n / (self.n + increment)
-		if self.n == 0.0: persistence = 0.0
-		x = numpy.array(x, copy=False).flatten()
-		delta = asmatrix(x - self.m)
-		self.n += increment
-		self.m = persistence * self.m  +  (1.0 - persistence) * x;
-		self.C = persistence * self.C  +  (1.0 - persistence) * persistence*delta*delta.H;
-	def __getattr__(self, key):
-		if key == 'v':          return numpy.diag(self.C)
-		if key == 'v_unbiased': return self.v * (self.n / (self.n - self.increment))
-		if key == 'C_unbiased': return self.C * (self.n / (self.n - self.increment))
-		raise AttributeError, key
-	def _getAttributeNames(self):
-		return ['v', 'v_unbiased', 'C_unbiased']
-	def run(self, x, axis=-1, reset=False):
-		"""
-		Test the running_cov object by adding <x> one sample at a time,
-		where samples are slices concatenated along the specified <axis>.
 		
-		If <reset> is passed as True, the object is reset first.
-		
-			running_cov().run(x, axis=1).C_unbiased
-		
-		should be the same as numpy.cov(x)
-		"""###
-		if reset: self.reset()
-		x = numpy.array(x, copy=False)
-		x = x.view()
-		if axis < 0: axis += len(x.shape)
-		x.shape = tuple(list(x.shape) + [1]*(axis+1-len(x.shape)))
-		sub = [slice(None)] * len(x.shape)
-		for i in range(x.shape[axis]): sub[axis] = i; self += x[sub]
-		return self
 	def plot(self, *pargs, **kwargs):
 		"""
 		Works only for an object that has accumulated information about
@@ -401,11 +418,47 @@ class running_cov(object):
 		of x. The size of the ellipse is specified by optional keyword
 		argument nstd=2.0 (any other arguments are passed through to plot).
 		"""###
+		if not self.fullcov: raise ValueError("plot method is only available for objects that compute full covariance matrices (construct with fullcov=True)")
+		if numpy.asarray(self.m).size != 2: raise ValueError("plot method is only available for objects that have accumulated two-dimensional data")
 		nstd = kwargs.pop('nstd', 2.0)
 		r = numpy.linspace(0, 2*numpy.pi, 100)
-		x = asmatrix(self.m).A + nstd*(svd(self.C).sqrtm * numpy.matrix([numpy.cos(r), numpy.sin(r)])).A
+		x = numpy.asmatrix(self.m).A + nstd*(svd(self.C).sqrtm * numpy.matrix([numpy.cos(r), numpy.sin(r)])).A
 		import Plotting; pylab = Plotting.load_pylab()
 		pylab.plot(x[0],x[1],*pargs,**kwargs)
+		pylab.draw()
+
+class running_cov(running_mean):
+	"""
+	A class for computing means, variances and covariances online, optionally with a decay factor.
+	It is a subclass of running_mean for which the fullcov attribute is always initialized to True.
+	It is included under the separate name running_cov purely for backward compatibility. See
+	running_mean for more details.
+	"""###
+	def __init__(self, persistence=1.0, increment=1.0):
+		running_mean.__init__(self, persistence=persistence, increment=increment, fullcov=True)
+
+
+class ema(running_mean):
+	def reset(self):
+		self.sumx1 = 0.0
+		self.sumx2 = 0.0
+		self.n = 0.0
+		self.denom = 1.0
+	def update(self, x, increment=None):
+		if increment == None: increment = self.increment
+		persistence = self.persistence
+		if persistence == 1.0: persistence = self.n / (self.n + increment)
+		if self.n == 0.0: persistence = 0.0
+		if self.fullcov:
+			x1 = numpy.asarray(x).flatten()
+			xM = numpy.asmatrix(x1)
+			x2 = xM.H * xM
+		else:
+			x1 = x
+			x2 = numpy.multiply(x, numpy.conj(x))
+		self.sumx1 = persistence * self.sumx1 + (1.0 - persistence) * x1
+		self.sumx2 = persistence * self.sumx2 + (1.0 - persistence) * x2
+		self.n += increment
 		
 class svd(object):
 	"""
