@@ -28,8 +28,8 @@ function [out, isd, isf] = bci2000path(varargin)
 % For example:
 %      % Set up BCI2000 toolboxes:
 %      BCI2000PATH -AddToMatlabPath tools/mex
-%      BCI2000PATH -AddToMatlabPath tools/matlab
-%      BCI2000PATH -AddToSystemPath tools/cmdline
+%      BCI2000PATH -AddToMatlabPath tools/matlab   % spot the 
+%      BCI2000PATH -AddToSystemPath tools/cmdline  %          TWO differences
 % 
 %      % Remove BCI2000 toolboxes:
 %      BCI2000PATH -RemoveAll

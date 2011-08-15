@@ -26,6 +26,10 @@
 #
 
 import os, sys
+
+try: __IPYTHON__
+except NameError: __IPYTHON__ = get_ipython()
+
 exec 'import os,sys' in __IPYTHON__.shell.user_ns # in case this is being run via import rather than execute
 
 ################################################################################
@@ -33,7 +37,9 @@ exec 'import os,sys' in __IPYTHON__.shell.user_ns # in case this is being run vi
 
 class mymagic:
 
-	__IPYTHON__.rc.editor = 'scite'
+	if sys.platform.lower().startswith('win'):
+		if hasattr(__IPYTHON__, 'rc'): __IPYTHON__.rc.editor = 'scite'
+		else: __IPYTHON__.editor = 'scite'
 
 	############################################################################
 
@@ -45,10 +51,12 @@ class mymagic:
 		
 	############################################################################
 
-	from IPython.Debugger import Tracer
+	try: from IPython.Debugger import Tracer # IPython v 0.10 and earlier
+	except ImportError: from IPython.core.debugger import Tracer # IPython v 0.11 and later
 	__IPYTHON__.dbstop = Tracer()
 	# calling __IPYTHON__.dbstop()  is easier than having to remember and type
 	# "from IPython.Debugger import Tracer; Tracer()()" just to invoke the debugger
+	# (and *much* easier than having to remember the version-specific variants of that)
 	
 	############################################################################
 	@makemagic
@@ -83,7 +91,9 @@ edit IPython.foo      #  edits new file in existing subdirectory on path $BLAH/I
 		# NB: one (unlikely) case is not handled:  a new file with a non-.py extension
 		#     in an existing subdirectory on the path, e.g. edit IPython/foo.txt
 
-		editor = __IPYTHON__.rc.editor
+		if hasattr(__IPYTHON__, 'rc'): editor = __IPYTHON__.rc.editor
+		else: editor = __IPYTHON__.editor
+		
 		if sys.platform.lower().startswith('win'): editor = 'start ' + editor
 		ed = lambda x: os.system(editor + ' "' + os.path.abspath(x) + '"')
 		got = lambda x: os.path.isfile(os.path.abspath(x)) and (ed(x) or True)
