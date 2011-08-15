@@ -161,7 +161,7 @@ StateVector::CommitStateChanges()
 ostream&
 StateVector::WriteToStream( ostream& os ) const
 {
-  int indent = os.width();
+  streamsize indent = os.width();
   if( mpStateList == NULL )
     for( int i = 0; i < Length(); ++i )
     {

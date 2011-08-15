@@ -37,6 +37,7 @@
 #include "MessageHandler.h"
 #include "BCIError.h"
 #include "Version.h"
+#include "defines.h"
 
 using namespace std;
 
@@ -93,24 +94,24 @@ class StreamToMat : public MessageHandler
   SignalProperties    mSignalProperties;
   typedef set<string> StringSet; // A set is a sorted container of unique values.
   StringSet           mStateNames;
-  size_t              mDataElementSizePos,
+  size_t              mDataCols;
+  streamoff           mDataElementSizePos,
                       mDataColsPos,
-                      mDataSizePos,
-                      mDataCols;
+                      mDataSizePos;
 
-  size_t BeginVar(size_t flags) const;
-  void FinishVar(size_t sizePos) const;
+  streamoff BeginVar(size_t flags) const;
+  void FinishVar(streamoff sizePos) const;
   void WriteDims(size_t nRows, size_t nCols) const;
   void WriteName(string name) const;
   void WriteString(string name, string str) const;
   
   void WriteHeader();
   void WriteData( const GenericSignal& );
-  void Write16( unsigned short value ) const
+  void Write16( uint16 value ) const
   { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
-  void Write32( unsigned int value ) const
+  void Write32( uint32 value ) const
   { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
-  void WriteFloat32( float value ) const
+  void WriteFloat32( float32 value ) const
   { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
   void Pad() const;
 
@@ -144,16 +145,16 @@ ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
 void
 StreamToMat::Pad() const
 {
-  for( int i = mrOut.tellp(); i % matPadding; ++i )
+  for( streamoff i = mrOut.tellp(); i % matPadding; ++i )
     mrOut.put( 0 );
 }
 
 
-size_t
+streamoff
 StreamToMat::BeginVar(size_t flags) const
 {
   Write32( miMATRIX );
-  size_t sizePos = mrOut.tellp();
+  streamoff sizePos = mrOut.tellp();
   Write32( 0 ); // placeholder for size
   Write32( miUINT32 ); Write32( 8 ); // flags are coming
   Write32( flags ); Write32( 0 ); // here are the flags
@@ -161,11 +162,11 @@ StreamToMat::BeginVar(size_t flags) const
 }
 
 void
-StreamToMat::FinishVar(size_t sizePos) const
+StreamToMat::FinishVar(streamoff sizePos) const
 { // bounce back to sizePos, write the number of bytes between here and where you just came from - 4, bounce back to where you came from
-  size_t endPos = mrOut.tellp();
+  streamoff endPos = mrOut.tellp();
   mrOut.seekp( sizePos );
-  Write32( endPos - sizePos - 4 );
+  Write32( static_cast<uint32>( endPos - sizePos - 4 ) );
   mrOut.seekp( endPos );
 }
 
@@ -190,7 +191,7 @@ StreamToMat::WriteName(string name) const
 void
 StreamToMat::WriteString(string name, string str) const
 {
-  long sizePos = BeginVar( mxCHAR_CLASS );
+  streamoff sizePos = BeginVar( mxCHAR_CLASS );
   WriteDims( 1, str.size() );
   WriteName( name );
   Write32( miUTF16 );
@@ -209,15 +210,15 @@ StreamToMat::WriteHeader()
         << " by "
         << ToolInfo[ name ] << ", "
         << ToolInfo[ version ];
-  for( int i = mrOut.tellp(); i < matTextHeaderLength; ++i )
+  for( streamoff i = mrOut.tellp(); i < matTextHeaderLength; ++i )
     mrOut << ' ';
   mrOut.seekp( matTextHeaderLength );
-  for( int i = mrOut.tellp(); i < matVersionInfoOffset; ++i )
+  for( streamoff i = mrOut.tellp(); i < matVersionInfoOffset; ++i )
     mrOut << ' ';
   Write16( 0x0100 ); Write16( 'MI' );
   // Write a matlab structure containing arrays with state names
   // pointing to the associated columns.
-  size_t indexSizePos = BeginVar( mxSTRUCT_CLASS );
+  streamoff indexSizePos = BeginVar( mxSTRUCT_CLASS );
   WriteDims( 1, 1 );
   WriteName( "Index" );
   
@@ -244,7 +245,7 @@ StreamToMat::WriteHeader()
   // 1x1 arrays holding the states' column indices
   for( size_t i = 1; i <= mStateNames.size(); ++i )
   {
-    long sizePos = BeginVar( mxUINT32_CLASS );
+    streamoff sizePos = BeginVar( mxUINT32_CLASS );
     WriteDims( 1, 1 );
     WriteName( "" );
     // Array data
@@ -255,7 +256,7 @@ StreamToMat::WriteHeader()
   // An array with the signal's dimensions holding the signal entries' row indices
   long numSignalEntries = mSignalProperties.Channels() * mSignalProperties.Elements();
   {
-    long sizePos = BeginVar( mxUINT32_CLASS );
+    streamoff sizePos = BeginVar( mxUINT32_CLASS );
     WriteDims( mSignalProperties.Channels(), mSignalProperties.Elements() );
     WriteName( "" );
     // Array data
@@ -269,7 +270,7 @@ StreamToMat::WriteHeader()
   FinishVar( indexSizePos );
 
   // A cell array of channel labels
-  long channelLabelsSize = BeginVar( mxCELL_CLASS );
+  streamoff channelLabelsSize = BeginVar( mxCELL_CLASS );
   WriteDims( mSignalProperties.Channels(), 1 );
   WriteName( "ChannelLabels" );
   for( int i = 0; i < mSignalProperties.Channels(); i++ )
@@ -277,7 +278,7 @@ StreamToMat::WriteHeader()
   FinishVar( channelLabelsSize );
 
   // A cell array of element labels
-  long elementLabelsSize = BeginVar( mxCELL_CLASS );
+  streamoff elementLabelsSize = BeginVar( mxCELL_CLASS );
   WriteDims( mSignalProperties.Elements(), 1 );
   WriteName( "ElementLabels" );
   for( int i = 0; i < mSignalProperties.Elements(); i++ )
@@ -285,7 +286,7 @@ StreamToMat::WriteHeader()
   FinishVar( elementLabelsSize );
 
   // A single-precision numeric array of element values
-  long elementValuesSize = BeginVar( mxSINGLE_CLASS );
+  streamoff elementValuesSize = BeginVar( mxSINGLE_CLASS );
   WriteDims( mSignalProperties.Elements(), 1 );
   WriteName( "ElementValues" );
   Write32( miSINGLE ); Write32( 4 * mSignalProperties.Elements() );
@@ -337,7 +338,7 @@ StreamToMat::FinishHeader() const
   Pad();
   FinishVar( mDataElementSizePos );
   
-  size_t endPos = mrOut.tellp();
+  streamoff endPos = mrOut.tellp();
   mrOut.seekp( mDataColsPos );
   Write32( mDataCols );
   mrOut.seekp( endPos );
