@@ -3,7 +3,7 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: Classes/templates related to locking.
 //   *Lockable is a mixin-class to add locking to a class,
-//   *Lock<T> and Unlock<T> define RAAI objects that lock a lockable 
+//   *Lock<T> and Unlock<T> define RAAI objects that lock a lockable
 //    object while the RAAI object exists.
 //   *TemporaryLock<T>() is a function template that returns a
 //    temporary Lock<T> object. This allows, e.g., to lock a stream
@@ -31,51 +31,57 @@ class Lockable : private Uncopyable
 };
 
 template<typename T>
-class Lock : private Uncopyable
+class Lock
 {
  private:
   Lock();
+  Lock& operator=( const Lock& );
 
  public:
   Lock( T& t )
-    : mrT( t ),
-      mLocked( t.Lock() )
-    {}
+    : mrT( t )
+    { mrT.Lock(); }
+  // A copy constructor is required by some compilers that need it to implement
+  //   return Lock( x );
+  // An object of type T must allow recursive locking, otherwise the copy
+  // constructor will block.
+  Lock( const Lock& lock )
+    : mrT( lock.mrT )
+    { mrT.Lock(); }
   ~Lock()
-    { if( mLocked ) mrT.Unlock(); }
+    { mrT.Unlock(); }
   T& operator()() const
     { return mrT; }
 
  private:
   T& mrT;
-  bool mLocked;
 };
 
 template<typename T>
-class Unlock : private Uncopyable
+class Unlock : private Uncopyable // Don't try to make a copyable Unlock.
+                                 // It won't work even with recursive locking in T.
 {
  private:
   Unlock();
 
  public:
   Unlock( T& t )
-    : mrT( t ),
-      mUnlocked( t.Unlock() )
-    {}
+    : mrT( t )
+    { mrT.Unlock(); }
   ~Unlock()
-    { if( mUnlocked ) mrT.Lock(); }
+    { mrT.Lock(); }
   T& operator()() const
     { return mrT; }
 
  private:
   T& mrT;
-  bool mUnlocked;
 };
+
 
 template<typename T>
 Lock<T>
 TemporaryLock( T& t )
-{
+{ // Some compilers require a copy constructor here.
   return Lock<T>( t );
 }
 

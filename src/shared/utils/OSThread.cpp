@@ -7,23 +7,23 @@
 //   Execute() function.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -76,7 +76,7 @@ OSThread::Start()
     bcierr << OSError().Message() << endl;
 }
 
-bool 
+bool
 OSThread::IsTerminated() const
 {
   return mHandle == NULL;
@@ -124,7 +124,7 @@ OSThread::Start()
   }
 }
 
-bool 
+bool
 OSThread::IsTerminated() const
 {
   return mTerminated;
@@ -153,24 +153,27 @@ OSThread::Terminate( OSEvent* inpEvent )
     mpTerminationEvent->Set();
 }
 
+// Older compilers do not allow a locally defined type as a
+// template argument to ExceptionCatcher::Execute(), that's
+// why we define it here:
+struct FunctionCall
+{
+  OSThread& obj;
+  int ( OSThread::*fn )();
+  int result;
+
+  void operator()()
+  { result = ( obj.*fn )(); }
+};
+
+
 int
 OSThread::CallExecute()
 {
-  struct
-  {
-    OSThread& obj;
-    int ( OSThread::*fn )();
-    int result;
-
-    void operator()()
-    { result = ( obj.*fn )(); }
-
-  } functionCall = { *this, &OSThread::Execute, 0 };
-
+  FunctionCall functionCall = { *this, &OSThread::Execute, 0 };
   ExceptionCatcher()
     .SetMessage( string( "canceling thread of type " ) + bci::ClassName( typeid( *this ) ) )
     .Execute( functionCall );
-
   return functionCall.result;
 }
 
@@ -199,7 +202,7 @@ OSThread::StartThread( void* inInstance )
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
   this_->mTerminating = false;
   this_->mTerminated = false;
-  // Set the cancel state to asynchronous, so pthread_cancel() will 
+  // Set the cancel state to asynchronous, so pthread_cancel() will
   // immediately cancel thread execution.
   ::pthread_setcancelstate( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
   this_->mResult = this_->CallExecute();

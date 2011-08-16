@@ -53,6 +53,9 @@ class BCIException : public std::exception
     {}
   BCIException( std::ostream& );
 
+  virtual ~BCIException() throw()
+    {}
+
   virtual const char* what() const throw();
 
  private:

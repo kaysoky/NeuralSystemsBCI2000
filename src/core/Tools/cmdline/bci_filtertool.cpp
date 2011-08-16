@@ -119,6 +119,15 @@ ToolInit()
   return noError;
 }
 
+struct FunctionCall
+{
+  FilterWrapper& wrapper;
+  void ( FilterWrapper::*fn )();
+  void operator()()
+  { ( wrapper.*fn )(); }
+};
+
+
 ToolResult
 ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
@@ -132,14 +141,10 @@ ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
     operatorOut.open( operatorFile.c_str() );
   }
   FilterWrapper wrapper( arIn, arOut, operatorOut );
-  struct
-  {
-    FilterWrapper& wrapper;
-    void ( FilterWrapper::*fn )();
-    void operator()() { ( wrapper.*fn )(); }
-  } functor = { wrapper, &FilterWrapper::Run };
-  ExceptionCatcher().SetMessage( "aborting" )
-                    .Execute( functor );
+  FunctionCall functionCall = { wrapper, &FilterWrapper::Run };
+  ExceptionCatcher()
+    .SetMessage( "aborting" )
+    .Execute( functionCall );
   if( bcierr__.Flushes() > 0 || !arIn )
     result = illegalInput;
   return result;

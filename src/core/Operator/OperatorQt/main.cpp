@@ -4,23 +4,23 @@
 // Description: The Operator module's main() function.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #include <QtGui/QApplication>
@@ -51,6 +51,13 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 }
 #endif // _WIN32
 
+struct MainLoop
+{
+  QApplication& a;
+  MainWindow& w;
+  void operator()();
+};
+
 int
 main(int argc, char *argv[])
 {
@@ -79,38 +86,39 @@ main(int argc, char *argv[])
   VisDisplay::SetParentWindow( &w );
   w.show();
 
-  struct
-  {
-    QApplication& a;
-    MainWindow& w;
-    void operator()()
-    {
-      while( !w.Terminating() )
-      { // We use our own event loop to allow for processing pending
-        // callbacks from the BCI operator library.
-        // Qt docs suggest using a zero ms timer for doing idle processing,
-        // but this leads to high CPU usage.
-        a.sendPostedEvents();
-        a.processEvents();
-        OSThread::Sleep( 1 ); // avoid hogging the CPU
-        BCI_CheckPendingCallback();
-      }
-      while( !w.Terminated() )
-      {
-        OSThread::Sleep( 1 );
-        BCI_CheckPendingCallback();
-      }
-      // QWidget destructors assume a valid application object,
-      // so we delete visualization windows while the application
-      // object is still in scope.
-      VisDisplay::Clear();
-    }
-  } functor = { a, w };
-  ExceptionCatcher().SetMessage( "terminating Operator module" )
-                    .Execute( functor );
+  MainLoop loop = { a, w };
+  ExceptionCatcher()
+    .SetMessage( "terminating Operator module" )
+    .Execute( loop );
 #ifdef _WIN32
   ::ReleaseMutex( appMutex );
   ::CloseHandle( appMutex );
 #endif // _WIN32
   return 0;
 }
+
+
+void
+MainLoop::operator()()
+{
+  while( !w.Terminating() )
+  { // We use our own event loop to allow for processing pending
+    // callbacks from the BCI operator library.
+    // Qt docs suggest using a zero ms timer for doing idle processing,
+    // but this leads to high CPU usage.
+    a.sendPostedEvents();
+    a.processEvents();
+    OSThread::Sleep( 1 ); // avoid hogging the CPU
+    BCI_CheckPendingCallback();
+  }
+  while( !w.Terminated() )
+  {
+    OSThread::Sleep( 1 );
+    BCI_CheckPendingCallback();
+  }
+  // QWidget destructors assume a valid application object,
+  // so we delete visualization windows while the application
+  // object is still in scope.
+  VisDisplay::Clear();
+}
+

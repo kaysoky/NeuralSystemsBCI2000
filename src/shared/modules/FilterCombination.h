@@ -68,6 +68,14 @@ class ParallelCombination : public FilterCombination<Filter1Type, Filter2Type>
    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
    virtual void Initialize( const SignalProperties&, const SignalProperties& );
    virtual void Process( const GenericSignal&, GenericSignal& );
+
+   typedef FilterCombination<Filter1Type, Filter2Type> Parent;
+   using Parent::mFilter1;
+   using Parent::mFilter2;
+   using Parent::mProperties1;
+   using Parent::mProperties2;
+   using Parent::mOutput1;
+   using Parent::mOutput2;
 };
 
 template<class Filter1Type, class Filter2Type>
@@ -77,6 +85,12 @@ class LinearCombination : public FilterCombination<Filter1Type, Filter2Type>
    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
    virtual void Initialize( const SignalProperties&, const SignalProperties& );
    virtual void Process( const GenericSignal&, GenericSignal& );
+
+   typedef FilterCombination<Filter1Type, Filter2Type> Parent;
+   using Parent::mFilter1;
+   using Parent::mFilter2;
+   using Parent::mProperties1;
+   using Parent::mOutput1;
 };
 
 // FilterCombination implementation

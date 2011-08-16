@@ -35,7 +35,7 @@ class CfgID
 
    typedef uint8 IDType;
 
-  enum
+  enum CfgID_ // Must have a name to be used as a template argument.
   {
     None = 251, // -5
 

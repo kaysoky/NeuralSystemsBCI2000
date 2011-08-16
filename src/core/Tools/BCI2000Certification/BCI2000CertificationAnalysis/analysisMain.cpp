@@ -46,6 +46,13 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 }
 #endif // _WIN32
 
+struct MainLoop
+{
+  QApplication& app;
+  int result;
+  void operator()()
+  { result = app.exec(); }
+};
 
 int main(int argc, char* argv[])
 {
@@ -55,15 +62,10 @@ int main(int argc, char* argv[])
 
   std::string message = "aborting ";
   message += app.applicationName().toLocal8Bit().constData();
-  struct
-  {
-    QApplication& app;
-    int result;
-    void operator()()
-    { result = app.exec(); }
-  } functor = { app, -1 };
-  ExceptionCatcher().SetMessage( message )
-                    .Execute( functor );
-  return functor.result;
+  MainLoop loop = { app, -1 };
+  ExceptionCatcher()
+    .SetMessage( message )
+    .Execute( loop );
+  return loop.result;
 }
 //---------------------------------------------------------------------------
