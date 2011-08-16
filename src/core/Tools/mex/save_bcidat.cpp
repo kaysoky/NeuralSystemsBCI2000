@@ -94,7 +94,7 @@ class FilterWrapper
   template<class T>
   void Instantiate()
   {
-    EnvironmentBase::EnterConstructionPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::EnterConstructionPhase( &mParameters, &mStates, NULL );
     delete mpOutputFormat;
     mpOutputFormat = new T;
     EnvironmentBase::ErrorContext( "Publish", mpOutputFormat );
@@ -106,7 +106,7 @@ class FilterWrapper
 
   void Preflight( const SignalProperties& inProperties, const StateVector& inStatevector )
   {
-    EnvironmentBase::EnterPreflightPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::EnterPreflightPhase( &mParameters, &mStates, NULL );
     EnvironmentBase::ErrorContext( "Preflight", mpOutputFormat );
     mpOutputFormat->Preflight( inProperties, inStatevector );
     EnvironmentBase::ErrorContext( "" );
@@ -115,7 +115,7 @@ class FilterWrapper
 
   void Initialize( const SignalProperties& inProperties, const StateVector& inStatevector )
   {
-    EnvironmentBase::EnterInitializationPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::EnterInitializationPhase( &mParameters, &mStates, NULL );
     EnvironmentBase::ErrorContext( "Initialize", mpOutputFormat );
     mpOutputFormat->Initialize( inProperties, inStatevector );
     EnvironmentBase::ErrorContext( "" );
@@ -124,7 +124,7 @@ class FilterWrapper
 
   void StartRun( ostream& os, const string& inName )
   {
-    EnvironmentBase::EnterStartRunPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::EnterStartRunPhase( &mParameters, &mStates, NULL );
     EnvironmentBase::ErrorContext( "StartRun", mpOutputFormat );
     mpOutputFormat->StartRun( os, inName );
     EnvironmentBase::ErrorContext( "" );
@@ -133,7 +133,7 @@ class FilterWrapper
 
   void Write( ostream& os, const GenericSignal& inSignal, StateVector& inStatevector )
   {
-    EnvironmentBase::EnterProcessingPhase( &mParameters, &mStates, &inStatevector, NULL );
+    EnvironmentBase::EnterProcessingPhase( &mParameters, &mStates, &inStatevector );
     EnvironmentBase::ErrorContext( "Write", mpOutputFormat );
     mpOutputFormat->Write( os, inSignal, inStatevector );
     EnvironmentBase::ErrorContext( "" );
@@ -142,7 +142,7 @@ class FilterWrapper
 
   void StopRun( ostream& os )
   {
-    EnvironmentBase::EnterStopRunPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::EnterStopRunPhase( &mParameters, &mStates, NULL );
     EnvironmentBase::ErrorContext( "StopRun", mpOutputFormat );
     mpOutputFormat->StopRun( os );
     EnvironmentBase::ErrorContext( "" );
