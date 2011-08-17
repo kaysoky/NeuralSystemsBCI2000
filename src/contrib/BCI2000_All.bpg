@@ -1,0 +1,195 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = SWApp.exe SWSpeller.exe Speller.exe FieldTripBuffer.exe \
+  FIRProcessing.exe PeakDetectSignalProcessing.exe SigfriedSigProc.exe \
+  SWSignalProcessing.exe AmpServerPro.exe BioRadio.exe Biosemi2.exe NISource.exe \
+  NeuroscanClient.exe ModularEEG.exe MicroMed.exe DT2000.exe DASSource.exe \
+  StimulusPresentation.exe P3Speller.exe FeedbackDemo.exe DummyApplication.exe \
+  CursorTask.exe vAmpSource.exe TMSi.exe RDAClient.exe NIDAQ_mx_Source.exe \
+  gUSBampSource.exe gMOBIlabPlus.exe gMOBIlab.exe P3SignalProcessing.exe \
+  MatlabSignalProcessing.exe DummySignalProcessing.exe ARSignalProcessing.exe \
+  OperatorLib.dll gUSBampgetinfo.exe RDAgetparams.exe neurogetparams.exe \
+  PythonSource.exe PythonSignalProcessing.exe PythonApplication.exe Demo.exe \
+  SignalGenerator.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+SWApp.exe: ..\contrib\Application\SlowWaveApp\SWApp.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SWSpeller.exe: ..\contrib\Application\SlowWaveApp\SWSpeller.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+Speller.exe: ..\contrib\Application\Speller\Speller.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+FieldTripBuffer.exe: ..\contrib\SignalProcessing\FieldTripBuffer\FieldTripBuffer.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+FIRProcessing.exe: ..\contrib\SignalProcessing\FIR\FIRProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+PeakDetectSignalProcessing.exe: ..\contrib\SignalProcessing\PeakDetector\PeakDetectSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SigfriedSigProc.exe: ..\contrib\SignalProcessing\SigfriedSigProc\SigfriedSigProc.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SWSignalProcessing.exe: ..\contrib\SignalProcessing\SW\SWSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+AmpServerPro.exe: ..\contrib\SignalSource\AmpServerPro\AmpServerPro.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BioRadio.exe: ..\contrib\SignalSource\BioRadio\BioRadio.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+Biosemi2.exe: ..\contrib\SignalSource\Biosemi\Biosemi2.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+NISource.exe: ..\contrib\SignalSource\NIDAQ\NISource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+NeuroscanClient.exe: ..\contrib\SignalSource\Neuroscan\NeuroscanClient.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+ModularEEG.exe: ..\contrib\SignalSource\ModularEEG\ModularEEG.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+MicroMed.exe: ..\contrib\SignalSource\Micromed\MicroMed.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DT2000.exe: ..\contrib\SignalSource\DTADC\DT2000.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DASSource.exe: ..\contrib\SignalSource\DASSource\DASSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+StimulusPresentation.exe: ..\core\Application\StimulusPresentation\StimulusPresentation.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+P3Speller.exe: ..\core\Application\P3Speller\P3Speller.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+FeedbackDemo.exe: ..\core\Application\FeedbackDemo\FeedbackDemo.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DummyApplication.exe: ..\core\Application\Dummy\DummyApplication.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+CursorTask.exe: ..\core\Application\CursorTask\CursorTask.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+vAmpSource.exe: ..\contrib\SignalSource\vAmp\vAmpSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+TMSi.exe: ..\contrib\SignalSource\TMSi\TMSi.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+RDAClient.exe: ..\contrib\SignalSource\RDAClient\RDAClient.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+NIDAQ_mx_Source.exe: ..\contrib\SignalSource\NIDAQ-MX\NIDAQ_mx_Source.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gUSBampSource.exe: ..\core\SignalSource\g.USBamp\gUSBampSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gMOBIlabPlus.exe: ..\core\SignalSource\g.MOBIlabPlus\gMOBIlabPlus.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gMOBIlab.exe: ..\core\SignalSource\g.MOBIlab\gMOBIlab.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+P3SignalProcessing.exe: ..\core\SignalProcessing\P3\P3SignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+MatlabSignalProcessing.exe: ..\core\SignalProcessing\Matlab\MatlabSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DummySignalProcessing.exe: ..\core\SignalProcessing\Dummy\DummySignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+ARSignalProcessing.exe: ..\core\SignalProcessing\AR\ARSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+OperatorLib.dll: ..\core\Operator\OperatorLib\OperatorLib.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gUSBampgetinfo.exe: ..\core\SignalSource\g.USBamp\getinfo\gUSBampgetinfo.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+RDAgetparams.exe: ..\contrib\SignalSource\RDAClient\getparams\RDAgetparams.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+neurogetparams.exe: ..\contrib\SignalSource\Neuroscan\getparams\neurogetparams.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+PythonSource.exe: ..\contrib\BCPy2000\foundation\SignalSource\PythonSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+PythonSignalProcessing.exe: ..\contrib\BCPy2000\foundation\SignalProcessing\PythonSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+PythonApplication.exe: ..\contrib\BCPy2000\foundation\Application\PythonApplication.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+Demo.exe: ..\extlib\3DAPI\Demo\Demo.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SignalGenerator.exe: ..\core\SignalSource\SignalGenerator\SignalGenerator.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+

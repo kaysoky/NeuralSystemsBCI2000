@@ -95,11 +95,11 @@ struct FunctionCall
 { // Must be declared outside a function to be used with a template.
   int argc;
   char** argv;
-  CoreModule& obj;
+  CoreModule* obj;
   void ( CoreModule::*fn )( int, char** );
 
   void operator()()
-  { ( obj.*fn )( argc, argv ); }
+  { ( obj->*fn )( argc, argv ); }
 
 };
 
@@ -110,7 +110,7 @@ CoreModule::Run( int inArgc, char** inArgv )
   {
     inArgc,
     inArgv,
-    *this,
+    this,
     &CoreModule::DoRun
   };
   ExceptionCatcher()

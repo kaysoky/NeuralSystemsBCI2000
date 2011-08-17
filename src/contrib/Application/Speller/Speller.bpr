@@ -21,7 +21,8 @@
       obj\LabelIndex.obj obj\PhysicalUnit.obj obj\ArithmeticExpression.obj 
       obj\EventQueue.obj obj\OSError.obj obj\OSThread.obj obj\BCIEvent.obj 
       obj\StateVectorSample.obj obj\OSMutex.obj obj\OSEvent.obj 
-      obj\MessageQueue.obj obj\ApplicationWindow.obj obj\DisplayWindow.obj"/>
+      obj\MessageQueue.obj obj\ApplicationWindow.obj obj\DisplayWindow.obj 
+      obj\ExceptionCatcher.obj obj\CfgID.obj obj\BCIException.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -30,14 +31,14 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\extlib\SAPILib;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\application\gui;..\..\..\shared\gui"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\extlib\SAPILib;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\application\gui;..\..\..\shared\gui;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;MODTYPE=3"/>
+    <USERDEFINES value="_DEBUG;MODTYPE=3;NO_APP_WINDOW"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="Speller.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\Application\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\audio"/>
@@ -123,6 +124,9 @@
       <FILE FILENAME="..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\application\gui\ApplicationWindow.cpp" FORMNAME="" UNITNAME="ApplicationWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\gui\DisplayWindow.cpp" FORMNAME="" UNITNAME="DisplayWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -156,30 +160,35 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+c:\programme\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=5
-Item0=..\..\..\Application\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\audio
-Item1=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\audio
-Item2=..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\utils
-Item3=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\utils
-Item4=..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl
+Count=6
+Item0=..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\Application\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\audio
+Item1=..\..\..\Application\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\audio
+Item2=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\audio
+Item3=..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\utils
+Item4=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\Application\shared\utils
+Item5=..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\config;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=4
-Item0=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\lib\obj;$(BCB)\lib;..\..\..\Application\shared\audio
-Item1=..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\lib\obj;$(BCB)\lib;..\..\..\Application\shared\utils
-Item2=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\lib\obj;$(BCB)\lib;..\..\..\Application\shared\utils
-Item3=..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\lib\obj;$(BCB)\lib;..\shared\SAPILib
+Count=5
+Item0=..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\Application\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;..\..\..\Application\shared\audio;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+Item1=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\lib\obj;$(BCB)\lib;..\..\..\Application\shared\audio
+Item2=..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\lib\obj;$(BCB)\lib;..\..\..\Application\shared\utils
+Item3=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\lib\obj;$(BCB)\lib;..\..\..\Application\shared\utils
+Item4=..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\extlib\SAPILib;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;$(BCB)\lib\obj;$(BCB)\lib;..\shared\SAPILib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
-Item0=_DEBUG;MODTYPE=3
+Count=2
+Item0=_DEBUG;MODTYPE=3;NO_APP_WINDOW
+Item1=_DEBUG;MODTYPE=3
 
 [HistoryLists\hlIntOutputDir]
 Count=1

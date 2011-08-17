@@ -19,7 +19,8 @@
       obj\OSError.obj obj\ArithmeticExpression.obj obj\StateVectorSample.obj 
       obj\EventQueue.obj obj\BCIEvent.obj obj\SpatialFilterGroup.obj 
       obj\SpatialFilterCell.obj obj\OSEvent.obj obj\OSMutex.obj 
-      obj\MessageQueue.obj obj\OSThread.obj"/>
+      obj\MessageQueue.obj obj\OSThread.obj obj\ExceptionCatcher.obj 
+      obj\CfgID.obj obj\BCIException.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -28,7 +29,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalprocessing;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\modules\signalprocessing;..\..\..\shared\modules\signalprocessing;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\utils"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalprocessing;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\modules\signalprocessing;..\..\..\shared\modules\signalprocessing;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -110,6 +111,9 @@
       <FILE FILENAME="..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

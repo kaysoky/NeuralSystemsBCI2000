@@ -18,6 +18,10 @@ class Uncopyable
  private:
   Uncopyable( const Uncopyable& );
   Uncopyable& operator=( const Uncopyable& );
+
+#if __BORLANDC__  // BCB fails on multiple inheritance from classes without data.
+  char mData;
+#endif // __BORLANDC__
 };
 
 #endif // UNCOPYABLE_H

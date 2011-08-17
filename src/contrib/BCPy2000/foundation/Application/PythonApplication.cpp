@@ -53,7 +53,8 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         try
         {
                  Application->Initialize();
-                 Application->Title = "BCI2000 PythonApplication";\
+                 Application->Title = "";
+         \
                  CoreModuleVCL().Run( _argc, _argv );
         }
         catch (Exception &exception)

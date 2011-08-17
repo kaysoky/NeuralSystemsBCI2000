@@ -4,8 +4,8 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\demo\prog\PythonSignalProcessing.exe"/>
-    <OBJFILES value="obj\PythonSignalProcessing.obj obj\PythonFilter.obj 
-      obj\PythonWrapper.obj obj\PythonLink24.obj obj\PythonLink25.obj obj\PythonLink26.obj
+    <OBJFILES value="obj\PythonSignalProcessing.obj obj\PythonFilter.obj obj\PythonWrapper.obj 
+      obj\PythonLink24.obj obj\PythonLink25.obj obj\PythonLink26.obj 
       obj\MessageHandler.obj obj\CoreModule.obj obj\CoreModuleVCL.obj 
       obj\GenericFilter.obj obj\Brackets.obj obj\PhysicalUnit.obj 
       obj\VersionInfo.obj obj\MeasurementUnits.obj obj\PrecisionTime.obj 
@@ -18,8 +18,10 @@
       obj\ParamRef.obj obj\BCIError.obj obj\BCIError_module.obj 
       obj\BitmapImage.obj obj\Color.obj obj\BCIDirectory.obj obj\OSError.obj 
       obj\ExpressionParser.obj obj\Expression.obj obj\ArithmeticExpression.obj 
-      obj\SpatialFilter.obj 
-      obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj"/>
+      obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj 
+      obj\SpatialFilter.obj obj\ExceptionCatcher.obj obj\CfgID.obj 
+      obj\BCIException.obj obj\OSThread.obj obj\OSMutex.obj obj\OSEvent.obj 
+      obj\MessageQueue.obj obj\SpatialFilterGroup.obj obj\SpatialFilterCell.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -28,7 +30,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\shared;..\shared;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\accessors;..\..\..\..\shared\accessors;..\..\..\..\shared\bcistream;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\fileio;..\..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\accessors;..\..\..\..\shared\modules\signalprocessing"/>
+    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\accessors;..\..\..\..\shared\accessors;..\..\..\..\shared\bcistream;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\fileio;..\..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\accessors;..\..\..\..\shared\modules\signalprocessing;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\bcistream;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\modules;..\..\..\..\shared\modules\signalprocessing;..\..\..\..\shared\modules\signalprocessing"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -39,7 +41,7 @@
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="PythonSignalProcessing.cpp"/>
     <INCLUDEPATH value="..\shared;..\..\..\..\shared;..\..\..\..\shared\accessors;..\..\..\..\shared\bcistream;..\..\..\..\shared\config;..\..\..\..\shared\fileio;..\..\..\..\shared\modules;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\modules\signalprocessing;$(BCB)\include\vcl;$(BCB)\include"/>
-    <LIBPATH value="..\..\..\..\shared\utils\Expression;..\..\..\..\shared\fileio;..\..\..\..\shared\bcistream;..\..\..\..\shared\accessors;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\modules;..\shared;..\..\shared;$(BCB)\Imports;$(BCB)\Projects;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <LIBPATH value="..\..\..\..\shared\modules\signalprocessing;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\fileio;..\..\..\..\shared\bcistream;..\..\..\..\shared\accessors;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\modules;..\shared;..\..\shared;$(BCB)\Imports;$(BCB)\Projects;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -105,6 +107,15 @@
       <FILE FILENAME="..\..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\modules\signalprocessing\SpatialFilter.cpp" FORMNAME="" UNITNAME="SpatialFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\modules\signalprocessing\SpatialFilterGroup.cpp" FORMNAME="" UNITNAME="SpatialFilterGroup" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\modules\signalprocessing\SpatialFilterCell.cpp" FORMNAME="" UNITNAME="SpatialFilterCell" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

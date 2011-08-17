@@ -4,8 +4,8 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\demo\prog\PythonApplication.exe"/>
-    <OBJFILES value="obj\PythonApplication.obj obj\PythonFilter.obj
-      obj\PythonWrapper.obj obj\PythonLink24.obj obj\PythonLink25.obj obj\PythonLink26.obj
+    <OBJFILES value="obj\PythonApplication.obj obj\PythonFilter.obj obj\PythonWrapper.obj 
+      obj\PythonLink24.obj obj\PythonLink25.obj obj\PythonLink26.obj 
       obj\MessageHandler.obj obj\CoreModule.obj obj\CoreModuleVCL.obj 
       obj\GenericFilter.obj obj\Brackets.obj obj\PhysicalUnit.obj 
       obj\VersionInfo.obj obj\MeasurementUnits.obj obj\PrecisionTime.obj 
@@ -18,7 +18,9 @@
       obj\ParamRef.obj obj\BCIError.obj obj\BCIError_module.obj 
       obj\BitmapImage.obj obj\Color.obj obj\BCIDirectory.obj obj\OSError.obj 
       obj\ExpressionParser.obj obj\Expression.obj obj\ArithmeticExpression.obj 
-      obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj"/>
+      obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj 
+      obj\ExceptionCatcher.obj obj\CfgID.obj obj\BCIException.obj 
+      obj\OSThread.obj obj\OSMutex.obj obj\OSEvent.obj obj\MessageQueue.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -27,18 +29,18 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\shared;..\shared;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\accessors;..\..\..\..\shared\accessors;..\..\..\..\shared\bcistream;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\fileio;..\..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\accessors"/>
+    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\modules;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\accessors;..\..\..\..\shared\accessors;..\..\..\..\shared\bcistream;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\fileio;..\..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\modules"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="MODTYPE=3;DYNAMIC_PYTHON=1"/>
+    <USERDEFINES value="MODTYPE=3;DYNAMIC_PYTHON=1;NO_APP_WINDOW"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="PythonApplication.cpp"/>
-    <INCLUDEPATH value="..\shared;..\..\..\..\shared;..\..\..\..\shared\accessors;..\..\..\..\shared\bcistream;..\..\..\..\shared\config;..\..\..\..\shared\fileio;..\..\..\..\shared\modules;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;$(BCB)\include\vcl;$(BCB)\include"/>
-    <LIBPATH value="..\..\..\..\shared\utils\Expression;..\..\..\..\shared\fileio;..\..\..\..\shared\bcistream;..\..\..\..\shared\accessors;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\modules;..\shared;$(BCB)\Imports;$(BCB)\Projects;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\utils;..\shared;..\..\..\..\shared;..\..\..\..\shared\accessors;..\..\..\..\shared\bcistream;..\..\..\..\shared\config;..\..\..\..\shared\fileio;..\..\..\..\shared\modules;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;$(BCB)\include\vcl;$(BCB)\include"/>
+    <LIBPATH value="..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\fileio;..\..\..\..\shared\bcistream;..\..\..\..\shared\accessors;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\modules;..\shared;$(BCB)\Imports;$(BCB)\Projects;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -103,6 +105,13 @@
       <FILE FILENAME="..\..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -136,8 +145,34 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-c:\program files\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
-c:\program files\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+c:\programme\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+c:\programme\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
+[HistoryLists\hlIncludePath]
+Count=1
+Item0=..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\utils;..\shared;..\..\..\..\shared;..\..\..\..\shared\accessors;..\..\..\..\shared\bcistream;..\..\..\..\shared\config;..\..\..\..\shared\fileio;..\..\..\..\shared\modules;..\..\..\..\shared\types;..\..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;$(BCB)\include\vcl;$(BCB)\include
+
+[HistoryLists\hlLibraryPath]
+Count=1
+Item0=..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\..\shared\utils\Expression;..\..\..\..\shared\fileio;..\..\..\..\shared\bcistream;..\..\..\..\shared\accessors;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\modules;..\shared;$(BCB)\Imports;$(BCB)\Projects;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=2
+Item0=MODTYPE=3;DYNAMIC_PYTHON=1;NO_APP_WINDOW
+Item1=MODTYPE=3;DYNAMIC_PYTHON=1
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\demo\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
@@ -158,10 +193,5 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=0
 LinkCGLIB=0
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>

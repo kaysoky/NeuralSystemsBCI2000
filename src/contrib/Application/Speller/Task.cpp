@@ -166,9 +166,9 @@ bool TTask::CheckTree(int root) const
   int displayPos = 0;
 
 
-  for(size_t row= 0; row<Parameter("TreeDefinitionMatrix")->NumRows(); row++)
+  for(int row= 0; row<Parameter("TreeDefinitionMatrix")->NumRows(); row++)
   {
-    for (size_t col=0; col<Parameter("TreeDefinitionMatrix")->NumColumns(); col++)
+    for (int col=0; col<Parameter("TreeDefinitionMatrix")->NumColumns(); col++)
     {
     //if(debug) fprintf(a, "checking matrix %d, %d, it's %s.\n", row, col,AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", row, col))  );
       if(checkInt( AnsiString ( Parameter("TreeDefinitionMatrix")(row, col).c_str())  ) )
@@ -181,7 +181,7 @@ bool TTask::CheckTree(int root) const
     }
   }
 
-  for(size_t i=0; i< Parameter("TreeDefinitionMatrix")->NumRows(); i++)
+  for(int i=0; i< Parameter("TreeDefinitionMatrix")->NumRows(); i++)
   {
   // if(debug) fprintf(a, "In 1st Loop, Looking for targetID %d, rowNum is %d, 1st    column is %s.\n", root, rowNum, AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", i, 0)) );
   //if 1st column in ith row contain the root targetID
@@ -254,7 +254,7 @@ bool TTask::CheckTargetMatrix() const
   WavePlayer testPlayer;
   bool errorflag=false;
 
-  for (size_t i = 0; i < Parameter("TargetDefinitionMatrix")->NumRows(); i++)
+  for (int i = 0; i < Parameter("TargetDefinitionMatrix")->NumRows(); i++)
   {
      AnsiString iFileName = AnsiString(Parameter("TargetDefinitionMatrix")(i,4).c_str());
      AnsiString sFileName = AnsiString(Parameter("TargetDefinitionMatrix")(i,5).c_str());

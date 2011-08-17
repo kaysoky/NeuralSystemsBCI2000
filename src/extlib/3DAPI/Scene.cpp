@@ -128,7 +128,7 @@ Scene::OnPaint( const DrawContext& inDC )
   // further to the top are drawn properly.
   ::SelectClipRgn( ( HDC )inDC.handle, NULL );
   if( !::wglMakeCurrent( ( HDC )inDC.handle, mGLRC ) )
-    bciexception << OSError().Message();
+    throw bciexception( OSError().Message() );
   GUI::Rect fullRect = { 0, 0, 1, 1 };
   fullRect = Display().NormalizedToPixelCoords( fullRect );
   int windowHeight = fullRect.bottom - fullRect.top;

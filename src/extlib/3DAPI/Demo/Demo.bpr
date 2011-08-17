@@ -10,7 +10,9 @@
       obj\threeDText.obj obj\twoDCursor.obj obj\twoDOverlay.obj obj\twoDText.obj 
       obj\GraphObject.obj obj\GraphDisplay.obj obj\PrecisionTime.obj 
       obj\Color.obj obj\BCIDirectory.obj obj\BCIError.obj 
-      obj\BCIError_guiapp.obj obj\OSError.obj"/>
+      obj\BCIError_guiapp.obj obj\OSError.obj obj\ExceptionCatcher.obj 
+      obj\CfgID.obj obj\BCIException.obj obj\OSMutex.obj obj\OSThread.obj 
+      obj\GUI.obj"/>
     <RESFILES value="Demo.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UDemoWindow.dfm"/>
@@ -18,7 +20,7 @@
     <LIBRARIES value="rtl.lib vcl.lib"/>
     <SPARELIBS value="vcl.lib rtl.lib"/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
-    <PATHCPP value=".;..;..;..;..;..;..;..;..;..;..;..;..;..;..;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils"/>
+    <PATHCPP value=".;..;..;..;..;..;..;..;..;..;..;..;..;..;..;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\gui"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -73,6 +75,12 @@
       <FILE FILENAME="..\..\..\shared\bcistream\BCIError.cpp" FORMNAME="" UNITNAME="BCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\bcistream\BCIError_guiapp.cpp" FORMNAME="" UNITNAME="BCIError_guiapp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

@@ -46,7 +46,9 @@
       SWSpeller.obj\BCIEvent.obj SWSpeller.obj\StateVectorSample.obj 
       SWSpeller.obj\OSMutex.obj SWSpeller.obj\OSEvent.obj 
       SWSpeller.obj\MessageQueue.obj SWSpeller.obj\ApplicationWindow.obj 
-      SWSpeller.obj\DisplayWindow.obj SWSpeller.obj\SWGUI.obj"/>
+      SWSpeller.obj\DisplayWindow.obj SWSpeller.obj\SWGUI.obj 
+      SWSpeller.obj\ExceptionCatcher.obj SWSpeller.obj\CfgID.obj 
+      SWSpeller.obj\BCIException.obj"/>
     <RESFILES value="SWSpeller.res Presentation\Views\Win32\Views.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -55,14 +57,14 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\audio;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\application\gui;..\..\..\shared\gui;Presentation\Views"/>
+    <PATHCPP value=".;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\audio;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules;..\..\..\shared\modules\application\gui;..\..\..\shared\gui;Presentation\Views;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;BCI2000;BCI2000_SPELLER;PERUVIAN_BRIGHTNESS_HACK;MODTYPE=3"/>
+    <USERDEFINES value="_DEBUG;BCI2000;BCI2000_SPELLER;PERUVIAN_BRIGHTNESS_HACK;MODTYPE=3;NO_APP_WINDOW"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SWSpeller.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -175,6 +177,9 @@
       <FILE FILENAME="..\..\..\shared\modules\application\gui\ApplicationWindow.cpp" FORMNAME="" UNITNAME="ApplicationWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\gui\DisplayWindow.cpp" FORMNAME="" UNITNAME="DisplayWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\Views\SWGUI.cpp" FORMNAME="" UNITNAME="SWGUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -208,29 +213,34 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+c:\programme\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=4
-Item0=..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl
-Item2=..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl
+Count=5
+Item0=..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=4
-Item0=..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib\obj;$(BCB)\lib
+Count=5
+Item0=..\..\..\shared\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+Item1=..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\utils;..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\Application\shared\utils;..\..\..\Application\shared\audio;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
-Item0=_DEBUG;BCI2000;BCI2000_SPELLER;PERUVIAN_BRIGHTNESS_HACK;MODTYPE=3
+Count=2
+Item0=_DEBUG;BCI2000;BCI2000_SPELLER;PERUVIAN_BRIGHTNESS_HACK;MODTYPE=3;NO_APP_WINDOW
+Item1=_DEBUG;BCI2000;BCI2000_SPELLER;PERUVIAN_BRIGHTNESS_HACK;MODTYPE=3
 
 [HistoryLists\hlIntOutputDir]
 Count=1

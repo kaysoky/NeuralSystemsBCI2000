@@ -6,7 +6,9 @@
     <PROJECT value="..\..\..\..\..\prog\RDAgetparams.exe"/>
     <OBJFILES value="obj\RDAgetparams.obj obj\RDAQueue.obj obj\BCIError.obj obj\ParamList.obj 
       obj\Param.obj obj\HierarchicalLabel.obj obj\Brackets.obj 
-      obj\EncodedString.obj obj\LabelIndex.obj obj\BCIError_tool.obj"/>
+      obj\EncodedString.obj obj\LabelIndex.obj obj\BCIError_tool.obj 
+      obj\OSMutex.obj obj\OSThread.obj obj\ExceptionCatcher.obj 
+      obj\BCIException.obj"/>
     <RESFILES value="RDAgetparams.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -19,7 +21,7 @@
       inetdbbde.bpi inetdbxpress.bpi inetdb.bpi nmfast.bpi bcbie.bpi soaprtl.bpi 
       dclocx.bpi dbexpress.bpi dbxcds.bpi indy.bpi bcb2kaxserver.bpi 
       visualclx.bpi visualdbclx.bpi"/>
-    <PATHCPP value=".;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\bcistream"/>
+    <PATHCPP value=".;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\bcistream;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\utils;..\..\..\..\shared\bcistream"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -29,8 +31,8 @@
     <USERDEFINES value="BCI_TOOL;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="RDAgetparams.bpf"/>
-    <INCLUDEPATH value="..\;..;..\..\..\..\extlib\RDA;..\..\..\..\shared\config;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <INCLUDEPATH value="..\..\..\..\shared\utils;..\;..;..\..\..\..\extlib\RDA;..\..\..\..\shared\config;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\..\..\shared\utils;..\;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -61,6 +63,10 @@
       <FILE FILENAME="..\..\..\..\shared\types\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\types\LabelIndex.cpp" FORMNAME="" UNITNAME="LabelIndex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\bcistream\BCIError_tool.cpp" FORMNAME="" UNITNAME="BCIError_tool" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

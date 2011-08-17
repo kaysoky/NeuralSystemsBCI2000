@@ -11,10 +11,12 @@
       obj\Brackets.obj obj\EncodedString.obj obj\HierarchicalLabel.obj 
       obj\LabelIndex.obj obj\OSEvent.obj obj\OSMutex.obj obj\SockStream.obj 
       obj\BCIDirectory.obj obj\OSThread.obj obj\Status.obj 
-      obj\MessageHandler.obj obj\BCIError.obj obj\BCIError_opdll.obj 
-      obj\OSError.obj obj\VersionInfo.obj obj\GenericSignal.obj 
-      obj\GenericVisualization.obj obj\BitmapImage.obj obj\PhysicalUnit.obj 
-      obj\MessageQueue.obj obj\SignalType.obj obj\Label.obj"/>
+      obj\MessageHandler.obj obj\MessageQueue.obj obj\BCIError.obj 
+      obj\BCIError_opdll.obj obj\OSError.obj obj\VersionInfo.obj 
+      obj\GenericSignal.obj obj\GenericVisualization.obj obj\BitmapImage.obj 
+      obj\PhysicalUnit.obj obj\SignalType.obj obj\Label.obj 
+      obj\ExceptionCatcher.obj obj\CfgID.obj obj\BCIException.obj 
+      obj\ClassName.obj"/>
     <RESFILES value="OperatorLib.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -27,7 +29,7 @@
       inetdbxpress.bpi inetdb.bpi nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi 
       dbexpress.bpi indy.bpi bcb2kaxserver.bpi dbxcds.bpi visualclx.bpi 
       visualdbclx.bpi adortl.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\fileio;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types"/>
+    <PATHCPP value=".;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\fileio;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\utils"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -94,6 +96,10 @@
       <FILE FILENAME="..\..\..\shared\types\PhysicalUnit.cpp" FORMNAME="" UNITNAME="PhysicalUnit" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\SignalType.cpp" FORMNAME="" UNITNAME="SignalType" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\Label.cpp" FORMNAME="" UNITNAME="Label" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ClassName.cpp" FORMNAME="" UNITNAME="ClassName" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

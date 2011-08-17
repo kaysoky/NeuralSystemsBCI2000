@@ -31,7 +31,8 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
   {
     Application->Initialize();
     Application->Title = "SlowWave Feedback";
-    CoreModuleVCL().Run( _argc, _argv );
+    CoreModuleVCL* pModule;
+    //module.Run( _argc, _argv );
   }
   catch (Exception &exception)
   {

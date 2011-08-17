@@ -6,7 +6,7 @@
     <PROJECT value="..\..\..\..\..\prog\neurogetparams.exe"/>
     <OBJFILES value="obj\neuroscanget.obj obj\SockStream.obj obj\Param.obj obj\ParamList.obj 
       obj\EncodedString.obj obj\HierarchicalLabel.obj obj\LabelIndex.obj 
-      obj\Brackets.obj"/>
+      obj\Brackets.obj obj\BCIException.obj"/>
     <RESFILES value="neurogetparams.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -14,7 +14,7 @@
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
-    <PATHCPP value=".;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types"/>
+    <PATHCPP value=".;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\types;..\..\..\..\shared\bcistream"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -24,8 +24,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="neurogetparams.bpf"/>
-    <INCLUDEPATH value="..\..\..\..\shared\config;..\..\..\..\shared;..\..\..\..\shared\types;..\..\..\..\shared\utils;..;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\..\..\shared;..\..\..\..\shared\types;..\..\..\..\shared\utils;$(BCB)\Projects\Lib;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <INCLUDEPATH value="..\..\..\..\shared\bcistream;..\..\..\..\shared\config;..\..\..\..\shared;..\..\..\..\shared\types;..\..\..\..\shared\utils;..;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\..\..\shared\bcistream;..\..\..\..\shared;..\..\..\..\shared\types;..\..\..\..\shared\utils;$(BCB)\Projects\Lib;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -54,6 +54,7 @@
       <FILE FILENAME="..\..\..\..\shared\types\HierarchicalLabel.cpp" FORMNAME="" UNITNAME="HierarchicalLabel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\types\LabelIndex.cpp" FORMNAME="" UNITNAME="LabelIndex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\types\Brackets.cpp" FORMNAME="" UNITNAME="Brackets" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

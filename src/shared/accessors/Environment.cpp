@@ -1,17 +1,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: Environment and EnvironmentExtension are mix-in base classes that
-//              channel access to enviroment-like
-//              global objects of types ParamList, StateList,
-//              StateVector, and provides convenient accessor functions
-//              and checking utilities.
-//              The difference between Environment and EnvironmentExtension is that
-//              Environment descendants are assumed to perform globally relevant
-//              actions inside their constructors (as GenericFilter does), while
-//              EnvironmentExtension descendants
-//              are supposed to use a separate function Publish() for such
-//              purposes.
+// Description: Environment is a mix-in base class
+//   that channels access to enviroment-like
+//   global objects of types ParamList, StateList,
+//   StateVector, and provides convenient accessor functions which perform
+//   checks for parameter/state existence, and bounds.
+//
+//   Inheriting from Environment, EnvironmentExtension is an interface class
+//   for components that need to handle system-wide events such as Preflight,
+//   Initialize, etc. Direct inheritance from Environment should be used
+//   for components that need access to parameters and states without handling
+//   global events.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
