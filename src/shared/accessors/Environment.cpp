@@ -52,6 +52,7 @@
 
 #include <sstream>
 #include <typeinfo>
+#include <cstdlib>
 
 using namespace std;
 using namespace bci;
