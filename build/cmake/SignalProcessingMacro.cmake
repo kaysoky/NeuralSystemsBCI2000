@@ -35,6 +35,8 @@ ENDIF( NOT BORLAND )
 # Add to our include directories
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/modules/signalprocessing ${INCLUDES} )
 
+SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
+
 # Add the executable to the project
 ADD_EXECUTABLE( ${NAME} WIN32 ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
 

@@ -52,6 +52,12 @@ SET( HDR_BCI2000_SHARED_FILEIO_EDF_GDF
   ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/GDFFileWriter.h
   ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/GDFOutputFormat.h
 )
+SET( SRC_BCI2000_SHARED_MODULES_SIGNALSOURCE
+  ${BCI2000_SRC_DIR}/shared/modules/signalsource/BufferedADC.cpp
+)
+SET( HDR_BCI2000_SHARED_MODULES_SIGNALSOURCE
+  ${BCI2000_SRC_DIR}/shared/modules/signalsource/BufferedADC.h
+)
 
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_SHARED_UTILS}
@@ -63,6 +69,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_SHARED_FILEIO}
   ${SRC_BCI2000_SHARED_FILEIO_DAT}
   ${SRC_BCI2000_SHARED_FILEIO_EDF_GDF}
+  ${SRC_BCI2000_SHARED_MODULES_SIGNALSOURCE}
 )
 
 SET( HDR_BCI2000_FRAMEWORK
@@ -75,6 +82,7 @@ SET( HDR_BCI2000_FRAMEWORK
   ${HDR_BCI2000_SHARED_FILEIO}
   ${HDR_BCI2000_SHARED_FILEIO_DAT}
   ${HDR_BCI2000_SHARED_FILEIO_EDF_GDF}
+  ${HDR_BCI2000_SHARED_MODULES_SIGNALSOURCE}
 )
 
 # Set the BCI2000 Source Groups
@@ -87,6 +95,7 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_BCI2000_S
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\fileio FILES ${SRC_BCI2000_SHARED_FILEIO} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\fileio\\dat FILES ${SRC_BCI2000_SHARED_FILEIO_DAT} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\fileio\\edf_gdf FILES ${SRC_BCI2000_SHARED_FILEIO_EDF_GDF} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\signalsource FILES ${SRC_BCI2000_SHARED_MODULES_SIGNALSOURCE} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES ${HDR_BCI2000_SHARED_UTILS} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils\\expression FILES ${HDR_BCI2000_SHARED_UTILS_EXPRESSION} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules FILES ${HDR_BCI2000_SHARED_MODULES} )
@@ -96,6 +105,7 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\bcistream FILES ${HDR_BCI2000_
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\fileio FILES ${HDR_BCI2000_SHARED_FILEIO} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\fileio\\dat FILES ${HDR_BCI2000_SHARED_FILEIO_DAT} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\fileio\\edf_gdf FILES ${HDR_BCI2000_SHARED_FILEIO_EDF_GDF} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\signalsource FILES ${HDR_BCI2000_SHARED_MODULES_SIGNALSOURCE} )
 
 # Define include directories
 IF( BORLAND )
@@ -112,6 +122,7 @@ INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared/fileio
   ${BCI2000_SRC_DIR}/shared/fileio/dat
   ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf
+  ${BCI2000_SRC_DIR}/shared/modules/signalsource
 )
 ELSE( BORLAND )
 INCLUDE_DIRECTORIES(
@@ -127,5 +138,6 @@ INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared/fileio
   ${BCI2000_SRC_DIR}/shared/fileio/dat
   ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf
+  ${BCI2000_SRC_DIR}/shared/modules/signalsource
 )
 ENDIF( BORLAND )
