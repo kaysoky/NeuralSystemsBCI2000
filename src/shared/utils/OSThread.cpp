@@ -161,25 +161,12 @@ OSThread::TerminateWait( int inTimeout )
   return event.Wait( inTimeout );
 }
 
-// Older compilers do not allow a locally defined type as a
-// template argument to ExceptionCatcher::Execute(), that's
-// why we define it here:
-struct FunctionCall
-{
-  OSThread* obj;
-  int ( OSThread::*fn )();
-  int result;
-
-  void operator()()
-  { result = ( obj->*fn )(); }
-};
-
 int
 OSThread::CallExecute()
 {
   FunctionCall functionCall = { this, &OSThread::Execute, 0 };
   ExceptionCatcher()
-    .SetMessage( string( "canceling thread of type " ) + bci::ClassName( typeid( *this ) ) )
+    .SetMessage( "canceling thread of type " + bci::ClassName( typeid( *this ) ) )
     .Execute( functionCall );
   return functionCall.result;
 }

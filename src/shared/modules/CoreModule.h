@@ -147,6 +147,17 @@ class CoreModule : private Uncopyable, private MessageHandler
   bool HandleStateVector( std::istream& );
   bool HandleSysCommand( std::istream& );
 
+  struct MainLoop;
+  friend struct MainLoop;
+  struct MainLoop
+  {
+    int mArgc;
+    char** mArgv;
+    CoreModule* mpObj;
+
+    void operator()();
+  };
+
   class ReceivingThread;
   friend class ReceivingThread;
   class ReceivingThread : public OSThread

@@ -69,6 +69,7 @@ CoreModule::CoreModule()
   mStartRunPending( false ),
   mStopRunPending( false ),
   mFirstStatevectorPending( false ),
+  mMutex( NULL ),
   mSampleBlockSize( 0 )
 #if _WIN32
 , mFPMask( cDisabledFPExceptions )
@@ -93,40 +94,27 @@ CoreModule::~CoreModule()
   }
 }
 
-struct FunctionCall
-{ // Must be declared outside a function to be used with a template.
-  int argc;
-  char** argv;
-  CoreModule* obj;
-  void ( CoreModule::*fn )( int, char** );
-
-  void operator()()
-  { ( obj->*fn )( argc, argv ); }
-
-};
+void
+CoreModule::MainLoop::operator()()
+{
+  if( mpObj->Initialize( mArgc, mArgv ) )
+    mpObj->MainMessageLoop();
+}
 
 bool
 CoreModule::Run( int inArgc, char** inArgv )
 {
-  FunctionCall functionCall =
+  MainLoop loop =
   {
     inArgc,
     inArgv,
-    this,
-    &CoreModule::DoRun
+    this
   };
   ExceptionCatcher()
     .SetMessage( "terminating " THISMODULE " module" )
-    .Execute( functionCall );
+    .Execute( loop );
   ShutdownSystem();
   return ( bcierr__.Flushes() == 0 );
-}
-
-void
-CoreModule::DoRun( int inArgc, char** inArgv )
-{
-  if( Initialize( inArgc, inArgv ) )
-    MainMessageLoop();
 }
 
 // Internal functions.

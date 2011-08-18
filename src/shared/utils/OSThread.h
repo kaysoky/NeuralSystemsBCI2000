@@ -60,6 +60,15 @@ class OSThread : private Uncopyable
  private:
   virtual int Execute() = 0;
 
+  struct FunctionCall
+  {
+    OSThread* obj;
+    int ( OSThread::*fn )();
+    int result;
+
+    void operator()()
+    { result = ( obj->*fn )(); }
+  };
   int CallExecute();
 
  private:

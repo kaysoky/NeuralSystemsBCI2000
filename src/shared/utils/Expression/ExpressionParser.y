@@ -128,7 +128,8 @@ addr:  exp                           { ostringstream oss; oss << $1; $$ = new st
     }
     else if( ::isalnum( c ) )
     {
-      string name;
+      static string name;
+      name.clear();
       while( ::isalnum( c ) )
       {
         name += c;
