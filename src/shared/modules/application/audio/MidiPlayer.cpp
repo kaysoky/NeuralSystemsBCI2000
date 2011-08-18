@@ -237,7 +237,7 @@ MidiPlayer::Play( int inMidiNote,
 
 void
 CALLBACK
-MidiPlayer::SendMidiMsg( UINT inTimerID, UINT, DWORD inMsg, DWORD, DWORD )
+MidiPlayer::SendMidiMsg( UINT, UINT, DWORD inMsg, DWORD, DWORD )
 {
   // If the last instance of MidiPlayer was deleted since
   // the timer was set up,
@@ -251,7 +251,7 @@ MidiPlayer::SendMidiMsg( UINT inTimerID, UINT, DWORD inMsg, DWORD, DWORD )
   // We need to try again. We can't use a while loop here because while we are inside
   // the interrupt handler the pending SendMidiMsg call cannot return.
   // We set up a new timer and hope that this will not happen too often.
-  ::timeSetEvent( retryDelay, timerResolution, SendMidiMsg, inMsg, TIME_ONESHOT );
+    ::timeSetEvent( retryDelay, timerResolution, SendMidiMsg, inMsg, TIME_ONESHOT );
 }
 
 int
@@ -385,7 +385,7 @@ MidiPlayer::StopSequence()
 
 void
 CALLBACK
-MidiPlayer::SeqCallback( UINT inID, UINT, DWORD inInstance, DWORD, DWORD )
+MidiPlayer::SeqCallback( UINT, UINT, DWORD inInstance, DWORD, DWORD )
 {
   MidiPlayer* this_ = reinterpret_cast<MidiPlayer*>( inInstance );
   MidiNote*   pCurNote = this_->mpCurSeqPos;

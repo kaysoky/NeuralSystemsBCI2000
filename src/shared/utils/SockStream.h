@@ -115,7 +115,7 @@ class streamsock
     typedef std::set<std::string, ip_compare> set_of_addresses;
     // Return a list of local addresses. Addresses will be ordered by "externality":
     // local (127), auto (169), internal (10,192), external.
-    static const set_of_addresses& local_addresses();
+    static set_of_addresses local_addresses();
 
 
   private:

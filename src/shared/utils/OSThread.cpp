@@ -153,6 +153,14 @@ OSThread::Terminate( OSEvent* inpEvent )
     mpTerminationEvent->Set();
 }
 
+bool
+OSThread::TerminateWait( int inTimeout )
+{
+  OSEvent event;
+  Terminate( &event );
+  return event.Wait( inTimeout );
+}
+
 // Older compilers do not allow a locally defined type as a
 // template argument to ExceptionCatcher::Execute(), that's
 // why we define it here:
@@ -165,7 +173,6 @@ struct FunctionCall
   void operator()()
   { result = ( obj->*fn )(); }
 };
-
 
 int
 OSThread::CallExecute()

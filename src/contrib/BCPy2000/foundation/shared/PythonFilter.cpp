@@ -26,6 +26,8 @@
 #ifdef _WIN32
 # ifndef __BORLANDC__
 #  define _WIN32_WINNT 0x500
+# else // __BORLANDC__
+# include <float.h>
 # endif // __BORLANDC__
 #include <Windows.h>
 #endif // _WIN32
@@ -62,6 +64,12 @@ void Sleep(long msec)
 }
 
 #endif // _WIN32
+
+#if __BORLANDC__
+# define TO_CSTRING(x) AnsiString(x).c_str()
+#else
+# define TO_CSTRING(x) std::string(x).c_str()
+#endif // __BORLANDC__
 
 
 using namespace std;
@@ -906,7 +914,7 @@ void
 FILTER_NAME::HandleException(Exception& e, std::string qualifier) const
 {
   UnblockThreads();
-  DoubleErr(e.Message.c_str(), qualifier.c_str(), true);
+  DoubleErr(TO_CSTRING(e.Message), qualifier.c_str(), true);
 }
 
 void

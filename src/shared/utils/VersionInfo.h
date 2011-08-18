@@ -56,6 +56,7 @@ class VersionInfo : public VersionInfoBase
   std::ostream& WriteToStream( std::ostream& os ) const;
 
  private:
+  static const std::string sEmptyString;
   static const char*  sNames[];
   static const size_t sNumNames;
 };

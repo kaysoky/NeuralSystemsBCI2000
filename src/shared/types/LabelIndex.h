@@ -53,7 +53,7 @@ class LabelIndex
   std::string& operator[]( size_t );
 
   bool IsTrivial() const;
-  static const std::string& TrivialLabel( size_t );
+  static std::string TrivialLabel( size_t );
 
   // Stream I/O.
   std::ostream& WriteToStream( std::ostream& ) const;

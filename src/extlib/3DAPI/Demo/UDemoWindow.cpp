@@ -89,13 +89,13 @@ __fastcall TDemoWindow::TDemoWindow(TComponent* Owner)
   FrameUpdate->Enabled = true;
 }
 //---------------------------------------------------------------------------
-void __fastcall TDemoWindow::FormClose(TObject *Sender,
-      TCloseAction &Action)
+void __fastcall TDemoWindow::FormClose(TObject * /*Sender*/,
+      TCloseAction & /*Action*/)
 {
   mGraphDisplay.DeleteObjects();
 }
 //---------------------------------------------------------------------------
-void __fastcall TDemoWindow::FormPaint(TObject *Sender)
+void __fastcall TDemoWindow::FormPaint(TObject */*Sender*/)
 {
   PrecisionTime t1 = PrecisionTime::Now();
   mGraphDisplay.Paint();
@@ -110,7 +110,7 @@ void __fastcall TDemoWindow::FormPaint(TObject *Sender)
   }
 }
 //---------------------------------------------------------------------------
-void __fastcall TDemoWindow::FormResize(TObject *Sender)
+void __fastcall TDemoWindow::FormResize(TObject */*Sender*/)
 {
   FrameUpdate->Enabled = false;
   HDC winDC = mGraphDisplay.Context().handle;
@@ -361,8 +361,8 @@ TDemoWindow::OnCollide( sceneObj& p1, sceneObj& p2 )
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TDemoWindow::FormKeyDown(TObject *Sender, WORD &Key,
-      TShiftState Shift)
+void __fastcall TDemoWindow::FormKeyDown(TObject */*Sender*/, WORD &Key,
+      TShiftState /*Shift*/)
 {
   switch( Key )
   {
@@ -428,7 +428,7 @@ void __fastcall TDemoWindow::FormKeyDown(TObject *Sender, WORD &Key,
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TDemoWindow::FrameUpdateTimer(TObject *Sender)
+void __fastcall TDemoWindow::FrameUpdateTimer(TObject */*Sender*/)
 {
   mpScene->Move( 1 );
   this->Paint();

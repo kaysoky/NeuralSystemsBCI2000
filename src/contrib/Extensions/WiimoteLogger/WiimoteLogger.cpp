@@ -149,9 +149,7 @@ WiimoteLogger::~WiimoteLogger()
     {
         if( mpWiimoteThread[i] )
         {
-            mpWiimoteThread[i]->Terminate();
-            while( !mpWiimoteThread[i]->IsTerminated() )
-              ::Sleep(1);
+            mpWiimoteThread[i]->TerminateWait();
             delete mpWiimoteThread[i];
             mpWiimoteThread[i] = NULL;
         }
@@ -301,9 +299,7 @@ void WiimoteLogger::Preflight() const
   {
     if( mpWiimoteThread[i] )
     {
-      mpWiimoteThread[i]->Terminate();
-      while( !mpWiimoteThread[i]->IsTerminated() )
-        ::Sleep(1);
+      mpWiimoteThread[i]->TerminateWait();
       delete mpWiimoteThread[i]; //This also deletes the associated wiimote object
     }
     if( m_wiimotes[i] )
@@ -417,9 +413,7 @@ void WiimoteLogger::StopRun()
   {
     if( mpWiimoteThread[i] )
     {
-      mpWiimoteThread[i]->Terminate();
-      while( !mpWiimoteThread[i]->IsTerminated() )
-        ::Sleep(1);
+      mpWiimoteThread[i]->TerminateWait();
       delete mpWiimoteThread[i];
       mpWiimoteThread[i] = NULL;
     }

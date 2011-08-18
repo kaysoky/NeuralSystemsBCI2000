@@ -76,12 +76,10 @@ GenericFilter::Visualizations()
   return visualizations;
 }
 
-const string&
-GenericFilter::VisParamName( const GenericFilter* inpFilter )
+string
+GenericFilter::VisParamName() const
 {
-  static string result;
-  result = string( "Visualize" ) + ClassName( typeid( *inpFilter ) );
-  return result;
+  return string( "Visualize" ) + ClassName( typeid( *this ) );
 }
 
 GenericFilter::Registrar::Registrar( const char* inPos, int inPriority ) 
@@ -143,11 +141,10 @@ GenericFilter::GetLastFilterPosition()
   return ( *Registrar::Registrars().rbegin() )->Position();
 }
 
-const GenericFilter::ChainInfo&
+GenericFilter::ChainInfo
 GenericFilter::GetChainInfo()
 {
-  static ChainInfo result;
-  result.clear();
+  ChainInfo result;
   for( RegistrarSet::const_iterator i = Registrar::Registrars().begin();
        i != Registrar::Registrars().end(); ++i )
   {
@@ -258,7 +255,7 @@ GenericFilter::InstantiateFilters()
       }
       string paramDefinition = string( "Visualize:Processing%20Stages" )
                                + " int "
-                               + VisParamName( pFilter )
+                               + pFilter->VisParamName()
                                + "= 0 0 0 1 // Visualize "
                                + filterName
                                + " output (boolean)";
@@ -298,7 +295,7 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
       currentOutput.SetName( ClassName( typeid( *currentFilter ) ) );
     // The output signal will be created here if it does not exist.
     OwnedSignals()[ currentFilter ].SetProperties( currentOutput );
-    currentFilter->OptionalParameter( VisParamName( currentFilter ) );
+    currentFilter->OptionalParameter( currentFilter->VisParamName() );
     currentInput = &OwnedSignals()[ currentFilter ].Properties();
   }
   Output = OwnedSignals()[ currentFilter ].Properties();
@@ -319,7 +316,7 @@ GenericFilter::InitializeFilters()
     bool visEnabled = false;
     if( currentFilter->AllowsVisualization() )
     {
-      visEnabled = int( currentFilter->Parameter( VisParamName( currentFilter ) ) ) != 0;
+      visEnabled = int( currentFilter->Parameter( currentFilter->VisParamName() ) ) != 0;
       Visualizations()[ currentFilter ].SetEnabled( visEnabled );
       if( visEnabled )
         Visualizations()[ currentFilter ].Send( currentOutput );

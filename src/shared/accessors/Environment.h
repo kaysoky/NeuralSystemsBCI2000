@@ -266,6 +266,8 @@ class EnvironmentBase
   void ParamAccess( const std::string& name ) const;
   virtual void OnParamAccess( const std::string& name ) const {}
 
+  mutable Param mDefaultParam;
+
  protected:
   // A macro/function combination for convenient formulation of parameter checks.
   #define PreflightCondition( x )        (PreflightCondition_(#x,double(x)))

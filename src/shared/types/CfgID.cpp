@@ -23,6 +23,9 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
+#include "PCHIncludes.h"
+#pragma hdrstop
+
 #include "CfgID.h"
 
 #include <cstring>

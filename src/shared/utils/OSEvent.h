@@ -37,12 +37,14 @@
 class OSEvent : private Uncopyable
 {
  public:
+  static const int cInfiniteTimeout = -1;
+
   OSEvent();
   virtual ~OSEvent();
 
   bool Set();
   bool Reset();
-  bool Wait( int timeout_ms = -1 );
+  bool Wait( int timeout_ms = cInfiniteTimeout );
 
  private:
 #if _WIN32

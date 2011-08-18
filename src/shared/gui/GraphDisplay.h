@@ -89,7 +89,7 @@ public:
     { while( !mObjects.empty() ) delete *mObjects.begin(); return *this; }
 
   // Read bitmap data, resampled to target resolution
-  const BitmapImage& BitmapData( int width = 0, int height = 0 ) const;
+  BitmapImage BitmapData( int width = 0, int height = 0 ) const;
 
   // Graphics functions
   //  Invalidate the display's entire area

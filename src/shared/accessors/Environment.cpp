@@ -196,8 +196,6 @@ EnvironmentBase::OptionalParameter( const string& inName, const string& inDefaul
 {
   ParamAccess( inName );
 
-  static Param defaultParam;
-
   Param* pParam = NULL;
   if( Parameters == NULL )
     bcierr_ << "Attempted parameter access during non-access phase."
@@ -206,8 +204,8 @@ EnvironmentBase::OptionalParameter( const string& inName, const string& inDefaul
     pParam = &( *Parameters )[ inName ];
   else
   {
-    defaultParam.Value() = inDefaultValue;
-    pParam = &defaultParam;
+    mDefaultParam.Value() = inDefaultValue;
+    pParam = &mDefaultParam;
   }
   return ParamRef( pParam );
 }

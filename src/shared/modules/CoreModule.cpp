@@ -57,6 +57,8 @@
 
 using namespace std;
 
+static GenericSignal sNullSignal( 0, 0 );
+
 CoreModule::CoreModule()
 : mReceivingThread( *this ),
   mTerminated( false ),
@@ -680,8 +682,7 @@ CoreModule::HandleState( istream& is )
         {
           mLastRunning = true;
           StartRunFilters();
-          static GenericSignal nullSignal( 0, 0 );
-          ProcessFilters( nullSignal );
+          ProcessFilters( sNullSignal );
         }
       }
 #else // SIGSRC
@@ -769,8 +770,7 @@ CoreModule::HandleStateVector( istream& is )
                        // By evaluating at "mLastRunning" instead of "running" we
                        // obtain this behavior.
     {
-      static GenericSignal nullSignal( 0, 0 );
-      ProcessFilters( nullSignal );
+      ProcessFilters( sNullSignal );
     }
     // One of the filters might have set Running to 0 during ProcessFilters().
     bool running = mpStatevector->StateValue( "Running" );

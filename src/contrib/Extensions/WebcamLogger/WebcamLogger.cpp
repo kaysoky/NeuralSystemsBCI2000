@@ -238,7 +238,7 @@ void WebcamLogger::Halt()
 	if( mpWebcamThread )
 	{
 		mpWebcamThread->SetRunning( false );
-		mpWebcamThread->Terminate();
+		mpWebcamThread->TerminateWait();
 		delete mpWebcamThread;
 		bcidbg( 10 ) << "4. Distroy Thread" << endl;
 		mpWebcamThread = NULL;

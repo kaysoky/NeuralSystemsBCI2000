@@ -36,8 +36,7 @@
 #endif // _WIN32
 
 #include "Uncopyable.h"
-
-class OSEvent;
+#include "OSEvent.h"
 
 class OSThread : private Uncopyable
 {
@@ -47,6 +46,7 @@ class OSThread : private Uncopyable
 
   void Start();
   void Terminate( OSEvent* = NULL );
+  bool TerminateWait( int timeout_ms = OSEvent::cInfiniteTimeout ); // returns false on timeout
   bool IsTerminating() const
     { return mTerminating; }
   bool IsTerminated() const;
@@ -66,18 +66,18 @@ class OSThread : private Uncopyable
 #ifdef _WIN32
   static DWORD WINAPI StartThread( void* inInstance );
 
-  HANDLE mHandle;
+  volatile HANDLE mHandle;
   DWORD  mThreadID;
   static DWORD sMainThreadID;
 #else // _WIN32
   static void* StartThread( void* inInstance );
 
   pthread_t mThread;
-  bool      mTerminated;
+  volatile bool mTerminated;
   static pthread_t sMainThread;
 #endif // _WIN32
-  int           mResult;
-  OSEvent*      mpTerminationEvent;
+  int mResult;
+  OSEvent* volatile mpTerminationEvent;
   volatile bool mTerminating;
 };
 

@@ -1,9 +1,9 @@
 object DemoWindow: TDemoWindow
   Left = 375
   Top = 290
-  Width = 648
-  Height = 507
   Caption = '3D Environment Demo'
+  ClientHeight = 473
+  ClientWidth = 640
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

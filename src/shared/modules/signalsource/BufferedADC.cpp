@@ -93,9 +93,7 @@ BufferedADC::Process( const GenericSignal&,
 void
 BufferedADC::Halt()
 {
-  OSEvent terminationEvent;
-  OSThread::Terminate( &terminationEvent );
-  terminationEvent.Wait();
+  OSThread::TerminateWait();
   OnHalt();
 }
 

@@ -449,9 +449,7 @@ void EyetrackerLogger::StopRun()
     mpEyetrackerThread->SetRunning( false );
     while( !mpEyetrackerThread->Disabled() )
       ::Sleep(1);
-    mpEyetrackerThread->Terminate();
-    while( !mpEyetrackerThread->IsTerminated() )
-      ::Sleep(1);
+    mpEyetrackerThread->TerminateWait();
     delete mpEyetrackerThread;
     bcidbg( 10 ) << "4. Distroy Thread" << endl;
     mpEyetrackerThread = NULL;

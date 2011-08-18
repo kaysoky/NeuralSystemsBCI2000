@@ -230,10 +230,7 @@ void
 DataGloveLogger::StopRun()
 {
 	for(DataGloveThreadList::iterator g = mGloves.begin(); g != mGloves.end(); g++)
-		(*g)->Terminate();
-	for(DataGloveThreadList::iterator g = mGloves.begin(); g != mGloves.end(); g++)
-		while( !(*g)->IsTerminated() )
-			::Sleep(1);
+		(*g)->TerminateWait();
 	EmptyList(mGloves);
 }
 

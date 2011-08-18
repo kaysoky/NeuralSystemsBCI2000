@@ -360,7 +360,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
 
 
 void
-DataIOFilter::Initialize( const SignalProperties& Input,
+DataIOFilter::Initialize( const SignalProperties& /*Input*/,
                           const SignalProperties& Output )
 {
   const SignalProperties& adcInput = mADCInput.Properties(),
@@ -507,7 +507,7 @@ DataIOFilter::StopRun()
 
 
 void
-DataIOFilter::Process( const GenericSignal& Input,
+DataIOFilter::Process( const GenericSignal& /*Input*/,
                              GenericSignal& Output )
 {
   PrecisionTime functionEntry = PrecisionTime::Now();

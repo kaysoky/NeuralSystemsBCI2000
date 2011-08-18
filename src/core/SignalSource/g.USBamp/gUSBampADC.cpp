@@ -400,9 +400,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
     //stop the acquire thread
     if (mpAcquireThread != NULL)
     {
-        mpAcquireThread->Terminate();
-        while( !mpAcquireThread->IsTerminated() ) //wait for the thread to terminate
-          OSThread::Sleep( 10 );
+        mpAcquireThread->TerminateWait();
         delete mpAcquireThread;
         mpAcquireThread = NULL;
     }
@@ -931,9 +929,7 @@ void gUSBampADC::Halt()
     //stop the acquire thread
     if (mpAcquireThread != NULL)
     {
-        mpAcquireThread->Terminate();
-        while (mpAcquireThread->IsTerminating() && !mpAcquireThread->IsTerminated())
-            Sleep(10);
+        mpAcquireThread->TerminateWait();
         delete mpAcquireThread;
         mpAcquireThread = NULL;
     }

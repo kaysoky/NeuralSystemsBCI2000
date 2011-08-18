@@ -185,11 +185,10 @@ streamsock::ip_compare::operator()( const string& inAddr1, const string& inAddr2
   return ( p1 != p2 ) ? ( p1 < p2 ) : ( addr1 < addr2 );
 }
 
-const streamsock::set_of_addresses&
+streamsock::set_of_addresses
 streamsock::local_addresses()
 {
-  static set_of_addresses addresses;
-  addresses.clear();
+  set_of_addresses addresses;
   addresses.insert( "127.0.0.1" );
 
   const int buflen = 1024;

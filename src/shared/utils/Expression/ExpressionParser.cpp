@@ -1454,8 +1454,7 @@ yyreturn:
     }
     else if( ::isalnum( c ) )
     {
-      static string name;
-      name = "";
+      string name;
       while( ::isalnum( c ) )
       {
         name += c;

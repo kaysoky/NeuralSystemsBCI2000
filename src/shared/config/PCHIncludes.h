@@ -32,6 +32,7 @@
 #ifdef __BORLANDC__
 #pragma warn -8004 // suppress warning on proper initialization of variables
 #pragma warn -8027 // suppress warning on inline expansion failure
+#pragma warn -8058 // suppress warning on initialized data in header
 #endif
 
 #ifdef __GNUC__

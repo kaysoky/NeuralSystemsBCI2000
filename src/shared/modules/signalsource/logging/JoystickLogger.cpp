@@ -195,8 +195,7 @@ void JoystickLogger::StopRun()
   if( mpJoystickThread )
   {
     OSEvent terminationEvent;
-    mpJoystickThread->Terminate( &terminationEvent );
-    terminationEvent.Wait();
+    mpJoystickThread->TerminateWait();
     delete mpJoystickThread;
     mpJoystickThread = NULL;
   }

@@ -71,8 +71,7 @@ StateList::operator[]( const std::string& inName )
 const State&
 StateList::operator[]( const std::string& inName ) const
 {
-  static State defaultState;
-  const State* result = &defaultState;
+  const State* result = &mDefaultState;
   StateIndex::const_iterator i = mIndex.find( inName );
   if( i != mIndex.end() )
     result = &StateContainer::operator[]( i->second );

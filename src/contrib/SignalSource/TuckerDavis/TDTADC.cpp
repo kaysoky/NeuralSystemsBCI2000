@@ -180,8 +180,7 @@ void TDTADC::Initialize(const SignalProperties&, const SignalProperties&)
 	//stop the acquire thread
     if (mpAcquireThread != NULL)
     {
-        mpAcquireThread->Terminate();
-        //mpAcquireThread->WaitFor(); //wait for the thread to terminate
+        mpAcquireThread->TerminateWait();
         delete mpAcquireThread;
         mpAcquireThread = NULL;
     }
@@ -285,9 +284,7 @@ void TDTADC::Halt()
 	//bciout <<"Halting the TDT..."<<endl;
 	if (mpAcquireThread != NULL)
     {
-        mpAcquireThread->Terminate();
-        while (mpAcquireThread->IsTerminating() && !mpAcquireThread->IsTerminated())
-            Sleep(10);
+        mpAcquireThread->TerminateWait();
         delete mpAcquireThread;
         mpAcquireThread = NULL;
     }

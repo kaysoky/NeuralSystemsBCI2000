@@ -73,6 +73,8 @@ class StateList : private StateContainer
 
   typedef std::map<std::string, int, State::NameCmp> StateIndex;
   StateIndex mIndex;
+
+  State mDefaultState;
 };
 
 

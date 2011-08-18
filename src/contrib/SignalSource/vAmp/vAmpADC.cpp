@@ -373,8 +373,7 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
   if (!mAcquire->ok())
   {
     bcierr << mAcquire->GetLastErr() << endl;
-    mAcquire->Terminate();
-    while( !mAcquire->IsTerminated() ) Sleep(10);
+    mAcquire->TerminateWait();
     delete mAcquire;
     return;
   }
@@ -458,9 +457,7 @@ void vAmpADC::Halt()
 {
 	if (mAcquire != NULL)
 	{
-		mAcquire->Terminate();
-		while (!mAcquire->IsTerminated())
-		Sleep(10);
+		mAcquire->TerminateWait();
 		delete mAcquire;
 		mAcquire = NULL;
 	}

@@ -90,7 +90,7 @@ ExceptionCatcher::DoExecute2( Fn& inFn )
              << mMessage
              << endl;
   }
-#ifdef __BORLANDC__
+#if defined( SystemHPP ) && !defined( _NO_VCL ) // VCL is available both at compile and link time
   catch( Exception& e )
   {
     bcierr__ << "Unhandled exception "
@@ -99,7 +99,7 @@ ExceptionCatcher::DoExecute2( Fn& inFn )
              << mMessage
              << endl;
   }
-#endif // __BORLANDC__
+#endif // SystemHPP  && !_NO_VCL
   return result;
 }
 

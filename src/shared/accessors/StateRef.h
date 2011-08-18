@@ -191,7 +191,7 @@ const StateRefSigned&
 StateRefSigned::operator=( long inL )
 {
   const int bitsPerByte = 8;
-  if( mrStateRef->Length() == sizeof( 1L ) * bitsPerByte )
+  if( mrStateRef->Length() == static_cast<int>( sizeof( 1L ) * bitsPerByte ) )
     mrStateRef = inL;
   else
     mrStateRef = ( inL & ( ( 1L << mrStateRef->Length() ) - 1L ) );

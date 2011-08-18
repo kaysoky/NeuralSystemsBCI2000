@@ -354,7 +354,7 @@ GraphDisplay::PixelToNormalizedCoords( const GUI::Rect& inRect ) const
   return result;
 }
 
-const class BitmapImage&
+class BitmapImage
 GraphDisplay::BitmapData( int inWidth, int inHeight ) const
 {
   int width = inWidth,
@@ -366,8 +366,7 @@ GraphDisplay::BitmapData( int inWidth, int inHeight ) const
     width = originalWidth;
     height = originalHeight;
   }
-  static BitmapImage image;
-  image = BitmapImage( width, height );
+  BitmapImage image( width, height );
 
 #ifdef __BORLANDC__
 

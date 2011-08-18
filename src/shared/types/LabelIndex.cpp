@@ -33,6 +33,8 @@
 
 using namespace std;
 
+static string sNAString = "<n/a>";
+
 // **************************************************************************
 // Function:   operator[]
 // Purpose:    Maps string labels to numerical indices.
@@ -73,8 +75,7 @@ LabelIndex::Exists( const string& inLabel ) const
 const string&
 LabelIndex::operator[]( size_t inIndex ) const
 {
-  static string naString( "N/A" );
-  const string* retString = &naString;
+  const string* retString = &sNAString;
   if( inIndex < mReverseIndex.size() )
     retString = &mReverseIndex[ inIndex ];
   return *retString;
@@ -130,23 +131,15 @@ LabelIndex::Sync() const
 // Parameters: Numerical Index.
 // Returns:    Label.
 // **************************************************************************
-const string&
+string
 LabelIndex::TrivialLabel( size_t index )
 {
-  typedef map<size_t, string> buffer;
-  static buffer labelBuffer;
-  if( labelBuffer[ index ] == "" )
-  {
-    // This should be the only place where a statement
-    // is made about how a trivial label is formed.
-    const int trivialBase = 1; // Channels are counted from 1,
-                               // so trivial labels should start with 1 to avoid
-                               // user confusion.
-    ostringstream oss;
-    oss << index + trivialBase;
-    labelBuffer[ index ] = oss.str();
-  }
-  return labelBuffer[ index ];
+  const int trivialBase = 1; // Channels are counted from 1,
+                             // so trivial labels should start with 1 to avoid
+                             // user confusion.
+  ostringstream oss;
+  oss << index + trivialBase;
+  return oss.str();
 }
 
 // **************************************************************************

@@ -39,6 +39,8 @@
 
 using namespace std;
 
+const string VersionInfo::sEmptyString;
+
 const char* VersionInfo::sNames[] =
 {
  "Version",
@@ -51,8 +53,7 @@ const size_t VersionInfo::sNumNames = sizeof( sNames ) / sizeof( *sNames );
 const std::string&
 VersionInfo::operator[]( size_t inIdx )
 {
-  static string emptyString;
-  const string* result = &emptyString;
+  const string* result = &sEmptyString;
   if( inIdx < sNumNames )
   {
     const_iterator i = this->find( sNames[ inIdx ] );

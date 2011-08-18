@@ -166,7 +166,7 @@ class GenericFilter : protected Environment, private Uncopyable
     std::ostream& WriteToStream( std::ostream& );
     std::istream& ReadFromStream( std::istream& );
   };
-  static const ChainInfo& GetChainInfo();
+  static ChainInfo GetChainInfo();
 
   // Instantiate all registered filters once.
   static void InstantiateFilters();
@@ -237,7 +237,7 @@ class GenericFilter : protected Environment, private Uncopyable
   };
   typedef std::map<GenericFilter*, FilterVis> VisualizationsType;
   static VisualizationsType& Visualizations();
-  static const std::string& VisParamName( const GenericFilter* );
+  std::string VisParamName() const;
 };
 
 #endif // GENERIC_FILTER_H
