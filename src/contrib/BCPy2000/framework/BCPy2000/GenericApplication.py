@@ -535,8 +535,8 @@ class BciGenericApplication(Core.BciCore):
 			print "failed to initialize window focus handlers"
 		else:
 			self._focus = {
-				 'stimuli':  self.screen.RaiseWindow,
-			    'operator':  Core.BciFunc(self._raise_window, opwin),
+				'stimuli':  self.screen.RaiseWindow,
+				'operator':  Core.BciFunc(self._raise_window, opwin),
 			}
 			self.add_callback('StartRun', self.focus, ('stimuli',))
 			self.add_callback('StopRun',  self.focus, ('operator',))
@@ -1018,8 +1018,7 @@ class BciGenericApplication(Core.BciCore):
 		"""###
 		try:
 			from WavTools.MasterVolume import GetMasterVolume
-			try:    sysvol = GetMasterVolume(channel=0)
-			except: sysvol = GetMasterVolume(channel=1)
+			sysvol = GetMasterVolume()
 		except:
 			print "failed to get master volume and install master volume handlers"
 		else:
@@ -1041,10 +1040,7 @@ class BciGenericApplication(Core.BciCore):
 		except:
 			return
 		#print "vol", volume
-		try:
-			SetMasterVolume(volume, channel=0)
-		except:
-			SetMasterVolume(volume, channel=1)
+		SetMasterVolume(volume)
 		
 	#############################################################
 

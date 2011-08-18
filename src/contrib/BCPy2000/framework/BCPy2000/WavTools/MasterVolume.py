@@ -41,8 +41,10 @@ if platform.system().lower() == 'windows':
 	
 	# Some constants
 	MIXER_OBJECTF_MIXER = 0   # mmsystem.h
-	VOLUME_CONTROL_ID = 0     # Same on all machines?
-	SPEAKER_LINE_FADER_ID = 0 # Same on all machines?
+	VOLUME_CONTROL_ID = 0     # Device ID: same on all machines?
+	
+	SPEAKER_LINE_FADER_ID = 0 # control ID: clearly varies between XP and Vista/7, and also between machines: see #***
+	
 	MINIMUM_VOLUME = 0        # fader control (MSDN Library)
 	MAXIMUM_VOLUME = 65535    # fader control (MSDN Library)
 	
@@ -59,7 +61,8 @@ if platform.system().lower() == 'windows':
 			('paDetails',      ctypes.POINTER(ctypes.c_uint32)),
 		]
 	
-	def SetMasterVolume(volume, channel=SPEAKER_LINE_FADER_ID):
+	def SetMasterVolume(volume, channel=None):
+		if channel == None: channel = SPEAKER_LINE_FADER_ID
 		volume = min(1.0, max(0.0, volume))
 		volume = int( 0.5 + MINIMUM_VOLUME + (MAXIMUM_VOLUME - MINIMUM_VOLUME) * volume )
 		
@@ -77,7 +80,8 @@ if platform.system().lower() == 'windows':
 		)
 		if ret != 0: raise WindowsError, "Error %d while setting master volume" % ret
 			
-	def GetMasterVolume(channel=SPEAKER_LINE_FADER_ID):
+	def GetMasterVolume(channel=None):
+		if channel == None: channel = SPEAKER_LINE_FADER_ID
 		s = MIXERCONTROLDETAILS(
 			ctypes.sizeof(MIXERCONTROLDETAILS),
 			channel,
@@ -94,5 +98,11 @@ if platform.system().lower() == 'windows':
 		volume = s.paDetails.contents.value
 		return (float(volume) - MINIMUM_VOLUME) / (MAXIMUM_VOLUME - MINIMUM_VOLUME)
 
+	#*** extreme empirical adhockery ahead: if anyone knows how to navigate the rocks of the windows API to do this properly, please tell me!
+	if platform.win32_ver()[0].lower().startswith('xp'):
+		try: GetMasterVolume()  #  control ID=0 is correct on some XP machines but fails with an exception on others
+		except: SPEAKER_LINE_FADER_ID = 1  #  control ID=1 is correct on some XP machines
+	else: SPEAKER_LINE_FADER_ID = 2  # control ID=2 seems to be correct on some Vista/Win7 machines (whereas 0 throws an error and 1 is, extremely inconveniently, the mute control)
+	
 if SetMasterVolume == None:
 	print __name__,'module could not find an implementation for SetMasterVolume---only supported for Win32 at the moment'
