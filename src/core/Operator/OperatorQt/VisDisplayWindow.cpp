@@ -73,10 +73,13 @@ VisDisplayWindow::SetConfig( ConfigSettings& inConfig )
   // from the previous one.
   static int newTop = 10,
              newLeft = 10;
-  int formTop = 10,
-      formLeft = 10,
-      formHeight = 100,
-      formWidth = 100;
+  const int delta = 10,
+            minSize = 10,
+            defaultSize = 100;
+  int formTop = newTop,
+      formLeft = newLeft,
+      formHeight = defaultSize,
+      formWidth = defaultSize;
   bool posDefault  = !inConfig.Get( CfgID::Top, formTop ) ||
                      !inConfig.Get( CfgID::Left, formLeft ),
        sizeDefault = !inConfig.Get( CfgID::Height, formHeight ) ||
@@ -84,26 +87,29 @@ VisDisplayWindow::SetConfig( ConfigSettings& inConfig )
   if( posDefault )
   {
     formTop = newTop;
-    newTop += 10;
+    newTop += delta;
     formLeft = newLeft;
-    newLeft += 10;
+    newLeft += delta;
   }
   if( formWidth <= 10 || formHeight <= 10 )
   {
     sizeDefault = true;
-    formHeight = 100;
-    formWidth = 100;
+    formHeight = defaultSize;
+    formWidth = defaultSize;
   }
-  int desktopWidth = QApplication::desktop()->width(),
-      desktopHeight = QApplication::desktop()->height();
-  if( formTop < 0 || formLeft < 0 
-      || formTop >= desktopHeight || formLeft >= desktopWidth )
+  QRect formRect( formLeft, formTop, formWidth, formHeight );
+  formRect.adjust( minSize, minSize, -minSize, -minSize );
+  QDesktopWidget* pDesktop = QApplication::desktop();
+  bool isVisible = false;
+  for( int screen = 0; screen < pDesktop->screenCount(); ++screen )
+    isVisible |= formRect.intersects( pDesktop->availableGeometry( screen ) );
+  if( !isVisible && pDesktop->screenCount() > 0 )
   {
     posDefault = true;
     formTop = newTop;
-    newTop += 10;
+    newTop += delta;
     formLeft = newLeft;
-    newLeft += 10;
+    newLeft += delta;
   }
   this->move( formLeft, formTop );
   this->resize( formWidth, formHeight );

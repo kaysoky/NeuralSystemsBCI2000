@@ -76,18 +76,21 @@ void
 BufferedADC::Process( const GenericSignal&,
                             GenericSignal& output )
 {
-  mMutex.Acquire();
-  bool waitForData = ( mReadCursor == mWriteCursor );
-  mAcquisitionDone.Reset();
-  mMutex.Release();
+  bool waitForData = false;
+  {
+    OSMutex::Lock lock( mMutex );
+    waitForData = ( mReadCursor == mWriteCursor );
+    mAcquisitionDone.Reset();
+  }
   if( waitForData )
     mAcquisitionDone.Wait();
 
   output = mBuffer[mReadCursor];
   State( "SourceTime" ) = mTimeStamps[mReadCursor];
-  mMutex.Acquire();
-  ++mReadCursor %= mBuffer.size();
-  mMutex.Release();
+  {
+    OSMutex::Lock lock( mMutex );
+    ++mReadCursor %= mBuffer.size();
+  }
 }
 
 void
@@ -107,12 +110,13 @@ BufferedADC::Execute()
   {
     this->DoAcquire( mBuffer[mWriteCursor] );
     mTimeStamps[mWriteCursor] = PrecisionTime::Now();
-    mMutex.Acquire();
-    ++mWriteCursor %= mBuffer.size();
-    if( mWriteCursor == mReadCursor )
-      bciout << "Data acquisition buffer overflow" << endl;
-    mAcquisitionDone.Set();
-    mMutex.Release();
+    {
+      OSMutex::Lock lock( mMutex );
+      ++mWriteCursor %= mBuffer.size();
+      if( mWriteCursor == mReadCursor )
+        bciout << "Data acquisition buffer overflow" << endl;
+      mAcquisitionDone.Set();
+    }
   }
   this->OnStopAcquisition();
   return 0;

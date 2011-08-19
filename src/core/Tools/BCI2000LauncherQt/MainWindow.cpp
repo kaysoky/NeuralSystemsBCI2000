@@ -53,6 +53,23 @@ static const char* sKnownSourceModules[] =
   "RDAClient",
   "DASSource",
   "NISource",
+  "AmpServerPro",
+  "BioRadio",
+  "Biosemi2",
+  "Emotiv",
+  "ENOBIO",
+  "FieldTripBufferSource",
+  "FilePlayback",
+  "Micromed",
+  "NeuroscanClient",
+  "NeuroscanAccess",
+  "NeuroSky",
+  "NIDAQ_mx_Source",
+  "PythonSource",
+  "TMSi",
+  "TuckerDavis",
+  "vAmpSource",
+  "Grapevine",
 };
 
 static const char* sKnownSigprocModules[] =
@@ -63,6 +80,13 @@ static const char* sKnownSigprocModules[] =
   "FIRProcessing",
   "PeakDetectSignalProcessing",
   "SWSignalProcessing",
+  "CoherenceFFTSignalProcessing",
+  "CoherenceSignalProcessing",
+  "FFTSignalProcessing",
+  "FieldTripBuffer",
+  "MatlabSignalProcessing",
+  "PythonSignalProcessing",
+  "SigfriedSigProc",
 };
 
 static const char* sKnownApplicationModules[] =
@@ -80,6 +104,12 @@ static const char* sKnownApplicationModules[] =
   "StimulusPresentation",
   "FeedbackDemo",
   "CursorTask",
+  "AttentionTask",
+  "CursorTaskWithGauges",
+  "DummyApplication",
+  "GameBreakout",
+  "GaugesOnly",
+  "PythonApplication",
 };
 
 static const char* sProgramsToSuppress[] =

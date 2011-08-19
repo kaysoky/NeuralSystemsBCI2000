@@ -33,7 +33,7 @@
 #include "VisDisplayMemo.h"
 #include "VisDisplayBitmap.h"
 #include "Settings.h"
-#include "defines.h"
+#include "CfgID.h"
 
 #include <QtGui>
 
@@ -54,8 +54,6 @@ VisDisplayBase::Visconfigs()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-static const QString cfgid_prefix = "CFGID";
-
 void
 VisDisplayBase::ConfigContainer::Save()
 {
@@ -64,15 +62,19 @@ VisDisplayBase::ConfigContainer::Save()
   for( iterator i = begin(); i != end(); ++i )
   {
     settings.beginGroup( i->first.c_str() );
-    settings.setValue( "Title", i->second[ CfgID::WindowTitle ].c_str() );
+    set<CfgID> userDefinedCfgIDs;
     for( ConfigSettings::iterator j = i->second.begin(); j != i->second.end(); ++j )
-    {
       if( i->second.State( j->first ) == UserDefined )
-      {
-        QString cfgID;
-        cfgID.setNum( j->first );
-        settings.setValue( cfgid_prefix + cfgID, j->second.c_str() );
-      }
+        userDefinedCfgIDs.insert( j->first );
+
+    if( !userDefinedCfgIDs.empty() )
+    {
+      // We add a Title entry to make it easier for the user to understand entries in the ini file.
+      // Note that it is not called WindowTitle, so it is never restored from the ini file but 
+      // always determined by current BCI2000 module code.
+      settings.setValue( "Title", i->second[ CfgID::WindowTitle ].c_str() );
+      for( set<CfgID>::const_iterator j = userDefinedCfgIDs.begin(); j != userDefinedCfgIDs.end(); ++j )
+        settings.setValue( string( *j ).c_str(), i->second[*j].c_str() );
     }
     settings.endGroup();
   }
@@ -91,11 +93,11 @@ VisDisplayBase::ConfigContainer::Restore()
     QStringList cfgIDs = settings.childKeys();
     for( QStringList::iterator j = cfgIDs.begin(); j != cfgIDs.end(); ++j )
     {
-      if( j->startsWith( cfgid_prefix ) )
+      CfgID cfgID( j->toStdString() );
+      if( cfgID != CfgID::None )
       {
-        CfgID cfgID = j->mid( cfgid_prefix.length() ).toUInt();
-        QString value = settings.value( *j ).toString();
-        ( *this )[ visID ].Put( cfgID, value.toStdString(), OnceUserDefined );
+        string value = settings.value( *j ).toString().toStdString();
+        ( *this )[ visID ].Put( cfgID, value, OnceUserDefined );
       }
     }
     settings.endGroup();
