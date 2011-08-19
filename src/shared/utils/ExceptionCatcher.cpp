@@ -84,8 +84,9 @@ ExceptionCatcher::DoExecute2( Fn& inFn )
   }
   catch( const exception& e )
   {
-    bcierr__ << "Unhandled exception "
-             << bci::ClassName( typeid( e ) ) << " (" << e.what() << ")"
+    bcierr__ << "Unhandled exception of type "
+             << bci::ClassName( typeid( e ) )
+             << ": " << e.what()
              << ( mMessage.empty() ? "" : ",\n" )
              << mMessage
              << endl;
@@ -93,8 +94,9 @@ ExceptionCatcher::DoExecute2( Fn& inFn )
 #if defined( SystemHPP ) && !defined( _NO_VCL ) // VCL is available both at compile and link time
   catch( Exception& e )
   {
-    bcierr__ << "Unhandled exception "
-             << e.Message.c_str()
+    bcierr__ << "Unhandled exception of type "
+             << bci::ClassName( typeid( e ) )
+             << ": " << AnsiString( e.Message ).c_str()
              << ( mMessage.empty() ? "" : ",\n" )
              << mMessage
              << endl;
