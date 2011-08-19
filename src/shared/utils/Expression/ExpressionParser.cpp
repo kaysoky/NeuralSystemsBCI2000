@@ -129,14 +129,13 @@ using namespace std;
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 35 "ExpressionParser.y"
+#line 53 "ExpressionParser.y"
 typedef union YYSTYPE {
   double       value;
-  const char*  name;
   std::string* str;
 } YYSTYPE;
 /* Line 191 of yacc.c.  */
-#line 122 "ExpressionParser.cpp"
+#line 139 "ExpressionParser.cpp"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -145,14 +144,14 @@ typedef union YYSTYPE {
 
 
 /* Copy the second part of user declarations.  */
-#line 41 "ExpressionParser.y"
+#line 59 "ExpressionParser.y"
 
 namespace ExpressionParser
 {
 
 
 /* Line 214 of yacc.c.  */
-#line 138 "ExpressionParser.cpp"
+#line 155 "ExpressionParser.cpp"
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
@@ -331,9 +330,9 @@ static const yysigned_char yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned char yyrline[] =
 {
-       0,    61,    61,    62,    65,    66,    67,    68,    69,    70,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
-      81,    82,    83,    84,    85,    86,    89,    90,    91,    92
+       0,    79,    79,    80,    83,    84,    85,    86,    87,    88,
+      89,    90,    91,    92,    93,    94,    95,    96,    97,    98,
+      99,   100,   101,   102,   103,   104,   107,   108,   109,   110
 };
 #endif
 
@@ -1086,150 +1085,150 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 61 "ExpressionParser.y"
+#line 79 "ExpressionParser.y"
     { pInstance->mValue = 0; ;}
     break;
 
   case 3:
-#line 62 "ExpressionParser.y"
+#line 80 "ExpressionParser.y"
     { pInstance->mValue = yyvsp[0].value; ;}
     break;
 
   case 4:
-#line 65 "ExpressionParser.y"
-    { yyval.value = pInstance->State( yyvsp[0].name ); ;}
+#line 83 "ExpressionParser.y"
+    { yyval.value = pInstance->State( *yyvsp[0].str ); ;}
     break;
 
   case 5:
-#line 66 "ExpressionParser.y"
+#line 84 "ExpressionParser.y"
     { yyval.value = yyvsp[0].value;       ;}
     break;
 
   case 6:
-#line 67 "ExpressionParser.y"
+#line 85 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value + yyvsp[0].value;  ;}
     break;
 
   case 7:
-#line 68 "ExpressionParser.y"
+#line 86 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value - yyvsp[0].value;  ;}
     break;
 
   case 8:
-#line 69 "ExpressionParser.y"
+#line 87 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value * yyvsp[0].value;  ;}
     break;
 
   case 9:
-#line 70 "ExpressionParser.y"
+#line 88 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value / yyvsp[0].value;  ;}
     break;
 
   case 10:
-#line 71 "ExpressionParser.y"
+#line 89 "ExpressionParser.y"
     { yyval.value = -yyvsp[0].value;      ;}
     break;
 
   case 11:
-#line 72 "ExpressionParser.y"
+#line 90 "ExpressionParser.y"
     { yyval.value = ::pow( yyvsp[-2].value, yyvsp[0].value ); ;}
     break;
 
   case 12:
-#line 73 "ExpressionParser.y"
+#line 91 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value && yyvsp[0].value; ;}
     break;
 
   case 13:
-#line 74 "ExpressionParser.y"
+#line 92 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value || yyvsp[0].value; ;}
     break;
 
   case 14:
-#line 75 "ExpressionParser.y"
+#line 93 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value == yyvsp[0].value; ;}
     break;
 
   case 15:
-#line 76 "ExpressionParser.y"
+#line 94 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value != yyvsp[0].value; ;}
     break;
 
   case 16:
-#line 77 "ExpressionParser.y"
+#line 95 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value != yyvsp[0].value; ;}
     break;
 
   case 17:
-#line 78 "ExpressionParser.y"
+#line 96 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value > yyvsp[0].value;  ;}
     break;
 
   case 18:
-#line 79 "ExpressionParser.y"
+#line 97 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value < yyvsp[0].value;  ;}
     break;
 
   case 19:
-#line 80 "ExpressionParser.y"
+#line 98 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value >= yyvsp[0].value; ;}
     break;
 
   case 20:
-#line 81 "ExpressionParser.y"
+#line 99 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value <= yyvsp[0].value; ;}
     break;
 
   case 21:
-#line 82 "ExpressionParser.y"
+#line 100 "ExpressionParser.y"
     { yyval.value = !yyvsp[0].value;      ;}
     break;
 
   case 22:
-#line 83 "ExpressionParser.y"
+#line 101 "ExpressionParser.y"
     { yyval.value = !yyvsp[0].value;      ;}
     break;
 
   case 23:
-#line 84 "ExpressionParser.y"
+#line 102 "ExpressionParser.y"
     { yyval.value = yyvsp[-1].value;       ;}
     break;
 
   case 24:
-#line 85 "ExpressionParser.y"
+#line 103 "ExpressionParser.y"
     { yyval.value = yyvsp[-4].value ? yyvsp[-2].value : yyvsp[0].value ;}
     break;
 
   case 25:
-#line 86 "ExpressionParser.y"
-    { yyval.value = pInstance->Signal( *yyvsp[-3].str, *yyvsp[-1].str ); delete yyvsp[-3].str; delete yyvsp[-1].str; ;}
+#line 104 "ExpressionParser.y"
+    { yyval.value = pInstance->Signal( *yyvsp[-3].str, *yyvsp[-1].str ); ;}
     break;
 
   case 26:
-#line 89 "ExpressionParser.y"
-    { ostringstream oss; oss << yyvsp[0].value; yyval.str = new string( oss.str() ); ;}
+#line 107 "ExpressionParser.y"
+    { ostringstream oss; oss << yyvsp[0].value; yyval.str = pInstance->AllocateCopy( oss.str() ); ;}
     break;
 
   case 27:
-#line 90 "ExpressionParser.y"
-    { ostringstream oss; oss << yyvsp[-1].value << yyvsp[0].name; yyval.str = new string( oss.str() ); ;}
+#line 108 "ExpressionParser.y"
+    { ostringstream oss; oss << yyvsp[-1].value << *yyvsp[0].str; yyval.str = pInstance->AllocateCopy( oss.str() ); ;}
     break;
 
   case 28:
-#line 91 "ExpressionParser.y"
-    { yyval.str = new string( yyvsp[-1].name ); ;}
+#line 109 "ExpressionParser.y"
+    { yyval.str = yyvsp[-1].str; ;}
     break;
 
   case 29:
-#line 92 "ExpressionParser.y"
-    { yyval.str = new string( yyvsp[-1].name ); ;}
+#line 110 "ExpressionParser.y"
+    { yyval.str = yyvsp[-1].str; ;}
     break;
 
 
     }
 
 /* Line 999 of yacc.c.  */
-#line 1215 "ExpressionParser.cpp"
+#line 1232 "ExpressionParser.cpp"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1435,7 +1434,7 @@ yyreturn:
 }
 
 
-#line 95 "ExpressionParser.y"
+#line 113 "ExpressionParser.y"
 
 
   int
@@ -1454,16 +1453,14 @@ yyreturn:
     }
     else if( ::isalnum( c ) )
     {
-      static string name;
-      name.clear();
+      pLval->str = pInstance->AllocateCopy( string() );
       while( ::isalnum( c ) )
       {
-        name += c;
+        *pLval->str += c;
         pInstance->mInput.ignore();
         c = pInstance->mInput.peek();
       }
-      pLval->name = name.c_str();
-      if( ::stricmp( pLval->name, "signal" ) == 0 )
+      if( ::stricmp( pLval->str->c_str(), "signal" ) == 0 )
         token = SIGNAL_;
       else
         token = NAME;
@@ -1483,5 +1480,6 @@ yyreturn:
   }
 
 } // namespace ExpressionParser
+
 
 

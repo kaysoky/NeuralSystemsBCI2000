@@ -67,7 +67,7 @@ Expression::Evaluate( const GenericSignal* inSignal )
 }
 
 double
-Expression::State( const char* inName )
+Expression::State( const string& inName )
 {
   return mOptionalAccess
    ? Environment::OptionalState( inName, mDefaultValue )

@@ -60,6 +60,11 @@ ArithmeticExpression::ArithmeticExpression( const ArithmeticExpression& e )
 {
 }
 
+ArithmeticExpression::~ArithmeticExpression()
+{
+  Cleanup();
+}
+
 const ArithmeticExpression&
 ArithmeticExpression::operator=( const ArithmeticExpression& e )
 {
@@ -71,7 +76,6 @@ ArithmeticExpression::operator=( const ArithmeticExpression& e )
   mValue = 0;
   return *this;
 }
-
 
 double
 ArithmeticExpression::Evaluate()
@@ -92,7 +96,7 @@ ArithmeticExpression::IsValid()
 }
 
 double
-ArithmeticExpression::State( const char* )
+ArithmeticExpression::State( const string& )
 {
   Errors() << "Use an Expression rather than an ArithmeticExpression to access states"
            << endl;
@@ -140,6 +144,25 @@ ArithmeticExpression::Parse()
   {
     Errors() << "Unknown exception caught" << endl;
     mValue = 0;
+  }
+  Cleanup();
+}
+
+string*
+ArithmeticExpression::AllocateCopy( const string& s )
+{
+  string* p = new string( s );
+  mAllocatedStrings.push_front( p );
+  return p;
+}
+
+void
+ArithmeticExpression::Cleanup()
+{
+  while( !mAllocatedStrings.empty() )
+  {
+    delete mAllocatedStrings.front();
+    mAllocatedStrings.pop_front();
   }
 }
 

@@ -52,9 +52,9 @@ using namespace std;
 %union
 {
   double       value;
-  const char*  name;
   std::string* str;
 }
+
 
 %{
 namespace ExpressionParser
@@ -63,7 +63,7 @@ namespace ExpressionParser
 
 /* Bison declarations.  */
 %token <value>   NUMBER
-%token <name>    NAME SIGNAL_ /* avoid interference with Qt's SIGNAL macro */
+%token <str>     NAME SIGNAL_ /* avoid interference with Qt's SIGNAL macro */
 %left '?' ':'
 %left '&' '|'
 %left '=' '~' '!' '>' '<'
@@ -80,7 +80,7 @@ input: /* empty */                   { pInstance->mValue = 0; }
      | exp                           { pInstance->mValue = $1; }
 ;
 
-exp:   NAME                          { $$ = pInstance->State( $1 ); }
+exp:   NAME                          { $$ = pInstance->State( *$1 ); }
      | NUMBER                        { $$ = $1;       }
      | exp '+' exp                   { $$ = $1 + $3;  }
      | exp '-' exp                   { $$ = $1 - $3;  }
@@ -101,13 +101,13 @@ exp:   NAME                          { $$ = pInstance->State( $1 ); }
      | '!' exp %prec NEG             { $$ = !$2;      }
      | '(' exp ')'                   { $$ = $2;       }
      | exp '?' exp ':' exp           { $$ = $1 ? $3 : $5 }
-     | SIGNAL_ '(' addr ',' addr ')' { $$ = pInstance->Signal( *$3, *$5 ); delete $3; delete $5; }
+     | SIGNAL_ '(' addr ',' addr ')' { $$ = pInstance->Signal( *$3, *$5 ); }
 ;
 
-addr:  exp                           { ostringstream oss; oss << $1; $$ = new string( oss.str() ); }
-     | exp NAME                      { ostringstream oss; oss << $1 << $2; $$ = new string( oss.str() ); }
-     | '"' NAME '"'                  { $$ = new string( $2 ); }
-     | '\'' NAME '\''                { $$ = new string( $2 ); }
+addr:  exp                           { ostringstream oss; oss << $1; $$ = pInstance->AllocateCopy( oss.str() ); }
+     | exp NAME                      { ostringstream oss; oss << $1 << *$2; $$ = pInstance->AllocateCopy( oss.str() ); }
+     | '"' NAME '"'                  { $$ = $2; }
+     | '\'' NAME '\''                { $$ = $2; }
 ;
 
 %%
@@ -128,16 +128,14 @@ addr:  exp                           { ostringstream oss; oss << $1; $$ = new st
     }
     else if( ::isalnum( c ) )
     {
-      static string name;
-      name.clear();
+      pLval->str = pInstance->AllocateCopy( string() );
       while( ::isalnum( c ) )
       {
-        name += c;
+        *pLval->str += c;
         pInstance->mInput.ignore();
         c = pInstance->mInput.peek();
       }
-      pLval->name = name.c_str();
-      if( ::stricmp( pLval->name, "signal" ) == 0 )
+      if( ::stricmp( pLval->str->c_str(), "signal" ) == 0 )
         token = SIGNAL_;
       else
         token = NAME;
@@ -157,4 +155,5 @@ addr:  exp                           { ostringstream oss; oss << $1; $$ = new st
   }
 
 } // namespace ExpressionParser
+
 

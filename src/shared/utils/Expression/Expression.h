@@ -75,7 +75,7 @@ class Expression : public ArithmeticExpression, private Environment
   double Evaluate( const GenericSignal* = NULL );
 
  private:
-  virtual double State( const char* );
+  virtual double State( const std::string& );
   virtual double Signal( const std::string&, const std::string& );
 
   const GenericSignal* mpSignal;

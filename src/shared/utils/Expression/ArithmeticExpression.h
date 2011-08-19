@@ -31,6 +31,7 @@
 
 #include <sstream>
 #include <string>
+#include <list>
 
 #include "ExpressionParser.hpp"
 
@@ -53,26 +54,31 @@ class ArithmeticExpression
   ArithmeticExpression();
   ArithmeticExpression( const std::string& );
   ArithmeticExpression( const ArithmeticExpression& );
-  virtual ~ArithmeticExpression()
-    {}
+  virtual ~ArithmeticExpression();
+
   const ArithmeticExpression& operator=( const ArithmeticExpression& e );
 
   bool   IsValid();
   double Evaluate();
 
  protected:
-  virtual double State( const char* );
+  virtual double State( const std::string& );
   virtual double Signal( const std::string&, const std::string& );
   std::ostream& Errors()
     { return mErrors; }
 
  private:
   void Parse();
+  void Cleanup();
+  std::string* AllocateCopy( const std::string& );
 
   std::string        mExpression;
   std::istringstream mInput;
   std::ostringstream mErrors;
   double             mValue;
+
+  typedef std::list<std::string*> StringContainer;
+  StringContainer mAllocatedStrings;
 };
 
 #endif // ARITHMETIC_EXPRESSION_H
