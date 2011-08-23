@@ -45,6 +45,8 @@ MESSAGE( "-- Creating Project files for BCI2000 Version " ${BCI2000_VERSION} )
 
 INCLUDE( "${BCI2000_SRC_DIR}/contrib/Extensions/Extensions.cmake" )
 
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/FrameworkLibs.cmake )
+
 # Recurse down into all project subdirectories
 
 # src/private : stuff we use that is not released yet

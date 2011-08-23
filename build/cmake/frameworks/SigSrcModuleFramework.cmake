@@ -4,17 +4,17 @@
 ## Description: Sets up a module independent BCI2000 Framework of source
 ##              files and include directories
 
+INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleFramework.cmake )
 
 SET( SRC_BCI2000_SHARED_UTILS 
   ${SRC_BCI2000_SHARED_UTILS}
   ${BCI2000_SRC_DIR}/shared/utils/RandomGenerator.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
   ${HDR_BCI2000_SHARED_UTILS}
   ${BCI2000_SRC_DIR}/shared/utils/RandomGenerator.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
 )
 SET( SRC_BCI2000_SHARED_FILEIO
   ${SRC_BCI2000_SHARED_FILEIO}
