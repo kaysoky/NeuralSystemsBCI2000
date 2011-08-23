@@ -18,8 +18,6 @@ SET( SRC_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.cpp
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp
 )
 SET( HDR_BCI2000_FRAMEWORK
@@ -27,8 +25,6 @@ SET( HDR_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.h
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.h
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
   ${BCI2000_SRC_DIR}/shared/utils/Settings.h
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES
@@ -40,8 +36,6 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.cpp
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES
-  ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp
 )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\fileio\\dat FILES
@@ -51,8 +45,6 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\gui FILES
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.h
 )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES
-  ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
   ${BCI2000_SRC_DIR}/shared/utils/Settings.h
 )
   
@@ -103,7 +95,9 @@ SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/tools/${NAME} )
 ADD_EXECUTABLE( ${NAME} WIN32 ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} ${GEN} )
 
 # Add Pre-processor defines
-SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
+IF( NOT BORLAND )
+  SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
+ENDIF( NOT BORLAND )
 
 # Link against the Qt/VCL Libraries
 IF( BORLAND )
