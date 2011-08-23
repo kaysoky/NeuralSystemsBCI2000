@@ -46,10 +46,6 @@
 #include "ClassName.h"
 #include "PhysicalUnit.h"
 
-#if WITH_APP_WINDOWS
-# include "ApplicationWindow.h"
-#endif // WITH_APP_WINDOWS
-
 #include <sstream>
 #include <typeinfo>
 #include <cstdlib>
@@ -72,10 +68,6 @@ EnvironmentBase::ExecutionPhase EnvironmentBase::phase_ = EnvironmentBase::nonac
 EnvironmentBase::paramlistAccessor   EnvironmentBase::Parameters;
 EnvironmentBase::statelistAccessor   EnvironmentBase::States;
 EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
-
-#if WITH_APP_WINDOWS
-const ApplicationWindowList* const EnvironmentBase::Windows = &ApplicationWindow::Windows();
-#endif // WITH_APP_WINDOWS
 
 int EnvironmentBase::sNumInstances = 0;
 const EnvironmentBase* EnvironmentBase::sObjectContext = NULL;
@@ -133,14 +125,6 @@ EnvironmentBase::StatesAccessedDuringPreflight()
 EnvironmentBase::~EnvironmentBase()
 {
   --sNumInstances;
-#if WITH_APP_WINDOWS
-  for( WindowSet::const_iterator i = mWindowsAccessed.begin(); i != mWindowsAccessed.end(); ++i )
-  {
-    ( *i )->UnregisterUser( this );
-    if( ( *i )->Users() == 0 )
-      delete *i;
-  }
-#endif // WITH_APP_WINDOWS
 }
 
 
@@ -324,49 +308,6 @@ EnvironmentBase::StateAccess( const string& inName ) const
     accessedStates.insert( inName );
   OnStateAccess( inName );
 }
-
-#if WITH_APP_WINDOWS
-ApplicationWindow&
-EnvironmentBase::Window( const string& inName ) const
-{
-  string name = inName;
-  if( name.empty() )
-    name = ApplicationWindow::DefaultName;
-
-  ApplicationWindow* pWindow = ( *Windows )[name];
-  if( pWindow == NULL )
-  { // New Windows are legally created on access during the construction
-    // phase. Outside the construction phase, we report an error, but still
-    // return a valid reference to allow the caller to proceed.
-    pWindow = new ApplicationWindow( name );
-    if( Phase() != construction )
-      bcierr_ << "Access to non-existent application window \""
-              << name
-              << "\""
-              << endl;
-  }
-  pWindow->RegisterUser( this );
-
-  switch( Phase() )
-  {
-    case construction:
-    case preflight:
-      break;
-
-    default:
-      if( mWindowsAccessed.find( pWindow ) == mWindowsAccessed.end() )
-        bcierr_ << "Application window \""
-                << name
-                << "\" was neither declared during construction, "
-                << "nor tested for existence during preflight phase."
-                << endl;
-  }
-  mWindowsAccessed.insert( pWindow );
-
-  return *pWindow;
-}
-#endif // WITH_APP_WINDOWS
-
 
 // Called to prevent access.
 void EnvironmentBase::EnterNonaccessPhase()

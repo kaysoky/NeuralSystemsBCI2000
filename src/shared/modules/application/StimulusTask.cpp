@@ -61,7 +61,7 @@ StimulusTask::StimulusTask()
   mStimToClassDuration( 0 ),
   mpMessageField( NULL ),
   mpAttendedTarget( NULL ),
-  mrDisplay( Environment::Window() )
+  mrDisplay( Window() )
 {
   BEGIN_PARAMETER_DEFINITIONS
    "Application:Sequencing float PreRunDuration= 1 1 % % "

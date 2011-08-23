@@ -236,3 +236,63 @@ ApplicationWindowList::operator[]( int inIdx ) const
     ++j, ++i;
   return i == end() ? NULL : i->second;
 }
+
+// ApplicationWindowClient definitions
+const ApplicationWindowList* const ApplicationWindowClient::Windows = &ApplicationWindow::Windows();
+
+ApplicationWindowClient::ApplicationWindowClient()
+{
+}
+
+ApplicationWindowClient::~ApplicationWindowClient()
+{
+  for( WindowSet::const_iterator i = mWindowsAccessed.begin(); i != mWindowsAccessed.end(); ++i )
+  {
+    ( *i )->UnregisterUser( this );
+    if( ( *i )->Users() == 0 )
+      delete *i;
+  }
+}
+
+ApplicationWindow&
+ApplicationWindowClient::Window( const string& inName ) const
+{
+  string name = inName;
+  if( name.empty() )
+    name = ApplicationWindow::DefaultName;
+
+  ApplicationWindow* pWindow = ( *Windows )[name];
+  if( pWindow == NULL )
+  { // New Windows are legally created on access during the construction
+    // phase. Outside the construction phase, we report an error, but still
+    // return a valid reference to allow the caller to proceed.
+    pWindow = new ApplicationWindow( name );
+    if( Environment::Phase() != Environment::construction )
+      bcierr_ << "Access to non-existent application window \""
+              << name
+              << "\""
+              << endl;
+  }
+  pWindow->RegisterUser( this );
+
+  switch( Environment::Phase() )
+  {
+    case Environment::construction:
+    case Environment::preflight:
+      break;
+
+    default:
+      if( mWindowsAccessed.find( pWindow ) == mWindowsAccessed.end() )
+        bcierr_ << "Application window \""
+                << name
+                << "\" was neither declared during construction, "
+                << "nor tested for existence during preflight phase."
+                << endl;
+  }
+  mWindowsAccessed.insert( pWindow );
+
+  return *pWindow;
+}
+
+
+

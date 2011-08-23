@@ -12,13 +12,13 @@
 //     the StimulusTime time stamp immediately after updating.
 //
 //   ApplicationWindow instances are associated with names, and may only be
-//   created by calling the Environment::Window() accessor function during
-//   the construction phase (typically, from a GenericFilter constructor).
+//   created by calling the ApplicationWindowClient::Window() accessor function
+//   during the construction phase (typically, from a GenericFilter constructor).
 //   Access to existing ApplicationWindow instances is possible during other
-//   phases as well but requires that an Environment::Window() call was issued
-//   during the preflight or construction phase. Unlike the construction phase,
-//   a call during preflight will not create a functional ApplicationWindow 
-//   instance.
+//   phases as well but requires that an ApplicationWindowClient::Window() call
+//   was issued during the preflight or construction phase. Unlike the 
+//   construction phase, a call during preflight will not create a functional
+//   ApplicationWindow instance.
 //
 //   When multiple ApplicationWindow instances are present, the StimulusTime
 //   time stamp will reflect the time when the last window was updated.
@@ -67,10 +67,11 @@
 #include <map>
 
 class ApplicationWindowList;
+class ApplicationWindowClient;
 
 class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtension
 {
-  friend class EnvironmentBase;
+  friend class ApplicationWindowClient;
 
  public:
   static std::string DefaultName;
@@ -104,17 +105,17 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
   { return mVis.SourceID(); }
 
  private:
-  // For use by the EnvironmentBase class:
+  // For use by the ApplicationWindowClient class:
   // These methods keep track of objects using the window instance to allow for
   // automatic deletion when last user instance gets destroyed.
-  void RegisterUser( const EnvironmentBase* p )
+  void RegisterUser( const ApplicationWindowClient* p )
   { mUsers.insert( p ); }
-  void UnregisterUser( const EnvironmentBase* p )
+  void UnregisterUser( const ApplicationWindowClient* p )
   { mUsers.erase( p ); }
   int Users() const
   { return mUsers.size(); }
  private:
-  std::set<const EnvironmentBase*> mUsers;
+  std::set<const ApplicationWindowClient*> mUsers;
 
  private:
   std::string mName;
@@ -161,6 +162,25 @@ class ApplicationWindowList : public std::map<std::string, ApplicationWindow*>
   ApplicationWindow*& operator[]( const std::string& );
   ApplicationWindow* operator[]( const std::string& ) const;
   ApplicationWindow* operator[]( int ) const;
+};
+
+class ApplicationWindowClient
+{
+ protected:
+   ApplicationWindowClient();
+   virtual ~ApplicationWindowClient();
+
+ protected:
+  // Access to application windows in application modules.
+  // When no name is given, ApplicationWindow::DefaultName is used.
+  class ApplicationWindow& Window( const std::string& name = "" ) const;
+  static const class ApplicationWindowList* const Windows;
+
+ private:
+  // Keep track of accessed windows to allow for automatic deletion of
+  // unreferenced windows, and for error checking on window access.
+  typedef std::set<ApplicationWindow*> WindowSet;
+  mutable WindowSet mWindowsAccessed;
 };
 
 #endif // APPLICATION_WINDOW_H

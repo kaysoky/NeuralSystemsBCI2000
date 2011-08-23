@@ -59,7 +59,7 @@ CursorFeedbackTask::CursorFeedbackTask()
   mCursorSpeedX( 1.0 ),
   mCursorSpeedY( 1.0 ),
   mCursorSpeedZ( 1.0 ),
-  mrWindow( Environment::Window() )
+  mrWindow( Window() )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Application:Window int RenderingQuality= 1 0 0 1 "
