@@ -3,14 +3,14 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Contains a macro for creating a signal source module
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceModules.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 
 MACRO( BCI2000_ADD_SIGNAL_SOURCE_MODULE NAME SOURCES HEADERS INCLUDES )
 
 # DEBUG
 MESSAGE( "-- Adding Signal Source Project: " ${NAME} )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/DefaultSigSrcFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/SigSrcModuleFramework.cmake )
 
 # Add the required signal processing files into the framework for this project
 SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${BCI2000_SIGSRCSOURCES}" "${BCI2000_SIGSRCSOURCES_EXTENSIONS}" "${BCI2000_SIGSRCSOURCES_LOGGING}" )

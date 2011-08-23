@@ -4,7 +4,7 @@
 ## Description: Contains a macro for creating an application module
 
 # Setup Global Application Modules
-INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationModules.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )
 
 MACRO( BCI2000_ADD_APPLICATION_MODULE NAME SOURCES HEADERS APPSOURCES APPHEADERS INCLUDES )
 
@@ -12,7 +12,7 @@ MACRO( BCI2000_ADD_APPLICATION_MODULE NAME SOURCES HEADERS APPSOURCES APPHEADERS
 MESSAGE( "-- Adding Application Project: " ${NAME} )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/DefaultAppFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/AppModuleFramework.cmake )
 
 # Add the global and specific application files into the framework for this project
 SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${APPSOURCES}" "${BCI2000_APPSOURCES}"

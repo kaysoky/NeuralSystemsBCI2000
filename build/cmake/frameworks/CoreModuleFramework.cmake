@@ -5,7 +5,7 @@
 ##              files and include directories
 
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/MinimalFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
 
 # Add CoreModule framework classes
 SET( SRC_BCI2000_SHARED_MODULES 

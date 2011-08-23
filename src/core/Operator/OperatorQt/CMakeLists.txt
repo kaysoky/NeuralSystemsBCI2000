@@ -73,7 +73,7 @@ BCI2000_IMPORT_GUI( "PreferencesQt" )
 BCI2000_IMPORT_GUI( "OperatorUtilsQt" )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/MinimalFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
 
 # Add missing framework files
 SET( SRC_BCI2000_FRAMEWORK
@@ -82,8 +82,6 @@ SET( SRC_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp
   ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.cpp
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp 
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.cpp
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
@@ -94,8 +92,6 @@ SET( HDR_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.h
   ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.h
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h
   ${BCI2000_SRC_DIR}/shared/utils/Settings.h 
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.h
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.h
@@ -111,8 +107,6 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES
   ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.cpp
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp 
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp 
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES
@@ -126,8 +120,6 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\fileio\\dat FILES
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES
   ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.h
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h 
   ${BCI2000_SRC_DIR}/shared/utils/Settings.h 
 )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\gui FILES

@@ -36,10 +36,6 @@ SET( RSRC_PROJECT
 SET( SRC_SHARED_MODULES 
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
 )
-SET( SRC_SHARED_UTILS
-  ${BCI2000_SRC_DIR}/shared/utils/OSEvent.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
-)
 SET( SRC_SHARED_BCISTREAM
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_module.cpp
 )
@@ -47,20 +43,14 @@ SET( SRC_SHARED_BCISTREAM
 SET( HDR_SHARED_MODULES 
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.h
 )
-SET( HDR_SHARED_UTILS
-  ${BCI2000_SRC_DIR}/shared/utils/OSEvent.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
-)
 
-SET( SRC_APPLICATION "${SRC_SHARED_MODULES}" "${SRC_SHARED_UTILS}" "${SRC_SHARED_BCISTREAM}" )
-SET( HDR_APPLICATION "${HDR_SHARED_MODULES}" "${HDR_SHARED_UTILS}" )
+SET( SRC_APPLICATION "${SRC_SHARED_MODULES}" "${SRC_SHARED_BCISTREAM}" )
+SET( HDR_APPLICATION "${HDR_SHARED_MODULES}" )
 
 # Set Source Groups
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules FILES ${SRC_SHARED_MODULES} )
-SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES ${SRC_SHARED_UTILS} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_SHARED_BCISTREAM} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules FILES ${HDR_SHARED_MODULES} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES ${HDR_SHARED_UTILS} )
 
 # Define extra include directories
 SET( INCLUDES 
@@ -77,10 +67,10 @@ FOREACH( flag_var ${FLAG_VARS} )
 ENDFOREACH( flag_var )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/MinimalFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
 
-# Setup Global Application Modules
-INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationModules.cmake )
+# Setup Global Application Module Contents
+INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )
 
 # Add the global and specific application files into the framework for this project
 SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${SRC_APPLICATION}" "${BCI2000_APPSOURCES}" )

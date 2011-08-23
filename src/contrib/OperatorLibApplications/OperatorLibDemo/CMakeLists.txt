@@ -17,30 +17,17 @@ SET( HDR_PROJECT
 )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/MinimalFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
 
 # Add in the appropriate error handling module
 SET( SRC_SHARED_BCISTREAM 
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_tool.cpp
 )
-SET( SRC_SHARED_UTILS
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
-)
-SET( HDR_SHARED_UTILS
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
-)
 
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_SHARED_BCISTREAM} )
-SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES ${SRC_SHARED_UTILS} )
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
   ${SRC_SHARED_BCISTREAM}
-  ${SRC_SHARED_UTILS}
-)
-SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES ${HDR_SHARED_UTILS} )
-SET( HDR_BCI2000_FRAMEWORK
-  ${HDR_BCI2000_FRAMEWORK}
-  ${HDR_SHARED_UTILS}
 )
 
 SET( HDR_PROJECT

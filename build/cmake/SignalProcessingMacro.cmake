@@ -8,7 +8,7 @@ MACRO( BCI2000_ADD_SIGNAL_PROCESSING_MODULE NAME SOURCES HEADERS SIGPROCSOURCES 
 # DEBUG
 MESSAGE( "-- Adding Signal Processing Project: " ${NAME} )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/DefaultSigProcFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/SigProcModuleFramework.cmake )
 
 # Add the required signal processing files into the framework for this project
 SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${SIGPROCSOURCES}" "${EXTRASOURCES}" )

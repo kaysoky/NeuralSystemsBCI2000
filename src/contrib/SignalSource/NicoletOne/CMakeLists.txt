@@ -52,44 +52,22 @@ SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t-" )
 ADD_DEFINITIONS( -D_AFXDLL )
 SET( CMAKE_MFC_FLAG 2 )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/MinimalFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 
 SET( BCI2000_SIGSRCSOURCES
+  ${BCI2000_SIGSRCSOURCES}
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSEvent.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_module.cpp
   ${BCI2000_SRC_DIR}/shared/fileio/GenericFileWriter.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/AlignmentFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/DataIOFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/TransmissionFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_module.cpp
 )
 
 SET( BCI2000_SIGSRCHEADERS
-  ${BCI2000_SRC_DIR}/shared/fileio/GenericFileWriter.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/AlignmentFilter.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/DataIOFilter.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/TransmissionFilter.h
+  ${BCI2000_SIGSRCHEADERS}
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSEvent.h
-  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
+  ${BCI2000_SRC_DIR}/shared/fileio/GenericFileWriter.h
 )
 
-# Duplicate the content of cmake/SignalSourceModules.cmake to avoid 
-# the MFC-incompatible Webcam logger
-IF( WIN32 )
-	
-  SET( BCI2000_SIGSRCSOURCES
-    ${BCI2000_SIGSRCSOURCES}
-    ${BCI2000_SRC_DIR}/shared/modules/signalsource/logging/JoystickLogger.cpp
-    ${BCI2000_SRC_DIR}/shared/modules/signalsource/logging/KeyLogger.cpp
-  )
-  SET( BCI2000_SIGSRCHEADERS
-    ${BCI2000_SIGSRCHEADERS}
-    ${BCI2000_SRC_DIR}/shared/modules/signalsource/logging/JoystickLogger.h
-    ${BCI2000_SRC_DIR}/shared/modules/signalsource/logging/KeyLogger.h
-  )
-ENDIF( WIN32 )
 
 # Add the required signal processing files into the framework for this project
 SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${BCI2000_SIGSRCSOURCES}" )

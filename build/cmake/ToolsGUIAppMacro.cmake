@@ -9,7 +9,7 @@ MACRO( BCI2000_ADD_TOOLS_GUIAPP NAME SOURCES HEADERS GEN )
 MESSAGE( "-- Adding Tool Project: " ${NAME} )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/MinimalFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
 
 # Add Extra Sources
 SET( SRC_BCI2000_FRAMEWORK

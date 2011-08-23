@@ -11,7 +11,7 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
   #MESSAGE( "${NAME} headers: ${HEADERS}" )
   
   # Generate the required framework
-  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/MinimalFramework.cmake )
+  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
   
   SET( SOURCES
     ${SOURCES}
