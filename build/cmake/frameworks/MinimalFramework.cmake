@@ -55,6 +55,7 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h
   ${BCI2000_SRC_DIR}/shared/utils/OSEvent.h
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
+  ${BCI2000_SRC_DIR}/shared/utils/FPExceptMask.h
   ${BCI2000_SRC_DIR}/shared/utils/Lockable.h
   ${BCI2000_SRC_DIR}/shared/utils/Uncopyable.h
   ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.h
@@ -135,10 +136,10 @@ SET( HDR_BCI2000_SHARED_BCISTREAM
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.h
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIAssert.h
 )
-set( SRC_BCI2000_SHARED_FILEIO
+SET( SRC_BCI2000_SHARED_FILEIO
   ${BCI2000_SRC_DIR}/shared/fileio/BCIDirectory.cpp
 )
-set( HDR_BCI2000_SHARED_FILEIO
+SET( HDR_BCI2000_SHARED_FILEIO
   ${BCI2000_SRC_DIR}/shared/fileio/BCIDirectory.h
 )
 
