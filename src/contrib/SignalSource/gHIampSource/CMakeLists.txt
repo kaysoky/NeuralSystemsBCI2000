@@ -26,16 +26,16 @@ ELSE( NOT WIN32 )
   )
 
   INCLUDE_DIRECTORIES(
-    ${BCI2000_SRC_DIR}/custom/gHIampSource/lib/inc
+    ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/inc
   )
 
   IF( BORLAND )
     LINK_DIRECTORIES(
-      ${BCI2000_SRC_DIR}/custom/gHIampSource/lib/omf
+      ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/omf
     )
   ELSE( BORLAND )
     LINK_DIRECTORIES(
-      ${BCI2000_SRC_DIR}/custom/gHIampSource/lib/coff
+      ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/coff
     )
   ENDIF( BORLAND )
 
