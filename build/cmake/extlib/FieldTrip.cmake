@@ -3,13 +3,13 @@
 ## Author: juergen.mellinger@uni-tuebingen.de
 ## Description: Sets up CMAKE variables for including the FieldTrip library
 ## SETS:
-##       SRC_EXTLIB_FIELDTRIP - Required source files for FieldTrip
-##       HDR_EXTLIB_FIELDTRIP - Required header files for FieldTrip
-##       INC_EXTLIB_FIELDTRIP - Include directory for FieldTrip
+##       SRC_EXTLIB - Required source files for FieldTrip
+##       HDR_EXTLIB - Required header files for FieldTrip
+##       INC_EXTLIB - Include directory for FieldTrip
 ##       Also defines source groups for source files
 
 # Set the Source and headers
-SET( SRC_EXTLIB_FIELDTRIP
+SET( SRC_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/cleanup.c
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/clientrequest.c
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/dmarequest.c
@@ -22,7 +22,7 @@ SET( SRC_EXTLIB_FIELDTRIP
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/tcpsocket.c
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/util.c
 )
-SET( HDR_EXTLIB_FIELDTRIP
+SET( HDR_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/buffer.h
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/compiler.h
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/extern.h
@@ -33,25 +33,25 @@ SET( HDR_EXTLIB_FIELDTRIP
 )
 
 IF( WIN32 )
-SET( SRC_EXTLIB_FIELDTRIP
-  ${SRC_EXTLIB_FIELDTRIP}
+SET( SRC_EXTLIB
+  ${SRC_EXTLIB}
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/win32/gettimeofday.c
 )
-SET( HDR_EXTLIB_FIELDTRIP
-  ${HDR_EXTLIB_FIELDTRIP}
+SET( HDR_EXTLIB
+  ${HDR_EXTLIB}
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/win32/gettimeofday.h
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/win32/stdint.h
 )
 ENDIF( WIN32 )
 
 # Define the include directory
-SET( INC_EXTLIB_FIELDTRIP 
+SET( INC_EXTLIB 
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/
 )
 
 # Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\fieldtrip\\buffer FILES ${SRC_EXTLIB_FIELDTRIP} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\fieldtrip\\buffer FILES ${HDR_EXTLIB_FIELDTRIP} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\fieldtrip\\buffer FILES ${SRC_EXTLIB} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\fieldtrip\\buffer FILES ${HDR_EXTLIB} )
 
 # Set success
-SET( FIELDTRIP_OK TRUE )
+SET( EXTLIB_OK TRUE )

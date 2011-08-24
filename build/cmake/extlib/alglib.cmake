@@ -3,13 +3,13 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Sets up CMAKE variables for including alglib in a project
 ## SETS:
-##       SRC_EXTLIB_ALGLIB - Required source files for the alglib
-##       HDR_EXTLIB_ALGLIB - Required header files for the alglib
-##       INC_EXTLIB_ALGLIB - Include directory for the alglib
+##       SRC_EXTLIB - Required source files for the alglib
+##       HDR_EXTLIB - Required header files for the alglib
+##       INC_EXTLIB - Include directory for the alglib
 ##       Also defines source groups for the ALGLIB files
 
 # Define the source files
-SET( SRC_EXTLIB_ALGLIB
+SET( SRC_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/alglib/ap.cpp
   ${BCI2000_SRC_DIR}/extlib/alglib/betacf.cpp
   ${BCI2000_SRC_DIR}/extlib/alglib/betai.cpp
@@ -25,7 +25,7 @@ SET( SRC_EXTLIB_ALGLIB
 )
 
 # Define the headers
-SET( HDR_EXTLIB_ALGLIB
+SET( HDR_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/alglib/ap.h
   ${BCI2000_SRC_DIR}/extlib/alglib/apvt.h
   ${BCI2000_SRC_DIR}/extlib/alglib/betacf.h
@@ -42,11 +42,11 @@ SET( HDR_EXTLIB_ALGLIB
 )
 
 # Define the include directory
-SET( INC_EXTLIB_ALGLIB ${BCI2000_SRC_DIR}/extlib/alglib )
+SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/alglib )
 
 # Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\alglib FILES ${SRC_EXTLIB_ALGLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\alglib FILES ${HDR_EXTLIB_ALGLIB} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\alglib FILES ${SRC_EXTLIB} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\alglib FILES ${HDR_EXTLIB} )
 
 # Set success
-SET( ALGLIB_OK TRUE )
+SET( EXTLIB_OK TRUE )

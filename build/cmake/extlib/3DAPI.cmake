@@ -14,13 +14,13 @@ SET( QT_USE_QTOPENGL TRUE )
 INCLUDE(${QT_USE_FILE})
 FIND_PACKAGE( OpenGL REQUIRED )
 IF( OPENGL_FOUND )
-  SET( LIBS_EXTLIB_3DAPI
+  SET( LIBS_EXTLIB
     ${OPENGL_LIBRARIES}
   )
 ENDIF( OPENGL_FOUND )
 
 # Define the source files
-SET( SRC_EXTLIB_3DAPI
+SET( SRC_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/3DAPI/buffers.cpp
   ${BCI2000_SRC_DIR}/extlib/3DAPI/cameraNlight.cpp
   ${BCI2000_SRC_DIR}/extlib/3DAPI/cuboids.cpp
@@ -38,7 +38,7 @@ SET( SRC_EXTLIB_3DAPI
 )
 
 # Define the headers
-SET( HDR_EXTLIB_3DAPI
+SET( HDR_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/3DAPI/buffers.h
   ${BCI2000_SRC_DIR}/extlib/3DAPI/cameraNlight.h
   ${BCI2000_SRC_DIR}/extlib/3DAPI/component.h
@@ -58,11 +58,11 @@ SET( HDR_EXTLIB_3DAPI
 )
 
 # Define the include directory
-SET( INC_EXTLIB_3DAPI ${BCI2000_SRC_DIR}/extlib/3DAPI )
+SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/3DAPI )
 
 # Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\3DAPI FILES ${SRC_EXTLIB_3DAPI} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\3DAPI FILES ${HDR_EXTLIB_3DAPI} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\3DAPI FILES ${SRC_EXTLIB} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\3DAPI FILES ${HDR_EXTLIB} )
 
 # Set success
-SET( 3DAPI_OK TRUE )
+SET( EXTLIB_OK TRUE )
