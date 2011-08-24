@@ -4,9 +4,8 @@
 ## Description: Sets up a module independent BCI2000 Framework of source
 ##              files and include directories
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleFrameworkFiles.cmake )
 
 SET( SRC_BCI2000_SHARED_UTILS 
   ${SRC_BCI2000_SHARED_UTILS}

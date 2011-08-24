@@ -26,6 +26,7 @@
 #ifndef MIDI_PLAYER_H
 #define MIDI_PLAYER_H
 
+#include <windows.h>
 #include <mmsystem.h>
 
 #define LITTLE_ENDIAN 1

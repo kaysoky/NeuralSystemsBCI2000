@@ -11,17 +11,20 @@ SET( SRC_PROJECT
   DummyApplication.cpp
 )
 SET( HDR_PROJECT
-
 )
+
 SET( SRC_APPLICATION
 )
 SET( HDR_APPLICATION
 )
 
-# Create the signal processing module
+# Define extra include directories
+INCLUDE_DIRECTORIES(
+)
+
+# Create the module
 BCI2000_ADD_APPLICATION_MODULE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
   "${SRC_APPLICATION}" "${HDR_APPLICATION}" 
-  "${INC_EXTLIB}" "${SRC_EXTRA}" "${HDR_EXTRA}"
 )

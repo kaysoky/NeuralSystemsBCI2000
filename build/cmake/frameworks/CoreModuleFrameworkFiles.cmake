@@ -51,4 +51,3 @@ ELSE( BORLAND )
 	${BCI2000_SRC_DIR}/shared/modules/CoreModuleQT.h
   )
 ENDIF( BORLAND )
-

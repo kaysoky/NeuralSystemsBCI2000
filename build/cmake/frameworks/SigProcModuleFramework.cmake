@@ -5,7 +5,7 @@
 ##              files and include directories
 
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleFrameworkFiles.cmake )
 
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_SHARED_UTILS}

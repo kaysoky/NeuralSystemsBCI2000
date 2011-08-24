@@ -18,7 +18,10 @@ SET( HDR_BCI2000_SHARED_MODULES
   ${BCI2000_SRC_DIR}/shared/modules/MessageHandler.h
   ${BCI2000_SRC_DIR}/shared/modules/MessageQueue.h
 )
+
 SET( SRC_BCI2000_SHARED_UTILS 
+  ${BCI2000_SRC_DIR}/shared/utils/LogFile.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/RandomGenerator.cpp
   ${BCI2000_SRC_DIR}/shared/utils/ClassName.cpp
   ${BCI2000_SRC_DIR}/shared/utils/EventQueue.cpp
   ${BCI2000_SRC_DIR}/shared/utils/MeasurementUnits.cpp
@@ -32,6 +35,8 @@ SET( SRC_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
+  ${BCI2000_SRC_DIR}/shared/utils/LogFile.h
+  ${BCI2000_SRC_DIR}/shared/utils/RandomGenerator.h
   ${BCI2000_SRC_DIR}/shared/utils/ClassName.h
   ${BCI2000_SRC_DIR}/shared/utils/EventQueue.h
   ${BCI2000_SRC_DIR}/shared/utils/MeasurementUnits.h
@@ -170,3 +175,4 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\fileio FILES ${HDR_BCI2000_SHA
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
 
 ADD_LIBRARY( ${NAME} STATIC ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} )
+

@@ -32,7 +32,7 @@ SET( RSRC_PROJECT
   MFCdemo.rc
 )
 
-# Set Application Modules Here.
+# Set Application components here.
 SET( SRC_SHARED_MODULES 
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
 )
@@ -52,11 +52,6 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules FILES ${SRC_SHARED_MODU
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_SHARED_BCISTREAM} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules FILES ${HDR_SHARED_MODULES} )
 
-# Define extra include directories
-SET( INCLUDES 
-
-)
-
 # Set this up as an AFX project
 ADD_DEFINITIONS( -D_AFXDLL )
 SET( CMAKE_MFC_FLAG 2 )
@@ -66,7 +61,7 @@ FOREACH( flag_var ${FLAG_VARS} )
    SET( ${flag_var} "${${flag_var}_DYNAMIC}" )
 ENDFOREACH( flag_var )
 
-# Generate the required framework
+# Include the required framework
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
 
 # Setup Global Application Module Contents
@@ -83,9 +78,6 @@ SOURCE_GROUP( Resources\\Project FILES ${RSRC_PROJECT} )
 
 # Add in external required libraries
 BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS )
-
-# Set Application Include Directories
-INCLUDE_DIRECTORIES( ${INCLUDES} )
 
 # Add the executable to the project
 ADD_EXECUTABLE( ${EXECUTABLE_NAME} WIN32 ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SRC_PROJECT} ${HDR_PROJECT} ${RSRC_PROJECT} )
