@@ -3,8 +3,10 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: Classes/templates related to locking.
 //   *Lockable is a mixin-class to add locking to a class,
-//   *Lock<T> and Unlock<T> define RAAI objects that lock a lockable
-//    object while the RAAI object exists.
+//   *Lock<T> defines RAAI objects that lock a lockable
+//    object during the lifetime of the RAAI object.
+//    For a RAAI class that operates on an OSMutex rather than
+//    a Lockable, see OSMutex::Lock.
 //   *TemporaryLock<T>() is a function template that returns a
 //    temporary Lock<T> object. This allows, e.g., to lock a stream
 //    object during evaluation of an expression that writes into the
@@ -56,27 +58,6 @@ class Lock
  private:
   T& mrT;
 };
-
-template<typename T>
-class Unlock : private Uncopyable // Don't try to make a copyable Unlock.
-                                 // It won't work even with recursive locking in T.
-{
- private:
-  Unlock();
-
- public:
-  Unlock( T& t )
-    : mrT( t )
-    { mrT.Unlock(); }
-  ~Unlock()
-    { mrT.Lock(); }
-  T& operator()() const
-    { return mrT; }
-
- private:
-  T& mrT;
-};
-
 
 template<typename T>
 Lock<T>
