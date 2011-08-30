@@ -38,7 +38,7 @@ SOURCE_GROUP( Source\\Project FILES ${SOURCES} )
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Neuroscan )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 # Add the executable to the project
 ADD_EXECUTABLE( ${NAME} ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )

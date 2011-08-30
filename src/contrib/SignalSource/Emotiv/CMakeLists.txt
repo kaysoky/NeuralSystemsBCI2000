@@ -10,20 +10,9 @@ SET( EXECUTABLE_NAME Emotiv )
 SET( SRC_PROJECT
   Emotiv.cpp
   EmotivADC.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/SourceFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.cpp
-  ${BCI2000_SRC_DIR}/extlib/math/FilterDesign.cpp
 )
 SET( HDR_PROJECT
   EmotivADC.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/SourceFilter.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.h 
-  ${BCI2000_SRC_DIR}/extlib/math/FilterDesign.h
-)
-
-INCLUDE_DIRECTORIES( 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing
-  ${BCI2000_SRC_DIR}/extlib/math
 )
 
 # Define the library
@@ -35,11 +24,12 @@ ENDIF( BORLAND )
 
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Emotiv/lib/include )
 
+BCI2000_INCLUDE( "SOURCEFILTER" )
+
 # Create the signal source module
 BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${INC_EXTLIB}"
 )
 
 # Link the Emotiv Library

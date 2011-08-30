@@ -20,24 +20,17 @@ SET( HDR_PROJECT
   FeedbackScene.h
 )
 
-# Set required application source files
-SET( SRC_APPLICATION
-)
-SET( HDR_APPLICATION
-)
-
 # Define extra include directories
 INCLUDE_DIRECTORIES(
 )
 
-# Let the macro know we want to include the 3D API
-BCI2000_USE( "3DAPI" )
+# Let the macro know we want to use the 3D API
+BCI2000_INCLUDE( "3DAPI" )
 
 # Create the module
 BCI2000_ADD_APPLICATION_MODULE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${SRC_APPLICATION}" "${HDR_APPLICATION}" 
 )
 
 

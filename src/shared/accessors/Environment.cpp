@@ -580,6 +580,20 @@ Environment::OnStateAccess( const string& inName ) const
 ////////////////////////////////////////////////////////////////////////////////
 // EnvironmentExtension definitions
 ////////////////////////////////////////////////////////////////////////////////
+EnvironmentExtension::AutoDeleteSet&
+EnvironmentExtension::AutoDeleteInstance()
+{
+  static AutoDeleteSet instance;
+  return instance;
+}
+
+EnvironmentExtension*
+EnvironmentExtension::AutoDelete( EnvironmentExtension* p )
+{
+  AutoDeleteInstance().insert( p );
+  return p;
+}
+
 #define CALL( x )                    \
 void EnvironmentExtension::Call##x() \
 {                                    \

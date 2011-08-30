@@ -102,6 +102,10 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		virtual void Resting();
 		virtual void Halt();
 	
+#if MODTYPE == 1
+		virtual bool IsRealTimeSource() { return false; } // permits --EvaluateTiming=0, to launch without realtime checking
+#endif // MODTYPE
+	
 	private:
 		PrecisionTime* cur_time;
 		PyObject*      bci2000_instance;

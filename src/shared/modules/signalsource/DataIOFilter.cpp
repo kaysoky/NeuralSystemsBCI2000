@@ -219,14 +219,6 @@ DataIOFilter::Preflight( const SignalProperties& Input,
            << endl;
   }
 
-#ifndef TIME_IS_REAL
-#define TIME_IS_REAL 1
-#endif // #ifndef TIME_IS_REAL
-#if !TIME_IS_REAL
-  if( OptionalParameter( "EvaluateTiming", 1) == 0)
-    bciout << "WARNING: the EvaluateTiming parameter is false, so realtime operation will not be enforced" << endl;
-#endif // !TIME_IS_REAL
-
   if( Parameter( "VisualizeSource" ) == 1 )
   {
     int SampleBlockSize = Parameter( "SampleBlockSize" );
@@ -294,6 +286,10 @@ DataIOFilter::Preflight( const SignalProperties& Input,
                         .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
                         .SetSymbol( "s" );
   Output.SetUpdateRate( Parameter( "SamplingRate" ).InHertz() / Parameter( "SampleBlockSize" ) );
+
+  if( !mpADC->IsRealTimeSource() )
+    if( OptionalParameter( "EvaluateTiming", 1 ) == 0 )
+      bciout << "WARNING: the EvaluateTiming parameter is false, so realtime operation will not be enforced" << endl;
 
   if( mpSourceFilter )
   {
@@ -439,9 +435,8 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
 
   mVisualizeTiming = ( Parameter( "VisualizeTiming" ) == 1 );
 
-#if !TIME_IS_REAL
-  mEvaluateTiming = ( OptionalParameter( "EvaluateTiming", 1 ) != 0 );
-#endif // !TIME_IS_REAL
+  if( !mpADC->IsRealTimeSource() )
+    mEvaluateTiming = ( OptionalParameter( "EvaluateTiming", 1 ) != 0 );
 
   bool measureStimulus = ( Parameter( "SignalSourceIP" ) == Parameter( "ApplicationIP" ) );
   SignalProperties p = mTimingSignal.Properties();

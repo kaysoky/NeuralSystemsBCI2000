@@ -35,7 +35,7 @@ class GenericADC : public GenericFilter
 
  public:
   virtual ~GenericADC() {}
-  // GenericFilter inherited functions.
+  // GenericFilter inherited functions, forcing implementation of Halt().
   virtual void Preflight( const SignalProperties&,
                                 SignalProperties& ) const = 0;
   virtual void Initialize( const SignalProperties&,
@@ -47,6 +47,10 @@ class GenericADC : public GenericFilter
   virtual void Halt() = 0;
 
   virtual bool AllowsVisualization() const { return false; }
+  // A function to specify whether data is generated in real time.
+  // Should return false when data is replayed from a file, or otherwise
+  // released faster/slower than prescribed by the SamplingRate parameter.
+  virtual bool IsRealTimeSource() const { return true; }
 };
 
 #endif // GENERIC_ADC_H

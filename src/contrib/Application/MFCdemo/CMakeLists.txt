@@ -62,7 +62,7 @@ FOREACH( flag_var ${FLAG_VARS} )
 ENDFOREACH( flag_var )
 
 # Include the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 # Setup Global Application Module Contents
 INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )

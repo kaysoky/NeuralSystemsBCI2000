@@ -1,25 +1,10 @@
 ###########################################################################
 ## $Id$
-## Authors: griffin.milsap@gmail.com
-## Description: Sets up a module independent BCI2000 Framework of source
-##              files and include directories
+## Authors: griffin.milsap@gmail.com, juergen.mellinger@uni-tuebingen.de
+## Description: Source files common to all Core Module libraries
 
-
-# Unset all current variables
-UNSET( SRC_BCI2000_SHARED_MODULES )
-UNSET( HDR_BCI2000_SHARED_MODULES )
-UNSET( SRC_BCI2000_SHARED_UTILS )
-UNSET( HDR_BCI2000_SHARED_UTILS )
-UNSET( SRC_BCI2000_SHARED_UTILS_EXPRESSION )
-UNSET( HDR_BCI2000_SHARED_UTILS_EXPRESSION )
-UNSET( SRC_BCI2000_SHARED_TYPES )
-UNSET( HDR_BCI2000_SHARED_TYPES )
-UNSET( SRC_BCI2000_SHARED_ACCESSORS )
-UNSET( HDR_BCI2000_SHARED_ACCESSORS )
-UNSET( SRC_BCI2000_SHARED_BCISTREAM )
-UNSET( HDR_BCI2000_SHARED_BCISTREAM )
-UNSET( SRC_BCI2000_SHARED_FILEIO )
-UNSET( HDR_BCI2000_SHARED_FILEIO )
+# Don't clutter the global output directory with static libs
+SET_OUTPUT_DIRECTORY( ${CMAKE_CURRENT_BINARY_DIR} )
 
 # Add CoreModule framework classes
 SET( SRC_BCI2000_SHARED_MODULES 
@@ -51,3 +36,19 @@ ELSE( BORLAND )
 	${BCI2000_SRC_DIR}/shared/modules/CoreModuleQT.h
   )
 ENDIF( BORLAND )
+
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules FILES ${SRC_BCI2000_SHARED_MODULES} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_BCI2000_SHARED_BCISTREAM} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules FILES ${HDR_BCI2000_SHARED_MODULES} )
+
+SET( SRC_BCI2000_FRAMEWORK
+  ${SRC_BCI2000_SHARED_MODULES}
+  ${SRC_BCI2000_SHARED_BCISTREAM}
+)
+
+SET( HDR_BCI2000_FRAMEWORK
+  ${HDR_BCI2000_SHARED_MODULES}
+  ${HDR_BCI2000_SHARED_BCISTREAM}
+)
+
+

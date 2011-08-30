@@ -36,7 +36,6 @@ ELSE( NOT MSVC AND NOT BORLAND )
   BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
     "${EXECUTABLE_NAME}" 
     "${SRC_PROJECT}" "${HDR_PROJECT}" 
-    "${INC_EXTLIB}"
   )
 
   # Link the Enobio Library

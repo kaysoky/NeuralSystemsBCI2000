@@ -41,10 +41,10 @@ class KeystrokeFilter : public GenericFilter
   virtual bool AllowsVisualization() const { return false; }
 
  private:
-  void SendKeystroke( short );
+  void SendKeystroke( State::ValueType );
 
   std::string mKeystrokeStateName;
-  short       mPreviousStateValue;
+  State::ValueType mPreviousStateValue;
 };
 
 #endif // KEYSTROKE_FILTER_H

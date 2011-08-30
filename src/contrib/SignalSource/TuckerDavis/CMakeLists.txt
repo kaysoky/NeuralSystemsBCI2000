@@ -22,7 +22,6 @@ IF( WIN32 AND NOT MINGW )
   BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
     "${EXECUTABLE_NAME}" 
     "${SRC_PROJECT}" "${HDR_PROJECT}" 
-    "${INC_EXTLIB}"
   )
 ELSE()
   MESSAGE( "-- TuckerDavis does not provide libraries for this compiler/OS, will not build" )

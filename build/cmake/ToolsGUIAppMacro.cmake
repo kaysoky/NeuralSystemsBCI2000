@@ -9,28 +9,24 @@ MACRO( BCI2000_ADD_TOOLS_GUIAPP NAME SOURCES HEADERS GEN )
 MESSAGE( "-- Adding Tool Project: " ${NAME} )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 # Add Extra Sources
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.cpp
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.cpp
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp
 )
 SET( HDR_BCI2000_FRAMEWORK
   ${HDR_BCI2000_FRAMEWORK}
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.h
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.h
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.h
   ${BCI2000_SRC_DIR}/shared/utils/Settings.h
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp )
-SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\fileio\\dat FILES
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.cpp )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp 
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.cpp
@@ -38,8 +34,6 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp
 )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\fileio\\dat FILES
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.h )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\gui FILES
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.h
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.h
@@ -68,7 +62,6 @@ ENDIF( NOT BORLAND )
 INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared/gui
   ${BCI2000_SRC_DIR}/shared/bcistream
-  ${BCI2000_SRC_DIR}/shared/fileio/dat
 )
 
 

@@ -17,13 +17,12 @@ SET( HDR_PROJECT
 )
 
 # Tell the macro to link against the gUSBamp API found in EXTLIB
-BCI2000_USE( "GUSBAMP" )
+BCI2000_INCLUDE( "GUSBAMP" )
 
 # Create the signal source module
 ADD_EXECUTABLE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${INC_EXTLIB}"
 )
 
 TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${LIBS} )

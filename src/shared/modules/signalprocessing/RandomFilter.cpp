@@ -97,6 +97,6 @@ RandomFilter::Process( const GenericSignal& Input,
 float
 RandomFilter::GetRandomUniform()
 {
-  return ( mRandomGenerator.Random() * 2.0 / mRandomGenerator.RandMax() ) - 1.0;
+  return ( mRandomGenerator.Random() * 2.0f / mRandomGenerator.RandMax() ) - 1.0f;
 }
 

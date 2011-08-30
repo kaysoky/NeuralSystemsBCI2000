@@ -14,23 +14,23 @@
 //   global events.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef ENVIRONMENT_H
@@ -43,6 +43,7 @@
 #include "StateRef.h"
 #include "BCIError.h"
 #include "ClassName.h"
+#include "BCIRegistry.h"
 #include <set>
 #include <iostream>
 #include <sstream>
@@ -56,9 +57,6 @@ class CoreModule;
 class FilterWrapper;
 
 class ApplicationWindowClient;
-
-// A macro to register extensions for automatic instantiation.
-#define Extension(x) static x x##instance_;
 
 // Some utility macros for better readable code in filter constructors.
 #define BEGIN_PARAMETER_DEFINITIONS                                      \
@@ -241,7 +239,7 @@ class EnvironmentBase
   // Helper functions to construct and set an error context string.
   static void ErrorContext( const std::string&, const EnvironmentBase* = NULL );
   const EnvironmentBase* ObjectContext() const;
-  
+
   // There is a bug in the Borland compiler that prevents casting the this
   // pointer of a subclass that inherits "protected"ly from EnvironmentBase into
   // an EnvironmentBase*. We fix this by providing an explicit conversion for
@@ -345,7 +343,7 @@ class EnvironmentBase
                                         StateVector* );
 
  protected:
-  void RegisterExtension( EnvironmentExtension* p )   { Extensions().insert( p ); }
+  void RegisterExtension__( EnvironmentExtension* p )   { Extensions().insert( p ); }
   void UnregisterExtension( EnvironmentExtension* p ) { Extensions().erase( p ); }
 
  private:
@@ -412,7 +410,7 @@ class Environment : public EnvironmentBase
 class EnvironmentExtension : protected Environment
 {
  protected:
-  EnvironmentExtension()          { Environment::RegisterExtension( this ); }
+  EnvironmentExtension()          { Environment::RegisterExtension__( this ); }
   virtual ~EnvironmentExtension() { Environment::UnregisterExtension( this ); }
 
  // The extension interface. Extension descendants implement these functions.
@@ -446,6 +444,16 @@ class EnvironmentExtension : protected Environment
   void CallProcess();
   void CallPostProcess();
   void CallResting();
+
+ public:
+  // Objects registered with AutoDelete() are deleted at static deinitialization time
+  static EnvironmentExtension* AutoDelete( EnvironmentExtension* p );
+
+ private:
+  static struct AutoDeleteSet : public std::set<EnvironmentExtension*>
+  {
+    ~AutoDeleteSet() { while( !empty() ) { delete *begin(); erase( begin() ); } }
+  }& AutoDeleteInstance();
 };
 
 #endif // ENVIRONMENT_H

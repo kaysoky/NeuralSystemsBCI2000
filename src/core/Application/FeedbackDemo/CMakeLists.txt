@@ -15,12 +15,6 @@ SET( HDR_PROJECT
   FeedbackDemoTask.h
 )
 
-# Set required application source files
-SET( SRC_APPLICATION
-)
-SET( HDR_APPLICATION
-)
-
 # Define extra include directories
 INCLUDE_DIRECTORIES(
 )
@@ -29,7 +23,6 @@ INCLUDE_DIRECTORIES(
 BCI2000_ADD_APPLICATION_MODULE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${SRC_APPLICATION}" "${HDR_APPLICATION}" 
 )
 
 

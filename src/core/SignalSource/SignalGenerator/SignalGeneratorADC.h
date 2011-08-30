@@ -44,6 +44,8 @@ class SignalGeneratorADC : public GenericADC
   virtual void Process( const GenericSignal&, GenericSignal& );
   virtual void Halt();
 
+  virtual bool IsRealTimeSource() { return false; } // permits --EvaluateTiming=0, to launch without realtime checking
+
  private:
   // Configuration
   double mSineFrequency,

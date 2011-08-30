@@ -6,8 +6,6 @@
 # Set the executable name
 SET( EXECUTABLE_NAME PythonSource )
 
-ADD_DEFINITIONS ( -DTIME_IS_REAL=0 ) # permits --EvaluateTiming=0, to launch without realtime checking
-
 # Set the project specific sources
 SET( SRC_PROJECT
   PythonSource.cpp
@@ -22,14 +20,8 @@ SET( HDR_PROJECT
   ../shared/PythonWrapper.h
 )
 
-# Set required application source files
-SET( SRC_SIGNALSOURCE
-)
-SET( HDR_SIGNALSOURCE
-)
-
 # Define extra include directories
-SET( INCLUDES
+INCLUDE_DIRECTORIES(
 )
 
 ADD_DEFINITIONS(
@@ -40,8 +32,6 @@ ADD_DEFINITIONS(
 BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${SRC_SIGNALSOURCE}" "${HDR_SIGNALSOURCE}" 
-  "${INCLUDES}"
 )
 
 ADD_CUSTOM_COMMAND(

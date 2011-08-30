@@ -35,6 +35,7 @@
 #include <queue>
 
 class GenericFileWriter;
+class GenericADC;
 
 class DataIOFilter: public GenericFilter
 {
@@ -65,8 +66,8 @@ class DataIOFilter: public GenericFilter
   void ProcessBCIEvents();
   void ResetStates( int kind );
 
-  GenericFilter*         mpADC,
-               *         mpSourceFilter;
+  GenericADC*            mpADC;
+  GenericFilter*         mpSourceFilter;
   GenericFileWriter*     mpFileWriter;
   GenericSignal          mOutputBuffer;
   StateVector            mStatevectorBuffer;

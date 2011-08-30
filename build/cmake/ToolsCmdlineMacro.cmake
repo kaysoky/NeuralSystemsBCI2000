@@ -11,7 +11,7 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
   #MESSAGE( "${NAME} headers: ${HEADERS}" )
   
   # Generate the required framework
-  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
+  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
   
   SET( SOURCES
     ${SOURCES}
@@ -39,13 +39,13 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
   # Add in external required libraries
   BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS )
   
-  # If we're building a Qt project, we need to automoc the sources, generating new files
+  # If we're building a Qt project, we need to automoc the headers, generating new files
   SET( USEQT ${REQUESTQT} )
   IF( BORLAND )
      SET( USEQT "FALSE" )
   ENDIF( BORLAND )
   IF( ${USEQT} )
-    QT4_AUTOMOC( ${SOURCES} )  
+    QT4_AUTOMOC( ${HEADERS} )  
   ENDIF( ${USEQT} )
   
   # Set output directories
@@ -125,7 +125,7 @@ MACRO( BCI2000_ADD_CMDLINE_FILTER )
 
   PARSE_ARGUMENTS(
     CMDLINEFILTER
-    "FROM;EXTRA_SOURCES;EXTRA_HEADERS;USING"
+    "FROM;EXTRA_SOURCES;EXTRA_HEADERS;USING;INCLUDING"
     ""
     ${ARGN}
   )
@@ -155,11 +155,11 @@ MACRO( BCI2000_ADD_CMDLINE_FILTER )
   )
 
   SET( USEQT FALSE )
-  FOREACH( DEPENDENCY ${CMDLINEFILTER_USING} )
+  FOREACH( DEPENDENCY ${CMDLINEFILTER_USING} ${CMDLINEFILTER_INCLUDING} )
     IF( ${DEPENDENCY} STREQUAL QT )
       SET( USEQT TRUE )
     ELSE( ${DEPENDENCY} STREQUAL QT )
-      BCI2000_USE( ${DEPENDENCY} )
+      BCI2000_INCLUDE( ${DEPENDENCY} )
     ENDIF( ${DEPENDENCY} STREQUAL QT )
   ENDFOREACH( DEPENDENCY )
   

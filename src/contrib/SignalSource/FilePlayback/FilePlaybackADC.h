@@ -46,9 +46,11 @@ class FilePlaybackADC : public GenericADC
 		virtual void StartRun();
 		virtual void Process( const GenericSignal&, GenericSignal& );
 		virtual void Halt();
-		virtual void MatchChannels( const BCI2000FileReader& dataFile, std::vector<int>& chList ) const;
+
+		virtual bool IsRealTimeSource() { return false; } // permits --EvaluateTiming=0, to launch without realtime checking
 
 	private:
+		void MatchChannels( const BCI2000FileReader& dataFile, std::vector<int>& chList ) const;
 		void CheckFile( std::string& fname, BCI2000FileReader& dataFile ) const;
 
 		// Configuration

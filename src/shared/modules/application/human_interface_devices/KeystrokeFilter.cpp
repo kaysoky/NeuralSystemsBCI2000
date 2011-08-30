@@ -77,7 +77,7 @@ KeystrokeFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   if( mKeystrokeStateName != "" )
   {
-    short currentStateValue = State( mKeystrokeStateName.c_str() );
+    State::ValueType currentStateValue = State( mKeystrokeStateName.c_str() );
     if( currentStateValue != mPreviousStateValue )
       SendKeystroke( currentStateValue );
     mPreviousStateValue = currentStateValue;
@@ -85,7 +85,7 @@ KeystrokeFilter::Process( const GenericSignal& Input, GenericSignal& Output )
   Output = Input;
 }
 
-void KeystrokeFilter::SendKeystroke( short s )
+void KeystrokeFilter::SendKeystroke( State::ValueType s )
 {
   const short unicodeChars[] =
   {

@@ -62,7 +62,7 @@ SET( GENERATED
 )
 
 # Tell the macro to link against the math libraries in extlib
-BCI2000_USE( "MATH" )
+BCI2000_INCLUDE( "MATH" )
 
 # Tell the macro to link against a few external GUIs
 BCI2000_IMPORT_GUI( "ConfigWindowQt" )
@@ -73,12 +73,11 @@ BCI2000_IMPORT_GUI( "PreferencesQt" )
 BCI2000_IMPORT_GUI( "OperatorUtilsQt" )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 # Add missing framework files
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.cpp
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp
   ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.cpp
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.cpp
@@ -89,7 +88,6 @@ SET( SRC_BCI2000_FRAMEWORK
 )
 SET( HDR_BCI2000_FRAMEWORK
   ${HDR_BCI2000_FRAMEWORK}
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.h
   ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.h
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.h
   ${BCI2000_SRC_DIR}/shared/utils/Settings.h 
@@ -98,9 +96,6 @@ SET( HDR_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/gui/ColorListChooser.h
 )
 
-SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\fileio\\dat FILES
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.cpp 
-)
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp 
 )
@@ -113,9 +108,6 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.cpp
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
   ${BCI2000_SRC_DIR}/shared/gui/ColorListChooser.cpp
-)
-SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\fileio\\dat FILES
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.h 
 )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES
   ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.h
@@ -147,10 +139,6 @@ BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK L
 
 # Setup GUI Imports
 BCI2000_SETUP_GUI_IMPORTS( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK )
-
-# If we're building a Qt project, we need to automoc the sources, generating new files
-QT4_AUTOMOC( ${SRC_PROJECT} )
-QT4_AUTOMOC( ${HDR_PROJECT} )
 
 # Add the executable to the project
 ADD_EXECUTABLE( 

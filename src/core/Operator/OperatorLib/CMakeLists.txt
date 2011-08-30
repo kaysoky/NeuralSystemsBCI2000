@@ -32,7 +32,7 @@ IF( WIN32 )
 ENDIF( WIN32 )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 # Add missing framework files
 SET( SRC_BCI2000_FRAMEWORK
@@ -60,9 +60,7 @@ IF( WIN32 )
   SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DLIBOPERATOR_LIBRARY" )
 ENDIF( WIN32 )
 
-IF( WIN32 )
-  TARGET_LINK_LIBRARIES( ${NAME} wsock32 )
-ENDIF( WIN32 )
+TARGET_LINK_LIBRARIES( ${NAME} ${LIBS} )
 
 # Set output name
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES 

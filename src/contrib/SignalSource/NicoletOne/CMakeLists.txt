@@ -52,7 +52,7 @@ SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t-" )
 ADD_DEFINITIONS( -D_AFXDLL )
 SET( CMAKE_MFC_FLAG 2 )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 
 SET( BCI2000_SIGSRCSOURCES

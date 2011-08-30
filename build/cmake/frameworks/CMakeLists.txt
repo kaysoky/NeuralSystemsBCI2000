@@ -3,5 +3,7 @@
 ## Author: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for framework libraries
 
-INCLUDE( BasicFrameworkLib.cmake )
-INCLUDE( AppModuleFrameworkLib.cmake )
+ADD_SUBDIRECTORY( CoreLib )
+ADD_SUBDIRECTORY( SigSrcModuleLib )
+ADD_SUBDIRECTORY( SigProcModuleLib )
+ADD_SUBDIRECTORY( AppModuleLib )

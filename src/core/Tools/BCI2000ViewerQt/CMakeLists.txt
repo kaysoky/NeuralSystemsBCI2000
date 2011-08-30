@@ -36,7 +36,7 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES
 )
 
 # Tell the macro to link against the math libraries in extlib
-BCI2000_USE( "MATH" )
+BCI2000_INCLUDE( "MATH" )
 
 # Wrap the Qt files
 QT4_WRAP_UI( GENERATED_UI BCI2000Viewer.ui )
@@ -55,5 +55,3 @@ BCI2000_ADD_TOOLS_GUIAPP(
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
   "${GENERATED}"
 )
-
-

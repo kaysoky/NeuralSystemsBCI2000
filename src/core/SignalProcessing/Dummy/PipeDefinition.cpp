@@ -29,4 +29,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
+#include "IdentityFilter.h"
+
+Filter( IdentityFilter, 2.0 );
 

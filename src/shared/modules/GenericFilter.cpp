@@ -82,7 +82,8 @@ GenericFilter::VisParamName() const
   return string( "Visualize" ) + ClassName( typeid( *this ) );
 }
 
-GenericFilter::Registrar::Registrar( const char* inPos, int inPriority ) 
+// GenericFilter::Registrar definitions
+GenericFilter::Registrar::Registrar( const char* inPos, int inPriority, bool inAutoDelete ) 
 : mPos( inPos ),
   mPriority( inPriority ),
   mInstance( sCreatedInstances++ )
@@ -102,6 +103,9 @@ GenericFilter::Registrar::Registrar( const char* inPos, int inPriority )
   // Only insert if priority is high enough.
   if( inPriority >= maxPriority )
     Registrars().insert( this ); 
+
+  if( inAutoDelete )
+    AutoDeleteInstance().insert( this );
 }
 
 GenericFilter::Registrar::~Registrar()
@@ -125,6 +129,23 @@ GenericFilter::Registrar::Registrars()
   return registrars;
 }
 
+GenericFilter::Registrar::AutoDeleteSet::~AutoDeleteSet()
+{
+  while( !empty() )
+  {
+    delete *begin();
+    erase( begin() );
+  }
+}
+
+GenericFilter::Registrar::AutoDeleteSet&
+GenericFilter::Registrar::AutoDeleteInstance()
+{
+  static AutoDeleteSet instance;
+  return instance;
+}
+
+// GenericFilter definitions
 const string&
 GenericFilter::GetFirstFilterPosition()
 {

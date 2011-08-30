@@ -70,7 +70,7 @@ SET( GENERATED
   ${GENERATED_RCC}
 )
 
-BCI2000_USE( ALGLIB )
+BCI2000_INCLUDE( ALGLIB )
 
 # Create the signal processing module
 BCI2000_ADD_TOOLS_GUIAPP( 

@@ -28,7 +28,6 @@ IF( BORLAND OR MSVC )
   BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
     "${EXECUTABLE_NAME}" 
     "${SRC_PROJECT}" "${HDR_PROJECT}" 
-    "${INC_EXTLIB}"
   )
 ELSE()
   MESSAGE( "NIDAQ-MX libraries not available for this compiler/OS, NIDAQ-MX source will not build." )

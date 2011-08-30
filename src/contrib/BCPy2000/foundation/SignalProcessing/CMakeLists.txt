@@ -20,20 +20,8 @@ SET( HDR_PROJECT
   ../shared/PythonWrapper.h
 )
 
-# Set required signal processing source files
-SET( SRC_SIGNALPROCESSING
-  ../../../../shared/modules/signalprocessing/SpatialFilter.cpp
-  ../../../../shared/modules/signalprocessing/SpatialFilterCell.cpp
-  ../../../../shared/modules/signalprocessing/SpatialFilterGroup.cpp
-)
-SET( HDR_SIGNALPROCESSING
-  ../../../../shared/modules/signalprocessing/SpatialFilter.h
-  ../../../../shared/modules/signalprocessing/SpatialFilterCell.h
-  ../../../../shared/modules/signalprocessing/SpatialFilterGroup.h
-)
-
 # Define extra include directories
-SET( INCLUDES
+INCLUDE_DIRECTORIES(
 )
 
 ADD_DEFINITIONS(
@@ -44,8 +32,6 @@ ADD_DEFINITIONS(
 BCI2000_ADD_SIGNAL_PROCESSING_MODULE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${SRC_SIGNALPROCESSING}" "${HDR_SIGNALPROCESSING}" 
-  "${INCLUDES}"
 )
 
 ADD_CUSTOM_COMMAND(

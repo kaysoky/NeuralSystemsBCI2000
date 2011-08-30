@@ -1,17 +1,10 @@
 ###########################################################################
 ## $Id$
-## Authors: griffin.milsap@gmail.com
-## Description: Sets up a module independent BCI2000 Framework of source
-##              files and include directories
+## Authors: griffin.milsap@gmail.com, juergen.mellinger@uni-tuebingen.de
+## Description: Sets up include directories and dependencies for 
+##   Application Modules using the AppModule library
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
-
-# Define include directories
-IF( BORLAND )
- INCLUDE_DIRECTORIES( ${VXLCORE_INCLUDE_DIR} )
-ELSE( BORLAND )
- INCLUDE_DIRECTORIES( ${QT_INCLUDE_DIR} )
-ENDIF( BORLAND )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModule.cmake )
 
 INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared
@@ -33,9 +26,12 @@ INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared/modules/application/stimuli
 )
 
-SET( LIBS ${LIBS} AppModuleFramework )
-
-# Notify macro we need some extlib dependencies
 BCI2000_USE( "SAPI" )
 BCI2000_USE( "DSOUND" )
 
+IF( MSVC )
+  SET( REGISTRY_NAME AppRegistry )
+  SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /include:_${REGISTRY_NAME}" )
+ENDIF()
+
+SET( LIBS ${LIBS} BCI2000FrameworkAppModule )

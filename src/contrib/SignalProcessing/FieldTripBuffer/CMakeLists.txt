@@ -16,25 +16,15 @@ SET( HDR_PROJECT
   FieldTripBufferFilter.h
 )
 
-# Set required signal processing source files
-SET( SRC_SIGNALPROCESSING 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ExpressionFilter.cpp
-)
-SET( HDR_SIGNALPROCESSING 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ExpressionFilter.h
-)
-
-BCI2000_USE( "FIELDTRIP" )
+BCI2000_INCLUDE( "FIELDTRIP" )
 IF( WIN32 )
-  BCI2000_USE( "PTHREADS" )
+  BCI2000_INCLUDE( "PTHREADS" )
 ENDIF( WIN32 )
 
 # Create the signal processing module
 BCI2000_ADD_SIGNAL_PROCESSING_MODULE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${SRC_SIGNALPROCESSING}" "${HDR_SIGNALPROCESSING}" 
-  "${INC_EXTLIB}"
 )
 
 IF( MSVC AND WIN32 )

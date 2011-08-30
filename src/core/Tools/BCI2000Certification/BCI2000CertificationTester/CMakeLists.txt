@@ -31,7 +31,6 @@ QT4_WRAP_CPP( GENERATED_MOC certificationGUI.h ../progressClass.h)
 SET( GENERATED
   ${GENERATED_MOC}
 )
-QT4_AUTOMOC( certificationGUI.cpp ../progressClass.cpp )
 
 INCLUDE_DIRECTORIES( . ../ )
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/tools/BCI2000Certification )

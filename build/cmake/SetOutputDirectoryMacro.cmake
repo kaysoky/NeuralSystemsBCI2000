@@ -1,7 +1,7 @@
 ###########################################################################
 ## $Id$
 ## Authors: juergen.mellinger@uni-tuebingen.de
-## Description: Contains macros to set CMake output directories.
+## Description: A macro to set CMake output directories.
 ##   SET_OUTPUT_DIRECTORY( dir [target1, target2, ...] )
 ##   When no targets are given, CMAKE_..._OUTPUT_DIRECTORY... variables
 ##   are set; when targets are given, ..._OUTPUT_DIRECTORY... properties

@@ -4,23 +4,23 @@
 //   which all BCI2000 filters are supposed to implement.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GENERIC_FILTER_H
@@ -37,20 +37,7 @@
 // convenience.
 #include "GenericSignal.h"
 #include "BCIError.h"
-
-// Filter() and RegisterFilter() both register filters to the framework.
-// However, Filter() statements take precedence over RegisterFilter() statements:
-// When any Filter() statement is present in a module, all RegisterFilter() statements are ignored.
-#define Filter( name, pos )          RegisterFilter_( name, pos, 2 )
-#define RegisterFilter( name, pos )  RegisterFilter_( name, pos, 1 )
-
-#if( __GNUC__ )
-# define RegisterFilter_( name, pos, priority )  \
-  GenericFilter::FilterRegistrar<name> name##Registrar##priority __attribute__(( used ))(#pos, priority);
-#else
-# define RegisterFilter_( name, pos, priority )  \
-  GenericFilter::FilterRegistrar<name> name##Registrar##priority(#pos, priority);
-#endif // __GNUC__
+#include "BCIRegistry.h"
 
 class GenericFilter : protected Environment, private Uncopyable
 {
@@ -116,7 +103,7 @@ class GenericFilter : protected Environment, private Uncopyable
   class Registrar
   {
    public:
-    Registrar( const char* inPos, int inPriority );
+    Registrar( const char* inPos, int inPriority, bool inAutoDelete );
     virtual ~Registrar();
     const std::string& Position() const { return mPos; }
     virtual const std::type_info& Typeid() const = 0;
@@ -137,6 +124,11 @@ class GenericFilter : protected Environment, private Uncopyable
     int mPriority;
     size_t mInstance;
     static size_t sCreatedInstances;
+
+    static struct AutoDeleteSet : public std::set<Registrar*>
+    {
+      ~AutoDeleteSet();
+    }& AutoDeleteInstance();
   };
   typedef Registrar::RegistrarSet_ RegistrarSet;
 
@@ -146,7 +138,9 @@ class GenericFilter : protected Environment, private Uncopyable
   template<typename T> class FilterRegistrar : public Registrar
   {
    public:
-    FilterRegistrar( const char* inPos, int inPriority ) : Registrar( inPos, inPriority ) {}
+    FilterRegistrar( const char* inPos, int inPriority, bool inAutoDelete = false )
+    : Registrar( inPos, inPriority, inAutoDelete )
+    {}
     virtual const std::type_info& Typeid() const
     { return typeid( T ); }
     virtual GenericFilter* NewInstance() const

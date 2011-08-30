@@ -17,7 +17,7 @@ SET( HDR_PROJECT
 )
 
 # Generate the required framework
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/BasicFramework.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 # Add in the appropriate error handling module
 SET( SRC_SHARED_BCISTREAM 
