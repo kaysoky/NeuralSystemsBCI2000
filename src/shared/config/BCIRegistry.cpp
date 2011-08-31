@@ -6,8 +6,8 @@
 //   objects registered via the macros from BCIRegistry.h.
 //
 //   During compilation, define the REGISTRY_NAME macro to the name of the
-//   desired registry function. This must match the name of the cpp file
-//   included for the actual object references.
+//   desired registry function. This must match the name of a .inc file
+//   included for actual object references.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -31,10 +31,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "BCIRegistry.h"
 
-#ifndef _MSC_VER
-# error This file is needed only when building BCI2000 libraries under MSVC.
-#endif // _MSC_VER
-
 #ifndef REGISTRY_NAME
 # error Define REGISTRY_NAME to the name of the desired registry function.
 #endif // REGISTRY_NAME
@@ -42,7 +38,7 @@
 #undef STR
 #define STR( x ) #x
 #undef INCLUDE_FILE_
-#define INCLUDE_FILE_( x ) STR( x##.inc )
+#define INCLUDE_FILE_( x ) STR( x.inc )
 #undef INCLUDE_FILE
 #define INCLUDE_FILE( x ) INCLUDE_FILE_( x )
 
@@ -57,27 +53,29 @@
 // Re-define second-level macros to create declarations of global variables.
 #undef RegisterFilter_
 #define RegisterFilter_( name, pos, priority ) \
-   extern "C" void* FilterObjectName_( name, pos, priority );
+   extern "C" int FilterObjectName_( name, pos, priority );
 
 #undef RegisterExtension_
 #define RegisterExtension_( x ) \
-   extern "C" void* ExtensionObjectName_( x );
+   extern "C" int ExtensionObjectName_( x );
 
 #include INCLUDE_FILE( REGISTRY_NAME )
 
 // Re-define second-level macros to create code referencing global variables.
 #undef RegisterFilter_
 #define RegisterFilter_( name, pos, priority ) \
-   FilterObjectName_( name, pos, priority ) = 0; // will never be executed
+   result += FilterObjectName_( name, pos, priority );
 
 #undef RegisterExtension_
 #define RegisterExtension_( x ) \
-   ExtensionObjectName_( x ) = 0; // will never be executed
+   result += ExtensionObjectName_( x );
 
 // Define a global function called REGISTRY_NAME. Force inclusion of that function
-// using MSVC's /include linker switch.
-extern "C" void REGISTRY_NAME()
+// using MSVC's /include linker switch, or gcc's -Wl,-u option
+extern "C" int REGISTRY_NAME()
 {
+  int result = 0;
 #include INCLUDE_FILE( REGISTRY_NAME )
+  return result;
 }
 

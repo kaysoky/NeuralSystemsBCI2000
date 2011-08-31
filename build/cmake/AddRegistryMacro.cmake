@@ -32,9 +32,18 @@ MACRO( BCI2000_ADD_REGISTRY NAME SOURCES DEPENDS )
       VERBATIM
     )
   ENDFOREACH()
+  ADD_CUSTOM_COMMAND( # Make sure the registry file is re-created each time the configuration has changed.
+    OUTPUT ${REGISTRY_INC}
+    DEPENDS ${CMAKE_CACHEFILE_DIR}/CMakeCache.txt
+    APPEND
+  )
 
   SET( REGISTRY_CPP
     ${BCI2000_SRC_DIR}/shared/config/BCIRegistry.cpp
+  )
+  ADD_CUSTOM_COMMAND( # Make sure BCIRegistry is re-compiled each time the registry file has changed.
+    OUTPUT ${REGISTRY_CPP}
+    DEPENDS ${REGISTRY_INC}
   )
   SET( ${SOURCES}
     ${${SOURCES}}
@@ -52,3 +61,13 @@ MACRO( BCI2000_ADD_REGISTRY NAME SOURCES DEPENDS )
   )
 
 ENDMACRO()
+
+
+MACRO( FORCE_INCLUDE_OBJECT NAME )
+  IF( MSVC )
+    SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /include:_${NAME}" )
+  ELSEIF( CMAKE_COMPILER_IS_GNUCXX )
+    SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-u_${NAME}" )
+  ENDIF()
+ENDMACRO()
+

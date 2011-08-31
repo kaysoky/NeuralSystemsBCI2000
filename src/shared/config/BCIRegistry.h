@@ -7,15 +7,16 @@
 //
 //   Basically, these macros define global instances of FilterRegistrars, or
 //   EnvironmentExtensions. When these get linked into the final executable,
-//   registrar or extension instances are then available for processing.
+//   registrar or extension instances are available for processing.
 //
-//   With MSVC, a problem arises in conjunction with static libraries because
-//   MSVC strips all unused symbols from a static library when linking to it.
-//   Thus, for MSVC static libraries we need a tool that extracts registration
-//   macros from source files, and create a registry function which is then
-//   forced into the final executable using the MSVC linker's /include switch.
+//   A problem arises in conjunction with static libraries because
+//   all unused symbols are stripped from a static library when linking to it.
+//   Thus, for static libraries we need a tool that extracts registration
+//   macros from source files, and creates a registry function which is then
+//   forced into the final executable using an apppropriate linker option
+//   (/include for MSVC, -u for LD).
 //   Compile BCIRegistry.cpp with REGISTRY_NAME set to the name of the
-//   registration function.
+//   registry function.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -68,27 +69,29 @@
 #define ExtensionObjectName_( name )             name##Instance
 
 // Define second-level macros to create definitions of global variables.
-#if( __GNUC__ ) // gcc has a "used" attribute that retains unreferenced symbols when linking.
+// We use int type and "extern C" so we need not deal with name mangling, and can reference objects
+// from a registry function without needing access to filters' header files.
+#if( __GNUC__ )
 
 # define RegisterFilter_( name, pos, priority )  \
-  GenericFilter::FilterRegistrar<name> FilterObjectName_( name, pos, priority ) __attribute__(( used )) ( #pos, priority );
+  extern "C" int FilterObjectName_( name, pos, priority ); \
+  int FilterObjectName_( name, pos, priority ) __attribute__(( used )) = (int) new GenericFilter::FilterRegistrar<name> ( #pos, priority, true );
 
 # define RegisterExtension_( x )  \
-  x ExtensionObjectName( x ) __attribute__(( used ));
+  extern "C" int ExtensionObjectName_( x ); \
+  int ExtensionObjectName_( x ) __attribute__(( used )) = (int)EnvironmentExtension::AutoDelete( new x );
 
-#elif( _MSC_VER ) // MSVC provides linker comments but these are not transitive when linking against static libraries.
-                  // We use void* type and "extern C" so we need not deal with name mangling, and can reference objects
-                  // from a Registry function without needing access to filters' header files.
+#elif( _MSC_VER )
 
 # define RegisterFilter_( name, pos, priority )  \
-   extern "C" void* FilterObjectName_( name, pos, priority ) = new GenericFilter::FilterRegistrar<name>( #pos, priority, true ); \
+   extern "C" int FilterObjectName_( name, pos, priority ) = (int) new GenericFilter::FilterRegistrar<name>( #pos, priority, true ); \
    __pragma( comment( linker, "/include:_" #name "Registrar" #priority ) )
 
 # define RegisterExtension_( x )  \
-   extern "C" void* ExtensionObjectName_( x ) = EnvironmentExtension::AutoDelete( new x ); \
+   extern "C" int ExtensionObjectName_( x ) = (int)EnvironmentExtension::AutoDelete( new x ); \
    __pragma( comment( linker, "/include:_" #x "Instance" ) )
 
-#else // __GNUC__, _MSC_VER // for other compilers, we hope they don't strip unreferenced globals
+#else // __GNUC__, _MSC_VER // for other compilers, we cannot use registration in static libraries
 
 # define RegisterFilter_( name, pos, priority )  \
   GenericFilter::FilterRegistrar<name> FilterObjectName_( name, pos, priority )( #pos, priority );

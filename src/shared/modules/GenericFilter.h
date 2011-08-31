@@ -125,10 +125,11 @@ class GenericFilter : protected Environment, private Uncopyable
     size_t mInstance;
     static size_t sCreatedInstances;
 
-    static struct AutoDeleteSet : public std::set<Registrar*>
+    struct AutoDeleteSet : public std::set<Registrar*>
     {
       ~AutoDeleteSet();
-    }& AutoDeleteInstance();
+    };
+    static AutoDeleteSet& AutoDeleteInstance();
   };
   typedef Registrar::RegistrarSet_ RegistrarSet;
 

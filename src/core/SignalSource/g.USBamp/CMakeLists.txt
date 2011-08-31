@@ -3,6 +3,9 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for gUSBampSource
 
+# Add getinfo here to avoid linker settings defined by BCI2000_ADD_SIGNAL_SOURCE_MODULE
+ADD_SUBDIRECTORY( getinfo )
+
 # Set the executable name
 SET( EXECUTABLE_NAME gUSBampSource )
 
@@ -23,5 +26,3 @@ BCI2000_ADD_SIGNAL_SOURCE_MODULE(
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
 )
-
-ADD_SUBDIRECTORY( getinfo )

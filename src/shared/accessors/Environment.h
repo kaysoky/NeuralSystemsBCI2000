@@ -450,10 +450,11 @@ class EnvironmentExtension : protected Environment
   static EnvironmentExtension* AutoDelete( EnvironmentExtension* p );
 
  private:
-  static struct AutoDeleteSet : public std::set<EnvironmentExtension*>
+  struct AutoDeleteSet : public std::set<EnvironmentExtension*>
   {
     ~AutoDeleteSet() { while( !empty() ) { delete *begin(); erase( begin() ); } }
-  }& AutoDeleteInstance();
+  };
+  static AutoDeleteSet& AutoDeleteInstance();
 };
 
 #endif // ENVIRONMENT_H

@@ -30,7 +30,7 @@ main( int argc, char* argv[] )
 
   // Do some parsing to remove comments from the input stream.
   string code;
-  int prev = EOF;
+  int prev = '\0';
   enum
   {
     readingCode,
@@ -87,7 +87,7 @@ main( int argc, char* argv[] )
        return -1;
     }
    prev = cin.get();
-  } while( prev != EOF );
+  } while( cin );
 
   // Read macro names into a set to remove duplicates.
   const string macros_[] = REGISTRY_MACROS;
