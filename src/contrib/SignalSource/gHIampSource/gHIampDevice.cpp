@@ -4,23 +4,23 @@
 // Description: A class which manages a gHIamp device
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -67,7 +67,7 @@ gHIampDevice::Cleanup()
   for( size_t i = 0; i < QUEUE_SIZE; i++ )
   {
     if( mpOverlapped ) WaitForSingleObject( mpOverlapped[i].hEvent, 1000 );
-	if( mpOverlapped ) CloseHandle( mpOverlapped[i].hEvent );
+  if( mpOverlapped ) CloseHandle( mpOverlapped[i].hEvent );
     if( mpBuffers ) delete [] mpBuffers[i];
   }
   delete [] mpBuffers; mpBuffers = NULL;
@@ -91,7 +91,11 @@ gHIampDevice::BeginAcquisition()
   for( size_t i = 0; i < QUEUE_SIZE; i++ )
   {
     mpBuffers[i] = new BYTE[ mBufferSizeBytes ];
+#ifdef __GNUC__
+    ZeroMemory( &( mpOverlapped[i] ), sizeof( OVERLAPPED ) );
+#else // __GNUC__
     SecureZeroMemory( &( mpOverlapped[i] ), sizeof( OVERLAPPED ) );
+#endif // __GNUC__
     mpOverlapped[i].hEvent = CreateEvent( NULL, false, false, NULL );
   }
 
@@ -156,12 +160,12 @@ gHIampDevice::GetData( GenericSignal &Output )
   if( !GT_GetData( mDevice, mpBuffers[mQueueIndex], mBufferSizeBytes, &mpOverlapped[mQueueIndex] ) )
     bcierr << "Unable to queue another data request for gHIamp: serial " << Serial() << endl
            << GetDeviceErrorMessage() << endl;
-			
+
   // Move to the next data request
   mQueueIndex = ( mQueueIndex + 1 ) % QUEUE_SIZE;
 }
 
-void 
+void
 gHIampDevice::EndAcquisition()
 {
   // Attempt to stop the device
@@ -173,10 +177,10 @@ gHIampDevice::EndAcquisition()
   Cleanup();
 }
 
-// Try to map numch available analog channels on this device 
+// Try to map numch available analog channels on this device
 // starting with output channel startch and return the number of
 // mapped channels
-int 
+int
 gHIampDevice::MapAllAnalogChannels( int startch, int numch )
 {
   int numMapped = 0;
@@ -193,7 +197,7 @@ gHIampDevice::MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bo
 {
   if( devicech > 256 )
   {
-    if( err ) bcierr << "Requested channel " << devicech + 1 
+    if( err ) bcierr << "Requested channel " << devicech + 1
                      << " from g.HIamp which only has 256 channels" << endl;
     return false;
   }
@@ -204,7 +208,7 @@ gHIampDevice::MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bo
   }
   if( !mConfig.Channels[devicech].Available )
   {
-    if( err ) bciout << "Channel " << devicech + 1 << " on amp: " 
+    if( err ) bciout << "Channel " << devicech + 1 << " on amp: "
                      << Serial() << " is not available." << endl;
     return false;
   }
@@ -217,7 +221,7 @@ gHIampDevice::MapDigitalChannel( unsigned int devicech, unsigned int sourcech )
 {
   if( devicech > 16 )
   {
-    bcierr << "Requested digital channel " << devicech + 1 
+    bcierr << "Requested digital channel " << devicech + 1
            << " from g.HIamp which only has 16 digital channels" << endl;
     return false;
   }
@@ -230,8 +234,8 @@ gHIampDevice::MapDigitalChannel( unsigned int devicech, unsigned int sourcech )
   return true;
 }
 
-bool gHIampDevice::SetRefChan( int devicech ) 
-{ 
+bool gHIampDevice::SetRefChan( int devicech )
+{
   if( devicech > 256 )
     return false;
   if( !mConfig.Channels[ devicech ].Available )
@@ -287,7 +291,7 @@ gHIampDevice::SetConfiguration( int iSampleRate, int iSampleBlockSize )
 // DeviceContainer
 // Purpose: This class auto-detects, opens, and closes gHIamp devices
 // **************************************************************************
-bool 
+bool
 gHIampDeviceContainer::Detect()
 {
   Close();
@@ -311,13 +315,12 @@ gHIampDeviceContainer::Close()
 }
 
 void
-gHIampDeviceContainer::Remove( gHIampDeviceContainer::iterator& itr )
+gHIampDeviceContainer::Remove( gHIampDeviceContainer::iterator itr )
 {
   if( !GT_CloseDevice( &( itr->mDevice ) ) )
       bcierr << "Could not close gHIamp device: serial " << itr->Serial() << endl
              << GetDeviceErrorMessage() << endl;
   erase( itr );
-  itr--;
 }
 
 // **************************************************************************
@@ -326,17 +329,16 @@ gHIampDeviceContainer::Remove( gHIampDeviceContainer::iterator& itr )
 // Parameters: N/A
 // Returns:    std::string formatted error
 // **************************************************************************
-string 
+string
 GetDeviceErrorMessage()
 {
   WORD errorCode = 0;
-  char errorMessage[256];
+  char errorMessage[256]; // apparently, standard array size in gHIamp.h
 
   if( !GT_GetLastError( &errorCode, errorMessage ) )
     return string( "(reason unknown: error code could not be retrieved from device)" );
 
-  char exceptionMessage[512];
-  sprintf_s( exceptionMessage, 512, "(#%d: %s)", errorCode, errorMessage );
-
-  return string( exceptionMessage );
+  ostringstream oss;
+  oss << "(#" << errorCode << ": " << errorMessage << ")";
+  return oss.str();
 }

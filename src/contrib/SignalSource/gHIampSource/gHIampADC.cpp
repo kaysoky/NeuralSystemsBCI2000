@@ -89,7 +89,7 @@ gHIampADC::gHIampADC()
     //    "0 Signal Acquisition, "
     //    "1 Calibration, "
     //    "2 Impedance "
-    //    "(enumeration)", 
+    //    "(enumeration)",
   END_PARAMETER_DEFINITIONS
 }
 
@@ -108,7 +108,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
     bcierr << "SamplingRate cannot be zero" << endl;
   bool validMode = false;
   for( size_t i = 0; i < NUM_MODES; i++ )
-    if( static_cast< int >( Parameter( "SamplingRate" ) ) == ValidRates[i] 
+    if( static_cast< int >( Parameter( "SamplingRate" ) ) == ValidRates[i]
       && static_cast< int >( Parameter( "SampleBlockSize" ) ) == ValidBlockSizes[i] )
       validMode = true;
   if( !validMode )
@@ -124,7 +124,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
   }
 
   for( size_t i = 0; i < devices.size(); i++ )
-    bcidbg( 0 ) << "g.HIamp Detected: Serial " << devices[i].Serial() 
+    bcidbg( 0 ) << "g.HIamp Detected: Serial " << devices[i].Serial()
                 << ", Hardware Version " << GT_GetHWVersion( devices[i].mDevice ) << endl;
 
   if( Parameter( "DeviceIDs" )->NumValues() == 0 )
@@ -199,7 +199,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
   int notchNo = 0;
   if( ( int )Parameter( "NotchEnabled" ) )
     if( !DetermineNotchNumber( notchNo ) )
-      bcierr << "Could not find appropriate notch filter in gHIamp." << endl; 
+      bcierr << "Could not find appropriate notch filter in gHIamp." << endl;
 
   // Seems all the requested devices are connected and detected;
   // Attempt to determine if the requested channels are valid
@@ -219,7 +219,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
     }
     if( channels != 0 )
       bcierr << "SourceCh is " << Parameter( "SourceCh" ) << ", but the sum of "
-             << "available analog channels on all connected devices is " 
+             << "available analog channels on all connected devices is "
              << Parameter( "SourceCh" ) - channels << endl;
   } else {
     if( Parameter( "SourceChList" )->NumValues() != Parameter( "SourceCh" ) )
@@ -251,7 +251,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
           if( s.IsDigital() )
           {
             if( !devices[dev].MapDigitalChannel( s.Channel(), i ) )
-              bcierr << "Error mapping digital channel " << s.Channel() 
+              bcierr << "Error mapping digital channel " << s.Channel()
                      << " on device " << devices[dev].Serial() << endl;
           } else {
             if( !devices[dev].MapAnalogChannel( s.Channel(), i ) )
@@ -279,20 +279,22 @@ gHIampADC::OnInitialize( const SignalProperties& Output )
 
   // Detect and query all connected gHIamp devices
   if( !mDevices.Detect() )
-    bcierr << "Error connecting to gHIamp devices" << endl 
+    bcierr << "Error connecting to gHIamp devices" << endl
            << "-- Was able to find devices in preflight phase, but unable to find them later" << endl;
 
   // Remove all entries in mDevices that we don't want to log from
   if( Parameter( "DeviceIDs" )(0) != "auto" )
   {
-    for( gHIampDeviceContainer::iterator itr = mDevices.begin(); itr != mDevices.end(); itr++ )
+    for( gHIampDeviceContainer::iterator itr = mDevices.begin(); itr != mDevices.end(); /* empty */ )
     {
       bool found = false;
       for( int i = 0; i < Parameter( "DeviceIDs" )->NumValues(); i++ )
         if( Parameter( "DeviceIDs" )(i) == itr->Serial() )
           found = true;
       if( !found )
-        mDevices.Remove( itr );
+        mDevices.Remove( itr++ );
+      else
+        ++itr;
     }
   }
 
