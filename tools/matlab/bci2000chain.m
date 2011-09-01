@@ -96,8 +96,14 @@ for i = 1:numel(varargin)
 	end
 	prm{end+1} = varargin{i};
 end
-verbose = ismember('-v', opts);
-if ismember('-p', opts), pretty = {'-p'}; else pretty = {}; end
+[preserve_tmpdir, opts] = getopt(opts, '-k', '--keep');
+[verbose, opts] = getopt(opts, '-v', '--verbose');
+[pretty,  opts] = getopt(opts, '-p', '--pretty');
+if pretty, pretty = {'-p'}; else pretty = {}; end
+if ~isempty(opts)
+	opts(2, :) = {' '};
+	error(['unrecognized option(s): ' opts{1:end-1}])
+end
 
 cmd = {};
 tmpdir = tempname;
@@ -234,17 +240,37 @@ if isempty(err)
 		out.States.(statenames{i}) = mat.Data(out.States.(statenames{i}), :)';
 	end
 	out.Megabytes = getfield(whos('out'), 'bytes') / 1024^2;
+else
+	preserve_tmpdir = 1;
+	out = [];
+end
+	
+if preserve_tmpdir & exist(tmpdir, 'dir')
+	a = dir(tmpdir);
+	a = sort({a(~[a.isdir]).name});
+	if ~isempty(a)
+		fprintf('The following commands should be executed to clean up the temporary files:\n');
+		for i = 1:numel(a), fprintf('    delete(''%s'')\n', fullfile(tmpdir, a{i})); end
+		fprintf('    rmdir(''%s'')\n', tmpdir);
+	end
+else
 	if exist(prmfile_in,  'file'), delete(prmfile_in),  end
 	if exist(prmfile_out, 'file'), delete(prmfile_out), end
 	if exist(bcifile,     'file'), delete(bcifile),     end
 	if exist(matfile,     'file'), delete(matfile),     end
 	if exist(tmpdir,      'dir'),  rmdir(tmpdir),       end
-else
-	out = [];
 end
 
 if nargout < 2, error(err), end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [ispresent,opts] = getopt(opts, shortform, longform)
+[ispresent(1) ind{1}] = ismember(shortform,opts);
+[ispresent(2) ind{2}] = ismember(longform,opts);
+ispresent = any(ispresent);
+rm = [ind{:}]; rm(rm == 0) = [];
+opts(rm) = [];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function p = resolve(p)

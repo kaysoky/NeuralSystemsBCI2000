@@ -2485,8 +2485,8 @@ def stfac_filters_and_patterns(u, D=None, S=None, B=None, Ss=None, St=None):
 
 
 def correlate(x, y, axis=0):
-	x = numpy.asarray(x, dtype=float)
-	y = numpy.asarray(y, dtype=float)
+	x = numpy.asarray(x, dtype=float).view()
+	y = numpy.asarray(y, dtype=float).view()
 	x.shape = list(x.shape) + [1] * (len(y.shape) - len(x.shape))
 	y.shape = list(y.shape) + [1] * (len(x.shape) - len(y.shape))
 	xm = numpy.expand_dims( x.mean(axis=axis), axis )
