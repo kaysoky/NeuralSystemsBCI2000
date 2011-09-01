@@ -62,6 +62,8 @@ MainWindow::MainWindow( QWidget* parent )
   istringstream iss( BCI2000_VERSION );
   iss >> mVersionInfo;
 
+  ReadCommandLine();
+
   if( gpPreferences == NULL )
     gpPreferences = new Preferences;
 
@@ -151,6 +153,16 @@ MainWindow::QuitOperator()
 }
 
 void
+MainWindow::ReadCommandLine()
+{
+  for( int i = 1; i < qApp->arguments().size(); ++i )
+  {
+    if( qApp->arguments().at( i ) == "--Title" && ( i + 1 ) < qApp->arguments().size() )
+      mTitle = qApp->arguments().at( i + 1 );
+  }
+}
+
+void
 MainWindow::timerEvent( QTimerEvent* inEvent )
 {
   if( inEvent->timerId() == mUpdateTimerID )
@@ -168,6 +180,11 @@ MainWindow::UpdateDisplay()
   QString windowCaption = TXT_WINDOW_CAPTION " ",
           statusText = "N/A";
   windowCaption += mVersionInfo[ "Version" ].c_str();
+  if( mTitle.length() > 0 )
+  {
+    windowCaption += " - ";
+    windowCaption += mTitle;
+  }
 
   switch( BCI_GetStateOfOperation() )
   {

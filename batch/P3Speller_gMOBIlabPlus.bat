@@ -23,7 +23,9 @@
 :: $END_BCI2000_LICENSE$
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 cd ..\prog
-start operator.exe 
+start operator.exe ^
+   --Title %~n0 ^
+   --OnConnect "-LOAD PARAMETERFILE ..\parms\fragments\amplifiers\gMOBIlab.prm"
 start gMOBIlabPlus.exe 127.0.0.1
 start P3SignalProcessing.exe 127.0.0.1
 start P3Speller.exe 127.0.0.1

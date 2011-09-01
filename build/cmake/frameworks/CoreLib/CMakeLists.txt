@@ -36,6 +36,7 @@ SET( SRC_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSEvent.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
   ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/RunnerThread.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
   ${BCI2000_SRC_DIR}/shared/utils/LogFile.h
@@ -54,6 +55,8 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/Lockable.h
   ${BCI2000_SRC_DIR}/shared/utils/Uncopyable.h
   ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.h
+  ${BCI2000_SRC_DIR}/shared/utils/Runnable.h
+  ${BCI2000_SRC_DIR}/shared/utils/RunnerThread.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
   ${BCI2000_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp

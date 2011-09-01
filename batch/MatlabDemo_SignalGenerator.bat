@@ -23,7 +23,9 @@
 :: $END_BCI2000_LICENSE$
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 cd ..\prog
-start operator.exe
+start operator.exe ^
+   --Title %~n0 ^
+   --OnConnect "-LOAD PARAMETERFILE ..\parms\fragments\amplifiers\SignalGenerator.prm"
 start SignalGenerator.exe 127.0.0.1
 start MatlabSignalProcessing.exe --MatlabWD="./matlab" 127.0.0.1
 start FeedbackDemo.exe 127.0.0.1

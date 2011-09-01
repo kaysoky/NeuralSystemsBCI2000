@@ -23,7 +23,9 @@
 :: $END_BCI2000_LICENSE$
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 cd ..\prog
-start operator.exe
+start operator.exe ^
+   --Title %~n0 ^
+   --OnConnect "-LOAD PARAMETERFILE ..\parms\fragments\amplifiers\gMOBIlab.prm"
 start gMOBIlab.exe 127.0.0.1
 start ARSignalProcessing.exe 127.0.0.1
 start CursorTask.exe 127.0.0.1

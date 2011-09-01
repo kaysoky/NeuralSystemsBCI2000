@@ -80,6 +80,7 @@ class MainWindow : public QMainWindow
   void QuitOperator();
   void Terminate();
 
+  void ReadCommandLine();
   void UpdateDisplay();
   void SetFunctionButtons();
   void ExecuteScript( const QString& );
@@ -119,6 +120,7 @@ class MainWindow : public QMainWindow
   volatile bool  mTerminating,
                  mTerminated;
   QDateTime      mStarttime;
+  QString        mTitle;
   VersionInfo    mVersionInfo;
   int            mUpdateTimerID;
 };
