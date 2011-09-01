@@ -17,14 +17,6 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 
 const char* cProgramName = "BCI2000Export";
 
-struct MainLoop
-{
-  QApplication& app;
-  int result;
-  void operator()()
-  { result = app.exec(); }
-};
-
 int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
@@ -37,9 +29,10 @@ int main(int argc, char *argv[])
 
   std::string message = "aborting ";
   message += a.applicationName().toLocal8Bit().constData();
-  MainLoop loop = { a, -1 };
-  ExceptionCatcher()
+  FunctionCall< int() >
+    call( &QApplication::exec );
+  bool finished = ExceptionCatcher()
     .SetMessage( message )
-    .Execute( loop );
-  return loop.result;
+    .Run( call );
+  return finished ? call.Result() : -1;
 }

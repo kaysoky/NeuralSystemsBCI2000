@@ -1,7 +1,13 @@
 //////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A wrapper for mutex objects.
+// Description: A class that wraps a thread, and allows clients to
+//   run code inside that thread. Unlike OSThread, which starts a new
+//   thread each time its Start() function is called, an instance of
+//   RunnerThread is bound to a single thread during its lifetime, and
+//   re-uses that thread for each call to Run(). After calling Run()
+//   for a Runnable, call Wait() to wait until execution of the
+//   Runnable has finished.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,56 +29,29 @@
 //
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
-#ifndef OS_MUTEX_H
-#define OS_MUTEX_H
+#ifndef RUNNER_THREAD_H
+#define RUNNER_THREAD_H
 
-#ifdef _WIN32
-# include <windows.h>
-#else
-# include <pthread.h>
-#endif // _WIN32
+#include "OSThread.h"
+#include "OSEvent.h"
+#include "Runnable.h"
 
-#include "Uncopyable.h"
-
-class OSMutex : private Uncopyable
+class RunnerThread : private OSThread
 {
  public:
-  OSMutex();
-  virtual ~OSMutex();
+  RunnerThread();
+  ~RunnerThread();
 
-  bool Acquire() const;
-  bool Release() const;
-
-  class Lock : private Uncopyable
-  { // A RAAI object that locks a mutex.
-   public:
-    Lock( const OSMutex& );
-    Lock( const OSMutex* );
-    ~Lock();
-
-   private:
-    void DoAcquire();
-    const OSMutex* mpMutex;
-  };
-
-  class Unlock : private Uncopyable
-  { // A RAAI object that unlocks a mutex.
-   public:
-    Unlock( const OSMutex& );
-    Unlock( const OSMutex* );
-    ~Unlock();
-
-   private:
-    void DoRelease();
-    const OSMutex* mpMutex;
-  };
+  bool Run( Runnable& );
+  bool Busy() const;
+  bool Wait( int timeout = OSEvent::cInfiniteTimeout );
 
  private:
-#ifdef _WIN32
-  HANDLE mHandle;
-#else // _WIN32
-	mutable pthread_mutex_t mMutex;
-#endif // _WIN32
+  int Execute(); // overridden from OSThread
+
+  OSEvent mStartEvent,
+          mFinishedEvent;
+  Runnable* volatile mpRunnable;
 };
 
-#endif // OS_THREAD_H
+#endif // RUNNER_THREAD_H

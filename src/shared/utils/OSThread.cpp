@@ -164,11 +164,11 @@ OSThread::TerminateWait( int inTimeout )
 int
 OSThread::CallExecute()
 {
-  FunctionCall functionCall = { this, &OSThread::Execute, 0 };
+  MemberCall<int(OSThread*)> call( &OSThread::Execute, this );
   ExceptionCatcher()
     .SetMessage( "canceling thread of type " + bci::ClassName( typeid( *this ) ) )
-    .Execute( functionCall );
-  return functionCall.result;
+    .Run( call );
+  return call.Result();
 }
 
 

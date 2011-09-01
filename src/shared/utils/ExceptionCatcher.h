@@ -2,19 +2,19 @@
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A class that simplifies high-level exception catching.
-//   Call its Execute() function with a functor as argument in order
-//   to execute the functor in a try block, catching exceptions that
-//   occur during execution of the functor.
+//   Call its Run() function with a Runnable as argument in order
+//   to execute the Runnable in a try block, catching exceptions that
+//   occur during execution of the Runnable.
 //
 //   struct
 //   {
 //     int arg;
 //     int result;
-//     void operator()()
+//     void OnRun()
 //     { result = SomeFunction( arg ); }
-//   } functor = { arg, -1 };
+//   } runnable = { arg, -1 };
 //   ExceptionCatcher().SetMessage( "aborting" )
-//                      Execute( functor );
+//                      Run( runnable );
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -40,13 +40,13 @@
 #define EXCEPTION_CATCHER_H
 
 #include <string>
+#include "Runnable.h"
 
 class ExceptionCatcher
 {
  public:
-  // Call the Execute function with a nullary functor as an argument.
-  // Returns true when execution finished normally, false when an exception was caught.
-  template <typename T> bool Execute( T& );
+  // Run() returns true when execution finished normally, false when an exception was caught.
+  bool Run( Runnable& );
   // The Message property is a string that is appended when reporting an error.
   ExceptionCatcher&  SetMessage( const std::string& inMessage )
                      { mMessage = inMessage; return *this; }
@@ -54,13 +54,7 @@ class ExceptionCatcher
                      { return mMessage; }
 
  private:
-  struct Fn
-  {
-    virtual ~Fn() {}
-    virtual void Execute() = 0;
-  };
-  bool DoExecute1( Fn& );
-  bool DoExecute2( Fn& );
+  bool Run2( Runnable& );
 #if _MSC_VER
   void ReportWin32Exception( int code );
 #endif // _MSC_VER
@@ -68,19 +62,5 @@ class ExceptionCatcher
  private:
   std::string mMessage;
 };
-
-template <typename T>
-bool
-ExceptionCatcher::Execute( T& inFunctor )
-{
-  struct : Fn
-  {
-    T* pFunctor;
-    virtual void Execute()
-    { ( *pFunctor )(); }
-  } fn;
-  fn.pFunctor = &inFunctor;
-  return DoExecute1( fn );
-}
 
 #endif // EXCEPTION_CATCHER_H

@@ -39,6 +39,8 @@
 
 using namespace std;
 
+void MainLoop( QApplication&, MainWindow& );
+
 #ifdef _WIN32
 # include <Windows.h>
 
@@ -50,13 +52,6 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
   return main( __argc, __argv );
 }
 #endif // _WIN32
-
-struct MainLoop
-{
-  QApplication& a;
-  MainWindow& w;
-  void operator()();
-};
 
 int
 main(int argc, char *argv[])
@@ -86,10 +81,11 @@ main(int argc, char *argv[])
   VisDisplay::SetParentWindow( &w );
   w.show();
 
-  MainLoop loop = { a, w };
+  FunctionCall< void( QApplication&, MainWindow& ) >
+    call( MainLoop, a, w );
   ExceptionCatcher()
     .SetMessage( "terminating Operator module" )
-    .Execute( loop );
+    .Run( call );
 #ifdef _WIN32
   ::ReleaseMutex( appMutex );
   ::CloseHandle( appMutex );
@@ -97,9 +93,8 @@ main(int argc, char *argv[])
   return 0;
 }
 
-
 void
-MainLoop::operator()()
+MainLoop( QApplication& a, MainWindow& w )
 {
   while( !w.Terminating() )
   { // We use our own event loop to allow for processing pending

@@ -95,24 +95,20 @@ CoreModule::~CoreModule()
 }
 
 void
-CoreModule::MainLoop::operator()()
+CoreModule::DoRun( int inArgc, char** inArgv )
 {
-  if( mpObj->Initialize( mArgc, mArgv ) )
-    mpObj->MainMessageLoop();
+  if( Initialize( inArgc, inArgv ) )
+    MainMessageLoop();
 }
 
 bool
 CoreModule::Run( int inArgc, char** inArgv )
 {
-  MainLoop loop =
-  {
-    inArgc,
-    inArgv,
-    this
-  };
+  MemberCall< void( CoreModule*, int, char** ) >
+    call( &CoreModule::DoRun, this, inArgc, inArgv );
   ExceptionCatcher()
     .SetMessage( "terminating " THISMODULE " module" )
-    .Execute( loop );
+    .Run( call );
   ShutdownSystem();
   return ( bcierr__.Flushes() == 0 );
 }

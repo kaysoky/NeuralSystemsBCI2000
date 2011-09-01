@@ -37,23 +37,18 @@
 
 using namespace std;
 
-void
-ExceptionCatcher::Fn::Execute()
-{
-}
-
 bool
-ExceptionCatcher::DoExecute1( Fn& inFn )
+ExceptionCatcher::Run( Runnable& inRunnable )
 {
   // This function catches Win32 "structured" exceptions.
   // Handling of those cannot coexist with C++ exception handling in the same function,
-  // so we need another function DoExecute2() that handles C++ exceptions.
+  // so we need another function Run2() that handles C++ exceptions.
   bool result = false;
 #if _MSC_VER
   __try
 #endif // _MSC_VER
   {
-    result = DoExecute2( inFn );
+    result = Run2( inRunnable );
   }
 #if _MSC_VER
   // For breakpoint exceptions, we want to execute the default handler (which opens the debugger).
@@ -66,13 +61,13 @@ ExceptionCatcher::DoExecute1( Fn& inFn )
 }
 
 bool
-ExceptionCatcher::DoExecute2( Fn& inFn )
+ExceptionCatcher::Run2( Runnable& inRunnable )
 {
   // This function handles C++ exceptions.
   bool result = false;
   try
   {
-    inFn.Execute();
+    inRunnable.Run();
     result = true;
   }
   catch( const BCIException& e )

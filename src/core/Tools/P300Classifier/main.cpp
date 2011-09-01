@@ -15,31 +15,23 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 }
 #endif // _WIN32
 
-struct MainLoop
-{
-  QApplication& app;
-  int argc;
-  char** argv;
-  int result;
-
-  void operator()();
-};
-
+int P300ClassifierMain( int, char **, QApplication& );
 
 int main(int argc, char *argv[])
 {
   Q_INIT_RESOURCE(configdialog);
 
   QApplication app(argc, argv);
-  MainLoop loop = { app, argc, argv, -1 };
-  ExceptionCatcher()
+  FunctionCall< int( int, char**, QApplication& ) >
+    call( P300ClassifierMain, argc, argv, app );
+  bool finished = ExceptionCatcher()
     .SetMessage( "aborting" )
-    .Execute( loop );
-  return loop.result;
+    .Run( call );
+  return finished ? call.Result() : -1;
 }
 
-void
-MainLoop::operator()()
+int
+P300ClassifierMain( int argc, char **argv, QApplication& app )
 {
   ConfigDialog dialog;
 
@@ -98,5 +90,5 @@ MainLoop::operator()()
 
   dialog.SetFiles(arg_TrainingDataFilesList, arg_TestingDataFilesList, arg_inicfg, barg_TrainingDataFiles);
 
-  result = dialog.exec();
+  return dialog.exec();
 }
