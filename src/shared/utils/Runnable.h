@@ -117,7 +117,7 @@ template<typename R> class FunctionCall< R() > : public Runnable, public Functio
  public:
   FunctionCall( R (*f)() ) : f(f) {}
  private:
-  void OnRun() { r = f(); }
+  void OnRun() { FunctionResult_<R>::r = f(); }
   R (*f)();
 };
 template<typename R, typename T1> class FunctionCall< R(T1) > : public Runnable, public FunctionResult_<R>
@@ -125,7 +125,7 @@ template<typename R, typename T1> class FunctionCall< R(T1) > : public Runnable,
  public:
   FunctionCall( R (*f)(T1), T1 t1 ) : f(f), t1(t1) {}
  private:
-  void OnRun() { r = f(t1); }
+  void OnRun() { FunctionResult_<R>::r = f(t1); }
   R (*f)(T1);
   T1 t1;
 };
@@ -134,7 +134,7 @@ template<typename R, typename T1, typename T2> class FunctionCall< R(T1,T2) > : 
  public:
   FunctionCall( R (*f)(T1,T2), T1 t1, T2 t2 ) : f(f), t1(t1), t2(t2) {}
  private:
-  void OnRun() { r = f(t1,t2); }
+  void OnRun() { FunctionResult_<R>::r = f(t1,t2); }
   R (*f)(T1,T2);
   T1 t1;
   T2 t2;
@@ -144,7 +144,7 @@ template<typename R, typename T1, typename T2, typename T3> class FunctionCall< 
  public:
   FunctionCall( R (*f)(T1,T2,T3), T1 t1, T2 t2, T3 t3 ) : f(f), t1(t1), t2(t2),t3(t3) {}
  private:
-  void OnRun() { r = f(t1,t2,t3); }
+  void OnRun() { FunctionResult_<R>::r = f(t1,t2,t3); }
   R (*f)(T1,T2,T3);
   T1 t1;
   T2 t2;
@@ -208,7 +208,7 @@ template<typename R, class C> class MemberCall< R(C*) > : public Runnable, publi
  public:
   MemberCall( R (C::*f)(), C* c ) : f(f), c(c) {}
  private:
-  void OnRun() { r = (c->*f)(); }
+  void OnRun() { FunctionResult_<R>::r = (c->*f)(); }
   R (C::*f)();
   C* c;
 };
@@ -217,7 +217,7 @@ template<typename R, class C, typename T1> class MemberCall< R(C*,T1) > : public
  public:
   MemberCall( R (C::*f)(T1), C* c, T1 t1 ) : f(f), c(c), t1(t1) {}
  private:
-  void OnRun() { r = (c->*f)(t1); }
+  void OnRun() { FunctionResult_<R>::r = (c->*f)(t1); }
   R (C::*f)(T1);
   C* c;
   T1 t1;
@@ -227,7 +227,7 @@ template<typename R, class C, typename T1, typename T2> class MemberCall< R(C*,T
  public:
   MemberCall( R (C::*f)(T1,T2), C* c, T1 t1, T2 t2 ) : f(f), c(c), t1(t1), t2(t2) {}
  private:
-  void OnRun() { r = (c->*f)(t1,t2); }
+  void OnRun() { FunctionResult_<R>::r = (c->*f)(t1,t2); }
   R (C::*f)(T1,T2);
   C* c;
   T1 t1;
@@ -238,7 +238,7 @@ template<typename R, class C, typename T1, typename T2, typename T3> class Membe
  public:
   MemberCall( R (C::*f)(T1,T2,T3), C* c, T1 t1, T2 t2, T3 t3 ) : f(f), c(c), t1(t1), t2(t2), t3(t3) {}
  private:
-  void OnRun() { r = (c->*f)(t1,t2,t3); }
+  void OnRun() { FunctionResult_<R>::r = (c->*f)(t1,t2,t3); }
   R (C::*f)(T1,T2,T3);
   C* c;
   T1 t1;
