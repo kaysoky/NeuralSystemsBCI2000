@@ -39,4 +39,4 @@ function result = convert_bciprm( varargin )
 %  This is a help file documenting the functionality contained in
 %  convert_bciprm.mex.
 %  $Id$
-error( 'There is no convert_bciprm mex file for your platform available.' );
+missing_mex_file;

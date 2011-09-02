@@ -72,4 +72,4 @@ function [ signal, states, parameters, total_samples ] = load_bcidat( varargin )
 %  load_bcimat.mex.
 %  $Id$
 %
-error( 'There is no load_bcidat mex file for your platform available.' );
+missing_mex_file;
