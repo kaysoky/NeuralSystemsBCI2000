@@ -58,7 +58,7 @@ MakeDirectory( string x )
 
 string
 StandardizePath( string x )
-{ // change all occurrences of either '\\' or '/' into the variant appropriate for the current platform, and eliminate multiple slashes (exception: allow Windows-style double slashes at the beginning of a path)
+{ // change all occurrences of either '\\' or '/' into the variant appropriate for the current platform, and eliminate multiple slashes (exception to allow for Samba paths: allow double backslashes at the beginning of a path on Windows)
 	string y;
 	bool ignore = false;
 	for( unsigned int i = 0; i < x.size(); i++)
@@ -67,8 +67,12 @@ StandardizePath( string x )
 		if( c == '\\' || c == '/' )
 		{
 			if( i == x.size() - 1 ) break;
-			if( !ignore ) y += gFileSeparator;	
+			if( !ignore ) y += gFileSeparator;
+#ifdef _WIN32
 			ignore = ( y.size() > 1 );
+#else
+			ignore = true;
+#endif
 		}
 		else
 		{
@@ -640,6 +644,6 @@ int main( int argc, const char* argv[] )
 	result = MAIN_FUNCTION( (argc>1?argv[1]:""), (argc>2?argv[2]:""), (argc>3?argv[3]:""), (argc>4?"x":"") );
 #ifdef _WIN32 // here be lameness
 	if( WAIT_AT_END ) { cout << endl; system( "pause" ); }
-	return result;
 #endif
+	return result;
 }

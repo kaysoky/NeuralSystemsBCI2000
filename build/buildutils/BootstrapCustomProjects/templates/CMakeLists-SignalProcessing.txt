@@ -32,7 +32,7 @@ BCI2000_ADD_SIGNAL_PROCESSING_MODULE(
 # You may also find it useful to produce a command-line version of your filters, for offline processing:
 # BCI2000_ADD_CMDLINE_FILTER( MyNewCustomFilter )
 # BCI2000_ADD_CMDLINE_FILTER( MyOtherCustomFilter   # a more complicated example, with dependencies
-#                             INCLUDING "MATLAB"
-#                             EXTRA_SOURCES ${BCI2000_SRC_DIR}/core/SignalProcessing/Matlab/MatlabWrapper.cpp
-#                             EXTRA_HEADERS ${BCI2000_SRC_DIR}/core/SignalProcessing/Matlab/MatlabWrapper.h
+#                             INCLUDING "MATLAB"    # names of suites that BCI2000_INCLUDE can access
+#                             EXTRA_SOURCES SomeOtherCPlusPlusFile.cpp
+#                             EXTRA_HEADERS SomeOtherCPlusPlusFile.h  ../And/Yet/Another/Header.h
 #                           )

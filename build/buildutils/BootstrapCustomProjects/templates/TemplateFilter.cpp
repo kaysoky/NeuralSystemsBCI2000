@@ -40,7 +40,7 @@ RegisterFilter( `, 2.X );
      // sorted into the chain. By convention:
      //  - filter locations within SignalSource modules begin with "1."
      //  - filter locations witin SignalProcessing modules begin with "2."  
-     //       (NB: SignalProcessing modules must specify this with a Filter() command in their PipeDefinition.cpp file too)
+     //       (NB: Filter() commands in a separate PipeDefinition.cpp file may override the default location set here with RegisterFilter)
      //  - filter locations within Application modules begin with "3."
 
 
@@ -163,7 +163,7 @@ void
 `::StopRun()
 {
   // The Running state has been set to 0, either because the user has pressed "Suspend",
-  // because the run has reached its natural end.
+  // or because the run has reached its natural end.
   bciout << "Goodbye World." << endl;
   // You know, you can delete methods if you're not using them.
   // Remove the corresponding declaration from `.h too, if so.

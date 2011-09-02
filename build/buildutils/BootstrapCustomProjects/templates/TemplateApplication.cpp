@@ -141,7 +141,7 @@ void
 `::StopRun()
 {
   // The Running state has been set to 0, either because the user has pressed "Suspend",
-  // because the run has reached its natural end.
+  // or because the run has reached its natural end.
   bciout << "Goodbye World." << endl;
   // You know, you can delete methods if you're not using them.
   // Remove the corresponding declaration from `.h too, if so.

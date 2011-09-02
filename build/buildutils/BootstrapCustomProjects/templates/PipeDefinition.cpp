@@ -32,12 +32,16 @@
 // applied. Each Filter() entry consists of the name of a filter and a location token:
 // the BCI2000 framework will then determine the order of the filters by string-sorting
 // these location tokens.  By convention:
- //  - filters locations for SignalSource modules begin with "1."
- //  - filters locations for SignalProcessing modules begin with "2."  
- //       (but the order is often explicitly re-defined in a PipeDefinition.cpp file)
- //  - filters locations Application modules begin with "3."
+//   - filters locations for SignalSource modules begin with "1."
+//   - filters locations for SignalProcessing modules begin with "2."  
+//   - filters locations Application modules begin with "3."
+// 
+// Locations defined here using the Filter() macro override the defaults set by
+// RegisterFilter() in the individual filters' implementation files.
 
-// Uncomment/add the lines for the filters you need
+
+
+// Uncomment/add the lines for the filters you need:
 
 //#include "SpatialFilter.h"
 //Filter( SpatialFilter, 2.B );
