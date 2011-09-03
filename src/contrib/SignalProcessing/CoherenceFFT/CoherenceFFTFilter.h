@@ -30,6 +30,6 @@
 #include "CoherenceFilter.h"
 #include "FFTFilter.h"
 
-typedef ParallelCombination<CoherenceFilter, FFTFilter> CoherenceFFTFilter;
+typedef ParallelCombination<FFTFilter, CoherenceFilter> CoherenceFFTFilter;
 
 #endif // COHERENCE_FFT_FILTER_H
