@@ -30,6 +30,8 @@
 #include "OperatorUtils.h"
 #include <QtGui>
 
+static const int cTextMargin = 2;
+
 ShowParameters::ShowParameters( QWidget* parent, const ParamList& paramlist, int filtertype )
 : QDialog(parent),
   m_ui(new Ui::ShowParameters),
@@ -45,6 +47,8 @@ ShowParameters::ShowParameters( QWidget* parent, const ParamList& paramlist, int
 #endif // Q_WS_MAC
 
   connect( this, SIGNAL(finished(int)), this, SLOT(OnClose()) );
+  connect( m_ui->treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem*)), this, SLOT(OnExpandCollapse()) );
+  connect( m_ui->treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), this, SLOT(OnExpandCollapse()) );
   switch( mFilterType )
   {
     case OperatorUtils::loadFilter:
@@ -78,24 +82,68 @@ ShowParameters::changeEvent( QEvent* e )
 void
 ShowParameters::OnShow()
 {
-  m_ui->listWidget->clear();
+  m_ui->treeWidget->clear();
   for( int i = 0; i < mrParamList.Size(); ++i )
   {
-    QListWidgetItem* item = new QListWidgetItem;
-    const char* name = mrParamList[ i ].Name().c_str();
-    item->setText( name );
-    item->setFlags( item->flags() | Qt::ItemIsUserCheckable );
-    item->setCheckState( OperatorUtils::GetFilterStatus( name, mFilterType ) ? Qt::Checked : Qt::Unchecked );
-    m_ui->listWidget->addItem( item );
+    const HierarchicalLabel& path = mrParamList[i].Sections();
+    QTreeWidgetItem* pParent = m_ui->treeWidget->invisibleRootItem();
+    for( HierarchicalLabel::const_iterator j = path.begin(); j != path.end(); ++j )
+    {
+      int c = 0;
+      while( c < pParent->childCount() )
+      {
+        if( pParent->child( c )->text( 0 ) == j->c_str() )
+          break;
+        else
+          ++c;
+      }
+      if( c < pParent->childCount() )
+      {
+        pParent = pParent->child( c );
+      }
+      else
+      {
+        pParent = new QTreeWidgetItem( pParent, QStringList( j->c_str() ) );
+        pParent->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsTristate | Qt::ItemIsEnabled );
+        pParent->setCheckState( 0, Qt::PartiallyChecked );
+        AdjustSize( pParent, cTextMargin );
+      }
+    }
+
+    const char* pName = mrParamList[i].Name().c_str();
+    QTreeWidgetItem* pItem = new QTreeWidgetItem( pParent, QStringList( pName ) );
+    pItem->setToolTip( 0, QString::fromLocal8Bit( mrParamList[i].Comment().c_str() ) );
+    pItem->setWhatsThis( 0, pItem->toolTip( 0 ) );
+    pItem->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled );
+    pItem->setCheckState( 0, OperatorUtils::GetFilterStatus( pName, mFilterType ) ? Qt::Checked : Qt::Unchecked );
+    AdjustSize( pItem, cTextMargin );
   }
+
+  m_ui->treeWidget->resizeColumnToContents( 0 );
 }
 
 void
 ShowParameters::OnClose()
 {
-  for( int i = 0; i < m_ui->listWidget->count(); ++i )
+  for( QTreeWidgetItemIterator i( m_ui->treeWidget, QTreeWidgetItemIterator::NoChildren ); *i != NULL; ++i )
+    OperatorUtils::SetFilterStatus( (*i)->text( 0 ).toAscii(), mFilterType, (*i)->checkState( 0 ) == Qt::Checked );
+}
+
+void
+ShowParameters::OnExpandCollapse()
+{
+  m_ui->treeWidget->resizeColumnToContents( 0 );
+}
+
+void
+ShowParameters::AdjustSize( QTreeWidgetItem* inpItem, int inMargin )
+{
+  for( int i = 0; i < inpItem->columnCount(); ++i )
   {
-    QListWidgetItem* item = m_ui->listWidget->item( i );
-    OperatorUtils::SetFilterStatus( item->text().toAscii(), mFilterType, item->checkState() == Qt::Checked );
+    QRect r = QFontMetrics( inpItem->font( i ) ).boundingRect( inpItem->text( i ) );
+    r.adjust( -inMargin, -inMargin, inMargin, inMargin );
+    inpItem->setSizeHint( i, r.size() );
   }
 }
+
+

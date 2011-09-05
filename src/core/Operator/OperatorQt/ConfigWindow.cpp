@@ -47,8 +47,6 @@ using namespace std;
 
 ConfigWindow* gpConfig = NULL;
 
-static QDir sLastPath;
-
 ConfigWindow::ConfigWindow(QWidget *parent)
 : QDialog(parent),
   m_ui(new Ui::ConfigWindow),
@@ -65,6 +63,7 @@ ConfigWindow::ConfigWindow(QWidget *parent)
   OperatorUtils::RestoreWidget( this );
   if( ExecutableHelp().ParamHelp().Empty() )
     m_ui->bHelp->setVisible( false );
+  mOriginalTitle = this->windowTitle();
 }
 
 ConfigWindow::~ConfigWindow()
@@ -319,7 +318,9 @@ ConfigWindow::OnSaveParametersClick()
         paramsToSave.Add( ( *mpParameters )[ i ] );
 
     bool result = paramsToSave.Save( fileName.toAscii().data() );
-    if( !result )
+    if( result )
+      this->setWindowTitle( mOriginalTitle + tr(" - wrote %1").arg( fileName ) );
+    else
       QMessageBox::critical( this, tr("Error"), tr("Error writing parameter file") );
   }
 }
@@ -375,9 +376,14 @@ ConfigWindow::OnLoadParametersClick()
     UpdateParameters();
     bool result = LoadParameters( fileName );
     if( !result )
+    {
       QMessageBox::critical( this, tr("Error"), tr("Error reading parameter file") );
+    }
     else
+    {
+      this->setWindowTitle( mOriginalTitle + tr(" - read %1").arg( fileName ) );
       RenderParameters( mCurTab );
+    }
   }
 }
 

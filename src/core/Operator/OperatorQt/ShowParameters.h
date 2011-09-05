@@ -49,8 +49,11 @@ class ShowParameters : public QDialog
  private slots:
   void OnShow();
   void OnClose();
+  void OnExpandCollapse();
 
  private:
+  static void AdjustSize( class QTreeWidgetItem*, int margin );
+
   Ui::ShowParameters* m_ui;
   const ParamList&    mrParamList;
   int                 mFilterType;

@@ -85,6 +85,7 @@ class ConfigWindow : public QDialog
   DisplayContainer mParamDisplays;
   std::string      mCurTab;
   bool             mUserSwitchedTabs;
+  QString          mOriginalTitle;
 };
 
 extern ConfigWindow* gpConfig;
