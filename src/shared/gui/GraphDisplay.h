@@ -32,7 +32,7 @@
 
 #include "Color.h"
 #include <set>
-#include <queue>
+#include <list>
 #ifdef _WIN32
 # include "windows.h"
 #endif
@@ -48,7 +48,13 @@ class BitmapImage;
 namespace GUI {
 
 typedef std::set<GraphObject*>   SetOfGraphObjects;
-typedef std::queue<GraphObject*> QueueOfGraphObjects;
+struct QueueOfGraphObjects : public std::list<GraphObject*>
+{
+  void pop()
+    { pop_front(); }
+  void push( GraphObject* p )
+    { push_back( p ); }
+};
 
 class GraphDisplay : private Uncopyable
 {
@@ -81,8 +87,7 @@ class GraphDisplay : private Uncopyable
   // a GraphObject's display reference, and the display it is attached to.
   GraphDisplay& Add( GraphObject* obj )
     { mObjects.insert( obj ); return *this; }
-  GraphDisplay& Remove( GraphObject* obj )
-    { obj->Invalidate(); mObjects.erase( obj ); return *this; }
+  GraphDisplay& Remove( GraphObject* );
 
 public:
   GraphDisplay& DeleteObjects()

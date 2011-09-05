@@ -379,11 +379,17 @@ void
 P3SpellerTask::OnStartRun()
 {
   // Non-summary file
+  Display().ClearClicks();
   if( mInterpretMode_ == InterpretModes::Copy )
     ClearTextHistory();
   InitSequence();
   DetermineAttendedTarget();
   DisplayMessage( LocalizableString( "Waiting to start ..." ) );
+
+  mNumSelections = 0;
+  mSleepDuration = 0;
+  mSleepMode = dontSleep;
+  mPaused = false;
 
   // Summary file
   mSummaryFile << "System ID = "  << OptionalParameter( "ID_System", "N/A" )  << '\t'
@@ -448,11 +454,6 @@ P3SpellerTask::OnStartRun()
                  << MenuCols( i ) << '\n';
 
   mSelectionSummary.str() = "Selections in this run:\n";
-
-  mNumSelections = 0;
-  mSleepDuration = 0;
-  mSleepMode = dontSleep;
-  mPaused = false;
 }
 
 void

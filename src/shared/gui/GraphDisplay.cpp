@@ -82,6 +82,16 @@ GraphDisplay::Update() const
   return *this;
 }
 
+GraphDisplay&
+GraphDisplay::Remove( GraphObject* inObj )
+{
+  inObj->Invalidate();
+  mObjects.erase( inObj );
+  mObjectsClicked.remove( inObj );
+  return *this;
+}
+
+
 void
 GraphDisplay::Change()
 {
