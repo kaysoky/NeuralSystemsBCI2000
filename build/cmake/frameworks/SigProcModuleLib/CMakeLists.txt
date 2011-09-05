@@ -38,7 +38,7 @@ SET( SIGPROCHEADERS
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARGroup.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARChannel.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/P3TemporalFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/P3TemporalFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LinearClassifier.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LPFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ExpressionFilter.h
