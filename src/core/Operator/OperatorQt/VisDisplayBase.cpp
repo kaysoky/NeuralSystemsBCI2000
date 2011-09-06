@@ -105,11 +105,11 @@ VisDisplayBase::ConfigContainer::Restore()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-VisDisplayBase::VisDisplayBase( const std::string& inVisID )
+VisDisplayBase::VisDisplayBase( const VisID& inVisID )
 : QWidget( NULL ),
   mVisID( inVisID )
 {
-  if( mVisID != mVisID.WindowID() )
+  if( mVisID.RefersLayer() )
   {
     if( !Visuals()[ mVisID.WindowID() ] )
       new VisDisplayWindow( mVisID.WindowID() );

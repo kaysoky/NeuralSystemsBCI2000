@@ -29,6 +29,7 @@
 
 #include "VisDisplay.h"
 
+#include "VisID.h"
 #include <QWidget>
 #include <map>
 #include <string>
@@ -53,7 +54,7 @@ class VisDisplayBase : public QWidget
   } ConfigState;
 
  protected:
-  VisDisplayBase( const std::string& inVisID );
+  VisDisplayBase( const VisID& inVisID );
  public:
   virtual ~VisDisplayBase();
 
@@ -68,18 +69,10 @@ class VisDisplayBase : public QWidget
   virtual void Save() const;
 
  protected:
-  class VisID : public std::string
-  {
-   public:
-    VisID( const std::string& id ) : std::string( id ) { }
-    std::string LayerID() { return substr( find( ":" ) ).substr( 1 ); }
-    std::string WindowID() { return substr( 0, find( ":" ) ); }
-    std::string DominatingLayerVisID() { return substr( 0, find( ":" ) + 1 ); }
-  } mVisID;
+  VisID mVisID;
 
   // visID->display instance
-  // TODO: VisContainerBase should be a map of < VisID, VisDisplayBase* >
-  typedef std::map< std::string, VisDisplayBase* > VisContainerBase;
+  typedef std::map< VisID, VisDisplayBase* > VisContainerBase;
   class VisContainer : public VisContainerBase
   {
      public:

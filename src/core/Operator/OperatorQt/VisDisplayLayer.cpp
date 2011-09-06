@@ -27,7 +27,9 @@
 #pragma hdrstop
 
 #include "VisDisplayLayer.h"
+#include "BCIAssert.h"
 #include <QLayout>
+#include <map>
 
 using namespace std;
 
@@ -39,13 +41,22 @@ VisDisplayLayer::VisDisplayLayer( const std::string& inVisID )
   this->parentWidget()->layout()->addWidget( this );
   SetConfig( Visconfigs()[ mVisID ] );
 
-  // Sort sibling layers
-  VisContainerBase layers;
-  for( VisContainerBase::iterator vitr = Visuals().begin(); vitr != Visuals().end(); vitr++ )
-    if( vitr->first.find( mVisID.DominatingLayerVisID() ) != string::npos )
-      layers[ VisID( vitr->first ).LayerID() ] = vitr->second;
-  for( VisContainerBase::iterator sitr = layers.begin(); sitr != layers.end(); sitr++ )
-    if( sitr->second ) sitr->second->raise();
+  // Arrange sibling layers according to their layer IDs.
+  typedef map<string, VisDisplayLayer*> LayerMap;
+  LayerMap layers;
+  const QObjectList& children = this->parentWidget()->children();
+  for( QObjectList::const_iterator i = children.begin(); i != children.end(); ++i )
+  {
+    VisDisplayLayer* pLayer = dynamic_cast<VisDisplayLayer*>( *i );
+    if( pLayer != NULL )
+      layers[pLayer->LayerID()] = pLayer;
+  }
+  // The dominating layer has an empty layer ID, and will be first in sorting order.
+  for( LayerMap::iterator i = layers.begin(); i != layers.end(); ++i )
+    i->second->raise();
+  // The bottom layer should get keyboard focus.
+  bciassert( !layers.empty() );
+  layers.begin()->second->setFocus();
 }
 
 VisDisplayLayer::~VisDisplayLayer()

@@ -29,7 +29,8 @@
 
 #include "BCIException.h"
 
-#define bciassert(x) { if( !(bci::id_(x)) ) throw bciexception( "Assertion failed: " << #x ); }
+#define bciassert(x) { if( !bci::id_(x) ) throw bciexception( "Assertion failed: " << #x << "\n" ); }
+
 namespace bci
 { // The id_() function is there to avoid "condition is always false" and 
   // "unreachable code" compiler warnings.

@@ -37,13 +37,37 @@
 #include <exception>
 #include <sstream>
 
-#ifdef _MSC_VER
-# define EXCEPTION_CONTEXT_   __FUNCTION__
-#else
-# define EXCEPTION_CONTEXT_   __FUNC__
-#endif // _MSC_VER
+#define STR_(x) STR__(x)
+#define STR__(x) #x
 
-#define bciexception(x) BCIException( std::ostringstream() << EXCEPTION_CONTEXT_ << ": " << x )
+#ifndef __FUNC__
+# ifdef __FUNCTION__
+#  define __FUNC__   __FUNCTION__
+# elif defined( __PRETTY_FUNCTION__ )
+#  define __FUNC__   __PRETTY_FUNCTION__
+# elif defined( __func__ )
+#  define __FUNC__   __func__
+# endif
+#endif // __FUNC__
+
+#define FILE_CONTEXT_ \
+     "\nFile: " << __FILE__ \
+  << "\nLine: " << STR_( __LINE__ )
+
+#ifdef __FUNC__
+# define EXCEPTION_CONTEXT_ \
+     "\nFunction: " << __FUNC__ << "()" \
+  << FILE_CONTEXT_
+#else // __FUNC__
+# define EXCEPTION_CONTEXT_  FILE_CONTEXT_
+#endif // __FUNC__
+
+// Due to the use of a temporary, we need to use an inserter that's implemented as an ostream member first.
+// Especially, std::operator<<( ostream&, const char* ) cannot be used as an initial inserter because its
+// first argument (reference) cannot be initialized with a temporary. Thus, the expression gets resolved to
+// std::ostream::operator<<( void* ), and the address of the string literal is inserted into the stream
+// rather than the string itself.
+#define bciexception(x) BCIException( std::ostringstream() << std::flush << x << EXCEPTION_CONTEXT_ )
 
 class BCIException : public std::exception
 {

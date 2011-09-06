@@ -6,16 +6,6 @@
 //   to execute the Runnable in a try block, catching exceptions that
 //   occur during execution of the Runnable.
 //
-//   struct
-//   {
-//     int arg;
-//     int result;
-//     void OnRun()
-//     { result = SomeFunction( arg ); }
-//   } runnable = { arg, -1 };
-//   ExceptionCatcher().SetMessage( "aborting" )
-//                      Run( runnable );
-//
 // $BEGIN_BCI2000_LICENSE$
 //
 // This file is part of BCI2000, a platform for real-time bio-signal research.
@@ -58,6 +48,7 @@ class ExceptionCatcher
 #if _MSC_VER
   void ReportWin32Exception( int code );
 #endif // _MSC_VER
+  std::string UserMessage() const;
 
  private:
   std::string mMessage;

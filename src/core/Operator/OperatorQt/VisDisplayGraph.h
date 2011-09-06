@@ -170,6 +170,7 @@ class VisDisplayGraph : public VisDisplayLayer
 
  private:
   void SyncDisplay();
+
  protected:
   // Qt event handlers
   void paintEvent( QPaintEvent* );

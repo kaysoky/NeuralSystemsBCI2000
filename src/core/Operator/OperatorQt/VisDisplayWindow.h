@@ -37,17 +37,22 @@ class VisDisplayWindow : public VisDisplayBase
   VisDisplayWindow( const std::string& visID );
   virtual ~VisDisplayWindow();
 
+  std::string WindowID() const { return mVisID.WindowID(); }
+
   static void SetParentWindow( QWidget* w ) { spParentWindow = w; }
 
  protected:
   void moveEvent( QMoveEvent* );
   void resizeEvent( QResizeEvent* );
  
- protected:
+ private:
   static QWidget* spParentWindow;
+
  private:
   bool mUserIsMoving;
+#if 0
   std::string mTitle;
+#endif
   QStackedLayout* mpLayout;
 
  protected:

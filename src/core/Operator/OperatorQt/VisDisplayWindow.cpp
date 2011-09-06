@@ -39,20 +39,21 @@ VisDisplayWindow::VisDisplayWindow( const std::string& inVisID )
 {
   this->setParent( spParentWindow, Qt::Tool );
   this->setAttribute( Qt::WA_MacAlwaysShowToolWindow, true );
-  SetConfig( Visconfigs()[ mVisID ] );
+
   mpLayout = new QStackedLayout( this );
+#if 0
   mpLayout->setGeometry( QRect( 0, 0, this->width(), this->height() ) );
+#endif
   mpLayout->setStackingMode( QStackedLayout::StackAll );
-  mpLayout->setParent( this );
-  this->setLayout( mpLayout );
 
   // All VisDisplayWindows have a black background for backward compatibility
-  // Note: This palette will propogate to child QWidgets.
+  // Note: This palette will propagate to child QWidgets.
   QPalette pal = this->palette();
   pal.setBrush( QPalette::Window, QBrush( Qt::black ) );
   pal.setBrush( QPalette::WindowText, QBrush( Qt::white ) );
   this->setPalette( pal );
-  this->update();
+
+  SetConfig( Visconfigs()[ mVisID ] );
 }
 
 VisDisplayWindow::~VisDisplayWindow()
@@ -63,9 +64,9 @@ void
 VisDisplayWindow::SetConfig( ConfigSettings& inConfig )
 { 
   mUserIsMoving = false;
-  mTitle = inConfig[ CfgID::WindowTitle ];
-  if( !mTitle.empty() )
-    this->setWindowTitle( mTitle.c_str() );
+  string title = inConfig[ CfgID::WindowTitle ];
+  if( !title.empty() )
+    this->setWindowTitle( title.c_str() );
   else
     this->setWindowTitle( mVisID.c_str() );
 

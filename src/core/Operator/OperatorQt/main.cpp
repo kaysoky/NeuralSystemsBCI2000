@@ -84,7 +84,7 @@ main(int argc, char *argv[])
   FunctionCall< void( QApplication&, MainWindow& ) >
     call( MainLoop, a, w );
   ExceptionCatcher()
-    .SetMessage( "terminating Operator module" )
+    .SetMessage( "Terminating Operator module" )
     .Run( call );
 #ifdef _WIN32
   ::ReleaseMutex( appMutex );

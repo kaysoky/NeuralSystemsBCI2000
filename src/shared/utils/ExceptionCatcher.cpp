@@ -73,8 +73,7 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
   catch( const BCIException& e )
   {
     bcierr__ << e.what()
-             << ( mMessage.empty() ? "" : ", " )
-             << mMessage
+             << UserMessage()
              << endl;
   }
   catch( const exception& e )
@@ -82,8 +81,7 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
     bcierr__ << "Unhandled exception of type "
              << bci::ClassName( typeid( e ) )
              << ": " << e.what()
-             << ( mMessage.empty() ? "" : ",\n" )
-             << mMessage
+             << UserMessage()
              << endl;
   }
 #if defined( SystemHPP ) && !defined( _NO_VCL ) // VCL is available both at compile and link time
@@ -92,8 +90,7 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
     bcierr__ << "Unhandled exception of type "
              << bci::ClassName( typeid( e ) )
              << ": " << AnsiString( e.Message ).c_str()
-             << ( mMessage.empty() ? "" : ",\n" )
-             << mMessage
+             << UserMessage()
              << endl;
   }
 #endif // SystemHPP  && !_NO_VCL
@@ -109,8 +106,16 @@ ExceptionCatcher::ReportWin32Exception( int inCode )
   bcierr__ << "Unhandled Win32 exception 0x"
            << hex << inCode << ": "
            << OSError( inCode ).Message()
-           << ( mMessage.empty() ? "" : ",\n" )
-           << mMessage
+           << UserMessage()
            << endl;
 }
 #endif // _MSC_VER
+
+string
+ExceptionCatcher::UserMessage() const
+{
+  string result;
+  if( !mMessage.empty() )
+    result += "\n" + mMessage;
+  return result;
+}
