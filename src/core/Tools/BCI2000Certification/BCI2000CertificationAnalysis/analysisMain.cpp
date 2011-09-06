@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
   analysisGUI GUI;
   GUI.show();
 
-  std::string message = "aborting ";
+  std::string message = "Aborting ";
   message += app.applicationName().toLocal8Bit().constData();
   FunctionCall< int() >
     call( &QApplication::exec );

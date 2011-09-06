@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   MainWindow w;
   w.show();
 
-  std::string message = "aborting ";
+  std::string message = "Aborting ";
   message += a.applicationName().toLocal8Bit().constData();
   FunctionCall< int() >
     call( &QApplication::exec );

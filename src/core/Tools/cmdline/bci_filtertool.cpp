@@ -135,7 +135,7 @@ ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
   MemberCall< void( FilterWrapper* ) >
     call( &FilterWrapper::Run, &wrapper );
   ExceptionCatcher()
-    .SetMessage( "aborting" )
+    .SetMessage( "Aborting" )
     .Run( call );
   if( bcierr__.Flushes() > 0 || !arIn )
     result = illegalInput;

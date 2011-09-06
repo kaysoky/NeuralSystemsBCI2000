@@ -107,7 +107,7 @@ CoreModule::Run( int inArgc, char** inArgv )
   MemberCall< void( CoreModule*, int, char** ) >
     call( &CoreModule::DoRun, this, inArgc, inArgv );
   ExceptionCatcher()
-    .SetMessage( "terminating " THISMODULE " module" )
+    .SetMessage( "Terminating " THISMODULE " module" )
     .Run( call );
   ShutdownSystem();
   return ( bcierr__.Flushes() == 0 );

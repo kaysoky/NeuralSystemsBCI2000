@@ -165,10 +165,10 @@ int
 OSThread::CallExecute()
 {
   MemberCall<int(OSThread*)> call( &OSThread::Execute, this );
-  ExceptionCatcher()
-    .SetMessage( "canceling thread of type " + bci::ClassName( typeid( *this ) ) )
+  bool finished = ExceptionCatcher()
+    .SetMessage( "Canceling thread of type " + bci::ClassName( typeid( *this ) ) )
     .Run( call );
-  return call.Result();
+  return finished ? call.Result() : -1;
 }
 
 

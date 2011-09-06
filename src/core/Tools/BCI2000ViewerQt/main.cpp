@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   BCI2000Viewer w;
   w.show();
 
-  std::string message = "aborting ";
+  std::string message = "Aborting ";
   message += a.applicationName().toLocal8Bit().constData();
   FunctionCall< int() >
     call( &QApplication::exec );

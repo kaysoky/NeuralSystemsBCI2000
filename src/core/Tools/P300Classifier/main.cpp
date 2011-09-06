@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   FunctionCall< int( int, char**, QApplication& ) >
     call( P300ClassifierMain, argc, argv, app );
   bool finished = ExceptionCatcher()
-    .SetMessage( "aborting" )
+    .SetMessage( "Aborting" )
     .Run( call );
   return finished ? call.Result() : -1;
 }
