@@ -34,6 +34,8 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <sstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -382,6 +384,8 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
   Parameter("SourceChList");
   Parameter("SourceChGain");
   Parameter("NumBuffers");
+
+  OptionalParameter( "ChannelNames", "" );
 }
 
 
@@ -499,7 +503,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
     m_iBytesperScan.resize(m_numdevices);
     m_buffersize.resize(m_numdevices);
     // configure all devices
-    int totalch=1;
+    int channelsFromPreviousAmps = 0;
     int sourceChListOffset = 0;
 
     mBufferSize = 0;
@@ -558,14 +562,23 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         // this precedes normal configuration
         if (m_acqmode == 2) {
             double impedance;
-            for (int cur_ch=0; cur_ch < m_numchans.at(dev); cur_ch++)
+			bool reportNames = ( OptionalParameter( "ChannelNames", "" )->NumValues() == Parameter( "SourceCh" ) );
+			for (int cur_ch=0; cur_ch < m_numchans.at(dev); cur_ch++)
             {
-                char memotext[1024];
-				GT_GetImpedance(m_hdev.at(dev), channels[cur_ch], &impedance);
-                mVis.Send( CfgID::WindowTitle, "g.USBamp Impedance Values" );
-				sprintf(memotext, "Amp %d ch %02d (%s/%02d): %.1f kOhms\r", dev, channels[cur_ch], m_DeviceIDs.at(dev).c_str(), channels[cur_ch], (float)(impedance/1000));
-				mVis.Send(memotext);
-                totalch++;
+              int global_ch = channelsFromPreviousAmps + cur_ch;
+              mVis.Send( CfgID::WindowTitle, "g.USBamp Impedance Values" );
+              if( global_ch == 0 ) mVis.Send( "\r" );
+              GT_GetImpedance(m_hdev.at(dev), channels[cur_ch], &impedance);
+              stringstream memostream;
+              memostream << "Amp " << dev;
+              memostream << " Ch " << right << setw( 2 ) << (int)(channels[cur_ch]); // ...although you might have expected (cur_ch+1) here, this is the way it was
+			  memostream << " (" << m_DeviceIDs.at(dev) << "/" << setw(2) << setfill('0') << right << (int)(channels[cur_ch]) << setfill(' ') << ")";
+              memostream << " " << right << setw(3) << (global_ch+1);
+              if( reportNames )
+                memostream << left << setw(7) << ( " (" + (string)Parameter( "ChannelNames" )( global_ch ) + ")" );
+			  memostream << ": " << right << setw(7) << fixed << setprecision(1) << (impedance/1000.0) << " kOhm\r";
+              string memostring = memostream.str();
+              mVis.Send(memostring.c_str());
             }
             // Parameter("AcquisitionMode")=1;  // update this parameter
         }
@@ -615,7 +628,8 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
             GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev));
 
         delete [] channels;
-
+        
+        channelsFromPreviousAmps += m_numchans.at(dev);
     } //END device init loop
 
     // let's remember the filternumbers for next time
