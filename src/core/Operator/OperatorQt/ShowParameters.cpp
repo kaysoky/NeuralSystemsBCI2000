@@ -31,31 +31,39 @@
 #include <QtGui>
 
 static const int cTextMargin = 2;
+static const size_t cMaxTreeDepth = 3;
+
+using namespace std;
 
 ShowParameters::ShowParameters( QWidget* parent, const ParamList& paramlist, int filtertype )
 : QDialog(parent),
   m_ui(new Ui::ShowParameters),
   mrParamList( paramlist ),
-  mFilterType( filtertype )
+  mFilterType( filtertype ),
+  mChanged( false )
 {
   m_ui->setupUi(this);
 
-#ifdef Q_WS_MAC
-  QDialogButtonBox* pButtonBox = new QDialogButtonBox( QDialogButtonBox::Ok );
+  QDialogButtonBox* pButtonBox = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel );
   this->layout()->addWidget( pButtonBox );
   connect( pButtonBox, SIGNAL(accepted()), this, SLOT(accept()) );
-#endif // Q_WS_MAC
+  connect( pButtonBox, SIGNAL(rejected()), this, SLOT(reject()) );
 
-  connect( this, SIGNAL(finished(int)), this, SLOT(OnClose()) );
+  connect( this, SIGNAL(accepted()), this, SLOT(OnAccepted()) );
+  connect( this, SIGNAL(rejected()), this, SLOT(OnRejected()) );
   connect( m_ui->treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem*)), this, SLOT(OnExpandCollapse()) );
   connect( m_ui->treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), this, SLOT(OnExpandCollapse()) );
+  connect( m_ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(OnItemChanged()) );
+
   switch( mFilterType )
   {
     case OperatorUtils::loadFilter:
-      this->setWindowTitle( "Load Filter" );
+      this->setWindowTitle( tr("Load Filter") );
+      m_ui->label->setText( tr("Select parameters for reading:") );
       break;
     case OperatorUtils::saveFilter:
-      this->setWindowTitle( "Save Filter" );
+      this->setWindowTitle( tr("Save Filter") );
+      m_ui->label->setText( tr("Select parameters for writing:") );
       break;
   }
   OnShow();
@@ -87,12 +95,12 @@ ShowParameters::OnShow()
   {
     const HierarchicalLabel& path = mrParamList[i].Sections();
     QTreeWidgetItem* pParent = m_ui->treeWidget->invisibleRootItem();
-    for( HierarchicalLabel::const_iterator j = path.begin(); j != path.end(); ++j )
+    for( size_t j = 0; j < min( cMaxTreeDepth - 1, path.size() ); ++j )
     {
       int c = 0;
       while( c < pParent->childCount() )
       {
-        if( pParent->child( c )->text( 0 ) == j->c_str() )
+        if( pParent->child( c )->text( 0 ) == path[j].c_str() )
           break;
         else
           ++c;
@@ -103,36 +111,58 @@ ShowParameters::OnShow()
       }
       else
       {
-        pParent = new QTreeWidgetItem( pParent, QStringList( j->c_str() ) );
+        pParent = new QTreeWidgetItem( pParent, QStringList( path[j].c_str() ) );
         pParent->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsTristate | Qt::ItemIsEnabled );
         pParent->setCheckState( 0, Qt::PartiallyChecked );
         AdjustSize( pParent, cTextMargin );
       }
     }
-
     const char* pName = mrParamList[i].Name().c_str();
     QTreeWidgetItem* pItem = new QTreeWidgetItem( pParent, QStringList( pName ) );
     pItem->setToolTip( 0, QString::fromLocal8Bit( mrParamList[i].Comment().c_str() ) );
     pItem->setWhatsThis( 0, pItem->toolTip( 0 ) );
     pItem->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled );
-    pItem->setCheckState( 0, OperatorUtils::GetFilterStatus( pName, mFilterType ) ? Qt::Checked : Qt::Unchecked );
+    pItem->setCheckState( 0, OperatorUtils::GetFilterStatus( pName, mFilterType ) ? Qt::Unchecked : Qt::Checked );
     AdjustSize( pItem, cTextMargin );
   }
-
   m_ui->treeWidget->resizeColumnToContents( 0 );
+  mChanged = false;
 }
 
 void
-ShowParameters::OnClose()
+ShowParameters::OnAccepted()
 {
   for( QTreeWidgetItemIterator i( m_ui->treeWidget, QTreeWidgetItemIterator::NoChildren ); *i != NULL; ++i )
-    OperatorUtils::SetFilterStatus( (*i)->text( 0 ).toAscii(), mFilterType, (*i)->checkState( 0 ) == Qt::Checked );
+    OperatorUtils::SetFilterStatus( (*i)->text( 0 ).toAscii(), mFilterType, (*i)->checkState( 0 ) == Qt::Unchecked );
+}
+
+void
+ShowParameters::OnRejected()
+{
+  if( mChanged )
+  {
+    int result = QMessageBox::question(
+                        this,
+                        tr("BCI2000 Operator Module"),
+                        tr("Discard changes to Parameter selection?"),
+                        QMessageBox::Save | QMessageBox::Discard,
+                        QMessageBox::Discard
+                       );
+    if( result == QMessageBox::Save )
+      OnAccepted();
+  }
 }
 
 void
 ShowParameters::OnExpandCollapse()
 {
   m_ui->treeWidget->resizeColumnToContents( 0 );
+}
+
+void
+ShowParameters::OnItemChanged()
+{
+  mChanged = true;
 }
 
 void

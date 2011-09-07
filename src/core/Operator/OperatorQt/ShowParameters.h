@@ -30,6 +30,7 @@
 
 class Param;
 class ParamList;
+class QTreeWidgetItem;
 
 namespace Ui
 {
@@ -48,15 +49,18 @@ class ShowParameters : public QDialog
 
  private slots:
   void OnShow();
-  void OnClose();
+  void OnAccepted();
+  void OnRejected();
   void OnExpandCollapse();
+  void OnItemChanged();
 
  private:
-  static void AdjustSize( class QTreeWidgetItem*, int margin );
+  static void AdjustSize( QTreeWidgetItem*, int margin );
 
   Ui::ShowParameters* m_ui;
   const ParamList&    mrParamList;
   int                 mFilterType;
+  bool                mChanged;
 };
 
 #endif // SHOWPARAMETERS_H

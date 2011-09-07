@@ -130,12 +130,17 @@ PrefDialog::changeEvent( QEvent* e )
 }
 
 void
-PrefDialog::on_pushButton_clicked()
+PrefDialog::on_okButton_clicked()
 {
   PutValues();
   close();
 }
 
+void
+PrefDialog::on_cancelButton_clicked()
+{
+  close();
+}
 
 void PrefDialog::on_slider_UserLevel_valueChanged( int value )
 {

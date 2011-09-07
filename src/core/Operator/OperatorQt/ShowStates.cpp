@@ -34,11 +34,11 @@ ShowStates::ShowStates( QWidget* parent )
   m_ui( new Ui::ShowStates )
 {
   m_ui->setupUi( this );
-#ifdef Q_WS_MAC
+
   QDialogButtonBox* pButtonBox = new QDialogButtonBox( QDialogButtonBox::Ok );
   this->layout()->addWidget( pButtonBox );
   connect( pButtonBox, SIGNAL(accepted()), this, SLOT(accept()) );
-#endif // Q_WS_MAC
+
   this->setWindowTitle( "System States" );
   Populate();
 }

@@ -276,7 +276,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="okButton">
    <property name="geometry">
     <rect>
      <x>410</x>
@@ -588,6 +588,25 @@
     </property>
    </widget>
   </widget>
+  <widget class="QPushButton" name="cancelButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>310</y>
+     <width>75</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Cancel</string>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
+   <property name="default">
+    <bool>false</bool>
+   </property>
+  </widget>
  </widget>
  <tabstops>
   <tabstop>edit_OnConnect</tabstop>
@@ -605,7 +624,7 @@
   <tabstop>edit_NameBtn4</tabstop>
   <tabstop>edit_CmdBtn4</tabstop>
   <tabstop>slider_UserLevel</tabstop>
-  <tabstop>pushButton</tabstop>
+  <tabstop>okButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

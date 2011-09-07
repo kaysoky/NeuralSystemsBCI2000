@@ -52,7 +52,8 @@ public:
 
  private slots:
   void on_slider_UserLevel_valueChanged( int value );
-  void on_pushButton_clicked();
+  void on_okButton_clicked();
+  void on_cancelButton_clicked();
 };
 
 #endif // PREFDIALOG_H

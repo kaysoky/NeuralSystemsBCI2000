@@ -55,6 +55,9 @@
     <property name="text">
      <string>Config</string>
     </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
    </widget>
    <widget class="QPushButton" name="pushButton_SetConfig">
     <property name="geometry">
@@ -264,7 +267,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>19</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

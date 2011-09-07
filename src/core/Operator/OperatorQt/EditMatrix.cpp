@@ -49,11 +49,10 @@ EditMatrix::EditMatrix( QWidget* parent )
   mContextCol( -1 )
 {
   m_ui->setupUi(this);
-#ifdef Q_WS_MAC
-  QDialogButtonBox* pButtonBox = new QDialogButtonBox( QDialogButtonBox::Ok );
+
+  QDialogButtonBox* pButtonBox = new QDialogButtonBox( QDialogButtonBox::Close );
   this->layout()->addWidget( pButtonBox );
-  connect( pButtonBox, SIGNAL(accepted()), this, SLOT(accept()) );
-#endif // Q_WS_MAC
+  connect( pButtonBox, SIGNAL(rejected()), this, SLOT(accept()) );
 
   connect( m_ui->pushButton, SIGNAL(clicked()), this, SLOT(OnChangeMatrixSizeClick()) );
   connect( this, SIGNAL(finished(int)), this, SLOT(OnClose()) );

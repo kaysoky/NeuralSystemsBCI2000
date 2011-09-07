@@ -59,6 +59,7 @@ ConfigWindow::ConfigWindow(QWidget *parent)
   connect( m_ui->bHelp, SIGNAL(clicked()), this, SLOT(OnHelpClick()) );
   connect( m_ui->bLoadParameters, SIGNAL(clicked()), this, SLOT(OnLoadParametersClick()) );
   connect( m_ui->bSaveParameters, SIGNAL(clicked()), this, SLOT(OnSaveParametersClick()) );
+  connect( m_ui->bClose, SIGNAL(clicked()), this, SLOT(accept()) );
   connect( m_ui->cfgTabControl, SIGNAL(currentChanged(int)), this, SLOT(OnCfgTabControlChange()) );
   OperatorUtils::RestoreWidget( this );
   if( ExecutableHelp().ParamHelp().Empty() )
@@ -390,7 +391,6 @@ ConfigWindow::OnLoadParametersClick()
 void
 ConfigWindow::OnConfigureSaveFilterClick()
 {
-  QMessageBox::warning( this, tr("Reminder"), tr("The parameters you select here will NOT be saved!") );
   ShowParameters dialog( this, *mpParameters, OperatorUtils::saveFilter );
   dialog.exec();
 }
@@ -398,7 +398,6 @@ ConfigWindow::OnConfigureSaveFilterClick()
 void
 ConfigWindow::OnConfigureLoadFilterClick()
 {
-  QMessageBox::warning( this, tr("Reminder"), tr("The parameters you select here will NOT be loaded!") );
   ShowParameters dialog( this, *mpParameters, OperatorUtils::loadFilter );
   dialog.exec();
 }
