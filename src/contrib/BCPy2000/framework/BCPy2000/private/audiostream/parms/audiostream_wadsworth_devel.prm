@@ -30,7 +30,7 @@ PythonApp                                     int       ShowSignalTime=         
 PythonApp                                     float     SystemMasterVolume=               1.0           // 
 PythonApp                                     float     WindowSize=                       0.5           // 
   
-PythonApp                                     int       SurroundSoundTrigger=             0             // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
+PythonApp                                     int       SurroundSoundTrigger=             1             // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
 PythonApp                                     int       LPTSynch=                         0             // use parallel port synch or not? (boolean)
 PythonApp                                     int       FreeChoice=                       0             // allow user to choose freely (boolean)
 

@@ -2,7 +2,7 @@
 @set PYWD=%WD%\python
 @set PARMS=%WD%\parms
 
-@set PROG=..\..\..\..\..\..\..\BCI2000\prog
+@set PROG=%WD%\..\..\..\..\..\..\..\prog
 @if exist %PROG% cd %PROG%
 @if exist %PROG% goto gotprog
 
@@ -10,6 +10,7 @@
 @if exist %PROG% cd %PROG%
 @if exist %PROG% goto gotprog
 :gotprog
+@set PROG=%CD%
 
 @set BREAKOUT=%WD%\..\..\..\..\..\..\private\Application\Games\Breakout
 @if exist %BREAKOUT% goto gotbreakout
@@ -17,9 +18,9 @@
 
 
 
-@set PLAYBACK=..\data\20110706_8503_A_002\20110706_8503_A_S002R02.dat
-@set PLAYBACK=..\data\20110801_8502_A_999\20110801_8502_A_S999R10.dat
-@set PLAYBACK=..\data\20110802_8501_A_999\20110802_8501_A_S999R08.dat
+@set PLAYBACK=%PROG%\..\data\EEG_201107_Audiostream\20110706_8503_A_002\20110706_8503_A_S002R02.dat
+@set PLAYBACK=%PROG%\..\data\EEG_201107_Audiostream\20110801_8502_A_999\20110801_8502_A_S999R10.dat
+@set PLAYBACK=%PROG%\..\data\EEG_201107_Audiostream\20110802_8501_A_999\20110802_8501_A_S999R08.dat
 @if [%1]==[] goto SKIPARG
 @set PLAYBACK=%1
 :SKIPARG

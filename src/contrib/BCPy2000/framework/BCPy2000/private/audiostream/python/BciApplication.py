@@ -34,6 +34,7 @@ class BciApplication(BciGenericApplication):
 			"PythonApp:Sound   int       HeadPhones=                               0                      0     0 1 // use headphones or not? (boolean)",
 			"PythonApp:Sound   int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
 			"PythonApp         int       LPTSynch=                                 1                      0     0 1 // use parallel port synch or not? (boolean)",
+			"PythonApp         int       TestEyeTracker=                           0                      0     0 1 // display gaze feedback stimulus? (boolean)",
 			"PythonApp:Task    int       FreeChoice=                               0                      0     0 1 // allow user to choose freely (boolean)",
 			"PythonApp:Sound   int       InteractiveVolumeAdjust=                  0                      0     0 1 // interactively adjust the volume (boolean)",
 		]
@@ -153,6 +154,9 @@ class BciApplication(BciGenericApplication):
 		
 		if self.StimulusMaker.modular: self.make( store=True )
 		self.enable_software_volume_adjustment = int(self.params['InteractiveVolumeAdjust'])
+		
+		if int(self.params.TestEyeTracker):
+			self.stimulus('eye', VisualStimuli.Text, text='o', anchor='center', on=False)
 		
 	#############################################################
 	
@@ -293,7 +297,15 @@ class BciApplication(BciGenericApplication):
 			
 		if self.enable_software_volume_adjustment and self.current_presentation_phase == 'respond' and self.since('transition')['packets'] > 10:
 			self.change_phase()
-		
+			
+		if 'eye' in self.stimuli and 'EyetrackerLeftEyeGazeX' in self.states:
+			x = 0.5 * self.states.EyetrackerLeftEyeGazeX + 0.5 * self.states.EyetrackerRightEyeGazeX
+			y = 0.5 * self.states.EyetrackerLeftEyeGazeY + 0.5 * self.states.EyetrackerRightEyeGazeY
+			x = x/65535.0 * self.screen.size[0]
+			y = (1.0 - y/65535.0) * self.screen.size[1]
+			self.stimuli.eye.on = True
+			self.stimuli.eye.position = x,y
+			
 	#############################################################
 
 	def Event(self, phase, event):

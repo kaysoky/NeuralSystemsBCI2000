@@ -2,17 +2,18 @@
 @set PYWD=%WD%\python
 @set PARMS=%WD%\parms
 
-@set PROG=..\..\..\..\..\..\..\BCI2000\prog
+@set PROG=%WD%\..\..\..\..\..\..\..\prog
 @if exist %PROG% cd %PROG%
-@if exist %PROG% goto start
+@if exist %PROG% goto gotprog
 
 @set PROG=%PYTHONHOME%\..\..\BCI2000\prog
 @if exist %PROG% cd %PROG%
-@if exist %PROG% goto start
-:start
+@if exist %PROG% goto gotprog
+:gotprog
+@set PROG=%CD%
 
 
-@set PLAYBACK=..\data\20110706_8503_A_002\20110706_8503_A_S002R02.dat
+@set PLAYBACK=%PROG%\..\data\EEG_201107_Audiostream\20110706_8503_A_002\20110706_8503_A_S002R02.dat
 @if [%1]==[] goto SKIPARG
 @set PLAYBACK=%1
 :SKIPARG

@@ -508,6 +508,9 @@ class wav:
 				raise ValueError, 'incompatible sampling rates'
 			other = other.y
 		me = self.y
+		if isinstance(other, list) and False not in [isinstance(x, (bool,int,float)) for x in other]:
+			other = numpy.concatenate([numpy.asmatrix(x, dtype=numpy.float64).A for x in other], axis=across_channels)
+			equalize_duration = False
 		if isnumpyarray(other):
 			if equalize_channels:
 				if channels(other) == 1 and channels(me) > 1:

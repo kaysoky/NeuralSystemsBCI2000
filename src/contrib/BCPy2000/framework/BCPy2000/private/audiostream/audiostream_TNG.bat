@@ -25,11 +25,7 @@ call portable.bat
 @set LOGGERS=
 @set OnConnect=-
 
-:: Signal-processing parameters
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBB-Cap16+Audio2.prm
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\fixed.prm 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\audiostream_wadsworth_devel.prm
-
 :: Breakout parameters
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %BREAKOUT%\breakout\parms\Laptop.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %BREAKOUT%\breakout\parms\BCISYSTEM2_ExtendedDesktop.prm
@@ -37,14 +33,17 @@ call portable.bat
 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\eyetracker.prm      && set LOGGERS=%LOGGERS% --LogEyetracker=1
 
+:: NB AudiostreamBreakoutGame sets some control-signal-filtering parameters.  Overwrite these here
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\tng.prm 
+
 :: MUST ALSO LOAD WEIGHTS
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PROG%\..\data\EEG_201107_Audiostream\20110802_8501_A_002\20110802_8501_A_S002R03_weights.prm
 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm
 @set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession 999
 
-@set OnConnect=%OnConnect% ; INSERT STATE Stream1 3 0 0 0
-@set OnConnect=%OnConnect% ; INSERT STATE Stream2 3 0 0 0
+::@set OnConnect=%OnConnect% ; INSERT STATE Stream1 3 0 0 0
+::@set OnConnect=%OnConnect% ; INSERT STATE Stream2 3 0 0 0
 ::@set OnConnect=%OnConnect% ; SETCONFIG
 ::@set OnSetConfig=- SET STATE Running 1
 
@@ -52,6 +51,6 @@ start              operat                   --OnConnect "%OnConnect%" --OnSetCon
 
 start /D%BREAKOUT% GameBreakout
 
-start              PythonSignalProcessing   --PythonSigWD=%WD%\python
+start              PythonSignalProcessing   --PythonSigWD=%WD%\python --PythonSigClassFile=Streaming.py
 
 start              gUSBampSource %LOGGERS%

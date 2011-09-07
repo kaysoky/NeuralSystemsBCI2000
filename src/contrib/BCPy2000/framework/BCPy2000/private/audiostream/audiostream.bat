@@ -2,17 +2,17 @@
 @set PYWD=%WD%\python
 @set PARMS=%WD%\parms
 
-@set PROG=..\..\..\..\..\..\..\BCI2000\prog
+@set PROG=%WD%\..\..\..\..\..\..\..\prog
 @if exist %PROG% cd %PROG%
-@if exist %PROG% goto start
+@if exist %PROG% goto gotprog
 
 @set PROG=%PYTHONHOME%\..\..\BCI2000\prog
 @if exist %PROG% cd %PROG%
-@if exist %PROG% goto start
-:start
+@if exist %PROG% goto gotprog
+:gotprog
+@set PROG=%CD%
 
-
-@set SESSION=001
+@set SESSION=002
 @if [%1]==[] goto SKIPSESSIONARG
 @set SESSION=%1
 :SKIPSESSIONARG
@@ -23,10 +23,10 @@
 :SKIPDEMOARG
 
 
+
 cd ..\prog
-call portable.bat
-
-
+::call portable.bat
+@set LOGGERS=
 @set OnConnect=-
 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBB-Cap16+Audio2.prm
@@ -34,6 +34,8 @@ call portable.bat
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-SchalkCap64+Audio2.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\drifting.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\audiostream_wadsworth_devel.prm
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\eyetracker.prm      && set LOGGERS=%LOGGERS% --LogEyetracker=1
+::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\arse.prm
 
 @if [%SESSION%] == [001] goto SKIPFIXED
 @if [%SESSION%] == [002] goto FIXED
@@ -59,11 +61,12 @@ if [%DEMO%] == [] goto SKIPDEMO
 ::@set OnSetConfig=- SET STATE Running 1
 
 start           operat                   --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
-start          gUSBampSource
+start           gUSBampSource %LOGGERS%
 ::start           PythonSource             --PythonSrcWD=%WD%\python --PythonSrcShell=1 --PythonSrcLog=%WD%\log\###-src.txt
 
 ::start           DummySignalProcessing
 start           PythonSignalProcessing   --PythonSigWD=%WD%\python
 
 ::start           DummyApplication
-start PythonApplication        --PythonAppWD=%WD%\python
+::start           StimulusPresentation
+start           PythonApplication        --PythonAppWD=%WD%\python
