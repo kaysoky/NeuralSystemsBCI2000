@@ -1,4 +1,4 @@
-function = save_bcidat( varargin )
+function save_bcidat( varargin )
 %SAVE_BCIDAT Save Matlab workspace variables into a BCI2000 data file. 
 %
 %  save_bcidat( 'filename', signal, states, parameters )
@@ -40,4 +40,4 @@ function = save_bcidat( varargin )
 %  save_bcimat.mex.
 %  $Id$
 %
-error( 'There is no save_bcidat mex file for your platform available.' );
+missing_mex_file;
