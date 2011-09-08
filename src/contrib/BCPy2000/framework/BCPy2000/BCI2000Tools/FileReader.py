@@ -279,7 +279,7 @@ class bcistream(object):
 
 	def samples2msec(self, samples):
 		if samples == None: return None
-		return numpy.round(1000.0 * samples / self.samplingfreq_hz)
+		return 1000.0 * samples / float(self.samplingfreq_hz)
 
 	def plotstates(self, states): # TODO:  choose which states to plot
 		labels = states.keys()

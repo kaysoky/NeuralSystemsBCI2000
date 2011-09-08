@@ -40,6 +40,7 @@ sys.argv = sys.argv[:1] + args
 try: import setuptools
 except ImportError: print "WARNING: failed to import setuptools"
 from distutils.core import setup, Extension
+import BCPy2000
 
 dependencies = {
 	    'numpy': '>=1.3',
@@ -48,7 +49,7 @@ dependencies = {
 }
 setup(
 	name = 'BCPy2000',
-	version = '34600',
+	version = BCPy2000.__version__,
 	packages = [
 		'BCPy2000',
 		'BCPy2000.AppTools',
