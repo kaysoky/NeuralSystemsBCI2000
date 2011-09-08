@@ -231,8 +231,14 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
 {
   mpAppDisplay = NULL;
   if( Windows->Exists( "Application" ) )
+  {
     mpAppDisplay = &Window( "Application" );
-  mVis.SetSourceID( ( mpAppDisplay ) ? ( mpAppDisplay->VisualizationID() + ":1" ) : "GAZE" );
+    mVis.SetVisID( VisID( mpAppDisplay->VisID() ).SetLayerID( "1" ) );
+  }
+  else
+  {
+    mVis.SetVisID( "GAZE" );
+  }
 
   delete mpFixationImage;
   delete mpFixationViolationImage;

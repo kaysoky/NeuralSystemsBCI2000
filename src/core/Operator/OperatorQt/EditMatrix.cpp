@@ -300,7 +300,8 @@ EditMatrix::PlainCellToMatrix( int inRow, int inCol )
   if( QMessageBox::Ok == QMessageBox::question( this, tr("Confirmation"),
     tr("You are about to change this cell into a 1x1-sub-matrix.\n"
        "Proceed?"),
-      QMessageBox::Ok, QMessageBox::Cancel ) )
+      QMessageBox::Ok | QMessageBox::Cancel,
+      QMessageBox::Cancel ) )
   {
     QTableWidgetItem* item = m_ui->tableWidget->item( inRow, inCol );
     Param p( "{ matrix 1 1 0 }" );
@@ -345,7 +346,7 @@ EditMatrix::MatrixToPlainCell( int inRow, int inCol )
     message += tr("This will discard all sub-matrix entries except the top left one.\n");
   message += tr("Proceed?");
 
-  if( QMessageBox::Ok == QMessageBox::question( this, tr("Confirmation"), message, QMessageBox::Ok, QMessageBox::Cancel ) )
+  if( QMessageBox::Ok == QMessageBox::question( this, tr("Confirmation"), message, QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel ) )
   {
     // Descend into sub-matrices until a single value is found.
     const Param::ParamValue* val = &mpMatrixParam->Value( inRow, inCol )->Value( 0, 0 );
@@ -419,7 +420,9 @@ EditMatrix::OnChangeMatrixSizeClick()
 {
   if( QMessageBox::Ok == QMessageBox::question(
       this,
-      tr("Confirmation"), tr("Do you really want to change the size of the matrix?") ) )
+      tr("Confirmation"), tr("Do you really want to change the size of the matrix?"),
+      QMessageBox::Ok | QMessageBox::Cancel,
+      QMessageBox::Cancel ) )
   {
     Lock();
     UpdateParam();

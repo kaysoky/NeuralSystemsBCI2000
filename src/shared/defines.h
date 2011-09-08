@@ -33,10 +33,16 @@
 #define KEY_VIEWER              "VIEWER"
 #define KEY_EXPORT              "EXPORT"
 
+#ifdef TODO
+# error Move remaining SourceID constants into VisID class.
+#endif // TODO
+
 namespace SourceID
 {
   enum SourceID
   {
+    min = 52,
+
     Classifier = 57,
     Normalizer = 58,
     Statistics = 59,

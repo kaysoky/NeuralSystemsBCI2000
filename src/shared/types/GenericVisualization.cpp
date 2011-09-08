@@ -30,6 +30,7 @@
 #include "MessageHandler.h"
 #include "OSMutex.h"
 #include "BCIError.h"
+#include "defines.h"
 
 #include <iostream>
 #include <string>
@@ -42,16 +43,19 @@ using namespace std;
 istream&
 VisBase::ReadBinary( istream& is )
 {
-  int sourceID = is.get();
-  if( sourceID == InvalidID )
+  int visID = is.get();
+  if( visID == InvalidID )
   {
-    getline( is, mSourceID, '\0' );
+    string s;
+    getline( is, s, '\0' );
+    istringstream iss( s );
+    iss >> mVisID;
   }
   else
   {
     ostringstream oss;
-    oss << sourceID;
-    mSourceID = oss.str();
+    oss << visID;
+    mVisID = oss.str();
   }
   ReadBinarySelf( is );
   return is;
@@ -63,23 +67,23 @@ VisBase::WriteBinary( ostream& os ) const
   // We use the traditional message format if the source ID can be represented
   // as a single byte number.
   bool oldFormat = false;
-  int sourceID = ::atoi( mSourceID.c_str() );
-  if( sourceID >= 52 && sourceID < 255 )
+  int visID = ::atoi( mVisID.c_str() );
+  if( visID >= SourceID::min && visID < SourceID::ExtendedFormat )
   {
     ostringstream oss;
-    oss << sourceID;
-    if( oss.str() == mSourceID )
+    oss << visID;
+    if( oss.str() == mVisID )
       oldFormat = true;
   }
   if( oldFormat )
   {
-    os.put( sourceID & 0xff );
+    os.put( visID & 0xff );
   }
   else
   {
-    os.put( '\xff' )
-      .write( mSourceID.data(), mSourceID.length() )
-      .put( '\0' );
+    os.put( '\xff' );
+    os << mVisID;
+    os.put( '\0' );
   }
   WriteBinarySelf( os );
   return os;
@@ -160,31 +164,31 @@ const OSMutex* GenericVisualization::spOutputLock = NULL;
 GenericVisualization&
 GenericVisualization::SendCfgString( CfgID inCfgID, const std::string& inCfgString )
 {
-  return SendObject( VisCfg( mSourceID, inCfgID, inCfgString ) );
+  return SendObject( VisCfg( mVisID, inCfgID, inCfgString ) );
 }
 
 GenericVisualization&
 GenericVisualization::Send( const string& s )
 {
-  return SendObject( VisMemo( mSourceID, s ) );
+  return SendObject( VisMemo( mVisID, s ) );
 }
 
 GenericVisualization&
 GenericVisualization::Send( const GenericSignal& s )
 {
-  return SendObject( VisSignal( mSourceID, s ) );
+  return SendObject( VisSignal( mVisID, s ) );
 }
 
 GenericVisualization&
 GenericVisualization::Send( const SignalProperties& s )
 {
-  return SendObject( VisSignalProperties( mSourceID, s ) );
+  return SendObject( VisSignalProperties( mVisID, s ) );
 }
 
 GenericVisualization&
 GenericVisualization::Send( const BitmapImage& b )
 {
-  return SendObject( VisBitmap( mSourceID, b ) );
+  return SendObject( VisBitmap( mVisID, b ) );
 }
 
 template<typename T>

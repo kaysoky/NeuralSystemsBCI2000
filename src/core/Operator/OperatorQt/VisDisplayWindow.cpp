@@ -41,9 +41,6 @@ VisDisplayWindow::VisDisplayWindow( const std::string& inVisID )
   this->setAttribute( Qt::WA_MacAlwaysShowToolWindow, true );
 
   mpLayout = new QStackedLayout( this );
-#if 0
-  mpLayout->setGeometry( QRect( 0, 0, this->width(), this->height() ) );
-#endif
   mpLayout->setStackingMode( QStackedLayout::StackAll );
 
   // All VisDisplayWindows have a black background for backward compatibility

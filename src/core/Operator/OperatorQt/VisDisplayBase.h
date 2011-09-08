@@ -42,8 +42,6 @@ class VisDisplayBase : public QWidget
 {
   Q_OBJECT
 
-  friend class VisDisplay;
-    
  public:
   typedef enum // Possible states of properties ("configs").
   {
@@ -59,10 +57,10 @@ class VisDisplayBase : public QWidget
   virtual ~VisDisplayBase();
 
   static void Clear() { Visuals().Clear(); }
-  static void HandleSignal( const char* visID, const GenericSignal& );
-  static void HandleMemo( const char* visID, const char* );
-  static void HandleBitmap( const char* visID, const BitmapImage& );
-  static void HandleProperty( const char* visID, CfgID, const char* value, ConfigState );
+  static void HandleSignal( const VisID&, const GenericSignal& );
+  static void HandleMemo( const VisID&, const char* );
+  static void HandleBitmap( const VisID&, const BitmapImage& );
+  static void HandleProperty( const VisID&, CfgID, const char* value, ConfigState );
 
  protected:
   virtual void Restore();

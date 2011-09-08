@@ -68,6 +68,10 @@ IF( MSVC )
     -D_CRT_SECURE_NO_WARNINGS
     -D_CRT_NONSTDC_NO_WARNINGS
     -D_SCL_SECURE_NO_WARNINGS
+    -D_SECURE_SCL_THROWS=1
+  )
+  SET( CMAKE_CXX_FLAGS_RELEASE
+    "${CMAKE_CXX_FLAGS_RELEASE} /D_SECURE_SCL=0"
   )
   # Adjust flags such that by default programs are built statically against the MSVC runtime;
   # save defaults as "_DYNAMIC" for use with MFC-based projects.

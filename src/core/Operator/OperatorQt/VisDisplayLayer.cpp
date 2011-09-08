@@ -39,7 +39,6 @@ VisDisplayLayer::VisDisplayLayer( const std::string& inVisID )
   // Set widget properties and add it to the window
   this->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
   this->parentWidget()->layout()->addWidget( this );
-  SetConfig( Visconfigs()[ mVisID ] );
 
   // Arrange sibling layers according to their layer IDs.
   typedef map<string, VisDisplayLayer*> LayerMap;
@@ -49,29 +48,18 @@ VisDisplayLayer::VisDisplayLayer( const std::string& inVisID )
   {
     VisDisplayLayer* pLayer = dynamic_cast<VisDisplayLayer*>( *i );
     if( pLayer != NULL )
-      layers[pLayer->LayerID()] = pLayer;
+      layers[pLayer->mVisID.LayerID()] = pLayer;
   }
-  // The dominating layer has an empty layer ID, and will be first in sorting order.
+  // A layer with an empty layer ID will be moved to the bottom of the layout.
   for( LayerMap::iterator i = layers.begin(); i != layers.end(); ++i )
     i->second->raise();
   // The bottom layer should get keyboard focus.
   bciassert( !layers.empty() );
   layers.begin()->second->setFocus();
+
+  SetConfig( Visconfigs()[ mVisID ] );
 }
 
 VisDisplayLayer::~VisDisplayLayer()
 {
-  /* This appears to be corrupting the heap intermittently
-  // Determine if this was the last layer and remove the window if necessary
-  string base = mVisID.substr( 0, mVisID.find( ":" ) + 1 );
-  VisContainerBase layers;
-  for( VisContainerBase::iterator vitr = Visuals().begin(); vitr != Visuals().end(); vitr++ )
-    if( vitr->first != mVisID && vitr->first.find( base ) != string::npos )
-      layers[ vitr->first.substr( vitr->first.find( ":" ) ).substr( 1 ) ] = vitr->second;
-  if( layers.empty() )
-  {
-    Visuals()[ base ]->deleteLater();
-    Visuals()[ base ] = NULL;
-  }
-  */
 }

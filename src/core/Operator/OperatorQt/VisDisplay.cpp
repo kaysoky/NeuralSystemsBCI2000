@@ -28,6 +28,7 @@
 
 #include "VisDisplay.h"
 
+#include "VisID.h"
 #include "VisDisplayBase.h"
 #include "VisDisplayWindow.h"
 #include "VisDisplayMemo.h"
@@ -51,96 +52,53 @@ VisDisplay::Clear()
 void
 VisDisplay::CreateMemo( const char* inVisID )
 {
-  string visid = FormatID( inVisID );
-  new VisDisplayMemo( visid );
+  new VisDisplayMemo( VisID( inVisID ).ToLayer() );
 }
 
 void
 VisDisplay::CreateGraph( const char* inVisID )
 {
-  string visid = FormatID( inVisID );
-  new VisDisplayGraph( visid );
+  new VisDisplayGraph( VisID( inVisID ).ToLayer() );
 }
 
 void
 VisDisplay::CreateBitmap( const char* inVisID )
 {
-  string visid = FormatID( inVisID );
-  new VisDisplayBitmap( visid );
+  new VisDisplayBitmap( VisID( inVisID ).ToLayer() );
 }
 
 void
 VisDisplay::HandleSignal( const char* inVisID, const GenericSignal& inSignal )
 {
-  string visid = FormatID( inVisID );
-  VisDisplayBase::HandleSignal( visid.c_str(), inSignal );
+  VisDisplayBase::HandleSignal( VisID( inVisID ).ToLayer(), inSignal );
 }
 
 void
 VisDisplay::HandleMemo( const char* inVisID, const char* inText )
 {
-  string visid = FormatID( inVisID );
-  VisDisplayBase::HandleMemo( visid.c_str(), inText );
+  VisDisplayBase::HandleMemo( VisID( inVisID ).ToLayer(), inText );
 }
 
 void
 VisDisplay::HandleBitmap( const char* inVisID, const BitmapImage& inBitmap )
 {
-  string visid = FormatID( inVisID );
-  VisDisplayBase::HandleBitmap( visid.c_str(), inBitmap );
+  VisDisplayBase::HandleBitmap( VisID( inVisID ).ToLayer(), inBitmap );
 }
 
 void
 VisDisplay::HandlePropertyMessage( const char* inVisID, CfgID inCfgID, const char* inValue )
 {
-  string visid = FormatID( inVisID );
-  string layer = Layer( visid );
-  if( layer == "" )
-    VisDisplayBase::HandleProperty( Base( visid ).c_str(), inCfgID, inValue, VisDisplayBase::MessageDefined );
-  VisDisplayBase::HandleProperty( visid.c_str(), inCfgID, inValue, VisDisplayBase::MessageDefined );
+  VisID visID( inVisID );
+  if( visID.LayerID().empty() )
+    VisDisplayBase::HandleProperty( visID.WindowID(), inCfgID, inValue, VisDisplayBase::MessageDefined );
+  VisDisplayBase::HandleProperty( visID.ToLayer(), inCfgID, inValue, VisDisplayBase::MessageDefined );
 }
 
 void
 VisDisplay::HandleProperty( const char* inVisID, CfgID inCfgID, const char* inValue )
 {
-  string visid = FormatID( inVisID );
-  string layer = Layer( visid );
-  if( layer == "" )
-    VisDisplayBase::HandleProperty( Base( visid ).c_str(), inCfgID, inValue, VisDisplayBase::UserDefined );
-  VisDisplayBase::HandleProperty( visid.c_str(), inCfgID, inValue, VisDisplayBase::UserDefined );
-}
-
-/*
-string
-VisDisplay::FormatID( const char* id )
-{
-  string ret( id );
-  return FormatID( ret );
-}
-*/
-
-string
-VisDisplay::FormatID( const string &id )
-{
-  string ret = id;
-  if( ret.find( ":" ) == string::npos )
-    ret.append( ":" );
-  return ret;
-}
-
-string
-VisDisplay::Layer( const string &id )
-{
-  string ret = "";
-  size_t idx = id.find( ":" );
-  if( idx == string::npos )
-    return ret;
-  ret = id.substr( idx ).substr( 1 );
-  return ret;
-}
-
-string
-VisDisplay::Base( const string &id )
-{
-  return id.substr( 0, id.find( ":" ) );
+  VisID visID( inVisID );
+  if( visID.LayerID().empty() )
+    VisDisplayBase::HandleProperty( visID.WindowID(), inCfgID, inValue, VisDisplayBase::UserDefined );
+  VisDisplayBase::HandleProperty( visID.ToLayer(), inCfgID, inValue, VisDisplayBase::UserDefined );
 }

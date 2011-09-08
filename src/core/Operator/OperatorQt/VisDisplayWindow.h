@@ -50,9 +50,6 @@ class VisDisplayWindow : public VisDisplayBase
 
  private:
   bool mUserIsMoving;
-#if 0
-  std::string mTitle;
-#endif
   QStackedLayout* mpLayout;
 
  protected:

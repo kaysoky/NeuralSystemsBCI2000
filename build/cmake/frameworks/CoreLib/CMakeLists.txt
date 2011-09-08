@@ -90,6 +90,7 @@ SET( SRC_BCI2000_SHARED_TYPES
   ${BCI2000_SRC_DIR}/shared/types/StateVectorSample.cpp
   ${BCI2000_SRC_DIR}/shared/types/Status.cpp
   ${BCI2000_SRC_DIR}/shared/types/SysCommand.cpp
+  ${BCI2000_SRC_DIR}/shared/types/VisID.cpp
 )
 SET( HDR_BCI2000_SHARED_TYPES 
   ${BCI2000_SRC_DIR}/shared/types/BitmapImage.h
@@ -113,6 +114,7 @@ SET( HDR_BCI2000_SHARED_TYPES
   ${BCI2000_SRC_DIR}/shared/types/StateVectorSample.h
   ${BCI2000_SRC_DIR}/shared/types/Status.h
   ${BCI2000_SRC_DIR}/shared/types/SysCommand.h
+  ${BCI2000_SRC_DIR}/shared/types/VisID.h
 )
 SET( SRC_BCI2000_SHARED_ACCESSORS 
   ${BCI2000_SRC_DIR}/shared/accessors/BCIEvent.cpp

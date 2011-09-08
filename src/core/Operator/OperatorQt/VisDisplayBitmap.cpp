@@ -83,11 +83,11 @@ VisDisplayBitmap::HandleBitmap( const BitmapImage& inImage )
     if( ( mImageBuffer.Width() != inImage.Width() ) || ( mImageBuffer.Height() != inImage.Height() ) )
     {
       // Adapt the window's aspect ratio without changing its width.
-      if( VisID( mVisID ).DominatingLayerVisID() == mVisID && inImage.Width() > 0 )
+      if( this->hasFocus() && inImage.Width() > 0 )
       {
         QWidget* pParent = this->parentWidget();
         pParent->resize( pParent->width(), ( inImage.Height() * pParent->width() ) / inImage.Width() );
-        Visconfigs()[ VisID( mVisID ).WindowID() ].Put( CfgID::Height, pParent->height(), UserDefined );
+        Visconfigs()[ mVisID.WindowID() ].Put( CfgID::Height, pParent->height(), UserDefined );
       }
     }
     mImageBuffer = inImage;

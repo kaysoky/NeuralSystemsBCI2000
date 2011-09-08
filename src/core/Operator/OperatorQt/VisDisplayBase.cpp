@@ -70,7 +70,7 @@ VisDisplayBase::ConfigContainer::Save()
     if( !userDefinedCfgIDs.empty() )
     {
       // We add a Title entry to make it easier for the user to understand entries in the ini file.
-      // Note that it is not called WindowTitle, so it is never restored from the ini file but 
+      // Note that this entry is not named WindowTitle, so it is never restored from the ini file but 
       // always determined by current BCI2000 module code.
       settings.setValue( "Title", i->second[ CfgID::WindowTitle ].c_str() );
       for( set<CfgID>::const_iterator j = userDefinedCfgIDs.begin(); j != userDefinedCfgIDs.end(); ++j )
@@ -109,7 +109,7 @@ VisDisplayBase::VisDisplayBase( const VisID& inVisID )
 : QWidget( NULL ),
   mVisID( inVisID )
 {
-  if( mVisID.RefersLayer() )
+  if( mVisID.IsLayer() )
   {
     if( !Visuals()[ mVisID.WindowID() ] )
       new VisDisplayWindow( mVisID.WindowID() );
@@ -153,7 +153,7 @@ VisDisplayBase::Save() const
 }
 
 void
-VisDisplayBase::HandleSignal( const char* inVisID, const GenericSignal& inSignal )
+VisDisplayBase::HandleSignal( const VisID& inVisID, const GenericSignal& inSignal )
 {
   VisDisplayGraph* visual = dynamic_cast<VisDisplayGraph*>( Visuals()[ inVisID ] );
   if( visual != NULL )
@@ -165,7 +165,7 @@ VisDisplayBase::HandleSignal( const char* inVisID, const GenericSignal& inSignal
 }
 
 void
-VisDisplayBase::HandleMemo( const char* inVisID, const char* inText )
+VisDisplayBase::HandleMemo( const VisID& inVisID, const char* inText )
 {
   VisDisplayMemo* visual = dynamic_cast<VisDisplayMemo*>( Visuals()[ inVisID ] );
   if( visual != NULL )
@@ -177,7 +177,7 @@ VisDisplayBase::HandleMemo( const char* inVisID, const char* inText )
 }
 
 void
-VisDisplayBase::HandleBitmap( const char* inVisID, const BitmapImage& inBitmap )
+VisDisplayBase::HandleBitmap( const VisID& inVisID, const BitmapImage& inBitmap )
 {
   VisDisplayBitmap* visual = dynamic_cast<VisDisplayBitmap*>( Visuals()[ inVisID ] );
   if( visual != NULL )
@@ -189,7 +189,7 @@ VisDisplayBase::HandleBitmap( const char* inVisID, const BitmapImage& inBitmap )
 }
 
 void
-VisDisplayBase::HandleProperty( const char* inVisID, CfgID inCfgID, const char* inValue, ConfigState inState )
+VisDisplayBase::HandleProperty( const VisID& inVisID, CfgID inCfgID, const char* inValue, ConfigState inState )
 {
   Visconfigs()[ inVisID ].Put( inCfgID, inValue, inState );
   if( Visuals()[ inVisID ] != NULL )

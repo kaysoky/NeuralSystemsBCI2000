@@ -129,7 +129,9 @@ MainWindow::~MainWindow()
 {
   OperatorUtils::SaveWidget( this );
   delete ui;
+  ui = NULL;
   delete gpPreferences;
+  gpPreferences = NULL;
   BCI_Dispose();
 }
 
@@ -147,7 +149,7 @@ MainWindow::QuitOperator()
   if( QMessageBox::Yes == QMessageBox::question(
        this,
        "Question", "Do you really want to quit BCI2000?",
-       QMessageBox::No, QMessageBox::Yes | QMessageBox::Default )
+       QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes )
     )
     this->Terminate();
 }

@@ -2,15 +2,6 @@
 // $Id$
 // Author: griffin.milsap@gmail.com, juergen.mellinger@uni-tuebingen.de
 // Description: A class representing a Visualization ID.
-//   Visualization IDs refer to visualization windows,
-//   and layers within windows. In case of windows,
-//   the Visualization ID is a window ID; in case of
-//   layers, the Visualization ID is a combination of
-//   window ID and layer ID, separated with a colon.
-//   When a colon but no layer ID is present, the
-//   resulting Visualization ID refers to the window's
-//   "dominating layer" which is always at the bottom
-//   of the window, and receives keyboard focus.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -32,30 +23,71 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef VIS_ID_H
-#define VIS_ID_H
+#include "PCHIncludes.h"
+#pragma hdrstop
 
-#include "EncodedString.h"
+#include "VisID.h"
+#include "BCIError.h"
 
-class VisID : public EncodedString
+using namespace std;
+
+VisID::VisID()
 {
- public:
-  VisID();
-  VisID( const std::string& );
-  VisID( const char* );
+}
 
-  VisID& SetWindowID( const std::string& );
-  std::string WindowID() const;
+VisID::VisID( const string& s )
+: EncodedString( s )
+{
+}
 
-  VisID& SetLayerID( const std::string& );
-  std::string LayerID() const;
+VisID::VisID( const char* s )
+: EncodedString( s )
+{
+}
 
-  bool IsLayer() const;
-  VisID& ToLayer();
+VisID&
+VisID::SetWindowID( const string& s )
+{
+  if( s.find( cSeparator ) != string::npos )
+    bcierr << "Window IDs may not contain the '" << cSeparator << "' character" << endl;
 
- private:
-  static const char cSeparator = ':';
-};
+  if( IsLayer() )
+    *this = s + cSeparator + LayerID();
+  else
+    *this = s;
+  return *this;
+}
 
-#endif // VIS_ID_H
+string
+VisID::WindowID() const
+{
+  return substr( 0, find( cSeparator ) );
+}
+
+VisID&
+VisID::SetLayerID( const string& s )
+{
+  return *this = WindowID() + cSeparator + s;
+}
+
+string
+VisID::LayerID() const
+{ 
+  size_t pos = find( cSeparator );
+  if( pos != string::npos )
+    return substr( pos ).substr( 1 );
+  return string();
+}
+
+bool
+VisID::IsLayer() const
+{
+  return find( cSeparator ) != string::npos;
+}
+
+VisID&
+VisID::ToLayer()
+{
+  return SetLayerID( LayerID() );
+}
 

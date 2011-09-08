@@ -32,11 +32,17 @@
 #include <string>
 #include <sstream>
 #include "CfgID.h"
+#include "VisID.h"
 #include "GenericSignal.h"
 #include "SignalProperties.h"
 #include "BitmapImage.h"
 
 class OSMutex;
+
+#define BACK_COMPAT 1
+#ifdef TODO
+# error Remove BACK_COMPAT condition when VisID/SourceID duplicity has been resolved
+#endif // TODO
 
 class VisBase
 {
@@ -44,11 +50,14 @@ class VisBase
     enum { InvalidID = 0xff };
 
     VisBase() {}
-    VisBase( const std::string& inSourceID )
-    : mSourceID( inSourceID ) {}
+    VisBase( const ::VisID& inVisID )
+    : mVisID( inVisID ) {}
     virtual ~VisBase() {}
 
-    const std::string& SourceID() const { return mSourceID; }
+#ifdef BACK_COMPAT
+    const ::VisID& SourceID() const { return mVisID; }
+#endif // BACK_COMPAT
+    const ::VisID& VisID() const { return mVisID; }
 
     std::istream& ReadBinary( std::istream& );
     std::ostream& WriteBinary( std::ostream& ) const;
@@ -58,7 +67,7 @@ class VisBase
     virtual void WriteBinarySelf( std::ostream& ) const = 0;
 
   private:
-    std::string mSourceID;
+    ::VisID mVisID;
 };
 
 class VisCfg : public VisBase
@@ -66,8 +75,8 @@ class VisCfg : public VisBase
   public:
     VisCfg()
     : mCfgID( InvalidID ) {}
-    VisCfg( const std::string& inSourceID, int inCfgID, const std::string& inCfgValue )
-    : VisBase( inSourceID ), mCfgID( inCfgID ), mCfgValue( inCfgValue ) {}
+    VisCfg( const ::VisID& inVisID, int inCfgID, const std::string& inCfgValue )
+    : VisBase( inVisID ), mCfgID( inCfgID ), mCfgValue( inCfgValue ) {}
 
     int CfgID() const { return mCfgID; }
     const std::string& CfgValue() const { return mCfgValue; }
@@ -85,8 +94,8 @@ class VisMemo : public VisBase
 {
   public:
     VisMemo() {}
-    VisMemo( const std::string& inSourceID, const std::string& inMemo )
-    : VisBase( inSourceID ), mMemo( inMemo ) {}
+    VisMemo( const ::VisID& inVisID, const std::string& inMemo )
+    : VisBase( inVisID ), mMemo( inMemo ) {}
 
     const std::string& MemoText() const { return mMemo; }
 
@@ -102,8 +111,8 @@ class VisSignal : public VisBase
 {
   public:
     VisSignal() {}
-    VisSignal( const std::string& inSourceID, const GenericSignal& inSignal )
-    : VisBase( inSourceID ), mSignal( inSignal ) {}
+    VisSignal( const ::VisID& inVisID, const GenericSignal& inSignal )
+    : VisBase( inVisID ), mSignal( inSignal ) {}
     VisSignal( const GenericSignal& inSignal )
     : mSignal( inSignal ) {}
 
@@ -122,8 +131,8 @@ class VisSignalProperties : public VisBase
 {
   public:
     VisSignalProperties() {}
-    VisSignalProperties( const std::string& inSourceID, const ::SignalProperties& inSignalProperties )
-    : VisBase( inSourceID ), mSignalProperties( inSignalProperties ) {}
+    VisSignalProperties( const ::VisID& inVisID, const ::SignalProperties& inSignalProperties )
+    : VisBase( inVisID ), mSignalProperties( inSignalProperties ) {}
     VisSignalProperties( const ::SignalProperties& inSignalProperties )
     : mSignalProperties( inSignalProperties ) {}
 
@@ -142,8 +151,8 @@ class VisBitmap : public VisBase
 {
   public:
     VisBitmap() {}
-    VisBitmap( const std::string& inSourceID, const ::BitmapImage& inBitmap )
-    : VisBase( inSourceID ), mBitmap( inBitmap ) {}
+    VisBitmap( const ::VisID& inVisID, const ::BitmapImage& inBitmap )
+    : VisBase( inVisID ), mBitmap( inBitmap ) {}
     VisBitmap( const ::BitmapImage& inBitmap )
     : mBitmap( inBitmap ) {}
 
@@ -165,21 +174,21 @@ class GenericVisualization : public std::ostream
     : std::ostream( 0 ), mBuf( this )
     { this->init( &mBuf ); }
 
-    GenericVisualization( int inSourceID )
+    explicit GenericVisualization( int inVisID )
     : std::ostream( 0 ), mBuf( this )
     {
       this->init( &mBuf );
       std::ostringstream oss;
-      oss << inSourceID;
-      mSourceID = oss.str();
+      oss << inVisID;
+      mVisID = oss.str();
     }
 
-    GenericVisualization( const std::string& inSourceID )
-    : std::ostream( 0 ), mSourceID( inSourceID ), mBuf( this )
+    explicit GenericVisualization( const ::VisID& inVisID )
+    : std::ostream( 0 ), mVisID( inVisID ), mBuf( this )
     { this->init( &mBuf ); }
 
     GenericVisualization( const GenericVisualization& v )
-    : std::ostream( 0 ), mSourceID( v.mSourceID ), mBuf( this )
+    : std::ostream( 0 ), mVisID( v.mVisID ), mBuf( this )
     {
       this->init( &mBuf );
       mBuf.str( v.mBuf.str() );
@@ -189,7 +198,7 @@ class GenericVisualization : public std::ostream
     {
       if( this != &v )
       {
-        mSourceID = v.mSourceID;
+        mVisID = v.mVisID;
         mBuf.str( v.mBuf.str() );
       }
       return *this;
@@ -198,10 +207,16 @@ class GenericVisualization : public std::ostream
     ~GenericVisualization() { mBuf.str( "" ); }
 
     // Setters and Getters.
-    GenericVisualization& SetSourceID( const std::string& inSourceID )
-                          { mSourceID = inSourceID; return *this; }
-    const std::string&    SourceID() const
-                          { return mSourceID; }
+#ifdef BACK_COMPAT
+    GenericVisualization& SetSourceID( const ::VisID& inVisID )
+                          { mVisID = inVisID; return *this; }
+    const ::VisID&        SourceID() const
+                          { return mVisID; }
+#endif // BACK_COMPAT
+    GenericVisualization& SetVisID( const ::VisID& inVisID )
+                          { mVisID = inVisID; return *this; }
+    const ::VisID&        VisID() const
+                          { return mVisID; }
 
     template<typename T> GenericVisualization& Send( CfgID cfgID, const T& cfgValue );
     GenericVisualization& Send( const std::string& memo );
@@ -216,7 +231,7 @@ class GenericVisualization : public std::ostream
     GenericVisualization& SendCfgString( CfgID, const std::string& );
     template<typename T> GenericVisualization& SendObject( const T& );
 
-    std::string  mSourceID;
+    ::VisID  mVisID;
     class VisStringbuf : public std::stringbuf
     {
       public:
@@ -236,16 +251,16 @@ class GenericVisualization : public std::ostream
 class BitmapVisualization : public GenericVisualization
 {
   public:
-    BitmapVisualization() { }
+    BitmapVisualization() {}
     
-    BitmapVisualization( int inSourceID )
-    : GenericVisualization( inSourceID ) { }
+    explicit BitmapVisualization( int inVisID )
+    : GenericVisualization( inVisID ) {}
 
-    BitmapVisualization( const std::string& inSourceID )
-    : GenericVisualization( inSourceID ) { }
+    explicit BitmapVisualization( const ::VisID& inVisID )
+    : GenericVisualization( inVisID ) {}
 
     BitmapVisualization( const BitmapVisualization& v )
-    : GenericVisualization( v ) { }
+    : GenericVisualization( v ) {}
 
     void SendReferenceFrame( const BitmapImage& );
     void SendDifferenceFrame( const BitmapImage& );

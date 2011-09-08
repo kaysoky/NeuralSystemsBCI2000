@@ -35,8 +35,6 @@ class VisDisplayLayer : public VisDisplayBase
  public:
   VisDisplayLayer( const std::string& visID );
   virtual ~VisDisplayLayer();
-
-  std::string LayerID() const { return mVisID.LayerID(); }
 };
 
 #endif // VIS_DISPLAY_LAYER_H

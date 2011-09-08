@@ -101,8 +101,10 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
  public:
   const std::string& Name() const
   { return mName; }
-  const std::string& VisualizationID() const
-  { return mVis.SourceID(); }
+  const ::VisID& VisID() const
+  { return mVis.VisID(); }
+  const ::VisID& VisualizationID() const
+  { return VisID(); }
 
  private:
   // For use by the ApplicationWindowClient class:
