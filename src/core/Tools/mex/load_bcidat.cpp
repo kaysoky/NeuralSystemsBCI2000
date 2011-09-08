@@ -59,8 +59,8 @@ struct StateInfo
 
 struct FileInfo
 {
-  long long begin, // range of samples to read
-            end;
+  sint64 begin, // range of samples to read
+         end;
   BCI2000FileReader* data;
 };
 
@@ -80,21 +80,23 @@ void
 ReadSignal( FileContainer& inFiles, mxArray* ioSignal )
 {
   T* data = reinterpret_cast<T*>( mxGetData( ioSignal ) );
-  long long sampleOffset = 0,
-            totalSamples = 0;
+  sint64 sampleOffset = 0,
+         totalSamples = 0;
   for( FileContainer::iterator i = inFiles.begin(); i != inFiles.end(); ++i )
     totalSamples += i->end - i->begin;
 
   for( FileContainer::iterator i = inFiles.begin(); i != inFiles.end(); ++i )
   {
     BCI2000FileReader* file = i->data;
-    long long numSamples = i->end - i->begin;
+    sint64 numSamples = i->end - i->begin;
     int numChannels = file->SignalProperties().Channels();
-    for( long long sample = 0; sample < numSamples; ++sample )
+    for( sint64 sample = 0; sample < numSamples; ++sample )
       for( int channel = 0; channel < numChannels; ++channel )
         data[ totalSamples * channel + sample + sampleOffset ]
-          = Raw ? file->RawValue( channel, sample + i->begin )
-                : file->CalibratedValue( channel, sample + i->begin );
+          = static_cast<T>(
+              Raw ? file->RawValue( channel, sample + i->begin )
+                  : file->CalibratedValue( channel, sample + i->begin )
+            );
     sampleOffset += numSamples;
   }
 }
@@ -146,7 +148,7 @@ mexFunction( int nargout, mxArray* varargout[],
       BCI2000FileReader* file = new BCI2000FileReader;
       FileInfo fileInfo =
       {
-        0, numeric_limits<long long>::max(),
+        0, numeric_limits<sint64>::max(),
         file
       };
       files.push_back( fileInfo );
@@ -160,9 +162,9 @@ mexFunction( int nargout, mxArray* varargout[],
         mexErrMsgTxt( oss.str().c_str() );
       }
 
-      long long samplesInFile = file->NumSamples(),
-                begin = 0,
-                end = numeric_limits<long long>::max();
+      sint64 samplesInFile = file->NumSamples(),
+             begin = 0,
+             end = numeric_limits<sint64>::max();
 
       if( ( i + 1 < nargin )
            && ( mxGetClassID( varargin[ i + 1 ] ) == mxDOUBLE_CLASS ) )
@@ -178,9 +180,9 @@ mexFunction( int nargout, mxArray* varargout[],
             mexErrMsgTxt( "Nonnegative integers expected in range vector." );
 
         if( numEntries > 0 )
-          begin = range[ 0 ] - 1;
+          begin = static_cast<sint64>( range[ 0 ] - 1 );
         if( numEntries > 1 )
-          end = range[ 1 ];
+          end = static_cast<sint64>( range[ 1 ] );
       }
       if( begin == -1 && end == 0 ) // The [0 0] case.
         begin = 0;
@@ -204,7 +206,7 @@ mexFunction( int nargout, mxArray* varargout[],
     ++i;
   }
 
-  long long totalSamples = files[ 0 ].end - files[ 0 ].begin;
+  sint64 totalSamples = files[ 0 ].end - files[ 0 ].begin;
   int numChannels = files[ 0 ].data->SignalProperties().Channels();
   SignalType dataType = files[ 0 ].data->SignalProperties().Type();
   mxClassID classID = mxDOUBLE_CLASS;
@@ -246,7 +248,7 @@ mexFunction( int nargout, mxArray* varargout[],
   }
 
   // Read EEG data into the first output argument.
-  mwSize dim[] = { totalSamples, numChannels };
+  mwSize dim[] = { static_cast<mwSize>( totalSamples ), numChannels };
   mxArray* signal = mxCreateNumericArray( 2, dim, classID, mxREAL );
   if( signal == NULL )
     mexErrMsgTxt( "Out of memory when allocating space for the signal variable." );
@@ -307,22 +309,22 @@ mexFunction( int nargout, mxArray* varargout[],
       { // Calling mxCreateNumericMatrix with a mxClassID type variable rather than a
         // constant appears unreliable.
         stateInfo[ i ].classID = mxUINT8_CLASS;
-        stateArray = mxCreateNumericMatrix( totalSamples, 1, mxUINT8_CLASS, mxREAL );
+        stateArray = mxCreateNumericMatrix( static_cast<mwSize>( totalSamples ), 1, mxUINT8_CLASS, mxREAL );
       }
       else if( maxLength <= 16 )
       {
         stateInfo[ i ].classID = mxUINT16_CLASS;
-        stateArray = mxCreateNumericMatrix( totalSamples, 1, mxUINT16_CLASS, mxREAL );
+        stateArray = mxCreateNumericMatrix( static_cast<mwSize>( totalSamples ), 1, mxUINT16_CLASS, mxREAL );
       }
       else if( maxLength <= 32 )
       {
         stateInfo[ i ].classID = mxUINT32_CLASS;
-        stateArray = mxCreateNumericMatrix( totalSamples, 1, mxUINT32_CLASS, mxREAL );
+        stateArray = mxCreateNumericMatrix( static_cast<mwSize>( totalSamples ), 1, mxUINT32_CLASS, mxREAL );
       }
       else
       {
         stateInfo[ i ].classID = mxUINT64_CLASS;
-        stateArray = mxCreateNumericMatrix( totalSamples, 1, mxUINT64_CLASS, mxREAL );
+        stateArray = mxCreateNumericMatrix( static_cast<mwSize>( totalSamples ), 1, mxUINT64_CLASS, mxREAL );
       }
       if( stateArray == NULL )
         mexErrMsgTxt( "Out of memory when allocating space for state variables." );
@@ -340,7 +342,7 @@ mexFunction( int nargout, mxArray* varargout[],
         stateInfo[ i ].location = s.Location();
         stateInfo[ i ].length = s.Length();
       }
-      for( long long sample = file->begin; sample < file->end; ++sample )
+      for( sint64 sample = file->begin; sample < file->end; ++sample )
       { // Iterating over samples in the outer loop will avoid scanning
         // the file multiple times.
         file->data->ReadStateVector( sample );
@@ -351,19 +353,19 @@ mexFunction( int nargout, mxArray* varargout[],
           switch( stateInfo[ i ].classID )
           {
             case mxUINT8_CLASS:
-              *stateInfo[ i ].data8++ = value;
+              *stateInfo[ i ].data8++ = static_cast<uint8>( value );
               break;
 
             case mxUINT16_CLASS:
-              *stateInfo[ i ].data16++ = value;
+              *stateInfo[ i ].data16++ = static_cast<uint16>( value );
               break;
 
             case mxUINT32_CLASS:
-              *stateInfo[ i ].data32++ = value;
+              *stateInfo[ i ].data32++ = static_cast<uint32>( value );
               break;
 
             case mxUINT64_CLASS:
-              *stateInfo[ i ].data64++ = value;
+              *stateInfo[ i ].data64++ = static_cast<uint64>( value );
               break;
 
             default:
@@ -382,13 +384,24 @@ mexFunction( int nargout, mxArray* varargout[],
     varargout[ 2 ] = ParamlistToStruct( *files[ 0 ].data->Parameters() );
     bcierr__.Clear();
   }
-  // Return the total number of samples if requested.
+  // Return the total number of samples over all listed files, independently
+  // of the number of samples requested for each file.
   if( nargout > 3 )
   {
-    long long numSamples = 0;
+    uint64 numSamples = 0;
     for( FileContainer::const_iterator i = files.begin(); i != files.end(); ++i )
       numSamples += i->data->NumSamples();
-    varargout[ 3 ] = mxCreateDoubleScalar( numSamples );
+    varargout[ 3 ] = mxCreateDoubleScalar( static_cast<double>( numSamples ) );
+  }
+  // Report the files' number of samples, independently of the number of
+  // samples requested for each file.
+  if( nargout > 4 )
+  {
+    mwSize dims[] = { 1, files.size() };
+    varargout[4] = mxCreateNumericArray( 2, dims, mxUINT64_CLASS, mxREAL );
+    uint64* pSizes = static_cast<uint64*>( mxGetData( varargout[4] ) );
+    for( FileContainer::const_iterator i = files.begin(); i != files.end(); ++i )
+      *pSizes++ = i->data->NumSamples();
   }
 }
 

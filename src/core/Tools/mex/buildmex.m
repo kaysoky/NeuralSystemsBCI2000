@@ -288,13 +288,20 @@ switch( target )
         end
         if( exist( 'COPYFILES' ) )
           for( f = COPYFILES )
-              copyfile( f, BINDIR );
+              copyfile( f{:}, BINDIR );
           end
         end
-        copyfile( [ target '.' mexext ], BINDIR );
-        if( exist( [ target '.m' ] ) )
-            copyfile( [ target '.m' ], BINDIR );
+        
+        targetfile = [ target '.' mexext ];
+        clear( targetfile );
+        copyfile( targetfile, BINDIR );
+        
+        targetfile = [ target '.m' ];
+        if( exist( targetfile ) )
+          clear( targetfile );
+          copyfile( targetfile, BINDIR );
         end
+        
         fprintf( 1, [ 'Finished building ' target '\n' ] );
 end
 

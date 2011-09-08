@@ -1,7 +1,9 @@
-function [ signal, states, parameters, total_samples ] = load_bcidat( varargin )
+function [ signal, states, parameters, total_samples, file_samples ] ...
+    = load_bcidat( varargin )
 %LOAD_BCIDAT Load BCI2000 data files into Matlab workspace variables.
 %
-%  [ signal, states, parameters, total_samples ] = load_bcidat( 'filename1', 'filename2', ... )
+%  [ signal, states, parameters, total_samples, file_samples ] ...
+%     = load_bcidat( 'filename1', 'filename2', ... )
 %
 %  loads signal, state, and parameter data from the files whose names are given
 %  as function arguments.
@@ -44,7 +46,13 @@ function [ signal, states, parameters, total_samples ] = load_bcidat( varargin )
 %  [ ignored, states, parameters ] = load_bcidat( 'filename', [0 0] );
 %
 %  The 'total_samples' output variable reports the total number of samples
-%  present in all files.
+%  present in all files, independently of how many samples have been
+%  specified as sample ranges. This allows to retrieve the number of
+%  samples in a file without actually loading the file.
+%
+%  Similarly, the 'file_samples' output variable provides a vector
+%  containing the number of samples within each input file, regardless of
+%  any sample ranges that may have been specified.
 %
 %
 %  The load_bcidat function is part of the BCI2000 project. 

@@ -52,21 +52,21 @@ struct StateInfo
 {
   int   mLength, mLocation;
   void* mpData;
-  void ( StateInfo::*mfpCopyState )( long, StateVector& ) const;
+  void ( StateInfo::*mfpCopyState )( sint64, StateVector& ) const;
 
   template<typename T>
-  void CopyState( long inBlockStart, StateVector& outStatevector ) const
+  void CopyState( sint64 inBlockStart, StateVector& outStatevector ) const
   {
     T* data = reinterpret_cast<T*>( mpData ) + inBlockStart;
     for( int sample = 0; sample < outStatevector.Samples(); ++sample )
-      outStatevector.SetStateValue( mLocation, mLength, sample, data[sample] );
+      outStatevector.SetStateValue( mLocation, mLength, sample, static_cast<State::ValueType>( data[sample] ) );
   }
 };
 
 
 template<typename T>
 void
-ReadSignal( void* inData, long long inNumSamples, long long inSampleOffset, GenericSignal& outSignal )
+ReadSignal( void* inData, sint64 inNumSamples, sint64 inSampleOffset, GenericSignal& outSignal )
 {
   for( int ch = 0; ch < outSignal.Channels(); ++ch )
   {
@@ -188,7 +188,7 @@ mexFunction( int nargout, mxArray* varargout[],
     bcierr__ << "Signal data must have two dimensions." << endl;
   mwSize totalSamples = dims[0];
 
-  void ( *fpReadSignal )( void*, long long, long long, GenericSignal& ) = NULL;
+  void ( *fpReadSignal )( void*, sint64, sint64, GenericSignal& ) = NULL;
   SignalType type = SignalType::int16;
   switch( mxGetClassID( pSignal ) )
   {
@@ -394,7 +394,7 @@ mexFunction( int nargout, mxArray* varargout[],
   wrapper.StartRun( outputFile, outputFileName );
 
   GenericSignal signal( properties );
-  for( long long blockStart = 0; blockStart + sampleBlockSize <= totalSamples; blockStart += sampleBlockSize )
+  for( sint64 blockStart = 0; blockStart + sampleBlockSize <= totalSamples; blockStart += sampleBlockSize )
   {
     fpReadSignal( pSignalData, totalSamples, blockStart, signal );
     for( StateInfoMap::const_iterator i = stateInfo.begin(); i != stateInfo.end(); ++i )
