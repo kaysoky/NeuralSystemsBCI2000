@@ -39,6 +39,7 @@ static int ValidBlockSizes[NUM_MODES] = {  16,  32,  16,  32 };
 RegisterFilter( gHIampADC, 1 );
 
 gHIampADC::gHIampADC()
+: mMasterIdx( 0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Signal%20Properties int SourceCh= 256 "
@@ -125,7 +126,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
 
   for( size_t i = 0; i < devices.size(); i++ )
     bcidbg( 0 ) << "g.HIamp Detected: Serial " << devices[i].Serial()
-                << ", Hardware Version " << GT_GetHWVersion( devices[i].mDevice ) << endl;
+                << ", Hardware Version " << devices[i].HWVersion() << endl;
 
   if( Parameter( "DeviceIDs" )->NumValues() == 0 )
   {
@@ -163,7 +164,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
         {
           // The current gHIamp doesn't support slaving...
           bciout << "Slave mode not supported yet..." << endl;
-          devices[j].mConfig.IsSlave = true;
+          devices[j].SetIsSlave( true );
           detected = true;
         }
       }
@@ -179,7 +180,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
     {
       if( ( string )Parameter( "DeviceIDMaster" ) == devices[i].Serial() )
       {
-        devices[i].mConfig.IsSlave = false;
+        devices[i].SetIsSlave( false );
         masterIdx = i;
         detected = true;
       }
@@ -275,8 +276,6 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
 void
 gHIampADC::OnInitialize( const SignalProperties& Output )
 {
-  mSampleBlockSize = Parameter( "SampleBlockSize" );
-
   // Detect and query all connected gHIamp devices
   if( !mDevices.Detect() )
     bcierr << "Error connecting to gHIamp devices" << endl
@@ -322,7 +321,7 @@ gHIampADC::OnInitialize( const SignalProperties& Output )
     for( size_t i = 0; i < mDevices.size(); i++ )
       if( Parameter( "DeviceIDMaster" ) == mDevices[i].Serial() )
         mMasterIdx = i;
-  mDevices[ mMasterIdx ].mConfig.IsSlave = false;
+  mDevices[ mMasterIdx ].SetIsSlave( false );
 
   // Map Channels
   if( Parameter( "SourceChList" )->NumValues() == 0 )
@@ -513,18 +512,20 @@ gHIampADC::DetermineNotchNumber( int& oFilterNumber ) const
 // Purpose: Parsing SourceChList
 // **************************************************************************
 gHIampADC::SrcCh::SrcCh( string s )
+: mAmp( 0 ),
+  mChannel( 0 ),
+  mDigital( false )
 {
-  mAmp = 0;
-  mChannel = 0;
-  mDigital = false;
-  if( s.find( "." ) != string::npos )
+  size_t dotpos = s.find( "." );
+  if( dotpos != string::npos )
   {
-    mAmp = atoi( s.substr( 0, s.find( "." ) ).c_str() );
-    string chan = s.substr( s.find( "." ) + 1 );
-    if( chan.find( "D" ) != string::npos )
+    mAmp = atoi( s.substr( 0, dotpos ).c_str() );
+    string chan = s.substr( dotpos + 1 );
+    size_t dpos = chan.find( "D" );
+    if( dpos != string::npos )
     {
       mDigital = true;
-      mChannel = atoi( chan.substr( chan.find( "D" ) + 1 ).c_str() );
+      mChannel = atoi( chan.substr( dpos + 1 ).c_str() );
     }
     else
       mChannel = atoi( chan.c_str() );

@@ -28,37 +28,52 @@
 
 #include "gHIampDevice.h"
 #include "BCIError.h"
+#include "defines.h"
 
 using namespace std;
 
 #define QUEUE_SIZE 4
-string GetDeviceErrorMessage();
 
 void
-gHIampDevice::Init( HANDLE device )
+gHIampDevice::Init( int inPort )
 {
-  mDevice = device;
-  if( !GT_GetSerial( mDevice, mSerial, 16 ) )
-    bcierr << "Could not retreive serial from gHIamp device. "
-           << GetDeviceErrorMessage() << endl;
-  if( !GT_GetConfiguration( mDevice, &mConfig ) )
-    bcierr << "Could not get configuration from gHIamp: serial " << mSerial
-           << GetDeviceErrorMessage() << endl;
   mpBuffers = NULL;
   mpOverlapped = NULL;
-
-  // Initial configuration
-  for( size_t i = 0; i < 256; i++ )
-  {
-    mConfig.Channels[i].Acquire = true;
-    mConfig.Channels[i].BandpassFilterIndex = -1;
-    mConfig.Channels[i].NotchFilterIndex = -1;
-  }
-  mConfig.TriggerLineEnabled = true;
-  mConfig.IsSlave = true;
-  mConfig.Mode = M_NORMAL;
   mConfigured = false;
+  mHWVersion = 0.0;
+  mQueueIndex = 0;
+  mSampleBlockSize = 0;
   mRefIdx = -1;
+  mBufferSizeBytes = 0;
+  ::memset( &mConfig, 0, sizeof( mConfig ) );
+
+  mDevice = GT_OpenDevice( inPort );
+  if( mDevice )
+  {
+    char buf[256];
+    if( GT_GetSerial( mDevice, buf, sizeof( buf ) - 1 ) )
+      mSerial = buf;
+    else
+      bcierr << "Could not retrieve serial from gHIamp device. "
+             << GetDeviceErrorMessage() << endl;
+
+    if( !GT_GetConfiguration( mDevice, &mConfig ) )
+      bcierr << "Could not get configuration from gHIamp: serial " << mSerial
+             << GetDeviceErrorMessage() << endl;
+
+    mHWVersion = GT_GetHWVersion( mDevice );
+
+    // Initial configuration
+    for( size_t i = 0; i < cNumAnalogChannels; i++ )
+    {
+      mConfig.Channels[i].Acquire = true;
+      mConfig.Channels[i].BandpassFilterIndex = -1;
+      mConfig.Channels[i].NotchFilterIndex = -1;
+    }
+    mConfig.TriggerLineEnabled = true;
+    mConfig.IsSlave = true;
+    mConfig.Mode = M_NORMAL;
+  }
 }
 
 void
@@ -67,7 +82,7 @@ gHIampDevice::Cleanup()
   for( size_t i = 0; i < QUEUE_SIZE; i++ )
   {
     if( mpOverlapped ) WaitForSingleObject( mpOverlapped[i].hEvent, 1000 );
-  if( mpOverlapped ) CloseHandle( mpOverlapped[i].hEvent );
+    if( mpOverlapped ) CloseHandle( mpOverlapped[i].hEvent );
     if( mpBuffers ) delete [] mpBuffers[i];
   }
   delete [] mpBuffers; mpBuffers = NULL;
@@ -83,8 +98,7 @@ gHIampDevice::BeginAcquisition()
   Cleanup();
 
   // Determine the number of channels we should acquire
-  mNumChannels = 256 + 1;
-  int nPoints = mNumScans * mNumChannels;
+  int nPoints = mSampleBlockSize * cNumChannelPoints;
   mBufferSizeBytes = nPoints * sizeof( float );
   mpBuffers = new BYTE*[ QUEUE_SIZE ];
   mpOverlapped = new OVERLAPPED[ QUEUE_SIZE ];
@@ -116,8 +130,8 @@ gHIampDevice::BeginAcquisition()
 void
 gHIampDevice::GetData( GenericSignal &Output )
 {
-  // Block until new data is accessable
-  if( WaitForSingleObject( mpOverlapped[mQueueIndex].hEvent, 1000 ) == WAIT_TIMEOUT )
+  // Block until new data is accessible
+  if( WaitForSingleObject( mpOverlapped[mQueueIndex].hEvent, cTimeoutMs ) == WAIT_TIMEOUT )
     bcierr << "Timeout occurred while waiting for data from gHIamp: serial " << Serial() << endl
            << GetDeviceErrorMessage() << endl;
 
@@ -134,24 +148,23 @@ gHIampDevice::GetData( GenericSignal &Output )
 
   // Fill the output as necessary
   float* data = reinterpret_cast< float* >( mpBuffers[mQueueIndex] );
-  for( int sample = 0; sample < mNumScans; sample++ )
+  for( int sample = 0; sample < mSampleBlockSize; sample++ )
   {
     map< int, int >::iterator itr = mAnalogChannelMap.begin();
-    int idx = 0;
     if( mRefIdx == -1 ) // Unreferenced Mode
-      for( ; itr != mAnalogChannelMap.end(); itr++, idx++ )
-        Output( itr->second, sample ) = data[ ( mNumChannels * sample ) + itr->first ];
+      for( ; itr != mAnalogChannelMap.end(); itr++ )
+        Output( itr->second, sample ) = data[ ( cNumChannelPoints * sample ) + itr->first ];
     else // Referenced Mode
-      for( ; itr != mAnalogChannelMap.end(); itr++, idx++ )
-        Output( itr->second, sample ) = data[ ( mNumChannels * sample ) + itr->first ]
-                                      - data[ ( mNumChannels * sample ) + mRefIdx];
+      for( ; itr != mAnalogChannelMap.end(); itr++ )
+        Output( itr->second, sample ) = data[ ( cNumChannelPoints * sample ) + itr->first ]
+                                      - data[ ( cNumChannelPoints * sample ) + mRefIdx];
 
     // This might break in the future.  This should really be a uint16_t
-    unsigned short digital = ( unsigned short )( mpBuffers[mQueueIndex][ 256 * ( sample + 1 ) ] );
+    uint16 digital = *reinterpret_cast<uint16*>( mpBuffers[mQueueIndex] + cNumAnalogChannels * ( sample + 1 ) );
     itr = mDigitalChannelMap.begin();
     for( ; itr != mDigitalChannelMap.end(); itr++ )
     {
-      unsigned short mask = 1 << itr->first;
+      uint16 mask = 1 << itr->first;
       Output( itr->second, sample ) = ( digital & mask ) ? 100.0f : 0.0f;
     }
   }
@@ -195,10 +208,10 @@ gHIampDevice::MapAllAnalogChannels( int startch, int numch )
 bool
 gHIampDevice::MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bool err )
 {
-  if( devicech > 256 )
+  if( devicech >= cNumAnalogChannels )
   {
     if( err ) bcierr << "Requested channel " << devicech + 1
-                     << " from g.HIamp which only has 256 channels" << endl;
+                     << " from g.HIamp which only has " << cNumAnalogChannels << " channels" << endl;
     return false;
   }
   if( mAnalogChannelMap.find( devicech ) != mAnalogChannelMap.end() )
@@ -219,7 +232,7 @@ gHIampDevice::MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bo
 bool
 gHIampDevice::MapDigitalChannel( unsigned int devicech, unsigned int sourcech )
 {
-  if( devicech > 16 )
+  if( devicech >= cNumDigitalChannels )
   {
     bcierr << "Requested digital channel " << devicech + 1
            << " from g.HIamp which only has 16 digital channels" << endl;
@@ -236,7 +249,7 @@ gHIampDevice::MapDigitalChannel( unsigned int devicech, unsigned int sourcech )
 
 bool gHIampDevice::SetRefChan( int devicech )
 {
-  if( devicech > 256 )
+  if( devicech >= cNumAnalogChannels )
     return false;
   if( !mConfig.Channels[ devicech ].Available )
     return false;
@@ -247,14 +260,14 @@ bool gHIampDevice::SetRefChan( int devicech )
 void
 gHIampDevice::SetNotch( int iNotchNo )
 {
-  for( size_t i = 0; i < 256; i++ )
+  for( size_t i = 0; i < cNumAnalogChannels; i++ )
     mConfig.Channels[i].NotchFilterIndex = iNotchNo;
 }
 
 void
 gHIampDevice::SetFilter( int iFilterNo )
 {
-  for( size_t i = 0; i < 256; i++ )
+  for( size_t i = 0; i < cNumAnalogChannels; i++ )
     mConfig.Channels[i].BandpassFilterIndex = iFilterNo;
 }
 
@@ -262,9 +275,9 @@ void
 gHIampDevice::SetConfiguration( int iSampleRate, int iSampleBlockSize )
 {
   // Configure the amp to work with our system setup
-  mNumScans = iSampleBlockSize;
+  mSampleBlockSize = iSampleBlockSize;
   mConfig.SampleRate = iSampleRate;
-  mConfig.BufferSize = mNumScans;
+  mConfig.BufferSize = mSampleBlockSize;
   mConfig.HoldEnabled = false;
   mConfig.Mode = M_NORMAL;
 
@@ -275,7 +288,7 @@ gHIampDevice::SetConfiguration( int iSampleRate, int iSampleBlockSize )
   mConfig.InternalSignalGenerator.Offset = 0; // muV
 
   // Configure device channels
-  for( int j = 0; j < 256; j++ )
+  for( int j = 0; j < cNumAnalogChannels; j++ )
     if( mConfig.Channels[j].Available )
       mConfig.Channels[j].BipolarChannel = 0;
 
@@ -287,50 +300,22 @@ gHIampDevice::SetConfiguration( int iSampleRate, int iSampleBlockSize )
   mConfigured = true;
 }
 
-// **************************************************************************
-// DeviceContainer
-// Purpose: This class auto-detects, opens, and closes gHIamp devices
-// **************************************************************************
-bool
-gHIampDeviceContainer::Detect()
-{
-  Close();
-  for( int port = 0; port < 16; port++ )
-  {
-    HANDLE hdev = GT_OpenDevice( port );
-    if( hdev )
-      this->push_back( gHIampDevice( hdev ) );
-  }
-  return !this->empty();
-}
-
 void
-gHIampDeviceContainer::Close()
+gHIampDevice::Close()
 {
-  for( gHIampDeviceContainer::iterator itr = begin(); itr != end(); itr++ )
-    if( !GT_CloseDevice( &( itr->mDevice ) ) )
-      bcierr << "Could not close gHIamp device: serial " << itr->Serial() << endl
-             << GetDeviceErrorMessage() << endl;
-  clear();
-}
-
-void
-gHIampDeviceContainer::Remove( gHIampDeviceContainer::iterator itr )
-{
-  if( !GT_CloseDevice( &( itr->mDevice ) ) )
-      bcierr << "Could not close gHIamp device: serial " << itr->Serial() << endl
-             << GetDeviceErrorMessage() << endl;
-  erase( itr );
+  if( mDevice && !GT_CloseDevice( &mDevice ) )
+    bcierr << "Could not close gHIamp device: serial " << Serial() << endl
+           << GetDeviceErrorMessage() << endl;
 }
 
 // **************************************************************************
 // Function:   GetDeviceErrorMessage
-// Purpose:    Retreives a formatted error string from the gHIamp device API
+// Purpose:    Retrieves a formatted error string from the gHIamp device API
 // Parameters: N/A
 // Returns:    std::string formatted error
 // **************************************************************************
 string
-GetDeviceErrorMessage()
+gHIampDevice::GetDeviceErrorMessage()
 {
   WORD errorCode = 0;
   char errorMessage[256]; // apparently, standard array size in gHIamp.h
@@ -341,4 +326,36 @@ GetDeviceErrorMessage()
   ostringstream oss;
   oss << "(#" << errorCode << ": " << errorMessage << ")";
   return oss.str();
+}
+
+// **************************************************************************
+// DeviceContainer
+// Purpose: This class auto-detects, opens, and closes gHIamp devices
+// **************************************************************************
+bool
+gHIampDeviceContainer::Detect()
+{
+  Close();
+  for( int port = 0; port < gHIampDevice::cNumberOfPorts; port++ )
+  {
+    gHIampDevice device( port );
+    if( device.IsOpen() )
+      this->push_back( device );
+  }
+  return !this->empty();
+}
+
+void
+gHIampDeviceContainer::Close()
+{
+  for( gHIampDeviceContainer::iterator itr = begin(); itr != end(); itr++ )
+    itr->Close();
+  clear();
+}
+
+void
+gHIampDeviceContainer::Remove( gHIampDeviceContainer::iterator itr )
+{
+  itr->Close();
+  erase( itr );
 }

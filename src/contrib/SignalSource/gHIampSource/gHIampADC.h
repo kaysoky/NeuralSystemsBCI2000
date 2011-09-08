@@ -45,9 +45,9 @@ class gHIampADC : public BufferedADC
  private:
   bool DetermineFilterNumber( int& oFilterNumber ) const;
   bool DetermineNotchNumber( int& oFilterNumber ) const;
-  int mSampleBlockSize;
-  gHIampDeviceContainer mDevices;
+
   int mMasterIdx;
+  gHIampDeviceContainer mDevices;
 
   // A little class for parsing SourceChList
   class SrcCh

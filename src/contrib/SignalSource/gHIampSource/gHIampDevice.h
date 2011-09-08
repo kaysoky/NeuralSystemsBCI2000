@@ -34,10 +34,15 @@
 class gHIampDevice
 {
  public:
-  gHIampDevice( HANDLE device ) { Init( device ); }
+  static const int cNumberOfPorts = 16;
+  static const int cTimeoutMs = 1000;
+
+  gHIampDevice( int port ) { Init( port ); }
   ~gHIampDevice() { Cleanup(); }
-  void Init( HANDLE device );
+  void Init( int port );
   void Cleanup();
+  bool IsOpen() const { return mDevice != NULL; }
+  void Close();
 
   // Device control
   bool MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bool err = true );
@@ -51,18 +56,28 @@ class gHIampDevice
   void GetData( GenericSignal& Output );
   void EndAcquisition();
 
+  static std::string GetDeviceErrorMessage();
+
+  // Setters
+  void SetIsSlave( bool inIsSlave ) { mConfig.IsSlave = inIsSlave; }
   // Getters
-  std::string Serial() { return std::string( mSerial ); }
+  bool IsSlave() const { return mConfig.IsSlave; }
+  const std::string& Serial() const { return mSerial; }
+  const float HWVersion() const { return mHWVersion; }
+
+ private:
+  static const size_t cNumAnalogChannels = 256;
+  static const size_t cNumDigitalChannels = 16;
+  static const size_t cNumChannelPoints = cNumAnalogChannels + 1;
 
   HANDLE                 mDevice;
   GT_HIAMP_CONFIGURATION mConfig;
 
- private:
   bool        mConfigured;
-  char        mSerial[16];
+  std::string mSerial;
+  float       mHWVersion;
   int         mQueueIndex,
-              mNumChannels,
-              mNumScans,
+              mSampleBlockSize,
               mRefIdx;
   BYTE**      mpBuffers;
   OVERLAPPED* mpOverlapped;
