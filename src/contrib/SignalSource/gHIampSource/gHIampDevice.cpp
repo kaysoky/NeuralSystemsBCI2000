@@ -339,7 +339,7 @@ bool
 gHIampDeviceContainer::Detect()
 {
   Close();
-  for( int port = 0; port < gHIampDevice::cNumberOfPorts; port++ )
+  for( int port = 0; port < gHIampDevice::cNumberOfUSBPorts; port++ )
   {
     gHIampDevice device( port );
     if( device.IsOpen() )
