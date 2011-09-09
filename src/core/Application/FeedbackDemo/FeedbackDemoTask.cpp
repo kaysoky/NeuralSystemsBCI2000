@@ -57,12 +57,12 @@ FeedbackDemoTask::FeedbackDemoTask()
   mpTarget( new TShape( mpForm ) ),
   mpCursor( new TShape( mpForm ) )
 #else // __BORLANDC__
-  mpForm( new QWidget() ),
-  mpScene( new QGraphicsScene() ),
-  mpSceneView( new QGraphicsView( mpForm ) ),
-  mpLabel( new QGraphicsSimpleTextItem() ),
-  mpTarget( new QGraphicsRectItem() ),
-  mpCursor( new QGraphicsEllipseItem() )
+  mpForm( NULL ),
+  mpScene( NULL ),
+  mpSceneView( NULL ),
+  mpLabel( NULL ),
+  mpTarget( NULL ),
+  mpCursor( NULL )
 #endif // __BORLANDC__
 {
   BEGIN_PARAMETER_DEFINITIONS
@@ -110,21 +110,27 @@ FeedbackDemoTask::FeedbackDemoTask()
   mpCursor->Pen->Width = 0;
   mpCursor->Hide();
 #else // __BORLANDC__
+  mpForm = new QWidget;
   mpForm->setWindowFlags( Qt::FramelessWindowHint );
+  mpForm->setWindowTitle( "BCI2000 Feedback Demo" );
+
+  mpScene = new QGraphicsScene;
   mpScene->setBackgroundBrush( QBrush( Qt::black ) );
+
+  mpSceneView = new QGraphicsView( mpForm );
   mpSceneView->setScene( mpScene );
   mpSceneView->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
   mpSceneView->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
   mpSceneView->show();
 
-  mpScene->addItem( mpLabel );
+  mpLabel = new QGraphicsSimpleTextItem( NULL, mpScene );
   mpLabel->show();
 
-  mpScene->addItem( mpTarget );
+  mpTarget = new QGraphicsRectItem( NULL, mpScene );
   mpTarget->setPen( Qt::NoPen );
   mpTarget->hide();
 
-  mpScene->addItem( mpCursor );
+  mpCursor = new QGraphicsEllipseItem( NULL, mpScene );
   mpCursor->setPen( Qt::NoPen );
   mpCursor->hide();
 
