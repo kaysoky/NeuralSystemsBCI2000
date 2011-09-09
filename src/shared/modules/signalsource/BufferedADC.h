@@ -17,6 +17,10 @@
 //        argument for output properties, and none for input.
 //        From here, do all initialization except actually starting data
 //        acquisition.
+//     OnProcess()
+//        Called at the beginning of the standard Preflight() function.
+//        Override this method when you need to act on state variables,
+//        e.g. to set a digital output on the amplifier.
 //     OnStartAcquisition()
 //       Perform initialization steps necessary to read from the ADC.
 //     OnStopAcquisition()
@@ -26,8 +30,10 @@
 //       argument.
 //    The latter three functions are called from a data acquisition thread, whereas 
 //    remaining ones are called from the main thread. Still, it is guaranteed that
-//    no two functions of this interface are ever executed concurrently, so you may 
+//    functions of this interface are not executed concurrently, so you may 
 //    read/write member variables of your derived class without using synchronizers.
+//    An important exception are OnProcess() and DoAcquire(), which may execute
+//    concurrently.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -81,6 +87,7 @@ class BufferedADC : public GenericADC, private OSThread
   // Virtual data acquisition interface.
   virtual void OnPreflight( SignalProperties& ) const = 0;
   virtual void OnInitialize( const SignalProperties& ) = 0;
+  virtual void OnProcess() {}
   virtual void OnStartAcquisition() = 0;
   virtual void OnStopAcquisition() = 0;
   virtual void DoAcquire( GenericSignal& ) = 0;

@@ -76,6 +76,8 @@ void
 BufferedADC::Process( const GenericSignal&,
                             GenericSignal& output )
 {
+  this->OnProcess();
+
   bool waitForData = false;
   {
     OSMutex::Lock lock( mMutex );
