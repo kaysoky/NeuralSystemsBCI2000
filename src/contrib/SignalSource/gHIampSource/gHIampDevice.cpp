@@ -185,7 +185,10 @@ gHIampDevice::EndAcquisition()
   if( !GT_Stop( mDevice ) )
     bcierr << "Error trying to stop acquisition from gHIamp: serial " << Serial() << endl
            << GetDeviceErrorMessage() << endl;
-
+  // Reset data in the driver's transfer pipe
+  if( !GT_ResetTransfer( mDevice ) )
+    bcierr << "Error trying to reset transfer from gHIamp: serial " << Serial() << endl
+           << GetDeviceErrorMessage() << endl;
   // Clean up allocated resources
   Cleanup();
 }
@@ -303,13 +306,9 @@ gHIampDevice::SetConfiguration( int iSampleRate, int iSampleBlockSize )
 void
 gHIampDevice::Close()
 {
-  if( mDevice )
-  {
-    if( !GT_CloseDevice( &mDevice ) )
-      bcierr << "Could not close gHIamp device: serial " << Serial() << endl
-             << GetDeviceErrorMessage() << endl;
-    ::CloseHandle( mDevice );
-  }
+  if( mDevice && !GT_CloseDevice( &mDevice ) )
+    bcierr << "Could not close gHIamp device: serial " << Serial() << endl
+           << GetDeviceErrorMessage() << endl;
 }
 
 // **************************************************************************
