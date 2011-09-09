@@ -34,7 +34,7 @@
 class gHIampDevice
 {
  public:
-  static const int cNumberOfPorts = 16;
+  static const int cNumberOfUSBPorts = 16;
   static const int cTimeoutMs = 1000;
 
   gHIampDevice( int port ) { Init( port ); }
@@ -66,6 +66,7 @@ class gHIampDevice
   const float HWVersion() const { return mHWVersion; }
 
  private:
+  static const size_t cErrorMessageSize = 1024; // from g.USBamp API doc
   static const size_t cNumAnalogChannels = 256;
   static const size_t cNumDigitalChannels = 16;
   static const size_t cNumChannelPoints = cNumAnalogChannels + 1;

@@ -303,9 +303,13 @@ gHIampDevice::SetConfiguration( int iSampleRate, int iSampleBlockSize )
 void
 gHIampDevice::Close()
 {
-  if( mDevice && !GT_CloseDevice( &mDevice ) )
-    bcierr << "Could not close gHIamp device: serial " << Serial() << endl
-           << GetDeviceErrorMessage() << endl;
+  if( mDevice )
+  {
+    if( !GT_CloseDevice( &mDevice ) )
+      bcierr << "Could not close gHIamp device: serial " << Serial() << endl
+             << GetDeviceErrorMessage() << endl;
+    ::CloseHandle( mDevice );
+  }
 }
 
 // **************************************************************************
@@ -318,7 +322,7 @@ string
 gHIampDevice::GetDeviceErrorMessage()
 {
   WORD errorCode = 0;
-  char errorMessage[256]; // apparently, standard array size in gHIamp.h
+  char errorMessage[cErrorMessageSize+1];
 
   if( !GT_GetLastError( &errorCode, errorMessage ) )
     return string( "(reason unknown: error code could not be retrieved from device)" );
