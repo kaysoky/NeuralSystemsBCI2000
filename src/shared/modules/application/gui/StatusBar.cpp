@@ -273,7 +273,10 @@ StatusBar::OnPaint( const DrawContext& dc )
   );
   int size = fm.width( line1_ );
   while( size > line1Rect.width() - 2 * charWidth )
-    size = fm.width( line1_.mid( 2 ) );
+  {
+    line1_ = line1_.mid( 2 );
+    size = fm.width( line1_ );
+  }
   p->drawText( line1Rect, line1_ );
 
   QString line2_ = QString::fromLocal8Bit( line2.c_str() );
@@ -285,7 +288,10 @@ StatusBar::OnPaint( const DrawContext& dc )
   );
   size = fm.width( line2_ );
   while( size > line2Rect.width() - 2 * charWidth )
-    size = fm.width( line2_.mid( 2 ) );
+  {
+    line2_ = line2_.mid( 2 );
+    size = fm.width( line2_ );
+  }
   p->drawText( line2Rect, line2_ );
 #endif // __BORLANDC__
 }
