@@ -34,13 +34,15 @@
 
 // BCB2009 and MSVC10 define char16_t but not __STDC_UTF_16__.
 // This leads to problems with recent Matlab headers.
-// MSVC10 has a similar problem.
 #if ( __BORLANDC__ > 0x0600 ) || ( _MSC_VER >= 1600 )
 # ifndef __STDC_UTF_16__
 #  define __STDC_UTF_16__ true
 # endif // __STDC_UTF_16__
 #endif // ( __BORLANDC__ > 0x0600 ) || ( _MSC_VER >= 1600 )
 
+#ifdef _WIN32
+# define MX_COMPAT_32 1
+#endif // _WIN32
 #include "engine.h"
 
 class MatlabEngine
