@@ -35,6 +35,7 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QWhatsThis>
+#include <QTemporaryFile>
 
 #include "BCI2000FileReader.h"
 #include "OperatorUtils.h"
@@ -334,19 +335,15 @@ ConfigWindow::LoadParameters( const QString& inName )
   QString fileExtension = QFileInfo( inName ).suffix();
   if( fileExtension == "dat" )
   {
-    const char* tempdir = ::getenv( "TEMP" );
-    if( tempdir == NULL )
-      tempdir = ::getenv( "TMP" );
-    if( tempdir == NULL )
-      tempdir = "/tmp";
-    QString name = tempdir;
-    name = name + "/" + ::tmpnam( NULL );
-    BCI2000FileReader file( inName.toLocal8Bit().constData() );
-    if( file.IsOpen() )
-      file.Parameters()->Save( name.toLocal8Bit().constData() );
-    // do not import non-existing parameters
-    result = paramsFromFile.Load( name.toLocal8Bit().constData(), false );
-    ::unlink( name.toLocal8Bit().constData() );
+    QTemporaryFile temp;
+    if( temp.open() )
+    {
+        BCI2000FileReader file( inName.toLocal8Bit().constData() );
+        if( file.IsOpen() )
+            file.Parameters()->Save( temp.fileName().toLocal8Bit().constData() );
+        // do not import non-existing parameters
+        result = paramsFromFile.Load( temp.fileName().toLocal8Bit().constData(), false );
+    }
   }
   else
     result = paramsFromFile.Load( inName.toLocal8Bit().constData(), false );

@@ -51,6 +51,7 @@
 #include <iomanip>
 #include <ctime>
 #include <cmath>
+#include <cstdlib>
 
 using namespace std;
 

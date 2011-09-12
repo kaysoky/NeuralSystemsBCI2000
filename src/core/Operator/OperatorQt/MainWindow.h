@@ -31,7 +31,7 @@
 #include <QDateTime>
 #include "VersionInfo.h"
 #include "SysLog.h"
-#include "Paramlist.h"
+#include "ParamList.h"
 
 #define TXT_WINDOW_CAPTION      "BCI2000/Operator"
 #define TXT_OPERATOR_SUSPENDED  "Suspended"

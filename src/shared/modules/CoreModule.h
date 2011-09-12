@@ -60,8 +60,8 @@
 
 #include "Uncopyable.h"
 #include "MessageHandler.h"
-#include "Paramlist.h"
-#include "Statelist.h"
+#include "ParamList.h"
+#include "StateList.h"
 #include "GenericSignal.h"
 
 #include "OSThread.h"

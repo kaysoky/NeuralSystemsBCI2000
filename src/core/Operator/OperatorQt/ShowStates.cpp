@@ -27,7 +27,7 @@
 #include "ui_ShowStates.h"
 #include "BCI_OperatorLib.h"
 
-#include <QDialogButtonbox>
+#include <QDialogButtonBox>
 
 ShowStates::ShowStates( QWidget* parent )
 : QDialog( parent ),

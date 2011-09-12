@@ -26,6 +26,7 @@
 #include "../OperatorLib/BCI_OperatorLib.h"
 
 #include <string>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 
@@ -220,7 +221,7 @@ OnUnknownCommand( void* inData, const char* inCommand )
   const char* runCommand = "run script";
   if( strnicmp( inCommand, runCommand, strlen( runCommand ) ) == 0 )
   {
-    const char* p = inCommand + strlen( runCommand );
+    const char* p = inCommand + ::strlen( runCommand );
     while( *p && ::isspace( *p ) )
       ++p;
     ExecuteScript( p );
