@@ -63,6 +63,7 @@ MessageHandler::HandleMessage( MessageQueue& ioQueue )
   MessageQueueEntry entry = ioQueue.Next();
 
   istringstream iss( string( entry.message, entry.length ) );
+  delete[] entry.message;
   switch( entry.descSupp )
   {
     CONSIDER( ProtocolVersion );
@@ -80,7 +81,6 @@ MessageHandler::HandleMessage( MessageQueue& ioQueue )
       bcierr << "Unknown message descriptor/supplement 0x" 
              << hex << entry.descSupp << endl;
   }
-  delete[] entry.message;
 }
 
 void

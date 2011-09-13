@@ -44,7 +44,7 @@ istream&
 VisBase::ReadBinary( istream& is )
 {
   int visID = is.get();
-  if( visID == InvalidID )
+  if( visID == SourceID::ExtendedFormat )
   {
     string s;
     getline( is, s, '\0' );
@@ -81,7 +81,7 @@ VisBase::WriteBinary( ostream& os ) const
   }
   else
   {
-    os.put( '\xff' );
+    os.put( static_cast<unsigned char>( SourceID::ExtendedFormat ) );
     os << mVisID;
     os.put( '\0' );
   }

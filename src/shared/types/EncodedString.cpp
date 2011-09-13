@@ -74,7 +74,7 @@ EncodedString::ReadFromStream( istream& is )
       }
       newContent.erase( pos, numDigits );
       if( hexValue > 0 )
-        newContent.insert( pos, 1, ( char )hexValue );
+        newContent.insert( pos, 1, static_cast<char>( hexValue ) );
 
       pos = newContent.find( cEscapeChar, pos + 1 );
     }
