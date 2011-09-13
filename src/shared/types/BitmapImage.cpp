@@ -134,8 +134,11 @@ BitmapImage::WriteBinary( ostream& os ) const
 istream&
 BitmapImage::ReadBinary( istream& is )
 {
-  mWidth = uint8( is.get() ) | ( uint8( is.get() ) << 8 );
-  mHeight = uint8( is.get() ) | ( uint8( is.get() ) << 8 );
+  mWidth = uint8( is.get() );
+  mWidth |= uint8( is.get() ) << 8;
+  mHeight = uint8( is.get() );
+  mHeight |= uint8( is.get() ) << 8;
+
   delete[] mpData;
   mpData = new uint16[ mWidth * mHeight ];
 
@@ -144,7 +147,8 @@ BitmapImage::ReadBinary( istream& is )
   while( pData < pEnd )
   {
     int length_1 = uint8( is.get() );
-    int value = uint8( is.get() ) | ( uint8( is.get() ) << 8 );
+    int value = uint8( is.get() );
+    value |= uint8( is.get() ) << 8;
     for( int i = 0; i <= length_1 && pData < pEnd; ++i )
       *pData++ = value;
   }
