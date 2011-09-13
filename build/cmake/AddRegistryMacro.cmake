@@ -32,22 +32,21 @@ MACRO( BCI2000_ADD_REGISTRY NAME SOURCES DEPENDS )
       VERBATIM
     )
   ENDFOREACH()
-  ADD_CUSTOM_COMMAND( # Make sure the registry file is re-created each time the configuration has changed.
-    OUTPUT ${REGISTRY_INC}
-    DEPENDS ${CMAKE_CACHEFILE_DIR}/CMakeCache.txt
-    APPEND
+  SET_PROPERTY( # Make sure the registry file is re-created each time the configuration has changed.
+    SOURCE ${REGISTRY_INC}
+    APPEND PROPERTY OBJECT_DEPENDS ${CMAKE_CACHEFILE_DIR}/CMakeCache.txt
   )
   ADD_CUSTOM_COMMAND(
-    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CACHEFILE_DIR}/CMakeCache.txt
+    COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CACHEFILE_DIR}/CMakeCache.txt"
     OUTPUT ${CMAKE_CACHEFILE_DIR}/CMakeCache.txt
   )
 
   SET( REGISTRY_CPP
     ${BCI2000_SRC_DIR}/shared/config/BCIRegistry.cpp
   )
-  ADD_CUSTOM_COMMAND( # Make sure BCIRegistry is re-compiled each time the registry file has changed.
-    OUTPUT ${REGISTRY_CPP}
-    DEPENDS ${REGISTRY_INC}
+  SET_PROPERTY( # Make sure the registry cpp file is re-compiled each time the registry file has changed.
+    SOURCE ${REGISTRY_CPP}
+    APPEND PROPERTY OBJECT_DEPENDS ${REGISTRY_INC}
   )
   SET( ${SOURCES}
     ${${SOURCES}}

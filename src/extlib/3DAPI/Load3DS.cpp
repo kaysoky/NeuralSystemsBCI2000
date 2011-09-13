@@ -33,7 +33,7 @@
 #if __BORLANDC__
 # include <windows.h>
 #else // __BORLANDC__
-# include <QMessagebox>
+# include <QMessageBox>
 #endif // __BORLANDC__
 
 using namespace std;

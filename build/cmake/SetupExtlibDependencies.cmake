@@ -4,12 +4,13 @@
 ## Description: Modifies the framework and sets up libraries to be linked
 
 # Sets up the extlib dependencies by looping through the BCI2000_INCLUDING var
-MACRO( BCI2000_SETUP_EXTLIB_DEPENDENCIES SRC_FRAMEWORK HDR_FRAMEWORK LIBS )
+MACRO( BCI2000_SETUP_EXTLIB_DEPENDENCIES SRC_FRAMEWORK HDR_FRAMEWORK LIBS FAILED )
 
 # Make sure the input is treated as variables
 SET( SOURCES "${SRC_FRAMEWORK}" )
 SET( HEADERS "${HDR_FRAMEWORK}" )
 SET( LIBRARIES "${LIBS}" )
+SET( ${FAILED} "" )
 
 # We'll loop through the using statements
 FOREACH( INC ${BCI2000_INCLUDING} )
@@ -41,6 +42,12 @@ FOREACH( INC ${BCI2000_INCLUDING} )
       SET( ${LIBRARIES}
         ${${LIBRARIES}}
         ${LIBS_EXTLIB}
+      )
+    ELSE( EXTLIB_OK )
+      MESSAGE( " - WARNING: Could not satisfy dependency on ${INC} extlib." )
+      SET( ${FAILED}
+        ${${FAILED}}
+        ${INC}
       )
     ENDIF( EXTLIB_OK )
   ENDIF()

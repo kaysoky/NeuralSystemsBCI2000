@@ -37,10 +37,13 @@
 
 #include <vector>
 #include <string>
+#include <cstring>
+#include <cstdlib>
+#include <fstream>
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <fstream>
 #include <float.h>
 #include <limits.h>
 
@@ -746,7 +749,7 @@ void Trim(t_Str& szStr)
 // WriteLn
 // Writes the formatted output to the file stream, returning the number of
 // bytes written.
-int WriteLn(fstream& stream, char* fmt, ...)
+int WriteLn(fstream& stream, const char* fmt, ...)
 {
 	char buf[MAX_BUFFER_LEN];
 	int nLength;
@@ -773,7 +776,7 @@ int WriteLn(fstream& stream, char* fmt, ...)
 // A simple reporting function. Outputs the report messages to stdout
 // This is a dumb'd down version of a simmilar function of mine, so if 
 // it looks like it should do more than it does, that's why...
-void Report(e_DebugLevel DebugLevel, char *fmt, ...)
+void Report(e_DebugLevel DebugLevel, const char *fmt, ...)
 {
 	char buf[MAX_BUFFER_LEN];
 	int nLength;

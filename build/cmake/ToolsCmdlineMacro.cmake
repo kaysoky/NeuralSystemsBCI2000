@@ -37,7 +37,7 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
   SOURCE_GROUP( Headers\\Project FILES ${HEADERS} )
   
   # Add in external required libraries
-  BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS )
+  BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS FAILED )
   
   # If we're building a Qt project, we need to automoc the headers, generating new files
   SET( USEQT ${REQUESTQT} )
@@ -51,23 +51,25 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
   # Set output directories
   SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/tools/cmdline" )
 
-  # Add the executable to the project
-  ADD_EXECUTABLE( ${NAME} ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
+  IF( NOT FAILED )
+    # Add the executable to the project
+    ADD_EXECUTABLE( ${NAME} ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
   
-  # Add Pre-processor defines
-  IF( ${USEQT} )
-    SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
-  ENDIF( ${USEQT} )
+    # Add Pre-processor defines
+    IF( ${USEQT} )
+      SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
+    ENDIF( ${USEQT} )
 
-  # Link against the Qt/VCL Libraries
-  IF( BORLAND )
-    TARGET_LINK_LIBRARIES( ${NAME} vcl rtl ${VXL_VGUI_LIBRARIES} ${LIBS} )
-  ELSEIF( ${USEQT} )
-    MESSAGE( "-- (NB: ${NAME} is using Qt)" )
-    TARGET_LINK_LIBRARIES( ${NAME} ${QT_LIBRARIES} ${LIBS} )
-  ELSE()
-    TARGET_LINK_LIBRARIES( ${NAME} ${LIBS} )
-  ENDIF()
+    # Link against the Qt/VCL Libraries
+    IF( BORLAND )
+      TARGET_LINK_LIBRARIES( ${NAME} vcl rtl ${VXL_VGUI_LIBRARIES} ${LIBS} )
+    ELSEIF( ${USEQT} )
+      MESSAGE( "-- (NB: ${NAME} is using Qt)" )
+      TARGET_LINK_LIBRARIES( ${NAME} ${QT_LIBRARIES} ${LIBS} )
+    ELSE()
+      TARGET_LINK_LIBRARIES( ${NAME} ${LIBS} )
+    ENDIF()
+  ENDIF( NOT FAILED )
 
 ENDMACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS )
 

@@ -27,7 +27,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "cameraNLight.h"
+#include "cameraNlight.h"
 #include "component.h"
 #include <algorithm>
 

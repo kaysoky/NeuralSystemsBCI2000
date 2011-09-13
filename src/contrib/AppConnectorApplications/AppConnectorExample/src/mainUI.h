@@ -31,7 +31,7 @@
 #include <map>
 #include <algorithm>
 
-#include "Sockstream.h"
+#include "SockStream.h"
 
 //forward declare our qt classes to decrease compile time
 class QGridLayout;

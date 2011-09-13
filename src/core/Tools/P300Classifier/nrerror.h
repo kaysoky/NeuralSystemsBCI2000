@@ -4,5 +4,5 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
-void nrerror(char error_text[]);
+void nrerror(const char* error_text);
 #endif

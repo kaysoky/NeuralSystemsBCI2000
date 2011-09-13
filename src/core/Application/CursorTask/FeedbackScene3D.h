@@ -29,8 +29,8 @@
 #include "FeedbackScene.h"
 
 #include "Scene.h"
-#include "Sphere.h"
-#include "Cuboids.h"
+#include "sphere.h"
+#include "cuboids.h"
 #include "threeDText.h"
 #include "DisplayWindow.h"
 

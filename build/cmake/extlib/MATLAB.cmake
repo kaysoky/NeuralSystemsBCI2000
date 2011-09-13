@@ -36,12 +36,12 @@ ELSE( WIN32 )
 
   FIND_PROGRAM( MATLAB_EXECUTABLE matlab /usr /var /opt /Applications )
   IF( NOT MATLAB_EXECUTABLE )
-    MESSAGE( FATAL_ERROR "Could not find Matlab executable." )
+    RETURN()
   ENDIF( NOT MATLAB_EXECUTABLE )
 
   EXECUTE_PROCESS( COMMAND ${MATLAB_EXECUTABLE} -n RESULT_VARIABLE RESULT OUTPUT_VARIABLE MATLAB_CONFIG )
   IF( RESULT )
-    MESSAGE( FATAL_ERROR "Could not obtain Matlab installation details." )
+    RETURN()
   ENDIF( RESULT )
 
   STRING( REGEX MATCH "MATLAB[ ]+=[ ]+([^\r\n]*).*LD_LIBRARY_PATH[ ]+=[ ]+([^\r\n]*)" IGNORED ${MATLAB_CONFIG} )

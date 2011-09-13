@@ -54,6 +54,7 @@
 
 #define FILESEP "/"
 #include <sys/stat.h>
+#include <sys/select.h>
 #include <time.h>
 void Sleep(long msec)
 {

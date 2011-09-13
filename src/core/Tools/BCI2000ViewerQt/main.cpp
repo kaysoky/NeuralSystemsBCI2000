@@ -26,7 +26,7 @@
 #include <QtGui/QApplication>
 #include "ExceptionCatcher.h"
 #include "Settings.h"
-#include "bci2000viewer.h"
+#include "BCI2000Viewer.h"
 
 #ifdef _WIN32
 # include <Windows.h>

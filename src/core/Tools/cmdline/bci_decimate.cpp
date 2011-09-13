@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <cstdio>
+#include <cstdlib>
 #include <iomanip>
 #include <string>
 #include <vector>
