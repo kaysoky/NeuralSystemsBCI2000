@@ -33,11 +33,12 @@ function EEG = pop_loadBCI2000(fileName, events)
 %     >> EEG = pop_loadBCI2000({'set001.dat', 'set002.dat'});
 
 % Copyright by Clemens Brunner <clbrunner@ucsd.edu>
-% Revision: 0.26
-% Date: 08/31/2011
+% Revision: 0.30
+% Date: 09/14/2011
 % Parts based on BCI2000import.m from the BCI2000 distribution (www.bci2000.org)
 
 % Revision history:
+%   0.30: Create boundary events when loading multiple files
 %   0.26: Import channel labels
 %   0.25: Added EEG.urevent structure
 %   0.20: Adapted to EEGLAB conventions
@@ -63,9 +64,19 @@ if nargin < 1  % No input arguments specified, show GUI
         [signal, states, parms] = load_bcidat(fullfile(filePath, fileName));
     else  % Multiple files were selected
         files = struct('name', fileName);
-        for k = 1:length(files)  % Add full path to each file name
-            files(k).name = fullfile(filePath, files(k).name); end
-        [signal, states, parms] = load_bcidat(files.name);
+        totalSamples = zeros(1, length(files));
+        for k = 1:length(files)
+            files(k).name = fullfile(filePath, files(k).name);  % Add full path to each file name
+            [~, ~, ~, totalSamples(k)] = load_bcidat(files(k).name, [0, 0]);  % Get length of each individual file
+        end
+        
+        % Determine start time of individual files
+        fileBorders = zeros(1, length(files));
+        fileBorders(1) = 1;
+        for k = 2:length(files)
+            fileBorders(k) = fileBorders(k - 1) + totalSamples(k - 1);  end
+        
+        [signal, states, parms] = load_bcidat(files.name);  % Load all files
     end
     
     % Build a string consisting of all events, separated by a "|" (necessary for
@@ -95,10 +106,22 @@ else  % Input arguments specified
         files = cell2struct(fileName, 'name', 1);
     else  % Just a string (possibly containing wildcards)
         files = dir(fileName);
-        for k = 1:length(files)  % Add full path to each file name
-            files(k).name = fullfile(fileparts(fileName), files(k).name); end
+        totalSamples = zeros(1, length(files));
+        for k = 1:length(files)
+            files(k).name = fullfile(fileparts(fileName), files(k).name);  % Add full path to each file name
+            [~, ~, ~, totalSamples(k)] = load_bcidat(files(k).name, [0, 0]);  % Get length of each individual file
+        end
     end
-    [signal, states, parms] = load_bcidat(files.name);
+    
+    % Determine start time of individual files
+    if length(files) > 1
+        fileBorders = zeros(1, length(files));
+        fileBorders(1) = 1;
+        for k = 2:length(files)
+            fileBorders(k) = fileBorders(k - 1) + totalSamples(k - 1);  end
+    end
+    
+    [signal, states, parms] = load_bcidat(files.name);  % Load all files
     
     if ~exist('events', 'var')  % If no events were specified, select all events contained in the file
         events = 1:length(fieldnames(states)); end
@@ -154,6 +177,9 @@ for k = 1:length(stateNames)
         evCount = evCount + 1;
     end
 end
+
+if exist('fileBorders', 'var')  % If multiple files were loaded and concatenated, create boundary events at the start of new files
+    EEG.event = eeg_insertbound(EEG.event, EEG.pnts * EEG.trials, fileBorders');  end
 
 EEG = eeg_checkset(EEG, 'eventconsistency');
 EEG.urevent = EEG.event;  % Create urevent structure
