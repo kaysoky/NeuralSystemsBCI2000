@@ -29,13 +29,11 @@
 
 #include "WavePlayer.h"
 #include "BCIDirectory.h"
-#if !_WIN32
-# include "BCIError.h"
-#endif // !_WIN32
+#include "BCIError.h"
 
 using namespace std;
 
-#if _WIN32
+#if USE_DSOUND
 
 LPDIRECTSOUND       WavePlayer::sPDS = NULL;
 LPDIRECTSOUNDBUFFER WavePlayer::sPrimarySoundBuffer = NULL;
@@ -373,7 +371,7 @@ WavePlayer::PlayingPos() const
   return 1e3f * ( pos * 8 ) / ( mSamplingRate * mBitsPerSample );
 }
 
-#else // _WIN32
+#else // USE_DSOUND
 
 WavePlayer::WavePlayer()
 : mVolume( 1.0 ),
@@ -435,68 +433,68 @@ WavePlayer::Clear()
 {
   if( IsPlaying() )
     Stop();
-	
+  
   delete mpSound;
-	mpSound = NULL;
+  mpSound = NULL;
   mFile = "";
 }
 
 WavePlayer&
 WavePlayer::SetFile( const string& inFileName )
 {
-	Clear();
-	if( !inFileName.empty() )
-	{
-		mFile = inFileName;
-		mpSound = new QSound( inFileName.c_str() );
-	}
-	return *this;
+  Clear();
+  if( !inFileName.empty() )
+  {
+    mFile = inFileName;
+    mpSound = new QSound( inFileName.c_str() );
+  }
+  return *this;
 }
 
 WavePlayer&
 WavePlayer::Play()
 {
-	if( mpSound )
-		mpSound->play();
-	return *this;
+  if( mpSound )
+    mpSound->play();
+  return *this;
 }
 
 WavePlayer&
 WavePlayer::SetVolume( float inVolume )
 {
-	if( inVolume != 1.0 )
-		bciout << "Cannot adjust volume in non-windows builds" << endl;
-	mVolume = 1.0;
-	return *this;
+  if( inVolume != 1.0 )
+    bciout << "Cannot adjust volume in non-windows builds" << endl;
+  mVolume = 1.0;
+  return *this;
 }
 
 WavePlayer&
 WavePlayer::SetPan( float inPan )
 {
-	if( inPan != 0.0 )
-		bciout << "Cannot adjust pan in non-windows builds" << endl;
+  if( inPan != 0.0 )
+    bciout << "Cannot adjust pan in non-windows builds" << endl;
   mPan = 0.0;
-	return *this;
+  return *this;
 }
 
 WavePlayer&
 WavePlayer::Stop()
 {
-	if( mpSound )
-	  mpSound->stop();
+  if( mpSound )
+    mpSound->stop();
   return *this;
 }
 
 bool
 WavePlayer::IsPlaying() const
 {
-	return mpSound && !mpSound->isFinished();
+  return mpSound && !mpSound->isFinished();
 }
 
 float
 WavePlayer::PlayingPos() const
 {
-	return IsPlaying() ? -1.0 : 0.0;
+  return IsPlaying() ? -1.0 : 0.0;
 }
 
-#endif // _WIN32
+#endif // USE_DSOUND

@@ -27,13 +27,17 @@
 #ifndef WAVE_PLAYER_H
 #define WAVE_PLAYER_H
 
-#ifdef _WIN32
+#if !defined( USE_DSOUND ) && defined( _WIN32 )
+# define USE_DSOUND 1
+#endif // USE_DSOUND, _WIN32
+
+#if USE_DSOUND
 #include <windows.h>
 #include <mmsystem.h>
 #include <dsound.h>
-#else //_WIN32
+#else //USE_DSOUND
 #include <QSound>
-#endif // _WIN32
+#endif // USE_DSOUND
 #include <string>
 
 class WavePlayer
@@ -87,17 +91,17 @@ class WavePlayer
   std::string mFile;
   Error       mErrorState;
 
-  // OS specific members go here.
-  static  int                 sNumInstances;
-#if _WIN32
+  static  int sNumInstances;
+
+#if USE_DSOUND
           DWORD               mSamplingRate;
           DWORD               mBitsPerSample;
           LPDIRECTSOUNDBUFFER mSecondaryBuffer;
   static  LPDIRECTSOUND       sPDS;
   static  LPDIRECTSOUNDBUFFER sPrimarySoundBuffer;
-#else // _WIN32
-					QSound* mpSound;
-#endif // _WIN32
+#else // USE_DSOUND
+  QSound* mpSound;
+#endif // USE_DSOUND
 
 };
 #endif // WAVE_PLAYER_H
