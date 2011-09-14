@@ -281,9 +281,13 @@ class bcistream(object):
 		if samples == None: return None
 		return 1000.0 * samples / float(self.samplingfreq_hz)
 
-	def plotstates(self, states): # TODO:  choose which states to plot
+	def plotstates(self, states, whichstates=None, **kwargs):
 		labels = states.keys()
-		v = numpy.matrix(numpy.concatenate(states.values(), axis=0), dtype=numpy.float32)
+		if whichstates != None:
+			if isinstance(whichstates, basestring): whichstates = whichstates.split()
+			labels = whichstates
+		
+		v = numpy.matrix(numpy.concatenate([states[k] for k in labels], axis=0), dtype=numpy.float32)
 		ntraces,nsamp = v.shape
 		#v = v - numpy.min(v,1)
 		sc = numpy.max(v,1)
@@ -296,7 +300,7 @@ class bcistream(object):
 		pylab = load_pylab()
 		pylab.cla()
 		ax = pylab.gca()
-		h = pylab.plot(t, v)
+		h = pylab.plot(t, v, **kwargs)
 		ax.set_xlim(0,nsamp/self.samplingfreq_hz)
 		ax.set_yticks(offsets.flatten())
 		ax.set_yticklabels(labels)

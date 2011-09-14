@@ -57,10 +57,13 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Streams matrix    StreamStimuli=                    2 { Standard Target } % % % %  %     % % // ",
 			"PythonSig:Streams floatlist PeriodMsec=                         2   500   500              500     0 % // ",
 			"PythonSig:Streams floatlist OffsetMsec=                         2     0   250              500     0 % // ",
-			"PythonSig:Streams floatlist TargetProbability=                  2     0.2   0.2              0.2   0 1 // ",
+			"PythonSig:Streams intlist   MinTargets=                   2     1     1                      1     0 % // ",
+			"PythonSig:Streams intlist   MaxTargets=                   2     3     3                      3     0 % // ",
+			"PythonSig:Streams intlist   ScopeForMinMax=               2     7     7                      7     1 % // ",
 			"PythonSig:Streams intlist   InitialStandards=                   2     2       2              3     0 % // how many stimuli at the beginning of each stream are guaranteed to be standards",
 			"PythonSig:Streams int       SurroundSoundTrigger=                     0                      0     0 1 // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)",
 			"PythonSig:Streams int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
+			"PythonSig:Streams floatlist StreamVolumes=                      2     1.0 1.0              1.0     0 1 // ",
 			
 			"PythonSig:Epoch   float     EpochDurationMsec=                      600                    600   100 % // ",
 			"PythonSig:Epoch   floatlist EpochLowerBoundMsec=                2   100     100            100     0 % // after springing, each ERP trap will not spring again for this many milliseconds",
@@ -68,6 +71,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Epoch   floatlist TriggerThreshold=                   2     0.1     0.1            %     0 % // ",
 			"PythonSig:Epoch   float     TriggerHPCutoff=                          0.0                    0.0   0 % // ",
 			"PythonSig:Epoch   int       TriggerHPOrder=                           4                      4     0 % // ",
+			"PythonSig:Epoch   float     TriggerlessOffsetMsec=                   50.0                 50.0     0 % // used to compensate for stimulus output latency to make weights from triggered and triggerless versions as compatible as possible",
 			"PythonSig:Epoch   floatlist ERPFilterFreqHz=                    2     0.1     8              %     0 % // lower and upper frequencies of bandpass filter for ERP feature set",
 			"PythonSig:Epoch   int       ERPFilterOrder=                           8                      8     0 % // order of bandpass filter for ERP feature set",
 			"PythonSig:Epoch   intlist   DiscardEpochs=                      2     2       2              2     0 % // for classification, discard this many epochs at the beginning",
@@ -83,6 +87,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		]
 		states = [
 			"StreamingRequired  1 0 0 0",
+			"StreamingFinished  1 0 0 0",
 			"StimulusCode       4 0 0 0",
 			"StimulusVariant    2 0 0 0",
 			"StimulusType       1 0 0 0",
@@ -114,7 +119,11 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.triggerfilter = None
 		
 		# check length = number of streams
-		perStreamParams = ['EpochLowerBoundMsec', 'DiscardEpochs', 'PeriodMsec', 'OffsetMsec', 'InitialStandards', 'TargetProbability']
+		perStreamParams = [
+			'EpochLowerBoundMsec', 'DiscardEpochs', 'PeriodMsec', 'OffsetMsec',
+			'InitialStandards', 'MinTargets', 'MaxTargets', 'ScopeForMinMax',
+			'StreamVolumes',
+		]
 		if use_trigger: perStreamParams += ['TriggerChannels', 'TriggerThreshold']
 		for paramname in perStreamParams:
 			v = self.params[paramname].val
@@ -131,10 +140,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			nf = [x for x in trigch if x < 1 or x > len(chn) or x != round(x)] 
 			if len(nf): raise EndUserError, "illegal channel(s): %s" % str(nf)
 			self.trigchan = [x-1 for x in trigch]
-				
-		if self.trigchan == []:
-			raise RuntimeError("triggerlessness not yet implemented")
-		
+						
 		self.otherchan = [chn.index(x) for x in ['VMRK'] if x in chn]
 		self.sigchan = list(set(range(len(chn))).difference(self.trigchan + self.otherchan))
 		self.trigthresh = numpy.asarray(self.params['TriggerThreshold'].val)
@@ -172,10 +178,18 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		for istream in range(self.nstreams):
 			self.periods.append( self.RoundToPackets('PeriodMsec', istream, minval=1) )
 			self.offsets.append( self.RoundToPackets('OffsetMsec', istream, minval=0) )
-			p = self.params['TargetProbability'].val[istream]
-			if p < 0.0 or p > 1.0: raise EndUserError('TargetProbability values must be in the range [0,1]')
-			p = self.params['InitialStandards'].val[istream]
-			if p < 0.0 or p != round(p): raise EndUserError('InitialStandards values must be integers >= 0')
+			tmin = self.params['MinTargets'].val[istream]
+			tmax = self.params['MaxTargets'].val[istream]
+			bmax = self.params['ScopeForMinMax'].val[istream]
+			istd = self.params['InitialStandards'].val[istream]
+			for pname in ['MinTargets', 'MaxTargets', 'ScopeForMinMax', 'InitialStandards']:
+				val = self.params[pname].val[istream]
+				if val < 0.0 or val != round(val): raise EndUserError('%s values must be integers >= 0' % pname)
+			if bmax < 1: raise EndUserError('ScopeForMinMax values cannot be less than 1')
+			if istd > bmax: raise EndUserError('InitialStandards values cannot be larger than the corresponding ScopeForMinMax values')
+			if tmin > bmax-istd: raise EndUserError('MinTargets value %d in stream #%d is too large: it should not exceed the corresponding value of ScopeForMinMax-InitialStandards = %d' % (tmin, istream+1, bmax-istd))
+			if tmax > bmax-istd: raise EndUserError('MaxTargets value %d in stream #%d is too large: it should not exceed the corresponding value of ScopeForMinMax-InitialStandards = %d' % (tmax, istream+1, bmax-istd))
+			if tmin > tmax: raise EndUserError('MinTargets value %d in stream #%d is larger than the corresponding MaxTargets value (%d)' % (tmin, istream+1, tmax))
 			
 		if int(self.params['DirectSound']):
 			import DirectSoundInterface
@@ -187,7 +201,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if stim.shape[0] != self.nstreams: raise EndUserError("StreamStimuli parameter must have one row per streams (NumberOfStreams = %d)" % self.nstreams)
 		self.surround = int(self.params['SurroundSoundTrigger'])
 		self.standards = [self.prepwav(filename,istream) for istream,filename in enumerate(stim[:,0])]
-		self.targets   = [self.prepwav(filename,istream) for istream,filename in enumerate(stim[:,1])]		
+		self.targets   = [self.prepwav(filename,istream) for istream,filename in enumerate(stim[:,1])]
+			
 		for p in self.standards + self.targets:
 			while p.playing: time.sleep(0.001)
 			p.vol = 1.0
@@ -214,6 +229,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 		if w.channels() != 1: raise EndUserError("StreamStimuli wav files must be single-channel: found %d channels in %s" % (w.channels(), w.filename))
 
+		w *= float(self.params['StreamVolumes'][istream])
 		chmask = [i==istream for i in range(self.nstreams)]
 		w *= chmask
 		if self.surround:
@@ -233,19 +249,26 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 		self.seq = []
 		for istream in xrange(self.nstreams):
-			if len(self.trigchan): seqclass = BciTrapSequence
-			else: seqclass = BciTriggerlessTrapSequence
+			if len(self.trigchan):
+				seqclass = BciTrapSequence
+				kwargs = {
+					'trigger_channel':self.trigchan[istream],
+					'trigger_threshold':self.trigthresh[istream],
+					'trigger_processing':self.ProcessTrigger,
+				}
+			else:
+				self.extra_event_offset = SigTools.msec2samples(self.params['TriggerlessOffsetMsec'], self.eegfs)
+				seqclass = BciTriggerlessTrapSequence
+				kwargs = {}
 			s = seqclass (
 					nsamp=self.epoch_samples,
 					mingap=self.trapgap[istream],
-					trigger_channel=self.trigchan[istream],
-					trigger_threshold=self.trigthresh[istream],
-					trigger_processing=self.ProcessTrigger,
 					discard=self.discard[istream],
 					remember=10,
 					persistence=self.persistence,
 					detrend={0:None, 1:'constant', 2:'linear'}.get(int(self.params['DetrendEpochs'])),
 					bci=self,
+					**kwargs\
 			)
 			self.seq.append(s)
 
@@ -263,6 +286,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.y = []
 		self.nbeats = [0] * self.nstreams
 		self.TriggerTrouble = [None] * self.nstreams
+		self.started = False
 		
 		if self.saving:
 			self.dump(channels=list(self.inchannels()), fs=self.nominal['SamplesPerSecond'])
@@ -296,18 +320,48 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				
 	#############################################################
 
+	def GetVariant(self, istream):
+		
+		tmin = self.params['MinTargets'].val[istream]
+		tmax = self.params['MaxTargets'].val[istream]
+		batch = self.params['ScopeForMinMax'].val[istream]
+		istd = self.params['InitialStandards'].val[istream]
+		done = self.nbeats[istream]
+		
+		standard = 1
+		target = 2
+		
+		if done < istd: return standard
+		if done < batch: batch -= istd
+		self.prepseq = getattr(self, 'prepseq', [[] for x in range(self.nstreams)])
+		s = self.prepseq[istream]
+		if len(s) == 0:
+			ntargets = numpy.random.randint(tmin, tmax+1)
+			s += [target] * ntargets + [standard] * (batch-ntargets)
+			numpy.random.shuffle(s)
+			
+		return s.pop(0)
+		
+		
+	#############################################################
+
 	def Process(self, sig):
+		
+		# if len(self.trigchan): sig[:len(self.trigchan),:]=sig[self.trigchan,:]; self.debug('signal butcherings') # comment this out!! diagnostic purposes only
 		
 		if self.bandpass != None:
 			sig[self.sigchan,:] = self.bandpass(sig[self.sigchan,:], axis=1)
-		if self.triggerfilter != None:
-			sig[self.trigchan,:] = self.triggerfilter(sig[self.trigchan,:], axis=1)				
-			
-		self.Last10SecondsTrigger.process(sig[self.trigchan,:])
-				
+		
+		if len(self.trigchan):
+			if self.triggerfilter != None:
+				sig[self.trigchan,:] = self.triggerfilter(sig[self.trigchan,:], axis=1)				
+			self.Last10SecondsTrigger.process(sig[self.trigchan,:])
+		
 		starting = self.changed('StreamingRequired', fromVals=0)
 		presenting = self.states['StreamingRequired'] != 0
-		if starting: self.remember('streaming')
+		if starting:
+			self.started = True
+			self.remember('streaming')
 		resetStates = False
 		stimDelivered = 0
 		
@@ -322,19 +376,21 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				count = (np - self.offsets[istream]) % self.periods[istream]
 				counts.append(count)
 				if count == 0:
-					if self.nbeats[istream] < self.params['InitialStandards'].val[istream]:
-						self.states['StimulusVariant'] = 1
+					if int(self.params.get('EnslavePython', 0)): variant = self.states['StimulusVariant']
+					else: variant = self.GetVariant(istream)
+					if variant == 2: stim = self.targets[istream]
+					else: stim = self.standards[istream]
+						
+					if stim.going:
+						self.debug('stimuli skipped', counts=counts, packetsSinceStartOfStreaming=np, nbeats=list(self.nbeats))
 					else:
-						self.states['StimulusVariant'] = 1 + int(numpy.random.rand() < self.params['TargetProbability'].val[istream])
-					if self.states['StimulusVariant'] == 2:
-						stim = self.targets[istream]
-					else:
-						stim = self.standards[istream]
-					self.states['StimulusCode'] = istream + 1
-					if self.states.get('TargetStream', 0) == istream + 1: self.states['StimulusType'] = 1
-					stim.play()
-					self.nbeats[istream] += 1
-					stimDelivered += 1
+						stim.play()
+						self.nbeats[istream] += 1
+						self.states['StimulusCode'] = istream + 1
+						self.states['StimulusVariant'] = variant
+						self.states['StimulusType'] = int( self.states.get('TargetStream', 0) == istream + 1 )
+						stimDelivered += 1
+						
 				if count == 1:
 					resetStates = True
 					
@@ -347,25 +403,26 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.debug("stimulus collisions", counts=counts, packetsSinceStartOfStreaming=np, nbeats=list(self.nbeats))
 
 
-		wasWaiting = False
 		stillWaiting = False
 		
 		for istream, seq in enumerate(self.seq):
-			if starting:
-				seq.reset()
+			if starting: seq.reset()
+				
+			if len(self.trigchan) == 0 and stimDelivered==1 and counts[istream]==0:
+				kwargs = {'event_offset':self.nominal.SamplesPerPacket + self.extra_event_offset} # TODO: this seems either non-stationarily or non-linearly related to the offset you can actually see using plottrap
 			else:
-				if len(self.trigchan) == 0 and counts[istream] == 0: kwargs = {'event_offset':self.nominal.SamplesPerPacket}
-				else: kwargs = {}
-				waiting = seq.ndelivered < self.nbeats[istream]
-				wasWaiting |= waiting
-				if presenting or waiting: seq.process(sig, **kwargs)
-				waiting = seq.ndelivered < self.nbeats[istream]
-				stillWaiting |= waiting
+				kwargs = {}
+			waiting = seq.ndelivered < self.nbeats[istream]
+			if presenting or waiting: seq.process(sig, **kwargs)
+			waiting = seq.ndelivered < self.nbeats[istream]
+			stillWaiting |= waiting
 			
-		if not wasWaiting:
+		if not self.started:
 			self.prediction, self.prediction_se = 0.0, 1.0
-		
-		if wasWaiting and not stillWaiting and not presenting:
+				
+		if self.started and not presenting and not stillWaiting:
+			self.started = False
+			self.states['StreamingFinished'] = 1
 			for istream, seq in enumerate(self.seq):
 				if seq.ndelivered != self.nbeats[istream]:
 					self.TriggerTrouble[istream] = "expected %d beats in stream %d, but trapped %d" % (self.nbeats[istream], istream+1, seq.ndelivered)
@@ -386,6 +443,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				self.dump(x=xi,y=yi) # the new python way
 				self.x.append(xi) # the old matlab way
 				self.y.append(yi) # the old matlab way
+		else:
+			self.states['StreamingFinished'] = 0
 			
 		control_signal = self.prediction / self.prediction_se
 		if self.controlfilter: control_signal = self.controlfilter.apply([[control_signal]])
@@ -456,7 +515,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			collated.append(numpy.concatenate([numpy.asmatrix(x[i,:]) for x in epochs], axis=0))
 		return sdict({'b':b, 'sig':sig, 'states':sdict(states), 'epochs':epochs, 'collated':collated, 'plot':b.plotsig})
 	
-	def plottrap(self, istream=0, itrap=-1):
+	def plottrap(self, istream=0, itrap=-1, chans=None):
 		"""
 		Plot all trigger channels in (by default) the last-trapped epoch, where an epoch is defined
 		according to the trigger for stream <istream>.		
@@ -468,7 +527,9 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		active = [t.read() for t in self.seq[istream].active if t.collected()] # non-empty, undelivered
 		y = (delivered + active)[itrap]
 		
-		y = y[self.trigchan, :].T
+		if chans == None and len(self.trigchan): chans = self.trigchan
+		if chans == None: chans = [0,1]
+		y = y[chans, :].T
 		t = SigTools.samples2msec(numpy.arange(y.shape[0]), self.eegfs)
 		SigTools.plot(t, y)
 		import pylab
