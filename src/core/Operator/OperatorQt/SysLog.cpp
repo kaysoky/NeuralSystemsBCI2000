@@ -31,6 +31,7 @@
 SysLog::SysLog( QWidget* inParent )
 : QDialog( inParent ),
   mpLog( new QTextEdit ),
+  mEmpty( true ),
   mDontClose( false )
 {
   QHBoxLayout* pLayout = new QHBoxLayout;
@@ -42,6 +43,7 @@ SysLog::SysLog( QWidget* inParent )
   OperatorUtils::RestoreWidget( this );
 
   mpLog->setReadOnly( true );
+  mDefaultFormat = mpLog->currentCharFormat();
 }
 
 
@@ -64,9 +66,8 @@ SysLog::Close( bool inForce )
 void
 SysLog::AddEntry( const QString& inText, int inMode )
 {
-  mCritsec.lock();
-  QTextCharFormat oldFormat = mpLog->currentCharFormat(),
-                  format = oldFormat;
+  QMutexLocker lock( &mCritsec );
+  QTextCharFormat format = mDefaultFormat;
   switch( inMode )
   {
     case logEntryWarning:
@@ -87,10 +88,11 @@ SysLog::AddEntry( const QString& inText, int inMode )
     default:
       break;
   }
-  QString line = QDateTime::currentDateTime().toString( Qt::ISODate ) + " - " + inText + "\n";
+  QString line = ( mEmpty ? "" : "\n" ) + QDateTime::currentDateTime().toString( Qt::ISODate ) + " - " + inText;
+  mEmpty = false;
+  mpLog->moveCursor( QTextCursor::End );
   mpLog->setCurrentCharFormat( format );
   mpLog->insertPlainText( line );
-  mpLog->setCurrentCharFormat( oldFormat );
   switch( inMode )
   {
     case logEntryWarning:
@@ -100,6 +102,6 @@ SysLog::AddEntry( const QString& inText, int inMode )
     default:
       break;
   }
+  mpLog->moveCursor( QTextCursor::End );
   mpLog->ensureCursorVisible();
-  mCritsec.unlock();
 }

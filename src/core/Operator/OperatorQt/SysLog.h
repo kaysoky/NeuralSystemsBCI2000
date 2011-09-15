@@ -52,9 +52,11 @@ class SysLog : public QDialog
 
  private:
   QTextEdit* mpLog;
-  QMutex     mCritsec;
-  bool       mDontClose;
-  QString    mLastLine;
+  QTextCharFormat mDefaultFormat;
+  QMutex mCritsec;
+  bool mEmpty,
+       mDontClose;
+  QString mLastLine;
 };
 
 #endif // SYSLOG_H
