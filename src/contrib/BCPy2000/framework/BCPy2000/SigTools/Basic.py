@@ -89,7 +89,7 @@ def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,sam
 	Uses wavegen()
 	"""###
 	if isnumpyarray(w): y = w
-	elif hasattr(w, 'y'): y = w.y
+	elif hasattr(w, 'y'): w = w.copy(); y = w.y
 	else: raise TypeError, "don't know how to handle this kind of carrier object"
 
 	if samplingfreq_hz==None: samplingfreq_hz = getfs(w)	
