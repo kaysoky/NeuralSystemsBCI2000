@@ -1,20 +1,22 @@
 ###########################################################################
-## $Id$
+## $Id: CMakeLists.txt 3497 2011-08-30 16:50:58Z mellinger $
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for Neuroscan getparams tool
 
 # Set the executable name
-SET( NAME neurogetparams )
+SET( NAME RDAgetparams )
 
 # DEBUG
 MESSAGE( "-- Adding Tool Project: " ${NAME} )
 
 # Set the project specific sources
 SET( SOURCES
-  neuroscanget.cpp
+  RDAgetparams.cpp
+  ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient/RDAQueue.cpp
 )
 SET( HEADERS
-  ${BCI2000_SRC_DIR}/contrib/SignalSource/Neuroscan/NeuroscanNetRead.h
+  ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient/RDAQueue.h
+  ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient/RDA/RecorderRDA.h
 )
 
 # Add in the appropriate error handling module
@@ -35,7 +37,7 @@ SET( SOURCES
 SOURCE_GROUP( Headers\\Project FILES ${HEADERS} )
 SOURCE_GROUP( Source\\Project FILES ${SOURCES} )
 
-INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Neuroscan )
+INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient )
 
 # Generate the required framework
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )

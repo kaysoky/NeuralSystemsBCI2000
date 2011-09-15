@@ -40,7 +40,12 @@
 #include <signal.h>
 
 using namespace std;
+using namespace bci;
 
+// The following arrays contain current or former modules from 
+// the BCI2000 core/contrib directories as of r3545 (Sept 2011).
+// To catch modules located in private/custom, and future core/contrib modules,
+// we rely on the mechanism available via src/shared/config/ModuleInventory.
 static const char* sKnownSourceModules[] =
 {
   "SignalGenerator",
@@ -104,19 +109,9 @@ static const char* sKnownApplicationModules[] =
   "StimulusPresentation",
   "FeedbackDemo",
   "CursorTask",
-  "AttentionTask",
-  "CursorTaskWithGauges",
   "DummyApplication",
-  "GameBreakout",
-  "GaugesOnly",
   "PythonApplication",
 };
-
-static const char* sProgramsToSuppress[] =
-{
-  "Operator",
-};
-
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -131,6 +126,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   ReadSettings();
 
+  SetupInventory();
   QStringList programs = ScanForPrograms();
   DistributePrograms( programs );
 }
@@ -253,6 +249,15 @@ MainWindow::SetupActions()
   ui->otherList->addAction( ui->actionDown );
 }
 
+void
+MainWindow::SetupInventory()
+{
+#define RANGE( x ) (x), (x) + sizeof(x)/sizeof(*x)
+  mInventory[Inventory::SignalSource].insert( RANGE( sKnownSourceModules ) );
+  mInventory[Inventory::SignalProcessing].insert( RANGE( sKnownSigprocModules ) );
+  mInventory[Inventory::Application].insert( RANGE( sKnownApplicationModules ) );
+}
+
 QStringList
 MainWindow::ScanForPrograms()
 {
@@ -263,10 +268,16 @@ MainWindow::ScanForPrograms()
               programs;
   for( int i = 0; i < entries.size(); ++i )
     programs.append( QFileInfo( entries.at( i ) ).completeBaseName() );
+  // Remove the program itself.
   programs.removeOne( QFileInfo( QApplication::applicationFilePath() ).completeBaseName() );
-  const int numProgramsToSuppress = sizeof( sProgramsToSuppress ) / sizeof( *sProgramsToSuppress );
-  for( int i = 0; i < numProgramsToSuppress; ++i )
-    programs.removeOne( sProgramsToSuppress[i] );
+  // Remove all operator modules.
+  for( Inventory::mapped_type::const_iterator i = mInventory[Inventory::Operator].begin();
+         i != mInventory[Inventory::Operator].end(); ++i )
+    programs.removeOne( QString::fromLocal8Bit( i->c_str() ) );
+  // Remove all tools.
+  for( Inventory::mapped_type::const_iterator i = mInventory[Inventory::Tool].begin();
+         i != mInventory[Inventory::Tool].end(); ++i )
+    programs.removeOne( QString::fromLocal8Bit( i->c_str() ) );
   return programs;
 }
 
@@ -313,31 +324,22 @@ MainWindow::IntroduceNewProgram( const QString& inProgram )
 { // Introduce a new program into the programs group.
   // Check against the lists of known modules first.
   // If not found there, add to the "others" list.
-  const int numSourceModules = sizeof( sKnownSourceModules ) / sizeof( *sKnownSourceModules );
-  int i = 0;
-  while( inProgram != sKnownSourceModules[i] && i < numSourceModules )
-    ++i;
-  if( i != numSourceModules )
+  const Inventory::mapped_type& sources = mInventory[Inventory::SignalSource];
+  if( sources.find( inProgram.toLocal8Bit().constData() ) != sources.end() )
   {
     ui->sourceList->addItem( inProgram );
     return;
   }
 
-  const int numSigprocModules = sizeof( sKnownSigprocModules ) / sizeof( *sKnownSigprocModules );
-  i = 0;
-  while( inProgram != sKnownSigprocModules[i] && i < numSigprocModules )
-    ++i;
-  if( i != numSigprocModules )
+  const Inventory::mapped_type& sigprocs = mInventory[Inventory::SignalProcessing];
+  if( sigprocs.find( inProgram.toLocal8Bit().constData() ) != sigprocs.end() )
   {
     ui->sigprocList->addItem( inProgram );
     return;
   }
 
-  const int numApplicationModules = sizeof( sKnownApplicationModules ) / sizeof( *sKnownApplicationModules );
-  i = 0;
-  while( inProgram != sKnownApplicationModules[i] && i < numApplicationModules )
-    ++i;
-  if( i != numApplicationModules )
+  const Inventory::mapped_type& apps = mInventory[Inventory::Application];
+  if( apps.find( inProgram.toLocal8Bit().constData() ) != apps.end() )
   {
     ui->applicationList->addItem( inProgram );
     return;

@@ -26,6 +26,8 @@ IF( NOT BORLAND )
 ENDIF( NOT BORLAND )
 
 IF( NOT FAILED )
+  BCI2000_ADD_TO_INVENTORY( SignalProcessing ${NAME} )
+  
   SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
 
   # Add the executable to the project

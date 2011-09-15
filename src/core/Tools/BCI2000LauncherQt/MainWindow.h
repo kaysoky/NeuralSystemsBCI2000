@@ -29,6 +29,8 @@
 #include <QtGui/QMainWindow>
 #include <QList>
 
+#include "ModuleInventory.h"
+
 class QListWidget;
 
 namespace Ui
@@ -73,6 +75,7 @@ private:
     void SetupStatusGroup();
     void SetupActions();
 
+    void SetupInventory();
     QStringList ScanForPrograms();
     void DistributePrograms( const QStringList& );
     void ClearProgramEntries( const QString& );
@@ -88,6 +91,7 @@ private:
 
 private:
     QStringList mParameterFiles;
+    bci::Inventory mInventory;
 };
 
 #endif // MAINWINDOW_H
