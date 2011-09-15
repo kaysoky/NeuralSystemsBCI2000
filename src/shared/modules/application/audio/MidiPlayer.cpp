@@ -4,23 +4,23 @@
 // Description: The Win32 implementation of the MidiPlayer interface.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 //////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -170,10 +170,10 @@ void
 MidiPlayer::Destruct()
 {
   // Stop sequence processing.
-  if( mSeqTimerID != NULL )
+  if( mSeqTimerID != 0 )
   {
     ::timeKillEvent( mSeqTimerID );
-    mSeqTimerID = NULL;
+    mSeqTimerID = 0;
   }
   if( mpNoteSeq != NULL )
   {
@@ -227,7 +227,7 @@ MidiPlayer::Play( int inMidiNote,
   DWORD       msg = ShortMidiMsg( NoteOff, mChannel, mCurNote, 0 );
   MMRESULT    timerID = ::timeSetEvent( mCurLength, timerResolution,
                           SendMidiMsg, msg, TIME_ONESHOT );
-  if( timerID == NULL )
+  if( timerID == 0 )
     // Setting the timer didn't work; switch the note off at once.
     ::midiOutShortMsg( sDeviceHandle, msg );
 
@@ -350,7 +350,7 @@ MidiPlayer::PlaySequence( const MidiNote* inNoteSequence )
   UINT timerID = ::timeSetEvent( mpCurSeqPos->duration, timerResolution,
                                       SeqCallback, ( DWORD )this, TIME_ONESHOT );
   mSeqTimerID = timerID;
-  if( timerID == NULL ) // Setting the timer didn't work; switch the note off at once.
+  if( timerID == 0 ) // Setting the timer didn't work; switch the note off at once.
   {
     ::midiOutShortMsg( sDeviceHandle,
       ShortMidiMsg( NoteOff, mChannel, mpCurSeqPos->note, midiVelocity ) );
@@ -365,10 +365,10 @@ MidiPlayer&
 MidiPlayer::StopSequence()
 {
   // Stop sequence processing.
-  if( mSeqTimerID != NULL )
+  if( mSeqTimerID != 0 )
   {
     ::timeKillEvent( mSeqTimerID );
-    mSeqTimerID = NULL;
+    mSeqTimerID = 0;
   }
   if( mpNoteSeq != NULL )
   {
@@ -430,7 +430,7 @@ MidiPlayer::SeqCallback( UINT, UINT, DWORD inInstance, DWORD, DWORD )
   UINT timerID = ::timeSetEvent( pCurNote->duration, timerResolution,
                                       SeqCallback, inInstance, TIME_ONESHOT );
   this_->mSeqTimerID = timerID;
-  if( timerID == NULL ) // Setting the timer didn't work; switch the note off at once.
+  if( timerID == 0 ) // Setting the timer didn't work; switch the note off at once.
     ::midiOutShortMsg( sDeviceHandle,
       ShortMidiMsg( NoteOff, this_->mChannel, pCurNote->note, midiVelocity ) );
 }
