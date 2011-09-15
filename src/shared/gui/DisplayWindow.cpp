@@ -75,7 +75,11 @@ DisplayForm::mousePressEvent( QMouseEvent* iopEvent )
 #endif // __BORLANDC__
 
 DisplayWindow::DisplayWindow()
-: mpForm( NULL )
+: mTop( 0 ),
+  mLeft( 0 ),
+  mWidth( 0 ),
+  mHeight( 0 ),
+  mpForm( NULL )
 {
 #ifdef __BORLANDC__
   mWinDC = NULL;

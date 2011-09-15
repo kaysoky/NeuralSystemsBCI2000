@@ -94,7 +94,7 @@ class GraphObject
     { return mAspectRatioMode; }
   GraphObject& SetDisplayRect( const GUI::Rect& );
   const GUI::Rect& DisplayRect() const
-    { return mDisplayRect; }
+    { return mActualDisplayRect; }
 
   // Graphics
   GraphObject& Invalidate();
@@ -104,7 +104,7 @@ class GraphObject
   void Paint();
   void Change();
   bool Click( const Point& p )
-    { return PointInRect( p, mDisplayRect ) && OnClick( p ); }
+    { return PointInRect( p, mActualDisplayRect ) && OnClick( p ); }
 
  protected:
   //  Handling side
@@ -112,7 +112,7 @@ class GraphObject
   virtual void OnPaint( const DrawContext& ) = 0;
   //  This function is called when any change of properties occurs.
   //  For AspectRatioModes that adapt the object's enclosing rectangle,
-  //  OnChange must change the DrawContext's rectangle to reflect the adaptation.
+  //  OnChange must change the DrawContext's rectangle to reflect adaptation.
   virtual void OnChange( DrawContext& )
     {}
   //  The OnClick event handler receives a point in continuous coordinates, and
@@ -133,7 +133,8 @@ class GraphObject
                 mRectSet;
   float         mZOrder;
   int           mAspectRatioMode;
-  Rect          mDisplayRect;
+  Rect          mUserSpecifiedDisplayRect,
+                mActualDisplayRect;
 };
 
 } // namespace GUI
