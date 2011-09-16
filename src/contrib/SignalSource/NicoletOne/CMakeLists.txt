@@ -52,7 +52,10 @@ SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t-" )
 ADD_DEFINITIONS( -D_AFXDLL )
 SET( CMAKE_MFC_FLAG 2 )
 
+SET( LIBS_ ${LIBS} )
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+SET( LIBS ${LIBS_} )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreLib/CoreLibFiles.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 
 SET( BCI2000_SIGSRCSOURCES
@@ -69,7 +72,7 @@ SET( BCI2000_SIGSRCHEADERS
 )
 
 
-# Add the required signal processing files into the framework for this project
+# Add the required signal source files into the framework for this project
 SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${BCI2000_SIGSRCSOURCES}" )
 SET( HDR_BCI2000_FRAMEWORK "${HDR_BCI2000_FRAMEWORK}" "${BCI2000_SIGSRCHEADERS}" )
 
