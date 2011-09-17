@@ -22,7 +22,8 @@ call portable.bat
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\blah.prm
 @set OnConnect=%OnConnect% ; SETCONFIG
 
-start operat.exe                 --OnConnect "%OnConnect%"
-start PythonSource.exe           --PythonSrcWD=%PYWD% --PythonSrcClassFile=TrefoilSource.py
-start PythonSignalProcessing.exe --PythonSigWD=%PYWD% --PythonSigClassFile=
-start PythonApplication.exe      --PythonAppWD=%PYWD% --PythonAppClassFile=posner.py
+start Operator               --OnConnect "%OnConnect%"
+start SignalGenerator        --EvaluateTiming=0
+::start PythonSource           --PythonSrcWD=%PYWD% --PythonSrcClassFile= --EvaluateTiming=0
+start PythonSignalProcessing --PythonSigWD=%PYWD% --PythonSigClassFile=
+start PythonApplication      --PythonAppWD=%PYWD% --PythonAppClassFile=posner.py
