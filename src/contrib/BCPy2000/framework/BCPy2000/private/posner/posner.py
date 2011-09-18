@@ -19,7 +19,7 @@ class BciApplication(BciGenericApplication):
 		self.define_param("PythonApp floatlist BackgroundColor= 3    0.0 0.0 0.0     0.0    0.0   1.0   // ")
 		self.define_param("PythonApp floatlist FixationColor=   3    0.8 0.8 0.8     0.0    0.0   1.0   // ")
 		self.define_param("PythonApp floatlist CueColor=        3    1.0 0.0 0.0     0.0    0.0   1.0   // ")
-		self.define_param("PythonApp floatlist TargetColor=     3    1.0 1.0 0.0     0.0    0.0   1.0   // ")
+		self.define_param("PythonApp floatlist TargetColor=     3    0.5 0.5 0.0     0.0    0.0   1.0   // ")
 		
 		self.define_param("PythonApp int       WindowSize=           0.8             0.8    0.0   1.0   // ")
 		
@@ -29,6 +29,7 @@ class BciApplication(BciGenericApplication):
 		self.define_state("Neutral      1 0 0 0")
 		self.define_state("TimeOut      1 0 0 0")
 		self.define_state("Premature    1 0 0 0")
+		self.define_state("Classify     1 0 0 0")
 		self.define_state("ResponseTimeMsec  16 0 0 0")
 		
 	def Phases(self):
@@ -62,14 +63,14 @@ class BciApplication(BciGenericApplication):
 		self.screen.color = self.params.BackgroundColor.val
 		self.stimulus('fixation', VisualStimuli.Text, text='+', font_size=200, position=center, anchor='center', color=self.params.FixationColor.val, on=True)
 		self.stimulus('arrow', PolygonTexture, frame=b, vertices=vert, position=center, color=self.params.CueColor.val, on=False)
-		self.stimulus('target', Disc, position=center, radius=scrsiz*0.05, color=self.params.TargetColor.val, on=False)
+		self.stimulus('target', Disc, position=center, radius=scrsiz*0.01, color=self.params.TargetColor.val, on=False)
 		
 		if int(self.params.TestEyeTracker):
 			self.stimulus('eye', Disc, position=center, radius=scrsiz*0.01, color=[0,1,0], on=False)
 		
 		ntrials = int(self.params.TrialsPerBlock)
-		self.angles = list(self.params['Angles'].val) 
-		self.angles *= max(1, ntrials/len(self.angles))
+		self.angles = list(self.params['Angles'].val) * 20
+		#self.angles *= max(1, ntrials/len(self.angles))
 		numpy.random.shuffle(self.angles)
 		
 		self.neutral=False
@@ -126,6 +127,7 @@ class BciApplication(BciGenericApplication):
 				self.prematuresound.play()
 	
 	def Process(self, sig):
+		self.states.Classify = int(self.in_phase('delay') and self.since('transition')['msec'] > 1000)
 		if 'eye' in self.stimuli and 'EyetrackerLeftEyeGazeX' in self.states:
 			x = 0.5 * self.states.EyetrackerLeftEyeGazeX + 0.5 * self.states.EyetrackerRightEyeGazeX
 			y = 0.5 * self.states.EyetrackerLeftEyeGazeY + 0.5 * self.states.EyetrackerRightEyeGazeY
@@ -134,6 +136,11 @@ class BciApplication(BciGenericApplication):
 			self.stimuli.eye.on = True
 			self.stimuli.eye.position = x,y
 			
+	def StartRun(self):
+		self.angles = list(self.params['Angles'].val) * 20
+		#self.angles *= max(1, ntrials/len(self.angles))
+		numpy.random.shuffle(self.angles)
+		
 	def StopRun(self):
 		self.endsound.play()
 		

@@ -23,8 +23,15 @@ call portable.bat
 @set OnConnect=%OnConnect% ; SETCONFIG
 
 start Operator               --OnConnect "%OnConnect%"
-::start SignalGenerator        --EvaluateTiming=0
-start gUSBampSource          --LogEyetracker=1
-::start PythonSource           --PythonSrcWD=%PYWD% --PythonSrcClassFile= --EvaluateTiming=0
+
 start ARSignalProcessing_Hijacked 
 start PythonApplication      --PythonAppWD=%PYWD% --PythonAppClassFile=posner.py
+
+@if %COMPUTERNAME%==BCI2000-DEV goto DEV
+:USBAMPS
+start gUSBampSource          --LogEyetracker=1
+goto END
+:DEV
+start SignalGenerator        --EvaluateTiming=0
+goto END
+:END

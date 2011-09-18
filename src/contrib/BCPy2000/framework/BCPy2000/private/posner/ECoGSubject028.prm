@@ -5,4 +5,4 @@ Filtering:SpatialFilter                       matrix    SpatialFilter=          
 Visualization                                 int       VisualizeARFilter=             1
 Visualization                                 int       TestEyetracker=                1
 
-Storage                                       string    SubjectName=             ECOG028
+Storage                                       string    SubjectName=             ECOG028_
