@@ -63,6 +63,7 @@ def msec2samples(msec, samplingfreq_hz):
 	"""###
 	fs = getfs(samplingfreq_hz)
 	if msec==None or fs==None: return None
+	if isinstance(msec, (tuple,list)): msec = numpy.array(msec)
 	if isinstance(msec, numpy.ndarray): msec = msec.astype(numpy.float64)
 	else: msec = float(msec)
 	return numpy.round(float(fs) * msec / 1000.0)
@@ -73,6 +74,7 @@ def samples2msec(samples, samplingfreq_hz):
 	"""###
 	fs = getfs(samplingfreq_hz)
 	if samples==None or fs==None: return None
+	if isinstance(samples, (tuple,list)): samples = numpy.array(samples)
 	if isinstance(samples, numpy.ndarray): samples = samples.astype(numpy.float64)
 	else: samples = float(samples)
 	return 1000.0 * samples / float(fs)

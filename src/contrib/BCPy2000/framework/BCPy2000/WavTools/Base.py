@@ -45,14 +45,20 @@ def isnumpyarray(x):
 	return isinstance(x, numpy.ndarray)
 	
 def msec2samples(msec, fs):
-	if msec==None: return None
 	if hasattr(fs, 'fs'): fs = fs.fs
-	return round(float(fs) * float(msec) / 1000.0)
+	if msec==None or fs==None: return None
+	if isinstance(msec, (tuple,list)): msec = numpy.array(msec)
+	if isinstance(msec, numpy.ndarray): msec = msec.astype(numpy.float64)
+	else: msec = float(msec)
+	return numpy.round(float(fs) * msec / 1000.0)
 
 def samples2msec(samples, fs):
-	if samples==None: return None
 	if hasattr(fs, 'fs'): fs = fs.fs
-	return 1000.0 * float(samples) / float(fs)
+	if samples==None or fs==None: return None
+	if isinstance(samples, (tuple,list)): samples = numpy.array(samples)
+	if isinstance(samples, numpy.ndarray): samples = samples.astype(numpy.float64)
+	else: samples = float(samples)
+	return 1000.0 * samples / float(fs)
 
 def samples(a):
 	if hasattr(a, 'wav') and hasattr(a.wav, 'y') and isnumpyarray(a.wav.y): a = a.wav.y
@@ -263,21 +269,21 @@ class wav:
 		    * and / can be used to scale amplitudes (use a list of scaling factors
 		    in order to scale channels separately) or window a signal by multiplying
 		    two timeseries together.
-		   			   
+		 
 		Concatenation of objects with objects:
 		    w1 % w2   # is the same as wav.cat(w1,w2)
 		              # i.e. it returns a concatenation of w1 and w2 in time
-			
+		
 		Concatenation of objects with scalars:
 		    w % 0.4  # returns a new object with 400 msec of silence appended
 		    0.4 % w  # returns a new object with 400 msec of silence prepended
-			
+		
 		Creating multichannel objects:
 		    w1 & w2   # returns a new object with the channels of w1 and
 		              # the channels of w2 (even if lengths do not match)
-			          
+		
 		 +=  -=  *=  /=   %=   &=   also behave as you might expect
-			
+		
 		"""###
 		y = numpy.array([], dtype='<f4')
 		y.shape=(0,nchan)
@@ -635,3 +641,7 @@ class wav:
 		subs[across_samples] = slice(start, stop, step)
 		subs[across_channels] = chans
 		return subs
+	
+	def msec2samples(self, msec): return msec2samples(msec, self)
+	def samples2msec(self, msec): return samples2msec(msec, self)
+		
