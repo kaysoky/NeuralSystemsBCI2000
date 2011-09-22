@@ -28,10 +28,11 @@ class BciApplication(BciGenericApplication):
 		params = [
 			"PythonApp         float     WindowSize=                               1.0                    1.0   0 1 // subject window size from 0 to 1",
 			"PythonApp         float     SystemMasterVolume=                       1.0                    1.0   0 1 // operating-system volume setting from 0 to 1",
-			"PythonApp         int       HeadPhones=                               1                      0     0 1 // use headphones or not? (boolean)",
-			"PythonApp         int       TestEyeTracker=                           0                      0     0 1 // display gaze feedback stimulus? (boolean)",
-			"PythonApp         int       FreeChoice=                               0                      0     0 1 // allow user to choose freely (boolean)",
-			"PythonApp         intlist   BeatsPerTrial=                         1  7                      7     1 % // ",
+			"PythonApp:Task    int       HeadPhones=                               1                      0     0 1 // use headphones or not? (boolean)",
+			"PythonApp:Task    int       TestEyeTracker=                           0                      0     0 1 // display gaze feedback stimulus? (boolean)",
+			"PythonApp:Task    int       FreeChoice=                               0                      0     0 1 // allow user to choose freely? (boolean)",
+			"PythonApp:Task    int       ShowCountFeedback=                        1                      0     0 1 // show correct counts after each trial? (boolean)",
+			"PythonApp:Task    intlist   BeatsPerTrial=                         1  7                      7     1 % // ",
 		]
 		nbits = numpy.ceil(numpy.log2(self.maxstreams + 1.0))
 		states = [
@@ -94,6 +95,10 @@ class BciApplication(BciGenericApplication):
 		
 		self.ding = WavTools.player('ding.wav')
 		self.chimes = WavTools.player('chimes.wav')
+		self.answers = {
+			'YES': WavTools.player(1 % WavTools.wav('yes.wav')/2.0),
+			'NO':  WavTools.player(1 % WavTools.wav('no.wav')/2.0),
+		}
 		
 		self.reset_count()
 		self.count_feedback_stimuli = []
@@ -111,6 +116,7 @@ class BciApplication(BciGenericApplication):
 			self.addstatemonitor('PredictedStream')
 						
 		self.freechoice = int(self.params['FreeChoice'])
+		self.showcounts = int(self.params['ShowCountFeedback'])
 		self.last_prediction = 0
 		vol = float(self.params['SystemMasterVolume'])
 		self.init_volume(vol)
@@ -131,16 +137,25 @@ class BciApplication(BciGenericApplication):
 	
 	def Phases(self):
 		
-		if self.freechoice: cuelen = 3000
-		else: cuelen = 2000
+		if self.freechoice:
+			cuelen = None # 3000
+			resplen = 2000
+		else:
+			cuelen = 2000
+			resplen = 5000
 		
+		if self.showcounts:
+			after_reponse = 'feedback'
+		else:
+			after_reponse = 'pause'
+
 		pauselen = numpy.random.rand() * 1000 + 500
 		
 		self.phase(  duration=pauselen, name='pause',      next='cue',  )
 		self.phase(  duration=cuelen,   name='cue',        next='stimulus',  )
 		self.phase(  duration=None,     name='stimulus',   next='classify',  )
 		self.phase(  duration=1000,     name='classify',   next='respond',   )
-		self.phase(  duration=5000,     name='respond',    next='feedback',  )
+		self.phase(  duration=resplen,  name='respond',    next=after_reponse,  )
 		self.phase(  duration=2000,     name='feedback',   next='pause',  )
 		
 		self.design(start='pause', new_trial='cue')
@@ -170,7 +185,9 @@ class BciApplication(BciGenericApplication):
 			else:
 				self.states['CorrectResponse'] = 0
 			if self.freechoice and self.last_prediction:
-				self.stimuli['cue'].text = {1:'NO', 2:'YES'}.get(self.last_prediction, '?')
+				answer = {1:'NO', 2:'YES'}.get(self.last_prediction, '?')
+				self.stimuli['cue'].text = answer
+				if answer in self.answers: self.answers[answer].play()
 			else:
 				self.stimuli['cue'].text = '?'
 				self.screen.RaiseWindow()
@@ -212,10 +229,14 @@ class BciApplication(BciGenericApplication):
 	def Process(self, sig):
 			
 		self.update_count()
-				
+		
+		if self.in_phase('cue', 2) and self.states['StreamingRequired'] == 1:
+			self.change_phase()
+		
 		if self.in_phase('stimulus'):
 			if True not in [n < self.nbeats[istream] for istream,n in enumerate(self.count['beats'])]: 
 				self.states['StreamingRequired'] = 0
+			if self.states['StreamingRequired'] == 0:
 				self.change_phase()
 				
 		if self.changed('StreamingFinished', fromVals=0):
@@ -247,6 +268,8 @@ class BciApplication(BciGenericApplication):
 			if key in range(256, 266): self.states['Response'] = key - 256
 			elif key in range(48,58):  self.states['Response'] = key - 48
 			self.change_phase()
+		if self.freechoice and phase == 'cue' and event.type == pygame.locals.KEYUP:
+			self.change_phase()
 			
 	#############################################################
 
@@ -264,6 +287,7 @@ class BciApplication(BciGenericApplication):
 		f = open(fn, 'w'); f.write(m); f.close()	
 			
 		self.chimes.play()
+		self.stimuli['cue'].on = False
 								
 	#############################################################
 	

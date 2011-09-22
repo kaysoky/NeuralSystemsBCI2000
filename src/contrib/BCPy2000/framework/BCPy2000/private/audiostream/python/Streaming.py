@@ -1,7 +1,7 @@
 import os,sys
 import time
 import numpy
-import scipy.signal
+import scipy.signal # for detrending
 import SigTools
 import WavTools
 import BCI2000Tools.DataFiles  # adds self.load and self.dump methods
@@ -235,7 +235,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			else:
 				w = WavTools.wav(base)
 				if shift != None: w += (shift % w)
-				if amfreq != None: w = SigTools.ampmod(freq_hz=amfreq)
+				if amfreq != None: w = SigTools.ampmod(w, freq_hz=amfreq)
 				
 		if base == None: # no, don't turn this into an else
 			try: w = WavTools.wav(prmval)
@@ -570,6 +570,45 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				pylab.xlim([0, msec[-1]])
 				pylab.grid('on')
 			pylab.draw()
-					
+			
+	#############################################################
+	
+	def play(self, channels='left'):
+		if self.states['Running']: print "not now"; return
+		if isinstance(channels, basestring):
+			if channels == 'both': channels = 'left+right'
+			channels = [c for c in channels.replace(',',' ').replace('&',' ').replace('+',' ').split() if len(c)]
+		if not isinstance(channels, (tuple,list)): channels = [channels]
+		ww = 0.0
+		self.nbeats = [0] * self.nstreams
+		for c in channels:
+			if c == '': continue
+			if isinstance(c, basestring):
+				streamstring = c
+				c = {'left':1, 'right':2}[c.lower()]
+			else:
+				streamstring = 'stream %d' % c
+			istream = c - 1
+			w = float(self.params['OffsetMsec'][istream]) / 1000.0
+			period = float(self.params['PeriodMsec'][istream]) / 1000.0
+			ntargets = 0
+			standard = self.standards[istream].wav.copy(); standard.padendto(period)
+			target = self.targets[istream].wav.copy(); target.padendto(period)
+			keepgoing = True
+			while keepgoing:
+				v = self.GetVariant(istream)
+				if v == 2: w = w % target; ntargets += 1
+				else: w = w % standard
+				self.nbeats[istream] += 1
+				if 'BeatsPerTrial' in self.params:
+					keepgoing = self.nbeats[istream] < int((self.params['BeatsPerTrial']*self.nstreams)[istream])
+				else:
+					keepgoing = len(self.prepseq[istream]) > 0
+			print "%d targets in %s" % (ntargets, streamstring)
+			ww = ww + w
+		del self.prepseq
+		self.nbeats = [0] * self.nstreams
+		WavTools.player(ww).play(bg=False)
+		
 #################################################################
 #################################################################
