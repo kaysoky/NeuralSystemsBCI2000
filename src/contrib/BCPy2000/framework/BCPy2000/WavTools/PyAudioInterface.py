@@ -270,7 +270,7 @@ class player(Background.ongoing):
 			self.stream.close()
 		self.stream = None
 		
-	def play(self, repeats=1, bg=True, w=None, data=None, timeout=None):
+	def play(self, repeats=1, bg=True, w=None, data=None, timeout=None, vol=None, pan=None):
 		"""
 		plays a wav object w, which defaults to the currently loaded instance p.wav
 
@@ -293,6 +293,8 @@ class player(Background.ongoing):
 		if Base.channels(data) != Base.channels(w): raise ValueError, 'data array and wav object have mismatched numbers of channels'
 		self.timeout=timeout
 		self.kwargs = {'w':w, 'data':data, 'repeats':repeats}
+		if vol != None: self.vol = vol
+		if pan != None: self.pan = pan
 		self.go(bg=bg)
 
 	def onfinish(self):

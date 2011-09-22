@@ -8,6 +8,7 @@ PythonSig:Streams                             intlist   ScopeForMinMax=         
 PythonSig:Streams                             floatlist StreamVolumes=            2       0.02     0.02 //
 PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } no.wav no_mod.wav   yes.wav yes_mod.wav  //
 PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } 8500LeftStandard.wav 8500LeftTarget.wav   8500RightStandard.wav 8500RightTarget.wav  //
+PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } tick.wav 15msec   tock.wav 15msec  //
 PythonSig:Streams                             int       SurroundSoundTrigger=             1             // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
 PythonSig:Streams                             int       DirectSound=                      1             // use DirectSound interface or not? (boolean)
 

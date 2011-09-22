@@ -200,8 +200,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if stim.shape[1] != 2: raise EndUserError("StreamStimuli parameter must have 2 columns (Standard and Target)")
 		if stim.shape[0] != self.nstreams: raise EndUserError("StreamStimuli parameter must have one row per streams (NumberOfStreams = %d)" % self.nstreams)
 		self.surround = int(self.params['SurroundSoundTrigger'])
-		self.standards = [self.prepwav(filename,istream) for istream,filename in enumerate(stim[:,0])]
-		self.targets   = [self.prepwav(filename,istream) for istream,filename in enumerate(stim[:,1])]
+		self.standards = [self.prepwav(prmval, istream                      ) for istream,prmval in enumerate(stim[:,0])]
+		self.targets   = [self.prepwav(prmval, istream, base=stim[istream,0]) for istream,prmval in enumerate(stim[:,1])]
 			
 		for p in self.standards + self.targets:
 			while p.playing: time.sleep(0.001)
@@ -223,9 +223,23 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 	#############################################################
 	
-	def prepwav(self, filename, istream):
-		try: w = WavTools.wav(filename)
-		except IOError: raise EndUserError("failed to load '%s' as a wav file" % filename)
+	def prepwav(self, prmval, istream, base=None):
+		
+		if base != None:
+			amfreq = shift = None
+			try:
+				if prmval.lower().endswith('hz'): amfreq = float(prmval.lower().rstrip('hz'))
+				else: shift = float(prmval.lower().rstrip('msec'))/1000.0
+			except ValueError:
+				base = None
+			else:
+				w = WavTools.wav(base)
+				if shift != None: w += (shift % w)
+				if amfreq != None: w = SigTools.ampmod(freq_hz=amfreq)
+				
+		if base == None: # no, don't turn this into an else
+			try: w = WavTools.wav(prmval)
+			except IOError: raise EndUserError("failed to load '%s' as a wav file" % prmval)
 		
 		if w.channels() != 1: raise EndUserError("StreamStimuli wav files must be single-channel: found %d channels in %s" % (w.channels(), w.filename))
 
