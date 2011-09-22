@@ -162,7 +162,7 @@ class BciApplication(BciGenericApplication):
 			else:
 				self.states['TargetStream'] = self.nexttarget()
 			self.target = self.states['TargetStream']
-			self.stimuli['cue'].text = {0:'CHOOSE', 1:'<<< LEFT', 2:'RIGHT >>>'}.get(self.target, 'stream #%d'%self.target)
+			self.stimuli['cue'].text = {0:'READY...', 1:'<<< LEFT', 2:'RIGHT >>>'}.get(self.target, 'stream #%d'%self.target)
 			self.stimuli['cue'].on = True
 		elif phase == 'respond':
 			if self.target > 0:
@@ -170,7 +170,7 @@ class BciApplication(BciGenericApplication):
 			else:
 				self.states['CorrectResponse'] = 0
 			if self.freechoice and self.last_prediction:
-				self.stimuli['cue'].text = {1:'interpreted as LEFT', 2:'interpreted as RIGHT'}.get(self.last_prediction, '?')
+				self.stimuli['cue'].text = {1:'NO', 2:'YES'}.get(self.last_prediction, '?')
 			else:
 				self.stimuli['cue'].text = '?'
 				self.screen.RaiseWindow()
