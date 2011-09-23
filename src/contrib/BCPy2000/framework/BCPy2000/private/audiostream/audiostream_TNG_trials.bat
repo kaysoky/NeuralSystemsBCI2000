@@ -13,6 +13,11 @@
 @set PROG=%CD%
 
 
+@set SESSION=002
+@if [%1]==[] goto SKIPSESSIONARG
+@set SESSION=%1
+:SKIPSESSIONARG
+
 
 cd ..\prog
 call portable.bat
@@ -26,8 +31,11 @@ call portable.bat
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\tng.prm 
 @set OnConnect=%OnConnect% ; SET PARAMETER EpochAveragingPersistence 1.0
 @set OnConnect=%OnConnect% ; SET PARAMETER ControlFilterCutoffHz     0.0
-@set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession          002
+@set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession        %SESSION%
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition%SESSION%.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm
+
+
 
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PROG%\..\data\20110801_8502_A_S002R03_weights.prm
 ::@set OnConnect=%OnConnect% ; SET PARAMETER ShowSignalTime 1

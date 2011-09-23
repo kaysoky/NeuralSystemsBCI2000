@@ -995,7 +995,7 @@ def confuse(true, predicted, labels=None, exemplar_dim=0):
 		except: pass
 	else:
 		labels = list(labels)
-		for fi,pi in found_labels:
+		for fi in found_labels:
 			if find(fi, labels) == None: raise ValueError('inputs contain labels not listed in the <labels> argument')
 	nclasses = len(labels)
 	C = numpy.zeros((nclasses, nclasses), dtype=numpy.float64)

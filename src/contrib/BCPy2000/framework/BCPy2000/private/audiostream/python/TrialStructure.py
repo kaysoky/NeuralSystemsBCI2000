@@ -26,8 +26,10 @@ class BciApplication(BciGenericApplication):
 	def Construct(self):
 		self.maxstreams = 2
 		params = [
-			"PythonApp         float     WindowSize=                               1.0                    1.0   0 1 // subject window size from 0 to 1",
-			"PythonApp         float     SystemMasterVolume=                       1.0                    1.0   0 1 // operating-system volume setting from 0 to 1",
+			"PythonApp:System  int       ScreenID=                                -1                     -1     % % // monitor id (0,1,2..., or -1 for last)",
+			"PythonApp:System  float     WindowSize=                               0.8                    1.0   0 1 // subject window size from 0 to 1, when ScreenID is not -1",
+			"PythonApp:System  float     FontSize=                                80                     80     5 % // font size for cue text",
+			"PythonApp:System  float     SystemMasterVolume=                       1.0                    1.0   0 1 // operating-system volume setting from 0 to 1",
 			"PythonApp:Task    int       HeadPhones=                               1                      0     0 1 // use headphones or not? (boolean)",
 			"PythonApp:Task    int       TestEyeTracker=                           0                      0     0 1 // display gaze feedback stimulus? (boolean)",
 			"PythonApp:Task    int       FreeChoice=                               0                      0     0 1 // allow user to choose freely? (boolean)",
@@ -65,10 +67,11 @@ class BciApplication(BciGenericApplication):
 		for istream,n in enumerate(self.nbeats):
 			if n < 1 or n != round(n): raise EndUserError("BeatsPerTrial elements must be integers > 0")
 
+		monitor = int(self.params['ScreenID'])
 		windowsize = float(self.params['WindowSize'])
-		if AppTools.Displays.number_of_monitors() > 1: windowsize = 1.0
-		AppTools.Displays.fullscreen(id=-1, scale=windowsize)
-		self.screen.setup(frameless_window=(windowsize==1.0))
+		if AppTools.Displays.number_of_monitors() > 1 and monitor == -1: windowsize = 1.0
+		AppTools.Displays.fullscreen(id=monitor, scale=windowsize)
+		self.screen.setup(frameless_window=(windowsize==1.0), hide_mouse=(windowsize==1.0))
 
 		if 'ConsoleRenderer' in sys.modules: self.screen.fake()
 		
@@ -76,6 +79,7 @@ class BciApplication(BciGenericApplication):
 
 	def Initialize(self, indim, outdim):
 		
+		self.screen.SetDefaultFont(size=int(self.params['FontSize']))
 		self.transient('PredictedStream', manual=True) # for some reason this does not work (problem xxx)
 		self.transient('Response', manual=True)
 		self.transient('CorrectResponse', manual=True)
@@ -85,12 +89,11 @@ class BciApplication(BciGenericApplication):
 		if int(self.params['HeadPhones']): starttext = 'HEADPHONES'
 		else: starttext = 'SPEAKERS'
 		
-		starttext += '   two-sided (attention)'
 		if len(self.params['ERPClassifierWeights'].val) == 0:
 			starttext += '   no classifier loaded'
 
 		w,h = self.screen.size
-		t = VisualStimuli.Text(text=starttext, position=(w/2,h/2), anchor='top', on=True)
+		t = VisualStimuli.Text(text=starttext, position=(w/2,h/2), anchor='center', on=True)
 		self.stimulus('cue', t)
 		
 		self.ding = WavTools.player('ding.wav')
@@ -217,6 +220,7 @@ class BciApplication(BciGenericApplication):
 				if istream+1 == self.target and correct != 0:
 					if response == correct:
 						stim.color = (0,1,0)
+						if response: stim.text += ' is correct'
 					else: 
 						stim.color = (1,0,0)
 						if response: stim.text += ', not %d' % response
@@ -331,14 +335,55 @@ class BciApplication(BciGenericApplication):
 			
 	#############################################################
 	
-	def history(self, fn=None, states='', **kwargs):
+	def ViewRun(self, fn=None, states='', **kwargs):
+		ind = -1
+		if isinstance(fn, int): fn,ind = None,fn
 		if fn == None: fn = self.data_dir
 		import BCI2000Tools.FileReader
-		b = BCI2000Tools.FileReader.bcistream(fn)
+		b = BCI2000Tools.FileReader.bcistream(fn=fn,ind=ind)
 		x,st=b.decode('all')
 		if isinstance(states, basestring): states = states.split()
 		b.plotstates(st, 'TargetStream PredictedStream CorrectResponse Response'.split() + states, **kwargs)
 		
+	#############################################################
+	
+	def performance(self, condition=None, type='predictions', labels=None, directory=None):
+		import SigTools
+		if directory == None: directory = self.data_dir
+		if condition != None: directory = directory[:-3] + ('%03d'% condition)
+		files = [os.path.join(directory,x) for x in os.listdir(directory) if x.endswith('_' + type + '.txt')]
+		arrays = [numpy.array(eval('\n'.join(open(x).readlines()))) for x in files] 
+		confmat = 0
+		if labels == None: labels = {'predictions':[1,2], 'responses':[1,2,3]}[type]
+		for f,a in zip(files,arrays):
+			print f
+			if len(a) == 0 or numpy.all(a[:,1]==0):
+				print "no entries"
+			else:
+				target = a[:,1]
+				achieved = a[:,0]
+				good = [int(x in labels) for x in achieved]
+				achieved *= good
+				if False in good: print "%d bad trials" % (len(good)-sum(good))
+				c,x = SigTools.confuse(a[:,1],a[:,0], labels=[0]+labels)
+				pc,stc = SigTools.class_loss(confusion_matrix=c)
+				pb,stb = SigTools.balanced_loss(confusion_matrix=c)
+				print c
+				print ' overall accuracy of %s = %3.1f%% +/- %3.1f from %d trials' % (type, 100-100*pc, 100*stc, c.sum())
+				print 'balanced accuracy of %s = %3.1f%% +/- %3.1f from %d trials' % (type, 100-100*pb, 100*stb, c.sum())
+				confmat = confmat + c
+			print
+		print "collated over %s" % directory
+		c = confmat
+		if c is 0:
+			print "no relevant entries found"
+		else:			
+			pc,stc = SigTools.class_loss(confusion_matrix=c)
+			pb,stb = SigTools.balanced_loss(confusion_matrix=c)
+			print confmat
+			print ' overall accuracy of %s = %3.1f%% +/- %3.1f from %d trials' % (type, 100-100*pc, 100*stc, c.sum())
+			print 'balanced accuracy of %s = %3.1f%% +/- %3.1f from %d trials' % (type, 100-100*pb, 100*stb, c.sum())
+			
 #################################################################
 #################################################################
 

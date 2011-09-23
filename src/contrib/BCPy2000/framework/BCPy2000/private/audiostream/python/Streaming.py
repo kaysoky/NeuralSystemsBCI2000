@@ -573,7 +573,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			
 	#############################################################
 	
-	def play(self, channels='left'):
+	def play(self, channels='left', reps=None):
 		if self.states['Running']: print "not now"; return
 		if isinstance(channels, basestring):
 			if channels == 'both': channels = 'left+right'
@@ -594,16 +594,15 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			ntargets = 0
 			standard = self.standards[istream].wav.copy(); standard.padendto(period)
 			target = self.targets[istream].wav.copy(); target.padendto(period)
-			keepgoing = True
-			while keepgoing:
+			nbmax = reps
+			if nbmax == None:
+				if 'BeatsPerTrial' in self.params: nbmax = int((self.params['BeatsPerTrial']*self.nstreams)[istream])
+				else:                              nbmax = int((self.params['ScopeForMinMax']*self.nstreams)[istream])
+			while self.nbeats[istream] < nbmax:
 				v = self.GetVariant(istream)
 				if v == 2: w = w % target; ntargets += 1
 				else: w = w % standard
 				self.nbeats[istream] += 1
-				if 'BeatsPerTrial' in self.params:
-					keepgoing = self.nbeats[istream] < int((self.params['BeatsPerTrial']*self.nstreams)[istream])
-				else:
-					keepgoing = len(self.prepseq[istream]) > 0
 			print "%d targets in %s" % (ntargets, streamstring)
 			ww = ww + w
 		del self.prepseq

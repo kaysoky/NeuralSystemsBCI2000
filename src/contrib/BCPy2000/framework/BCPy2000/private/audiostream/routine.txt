@@ -1,46 +1,189 @@
-plug out dataglove, plug in USB keyboard
-plug out bluetooth dongle, plug in 5th amp
+Before the subject arrives:
+	
+	- if this is a paid subject who has never been a subject before, get cash and
+	  forms from Bill
+	  
+	- get a towel
+	
+	- set up the camera
+	
+	- test communication with the eyetracker, and restart the laptop if necessary
+	
+	- click on the blue musical note and verify that the soundcard is set to 4 channels
+		click on "front left":  ONLY the left earphone should sound
+		click on "front right":  ONLY the right earphone should sound
+		click on "back left/right": nothing through earphones (but something in BCI2000)
+		
+	- edit subject_attention.prm, adjust SubjectName to code the date and subject
+	   number as 2011MMDD_85NN_A_   without spaces. Save. It's fine to do this in
+	   advance as long as you don't "Start" a run in BCI2000 before you're collecting
+	   data for real.  Just measuring impedances will not cause a "Start".
 
-edit subject_attention.prm and ensure SubjectName contains generic Xs
+	- write down subject number, name, date and time, whether this subject needs to
+	  be paid or not, and whether this is a condition-2-first subject or
+	  condition-4-first subject (alternate this). Keep this info in a spreadsheet.
+	
+When the subject arrives:
 
-Launch audiostream.bat
+	- Find out whether the subject has done EEG experiments here before.
+	
+	- If not, explain again what is involved (takes about 2 hours in total, it's not painful,
+	  but you get gel in your hair; you can wash your hair here, etc).
+	  
+	- Get them to sign the consent form.
+	
+	- For state workers, draw their attention to the point on the form that, since we're
+	  paying them directly for their time, this time cannot be counted as work hours by the
+	  Department of Health (or wherever they work).
+	  
+	- First-timers will be paid in cash (get it, and the receipt for them to sign, from Bill
+	  before they arrive). Non-first-timers will go into the system (give Bill the details)
+	  and get a cheque at the end of the month (or of some month ;-)  ).  SECOND-timers may
+	  not be expecting this, so find out, and warn them not to expect cash.
 
-Config -> PythonApp -> Sound -> InteractiveVolumeAdjust: check
+EEG setup:
 
-SetConfig
+	- launch audiostream_TNG_trials.bat     if you're going to run condition 2 first
+	     or  audiostream_TNG_trials_004.bat if you're going to run condition 4 first
+ 		 
+	- Apply the cap.
 
-To demonstrate the stimulus, go to PythonApp terminal window and use
+	- Optimize the impedances / signal quality, applying the potential-equalization cable
+	  to the arm if necessary.
 
-	self.play('left')    # with speakers
-	self.play('left')    # with headphones (allow subj to adjust volume knob)
-	self.play('right')   # with headphones
-	self.play('both')
+	- Tape the EEG cable to chair, allowing slack before and after the tape.
 
-Run a demo run.
-Given that InteractiveVolumeAdjust is set, it will not wait for a response,
-but the arrow keys will be enabled for adjusting relative left/right levels.
+	- Turn mobile phones off or to silent.
 
-Quit
+Eyetracker calibration:
 
-edit subject_attention.prm, adjust SubjectName to code the date and subject number as
-2011MMDD_85NN_A_   without spaces. Save.
+	- Quit BCI2000
+	- Using NVIDIA control panel, switch to "Clone" mode
+	- Open "Tobii Eyetracker browser", click on eyetracker, click "Copy", close.
+	- Open "EyeCal"
+	- Instead of "localhost" at the top right, paste the address with ctrl-v
+	- Click "Start".
+	- Set viewing distance to arm's length or slightly less (ca 60cm)
+	- Align the image of the eyes to the centre of the black square. 
+	- Tell the subject to watch the blue dot, and click "Calibrate"
+	- Click "Recalibrate" to see if it needs to redo anything. Repeat until not.
+	  (Or, if it refuses to settle after 3 times, just carry on.)
+	- Click "Start" under "Test". Ask subject to follow mouse pointer into corners.
+	- If the dancing square is not bright green, adjust viewing distance until it is.
+	- If a viewing-distance adjustment was required, "Stop" testing and go back
+	  to the "Calibrate" step again.
+	- Use the NVIDIA control panel to switch back to "Dualview"
+	  
+Experiment:
 
-Launch audiostream.bat (condition 001) or audiostream_fixed.bat (condition 002)
+	launch audiostream_TNG_trials.bat     for condition 2
+	   or  audiostream_TNG_trials_004.bat for condition 4
+ 		 
+	To demonstrate the stimulus, go to PythonSig terminal window and use
 
-In Matlab, when using audiostream_classify, be sure to choose the right condition (001 or 002) for the previous run.
-When loading weights:  be VERY careful to choose from right condition directory (001 or 002) for the NEXT run
+		self.play('left')
+		self.play('right')
+		self.play('both')
 
+	Run self.play('both') several times, each time telling the subject to listen
+	either left or right. Get them to tell you how many targets there were each
+	time. Encourage them to adjust the sliders until (a) the volume is comfortable
+	and (b) neither left nor right is significantly easier/harder to ignore.
 
-end of session:
-	edit subject_attention.prm and change SubjectName back to generic Xs
+	When they've got the idea of it, say that the computer will tell them
+	whether to listen left or right, then they'll see a cross. While the cross
+	is on the screen, they should "act paralyzed": relax, but don't move: keep their
+	eyes fixed on the cross, and reduce blinking or swallowing to a minimum.
+	When the cross changes to a question-mark, THEN they can move again, and at that
+	point they should press 1, 2 or 3.
+	
+	At the end of the first run, explain that that was the first of 12 runs we'd ideally
+	like to perform today.
+		
+Classifier training:
 
+	- At the end of every run, go to the PythonSig window and type
+		x = self.classify()
+		
+	- Then (unless you are about to switch stimulus conditions) load the weights
+	  it has just created. BE VERY CAREFUL TO VERIFY that you are picking up
+	  weights from the correct directory (especially if you have just switched).
 
-If there is an error ("expected 8 beats in stream 1 but trapped  [some other number]"   or   "not all traps are full")
-The run is good up until that point, but you must save out the features for classification:
+	- The first time you load weights, explain that the task is EXACTLY the same,
+	  but sometimes the subject will hear a "Bing!" when the question-mark appears.
+	  This means the computer was able to correctly determine that the subject was
+	  listening to the side we told them to listen to. They shouldn't worry if there
+	  is not a "Bing!" all the time---the classifier doesn't have a lot of
+	  experience with their brain signals yet, but we'll keep training it.
+	  
+	- If it's time to switch stimulus conditions, quit BCI2000 entirely and re-launch
+	  using the other batch-file. If you have weights for this stimulus condition
+	  already: again, make sure you load them from the CORRECT directory for the
+	  condition you are about to run.
+	  
+	- The first time you switch stimulus conditions:
+	  -  run the self.play() tests again to get the subject used to the new stimulus
+	  -  warn the subject that there won't be any "Bing!" this time around (just like
+	     it was at the beginning).
 
-Quit BCI2000
-The PythonSig window will stay open (because it issued the error).
-Execute:
-	self.StopRun()
-Then you must close the PythonSig window manually before you can launch BCI2000 again.
+If there is an error on "Set Config" it can be corrected in the Config dialog
+without quitting BCI2000.
+
+If there is an unexpected error DURING a run:
+
+	- SAVE THE ERROR MESSAGE TEXT.  Select-all and copy from the operator log
+	  window, to a text file, or if all else fails, write down the error text
+	  exactly.
+	
+	- Quit BCI2000
+	
+	- The PythonSig or PythonApp window may stay open if it issued the error.
+	  If so, try to save error backtrace text that is in the window (use the
+	  Edit menu from top left corner: first Select All, then Copy, then paste
+	  into a text file). Then you must close the python window manually before
+	  you can launch BCI2000 again.
+
+	Jez:  +1 518 577 5008 (mobile)
+    	  +1 518 408 1842 (desk in Wadsworth basement, where there is no mobile reception)
+        	        81842 from inside the building
+
+At the end of the session:
+
+	- unlock the connecting door, show the subjects where they can wash. There's
+	  a bucket in the bathroom for used towels.
+	
+	- put the cap in to soak
+	
+	- self.performance() from the PythonApp window gets you the performance stats.
+	  more complex example: self.performance(condition=2, type='responses')
+	
+	- edit subject_attention.prm and change SubjectName back to generic Xs
+	
+	- if there has been any movie recording:
+		- the .MTS files from the STREAM subdirectory can be previewed in VLC
+		- copy the RELEVANT .MTS files from the camera to a directory of their
+		  own (let's say you call it BLAH) on the desktop. Open a DOS window.
+		- type
+			cd Desktop
+			c:\GPAC\mts2mp4  BLAH\*.mts
+		  This should take a couple of hours (approx 2x real duration of video)
+		  and will produce a movie on the desktop called out.mp4
+		- RENAME out.mp4 to 2011MMDD_85NN.mp4
+		- Check it in VLC (skip through using the slider)
+		- If it seems OK, delete the BLAH directory of MTS files again (to preserve
+		  disk space)
+	
+	- if appropriate, pay the subject and get them to sign a receipt
+	
+	- return to Bill:  camera, tripod, ivory washing-liquid, subject paperwork
+	
+	- finish washing the cap
+	
+	- save the purple syringe tip, in an envelope marked with the subject's name,
+	  if there's any chance we'll measure them again soon
+	  
+	- turn out lights, close all doors
+	
+	- Type up any session notes (including the condition order, 222444222444 or
+	  444222444222) into a 2011MMDD_85NN.txt file by the end of the day.
 
