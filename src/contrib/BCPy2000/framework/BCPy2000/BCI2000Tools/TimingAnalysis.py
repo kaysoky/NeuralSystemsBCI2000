@@ -182,7 +182,7 @@ def StimulusTiming(filename='.', ind=None, channels=0, trigger='StimulusCode > 0
 			EventOffsets=[],
 			UseEventOffsets=False,
 		) for ch in channels]
-	
+	if len(filename) == 0: raise ValueError("no data files specified")
 	for f,i in zip(filename, ind):
 		b = bcistream(filename=f, ind=i)
 		nsamp = b.msec2samples(msec)

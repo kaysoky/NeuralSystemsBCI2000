@@ -54,8 +54,7 @@ echo Test Ended.
 
 cd %SIMPLECERT%
 echo Running Analysis...
-python analysis.py %DATADIR%
-echo Saved timing figures in %DATADIR%
+python analysis.py %DATADIR%\SimpleCert001
 pause
 
 

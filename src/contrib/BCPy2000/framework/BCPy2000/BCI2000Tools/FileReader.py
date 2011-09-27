@@ -37,6 +37,7 @@ class DatFileError(Exception): pass
 
 
 def nsorted(x, width=20):
+	if len(x) == 0: return []
 	import re; return zip(*sorted(zip([re.sub('[0-9]+', lambda m: m.group().rjust(width,'0'), xi) for xi in x], x)))[1]
 
 def ListDatFiles(d='.'):
