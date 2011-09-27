@@ -47,7 +47,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	#############################################################
 
 	def Description(self):
-		return "binary classification of difference of L-R ERPs triggered by stereo AUX channels"
+		return "binary classification of difference of L-R ERPs - self-contained streaming module $Id $"
 
 	#############################################################
 
@@ -88,7 +88,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		states = [
 			"StreamingRequired  1 0 0 0",
 			"StreamingFinished  1 0 0 0",
-			"StimulusCode       4 0 0 0",
+			"StimulusCode       8 0 0 0",
 			"StimulusVariant    2 0 0 0",
 			"StimulusType       1 0 0 0",
 		]
@@ -196,16 +196,23 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		elif 'DirectSoundInterface' in sys.modules and sys.modules['DirectSoundInterface'].loaded:
 			raise EndUserError, "once turned on, the DirectSound setting cannot be turned off without restarting BCI2000"
 			
-		stim = numpy.array(self.params['StreamStimuli'])
-		if stim.shape[1] != 2: raise EndUserError("StreamStimuli parameter must have 2 columns (Standard and Target)")
-		if stim.shape[0] != self.nstreams: raise EndUserError("StreamStimuli parameter must have one row per streams (NumberOfStreams = %d)" % self.nstreams)
 		self.surround = int(self.params['SurroundSoundTrigger'])
-		self.standards = [self.prepwav(prmval, istream                      ) for istream,prmval in enumerate(stim[:,0])]
-		self.targets   = [self.prepwav(prmval, istream, base=stim[istream,0]) for istream,prmval in enumerate(stim[:,1])]
-			
-		for p in self.standards + self.targets:
-			while p.playing: time.sleep(0.001)
-			p.vol = 1.0
+		stim = numpy.array(self.params['StreamStimuli'])
+		if stim.shape[1] == 1:
+			if not self.surround: raise EndUserError("To use pre-prepared multichannel StreamStimuli, SurroundSoundTrigger must be on")
+			if len(self.trigchan) == 0:  raise EndUserError("To use pre-prepared multichannel StreamStimuli, TriggerChannels must be used")
+			if max(self.params['MaxTargets'].val) > 0: raise EndUserError("To use pre-prepared multichannel StreamStimuli, MaxTargets must be 0 for all streams")
+			self.precooked_wavs = [WavTools.player(x) for x in stim[:,0]]
+			for p in self.precooked_wavs: p.play(vol=0); time.sleep(0.01)
+			for p in self.precooked_wavs: p.stop(); p.vol = 1;
+		else:
+			self.precooked_wavs = None
+			if stim.shape[1] != 2: raise EndUserError("StreamStimuli parameter must have 2 columns (Standard and Target)")
+			if stim.shape[0] != self.nstreams: raise EndUserError("StreamStimuli parameter must have one row per streams (NumberOfStreams = %d)" % self.nstreams)
+			self.standards = [self.prepwav(prmval, istream                      ) for istream,prmval in enumerate(stim[:,0])]
+			self.targets   = [self.prepwav(prmval, istream, base=stim[istream,0]) for istream,prmval in enumerate(stim[:,1])]
+			time.sleep(0.1)
+			for p in self.standards + self.targets: p.stop(); p.vol = 1.0
 		
 	#############################################################
 	
@@ -304,6 +311,9 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 		if self.saving:
 			self.dump(channels=list(self.inchannels()), fs=self.nominal['SamplesPerSecond'])
+			
+		self.precooked_playing = None
+		self.precooked_counter = 0
 				
 	#############################################################
 	
@@ -381,6 +391,16 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 		counts = []
 		np = self.since('streaming')['packets']
+		
+		if self.precooked_wavs:
+			if starting:
+				self.precooked_playing = self.precooked_wavs[self.precooked_counter % len(self.precooked_wavs)]
+				self.precooked_playing.play()
+				self.precooked_counter += 1
+			if not presenting and self.precooked_playing != None:
+				if self.precooked_playing.going: self.precooked_playing.stop()
+				self.precooked_playing = None
+				
 		for istream in range(self.nstreams):
 									
 			if starting:
@@ -392,13 +412,18 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				if count == 0:
 					if int(self.params.get('EnslavePython', 0)): variant = self.states['StimulusVariant']
 					else: variant = self.GetVariant(istream)
-					if variant == 2: stim = self.targets[istream]
-					else: stim = self.standards[istream]
+					
+					if self.precooked_wavs:
+						stim = None
+					elif variant == 2:
+						stim = self.targets[istream]
+					else:
+						stim = self.standards[istream]
 						
-					if stim.going:
+					if stim != None and stim.going:
 						self.debug('stimuli skipped', counts=counts, packetsSinceStartOfStreaming=np, nbeats=list(self.nbeats))
 					else:
-						stim.play()
+						if stim != None: stim.play()
 						self.nbeats[istream] += 1
 						self.states['StimulusCode'] = istream + 1
 						self.states['StimulusVariant'] = variant

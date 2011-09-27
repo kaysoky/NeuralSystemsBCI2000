@@ -19,7 +19,7 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 
 	def Description(self):
-		return "attention to auditory streams"
+		return "attention to auditory streams $Id $"
 
 	#############################################################
 
@@ -340,7 +340,7 @@ class BciApplication(BciGenericApplication):
 		if isinstance(fn, int): fn,ind = None,fn
 		if fn == None: fn = self.data_dir
 		import BCI2000Tools.FileReader
-		b = BCI2000Tools.FileReader.bcistream(fn=fn,ind=ind)
+		b = BCI2000Tools.FileReader.bcistream(filename=fn,ind=ind)
 		x,st=b.decode('all')
 		if isinstance(states, basestring): states = states.split()
 		b.plotstates(st, 'TargetStream PredictedStream CorrectResponse Response'.split() + states, **kwargs)
