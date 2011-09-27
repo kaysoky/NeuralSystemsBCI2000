@@ -79,7 +79,7 @@ def samples2msec(samples, samplingfreq_hz):
 	else: samples = float(samples)
 	return 1000.0 * samples / float(fs)
 
-def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,samplingfreq_hz=None,duration_msec=None,duration_samples=None,axis=None,waveform=numpy.sin):
+def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,samplingfreq_hz=None,duration_msec=None,duration_samples=None,axis=None,waveform=numpy.sin,**kwargs):
 	"""
 	Return a copy of <w> (a numpy.ndarray or a WavTools.wav object) in which
 	the amplitude is modulated sinusoidally along the specified time <axis>.
@@ -97,7 +97,7 @@ def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,sam
 	if samplingfreq_hz==None: samplingfreq_hz = getfs(w)	
 	if phase_rad==None and phase_deg==None: phase_deg = -90.0
 	if duration_samples==None and duration_msec==None: duration_samples = project(y,0).shape[0]
-	envelope = wavegen(freq_hz=freq_hz,phase_rad=phase_rad,phase_deg=phase_deg,amplitude=amplitude,dc=dc,samplingfreq_hz=samplingfreq_hz,duration_msec=duration_msec,duration_samples=duration_samples,axis=axis,waveform=waveform)
+	envelope = wavegen(freq_hz=freq_hz,phase_rad=phase_rad,phase_deg=phase_deg,amplitude=amplitude,dc=dc,samplingfreq_hz=samplingfreq_hz,duration_msec=duration_msec,duration_samples=duration_samples,axis=axis,waveform=waveform,**kwargs)
 	envelope = project(envelope, len(y.shape)-1)
 	y = y * envelope
 	if isnumpyarray(w): w = y
@@ -283,7 +283,8 @@ def sinewave(theta, maxharm=None, rescale=False):
 	"""###
 	return numpy.sin(theta) # maxharm and rescale have no effect
 	
-def squarewave(theta, maxharm=None, rescale=False, tol=1e-8):
+	
+def squarewave(theta, maxharm=None, rescale=False, duty=0.5, ramp=0, tol=1e-8):
 	"""
 	A square wave with its peaks and troughs in sine phase.
 	If <maxharm> is an integer, then an anti-aliased approximation
@@ -292,13 +293,34 @@ def squarewave(theta, maxharm=None, rescale=False, tol=1e-8):
 	this case, the <rescale> flag can be set to ensure that the
 	waveform does not exceed +/- 1.0
 	"""###
+	if ramp + tol > 1.0: raise ValueError("ramp + tol cannot exceed 1.0")
 	if maxharm == None or maxharm == numpy.inf:
-		y = numpy.sin(theta)
-		if tol:
-			f = y.flat
-			f[numpy.where(numpy.abs(f)<tol)] = 0
-		return numpy.sign(y)
+		y = theta / (2*numpy.pi)
+		y %= 1.0		
+		t = y * 1.0
+		def piecewise_linear(y, yrange, t, trange):
+			if trange[1] == trange[0]:
+				y[t==trange[0]] = sum(yrange)/2.0
+			else:
+				mask = numpy.logical_and(trange[0] <= t,  t < trange[1])
+				t = (t[mask] - trange[0]) / float(trange[1] - trange[0])
+				if len(t): y[mask] = yrange[0] + (yrange[1] - yrange[0]) * t
+			return trange[1]
+		
+		on,off = duty * (1.0-tol-ramp), (1.0 - duty) * (1-tol-ramp)
+		x = 0.0
+		x = piecewise_linear(y, [ 0, 0], t, [x, x + tol/4.0])
+		x = piecewise_linear(y, [ 0,+1], t, [x, x + ramp/4.0 ])
+		x = piecewise_linear(y, [+1,+1], t, [x, x + on       ])
+		x = piecewise_linear(y, [+1, 0], t, [x, x + ramp/4.0 ])
+		x = piecewise_linear(y, [ 0, 0], t, [x, x + tol/2.0  ])
+		x = piecewise_linear(y, [ 0,-1], t, [x, x + ramp/4.0 ])
+		x = piecewise_linear(y, [-1,-1], t, [x, x + off      ])
+		x = piecewise_linear(y, [-1, 0], t, [x, x + ramp/4.0 ])
+		x = piecewise_linear(y, [ 0, 0], t, [x, x + tol/4.0  ])		
+		return y
 			
+	if duty != 0.5 or ramp != 0: raise ValueError("antialiasing (maxharm!=None) not implemented for duty cycles other than 0.5 or ramps other than 0")
 	y = 0.0
 	for h in numpy.arange(1.0, 1.0+maxharm, 2.0): y = y + numpy.sin(h*theta)/h
 	y *= 4.0 / numpy.pi
