@@ -19,7 +19,7 @@ Visualize:Source%20Signal:DataIOFilter        int       SourceMax=              
 Visualize:Processing%20Stages                 int       VisualizePythonSigFilter=         1             // Visualize PythonSigFilter output (boolean)
                 
 Filtering:SpatialFilter                       int       SpatialFilterType=                0             // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)
-PythonSig:Epoch                               list      TriggerChannels=          0    AUDL     AUDR    // 
+PythonSig:Epoch                               list      TriggerChannels=          2    AUDL     AUDR    // 
 PythonSig:Epoch                               floatlist TriggerThreshold=         2   50000    50000    // 
 PythonSig:Epoch                               float     TriggerHPCutoff=                  0.0           // 
 PythonSig:Epoch                               float     TriggerHPOrder=                   4             // 
@@ -35,7 +35,7 @@ PythonSig:Epoch                               float     ERPClassifierBias=      
 PythonSig:Epoch                               matrix    ERPClassifierWeights=   0 1       %             // 
 PythonSig:Epoch                               int       SaveTrainingData=                 1             // 
 
-PythonSig:Control                             float     EpochAveragingPersistence=        0.8           // persistence parameter for the running average of ERPs
+PythonSig:Control                             float     EpochAveragingPersistence=        0.7           // persistence parameter for the running average of ERPs
 PythonSig:Control                             float     ControlFilterCutoffHz=            3.0           // output low-pass cutoff in Hz (0 to disable)
 PythonSig:Control                             int       ControlFilterOrder=               8             // 
 

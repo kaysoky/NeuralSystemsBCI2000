@@ -32,6 +32,7 @@ call portable.bat
 @set OnConnect=%OnConnect% ; SET PARAMETER EpochAveragingPersistence 1.0
 @set OnConnect=%OnConnect% ; SET PARAMETER ControlFilterCutoffHz     0.0
 @set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession        %SESSION%
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\triggerless16.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition%SESSION%.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm
 

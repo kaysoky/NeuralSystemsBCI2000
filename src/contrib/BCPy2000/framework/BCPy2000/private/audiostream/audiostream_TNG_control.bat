@@ -35,9 +35,11 @@ call portable.bat
 
 :: NB AudiostreamBreakoutGame sets some control-signal-filtering parameters.  Overwrite these here
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\tng.prm 
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\triggerless16.prm 
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition004.prm 
 
 :: MUST ALSO LOAD WEIGHTS
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PROG%\..\data\EEG_201107_Audiostream\20110802_8501_A_002\20110802_8501_A_S002R03_weights.prm
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PROG%\..\data\EEG_201107_Audiostream\remember_to_load_some_weights.prm
 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm
 @set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession 999

@@ -160,18 +160,17 @@ At the end of the session:
 	- edit subject_attention.prm and change SubjectName back to generic Xs
 	
 	- if there has been any movie recording:
-		- the .MTS files from the STREAM subdirectory can be previewed in VLC
-		- copy the RELEVANT .MTS files from the camera to a directory of their
-		  own (let's say you call it BLAH) on the desktop. Open a DOS window.
-		- type
+		- identify which MTS files you need from the camera's STREAM
+          subdirectory: use datestamps and/or previw them in VLC
+		- open a DOS window and type the following (replacing the BLAHs
+		  and file numbers as appropriate)
 			cd Desktop
-			c:\GPAC\mts2mp4  BLAH\*.mts
-		  This should take a couple of hours (approx 2x real duration of video)
+			mts2mp4  G:\BLAH\BLAH\STREAM\00001.MTS G:\BLAH\BLAH\STREAM\00002.MTS 
+		- Then enter a filename when it asks you (2011MMDD_85NN.mp4), and
+		  answer questions if you are overwriting anything.
+		- This may take 30-60mins (approx 1.5x real duration of video)
 		  and will produce a movie on the desktop called out.mp4
-		- RENAME out.mp4 to 2011MMDD_85NN.mp4
 		- Check it in VLC (skip through using the slider)
-		- If it seems OK, delete the BLAH directory of MTS files again (to preserve
-		  disk space)
 	
 	- if appropriate, pay the subject and get them to sign a receipt
 	

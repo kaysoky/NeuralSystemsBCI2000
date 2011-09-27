@@ -41,7 +41,7 @@ PythonSig:Control                       float     EpochAveragingPersistence= 0.5
 PythonSig:Control                       int       ContinuousOutput=          1        // continuous output rather than trial-based feedback at the end of a defined period (boolean)
 PythonSig:Control                       float     ControlFilterCutoffHz=     3.0      // output low-pass cutoff in Hz (0 to disable)
 
-Application:Game                        string    PaddleExpressionX=         Signal(1,1) // Expression for X position of the paddle (-1:1) 
+Application:Game                        string    PaddleExpressionX=         0.2*Signal(1,1) // Expression for X position of the paddle (-1:1) 
 Application:Game                        int       IntegratePaddleX=          1        // 
 
 
