@@ -281,6 +281,8 @@ ImageStimulus::OnChange( DrawContext& ioDC )
         break;
 
       case GUI::AspectRatioModes::AdjustBoth:
+        imageWidth = mpImage->width();
+        imageHeight = mpImage->height();
         ioDC.rect.left = hCenter - mpImage->width() / 2;
         ioDC.rect.right = ioDC.rect.left + mpImage->width();
         ioDC.rect.top = vCenter - mpImage->height() / 2;
@@ -293,12 +295,13 @@ ImageStimulus::OnChange( DrawContext& ioDC )
     }
 
     // Create the normal pixmap
-    mpImageBufferNormal = new QPixmap();
-    *mpImageBufferNormal = QPixmap::fromImage( *mpImage );
-
+    if( PresentationMode() != ShowHide )
+    {
+      mpImageBufferNormal = new QPixmap;
+      mpImageBufferNormal->convertFromImage( mpImage->scaled( imageWidth, imageHeight ) );
+    }
     // Create the highlighted pixmap by modifying mpImage
-    mpImageBufferHighlighted = new QPixmap();
-    QImage temp = *mpImage;
+    QImage img( *mpImage );
     switch( PresentationMode() )
     {
       case ShowHide:
@@ -307,42 +310,36 @@ ImageStimulus::OnChange( DrawContext& ioDC )
         break;
 
       case Intensify:
-        for( int i = 0; i < mpImage->width(); ++i )
-          for( int j = 0; j < mpImage->height(); ++j )
+        for( int i = 0; i < img.width(); ++i )
+          for( int j = 0; j < img.height(); ++j )
           {
-            QColor c = mpImage->pixel( i, j );
+            QColor c = img.pixel( i, j );
             c = c.lighter( static_cast<int>( 100 * DimFactor() ) );
-            mpImage->setPixel( i, j, c.rgb() );
+            img.setPixel( i, j, c.rgb() );
           }
         break;
 
       case Grayscale:
         // May need changing.  Mono makes this monochromatic, not grayscale.
-        mpImage->convertToFormat( QImage::Format_Mono );
+        img.convertToFormat( QImage::Format_Mono );
         break;
 
       case Invert:
-        mpImage->invertPixels();
+        img.invertPixels();
         break;
 
       case Dim:
-        for( int i = 0; i < mpImage->width(); ++i )
-          for( int j = 0; j < mpImage->height(); ++j )
+        for( int i = 0; i < img.width(); ++i )
+          for( int j = 0; j < img.height(); ++j )
           {
-            QColor c = mpImage->pixel( i, j );
+            QColor c = img.pixel( i, j );
             c = c.darker( static_cast<int>( 100 * DimFactor() ) );
-            mpImage->setPixel( i, j, c.rgb() );
+            img.setPixel( i, j, c.rgb() );
           }
         break;
     }
-    *mpImageBufferHighlighted = QPixmap::fromImage( *mpImage );
-    *mpImage = temp;
-
-    // Scale the pixmaps if necessary
-    if( mpImageBufferNormal )
-      *mpImageBufferNormal = mpImageBufferNormal->scaled( imageWidth, imageHeight );
-    if( mpImageBufferHighlighted )
-      *mpImageBufferHighlighted = mpImageBufferHighlighted->scaled( imageWidth, imageHeight );
+    mpImageBufferHighlighted = new QPixmap;
+    mpImageBufferHighlighted->convertFromImage( img.scaled( imageWidth, imageHeight ) );
   }
 
 #endif // __BORLANDC__
