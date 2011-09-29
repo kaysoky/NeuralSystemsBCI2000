@@ -162,7 +162,7 @@ void EmotivADC::Preflight( const SignalProperties&,
   // Attempt to find the device
   unsigned int userID = 0;
   DataHandle hData = EE_DataCreate();
-  bciout << "Waiting for Emotiv device to connect." << endl;
+  bcidbg( 1 ) << "Waiting for Emotiv device to connect." << endl;
 
   // Connect to the first user
   int state	= 0;
@@ -183,11 +183,11 @@ void EmotivADC::Preflight( const SignalProperties&,
 
       // See if we have a user connected or not
       if( eventType == EE_UserAdded )
-        bciout << "Emotiv User Connected.  Waiting for Headset on..." << endl;
+        bcidbg( 1 ) << "Emotiv User Connected.  Waiting for Headset on..." << endl;
 
       // See if we've removed a user or not
       if( eventType == EE_UserRemoved )
-        bciout << "Emotiv User Disconnected.  Waiting for a user connection" << endl;
+        bcidbg( 1 ) << "Emotiv User Disconnected.  Waiting for a user connection" << endl;
 
       // There is a user connected, we need to check the state
       if (eventType == EE_EmoStateUpdated)
@@ -196,7 +196,7 @@ void EmotivADC::Preflight( const SignalProperties&,
 
         if( ES_GetHeadsetOn( mState ) )
         {
-          bciout << "Emotiv device on, initiating data collection" << endl;
+          bcidbg( 1 ) << "Emotiv device on, initiating data collection" << endl;
           readyToCollect = true;
         }
       }
