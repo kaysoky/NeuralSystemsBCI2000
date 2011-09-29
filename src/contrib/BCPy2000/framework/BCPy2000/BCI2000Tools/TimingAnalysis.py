@@ -236,7 +236,7 @@ def StimulusTiming(filename='.', ind=None, channels=0, trigger='StimulusCode > 0
 		y = y=range(1,len(s.img)+1)
 		SigTools.imagesc(s.img, x=s.t, y=y, aspect='auto', **kwargs)
 		xl,yl = pylab.xlim(),pylab.ylim()
-		pylab.plot(s.edges, y, 'w*', markersize=20)
+		pylab.plot(s.edges, y, 'w*', markersize=10)
 		pylab.xlim(xl); pylab.ylim(yl)
 		pylab.grid('on')
 		#pylab.ylim([len(s.img)+0.5,0.5]) # this corrupts the image!!

@@ -41,12 +41,22 @@ def ClassifyERPs (
 		save = False,
 		description='ERPs to attended vs unattended events',
 		maxcount=None,
+		classes=None,
 	):
 
 	d = DataFiles.load(featurefile, catdim=0, maxcount=maxcount)
 
 	x = d['x']
 	y = numpy.array(d['y'].flat)
+	if classes != None:
+		for cl in classes:
+			if cl not in y: raise ValueError("class %s is not in the dataset" % str(cl))
+		mask = numpy.array([yi in classes for yi in y])
+		y = y[mask]
+		x = x[mask]
+		discarded = sum(mask==False)
+		if discarded: print "discarding %d trials that are outside the requested classes %s"%(discarded,str(classes))
+		
 	n = len(y)
 	uy = numpy.unique(y)
 	if uy.size != 2: raise ValueError("expected 2 classes in dataset, found %d" % uy.size)

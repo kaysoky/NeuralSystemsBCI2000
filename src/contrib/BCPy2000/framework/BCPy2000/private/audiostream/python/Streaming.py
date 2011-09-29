@@ -203,8 +203,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.soundmasks   = [[0 for spec in chanspecs] for istream in range(self.nstreams)]
 		self.triggermasks = [[0 for spec in chanspecs] for istream in range(self.nstreams)]
 		
-		sstrings = ['S%d'%(i+1) for istream in range(self.nstreams)]
-		tstrings = ['T%d'%(i+1) for istream in range(self.nstreams)]
+		sstrings = ['S%d'%(istream+1) for istream in range(self.nstreams)]
+		tstrings = ['T%d'%(istream+1) for istream in range(self.nstreams)]
 		for iOutputChannel,spec in enumerate(self.params['SoundChannels']):
 			val = spec.upper().rstrip('F')
 			if val in ['X', '']:
@@ -213,7 +213,6 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				istream = int(val[1:])-1
 				sounds.append(istream)
 				self.soundmasks[istream][iOutputChannel] = 1
-				defaultfbmask[iOutputChannel] = 1
 			elif val in tstrings:
 				istream = int(val[1:])-1
 				triggers.append(istream)
@@ -276,7 +275,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			except IOError: raise EndUserError("failed to load '%s' as a wav file" % prmval)
 		
 		if w.channels() != 1: raise EndUserError("StreamStimuli wav files must be single-channel: found %d channels in %s" % (w.channels(), w.filename))
-
+		w.padendto(0.05) # causes some kind of stream-hanging/-silent-crashing problem on mac mini if wavs very short(??)
 		w *= float(self.params['StreamVolumes'][istream])
 		w *= self.soundmasks[istream]
 		if self.surround:
@@ -549,7 +548,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 
 	#################################################################
 	
-	def classify(self, runs=None, xtn='.pk', C=(1e-0,1e-2,1e-4,1e-6), gamma=0.0, rebias=False, save=True, plotopt=False, **kwargs):
+	def classify(self, runs=None, xtn='.pk', C=(1e+4,1e+2,1e-0,1e-2,1e-4,1e-6), gamma=0.0, rebias=False, save=True, plotopt=False, **kwargs):
 		from BCI2000Tools.Classification import ClassifyERPs
 		files = self.find_data_files(xtn=xtn, runs=runs)
 		u,c = ClassifyERPs(files, C=C, gamma=gamma, rebias=rebias, save=save, **kwargs)

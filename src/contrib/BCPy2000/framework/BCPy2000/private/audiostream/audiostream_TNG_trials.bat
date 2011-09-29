@@ -22,6 +22,7 @@
 cd ..\prog
 call portable.bat
 
+@set SRC=gUSBampSource
 @set LOGGERS=
 @set OnConnect=-
 @set OnSetConfig=-
@@ -37,7 +38,8 @@ call portable.bat
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\lopez.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm
 
-
+::@set SRC=Emotiv && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=
+::@set SRC=SignalGenerator && set LOGGERS=
 
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PROG%\..\data\20110801_8502_A_S002R03_weights.prm
 ::@set OnConnect=%OnConnect% ; SET PARAMETER ShowSignalTime 1
@@ -48,4 +50,4 @@ call portable.bat
 start              operat                   --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
 start              PythonApplication        --PythonAppWD=%WD%\python --PythonAppClassFile=TrialStructure.py
 start              PythonSignalProcessing   --PythonSigWD=%WD%\python --PythonSigClassFile=Streaming.py
-start              gUSBampSource %LOGGERS%
+start              %SRC% %LOGGERS%
