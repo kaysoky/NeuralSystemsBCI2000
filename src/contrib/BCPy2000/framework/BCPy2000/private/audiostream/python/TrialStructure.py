@@ -96,11 +96,11 @@ class BciApplication(BciGenericApplication):
 		t = VisualStimuli.Text(text=starttext, position=(w/2,h/2), anchor='center', on=True)
 		self.stimulus('cue', t)
 		
-		self.ding = WavTools.player('ding.wav')
-		self.chimes = WavTools.player('chimes.wav')
+		self.ding = self.PrepareFeedback('ding.wav')
+		self.chimes = self.PrepareFeedback('chimes.wav')
 		self.answers = {
-			'YES': WavTools.player(1 % WavTools.wav('yes.wav')/2.0),
-			'NO':  WavTools.player(1 % WavTools.wav('no.wav')/2.0),
+			'YES': self.PrepareFeedback(1 % WavTools.wav('yes.wav')/2.0),
+			'NO':  self.PrepareFeedback(1 % WavTools.wav('no.wav')/2.0),
 		}
 		
 		self.reset_count()
@@ -126,6 +126,18 @@ class BciApplication(BciGenericApplication):
 				
 		if int(self.params.TestEyeTracker):
 			self.stimulus('eye', VisualStimuli.Text, text='o', anchor='center', on=False)
+		
+	#############################################################
+	
+	def PrepareFeedback(self, w):
+		if isinstance(w, basestring): w = WavTools.wav(w)
+		if 'SoundChannels' in self.params:
+			mask = [int(x.upper().endswith('F')) for x in self.params['SoundChannels']]
+			q = 0; ww = []
+			for m in mask: ww.append(w[:,q%w.channels()]*m); q += m
+			w = WavTools.stack(ww)
+			
+		return WavTools.player(w)
 		
 	#############################################################
 	

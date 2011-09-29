@@ -61,7 +61,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Streams intlist   MaxTargets=                   2     3     3                      3     0 % // ",
 			"PythonSig:Streams intlist   ScopeForMinMax=               2     7     7                      7     1 % // ",
 			"PythonSig:Streams intlist   InitialStandards=                   2     2       2              3     0 % // how many stimuli at the beginning of each stream are guaranteed to be standards",
-			"PythonSig:Streams int       SurroundSoundTrigger=                     0                      0     0 1 // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)",
+			#"PythonSig:Streams int      SurroundSoundTrigger=                     0                      0     0 1 // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)",
+			"PythonSig:Streams list      SoundChannels=                      2     S1F S2F                %     % % // ",
 			"PythonSig:Streams int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
 			"PythonSig:Streams floatlist StreamVolumes=                      2     1.0 1.0              1.0     0 1 // ",
 			
@@ -196,10 +197,36 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		elif 'DirectSoundInterface' in sys.modules and sys.modules['DirectSoundInterface'].loaded:
 			raise EndUserError, "once turned on, the DirectSound setting cannot be turned off without restarting BCI2000"
 			
-		self.surround = int(self.params['SurroundSoundTrigger'])
+		sounds = []
+		triggers = []
+		chanspecs = self.params['SoundChannels']
+		self.soundmasks   = [[0 for spec in chanspecs] for istream in range(self.nstreams)]
+		self.triggermasks = [[0 for spec in chanspecs] for istream in range(self.nstreams)]
+		
+		sstrings = ['S%d'%(i+1) for istream in range(self.nstreams)]
+		tstrings = ['T%d'%(i+1) for istream in range(self.nstreams)]
+		for iOutputChannel,spec in enumerate(self.params['SoundChannels']):
+			val = spec.upper().rstrip('F')
+			if val in ['X', '']:
+				continue
+			elif val in sstrings:
+				istream = int(val[1:])-1
+				sounds.append(istream)
+				self.soundmasks[istream][iOutputChannel] = 1
+				defaultfbmask[iOutputChannel] = 1
+			elif val in tstrings:
+				istream = int(val[1:])-1
+				triggers.append(istream)
+				self.triggermasks[istream][iOutputChannel] = 1
+			else:
+				raise EndUserError('unrecognized SoundChannels entry "%s": legal values for a %d-stream system are X F %s (an optional "F" may be appended)'%(self.nstreams,' '.join(sstrings+tstrings)))
+		self.surround = len(triggers) > 0
+		if self.surround and sorted(triggers) != range(self.nstreams): raise EndUserError("if Tx values are specified in SoundChannels, all T1 through T%d must be specified without repetition"%self.nstreams)
+		if sorted(sounds) != range(self.nstreams): raise EndUserError("SoundChannels must contain all S1 through S%d without repetition"%self.nstreams)
+		
 		stim = numpy.array(self.params['StreamStimuli'])
 		if stim.shape[1] == 1:
-			if not self.surround: raise EndUserError("To use pre-prepared multichannel StreamStimuli, SurroundSoundTrigger must be on")
+			if not self.surround: raise EndUserError("To use pre-prepared multichannel StreamStimuli, trigger outputs must be specified in SoundChannels")
 			if len(self.trigchan) == 0:  raise EndUserError("To use pre-prepared multichannel StreamStimuli, TriggerChannels must be used")
 			if max(self.params['MaxTargets'].val) > 0: raise EndUserError("To use pre-prepared multichannel StreamStimuli, MaxTargets must be 0 for all streams")
 			self.precooked_wavs = [WavTools.player(x) for x in stim[:,0]]
@@ -251,13 +278,12 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if w.channels() != 1: raise EndUserError("StreamStimuli wav files must be single-channel: found %d channels in %s" % (w.channels(), w.filename))
 
 		w *= float(self.params['StreamVolumes'][istream])
-		chmask = [i==istream for i in range(self.nstreams)]
-		w *= chmask
+		w *= self.soundmasks[istream]
 		if self.surround:
 			f = self.eegfs/4.0
 			d = 100
 			d = SigTools.samples2msec(max(1, SigTools.msec2samples(d, f)), f)
-			w &= SigTools.wavegen(freq_hz=f, duration_msec=d, container=w[:,0]*0, waveform=numpy.sin) * chmask
+			w += SigTools.wavegen(freq_hz=f, duration_msec=d, container=w[:,0]*0, waveform=numpy.sin) * self.triggermasks[istream]
 					
 		p = WavTools.player(w)
 		p.vol = 0.0
