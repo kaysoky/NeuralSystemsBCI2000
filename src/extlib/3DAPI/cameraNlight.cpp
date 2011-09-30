@@ -93,8 +93,8 @@ cameraNLight::apply() const
       1
     };
 
-    glLightfv( GL_LIGHT0, GL_DIFFUSE, spec );  // Setup The Specular Light
-    glLightfv( GL_LIGHT0, GL_SPECULAR, spec ); // Setup The Specular Light
+    glLightfv( GL_LIGHT0, GL_DIFFUSE, spec );
+    glLightfv( GL_LIGHT0, GL_SPECULAR, spec );
 
     GLfloat lightPos[] =
     {

@@ -3,9 +3,6 @@
 ## Authors: griffin.milsap@gmail.com, juergen.mellinger@uni-tuebingen.de
 ## Description: Source files common to all Core Module libraries
 
-# Don't clutter the global output directory with static libs
-SET_OUTPUT_DIRECTORY( ${CMAKE_CURRENT_BINARY_DIR} )
-
 # Add CoreModule framework classes
 SET( SRC_BCI2000_SHARED_MODULES 
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp

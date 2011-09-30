@@ -46,24 +46,56 @@ struct Point
 {
   float x, y;
 
-  Point operator+( const Point& p )
+  Point operator+( const Point& p ) const
   {
     Point r = { x + p.x, y + p.y };
     return r;
   }
 
-  Point operator-( const Point& p )
+  Point operator-( const Point& p ) const
   {
     Point r = { x - p.x, y - p.y };
     return r;
   }
 
+  bool operator==( const Point& p ) const
+  {
+    return x == p.x && y == p.y;
+  }
+
+  bool operator!=( const Point& p ) const
+  {
+    return !operator==( p );
+  }
 };
 
 // A rectangle in continuous coordinates.
 struct Rect
 {
   float left, top, right, bottom;
+
+  float Width() const
+  {
+    return right - left;
+  }
+
+  float Height() const
+  {
+    return bottom - top;
+  }
+
+  bool operator==( const Rect& r ) const
+  {
+    return left == r.left
+        && right == r.right
+        && top == r.top
+        && bottom == r.bottom;
+  }
+
+  bool operator!=( const Rect& r ) const
+  {
+    return !operator==( r );
+  }
 };
 
 // Test whether a point is contained in a rectangle.

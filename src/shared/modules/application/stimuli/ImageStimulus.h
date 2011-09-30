@@ -51,6 +51,11 @@ class ImageStimulus : public VisualStimulus, public GUI::GraphObject
   // GraphObject event handlers
   virtual void OnPaint( const GUI::DrawContext& );
   virtual void OnChange( GUI::DrawContext& );
+  virtual void OnMove( GUI::DrawContext& );
+  virtual void OnResize( GUI::DrawContext& );
+
+ private:
+  void AdjustRect( GUI::Rect& ) const;
 
  private:
   std::string mFile;
@@ -60,6 +65,7 @@ class ImageStimulus : public VisualStimulus, public GUI::GraphObject
   Graphics::TBitmap*  mpImageBufferNormal,
                    *  mpImageBufferHighlighted;
 #else // __BORLANDC__
+  QImage& ApplyRenderingMode( QImage& ) const;
   QImage* mpImage;
   QPixmap*  mpImageBufferNormal,
          *  mpImageBufferHighlighted;

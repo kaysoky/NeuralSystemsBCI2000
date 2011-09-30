@@ -29,21 +29,65 @@
 
 #ifndef __BORLANDC__
 # include <QPainter>
-# include <QWidget>
+# include <QGLWidget>
 # include <QImage>
 # include <QPixmap>
+# include <QPaintEvent>
+# include <QMouseEvent>
 #endif // __BORLANDC__
 
 #include "GraphDisplay.h"
 #include "BitmapImage.h"
-#ifdef QT_OPENGL_LIB
-# include "Scene.h"
-#endif // QT_OPENGL_LIB
 
 #include <algorithm>
 
 using namespace GUI;
 using namespace std;
+
+#ifndef __BORLANDC__
+namespace GUI
+{
+
+class WidgetBase
+{
+ public:
+  WidgetBase( GraphDisplay& );
+  virtual ~WidgetBase();
+ protected:
+  void SetWidget( QWidget* );
+  void OnPaintEvent( QPaintEvent* );
+  void OnMousePressEvent( QMouseEvent* );
+ private:
+  GraphDisplay& mrGraphDisplay;
+  QWidget*      mpWidget;
+};
+
+class GLWidget : public QGLWidget, private WidgetBase
+{
+ public:
+  GLWidget( GraphDisplay& d, const QGLFormat& f, QWidget* p )
+    : QGLWidget( f, p ), WidgetBase( d ) { SetWidget( this ); }
+ protected:
+  void paintEvent( QPaintEvent* e )
+    { WidgetBase::OnPaintEvent( e ); }
+  void mousePressEvent( QMouseEvent* e )
+    { WidgetBase::OnMousePressEvent( e ); }
+};
+
+class Widget : public QWidget, private WidgetBase
+{
+ public:
+  Widget( GraphDisplay& d, QWidget* p )
+    : QWidget( p ), WidgetBase( d ) { SetWidget( this ); }
+ protected:
+  void paintEvent( QPaintEvent* e )
+    { WidgetBase::OnPaintEvent( e ); }
+  void mousePressEvent( QMouseEvent* e )
+    { WidgetBase::OnMousePressEvent( e ); }
+};
+
+} // namespace GUI
+#endif // __BORLANDC__
 
 GraphDisplay::GraphDisplay()
 : mColor( RGBColor::Gray )
@@ -58,9 +102,21 @@ GraphDisplay::GraphDisplay()
 #else // __BORLANDC__
   mContext.handle.device = NULL;
   mContext.handle.painter = NULL;
+  mpWidget = NULL;
+  mUsingGL = false;
 #endif // __BORLANDC__
   mOffscreenBmp = NULL;
 }
+
+GraphDisplay::~GraphDisplay()
+{
+#ifndef __BORLANDC__
+  delete mpWidget;
+#endif // __BORLANDC__
+  ClearOffscreenBuffer();
+  DeleteObjects();
+}
+
 
 const GraphDisplay&
 GraphDisplay::Update() const
@@ -68,17 +124,22 @@ GraphDisplay::Update() const
 #ifdef __BORLANDC__
   if( mContext.handle != NULL )
   {
-#ifdef _WIN32
     HWND window = ::WindowFromDC( ( HDC )mContext.handle );
     if( window != NULL )
       ::UpdateWindow( window );
-#endif // _WIN32
   }
 #else // __BORLANDC__
-  QWidget* pWidget = dynamic_cast< QWidget* >( mContext.handle.device );
-  if( pWidget )
-    pWidget->repaint( mInvalidRegion );
+  if( mpWidget )
+    mpWidget->repaint( mInvalidRegion.translated( -mpWidget->pos() ) );
 #endif // __BORLANDC__
+  return *this;
+}
+
+GraphDisplay&
+GraphDisplay::Add( GraphObject* inObj )
+{
+  mObjects.insert( inObj );
+  Change();
   return *this;
 }
 
@@ -88,16 +149,59 @@ GraphDisplay::Remove( GraphObject* inObj )
   inObj->Invalidate();
   mObjects.erase( inObj );
   mObjectsClicked.remove( inObj );
+  Change();
   return *this;
 }
-
 
 void
 GraphDisplay::Change()
 {
+#ifndef __BORLANDC__
+  bool useGL = false;
+  for( SetOfGraphObjects::iterator i = mObjects.begin(); i != mObjects.end(); ++i )
+    useGL |= ( *i )->NeedsGL();
+
+  if( !useGL && mUsingGL || useGL && !mUsingGL )
+  {
+    delete mpWidget;
+    mpWidget = NULL;
+  }
+  mUsingGL = useGL;
+
+  QWidget* pParent = dynamic_cast<QWidget*>( mContext.handle.device );
+  if( mpWidget && mpWidget->parent() != pParent )
+  {
+    delete mpWidget;
+    mpWidget = NULL;
+  }
+  if( pParent && !mpWidget )
+  {
+    if( useGL )
+    {
+      QGLFormat format = QGLFormat::defaultFormat();
+      format.setDepth( true );
+      format.setDepthBufferSize( 16 );
+      format.setOverlay( true );
+      format.setSwapInterval( 0 ); // disable VSync
+      mpWidget = new GLWidget( *this, format, pParent );
+    }
+    else
+    {
+      mpWidget = new Widget( *this, pParent );
+    }
+  }
+  if( mpWidget )
+  {
+    mpWidget->setGeometry(
+      mContext.rect.left,
+      mContext.rect.top,
+      mContext.rect.right - mContext.rect.left,
+      mContext.rect.bottom - mContext.rect.top
+    );
+  }
+#endif // __BORLANDC__
   ClearOffscreenBuffer();
   Invalidate();
-
   for( SetOfGraphObjects::iterator i = mObjects.begin(); i != mObjects.end(); ++i )
     ( *i )->Change();
 }
@@ -176,45 +280,30 @@ GraphDisplay::Paint( const void* inRegionHandle )
 
 #else // __BORLANDC__
 
-  // Create the QPixmap for the background buffer
-  if( mOffscreenBmp == NULL )
-  {
-    int width = static_cast<int>( mContext.rect.right - mContext.rect.left ),
-        height = static_cast<int>( mContext.rect.bottom - mContext.rect.top );
-    mOffscreenBmp = new QPixmap( width, height );
-  }
+  int left = static_cast<int>( mContext.rect.left ),
+      top = static_cast<int>( mContext.rect.top ),
+      width = static_cast<int>( mContext.rect.right - mContext.rect.left ),
+      height = static_cast<int>( mContext.rect.bottom - mContext.rect.top );
 
-  if( mColor == RGBColor::NullColor )
+  if( !mpWidget && mOffscreenBmp == NULL )
+    mOffscreenBmp = new QPixmap( width, height );
+
+  if( mOffscreenBmp && mColor == RGBColor::NullColor )
     mOffscreenBmp->fill( Qt::transparent );
 
-  // Set up the painter object used by the objects' drawing code.
-  QPainter* pOffscreenPainter = new QPainter( mOffscreenBmp );
-  pOffscreenPainter->translate( -mContext.rect.left, -mContext.rect.top );
-  pOffscreenPainter->setClipping( true );
-  pOffscreenPainter->setClipRegion( mInvalidRegion );
-
-  QRect rect;
-  rect.setLeft( static_cast<int>( mContext.rect.left ) );
-  rect.setTop( static_cast<int>( mContext.rect.top ) );
-  rect.setRight( static_cast<int>( mContext.rect.right ) );
-  rect.setBottom( static_cast<int>( mContext.rect.bottom ) );
-
+  QPainter* pPainter = mpWidget ? new QPainter( mpWidget ) : new QPainter( mOffscreenBmp );
+  pPainter->translate( -left, -top );
+  const QRegion* pInputRegion = reinterpret_cast<const QRegion*>( inRegionHandle );
+  if( pInputRegion )
+    mInvalidRegion += *pInputRegion;
+  pPainter->setClipRegion( mInvalidRegion );
   // Create a rect for the background color
   if( mColor != RGBColor::NullColor )
-  {
-    // Create the color to brush
-    QColor brushColor( mColor.R(), mColor.G(), mColor.B() );
-
-    // Create a brush to color
-    QBrush brush( brushColor );
-    brush.setStyle( Qt::SolidPattern );
-
-    // Paint the background color
-    pOffscreenPainter->fillRect( rect, brush ); 
-  }
-
-  // Set the backbuffer draw context
-  mContext.handle.painter = pOffscreenPainter;
+    pPainter->fillRect(
+      QRect( left, top, width, height ),
+      QColor( mColor.R(), mColor.G(), mColor.B() )
+    ); 
+  mContext.handle.painter = pPainter;
 
 #endif // __BORLANDC__
 
@@ -225,12 +314,12 @@ GraphDisplay::Paint( const void* inRegionHandle )
 
 #ifndef __BORLANDC__
 
+  pPainter->end();
   mContext.handle.painter = NULL;
-  delete pOffscreenPainter;
+  delete pPainter;
+  mInvalidRegion = QRegion();
 
-#endif // __BORLANDC__
-
-#ifdef __BORLANDC__
+#else // __BORLANDC__
 
   // Copy the data from the buffer into the target device context (usually a window).
   if( mContext.handle != NULL )
@@ -253,20 +342,6 @@ GraphDisplay::Paint( const void* inRegionHandle )
 
     mContext.handle = outputDC;
   }
-
-#else // __BORLANDC__
-
-  if( mContext.handle.device != NULL )
-  {
-    // Output the offscreen pixmap to the screen
-    QPainter outputPainter( mContext.handle.device );
-    outputPainter.drawPixmap( static_cast<int>( mContext.rect.left ),
-                              static_cast<int>( mContext.rect.top ),
-                              *mOffscreenBmp );
-  }
-  
-  // Clear the invalid region.
-  mInvalidRegion = QRegion();
 
 #endif // __BORLANDC__
 }
@@ -322,10 +397,14 @@ GraphDisplay::InvalidateRect( const GUI::Rect& inRect )
       static_cast<int>( rt.bottom - rt.top )
   );
   mInvalidRegion += rgn;
-
-  QWidget* pWidget = dynamic_cast< QWidget* >( mContext.handle.device );
-  if( pWidget )
-    pWidget->update( rgn );
+  // On a plain QWidget, we need to call QWidget::update() to make sure
+  // the QWidget::repaint() call actually triggers its paintEvent() rather
+  // than blitting from its back buffer.
+  // For a QGLWidget, paintEvent() is always triggered by QWidget::update()
+  // as well as QWidget::repaint(). So we do not call QWidget::update() for
+  // a QGLWidget to avoid it being redrawn multiple times.
+  if( mpWidget && !mUsingGL )
+    mpWidget->update( rgn.translated( -mpWidget->pos() ) );
 #endif // __BORLANDC__
   return *this;
 }
@@ -377,21 +456,93 @@ GraphDisplay::BitmapData( int inWidth, int inHeight ) const
     height = originalHeight;
   }
   BitmapImage image( width, height );
-
 #ifdef __BORLANDC__
 
-  HDC sourceDC = mOffscreenDC ? mOffscreenDC : (HDC)mContext.handle;
-  if( sourceDC != NULL )
+  RECT rect = { 0, 0, originalWidth, originalHeight };
+  HDC sourceDC = mOffscreenDC;
+  if( !mOffscreenDC )
   {
-    HDC miniDC = ::CreateCompatibleDC( sourceDC );
-    HBITMAP miniBmp = ::CreateCompatibleBitmap( sourceDC, width, height );
+    rect.left += mContext.rect.left;
+    rect.right += mContext.rect.left;
+    rect.top += mContext.rect.top;
+    rect.bottom += mContext.rect.top;
+    sourceDC = (HDC)mContext.handle;
+  }
+  BitmapImageFromHDC( image, sourceDC, rect );
+#else // __BORLANDC__
+  if( mOffscreenBmp != NULL )
+  {
+    BitmapImageFromQPixmap( image, *mOffscreenBmp );
+  }
+  else if( mpWidget != NULL )
+  {
+#if _WIN32
+    RECT rect = { 0, 0, originalWidth, originalHeight };
+    HWND wnd = mpWidget->winId();
+    HDC dc = ::GetDC( wnd );
+    BitmapImageFromHDC( image, dc, rect );
+    ::ReleaseDC( wnd, dc );
+#else // _WIN32
+    BitmapImageFromQPixmap( image, QPixmap::grabWindow( mpWidget->winId() ) );
+#endif // _WIN32
+  }
+#endif // __BORLANDC__
+  return image;
+}
+
+#ifndef __BORLANDC__
+QGLWidget*
+GraphDisplay::GLContext() const
+{
+  return dynamic_cast<QGLWidget*>( mpWidget );
+}
+#endif // __BORLANDC__
+
+void
+GraphDisplay::ClearOffscreenBuffer()
+{
+#ifdef __BORLANDC__
+  if( mOffscreenDC != NULL )
+  {
+    ::DeleteDC( mOffscreenDC );
+    mOffscreenDC = NULL;
+  }
+  if( mOffscreenBmp != NULL )
+  {
+    ::DeleteObject( mOffscreenBmp );
+    mOffscreenBmp = NULL;
+  }
+#else // __BORLANDC__
+  if( mOffscreenBmp != NULL )
+  {
+    delete mOffscreenBmp;
+    mOffscreenBmp = NULL;
+  }
+#endif // __BORLANDC__
+}
+
+#if _WIN32
+// This function uses StretchBlt() to read only required pixels from
+// video memory. Thus, it is considerably faster to use it than using Qt's
+// QPixmap::grabWindow() followed with QPixmap::scaled().
+void
+GraphDisplay::BitmapImageFromHDC( BitmapImage& ioImage, HDC inDC, const RECT& inSourceRect )
+{
+  int width = ioImage.Width(),
+      height = ioImage.Height(),
+      originalWidth = inSourceRect.right - inSourceRect.left,
+      originalHeight = inSourceRect.bottom - inSourceRect.top;
+  if( width > 0 && height > 0 && inDC != NULL )
+  {
+    HDC miniDC = ::CreateCompatibleDC( inDC );
+    HBITMAP miniBmp = ::CreateCompatibleBitmap( inDC, width, height );
     ::DeleteObject( ::SelectObject( miniDC, miniBmp ) );
     // STRETCH_DELETESCANS is the only option that ignores intermediate pixels,
-    // thus is considerably faster.
+    // thus it is the fastest one here.
     ::SetStretchBltMode( miniDC, STRETCH_DELETESCANS );
     ::StretchBlt(
       miniDC, 0, 0, width, height,
-      sourceDC, 0, 0, originalWidth, originalHeight,
+      inDC, inSourceRect.left, inSourceRect.top, originalWidth, originalHeight,
       SRCCOPY
     );
 
@@ -413,74 +564,74 @@ GraphDisplay::BitmapData( int inWidth, int inHeight ) const
     if( result > 0 )
       for( int x = 0; x < width; ++x )
         for( int y = 0; y < height; ++y )
-          image( x, y ) = RGBColor( pBitmapData[ x + y * width ] & 0xffffff );
+          ioImage( x, y ) = RGBColor( pBitmapData[ x + y * width ] & 0xffffff );
     delete[] pBitmapData;
     ::DeleteDC( miniDC );
     ::DeleteObject( miniBmp );
   }
+}
+#endif // _WIN32
 
-#else // __BORLANDC__
-
-  if( mOffscreenBmp != NULL )
+#ifndef __BORLANDC__
+void
+GraphDisplay::BitmapImageFromQPixmap( BitmapImage& ioImage, const QPixmap& inPixmap )
+{
+  int width = ioImage.Width(),
+      height = ioImage.Height();
+  QImage img( inPixmap.scaled( width, height ).toImage() );
+  for( int x = 0; x < width; ++x )
   {
-#ifdef QT_OPENGL_LIB
-    for( SetOfGraphObjects::const_iterator i = mObjects.begin(); i != mObjects.end(); ++i )
-    { // OpenGL-based scenes are not rendered into the offscreen buffer, and require
-      // a different approach to retrieving pixel data.
-      Scene* pScene = dynamic_cast<Scene*>( *i );
-      if( pScene )
-      {
-        Rect r = NormalizedToPixelCoords( pScene->DisplayRect() );
-        QImage sceneImage = const_cast<GLScene&>( pScene->GLScene() ).grabFrameBuffer();
-        QPainter p( mOffscreenBmp );
-        p.drawImage(
-          static_cast<int>( r.left ),
-          static_cast<int>( r.top ),
-          sceneImage
-        );
-      }
-    }
-#endif // QT_OPENGL_LIB
-    QImage img = mOffscreenBmp->scaled( width, height ).toImage();
-    for( int x = 0; x < width; x++ )
+    for( int y = 0; y < height; ++y )
     {
-      for( int y = 0; y < height; y++ )
-      {
-        QColor color = QColor::fromRgba( img.pixel( x, y ) );
-        if( color.alpha() == 0 )
-          image( x, y ) = RGBColor::NullColor;
-        else
-          image( x, y ) = RGBColor( color.red(), color.green(), color.blue() );
-      }
+      QColor color = QColor::fromRgba( img.pixel( x, y ) );
+      if( color.alpha() == 0 )
+        ioImage( x, y ) = RGBColor::NullColor;
+      else
+        ioImage( x, y ) = RGBColor( color.red(), color.green(), color.blue() );
     }
   }
-
+}
 #endif // __BORLANDC__
-  return image;
+
+#ifndef __BORLANDC__
+WidgetBase::WidgetBase( GraphDisplay& inDisplay )
+: mrGraphDisplay( inDisplay ),
+  mpWidget( NULL )
+{
+}
+
+WidgetBase::~WidgetBase()
+{
+  mrGraphDisplay.mpWidget = NULL;
 }
 
 void
-GraphDisplay::ClearOffscreenBuffer()
+WidgetBase::SetWidget( QWidget* inpWidget )
 {
-#ifdef __BORLANDC__
-
-  if( mOffscreenDC != NULL )
-  {
-    ::DeleteDC( mOffscreenDC );
-    mOffscreenDC = NULL;
-  }
-  if( mOffscreenBmp != NULL )
-  {
-    ::DeleteObject( mOffscreenBmp );
-    mOffscreenBmp = NULL;
-  }
-
-#else // __BORLANDC__
-
-  if( mOffscreenBmp != NULL )
-  {
-    delete mOffscreenBmp;
-    mOffscreenBmp = NULL;
-  }
-#endif // __BORLANDC__
+  mpWidget = inpWidget;
+  mpWidget->setAttribute( Qt::WA_NoSystemBackground );
+  mpWidget->setAutoFillBackground( false );
+  mpWidget->winId();
+  mpWidget->setVisible( true );
 }
+
+void
+WidgetBase::OnPaintEvent( QPaintEvent* iopEvent )
+{
+  mrGraphDisplay.Paint( &iopEvent->region().translated( mpWidget->pos() ) );
+  iopEvent->accept();
+}
+
+void 
+WidgetBase::OnMousePressEvent( QMouseEvent* iopEvent )
+{
+  if( iopEvent->button() == Qt::LeftButton )
+  {
+    mrGraphDisplay.Click(
+      iopEvent->x() + mpWidget->pos().x(),
+      iopEvent->y() + mpWidget->pos().y()
+    );
+    iopEvent->accept();
+  }
+}
+#endif // __BORLANDC__

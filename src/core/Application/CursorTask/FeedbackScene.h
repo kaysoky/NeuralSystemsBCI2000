@@ -29,6 +29,7 @@
 
 #include "Environment.h"
 #include "Color.h"
+#include <string>
 
 class FeedbackScene : protected Environment
 {

@@ -52,40 +52,16 @@ using namespace std;
 
 Scene::Scene( GraphDisplay& inDisplay )
 : GraphObject( inDisplay, SceneDisplayZOrder ),
+  mColor( RGBColor::NullColor ),
   mInitialized( false ),
-#ifdef __BORLANDC__
-  mGLRC( NULL ),
-#else // __BORLANDC__
-  mpGLScene( NULL ),
-#endif // __BORLANDC__
   mContextHandle( NULL ),
-  mBitDepth( 16 ),
-  mDoubleBuffering( false ),
-  mDisableVsync( false ),
-  mHardwareAccelerated( false ),
   mfpOnCollide( NULL )
 {
-#ifndef __BORLANDC__
-  QWidget* parentWidget = NULL;
-  parentWidget = dynamic_cast<QWidget*>( Display().Context().handle.device );
-  if( parentWidget )
-  {
-    mpGLScene = new class GLScene( parentWidget );
-    mpGLScene->resize(
-      static_cast<int>( Display().Context().rect.right - Display().Context().rect.left ),
-      static_cast<int>( Display().Context().rect.bottom - Display().Context().rect.top - 1 )
-    );
-  }
-#endif // __BORLANDC__
 }
 
 Scene::~Scene()
 {
   DeleteObjects();
-#ifndef __BORLANDC__
-  delete mpGLScene;
-  mpGLScene = NULL;
-#endif // __BORLANDC__
 }
 
 void
@@ -113,7 +89,8 @@ Scene::Remove( primObj* p )
 void
 Scene::DeleteObjects()
 {
-  Cleanup();
+  MakeCurrent();
+  OnCleanupGL();
   while( !mObjects.empty() )
     delete *mObjects.begin();
 }
@@ -123,39 +100,73 @@ void
 Scene::OnPaint( const DrawContext& inDC )
 {
 #ifdef __BORLANDC__
-  // OpenGL is not compatible with clipping, so we remove the clipping region.
-  // We also don't restore the clipping region to make sure that all objects
-  // further to the top are drawn properly.
-  ::SelectClipRgn( ( HDC )inDC.handle, NULL );
-  if( !::wglMakeCurrent( ( HDC )inDC.handle, mGLRC ) )
-    throw bciexception( OSError().Message() );
-  GUI::Rect fullRect = { 0, 0, 1, 1 };
-  fullRect = Display().NormalizedToPixelCoords( fullRect );
-  int windowHeight = fullRect.bottom - fullRect.top;
-  ::glViewport(
-    inDC.rect.left,
-    windowHeight - inDC.rect.bottom,
-    inDC.rect.right - inDC.rect.left,
-    inDC.rect.bottom - inDC.rect.top
-  );
-
-  ::glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-  ::glMatrixMode( GL_MODELVIEW );
-  ::glLoadIdentity();
-  mCameraAndLight.apply();
-  ::glEnable( GL_NORMALIZE );
-
-  DrawingOrderedSetOfObjects s;
-  for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
-    s.insert( *i );
-
-  for( DrawingOrderedIterator i = s.begin(); i != s.end(); ++i )
-    ( *i )->render();
-
+  MakeCurrent();
+  OnPaintGL();
   ::glFlush();
-  ::wglMakeCurrent( NULL, NULL );
 #else // __BORLANDC__
-  mpGLScene->RenderObjects( mObjects, &mCameraAndLight );
+  QPainter* p = inDC.handle.painter;
+  if( p && mColor != RGBColor::NullColor )
+  {
+    QRect r( inDC.rect.left, inDC.rect.top, inDC.rect.right - inDC.rect.left, inDC.rect.bottom - inDC.rect.top );
+    p->fillRect( r, QColor( mColor.R(), mColor.G(), mColor.B() ) );
+  }
+  // QPainter::begin/endNativePainting saves/restores only a subset of
+  // relevant GL state. When there are problems with QPainter painting
+  // on top of the Scene's contents, there is probably some state missing
+  // from our own save/restore code.
+  if( p )
+    p->beginNativePainting();
+  int viewport[] = { -1, -1, -1, -1 };
+  ::glGetIntegerv( GL_VIEWPORT, viewport );
+  GLint shadeModel = GL_FLAT;
+  ::glGetIntegerv( GL_SHADE_MODEL, &shadeModel );
+  const int modes[] = { GL_MODELVIEW, GL_PROJECTION, GL_TEXTURE, GL_COLOR };
+  for( int i = 0; i < sizeof( modes ) / sizeof( *modes ); ++i )
+  {
+    ::glMatrixMode( modes[i] );
+    ::glPushMatrix();
+  }
+  const int caps[] = { GL_BLEND, GL_NORMALIZE, GL_CULL_FACE, GL_DEPTH_TEST, GL_LIGHTING };
+  const int numCaps = sizeof( caps ) / sizeof( *caps );
+  bool capValues[numCaps];
+  for( int i = 0; i < numCaps; ++i )
+    capValues[i] = ::glIsEnabled( caps[i] );
+
+  ::glClearDepth( 1 );
+  ::glClear( GL_DEPTH_BUFFER_BIT );
+
+  // Viewport setup.
+  const GUI::Rect& c = Display().Context().rect;
+  GUI::Rect r = inDC.rect;
+  r.left = ::floor( r.left );
+  r.top = ::floor( r.top );
+  r.bottom = ::floor( r.bottom );
+  r.right = ::floor( r.right );
+  r.left -= c.left;
+  r.top -= c.top;
+  r.right -= c.left;
+  r.bottom -= c.top;
+  float y = ( c.bottom - c.top ) - r.bottom;
+  ::glViewport( r.left, y, r.right - r.left, r.bottom - r.top );
+  OnPaintGL();
+
+  // Restore GL state.
+  for( int i = 0; i < numCaps; ++i )
+  {
+    if( capValues[i] )
+      ::glEnable( caps[i] );
+    else
+      ::glDisable( caps[i] );
+  }
+  for( int i = 0; i < sizeof( modes ) / sizeof( *modes ); ++i )
+  {
+    ::glMatrixMode( modes[i] );
+    ::glPopMatrix();
+  }
+  ::glShadeModel( shadeModel );
+  ::glViewport( viewport[0], viewport[1], viewport[2], viewport[3] );
+  if( p )
+    p->endNativePainting();
 #endif // __BORLANDC__
 }
 
@@ -199,7 +210,7 @@ Scene::OnChange( DrawContext& inDC )
       mHardwareAccelerated = ( ( pfd.dwFlags & PFD_GENERIC_FORMAT ) == 0 );
 
     mGLRC = ::wglCreateContext( ( HDC )inDC.handle );
-    ::wglMakeCurrent( ( HDC )inDC.handle, mGLRC );
+    MakeCurrent();
     Initialize();
 
     if( mDisableVsync )
@@ -225,58 +236,89 @@ Scene::OnChange( DrawContext& inDC )
          }
       }
     }
-    ::wglMakeCurrent( NULL, NULL );
+    DoneCurrent();
   }
   mContextHandle = inDC.handle;
 #else // __BORLANDC__
-  Initialize();
+  if( GLContext() && mContextHandle != GLContext() )
+  {
+    GLContext()->makeCurrent();
+    OnInitializeGL();
+  }
+  mContextHandle = GLContext();
+#endif // __BORLANDC__
+
+#ifdef __BORLANDC__
+  MakeCurrent();
+  GUI::Rect fullRect = { 0, 0, 1, 1 };
+  fullRect = Display().NormalizedToPixelCoords( fullRect );
+  int windowHeight = fullRect.bottom - fullRect.top;
+  ::glViewport(
+    inDC.rect.left,
+    windowHeight - inDC.rect.bottom,
+    inDC.rect.right - inDC.rect.left,
+    inDC.rect.bottom - inDC.rect.top
+  );
 #endif // __BORLANDC__
 }
 
+void
+Scene::MakeCurrent()
+{
+#ifdef __BORLANDC__
+  ::wglMakeCurrent( ( HDC )mContextHandle, mGLRC );
+#else // __BORLANDC__
+  if( GLContext() )
+    GLContext()->makeCurrent();
+#endif // __BORLANDC__
+}
 
 void
-Scene::Initialize()
+Scene::DoneCurrent()
 {
-  Cleanup();
-
-#ifdef __BORLANDC_
-  ::glClearColor( 0, 0, 0, 0.5 ); // background color
-  ::glClearDepth( 1 );
+#ifdef __BORLANDC__
+  ::wglMakeCurrent( 0, 0 );
+#else // __BORLANDC__
+  if( GLContext() )
+    GLContext()->doneCurrent();
 #endif // __BORLANDC__
+}
 
+void
+Scene::OnInitializeGL()
+{
   string cwd = BCIDirectory::GetCWD();
   if( !mImagePath.empty() )
     ::chdir( BCIDirectory::AbsolutePath( mImagePath ).c_str() );
-
   for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
     ( *i )->initialize();
-
   ::chdir( cwd.c_str() );
-
   mInitialized = true;
 }
 
 void
-Scene::Cleanup()
+Scene::OnCleanupGL()
 {
-#ifdef __BORLANDC__
-  if( mInitialized )
-  {
-    HGLRC glrc = ::wglGetCurrentContext();
-    HDC   dc = ::wglGetCurrentDC();
-    ::wglMakeCurrent( ( HDC )mContextHandle, mGLRC );
-
-    for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
-      ( *i )->cleanup();
-
-    ::wglMakeCurrent( dc, glrc );
-  }
-#else // __BORLANDC__
   if( mInitialized )
     for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
       ( *i )->cleanup();
-#endif // __BORLANDC__
   mInitialized = false;
+}
+
+void
+Scene::OnPaintGL()
+{
+  ::glMatrixMode( GL_MODELVIEW );
+  ::glLoadIdentity();
+  mCameraAndLight.apply();
+  ::glEnable( GL_NORMALIZE );
+
+  DrawingOrderedSetOfObjects s;
+  for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
+    s.insert( *i );
+
+  for( DrawingOrderedIterator i = s.begin(); i != s.end(); ++i )
+    ( *i )->render();
 }
 
 void
@@ -300,138 +342,6 @@ Scene::Move( float inDeltaT )
       for( SceneIterator j = sceneObjects.begin(); j != i; ++j )
         if( sceneObj::VolumeIntersection( **i, **j ) )
           mfpOnCollide( **i, **j );
+
+  Invalidate();
 }
-
-// GL Scene
-#ifndef __BORLANDC__
-// Constructs GLScene
-// Parameters: Pointer to the Parent QWidget
-GLScene::GLScene( QWidget *parent )
-: QGLWidget( parent ),
-  mCameraAndLight( NULL )
-{
-  this->show();
-}
-
-// Deconstructs GLScene
-GLScene::~GLScene()
-{
-}
-
-// Divs up overlay and scene objects, then calls repaint
-// Parameters: Set of primObjects to render
-void
-GLScene::RenderObjects( SetOfObjects &objSet, cameraNLight* cl )
-{
-  mSceneObjectSet.clear();
-  mOverlayObjectSet.clear();
-
-  mCameraAndLight = cl;
-
-  // Divide the overlay objects and the scene objects
-  for( ObjectIterator itr = objSet.begin(); itr != objSet.end(); itr++ )
-  {
-    sceneObj* sObj = NULL;
-    sObj = dynamic_cast<sceneObj*>( *itr );
-    if( sObj )
-      mSceneObjectSet.insert( sObj );
-
-    overlayObj* oObj = NULL;
-    oObj = dynamic_cast<overlayObj*>( *itr );
-    if( oObj )
-      mOverlayObjectSet.insert( oObj );
-  }
-
-  // Ensure the paint functions are called
-  this->updateGL();
-}
-
-// Virtual interface of the initializeGL function from QGLWidget
-// Sets up the GLScene for rendering 3d objects
-void
-GLScene::initializeGL()
-{
-  ::glClearColor( 0, 0, 0, 0.5 ); // background color
-  ::glClearDepth( 1 );
-}
-
-// Virtual interface of the resizeGL function from QGLWidget
-// Resizes the GLScene viewport
-void
-GLScene::resizeGL( int w, int h )
-{
-  // resize the widget
-}
-
-// Virtual interface of the paintGL function from QGLWidget
-// Handles all GL related paint functions
-void
-GLScene::paintGL()
-{
-  glViewport(
-    this->pos().x(),
-    this->pos().y(),
-    this->width(),
-    this->height()
-  );
-
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-  glMatrixMode( GL_MODELVIEW );
-  glLoadIdentity();
-  if( mCameraAndLight )
-    mCameraAndLight->apply();
-  glEnable( GL_NORMALIZE );
-
-  if( !mSceneObjectSet.empty() )
-  {
-    DrawingOrderedSetOfObjects s;
-    for( SceneObjectIterator i = mSceneObjectSet.begin(); i != mSceneObjectSet.end(); ++i )
-      s.insert( *i );
-
-    for( DrawingOrderedIterator i = s.begin(); i != s.end(); ++i )
-      ( *i )->render();
-  }
-
-  glFlush();
-#if _WIN32
-  wglMakeCurrent( NULL, NULL );
-#endif
-}
-
-// Virtual interface of the paintOverlayGL function from QGLWidget
-// Handles all overlay related GL Paint functions
-void
-GLScene::paintOverlayGL()
-{
-  glViewport(
-    this->pos().x(),
-    this->pos().y(),
-    this->width(),
-    this->height()
-  );
-
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-  glMatrixMode( GL_MODELVIEW );
-  glLoadIdentity();
-  if( mCameraAndLight )
-    mCameraAndLight->apply();
-  glEnable( GL_NORMALIZE );
-
-  if( !mOverlayObjectSet.empty() )
-  {
-    DrawingOrderedSetOfObjects s;
-    for( OverlayObjectIterator i = mOverlayObjectSet.begin(); i != mOverlayObjectSet.end(); ++i )
-      s.insert( *i );
-
-    for( DrawingOrderedIterator i = s.begin(); i != s.end(); ++i )
-      ( *i )->render();
-  }
-
-  glFlush();
-#if _WIN32
-  wglMakeCurrent( NULL, NULL );
-#endif
-}
-#endif // __BORLANDC__
-
-

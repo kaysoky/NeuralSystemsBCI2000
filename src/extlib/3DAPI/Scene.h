@@ -31,52 +31,7 @@
 #include "primObj.h"
 #include "cameraNlight.h"
 
-#ifndef __BORLANDC__
-#include <QGLWidget>
-#endif // __BORLANDC__
-
 #include <set>
-
-#ifndef __BORLANDC__
-// A descendent class of QGLWidget is required to render GL with QT
-class GLScene : public QGLWidget
-{
- public:
-  GLScene( QWidget* parent=0 );
-  ~GLScene();
-
-  // Helper Typedefs
-  typedef std::set<primObj*> SetOfObjects;
-  typedef GLScene::SetOfObjects::const_iterator ObjectIterator;
-
-  typedef std::set<sceneObj*, primObj::compareByDrawingOrder> SetOfSceneObjects;
-  typedef GLScene::SetOfSceneObjects::const_iterator SceneObjectIterator;
-
-  typedef std::set<overlayObj*, primObj::compareByDrawingOrder> SetOfOverlayObjects;
-  typedef GLScene::SetOfOverlayObjects::const_iterator OverlayObjectIterator;
-
-  typedef std::set<primObj*, primObj::compareByDrawingOrder> DrawingOrderedSetOfObjects;
-  typedef GLScene::DrawingOrderedSetOfObjects::const_iterator DrawingOrderedIterator;
-
-  // Renders a set of objects onto the GLScene
-  void RenderObjects( SetOfObjects &objSet, cameraNLight* cl );
-
- protected:
-  // Virtual interface with QGLWidget
-  virtual void initializeGL();
-  virtual void resizeGL( int w, int h );
-  virtual void paintGL();
-  virtual void paintOverlayGL();
-
- private:
-  // Set of overlay and scene objects
-  SetOfSceneObjects mSceneObjectSet;
-  SetOfOverlayObjects mOverlayObjectSet;
-
-  // Camera/Lighting
-  cameraNLight* mCameraAndLight;
-};
-#endif // __BORLANDC__
 
 class Scene : public GUI::GraphObject, private Uncopyable
 {
@@ -85,6 +40,13 @@ class Scene : public GUI::GraphObject, private Uncopyable
   virtual ~Scene();
 
   // Properties
+  bool NeedsGL() const
+    { return true; }
+
+  Scene& SetColor( RGBColor c )
+    { mColor = c; return *this; }
+  RGBColor Color() const
+    { return mColor; }
   Scene& SetImagePath( const std::string& p )
     { mImagePath = p; Change(); return *this; }
   const std::string& ImagePath() const
@@ -106,34 +68,9 @@ class Scene : public GUI::GraphObject, private Uncopyable
   cameraNLight& CameraAndLight()
     { return mCameraAndLight; }
 
-  Scene& SetBitDepth( int inBitDepth )
-    { mBitDepth = inBitDepth; Change(); return *this; }
-  int BitDepth() const
-    { return mBitDepth; }
-  // Double buffering may result in faster rendering but other GraphObjects will
-  // not be visible on the screen.
-  Scene& SetDoubleBuffering( bool inDoubleBuffering )
-    { mDoubleBuffering = inDoubleBuffering; Change(); return *this; }
-  bool DoubleBuffering() const
-    { return mDoubleBuffering; }
-  // Some graphics cards allow switching off buffer synchronization on vsync.
-  Scene& SetDisableVsync( bool inDisableVsync )
-    { mDisableVsync = inDisableVsync; return *this; }
-  bool DisableVsync() const
-    { return mDisableVsync; }
-  // False for the generic software OpenGL implementation.
-  bool HardwareAccelerated() const
-    { return mHardwareAccelerated; }
-
   void Add( primObj* );
   void Remove( primObj* );
   void DeleteObjects();
-
-  // GLScene if we're using Qt
-#ifndef __BORLANDC__
-  const class GLScene& GLScene() const
-    { return *mpGLScene; }
-#endif // __BORLANDC__
 
   typedef std::set<primObj*> SetOfObjects;
   typedef Scene::SetOfObjects::const_iterator ObjectIterator;
@@ -155,25 +92,21 @@ class Scene : public GUI::GraphObject, private Uncopyable
   void OnPaint( const GUI::DrawContext& );
   void OnChange( GUI::DrawContext& );
 
- private:
-  void Initialize();
-  void Cleanup();
+  // Event handlers executing GL commands
+  void OnInitializeGL();
+  void OnCleanupGL();
+  void OnPaintGL();
 
  private:
+  void MakeCurrent();
+  void DoneCurrent();
+
+  RGBColor mColor;
   bool  mInitialized;
-  
+  void* mContextHandle;
 #ifdef __BORLANDC__
   HGLRC mGLRC;
-#else // __BORLANDC__
-  // GLScene if we're using Qt
-  class GLScene* mpGLScene;
 #endif // __BORLANDC__
-  void* mContextHandle;
-  int   mBitDepth;
-  bool  mDoubleBuffering,
-        mDisableVsync,
-        mHardwareAccelerated;
-
 
   // Scene Objects
   SetOfObjects  mObjects;

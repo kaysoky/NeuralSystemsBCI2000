@@ -66,7 +66,6 @@ private:
   sphere*              mpCursor;
   invertedCuboid*      mpBoundary;
   std::vector<cuboid*> mTargets;
-  threeDText*          mpFixationCross;
 };
 
 #endif // FEEDBACK_SCENE_3D_H

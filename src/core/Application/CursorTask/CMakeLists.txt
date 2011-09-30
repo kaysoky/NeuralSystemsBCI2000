@@ -24,9 +24,6 @@ SET( HDR_PROJECT
 INCLUDE_DIRECTORIES(
 )
 
-# Let the macro know we want to use the 3D API
-BCI2000_INCLUDE( "3DAPI" )
-
 # Create the module
 BCI2000_ADD_APPLICATION_MODULE( 
   "${EXECUTABLE_NAME}" 

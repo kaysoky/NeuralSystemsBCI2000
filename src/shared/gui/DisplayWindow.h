@@ -37,23 +37,6 @@
 
 namespace GUI {
 
-#ifndef __BORLANDC__
-class DisplayForm : public QWidget
-{
-  Q_OBJECT
-
- public:
-  DisplayForm( GraphDisplay& );
-
- protected:
-  virtual void paintEvent( QPaintEvent* );
-  virtual void mousePressEvent( QMouseEvent* );
-
- private:
-  GraphDisplay& mDisplay;
-};
-#endif // __BORLANDC__
-
 class DisplayWindow : public GraphDisplay
 {
  public:
@@ -138,7 +121,7 @@ class DisplayWindow : public GraphDisplay
 
 #else // __BORLANDC__
 
-  DisplayForm* mpForm;
+  QWidget* mpForm;
 
 #endif // __BORLANDC__
 

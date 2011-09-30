@@ -169,15 +169,7 @@ IF( WIN32 )
   BCI2000_INCLUDE( "SAPI" )
   BCI2000_INCLUDE( "DSOUND" )
 ENDIF( WIN32 )
-
-# Create MOC files when using Qt
-SET( MOC_BCI2000_FRAMEWORK
-  ${BCI2000_SRC_DIR}/shared/gui/DisplayWindow.h
-)
-IF( NOT BORLAND )
-  QT4_WRAP_CPP( GENERATED ${MOC_BCI2000_FRAMEWORK} )
-  SOURCE_GROUP( Generated FILES ${GENERATED} )
-ENDIF( NOT BORLAND )
+BCI2000_INCLUDE( "3DAPI" )
 
 # Create the library project
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/AppModule.cmake )

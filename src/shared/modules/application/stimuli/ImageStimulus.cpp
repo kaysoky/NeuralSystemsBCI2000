@@ -115,8 +115,11 @@ ImageStimulus::File() const
 ImageStimulus&
 ImageStimulus::SetRenderingMode( int inMode )
 {
-  mRenderingMode = inMode;
-  Invalidate();
+  if( inMode != mRenderingMode )
+  {
+    mRenderingMode = inMode;
+    Change();
+  }
   return *this;
 }
 
@@ -154,14 +157,29 @@ ImageStimulus::OnPaint( const DrawContext& inDC )
 #else // __BORLANDC__
 
   QPixmap* pBuffer = BeingPresented() ?
-                    mpImageBufferHighlighted :
-                    mpImageBufferNormal;
+                     mpImageBufferHighlighted :
+                     mpImageBufferNormal;
   if( pBuffer != NULL )
   {
     inDC.handle.painter->drawPixmap( int( inDC.rect.left ), int( inDC.rect.top ), *pBuffer );
   }
 
 #endif // __BORLANDC__
+}
+
+void
+ImageStimulus::OnResize( DrawContext& ioDC )
+{
+  if( AspectRatioMode() == GUI::AspectRatioModes::AdjustBoth )
+    OnMove( ioDC );
+  else
+    OnChange( ioDC );
+}
+
+void
+ImageStimulus::OnMove( DrawContext& ioDC )
+{
+  AdjustRect( ioDC.rect );
 }
 
 void
@@ -172,42 +190,14 @@ ImageStimulus::OnChange( DrawContext& ioDC )
   delete mpImageBufferHighlighted;
   mpImageBufferHighlighted = NULL;
 
+  AdjustRect( ioDC.rect );
+  int width = ioDC.rect.Width(),
+      height = ioDC.rect.Height();
+
 #ifdef __BORLANDC__
 
   if( mpImage != NULL )
   {
-    int width = ioDC.rect.right - ioDC.rect.left,
-        height = ioDC.rect.bottom - ioDC.rect.top,
-        hCenter = ( ioDC.rect.left + ioDC.rect.right ) / 2,
-        vCenter = ( ioDC.rect.bottom + ioDC.rect.top ) / 2;
-
-    switch( AspectRatioMode() )
-    {
-      case GUI::AspectRatioModes::AdjustWidth:
-        width = ( mpImage->Width * height ) / mpImage->Height;
-        ioDC.rect.left = hCenter - width / 2;
-        ioDC.rect.right = ioDC.rect.left + width;
-        break;
-
-      case GUI::AspectRatioModes::AdjustHeight:
-        height = ( mpImage->Height * width ) / mpImage->Width;
-        ioDC.rect.top = vCenter - height / 2;
-        ioDC.rect.bottom = ioDC.rect.top + height;
-        break;
-
-      case GUI::AspectRatioModes::AdjustBoth:
-        width = mpImage->Width;
-        height = mpImage->Height;
-        ioDC.rect.left = hCenter - width / 2;
-        ioDC.rect.right = ioDC.rect.left + width;
-        ioDC.rect.top = vCenter - height / 2;
-        ioDC.rect.bottom = ioDC.rect.top + height;
-        break;
-
-      case GUI::AspectRatioModes::AdjustNone:
-      default:
-        ;
-    }
     TRect bufRect( 0, 0, width, height );
     mpImageBufferNormal = new Graphics::TBitmap;
     mpImageBufferNormal->Width = width;
@@ -261,44 +251,13 @@ ImageStimulus::OnChange( DrawContext& ioDC )
 
   if( mpImage != NULL )
   {
-    int imageWidth = static_cast<int>( ioDC.rect.right - ioDC.rect.left ),
-        imageHeight = static_cast<int>( ioDC.rect.bottom - ioDC.rect.top ),
-        hCenter = static_cast<int>( ( ioDC.rect.left + ioDC.rect.right ) / 2 ),
-        vCenter = static_cast<int>( ( ioDC.rect.bottom + ioDC.rect.top ) / 2 );
-
-    switch( AspectRatioMode() )
-    {
-      case GUI::AspectRatioModes::AdjustWidth:
-        imageWidth = ( mpImage->width() * imageHeight ) / mpImage->height();
-        ioDC.rect.left = hCenter - imageWidth / 2;
-        ioDC.rect.right = ioDC.rect.left + imageWidth;
-        break;
-
-      case GUI::AspectRatioModes::AdjustHeight:
-        imageHeight = ( mpImage->height() * imageWidth ) / mpImage->width();
-        ioDC.rect.top = vCenter - imageHeight / 2;
-        ioDC.rect.bottom = ioDC.rect.top + imageHeight;
-        break;
-
-      case GUI::AspectRatioModes::AdjustBoth:
-        imageWidth = mpImage->width();
-        imageHeight = mpImage->height();
-        ioDC.rect.left = hCenter - mpImage->width() / 2;
-        ioDC.rect.right = ioDC.rect.left + mpImage->width();
-        ioDC.rect.top = vCenter - mpImage->height() / 2;
-        ioDC.rect.bottom = ioDC.rect.top + mpImage->height();
-        break;
-
-      case GUI::AspectRatioModes::AdjustNone:
-      default:
-        ;
-    }
-
     // Create the normal pixmap
     if( PresentationMode() != ShowHide )
     {
+      QImage img = mpImage->scaled( width, height );
+      ApplyRenderingMode( img );
       mpImageBufferNormal = new QPixmap;
-      mpImageBufferNormal->convertFromImage( mpImage->scaled( imageWidth, imageHeight ) );
+      mpImageBufferNormal->convertFromImage( img );
     }
     // Create the highlighted pixmap by modifying mpImage
     QImage img( *mpImage );
@@ -338,13 +297,82 @@ ImageStimulus::OnChange( DrawContext& ioDC )
           }
         break;
     }
+    img = img.scaled( width, height );
+    ApplyRenderingMode( img );
     mpImageBufferHighlighted = new QPixmap;
-    mpImageBufferHighlighted->convertFromImage( img.scaled( imageWidth, imageHeight ) );
+    mpImageBufferHighlighted->convertFromImage( img );
   }
 
 #endif // __BORLANDC__
 
-  GraphObject::OnChange( ioDC );
 }
 
+void
+ImageStimulus::AdjustRect( GUI::Rect& ioRect ) const
+{
+  if( mpImage != NULL )
+  {
+    int width = ioRect.Width(),
+        height = ioRect.Height(),
+        hCenter = ( ioRect.left + ioRect.right ) / 2,
+        vCenter = ( ioRect.bottom + ioRect.top ) / 2;
+#ifdef __BORLANDC__
+    int imageWidth = mpImage->Width,
+        imageHeight = mpImage->Height;
+#else // __BORLANDC__
+    int imageWidth = mpImage->width(),
+        imageHeight = mpImage->height();
+#endif // __BORLANDC__
+
+    switch( AspectRatioMode() )
+    {
+      case GUI::AspectRatioModes::AdjustWidth:
+        width = ( imageWidth * height ) / imageHeight;
+        ioRect.left = hCenter - width / 2;
+        ioRect.right = ioRect.left + width;
+        break;
+
+      case GUI::AspectRatioModes::AdjustHeight:
+        height = ( imageHeight * width ) / imageWidth;
+        ioRect.top = vCenter - height / 2;
+        ioRect.bottom = ioRect.top + height;
+        break;
+
+      case GUI::AspectRatioModes::AdjustBoth:
+        width = imageWidth;
+        height = imageHeight;
+        ioRect.left = hCenter - width / 2;
+        ioRect.right = ioRect.left + width;
+        ioRect.top = vCenter - height / 2;
+        ioRect.bottom = ioRect.top + height;
+        break;
+
+      case GUI::AspectRatioModes::AdjustNone:
+      default:
+        ;
+    }
+  }
+}
+
+
+#ifndef __BORLANDC__
+QImage&
+ImageStimulus::ApplyRenderingMode( QImage& ioImage ) const
+{
+  if( mRenderingMode == GUI::RenderingMode::Transparent )
+  {
+    if( !ioImage.hasAlphaChannel() && ioImage.width() > 0 && ioImage.height() > 0 )
+    {
+      // Imitate the VCL's auto transparency feature.
+      ioImage = ioImage.convertToFormat( QImage::Format_ARGB32_Premultiplied );
+      QRgb c = ioImage.pixel( 0, 0 );
+      for( int i = 0; i < ioImage.width(); ++i )
+        for( int j = 0; j < ioImage.width(); ++j )
+          if( ioImage.pixel( i, j ) == c )
+            ioImage.setPixel( i, j, Qt::transparent );
+    }
+  }
+  return ioImage;
+}
+#endif // __BORLANDC__
 

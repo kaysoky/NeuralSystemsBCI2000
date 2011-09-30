@@ -64,8 +64,6 @@ CursorFeedbackTask::CursorFeedbackTask()
   BEGIN_PARAMETER_DEFINITIONS
     "Application:Window int RenderingQuality= 1 0 0 1 "
       " // rendering quality: 0: low, 1: high (enumeration)",
-    "Application:Window int WindowBitDepth= 16 16 1 32 "
-      " // color bit depth of feedback window",
 
     "Application:Sequencing float MaxFeedbackDuration= 3s % 0 % "
       " // abort a trial after this amount of feedback time has expired",
@@ -422,13 +420,13 @@ CursorFeedbackTask::MoveCursorTo( float inX, float inY, float inZ )
 void
 CursorFeedbackTask::DisplayMessage( const string& inMessage )
 {
-  if( inMessage.empty() || mRenderingQuality > 0 )
+  if( inMessage.empty() )
   {
     mpMessage->Hide();
   }
   else
   {
-    mpMessage->SetText( string( " " ) + inMessage + " " );
+    mpMessage->SetText( " " + inMessage + " " );
     mpMessage->Show();
   }
 }

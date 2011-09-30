@@ -28,51 +28,15 @@
 #pragma hdrstop
 
 #ifdef __BORLANDC__
-#include "VCLdefines.h"
+# include "VCLdefines.h"
 #else // __BORLANDC__
-#include <QPaintEvent>
-#include <QPainter>
-#include <QApplication>
+# include <QApplication>
 #endif // __BORLANDC__
 
 #include "DisplayWindow.h"
 
 using namespace GUI;
 using namespace std;
-
-// Constructor for DisplayForm (QtWidget)
-#ifndef __BORLANDC__
-DisplayForm::DisplayForm( GraphDisplay& inDisplay )
-: QWidget( NULL ),
-  mDisplay( inDisplay )
-{
-  //Set the window flags
-  this->setWindowFlags( Qt::FramelessWindowHint );
-  // Disable double buffering (as of 4.7, Qt docs say this only works on X11)
-  this->setAttribute( Qt::WA_PaintOnScreen );
-  // Disable clearing of window background
-  this->setAttribute( Qt::WA_NoSystemBackground );
-}
-
-void
-DisplayForm::paintEvent( QPaintEvent* iopEvent )
-{
-  mDisplay.Paint( &iopEvent->region() );
-  iopEvent->accept();
-}
-
-void 
-DisplayForm::mousePressEvent( QMouseEvent* iopEvent )
-{
-  if( iopEvent->button() == Qt::LeftButton )
-  {
-    mDisplay.Click( iopEvent->x(), iopEvent->y() );
-    iopEvent->accept();
-  }
-  QWidget::mousePressEvent( iopEvent );
-}
-
-#endif // __BORLANDC__
 
 DisplayWindow::DisplayWindow()
 : mTop( 0 ),
@@ -259,7 +223,9 @@ DisplayWindow::Restore()
   mpForm->Width = mWidth;
   mpForm->Caption = VCLSTR( mTitle.c_str() );
 #else // __BORLANDC__
-  mpForm = new DisplayForm( *this );
+  mpForm = new QWidget;
+  mpForm->setWindowFlags( Qt::FramelessWindowHint );
+  mpForm->setAttribute( Qt::WA_NoSystemBackground );
   mpForm->move( mLeft, mTop );
   mpForm->resize( mWidth, mHeight );
   mpForm->setWindowTitle( QString::fromLocal8Bit( mTitle.c_str() ) );

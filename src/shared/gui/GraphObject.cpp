@@ -66,11 +66,20 @@ GraphObject::Invalidate()
 GraphObject&
 GraphObject::SetDisplayRect( const GUI::Rect& inRect )
 {
-  Invalidate();
-  mUserSpecifiedDisplayRect = inRect;
-  mActualDisplayRect = inRect;
-  mRectSet = true;
-  Change();
+  if( mUserSpecifiedDisplayRect != inRect )
+  {
+    int changedFlags = Position;
+    bool resized = mUserSpecifiedDisplayRect.Width() != inRect.Width()
+                 || mUserSpecifiedDisplayRect.Height() != inRect.Height();
+    if( resized )
+      changedFlags |= Size;
+
+    Invalidate();
+    mUserSpecifiedDisplayRect = inRect;
+    mActualDisplayRect = inRect;
+    mRectSet = true;
+    Change( changedFlags );
+  }
   return *this;
 }
 
@@ -97,7 +106,7 @@ GraphObject::Paint()
 }
 
 void
-GraphObject::Change()
+GraphObject::Change( int inWhich )
 {
   if( mRectSet )
   {
@@ -108,10 +117,29 @@ GraphObject::Change()
       { 0, 0, 0, 0 }
     };
     dc.rect = mDisplay.NormalizedToPixelCoords( mUserSpecifiedDisplayRect );
-    OnChange( dc );
+    int considered = 0;
+
+    if( inWhich & Position )
+      OnMove( dc );
+    considered |= Position;
+
+    if( inWhich & Size )
+      OnResize( dc );
+    considered |= Size;
+
+    if( inWhich & ~considered )
+      OnChange( dc );
+
     mActualDisplayRect = mDisplay.PixelToNormalizedCoords( dc.rect );
     Invalidate();
   }
 }
 
+#ifndef __BORLANDC__
+QGLWidget*
+GraphObject::GLContext() const
+{
+  return mDisplay.GLContext();
+}
+#endif // __BORLANDC__
 

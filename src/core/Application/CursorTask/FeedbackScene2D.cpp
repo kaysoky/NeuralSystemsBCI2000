@@ -65,7 +65,6 @@ FeedbackScene2D::Initialize()
     mScalingY = -width / height;
   }
 
-  mDisplay.SetColor( RGBColor::Black );
   RGBColor boundaryColor = RGBColor( Parameter( "WorkspaceBoundaryColor" ) );
   if( boundaryColor != RGBColor( RGBColor::NullColor ) )
   {

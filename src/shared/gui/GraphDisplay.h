@@ -39,13 +39,16 @@
 #ifdef __BORLANDC__
 # include "VCL.h"
 #else // __BORLANDC__
-# include <QPixmap>
-# include <QRegion>
+# include <QWidget>
 #endif // __BORLANDC__
 
 class BitmapImage;
 
 namespace GUI {
+
+#ifndef __BORLANDC__
+  class WidgetBase;
+#endif // __BORLANDC__
 
 typedef std::set<GraphObject*>   SetOfGraphObjects;
 struct QueueOfGraphObjects : public std::list<GraphObject*>
@@ -62,8 +65,7 @@ class GraphDisplay : private Uncopyable
 
  public:
   GraphDisplay();
-  virtual ~GraphDisplay()
-    { DeleteObjects(); }
+  virtual ~GraphDisplay();
 
   // Properties
   GraphDisplay& SetContext( const DrawContext& dc )
@@ -85,8 +87,7 @@ class GraphDisplay : private Uncopyable
   // and unregistering in the GraphObject constructor and destructor.
   // Calling them from elsewhere will lead to inconsistency between
   // a GraphObject's display reference, and the display it is attached to.
-  GraphDisplay& Add( GraphObject* obj )
-    { mObjects.insert( obj ); return *this; }
+  GraphDisplay& Add( GraphObject* obj );
   GraphDisplay& Remove( GraphObject* );
 
 public:
@@ -113,18 +114,31 @@ public:
   Rect PixelToNormalizedCoords( const Rect& ) const;
 
  private:
+#ifndef __BORLANDC__
+  QGLWidget* GLContext() const;
+#endif // __BORLANDC__
+  void ClearOffscreenBuffer();
+#if _WIN32
+  static void BitmapImageFromHDC( BitmapImage&, HDC, const RECT& );
+#endif // _WIN32
+#ifndef __BORLANDC__
+  static void BitmapImageFromQPixmap( BitmapImage&, const QPixmap& );
+#endif // __BORLANDC__
+
   DrawContext         mContext;
   RGBColor            mColor;
   SetOfGraphObjects   mObjects;
   QueueOfGraphObjects mObjectsClicked;
 
-  void ClearOffscreenBuffer();
 #ifdef __BORLANDC__
   HDC                 mOffscreenDC;
   HBITMAP             mOffscreenBmp;
 #else // __BORLANDC__
-  QPixmap*            mOffscreenBmp;
-  QRegion             mInvalidRegion;
+  friend class GUI::WidgetBase;
+  QPixmap* mOffscreenBmp;
+  QRegion  mInvalidRegion;
+  QWidget* mpWidget;
+  bool     mUsingGL;
 #endif // __BORLANDC__
 };
 

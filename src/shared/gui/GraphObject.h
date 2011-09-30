@@ -59,7 +59,6 @@ class GraphObject
   struct CompareByZOrder;
   friend struct GraphObject::CompareByZOrder;
 
- protected:
   enum
   { // Top to bottom
     MessageZOrder,
@@ -68,6 +67,14 @@ class GraphObject
     ImageStimulusZOrder,
     ShapeZOrder,
     SceneDisplayZOrder,
+  };
+
+ private:
+  enum
+  { // Flags for properties that may have changed
+    All = -1,
+    Position = 1 << 0,
+    Size =     1 << 1,
   };
 
  public:
@@ -96,13 +103,16 @@ class GraphObject
   const GUI::Rect& DisplayRect() const
     { return mActualDisplayRect; }
 
+  virtual bool NeedsGL() const
+    { return false; }
+
   // Graphics
   GraphObject& Invalidate();
 
   // Events
   //  Calling side
   void Paint();
-  void Change();
+  void Change( int which = All );
   bool Click( const Point& p )
     { return PointInRect( p, mActualDisplayRect ) && OnClick( p ); }
 
@@ -110,15 +120,27 @@ class GraphObject
   //  Handling side
   //  This function implements drawing the object.
   virtual void OnPaint( const DrawContext& ) = 0;
-  //  This function is called when any change of properties occurs.
-  //  For AspectRatioModes that adapt the object's enclosing rectangle,
-  //  OnChange must change the DrawContext's rectangle to reflect adaptation.
+  //  This function is called when a change of properties other than position
+  //  or size occurs.
   virtual void OnChange( DrawContext& )
     {}
+  //  These functions are called when position or size has changed.
+  //  They call OnChange() by default, so you need not implement them.
+  //  For AspectRatioModes that adapt the object's enclosing rectangle,
+  //  OnMove() and OnResize() must change the DrawContext's rectangle to reflect adaptation.
+  virtual void OnMove( DrawContext& dc )
+    { OnChange( dc ); }
+  virtual void OnResize( DrawContext& dc )
+    { OnChange( dc ); }
   //  The OnClick event handler receives a point in continuous coordinates, and
   //  returns whether it considers itself clicked.
   virtual bool OnClick( const Point& )
     { return true; }
+
+#ifndef __BORLANDC__
+  // Access to OpenGL context from GraphObject descendants.
+  class QGLWidget* GLContext() const;
+#endif // __BORLANDC__
 
  public:
   // Sort order for drawing (smaller values correspond to top)

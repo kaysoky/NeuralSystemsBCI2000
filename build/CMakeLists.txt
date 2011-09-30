@@ -37,9 +37,6 @@ ADD_DEFINITIONS(
   -DBCI2000_VERSION_STRING="${BCI2000_VERSION}"
   )
 
-# Initialize CMake output directory variables
-SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
-
 # Tell the user what we're about to setup
 MESSAGE( "-- Creating Project files for BCI2000 Version " ${BCI2000_VERSION} )
 
@@ -47,8 +44,15 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )
 INCLUDE( "${BCI2000_SRC_DIR}/contrib/Extensions/Extensions.cmake" )
 ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/frameworks "${CMAKE_CURRENT_BINARY_DIR}/frameworks" )
+ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/extlib "${CMAKE_CURRENT_BINARY_DIR}/extlib" )
 
 # Recurse down into all project subdirectories
+
+# Set output for all build types to the prog folder.
+# This comes after static libraries have been created, so these 
+# maintain build-type specific output directories
+# (to avoid errors from linking to libraries with different build type)
+SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
 
 # src/private : stuff we use that is not released yet
 IF ( EXISTS ${BCI2000_SRC_DIR}/private )

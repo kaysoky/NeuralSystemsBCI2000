@@ -7,9 +7,6 @@ SET( NAME BCI2000FrameworkCore )
 
 MESSAGE( "---Adding Framework Library: ${NAME}" )
 
-# Don't clutter the global output directory with static libs
-SET_OUTPUT_DIRECTORY( ${CMAKE_CURRENT_BINARY_DIR} )
-
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreLib/CoreLibFiles.cmake )
 
 IF( WIN32 )

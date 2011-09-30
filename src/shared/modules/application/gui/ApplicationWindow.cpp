@@ -109,7 +109,7 @@ ApplicationWindow::Publish()
       " // screen coordinate of $name$ window's left edge",
     "Application:$name$%20Window int $top$= 0 0 % % "
       " // screen coordinate of $name$ window's top edge",
-    "Application:$name$%20Window string $background$= 0xFFFFFF 0x505050 % % "
+    "Application:$name$%20Window string $background$= 0x000000 0x505050 % % "
       "// $name$ window background color (color)",
 
     "Visualize:$name$%20Window int $visualize$= 0 0 0 1 "
