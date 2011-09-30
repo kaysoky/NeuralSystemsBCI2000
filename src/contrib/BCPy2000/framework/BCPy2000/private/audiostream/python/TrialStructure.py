@@ -131,12 +131,17 @@ class BciApplication(BciGenericApplication):
 	
 	def PrepareFeedback(self, w):
 		if isinstance(w, basestring): w = WavTools.wav(w)
-		if 'SoundChannels' in self.params:
-			mask = [int(x.upper().endswith('F')) for x in self.params['SoundChannels']]
-			q = 0; ww = []
-			for m in mask: ww.append(w[:,q%w.channels()]*m); q += m
-			w = WavTools.stack(ww)
-			
+		scparam = self.params.get('SoundChannels', None)
+		if scparam != None and len(scparam)>= 2 and len(scparam[0]) >= 3:
+			scparam = [[{'':'0'}.get(x,x) for x in row[:-1]] for row in scparam if row[-1].upper() == 'F']
+			ww = 0
+			for q,row in enumerate(scparam):
+				try: row = [float(x) for x in row]
+				except: raise EndUserError("failed to interpret %s as floating-point numbers" % str(row))
+				ww = ww + w[:,q%w.channels()] * row
+			if len(scparam) == 0: w *=0
+			else: w = ww
+				
 		return WavTools.player(w)
 		
 	#############################################################

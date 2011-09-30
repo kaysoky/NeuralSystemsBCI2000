@@ -62,7 +62,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Streams intlist   ScopeForMinMax=               2     7     7                      7     1 % // ",
 			"PythonSig:Streams intlist   InitialStandards=                   2     2       2              3     0 % // how many stimuli at the beginning of each stream are guaranteed to be standards",
 			#"PythonSig:Streams int      SurroundSoundTrigger=                     0                      0     0 1 // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)",
-			"PythonSig:Streams list      SoundChannels=                      2     S1F S2F                %     % % // ",
+			"PythonSig:Streams matrix    SoundChannels=                4     3     1 % S1     % 1 S2     1 % F       % 1 F     %     % % // ",
 			"PythonSig:Streams int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
 			"PythonSig:Streams floatlist StreamVolumes=                      2     1.0 1.0              1.0     0 1 // ",
 			
@@ -199,29 +199,32 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			
 		sounds = []
 		triggers = []
-		chanspecs = self.params['SoundChannels']
-		self.soundmasks   = [[0 for spec in chanspecs] for istream in range(self.nstreams)]
-		self.triggermasks = [[0 for spec in chanspecs] for istream in range(self.nstreams)]
+		scparam = self.params['SoundChannels']
+		if len(scparam) < 2 or len(scparam[0]) < 3:
+			raise EndUserError("SoundChannels must have at least 2 rows and at least 3 columns")
+		nAudioChannels = len(scparam[0]) - 1
+		self.soundmasks   = [[0]*nAudioChannels for istream in range(self.nstreams)]
+		self.triggermasks = [[0]*nAudioChannels for istream in range(self.nstreams)]
 		
 		sstrings = ['S%d'%(istream+1) for istream in range(self.nstreams)]
 		tstrings = ['T%d'%(istream+1) for istream in range(self.nstreams)]
-		for iOutputChannel,spec in enumerate(self.params['SoundChannels']):
-			val = spec.upper().rstrip('F')
-			if val in ['X', '']:
-				continue
-			elif val in sstrings:
-				istream = int(val[1:])-1
+		for row in self.params['SoundChannels']:
+			code = row[-1].upper()
+			try: row = [int({'':'0'}.get(x,x)) for x in row[:-1]]
+			except: raise EndUserError("failed to interpret %s as floating-point numbers" % str(row))
+			if code in sstrings:
+				istream = int(code[1:])-1
 				sounds.append(istream)
-				self.soundmasks[istream][iOutputChannel] = 1
-			elif val in tstrings:
-				istream = int(val[1:])-1
+				self.soundmasks[istream] = row
+			elif code in tstrings:
+				istream = int(code[1:])-1
 				triggers.append(istream)
-				self.triggermasks[istream][iOutputChannel] = 1
-			else:
-				raise EndUserError('unrecognized SoundChannels entry "%s": legal values for a %d-stream system are X F %s (an optional "F" may be appended)'%(self.nstreams,' '.join(sstrings+tstrings)))
+				self.triggermasks[istream] = row
+			elif code not in ['F']:
+				raise EndUserError('unrecognized SoundChannels code "%s": legal values for a %d-stream system are F %s'%(code, self.nstreams,' '.join(sstrings+tstrings)))
 		self.surround = len(triggers) > 0
 		if self.surround and sorted(triggers) != range(self.nstreams): raise EndUserError("if Tx values are specified in SoundChannels, all T1 through T%d must be specified without repetition"%self.nstreams)
-		if sorted(sounds) != range(self.nstreams): raise EndUserError("SoundChannels must contain all S1 through S%d without repetition"%self.nstreams)
+		if sorted(sounds) != range(self.nstreams): raise EndUserError("last column of SoundChannels must contain all S1 through S%d without repetition"%self.nstreams)
 		
 		stim = numpy.array(self.params['StreamStimuli'])
 		if stim.shape[1] == 1:
@@ -314,7 +317,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 					persistence=self.persistence,
 					detrend={0:None, 1:'constant', 2:'linear'}.get(int(self.params['DetrendEpochs'])),
 					bci=self,
-					**kwargs\
+					**kwargs
 			)
 			self.seq.append(s)
 

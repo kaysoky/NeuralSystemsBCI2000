@@ -10,7 +10,7 @@ PythonSig:Streams                             matrix    StreamStimuli=          
 PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } tick.wav 15msec   tock.wav 15msec  //
 PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } 8500LeftStandard.wav 8500LeftTarget.wav   8500RightStandard.wav 8500RightTarget.wav  //
 PythonSig:Streams                             int       SurroundSoundTrigger=             1             // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
-PythonSig:Streams                             list      SoundChannels=            4       S1F S2F T1 T2 // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
+PythonSig:Streams                             matrix    SoundChannels=          6 7       1 % % % % % S1     % 1 % % % % S2     % % 1 % % % T1     % % % 1 % % T2     1 % % % 1 % F     % 1 % % % 1 F  //
 PythonSig:Streams                             int       DirectSound=                      1             // use DirectSound interface or not? (boolean)
 
 Visualize:Processing%20Stages                 int       VisualizeTiming=                  0             // 
