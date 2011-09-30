@@ -87,9 +87,9 @@ GazeMonitorFilter::GazeMonitorFilter() :
     "Application:GazeMonitor string FixationY= 0.5 0.5 % % "
       " // Y coordinate of fixation center - 0.0 to 1.0 (expression)",
     "Application:GazeMonitor float BlinkTime= 100ms 100ms 0 %"
-      " // Maximum alloted time for invalid eyes",
+      " // Maximum allowed time for invalid eyes",
     "Application:GazeMonitor float SaccadeTime= 100ms 100ms 0 %"
-      " // Maximum alloted time for violating the fixation",
+      " // Maximum allowed time for violating the fixation",
     "Application:GazeMonitor float FixationRadius= 0.1 0.1 0.0 1.0 "
       " // Allowable distance from fixation center",
     "Application:GazeMonitor string FixationImage= % % % % "

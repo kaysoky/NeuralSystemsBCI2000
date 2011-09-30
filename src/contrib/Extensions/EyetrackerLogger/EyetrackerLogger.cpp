@@ -143,7 +143,15 @@ Extension( EyetrackerLogger );
 // Returns:    N/A
 // **************************************************************************
 EyetrackerLogger::EyetrackerLogger()
-:m_eyetrackerEnable( false )
+: m_eyetrackerEnable( false ),
+  m_eyetrackerPort( 0 ),
+  m_logGazeData( false ),
+  m_logEyePos( false ),
+  m_logPupilSize( false ),
+  m_logEyeDist( false ),
+  m_gazeScale( 1 ),
+  m_gazeOffset( 0 ),
+  mpEyetrackerThread( NULL )
 {
 }
 
@@ -155,6 +163,7 @@ EyetrackerLogger::EyetrackerLogger()
 // **************************************************************************
 EyetrackerLogger::~EyetrackerLogger()
 {
+  Halt();
 }
 
 // **************************************************************************
@@ -451,7 +460,7 @@ void EyetrackerLogger::StopRun()
       ::Sleep(1);
     mpEyetrackerThread->TerminateWait();
     delete mpEyetrackerThread;
-    bcidbg( 10 ) << "4. Distroy Thread" << endl;
+    bcidbg( 10 ) << "4. Destroy Thread" << endl;
     mpEyetrackerThread = NULL;
   }
 }
@@ -474,7 +483,8 @@ void EyetrackerLogger::Halt()
 // Returns:    N/A
 // **************************************************************************
 EyetrackerLogger::EyetrackerThread::EyetrackerThread(EyetrackerLogger* logger)
-: OSThread( )
+: m_DataOK( false ),
+  m_prevDataOK( false )
 {
   //Initialize everything to it's proper value
   m_running = true;
