@@ -327,6 +327,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
     if( string( Parameter( "FixationImage" ) ) != "" )
     {
       mpFixationImage->SetFile( string( Parameter( "FixationImage" ) ) );
+      mpFixationImage->SetZOrder( GUI::GraphObject::MessageZOrder + 1 );
       mpFixationImage->SetRenderingMode( GUI::RenderingMode::Transparent );
       mpFixationImage->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
       SetDisplayRect( mpFixationImage, cx, cy, mFixationSize );
