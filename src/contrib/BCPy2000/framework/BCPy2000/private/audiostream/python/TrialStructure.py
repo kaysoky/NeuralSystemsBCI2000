@@ -19,7 +19,7 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 
 	def Description(self):
-		return "attention to auditory streams $Id $"
+		return "attention to auditory streams $Id$"
 
 	#############################################################
 

@@ -281,7 +281,7 @@ def dumpmethod(self, *pargs, **kwargs):
 			for i in range(msec_timeout):
 				df = self._find_newest_file()
 				if df not in (None, 0, ''): self.data_file = df; break
-				time.sleep(0.001)
+				import time; time.sleep(0.001)
 			else:
 				raise RuntimeError("self.data_file has not been assigned")
 			print "current data file is assumed to be %s" % self.data_file

@@ -47,7 +47,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	#############################################################
 
 	def Description(self):
-		return "binary classification of difference of L-R ERPs - self-contained streaming module $Id $"
+		return "binary classification of difference of L-R ERPs - self-contained streaming module $Id$"
 
 	#############################################################
 
