@@ -4,6 +4,9 @@
 //    Copyright (c) 2011 Guger Technologies.
 //_____________________________________________________________________________________
 
+#ifndef GHIAMP_H
+#define GHIAMP_H
+
 #pragma pack(push)
 
 #ifdef GHIAMP_EXPORTS
@@ -22,14 +25,14 @@
 #define F_BUTTERWORTH	1
 #define F_BESSEL		2
 
-// MODES
-#define M_NORMAL		0
-#define	M_CALIBRATE		2
-#define M_COUNTER		3
-
-//WAVESHAPES
+//TESTSIGNAL
 #define WS_SQUARE		0x01
+#define TESTSIGNAL_AMPLITUDE	7622.83
+#define TESTSIGNAL_OFFSET		-TESTSIGNAL_AMPLITUDE
 
+//DEVICEINFO SIZE
+#define EEPROM_SIZE_BYTES		64*1024
+#define MAX_NUMBER_OF_CHANNELS	256
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,29 +47,36 @@ extern "C" {
 #pragma pack(1)
 typedef struct _DAC
 {
+	BOOL Enabled;
 	BYTE WaveShape;
-	WORD Amplitude;
+	double Amplitude;
 	WORD Frequency;
-	WORD Offset;
+	double Offset;
+
+	_DAC()
+		: Amplitude(TESTSIGNAL_AMPLITUDE), Offset(TESTSIGNAL_OFFSET), Enabled(FALSE), WaveShape(WS_SQUARE), Frequency(0)
+	{
+	}
 } DAC, *PDAC;
 
 #pragma pack(1)
 typedef struct _SCALE
 {
-	float factor[256];
-	float offset[256];
+	float factor[MAX_NUMBER_OF_CHANNELS];
+	float offset[MAX_NUMBER_OF_CHANNELS];
 } SCALE, *PSCALE;
 
 #pragma pack(1)
 typedef struct _GT_HIAMP_CHANNEL_IMPEDANCES
 {
-	double Impedance[256];
+	BOOL IsActiveElectrode[MAX_NUMBER_OF_CHANNELS];
+	double Impedance[MAX_NUMBER_OF_CHANNELS];
 } GT_HIAMP_CHANNEL_IMPEDANCES, *PGT_HIAMP_CHANNEL_IMPEDANCES;
 
 #pragma pack(1)
 typedef struct _GT_DEVICEINFO
 {
-	char deviceInfo[256];
+	char deviceInfo[EEPROM_SIZE_BYTES];
 } GT_DEVICEINFO, *PGT_DEVICEINFO;
 
 #pragma pack(1)
@@ -98,9 +108,9 @@ typedef struct _GT_HIAMP_CONFIGURATION
 	BOOL TriggerLineEnabled;
 	BOOL HoldEnabled;
 	BOOL IsSlave;
-	UCHAR Mode;
+	BOOL CounterEnabled;
 	DAC InternalSignalGenerator;
-	GT_HIAMP_CHANNEL_CONFIGURATION Channels[256];
+	GT_HIAMP_CHANNEL_CONFIGURATION Channels[MAX_NUMBER_OF_CHANNELS];
 } GT_HIAMP_CONFIGURATION, *PGT_HIAMP_CONFIGURATION;
 
 //_____________________________________________________________________________________
@@ -124,8 +134,11 @@ GHIAMP_API		BOOL	__stdcall	GT_VR(int nargin, void *varargin[], int nargout, void
 GHIAMP_API		BOOL	__stdcall	GT_Calibrate(HANDLE hDevice, PSCALE Scaling);
 GHIAMP_API		BOOL	__stdcall	GT_SetScale(HANDLE hDevice, PSCALE scaling);
 GHIAMP_API		BOOL	__stdcall	GT_GetScale(HANDLE hDevice, PSCALE scaling);
+GHIAMP_API		BOOL	__stdcall	GT_GetFactoryScaleSettings(HANDLE hDevice, PSCALE factoryScaling);
 GHIAMP_API		BOOL	__stdcall	GT_GetImpedance(HANDLE hDevice, GT_HIAMP_CHANNEL_IMPEDANCES *channelImpedances);
-GHIAMP_API		BOOL	__stdcall	GT_GetAvailableChannels(HANDLE hDevice, UCHAR *availableChannels, WORD availableChannelsLength);
+GHIAMP_API		BOOL	__stdcall	GT_GetAvailableChannels(HANDLE hDevice, UCHAR *availableChannels, WORD availableChannelsLength); 
+GHIAMP_API		BOOL	__stdcall	GT_GetNumberOfSupportedSampleRates(int *numberOfSupportedSampleRates);
+GHIAMP_API		BOOL	__stdcall	GT_GetSupportedSampleRates(float* supportedSampleRates);
 GHIAMP_API		BOOL	__stdcall	GT_SetConfiguration(HANDLE hDevice, GT_HIAMP_CONFIGURATION configuration);
 GHIAMP_API		BOOL	__stdcall	GT_GetConfiguration(HANDLE hDevice, GT_HIAMP_CONFIGURATION *configuration);
 
@@ -146,3 +159,5 @@ GHIAMP_API		BOOL	__stdcall	GT_GetNumberOfNotch(int* nof);
 #endif
 
 #pragma pack(pop)
+
+#endif //GHIAMP_H

@@ -72,7 +72,7 @@ gHIampDevice::Init( int inPort )
     }
     mConfig.TriggerLineEnabled = true;
     mConfig.IsSlave = true;
-    mConfig.Mode = M_NORMAL;
+    mConfig.CounterEnabled = false;
   }
 }
 
@@ -282,7 +282,7 @@ gHIampDevice::SetConfiguration( int iSampleRate, int iSampleBlockSize )
   mConfig.SampleRate = iSampleRate;
   mConfig.BufferSize = mSampleBlockSize;
   mConfig.HoldEnabled = false;
-  mConfig.Mode = M_NORMAL;
+  mConfig.CounterEnabled = false;
 
   // Configure the Internal Signal Generator
   mConfig.InternalSignalGenerator.WaveShape = WS_SQUARE;
