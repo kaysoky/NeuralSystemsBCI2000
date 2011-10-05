@@ -76,6 +76,7 @@ Epoch length may be specified in blocks as a raw number, or in seconds when imme
 </p>
 <a name="EpochsToAverage"></a><h3>EpochsToAverage</h3>
 <p>Determines the number of epochs that will be accumulated before reporting their temporal average. <i>EpochsToAverage</i> must be set to a value smaller than or equal to the <a href="User_Reference%253AP3SpellerTask.html#NumberOfSequences" title="User Reference:P3SpellerTask">NumberOfSequences</a> parameter; when <i>EpochsToAverage</i> is less than <i>NumberOfSequences</i>, only the first <i>EpochsToAverage</i> epochs will enter into the temporal average reported.
+<b>NOTE:</b> When using the P3TemporalFilter in conjunction with the <a href="User_Reference%253AStimulusPresentationTask.html" title="User Reference:StimulusPresentationTask">StimulusPresentationTask</a>, the sequence of stimuli must contain each stimulus once, or not at all. Presenting stimuli multiple times will result in presentation and classification going out of sync.
 </p>
 <a name="VisualizeP3TemporalFiltering"></a><h3>VisualizeP3TemporalFiltering</h3>
 <p>If nonzero, average waveforms will be presented graphically to the operator user.

@@ -103,7 +103,8 @@ On 64-bit Windows, the MEX files require the Visual Studio runtime libraries. If
 </li></ul>
 <a name="BCI2000_MEX_functions"></a><h2>BCI2000 MEX functions</h2>
 <a name="load_bcidat"></a><h3><tt>load_bcidat</tt></h3>
-<pre>[ signal, states, parameters ] = load_bcidat( 'filename1', 'filename2', ... );
+<pre> [ signal, states, parameters, total_samples, file_samples ] ...
+    = load_bcidat( 'filename1', 'filename2', ... )
 </pre>
 <p>loads signal, state, and parameter data from the files whose names are given
 as function arguments.
@@ -111,8 +112,8 @@ as function arguments.
 </p>
 <pre>files = dir( '*.dat' );
 [ signal, states, parameters ] = load_bcidat( files.name );
-</pre>
-<pre>files = struct( 'name', uigetfile( 'MultiSelect', 'on' ) );
+
+files = struct( 'name', uigetfile( 'MultiSelect', 'on' ) );
 [ signal, states, parameters ] = load_bcidat( files.name );
 </pre>
 <p>For multiple files, number of channels, states, and signal type must be
@@ -120,7 +121,7 @@ consistent.
 </p><p>By default, signal data will be in raw A/D units, and will be represented by the 
 smallest Matlab data type that accommodates them.
 To obtain signal data calibrated into physical units (microvolts),
-specify <tt>'-calibrated'</tt> as an option anywhere in the argument list.
+specify '-calibrated' as an option anywhere in the argument list.
 </p><p>The 'states' output variable will be a Matlab struct with BCI2000 state
 names as struct member names, and the number of state value entries matching
 the first dimension of the 'signal' output variable.
@@ -128,20 +129,33 @@ the first dimension of the 'signal' output variable.
 parameter names as struct member names.
 Individual parameter values are represented as cell arrays of strings in a 
 'Value' struct member, and additionally as numeric matrices in a 'NumericValue'
-struct member. When there is no numeric interpretation, the 
+struct member. When there is no numeric interpretation possible, the 
 corresponding matrix entry will be NaN. For nested matrices, no NumericValue
 field is provided.
-If multiple files are given, parameter values will match the ones contained 
+When multiple files are given, parameter values will match the ones contained 
 in the first file.
 </p><p>Optionally, sample ranges may be specified for individual files:
 </p>
-<pre>[ signal, states, parameters ] = load_bcidat( 'filename', [first last] );
+<pre>[ signal, states, parameters ] = load_bcidat( 'filename', [first last] )
 </pre>
 <p>will load a subset of samples defined by first and last sample index.
 Specifying [0 0] for an empty sample range allows to read states and 
 parameters from a file without reading sample data:
 </p>
 <pre>[ ignored, states, parameters ] = load_bcidat( 'filename', [0 0] );
+</pre>
+<p>The 'total_samples' output variable reports the total number of samples
+present in all files, independently of how many samples have been
+specified as sample ranges. This allows to retrieve the number of
+samples in a file without actually loading the file:
+</p>
+<pre>[ ignored, states, parameters, total_samples ] = load_bcidat( 'filename', [0 0] );
+</pre>
+<p>Similarly, the 'file_samples' output variable provides a vector
+containing the number of samples within each input file, regardless of
+any sample ranges that may have been specified.
+</p>
+<pre>[ ignored, states, parameters, total_samples, file_samples ] = load_bcidat( 'filename1', [0 0], 'filename2', [0 0]  );
 </pre>
 <a name="save_bcidat"></a><h3><tt>save_bcidat</tt></h3>
 <pre>save_bcidat( 'filename', signal, states, parameters );

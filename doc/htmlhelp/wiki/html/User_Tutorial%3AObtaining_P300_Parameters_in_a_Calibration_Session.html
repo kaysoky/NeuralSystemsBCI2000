@@ -130,7 +130,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>Now we will save these customizations to a subject-specific parameter file that will allow the subject to free-spell with good accuracy.
 </p>
 <ul><li>Start BCI2000 using <tt>batch/P3Speller_&lt;Your_Amplifier&gt;.bat</tt> file
-</li><li>Click <b>Config</b>, and load the configuration file you saved previously
+</li><li>Click <b>Config</b>, and load the baseline parameters for copy spelling that you used for recording the calibration session
 </li><li>Under the <b>Storage</b> tab, set the <i>SubjectSession</i> parameter to "002", and the <b>SubjectName</b> parameter to the subject's initials.
 </li><li>Under the <b>Source</b> tab, set the <i>TransmitChList</i> parameter to a list of channels from 1 to the number of channels recorded.
 </li><li>Under the <b>Filtering</b> tab, click the <b>Edit Matrix</b> button by <i>Classifier</i> near the bottom
@@ -142,7 +142,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>Repeat these steps for the remaining rows, and close the matrix when finished
 </li></ul>
 </li><li> If a <b>Common Average Reference</b> was used in the analysis, under the <b>Filtering</b> tab change the <b>SpatialFilterType</b> parameter to <b>Common Average Reference (CAR)</b>; otherwise, leave it as <b>None</b>.
-</li><li>Click <b>Save Parameters</b> to save this file, naming it however you deem fit
+</li><li>Click <b>Save Parameters</b> to save this file as <tt>&lt;SubjectName&gt;_CopySpelling.prm</tt>.
 </li><li>Use this new parameter file to repeat the configuration session and data analysis a few times, adding new rows to the classifier matrix each time for new data points to be utilized.
 </li><li>When accuracy is reliably above 90%, click <b>Config,</b> and click on the <b>Application</b> tab:
 <ul><li>Delete the contents of the <i>Text to Spell</i> field
@@ -153,12 +153,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>In the second column replace <tt>9</tt> with <tt>&lt;BS&gt;</tt>
 </li></ul>
 </li></ul>
-</li><li>Click <b>Save Parameters</b>, and change the <tt>copy_spell</tt> portion of this parameter file name to <tt>free_spell</tt>
+</li><li>Click <b>Save Parameters</b>, and change the <tt>CopySpelling</tt> portion of this parameter file name to <tt>FreeSpelling</tt>
 </li><li>This parameter file is now ready to use for that specific subject for future P300 spelling experiments
 </li></ul>
 <a name="P300Classifier"></a><h2>P300Classifier</h2>
 <p>The use of the "Offline Analysis" program was provided to familiarize you with the characteristics of the P300 response.
-At the same time, manually selecting the best features will typically result in reduced performance compared to when the features are automatically selected. Such automatic selection is performed using the <i>P300Classifier</i> tool that is provided with BCI2000. This stand-alone program determines optimal features (i.e., signal times and channels) and corresponding weights automatically, and outputs those in a classifier matrix. Use of this program streamlines the configuration process at the expense of decreased hands-on experience with BCI data and the BCI2000 progra itself.
+At the same time, manually selecting the best features will typically result in reduced performance compared to when the features are automatically selected. Such automatic selection is performed using the <i>P300Classifier</i> tool that is provided with BCI2000. This stand-alone program determines optimal features (i.e., signal times and channels) and corresponding weights automatically, and outputs those in a classifier matrix. Use of this program streamlines the configuration process at the expense of decreased hands-on experience with BCI data and the BCI2000 program itself.
 </p><p>For instructions on using the P300Classifier, see <a href="User_Reference%253AP300Classifier.html" title="User Reference:P300Classifier">User Reference:P300Classifier</a>.
 </p>
 <a name="Next_Step"></a><h2>Next Step</h2>

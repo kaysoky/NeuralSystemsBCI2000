@@ -35,6 +35,14 @@ In addition to these fully supported amplifiers, a larger and growing number of 
 <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a> provides an overview of source modules currently available.
 </p><p>In comparison to using an amplifier from the core distribution, you will need to perform a few additional, simple steps in order to use a contributed source module.
 </p>
+<table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="Contributions%253AHow_to_use_a_Contributed_Source_Module.html#Obtaining_a_binary_version_of_a_Contributed_Source_Module"><span class="tocnumber">1</span> <span class="toctext">Obtaining a binary version of a Contributed Source Module</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AHow_to_use_a_Contributed_Source_Module.html#Creating_batch_files"><span class="tocnumber">2</span> <span class="toctext">Creating batch files</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AHow_to_use_a_Contributed_Source_Module.html#Setting_up_your_amplifier"><span class="tocnumber">3</span> <span class="toctext">Setting up your amplifier</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AHow_to_use_a_Contributed_Source_Module.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
+</ul>
+</td></tr></table>
 <a name="Obtaining_a_binary_version_of_a_Contributed_Source_Module"></a><h2>Obtaining a binary version of a Contributed Source Module</h2>
 <p>Binary versions of contributed source modules are available in the <a href="BCI2000_Binaries.html#Contributed_Code" title="BCI2000 Binaries">extended binary distribution</a> of BCI2000.
 Alternatively, you can build contributed source modules from the BCI2000 source code as described <a href="Programming_Howto%253ABuilding_BCI2000.html#Building_Contributions" title="Programming Howto:Building BCI2000">here</a>.
@@ -50,6 +58,14 @@ Alternatively, you can build contributed source modules from the BCI2000 source 
 </li><li>There, replace <tt>SignalGenerator.exe</tt> with your source module's executable name, e.g. <tt>NeuroscanClient.exe</tt>.
 </li><li>Save the batch file, and run it to start BCI2000 in the desired configuration.
 </li><li>Repeat these steps for all paradigms you intend to use.
+</li></ul>
+<a name="Setting_up_your_amplifier"></a><h2>Setting up your amplifier</h2>
+<p>After creating one or more batch files for use with your amplifier, you might create a parameter file that only contains settings specific to your amplifier and EEG setup. You can do this by starting up from one of your newly created batch files, clicking "Config", and then going to the "Source" tab. There, adjust all settings as appropriate. Then, click "Configure Save", and make sure that only those from the "Source" tab are selected. Finally, click "Save Parameters...", and save your subset of parameters under <tt>parms/amplifiers/&lt;your_amplifier&gt;.prm</tt>. After that, don't forget to click "Configure Save" again, and to re-select all parameters, to make sure you can save full parameter files as usual.
+</p><p>When you are comfortable with a text editor, you may alternatively perform the "Save" step as follows:
+</p>
+<ul><li>First, save the full parameter file without using "Configure Save".
+</li><li>Then, open the new parameter file in a text editor such as Windows Notepad.
+</li><li>You will see a list of parameters, with each parameter corresponding to a single line. These are sorted by tabs in the operator's config dialog where the individual parameters appear. Thus, it is simple to remove all parameter lines except the ones referring to the "Source" tab.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>, <a href="BCI2000_Binaries.html" title="BCI2000 Binaries">BCI2000 Binaries</a>, <a href="Programming_Howto%253ABuilding_BCI2000.html" title="Programming Howto:Building BCI2000">Programming Howto:Building BCI2000</a>

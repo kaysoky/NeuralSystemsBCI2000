@@ -4,7 +4,7 @@
 <head>
 <title>Technical Reference:Operator Library - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Technical Reference:Operator Library,Programming Reference:Debug Output,Technical Reference:States of Operation,User Reference:Operator Module Scripting" />
+<meta name="keywords" content="Technical Reference:Operator Library,Programming Reference:Debug Output,Technical Reference:Core Modules,Technical Reference:States of Operation,Technical Reference:Visualization Properties,User Reference:Operator Module,User Reference:Operator Module Scripting" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,12 +30,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Operator Library</h1><p class="subtitle">Technical Reference</p><hr class="sep" /><p>The Operator Library is a shared library that encapsulates the Operator Module's core functionality into an easy-to-use interface that allows to embed Operator functionality into one's own application. This way, it is easy write your own Operator module, or to control BCI2000 from your own application, using any programming language that allows using a shared library (DLL).
-</p><p>For an example that uses the Operator Library to implement a simple Operator Module, see <a href="http://www.bci2000.org/tracproj/browser/trunk/src/contrib/OperatorLibApplications/OperatorLibDemo/main.cpp" class='external text' title="http://www.bci2000.org/tracproj/browser/trunk/src/contrib/OperatorLibApplications/OperatorLibDemo/main.cpp" rel="nofollow">the OperatorLibDemo</a> program.
+<h1 class="pagetitle">Operator Library</h1><p class="subtitle">Technical Reference</p><hr class="sep" /><p>The Operator Library is a shared library that encapsulates the Operator Module's core functionality into an interface that allows to embed Operator functionality into one's own application. This way, is is possible to write your own Operator module, or to control BCI2000 from your own application, without having to deal with details of the BCI2000 protocol. The BCI2000 Operator library can be used from any programming language that allows using a shared library (DLL). Although the Operator library is written in C++, its DLL interface is plain C, and can be used with compiled languages such as C, C++, C#, Pascal, but also with interpreted languages that can call functions in a DLL, such as Python, Matlab, VisualBasic, etc. Interfacing with Java requires a JNI (Java Native Interface) wrapper, which is currently not provided by BCI2000. 
+</p><p>For a C++ example that uses the Operator Library to implement a simple Operator Module, see <a href="http://www.bci2000.org/tracproj/browser/trunk/src/contrib/OperatorLibApplications/OperatorLibDemo/main.cpp" class='external text' title="http://www.bci2000.org/tracproj/browser/trunk/src/contrib/OperatorLibApplications/OperatorLibDemo/main.cpp" rel="nofollow">the OperatorLibDemo</a> program.
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
-<li class='toclevel-1'><a href="Technical_Reference%253AOperator_Library.html#System_State"><span class="tocnumber">1</span> <span class="toctext">System State</span></a>
+<li class='toclevel-1'><a href="Technical_Reference%253AOperator_Library.html#System_State_.28State_of_Operation.29"><span class="tocnumber">1</span> <span class="toctext">System State (State of Operation)</span></a>
 <ul>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_StateUnavailable"><span class="tocnumber">1.1</span> <span class="toctext">BCI_StateUnavailable</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_StateStartup"><span class="tocnumber">1.2</span> <span class="toctext">BCI_StateStartup</span></a></li>
@@ -104,14 +104,14 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_Initialize.28_void_.29"><span class="tocnumber">4.6</span> <span class="toctext">int BCI_Initialize( void )</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_Dispose.28_void_.29"><span class="tocnumber">4.7</span> <span class="toctext">int BCI_Dispose( void )</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_ExecuteScript.28_const_char.2A_script_.29"><span class="tocnumber">4.8</span> <span class="toctext">int BCI_ExecuteScript( const char* script )</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_ReleaseObject.28_char.2A_.29"><span class="tocnumber">4.9</span> <span class="toctext">int BCI_ReleaseObject( char* )</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#int_BCI_ReleaseObject.28_const_char.2A_.29"><span class="tocnumber">4.9</span> <span class="toctext">int BCI_ReleaseObject( const char* )</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Technical_Reference%253AOperator_Library.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
-<a name="System_State"></a><h2>System State</h2>
-<p>BCI2000 system state may be queried using <tt>BCI_GetStateOfOperation()</tt>, and modified using the <tt>BCI_SetConfig()</tt>, <tt>BCI_StartRun()</tt>, and <tt>BCI_StopRun()</tt> functions.
+<a name="System_State_.28State_of_Operation.29"></a><h2>System State (State of Operation)</h2>
+<p>BCI2000 system state may be queried using <tt>BCI_GetStateOfOperation()</tt>, and modified using the <tt>BCI_SetConfig()</tt>, <tt>BCI_StartRun()</tt>, and <tt>BCI_StopRun()</tt> functions. These functions manipulate system state in a way that is analogous to the main buttons in the standard <a href="User_Reference%253AOperator_Module.html" title="User Reference:Operator Module">Operator module</a>.
 </p><p>System state is one of the following:
 </p>
 <a name="BCI_StateUnavailable"></a><h3>BCI_StateUnavailable</h3>
@@ -162,7 +162,7 @@ the state of operation of the BCI2000 system.
 <dl><dt>returns</dt><dd>   1 if successful, 0 otherwise.
 </dd></dl>
 <a name="Parameterization"></a><h2>Parameterization</h2>
-<p>Parameterization functions allow the population and modification of the Operator Library's internal parameter list, state list, and visproperty list. When calling <tt>SetConfig()</tt>, parameter values are applied to the BCI2000 system. Setting a state via <tt>BCI_SetStateValue()</tt> may result in a change to BCI2000 system state.
+<p>Parameterization functions allow the population and modification of the Operator Library's internal parameter list, state list, and visproperty list. When calling <tt>SetConfig()</tt>, parameter values are applied to the BCI2000 system.
 </p>
 <a name="int_BCI_PutParameter.28_const_char.2A_parameterLine_.29"></a><h3>int BCI_PutParameter( const char* parameterLine )</h3>
 <p>Parses a BCI2000 parameter definition line, and adds the resulting parameter object to the internal parameter list, or changes the value of a parameter if it exists.
@@ -171,7 +171,7 @@ the state of operation of the BCI2000 system.
 </dd><dt>returns</dt><dd>   1 if successful, 0 otherwise.
 </dd></dl>
 <a name="const_char.2A_BCI_GetParameter.28_long_index_.29"></a><h3>const char* BCI_GetParameter( long index )</h3>
-<p>Returns the parameter with the given index from the operator's internal parameter list.
+<p>Returns the parameter with the given index from the operator's internal parameter list, or NULL when the index is out of range.
 </p>
 <dl><dt>arguments</dt><dd> Parameter index.
 </dd><dt>returns</dt><dd>   Pointer to a null-terminated string containing a parameter line, or NULL. The output buffer is allocated by the library, and should be released by the caller using <tt>BCI_ReleaseObject()</tt>.
@@ -183,32 +183,59 @@ the state of operation of the BCI2000 system.
 </dd><dt>returns</dt><dd>   1 if successful, 0 otherwise.
 </dd></dl>
 <a name="const_char.2A_BCI_GetState.28_long_index_.29"></a><h3>const char* BCI_GetState( long index )</h3>
-<p>Returns the state with the given index from the DLL's internal state list.
+<p>Returns the state with the given index from the DLL's internal state list. , or NULL when the index is out of range.
 </p>
 <dl><dt>arguments</dt><dd> State index.
 </dd><dt>returns</dt><dd>   Pointer to a null-terminated string containing a state line, or NULL. The output buffer is allocated by the library, and should be released by the caller using <tt>BCI_ReleaseObject()</tt>.
 </dd></dl>
 <a name="int_BCI_SetStateValue.28_const_char.2A_stateName.2C_long_value_.29"></a><h3>int BCI_SetStateValue( const char* stateName, long value )</h3>
-<p>Sets the value of a state to a given value.
+<p>Sets the value of a state to a given value. Setting a state via <tt>BCI_SetStateValue()</tt> may result in a change to BCI2000 system state.
 </p>
 <dl><dt>arguments</dt><dd> Pointer to a null-terminated state name string; new state value.
 </dd><dt>returns</dt><dd>   1 if successful, 0 otherwise.
 </dd></dl>
 <a name="int_BCI_PutVisProperty.28_const_char.2A_visID.2C_int_cfgID.2C_const_char.2A_value_.29"></a><h3>int BCI_PutVisProperty( const char* visID, int cfgID, const char* value )</h3>
-<p>Sets the a property to the given value, or adds the property to the property list if it is not present.
+<p>Sets the a property to the given value, or adds the property to the property list if it is not present. A list of visualization properties is available at <a href="Technical_Reference%253AVisualization_Properties.html" title="Technical Reference:Visualization Properties">Technical Reference:Visualization Properties</a>.
 </p>
 <dl><dt>arguments</dt><dd> Pointer to a null-terminated vis ID string, numeric config ID, and a pointer to a null-terminated value string.
 </dd><dt>returns</dt><dd>   1 if successful, 0 otherwise.
 </dd></dl>
 <a name="const_char.2A_BCI_GetVisProperty.28_const_char.2A_visID.2C_int_cfgID_.29"></a><h3>const char* BCI_GetVisProperty( const char* visID, int cfgID )</h3>
-<p>Returns the property with the given index from the DLL's internal property list. When a visID is given, results are restricted to properties with the respective visID.
+<p>Returns the property with the given cfgID from the DLL's internal property list. A list of visualization properties is available at <a href="Technical_Reference%253AVisualization_Properties.html" title="Technical Reference:Visualization Properties">Technical Reference:Visualization Properties</a>.
 </p>
 <dl><dt>arguments</dt><dd> Pointer to a null-terminated vis ID string, numeric config ID.
 </dd><dt>returns</dt><dd>   Pointer to a null-terminated string containing a property line, or NULL. The output buffer is allocated by the library, and should be released by the caller using <tt>BCI_ReleaseObject()</tt>.
 </dd></dl>
 <a name="Callbacks"></a><h2>Callbacks</h2>
-<p>Whenever the Operator Library gets data, or its state is modified, a <i>callback event</i> is triggered, and a callback function is called, provided it has been registered with <tt>BCI_SetCallback()</tt> or <tt>BCI_SetExternalCallback()</tt>. The difference between the two registration functions is that the first registers a callback function to be called within an internal thread of the Operator Library, while the second registers a callback function to be executed in an "external" thread. For this to work, the desired "external" thread needs to call <tt>BCI_CheckPendingCallback()</tt> often, e.g. from a GUI message handling loop.
-</p><p>Callback events are listed with their event names, and their handler's arguments. The refdata pointer is an arbitrary value that may be registered together with the callback function.
+<p>Whenever the Operator Library receives data, or its state is modified, a <i>callback event</i> is triggered. In response to this event, a callback function is called. Callback functions are registered with <tt>BCI_SetCallback()</tt> or <tt>BCI_SetExternalCallback()</tt>. The difference between the two registration functions is that the first registers a callback function to be called within the context of an internal thread of the Operator Library, while the second registers a callback function to be executed in a thread owned by the application that uses the Operator library, i.e. a thread that is "external" to the Operator library. That "external" thread needs to call <tt>BCI_CheckPendingCallback()</tt> regularly in order to execute callback functions. Typically, <tt>BCI_CheckPendingCallback()</tt> would be called from a GUI application's main thread within its message handling loop.
+</p><p>Callback events are listed with their event names, and their handler's arguments. A callback function has at least one argument, which is a void* named refdata. The refdata pointer is supplied by user code when registering the callback function, and provided to the callback function unchanged. Typically, it would be used to store an object pointer in C++, or to an application specific data structure in C.
+</p><p>When programming in C++, callback functions must be either global functions, or functions declared "static" within class scope. They may not be ordinary member functions of a class. In object oriented programming however, you will typically want an ordinary member function to be called as a callback. This is possible using the "refdata" pointer to store an object pointer, and then call a member function on that object from the callback function as in the following example:
+</p>
+<pre>
+class MyOperator
+{
+ public:
+  MyOperator()
+  {
+    BCI_SetCallback( BCI_OnSystemStateChange, BCI_Function( &amp;OnSystemStateChangeCallback ), this );
+  }
+  ~MyOperator()
+  {
+    BCI_SetCallback( BCI_OnSystemStateChange, NULL, NULL );
+  }
+ private:
+  void OnSystemStateChange()
+  {
+    ... // ordinary member function that gets executed when system state changes
+  }
+  static void OnSystemStateChangeCallback( void* refdata )
+  {
+    MyOperator* pObject = reinterpret_cast&lt;MyOperator*&gt;( refdata );
+    pObject-&gt;OnSystemStateChange();
+  }
+};
+</pre>
+<p>In the following, callbacks are listed as if they were ordinary functions. However, you will not use them this way. Rather, the "function name" is the name of the callback that is supplied as the first argument to <tt>BCI_SetCallback()</tt> or <tt>BCI_SetExternalCallback()</tt>. Your own callback function will have a different name, must return "void", and must take the arguments listed as arguments to the callback. A pointer to your own callback function will then be specified as the second argument to <tt>BCI_SetCallback()</tt>, casted to the <tt>BCI_Function</tt> type.
 </p>
 <a name="BCI_OnSystemStateChange.28_void.2A_refdata_.29"></a><h3> BCI_OnSystemStateChange( void* refdata )</h3>
 <p>Occurs on any change to BCI2000 system state.
@@ -220,10 +247,10 @@ the state of operation of the BCI2000 system.
 <p>Occurs when core modules have connected to the Operator Library.
 </p>
 <a name="BCI_OnSetConfig.28_void.2A_refdata_.29"></a><h3>BCI_OnSetConfig( void* refdata )</h3>
-<p>Triggered when <tt>SetConfig()</tt> is called.
+<p>Triggered when <tt>SetConfig()</tt> has been called.
 </p>
 <a name="BCI_OnStart.28_void.2A_refdata_.29"></a><h3>BCI_OnStart( void* refdata )</h3>
-<p>Triggered when <tt>StartRun()</tt> is called.
+<p>Triggered when <tt>StartRun()</tt> has been called.
 </p>
 <a name="BCI_OnSuspend.28_void.2A_refdata_.29"></a><h3>BCI_OnSuspend( void* refdata )</h3>
 <p>Triggered when BCI2000 goes into suspended state.
@@ -235,7 +262,7 @@ the state of operation of the BCI2000 system.
 <p>Triggered when <tt>BCI_Shutdown()</tt> is called.
 </p>
 <a name="BCI_OnLogMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29"></a><h3>BCI_OnLogMessage( void* refdata, const char* msg )</h3>
-<p>Triggered for each log message arriving from one of the modules, including the Operator module.
+<p>Triggered for each log message arriving from one of the modules, including the Operator module itself.
 </p>
 <a name="BCI_OnWarningMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29"></a><h3>BCI_OnWarningMessage( void* refdata, const char* msg )</h3>
 <p>Triggered for warning messages. Note that also a <tt>BCI_OnLogMessage</tt> event is triggered for warning messages.
@@ -244,7 +271,7 @@ the state of operation of the BCI2000 system.
 <p>Triggered for error messages. Note that also a <tt>BCI_OnLogMessage</tt> event is triggered for error messages.
 </p>
 <a name="BCI_OnDebugMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29"></a><h3>BCI_OnDebugMessage( void* refdata, const char* msg )</h3>
-<p>Triggered for each <a href="Programming_Reference%253ADebug_Output.html" title="Programming Reference:Debug Output">debug message</a> arriving at the Operator module.
+<p>Triggered for each <a href="Programming_Reference%253ADebug_Output.html" title="Programming Reference:Debug Output">debug message</a> received by the Operator module.
 </p>
 <a name="BCI_OnParameter.28_void.2A_refdata.2C_const_char.2A_parameterline_.29"></a><h3>BCI_OnParameter( void* refdata, const char* parameterline )</h3>
 <p>Triggered whenever a parameter message arrives at the Operator module.
@@ -268,10 +295,11 @@ the state of operation of the BCI2000 system.
 <p>Triggered for each signal data message to a visualization window. Data are given such that the pair of indices <tt>(ch,el)</tt> corresponds to the single index <tt>ch*elements+el</tt>. Note that this is different from the layout of bitmap data.
 </p>
 <a name="BCI_OnVisBitmap.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_width.2C_int_height.2C_unsigned_short.2A_data_.29"></a><h3>BCI_OnVisBitmap( void* refdata, const char* visID, int width, int height, unsigned short* data )</h3>
-<p>Triggered for each bitmap data message to a visualization window. Data are given in 15-bit RGB format, with one extra bit allowing for negative values to enable processing of difference images. For data, the pair of indices <tt>(x,y)</tt> corresponds to the single index <tt>y*width+x</tt>. Note that this is different from the layout of signal messages.
+<p>Triggered for each bitmap data message to a visualization window. Data are given in ARGB 1444 format, where the 12 bits with lowest significance represent color. When any of the 3 bits with higher significance is set, the pixel is assumed to be transparent. Negative values are possible to allow for processing of difference images. In transmission, empty bitmaps (width and height set to 0) are sent to indicate that the next bitmap will be a reference frame; between reference frames, difference frames are sent.
+</p><p>When addressing pixels, the pair of indices <tt>(x,y)</tt> corresponds to the single index <tt>y*width+x</tt>. Note that this is different from the layout of signal messages.
 </p>
 <a name="BCI_OnUnknownCommand.28_void.2A_refdata.2C_const_char.2A_command_.29"></a><h3>BCI_OnUnknownCommand( void* refdata, const char* command )</h3>
-<p>Triggered when the <a href="User_Reference%253AOperator_Module_Scripting.html" title="User Reference:Operator Module Scripting">Operator Module Scripting</a> engine meets an unknown command. The event handler can extend the set of known commands by executing commands that are unknown to the scripting engine.
+<p>Triggered when the <a href="User_Reference%253AOperator_Module_Scripting.html" title="User Reference:Operator Module Scripting">Operator Module Scripting</a> engine meets an unknown command. The event handler can be used to extend the set of commands by handling those commands that are unknown to the scripting engine.
 </p>
 <a name="BCI_OnScriptError.28_void.2A_refdata.2C_const_char.2A_msg_.29"></a><h3>BCI_OnScriptError( void* refdata, const char* msg )</h3>
 <p>Triggered when script execution results in an error condition. Note that unknown commands are reported through the <tt>BCI_OnUnknownCommand</tt> event handler.
@@ -289,7 +317,7 @@ the state of operation of the BCI2000 system.
 </dd><dt>returns</dt><dd>   1 if successful, 0 otherwise.
 </dd></dl>
 <a name="int_BCI_CheckPendingCallback.28.29"></a><h3>int BCI_CheckPendingCallback()</h3>
-<p>Call this function regularly from within an external thread you want external callbacks to run in.
+<p>Call this function regularly from within an external thread you want external callbacks to run in. Typically, is is called from a GUI application's main event loop.
 </p>
 <dl><dt>arguments</dt><dd> None.
 </dd><dt>returns</dt><dd>   1 if a callback was executed, 0 otherwise.
@@ -314,13 +342,13 @@ the state of operation of the BCI2000 system.
 </dd><dt>returns</dt><dd>   Pointer to a null-terminated string holding the information requested. The output buffer is allocated by the library, and should be released by the caller using <tt>BCI_ReleaseObject()</tt>.
 </dd></dl>
 <a name="const_char.2A_BCI_GetConnectionInfo.28_int_index_.29"></a><h3>const char* BCI_GetConnectionInfo( int index )</h3>
-<p>Obtains information about a core module connection.
+<p>Obtains information about a <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">core module</a> connection.
 </p>
 <dl><dt>argument</dt><dd>  Zero-based index of core module connection.
 </dd><dt>returns</dt><dd>   Pointer to a null-terminated string containing connection information, or NULL for an invalid index. The output buffer is allocated by the library, and should be released by the caller using <tt>BCI_ReleaseObject()</tt>.
 </dd></dl>
 <a name="const_char.2A_BCI_GetCoreModuleStatus.28_int_index_.29"></a><h3>const char* BCI_GetCoreModuleStatus( int index )</h3>
-<p>Obtains a core module's current status message.
+<p>Obtains a <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">core module's</a> current status message.
 </p>
 <dl><dt>argument</dt><dd>  Zero-based index of core module connection.
 </dd><dt>returns</dt><dd>   Pointer to a null-terminated string containing status information, or NULL for an invalid index. The output buffer is allocated by the library, and should be released by the caller using <tt>BCI_ReleaseObject()</tt>.
@@ -328,7 +356,7 @@ the state of operation of the BCI2000 system.
 <a name="int_BCI_Startup.28_const_char.2A_moduleList_.29"></a><h3>int BCI_Startup( const char* moduleList )</h3>
 <p>Startup of the operator controller object.
 </p>
-<dl><dt>arguments</dt><dd> A string defining core module listening addresses in the form "&lt;ip1&gt;:&lt;port1&gt; &lt;ip2:port2&gt; ... &lt;ipN:portN&gt;" If NULL, a value of "localhost:4000 localhost:4001 localhost:4002" reflecting the standard BCI2000 configuration is used.
+<dl><dt>arguments</dt><dd> A string defining <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">core module</a> listening addresses in the form "&lt;ip1&gt;:&lt;port1&gt; &lt;ip2:port2&gt; ... &lt;ipN:portN&gt;" If NULL, a value of "localhost:4000 localhost:4001 localhost:4002" representing a standard BCI2000 configuration is used.
 </dd><dt>returns</dt><dd>   1 if successful, 0 otherwise.
 </dd></dl>
 <a name="int_BCI_Shutdown.28_void_.29"></a><h3>int BCI_Shutdown( void )</h3>
@@ -352,7 +380,7 @@ the state of operation of the BCI2000 system.
 <dl><dt>arguments</dt><dd> Null-terminated string specifying script commands.
 </dd><dt>returns</dt><dd>   0 if a syntax error is present, 1 otherwise.
 </dd></dl>
-<a name="int_BCI_ReleaseObject.28_char.2A_.29"></a><h3>int BCI_ReleaseObject( char* )</h3>
+<a name="int_BCI_ReleaseObject.28_const_char.2A_.29"></a><h3>int BCI_ReleaseObject( const char* )</h3>
 <p>Indicate that an object that has been allocated by the library is no longer needed by the library's client.
 </p>
 <dl><dt>arguments</dt><dd> Object to be released, or NULL.

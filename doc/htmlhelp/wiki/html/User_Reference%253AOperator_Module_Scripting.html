@@ -32,7 +32,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <div id='article'>
 <h1 class="pagetitle">Operator Module Scripting</h1><p class="subtitle">User Reference</p><hr class="sep" /><p>Operator scripts automate actions that the otherwise would be performed by the user, e.g. starting or suspending system operation.
 Scripts may be contained in script files, or given immediately in the operator module's preferences dialog.
-There is also an option to specify scripts from the <a href="User_Reference%253AModule_Command_Line_Options.html#Operator_Module" title="User Reference:Module Command Line Options">command line</a> when starting the operator module. When using the <a href="Technical_Reference%253AOperator_Library.html" title="Technical Reference:Operator Library">Operator Library</a>, script execution may occur at any time.
+There is also an option to specify scripts from the <a href="User_Reference%253AModule_Command_Line_Options.html#Operator_Module" title="User Reference:Module Command Line Options">command line</a> when starting the operator module. When using the <a href="Technical_Reference%253AOperator_Library.html" title="Technical Reference:Operator Library">Operator Library</a> from your own application, you may execute scripts at any time.
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
@@ -159,9 +159,9 @@ Entries that start with a minus sign (-) are treated as one-line scripts, which 
 <p>The following example shows how to specify script commands from the command line.
 It fully automates BCI2000 operation by loading a parameter file, applying parameters, starting the system once the parameters are applied, and quitting the system once the run is over. For better readability, the example is broken across lines; for execution, the command needs to be entered as a single line.
 </p>
-<pre>operat.exe --OnConnect "-LOAD PARAMETERFILE ..\parms\examples\CursorTask_SignalGenerator.prm; SETCONFIG" 
-           --OnSetConfig "-SET STATE Running 1"  
-           --OnSuspend "-QUIT"
+<pre>operator.exe --OnConnect "-LOAD PARAMETERFILE ..\parms\examples\CursorTask_SignalGenerator.prm; SETCONFIG" 
+             --OnSetConfig "-SET STATE Running 1"  
+             --OnSuspend "-QUIT"
 </pre>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AModule_Command_Line_Options.html" title="User Reference:Module Command Line Options">User Reference:Module Command Line Options</a>, <a href="User_Reference%253AOperator_Module.html" title="User Reference:Operator Module">User Reference:Operator Module</a>, <a href="Technical_Reference%253AStates_of_Operation.html" title="Technical Reference:States of Operation">Technical Reference:States of Operation</a>

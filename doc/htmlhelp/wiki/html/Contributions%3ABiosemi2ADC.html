@@ -104,7 +104,8 @@ Version 1.0 tested with a MK1. Versions 1.2 and up tested on a MK2.
 </p><p>Warning: If TriggerChList is empty, the trigger values will not be saved in the data files and are not recoverable.
 </p>
 <a name="Installation"></a><h2>Installation</h2>
-<p>Copy the Labview_DLL.dll to the prog directory for the module to work.
+<p>Copy the Labview_DLL.dll to the prog directory for the module to work. (In the BCI2000 Contrib distribution, that DLL is already in place.)
+If you experience problems with the Biosemi 2 source module, uninstall the 'Labview Run time engine' included in the Active View CD (as suggested by Hohyun Cho).
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>As of version 2.0 (svn revision 2189) the old parameters <b>PostFixTriggers</b> and <b>TriggerScaleMultiplier</b> have been removed. The functionality of the former is replaced by <b>TriggerChList</b> and the latter can be simulated by setting the corresponding elements of <b>SourceChGain</b> accordingly.

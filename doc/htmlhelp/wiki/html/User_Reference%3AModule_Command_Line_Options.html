@@ -78,10 +78,15 @@ Parameter values must not contain white spaces on the command line; however, whi
 </li><li>The <i>Debug</i> option will make a module send <a href="Programming_Reference%253ADebug_Output.html" title="Programming Reference:Debug Output">Debug Messages</a> that appear in the operator module's log window.
 </li><li>The <i>LogKeyboard</i>, <i>LogMouse</i>, and <i>LogJoystick</i> options will enable <a href="User_Reference%253ALogging_Input.html" title="User Reference:Logging Input">recording of key presses, mouse and joystick position</a>.
 </li><li>The <i>SavePrmFile</i> option will save a <a href="Technical_Reference%253AParameter_File.html" title="Technical Reference:Parameter File">parameter file</a> for each run.
+</li><li>Normally, BCI2000 automatically chooses a suitable IP address for communication between SignalSource, SignalProcessing, and Application module. Sometimes however, you want a specific address to be used. This is possible using the <i>SignalSourceIP/SignalProcessingIP/ApplicationIP</i> options. Note that these options must be specified on the command line of the respective module, e.g. the following lines will specify the localhost address for both the connection to the Operator module (first option), and the connection between core modules:
 </li></ul>
+<pre>start SignalSource 127.0.0.1 --SignalSourceIP=127.0.0.1
+start SignalProcessing 127.0.0.1 --SignalProcessingIP=127.0.0.1
+start Application 127.0.0.1 --ApplicationIP=127.0.0.1
+</pre>
 <a name="Operator_Module"></a><h2>Operator Module</h2>
-<p>The operator module allows to specify scripts from the command line.
-Command line options correspond to script entries in the operator's preferences dialog.
+<p>The Operator Module allows to specify scripts from the command line.
+Most command line options correspond to script entries in the operator's preferences dialog, except the "--Title" option which takes a string that is displayed in the Operator Module's title bar.
 The following options exist:
 </p>
 <pre>--OnConnect
@@ -90,14 +95,17 @@ The following options exist:
 --OnSuspend
 --OnResume
 --OnStart
+--Title
 </pre>
 <p>After the option, white space is expected, followed with a double-quote enclosed string.
 Examples:
 </p>
 <pre>--OnConnect "C:\scripts\onconnect.bciscript"
 --OnConnect "-LOAD PARAMETERFILE ..\parms\myparms.prm"
+--Title %~n0
 </pre>
-<p>For further details and examples, see <a href="User_Reference%253AOperator_Module_Scripting.html" title="User Reference:Operator Module Scripting">User Reference:Operator Module Scripting</a>.
+<p>The last example shows how to display the name of the batch file from which the Operator Module was started under MS Windows.
+</p><p>For further details and examples, see <a href="User_Reference%253AOperator_Module_Scripting.html" title="User Reference:Operator Module Scripting">User Reference:Operator Module Scripting</a>.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">Technical Reference:Core Modules</a>, <a href="User_Reference%253AOperator_Module_Scripting.html" title="User Reference:Operator Module Scripting">User Reference:Operator Module Scripting</a>, <a href="User_Reference%253AData_File_Formats.html" title="User Reference:Data File Formats">User Reference:Data File Formats</a>, <a href="Programming_Reference%253ADebug_Output.html" title="Programming Reference:Debug Output">Programming Reference:Debug Output</a>, <a href="User_Reference%253ALogging_Input.html" title="User Reference:Logging Input">User Reference:Logging Input</a>

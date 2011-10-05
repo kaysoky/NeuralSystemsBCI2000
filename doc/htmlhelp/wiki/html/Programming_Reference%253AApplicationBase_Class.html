@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:ApplicationBase Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:ApplicationBase Class,BCI2000 Glossary,Programming Reference:FeedbackTask Class,Programming Reference:GenericVisualization Class,Programming Reference:GraphDisplay Class,Programming Reference:LogFile Class,Programming Reference:RandomGenerator Class,Programming Reference:StimulusTask Class,Technical Reference:BCI2000 Messages,User Reference:Operator Module" />
+<meta name="keywords" content="Programming Reference:ApplicationBase Class,BCI2000 Glossary,Programming Reference:ApplicationWindowClient Class,Programming Reference:ApplicationWindow Class,Programming Reference:FeedbackTask Class,Programming Reference:GenericVisualization Class,Programming Reference:LogFile Class,Programming Reference:RandomGenerator Class,Programming Reference:StimulusTask Class,Technical Reference:BCI2000 Messages" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -35,28 +35,11 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Location"><span class="tocnumber">1</span> <span class="toctext">Location</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Synopsis"><span class="tocnumber">2</span> <span class="toctext">Synopsis</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Usage"><span class="tocnumber">3</span> <span class="toctext">Usage</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#RandomNumberGenerator"><span class="tocnumber">4</span> <span class="toctext">RandomNumberGenerator</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Application_Log"><span class="tocnumber">5</span> <span class="toctext">Application Log</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Display_Parameterization_and_Visualization"><span class="tocnumber">6</span> <span class="toctext">Display Parameterization and Visualization</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Parameters"><span class="tocnumber">7</span> <span class="toctext">Parameters</span></a>
-<ul>
-<li class='toclevel-2'><a href="Programming_Reference%253AApplicationBase_Class.html#Application_Window_Properties"><span class="tocnumber">7.1</span> <span class="toctext">Application Window Properties</span></a>
-<ul>
-<li class='toclevel-3'><a href="Programming_Reference%253AApplicationBase_Class.html#WindowWidth.2C_WindowHeight"><span class="tocnumber">7.1.1</span> <span class="toctext">WindowWidth, WindowHeight</span></a></li>
-<li class='toclevel-3'><a href="Programming_Reference%253AApplicationBase_Class.html#WindowLeft.2C_WindowTop"><span class="tocnumber">7.1.2</span> <span class="toctext">WindowLeft, WindowTop</span></a></li>
-</ul>
-</li>
-<li class='toclevel-2'><a href="Programming_Reference%253AApplicationBase_Class.html#Application_Window_Visualization"><span class="tocnumber">7.2</span> <span class="toctext">Application Window Visualization</span></a>
-<ul>
-<li class='toclevel-3'><a href="Programming_Reference%253AApplicationBase_Class.html#VisualizeApplicationWindow"><span class="tocnumber">7.2.1</span> <span class="toctext">VisualizeApplicationWindow</span></a></li>
-<li class='toclevel-3'><a href="Programming_Reference%253AApplicationBase_Class.html#AppWindowSpatialDecimation"><span class="tocnumber">7.2.2</span> <span class="toctext">AppWindowSpatialDecimation</span></a></li>
-<li class='toclevel-3'><a href="Programming_Reference%253AApplicationBase_Class.html#AppWindowTemporalDecimation"><span class="tocnumber">7.2.3</span> <span class="toctext">AppWindowTemporalDecimation</span></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Remarks"><span class="tocnumber">8</span> <span class="toctext">Remarks</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#See_also"><span class="tocnumber">9</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Access_to_Application_Windows"><span class="tocnumber">4</span> <span class="toctext">Access to Application Windows</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#RandomNumberGenerator"><span class="tocnumber">5</span> <span class="toctext">RandomNumberGenerator</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Application_Log"><span class="tocnumber">6</span> <span class="toctext">Application Log</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#Remarks"><span class="tocnumber">7</span> <span class="toctext">Remarks</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AApplicationBase_Class.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Location"></a><h2>Location</h2>
@@ -66,12 +49,38 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>The <tt>ApplicationBase</tt> class bundles base functionality which is useful for any BCI2000 application module. This base functionality comprises
 </p>
 <ul><li>generation of random numbers,
-</li><li>maintaining an application log file, and application log messages to the operator user,
-</li><li>parameterization of application screen position and dimensions,
-</li><li>display of a small copy of the application screen in an <a href="User_Reference%253AOperator_Module.html#Visualization_Windows" title="User Reference:Operator Module">operator visualization window</a>.
+</li><li>maintaining an application log file, and application log messages to the operator user.
 </li></ul>
 <a name="Usage"></a><h2>Usage</h2>
 <p>An application module uses the <tt>ApplicationBase</tt> class by deriving its <a href="BCI2000_Glossary.html#Task" title="BCI2000 Glossary">task filter</a> from <tt>ApplicationBase</tt> rather than <tt>GenericFilter</tt> directly. It has then access to the facilities explained below.
+</p>
+<a name="Access_to_Application_Windows"></a><h2>Access to Application Windows</h2>
+<p>The <tt>ApplicationBase</tt> class inherits from the <a href="Programming_Reference%253AApplicationWindowClient_Class.html" title="Programming Reference:ApplicationWindowClient Class"><tt>ApplicationWindowClient</tt> class</a>, and thus provides access to framework-managed <a href="Programming_Reference%253AApplicationWindow_Class.html" title="Programming Reference:ApplicationWindow Class">application windows</a>.
+To access, and possibly create, the main application window from your <tt>ApplicationBase</tt>-derived application filter class, initialize an <tt>ApplicationWindow</tt> reference in its constructor with the <tt>ApplicationWindowClient::Window()</tt> function:
+</p>
+<pre>
+ class MyTaskFilter&nbsp;: public ApplicationBase
+ {
+    ...
+   private:
+    ApplicationWindow&amp; mrWindow;
+    ...
+ };
+
+ MyTaskFilter::MyTaskFilter()
+ : mrWindow( ApplicationWindowClient::Window() )
+ {
+   ...
+ }
+
+ MyTaskFilter::Initialize( ... )
+ {
+   ...
+   ImageStimulus* pImageStimulus = new ImageStimulus( mrWindow );
+   ...
+ }
+</pre>
+<p>You may also test windows for existence from the <tt>Preflight()</tt> function, and only use them when they already exist. This way, your code can adapt to the presence of certain filters in the application module. For more details, see the <a href="Programming_Reference%253AApplicationWindowClient_Class.html" title="Programming Reference:ApplicationWindowClient Class"><tt>ApplicationWindowClient</tt> class</a> reference page.
 </p>
 <a name="RandomNumberGenerator"></a><h2>RandomNumberGenerator</h2>
 <p>The <tt>ApplicationBase</tt> class provides an object of type <a href="Programming_Reference%253ARandomGenerator_Class.html" title="Programming Reference:RandomGenerator Class"><tt>RandomGenerator</tt></a> which may be used to obtain integer pseudo-random numbers uniformly distributed over a specified range:
@@ -99,33 +108,6 @@ AppLog &lt;&lt; "This message is displayed by the operator module, and written i
 <p>The application log file is located in the current session directory, and named after the current session; it carries an <b>.applog</b> extension.
 </p><p>Operator log window messages have <i>APLG</i> as their <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">visualization source ID</a>.
 </p>
-<a name="Display_Parameterization_and_Visualization"></a><h2>Display Parameterization and Visualization</h2>
-<p>Typically, a BCI2000 application module displays feedback or other stimuli in an application window. In the GUI abstraction layer of the BCI2000 framework, the application window's drawing area is represented as an object that inherits the <a href="Programming_Reference%253AGraphDisplay_Class.html" title="Programming Reference:GraphDisplay Class"><tt>GUI::GraphDisplay</tt></a> interface.
-</p><p>When a derived class provides its underlying <tt>ApplicationBase</tt> with a <tt>GUI::GraphDisplay</tt> pointer at construction time, the <tt>ApplicationBase</tt> class will handle display visualization transparently.
-The <tt>ApplicationBase</tt> class uses the <tt>GraphDisplay</tt>'s <tt>BitmapData</tt> method to obtain a copy of its contents, and to send these to the operator module for display in a visualization window using a message source ID of <i>APSC</i>.
-</p>
-<a name="Parameters"></a><h2>Parameters</h2>
-<a name="Application_Window_Properties"></a><h3>Application Window Properties</h3>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:ApplicationBaseParams&amp;action=edit&amp;section=1" title="Template:ApplicationBaseParams">edit</a>]</div><a name="WindowWidth.2C_WindowHeight"></a><h4>WindowWidth, WindowHeight</h4>
-<p>The width and height of the subject-visible application window, in pixels.
-</p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:ApplicationBaseParams&amp;action=edit&amp;section=2" title="Template:ApplicationBaseParams">edit</a>]</div><a name="WindowLeft.2C_WindowTop"></a><h4>WindowLeft, WindowTop</h4>
-<p>The screen position of the application window's top left corner, in pixels.
-</p>
-<a name="Application_Window_Visualization"></a><h3>Application Window Visualization</h3>
-<p>Visualization parameters are available only if the descendant class provides a <tt>GUI::GraphDisplay</tt> pointer at construction time.
-</p>
-<a name="VisualizeApplicationWindow"></a><h4>VisualizeApplicationWindow</h4>
-<p>Switches visualization display of a miniature copy of the application window on or off.
-</p>
-<a name="AppWindowSpatialDecimation"></a><h4> AppWindowSpatialDecimation</h4>
-<p>A factor that determines resolution of visualized data in relation to the original window's size.
-Enlarging the factor reduces the visualization window's resolution, and its initial size, and improves system timing by reducing the amount of data transferred.
-</p>
-<a name="AppWindowTemporalDecimation"></a><h4>AppWindowTemporalDecimation</h4>
-<p>A factor that determines the visualization window's update rate. A value of <i>n</i> results in each <i>n</i>th sample being transferred.
-</p><p><br />
-</p>
 <a name="Remarks"></a><h2>Remarks</h2>
 <p>Typically, a BCI2000 application module will implement a paradigm that belongs to one of two categories:
 </p>
@@ -136,7 +118,7 @@ Enlarging the factor reduces the visualization window's resolution, and its init
 Still, such a task filter has access to all functionality provided by <tt>ApplicationBase</tt>.
 </p>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="Programming_Reference%253AStimulusTask_Class.html" title="Programming Reference:StimulusTask Class">Programming Reference:StimulusTask Class</a>, <a href="Programming_Reference%253AFeedbackTask_Class.html" title="Programming Reference:FeedbackTask Class">Programming Reference:FeedbackTask Class</a>
+<p><a href="Programming_Reference%253AStimulusTask_Class.html" title="Programming Reference:StimulusTask Class">Programming Reference:StimulusTask Class</a>, <a href="Programming_Reference%253AFeedbackTask_Class.html" title="Programming Reference:FeedbackTask Class">Programming Reference:FeedbackTask Class</a>, <a href="Programming_Reference%253AApplicationWindowClient_Class.html" title="Programming Reference:ApplicationWindowClient Class">Programming Reference:ApplicationWindowClient Class</a>
 </p>
 <div class="printfooter">
 </div>

@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:EnvironmentExtension Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:EnvironmentExtension Class,BCI2000 Glossary,Programming Reference:Error Handling,Programming Reference:GenericFilter Class,Technical Reference:Parameter Definition,Technical Reference:State Definition,Technical Reference:States of Operation" />
+<meta name="keywords" content="Programming Reference:EnvironmentExtension Class,BCI2000 Glossary,Programming Reference:Environment Class,Programming Reference:Error Handling,Programming Reference:GenericFilter Class,Technical Reference:Parameter Definition,Technical Reference:State Definition,Technical Reference:States of Operation" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -65,7 +65,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p><tt>BCI200/src/shared/accessors</tt>
 </p>
 <a name="Synopsis"></a><h2>Synopsis</h2>
-<p>The EnvironmentExtension class is a base class for BCI2000 components (<i>"extensions"</i>) that are not <a href="Programming_Reference%253AGenericFilter_Class.html" title="Programming Reference:GenericFilter Class">filters</a>. Such extensions do not process signals but still have access to <a href="BCI2000_Glossary.html#Parameter" title="BCI2000 Glossary">BCI2000 parameters</a> and <a href="BCI2000_Glossary.html#State" title="BCI2000 Glossary">state variables</a>, and are notified of system events such as <i>Preflight</i>, <i>Initialize</i>, and <i>StartRun</i>.
+<p>The EnvironmentExtension class defines an interface for BCI2000 components (<i>"extensions"</i>) that are not <a href="Programming_Reference%253AGenericFilter_Class.html" title="Programming Reference:GenericFilter Class">filters</a>. Such extensions do not process signals but still have access to <a href="BCI2000_Glossary.html#Parameter" title="BCI2000 Glossary">BCI2000 parameters</a> and <a href="BCI2000_Glossary.html#State" title="BCI2000 Glossary">state variables</a>, and are notified of system events such as <i>Preflight</i>, <i>Initialize</i>, and <i>StartRun</i>.
+</p><p>Components that don't need to handle system events may inherit from the <a href="Programming_Reference%253AEnvironment_Class.html" title="Programming Reference:Environment Class">Environment class</a> directly rather than indirectly via EnvironmentExtension.
 </p>
 <a name="Events"></a><h2>Events</h2>
 <a name="Publish"></a><h3>Publish</h3>

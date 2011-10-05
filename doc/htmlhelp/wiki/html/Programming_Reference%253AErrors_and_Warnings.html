@@ -36,7 +36,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Reference%253AErrors_and_Warnings.html#Writing_into_Error_and_Warning_Streams"><span class="tocnumber">2</span> <span class="toctext">Writing into Error and Warning Streams</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AErrors_and_Warnings.html#Convenience_Macros"><span class="tocnumber">3</span> <span class="toctext">Convenience Macros</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AErrors_and_Warnings.html#Throwing_Exceptions"><span class="tocnumber">4</span> <span class="toctext">Throwing Exceptions</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AErrors_and_Warnings.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AErrors_and_Warnings.html#Assertions"><span class="tocnumber">5</span> <span class="toctext">Assertions</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AErrors_and_Warnings.html#See_also"><span class="tocnumber">6</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Output_Streams"></a><h2>Output Streams</h2>
@@ -80,13 +81,28 @@ for conditions more convenient:
 <a name="Throwing_Exceptions"></a><h2>Throwing Exceptions</h2>
 <p>Finally, in case of a non-recoverable error, you may also throw an
 exception
-of type <tt>const char*</tt> in order to report an error in the
+of type <tt>BCIException</tt> in order to report an error in the
 operator window,
 and to terminate the BCI2000 system after the error has been
-displayed:
+displayed.
+For convenience, there is a macro <tt>bciexception</tt> that allows you to use stream inserters when specifying the error message:
 </p>
-<pre>throw __FUNC__ ": Disk space is exhausted";
+<pre>#include "BCIException.h"
+...
+throw bciexception( "Illegal value of n: " &lt;&lt; n );
 </pre>
+<a name="Assertions"></a><h2>Assertions</h2>
+<p>In addition to <tt>bciexception</tt>, there is a macro <tt>bciassert</tt> that takes a condition as an argument, and throws an exception of type <tt>BCIException</tt> when that condition evaluates to false.
+The exception's message contains "Assertion failed", and reports the location of the failure along with the condition itself.
+To use this macro, include the "BCIAssert.h" header file:
+</p>
+<pre>#include "BCIAssert.h"
+...
+bciassert( inIdx &lt; mContainer.size() );
+</pre>
+<p>Do only use assertions when a failure indicates a programming error, not a user configuration error. Especially, don't use bciassert in the <tt>GenericFilter::Preflight()</tt> function because it will terminate BCI2000, and not allow the user to modify parameter settings. To test for conditions in the <tt>Preflight()</tt> function, use the <tt>PreflightCondition</tt> macro described above.
+</p><p>Unlike the standard <tt>assert</tt> macro, <tt>bciassert</tt> will always be active, not only in debug builds.
+</p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Programming_Reference%253AError_Handling.html" title="Programming Reference:Error Handling">Programming Reference:Error Handling</a> for a more detailed discussion of error reporting facilities.
 </p>

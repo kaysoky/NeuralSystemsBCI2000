@@ -83,12 +83,26 @@ it were a hardware filter built into the amplifier.
 </p>
 <a name="Remarks"></a><h2>Remarks</h2>
 <p>Generally, the <i>SourceFilter</i> will be available in source modules connecting to amplifiers that require it. Adding the <i>SourceFilter</i> to modules that do not yet contain it requires <a href="Programming_Howto%253ABuilding_BCI2000.html" title="Programming Howto:Building BCI2000">recompilation</a>.
-</p><p>To add the <i>SourceFilter</i> to a new or existing source module, add the following files to the project, and recompile:
+</p><p>To add the <i>SourceFilter</i> to a new or existing source module, edit its CMakeLists.txt file by adding a line
+</p>
+<pre>BCI2000_INCLUDE( "SOURCEFILTER" )
+</pre>
+<p>above the line containing BCI2000_ADD_SIGNAL_SOURCE_MODULE.
+Re-run CMake, and recompile.
+</p><p>If you are not using CMake, add the following files to the project:
 </p>
 <pre>BCI2000/src/shared/modules/signalsource/SourceFilter.cpp
 BCI2000/src/shared/modules/signalprocessing/IIRFilterBase.cpp
 BCI2000/src/extlib/math/FilterDesign.cpp
 </pre>
+<p>Also, make sure that the following include paths are set in your project:
+</p>
+<pre>BCI2000/src/shared/modules/signalsource
+BCI2000/src/shared/modules/signalprocessing
+BCI2000/src/extlib/math/
+</pre>
+<p>After recompiling and linking, your source module will use the SourceFilter to preprocess recorded data.
+</p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AFilters.html" title="User Reference:Filters">User Reference:Filters</a>, <a href="Programming_Howto%253ABuilding_BCI2000.html" title="Programming Howto:Building BCI2000">Programming Howto:Building BCI2000</a>
 </p>

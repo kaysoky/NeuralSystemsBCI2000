@@ -143,7 +143,8 @@ insofar as that malfunction is due to a lack of resources in the underlying syst
 </p>
 <a name="Strategies_3"></a><h4>Strategies</h4>
 <p>Programming errors are not supposed to occur at all in a tested version of an application. Therefore, instead of trying to 'handle' them, it is important to make them show up as close to their point of origin in the code as possible, by frequently and explicitly checking whether
-implicit assumptions actually hold, and aborting execution with an error message if this is not the case. 
+implicit assumptions actually hold, and aborting execution with an error message if this is not the case.
+</p><p>Typically, such checks use an "assertion" facility provided by the programming language. BCI2000 provides its own <tt>bciassert</tt> macro in <tt>BCIAssert.h</tt> to make sure that failed assertions result in messages that are displayed by the BCI2000 operator module. Unlike the standard assert macro, BCI2000 assertions do not evaluate to empty in release builds.
 </p><p>Aside from that, writing code as explicit, general, and simple as possible greatly reduces the possibility of making logic errors in the first place.
 </p>
 <a name="User_Interface_Details_3"></a><h4>User Interface Details</h4>
@@ -172,30 +173,31 @@ A code example then looks like this:
 </pre>
 <p>Furthermore, for handling runtime errors from which it is difficult to recover, code may throw an exception that will abort execution and eventually lead to an error message being sent to the operator module (for framework related details see the section entitled "Implementation on the Framework Side"):
 </p>
-<pre>...
+<pre>#include "BCIException.h"
+...
 if( ernie.find( bert )&nbsp;!= ernie.end() )
-   throw "Ernie just ate Bert. I don't know how to tell the story.";
-tellMyStory( bert.begin(), ernie.end() );
+   throw bciexception( "Ernie just ate Bert. I don't know how to tell the story." );
+tellMyStory( ernie, bert );
 ...
 </pre>
 <a name="Checking_Parameters"></a><h4>Checking Parameters</h4>
 <p>Checking parameters is done in a separate member function of the filter base class which, similar to the member function that does the actual processing, takes input and output signal representatives as parameters, thus allowing for signal property checking.
 </p><p>For the actual implementation, its declaration is as follows:
 </p>
-<pre>void GenericFilter::Preflight ( const SignalProperties&amp; inSignalProperties, 
-                                SignalProperties&amp; outSignalProperties ) const;
+<pre>void GenericFilter::Preflight ( const SignalProperties&amp; Input, 
+                                      SignalProperties&amp; Output ) const;
 </pre>
 <p>For a filter class derived from <tt>GenericFilter</tt>, this function is supposed to perform
 parameter checking as described in the "Strategies" section. Instead of returning an error value, it writes possible error messages into <tt>bcierr</tt>. Furthermore, it communicates dimensions of its output signal which it guarantees not to exceed, and it does so by adjusting the properties of the second SignalProperties object in its argument list, e.g.
 </p>
-<pre>outSignalProperties = SignalProperties( inSignalProperties.Channels(), 1 );
+<pre>Output = SignalProperties( Input.Channels(), 1 );
 </pre>
 <p>or
 </p>
-<pre>outSignalProperties = SignalProperties( 0, 0 );
+<pre>Output = SignalProperties( 0, 0 );
 </pre>
 <p>if it declares not to use its output signal.
-</p><p>The <tt>const</tt> declaration for its <tt>this</tt> pointer prohibits initialization functionality from <tt>GenericFilter::Initialize()</tt> entering into <tt>Preflight()</tt>; this is unwanted because it would corrupt the idea of performing a <i>complete</i>  parameter check before actually <i>altering</i> the state of a filter object.
+</p><p>The <tt>const</tt> declaration for its <tt>this</tt> pointer prohibits initialization functionality from <tt>GenericFilter::Initialize()</tt> entering into <tt>Preflight()</tt>. Such behavior is unwanted because it would corrupt the idea of performing a <i>complete</i>  parameter check before actually <i>altering</i> the state of a filter object.
 </p><p>A necessary condition for a correct implementation of the <tt>Preflight()</tt> function is that any parameter, as well as any state that will be accessed during the processing phase, be accessed
 from <tt>Preflight()</tt> at least once. For parameters and states defined by the filter itself (i.e. inside its constructor), range and accessibility checks are automatically performed by the framework; parameters and states defined by other filters must be explicitly accessed from <tt>Preflight()</tt>. If a <tt>GenericFilter</tt> descendant fails to access an externally defined parameter or state during <tt>Preflight()</tt>, the first access during the processing phase will result in a runtime error.
 </p>
@@ -255,7 +257,7 @@ State( "OfAffairs" ) = nextStateOfAffairs;
 </p><p>Example: 
 </p><p><tt>PreflightCondition( Parameter( "TransmitCh" ) &lt;= Parameter( "SourceCh" ) );</tt> 
 </p><p>If TransmitCh is greater than SourceCh, a message will be sent to <tt>bcierr</tt> and  displayed to the user, stating: 
-</p><p><tt>Condition not fulfilled:   
+</p><p><tt>A necessary condition is violated. Please make sure that the following is true:   
 Parameter( "TransmitCh" ) &lt;= Parameter( "SourceCh" )</tt>
 </p>
 <a name="Implementation_on_the_Framework_Side"></a><h3>Implementation on the Framework Side</h3>
