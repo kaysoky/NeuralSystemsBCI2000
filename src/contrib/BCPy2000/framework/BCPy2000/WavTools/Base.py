@@ -633,7 +633,8 @@ class wav:
 		if range.start != None:
 			start = int(msec2samples(float(range.start) * 1000.0, self))
 			if range.stop != None:
-				duration = float(range.stop) - float(range.start)
+				stop = min(range.stop, self.duration())
+				duration = float(stop) - float(range.start)
 				stop  = int(msec2samples(duration * 1000.0, self)) + start
 		elif range.stop != None:
 			stop = int(msec2samples(float(range.stop) * 1000.0, self))

@@ -381,6 +381,7 @@ FILTER_NAME::StartRun()
     BlockThreads();
     SendParametersToPython();
     CallHook("_StartRun");
+    ReceiveStatesFromPython();
     UnblockThreads();
     if(shared_flag) *shared_flag = 0.0;
   }
