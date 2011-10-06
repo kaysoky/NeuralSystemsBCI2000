@@ -228,6 +228,7 @@ class player(Background.ongoing):
 		self.timestamps = {'play':None, 'core':None, 'before':[], 'after':[]}
 		
 	def open(self, w=None, dev=None):
+		if w == '': w = None
 		if isinstance(w,str): w = Base.wav(w)
 		if w == None: w = self.wav
 		self.wav = w
@@ -284,7 +285,6 @@ class player(Background.ongoing):
 		playing it at the sampling frequency and bit depth dictated by w.
 		"""###
 		if self.playing: return
-		self.__playing = True
 		self.timestamps['play'] = prectime()
 		self.open(w)
 		w = self.wav
@@ -295,6 +295,7 @@ class player(Background.ongoing):
 		self.kwargs = {'w':w, 'data':data, 'repeats':repeats}
 		if vol != None: self.vol = vol
 		if pan != None: self.pan = pan
+		self.__playing = True
 		self.go(bg=bg)
 
 	def onfinish(self):

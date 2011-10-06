@@ -34,7 +34,9 @@ class BciApplication(BciGenericApplication):
 			"PythonApp:Task    int       TestEyeTracker=                           0                      0     0 1 // display gaze feedback stimulus? (boolean)",
 			"PythonApp:Task    int       FreeChoice=                               0                      0     0 1 // allow user to choose freely? (boolean)",
 			"PythonApp:Task    int       ShowCountFeedback=                        1                      0     0 1 // show correct counts after each trial? (boolean)",
+			"PythonApp:Task    int       InvertCount=                              0                      0     0 1 // check if the subject should count standards rather than oddballs (boolean)",
 			"PythonApp:Task    intlist   BeatsPerTrial=                         1  7                      7     1 % // ",
+			"PythonApp:Task    matrix    Cues=                                  { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20LEFT RIGHT%20>>> % % NO YES no.wav yes.wav                  %     % % // ",
 		]
 		nbits = numpy.ceil(numpy.log2(self.maxstreams + 1.0))
 		states = [
@@ -66,7 +68,28 @@ class BciApplication(BciGenericApplication):
 		if len(self.nbeats) != self.nstreams: raise EndUserError("BeatsPerTrial parameter must have %d elements because NumberOfStreams=%d" % (self.nstreams,self.nstreams))
 		for istream,n in enumerate(self.nbeats):
 			if n < 1 or n != round(n): raise EndUserError("BeatsPerTrial elements must be integers > 0")
-
+		
+		cues = self.params['Cues']
+		if len(cues) != 4:
+			raise EndUserError("Cues parameter must have 4 rows")
+		if len(cues[0]) != self.nstreams:
+			raise EndUserError("Cues parameter must have %d columns (one per stream)" % self.nstreams)
+		
+		self.FocusOnText = {0:'READY...'}
+		self.FocusOnAudio = {0:WavTools.player(None)}
+		self.AnswerText = {}
+		self.AnswerAudio = {}
+		for istream in range(self.nstreams):
+			for irow in range(len(cues)):
+				label = cues.matrixlabels()[0][irow]
+				val = cues.val[irow,istream]
+				if   label == 'FocusOnText':  self.FocusOnText[istream+1]  = val
+				elif label == 'FocusOnAudio': self.FocusOnAudio[istream+1] = self.PrepareFeedback(val)
+				elif label == 'AnswerText':   self.AnswerText[istream+1]   = val
+				elif label == 'AnswerAudio':  self.AnswerAudio[istream+1]  = self.PrepareFeedback(val, delay=1.0)
+				else: raise EndUserError("unrecognized row label '%s' in Cues matrix" % label)
+		
+			
 		monitor = int(self.params['ScreenID'])
 		windowsize = float(self.params['WindowSize'])
 		if AppTools.Displays.number_of_monitors() > 1 and monitor == -1: windowsize = 1.0
@@ -98,10 +121,6 @@ class BciApplication(BciGenericApplication):
 		
 		self.ding = self.PrepareFeedback('ding.wav')
 		self.chimes = self.PrepareFeedback('chimes.wav')
-		self.answers = {
-			'YES': self.PrepareFeedback(1 % WavTools.wav('yes.wav')/2.0),
-			'NO':  self.PrepareFeedback(1 % WavTools.wav('no.wav')/2.0),
-		}
 		
 		self.reset_count()
 		self.count_feedback_stimuli = []
@@ -120,6 +139,7 @@ class BciApplication(BciGenericApplication):
 						
 		self.freechoice = int(self.params['FreeChoice'])
 		self.showcounts = int(self.params['ShowCountFeedback'])
+		self.invertcount = int(self.params['InvertCount'])
 		self.last_prediction = 0
 		vol = float(self.params['SystemMasterVolume'])
 		self.init_volume(vol)
@@ -129,7 +149,8 @@ class BciApplication(BciGenericApplication):
 		
 	#############################################################
 	
-	def PrepareFeedback(self, w):
+	def PrepareFeedback(self, w, delay=0):
+		if w == '' or w == None: return WavTools.player(None)
 		if isinstance(w, basestring): w = WavTools.wav(w)
 		scparam = self.params.get('SoundChannels', None)
 		if scparam != None and len(scparam)>= 2 and len(scparam[0]) >= 3:
@@ -142,7 +163,7 @@ class BciApplication(BciGenericApplication):
 			if len(scparam) == 0: w *=0
 			else: w = ww
 				
-		return WavTools.player(w)
+		return WavTools.player(delay % w)
 		
 	#############################################################
 	
@@ -197,17 +218,19 @@ class BciApplication(BciGenericApplication):
 			else:
 				self.states['TargetStream'] = self.nexttarget()
 			self.target = self.states['TargetStream']
-			self.stimuli['cue'].text = {0:'READY...', 1:'<<< LEFT', 2:'RIGHT >>>'}.get(self.target, 'stream #%d'%self.target)
+			self.stimuli['cue'].text = self.FocusOnText[self.target]
 			self.stimuli['cue'].on = True
+			self.FocusOnAudio[self.target].play()
 		elif phase == 'respond':
 			if self.target > 0:
-				self.states['CorrectResponse'] = self.count['targets'][self.target-1]
+				correct = self.count['targets'][self.target-1]
+				if self.invertcount: correct = self.nbeats[self.target-1] - correct
+				self.states['CorrectResponse'] = correct
 			else:
 				self.states['CorrectResponse'] = 0
 			if self.freechoice and self.last_prediction:
-				answer = {1:'NO', 2:'YES'}.get(self.last_prediction, '?')
-				self.stimuli['cue'].text = answer
-				if answer in self.answers: self.answers[answer].play()
+				self.stimuli['cue'].text = self.AnswerText.get(self.last_prediction, '??? %s ???' % str(self.last_prediction))
+				if self.last_prediction in self.AnswerAudio: self.AnswerAudio[self.last_prediction].play()
 			else:
 				self.stimuli['cue'].text = '?'
 				self.screen.RaiseWindow()
@@ -230,6 +253,7 @@ class BciApplication(BciGenericApplication):
 			for istream in range(self.nstreams):
 				#nt = self.current_stream.ntargets[istream]
 				nt = self.count['targets'][istream]
+				if self.invertcount: nt = self.nbeats[istream] - nt
 				stim = self.count_feedback_stimuli[istream]
 				stim.text = str(nt)
 				stim.on = True

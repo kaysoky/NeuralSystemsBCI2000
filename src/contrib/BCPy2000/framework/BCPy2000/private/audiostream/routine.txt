@@ -9,10 +9,12 @@ Before the subject arrives:
 	
 	- test communication with the eyetracker, and restart the laptop if necessary
 	
-	- click on the blue musical note and verify that the soundcard is set to 4 channels
-		click on "front left":  ONLY the left earphone should sound
-		click on "front right":  ONLY the right earphone should sound
-		click on "back left/right": nothing through earphones (but something in BCI2000)
+	- click on the blue musical note and verify that the soundcard is set to 8 channels
+		click on "L":  ONLY the left earphone should sound
+		click on "R":  ONLY the right earphone should sound
+		click on "Ls" and "Rs": nothing through earphones (but blue and green traces, respectively, in BCI2000)
+		click on "Lb" and "Rb": nothing through earphones, maybe a little crosstalk in BCI2000, sound from the screen
+		click on "center" and "subwoofer":  tactile stimulator only, if plugged in (otherwise nothing)
 		
 	- edit subject_attention.prm, adjust SubjectName to code the date and subject
 	   number as 2011MMDD_85NN_A_   without spaces. Save. It's fine to do this in
