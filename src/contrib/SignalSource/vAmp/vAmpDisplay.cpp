@@ -173,7 +173,7 @@ vAmpDisplay::DisplayImpedances( int inID, const vector<float>& inImpedances )
     r.top += frame;
     r.right -= frame;
     r.bottom -= frame;
-	pBitmap->Canvas->Brush->Color = c.R() | c.G() << 8 | c.B() << 16;
+	pBitmap->Canvas->Brush->Color = TColor( c.R() | c.G() << 8 | c.B() << 16 );
     pBitmap->Canvas->FillRect( r );
     pBitmap->Canvas->TextRect(
       r,

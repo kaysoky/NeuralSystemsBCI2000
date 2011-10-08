@@ -173,7 +173,7 @@ int TARGETSEQUENCE::LoadPotentialTargets()
 
 
  // parse the target definition matrix
- for (size_t i = 0; i < Parameter("TargetDefinitionMatrix")->NumRows(); i++)
+ for (int i = 0; i < Parameter("TargetDefinitionMatrix")->NumRows(); i++)
  {
   targetID =
         AnsiString(Parameter("TargetDefinitionMatrix")(i,0).c_str()).ToInt();
@@ -282,7 +282,7 @@ int     i, cur_targetID;
 
 
 // get these targets, in case there is word prediction
-TARGETLIST *TARGETSEQUENCE::GetActiveTargetsPrediction(int cur_parentID, BYTE backuppos, const char *cur_prefix)
+TARGETLIST *TARGETSEQUENCE::GetActiveTargetsPrediction(int cur_parentID, BYTE /*backuppos*/, const char *cur_prefix)
 {
 TARGETLIST *new_list;
 int     targetID, i, nummatching;

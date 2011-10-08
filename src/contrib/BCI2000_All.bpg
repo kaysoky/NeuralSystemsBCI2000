@@ -9,7 +9,7 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = SWApp.exe SWSpeller.exe Speller.exe FieldTripBuffer.exe \
+PROJECTS = bci_datadiff.exe SWApp.exe SWSpeller.exe Speller.exe FieldTripBuffer.exe \
   FIRProcessing.exe PeakDetectSignalProcessing.exe SigfriedSigProc.exe \
   SWSignalProcessing.exe AmpServerPro.exe BioRadio.exe Biosemi2.exe NISource.exe \
   NeuroscanClient.exe ModularEEG.exe MicroMed.exe DT2000.exe DASSource.exe \
@@ -23,6 +23,10 @@ PROJECTS = SWApp.exe SWSpeller.exe Speller.exe FieldTripBuffer.exe \
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
+
+bci_datadiff.exe: ..\..\build\buildutils\bci_datadiff.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 SWApp.exe: ..\contrib\Application\SlowWaveApp\SWApp.bpr
   $(ROOT)\bin\bpr2mak $**

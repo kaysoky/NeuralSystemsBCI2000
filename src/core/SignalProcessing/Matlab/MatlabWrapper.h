@@ -155,7 +155,7 @@ class MatlabFunction : private MatlabEngine
   MatlabFunction& OutputArgument( const std::string& );
   const std::string& Name() const { return mName; }
   bool Exists() const             { return mExists; }
-  const std::string& Execute() const;
+  std::string Execute() const;
 
  private:
   std::vector<std::string> mInputArguments,

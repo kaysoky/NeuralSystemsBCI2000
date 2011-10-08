@@ -21,6 +21,7 @@
       obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj 
       obj\SpatialFilter.obj obj\ExceptionCatcher.obj obj\CfgID.obj 
       obj\BCIException.obj obj\OSThread.obj obj\OSMutex.obj obj\OSEvent.obj 
+      obj\VisID.obj
       obj\MessageQueue.obj obj\SpatialFilterGroup.obj obj\SpatialFilterCell.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
@@ -109,6 +110,7 @@
       <FILE FILENAME="..\..\..\..\shared\modules\signalprocessing\SpatialFilter.cpp" FORMNAME="" UNITNAME="SpatialFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\types\VisID.cpp" FORMNAME="" UNITNAME="VisID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

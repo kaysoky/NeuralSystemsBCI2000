@@ -1,15 +1,15 @@
 //   $Id$
-//  
+//
 //   This file is part of the BCPy2000 foundation, a set of modules for
 //   the BCI2000 <http://bci2000.org/> that allow communication with a
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
-// 
-//   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner, 
+//
+//   Copyright (C) 2007-11  Jeremy Hill, Thomas Schreiner,
 //                         Christian Puzicha, Jason Farquhar
-//   
+//
 //   bcpy2000@bci2000.org
-//   
+//
 //   The BCPy2000 foundation is free software: you can redistribute it
 //   and/or modify it under the terms of the GNU Lesser General Public
 //   License as published by the Free Software Foundation, either
@@ -101,11 +101,11 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		virtual void StopRun();
 		virtual void Resting();
 		virtual void Halt();
-	
+
 #if MODTYPE == 1
-		virtual bool IsRealTimeSource() { return false; } // permits --EvaluateTiming=0, to launch without realtime checking
+		virtual bool IsRealTimeSource() const { return false; } // permits --EvaluateTiming=0, to launch without realtime checking
 #endif // MODTYPE
-	
+
 	private:
 		PrecisionTime* cur_time;
 		PyObject*      bci2000_instance;
@@ -113,12 +113,12 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 
 		mutable bool           stay_open;
 		mutable PyThreadState* _save;
-		
+
 		PyArrayObject* shared_insignal;
 		PyArrayObject* shared_outsignal;
 		double*        shared_statevals;
 		double*        shared_flag;
-		
+
 	protected:
 		void        SharingSetup(const SignalProperties &inProp, const SignalProperties &outProp);
         int         Share(const GenericSignal &inSignal, GenericSignal &outSignal);
@@ -128,16 +128,16 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		void        SendStatesToPython() const;
 		void        ReceiveStatesFromPython() const;
 		void        SendStatePrecisionsToPython() const;
-	
+
 		PyArrayObject* ConvertSignalToPyArrayObject(const GenericSignal& inSignal, PyArrayObject* array=NULL) const;
 		void           ConvertPyArrayObjectToSignal(PyArrayObject* pyOutSignal, GenericSignal& outSignal) const;
-	
+
 		PyObject*   ConvertPropertiesToPyObject(const SignalProperties& inSignalProperties) const;
 		void        ConvertPyObjectToProperties(PyObject* pyOutSignalProperties, SignalProperties& outSignalProperties) const;
-	
+
 		PyObject*   ConvertLabelIndexToPyList(LabelIndex from) const;
 		void        ConvertPyListToLabelIndex(PyObject*, LabelIndex& to) const;
-		            
+
 		PyObject*   ConvertPhysicalUnitToPyDict(PhysicalUnit from) const;
 		void        ConvertPyDictToPhysicalUnit(PyObject* from, PhysicalUnit& to) const;
 
@@ -146,7 +146,7 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		void        HandleException(Exception& e, std::string qualifier) const;
 		void        ChangeDir(std::string& d);
 		void        OpenConsole(const char *title);
-                    
+
 		void        BlockThreads() const;
 		void        UnblockThreads() const;
 
@@ -156,7 +156,7 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		PyObject*   CallMethod(const char* name, PyObject* arg1=NULL, PyObject* arg2=NULL, PyObject* arg3=NULL) const;
 		PyObject*   CallHook(const char* name, PyObject* arg1=NULL, PyObject* arg2=NULL) const;
 		void        HandlePythonError(std::string msg, bool errorCodeReturned=false) const;
-		
+
 };
 
 #endif // PythonFilterH

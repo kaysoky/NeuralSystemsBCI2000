@@ -72,6 +72,10 @@ EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
 int EnvironmentBase::sNumInstances = 0;
 const EnvironmentBase* EnvironmentBase::sObjectContext = NULL;
 
+#ifdef __BORLANDC__
+# pragma warn -8104 // No warning about local statics.
+#endif // __BORLANDC__
+
 EnvironmentBase::ExtensionsContainer&
 EnvironmentBase::Extensions()
 {
@@ -621,3 +625,4 @@ CALL( PostProcess )
 CALL( StopRun );
 CALL( PostStopRun )
 CALL( Resting );
+

@@ -48,7 +48,7 @@ TBackgroundView::~TBackgroundView()
 }
 
 TPresError
-TBackgroundView::Initialize(            ParamList   *inParamList,
+TBackgroundView::Initialize(            ParamList   */*inParamList*/,
                                 const   TGUIRect    &inRect )
 {
     viewRect = inRect;

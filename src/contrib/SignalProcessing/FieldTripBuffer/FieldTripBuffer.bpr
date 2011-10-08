@@ -21,6 +21,7 @@
       obj\dmarequest.obj obj\tcprequest.obj obj\tcpsocket.obj 
       obj\printstruct.obj obj\cleanup.obj obj\endianutil.obj obj\extern.obj 
       obj\OSMutex.obj obj\OSEvent.obj obj\MessageQueue.obj obj\OSError.obj 
+      obj\VisID.obj
       obj\OSThread.obj obj\ExceptionCatcher.obj obj\CfgID.obj obj\BCIException.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
@@ -121,6 +122,7 @@
       <FILE FILENAME="..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\VisID.cpp" FORMNAME="" UNITNAME="VisID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>

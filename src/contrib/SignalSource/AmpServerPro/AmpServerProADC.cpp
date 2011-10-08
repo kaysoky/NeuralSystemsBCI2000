@@ -247,9 +247,6 @@ bool AmpServerProADC::Connect(char *sServerIP, unsigned int nCmdPort,
 // **************************************************************************
 bool AmpServerProADC::BeginListening()
 {
-
-  bool bResp; // Todo: Actually check this!
-
   // Make sure amp is powered on.
   char *sCmd = BuildCmdString(ASP_CMD_SETPOWER, 0, 1, 0);
   if(!SendCommand(sCmd))
@@ -272,7 +269,7 @@ bool AmpServerProADC::BeginListening()
 
   // Always set the amp to the default acquisition state first.
   sCmd = BuildCmdString(ASP_CMD_DEFAULTACQUISITIONSTATE, 0, 0, 0);
-  bResp = SendCommand(sCmd);
+  SendCommand(sCmd);
   delete[] sCmd;
 
   // Now send the desired start state (if not the already set default acquisition state).
@@ -281,7 +278,7 @@ bool AmpServerProADC::BeginListening()
 		case 1:
 			{
             	sCmd = BuildCmdString(ASP_CMD_DEFAULTSIGNALGENERATION, 0, 0, 0);
-				bResp = SendCommand(sCmd);
+				SendCommand(sCmd);
 				delete[] sCmd;
 			}
 			break;
@@ -411,12 +408,12 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
 #else
   // Get connection info.
   strcpy(sServerIP, Parameter("ServerIP").c_str());
-  nScanRes = sscanf(Parameter("CommandPort").c_str(), "%d", &nCmdPort);
-  nScanRes = sscanf(Parameter("NotificationPort").c_str(), "%d", &nNotifPort);
-  nScanRes = sscanf(Parameter("StreamPort").c_str(), "%d", &nDataPort);
+  sscanf(Parameter("CommandPort").c_str(), "%d", &nCmdPort);
+  sscanf(Parameter("NotificationPort").c_str(), "%d", &nNotifPort);
+  sscanf(Parameter("StreamPort").c_str(), "%d", &nDataPort);
 
   // Amp state.
-  nScanRes = sscanf(Parameter("AmpState").c_str(), "%d", &m_nAmpState);
+  sscanf(Parameter("AmpState").c_str(), "%d", &m_nAmpState);
 
   // Samples are always 4-byte floats.
   outSignalProperties = SignalProperties(
@@ -811,11 +808,8 @@ char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg)
 // **************************************************************************
 char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg, unsigned int nAmpId) const
 {
-  char *sCmdFull = NULL;
-  int nCmdLen = 0;
-
   // Estimate amount of memory to allocate.
-  nCmdLen = strlen(ASP_CMD_SYNTAX);
+  int nCmdLen = strlen(ASP_CMD_SYNTAX);
   nCmdLen += strlen(sCmd);
   if (nAmpId <= 0)
     nCmdLen += 1;
@@ -833,7 +827,7 @@ char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg, unsigne
     nCmdLen += static_cast<int>(ceil(log10((double)nArg) + 1));
 
   // Create cmd string.
-  sCmdFull = new char[nCmdLen];
+  char* sCmdFull = new char[nCmdLen];
   sprintf(sCmdFull, ASP_CMD_SYNTAX, sCmd, nAmpId, nChanId, nArg);
 
   return sCmdFull;
@@ -921,15 +915,8 @@ void AmpServerProADC::Process(float sampBlock[40][280])
 void AmpServerProADC::Process( const GenericSignal&, GenericSignal& signal )
 #endif
 {
-  /*
-  time_t nStartTime;
-  nStartTime = clock();
-  bcidbg << "Seconds between calls to Process: " << (double(nStartTime)-double(m_nLastEnd))/CLOCKS_PER_SEC << endl;
-  */
-
   unsigned int nBytesRead = 0;
   unsigned int nOffset = 0;
-  unsigned int nSampsRead = 0;
   unsigned int nTotalSampsRead = 0;
 
   bcidbg << "Process" << endl;
@@ -963,13 +950,13 @@ void AmpServerProADC::Process( const GenericSignal&, GenericSignal& signal )
       return;
     }
 
-    nSampsRead = nBytesRead / ASP_SAMP_SIZE;
+    unsigned int nSampsRead = nBytesRead / ASP_SAMP_SIZE;
 
     bcidbg << nSampsRead << " samples read" << endl;
 
 	// Load the samples into the return parameter.
     nOffset = 0;
-	unsigned int loopCount = 0;
+    unsigned int loopCount = 0;
     for(unsigned int nSamp=nTotalSampsRead; nSamp< nTotalSampsRead + nSampsRead; nSamp++)
     {
 	  // Reorder only the first m_nNumChans floats and ignore the preceding 32-byte header.

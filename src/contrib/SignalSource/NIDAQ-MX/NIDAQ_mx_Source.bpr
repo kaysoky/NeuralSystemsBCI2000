@@ -24,6 +24,7 @@
       obj\GDFOutputFormat.obj obj\EDFOutputBase.obj obj\EDFOutputFormat.obj 
       obj\BCI2000OutputFormat.obj obj\OSMutex.obj obj\OSEvent.obj 
       obj\MessageQueue.obj obj\OSThread.obj obj\OSError.obj 
+      obj\VisID.obj
       obj\ExceptionCatcher.obj obj\CfgID.obj obj\BCIException.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
@@ -132,6 +133,7 @@
       <FILE FILENAME="..\..\..\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\VisID.cpp" FORMNAME="" UNITNAME="VisID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>

@@ -36,7 +36,7 @@
 #include "ClassName.h"
 
 #ifndef CATCH_STRUCTURED_EXCEPTIONS
-# define CATCH_STRUCTURED_EXCEPTIONS (_MSC_VER && !_DEBUG)
+# define CATCH_STRUCTURED_EXCEPTIONS (_MSC_VER && !defined(_DEBUG))
 #endif // CATCH_STRUCTURED_EXCEPTIONS
 
 using namespace std;

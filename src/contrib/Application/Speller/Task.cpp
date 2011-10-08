@@ -162,7 +162,7 @@ bool TTask::CheckTree(int root) const
   if(debug) fprintf(a, "toRet is default to %d.\n", toRet);
   toRet = true;
 
-  size_t rowNum = 0;
+  int rowNum = 0;
   int displayPos = 0;
 
 
@@ -321,7 +321,7 @@ int     ret;
  Wxl= Parameter("WinWidth");
  Wyl= Parameter("WinHeight");
 
- BackgroundColor=RGBColor(Parameter("BackgroundColor")).ToWinColor();
+ BackgroundColor=TColor(RGBColor(Parameter("BackgroundColor")).ToWinColor());
  userdisplay->CursorSize= Parameter("CursorSize");
  userdisplay->StatusBarSize=Parameter("StatusBarSize");
  userdisplay->TargetWidth=Parameter("TargetWidth");

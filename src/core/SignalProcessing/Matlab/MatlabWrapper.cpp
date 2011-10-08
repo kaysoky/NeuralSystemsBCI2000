@@ -523,7 +523,7 @@ MatlabFunction::OutputArgument( const string& inArg )
   return *this;
 }
 
-const string&
+string
 MatlabFunction::Execute() const
 {
   // Execute the following commands and return the content of errorvar:
@@ -535,8 +535,7 @@ MatlabFunction::Execute() const
   //   errorvar=lasterr;
   // end;
 
-  static string result;
-  result = "";
+  string result;
   if( !mExists )
     result = "Function " + mName + " does not exist in the Matlab search path.";
   else

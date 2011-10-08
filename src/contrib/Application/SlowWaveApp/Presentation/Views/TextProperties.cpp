@@ -191,6 +191,7 @@ TTextProperties::ParseTextProperties( const char* inProperties )
     return presNoError;
 }
 
+#pragma warn -8104
 const TInputSequence&
 TTextProperties::DisplayToInput( const TDisplaySequence& inDisplaySequence ) const
 {

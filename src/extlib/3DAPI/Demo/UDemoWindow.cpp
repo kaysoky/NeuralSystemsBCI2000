@@ -44,6 +44,7 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#pragma warn -8004
 
 using namespace std;
 
@@ -82,9 +83,7 @@ __fastcall TDemoWindow::TDemoWindow(TComponent* Owner)
   SetupScene();
   ResetPositions();
   GUI::Rect rect = { 0, 0, 1, 1 };
-  mpScene->SetBitDepth( 16 )
-          .SetDoubleBuffering( true )
-          .SetDisplayRect( rect );
+  mpScene->SetDisplayRect( rect );
   // Start the frame update timer
   FrameUpdate->Enabled = true;
 }
@@ -307,7 +306,9 @@ void
 TDemoWindow::OnCollide( sceneObj& p1, sceneObj& p2 )
 {
   CVector3 n;
+#pragma warn -8004
   bool doReflect = false; // Only reflect if movement is towards the other object.
+#pragma warn .8004
 
   // For the boundary, reflect wrt the face that has been hit.
   sceneObj* obj = NULL;

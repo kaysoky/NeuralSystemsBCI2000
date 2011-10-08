@@ -95,12 +95,15 @@ Scene::DeleteObjects()
     delete *mObjects.begin();
 }
 
-
+#ifdef __BORLANDC__
+# pragma argsused
+#endif // __BORLANDC__
 void
 Scene::OnPaint( const DrawContext& inDC )
 {
 #ifdef __BORLANDC__
   MakeCurrent();
+  ::glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
   OnPaintGL();
   ::glFlush();
 #else // __BORLANDC__
@@ -176,11 +179,12 @@ Scene::OnChange( DrawContext& inDC )
 #ifdef __BORLANDC__
   if( mContextHandle != inDC.handle )
   {
-    mHardwareAccelerated = false;
-
-    Cleanup();
     if( mGLRC )
+    {
+      DoneCurrent();
       ::wglDeleteContext( mGLRC );
+    }
+    mContextHandle = inDC.handle;
 
     PIXELFORMATDESCRIPTOR pfd =
     {
@@ -188,7 +192,7 @@ Scene::OnChange( DrawContext& inDC )
       1, // Version number
       PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL,
       PFD_TYPE_RGBA,
-      mBitDepth,
+      16, // Color buffer bit depth
       0, 0, 0, 0, 0, 0, // Color bits ignored
       0, // No alpha buffer
       0, // Shift bit ignored
@@ -201,44 +205,45 @@ Scene::OnChange( DrawContext& inDC )
       0, // Reserved
       0, 0, 0 // Layer masks ignored
     };
-    if( mDoubleBuffering )
-      pfd.dwFlags |= PFD_DOUBLEBUFFER;
+    pfd.dwFlags |= PFD_DOUBLEBUFFER;
 
     int pixelFormat = ::ChoosePixelFormat( ( HDC )inDC.handle, &pfd );
-    ::SetPixelFormat( ( HDC )inDC.handle, pixelFormat, &pfd );
-    if( ::DescribePixelFormat( ( HDC )inDC.handle, pixelFormat, sizeof( PIXELFORMATDESCRIPTOR ), &pfd ) )
-      mHardwareAccelerated = ( ( pfd.dwFlags & PFD_GENERIC_FORMAT ) == 0 );
+    bool result = ::SetPixelFormat( ( HDC )inDC.handle, pixelFormat, &pfd );
 
     mGLRC = ::wglCreateContext( ( HDC )inDC.handle );
     MakeCurrent();
-    Initialize();
+    OnInitializeGL();
 
-    if( mDisableVsync )
+    // Disable VSync if possible.
+    bool vsyncDisabled = false;
+    static const char* extensions = NULL; // glGetString may return NULL when called more than once.
+    if( extensions == NULL )
+      extensions = ::glGetString( GL_EXTENSIONS );
+    if( extensions != NULL && string( extensions ).find( "WGL_EXT_swap_control" ) != string::npos )
     {
-      mDisableVsync = false;
-      // glGetString will return non-NULL only the first time it is called.
-      static const char* extensions = NULL;
-      if( extensions == NULL )
-        extensions = ::glGetString( GL_EXTENSIONS );
-      if( extensions != NULL && string( extensions ).find( "WGL_EXT_swap_control" ) != string::npos )
-      {  // Switch off VSYNC if possible.
-         typedef void (APIENTRY *wglSwapProc)( int );
-         wglSwapProc wglSwapIntervalEXT
-           = reinterpret_cast<wglSwapProc>( ::wglGetProcAddress( "wglSwapIntervalEXT" ) );
-         if( wglSwapIntervalEXT != NULL )
-         {
-           wglSwapIntervalEXT( 0 );
-           typedef int (*wglGetSwapProc)();
-           wglGetSwapProc wglGetSwapIntervalEXT
-             = reinterpret_cast<wglGetSwapProc>( ::wglGetProcAddress( "wglGetSwapIntervalEXT" ) );
-             if( wglGetSwapIntervalEXT != NULL )
-               mDisableVsync = ( wglGetSwapIntervalEXT() == 0 );
-         }
+      typedef void (APIENTRY *wglSwapProc)( int );
+      wglSwapProc wglSwapIntervalEXT
+        = reinterpret_cast<wglSwapProc>( ::wglGetProcAddress( "wglSwapIntervalEXT" ) );
+      if( wglSwapIntervalEXT != NULL )
+      {
+        wglSwapIntervalEXT( 0 );
+        typedef int (*wglGetSwapProc)();
+        wglGetSwapProc wglGetSwapIntervalEXT
+          = reinterpret_cast<wglGetSwapProc>( ::wglGetProcAddress( "wglGetSwapIntervalEXT" ) );
+        if( wglGetSwapIntervalEXT != NULL )
+          vsyncDisabled = ( wglGetSwapIntervalEXT() == 0 );
       }
+    }
+    if( !vsyncDisabled )
+    {
+      bciout << "Could not disable Vertical Blank Synchronization "
+             << "of 3D scene updates. This may affect system timing. "
+             << "Check the timing window to make sure processing delay"
+             << " does not exceed the duration of a sample block."
+             << endl;
     }
     DoneCurrent();
   }
-  mContextHandle = inDC.handle;
 #else // __BORLANDC__
   if( GLContext() && mContextHandle != GLContext() )
   {

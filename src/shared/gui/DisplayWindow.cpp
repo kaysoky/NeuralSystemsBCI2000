@@ -173,6 +173,10 @@ DisplayWindow::Height() const
 DisplayWindow&
 DisplayWindow::Show()
 {
+#ifdef __BORLANDC__
+  if( mpForm && mpForm->Visible )
+    return *this;
+#endif // __BORLANDC__
   if( mpForm == NULL )
     Restore();
 #ifdef __BORLANDC__

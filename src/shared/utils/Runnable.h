@@ -246,7 +246,7 @@ template<typename R, class C, typename T1, typename T2, typename T3> class Membe
   T3 t3;
 };
 
-#if _DEBUG // Test whether all templates can be instantiated
+#ifndef NDEBUG // Test whether all templates can be instantiated
 // FunctionCall< void() > is already fully specialized.
 template class FunctionCall< void(int) >;
 template class FunctionCall< void(char, long*) >;
@@ -266,7 +266,7 @@ template class MemberCall< int(Runnable*) >;
 template class MemberCall< int(Runnable*, int) >;
 template class MemberCall< int(Runnable*, char, long*) >;
 template class MemberCall< int(Runnable*, int&, char, const long&) >;
-#endif // _DEBUG
+#endif // NDEBUG
 
 #endif // RUNNABLE_H
 

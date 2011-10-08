@@ -103,6 +103,7 @@ RGBColor::FromHSV( float H, float S, float V )
   if( h < 0.0 )
     h += 6.0;
   int i = static_cast<int>( ::floor( h ) );
+  bciassert( i >= 0 && i < 6 );
   float f = h - i;
   if( !( i % 2 ) )
     f = 1.0f - f;
@@ -137,7 +138,7 @@ RGBColor::FromHSV( float H, float S, float V )
       result = RGBColor( n, m, v );
       break;
     default:
-      bciassert( false );
+      ;
   }
   return result;
 }

@@ -61,6 +61,8 @@
 
 using namespace std;
 
+#pragma warn -8104
+
 list<class _TParamDef*>&
 _TParamDef::params()
 {

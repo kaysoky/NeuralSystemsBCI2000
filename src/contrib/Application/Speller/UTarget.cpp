@@ -498,7 +498,7 @@ TARGET::TARGET(int my_targetID)
 }
 
 
-void __fastcall TARGET::clickTarget( TObject* input)
+void __fastcall TARGET::clickTarget( TObject* /*input*/)
 {
         clickedOn = true;
 }
@@ -733,7 +733,7 @@ float   scalex, scaley;
               old_color = icon->Picture->Bitmap->Canvas->Pixels[x][y];
 
               if (IconHighlightMethod == "INVERT")
-                mono_icon->Picture->Bitmap->Canvas->Pixels[x][y] = (TColor)0x00ffffff-icon->Picture->Bitmap->Canvas->Pixels[x][y];
+                mono_icon->Picture->Bitmap->Canvas->Pixels[x][y] = TColor((TColor)0x00ffffff-icon->Picture->Bitmap->Canvas->Pixels[x][y]);
               else if (IconHighlightMethod == "DARKEN")
               {
                 long r, g, b;

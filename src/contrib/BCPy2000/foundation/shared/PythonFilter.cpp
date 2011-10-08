@@ -120,7 +120,7 @@ FILTER_NAME::FILTER_NAME()
     int         ipshell       = OptionalParameter(FILTER_ABBREV "Shell",      1);
 
     std::string date_escape = "###";
-    int found = logFile.find(date_escape, 0);
+    size_t found = logFile.find(date_escape, 0);
     if(found != std::string::npos) {
       char * datestr = new char[32];
       time_t tt;
@@ -736,10 +736,10 @@ FILTER_NAME::ConvertSignalToPyArrayObject(const GenericSignal& sig, PyArrayObjec
   // see http://projects.scipy.org/scipy/numpy/wiki/NumPyCAPI
   if(array == NULL) array = (PyArrayObject *)PyObject_CallMethod(bci2000_instance, (char*)"_zeros", (char*)"ii", sig.Channels(), sig.Elements());
 
-  size_t nrows = PyArray_DIM(array, 0);
-  size_t ncols = PyArray_DIM(array, 1);
-  size_t rrstride = PyArray_STRIDE(array, 0);
-  size_t ccstride = PyArray_STRIDE(array, 1);
+  int nrows = PyArray_DIM(array, 0);
+  int ncols = PyArray_DIM(array, 1);
+  int rrstride = PyArray_STRIDE(array, 0);
+  int ccstride = PyArray_STRIDE(array, 1);
   char *data = (char*)PyArray_DATA(array);
   if(nrows != sig.Channels() || ncols != sig.Elements())
   {
@@ -747,8 +747,8 @@ FILTER_NAME::ConvertSignalToPyArrayObject(const GenericSignal& sig, PyArrayObjec
     s << "PyArrayObject (" << nrows << " by " << ncols << ") is the wrong shape for the expected incoming BCI2000 signal (" << sig.Channels() << " by " << sig.Elements() << ")";
     throw Exception(s.str().c_str());
   }
-  for(size_t i = 0; i < nrows; ++i)
-    for(size_t j = 0; j < ncols; ++j)
+  for(int i = 0; i < nrows; ++i)
+    for(int j = 0; j < ncols; ++j)
       *((double*)(data + i*rrstride + j*ccstride)) = sig(i, j);
 
   return array;
@@ -763,10 +763,10 @@ FILTER_NAME::ConvertPyArrayObjectToSignal(PyArrayObject* array, GenericSignal& s
   //    Check that it has float64 precision
   //    Check that it is 2-dimensional
 
-  size_t nrows = PyArray_DIM(array, 0);
-  size_t ncols = PyArray_DIM(array, 1);
-  size_t rrstride = PyArray_STRIDE(array, 0);
-  size_t ccstride = PyArray_STRIDE(array, 1);
+  int nrows = PyArray_DIM(array, 0);
+  int ncols = PyArray_DIM(array, 1);
+  int rrstride = PyArray_STRIDE(array, 0);
+  int ccstride = PyArray_STRIDE(array, 1);
   char* data = (char*)PyArray_DATA(array);
   if(nrows != sig.Channels() || ncols != sig.Elements())
   {
@@ -774,8 +774,8 @@ FILTER_NAME::ConvertPyArrayObjectToSignal(PyArrayObject* array, GenericSignal& s
     s << "PyArrayObject (" << nrows << " by " << ncols << ") is the wrong shape for the expected outgoing BCI2000 signal (" << sig.Channels() << " by " << sig.Elements() << ")";
     throw Exception(s.str().c_str());
   }
-  for(size_t i = 0; i < nrows; ++i)
-    for(size_t j = 0; j < ncols; ++j)
+  for(int i = 0; i < nrows; ++i)
+    for(int j = 0; j < ncols; ++j)
       sig(i,j) = *((double*)(data + i*rrstride + j*ccstride));
 }
 

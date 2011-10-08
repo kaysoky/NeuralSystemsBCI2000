@@ -455,6 +455,7 @@ class EnvironmentExtension : protected Environment
     ~AutoDeleteSet() { while( !empty() ) { delete *begin(); erase( begin() ); } }
   };
   static AutoDeleteSet& AutoDeleteInstance();
+  friend struct AutoDeleteSet;
 };
 
 #endif // ENVIRONMENT_H

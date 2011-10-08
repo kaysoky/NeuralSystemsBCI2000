@@ -51,7 +51,7 @@ class LinearClassifier : public GenericFilter
   virtual void Process( const GenericSignal&, GenericSignal& );
 
  private:
-  const std::string& DescribeEntry( int row, int col ) const;
+  std::string DescribeEntry( int row, int col ) const;
   static int Round( double );
   
   std::vector<size_t>  mInputChannels,

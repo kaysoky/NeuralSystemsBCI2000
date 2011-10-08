@@ -80,7 +80,7 @@ PeakDetector::~PeakDetector()
 // Parameters: Input and output signal properties pointers.
 // Returns:    N/A
 // **************************************************************************
-void PeakDetector::Preflight( const SignalProperties& inSignalProperties,
+void PeakDetector::Preflight( const SignalProperties& /*inSignalProperties*/,
                                     SignalProperties& outSignalProperties ) const
 {
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.

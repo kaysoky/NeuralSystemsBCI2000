@@ -48,7 +48,7 @@
 using namespace std;
 
 TPresTaskModel::TPresTaskModel( ParamList        *inParamList,
-                                TPresBroadcaster *inBroadcaster )
+                                TPresBroadcaster */*inBroadcaster*/ )
 : TPresModel( inParamList ),
   sequenceType( 0 ),
   numberOfTargets( 0 ),

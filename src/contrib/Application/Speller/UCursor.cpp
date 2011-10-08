@@ -73,7 +73,7 @@ void CURSOR::Hide()
 //             destrect - part of the form the status bar will be rendered into
 // Returns:    N/A
 // **************************************************************************
-void CURSOR::RenderCursor(TForm *form, TRect destrect)
+void CURSOR::RenderCursor(TForm */*form*/, TRect destrect)
 {
 int     destwidth, destheight;
 int     scaledtop, scaledleft, scaledbottom, scaledright;

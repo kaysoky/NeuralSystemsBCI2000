@@ -114,7 +114,7 @@ for (int i=0; i<treesize; i++)
 treesize = 0;
 
 
- for (size_t i = 0; i < Parameter("TreeDefinitionMatrix")->NumRows(); i++)
+ for (int i = 0; i < Parameter("TreeDefinitionMatrix")->NumRows(); i++)
  {
         parentID[treesize] = AnsiString(Parameter("TreeDefinitionMatrix")(i,0).c_str()).ToInt();
         displaypos[treesize] = AnsiString(Parameter("TreeDefinitionMatrix")(i,1).c_str()).ToInt()-1;

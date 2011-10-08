@@ -9,7 +9,7 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = SignalGenerator.exe gUSBampSource.exe USBampgetinfo.exe gMOBIlab.exe \
+PROJECTS = bci_datadiff.exe SignalGenerator.exe gUSBampSource.exe USBampgetinfo.exe gMOBIlab.exe \
   gMOBIlabPlus.exe ARSignalProcessing.exe FFTSignalProcessing.exe \
   P3SignalProcessing.exe MatlabSignalProcessing.exe DummySignalProcessing.exe \
   CursorTask.exe FeedbackDemo.exe StimulusPresentation.exe P3Speller.exe \
@@ -18,6 +18,10 @@ PROJECTS = SignalGenerator.exe gUSBampSource.exe USBampgetinfo.exe gMOBIlab.exe 
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
 
+
+bci_datadiff.exe: ..\build\buildutils\bci_datadiff.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 SignalGenerator.exe: core\SignalSource\SignalGenerator\SignalGenerator.bpr
   $(ROOT)\bin\bpr2mak $**

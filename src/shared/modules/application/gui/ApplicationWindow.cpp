@@ -205,6 +205,9 @@ ApplicationWindow::PostProcess()
     mVis.SendDifferenceFrame( DisplayWindow::BitmapData( mWidth, mHeight ) );
 }
 
+#ifdef __BORLANDC__
+# pragma warn -8104 // No warning about local statics.
+#endif // __BORLANDC__
 
 ApplicationWindowList&
 ApplicationWindow::Windows()

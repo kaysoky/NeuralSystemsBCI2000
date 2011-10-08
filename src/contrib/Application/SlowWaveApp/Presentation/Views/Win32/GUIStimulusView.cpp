@@ -202,7 +202,7 @@ TGUIStimulusView::PresentVisualStimulus( int inDuration )
 
 void
 CALLBACK
-TGUIStimulusView::HideVisualStimulus( UINT inTimerID, UINT, DWORD inInstance, DWORD, DWORD )
+TGUIStimulusView::HideVisualStimulus( UINT /*inTimerID*/, UINT, DWORD inInstance, DWORD, DWORD )
 {
     TGUIStimulusView    *caller = ( TGUIStimulusView* )inInstance;
     assert( inTimerID == caller->timerID );

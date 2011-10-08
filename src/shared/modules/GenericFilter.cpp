@@ -47,6 +47,10 @@ GenericFilter::GenericFilter()
   AllFilters().push_back( this );
 }
 
+#ifdef __BORLANDC__
+# pragma warn -8104 // No warning about local statics.
+#endif // __BORLANDC__
+
 // Static members
 GenericFilter::FiltersType&
 GenericFilter::AllFilters()

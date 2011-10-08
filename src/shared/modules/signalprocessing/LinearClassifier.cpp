@@ -191,7 +191,7 @@ LinearClassifier::Process( const GenericSignal& Input, GenericSignal& Output )
 }
 
 
-const std::string&
+string
 LinearClassifier::DescribeEntry( int inRow, int inCol ) const
 {
   ParamRef Classifier = Parameter( "Classifier" );
@@ -200,9 +200,7 @@ LinearClassifier::DescribeEntry( int inRow, int inCol ) const
       << Classifier->RowLabels()[inRow] << ","
       << Classifier->ColumnLabels()[inCol] << ")="
       << Classifier( inRow, inCol );
-  static string result;
-  result = oss.str();
-  return result;
+  return oss.str();
 }
 
 

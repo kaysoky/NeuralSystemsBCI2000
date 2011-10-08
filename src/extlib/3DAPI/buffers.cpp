@@ -289,6 +289,7 @@ buffers::loadFont3D( const std::string& inFontName )
     {
       glDeleteLists( fontID, 256 );
       sFontHandles3D.erase( inFontName );
+      sFontData3D.erase( fontID );
       fontID = 0;
     }
   }

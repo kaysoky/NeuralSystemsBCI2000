@@ -136,7 +136,7 @@ TFBArteCorrection::Process( const GenericSignal& inSignal, GenericSignal& outSig
             break;
 
           default:
-            bciassert( false );
+            throw bciexception( "Unknown value of artifact mode" );
         }
       }
 }

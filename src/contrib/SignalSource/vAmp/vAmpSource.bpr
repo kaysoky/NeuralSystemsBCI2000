@@ -24,6 +24,7 @@
       obj\EDFOutputFormat.obj obj\GenericFileWriter.obj obj\vAmpChannelInfo.obj 
       obj\vAmpDisplay.obj obj\FilterDesign.obj obj\OSEvent.obj obj\OSMutex.obj 
       obj\MessageQueue.obj obj\ExceptionCatcher.obj obj\CfgID.obj 
+      obj\VisID.obj
       obj\BCIException.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
@@ -140,6 +141,7 @@
       <FILE FILENAME="..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\VisID.cpp" FORMNAME="" UNITNAME="VisID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>

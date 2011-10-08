@@ -264,9 +264,9 @@ TTargetSeq::CreateFromProbabilities( const Param *inParamPtr )
     // By searching the next greater element in that vector for a given random
     // number and taking its index as target code,
     // we get the inverse mapping from random numbers to target codes that we want.
-    int             numTargets = distribution.size();
-    float           curValue = 0.0;
-    vector< int >   randMap( numTargets );
+    int              numTargets = distribution.size();
+    float            curValue = 0.0;
+    vector< size_t > randMap( numTargets );
 
     for( int i = 0; i < numTargets; ++i )
     {
@@ -278,7 +278,7 @@ TTargetSeq::CreateFromProbabilities( const Param *inParamPtr )
 
     // Now, throw the dices.
     TTargetSeqEntry         curEntry;
-    vector< int >::iterator randomPos;
+    vector< size_t >::iterator randomPos;
     for( int i = 0; i < randomSeqLength; ++i )
     {
         // Find the first entry that is greater or equal to a random value.

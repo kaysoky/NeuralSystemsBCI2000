@@ -38,7 +38,7 @@
 
 void print_info();
 
-int main(int argc, char* argv[])
+int main(int, char*[])
 {
   printf("*******************************************\r\n");
   printf("BCI2000 Information Tool for g.USBamp\r\n");

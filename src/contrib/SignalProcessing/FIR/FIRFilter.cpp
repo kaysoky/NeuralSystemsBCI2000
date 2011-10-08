@@ -86,7 +86,7 @@ FIRFilter::Preflight( const SignalProperties& Input,
 
 
 void
-FIRFilter::Initialize( const SignalProperties& Input, const SignalProperties& Output )
+FIRFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*Output*/ )
 {
   mFilter.clear();
   mBuffer.clear();

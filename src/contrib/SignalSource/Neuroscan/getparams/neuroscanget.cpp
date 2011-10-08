@@ -18,17 +18,19 @@
  * 
  * $END_BCI2000_LICENSE$
  */
-#include <iostream>
 #include "SockStream.h"
 
+#include "BCIAssert.h"
+#include "ParamList.h"
+#include "NeuroscanNetRead.h"
+
+#include <iostream>
+
 #include <stdio.h>
-#include <assert.h>
 #include <string>
 #include <sstream>
 #include <fstream>
 
-#include "ParamList.h"
-#include "NeuroscanNetRead.h"
 
 using namespace std;
 
@@ -243,7 +245,7 @@ bool ProcessDataMsg(CAcqMessage *pMsg)
        // printf("Processing info data block\n");
        AcqBasicInfo* pInfo = (AcqBasicInfo *)pMsg->m_pBody;
        // let's make sure that the incoming data block is in fact of the correct length
-       assert(pInfo->dwSize == sizeof(m_BasicInfo));
+       bciassert(pInfo->dwSize == sizeof(m_BasicInfo));
        // if it is, copy it into the data structure
        memcpy((void*)&m_BasicInfo, pMsg->m_pBody, sizeof(m_BasicInfo));
        printf("Signal Channels: %d\n"
@@ -263,7 +265,7 @@ bool ProcessDataMsg(CAcqMessage *pMsg)
        {
        // printf("Processing 16 bit raw data block\n");
        // make sure the body has the right length - even if we're not processing the data
-       assert((int)(pMsg->m_dwSize) == (int)(m_BasicInfo.nEegChan+m_BasicInfo.nEvtChan)*m_BasicInfo.nBlockPnts*m_BasicInfo.nDataSize);
+       bciassert((int)(pMsg->m_dwSize) == (int)(m_BasicInfo.nEegChan+m_BasicInfo.nEvtChan)*m_BasicInfo.nBlockPnts*m_BasicInfo.nDataSize);
        // process raw 16 bit data
        /* FILE *fp=fopen("eeg.dat", "ab");
        for (int samp=0; samp<m_BasicInfo.nBlockPnts; samp++)

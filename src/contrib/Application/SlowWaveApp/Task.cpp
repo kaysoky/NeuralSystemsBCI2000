@@ -310,7 +310,7 @@ TTask::Process( const GenericSignal& Input, GenericSignal& Output )
 void
 TTask::Resting()
 {
-  static GenericSignal nullSignal( 0, 0 );
+  GenericSignal nullSignal( 0, 0 );
   TEventArgs eventArgs = { 0, 0, &nullSignal, 0 };
   switch( mAppState )
   {

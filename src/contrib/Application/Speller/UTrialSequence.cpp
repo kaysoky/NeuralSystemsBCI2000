@@ -106,7 +106,7 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-int TRIALSEQUENCE::Initialize(USERDISPLAY *new_userdisplay, int numT)
+int TRIALSEQUENCE::Initialize(USERDISPLAY *new_userdisplay, int /*numT*/)
 {
 int     ret;
 
