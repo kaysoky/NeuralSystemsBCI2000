@@ -25,6 +25,7 @@
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////
 #include "bci_tool.h"
+#include "ExceptionCatcher.h"
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -58,7 +59,13 @@ int main( int argc, const char** argv )
       ToolInfo[ name ].erase( extensionBegin );
   }
 
-  ToolResult result = ToolInit();
+  FunctionCall< ToolResult() > callInit( ToolInit );
+  bool finished = ExceptionCatcher()
+                 .SetMessage( "Aborting " + ToolInfo[ name ] )
+                 .Run( callInit );
+  if( !finished )
+    return genericError;
+  ToolResult result = callInit.Result();
   if( result != noError )
   {
     cerr << ToolInfo[ name ] << ": Initialization error" << endl;
@@ -155,14 +162,26 @@ int main( int argc, const char** argv )
 
   if( result == noError && options.execute )
   {
-    result = ToolMain( toolOptions, cin, cout );
-#if 0
-    if( !( in->good() || !in->eof() || result == fileIOError ) )
+    FunctionCall< ToolResult( const OptionSet&, istream&, ostream& ) >
+      callMain( ToolMain, toolOptions, cin, cout );
+    bool finished = ExceptionCatcher()
+                   .SetMessage( "Aborting " + ToolInfo[ name ] )
+                   .Run( callMain );
+    if( !finished )
     {
-      cerr << "Illegal data format" << endl;
-      result = illegalInput;
+      result = genericError;
     }
+    else
+    {
+      result = callMain.Result();
+#if 0
+      if( !( in->good() || !in->eof() || result == fileIOError ) )
+      {
+        cerr << "Illegal data format" << endl;
+        result = illegalInput;
+      }
 #endif
+    }
   }
 
   options.help |= ( result == illegalOption );

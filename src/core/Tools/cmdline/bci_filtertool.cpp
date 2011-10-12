@@ -44,7 +44,6 @@
 #include "Version.h"
 #include "SysCommand.h"
 #include "Uncopyable.h"
-#include "ExceptionCatcher.h"
 
 #define FILTER_NAME "$FILTER$"
 
@@ -132,11 +131,7 @@ ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
     operatorOut.open( operatorFile.c_str() );
   }
   FilterWrapper wrapper( arIn, arOut, operatorOut );
-  MemberCall< void( FilterWrapper* ) >
-    call( &FilterWrapper::Run, &wrapper );
-  ExceptionCatcher()
-    .SetMessage( "Aborting" )
-    .Run( call );
+  wrapper.Run();
   if( bcierr__.Flushes() > 0 || !arIn )
     result = illegalInput;
   return result;
