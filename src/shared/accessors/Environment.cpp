@@ -38,16 +38,12 @@
 
 #include "Environment.h"
 
+#include "ParamList.h"
 #include "StateList.h"
 #include "MessageHandler.h"
-#include "SysCommand.h"
-#include "BCIError.h"
-#include "MeasurementUnits.h"
-#include "ClassName.h"
 #include "PhysicalUnit.h"
+#include "MeasurementUnits.h"
 
-#include <sstream>
-#include <typeinfo>
 #include <cstdlib>
 
 using namespace std;
