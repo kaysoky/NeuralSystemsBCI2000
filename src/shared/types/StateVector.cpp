@@ -28,32 +28,40 @@
 #pragma hdrstop
 
 #include "StateVector.h"
+
+#include "StateList.h"
 #include "BCIException.h"
+#include "BCIAssert.h"
 
 #include <sstream>
 #include <iomanip>
 
 using namespace std;
 
-StateVector::StateVector( class StateList& inList, size_t inSamples )
-: mByteLength( 0 ),
-  mpStateList( &inList )
+StateVector::StateVector()
+: mpStateList( NULL )
 {
-  // calculate the state vector length
-  int bitLength = 0;
-  for( int i = 0; i < mpStateList->Size(); ++i )
-    bitLength += ( *mpStateList )[ i ].Length();
-  mByteLength = ( bitLength / 8 ) + 1;
-  mSamples.resize( inSamples, StateVectorSample( mByteLength ) );
+}
 
+StateVector::StateVector( class StateList& inList, size_t inSamples )
+: mpStateList( &inList )
+{
+  mSamples.resize( inSamples, StateVectorSample( mpStateList->ByteLength() ) );
   // initialize the content in the state vector, according to the content
   // of the current states in the state list
   for( int i = 0; i < mpStateList->Size(); ++i )
     SetStateValue( ( *mpStateList )[ i ].Name(), ( *mpStateList )[ i ].Value() );
 }
 
-StateVector::~StateVector()
+const StateVector&
+StateVector::CopyFromMasked( const StateVector& inVector, const StateVectorSample& inMask )
 {
+  if( &inVector == this )
+    return *this;
+  bciassert( this->Samples() == inVector.Samples() );
+  for( int i = 0; i < this->Samples(); ++i )
+    ( *this )( i ).CopyFromMasked( inVector( i ), inMask );
+  return *this;
 }
 
 // **************************************************************************
@@ -67,7 +75,7 @@ State::ValueType
 StateVector::StateValue( const string& inName, size_t inSample ) const
 {
   State::ValueType result = 0;
-  if( mpStateList->Exists( inName ) )
+  if( mpStateList && mpStateList->Exists( inName ) )
   {
     const State& s = ( *mpStateList )[ inName ];
     result = mSamples[ inSample ].StateValue( s.Location(), s.Length() );
@@ -100,11 +108,11 @@ StateVector::StateValue( size_t inLocation, size_t inLength, size_t inSample ) c
 void
 StateVector::SetStateValue( const string& inName, size_t inSample, State::ValueType inValue )
 {
-  if( mpStateList->Exists( inName ) )
+  if( mpStateList && mpStateList->Exists( inName ) )
   {
     const State& s = ( *mpStateList )[ inName ];
     SetStateValue( s.Location(), s.Length(), inSample, inValue );
-  };
+  }
 }
 
 // **************************************************************************
@@ -132,7 +140,7 @@ StateVector::SetStateValue( size_t inLocation, size_t inLength, size_t inSample,
 void
 StateVector::PostStateChange( const string& inName, State::ValueType inValue )
 {
-  if( !mpStateList->Exists( inName ) )
+  if( !mpStateList || !mpStateList->Exists( inName ) )
     throw bciexception( "Undeclared state " << inName );
 
   ( *mpStateList )[ inName ].SetValue( inValue ); // We use State::value as a buffer.
@@ -147,8 +155,9 @@ StateVector::PostStateChange( const string& inName, State::ValueType inValue )
 void
 StateVector::CommitStateChanges()
 {
-  for( int i = 0; i < mpStateList->Size(); ++i )
-    ( *mpStateList )[ i ].Commit( this );
+  if( mpStateList )
+    for( int i = 0; i < mpStateList->Size(); ++i )
+      ( *mpStateList )[ i ].Commit( this );
 }
 
 // **************************************************************************

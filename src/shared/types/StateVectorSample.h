@@ -29,15 +29,16 @@
 
 #include <iostream>
 #include "State.h"
-#include "StateList.h"
 
 class StateVectorSample
 {
  public:
   StateVectorSample( const StateVectorSample& );
-  explicit StateVectorSample( size_t inByteLength );
+  explicit StateVectorSample( size_t byteLength );
   ~StateVectorSample();
   const StateVectorSample& operator=( const StateVectorSample& );
+  // CopyFromMasked() copies bits that are set to 1 in the mask.
+  const StateVectorSample& CopyFromMasked( const StateVectorSample&, const StateVectorSample& mask );
 
  public:
   int            Length() const

@@ -28,7 +28,10 @@
 
 #include "StateList.h"
 
+#include "BCIException.h"
+
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -89,7 +92,41 @@ StateList::Clear()
   clear();
   RebuildIndex();
 }
-
+// **************************************************************************
+// Function:   BitLength
+// Purpose:    Compute overall state data length in bits.
+// Parameters: N/A
+// Returns:    Bit length.
+// **************************************************************************
+int
+StateList::BitLength() const
+{
+  if( this->Empty() )
+    return 0;
+  // A caller of this function implicitly assumes that state positions are consistent.
+  // We throw an error if this assumption is violated.
+  // The BitLength() function is called at setup time, so the overhead for checking
+  // should not be a problem.
+  typedef vector< pair<int, const State*> > UsageList;
+  UsageList usage;
+  for( int i = 0; i < Size(); ++i )
+  {
+    const State& s = ( *this )[i];
+    usage.push_back( make_pair<int, const State*>( s.Location(), &s ) );
+  }
+  sort( usage.begin(), usage.end() );
+  bool isOk = true;
+  for( size_t i = 0; i < usage.size() - 1; ++i )
+    isOk &= ( usage[i].first + usage[i].second->Length() <= usage[i+1].first );
+  if( !isOk )
+  {
+    ostringstream oss;
+    for( UsageList::const_iterator i = usage.begin(); i != usage.end(); ++i )
+      oss << *i->second << '\n';
+    throw bciexception( "Inconsistent state positions:\n" + oss.str() );
+  }
+  return usage.rbegin()->first + usage.rbegin()->second->Length();
+}
 // **************************************************************************
 // Function:   Add
 // Purpose:    adds a new state to the list of states
@@ -133,20 +170,26 @@ StateList::Delete( const string& inName )
 }
 
 // **************************************************************************
-// Function:   AssignPositions
-// Purpose:    assigns positions and lengths to states contained in the list
-// Parameters: none
-// Returns:    N/A
+// Function:   GetMask
+// Purpose:    creates a mask in which bytes belonging to states with a given
+//             kind are set
+// Parameters: state kind to mask in
+// Returns:    mask
 // **************************************************************************
-void
-StateList::AssignPositions()
+StateVectorSample
+StateList::GetMask( int inKind ) const
 {
-  int bitLength = 0;
+  StateVectorSample mask( ByteLength() );
   for( int i = 0; i < Size(); ++i )
   {
-    ( *this )[ i ].SetLocation( bitLength );
-    bitLength += ( *this )[ i ].Length();
+    const State& s = ( *this )[i];
+    if( s.Kind() == inKind )
+    {
+      State::ValueType valueMask = ( ULONG_MAX >> ( 8* sizeof( State::ValueType ) - s.Length() ) );
+      mask.SetStateValue( s.Location(), s.Length(), State::ValueType( ULONG_MAX & valueMask ) );
+    }
   }
+  return mask;
 }
 
 // **************************************************************************
@@ -220,6 +263,23 @@ istream&
 StateList::ReadBinary( istream& is )
 {
   return ReadFromStream( is );
+}
+
+// **************************************************************************
+// Function:   AssignPositions
+// Purpose:    assigns positions to states contained in the list
+// Parameters: none
+// Returns:    N/A
+// **************************************************************************
+void
+StateList::AssignPositions()
+{
+  int pos = 0;
+  for( int i = 0; i < Size(); ++i )
+  {
+    ( *this )[ i ].SetLocation( pos );
+    pos += ( *this )[ i ].Length();
+  }
 }
 
 // **************************************************************************

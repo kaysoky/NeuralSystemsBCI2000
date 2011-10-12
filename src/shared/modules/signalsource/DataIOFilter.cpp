@@ -55,7 +55,6 @@ DataIOFilter::DataIOFilter()
 : mpADC( GenericFilter::PassFilter<GenericADC>() ),
   mpSourceFilter( NULL ),
   mpFileWriter( NULL ),
-  mStatevectorBuffer( *States ),
   mVisualizeSource( false ),
   mVisualizeTiming( false ),
   mVisualizeSourceDecimation( 1 ),

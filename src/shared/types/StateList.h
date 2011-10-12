@@ -30,6 +30,7 @@
 #include <map>
 #include <string>
 #include "State.h"
+#include "StateVectorSample.h"
 
 typedef std::vector<State> StateContainer;
 
@@ -53,6 +54,10 @@ class StateList : private StateContainer
        { return empty(); }
   void Clear();
 
+  int  BitLength() const;
+  int  ByteLength() const
+       { return BitLength() / 8 + 1; }
+
   bool Exists( const std::string& name ) const
        { return mIndex.find( name ) != mIndex.end(); }
   int  Index( const std::string& name ) const
@@ -62,6 +67,7 @@ class StateList : private StateContainer
   bool Add( const std::string& stateDefinition );
   void Delete( const std::string& name );
   void AssignPositions();
+  StateVectorSample GetMask( int kind ) const;
 
   std::ostream& WriteToStream( std::ostream& ) const;
   std::istream& ReadFromStream( std::istream& );

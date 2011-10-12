@@ -34,14 +34,16 @@
 class StateVector
 {
  public:
+  StateVector();
   explicit StateVector( class StateList& list, size_t numSamples = 1 );
-  ~StateVector();
 
  public:
+  const StateVector& CopyFromMasked( const StateVector&, const StateVectorSample& mask );
+
   int            Samples() const
                  { return mSamples.size(); }
   int            Length() const
-                 { return mByteLength; }
+                 { return mSamples.empty() ? 0 : mSamples[0].Length(); }
   StateVectorSample& operator()( size_t inIdx )
                  { return mSamples[ inIdx ]; }
   const StateVectorSample& operator()( size_t inIdx ) const
@@ -66,7 +68,6 @@ class StateVector
   std::istream&  ReadBinary( std::istream& );
 
  private:
-  size_t                         mByteLength;
   class StateList*               mpStateList;
   std::vector<StateVectorSample> mSamples;
 };

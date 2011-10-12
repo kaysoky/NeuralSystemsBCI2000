@@ -30,6 +30,8 @@
 #include <cstring>
 
 class StateVector;
+class StateList;
+class CoreModule;
 
 class State
 {

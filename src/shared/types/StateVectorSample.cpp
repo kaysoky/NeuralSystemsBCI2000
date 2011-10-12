@@ -29,6 +29,7 @@
 
 #include "StateVectorSample.h"
 #include "BCIException.h"
+#include "BCIAssert.h"
 
 #include <sstream>
 #include <iomanip>
@@ -61,8 +62,8 @@ StateVectorSample::~StateVectorSample()
 // **************************************************************************
 // Function:   operator=
 // Purpose:    Make a deep copy of a StateVectorSample object.
-// Parameters: N/A
-// Returns:    N/A
+// Parameters: StateVectorSample to copy from.
+// Returns:    Calling instance.
 // **************************************************************************
 const StateVectorSample&
 StateVectorSample::operator=( const StateVectorSample& s )
@@ -73,6 +74,33 @@ StateVectorSample::operator=( const StateVectorSample& s )
     delete[] mpData;
     mpData = new unsigned char[ mByteLength ];
     ::memcpy( mpData, s.mpData, mByteLength );
+  }
+  return *this;
+}
+
+// **************************************************************************
+// Function:   CopyFromMasked
+// Purpose:    Make a deep copy of a StateVectorSample object, copying only
+//             bits that are set in a mask.
+// Parameters: StateVectorSample to copy from,
+//             mask as a std::string.
+// Returns:    Calling instance.
+// **************************************************************************
+const StateVectorSample&
+StateVectorSample::CopyFromMasked( const StateVectorSample& inSample, const StateVectorSample& inMask )
+{
+  if( &inSample == this )
+    return *this;
+  if( inMask.Length() == 0 )
+    return *this = inSample;
+
+  bciassert( inSample.Length() == inMask.Length() );
+  bciassert( inSample.Length() == this->Length() );
+
+  for( size_t i = 0; i < mByteLength; ++i )
+  {
+    mpData[i] &= ~inMask.mpData[i];
+    mpData[i] |= inSample.mpData[i] & inMask.mpData[i];
   }
   return *this;
 }
