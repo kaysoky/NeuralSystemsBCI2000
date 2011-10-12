@@ -62,6 +62,7 @@
 #include "MessageHandler.h"
 #include "ParamList.h"
 #include "StateList.h"
+#include "StateVector.h"
 #include "GenericSignal.h"
 
 #include "OSThread.h"
@@ -163,8 +164,8 @@ class CoreModule : private Uncopyable, private MessageHandler
   bool             mTerminated;
   ParamList        mParamlist;
   StateList        mStatelist;
-  StateVector*     mpStatevector;
-  std::string      mInitialStatevector;
+  StateVector      mStatevector,
+                   mInitialStatevector;
   GenericSignal    mInputSignal,
                    mOutputSignal;
   client_tcpsocket mOperatorSocket,
@@ -178,8 +179,7 @@ class CoreModule : private Uncopyable, private MessageHandler
                    mLastRunning,
                    mResting,
                    mStartRunPending,
-                   mStopRunPending,
-                   mFirstStatevectorPending;
+                   mStopRunPending;
   void*            mMutex;
   int              mSampleBlockSize;
 #if _WIN32

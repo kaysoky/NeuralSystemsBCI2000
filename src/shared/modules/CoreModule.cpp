@@ -57,18 +57,16 @@
 
 using namespace std;
 
-static GenericSignal sNullSignal( 0, 0 );
+static const GenericSignal sNullSignal( 0, 0 );
 
 CoreModule::CoreModule()
 : mReceivingThread( *this ),
   mTerminated( false ),
-  mpStatevector( NULL ),
   mFiltersInitialized( false ),
   mLastRunning( false ),
   mResting( false ),
   mStartRunPending( false ),
   mStopRunPending( false ),
-  mFirstStatevectorPending( false ),
   mMutex( NULL ),
   mSampleBlockSize( 0 )
 #if _WIN32
@@ -82,7 +80,6 @@ CoreModule::CoreModule()
 
 CoreModule::~CoreModule()
 {
-  delete mpStatevector;
   if( mMutex != NULL )
   {
 #ifdef _WIN32
@@ -221,6 +218,7 @@ CoreModule::Initialize( int inArgc, char** inArgv )
     mReceivingThread.Start();
   return success;
 }
+
 
 int
 CoreModule::ReceivingThread::Execute()
@@ -440,32 +438,17 @@ CoreModule::ShutdownSystem()
 {
   BCIError::SetOperatorStream( NULL, NULL );
   GenericVisualization::SetOutputStream( NULL, NULL );
-
   mOperatorSocket.close();
   mPreviousModuleSocket.close();
   mNextModuleSocket.close();
-
-  delete mpStatevector;
-  mpStatevector = NULL;
-
   GenericFilter::DisposeFilters();
 }
-
 
 void
 CoreModule::ResetStatevector()
 {
-  State::ValueType sourceTime = mpStatevector->StateValue( "SourceTime" ),
-                   stimulusTime = mpStatevector->StateValue( "StimulusTime" );
-  for( int i = 0; i < mpStatevector->Samples(); ++i )
-  {
-    istringstream iss( mInitialStatevector );
-    ( *mpStatevector )( i ).ReadBinary( iss );
-  }
-  mpStatevector->SetStateValue( "SourceTime", sourceTime );
-  mpStatevector->SetStateValue( "StimulusTime", stimulusTime );
+  mStatevector = mInitialStatevector;
 }
-
 
 void
 CoreModule::InitializeFilters( const SignalProperties& inputProperties )
@@ -474,7 +457,7 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
   bcierr__.Clear();
   GenericFilter::HaltFilters();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );
-  EnvironmentBase::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector );
+  EnvironmentBase::EnterPreflightPhase( &mParamlist, &mStatelist, &mStatevector );
 #ifdef TODO
 # error The inputPropertiesFixed variable may be removed once property messages contain an UpdateRate field.
 #endif // TODO
@@ -494,7 +477,7 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
       BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
 #endif // APP
     mOutputSignal = GenericSignal( outputProperties );
-    EnvironmentBase::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector );
+    EnvironmentBase::EnterInitializationPhase( &mParamlist, &mStatelist, &mStatevector );
     GenericFilter::InitializeFilters();
     EnvironmentBase::EnterNonaccessPhase();
     errorOccurred |= ( bcierr__.Flushes() > 0 );
@@ -519,16 +502,7 @@ void
 CoreModule::StartRunFilters()
 {
   mStartRunPending = false;
-  mFirstStatevectorPending = true;
-  // The first state vector written to disk is not the one
-  // received in response to the first EEG data block. Without resetting it
-  // to its initial value,
-  // there would be state information from the end of the (possibly
-  // interrupted) previous run written with the first EEG data block.
-  ResetStatevector();
-  mpStatevector->SetStateValue( "Running", 1 );
-
-  EnvironmentBase::EnterStartRunPhase( &mParamlist, &mStatelist, mpStatevector );
+  EnvironmentBase::EnterStartRunPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::StartRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
   if( bcierr__.Flushes() == 0 )
@@ -545,9 +519,10 @@ CoreModule::StopRunFilters()
 {
   mStopRunPending = false;
   mStartRunPending = true;
-  EnvironmentBase::EnterStopRunPhase( &mParamlist, &mStatelist, mpStatevector );
+  EnvironmentBase::EnterStopRunPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::StopRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
+  ResetStatevector();
   if( bcierr__.Flushes() == 0 )
   {
     BroadcastParameterChanges();
@@ -582,7 +557,7 @@ CoreModule::BroadcastParameterChanges()
 void
 CoreModule::ProcessFilters( const GenericSignal& input )
 {
-  EnvironmentBase::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector );
+  EnvironmentBase::EnterProcessingPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::ProcessFilters( input, mOutputSignal );
   EnvironmentBase::EnterNonaccessPhase();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );
@@ -592,7 +567,7 @@ CoreModule::ProcessFilters( const GenericSignal& input )
     return;
   }
   OSMutex::Lock lock( mConnectionLock );
-  MessageHandler::PutMessage( mNextModule, *mpStatevector );
+  MessageHandler::PutMessage( mNextModule, mStatevector );
 #if( MODTYPE != APP )
   MessageHandler::PutMessage( mNextModule, mOutputSignal );
 #endif // APP
@@ -602,7 +577,7 @@ CoreModule::ProcessFilters( const GenericSignal& input )
 void
 CoreModule::RestingFilters()
 {
-  EnvironmentBase::EnterRestingPhase( &mParamlist, &mStatelist, mpStatevector );
+  EnvironmentBase::EnterRestingPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::RestingFilters();
   EnvironmentBase::EnterNonaccessPhase();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );
@@ -621,7 +596,8 @@ CoreModule::HandleResting()
   RestingFilters();
 #if( MODTYPE != SIGSRC ) // For non-source modules, Resting() is called once
                          // after the Running state drops to 0.
-  mResting = false;
+  mResting = false;      // For source modules, Resting() is called repeatedly
+                         // while the Running state is 0.
 #endif // SIGSRC
 }
 
@@ -629,7 +605,7 @@ CoreModule::HandleResting()
 bool
 CoreModule::HandleParam( istream& is )
 {
-  if( mpStatevector && mpStatevector->StateValue( "Running" ) )
+  if( mStatevector.StateValue( "Running" ) )
     BCIERR << "Unexpected Param message" << endl;
 
   Param p;
@@ -645,27 +621,28 @@ CoreModule::HandleState( istream& is )
   State s;
   if( s.ReadBinary( is ) )
   {
-    if( mpStatevector )
+    if( mStatevector.Length() > 0 )
     {
 #if( MODTYPE == SIGSRC )
-      // Changing a state's value via mpStatevector->PostStateChange()
+      // Changing a state's value via mStatevector.PostStateChange()
       // will buffer the change, and postpone it until the next call to
-      // mpStatevector->CommitStateChanges(). That call happens
+      // mStatevector.CommitStateChanges(). That call happens
       // after arrival of a StateVector message to make sure that
       // changes are not overwritten with the content of the previous
       // state vector when it arrives from the application module.
-       mpStatevector->PostStateChange( s.Name(), s.Value() );
+       mStatevector.PostStateChange( s.Name(), s.Value() );
 
       // For the "Running" state, the module will undergo a more complex
       // state transition than for other states.
       if( string( "Running" ) == s.Name() )
       {
-        bool running = mpStatevector->StateValue( "Running" ),
+        bool running = mStatevector.StateValue( "Running" ),
              nextRunning = s.Value();
         if( !running && nextRunning )
         {
           mLastRunning = true;
           StartRunFilters();
+          mStatevector.SetStateValue( "Running", 1 );
           ProcessFilters( sNullSignal );
         }
       }
@@ -729,22 +706,10 @@ CoreModule::HandleVisSignalProperties( istream& is )
 bool
 CoreModule::HandleStateVector( istream& is )
 {
+  if( mStatevector.ReadBinary( is ) )
+  {
 #if( MODTYPE == SIGSRC )
-  bool success = false;
-  if( mFirstStatevectorPending )
-  { // To avoid overwriting state values with their initial values,
-    // we ignore the first statevector that comes in from the application
-    // module.
-    success = StateVector( mStatelist ).ReadBinary( is );
-    mFirstStatevectorPending = false;
-  }
-  else
-  {
-    success = mpStatevector->ReadBinary( is );
-  }
-  if( success )
-  {
-    mpStatevector->CommitStateChanges();
+    mStatevector.CommitStateChanges();
     // The source module does not receive a signal, so handling must take place
     // on arrival of a StateVector message.
     if( mLastRunning ) // For the first "Running" block, Process() is called from
@@ -756,21 +721,19 @@ CoreModule::HandleStateVector( istream& is )
     {
       ProcessFilters( sNullSignal );
     }
-    // One of the filters might have set Running to 0 during ProcessFilters().
-    bool running = mpStatevector->StateValue( "Running" );
-    if( !running && mLastRunning )
-      StopRunFilters();
-    mLastRunning = running;
-  }
-#else // SIGSRC
-  if( mpStatevector->ReadBinary( is ) )
-  {
-    bool running = mpStatevector->StateValue( "Running" );
-    if( !running && mLastRunning )
-      mStopRunPending = true;
-    mLastRunning = running;
-  }
 #endif // SIGSRC
+    // One of the filters might have set Running to 0 during ProcessFilters().
+    bool running = mStatevector.StateValue( "Running" );
+    if( !running && mLastRunning )
+    {
+#if( MODTYPE == SIGSRC )
+      StopRunFilters();
+#else // SIGSRC
+      mStopRunPending = true;
+#endif // SIGSRC
+    }
+    mLastRunning = running;
+  }
   return is ? true : false;
 }
 
@@ -793,44 +756,33 @@ CoreModule::HandleSysCommand( istream& is )
 
     if( s == SysCommand::EndOfState )
     {
-      if( mpStatevector != NULL )
+      // This happens during the first initialization only.
+      if( mStatevector.Length() > 0 )
         bcierr << "Unexpected SysCommand::EndOfState message" << endl;
-
-      delete mpStatevector;
-      // Initialize the state vector from the state list.
-      mStatelist.AssignPositions();
       // The state vector holds an additional sample which is used to initialize
-      // the subsequent state vector.
-      mpStatevector = new StateVector( mStatelist, mSampleBlockSize + 1 );
-      ostringstream oss;
-      ( *mpStatevector )( 0 ).WriteBinary( oss );
-      mInitialStatevector = oss.str();
-      mpStatevector->CommitStateChanges();
+      // the subsequent state vector at the beginning of a new block.
+      mStatevector = StateVector( mStatelist, mSampleBlockSize + 1 );
+      mInitialStatevector = mStatevector;
+      mStatevector.CommitStateChanges();
       InitializeCoreConnections();
-      mFiltersInitialized = false;
     }
     else if( s == SysCommand::EndOfParameter )
     {
-      // This happens for subsequent initializations.
-      if( mpStatevector != NULL )
-      {
-        delete mpStatevector;
-      // The state vector holds an additional sample which is used to initialize
-      // the subsequent state vector.
-        mpStatevector = new StateVector( mStatelist, mSampleBlockSize + 1 );
-        ResetStatevector();
-        mpStatevector->SetStateValue( "Running", 0 );
-        mFiltersInitialized = false;
-      }
+      // This happens for all initializations.
+      mFiltersInitialized = false;
     }
     else if( s == SysCommand::Start )
     {
       /* do nothing */
     }
     else if( s == SysCommand::Reset )
+    {
       Terminate();
+    }
     else
+    {
       BCIERR << "Unexpected SysCommand" << endl;
+    }
   }
   return is ? true : false;
 }
