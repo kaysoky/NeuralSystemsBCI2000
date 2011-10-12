@@ -90,6 +90,7 @@ MainWindow::MainWindow( QWidget* parent )
     ui->statusBar->addWidget( mpStatusLabels[i], 1 );
   }
   ui->statusBar->addWidget( new QLabel, 0 );
+  ui->statusBar->setMaximumHeight( ui->statusBar->height() );
 
   OperatorUtils::RestoreWidget( this );
   BCI_Initialize();
