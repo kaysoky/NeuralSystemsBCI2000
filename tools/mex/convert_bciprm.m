@@ -16,6 +16,7 @@ function result = convert_bciprm( varargin )
 %  parameter_struct = convert_bciprm( parameter_lines );
 %
 % This file is part of the BCI2000 project.
+
 % $BEGIN_BCI2000_LICENSE$
 % 
 % This file is part of BCI2000, a platform for real-time bio-signal research.

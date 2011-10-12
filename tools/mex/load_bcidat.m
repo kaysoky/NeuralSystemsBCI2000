@@ -54,8 +54,8 @@ function [ signal, states, parameters, total_samples, file_samples ] ...
 %  containing the number of samples within each input file, regardless of
 %  any sample ranges that may have been specified.
 %
-%
 %  The load_bcidat function is part of the BCI2000 project. 
+
 %  $BEGIN_BCI2000_LICENSE$
 %  
 %  This file is part of BCI2000, a platform for real-time bio-signal research.

@@ -14,8 +14,8 @@ function save_bcidat( varargin )
 %  which may be .dat, .edf, or .gdf. When no extension is recognized, 
 %  the BCI2000 dat file format is used.
 %
-%
-%  The save_bcidat function is part of the BCI2000 project. 
+%  The save_bcidat function is part of the BCI2000 project.
+
 %  $BEGIN_BCI2000_LICENSE$
 %  
 %  This file is part of BCI2000, a platform for real-time bio-signal research.
