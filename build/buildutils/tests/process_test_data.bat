@@ -23,20 +23,39 @@
 :: 
 :: $END_BCI2000_LICENSE$
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-rem @echo off
-if [%2]==[] echo Please specify two directories to compare. && verify false 2> nul
+@echo off
+setlocal
+if [%2]==[] goto usage
 
 set OLDPATH=%PATH%
 PATH="..\..\..\tools\cmdline";%PATH%
-for /r "%1" %%i in (*.dat) do bci_dat2stream --transmit-ds --raw < "%%i" | bci_stream2asc > "%%i.tmp~"
-for /r "%2" %%i in (*.dat) do bci_dat2stream --transmit-ds --raw < "%%i" | bci_stream2asc > "%%i.tmp~"
+for /d %%i in ("%1\*") do (
+  echo Preprocessing %%~ni
+  for /f %%j in ('dir /b "%1\%%~ni\*.dat"') do (
+    bci_dat2stream --transmit-ds --raw < "%1\%%~ni\%%~nj.dat" | bci_stream2asc > "%1\%%~ni\%%~nj.tmp~"
+    bci_dat2stream --transmit-ds --raw < "%2\%%~ni\%%~nj.dat" | bci_stream2asc > "%2\%%~ni\%%~nj.tmp~"
+  )
+)
 PATH=%OLDPATH%
 
-for /d %%i in ("%1\*") do ( set OUTFILE="%%~ni_Results.txt" && for /f %%j in ('dir /b "%1\%%~ni\*.tmp~"') do bci_datadiff "%2\%%~ni\%%~nj.tmp~" "%1\%%~ni\%%~nj.tmp~" "%%~ni_Results.txt" > nul ) || goto found_diffs
-goto end
+for /d %%i in ("%1\*") do (
+  for /f %%j in ('dir /b "%1\%%~ni\*.tmp~"') do (
+    echo Comparing %%~nj
+    bci_datadiff "%2\%%~ni\%%~nj.tmp~" "%1\%%~ni\%%~nj.tmp~" "%%~ni_Results.txt" > nul || (
+      echo Differences found. See the file "%%~ni_Results.txt" for details.
+      set FOUND_DIFFS=1
+    )
+  )
+)
 
-:found_diffs
-echo Differences found. See the file %OUTFILE% for details.
+if defined FOUND_DIFFS goto returnfalse
+goto returntrue
+
+:usage
+echo Please specify two directories to compare.
+goto returnfalse
+
+:returnfalse
 verify false 2> nul
 
-:end
+:returntrue
