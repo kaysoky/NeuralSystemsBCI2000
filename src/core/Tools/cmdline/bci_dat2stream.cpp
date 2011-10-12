@@ -182,10 +182,12 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
   SignalProperties inputProperties( sourceCh, sampleBlockSize, dataFormat );
   if( transmitData || transmitStates )
   {
-    StateVector statevector( states, 1 );
+    StateVector statevector( states, sampleBlockSize );
     if( statevector.Length() != stateVectorLength )
     {
-      cerr << "Statevector's length differs from StateVectorLen field" << endl;
+      cerr << "Statevector's length (" << statevector.Length() << ")"
+           << " differs from StateVectorLen field (" << stateVectorLength << ")"
+           << endl;
       return illegalInput;
     }
     if( calibrateData && parameters.Exists( "SamplingRate" ) )
@@ -242,7 +244,7 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
     {
       for( int i = 0; i < sourceCh; ++i )
         inputSignal.ReadValueBinary( in, i, curSample );
-      in.read( (char*)statevector( 0 ).Data(), statevector.Length() );
+      in.read( (char*)statevector( curSample ).Data(), statevector.Length() );
 
       if( ++curSample == sampleBlockSize )
       {
