@@ -24,8 +24,8 @@
 ##     MODULE( Tool, BCI2000Launcher )
 
 # Definition of inventory file:
-SET( INVENTORY_INCLUDES ${CMAKE_CURRENT_BINARY_DIR} )
-SET( INVENTORY_INC "${CMAKE_CURRENT_BINARY_DIR}/Inventory.inc" )
+SET( INVENTORY_INCLUDES ${CMAKE_BINARY_DIR} )
+SET( INVENTORY_INC "${CMAKE_BINARY_DIR}/Inventory.inc" )
 FILE( WRITE ${INVENTORY_INC} "// File contents created by BCI2000_ADD_TO_INVENTORY -- re-run CMake to update this file\n" )
 
 # Macro definitions
