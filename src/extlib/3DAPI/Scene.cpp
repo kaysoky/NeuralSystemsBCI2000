@@ -4,23 +4,23 @@
 // Description: A 3D scene viewed through a rectangular region.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -45,6 +45,7 @@
 
 #ifndef __BORLANDC__
 # include <QPainter>
+# include <QGLWidget>
 #endif // __BORLANDC__
 
 using namespace GUI;
@@ -54,7 +55,11 @@ Scene::Scene( GraphDisplay& inDisplay )
 : GraphObject( inDisplay, SceneDisplayZOrder ),
   mColor( RGBColor::NullColor ),
   mInitialized( false ),
+#ifdef __BORLANDC__
   mContextHandle( NULL ),
+#else // __BORLANDC__
+  mpGLContext( NULL ),
+#endif // __BORLANDC__
   mfpOnCollide( NULL )
 {
 }
@@ -245,12 +250,12 @@ Scene::OnChange( DrawContext& inDC )
     DoneCurrent();
   }
 #else // __BORLANDC__
-  if( GLContext() && mContextHandle != GLContext() )
+  if( inDC.handle.glContext && mpGLContext != inDC.handle.glContext )
   {
-    GLContext()->makeCurrent();
+    inDC.handle.glContext->makeCurrent();
     OnInitializeGL();
   }
-  mContextHandle = GLContext();
+  mpGLContext = inDC.handle.glContext;
 #endif // __BORLANDC__
 
 #ifdef __BORLANDC__
@@ -271,10 +276,10 @@ void
 Scene::MakeCurrent()
 {
 #ifdef __BORLANDC__
-  ::wglMakeCurrent( ( HDC )mContextHandle, mGLRC );
+  ::wglMakeCurrent( mContextHandle, mGLRC );
 #else // __BORLANDC__
-  if( GLContext() )
-    GLContext()->makeCurrent();
+  if( mpGLContext )
+    mpGLContext->makeCurrent();
 #endif // __BORLANDC__
 }
 
@@ -284,8 +289,8 @@ Scene::DoneCurrent()
 #ifdef __BORLANDC__
   ::wglMakeCurrent( 0, 0 );
 #else // __BORLANDC__
-  if( GLContext() )
-    GLContext()->doneCurrent();
+  if( mpGLContext )
+    mpGLContext->doneCurrent();
 #endif // __BORLANDC__
 }
 

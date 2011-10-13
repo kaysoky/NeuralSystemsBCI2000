@@ -5,23 +5,23 @@
 //   GraphObjects.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -102,6 +102,7 @@ GraphDisplay::GraphDisplay()
 #else // __BORLANDC__
   mContext.handle.device = NULL;
   mContext.handle.painter = NULL;
+  mContext.handle.glContext = NULL;
   mpWidget = NULL;
   mUsingGL = false;
 #endif // __BORLANDC__
@@ -165,6 +166,7 @@ GraphDisplay::Change()
   {
     delete mpWidget;
     mpWidget = NULL;
+    mContext.handle.glContext = NULL;
   }
   mUsingGL = useGL;
 
@@ -173,6 +175,7 @@ GraphDisplay::Change()
   {
     delete mpWidget;
     mpWidget = NULL;
+    mContext.handle.glContext = NULL;
   }
   if( pParent && !mpWidget )
   {
@@ -183,7 +186,8 @@ GraphDisplay::Change()
       format.setDepthBufferSize( 16 );
       format.setOverlay( true );
       format.setSwapInterval( 0 ); // disable VSync
-      mpWidget = new GLWidget( *this, format, pParent );
+      mContext.handle.glContext = new GLWidget( *this, format, pParent );
+      mpWidget = mContext.handle.glContext;
     }
     else
     {
@@ -250,8 +254,8 @@ GraphDisplay::Paint( const void* inRegionHandle )
     }
     if( inRegionHandle != NULL )
       ::SelectClipRgn( outputDC, (HRGN)inRegionHandle );
-  } 
-  else 
+  }
+  else
   {
     if( mOffscreenDC == NULL )
       mOffscreenDC = ::CreateCompatibleDC( NULL );
@@ -302,7 +306,7 @@ GraphDisplay::Paint( const void* inRegionHandle )
     pPainter->fillRect(
       QRect( left, top, width, height ),
       QColor( mColor.R(), mColor.G(), mColor.B() )
-    ); 
+    );
   mContext.handle.painter = pPainter;
 
 #endif // __BORLANDC__
@@ -490,14 +494,6 @@ GraphDisplay::BitmapData( int inWidth, int inHeight ) const
   return image;
 }
 
-#ifndef __BORLANDC__
-QGLWidget*
-GraphDisplay::GLContext() const
-{
-  return dynamic_cast<QGLWidget*>( mpWidget );
-}
-#endif // __BORLANDC__
-
 void
 GraphDisplay::ClearOffscreenBuffer()
 {
@@ -618,11 +614,12 @@ WidgetBase::SetWidget( QWidget* inpWidget )
 void
 WidgetBase::OnPaintEvent( QPaintEvent* iopEvent )
 {
-  mrGraphDisplay.Paint( &iopEvent->region().translated( mpWidget->pos() ) );
+  QRegion region = iopEvent->region().translated( mpWidget->pos() );
+  mrGraphDisplay.Paint( &region );
   iopEvent->accept();
 }
 
-void 
+void
 WidgetBase::OnMousePressEvent( QMouseEvent* iopEvent )
 {
   if( iopEvent->button() == Qt::LeftButton )
