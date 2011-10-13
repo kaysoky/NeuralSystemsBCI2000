@@ -40,6 +40,7 @@
 #include "ParamList.h"
 #include "ParamRef.h"
 #include "State.h"
+#include "StateList.h"
 #include "StateRef.h"
 #include "BCIError.h"
 #include "ClassName.h"

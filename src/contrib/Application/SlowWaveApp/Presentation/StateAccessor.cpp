@@ -43,6 +43,7 @@
 #include "StateAccessor.h"
 #include "PresErrors.h"
 #include "State.h"
+#include "StateList.h"
 #include "StateVector.h"
 
 StateVector*    TStateAccessor::stateVector = NULL;
