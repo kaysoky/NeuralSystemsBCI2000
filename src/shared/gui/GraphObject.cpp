@@ -36,6 +36,8 @@
 
 using namespace GUI;
 
+static Rect sNullRect = { 0, 0, 0, 0 };
+
 GraphObject::GraphObject( GraphDisplay& display, float zOrder )
 : mDisplay( display ),
   mVisible( true ),
@@ -43,9 +45,8 @@ GraphObject::GraphObject( GraphDisplay& display, float zOrder )
   mZOrder( zOrder ),
   mAspectRatioMode( AspectRatioModes::AdjustNone )
 {
-  Rect rect = { 0, 0, 0, 0 };
-  mUserSpecifiedDisplayRect = rect;
-  mActualDisplayRect = rect;
+  mUserSpecifiedDisplayRect = sNullRect;
+  mActualDisplayRect = sNullRect;
   mDisplay.Add( this );
   Invalidate();
 }
@@ -76,13 +77,18 @@ GraphObject::SetDisplayRect( const GUI::Rect& inRect )
 
     Invalidate();
     mUserSpecifiedDisplayRect = inRect;
-    mActualDisplayRect = inRect;
+    mActualDisplayRect = sNullRect;
     mRectSet = true;
     Change( changedFlags );
   }
   return *this;
 }
 
+GUI::Rect
+GraphObject::DisplayRect() const
+{
+  return mDisplay.PixelToNormalizedCoords( mActualDisplayRect );
+}
 
 void
 GraphObject::Paint()
@@ -92,9 +98,8 @@ GraphObject::Paint()
     DrawContext dc =
     {
       mDisplay.Context().handle,
-      { 0, 0, 0, 0 }
+      mActualDisplayRect
     };
-    dc.rect = mDisplay.NormalizedToPixelCoords( mActualDisplayRect );
 #ifndef __BORLANDC__
     dc.handle.painter->save();
 #endif // __BORLANDC__
@@ -114,9 +119,8 @@ GraphObject::Change( int inWhich )
     DrawContext dc =
     {
       mDisplay.Context().handle,
-      { 0, 0, 0, 0 }
+      mDisplay.NormalizedToPixelCoords( mUserSpecifiedDisplayRect )
     };
-    dc.rect = mDisplay.NormalizedToPixelCoords( mUserSpecifiedDisplayRect );
     int considered = 0;
 
     if( inWhich & Position )
@@ -130,7 +134,7 @@ GraphObject::Change( int inWhich )
     if( inWhich & ~considered )
       OnChange( dc );
 
-    mActualDisplayRect = mDisplay.PixelToNormalizedCoords( dc.rect );
+    mActualDisplayRect = dc.rect;
     Invalidate();
   }
 }

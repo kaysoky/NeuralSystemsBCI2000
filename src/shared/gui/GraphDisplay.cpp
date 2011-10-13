@@ -369,8 +369,7 @@ GraphDisplay::Click( int inX, int inY )
 GraphDisplay&
 GraphDisplay::Invalidate()
 {
-  Rect rect = { 0, 0, 1, 1 };
-  return InvalidateRect( rect );
+  return InvalidateRect( mContext.rect );
 }
 
 GraphDisplay&
@@ -381,24 +380,22 @@ GraphDisplay::InvalidateRect( const GUI::Rect& inRect )
   {
 #ifdef _WIN32
     HWND window = ::WindowFromDC( (HDC)mContext.handle );
-    const Rect& devRect = NormalizedToPixelCoords( inRect );
     RECT rect =
     {
-      devRect.left,
-      devRect.top,
-      devRect.right,
-      devRect.bottom
+      inRect.left,
+      inRect.top,
+      inRect.right,
+      inRect.bottom
     };
     ::InvalidateRect( window, &rect, false );
 #endif // _WIN32
   }
 #else // __BORLANDC__
-  Rect rt = NormalizedToPixelCoords( inRect );
   QRegion rgn(
-      static_cast<int>( rt.left ),
-      static_cast<int>( rt.top ),
-      static_cast<int>( rt.right - rt.left ),
-      static_cast<int>( rt.bottom - rt.top )
+      static_cast<int>( inRect.left ),
+      static_cast<int>( inRect.top ),
+      static_cast<int>( inRect.Width() ),
+      static_cast<int>( inRect.Height() )
   );
   mInvalidRegion += rgn;
   // On a plain QWidget, we need to call QWidget::update() to make sure

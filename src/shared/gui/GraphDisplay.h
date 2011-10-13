@@ -100,7 +100,7 @@ public:
   // Graphics functions
   //  Invalidate the display's entire area
   virtual GraphDisplay& Invalidate();
-  //  Invalidate a rectangle given in normalized coordinates
+  //  Invalidate a rectangle given in pixel coordinates
   virtual GraphDisplay& InvalidateRect( const Rect& );
   //  Force immediate (i.e., synchronous) redrawing of invalidated window areas
   virtual const GraphDisplay& Update() const;

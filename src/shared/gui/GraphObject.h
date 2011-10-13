@@ -100,8 +100,7 @@ class GraphObject
   int AspectRatioMode() const
     { return mAspectRatioMode; }
   GraphObject& SetDisplayRect( const GUI::Rect& );
-  const GUI::Rect& DisplayRect() const
-    { return mActualDisplayRect; }
+  GUI::Rect DisplayRect() const;
 
   virtual bool NeedsGL() const
     { return false; }
@@ -136,11 +135,6 @@ class GraphObject
   //  returns whether it considers itself clicked.
   virtual bool OnClick( const Point& )
     { return true; }
-
-#ifndef __BORLANDC__
-  // Access to OpenGL context from GraphObject descendants.
-  class QGLWidget* GLContext() const;
-#endif // __BORLANDC__
 
  public:
   // Sort order for drawing (smaller values correspond to top)
