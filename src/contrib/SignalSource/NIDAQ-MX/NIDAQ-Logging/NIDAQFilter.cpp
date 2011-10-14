@@ -34,12 +34,15 @@ using namespace std;
 
 RegisterFilter(NIDAQFilter,1.01);
 
-// The default constructor (overloaded) //
+// The constructor //
 NIDAQFilter::NIDAQFilter()
+: mRan( false ),
+  mUsed ( false ),
+  mSampleRate( 1.0 ),
+  mAnalog( NULL ),
+  mDigital( NULL )
 {
 	// INITIALIZE THINGS //
-	mRan = false;
-	mAnalog = mDigital = NULL;
 	mFound[0] = mFound[1] = 0;
 	mCounter[0] = mCounter[1] = 0;
 	mDevs[0] = mDevs[1] = "NULL";

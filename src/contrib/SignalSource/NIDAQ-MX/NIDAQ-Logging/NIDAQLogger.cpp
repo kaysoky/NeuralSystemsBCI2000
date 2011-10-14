@@ -33,10 +33,15 @@ using namespace std;
 Extension( NIDAQLogger );
 // The constructor for the NIDAQLogger //
 NIDAQLogger::NIDAQLogger()
+: mUsed( false ),
+  mSampleRate( 1.0 ),
+  mAnalog( NULL ),
+  mDigital( NULL ),
+  mDigiBuff( NULL ),
+  mAnaBuff( NULL )
 {
 	mFound[0] = mFound[1] = 0;
 	mCounter[0] = mCounter[1] = 0;
-	mAnalog = mDigital = NULL;
 	mDevs[0] = mDevs[1] = "NULL";
 	mActive[0] = mActive[1] = "";
 }
