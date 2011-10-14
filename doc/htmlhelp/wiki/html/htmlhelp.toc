@@ -42,6 +42,7 @@ BCI2000_Binaries.html
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_3_Builds Version 3 Builds
+4 October_2011_Version_3.0.3 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_111013.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_111013.exe" rel="nofollow">October 2011 Version 3.0.3</a>
 4 June_2011_Version_3.0.2 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" rel="nofollow">June 2011 Version 3.0.2</a>
 4 May_2011_Version_3.0.1 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" rel="nofollow">May 2011 Version 3.0.1</a>
 4 February_2011_Version_3_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" rel="nofollow">February 2011 Version 3 Release Build</a>

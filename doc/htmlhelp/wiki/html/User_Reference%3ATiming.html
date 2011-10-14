@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Timing - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Timing,BCI2000 Glossary,Programming Reference:GraphDisplay Class,Technical Reference:Core Modules,User Reference:DataIOFilter" />
+<meta name="keywords" content="User Reference:Timing,BCI2000 Glossary,Programming Reference:ApplicationWindow Class,Programming Reference:GraphDisplay Class,Technical Reference:Core Modules,User Reference:DataIOFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -57,8 +57,8 @@ Block duration is measured as the difference between two consecutive time stamps
 <p>Roundtrip is measured by subtracting a data block's time stamp from the current time when it enters the data acquisition module coming from the application module.
 </p>
 <a name="Measuring_Source-to-Stimulus_Delay"></a><h2>Measuring Source-to-Stimulus Delay</h2>
-<p>In the <i>StimulusTime</i> state, the application module stores a time stamp when the module's Process() function has finished. By this time, video memory should have been updated, given that the module enforces a display update at the end of its Process() function; generally, this is done by calling the <tt><a href="Programming_Reference%253AGraphDisplay_Class.html#Update" title="Programming Reference:GraphDisplay Class">GUI::GraphDisplay::Update()</a></tt> function for the module's display window.
-</p><p>The <a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">DataIOFilter</a> then subtracts the source time stamp from the stimulus time stamp to compute the source-to-stimulus delay. Unlike roundtrip time, measurement of the source-to-stimulus delay requires that data acquisition and application modules share a common time base; when BCI2000 is distributed over multiple machines in a network, source-to-stimulus delay cannot be measured.
+<p>In the <i>StimulusTime</i> state, the application module stores a time stamp when the module's Process() function has finished. By this time, video memory should have been updated, given that the module enforces a display update at the end of its Process() function; generally, this is done by calling the <tt><a href="Programming_Reference%253AGraphDisplay_Class.html#Update" title="Programming Reference:GraphDisplay Class">GUI::GraphDisplay::Update()</a></tt> function for the module's display window. Modules that use the <a href="Programming_Reference%253AApplicationWindow_Class.html" title="Programming Reference:ApplicationWindow Class">ApplicationWindow</a> class for stimulus display (as most do), don't need to call <tt>GUI::GraphDisplay::Update()</tt>, as this is taken care for by the ApplicationWindow class after all calls to <tt>GenericFilter::Process()</tt> have returned.
+</p><p>Once the stimulus time stamp has reached the source module, the <a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">DataIOFilter</a> subtracts the source time stamp from the stimulus time stamp to compute the source-to-stimulus delay. Unlike roundtrip time, measurement of the source-to-stimulus delay requires that data acquisition and application modules share a common time base; when BCI2000 is distributed over multiple machines in a network, source-to-stimulus delay cannot be measured.
 </p>
 <a name="Timing_Display"></a><h2>Timing Display</h2>
 <p><a href="../images/3/34/TimingDisplay.png" class="image" title="frameless"><img src="../images/3/34/TimingDisplay.png" alt="frameless" width="343" height="210" longdesc="/wiki/index.php/Image:TimingDisplay.png" /></a>

@@ -93,7 +93,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>Marks the entire <tt>GraphDisplay</tt> area for repainting.
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:GraphDisplayMethods&amp;action=edit&amp;section=3" title="Template:GraphDisplayMethods">edit</a>]</div><a name="InvalidateRect.28GUI::Rect.29"></a><h3>InvalidateRect(GUI::Rect)</h3>
-<p>Marks a rectangle within the <tt>GraphDisplay</tt> for repainting. The rectangle is given in normalized coordinates.
+<p>Marks a rectangle within the <tt>GraphDisplay</tt> for repainting. The rectangle is given in screen pixel coordinates.
+</p><p><b>NOTE:</b> The use of pixel coordinates has been introduced in <a href="http://www.bci2000.org/tracproj/changeset/3599" class='external text' title="http://www.bci2000.org/tracproj/changeset/3599" rel="nofollow">rev 3599</a> to avoid artifacts from converting forth and back between normalized and pixel coordinates. Originally, the rectangle was specified in normalized coordinates.
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:GraphDisplayMethods&amp;action=edit&amp;section=4" title="Template:GraphDisplayMethods">edit</a>]</div><a name="Update.28.29"></a><h3>Update()</h3>
 <p>Forces an immediate repaint of all invalidated areas in the <tt>GraphDisplay</tt>, making sure that changes in <tt>GraphObject</tt> state are reflected in the device's frame buffer. In BCI2000 application modules, this function should be called immediately before setting the <a href="User_Reference%253ATiming.html#Measuring_Source-to-Stimulus_Delay" title="User Reference:Timing">StimulusTime</a> time stamp.

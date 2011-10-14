@@ -42,9 +42,10 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-2'><a href="BCI2000_Binaries.html#Version_3_Builds"><span class="tocnumber">7.1</span> <span class="toctext">Version 3 Builds</span></a>
 <ul>
-<li class='toclevel-3'><a href="BCI2000_Binaries.html#June_2011_Version_3.0.2"><span class="tocnumber">7.1.1</span> <span class="toctext">June 2011 Version 3.0.2</span></a></li>
-<li class='toclevel-3'><a href="BCI2000_Binaries.html#May_2011_Version_3.0.1"><span class="tocnumber">7.1.2</span> <span class="toctext">May 2011 Version 3.0.1</span></a></li>
-<li class='toclevel-3'><a href="BCI2000_Binaries.html#February_2011_Version_3_Release_Build"><span class="tocnumber">7.1.3</span> <span class="toctext">February 2011 Version 3 Release Build</span></a></li>
+<li class='toclevel-3'><a href="BCI2000_Binaries.html#October_2011_Version_3.0.3"><span class="tocnumber">7.1.1</span> <span class="toctext">October 2011 Version 3.0.3</span></a></li>
+<li class='toclevel-3'><a href="BCI2000_Binaries.html#June_2011_Version_3.0.2"><span class="tocnumber">7.1.2</span> <span class="toctext">June 2011 Version 3.0.2</span></a></li>
+<li class='toclevel-3'><a href="BCI2000_Binaries.html#May_2011_Version_3.0.1"><span class="tocnumber">7.1.3</span> <span class="toctext">May 2011 Version 3.0.1</span></a></li>
+<li class='toclevel-3'><a href="BCI2000_Binaries.html#February_2011_Version_3_Release_Build"><span class="tocnumber">7.1.4</span> <span class="toctext">February 2011 Version 3 Release Build</span></a></li>
 </ul>
 </li>
 <li class='toclevel-2'><a href="BCI2000_Binaries.html#Version_2_Builds"><span class="tocnumber">7.2</span> <span class="toctext">Version 2 Builds</span></a>
@@ -105,6 +106,72 @@ For convenience, we provide an extended binary distribution that includes binary
 </p>
 <a name="Version_History"></a><h2>Version History</h2>
 <a name="Version_3_Builds"></a><h3>Version 3 Builds</h3>
+<a name="October_2011_Version_3.0.3"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_111013.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_111013.exe" rel="nofollow">October 2011 Version 3.0.3</a></h4>
+<p><b>New features in this version:</b>
+</p>
+<ul><li>Startup batch files in the batch directory are now loading amplifier configuration automatically. *Operator module
+<ul><li>displays the batch file's name in its title bar,
+</li><li>displays last save/load operation in configuration dialog's window title,
+</li><li>"Configure Save/Load" dialogs display parameters in a hierarchical fashion.
+</li></ul>
+</li><li>gUSBampADC impedance-check output made more human-readable. (J. Hill)
+</li><li>The KeystrokeFilter is now present in all Application modules by default. 
+</li><li>EEGLAB plugin: Start over with a redesigned plugin. It is now a pop_function, and more fields are imported into the EEGLAB data structure. (C. Brunner)
+</li><li>BCI2000Chain is smarter about how it parses options, and has a -k option for keeping the temporary files. (J. Hill)
+</li><li>More useful error message displays BCI2000 download information when a mex file cannot be found for the current platform. 
+</li><li>P300Classifier now uses the TargetDefinition matrix' Enter column when the Display column is empty (affects the "Predicted" column in the Details pane).
+</li><li>The OfflineAnalysis elocHelper tool now runs on 64 bit Windows systems.
+</li><li>load_bcidat reports file sizes in an additional output parameter.
+</li><li>New SimpleCert tool efficiently displays timing information in a graph. (G. Milsap, J. Hill)
+</li></ul>
+<p><b>Bug fixes in this version:</b>
+</p>
+<ul><li>Preflight could not be completed a second time once an error had occurred. 
+</li><li>In core modules, state information would be reset between the first and second data block of a run. 
+</li><li>SourceFilter would always report invalid filter frequencies when activated.
+</li><li>StimulusPresentationTask now correctly determines attended targets when EpochsToAverage is set to 0. 
+</li><li>P3Speller bug displaying a message about "No RTTI available" under certain conditions.
+</li><li>Fixed font size issue when running CursorTask in low resolution.
+</li><li>Fixed possibility of infinite loop in shared/modules/application/gui/StatusBar class.
+</li><li>In release builds, miniature Application windows in Operator were sometimes non-functional, or would result in out_of_memory exceptions in the Operator module. 
+</li><li>Fixed "sticking color" behavior in Operator log. Also, messages should no longer be inserted in the middle of the log window.
+</li><li>In Operator module, keyboard control for visualization windows is working again.
+</li><li>Fixed unwanted enlargement of status bar in Operator when displaying messages containing newlines. 
+</li><li>Catching unhandled exceptions in all command line tools. 
+</li><li>bci_dat2stream now sends all state information rather than ignoring multiple state vector samples per block. 
+</li></ul>
+<p><b>Enhancements to the BCI2000 programming framework:</b>
+</p>
+<ul><li>Minor documentation tweaks and minor changes to bootstrapping utility and templates. (J. Hill)
+</li><li>Incorporated Linux compatibility patches by N. Urii.
+</li><li>Added Layering scheme to Operator visualizations; visualizations may now be displayed on top of each other (G. Milsap)
+</li><li>Introduced BufferedADC as a base class for ADCs that transparently handles buffering of acquired data.
+</li><li>Ported 3DAPI demo/test program to Qt.  *Drawing of GUI elements is now faster because it occurs directly on a widget rather than an offscreen bitmap.  *When a 3D scene is present, all drawing now uses OpenGL via QGLWidget. This allows for GUI::GraphObjects such as text messages to appear on top of the Scene.  *GraphObjects now have OnMove() and OnResize() event handlers to avoid triggering OnChange() for each call to GraphObject::SetDisplayRect(). Thus, ImageStimulus objects may be efficiently moved around in a scene.  *FilterCombination template classes allow serial and parallel combination of filters.
+</li><li>IdentityFilter to be used in a ParallelCombination, or in a dummy signal processing module.
+</li><li>New ApplicationWindow base class for application windows allows multiple filters to maintain GraphObjects in a common application window.
+</li><li>Reentrancy and exception safety for ArithmeticExpression and Expression classes. 
+</li><li>Thread-safety for bcierr, bciout, and bcidbg streams.
+</li><li>CfgID class to hold configuration option IDs and their string representation in one place.  *Added VisID as a data type under shared/types. 
+</li><li>Introduced Uncopyable and Lockable utility mixin classes.  *Added a Runnable class, along with FunctionCall/MemberCall templates that create Runnables from function calls.  *Added a RunnerThread class that runs Runnables in a separate thread.
+</li><li>Various improvements related to catching and reporting of unhandled exceptions. 
+</li><li>bciexception macro provides a convenient way to construct exception messages using stream inserter syntax. *bciassert macro to send information about failed assertions to the Operator log. 
+</li><li>Introduced static libraries for all types of core modules to improve build speed.
+</li><li>Generalized SETUP_EXTLIB_DEPENDENCIES macro to simplify addition of extlib CMake include files.
+</li><li>Introduced a CMake-created module inventory such that BCI2000Launcher is built with information about all existing modules.
+</li></ul>
+<p> 
+<b>Bug fixes and enhancements to contributed code:</b>
+</p>
+<ul><li>Fixed mod 0 bug in DataGloveLogger. (J. Hill)
+</li><li>Added a GazeMonitorFilter which greatly eases using the EyetrackerLogger. (G. Milsap)
+</li><li>Fixed a bug in WebcamLogger regarding asynchronous state logging. (G. Milsap)
+</li><li>FilePlaybackADC: added an option to play the biosignal data backwards. (J. Hill)
+</li><li>Added gHIampSource module. (G. Milsap)
+</li><li>Emotiv source module no longer sends warnings for debugging purposes. (J. Hill)
+</li><li>EyetrackerLogger would crash due to dereferencing an uninitialized pointer. 
+</li><li>NIDAQ-mx source module would crash on "Suspend" or "Quit" due to deleting an uninitialized pointer.
+</li><li>Reintroducing workaround for reinitialization problem in the Biosemi source module. (G. Schalk)
+</li></ul>
 <a name="June_2011_Version_3.0.2"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" rel="nofollow">June 2011 Version 3.0.2</a></h4>
 <p><a href="http://bci2000.org/tracproj/changeset/3359" class='external text' title="http://bci2000.org/tracproj/changeset/3359" rel="nofollow">Latest changeset: 3359</a>
 </p><p><b>New features in this version:</b>
