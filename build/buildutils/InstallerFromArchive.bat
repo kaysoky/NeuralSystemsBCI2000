@@ -1,15 +1,15 @@
 :: $Id$
 :: Script to create a self-extracting archive from a 7z or zip archive.
 :: Call this script with a an archive as its argument.
+@echo off
+if [%1]==[] goto error
 
-@if [%1]==[] goto error
-
-@goto doit
+goto doit
 
 :error
-@echo This script takes a 7z or zip archive as an argument.
-@pause
-@goto end
+echo This script takes a 7z or zip archive as an argument.
+pause
+goto end
 
 :doit
 pushd %~dp0
