@@ -29,6 +29,7 @@ else:
 		if isinstance(w,str): w = WavTools.wav(w)
 		if w == None: w = self.wav
 		self.wav = w
+		if self.wav == None: return
 		if data==None: data = self.wav.y
 		oldstamp = getattr(self, 'wavstamp', None)
 		self.wavstamp = [id(self.wav), id(data), self.wav.revision]
@@ -59,7 +60,10 @@ else:
 		preplay_done = False
 	
 		self.open(w=w, data=data, timecritical=True)		
-	
+		if self.wav == None:
+			self.playing = False
+			return
+		
 		speed = pan = vol = None		
 		dsrepeats = min(1, repeats)		
 		while repeats != 0:

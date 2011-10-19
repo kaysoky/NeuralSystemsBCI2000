@@ -220,8 +220,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				istream = int(code[1:])-1
 				triggers.append(istream)
 				self.triggermasks[istream] = row
-			elif code not in ['F']:
-				raise EndUserError('unrecognized SoundChannels code "%s": legal values for a %d-stream system are F %s'%(code, self.nstreams,' '.join(sstrings+tstrings)))
+			elif code not in ['F', 'B']:
+				raise EndUserError('unrecognized SoundChannels code "%s": legal values for a %d-stream system are F B %s'%(code, self.nstreams,' '.join(sstrings+tstrings)))
 		self.surround = len(triggers) > 0
 		if self.surround and sorted(triggers) != range(self.nstreams): raise EndUserError("if Tx values are specified in SoundChannels, all T1 through T%d must be specified without repetition"%self.nstreams)
 		if sorted(sounds) != range(self.nstreams): raise EndUserError("last column of SoundChannels must contain all S1 through S%d without repetition"%self.nstreams)

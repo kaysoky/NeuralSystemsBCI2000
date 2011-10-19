@@ -37,6 +37,7 @@ class BciApplication(BciGenericApplication):
 			"PythonApp:Task    int       InvertCount=                              0                      0     0 1 // check if the subject should count standards rather than oddballs (boolean)",
 			"PythonApp:Task    intlist   BeatsPerTrial=                         1  7                      7     1 % // ",
 			"PythonApp:Task    matrix    Cues=                                  { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20LEFT RIGHT%20>>> % % NO YES no.wav yes.wav                  %     % % // ",
+			"PythonApp:Task    string    BackgroundSound=                          %                      %     % % // ",
 		]
 		nbits = numpy.ceil(numpy.log2(self.maxstreams + 1.0))
 		states = [
@@ -69,6 +70,12 @@ class BciApplication(BciGenericApplication):
 		for istream,n in enumerate(self.nbeats):
 			if n < 1 or n != round(n): raise EndUserError("BeatsPerTrial elements must be integers > 0")
 		
+		if 'DirectSound' in self.params:
+			if int(self.params['DirectSound']):
+				import DirectSoundInterface
+			elif 'DirectSoundInterface' in sys.modules and sys.modules['DirectSoundInterface'].loaded:
+				raise EndUserError, "once turned on, the DirectSound setting cannot be turned off without restarting BCI2000"
+
 		cues = self.params['Cues']
 		if len(cues) != 4:
 			raise EndUserError("Cues parameter must have 4 rows")
@@ -121,6 +128,7 @@ class BciApplication(BciGenericApplication):
 		
 		self.ding = self.PrepareFeedback('ding.wav')
 		self.chimes = self.PrepareFeedback('chimes.wav')
+		self.background_noise = self.PrepareFeedback(self.params['BackgroundSound'], lettercode='B')
 		
 		self.reset_count()
 		self.count_feedback_stimuli = []
@@ -149,12 +157,12 @@ class BciApplication(BciGenericApplication):
 		
 	#############################################################
 	
-	def PrepareFeedback(self, w, delay=0):
+	def PrepareFeedback(self, w, delay=0, lettercode='F'):
 		if w == '' or w == None: return WavTools.player(None)
 		if isinstance(w, basestring): w = WavTools.wav(w)
 		scparam = self.params.get('SoundChannels', None)
 		if scparam != None and len(scparam)>= 2 and len(scparam[0]) >= 3:
-			scparam = [[{'':'0'}.get(x,x) for x in row[:-1]] for row in scparam if row[-1].upper() == 'F']
+			scparam = [[{'':'0'}.get(x,x) for x in row[:-1]] for row in scparam if row[-1].upper() == lettercode]
 			ww = 0
 			for q,row in enumerate(scparam):
 				try: row = [float(x) for x in row]
@@ -173,6 +181,7 @@ class BciApplication(BciGenericApplication):
 		self.predictions = []
 		self.target = 0
 		self.targetorder = []
+		self.background_noise.play(-1)
 
 	#############################################################
 	
@@ -330,7 +339,8 @@ class BciApplication(BciGenericApplication):
 		m = repr(self.predictions)
 		m = m.replace('], [', '],\n\t[').replace('[[', '[\n\t[').replace(']]', '],\n]\n')
 		f = open(fn, 'w'); f.write(m); f.close()	
-			
+		
+		self.background_noise.stop()
 		self.chimes.play()
 		self.stimuli['cue'].on = False
 								
