@@ -10,7 +10,7 @@
 ##       LIBS_EXTLIB - required library for gMOBIlab
 ##       Also defines source groups for source files
 
-IF( WIN32 )
+IF( WIN32 AND NOT CMAKE_CL_64 )
 
 # Define the source files
 SET( SRC_EXTLIB_GTEC
@@ -66,9 +66,9 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\gtec\\gMOBIlab FILES ${HDR_EXT
 # Set success
 SET( EXTLIB_OK TRUE )
 
-ELSE( WIN32 )
+ELSE()
 
-  MESSAGE( "- WARNING: gMOBIlab libraries only exist for windows.  This module will not build." )
+  MESSAGE( "- WARNING: gMOBIlab libraries only exist for windows 32bit.  This module will not build." )
   SET( EXTLIB_OK FALSE )
 
-ENDIF( WIN32 )
+ENDIF()

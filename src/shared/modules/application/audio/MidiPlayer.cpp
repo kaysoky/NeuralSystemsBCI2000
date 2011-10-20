@@ -237,13 +237,13 @@ MidiPlayer::Play( int inMidiNote,
 
 void
 CALLBACK
-MidiPlayer::SendMidiMsg( UINT, UINT, DWORD inMsg, DWORD, DWORD )
+MidiPlayer::SendMidiMsg( UINT, UINT, DWORD_PTR inMsg, DWORD_PTR, DWORD_PTR )
 {
   // If the last instance of MidiPlayer was deleted since
   // the timer was set up,
   // the device will have been closed and the device handle will be invalid.
   // This should be ok.
-  MMRESULT err = ::midiOutShortMsg( sDeviceHandle, inMsg );
+  MMRESULT err = ::midiOutShortMsg( sDeviceHandle, static_cast<DWORD>( inMsg ) );
 
   if( err == MIDIERR_NOTREADY )
   // The device is busy with something else. This should only happen at interrupt time
@@ -322,7 +322,7 @@ MidiPlayer::PlaySequence( const MidiNote* inNoteSequence )
   const MidiNote *p = inNoteSequence;
   while( p->duration != 0 )
     ++p;
-  int numNotes = p - inNoteSequence;
+  size_t numNotes = p - inNoteSequence;
   mpNoteSeq = ( MidiNote* )::malloc( sizeof( MidiNote ) * ( numNotes + 1 ) );
   if( mpNoteSeq == NULL )
   {
@@ -347,8 +347,9 @@ MidiPlayer::PlaySequence( const MidiNote* inNoteSequence )
     }
   }
   // Set up the timer for processing the next note.
+  DWORD_PTR this_ = reinterpret_cast<DWORD_PTR>( this );
   UINT timerID = ::timeSetEvent( mpCurSeqPos->duration, timerResolution,
-                                      SeqCallback, ( DWORD )this, TIME_ONESHOT );
+                                      SeqCallback, this_, TIME_ONESHOT );
   mSeqTimerID = timerID;
   if( timerID == 0 ) // Setting the timer didn't work; switch the note off at once.
   {
@@ -385,7 +386,7 @@ MidiPlayer::StopSequence()
 
 void
 CALLBACK
-MidiPlayer::SeqCallback( UINT, UINT, DWORD inInstance, DWORD, DWORD )
+MidiPlayer::SeqCallback( UINT, UINT, DWORD_PTR inInstance, DWORD_PTR, DWORD_PTR )
 {
   MidiPlayer* this_ = reinterpret_cast<MidiPlayer*>( inInstance );
   MidiNote*   pCurNote = this_->mpCurSeqPos;

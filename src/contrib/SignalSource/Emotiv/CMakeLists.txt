@@ -26,6 +26,8 @@ INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Emotiv/lib/include 
 
 BCI2000_INCLUDE( "SOURCEFILTER" )
 
+IF( MSVC AND NOT CMAKE_CL_64 OR BORLAND )
+
 # Create the signal source module
 BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
   "${EXECUTABLE_NAME}" 
@@ -41,3 +43,9 @@ ADD_CUSTOM_COMMAND(
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/dll/edk.dll" "${BCI2000_ROOT_DIR}/prog"
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/dll/edk_utils.dll" "${BCI2000_ROOT_DIR}/prog"
 )
+
+ELSE()
+
+
+  MESSAGE( "--- No Emotiv libraries for this Compiler/OS. Will not build." )
+ENDIF()

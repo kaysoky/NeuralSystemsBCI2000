@@ -83,13 +83,19 @@
 
 #elif( _MSC_VER )
 
+# ifdef _WIN64
+#  define MANGLING_ ""
+# else // _WIN64
+#  define MANGLING_ "_"
+#endif // _WIN64
+
 # define RegisterFilter_( name, pos, priority )  \
    extern "C" int FilterObjectName_( name, pos, priority ) = (int) new GenericFilter::FilterRegistrar<name>( #pos, priority, true ); \
-   __pragma( comment( linker, "/include:_" #name "Registrar" #priority ) )
+   __pragma( comment( linker, "/include:" MANGLING_ #name "Registrar" #priority ) )
 
 # define RegisterExtension_( x )  \
    extern "C" int ExtensionObjectName_( x ) = (int)EnvironmentExtension::AutoDelete( new x ); \
-   __pragma( comment( linker, "/include:_" #x "Instance" ) )
+   __pragma( comment( linker, "/include:" MANGLING_ #x "Instance" ) )
 
 #else // __GNUC__, _MSC_VER // for other compilers, we cannot use registration in static libraries
 

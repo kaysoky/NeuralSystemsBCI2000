@@ -10,7 +10,7 @@
 ##       LIBS_EXTLIB - required library for vAmp
 ##       Also defines source groups for source files
 
-IF( WIN32 )
+IF( WIN32 AND NOT CMAKE_CL_64 )
 
 # Set the Source and headers
 SET( SRC_EXTLIB )
@@ -48,9 +48,9 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\brainproducts\\vamp FILES ${HD
 # Set success
 SET( EXTLIB_OK TRUE )
 
-ELSE( WIN32 )
+ELSE()
 
-  MESSAGE( "- WARNING: vAmp/FirstAmp libraries only exist for windows.  This module will not build." )
+  MESSAGE( "- WARNING: vAmp/FirstAmp libraries only exist for windows 32bit.  This module will not build." )
   SET( EXTLIB_OK FALSE )
 
-ENDIF( WIN32 )
+ENDIF()

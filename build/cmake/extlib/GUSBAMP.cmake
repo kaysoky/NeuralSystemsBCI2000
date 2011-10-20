@@ -25,20 +25,24 @@ SET( INC_EXTLIB
 
 # Define where the library is
 IF( BORLAND )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp )
+  SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/omf )
 ENDIF( BORLAND )
 IF( MSVC )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/coff )
+  IF( CMAKE_CL_64 )
+    SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/coff64 )
+  ELSE()
+    SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/coff )
+  ENDIF()
 ENDIF( MSVC )
 IF( MINGW )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/mingw )
+  SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/mingw )
 ENDIF( MINGW )
 
 # Set Libs required
 IF( MINGW )
-SET( LIBS_EXTLIB libgUSBamp.a )
+  SET( LIBS_EXTLIB libgUSBamp.a )
 ELSE( MINGW )
-SET( LIBS_EXTLIB gUSBamp.lib )
+  SET( LIBS_EXTLIB gUSBamp.lib )
 ENDIF( MINGW )
 
 # Set the source groups

@@ -256,8 +256,7 @@ ImageStimulus::OnChange( DrawContext& ioDC )
     {
       QImage img = mpImage->scaled( width, height );
       ApplyRenderingMode( img );
-      mpImageBufferNormal = new QPixmap;
-      mpImageBufferNormal->convertFromImage( img );
+      mpImageBufferNormal = new QPixmap( QPixmap::fromImage( img ) );
     }
     // Create the highlighted pixmap by modifying mpImage
     QImage img( *mpImage );
@@ -299,8 +298,7 @@ ImageStimulus::OnChange( DrawContext& ioDC )
     }
     img = img.scaled( width, height );
     ApplyRenderingMode( img );
-    mpImageBufferHighlighted = new QPixmap;
-    mpImageBufferHighlighted->convertFromImage( img );
+    mpImageBufferHighlighted = new QPixmap( QPixmap::fromImage( img ) );
   }
 
 #endif // __BORLANDC__

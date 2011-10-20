@@ -96,7 +96,7 @@ IF( MSVC )
   )
   FOREACH( flag_var ${LINKER_FLAG_VARS} )
      SET( ${flag_var}_DYNAMIC "${${flag_var}}" )
-     SET( ${flag_var} "${${flag_var}} /NODEFAULTLIB:msvcrt /NODEFAULTLIB:msvcrtd" )
+     SET( ${flag_var} "${${flag_var}} /NODEFAULTLIB:msvcrt /NODEFAULTLIB:msvcrtd /NODEFAULTLIB:msvcprt /NODEFAULTLIB:msvcprtd" )
      SET( ${flag_var}_STATIC "${${flag_var}}" )
   ENDFOREACH( flag_var )
   

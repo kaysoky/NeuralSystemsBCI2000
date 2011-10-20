@@ -141,9 +141,9 @@ class MidiPlayer
   // duration has expired.
   static void CALLBACK SendMidiMsg( UINT inID,
                                     UINT,
-                                    DWORD inMsg,
-                                    DWORD,
-                                    DWORD );
+                                    DWORD_PTR inMsg,
+                                    DWORD_PTR,
+                                    DWORD_PTR );
   // Playing a sequence of notes:
   // WIN32 MIDI streaming does not work reliably - we need to do this
   // ourselves.
@@ -152,9 +152,9 @@ class MidiPlayer
   // a sequence.
   static void CALLBACK SeqCallback( UINT inID,
                                     UINT,
-                                    DWORD inInstance,
-                                    DWORD,
-                                    DWORD );
+                                    DWORD_PTR inInstance,
+                                    DWORD_PTR,
+                                    DWORD_PTR );
   UINT      mSeqTimerID;
   MidiNote* mpNoteSeq,
           * mpCurSeqPos;

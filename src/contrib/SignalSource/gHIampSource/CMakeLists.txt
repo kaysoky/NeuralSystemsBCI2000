@@ -4,11 +4,11 @@
 ## Description: Build information for the gHIampSource source module
 ###########################################################################
 
-IF( NOT WIN32 )
+IF( NOT WIN32 OR CMAKE_CL_64 )
 
   MESSAGE( "-- gHIamp doesn't support this OS.  Will not build." )
 
-ELSE( NOT WIN32 )
+ELSE()
 
   # Set the executable name
   SET( EXECUTABLE_NAME gHIampSource )
@@ -47,4 +47,4 @@ ELSE( NOT WIN32 )
 
   TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} gHIamp )
 
-ENDIF( NOT WIN32 )
+ENDIF()

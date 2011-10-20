@@ -10,7 +10,7 @@
 ##       LIBS_EXTLIB - required library for pthreads
 ##       Also defines source groups for source files
 
-IF( WIN32 )
+IF( WIN32 AND NOT CMAKE_CL_64 )
 
 # Set the Source and headers
 SET( SRC_EXTLIB )
@@ -44,4 +44,4 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\fieldtrip\\pthreads-win32 FILE
 # Set success
 SET( EXTLIB_OK TRUE )
 
-ENDIF( WIN32 )
+ENDIF()

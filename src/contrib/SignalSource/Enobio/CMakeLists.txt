@@ -28,9 +28,9 @@ IF( MSVC )
 ENDIF( MSVC )
 
 # Put everything together
-IF( NOT MSVC AND NOT BORLAND )
+IF( NOT MSVC AND NOT BORLAND OR CMAKE_CL_64 )
   MESSAGE( "-- ENOBIO does not provide libraries for this compiler/OS,  Will not build" )
-ELSE( NOT MSVC AND NOT BORLAND )
+ELSE()
 
   # Create the signal source module
   BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
@@ -47,6 +47,6 @@ ELSE( NOT MSVC AND NOT BORLAND )
   	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/lib/EnobioDLL.dll" "${BCI2000_ROOT_DIR}/prog"
   )
 
-ENDIF( NOT MSVC AND NOT BORLAND )
+ENDIF()
 
 

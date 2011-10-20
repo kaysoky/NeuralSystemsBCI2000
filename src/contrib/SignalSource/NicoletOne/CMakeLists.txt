@@ -6,7 +6,7 @@
 
 # Unfortunately, this lib being COM based, we can't do this with ANYTHING
 # but Visual Studio.  Bleh.
-IF( MSVC )
+IF( MSVC AND NOT CMAKE_CL_64 )
 
 # Set the executable name
 SET( EXECUTABLE_NAME NicoletOne )
@@ -108,6 +108,6 @@ IF( NOT FAILED )
 
 ENDIF( NOT FAILED )
 
-ENDIF( MSVC )
+ENDIF( MSVC AND NOT CMAKE_CL_64 )
 
 
