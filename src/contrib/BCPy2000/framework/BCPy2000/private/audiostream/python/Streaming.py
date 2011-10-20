@@ -68,7 +68,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			
 			"PythonSig:Epoch   float     EpochDurationMsec=                      600                    600   100 % // ",
 			"PythonSig:Epoch   floatlist EpochLowerBoundMsec=                2   100     100            100     0 % // after springing, each ERP trap will not spring again for this many milliseconds",
-			"PythonSig:Epoch   list      TriggerChannels=                    2  LAUD    RAUD              %     % % // ",
+			"PythonSig:Epoch   list      TriggerChannels=                    2  AUDL    AUDR              %     % % // ",
 			"PythonSig:Epoch   floatlist TriggerThreshold=                   2     0.1     0.1            %     0 % // ",
 			"PythonSig:Epoch   float     TriggerHPCutoff=                          0.0                    0.0   0 % // ",
 			"PythonSig:Epoch   int       TriggerHPOrder=                           4                      4     0 % // ",
