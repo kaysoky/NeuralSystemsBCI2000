@@ -187,7 +187,7 @@ CallbackBase::CheckPendingCallback()
 
 
 // CallbackBase::Callback
-CallbackBase::Callback::Callback( void(*inFunction)(), void* inData, CallbackBase::Context inContext )
+CallbackBase::Callback::Callback( CallbackBase::Function inFunction, void* inData, CallbackBase::Context inContext )
 : mFunction( inFunction ),
   mData( inData ),
   mpWaitEvent( NULL ),
@@ -222,7 +222,7 @@ CallbackBase::Callback::ResumeThread()
 void
 CallbackBase::Callback0::Execute()
 {
-  typedef CallbackBase::Result (*Fn)( void* );
+  typedef CallbackBase::Result (STDCALL *Fn)( void* );
   mResult = reinterpret_cast<Fn>( mFunction )( mData );
 }
 

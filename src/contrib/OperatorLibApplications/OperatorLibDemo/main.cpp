@@ -32,12 +32,12 @@
 
 using namespace std;
 
-void OnConnect( void* );
-void OnSetConfig( void* );
-void OnSuspend( void* );
-void OnLogMessage( void*, const char* );
-void OnWarningMessage( void*, const char* );
-void OnErrorMessage( void*, const char* );
+void STDCALL OnConnect( void* );
+void STDCALL OnSetConfig( void* );
+void STDCALL OnSuspend( void* );
+void STDCALL OnLogMessage( void*, const char* );
+void STDCALL OnWarningMessage( void*, const char* );
+void STDCALL OnErrorMessage( void*, const char* );
 
 struct ProgramData
 {
@@ -101,7 +101,7 @@ main( int argc, char* argv[] )
   BCI_Dispose();
 }
 
-void
+void STDCALL
 OnConnect( void* inData )
 {
   ProgramData* pData = static_cast<ProgramData*>( inData );
@@ -115,32 +115,32 @@ OnConnect( void* inData )
     BCI_SetConfig();
 }
 
-void
+void STDCALL
 OnSetConfig( void* )
 {
   BCI_StartRun();
 }
 
-void
+void STDCALL
 OnSuspend( void* inData )
 {
   ProgramData* pData = static_cast<ProgramData*>( inData );
   pData->terminate = true;
 }
 
-void
+void STDCALL
 OnLogMessage( void*, const char* s )
 {
   cout << s << endl;
 }
 
-void
+void STDCALL
 OnWarningMessage( void*, const char* s )
 {
   cout << s << endl;
 }
 
-void
+void STDCALL
 OnErrorMessage( void* inData, const char* s )
 {
   cout << s << endl;

@@ -33,17 +33,18 @@
 using namespace std;
 
 void ExecuteScript( const char* );
-void OnConnect( void* );
-void OnSetConfig( void* );
-void OnStart( void* );
-void OnResume( void* );
-void OnSuspend( void* );
-void OnShutdown( void* );
-void OnDebugMessage( void*, const char* );
-void OnLogMessage( void*, const char* );
-void OnWarningMessage( void*, const char* );
-void OnErrorMessage( void*, const char* );
-void OnUnknownCommand( void*, const char* inCommand );
+// Operator Library Callbacks
+void STDCALL OnConnect( void* );
+void STDCALL OnSetConfig( void* );
+void STDCALL OnStart( void* );
+void STDCALL OnResume( void* );
+void STDCALL OnSuspend( void* );
+void STDCALL OnShutdown( void* );
+void STDCALL OnDebugMessage( void*, const char* );
+void STDCALL OnLogMessage( void*, const char* );
+void STDCALL OnWarningMessage( void*, const char* );
+void STDCALL OnErrorMessage( void*, const char* );
+void STDCALL OnUnknownCommand( void*, const char* inCommand );
 
 bool gTerminated = false;
 const char* gScript_OnConnect = NULL;
@@ -130,7 +131,7 @@ ExecuteScript( const char* inScript )
   }
 }
 
-void
+void STDCALL
 OnConnect( void* )
 {
   if( gScript_OnConnect )
@@ -140,7 +141,7 @@ OnConnect( void* )
   }
 }
 
-void
+void STDCALL
 OnSetConfig( void* )
 {
   if( gScript_OnSetConfig )
@@ -150,7 +151,7 @@ OnSetConfig( void* )
   }
 }
 
-void
+void STDCALL
 OnStart( void* )
 {
   if( gScript_OnStart )
@@ -160,7 +161,7 @@ OnStart( void* )
   }
 }
 
-void
+void STDCALL
 OnResume( void* )
 {
   if( gScript_OnResume )
@@ -170,7 +171,7 @@ OnResume( void* )
   }
 }
 
-void
+void STDCALL
 OnSuspend( void* )
 {
   if( gScript_OnSuspend )
@@ -180,7 +181,7 @@ OnSuspend( void* )
   }
 }
 
-void
+void STDCALL
 OnShutdown( void* )
 {
   if( gScript_OnShutdown )
@@ -191,31 +192,31 @@ OnShutdown( void* )
   gTerminated = true;
 }
 
-void
+void STDCALL
 OnDebugMessage( void*, const char* s )
 {
   cout << s << endl;
 }
 
-void
+void STDCALL
 OnLogMessage( void*, const char* s )
 {
   cout << s << endl;
 }
 
-void
+void STDCALL
 OnWarningMessage( void*, const char* s )
 {
   cout << "Warning: " << s << endl;
 }
 
-void
+void STDCALL
 OnErrorMessage( void*, const char* s )
 {
   cout << "Error: " << s << endl;
 }
 
-void
+void STDCALL
 OnUnknownCommand( void* inData, const char* inCommand )
 {
   const char* runCommand = "run script";

@@ -32,6 +32,7 @@
 #include "VersionInfo.h"
 #include "SysLog.h"
 #include "ParamList.h"
+#include "../OperatorLib/BCI_OperatorLib.h"
 
 #define TXT_WINDOW_CAPTION      "BCI2000/Operator"
 #define TXT_OPERATOR_SUSPENDED  "Suspended"
@@ -93,25 +94,25 @@ class MainWindow : public QMainWindow
  private:
   virtual void timerEvent( QTimerEvent* );
 
-  static void OnConnect( void* );
-  static void OnSetConfig( void* );
-  static void OnStart( void* );
-  static void OnResume( void* );
-  static void OnSuspend( void* );
-  static void OnCoreInput( void* );
-  static void OnShutdown( void* );
-  static void OnDebugMessage( void*, const char* );
-  static void OnLogMessage( void*, const char* );
-  static void OnWarningMessage( void*, const char* );
-  static void OnErrorMessage( void*, const char* );
-  static void OnUnknownCommand( void*, const char* );
-  static void OnParameter( void*, const char* );
-  static void OnVisSignal( void*, const char*, int, int, float* );
-  static void OnVisMemo( void*, const char*, const char* );
-  static void OnVisBitmap( void*, const char*, int, int, unsigned short* );
-  static void OnVisPropertyMessage( void*, const char*, int, const char* );
-  static void OnVisProperty( void*, const char*, int, const char* );
-  static void OnInitializeVis( void*, const char*, const char* );
+  static void STDCALL OnConnect( void* );
+  static void STDCALL OnSetConfig( void* );
+  static void STDCALL OnStart( void* );
+  static void STDCALL OnResume( void* );
+  static void STDCALL OnSuspend( void* );
+  static void STDCALL OnCoreInput( void* );
+  static void STDCALL OnShutdown( void* );
+  static void STDCALL OnDebugMessage( void*, const char* );
+  static void STDCALL OnLogMessage( void*, const char* );
+  static void STDCALL OnWarningMessage( void*, const char* );
+  static void STDCALL OnErrorMessage( void*, const char* );
+  static void STDCALL OnUnknownCommand( void*, const char* );
+  static void STDCALL OnParameter( void*, const char* );
+  static void STDCALL OnVisSignal( void*, const char*, int, int, float* );
+  static void STDCALL OnVisMemo( void*, const char*, const char* );
+  static void STDCALL OnVisBitmap( void*, const char*, int, int, unsigned short* );
+  static void STDCALL OnVisPropertyMessage( void*, const char*, int, const char* );
+  static void STDCALL OnVisProperty( void*, const char*, int, const char* );
+  static void STDCALL OnInitializeVis( void*, const char*, const char* );
 
  private:
   QLabel*        mpStatusLabels[4];
