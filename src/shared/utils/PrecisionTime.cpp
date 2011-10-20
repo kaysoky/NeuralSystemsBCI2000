@@ -27,6 +27,8 @@
 #pragma hdrstop
 
 #include "PrecisionTime.h"
+#include "BCIException.h"
+#include "OSError.h"
 
 // **************************************************************************
 // Function:   Now()
@@ -39,13 +41,22 @@
 // **************************************************************************
 
 #include <windows.h>
+
 PrecisionTime
 PrecisionTime::Now()
 {
+  static LARGE_INTEGER prectimebase;
+  static bool initialized = false;
+  if( !initialized )
+  {
+    if( !::QueryPerformanceFrequency( &prectimebase ) )
+      throw bciexception( "Could not initialize time base: " << OSError().Message() );
+    initialized = true;
+  }
   // Get the current time from the Windows precision timer.
-  LARGE_INTEGER prectime, prectimebase;
-  ::QueryPerformanceCounter( &prectime );
-  ::QueryPerformanceFrequency( &prectimebase );
+  LARGE_INTEGER prectime;
+  if( !::QueryPerformanceCounter( &prectime ) )
+    throw bciexception( "Could not get performance counter: " << OSError().Message() );
   return static_cast<PrecisionTime::NumType>( ( prectime.QuadPart * 1000 ) / prectimebase.QuadPart );
 }
 

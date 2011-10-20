@@ -521,18 +521,26 @@ DataIOFilter::Process( const GenericSignal& /*Input*/,
     visualizeTiming = mVisualizeTiming;
   }
 
-  PrecisionTime prevSourceTime = static_cast<short>( State( "SourceTime" ) );
+  PrecisionTime prevSourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) );
 
   mpADC->CallProcess( mADCInput, mInputBuffer );
   if( State( "SourceTime" ) == prevSourceTime ) // GenericADC::Process() did not set the time stamp
     State( "SourceTime" ) = PrecisionTime::Now();
 
-  PrecisionTime sourceTime = static_cast<short>( State( "SourceTime" ) ),
-                stimulusTime = static_cast<short>( State( "StimulusTime" ) );
-  mTimingSignal( 0, 0 ) = sourceTime - prevSourceTime; // sample block duration
-  mTimingSignal( 1, 0 ) = functionEntry - prevSourceTime; // roundtrip
+  PrecisionTime sourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) ),
+                stimulusTime = static_cast<PrecisionTime::NumType>( State( "StimulusTime" ) );
+  mTimingSignal( 0, 0 ) = PrecisionTime::SignedDiff( sourceTime, prevSourceTime ); // sample block duration
+  if( mTimingSignal( 0, 0 ) < 0 )
+  {
+    if( mEvaluateTiming )
+      bciout << "Time measurement appears to be unreliable on your system. "
+             << "You cannot use BCI2000 time stamps for timing evaluation."
+             << endl;
+    mEvaluateTiming = false;
+  }
+  mTimingSignal( 1, 0 ) = PrecisionTime::SignedDiff( functionEntry, prevSourceTime ); // roundtrip
   if( mTimingSignal.Channels() > 2 )
-    mTimingSignal( 2, 0 ) = stimulusTime - prevSourceTime; // source-to-stimulus delay
+    mTimingSignal( 2, 0 ) = PrecisionTime::SignedDiff( stimulusTime, prevSourceTime ); // source-to-stimulus delay
   if( mEvaluateTiming )
     EvaluateTiming( mTimingSignal( 1, 0 ) );
   if( visualizeTiming )
