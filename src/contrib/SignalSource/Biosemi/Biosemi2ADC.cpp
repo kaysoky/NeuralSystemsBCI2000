@@ -69,7 +69,8 @@ Biosemi2ADC::Biosemi2ADC()
 : mSamplingRate( 0 ),
   mSourceCh(0),
   mSampleBlockSize(0),
-  mChInd(NULL)
+  mChInd(NULL),
+  mpBiosemi( NULL )
 {
 
  BEGIN_PARAMETER_DEFINITIONS
@@ -91,8 +92,6 @@ Biosemi2ADC::Biosemi2ADC()
     "Source:Signal%20Properties:DataIOFilter floatlist SourceChGain=    80     0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125    100     100     100     100     100     100     100     100     100     100     100     100     100     100     100     100        % % %"
        "// gain for each channel (A/D units -> muV)",
  END_PARAMETER_DEFINITIONS
-
- mBiosemi=NULL;
 
  BEGIN_STATE_DEFINITIONS
    "Running    1 0 0 0",
@@ -117,7 +116,7 @@ Purpose:    Checks parameters for availability and consistence with input signal
 Parameters: Input and output signal properties.
 Returns:    N/A
 *******************************************************************************/
-void Biosemi2ADC::Preflight( const SignalProperties&,
+void Biosemi2ADC::Preflight( const SignalProperties& Input,
                                    SignalProperties& Output ) const
 {
 
@@ -126,12 +125,6 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
     State("BatteryLow");
     State("MODE");
     State("MK2");
-
-
-    if( Parameter( "SampleBlockSize" ) < 1 ){
-        bcierr << "Sample block Size of " << Parameter( "SampleBlockSize" )
-               << " is less than 1" << endl;
-    }
 
     int reqChannels     = Parameter("SourceCh");
     int nEegRequested   = Parameter( "EEGChList" )->NumValues();
@@ -150,65 +143,67 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
                << endl;
     }
 
-    // There is a remaining problem in the Biosemi2Client code
-    // that prevents proper function when initialize is called more than
-    // once. As a workaround, we now simply delete and recreate the whole object here
-    if (mBiosemi) delete mBiosemi;
-    mBiosemi=new Biosemi2Client;
-    mBiosemi->initialize(static_cast<int>(Parameter( "SamplingRate" ).InHertz()),
-                        Parameter( "SampleBlockSize" ), reqChannels);
+    Biosemi2Client biosemi;
+    bool result = biosemi.initialize(
+      static_cast<int>(Parameter( "SamplingRate" ).InHertz()),
+      Parameter( "SampleBlockSize" ),
+      reqChannels
+    );
 
-    int eegChannelsAvailable = mBiosemi->getNumEEGChannels();
-    for( int i = 0 ; i < nEegRequested ; ++i ) {
-        int ind = Parameter( "EEGChList" )( i );
-        if( ind < 1 || ind > eegChannelsAvailable ) {
-            bcierr << "Illegal EEGChList index " << ind
-                   << ". Legal range is [1," << eegChannelsAvailable << "]."
-                   << endl;
-        }
-        double gain = Parameter( "SourceChGain" )( i );
-        if( ::fabs( gain - 0.03125 ) > 1e-10) {
-            bcierr << "SourceChGain should be equal to 0.03125 microvolts for all EEG channels";
-            if( nEegRequested < reqChannels) bcierr << "(i.e. the first " << nEegRequested << " entries)";
-            bcierr << " but the value for channel #" << (i+1) << " is " << gain << endl;
-        }
-    }
+    if( result )
+    {
+      int eegChannelsAvailable = biosemi.getNumEEGChannels();
+      for( int i = 0 ; i < nEegRequested ; ++i ) {
+          int ind = Parameter( "EEGChList" )( i );
+          if( ind < 1 || ind > eegChannelsAvailable ) {
+              bcierr << "Illegal EEGChList index " << ind
+                     << ". Legal range is [1," << eegChannelsAvailable << "]."
+                     << endl;
+          }
+          double gain = Parameter( "SourceChGain" )( i );
+          if( ::fabs( gain - 0.03125 ) > 1e-10) {
+              bcierr << "SourceChGain should be equal to 0.03125 microvolts for all EEG channels";
+              if( nEegRequested < reqChannels) bcierr << "(i.e. the first " << nEegRequested << " entries)";
+              bcierr << " but the value for channel #" << (i+1) << " is " << gain << endl;
+          }
+      }
 
-    int aibChannelsAvailable = mBiosemi->getNumAIBChannels();
-    if( aibChannelsAvailable == 0 && nAibRequested != 0 ) {
-        bcierr << "AIBChList must be empty if AIB box is not connected" << endl;
-    }
-    for( int i = 0 ; i < nAibRequested ; ++i ) {
-        int ind = Parameter( "AIBChList" )( i );
-        if( ind < 1 || ind > Biosemi2Client::NUM_AIB_CHANNELS ) {
-            bcierr << "Illegal AIBChList index " << ind
-                   << ". Legal range is [1," << Biosemi2Client::NUM_AIB_CHANNELS << "]."
-                   << endl;
-        } 
-    }
+      int aibChannelsAvailable = biosemi.getNumAIBChannels();
+      if( aibChannelsAvailable == 0 && nAibRequested != 0 ) {
+          bcierr << "AIBChList must be empty if AIB box is not connected" << endl;
+      }
+      for( int i = 0 ; i < nAibRequested ; ++i ) {
+          int ind = Parameter( "AIBChList" )( i );
+          if( ind < 1 || ind > Biosemi2Client::NUM_AIB_CHANNELS ) {
+              bcierr << "Illegal AIBChList index " << ind
+                     << ". Legal range is [1," << Biosemi2Client::NUM_AIB_CHANNELS << "]."
+                     << endl;
+          }
+      }
 
-    for( int i = 0 ; i < nTrigRequested ; ++i ) {
-        int ind = Parameter( "TriggerChList" )( i );
-        if( ind > Biosemi2Client::NUM_TRIGGERS || ind < 0 || (ind == 0 && nTrigRequested > 1)) {
-            bcierr << "Illegal TriggerChList index " << ind
-                   << ". Legal range is [1," << Biosemi2Client::NUM_TRIGGERS << "]"
-                   << " although a single 0 (meaning all triggers as 16-bit integer) is also acceptable."
-                   << endl;
-        } 
-    }
+      for( int i = 0 ; i < nTrigRequested ; ++i ) {
+          int ind = Parameter( "TriggerChList" )( i );
+          if( ind > Biosemi2Client::NUM_TRIGGERS || ind < 0 || (ind == 0 && nTrigRequested > 1)) {
+              bcierr << "Illegal TriggerChList index " << ind
+                     << ". Legal range is [1," << Biosemi2Client::NUM_TRIGGERS << "]"
+                     << " although a single 0 (meaning all triggers as 16-bit integer) is also acceptable."
+                     << endl;
+          }
+      }
 
-    if( 0 != (mBiosemi->getSamplingRate() % (int)Parameter( "SamplingRate" ).InHertz()) ){
-        bcierr << "Sampling rate requested: " << Parameter( "SamplingRate" )
-            << " does not evenly divide biosemi sampling rate: "
-            << mBiosemi->getSamplingRate() << endl;
+      if( 0 != (biosemi.getSamplingRate() % (int)Parameter( "SamplingRate" ).InHertz()) ){
+          bcierr << "Sampling rate requested: " << Parameter( "SamplingRate" )
+              << " does not evenly divide biosemi sampling rate: "
+              << biosemi.getSamplingRate() << endl;
 
+      }
     }
 
 // Requested output signal properties.
-
-   Output = SignalProperties(
-     Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ),
-            SignalType::float32);
+    Output = Input;
+    Output.SetChannels( Parameter( "SourceCh" ) )
+          .SetElements( Parameter( "SampleBlockSize" ) )
+          .SetType( SignalType::float32 );
 }
 
 
@@ -221,25 +216,32 @@ Returns:    N/A
 *******************************************************************************/
 void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
-    mpDataBlock = &mBiosemi->getDataBlock();
-
 // store the value of the needed parameters
 
     mSamplingRate = static_cast<int>(Parameter( "SamplingRate" ).InHertz());
     mSourceCh = Parameter("SourceCh");
     mSampleBlockSize = Parameter( "SampleBlockSize" );
 
+    // There is a remaining problem in the Biosemi2Client code
+    // that prevents proper function when initialize is called more than
+    // once. As a workaround, we now simply delete and recreate the whole object here
+    delete mpBiosemi;
+    mpBiosemi = new Biosemi2Client;
+    mpBiosemi->initialize( mSamplingRate, mSampleBlockSize, mSourceCh );
+
+    mpDataBlock = &mpBiosemi->getDataBlock();
+
     delete [] mChInd;
     mChInd = new int[mSourceCh];
     int chInd_ind = 0;
-    
+
     int nEegRequested   = Parameter( "EEGChList" )->NumValues();
     for( int i = 0 ; i < nEegRequested ; ++i ) {
         int ind = Parameter( "EEGChList" )( i );
         mChInd[chInd_ind++] = Biosemi2Client::FIRST_EEG_CHANNEL + ind - 1;
     }
 
-	int first_aib = (mBiosemi->isMK2() ? Biosemi2Client::FIRST_AIB_CHANNEL_MK2 : Biosemi2Client::FIRST_AIB_CHANNEL_MK1);
+	int first_aib = (mpBiosemi->isMK2() ? Biosemi2Client::FIRST_AIB_CHANNEL_MK2 : Biosemi2Client::FIRST_AIB_CHANNEL_MK1);
     int nAibRequested   = Parameter( "AIBChList" )->NumValues();
     for( int i = 0 ; i < nAibRequested ; ++i ) {
         int ind = Parameter( "AIBChList" )( i );
@@ -254,12 +256,12 @@ void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
 
     // Setup the State
 
-    State("BatteryLow") = mBiosemi->isBatteryLow();
+    State("BatteryLow") = mpBiosemi->isBatteryLow();
     if( State("BatteryLow" ) ){
         bciout << "Warning: Battery low " << endl;
     }
-    State("MODE") =mBiosemi->getMode();
-    State("MK2") = mBiosemi->isMK2();
+    State("MODE") =mpBiosemi->getMode();
+    State("MK2") = mpBiosemi->isMK2();
 
 
 }
@@ -276,13 +278,13 @@ void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& Output )
 
 // wait for data to become ready
 
-    mBiosemi->isDataReady();
+    mpBiosemi->isDataReady();
 
 
 // Make sure the block is valid.
 
     if( !mpDataBlock->isDataValid() ){
-        if( mBiosemi->isBatteryLow() && !State("BatteryLow")){
+        if( mpBiosemi->isBatteryLow() && !State("BatteryLow")){
             bciout << "Warning: Battery Low" << endl;
 
 // we don't want to send messages to bicout everytime Process function is called,
@@ -326,5 +328,5 @@ Returns:    N/A
 *******************************************************************************/
 void Biosemi2ADC::Halt()
 {
-    if (mBiosemi) mBiosemi->halt();
+    if (mpBiosemi) mpBiosemi->halt();
 }

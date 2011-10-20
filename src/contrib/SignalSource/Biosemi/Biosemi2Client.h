@@ -102,7 +102,7 @@ public:
      *     the experiment to crash to a halt when the battery becomes
      *     low) Default = false
      */
-    virtual void  initialize( int desiredSamplingRate,
+    virtual bool  initialize( int desiredSamplingRate,
         int desiredSampleBlockSize, int desiredNumChannels );
 
     /*

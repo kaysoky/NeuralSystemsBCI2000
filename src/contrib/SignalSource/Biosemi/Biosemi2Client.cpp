@@ -52,13 +52,25 @@ using namespace std;
 Biosemi2Client::Biosemi2Client() :
     mpUsbdata(new char[USB_DATA_SIZE]),
     mpData(new char[BUFFER_SIZE_IN_BYTES]),
-    mpBufferCursorPos(new DWORD),
-    mOldBufferCursorPos(0),
-    mIntsAvailable(0),
+    mpDataAsInt( NULL ),
+    mMk2( false ),
+    mBattLow( false ),
+    mSamplingRate( -1 ),
+    mSampleBlockSize( 0 ),
+    mDesiredSamplingRate( -1 ),
+    mDesiredSampleBlockSize( -1 ),
     mNumChannels(-1),
+    mMode( 0 ),
+    mDevice( NULL ),
+    mpBufferCursorPos(new DWORD),
+    mIntsBuffered( 0 ),
+    mOldBufferCursorPos(0),
     mStartPos(0),
     mNextPos(0),
+    mIntsAvailable(0),
+    mNumIntsToRead( 0 ),
     mIsDataReadyCalledYet(false),
+    mDecimationFactor( 1 ),
     mWasDriverSetup(false),
     mpDataBlock(NULL)
 {
@@ -77,13 +89,12 @@ Biosemi2Client::Biosemi2Client() :
     mfpREAD_MULTIPLE_SWEEPS = 0;
     mfpREAD_POINTER = 0;
     mfpCLOSE_DRIVER_ASYNC = 0;
-    //mfpCLOSE_DRIVER = 0;
 
     HINSTANCE hLib;         //Handle to Labview_DLL.dll
 
     // To begin with - Load "Labview_DLL.dll"
     if(!(hLib = LoadLibrary("Labview_DLL.dll"))){
-        bcierr << "Drivers are not present" << endl;
+        bcierr << "Could not load Labview_DLL" << endl;
     }
     else if ( !(mfpOPEN_DRIVER_ASYNC = (dOPEN_DRIVER_ASYNC)GetProcAddress(
       hLib,"OPEN_DRIVER_ASYNC")) ) {
@@ -115,7 +126,7 @@ Biosemi2Client::~Biosemi2Client(){
 }
 
 void Biosemi2Client::setupDriver(){
-
+  mWasDriverSetup = false;
 /*******************************************************************************
 To acquire data, there are 7 step we need to go.
 *******************************************************************************/
@@ -127,6 +138,11 @@ used as an input for further function calls.
 *******************************************************************************/
 
     mDevice=mfpOPEN_DRIVER_ASYNC();
+    if( mDevice == NULL || mDevice == INVALID_HANDLE_VALUE )
+    {
+      bcierr << "Could not connect to device." << endl;
+      return;
+    }
 
 /*******************************************************************************
 Step 2:  "Start the acquisition with initializing the USB2 interface"
@@ -136,7 +152,11 @@ use an array of 64 zero bytes for the "data" input.
 
       memset( mpUsbdata,0,USB_DATA_SIZE);
 
-        mfpUSB_WRITE(mDevice, mpUsbdata);
+      if( !mfpUSB_WRITE(mDevice, mpUsbdata) )
+      {
+        bcierr << "Could not initialize USB interface." << endl;
+        return;
+      }
 
 /*******************************************************************************
 Step 3:  "Initialize the ringbuffer"
@@ -149,7 +169,11 @@ Every thing is now set to start with the acquisition,
 and the only thing to do is to enable the handshake.
 *******************************************************************************/
 
-        mfpREAD_MULTIPLE_SWEEPS(mDevice, mpData, BUFFER_SIZE_IN_BYTES);
+        if( !mfpREAD_MULTIPLE_SWEEPS(mDevice, mpData, BUFFER_SIZE_IN_BYTES) )
+        {
+          bcierr << "Could not initialize the ringbuffer." << endl;
+          return;
+        }
 
 /*******************************************************************************
 Step 4:  "Enable the handshake"
@@ -169,8 +193,12 @@ At this moment the handshake with the USB2 interface starts
 and the ringbuffer is filled with incoming data from the ActiveTwo.
 Your acquisition program should read the proper data for the ringbuffer.
 *******************************************************************************/
-                 mpUsbdata[0]=1;
-          mfpUSB_WRITE(mDevice, mpUsbdata);
+          mpUsbdata[0]=1;
+          if( !mfpUSB_WRITE(mDevice, mpUsbdata) )
+          {
+            bcierr << "Could not enable the handshake." << endl;
+            return;
+          }
 
 // tells halt it can actually stop the device or bad things happen
 
@@ -178,7 +206,7 @@ Your acquisition program should read the proper data for the ringbuffer.
 }
 
 
-void Biosemi2Client::initialize( int desiredSamplingRate,
+bool Biosemi2Client::initialize( int desiredSamplingRate,
     int desiredSampleBlockSize, int desiredNumChannels ){
 
 // Store the signal attributes the caller wants
@@ -190,13 +218,19 @@ void Biosemi2Client::initialize( int desiredSamplingRate,
 // setup the biosemi driver
 
     setupDriver();
+    if( !mWasDriverSetup )
+      return false;
 
 // Get a few data points to check the status channel and get the number of
 // channels, sampling rate, etc.
 
     for( int i = 0; i < 10 ; i++ ){
 
-        mfpREAD_POINTER(mDevice, mpBufferCursorPos);
+        if( !mfpREAD_POINTER(mDevice, mpBufferCursorPos) )
+        {
+          bcierr << "Could not get device status." << endl;
+          return false;
+        }
         Sleep (10);
     }
 
@@ -204,7 +238,7 @@ void Biosemi2Client::initialize( int desiredSamplingRate,
 
     if( *mpBufferCursorPos < BYTES_PER_INT*2){
         bcierr << "No cord or power" << endl;
-        return;
+        return false;
     }
 
 // Decode the status channel and place the results in the member variables passed
@@ -220,7 +254,7 @@ void Biosemi2Client::initialize( int desiredSamplingRate,
         bcierr << "Sampling rate requested: " << mDesiredSamplingRate
             << " does not evenly divide biosemi sampling rate: "
             << mSamplingRate << endl;
-        return;
+        return false;
     }
 
 // Determine how much we have to decimate the sample to achieve the requested
@@ -245,6 +279,7 @@ void Biosemi2Client::initialize( int desiredSamplingRate,
     mNextPos=0;
     mIsDataReadyCalledYet = false;
 
+    return true;
 }
 
 // Returns a pointer to the data buffer
@@ -554,7 +589,11 @@ void Biosemi2Client::isDataReady(){
 
     while( mIntsAvailable < mNumIntsToRead){
         Sleep(10);
-        mfpREAD_POINTER(mDevice, mpBufferCursorPos);
+        if( !mfpREAD_POINTER(mDevice, mpBufferCursorPos) )
+        {
+          bcierr << "Could not read data from device." << endl;
+          return;
+        }
 
 // Convert bufferCursorPos to integer based vs byte based
 

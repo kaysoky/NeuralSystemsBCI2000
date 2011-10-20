@@ -70,7 +70,7 @@ protected:
     int * mChInd;
 
     int mSampleBlockSize; // sample blocksize to send
-    mutable Biosemi2Client *mBiosemi;
+    Biosemi2Client* mpBiosemi;
 
     Biosemi2Client::DataBlock *mpDataBlock;
     std::vector<std::string> mTriggerNames;
