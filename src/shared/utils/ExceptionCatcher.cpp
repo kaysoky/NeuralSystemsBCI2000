@@ -102,14 +102,49 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
 }
 
 #if _MSC_VER
+# define EXCEPTION( x ) { EXCEPTION_##x, #x },
 void
 ExceptionCatcher::ReportWin32Exception( int inCode )
 {
-  // This is a separate function because objects with destructors may not exist
-  // in functions that handle "structured" exceptions.
+  static const struct
+  {
+    int code;
+    const char* description;
+  }
+  exceptions[] =
+  {
+    EXCEPTION( ACCESS_VIOLATION )
+    EXCEPTION( ARRAY_BOUNDS_EXCEEDED )
+    EXCEPTION( BREAKPOINT )
+    EXCEPTION( DATATYPE_MISALIGNMENT )
+    EXCEPTION( FLT_DENORMAL_OPERAND )
+    EXCEPTION( FLT_DIVIDE_BY_ZERO )
+    EXCEPTION( FLT_INEXACT_RESULT )
+    EXCEPTION( FLT_INVALID_OPERATION )
+    EXCEPTION( FLT_OVERFLOW )
+    EXCEPTION( FLT_STACK_CHECK )
+    EXCEPTION( FLT_UNDERFLOW )
+    EXCEPTION( GUARD_PAGE )
+    EXCEPTION( ILLEGAL_INSTRUCTION )
+    EXCEPTION( IN_PAGE_ERROR )
+    EXCEPTION( INT_DIVIDE_BY_ZERO )
+    EXCEPTION( INT_OVERFLOW )
+    EXCEPTION( INVALID_DISPOSITION )
+    EXCEPTION( INVALID_HANDLE )
+    EXCEPTION( NONCONTINUABLE_EXCEPTION )
+    EXCEPTION( PRIV_INSTRUCTION )
+    EXCEPTION( SINGLE_STEP )
+    EXCEPTION( STACK_OVERFLOW )
+  };
+  static const size_t numExceptions = sizeof( exceptions ) / sizeof( *exceptions );
+  size_t i = 0;
+  while( i < numExceptions && exceptions[i].code != inCode )
+    ++i;
+  const char* pDescription = i < numExceptions ? exceptions[i].description : "<n/a>";
+
   bcierr__ << "Unhandled Win32 exception 0x"
            << hex << inCode << ": "
-           << OSError( inCode ).Message()
+           << pDescription
            << UserMessage()
            << endl;
 }
