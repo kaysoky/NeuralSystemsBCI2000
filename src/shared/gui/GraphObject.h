@@ -112,8 +112,7 @@ class GraphObject
   //  Calling side
   void Paint();
   void Change( int which = All );
-  bool Click( const Point& p )
-    { return PointInRect( p, mActualDisplayRect ) && OnClick( p ); }
+  bool Click( const Point& );
 
  protected:
   //  Handling side

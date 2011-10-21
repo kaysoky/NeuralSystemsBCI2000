@@ -138,3 +138,11 @@ GraphObject::Change( int inWhich )
     Invalidate();
   }
 }
+
+bool
+GraphObject::Click( const Point& p )
+{
+  Rect r = mDisplay.PixelToNormalizedCoords( mActualDisplayRect );
+  return PointInRect( p, r ) && OnClick( p );
+}
+
