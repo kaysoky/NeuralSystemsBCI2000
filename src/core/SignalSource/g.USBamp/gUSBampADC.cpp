@@ -169,7 +169,7 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
 {
   // Requested output signal properties.
   FLOAT driVer = GT_GetDriverVersion();
-  bciout << "g.USBamp driver version = " << driVer <<endl;
+  bcidbg( 0 ) << "g.USBamp driver version = " << driVer <<endl;
 #ifdef TODO
 # error Remove support for int16 SignalType, including division of the signal by SourceChGain.
 #endif // TODO
@@ -237,26 +237,29 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
   }
   // check for maximum # channels
   for (int dev=0; dev<Parameter("DeviceIDs")->NumValues(); dev++)
-   {
-   if (Parameter("DigitalInput") == 0)
+  {
+    if (Parameter("DigitalInput") == 0)
+    {
       if (Parameter("SourceChDevices")(dev) > 16)
       {
          bcierr << "The g.USBamp only has 16 channels. Decrease SourceChDevices." << endl;
          return;
       }
-   if (Parameter("DigitalInput") == 1){
+    }
+    if (Parameter("DigitalInput") == 1)
+    {
       if (Parameter("SourceChDevices")(dev) > 17)
       {
-         bcierr << "The g.USBamp only has 16 channels. You have DigitalInput turned on (which adds one channel), so you may specify a maximum of 17 channels. Decrease SourceChDevices." << endl;
+        bcierr << "The g.USBamp only has 16 channels. You have DigitalInput turned on (which adds one channel), so you may specify a maximum of 17 channels. Decrease SourceChDevices." << endl;
         return;
-	  }
-	  if (Parameter("SourceChDevices")(dev) <= 1)
-	  {
-		bcierr <<"Due to a limitation of the g.USBamp driver, at least one analog channel must be acquired with a digital channel. Therefore, SourceChDevices must be >= 2 with digital input enabled."<<endl;
-		return;
-	  }
-	  }
-   }
+      }
+      if (Parameter("SourceChDevices")(dev) <= 1)
+      {
+        bcierr <<"Due to a limitation of the g.USBamp driver, at least one analog channel must be acquired with a digital channel. Therefore, SourceChDevices must be >= 2 with digital input enabled."<<endl;
+        return;
+      }
+    }
+  }
 
     //check for consistency between sourcechdevices and sourcechlist per device
     int sourceChListOffset = 0;
@@ -307,7 +310,7 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
     int detectionResult = DetectAutoMode();
     if( detectionResult == -1 )
       bcierr << "Could not detect any amplifier. "
-             << "Make sure there is a single gUSBamp amplifier connected to your system, and switched on"
+             << "Make sure there is a gUSBamp amplifier connected to your system, and switched on"
              << endl;
     else if( detectionResult == -2 )
       bcierr << "Too many amplifiers connected. "
@@ -316,6 +319,8 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
     else if( detectionResult < 0 )
       bcierr << "Auto-detection of amplifier failed"
              << endl;
+    if( detectionResult < 0 )
+      return;
   }
   else // if we defined more than one device or not auto mode, try to open and test all devices
      {
@@ -963,15 +968,20 @@ int gUSBampADC::DetectAutoMode() const
  int numdetected=0, USBport=-1;
 
  for (int cur_USBport=0; cur_USBport<16; cur_USBport++)
-  {
+{
   HANDLE hdev = GT_OpenDevice(cur_USBport);
-  if (hdev)
+  if (hdev != NULL)
+  {
+     char id[16] = "";
+     if( GT_GetSerial(hdev, id, sizeof( id )) )
      {
-     numdetected++;
-     GT_CloseDevice(&hdev);
-     USBport=cur_USBport;
+       numdetected++;
+       bcidbg( 0 ) << "Detected gUSBamp with DeviceID " << id << endl;
+       USBport=cur_USBport;
      }
+     GT_CloseDevice(&hdev);
   }
+}
 
  if (numdetected > 1)  return(-2);
  if (numdetected == 0) return(-1);
