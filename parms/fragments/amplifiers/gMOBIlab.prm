@@ -8,5 +8,4 @@ Source:Source%20Filter:SourceFilter int NotchFilter= 1 0 0 2 // Power line notch
 Source:Source%20Filter:SourceFilter int HighPassFilter= 1 0 0 1 // Source high pass filter: 0: disabled, 1: at 0.1Hz (enumeration)
 Source:Alignment:AlignmentFilter int AlignChannels= 1 0 0 1 // align channels in time (0=no, 1=yes)
 Source:Alignment:AlignmentFilter floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
-Source:Online%20Processing:TransmissionFilter list TransmitChList= 8 1 2 3 4 5 6 7 8 // list of transmitted channels
 Source:gMOBIlabADC int SignalType= 1 0 0 1 // numeric type of output signal:  0: int16, 1: float32 (enumeration)
