@@ -55,6 +55,7 @@ class OSThread : private Uncopyable
     { return mResult; }
 
   static void Sleep( int ); // milliseconds
+  static void PrecisionSleep( double ); // milliseconds
   static bool IsMainThread();
 
  private:

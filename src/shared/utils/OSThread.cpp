@@ -88,6 +88,20 @@ OSThread::Sleep( int inMs )
   ::Sleep( inMs );
 }
 
+void
+OSThread::PrecisionSleep( double inMs )
+{
+  HANDLE timer = ::CreateWaitableTimer( NULL, true, NULL );
+  LARGE_INTEGER deltaT;
+  deltaT.QuadPart = static_cast<LONGLONG>( -10000 * inMs );
+  if( !timer
+      || !::SetWaitableTimer( timer, &deltaT, 0, NULL, NULL, false )
+      || WAIT_OBJECT_0 != ::WaitForSingleObject( timer, INFINITE )
+    )
+    OSThread::Sleep( static_cast<int>( inMs ) );
+  ::CloseHandle( timer );
+}
+
 bool
 OSThread::IsMainThread()
 {
@@ -134,6 +148,12 @@ void
 OSThread::Sleep( int inMs )
 {
   ::usleep( inMs * 1000 );
+}
+
+void
+OSThread::PrecisionSleep( int inMs )
+{
+  OSThread::Sleep( inMs );
 }
 
 bool
