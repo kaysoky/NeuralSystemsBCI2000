@@ -411,7 +411,7 @@ vAmpThread::Execute()
 				}
 			}
             //This is done to prevent the display from being updated to often...paying attention to performance issues described in vAmp SDK.
-			if(bIsStart||(PrecisionTime::TimeDiff(tLastDisplayUpdate , PrecisionTime::Now())>=cDisplayUpdateTime))
+			if(bIsStart||(PrecisionTime::UnsignedDiff(PrecisionTime::Now(), tLastDisplayUpdate)>=cDisplayUpdateTime))
 			{
 				 tLastDisplayUpdate = PrecisionTime::Now();
 				 bIsStart = false;
@@ -422,7 +422,7 @@ vAmpThread::Execute()
 					return -1;
 				 }
 			}
-            waitTime = min(mBlockSize/mSampleRate*1000 - PrecisionTime::TimeDiff(tnow, PrecisionTime::Now()),1000*mBlockSize/mSampleRate);
+            waitTime = min(mBlockSize/mSampleRate*1000 - PrecisionTime::UnsignedDiff(PrecisionTime::Now(), tnow),1000*mBlockSize/mSampleRate);
             if (waitTime > 0) Sleep(waitTime);
             SetEvent( acquireEventRead );
             continue;

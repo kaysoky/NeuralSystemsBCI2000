@@ -441,7 +441,7 @@ DemoWindow::timerEvent( QTimerEvent* )
   PrecisionTime t1 = PrecisionTime::Now();
   mGraphDisplay.Update();
   PrecisionTime t2 = PrecisionTime::Now(),
-                dt = t2 - t1;
+                dt = PrecisionTime::UnsignedDiff( t2, t1 );
   const float cNumPastValues = 10,
               cDecayFactor = ::exp( -1.0 / cNumPastValues );
   mSum *= cDecayFactor;

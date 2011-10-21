@@ -134,7 +134,7 @@ void WebcamLogger::Preflight() const
 		{
 			frame = cvQueryFrame( capture );
 		}
-		PrecisionTime t2 = PrecisionTime::TimeDiff(t1, PrecisionTime::Now());
+		PrecisionTime t2 = PrecisionTime::UnsignedDiff(PrecisionTime::Now(),t1);
 		float fps = 1000.0/(float(t2)/nFrames);
 		bciout << "Avg. webcam framerate="<<fps<<endl;
 
@@ -378,7 +378,7 @@ void WebcamLogger::WebcamThread::InitCam()
 	{
 		mFrame = cvQueryFrame( mCapture );
 	}
-	PrecisionTime t2 = PrecisionTime::TimeDiff(t1, PrecisionTime::Now());
+	PrecisionTime t2 = PrecisionTime::UnsignedDiff(PrecisionTime::Now(), t1);
 	mFps = 1000.0/(float(t2)/nFrames);
 }
 

@@ -128,7 +128,7 @@ void read_channels (ser_t handle, int protocol)
        //  sleep(1) improved this situation
     }
     while ((PACKET.readstate!=PACKET_FINISHED) &&
-           ((time1-PrecisionTime::Now())<COM_TIMEOUT));
+            (PrecisionTime::UnsignedDiff(time1, PrecisionTime::Now())<COM_TIMEOUT));
            // read until the packet is finished or a timeout has occured
 
     PACKET.readstate=0;

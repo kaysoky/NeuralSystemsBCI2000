@@ -672,7 +672,7 @@ DataIOFilter::ProcessBCIEvents()
          && PrecisionTime::SignedDiff( mBCIEvents.FrontTimeStamp(), sourceTime ) <= 0 )
   {
     int offset = static_cast<int>( 
-        ( ( mBlockDuration - ( sourceTime - mBCIEvents.FrontTimeStamp() + 1 ) ) * mSampleBlockSize ) / mBlockDuration
+      ( ( mBlockDuration - ( PrecisionTime::UnsignedDiff( sourceTime, mBCIEvents.FrontTimeStamp() ) + 1 ) ) * mSampleBlockSize ) / mBlockDuration
     );
     istringstream iss( mBCIEvents.FrontDescriptor() );
     string name;

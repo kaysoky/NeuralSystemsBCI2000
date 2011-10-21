@@ -100,18 +100,18 @@ PrecisionTime::Now()
 
 
 // **************************************************************************
-// Function:   TimeDiff
-// Purpose:    calculates the difference between two times (i.e., time2-time1)
-//             takes roll-over into account (in case time2 < time1)
+// Function:   UnsignedDiff
+// Purpose:    calculates the difference between two times (i.e., time1-time2)
+//             takes roll-over into account (in case time1 < time2)
 // Parameters: time1, time2 - two 16 bit integers
-// Returns:    time2-time1, if time2-time1 >= 0
-//             or time2-time1+65536, if time2-time1 < 0
+// Returns:    time1-time2, if time1-time2 >= 0
+//             or time1-time2+65536, if time1-time2 < 0
 // **************************************************************************
 PrecisionTime::NumType
-PrecisionTime::TimeDiff( NumType time1, NumType time2 )
+PrecisionTime::UnsignedDiff( NumType time1, NumType time2 )
 {
   const int maxdiffPlusOne = 1 << ( 8 * sizeof( time1 ) );
-  return ( ( time2 + maxdiffPlusOne ) - time1 ) % maxdiffPlusOne;
+  return ( ( time1 + maxdiffPlusOne ) - time2 ) % maxdiffPlusOne;
 }
 
 // **************************************************************************
@@ -125,7 +125,8 @@ int
 PrecisionTime::SignedDiff( NumType time1, NumType time2 )
 {
   const int wraparound = 1 << ( 8 * sizeof( time1 ) );
-  int diff = time1 - time2;
+  int diff = time1;
+  diff -= time2;
   if( diff >= wraparound / 2 )
     diff -= wraparound;
   else if( diff < -wraparound / 2 )

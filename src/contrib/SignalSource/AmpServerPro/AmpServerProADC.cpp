@@ -389,10 +389,10 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
 #endif
 {
   char *sCmd;
-  int nScanRes;
+//  int nScanRes;
   bool bResp;
   char sServerIP[25];
-  int nAmpState;
+//  int nAmpState;
   unsigned int nCmdPort, nNotifPort, nDataPort;
   unsigned int nAmpId = -1;
   Connection oCmdConn, oNotifConn, oDataConn;
@@ -492,7 +492,7 @@ bool AmpServerProADC::GetAmpId(unsigned int *pAmpId, Connection *pCmdConn) const
 {
   char *sCmd;
   int nAmpId = 0;
-  bool bResp;
+//  bool bResp;
   char sCmdResp[ASP_CMD_RESP_SIZE];
   int nScanRes, nNumAmps;
 
@@ -577,8 +577,8 @@ void AmpServerProADC::Initialize( const SignalProperties&, const SignalPropertie
 #endif
 {
   char *sCmd;
-  bool bResp;
-  char sCmdResp[ASP_CMD_RESP_SIZE];
+//  bool bResp;
+//  char sCmdResp[ASP_CMD_RESP_SIZE];
 
   Halt();
 
@@ -1029,7 +1029,7 @@ inline bool AmpServerProADC::ReadDataHeader()
 
   // We're at the beginning of a new data pack, set offset and length.
   m_nLastDataPackOffset = 0;
-  m_nLastDataPackSize = m_oLastHeader.length;
+  m_nLastDataPackSize = static_cast<size_t>( m_oLastHeader.length );
 
   return true;
 }

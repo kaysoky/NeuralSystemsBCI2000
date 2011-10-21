@@ -169,7 +169,7 @@ void EmotivADC::Preflight( const SignalProperties&,
   bool readyToCollect = false;
   PrecisionTime starttime = PrecisionTime::Now();
   int timeout = 5000; // We'll wait 5 seconds for the device to connect.
-  while ( !readyToCollect && PrecisionTime::TimeDiff( starttime, PrecisionTime::Now() ) < timeout )
+  while ( !readyToCollect && PrecisionTime::UnsignedDiff( PrecisionTime::Now(), starttime ) < timeout )
   {
     state = EE_EngineGetNextEvent( mEvent );
 
@@ -362,7 +362,7 @@ void EmotivADC::Process( const GenericSignal&, GenericSignal& Output )
   // We'll do a timeout check here as well
   PrecisionTime starttime = PrecisionTime::Now();
   int timeout = ( int )( ( 1000.0f / 128.0f ) * ( float )Output.Elements() ) * 10 ; // We'll wait 10 datablocks for the device to connect.
-  while( mData[0].size() < ( unsigned int )Output.Elements() && PrecisionTime::TimeDiff( starttime, PrecisionTime::Now() ) < timeout )
+  while( mData[0].size() < ( unsigned int )Output.Elements() && PrecisionTime::UnsignedDiff( PrecisionTime::Now(), starttime ) < timeout )
   {
     // Check for updated states
     state = EE_EngineGetNextEvent( mEvent );

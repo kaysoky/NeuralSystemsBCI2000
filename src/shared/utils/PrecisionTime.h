@@ -36,13 +36,15 @@ class PrecisionTime
   PrecisionTime( NumType value )
     : mValue( value ) {}
 
-  NumType operator-( PrecisionTime subtrahend ) const
-    { return TimeDiff( subtrahend, *this ); }
+ private: // force the user to decide between UnsignedDiff and SignedDiff
+  void operator-( PrecisionTime );
+
+ public:
   operator NumType() const
     { return mValue; }
 
   static PrecisionTime Now();
-  static NumType TimeDiff( NumType, NumType );
+  static NumType UnsignedDiff( NumType, NumType );
   static int     SignedDiff( NumType, NumType );
 
  private:

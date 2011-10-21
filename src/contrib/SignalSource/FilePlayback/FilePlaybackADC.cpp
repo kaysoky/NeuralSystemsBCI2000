@@ -405,13 +405,13 @@ FilePlaybackADC::Process( const GenericSignal&, GenericSignal& Output )
   // Wait for the amount of time that corresponds to the length of a data block.
   PrecisionTime now = PrecisionTime::Now();
   //float blockDuration = 1e3 * Output.Elements() / mSamplingRate,
-  float time2wait = mUpdatePeriod - ( now - mLasttime );
+  float time2wait = mUpdatePeriod - PrecisionTime::UnsignedDiff( now, mLasttime );
   if( time2wait < 0 )
     time2wait = 0;
 
   const float timeJitter = 5;
   OSThread::Sleep( (int)( ::floor( time2wait / timeJitter ) * timeJitter ) );
-  while( PrecisionTime::Now() - mLasttime < mUpdatePeriod - 1 )
+  while( PrecisionTime::UnsignedDiff( PrecisionTime::Now(), mLasttime ) < mUpdatePeriod - 1 )
     OSThread::Sleep( 0 );
   mLasttime = PrecisionTime::Now();
 
