@@ -123,6 +123,21 @@ Shape::Color() const
   return mColor;
 }
 
+void
+Shape::OnMove( GUI::DrawContext& ioDC )
+{
+  // Correct invalidation rect
+  GUI::Rect corrected = {
+    static_cast<int>( ioDC.rect.left - ( this->LineWidth() / 2.0f ) ),
+    static_cast<int>( ioDC.rect.top - ( this->LineWidth() / 2.0f ) ),
+    static_cast<int>( ioDC.rect.right + ( this->LineWidth() / 2.0f ) + 1 ),
+    static_cast<int>( ioDC.rect.bottom + ( this->LineWidth() / 2.0f ) + 1 ) 
+  };
+
+  mRect = ioDC.rect;
+  ioDC.rect = corrected;
+}
+
 bool
 Shape::AreaIntersection( const Shape& s1, const Shape& s2 )
 {
@@ -166,7 +181,7 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
   try
   {
     pCanvas->Handle = ( HDC )inDC.handle;
-    TRect winRect( inDC.rect.left, inDC.rect.top, inDC.rect.right, inDC.rect.bottom );
+    TRect winRect( mRect.left, mRect.top, mRect.right, mRect.bottom );
     if( this->FillColor() == RGBColor::NullColor )
     {
       pCanvas->Brush->Style = bsClear;
@@ -196,10 +211,10 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
   // Prepare the brush
   QPainter* p = inDC.handle.painter;
   QRect drawRect(
-    static_cast<int>( inDC.rect.left + ( this->LineWidth() / 2.0f ) ),
-    static_cast<int>( inDC.rect.top + ( this->LineWidth() / 2.0f ) ),
-    static_cast<int>( inDC.rect.right - inDC.rect.left - ( 2.0f * this->LineWidth() ) - 1 ),
-    static_cast<int>( inDC.rect.bottom - inDC.rect.top - ( 2.0f * this->LineWidth() ) - 1 ) 
+    static_cast<int>( mRect.left ),
+    static_cast<int>( mRect.top ),
+    static_cast<int>( mRect.right - mRect.left ),
+    static_cast<int>( mRect.bottom - mRect.top )
   );
   QBrush fillBrush;
   if( this->FillColor() == RGBColor( RGBColor::NullColor ) )
@@ -339,7 +354,7 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
   try
   {
     pCanvas->Handle = ( HDC )inDC.handle;
-    TRect winRect( inDC.rect.left, inDC.rect.top, inDC.rect.right, inDC.rect.bottom );
+    TRect winRect( mRect.left, mRect.top, mRect.right, mRect.bottom );
     if( this->FillColor() == RGBColor::NullColor )
     {
       pCanvas->Brush->Style = bsClear;
@@ -369,10 +384,10 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
   // Prepare the Brush
   QPainter* p = inDC.handle.painter;
   QRect drawRect(
-    static_cast<int>( inDC.rect.left + ( this->LineWidth() / 2.0f ) ),
-    static_cast<int>( inDC.rect.top + ( this->LineWidth() / 2.0f ) ),
-    static_cast<int>( inDC.rect.right - inDC.rect.left - ( 2.0f * this->LineWidth() ) - 1 ),
-    static_cast<int>( inDC.rect.bottom - inDC.rect.top - ( 2.0f * this->LineWidth() ) - 1 ) 
+    static_cast<int>( mRect.left ),
+    static_cast<int>( mRect.top ),
+    static_cast<int>( mRect.right - mRect.left ),
+    static_cast<int>( mRect.bottom - mRect.top )
   );
   QBrush fillBrush;
   if( this->FillColor() == RGBColor( RGBColor::NullColor ) )

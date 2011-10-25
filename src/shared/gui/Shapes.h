@@ -45,6 +45,9 @@ class Shape : public GUI::GraphObject
   Shape&     SetColor( RGBColor );
   RGBColor   Color() const;
 
+  // For correcting the invalidation rect
+  virtual void OnMove( GUI::DrawContext& ioDC );
+
   // Intersection testing
  public:
   enum TestResult { false_ = 0, true_ = 1, undetermined };
@@ -58,10 +61,10 @@ class Shape : public GUI::GraphObject
  public:
   static bool AreaIntersection( const Shape&, const Shape& );
 
-
  protected:
   // GraphObject event handlers
   virtual void OnPaint( const GUI::DrawContext& ) = 0;
+  GUI::Rect   mRect;
 
  private:
   float       mLineWidth;
