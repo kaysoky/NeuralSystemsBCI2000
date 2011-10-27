@@ -169,11 +169,8 @@ Every thing is now set to start with the acquisition,
 and the only thing to do is to enable the handshake.
 *******************************************************************************/
 
-        if( !mfpREAD_MULTIPLE_SWEEPS(mDevice, mpData, BUFFER_SIZE_IN_BYTES) )
-        {
-          bcierr << "Could not initialize the ringbuffer." << endl;
-          return;
-        }
+        // This is probably supposed to remove any pending data, so we don't report an error if it fails.
+        mfpREAD_MULTIPLE_SWEEPS(mDevice, mpData, BUFFER_SIZE_IN_BYTES);
 
 /*******************************************************************************
 Step 4:  "Enable the handshake"
