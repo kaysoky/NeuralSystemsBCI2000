@@ -151,7 +151,7 @@ OSThread::Sleep( int inMs )
 }
 
 void
-OSThread::PrecisionSleep( int inMs )
+OSThread::PrecisionSleep( double inMs )
 {
   OSThread::Sleep( inMs );
 }

@@ -74,12 +74,12 @@
 #if( __GNUC__ )
 
 # define RegisterFilter_( name, pos, priority )  \
-  extern "C" int FilterObjectName_( name, pos, priority ); \
-  int FilterObjectName_( name, pos, priority ) __attribute__(( used )) = (int) new GenericFilter::FilterRegistrar<name> ( #pos, priority, true );
+  extern "C" long FilterObjectName_( name, pos, priority ); \
+  long FilterObjectName_( name, pos, priority ) __attribute__(( used )) = (long) new GenericFilter::FilterRegistrar<name> ( #pos, priority, true );
 
 # define RegisterExtension_( x )  \
-  extern "C" int ExtensionObjectName_( x ); \
-  int ExtensionObjectName_( x ) __attribute__(( used )) = (int)EnvironmentExtension::AutoDelete( new x );
+  extern "C" long ExtensionObjectName_( x ); \
+  long ExtensionObjectName_( x ) __attribute__(( used )) = (long)EnvironmentExtension::AutoDelete( new x );
 
 #elif( _MSC_VER )
 
