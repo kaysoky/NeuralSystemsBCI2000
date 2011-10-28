@@ -17,6 +17,8 @@ SET( HDR_PROJECT
   Biosemi2Client.h
 )
 
+BCI2000_INCLUDE( SOURCEFILTER )
+
 # Create the signal source module
 BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
   "${EXECUTABLE_NAME}" 
