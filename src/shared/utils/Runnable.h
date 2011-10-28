@@ -246,7 +246,10 @@ template<typename R, class C, typename T1, typename T2, typename T3> class Membe
   T3 t3;
 };
 
-#ifndef NDEBUG // Test whether all templates can be instantiated
+#if !defined( NDEBUG ) && !defined( __GNUC__ ) 
+// Test whether all templates can be instantiated.
+// Disabled for GCC due to a linker error on OSX.
+
 // FunctionCall< void() > is already fully specialized.
 template class FunctionCall< void(int) >;
 template class FunctionCall< void(char, long*) >;
