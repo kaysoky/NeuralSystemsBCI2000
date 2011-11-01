@@ -10,7 +10,7 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = bci_datadiff.exe SWApp.exe SWSpeller.exe Speller.exe FieldTripBuffer.exe \
-  FIRProcessing.exe PeakDetectSignalProcessing.exe SigfriedSigProc.exe \
+  FIRProcessing.exe PeakDetectSignalProcessing.exe \
   SWSignalProcessing.exe AmpServerPro.exe BioRadio.exe Biosemi2.exe NISource.exe \
   NeuroscanClient.exe ModularEEG.exe MicroMed.exe DT2000.exe DASSource.exe \
   StimulusPresentation.exe P3Speller.exe FeedbackDemo.exe DummyApplication.exe \
@@ -49,10 +49,6 @@ FIRProcessing.exe: ..\contrib\SignalProcessing\FIR\FIRProcessing.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 PeakDetectSignalProcessing.exe: ..\contrib\SignalProcessing\PeakDetector\PeakDetectSignalProcessing.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-SigfriedSigProc.exe: ..\contrib\SignalProcessing\SigfriedSigProc\SigfriedSigProc.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
