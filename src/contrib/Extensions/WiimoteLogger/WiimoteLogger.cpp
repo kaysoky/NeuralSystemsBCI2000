@@ -1,3 +1,4 @@
+#define report(x) #x<<"="<<(x)<<"; "
 /////////////////////////////////////////////////////////////////////////////
 // $Id: WiimoteLogger.cpp 3279 2011-05-11 01:00:23Z jhill $
 // Authors: griffin.milsap@gmail.com, jezhill@gmail.com
@@ -40,7 +41,7 @@
 #pragma hdrstop
 #include "wiimote.h"
 #include "wiimote_state.h"
-
+  
 #include "WiimoteLogger.h"
 #include "BCIEvent.h"
 
@@ -50,33 +51,33 @@ using namespace std;
 
 WiimoteReading::WiimoteReading(unsigned int index, const char *name, unsigned int bits)
 {
-	mPreviousReading = 0;
-	mPreviousOutput = 0;
-	mIndex = index;
-	mBits = bits;
-	mDeriv = false;
-	sprintf(mName, "Wiimote%d%s ", index+1, name);
-	sprintf(mDefinition, "%s %d 0 0 0", mName, bits);
+  mPreviousReading = 0;
+  mPreviousOutput = 0;
+  mIndex = index;
+  mBits = bits;
+  mDeriv = false;
+  sprintf(mName, "Wiimote%d%s ", index+1, name);
+  sprintf(mDefinition, "%s %d 0 0 0", mName, bits);
 }
 void WiimoteReading::SetDeriv(bool setting)
 {
-	if(mBits > 1) mDeriv = setting;
+  if(mBits > 1) mDeriv = setting;
 }
 unsigned short WiimoteReading::Read(unsigned int index, wiimote *W)
 {
-	if(index != mIndex) return 0;
-	unsigned short value = _read(W);
-	if(mDeriv) {
-		double diff = (double)value - (double)mPreviousReading;
-		mPreviousReading = value;
-		diff += 1L << (mBits -1);
-		long maxval = (1L << mBits) - 1;
-		value = (unsigned short)(diff < 0 ? 0 : diff > maxval ? maxval : diff);
-	}
-	if(value == mPreviousOutput) return value;
-	bcievent << mName << value;
-	mPreviousOutput = value;
-	return value;
+  if(index != mIndex) return 0;
+  unsigned short value = _read(W);
+  if(mDeriv) {
+    double diff = (double)value - (double)mPreviousReading;
+    mPreviousReading = value;
+    diff += 1L << (mBits -1);
+    long maxval = (1L << mBits) - 1;
+    value = (unsigned short)(diff < 0 ? 0 : diff > maxval ? maxval : diff);
+  }
+  if(value == mPreviousOutput) return value;
+  bcievent << mName << value;
+  mPreviousOutput = value;
+  return value;
 }
 const char * WiimoteReading::GetDefinition(void) { return mDefinition; }
 const char * WiimoteReading::GetName(void) { return mName; }
@@ -95,27 +96,28 @@ DefineReading(ButtonUp,    1, (W->Button.Up() == true) ? 1 : 0);
 DefineReading(ButtonDown,  1, (W->Button.Down() == true) ? 1 : 0);
 DefineReading(ButtonLeft,  1, (W->Button.Left() == true) ? 1 : 0);
 DefineReading(ButtonRight, 1, (W->Button.Right() == true) ? 1 : 0);
+DefineReading(IsConnected, 1, (W->IsConnected() == true) ? 1 : 0);
 
 #define WIIMOTE_MAX_IR_DOTS 4 // Wiimote limitation
 DefineReading(IRX,        12, GetIRCenter(W, 'x'));  
 DefineReading(IRY,        12, GetIRCenter(W, 'y'));
 unsigned short WiimoteReading::GetIRCenter(wiimote *W, char dim)
 {
-	float avg = 0.0f;
-	int dotsFound = 0;
-	for(int i = 0; i < WIIMOTE_MAX_IR_DOTS; i++)
-	{
-		if(W->IR.Dot[i].bVisible)
-		{
-			switch(dim) {
-				case 'x': avg += W->IR.Dot[i].X; break;
-				case 'y': avg += W->IR.Dot[i].Y; break;
-			}
-			dotsFound++;
-		}
-	}
-	if(dotsFound != 0) avg /= dotsFound;
-	return (unsigned short)(  (avg < 0.0f) ? 0: (avg > 1.0f) ? 4096: (avg * 4096)  );
+  float avg = 0.0f;
+  int dotsFound = 0;
+  for(int i = 0; i < WIIMOTE_MAX_IR_DOTS; i++)
+  {
+    if(W->IR.Dot[i].bVisible)
+    {
+      switch(dim) {
+        case 'x': avg += W->IR.Dot[i].X; break;
+        case 'y': avg += W->IR.Dot[i].Y; break;
+      }
+      dotsFound++;
+    }
+  }
+  if(dotsFound != 0) avg /= dotsFound;
+  return (unsigned short)(  (avg < 0.0f) ? 0: (avg > 1.0f) ? 4096: (avg * 4096)  );
 }
 
 Extension( WiimoteLogger );
@@ -129,12 +131,12 @@ Extension( WiimoteLogger );
 WiimoteLogger::WiimoteLogger()
 :m_wiimoteEnable( false )
 {
-	for(unsigned int i = 0; i < MAX_WIIMOTES; i++)
-    {
-	  m_wiimotes[i] = NULL;
-      mpWiimoteThread[i] = NULL;
-    }
-	m_numFound = 0;
+  for(unsigned int i = 0; i < MAX_WIIMOTES; i++)
+  {
+    m_wiimotes[i] = NULL;
+    mpWiimoteThread[i] = NULL;
+  }
+  m_numFound = 0;
 }
 
 // **************************************************************************
@@ -164,48 +166,6 @@ WiimoteLogger::~WiimoteLogger()
 }
 
 // **************************************************************************
-// Function:   GetNumWiimotes
-// Purpose:    This function connects to available wiimotes, then disconnects
-//             after finding all available wiimotes. - Counts number.
-// Returns:    Number of Available Wiimotes
-// **************************************************************************
-int WiimoteLogger::GetNumWiimotes() const
-{
-    unsigned int  numFound = 0;
-    wiimote       *n_wiimotes[MAX_WIIMOTES] = { NULL };
-
-    //Connect to the wiimotes
-	while(numFound < MAX_WIIMOTES)
-	{
-		wiimote *next = new wiimote;
-		if(!next->Connect(wiimote::FIRST_AVAILABLE))
-        {
-            delete next;
-            next = NULL;
-			break;
-        }
-		n_wiimotes[numFound++] = next;
-		next = NULL;
-	}
-
-	//Disconnect and clean up
-	for(unsigned int i = 0; i < numFound; i++)
-	{
-        bcidbg( 10 ) << "Wiimote " << (i+1) << " detected with battery at "
-                     << (int)n_wiimotes[i]->BatteryPercent << "%." << endl;
-        if(n_wiimotes[i]->BatteryPercent <= 20)
-            bcidbg( 0 ) << "Battery level on Wiimote " << (i+1) << " is at "
-                        << (int)n_wiimotes[i]->BatteryPercent
-                        <<  "%.  Consider replacing batteries." << endl;
-		n_wiimotes[i]->Disconnect();
-		delete n_wiimotes[i];
-		n_wiimotes[i] = NULL;
-	}
-
-    return numFound;
-}
-
-// **************************************************************************
 // Function:   AddReading
 // Purpose:    This function adds a pointer to a WiimoteReading helper object
 //             to a list, and registers the state that goes with it.
@@ -213,11 +173,11 @@ int WiimoteLogger::GetNumWiimotes() const
 // **************************************************************************
 WiimoteReading *WiimoteLogger::AddReading(WiimoteReading *r)
 {
-	mReadingList.push_back(r);
-	BEGIN_EVENT_DEFINITIONS
-		r->GetDefinition()
-	END_EVENT_DEFINITIONS
-	return r;
+  mReadingList.push_back(r);
+  BEGIN_EVENT_DEFINITIONS
+    r->GetDefinition()
+  END_EVENT_DEFINITIONS
+  return r;
 }
 // **************************************************************************
 // Function:   Publish
@@ -230,7 +190,6 @@ void WiimoteLogger::Publish()
 {
   bool          wiimoteEnable   = false;
   bool          wiimoteIREnable = false;
-  unsigned int  numFound        = 0;
 
   wiimoteEnable = ( ( int )OptionalParameter( "LogWiimote" ) != 0 );
   wiimoteIREnable = ( ( int )OptionalParameter( "LogWiimoteIR" ) != 0 );
@@ -238,14 +197,40 @@ void WiimoteLogger::Publish()
   if( !wiimoteEnable )
     return;
 
-  numFound = GetNumWiimotes();
+  m_numFound = 0;
+  while(m_numFound < MAX_WIIMOTES)
+  {
+    wiimote *w = new wiimote;
+    if(!w->Connect())
+    {
+      delete w;
+      w = NULL;
+      break;
+    }
+    if(w)
+    {
+      m_wiimotes[m_numFound++] = w;
+      bcidbg( 0 ) << "Wiimote " << m_numFound << " detected with battery at "
+                  << (int)w->BatteryPercent << "%." << endl;
+    }
+    w = NULL;
+  }
+  if( m_numFound == 0 )
+  {
+    bcierr << "No unused Wiimotes detected - if Wiimotes are connected, please disconnect, reconnect, and try again" << endl;
+    return;
+  }
+  if( wiimoteIREnable )
+    bcidbg( 0 ) << m_numFound << " Wiimotes Detected - Logging IR" << endl;
+  else
+    bcidbg( 0 ) << m_numFound << " Wiimotes Detected" << endl;
 
   BEGIN_PARAMETER_DEFINITIONS
   "Source:Log%20Input int LogWiimote=          1    0  0 1 // record wiimote to states (boolean)",
   "Source:Log%20Input int WiimoteDeriv=        0    0  0 1 // measure changes in accelerometer readings?: 0: no - measure raw, 1:yes - measure changes (enumeration)",
   END_PARAMETER_DEFINITIONS
 
-  for(unsigned int i = 0; i < numFound; i++)
+  for(unsigned int i = 0; i < m_numFound; i++)
   {
       AddNewReading(AccelX,i);
       AddNewReading(AccelY,i);
@@ -261,19 +246,20 @@ void WiimoteLogger::Publish()
       AddNewReading(ButtonDown,i);
       AddNewReading(ButtonLeft,i);
       AddNewReading(ButtonRight,i);
+      AddNewReading(IsConnected,i);
   }
   if( wiimoteIREnable )
   {
-	BEGIN_PARAMETER_DEFINITIONS
-	  "Source:Log%20Input int LogWiimoteIR= 1 0 0 1 "
-	  " // record wiimote ir to states (boolean)",
-	END_PARAMETER_DEFINITIONS
+    BEGIN_PARAMETER_DEFINITIONS
+      "Source:Log%20Input int LogWiimoteIR= 1 0 0 1 "
+      " // record wiimote ir to states (boolean)",
+    END_PARAMETER_DEFINITIONS
 
-	for(unsigned int i = 0; i < numFound; i++)
-	{
+    for(unsigned int i = 0; i < m_numFound; i++)
+    {
       AddNewReading(IRX,i);
       AddNewReading(IRY,i);
-	}
+    }
   }
 }
 
@@ -287,55 +273,23 @@ void WiimoteLogger::Publish()
 // **************************************************************************
 void WiimoteLogger::Preflight() const
 {
-  bool         wiimoteEnable   = false;
-  bool		   wiimoteIREnable = false;
-  unsigned int nNumFound       = 0;
+  bool         wiimoteEnable = false;
+  bool       wiimoteIREnable = false;
 
   wiimoteEnable = ( ( int )OptionalParameter( "LogWiimote" ) != 0 );
   wiimoteIREnable = ( ( int )OptionalParameter( "LogWiimoteIR" ) != 0 );
 
-  //Disconnect from and reconnect to all wiimotes
-  for(unsigned int i = 0; i < m_numFound; i++)
-  {
-    if( mpWiimoteThread[i] )
-    {
-      mpWiimoteThread[i]->TerminateWait();
-      delete mpWiimoteThread[i]; //This also deletes the associated wiimote object
-    }
-    if( m_wiimotes[i] )
-    {
-        m_wiimotes[i]->Disconnect();
-        delete m_wiimotes[i];
-    }
-  }
-
   if( wiimoteEnable )
   {
-	nNumFound = GetNumWiimotes();
-
-    for(unsigned int i = 0; i < MAX_WIIMOTES; i++)
+    for( unsigned int i = 0; i < m_numFound; i++ )
     {
-        if(m_wiimotes[i])
-        {
-            if(m_wiimotes[i]->IsConnected())
-            {
-                nNumFound++;
-                bcidbg( 0 ) << "Wiimote " << (i+1) << " is still connected." << endl;
-            }
-        }
+      if( !m_wiimotes[i]->IsConnected() )
+        bcierr << "Wiimote " << (i+1) << " has disconnected." << endl;
+      else if( m_wiimotes[i]->BatteryPercent <= 20 )
+        bciout << "Battery level on Wiimote " << (i+1) << " is at "
+               << (int)m_wiimotes[i]->BatteryPercent
+               <<  "%.  Consider replacing batteries." << endl;
     }
-
-	//Print the results
-	if(nNumFound == 0)
-	{
-		bcierr << "No Unused Wiimotes Detected - If Wiimotes are Connected, please disconnect, reconnect, and try again" << endl;
-		return;
-	}
-
-	if( wiimoteIREnable )
-		bcidbg( 0 ) << nNumFound << " Wiimotes Detected - Logging IR" << endl;
-	else
-		bcidbg( 0 ) << nNumFound << " Wiimotes Detected" << endl;
   }
 }
 
@@ -349,36 +303,26 @@ void WiimoteLogger::Initialize()
 {
   m_wiimoteEnable   = ( ( int )OptionalParameter( "LogWiimote" ) != 0 );
   m_wiimoteIREnable = ( ( int )OptionalParameter( "LogWiimoteIR" ) != 0 );
-  m_numFound = 0;
 
   if( m_wiimoteEnable )
   {
-	//Connect to the wiimotes
-	while(m_numFound < MAX_WIIMOTES)
-	{
-		wiimote *next = new wiimote;
-		if(!next->Connect(wiimote::FIRST_AVAILABLE))
-        {
-          delete next;
-          next = NULL;
-		  break;
-        }
-		m_wiimotes[m_numFound++] = next;
-		next = NULL;
-	}
+    for( unsigned int i = 0; i < m_numFound; i++ )
+    {
+      if( m_wiimotes[i]->IsConnected() )
+      {
+        //Initialize the lights and polling
+        if(m_wiimotes[i]->bExtension)
+          m_wiimotes[i]->SetReportType(wiimote::IN_BUTTONS_ACCEL_IR_EXT);
+        else
+          m_wiimotes[i]->SetReportType(wiimote::IN_BUTTONS_ACCEL_IR);
 
-	//Initialize the lights and polling
-	for(unsigned int i = 0; i < m_numFound; i++)
-	{
-	  if(m_wiimotes[i]->bExtension)
-		m_wiimotes[i]->SetReportType(wiimote::IN_BUTTONS_ACCEL_IR_EXT);
-	  else
-		m_wiimotes[i]->SetReportType(wiimote::IN_BUTTONS_ACCEL_IR);
-
-	  //Light LED 1 if this is m_wiimotes[0], LED 2 for [1], etc...
-	  m_wiimotes[i]->SetLEDs( (BYTE) (1 << i) );
-
-	}
+        //Light LED 1 if this is m_wiimotes[0], LED 2 for [1], etc...
+        m_wiimotes[i]->SetLEDs( (BYTE) (1 << i) );
+        // m_wiimotes[i]->RumbleForAsync( 500 );
+      }
+      else
+        bcierr << "Wiimote " << (i+1) << " has disconnected." << endl;
+    }
     bool deriv = ( ( int )Parameter( "WiimoteDeriv" ) != 0 );
     for(WiimoteReadingList::iterator r = mReadingList.begin(); r != mReadingList.end(); r++) (*r)->SetDeriv(deriv);
   }
@@ -394,10 +338,12 @@ void WiimoteLogger::StartRun()
 {
   if( m_wiimoteEnable )
   {
-	for(unsigned int i = 0; i < m_numFound; i++) {
-		mpWiimoteThread[i] = new WiimoteThread(m_wiimotes[i], m_wiimoteIREnable, i, &mReadingList);
-		mpWiimoteThread[i]->Start();
-	}
+    //bciout << report(m_numFound) << endl;
+    for(unsigned int i = 0; i < m_numFound; i++)
+    {
+      mpWiimoteThread[i] = new WiimoteThread(m_wiimotes[i], m_wiimoteIREnable, i, &mReadingList);
+      mpWiimoteThread[i]->Start();
+    }
   }
 }
 
@@ -438,13 +384,14 @@ void WiimoteLogger::Halt()
 // Returns:    N/A
 // **************************************************************************
 WiimoteLogger::WiimoteThread::WiimoteThread( wiimote *inWiimote,
-											 bool ir, unsigned int num, WiimoteReadingList * pReadingList )
+                       bool ir, unsigned int num, WiimoteReadingList * pReadingList )
 : OSThread(),
   mpReadingList( pReadingList ),
   m_wiimote( inWiimote ),
   m_ir( ir ),
   m_wiimoteNum( num )
 {
+  //bciout << "Created thread for wiimote #" << m_wiimoteNum+1 << endl;
 }
 
 // **************************************************************************
@@ -455,11 +402,12 @@ WiimoteLogger::WiimoteThread::WiimoteThread( wiimote *inWiimote,
 // **************************************************************************
 WiimoteLogger::WiimoteThread::~WiimoteThread()
 {
-    //Wiimote should be disconnected and deleted within the wiimotelogger class
-	//m_wiimote->SetLEDs(0);
-	//m_wiimote->Disconnect();
-	//delete m_wiimote;
-	//m_wiimote = NULL;
+  //bciout << "Destroyed thread object for wiimote #" << m_wiimoteNum+1 << endl;
+  //Wiimote should be disconnected and deleted within the wiimotelogger class
+  //m_wiimote->SetLEDs(0);
+  //m_wiimote->Disconnect();
+  //delete m_wiimote;
+  //m_wiimote = NULL;
 }
 
 // **************************************************************************
@@ -470,25 +418,27 @@ WiimoteLogger::WiimoteThread::~WiimoteThread()
 // **************************************************************************
 int WiimoteLogger::WiimoteThread::Execute()
 {  
+  //bciout << "Started thread object for wiimote #" << m_wiimoteNum+1 << endl;
+  ::Sleep(10);
   while( !IsTerminating() )
   {
-	while( m_wiimote->RefreshState() == NO_CHANGE)
-		::Sleep(1);
+    while( m_wiimote->RefreshState() == NO_CHANGE)
+      ::Sleep(1);
 
-	if ( m_wiimote->IsConnected() == true )
-	{
-	  for(WiimoteReadingList::iterator r = mpReadingList->begin(); r != mpReadingList->end(); r++) (*r)->Read(m_wiimoteNum, m_wiimote);
-	}
-	else
-	{
-      bcierr << "Wiimote " << (m_wiimoteNum+1) << " Has Disconnected.  "
-             << "Either Battery has died or wiimote has gone out of range.  "
-             << "Please reconnect and restart the program." << endl;
-	}
+    m_wiimote->SetRumble( m_wiimote->Button.A() );
+    if ( m_wiimote->IsConnected() == true )
+    {
+      for(WiimoteReadingList::iterator r = mpReadingList->begin(); r != mpReadingList->end(); r++) (*r)->Read(m_wiimoteNum, m_wiimote);
+    }
+    else
+    {
+        bcierr << "Wiimote " << (m_wiimoteNum+1) << " Has Disconnected.  "
+               << "Either Battery has died or wiimote has gone out of range.  "
+               << "Please reconnect and restart the program." << endl;
+    }
   }
 
   ::Sleep(10);
-
   return 0;
 }
 
