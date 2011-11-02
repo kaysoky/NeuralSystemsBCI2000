@@ -143,10 +143,10 @@ int main(int argc, char* argv[])
          
          ShowErrorCode(_T("BluetoothGetRadioInfo"), BluetoothGetRadioInfo(hRadios[radio], &radioInfo));
 
-         _tprintf(_T("\nRadio %d: %ls %s\n"),
+         _tprintf(_T("\nRadio %d:   %s \"%ls\"\n"),
                radio,
-               radioInfo.szName,
-               FormatBTAddress(radioInfo.address)
+               FormatBTAddress(radioInfo.address),
+               radioInfo.szName
                );
          
          srch.fReturnAuthenticated = TRUE;
@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
               istarget = nToHandle && MatchBTAddress(&btdi.Address, argv[nHandled+1]);
               if(nToHandle && !istarget) continue;
 
-              _tprintf(_T("    Found: %s \"%s\"\n"), FormatBTAddress(btdi.Address), btdi.szName);
+              _tprintf(_T("    Found: %s \"%ls\"\n"), FormatBTAddress(btdi.Address), btdi.szName);
                
               if (istarget || !wcscmp(btdi.szName, L"Nintendo RVL-WBC-01") || !wcscmp(btdi.szName, L"Nintendo RVL-CNT-01"))
               {
