@@ -437,7 +437,7 @@ VisDisplayGraph::ToggleNumericValues()
 bool
 VisDisplayGraph::ToggleNumericValues_Enabled() const
 {
-  return mDisplay.DisplayMode() == SignalDisplay::polyline;
+  return mDisplay.DisplayMode() == SignalDisplay::polyline && mDisplay.ChannelGroupSize() == 1;
 }
 
 bool

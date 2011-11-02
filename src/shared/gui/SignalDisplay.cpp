@@ -854,42 +854,44 @@ SignalDisplay::DrawNumericValues( const PaintInfo& p )
 {
   p.painter->setPen( p.labelColor );
   p.painter->setFont( p.monoFont );
-  //p.painter->setBackgroundMode( Qt::TransparentMode );
   int nextLabelPos = mDataRect.top();
 
-  for( int i = 0; i < mNumDisplayGroups; ++i )
+  if( !mData.Properties().IsEmpty() )
   {
-    size_t channelNumber = ( mTopGroup + i ) * mChannelGroupSize;
-    int    tickY = ( GroupTop( i ) + GroupBottom( i ) ) / 2;
-    stringstream ss;
-    ss.setf( ios::fixed );
-    ss.precision( 10 );
-    int sampleNumber = mSampleCursor - 1;
-    if( sampleNumber < 0 ) sampleNumber += mData.Elements();
-    ss << mData( channelNumber, sampleNumber ) << " ";
-    string s = ss.str();
-    const char* labelText = s.c_str();
-    QFontMetrics metrics( p.monoFont );
-    int w = metrics.width( labelText );
-    int h = metrics.height( );
-    if( mNumericValueWidth < w ) mNumericValueWidth = w; 
-    QRect tickRect(
-        mDisplayRect.width() - w,
-        tickY - h * 1.5,
-        w,
-        h
-    );
-
-    if( tickY >= nextLabelPos )
+    for( int i = 0; i < mNumDisplayGroups; ++i )
     {
-      if( mChannelGroupSize == 1 )
+      size_t channelNumber = ( mTopGroup + i ) * mChannelGroupSize;
+      int    tickY = ( GroupTop( i ) + GroupBottom( i ) ) / 2;
+      stringstream ss;
+      ss.setf( ios::fixed );
+      ss.precision( 10 );
+      int sampleNumber = mSampleCursor - 1;
+      if( sampleNumber < 0 ) sampleNumber += mData.Elements();
+      ss << mData( channelNumber, sampleNumber ) << " ";
+      string s = ss.str();
+      const char* labelText = s.c_str();
+      QFontMetrics metrics( p.monoFont );
+      int w = metrics.width( labelText );
+      int h = metrics.height();
+      if( mNumericValueWidth < w ) mNumericValueWidth = w; 
+      QRect tickRect(
+          mDisplayRect.width() - w,
+          tickY - h * 1.5,
+          w,
+          h
+      );
+
+      if( tickY >= nextLabelPos )
       {
-        p.painter->fillRect( tickRect, p.backgroundColor );
-        p.painter->drawText( tickRect,
-          Qt::AlignVCenter | Qt::TextSingleLine | Qt::AlignRight,
-          labelText );
+        if( mChannelGroupSize == 1 )
+        {
+          p.painter->fillRect( tickRect, p.backgroundColor );
+          p.painter->drawText( tickRect,
+            Qt::AlignVCenter | Qt::TextSingleLine | Qt::AlignRight,
+            labelText );
+        }
+        nextLabelPos = tickY + p.painter->fontMetrics().height();
       }
-      nextLabelPos = tickY + p.painter->fontMetrics().height();
     }
   }
 }
@@ -941,6 +943,7 @@ SignalDisplay::DrawMarkers( const PaintInfo& p )
 void
 SignalDisplay::DrawChannelLabels( const PaintInfo& p )
 {
+  p.painter->setFont( p.labelFont );
   if( mShowChannelLabels && mChannelGroupSize > 1 )
   {  // Draw channel labels when channels don't coincide with groups.
     p.painter->setBackground( p.backgroundColor );
