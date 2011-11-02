@@ -29,6 +29,9 @@
 // using *three* lines: "Nintendo RVL-CNT-01",  "No passkey", and "Connected".   Without that last line
 // saying "Connected" (which is flakily sometimes absent) the Wiimote will forget the pairing within a
 // few seconds.  If so, retry this program.
+// 
+// Wiimotes can be disconnected rather than connected, if the first input argument is -d or --disconnect.
+
 
 DWORD ShowErrorCode(LPTSTR msg, DWORD dw)
 {
@@ -69,21 +72,28 @@ _TCHAR * FormatBTAddress(BLUETOOTH_ADDRESS address)
 
 int MatchBTAddress(BLUETOOTH_ADDRESS * addr, const char *str)
 {
-	int i, nscanned, b[6];
-	if(str == NULL || addr == NULL) return 0;
-	nscanned = sscanf(str, "%x:%x:%x:%x:%x:%x", b+5, b+4, b+3, b+2, b+1, b+0);
-	if(nscanned != 6) return 0;
-	for(i = 0; i < 6; i++) if(addr->rgBytes[i] != (BYTE)(b[i])) return 0;
-	return 1;
+  int i, nscanned, b[6];
+  if(str == NULL || addr == NULL) return 0;
+  nscanned = sscanf(str, "%x:%x:%x:%x:%x:%x", b+5, b+4, b+3, b+2, b+1, b+0);
+  if(nscanned != 6) return 0;
+  for(i = 0; i < 6; i++) if(addr->rgBytes[i] != (BYTE)(b[i])) return 0;
+  return 1;
 }
 
 int main(int argc, char* argv[])
 {
+   bool disconnect = false;
+   if( argc >= 2 && ( strcmp(argv[1], "-d")==0 || strcmp(argv[1], "--disconnect")==0 ) )
+   {
+     disconnect = true;
+     argv++;
+     argc--;
+   }
    HANDLE hRadios[256];
    int nRadios;
-   int nPaired = 0;
-   int nNewlyPaired = 0;
-   int nToPair = argc-1;
+   int nHandled = 0;
+   int nNewlyHandled = 0;
+   int nToHandle = argc-1;
    int istarget = 0;
 
    ///////////////////////////////////////////////////////////////////////
@@ -116,7 +126,7 @@ int main(int argc, char* argv[])
    ///////////////////////////////////////////////////////////////////////
    // Keep looping until we pair with a Wii device
    ///////////////////////////////////////////////////////////////////////
-   while ((nToPair == 0 && nNewlyPaired == 0) || nPaired < nToPair)
+   while ((nToHandle == 0 && nNewlyHandled == 0) || nHandled < nToHandle)
    {
       int radio;
      
@@ -167,64 +177,83 @@ int main(int argc, char* argv[])
          {
             do
             {
-			   istarget = nToPair && MatchBTAddress(&btdi.Address, argv[nPaired+1]);
-			   if(nToPair && !istarget) continue;
+              istarget = nToHandle && MatchBTAddress(&btdi.Address, argv[nHandled+1]);
+              if(nToHandle && !istarget) continue;
 
-               _tprintf(_T("    Found: %s \"%s\"\n"), FormatBTAddress(btdi.Address), btdi.szName);
+              _tprintf(_T("    Found: %s \"%s\"\n"), FormatBTAddress(btdi.Address), btdi.szName);
                
-               if (istarget || !wcscmp(btdi.szName, L"Nintendo RVL-WBC-01") || !wcscmp(btdi.szName, L"Nintendo RVL-CNT-01"))
-               {
-                  DWORD pcServices = 16;
-                  GUID guids[16];
-                  DWORD error = ERROR_SUCCESS;
+              if (istarget || !wcscmp(btdi.szName, L"Nintendo RVL-WBC-01") || !wcscmp(btdi.szName, L"Nintendo RVL-CNT-01"))
+              {
+                 DWORD pcServices = 16;
+                 GUID guids[16];
+                 DWORD error = ERROR_SUCCESS;
 
-				  if (btdi.fConnected) {
+                 if( disconnect )
+                 {
+                   if ( btdi.fConnected || btdi.fRemembered )
+                   {
+                     _tprintf(_T( btdi.fConnected ? "    Device is connected. Removing...\n" : "    Device is \"remembered\" but not connected. Removing...\n"));
+                     error = ShowErrorCode(_T("    BluetoothRemoveDevice"), BluetoothRemoveDevice(&btdi.Address));
+                     if(error != ERROR_SUCCESS) continue;
+                     nHandled++;
+                     nNewlyHandled++;
+                   }
+                   else
+                   {
+                       _tprintf(_T("    Device is not connected\n"));
+                       nHandled++;
+                   }
+                   continue;
+                 }
+                   
+
+                 if (btdi.fConnected) {
                      _tprintf(_T("    Device is already connected\n"));
-					 nPaired++;
-					 continue;
-				  }
-				  if (btdi.fRemembered) { // Make Windows forget pairing
-                     _tprintf(_T("    Device is \"remembered\" but not connected. Removing...\n"));
-					 error = ShowErrorCode(_T("    BluetoothRemoveDevice"), BluetoothRemoveDevice(&btdi.Address));
-					 if(error != ERROR_SUCCESS) continue;
-				  }
+                     nHandled++;
+                     continue;
+                 }
+                 if (btdi.fRemembered) { // Make Windows forget pairing
+                   _tprintf(_T("    Device is \"remembered\" but not connected. Removing...\n"));
+                   error = ShowErrorCode(_T("    BluetoothRemoveDevice"), BluetoothRemoveDevice(&btdi.Address));
+                   if(error != ERROR_SUCCESS) continue;
+                 }
 
-                  _tprintf(_T("    Pairing...\n"));
-				  if(0) {  // Contrary to Richard Lynch's original code, this authentication step seems to be unnecessary (and fails, if attempted)
-                     WCHAR pass[6];
-                     // MAC address is passphrase
-                     pass[0] = (WCHAR)(radioInfo.address.rgBytes[0]);
-                     pass[1] = (WCHAR)(radioInfo.address.rgBytes[1]);
-                     pass[2] = (WCHAR)(radioInfo.address.rgBytes[2]);
-                     pass[3] = (WCHAR)(radioInfo.address.rgBytes[3]);
-                     pass[4] = (WCHAR)(radioInfo.address.rgBytes[4]);
-                     pass[5] = (WCHAR)(radioInfo.address.rgBytes[5]);
-                     // Pair with Wii device.
-                     error = ShowErrorCode(_T("    BluetoothAuthenticateDevice"), BluetoothAuthenticateDevice(NULL, hRadios[radio], &btdi, pass, 6));
-			         if(error != ERROR_SUCCESS) continue;
-				  }
+                 _tprintf(_T("    Pairing...\n"));
+                 if(0) {  // Contrary to Richard Lynch's original code, this authentication step seems to be unnecessary (and fails, if attempted)
+                   WCHAR pass[6];
+                   // MAC address is passphrase
+                   pass[0] = (WCHAR)(radioInfo.address.rgBytes[0]);
+                   pass[1] = (WCHAR)(radioInfo.address.rgBytes[1]);
+                   pass[2] = (WCHAR)(radioInfo.address.rgBytes[2]);
+                   pass[3] = (WCHAR)(radioInfo.address.rgBytes[3]);
+                   pass[4] = (WCHAR)(radioInfo.address.rgBytes[4]);
+                   pass[5] = (WCHAR)(radioInfo.address.rgBytes[5]);
+                   // Pair with Wii device.
+                   error = ShowErrorCode(_T("    BluetoothAuthenticateDevice"), BluetoothAuthenticateDevice(NULL, hRadios[radio], &btdi, pass, 6));
+                   if(error != ERROR_SUCCESS) continue;
+                 }
 
-                  // If this is not done, the Wii device will not remember the pairing
-                  error = ShowErrorCode(_T("    BluetoothEnumerateInstalledServices"), BluetoothEnumerateInstalledServices(hRadios[radio], &btdi, &pcServices, guids));
-			      if(error != ERROR_SUCCESS) continue;
+                 // If this is not done, the Wii device will not remember the pairing
+                 error = ShowErrorCode(_T("    BluetoothEnumerateInstalledServices"), BluetoothEnumerateInstalledServices(hRadios[radio], &btdi, &pcServices, guids));
+                 if(error != ERROR_SUCCESS) continue;
 
-                  // Activate service
-                  error = ShowErrorCode(_T("    BluetoothSetServiceState"), BluetoothSetServiceState (hRadios[radio], &btdi, &HumanInterfaceDeviceServiceClass_UUID, BLUETOOTH_SERVICE_ENABLE ));
-			      if(error != ERROR_SUCCESS) continue;
+                 // Activate service
+                 error = ShowErrorCode(_T("    BluetoothSetServiceState"), BluetoothSetServiceState (hRadios[radio], &btdi, &HumanInterfaceDeviceServiceClass_UUID, BLUETOOTH_SERVICE_ENABLE ));
+                 if(error != ERROR_SUCCESS) continue;
                  
-                  _tprintf(_T("    Paired.\n"));
-                  nPaired++;
-				  nNewlyPaired++;
+                 _tprintf(_T("    Paired.\n"));
+                 nHandled++;
+                 nNewlyHandled++;
 
-               } // if (!wcscmp(btdi.szName, L"Nintendo RVL-WBC-01") || !wcscmp(btdi.szName, L"Nintendo RVL-CNT-01"))
+              } // if (!wcscmp(btdi.szName, L"Nintendo RVL-WBC-01") || !wcscmp(btdi.szName, L"Nintendo RVL-CNT-01"))
             } while (BluetoothFindNextDevice(hFind, &btdi));
 
-			BluetoothFindDeviceClose(hFind);
+            BluetoothFindDeviceClose(hFind);
 
-         } // if (hFind == NULL)
+          } // if (hFind == NULL)
       } // for (radio = 0; radio < nRadios; radio++)
       Sleep(1000);
-   }
+    }
 
    ///////////////////////////////////////////////////////////////////////
    // Clean up
@@ -239,9 +268,9 @@ int main(int argc, char* argv[])
       }
    }
    
-   _tprintf(_T("=============================================\n"), nPaired);
-   _tprintf(_T("%d Wii devices paired\n"), nPaired);
+   _tprintf(_T("=============================================\n"));
+   _tprintf(_T("%d Wii devices %s\n"), nHandled, (disconnect ? "disconnected" : "paired") );
 
-	char strTemp[256]; printf("press return"); scanf("blah %s\n", strTemp);
+  char strTemp[256]; printf("press return"); scanf("blah %s\n", strTemp);
    return 0;
 }
