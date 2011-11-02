@@ -54,7 +54,8 @@ SignalGeneratorADC::SignalGeneratorADC()
   mAmplitudeY( 1 ),
   mAmplitudeZ( 1 ),
   mSinePhase( 0 ),
-  mLasttime( 0 )
+  mLasttime( 0 ),
+  mAccumulatedDiff( 0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Signal%20Properties int SourceCh= 16 "
@@ -170,6 +171,7 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
 #endif // _WIN32
 
   mLasttime = PrecisionTime::Now();
+  mAccumulatedDiff = 0;
 }
 
 
@@ -234,22 +236,12 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
       Output( ch, sample ) = value;
     }
   }
-
   // Wait for the amount of time that corresponds to the length of a data block.
-  const int cTimeJitter = 10; // ms
-  int blockDuration = static_cast<int>( 1e3 * MeasurementUnits::SampleBlockDuration() );
-  PrecisionTime continueTime = mLasttime + blockDuration;
-  int waitTime = PrecisionTime::SignedDiff( continueTime, PrecisionTime::Now() );
-  while( waitTime >= cTimeJitter )
-  {
-    OSThread::Sleep( waitTime );
-    waitTime = PrecisionTime::SignedDiff( continueTime, PrecisionTime::Now() );
-  }
-  while( waitTime > 0 )
-  {
-    waitTime = PrecisionTime::SignedDiff( continueTime, PrecisionTime::Now() );
-  }
-  mLasttime = PrecisionTime::Now();
+  double blockDuration = 1e3 * MeasurementUnits::SampleBlockDuration();
+  OSThread::PrecisionSleepUntil( mLasttime + static_cast<int>( blockDuration - mAccumulatedDiff ) );
+  PrecisionTime now = PrecisionTime::Now();
+  mAccumulatedDiff += PrecisionTime::UnsignedDiff( now, mLasttime ) - blockDuration;
+  mLasttime = now;
 }
 
 

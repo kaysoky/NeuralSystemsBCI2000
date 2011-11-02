@@ -43,6 +43,7 @@ RegisterFilter( FilePlaybackADC, 1 );
 FilePlaybackADC::FilePlaybackADC()
 : mSamplingRate( 1 ),
 mLasttime( 0 ),
+mBlockDuration( 0 ),
 mBlockSize(1),
 mFileName(""),
 mTemplateFileName(""),
@@ -322,10 +323,10 @@ FilePlaybackADC::Initialize( const SignalProperties&, const SignalProperties& )
   mDataFile->Open(mFileName.c_str(), bufsize);
   CheckFile( mFileName, *mDataFile );
   MatchChannels( *mDataFile, mChList );
-  mUpdatePeriod = 0;
-  if (mSpeedup > 0)
-    mUpdatePeriod = 1000.0f/float(mSpeedup)*mBlockSize/mSamplingRate;
-
+  float invSpeedup = ( mSpeedup > 0 ) ?  1 / mSpeedup : 1;
+  mBlockDuration = static_cast<int>( ( 1000 * mBlockSize ) * invSpeedup / mSamplingRate );
+  if( mBlockDuration < 1 )
+    mBlockDuration = 1;
   mNumSamples = mDataFile->NumSamples();
   mMaxBlock = (int)floor( double(mNumSamples)/double(mBlockSize) );
   double startTime = Parameter("PlaybackStartTime").InSampleBlocks();
@@ -352,6 +353,7 @@ FilePlaybackADC::Initialize( const SignalProperties&, const SignalProperties& )
       }
     }
   }
+  mLasttime = PrecisionTime::Now();
 }
 
 
@@ -403,16 +405,7 @@ FilePlaybackADC::Process( const GenericSignal&, GenericSignal& Output )
   if (mSpeedup == 0)
     return;
   // Wait for the amount of time that corresponds to the length of a data block.
-  PrecisionTime now = PrecisionTime::Now();
-  //float blockDuration = 1e3 * Output.Elements() / mSamplingRate,
-  float time2wait = mUpdatePeriod - PrecisionTime::UnsignedDiff( now, mLasttime );
-  if( time2wait < 0 )
-    time2wait = 0;
-
-  const float timeJitter = 5;
-  OSThread::Sleep( (int)( ::floor( time2wait / timeJitter ) * timeJitter ) );
-  while( PrecisionTime::UnsignedDiff( PrecisionTime::Now(), mLasttime ) < mUpdatePeriod - 1 )
-    OSThread::Sleep( 0 );
+  OSThread::PrecisionSleepUntil( mLasttime + mBlockDuration );
   mLasttime = PrecisionTime::Now();
 
 }

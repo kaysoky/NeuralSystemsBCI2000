@@ -60,7 +60,7 @@ class FilePlaybackADC : public GenericADC
 		std::string mFileName;
 		std::string mTemplateFileName;
 		std::vector<int> mChList;
-		float mUpdatePeriod;
+		int mBlockDuration;
 		BCI2000FileReader *mDataFile;
 		int mCurBlock;
 		int mMaxBlock;

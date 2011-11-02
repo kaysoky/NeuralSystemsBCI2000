@@ -37,6 +37,7 @@
 
 #include "Uncopyable.h"
 #include "OSEvent.h"
+#include "PrecisionTime.h"
 
 class OSThread : private Uncopyable
 {
@@ -54,8 +55,11 @@ class OSThread : private Uncopyable
   int  Result() const
     { return mResult; }
 
-  static void Sleep( int ); // milliseconds
-  static void PrecisionSleep( double ); // milliseconds
+  static void SleepFor( int ); // sleep for milliseconds
+  static void Sleep( int inMs )
+    { OSThread::SleepFor( inMs ); }
+  static void PrecisionSleepFor( double ); // sleep for milliseconds
+  static void PrecisionSleepUntil( PrecisionTime ); // sleep until absolute wakeup time
   static bool IsMainThread();
 
  private:

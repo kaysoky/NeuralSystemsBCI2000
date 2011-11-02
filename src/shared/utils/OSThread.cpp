@@ -32,9 +32,14 @@
 #include "OSThread.h"
 #include "OSEvent.h"
 #include "BCIError.h"
+#include "BCIException.h"
 #include "OSError.h"
 #include "ClassName.h"
 #include "ExceptionCatcher.h"
+#include "PrecisionTime.h"
+
+#include <cmath>
+#include <cstdlib>
 
 #if !_WIN32
 # include <unistd.h>
@@ -83,23 +88,40 @@ OSThread::IsTerminated() const
 }
 
 void
-OSThread::Sleep( int inMs )
+OSThread::SleepFor( int inMs )
 {
   ::Sleep( inMs );
 }
 
 void
-OSThread::PrecisionSleep( double inMs )
+OSThread::PrecisionSleepFor( double inMs )
 {
-  HANDLE timer = ::CreateWaitableTimer( NULL, true, NULL );
-  LARGE_INTEGER deltaT;
-  deltaT.QuadPart = static_cast<LONGLONG>( -10000 * inMs );
-  if( !timer
-      || !::SetWaitableTimer( timer, &deltaT, 0, NULL, NULL, false )
-      || WAIT_OBJECT_0 != ::WaitForSingleObject( timer, INFINITE )
-    )
-    OSThread::Sleep( static_cast<int>( inMs ) );
-  ::CloseHandle( timer );
+  if( inMs < 0 )
+    return;
+
+  // MSDN warns against frequent calls to timeBeginPeriod(), so we use a static RAAI object to set
+  // timing precision once, and clear it on application exit.
+  static class SetHighestPrecision
+  {
+   public:
+    SetHighestPrecision() : mPrecision( 0 )
+    {
+      TIMECAPS tc = { 0, 0 };
+      ::timeGetDevCaps( &tc, sizeof( tc ) );
+      mPrecision = tc.wPeriodMin;
+      ::timeBeginPeriod( mPrecision );
+    }
+    ~SetHighestPrecision()
+    {
+      ::timeEndPeriod( mPrecision );
+    }
+   private:
+    UINT mPrecision;
+  } setHighestPrecision;
+
+  // Use "dithering" to achieve sub-millisecond accuracy of mean sleeping time.
+  int sleepTime = static_cast<int>( ::floor( inMs ) ) + static_cast<int>( ::rand() > ( RAND_MAX + 1 ) * ::fmod( inMs, 1 ) );
+  ::Sleep( sleepTime );
 }
 
 bool
@@ -145,15 +167,15 @@ OSThread::IsTerminated() const
 }
 
 void
-OSThread::Sleep( int inMs )
+OSThread::SleepFor( int inMs )
 {
-  ::usleep( inMs * 1000 );
+  OSThread::PrecisionSleepFor( inMs );
 }
 
 void
-OSThread::PrecisionSleep( double inMs )
+OSThread::PrecisionSleepFor( double inMs )
 {
-  OSThread::Sleep( inMs );
+  ::usleep( inMs * 1000 );
 }
 
 bool
@@ -163,6 +185,12 @@ OSThread::IsMainThread()
 }
 
 #endif // _WIN32
+
+void
+OSThread::PrecisionSleepUntil( PrecisionTime inWakeupTime )
+{
+  PrecisionSleepFor( PrecisionTime::UnsignedDiff( inWakeupTime, PrecisionTime::Now() ) );
+}
 
 void
 OSThread::Terminate( OSEvent* inpEvent )

@@ -64,7 +64,8 @@ class SignalGeneratorADC : public GenericADC
          mAmplitudeY,
          mAmplitudeZ,
          mSinePhase;
-  PrecisionTime   mLasttime;
+  PrecisionTime mLasttime;
+  double mAccumulatedDiff;
   RandomGenerator mRandomGenerator;
 };
 
