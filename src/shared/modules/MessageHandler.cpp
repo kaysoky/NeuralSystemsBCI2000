@@ -51,6 +51,7 @@ using namespace std;
 #define CONSIDER(x)                                                      \
   case Header<x>::descSupp:                                              \
     Handle##x( iss );                                                    \
+    CheckForError( iss, #x );                                            \
     break;
 
 // Main message handling functions.
@@ -78,9 +79,16 @@ MessageHandler::HandleMessage( MessageQueue& ioQueue )
     CONSIDER( VisBitmap );
     CONSIDER( VisCfg );
     default:
-      bcierr << "Unknown message descriptor/supplement 0x" 
+      bcierr_ << ": Unknown message descriptor/supplement 0x" 
              << hex << entry.descSupp << endl;
   }
+}
+
+void
+MessageHandler::CheckForError( istream& inStream, const char* inMessageType )
+{
+  if( inStream.fail() || inStream.peek() != EOF )
+    bcierr_ << ": Error reading " << inMessageType << " message" << endl;
 }
 
 void
