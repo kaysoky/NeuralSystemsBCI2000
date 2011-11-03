@@ -64,7 +64,7 @@ VisBase::ReadBinary( istream& is )
 ostream&
 VisBase::WriteBinary( ostream& os ) const
 {
-  // We use the traditional message format if the source ID can be represented
+  // We use the traditional message format if the visID can be represented
   // as a single byte number.
   bool oldFormat = false;
   int visID = ::atoi( mVisID.c_str() );
@@ -82,7 +82,8 @@ VisBase::WriteBinary( ostream& os ) const
   else
   {
     os.put( static_cast<unsigned char>( SourceID::ExtendedFormat ) );
-    os << mVisID;
+    if( !mVisID.empty() ) // Maintain compatibility with older modules which don't expect an EncodedString here.
+      os << mVisID;
     os.put( '\0' );
   }
   WriteBinarySelf( os );
