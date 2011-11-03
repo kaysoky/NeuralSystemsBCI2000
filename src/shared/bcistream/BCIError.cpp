@@ -83,6 +83,9 @@ OutStream::StringBuf::SetFlushHandler( OutStream::FlushHandler f )
   if( str().length() > 1 )
   {
     string message = mContext.empty() ? str() : mContext + ": " + str();
+    size_t pos;
+    while( ( pos = message.find( '\0' ) ) != string::npos )
+      message = message.substr( 0, pos ) + message.substr( pos + 1 );
     if( mpOnFlush )
       mpOnFlush( message );
     else if( f )
