@@ -120,7 +120,7 @@ OSThread::PrecisionSleepFor( double inMs )
   } setHighestPrecision;
 
   // Use "dithering" to achieve sub-millisecond accuracy of mean sleeping time.
-  int sleepTime = static_cast<int>( ::floor( inMs ) ) + static_cast<int>( ::rand() > ( RAND_MAX + 1 ) * ::fmod( inMs, 1 ) );
+  int sleepTime = static_cast<int>( ::floor( inMs ) ) + static_cast<int>( ::rand() < ( RAND_MAX + 1 ) * ::fmod( inMs, 1 ) );
   ::Sleep( sleepTime );
 }
 
@@ -189,7 +189,7 @@ OSThread::IsMainThread()
 void
 OSThread::PrecisionSleepUntil( PrecisionTime inWakeupTime )
 {
-  PrecisionSleepFor( PrecisionTime::UnsignedDiff( inWakeupTime, PrecisionTime::Now() ) );
+  PrecisionSleepFor( PrecisionTime::SignedDiff( inWakeupTime, PrecisionTime::Now() ) );
 }
 
 void
