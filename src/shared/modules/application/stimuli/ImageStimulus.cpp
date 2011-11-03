@@ -35,6 +35,7 @@
 # include <VCL.h>
 #else // __BORLANDC__
 # include <QPainter>
+# include <QBitmap>
 #endif // __BORLANDC__
 
 using namespace std;
@@ -251,15 +252,11 @@ ImageStimulus::OnChange( DrawContext& ioDC )
 
   if( mpImage != NULL )
   {
+    QImage img = mpImage->scaled( width, height );
     // Create the normal pixmap
     if( PresentationMode() != ShowHide )
-    {
-      QImage img = mpImage->scaled( width, height );
-      ApplyRenderingMode( img );
-      mpImageBufferNormal = new QPixmap( QPixmap::fromImage( img ) );
-    }
-    // Create the highlighted pixmap by modifying mpImage
-    QImage img( *mpImage );
+      mpImageBufferNormal = NewBufferFromImage( img );
+    // Create the highlighted pixmap by modifying img
     switch( PresentationMode() )
     {
       case ShowHide:
@@ -268,18 +265,16 @@ ImageStimulus::OnChange( DrawContext& ioDC )
         break;
 
       case Intensify:
-        for( int i = 0; i < img.width(); ++i )
-          for( int j = 0; j < img.height(); ++j )
-          {
-            QColor c = img.pixel( i, j );
-            c = c.lighter( static_cast<int>( 100 * DimFactor() ) );
-            img.setPixel( i, j, c.rgb() );
-          }
+        img.convertToFormat( QImage::Format_Indexed8 );
+        for( int i = 0; i < img.colorCount(); ++i )
+          img.setColor( i, QColor( img.color( i ) ).lighter( static_cast<int>( 100 * DimFactor() ) ).rgb() );
         break;
 
       case Grayscale:
-        // May need changing.  Mono makes this monochromatic, not grayscale.
-        img.convertToFormat( QImage::Format_Mono );
+        img.convertToFormat( QImage::Format_Indexed8 );
+        for( int i = 0; i < img.colorCount(); ++i )
+          img.setColor( i, QColor( img.color( i ) ).value() );
+        break;
         break;
 
       case Invert:
@@ -287,18 +282,12 @@ ImageStimulus::OnChange( DrawContext& ioDC )
         break;
 
       case Dim:
-        for( int i = 0; i < img.width(); ++i )
-          for( int j = 0; j < img.height(); ++j )
-          {
-            QColor c = img.pixel( i, j );
-            c = c.darker( static_cast<int>( 100 * DimFactor() ) );
-            img.setPixel( i, j, c.rgb() );
-          }
+        img.convertToFormat( QImage::Format_Indexed8 );
+        for( int i = 0; i < img.colorCount(); ++i )
+          img.setColor( i, QColor( img.color( i ) ).lighter( static_cast<int>( 100 * DimFactor() ) ).rgb() );
         break;
     }
-    img = img.scaled( width, height );
-    ApplyRenderingMode( img );
-    mpImageBufferHighlighted = new QPixmap( QPixmap::fromImage( img ) );
+    mpImageBufferHighlighted = NewBufferFromImage( img );
   }
 
 #endif // __BORLANDC__
@@ -354,23 +343,17 @@ ImageStimulus::AdjustRect( GUI::Rect& ioRect ) const
 
 
 #ifndef __BORLANDC__
-QImage&
-ImageStimulus::ApplyRenderingMode( QImage& ioImage ) const
+QPixmap*
+ImageStimulus::NewBufferFromImage( QImage& inImage ) const
 {
+  QPixmap* pBuffer = new QPixmap( QPixmap::fromImage( inImage ) );
   if( mRenderingMode == GUI::RenderingMode::Transparent )
   {
-    if( !ioImage.hasAlphaChannel() && ioImage.width() > 0 && ioImage.height() > 0 )
-    {
-      // Imitate the VCL's auto transparency feature.
-      ioImage = ioImage.convertToFormat( QImage::Format_ARGB32_Premultiplied );
-      QRgb c = ioImage.pixel( 0, 0 );
-      for( int i = 0; i < ioImage.width(); ++i )
-        for( int j = 0; j < ioImage.width(); ++j )
-          if( ioImage.pixel( i, j ) == c )
-            ioImage.setPixel( i, j, Qt::transparent );
-    }
+    QRgb c = inImage.pixel( 0, 0 );
+    QImage mask = inImage.createMaskFromColor( c, Qt::MaskInColor );
+    pBuffer->setMask( QBitmap::fromImage( mask ) );
   }
-  return ioImage;
+  return pBuffer;
 }
 #endif // __BORLANDC__
 

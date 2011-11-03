@@ -65,7 +65,7 @@ class ImageStimulus : public VisualStimulus, public GUI::GraphObject
   Graphics::TBitmap*  mpImageBufferNormal,
                    *  mpImageBufferHighlighted;
 #else // __BORLANDC__
-  QImage& ApplyRenderingMode( QImage& ) const;
+  QPixmap*  NewBufferFromImage( QImage& ) const;
   QImage* mpImage;
   QPixmap*  mpImageBufferNormal,
          *  mpImageBufferHighlighted;

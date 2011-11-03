@@ -140,7 +140,8 @@ GraphDisplay&
 GraphDisplay::Add( GraphObject* inObj )
 {
   mObjects.insert( inObj );
-  Change();
+  if( !mUsingGL && inObj->NeedsGL() )
+    Change();
   return *this;
 }
 
@@ -150,7 +151,8 @@ GraphDisplay::Remove( GraphObject* inObj )
   inObj->Invalidate();
   mObjects.erase( inObj );
   mObjectsClicked.remove( inObj );
-  Change();
+  if( inObj->NeedsGL() )
+    Change();
   return *this;
 }
 
