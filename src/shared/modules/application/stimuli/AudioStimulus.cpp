@@ -106,13 +106,13 @@ AudioStimulus::Error() const
 void
 AudioStimulus::OnPresent()
 {
-  WavePlayer* pWavePlayer = dynamic_cast<WavePlayer*>( mpStimulus );
-  if( pWavePlayer != NULL )
-    pWavePlayer->SetVolume( mVolume );
+  SoundStimulus* pSoundStimulus = dynamic_cast<SoundStimulus*>( mpStimulus );
+  if( pSoundStimulus != NULL )
+    pSoundStimulus->SetVolume( mVolume );
 
-  TextToSpeech* pTextToSpeech = dynamic_cast<TextToSpeech*>( mpStimulus );
-  if( pTextToSpeech != NULL )
-    pTextToSpeech->SetVolume( mVolume );
+  SpeechStimulus* pSpeechStimulus = dynamic_cast<SpeechStimulus*>( mpStimulus );
+  if( pSpeechStimulus != NULL )
+    pSpeechStimulus->SetVolume( mVolume );
 
   if( mpStimulus != NULL )
     mpStimulus->Present();
