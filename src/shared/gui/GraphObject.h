@@ -101,6 +101,7 @@ class GraphObject
     { return mAspectRatioMode; }
   GraphObject& SetDisplayRect( const GUI::Rect& );
   GUI::Rect DisplayRect() const;
+  GUI::Rect ObjectRect() const;
 
   virtual bool NeedsGL() const
     { return false; }

@@ -90,6 +90,12 @@ GraphObject::DisplayRect() const
   return mDisplay.PixelToNormalizedCoords( mActualDisplayRect );
 }
 
+GUI::Rect
+GraphObject::ObjectRect() const
+{
+  return mUserSpecifiedDisplayRect;
+}
+
 void
 GraphObject::Paint()
 {
