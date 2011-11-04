@@ -60,12 +60,12 @@ Shape::SetCenter( const GUI::Point& p )
         dy = p.y - center.y;
   if( dx != 0 || dy != 0 )
   {
-    GUI::Rect r = DisplayRect();
+    GUI::Rect r = ObjectRect();
     r.left += dx;
     r.right += dx;
     r.top += dy;
     r.bottom += dy;
-    SetDisplayRect( r );
+    SetObjectRect( r );
   }
   return *this;
 }
@@ -75,8 +75,8 @@ Shape::Center() const
 {
   GUI::Point p =
   {
-    ( DisplayRect().left + DisplayRect().right ) / 2,
-    ( DisplayRect().top + DisplayRect().bottom ) / 2
+    ( ObjectRect().left + ObjectRect().right ) / 2,
+    ( ObjectRect().top + ObjectRect().bottom ) / 2
   };
   return p;
 }
@@ -151,7 +151,7 @@ Shape::AreaIntersection( const Shape& s1, const Shape& s2 )
 Shape::TestResult
 RectangularShape::Contains( const GUI::Point& p ) const
 {
-  return PointInRect( p, DisplayRect() ) ? true_ : false_;
+  return PointInRect( p, ObjectRect() ) ? true_ : false_;
 }
 
 Shape::TestResult
@@ -161,8 +161,8 @@ RectangularShape::IntersectsArea( const Shape& s ) const
   const RectangularShape* pRect = dynamic_cast<const RectangularShape*>( &s );
   if( pRect != NULL )
   {
-    GUI::Rect r1 = pRect->DisplayRect(),
-              r2 = this->DisplayRect(),
+    GUI::Rect r1 = pRect->ObjectRect(),
+              r2 = this->ObjectRect(),
               ov;
     ov.left = max( r1.left, r2.left );
     ov.right = min( r1.right, r2.right );
@@ -250,7 +250,7 @@ Shape::TestResult
 EllipticShape::Contains( const GUI::Point& p ) const
 {
   TestResult result = false_;
-  GUI::Rect r = this->DisplayRect();
+  GUI::Rect r = this->ObjectRect();
   float width = r.right - r.left,
         height = r.bottom - r.top;
   if( width > eps && height > eps )
@@ -279,8 +279,8 @@ EllipticShape::IntersectsArea( const Shape& s ) const
     }
     else
     {
-      GUI::Rect r1 = pEll->DisplayRect(),
-                r2 = this->DisplayRect();
+      GUI::Rect r1 = pEll->ObjectRect(),
+                r2 = this->ObjectRect();
       float width1 = r1.right - r1.left,
             width2 = r2.right - r2.left,
             height1 = r1.bottom - r1.top,
@@ -315,7 +315,7 @@ EllipticShape::IntersectsArea( const Shape& s ) const
       // closest to the ellipse's center is inside the ellipse.
       // The ellipse's axes are aligned with the rectangle, so the closest
       // points are easy to find.
-      GUI::Rect r = pRect->DisplayRect();
+      GUI::Rect r = pRect->ObjectRect();
       if( c.x > r.left && c.x <= r.right )
       {
         GUI::Point p1 = { c.x, r.top },

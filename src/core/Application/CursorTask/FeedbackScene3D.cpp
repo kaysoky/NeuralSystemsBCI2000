@@ -156,7 +156,7 @@ FeedbackScene3D::Initialize()
   }
 
   GUI::Rect rect = { 0, 0, 1, 1 };
-  mpScene->SetDisplayRect( rect );
+  mpScene->SetObjectRect( rect );
   return *this;
 }
 

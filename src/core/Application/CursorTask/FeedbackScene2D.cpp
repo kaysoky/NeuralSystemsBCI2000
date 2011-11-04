@@ -74,7 +74,7 @@ FeedbackScene2D::Initialize()
     GUI::Point boundaryDiag = { 100, 100 };
     SceneToObjectCoords( boundaryDiag, vector );
     GUI::Rect boundaryRect = { 0, 0, fabs( boundaryDiag.x ), fabs( boundaryDiag.y ) };
-    mpBoundary->SetDisplayRect( boundaryRect );
+    mpBoundary->SetObjectRect( boundaryRect );
     GUI::Point boundaryCenter = { 50, 50 };
     SceneToObjectCoords( boundaryCenter, point );
     mpBoundary->SetCenter( boundaryCenter );
@@ -84,7 +84,7 @@ FeedbackScene2D::Initialize()
   GUI::Point cursorDiag = { cursorWidth, cursorWidth };
   SceneToObjectCoords( cursorDiag, vector );
   GUI::Rect cursorRect = { 0, 0, fabs( cursorDiag.x ), fabs( cursorDiag.y ) };
-  mpCursor->SetDisplayRect( cursorRect );
+  mpCursor->SetObjectRect( cursorRect );
   mCursorZ = 0;
 
   enum { x, y, z, dx, dy, dz };
@@ -99,7 +99,7 @@ FeedbackScene2D::Initialize()
     GUI::Point targetDiag = { Targets( i, dx ), Targets( i, dy ) };
     SceneToObjectCoords( targetDiag, vector );
     GUI::Rect targetRect = { 0, 0, fabs( targetDiag.x ), fabs( targetDiag.y ) };
-    pTarget->SetDisplayRect( targetRect );
+    pTarget->SetObjectRect( targetRect );
     GUI::Point targetCenter = { Targets( i, x ), Targets( i, y ) };
     SceneToObjectCoords( targetCenter, point );
     pTarget->SetCenter( targetCenter );
@@ -112,7 +112,7 @@ FeedbackScene2D::Initialize()
 float
 FeedbackScene2D::CursorRadius() const
 {
-  GUI::Rect r = mpCursor->DisplayRect();
+  GUI::Rect r = mpCursor->ObjectRect();
   GUI::Point p = { r.right - r.left, r.bottom - r.top };
   ObjectToSceneCoords( p, vector );
   return max( fabs( p.x ), fabs( p.y ) ) / 2.;

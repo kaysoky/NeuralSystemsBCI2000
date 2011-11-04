@@ -443,8 +443,8 @@ StimulusTask::DisplayMessage( const string& inMessage )
                    .SetColor( RGBColor::Gray )
                    .SetTextColor( RGBColor::Yellow )
                    .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
-                   .SetDisplayRect( rect );
-    while( mpMessageField->DisplayRect().right - mpMessageField->DisplayRect().left > 1 )
+                   .SetObjectRect( rect );
+    while( mpMessageField->BoundingRect().right - mpMessageField->BoundingRect().left > 1 )
       mpMessageField->SetTextHeight( mpMessageField->TextHeight() * 0.9 );
   }
 }

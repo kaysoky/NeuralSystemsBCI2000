@@ -330,7 +330,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
       mpFixationImage->SetZOrder( GUI::GraphObject::MessageZOrder + 1 );
       mpFixationImage->SetRenderingMode( GUI::RenderingMode::Transparent );
       mpFixationImage->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
-      SetDisplayRect( mpFixationImage, cx, cy, mFixationSize );
+      SetObjectRect( mpFixationImage, cx, cy, mFixationSize );
       mpFixationImage->SetPresentationMode( VisualStimulus::ShowHide );
       mpFixationImage->Present();
     }
@@ -345,7 +345,7 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
         mpFixationViolationImage->SetFile( string( Parameter( "FixationViolationImage" ) ) );
         mpFixationViolationImage->SetRenderingMode( GUI::RenderingMode::Transparent );
         mpFixationViolationImage->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
-        SetDisplayRect( mpFixationViolationImage, cx, cy, mFixationSize );
+        SetObjectRect( mpFixationViolationImage, cx, cy, mFixationSize );
         mpFixationViolationImage->SetPresentationMode( VisualStimulus::ShowHide );
         mpFixationViolationImage->Conceal();
       }
@@ -360,13 +360,13 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
       mpZone->SetFillColor( RGBColor::NullColor );
       mpZone->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
       mpZone->SetLineWidth( 4.0f );
-      SetDisplayRect( mpZone, cx, cy, mFixationRadius );
+      SetObjectRect( mpZone, cx, cy, mFixationRadius );
       mpZone->Show();
 
       // Create a prompt for user correction
       mpPrompt->SetTextColor( RGBColor::White );
       GUI::Rect textRect = { 0.45f, 0.50f, 0.55f, 0.60f };
-      mpPrompt->SetDisplayRect( textRect );
+      mpPrompt->SetObjectRect( textRect );
       mpPrompt->SetTextHeight( 0.30f );
       mpPrompt->Hide();
 
@@ -490,8 +490,8 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     float x = mLastGazeX + ( gx - mLastGazeX ) / 3.0f;
     float y = mLastGazeY + ( gy - mLastGazeY ) / 3.0f;
     mLastGazeX = x; mLastGazeY = y;  
-    SetDisplayRect( mpGaze, gx, gy, ( ( eyedist - 400 ) / 400 ) * 0.06 );
-    if( mpPrompt ) SetDisplayRect( mpPrompt, x, y, 0.07f );
+    SetObjectRect( mpGaze, gx, gy, ( ( eyedist - 400 ) / 400 ) * 0.06 );
+    if( mpPrompt ) SetObjectRect( mpPrompt, x, y, 0.07f );
     mpGaze->SetFillColor( RGBColor( ( int )eyedist % CLOSE_PLANE, 
       CLOSE_PLANE - ( ( int )eyedist % CLOSE_PLANE ), 50 ) );
     mpGaze->Show();
@@ -499,10 +499,10 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
 
   if( mLoggingEyePos )
   {
-    SetDisplayRect( mpLeftEye, plx, ply, EYE_RADIUS );
+    SetObjectRect( mpLeftEye, plx, ply, EYE_RADIUS );
     if( leftEyeValid ) { mpLeftEye->Show(); }
     else { mpLeftEye->Hide(); }
-    SetDisplayRect( mpRightEye, prx, pry, EYE_RADIUS );
+    SetObjectRect( mpRightEye, prx, pry, EYE_RADIUS );
     if( rightEyeValid ) { mpRightEye->Show(); }
     else { mpRightEye->Hide(); }
   }
@@ -515,13 +515,13 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
 
     // Move visual stimuli to fixation
     if( mpFixationImage )
-      SetDisplayRect( mpFixationImage, fx, fy, mFixationSize );
+      SetObjectRect( mpFixationImage, fx, fy, mFixationSize );
 
     if( mLoggingGaze )
     {
       if( mpFixationViolationImage )
-        SetDisplayRect( mpFixationViolationImage, fx, fy, mFixationSize );
-      SetDisplayRect( mpZone, fx, fy, mFixationRadius );
+        SetObjectRect( mpFixationViolationImage, fx, fy, mFixationSize );
+      SetObjectRect( mpZone, fx, fy, mFixationRadius );
 
       // Calculate distance of gaze from fixation center
       float dist = pow( ( gx - fx ) * mAspectRatio, 2.0f ) + pow( gy - fy, 2.0f );
@@ -615,11 +615,11 @@ GazeMonitorFilter::InitSound( const string& inFilename, WavePlayer& ioPlayer ) c
 }
 
 void
-GazeMonitorFilter::SetDisplayRect( GUI::GraphObject *obj, float cx, float cy, float rad )
+GazeMonitorFilter::SetObjectRect( GUI::GraphObject *obj, float cx, float cy, float rad )
 {
   GUI::Rect rect = { cx - ( rad / mAspectRatio ), cy - rad,
                      cx + ( rad / mAspectRatio ), cy + rad };
-  obj->SetDisplayRect( rect );
+  obj->SetObjectRect( rect );
 }
 
 void

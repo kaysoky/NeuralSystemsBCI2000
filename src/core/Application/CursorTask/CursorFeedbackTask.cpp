@@ -132,7 +132,7 @@ CursorFeedbackTask::CursorFeedbackTask()
             .SetTextHeight( 0.8f )
             .SetColor( RGBColor::Gray )
             .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
-            .SetDisplayRect( rect );
+            .SetObjectRect( rect );
 }
 
 CursorFeedbackTask::~CursorFeedbackTask()

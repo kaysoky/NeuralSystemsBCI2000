@@ -128,7 +128,7 @@ DemoWindow::NewScene()
   PopulateScene();
   ResetPositions();
   GUI::Rect rect = { 0, 0, 1, 1 };
-  mpScene->SetDisplayRect( rect );
+  mpScene->SetObjectRect( rect );
 
   resizeEvent( NULL );
 }

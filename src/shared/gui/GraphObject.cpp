@@ -45,8 +45,8 @@ GraphObject::GraphObject( GraphDisplay& display, float zOrder )
   mZOrder( zOrder ),
   mAspectRatioMode( AspectRatioModes::AdjustNone )
 {
-  mUserSpecifiedDisplayRect = sNullRect;
-  mActualDisplayRect = sNullRect;
+  mObjectRect = sNullRect;
+  mBoundingRect = sNullRect;
   mDisplay.Add( this );
   Invalidate();
 }
@@ -60,24 +60,24 @@ GraphObject::~GraphObject()
 GraphObject&
 GraphObject::Invalidate()
 {
-  mDisplay.InvalidateRect( mActualDisplayRect );
+  mDisplay.InvalidateRect( mBoundingRect );
   return *this;
 }
 
 GraphObject&
-GraphObject::SetDisplayRect( const GUI::Rect& inRect )
+GraphObject::SetObjectRect( const GUI::Rect& inRect )
 {
-  if( mUserSpecifiedDisplayRect != inRect )
+  if( mObjectRect != inRect )
   {
     int changedFlags = Position;
-    bool resized = mUserSpecifiedDisplayRect.Width() != inRect.Width()
-                 || mUserSpecifiedDisplayRect.Height() != inRect.Height();
+    bool resized = mObjectRect.Width() != inRect.Width()
+                 || mObjectRect.Height() != inRect.Height();
     if( resized )
       changedFlags |= Size;
 
     Invalidate();
-    mUserSpecifiedDisplayRect = inRect;
-    mActualDisplayRect = sNullRect;
+    mObjectRect = inRect;
+    mBoundingRect = mDisplay.NormalizedToPixelCoords( inRect );
     mRectSet = true;
     Change( changedFlags );
   }
@@ -85,15 +85,9 @@ GraphObject::SetDisplayRect( const GUI::Rect& inRect )
 }
 
 GUI::Rect
-GraphObject::DisplayRect() const
+GraphObject::BoundingRect() const
 {
-  return mDisplay.PixelToNormalizedCoords( mActualDisplayRect );
-}
-
-GUI::Rect
-GraphObject::ObjectRect() const
-{
-  return mUserSpecifiedDisplayRect;
+  return mDisplay.PixelToNormalizedCoords( mBoundingRect );
 }
 
 void
@@ -104,7 +98,7 @@ GraphObject::Paint()
     DrawContext dc =
     {
       mDisplay.Context().handle,
-      mActualDisplayRect
+      mBoundingRect
     };
 #ifndef __BORLANDC__
     dc.handle.painter->save();
@@ -125,7 +119,7 @@ GraphObject::Change( int inWhich )
     DrawContext dc =
     {
       mDisplay.Context().handle,
-      mDisplay.NormalizedToPixelCoords( mUserSpecifiedDisplayRect )
+      mDisplay.NormalizedToPixelCoords( mObjectRect ),
     };
     int considered = 0;
 
@@ -140,7 +134,7 @@ GraphObject::Change( int inWhich )
     if( inWhich & ~considered )
       OnChange( dc );
 
-    mActualDisplayRect = dc.rect;
+    mBoundingRect = dc.rect;
     Invalidate();
   }
 }
@@ -148,7 +142,7 @@ GraphObject::Change( int inWhich )
 bool
 GraphObject::Click( const Point& p )
 {
-  Rect r = mDisplay.PixelToNormalizedCoords( mActualDisplayRect );
+  Rect r = mDisplay.PixelToNormalizedCoords( mBoundingRect );
   return PointInRect( p, r ) && OnClick( p );
 }
 

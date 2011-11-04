@@ -83,7 +83,7 @@ __fastcall TDemoWindow::TDemoWindow(TComponent* Owner)
   SetupScene();
   ResetPositions();
   GUI::Rect rect = { 0, 0, 1, 1 };
-  mpScene->SetDisplayRect( rect );
+  mpScene->SetObjectRect( rect );
   // Start the frame update timer
   FrameUpdate->Enabled = true;
 }

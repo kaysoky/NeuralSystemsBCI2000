@@ -303,7 +303,7 @@ P3SpellerTask::OnInitialize( const SignalProperties& /*Input*/ )
   mpStatusBar->SetTextHeight( Parameter( "StatusBarTextHeight" ) / Parameter( "StatusBarSize" ) )
               .SetColor( RGBColor::Gray )
               .SetTextColor( RGBColor::Yellow )
-              .SetDisplayRect( statusBarRect );
+              .SetObjectRect( statusBarRect );
 
   ClearTextHistory();
 
@@ -1071,7 +1071,7 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
                     .SetTextHeight( targetTextHeight * displaySize )
                     .SetTextColor( textColor )
                     .SetColor( RGBColor::NullColor )
-                    .SetDisplayRect( targetRect );
+                    .SetObjectRect( targetRect );
       pTextStimulus->SetIntensifiedColor( textColorIntensified )
                     .SetPresentationMode( VisualStimulus::Intensify );
       ioStimuli.Add( pTextStimulus );
@@ -1086,7 +1086,7 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
           ImageStimulus* pIcon = new ImageStimulus( ioDisplay );
           pIcon->SetFile( iconFile )
                 .SetRenderingMode( GUI::RenderingMode::Transparent )
-                .SetDisplayRect( targetRect );
+                .SetObjectRect( targetRect );
           pIcon->SetPresentationMode( VisualStimulus::Mode( iconHighlightMode ) )
                 .SetDimFactor( 1.0 / iconHighlightFactor );
           ioStimuli.insert( pIcon );

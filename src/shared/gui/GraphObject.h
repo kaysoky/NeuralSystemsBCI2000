@@ -36,6 +36,10 @@
 
 #include "GUI.h"
 
+#ifndef GRAPH_OBJECT_BACK_COMPAT
+# define GRAPH_OBJECT_BACK_COMPAT 1
+#endif // GRAPH_OBJECT_BACK_COMPAT
+
 namespace GUI
 {
 
@@ -99,9 +103,29 @@ class GraphObject
     { Invalidate(); mAspectRatioMode = m; Change(); return *this; }
   int AspectRatioMode() const
     { return mAspectRatioMode; }
-  GraphObject& SetDisplayRect( const GUI::Rect& );
-  GUI::Rect DisplayRect() const;
-  GUI::Rect ObjectRect() const;
+
+  // Properties that describe the object's position/extension on screen.
+  // All rectangles are given in normalized coordinates.
+  //  The ObjectRect property is the object's rectangle as described by the user.
+  //  For auto-sizing objects (AspectRatioMode==Adjust*), it may be an empty rectangle.
+  GraphObject& SetObjectRect( const GUI::Rect& );
+  const GUI::Rect& ObjectRect() const
+    { return mObjectRect; }
+  //  The read-only BoundingRect property describes the object's actual extent on screen.
+  GUI::Rect BoundingRect() const;
+
+#if GRAPH_OBJECT_BACK_COMPAT
+  // The DisplayRect property turned out to be confusing because it could be
+  // changed by GraphObjects.
+  // In the future, use the ObjectRect property to specify an object's shape,
+  // and the readonly BoundingRect property to obtain the object's actual extent.
+  // To test your code for compatibility with the new interface, define
+  // GRAPH_OBJECT_BACK_COMPAT=0 as a compiler flag.
+  GraphObject& SetDisplayRect( const GUI::Rect& r )
+    { return SetObjectRect( r ); }
+  GUI::Rect DisplayRect() const
+    { return BoundingRect(); }
+#endif // GRAPH_OBJECT_BACK_COMPAT
 
   virtual bool NeedsGL() const
     { return false; }
@@ -149,8 +173,8 @@ class GraphObject
                 mRectSet;
   float         mZOrder;
   int           mAspectRatioMode;
-  Rect          mUserSpecifiedDisplayRect,
-                mActualDisplayRect;
+  Rect          mObjectRect, // stored in normalized coordinates
+                mBoundingRect; // stored in pixel coordinates
 };
 
 } // namespace GUI

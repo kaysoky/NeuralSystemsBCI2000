@@ -363,7 +363,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
                 .SetTextColor( captionColor )
                 .SetColor( backgroundColor )
                 .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
-                .SetDisplayRect( captionRect );
+                .SetObjectRect( captionRect );
       pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
       mStimuli.Add( pStimulus );
       Associations()[ i + 1 ].Add( pStimulus );
@@ -382,7 +382,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
       pStimulus->SetFile( Stimuli( icon, i ) )
                 .SetRenderingMode( GUI::RenderingMode::Opaque )
                 .SetAspectRatioMode( iconSizeMode )
-                .SetDisplayRect( iconRect );
+                .SetObjectRect( iconRect );
       pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
       mStimuli.Add( pStimulus );
       Associations()[ i + 1 ].Add( pStimulus );
@@ -427,7 +427,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
                   .SetTextColor( captionColor )
                   .SetColor( backgroundColor )
                   .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
-                  .SetDisplayRect( captionRect );
+                  .SetObjectRect( captionRect );
         pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
         mFocusAnnouncement.Add( pStimulus );
       }
@@ -445,7 +445,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
         pStimulus->SetFile( FocusOn( icon, i ) )
                   .SetRenderingMode( GUI::RenderingMode::Opaque )
                   .SetAspectRatioMode( iconSizeMode )
-                  .SetDisplayRect( iconRect );
+                  .SetObjectRect( iconRect );
         pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
         mFocusAnnouncement.Add( pStimulus );
       }
@@ -484,7 +484,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
                   .SetTextColor( captionColor )
                   .SetColor( backgroundColor )
                   .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
-                  .SetDisplayRect( captionRect );
+                  .SetObjectRect( captionRect );
         pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
         mResultAnnouncement.Add( pStimulus );
       }
@@ -502,7 +502,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
         pStimulus->SetFile( Result( icon, i ) )
                   .SetRenderingMode( GUI::RenderingMode::Opaque )
                   .SetAspectRatioMode( iconSizeMode )
-                  .SetDisplayRect( iconRect );
+                  .SetObjectRect( iconRect );
         pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
         mResultAnnouncement.Add( pStimulus );
       }

@@ -58,7 +58,7 @@ class GazeMonitorFilter : public ApplicationBase
  private:
   // Private methods
   void InitSound( const std::string& inFilename, WavePlayer& ioPlayer) const; 
-  void SetDisplayRect( GUI::GraphObject* obj, float cx, float cy, float rad );
+  void SetObjectRect( GUI::GraphObject* obj, float cx, float cy, float rad );
   void DeleteStimuli();
   void ViolatedFixation();
   void AcquiredFixation();
