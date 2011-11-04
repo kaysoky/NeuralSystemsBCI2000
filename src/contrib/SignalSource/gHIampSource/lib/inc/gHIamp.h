@@ -33,6 +33,7 @@
 //DEVICEINFO SIZE
 #define EEPROM_SIZE_BYTES		64*1024
 #define MAX_NUMBER_OF_CHANNELS	256
+#define MAX_USB_PACKET_SIZE		1024
 
 #ifdef __cplusplus
 extern "C" {
