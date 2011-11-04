@@ -26,6 +26,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
+#include <cmath>
 #include "gHIampDevice.h"
 #include "BCIError.h"
 #include "defines.h"
@@ -100,6 +101,7 @@ gHIampDevice::BeginAcquisition()
   // Determine the number of channels we should acquire
   int nPoints = mSampleBlockSize * cNumChannelPoints;
   mBufferSizeBytes = nPoints * sizeof( float );
+  mBufferSizeBytes = ( DWORD ) ceil( mBufferSizeBytes / (double) MAX_USB_PACKET_SIZE ) * MAX_USB_PACKET_SIZE;
   mpBuffers = new BYTE*[ QUEUE_SIZE ];
   mpOverlapped = new OVERLAPPED[ QUEUE_SIZE ];
   for( size_t i = 0; i < QUEUE_SIZE; i++ )
