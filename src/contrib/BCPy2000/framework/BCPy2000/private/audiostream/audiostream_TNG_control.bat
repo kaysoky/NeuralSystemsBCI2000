@@ -49,7 +49,7 @@ call portable.bat
 ::@set OnConnect=%OnConnect% ; SETCONFIG
 ::@set OnSetConfig=- SET STATE Running 1
 
-start              operat                   --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
+start              Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
 
 start /D%BREAKOUT% GameBreakout
 

@@ -13,7 +13,7 @@ PythonSig:Streams                             int       SurroundSoundTrigger=   
 PythonSig:Streams                             matrix    SoundChannels=          6 9       1 % % % % % % % S1     % 1 % % % % % % S2     % % % % % % 1 % T1     % % % % % % % 1 T2     1 % % % 1 % % % F     % 1 % % % 1 % % F  //
 PythonSig:Streams                             int       DirectSound=                      1             // use DirectSound interface or not? (boolean)
 
-Visualize:Processing%20Stages                 int       VisualizeTiming=                  0             // 
+Visualize:Processing%20Stages                 int       VisualizeTiming=                  1             // 
 Visualize:Processing%20Stages                 int       VisualizeSource=                  1             // Visualize raw brain signal (boolean)
 Visualize:Source%20Signal:DataIOFilter        int       SourceMin=                       -50muV         // raw signal vis Min Value
 Visualize:Source%20Signal:DataIOFilter        int       SourceMax=                        50muV         // raw signal vis Max Value

@@ -31,7 +31,7 @@ call portable.bat
 ::@set OnConnect=%OnConnect% ; SETCONFIG
 ::@set OnSetConfig=- SET STATE Running 1
 
-start           operat                   --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
+start           Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
 start           PythonSignalProcessing   --PythonSigWD=%WD%\python
 start           PythonApplication        --PythonAppWD=%WD%\python
 ping -n 3 127.0.0.1 >nul

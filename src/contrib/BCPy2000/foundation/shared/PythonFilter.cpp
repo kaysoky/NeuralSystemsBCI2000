@@ -297,8 +297,6 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
     }
     Py_DECREF(py_list);
 
-    ReceiveStatesFromPython(); // NB: allows access to all states
-
     PreflightCondition(SignalType::ConversionIsSafe(inSignalProperties.Type(), outSignalProperties.Type()));
 
     UnblockThreads();
@@ -317,11 +315,15 @@ FILTER_NAME::Initialize( const SignalProperties& inSignalProperties,
 {
   try {
     BlockThreads();
+    SendStatesToPython();
 
     PyObject* pyInSignalProperties = ConvertPropertiesToPyObject(inSignalProperties);
     PyObject* pyOutSignalProperties = ConvertPropertiesToPyObject(outSignalProperties);
 
+    StateMap before = ReceiveStatesFromPython();
     CallHook( "_Initialize", pyInSignalProperties, pyOutSignalProperties);
+    StateMap after = ReceiveStatesFromPython();
+    UpdateStateChangesFromPython(before, after);
     SharingSetup(inSignalProperties, outSignalProperties);
     UnblockThreads();
   }
@@ -353,9 +355,13 @@ FILTER_NAME::Process( const GenericSignal& input, GenericSignal& output )
       // Watch out for the memory leaks. They come when you least expect them.
       // http://www-cgi.uni-regensburg.de/WWW_Server/Dokumentation/Python/ext.pdf
       PyArrayObject* py_input = ConvertSignalToPyArrayObject(input);
-      PyArrayObject* py_output = (PyArrayObject*)CallHook("_Process", (PyObject*)py_input);
+      StateMap before;
+      // unlike StartRun and Initialize, here we do not call before = ReceiveStatesFromPython();
+      // Python may have other threads that update states asynchronously. They are passed on here.
+	  PyArrayObject* py_output = (PyArrayObject*)CallHook("_Process", (PyObject*)py_input);
       Py_DECREF(py_input);
-      ReceiveStatesFromPython();
+      StateMap after = ReceiveStatesFromPython();
+      UpdateStateChangesFromPython(before, after);
       ConvertPyArrayObjectToSignal(py_output, output);
       Py_DECREF(py_output);
       UnblockThreads();
@@ -380,8 +386,10 @@ FILTER_NAME::StartRun()
   try {
     BlockThreads();
     SendParametersToPython();
+    StateMap before = ReceiveStatesFromPython();
     CallHook("_StartRun");
-    ReceiveStatesFromPython();
+    StateMap after = ReceiveStatesFromPython();
+	UpdateStateChangesFromPython(before, after);
     UnblockThreads();
     if(shared_flag) *shared_flag = 0.0;
   }
@@ -628,22 +636,36 @@ FILTER_NAME::SendStatesToPython() const
   Py_DECREF(states);
 }
 
-void
+StateMap
 FILTER_NAME::ReceiveStatesFromPython() const
 {
   PyObject *obj = CallMethod("_get_states");
   PyObject *state_value;
   long value;
 
+  StateMap m;
   for( int i = 0; i < States->Size(); ++i ) {
     const char* name = ( *States )[ i ].Name().c_str();
     state_value = PyDict_GetItemString(obj, name); // state_value doesn't need to be DECREFfed - it returns only a *borrowed* reference
     value = PyInt_AsLong(state_value); // must use PyInt_AsLong - Float_AsDouble returns strange numbers
     if (value == -1 && PyErr_Occurred()) PyErr_Clear(); // in case of an exception, we set the state to -1 and ignore the exception.
-    StateRef s = State(name);
-    if(s != value) s = value;
+    m[name] = value;
   }
   Py_DECREF(obj);
+  return m;
+}
+
+void
+FILTER_NAME::UpdateStateChangesFromPython( StateMap& before, StateMap& after ) const
+{
+  for( int i = 0; i < States->Size(); ++i ) {
+    const char* name = ( *States )[ i ].Name().c_str();
+    StateType value = after[name];
+    if( before.empty() || value != before[name] ) {
+      StateRef s = State(name);
+      if(s != value) s = value;
+    }
+  }
 }
 
 void
@@ -720,7 +742,7 @@ FILTER_NAME::Share(const GenericSignal &inSignal, GenericSignal &outSignal)
   ConvertPyArrayObjectToSignal(shared_outsignal, outSignal);
 
   for(i = 0; i < nstates; i++ )
-    State(  (*States)[i].Name().c_str()  ) = (unsigned long)shared_statevals[i];
+    State(  (*States)[i].Name().c_str()  ) = (StateType)shared_statevals[i];
 
   *shared_flag = 0.0;
   return 0;

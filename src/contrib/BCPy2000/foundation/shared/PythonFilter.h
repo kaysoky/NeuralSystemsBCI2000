@@ -89,6 +89,8 @@ class EndUserError : public Exception {
 		EndUserError(const char* s);
 };
 
+typedef                            long   StateType;
+typedef std::map<std::string, StateType>  StateMap;
 class FILTER_NAME : public FILTER_SUPERCLASS
 {
 	public:
@@ -126,7 +128,8 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		void        SendParametersToPython() const;
 		void        ReceiveParametersFromPython();
 		void        SendStatesToPython() const;
-		void        ReceiveStatesFromPython() const;
+		StateMap    ReceiveStatesFromPython() const;
+		void        UpdateStateChangesFromPython(StateMap& before, StateMap& after) const;
 		void        SendStatePrecisionsToPython() const;
 
 		PyArrayObject* ConvertSignalToPyArrayObject(const GenericSignal& inSignal, PyArrayObject* array=NULL) const;

@@ -60,7 +60,7 @@ if [%DEMO%] == [] goto SKIPDEMO
 ::@set OnConnect=%OnConnect% ; SETCONFIG
 ::@set OnSetConfig=- SET STATE Running 1
 
-start           operat                   --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
+start           Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
 start           gUSBampSource %LOGGERS%
 ::start           PythonSource             --PythonSrcWD=%WD%\python --PythonSrcShell=1 --PythonSrcLog=%WD%\log\###-src.txt
 

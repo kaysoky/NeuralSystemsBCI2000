@@ -39,7 +39,7 @@ call portable.bat
 ::@set OnConnect=%OnConnect% ; SET PARAMETER PlaybackReverseData 1
 ::@set OnConnect=%OnConnect% ; SET PARAMETER PlaybackSpeed 10
 
-start              operat                   --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
+start              Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
 
 start /D%BREAKOUT% GameBreakout
 
