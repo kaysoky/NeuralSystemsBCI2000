@@ -425,15 +425,15 @@ int WiimoteLogger::WiimoteThread::Execute()
     while( m_wiimote->RefreshState() == NO_CHANGE)
       ::Sleep(1);
 
-    m_wiimote->SetRumble( m_wiimote->Button.A() );
+    //m_wiimote->SetRumble( m_wiimote->Button.A() );
     if ( m_wiimote->IsConnected() == true )
     {
       for(WiimoteReadingList::iterator r = mpReadingList->begin(); r != mpReadingList->end(); r++) (*r)->Read(m_wiimoteNum, m_wiimote);
     }
     else
     {
-        bcierr << "Wiimote " << (m_wiimoteNum+1) << " Has Disconnected.  "
-               << "Either Battery has died or wiimote has gone out of range.  "
+        bcierr << "Wiimote " << (m_wiimoteNum+1) << " has disconnected.  "
+               << "Either the battery has died or the Wiimote has gone out of range.  "
                << "Please reconnect and restart the program." << endl;
     }
   }

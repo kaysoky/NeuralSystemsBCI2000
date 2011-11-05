@@ -29,12 +29,12 @@ __all__ = [
 	'ampmod', 'wavegen',
 	'sinewave', 'squarewave', 'trianglewave', 'sawtoothwave',
 	'fftfreqs', 'fft2ap', 'ap2fft', 'reconstruct', 'toy',
-	'fft', 'ifft', 'hanning',
+	'fft', 'ifft', 'hanning', 'shoulder', 'hilbert',
 ]
 import numpy
 import scipy.signal
 from scipy.signal import fft,ifft,hanning
-from NumTools import isnumpyarray,project,trimtrailingdims
+from NumTools import isnumpyarray,project,trimtrailingdims,unwrapdiff
 
 class ArgConflictError(Exception): pass
 
@@ -392,3 +392,75 @@ def reconstruct(ap,**kwargs):
 	r = r.swapaxes(extra_axis, axis)
 	r = r.sum(axis=extra_axis)
 	return r
+
+def shoulder(x, s):
+	"""
+	Return a (possibly asymmetric) Tukey window function of x.
+	s may have 1, 2, 3 or 4 elements:
+		1:  raised cosine between x=s[0]-0.5 and x=s[0]+0.5
+		2:  raised cosine between x=s[0] and x=s[1]
+		3:  raised cosine rise from s[0] to s[1], and fall from s[1] to s[2]
+		4:  raised cosine rise from s[0] to s[1], plateau from s[1] to s[2],
+		    and fall from s[2] to s[3]
+	"""###
+	if len(s) == 1: s = [s[0]-0.5, s[0]+0.5]
+	if len(s) == 2: s = [s[0], 0.5*(s[0]+s[1]), s[1]]
+	if len(s) == 3: s = [s[0], s[1], s[1], s[2]]
+	if len(s) != 4: raise ValueError("s must have 1, 2, 3 or 4 elements")
+	xrise = x - s[0]
+	xrise /= s[1]-s[0]
+	xrise = numpy.fmin(1, numpy.fmax(0, xrise))
+	xrise = 0.5 - 0.5 * numpy.cos(xrise * numpy.pi)
+	xfall = x - s[2]
+	xfall /= s[3]-s[2]
+	xfall = numpy.fmin(1, numpy.fmax(0, xfall))
+	xfall = 0.5 + 0.5 * numpy.cos(xfall * numpy.pi)
+	return numpy.fmin(xrise, xfall)
+	
+def hilbert(x, N=None, axis=0, band=(), samplingfreq_hz=None, return_dict=False):
+	"""
+	Compute the analytic signal, just like scipy.signal.hilbert but
+	with the differences that (a) the computation can be performed
+	along any axis and (b) a limited band of the signal may be
+	considered.  The <band> argument can be a two-, three- or
+	four-element tuple suitable for passing to shoulder(), specifying
+	the edges of the passband (expressed in Hz if <samplingfreq_hz> is
+	explicitly supplied, or relative to Nyquist if not).
+	
+	If <return_dict> is True, do not return just the complex analytic signal
+	but rather a dict containing its amplitude, phase, and unwrapped phase
+	difference.
+	"""###
+	
+	fs = getfs(x)
+	if samplingfreq_hz != None: fs = samplingfreq_hz
+	if fs == None: fs = 2.0
+	x = getattr(x, 'y', x)
+	
+	if N == None: N = x.shape[axis]
+	shape = [1 for d in x.shape]
+	shape[axis] = N
+	h = numpy.zeros(shape, dtype=numpy.float64)
+	if N % 2:
+		h.flat[0] = 1
+		h.flat[1:(N+1)/2] = 2
+	else:
+		h.flat[0] = h.flat[N/2] = 1
+		h.flat[1:N/2] = 2
+	x = fft(x, n=N, axis=axis)
+	x = numpy.multiply(x, h)
+	if len(band):
+		f = fftfreqs(N, samplingfreq_hz=fs)
+		h.flat = shoulder(numpy.abs(f), band)
+		x = numpy.multiply(x, h)
+	x = ifft(x, n=N, axis=axis)
+	if not return_dict: return x
+	amplitude = numpy.abs(x)
+	phase_rad = numpy.angle(x)
+	deltaphase_rad = unwrapdiff(phase_rad, base=numpy.pi*2, axis=axis)[0]
+	return {
+		'amplitude': amplitude,
+		'phase_rad': phase_rad,
+		'deltaphase_rad': deltaphase_rad,
+	}
+	

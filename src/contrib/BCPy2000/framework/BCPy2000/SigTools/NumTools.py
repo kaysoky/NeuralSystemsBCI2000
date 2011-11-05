@@ -28,7 +28,7 @@ __all__ = [
 	'whoami', 
 	'isnumpyarray', 
 	'disp', 'cat', 'mad', 
-	'project', 'trimtrailingdims', 'isequal', 'unwrapdiff', 
+	'project', 'trimtrailingdims', 'isequal', 'unwrapdiff', 'diffx',
 	'summarize', 'sdict', 'reportstruct', 'sstruct',
 	'loadmat', 'savemat', 'pickle', 'unpickle', 
 ]
@@ -256,6 +256,43 @@ def unwrapdiff(x, base=2*numpy.pi, axis=None, startval=None, dtype=None):
 	x = numpy.cumsum(numpy.concatenate((sv,d), axis=axis), axis=axis)
 	return d,x
 
+def diffx(x, order=1, axis=-1, pBefore=0.5, padVal=0):
+	"""
+	Padded diff.  Take a numerical diff of order <order> along axis <axis>,
+	but return a result that is the same size and shape as the input <x>.
+	Do this by padding with zeros (or copies of the value <padVal>, if
+	non-zero) at the beginning and end.
+	
+	The proportion of padding at the beginning is given by <pBefore>,
+	which defaults to 0.5. For odd values of <order>, the number of values
+	to be padded at the beginning is rounded---so by default, with order=1,
+	the result will be padded with a single zero at the beginning and
+	nothing at the end. 
+	
+	This results in the following default behaviour, which is quite natural
+	for plotting:
+	
+	>>> diffx([1,2,4])
+	array([0, 1, 2])
+
+	>>> diffx([1,2,4], order=2)
+	array([0, 1, 0])
+	
+	>>> diffx([1,2,4], pBefore=0)
+	array([1, 2, 0])
+
+	"""###
+	nBefore = int(round(pBefore * order))
+	nAfter = order - nBefore
+	x = numpy.asarray(x)
+	if len(x.shape)==0: x.shape = [1]
+	sub = [slice(None,None) for i in x.shape]
+	sub[axis] = slice(nBefore, x.shape[axis]-nAfter)
+	dx = numpy.zeros_like(x)
+	if(padVal): dx.fill(padVal)
+	dx[sub] = numpy.diff(x, n=order, axis=axis)
+	return dx
+	
 def summarize(a):
 	"""
 	Returns a somewhat easier-to-swallow string representation of
