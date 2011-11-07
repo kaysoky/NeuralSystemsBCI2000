@@ -44,13 +44,18 @@ using namespace std;
 
 Preferences* gpPreferences = NULL;
 
+#define EMPTY_FILENAME "<p align=center><i>&lt;drop a data file&gt;</i>" // using a macro allows translation
+
 BCI2000FileInfo::BCI2000FileInfo(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::BCI2000FileInfo)
 {
     if( gpPreferences == NULL )
         gpPreferences = new Preferences;
     ui->setupUi(this);
+    ui->filename->setText( tr( EMPTY_FILENAME ) );
     ReadSettings();
+    if( qApp->arguments().size() > 1 )
+      OpenFile( qApp->arguments().at( 1 ) );
 }
 
 BCI2000FileInfo::~BCI2000FileInfo()
@@ -127,7 +132,7 @@ void BCI2000FileInfo::OpenFile( QString filename )
         msgBox.exec();
         ui->parmButton->setEnabled( false );
         ui->blockSize->setText( "" );
-        ui->filename->setText( "" );
+        ui->filename->setText( tr( EMPTY_FILENAME ) );
         ui->feedback->setText( "" );
         ui->samplingRate->setText( "" );
         ui->formatVer->setText( "" );
