@@ -173,7 +173,7 @@ VisDisplayBase::HandleMemo( const VisID& inVisID, const char* inText )
         visual,
         "HandleMemo",
         Qt::QueuedConnection,
-        Q_ARG( QString, inText ) );
+        Q_ARG( QString, QString::fromLocal8Bit( inText ) ) );
 }
 
 void
