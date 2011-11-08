@@ -93,6 +93,9 @@ OSThread::SleepFor( int inMs )
   ::Sleep( inMs );
 }
 
+static bool sInitialized = false;
+static OSMutex sMutex;
+
 void
 OSThread::PrecisionSleepFor( double inMs )
 {
@@ -101,15 +104,23 @@ OSThread::PrecisionSleepFor( double inMs )
 
   // MSDN warns against frequent calls to timeBeginPeriod(), so we use a static RAAI object to set
   // timing precision once, and clear it on application exit.
+  // We also don't want to call timeBeginPeriod() unless PrecisionSleepFor() is actually used,
+  // so we use RAAI object that's local to the function.
   static class SetHighestPrecision
   {
    public:
-    SetHighestPrecision() : mPrecision( 0 )
+    SetHighestPrecision()
+    : mPrecision( 0 )
     {
-      TIMECAPS tc = { 0, 0 };
-      ::timeGetDevCaps( &tc, sizeof( tc ) );
-      mPrecision = tc.wPeriodMin;
-      ::timeBeginPeriod( mPrecision );
+      OSMutex::Lock lock( sMutex );
+      if( !sInitialized )
+      {
+        TIMECAPS tc = { 0, 0 };
+        ::timeGetDevCaps( &tc, sizeof( tc ) );
+        mPrecision = tc.wPeriodMin;
+        ::timeBeginPeriod( mPrecision );
+        sInitialized = true;
+      }
     }
     ~SetHighestPrecision()
     {
@@ -117,6 +128,8 @@ OSThread::PrecisionSleepFor( double inMs )
     }
    private:
     UINT mPrecision;
+    bool mInitialized;
+    OSMutex mMutex;
   } setHighestPrecision;
 
   // Use "dithering" to achieve sub-millisecond accuracy of mean sleeping time.

@@ -42,22 +42,27 @@
 
 #include <windows.h>
 
+static LARGE_INTEGER
+GetPrecTimeBase()
+{
+  LARGE_INTEGER result;
+  result.QuadPart = 0;
+  ::QueryPerformanceFrequency( &result );
+  return result;
+}
+
+static LARGE_INTEGER sPrecTimeBase = GetPrecTimeBase();
+
 PrecisionTime
 PrecisionTime::Now()
 {
-  static LARGE_INTEGER prectimebase;
-  static bool initialized = false;
-  if( !initialized )
-  {
-    if( !::QueryPerformanceFrequency( &prectimebase ) )
-      throw bciexception( "Could not initialize time base: " << OSError().Message() );
-    initialized = true;
-  }
+  if( sPrecTimeBase.QuadPart == 0 )
+    throw bciexception( "Your system does not provide a high precision timer" );
   // Get the current time from the Windows precision timer.
   LARGE_INTEGER prectime;
   if( !::QueryPerformanceCounter( &prectime ) )
-    throw bciexception( "Could not get performance counter: " << OSError().Message() );
-  return static_cast<PrecisionTime::NumType>( ( prectime.QuadPart * 1000 ) / prectimebase.QuadPart );
+    throw bciexception( "Could not read high precision timer: " << OSError().Message() );
+  return static_cast<PrecisionTime::NumType>( ( prectime.QuadPart * 1000 ) / sPrecTimeBase.QuadPart );
 }
 
 // **************************************************************************
