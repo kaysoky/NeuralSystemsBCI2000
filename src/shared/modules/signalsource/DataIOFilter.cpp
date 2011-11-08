@@ -33,6 +33,7 @@
 #include "GenericADC.h"
 #include "GenericFileWriter.h"
 #include "BCIError.h"
+#include "BCIException.h"
 #include "BCIEvent.h"
 #include "BCIDirectory.h"
 #include "PrecisionTime.h"
@@ -469,6 +470,9 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
 void
 DataIOFilter::StartRun()
 {
+#ifdef TODO
+# error Add BCIEvent::AllowEvents() and BCIEvent::DenyEvents(), call them from EnvironmentBase class.
+#endif // TODO
   BCIEvent::SetEventQueue( &mBCIEvents );
 
   mpADC->CallStartRun();
@@ -685,11 +689,11 @@ DataIOFilter::ProcessBCIEvents()
 
     int kind = ( *States )[name].Kind();
     if( kind != State::EventKind )
-      bcierr << "Trying to set state \"" << name << "\" from an event. "
-             << "This state was not defined as an event state. "
-             << "Use BEGIN_EVENT_DEFINITIONS/END_EVENT_DEFINITIONS to define states "
-             << "as event states."
-             << endl;
+      throw bciexception( "Trying to set state \"" << name << "\" from an event. "
+                          "This state was not defined as an event state. "
+                          "Use BEGIN_EVENT_DEFINITIONS/END_EVENT_DEFINITIONS to define states "
+                          "as event states."
+                        );
 
     bcidbg( 10 ) << "Setting State \"" << name
                  << "\" to " << value

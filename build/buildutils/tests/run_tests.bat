@@ -35,25 +35,25 @@ cd ..\..\..\prog
 echo Testing cursor task ...
 
 start Operator.exe --OnConnect "-LOAD PARAMETERFILE ..\build\buildutils\tests\CursorTask_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
-start SignalGenerator.exe 127.0.0.1
-start ARSignalProcessing.exe 127.0.0.1
-start /wait CursorTask.exe 127.0.0.1
+start SignalGenerator.exe --TestLoggerFrequency=100Hz
+start ARSignalProcessing.exe
+start /wait CursorTask.exe
 
 
 echo Testing stimulus presentation task ...
 
 start Operator.exe --OnConnect "-LOAD PARAMETERFILE ..\build\buildutils\tests\StimulusPresentation_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
-start SignalGenerator.exe 127.0.0.1
-start DummySignalProcessing.exe 127.0.0.1
-start /wait StimulusPresentation.exe 127.0.0.1
+start SignalGenerator.exe --TestLoggerFrequency=100Hz
+start DummySignalProcessing.exe 
+start /wait StimulusPresentation.exe 
 
 
 echo Testing P3 speller task ...
 
 start Operator.exe --OnConnect "-LOAD PARAMETERFILE ..\build\buildutils\tests\P3Speller_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
-start SignalGenerator.exe 127.0.0.1
-start P3SignalProcessing.exe 127.0.0.1
-start /wait P3Speller.exe 127.0.0.1
+start SignalGenerator.exe --TestLoggerFrequency=100Hz
+start P3SignalProcessing.exe 
+start /wait P3Speller.exe 
 
 
 cd ..\build\buildutils\tests

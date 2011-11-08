@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Author: griffin.milsap@gmail.com
+// Author: griffin.milsap@gmail.com, juergen.mellinger@uni-tuebingen.de
 // Description: Does a simple diff between two data streams, spits out problems
 // Alternate name: GriffDiff (awesome, yes?)
 // $BEGIN_BCI2000_LICENSE$
@@ -37,7 +37,7 @@ const double cSignificantError = 1.5;
 int main( int argc, char *argv[] )
 {
   // Welcome message
-  cout << "bci_datadiff" << endl << "BCI2000 Project 2009" << endl << endl;
+  cout << "bci_datadiff" << endl << "BCI2000 Project 2009-2011" << endl << endl;
 
   // User has no idea how to use the program.
   if ( argc < 3 )
@@ -121,6 +121,30 @@ int main( int argc, char *argv[] )
       continue;
     if( state == "StimulusTime:" )
       continue;
+    if( state == "TestLoggerCounter:" )
+    {
+      getline( in_test, testLine );
+      getline( in_ref, refLine );
+      stringstream refStream( refLine ),
+                   testStream( testLine );
+      int refVal = 0,
+          testVal = 0;
+      while( refStream >> refVal && testStream >> testVal )
+      {
+        int err = ::abs( refVal - testVal );
+        if( err > 0 )
+          ++numDifferences;
+        if( err >= cSignificantError )
+        {
+          ostringstream oss;
+          oss << "Significant difference in TestLoggerCounter: \"" << testVal << "\" should be \"" << refVal << "\"." << endl;
+          cout << oss.str();
+          if( output )
+            out_file << oss.str();
+          ++numSignificantDifferences;
+        }
+      }
+    }
     // For signal data, compute a relative error
     if( state == "VisSignal" )
     {
@@ -139,9 +163,11 @@ int main( int argc, char *argv[] )
         double err = ::fabs( testVal - refVal );
         if( err > 0 )
         {
-          cout << "Difference: signal value \"" << testVal << "\" should be \"" << refVal << "\"." << endl;
+          ostringstream oss;
+          oss << "Difference: signal value \"" << testVal << "\" should be \"" << refVal << "\"." << endl;
+          cout << oss.str();
           if( output )
-            out_file << "Difference: signal value \"" << testVal << "\" should be \"" << refVal << "\"." << endl;
+            out_file << oss.str();
           ++numDifferences;
         }
         if( err >= cSignificantError )
