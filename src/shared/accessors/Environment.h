@@ -130,20 +130,20 @@ class ApplicationWindowClient;
 
 #define BEGIN_EVENT_DEFINITIONS                                        \
 {                                                                      \
-  const char* states_[] =                                              \
+  const char* events_[] =                                              \
   {
 
 #if IS_SRC_MODULE
 
 #define END_EVENT_DEFINITIONS                                          \
   };                                                                   \
-  for( size_t i = 0; i < sizeof( states_ ) / sizeof( *states_ ); ++i ) \
+  for( size_t i = 0; i < sizeof( events_ ) / sizeof( *events_ ); ++i ) \
   {                                                                    \
     class State s;                                                     \
-    std::istringstream iss( states_[ i ] );                            \
+    std::istringstream iss( events_[ i ] );                            \
     if( !( iss >> s ) )                                                \
       bcierr << "error in state definition:\n"                         \
-             << states_[ i ]                                           \
+             << events_[ i ]                                           \
              << std::endl;                                             \
     else                                                               \
     {                                                                  \
