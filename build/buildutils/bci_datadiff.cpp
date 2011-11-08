@@ -4,23 +4,23 @@
 // Description: Does a simple diff between two data streams, spits out problems
 // Alternate name: GriffDiff (awesome, yes?)
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -122,29 +122,7 @@ int main( int argc, char *argv[] )
     if( state == "StimulusTime:" )
       continue;
     if( state == "TestLoggerCounter:" )
-    {
-      getline( in_test, testLine );
-      getline( in_ref, refLine );
-      stringstream refStream( refLine ),
-                   testStream( testLine );
-      int refVal = 0,
-          testVal = 0;
-      while( refStream >> refVal && testStream >> testVal )
-      {
-        int err = ::abs( refVal - testVal );
-        if( err > 0 )
-          ++numDifferences;
-        if( err >= cSignificantError )
-        {
-          ostringstream oss;
-          oss << "Significant difference in TestLoggerCounter: \"" << testVal << "\" should be \"" << refVal << "\"." << endl;
-          cout << oss.str();
-          if( output )
-            out_file << oss.str();
-          ++numSignificantDifferences;
-        }
-      }
-    }
+      continue;
     // For signal data, compute a relative error
     if( state == "VisSignal" )
     {
