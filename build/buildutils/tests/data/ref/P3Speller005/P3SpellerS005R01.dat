@@ -1,1308 +1,0 @@
-HeaderLen= 18683 SourceCh= 21 StatevectorLen= 14
-[ State Vector Definition ] 
-StimulusCodeRes 16 0 0 0
-StimulusTypeRes 3 0 2 0
-Running 1 1 2 3
-Recording 1 1 2 4
-SourceTime 16 0 2 5
-StimulusTime 16 0 4 5
-StimulusCode 16 0 6 5
-StimulusType 1 0 8 5
-StimulusBegin 1 0 8 6
-PhaseInSequence 2 0 8 7
-SelectedTarget 16 0 9 1
-SelectedRow 8 0 11 1
-SelectedColumn 8 0 12 1
-[ Parameter Definition ] 
-Source:Signal%20Properties:DataIOFilter int SourceCh= 21 16 1 % // number of digitized and stored channels
-Source:Signal%20Properties:DataIOFilter int SampleBlockSize= 84 32 1 % // number of samples transmitted at a time
-Source:Signal%20Properties:DataIOFilter int SamplingRate= 328 256Hz 1 % // sample rate
-Source:Signal%20Properties:DataIOFilter list ChannelNames= 21 _0Chnl_0 _1Chnl_1 _2Chnl_2 _3Chnl_3 _4Chnl_4 _5Chnl_5 _6Chnl_6 _7Chnl_7 _8Chnl_8 _9Chnl_9 _10Chnl_10 _11Chnl_11 _12Chnl_12 _13Chnl_13 _14Chnl_14 _15Chnl_15 _16Chnl_16 _17Chnl_17 _18Chnl_18 _19Chnl_19 _20Chnl_20 // list of channel names
-Source:Signal%20Properties:DataIOFilter floatlist SourceChOffset= 21 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 % % // Offset for channels in A/D units
-Source:Signal%20Properties:DataIOFilter floatlist SourceChGain= 21 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.53 0.003 % % // gain for each channel (A/D units -> muV)
-Storage:Data%20Location:DataIOFilter string DataDirectory= ..\build\buildutils\tests\data\test ..\data % % // path to top level data directory (directory)
-Storage:Session:DataIOFilter string SubjectName= P3Speller Name % % // subject alias
-Storage:Session:DataIOFilter string SubjectSession= 5 001 % % // three-digit session number
-Storage:Session:DataIOFilter string SubjectRun= 01 00 % % // two-digit run number
-Storage:Documentation:DataIOFilter string ID_System= % // BCI2000 System Code
-Storage:Documentation:DataIOFilter string ID_Amp= % // BCI2000 Amp Code
-Storage:Documentation:DataIOFilter string ID_Montage= % // BCI2000 Cap Montage Code
-Visualize:Timing:DataIOFilter int VisualizeTiming= 1 1 0 1 // visualize system timing (0=no, 1=yes) (boolean)
-Visualize:Source%20Signal:DataIOFilter int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
-Visualize:Source%20Signal:DataIOFilter int VisualizeSourceDecimation= 1 1 1 % // decimation factor for raw brain signal
-Visualize:Source%20Signal:DataIOFilter int VisualizeSourceTime= 2 2 0 % // how much time in Source visualization
-Visualize:Source%20Signal:DataIOFilter int SourceMin= -100muV -100muV % % // raw signal vis Min Value
-Visualize:Source%20Signal:DataIOFilter int SourceMax= 100muV 100muV % % // raw signal vis Max Value
-Source:SignalGeneratorADC int ModulateAmplitude= 0 0 0 1 // Modulate the amplitude with the mouse (0=no, 1=yes) (boolean)
-Source:SignalGeneratorADC int SineChannelX= 0 0 0 % // Channel number of sinewave controlled by mouse x position
-Source:SignalGeneratorADC int SineChannelY= 0 0 0 % // Channel number of sinewave controlled by mouse y position (0 for all)
-Source:SignalGeneratorADC int SineChannelZ= 0 0 0 % // Channel number of sinewave controlled by mouse key state
-Source:SignalGeneratorADC float SineFrequency= 10 10Hz % % // Frequency of sine wave
-Source:SignalGeneratorADC int SineAmplitude= 100muV 100muV % % // Amplitude of sine wave
-Source:SignalGeneratorADC int NoiseAmplitude= 30muV 30muV % % // Amplitude of white noise (common to all channels)
-Source:SignalGeneratorADC int DCOffset= 60muV 0muV % % // DC offset (common to all channels)
-Source:SignalGeneratorADC string OffsetMultiplier= StimulusType StimulusType % % // Expression to multiply offset by
-Source:SignalGeneratorADC int RandomSeed= 1 0 0 1 // Initialization value for random number generator (initialize from time if 0)
-Source:SignalGeneratorADC int SignalType= 0 0 0 2 // numeric type of output signal:  0: int16, 1: float32, 2: int32 (enumeration)
-Storage:Documentation:BCI2000FileWriter int SavePrmFile= 0 1 0 1 // save additional parameter file (0=no, 1=yes) (boolean)
-Storage:Documentation:BCI2000FileWriter string StorageTime= Tue%20Oct%2019%2018:10:39%202010 // time of beginning of data storage
-Source:Alignment:AlignmentFilter int AlignChannels= 1 0 0 1 // align channels in time (0=no, 1=yes)
-Source:Alignment:AlignmentFilter floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
-Source:Online%20Processing:TransmissionFilter list TransmitChList= 9 _5Chnl_5 _4Chnl_4 _8Chnl_8 _6Chnl_6 _9Chnl_9 _0Chnl_0 _12Chnl_12 _6Chnl_6 _18Chnl_18 // list of transmitted channels
-System:Core%20Connections string SignalSourcePort= 2401 4200 1024 65535 // the SignalSource module's listening port
-System:Core%20Connections string SignalSourceIP= 10.211.55.5 127.0.0.1 % % // the SignalSource module's listening IP
-System:Configuration matrix SignalSourceVersion= { Framework Revision Build } 1 2.x % 17:42:29%20Jul%2030%202010 // SignalSource version information
-System:Configuration matrix SignalSourceFilterChain= 8 { Filter%20Name Position%20String } DataIOFilter 0 SignalGeneratorADC 1 NullFileWriter 1 BCI2000FileWriter 1 EDFFileWriter 1 GDFFileWriter 1 AlignmentFilter 1.1 TransmissionFilter 1.2 // SignalSource filter chain
-Visualize:Processing%20Stages int VisualizeAlignmentFilter= 0 0 0 1 // Visualize AlignmentFilter output (boolean)
-Visualize:Processing%20Stages int VisualizeTransmissionFilter= 0 0 0 1 // Visualize TransmissionFilter output (boolean)
-System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 2.x % 18:00:09%20Oct%20%206%202010 // operator module version information
-Filtering:SpatialFilter int SpatialFilterType= 0 2 0 3 // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)
-Filtering:SpatialFilter:SpatialFilter intlist SpatialFilterCAROutput= 0 // list of output channels for the CAR if used
-Filtering:SpatialFilter:SpatialFilter matrix SpatialFilter= 0 1 0 % % // columns represent input channels, rows represent output channels
-Filtering:P3TemporalFilter int EpochLength= 3 500ms 0 % // Length of data epoch from stimulus onset
-Filtering:P3TemporalFilter int EpochsToAverage= 1 1 0 % // Number of epochs to average
-Visualize:P3TemporalFilter int VisualizeP3TemporalFiltering= 1 0 0 1 // Visualize averaged epochs (0=no 1=yes) (boolean)
-Visualize:P3TemporalFilter int TargetERPChannel= 1 1 % % // Input channel for which to display ERP data
-Filtering:LinearClassifier matrix Classifier= 192 4 8 22 1 0.27 _4Chnl_4 487ms 1 0.203 _4Chnl_4 673ms 1 0.14 2 120 1 -0.307 1 210 1 -0.179 6 55 1 0.085 _9Chnl_9 719ms 1 -0.316 _6Chnl_6 283ms 1 -0.067 _4Chnl_4 33ms 1 0.331 _8Chnl_8 603ms 1 -0.112 5 1 1 -0.141 _8Chnl_8 94ms 1 -0.465 _6Chnl_6 310ms 1 0.264 _9Chnl_9 140ms 1 0.344 2 28 1 -0.05 _0Chnl_0 628ms 1 -0.246 _6Chnl_6 634ms 1 0.383 1 183 1 0.385 _8Chnl_8 219ms 1 -0.147 _5Chnl_5 155ms 1 0.362 _6Chnl_6 646ms 1 0.375 6 67 1 -0.222 7 3 1 -0.298 _5Chnl_5 695ms 1 0.274 _6Chnl_6 201ms 1 0.476 6 104 1 -0.256 5 192 1 0.491 _0Chnl_0 426ms 1 0.173 3 180 1 0.095 _0Chnl_0 338ms 1 -0.416 9 223 1 -0.299 _4Chnl_4 3ms 1 0.133 _6Chnl_6 393ms 1 0.441 8 196 1 0.304 _9Chnl_9 12ms 1 -0.075 7 26 1 0.248 6 11 1 0.146 3 178 1 0.238 6 156 1 0.491 5 98 1 0.252 8 107 1 -0.11 9 223 1 -0.322 _0Chnl_0 731ms 1 0.088 _5Chnl_5 496ms 1 0.149 8 78 1 0.031 6 33 1 0.496 6 115 1 0.393 _6Chnl_6 414ms 1 -0.166 _6Chnl_6 228ms 1 0.219 _4Chnl_4 594ms 1 -0.234 _9Chnl_9 240ms 1 -0.307 _9Chnl_9 164ms 1 -0.281 7 164 1 0.034 8 171 1 0.397 2 65 1 -0.487 _12Chnl_12 676ms 1 0.362 _9Chnl_9 728ms 1 -0.399 2 130 1 -0.253 _6Chnl_6 85ms 1 0.238 _6Chnl_6 515ms 1 0.083 _4Chnl_4 533ms 1 0.222 _5Chnl_5 411ms 1 0.259 _0Chnl_0 292ms 1 -0.262 _4Chnl_4 701ms 1 -0.4 _18Chnl_18 646ms 1 -0.006 _8Chnl_8 164ms 1 0.08 4 240 1 -0.003 5 25 1 -0.354 2 149 1 0.442 1 193 1 -0.315 3 185 1 -0.267 8 42 1 -0.404 9 212 1 0.135 _0Chnl_0 3ms 1 -0.494 3 37 1 0.029 _12Chnl_12 329ms 1 0.095 _6Chnl_6 21ms 1 0.32 _4Chnl_4 432ms 1 -0.445 _6Chnl_6 600ms 1 -0.051 8 24 1 -0.323 _12Chnl_12 326ms 1 -0.46 8 9 1 0.05 _0Chnl_0 207ms 1 0.173 1 190 1 0.398 _12Chnl_12 128ms 1 0.267 _8Chnl_8 85ms 1 0.035 _5Chnl_5 384ms 1 -0.387 _9Chnl_9 228ms 1 0.452 6 132 1 -0.487 _8Chnl_8 393ms 1 0.014 _6Chnl_6 457ms 1 0.048 9 51 1 -0.197 _4Chnl_4 585ms 1 0.474 3 140 1 -0.433 _6Chnl_6 280ms 1 -0.261 3 98 1 -0.192 _6Chnl_6 512ms 1 0.135 _5Chnl_5 533ms 1 -0.016 4 227 1 0.058 4 198 1 -0.158 8 43 1 -0.089 3 60 1 -0.121 _8Chnl_8 314ms 1 0.117 8 3 1 -0.08 _0Chnl_0 689ms 1 0.266 6 210 1 -0.175 _18Chnl_18 396ms 1 0.385 _4Chnl_4 567ms 1 0.326 5 27 1 0.334 5 93 1 -0.024 5 53 1 0.321 _6Chnl_6 579ms 1 0.238 _6Chnl_6 618ms 1 -0.45 _9Chnl_9 198ms 1 -0.313 _8Chnl_8 176ms 1 -0.007 6 58 1 0.349 4 227 1 0.275 5 75 1 0.148 _5Chnl_5 628ms 1 -0.295 4 105 1 0.497 _9Chnl_9 371ms 1 0.415 6 58 1 -0.001 3 98 1 -0.374 7 105 1 0.284 _8Chnl_8 396ms 1 0.051 _9Chnl_9 262ms 1 -0.037 4 232 1 0.408 _6Chnl_6 493ms 1 -0.291 _8Chnl_8 417ms 1 0.065 _9Chnl_9 106ms 1 0.469 _8Chnl_8 682ms 1 -0.187 _4Chnl_4 432ms 1 -0.213 _12Chnl_12 219ms 1 -0.241 _9Chnl_9 661ms 1 0.273 _4Chnl_4 512ms 1 0.344 4 61 1 0.175 2 48 1 0.488 _9Chnl_9 271ms 1 0.089 3 58 1 -0.14 3 236 1 -0.205 1 37 1 0.276 _4Chnl_4 256ms 1 0.21 3 181 1 0.212 4 232 1 0.469 _9Chnl_9 60ms 1 0.452 5 81 1 0.133 9 68 1 -0.143 1 218 1 -0.474 8 135 1 0.263 _12Chnl_12 97ms 1 0.187 8 82 1 0.493 _8Chnl_8 460ms 1 0.45 _5Chnl_5 332ms 1 -0.493 _8Chnl_8 356ms 1 0.154 8 130 1 -0.326 _4Chnl_4 515ms 1 0.481 9 126 1 0.159 _4Chnl_4 524ms 1 -0.102 8 52 1 0.447 _9Chnl_9 64ms 1 0.258 _12Chnl_12 54ms 1 -0.013 9 75 1 -0.012 _9Chnl_9 30ms 1 -0.037 8 176 1 0.437 1 135 1 0.187 _18Chnl_18 439ms 1 0.321 _0Chnl_0 487ms 1 0.116 _8Chnl_8 164ms 1 0.314 _9Chnl_9 167ms 1 0.002 _6Chnl_6 237ms 1 -0.25 1 79 1 0.157 _5Chnl_5 289ms 1 0.457 _9Chnl_9 533ms 1 0.35 _6Chnl_6 225ms 1 -0.29 8 119 1 0.325 3 229 1 0.322 4 178 1 0.447 3 15 1 -0.161 4 115 1 0.47 _6Chnl_6 82ms 1 -0.116 4 147 1 0.433 _9Chnl_9 295ms 1 -0.394 _18Chnl_18 42ms 1 -0.323 _18Chnl_18 155ms 1 0.264 7 232 1 -0.004 _6Chnl_6 76ms 1 -0.066 _18Chnl_18 79ms 1 -0.104 _5Chnl_5 253ms 1 0.345 _5Chnl_5 246ms 1 -0.001 _0Chnl_0 350ms 1 -0.173 8 54 1 -0.441 4 235 1 0.405 // Linear classification matrix in sparse representation
-System:Core%20Connections string SignalProcessingPort= 2400 4200 1024 65535 // the SignalProcessing module's listening port
-System:Core%20Connections string SignalProcessingIP= 10.211.55.5 127.0.0.1 % % // the SignalProcessing module's listening IP
-System:Configuration matrix SignalProcessingVersion= { Framework Revision Build } 1 2.x % 17:25:47%20Oct%20%207%202010 // SignalProcessing version information
-System:Configuration matrix SignalProcessingFilterChain= 3 { Filter%20Name Position%20String } SpatialFilter 2.A P3TemporalFilter 2.B LinearClassifier 2.C // SignalProcessing filter chain
-Visualize:Processing%20Stages int VisualizeSpatialFilter= 0 0 0 1 // Visualize SpatialFilter output (boolean)
-Visualize:Processing%20Stages int VisualizeLinearClassifier= 0 0 0 1 // Visualize LinearClassifier output (boolean)
-Connector:ConnectorInput list ConnectorInputFilter= 0 // list of state names or signal elements to allow, "*" for any, signal elements as in "Signal(1,0)"
-Connector:ConnectorInput string ConnectorInputAddress= % localhost:20320 % % // IP address/port to read from, e.g. localhost:20320
-Visualize:Application%20Window:ApplicationBase%%3a%%3aDisplayVisualization int VisualizeApplicationWindow= 0 0 0 1 // Display miniature copy of application window (boolean)
-Visualize:Application%20Window:ApplicationBase%%3a%%3aDisplayVisualization int AppWindowSpatialDecimation= 8 8 1 % // Application window decimation (shrinking) factor
-Visualize:Application%20Window:ApplicationBase%%3a%%3aDisplayVisualization int AppWindowTemporalDecimation= 4 16 1 % // Application window time decimation factor
-Application:Window:ApplicationBase int WindowWidth= 640 640 0 % // width of application window
-Application:Window:ApplicationBase int WindowHeight= 480 480 0 % // height of application window
-Application:Window:ApplicationBase int WindowLeft= 0 0 % % // screen coordinate of application window's left edge
-Application:Window:ApplicationBase int WindowTop= 0 0 % % // screen coordinate of application window's top edge
-Application:Window:StimulusTask string WindowBackgroundColor= 0x000000 0x505050 % % // background color (color)
-Application:Sequencing:StimulusTask float PreRunDuration= 2s 1 % % // pause preceding first sequence
-Application:Sequencing:StimulusTask float PostRunDuration= 2s 0 0 % // pause following last sequence
-Application:Sequencing:StimulusTask float PreSequenceDuration= 2 2s 0 % // pause preceding sequences/sets of intensifications
-Application:Sequencing:StimulusTask float PostSequenceDuration= 4.85829 2s 0 % // pause following sequences/sets of intensifications
-Application:Sequencing:StimulusTask float StimulusDuration= 1 40ms 0 % // stimulus duration
-Application:Sequencing:StimulusTask float ISIMinDuration= 62.5ms 80ms 0 % // minimum duration of inter-stimulus interval
-Application:Sequencing:StimulusTask float ISIMaxDuration= 62.5ms 80ms 0 % // maximum duration of inter-stimulus interval
-Application:Result%20Processing:StimulusTask int InterpretMode= 2 0 0 2 // interpretation of results: 0 none, 1 online free mode, 2 copy mode (enumeration)
-Application:Result%20Processing:StimulusTask int DisplayResults= 1 1 0 1 // display results of copy/free spelling (boolean)
-Application:Sequencing:P3SpellerTask int NumberOfSequences= 1 15 1 % // number of sequences in a set of intensifications
-Application:Speller%20Targets:P3SpellerTask matrix TargetDefinitions= 36 { Display Enter Display%20Size Icon%20File Sound%20File } A A 1 % % B B 1 % % C C 1 % % D D 1 % % E E 1 % % F F 1 % % G G 1 % % H H 1 % % I I 1 % % J J 1 % % K K 1 % % L L 1 % % M M 1 % % N N 1 % % O O 1 % % P P 1 % % Q Q 1 % % R R 1 % % S S 1 % % T T 1 % % U U 1 % % V V 1 % % W W 1 % % X X 1 % % Y Y 1 % % Z Z 1 % % 1 1 1 % % 2 2 1 % % 3 3 1 % % 4 4 1 % % 5 5 1 % % 6 6 1 % % 7 7 1 % % 8 8 1 % % 9 9 1 % % _ %20 1 % % // speller target properties
-Application:Speller%20Targets:P3SpellerTask intlist NumMatrixColumns= 1 6 6 1 % // display matrices' column number(s)
-Application:Speller%20Targets:P3SpellerTask intlist NumMatrixRows= 1 6 6 0 % // display matrices' row number(s)
-Application:Audio%20Stimuli:P3SpellerTask int AudioStimuliOn= 0 0 0 1 // Audio Stimuli Mode (0=no, 1=yes) (boolean)
-Application:Audio%20Stimuli:P3SpellerTask matrix AudioStimuliRowsFiles= 6 { filename } sounds\1.wav sounds\2.wav sounds\3.wav sounds\4.wav sounds\5.wav sounds\6.wav // audio stimuli rows files 
-Application:Audio%20Stimuli:P3SpellerTask matrix AudioStimuliColsFiles= 6 { filename } sounds\a.wav sounds\b.wav sounds\c.wav sounds\d.wav sounds\e.wav sounds\f.wav // audio stimuli column files 
-Application:Speller%20Targets:P3SpellerTask floatlist TargetWidth= 1 16 0 0 100 // target width in percent of screen width
-Application:Speller%20Targets:P3SpellerTask floatlist TargetHeight= 1 14 0 0 100 // target height in percent of screen height
-Application:Speller%20Targets:P3SpellerTask floatlist TargetTextHeight= 1 12 0 0 100 // height of target labels in percent of screen height
-Application:Speller%20Targets:P3SpellerTask stringlist BackgroundColor= 1 0x00000000 0x505050 % % // target background color (color)
-Application:Speller%20Targets:P3SpellerTask stringlist TextColor= 1 0x00555555 0x505050 % % // text color (color)
-Application:Speller%20Targets:P3SpellerTask stringlist TextColorIntensified= 1 0x00FFFFFF 0x505050 % % // intensified text color (color)
-Application:Speller%20Targets:P3SpellerTask intlist IconHighlightMode= 1 1 1 0 4 // icon highlight method 0: Show/Hide, 1: Intensify, 2: Grayscale, 3: Invert, 4: Dim    (enumeration)
-Application:Speller%20Targets:P3SpellerTask floatlist IconHighlightFactor= 1 0.5 0.5 0 % // scale factor for highlighted icon pixel values
-Application:Speller:P3SpellerTask int FirstActiveMenu= 1 1 1 % // Index of first active menu
-Application:Speller:P3SpellerTask float StatusBarSize= 10 0 0 100 // size of status bar in percent of screen height
-Application:Speller:P3SpellerTask float StatusBarTextHeight= 4 0 0 100 // size of status bar text in percent of screen height
-Application:Speller:P3SpellerTask string TextToSpell= T // character or string to spell in offline copy mode
-Application:Speller:P3SpellerTask string TextResult= % // user spelling result
-Application:Speller:P3SpellerTask int TestMode= 1 0 0 1 // select targets by clicking on their associated stimuli (0=no, 1=yes) (boolean)
-Application:Speller:P3SpellerTask string DestinationAddress= % // network address for speller output in IP:port format
-Application:Text%20Window:P3SpellerTask int TextWindowEnabled= 0 0 0 1 // Show Text Window (0=no, 1=yes) (boolean)
-Application:Text%20Window:P3SpellerTask int TextWindowLeft= 600 0 0 % // Text Window X location
-Application:Text%20Window:P3SpellerTask int TextWindowTop= 5 0 0 % // Text Window Y location
-Application:Text%20Window:P3SpellerTask int TextWindowWidth= 512 512 0 % // Text Window Width
-Application:Text%20Window:P3SpellerTask int TextWindowHeight= 512 512 0 % // Text Window Height
-Application:Text%20Window:P3SpellerTask string TextWindowFontName= Courier // Text Window Font Name
-Application:Text%20Window:P3SpellerTask int TextWindowFontSize= 10 4 1 % // Text Window Font Size
-Application:Text%20Window:P3SpellerTask string TextWindowFilePath= % // Path for Saved Text File (directory)
-Connector:ConnectorOutput string ConnectorOutputAddress= % localhost:20320 % % // IP address/port to write to, e.g. localhost:20320
-Application:Localization:Localization string Language= Default Default % % // Language for user messages
-Application:Localization:Localization matrix LocalizedStrings= { German } { TIME%20OUT%20!!! Waiting%20to%20start%20... } Zeit%20abgelaufen! Warte%20... // Localized user messages
-System:Core%20Connections string ApplicationPort= 2402 4200 1024 65535 // the Application module's listening port
-System:Core%20Connections string ApplicationIP= 10.211.55.5 127.0.0.1 % % // the Application module's listening IP
-System:Configuration matrix ApplicationVersion= { Framework Revision Build } 1 2.x % 15:07:36%20Jul%2015%202010 // Application version information
-System:Configuration matrix ApplicationFilterChain= 3 { Filter%20Name Position%20String } ConnectorInput 2.9999 P3SpellerTask 3 ConnectorOutput 3.9999 // Application filter chain
-System:State%20Vector int StateVectorLength= 14 16 1 30 // length of the state vector in bytes
-
-	  яя  ляфяпя	     няжя     кяряхя  ч        чяьяхя  ияыя     жяуя  кя хяяякяея  ч        няояэя  ъя  эяъяфятяияъяьяшямядя  йя  ч        хяеяхя щя   хящяюя      хямя   ыя  ч         ся    хя
- тяыяжя мя  яяжяяяыя 	   ч            йя  мя  юя  сяоя ыяфяфяеяыя  ч         ьяфясяэя  кяфятя цязя чяжяеяхя      ч         ля   ня ия   ея    хя чяняия  ч        ъя кя ля дяпя ъя   эя
- фяпяжя ря
-   ч        	  кяфяея ся   	 ьяфярятяюя  ля    ч         оя жя  ья ья  ья	   ря ея  хя  ч         эяфя   чя яяеяэяля  шя уяжямяъячяжя  ч        шя   хяйяхяря  эя тя 
-  нячя йя йя  ч           фяня     тя дяюя      юя  ч         
- чя эязя       кя ея	 ея      ч        фя   ря   чямяуя     ьяцязя  мя  ч            фя тя     фя ыяйяся     эя  ч        ияея      ря    ья   щяуя щящя  ч        щя ря   ця   	  
- зя кяеяоялязя    ч         тячя оя  эяэяъя  шяшя   лящяжя ля  ч        ля
- чяфя шяфя ляоя   ся шя    юя  ч         	 чя   чя  яяеячяшя  	 ряря щяжя  ч        	 ья    чяйядязя мяляняйяыяюя   ия   ч        фяпя    
-   ня  уя цящя уя уя ця  ч          еяыяея  цяряэя     ря фя шя ыяья  ч        ня  ыя  йяэяыяжя   ьящя ня 
- шя   ч         зяляюя    пя  хя
-  	  зя       ч            эя  ыяояжяжя  йяэяря
-  	 зящя  ч         ъя  ня   ыяря  ья   чя   мя ся  ч        ряфя
-     эя  кя ыя йя    ряюя  ч        оя  ыя ояпя  	 	 кя  ья юя тячя ня  ч         ъяиясяья  ря   йямяяя  ъя	 щя  ля  ч        пя  чя  мя тяцяья  пя  ряря  еяряоя  ч         хяюяыячязя	 юя пяэяюя  ьякя ъяфящяоя  ч        хяця  уя    юя   фя чя  ля ьяфя  ч        зяря  жяуящя юяшя	  тяыя      эяэя  ч        уя зящя   мяоядячяэяояъя     эяея  ч        йя пя чяжя еяюя чяряуяйя щяеямяюяхя   ч         няюяюя  няня  еяия хя
-  мяюя     ч        ея  ояюя уяья лямяхя	    яя зяпяря   ч          жяжя  пя  шящя кящя
-   ця  ъя  ч         няуяъя 
- 	  ця жязя 
- пя    ля   ч        ия нячя     щяыясяжяояпя ця ся    ч                чя йяъячя хя эя кяхя   ч        мя  яя
-  тя   фя	 ьяоя   тя     ч        шя   пя   эящяжя уя  ля жякяня 	   ч           чяыякяляпя фямя   тя фя эя    ч         дя   мяхя ця тяоя ьящящя   тяеярякя  ч        
-  кяияия кя     фяфя   юязясяяя  ч        цяжяэя йя сякяяяфя шя  щяжя  чячя   ч         ря ъяхя ья уя юя   чя йяияхя ся  ч         фяцяся кя   уя
- зяияуя   ея 	    ч        юя  тяцязя кяйя   зяпя   ыяшя     ч        ля	   фяияъя    ня шяея йяоя  ъя
-   ч        
- хя    оясяфя      уячя  чяця   ч         шячяяянязя ья  	 пяияьяъякяуя ия
-    ч        ея хяжясячя  уяыя  мя йя ря  ъяхятя  ч        фя  йя йя  эяея жя       ияяяря  ч        ея уя            ьяся  хяня     ч        щя    ця     жя 	  тясяюядя     ч          тяэяия   	 ыя  ъяляня        ч        ля ня жяия зя   пя        чя   ч        ыя тя щяхяця еяъя 	   юящя   щяея  ч           оя ъя	       юяжя оя  ъяияня  ч          жя  ся шяхя эяфяуя юяпяыя
- сяья   ч        мяйя уя  ия    ия хя  уяояея    ч        ря  оямя дя  ыя  хящятяуя ця
- тяеякя  ч        ъя   чя    ыяюя     хя  хяжя  ч         ья   чяья зячязя жящярязяфя    мя  ч        яяйячяляряоя ря 
- ся	 
-  жя оя   пя  ч        ея    чя юяея   жяяя чя  кя щяйя  ч        ня  шя ля пя ья юяыя  ря 	   ря  ч           пя уя ья    эя  уякя юяжя кя  ч         мя ия цяэя йя 	   шя 	   ея     ч           эя ця   ыя кяея   кя  уязя  ч        ряляня чя   
-  кямя фя  еяеясятяыя  ч          йямяяяся фяшя   тящя ся   няюя  ч        жяряпяея тя      няяяхяся   щяъяюяря  ч        чяжяйя	   ня юя 
-   ья тя зя ьяря   ч        оя юя	 юяяя жя  тя   шя щяля шяэя   ч           фя    тя уяэя няся эяня  оя  ч        	 тяэя ыядяья уя    ъя чя кяшя  хя  ч             еяюя юя оя    шя хя йяюя   ч         ея дяшяжя фя  зяоя ыя ия  ся юя  ч            ыя  ыяеяцяыямя ыя 
-  зякясяняхя  x>ч          	 
-  эякя     
-  уя яя      x>ч        щяжязя  ияоя ряпя юя сячящятя  лякя  x>ч         чя няряэяфяйяоя цяхяшя   уя  ля жя  x>ч          пяпя хя  шякякяця      ця    x>ч        ся  	 ъя яяоя    зя ья ья  шяряфя  x>ч            ыяыяця  
- шя	        ня фя  x>ч        хя    мяфя пяэяшя  
-     чяфя
-    x>ч         хяеяжяеятя  эя  сясяоямя ыя  уя   x>ч        эя   ья   ья йяся    яяея        x>ч        ця ья  	  кязяюяхя  юяия сяоя	      x>ч             няъяюя еяъя     щя уяняляшяия  x>ч        ия     ея зятяья  ля зятя       x>ч          юятяйя    	 ня    сяжя эяюяшя  x>ч        сяяя       мя ыяыяуяляюя
- яя     x>ч        хя   эяия лятячя кяля  щяэящя ия   x>ч         уя  ряхя
-     эятя 	 	  фяъяпякя   x>ч        нянятя	  йяняюя     йяля          x>ч        чя 	     еячя     ояпя  ъя    x>ч        йя    ия дячяуяпячя  еяья 	   уя   x>ч             оя юя еяюямяйя  хя 
-  няиятя  x>ч        шяяя уяся  еяыяояэя  уяэящяыямяья оя  x>ч          йяпя ля  
-   жятямяйямя  чя    x>ч         щя сязязяпя ня  ия зяся    юя    x>ч        ля сящя  йя жя шя  ыя зяпя  йяья  x>ч        ыяхяйя ыя  ия уякяъяея  няэя ыя фя  x>ч          жяэя дяъя  ряня зяьяря зярятя ня  x>ч           йяхя уя уяуячя еяпяхя
-   тяжя   x>ч            пяюя  ря   яяыящя    ляояцяяя  x>ч           ця пя	     уя  шяья    ця  x>ч         ияъя  ъяхя  ряьятяияяя ця мя ея   x>ч        тяьяояоя  пяля йя зяся ня   ця ыя  x>ч        цяляйя йя   кяпяъя жямя   ияьяляжяия  x>ч         фя   ря    тяяя чя   яя кя   x>ч        цяця  тя  тя  ья   эя шя
-  щяпя  x>ч         ъя  	 еяэяояпя мя	   пямяия       x>ч        	 зя шя  	  эя еяоя ряюяэя эяыя щя  x>ч        ия   ыя   ня  ьятя ця щя  тя    x>ч        тязя   фя        ея уя  чязя  x>ч            пя  ея  ояюя зяшяляэяпяяя     x>ч          ся  ря    няня   	 ря ъямя    x>ч        	  	    ыя  чя  ря       чяъяья  x>ч         ся 
-   яя   
-   хянячяфя  тя ся  x>ч        ляыяыяжя юя  ця ея   ыя
-  ея      x>ч             юясяля    хя чя  кя  фяня   x>ч          хя
-   юяюя ыя  ряня ея  ря нящя  x>ч        	  ыясяея оя    ря ияэяьячяшякяея   x>ч           лякяся   эязя мясянямяьяшячя    x>ч        цяйя  ъя йя  ыя  ъямя  юяря уясяюя  x>ч          сяпя 	 юя  нятя      ря  фящя   x>ч        пя	 ыяжя   ъяфя ця  дя   тя 	 йякя  x>ч        эя  щяэяшяоя юяыямяия    яя йя яя  x>ч          хяряшяпя оя  ея  фя эяня   ия   x>ч           зяяя      ля      ня  
-    x>ч        пя            йяья щя ыя хя   x>ч         шя    ыяея кя       мящя	  	 пяяя  x>ч           яяияняпяця юярячя пя няняжяфяэя    x>ч         зяфяхяця эящяжя еяпяшя   	   	     x>ч         ья шя яя  ля кятя  тяфятяфяйя    x>ч          щяъяся   цяояфя  ся   пя   хя  x>ч         ъя еяжя
- эя   шя       ляюя щяоя  x>ч        зя    пяъяэя сяря  ьяхя ця юя щя   x>ч         ъя фяэя фяйя эяшяыя 	 ря     	    x>ч        ыя        ляря  пя  пяэяжяфя фятя  x>ч         эя   зя пяхяэяжя       ляиязя    x>ч        шя 
-  юя	 ня  
- яясяюяыя  ля      x>ч          пяоя  няьяяячя  йя  ля фя     x>ч        	  яяъя щя  ыя
- пя ия чя   кя щя   x>ч            ля ья  щя фяпя уя ля чяуяэя   x>ч           
-   еяйяеяэя ня  	 ия  пяшя эя  x>ч         ряуятя     тяюяпя 
- ея уяпя 	    x>ч        ря ояшя 	   шяйя   ея ця жякяыя    x>ч        ля ля эя  тя щя  	     ыя 
-      x>ч        ея  дяея иякя уя ряия        ня   x>ч         тяпяця  мяияфя  тяся шяпяцязя юяэя  x>ч          мяыяряия эя  ия ья мяйя юящя яя  x>ч          ляеяцяшя ияся ья 
- 
- шяэя  	 фяюя   x>ч         цятяля   еязя  ся хяцячяыя уя    x>ч          ря хяуяюя    тянящяэяйя уя     x>ч         хяжяшя  жя	 фя ея  ъя  эяжя	  юя  x>ч         йя   хя щячяъя	   зя     ъяля  x>ч        кя      	     йя  фя  ля ця    x>ч         ля 	 чяея мя ья  эя ияпяыяцяъязящя  x>ч        юящя       ыя     фя  ья	    x>ч          	 щя      уя   ыя ня    юя ця  Xa—@          уя  оя кя тя  зя чяяя тяхя ея   Xa—@       фя  тя хякяшя зя   
-   
- ья      Xa—@       ляыяця   юя     цяхяйя ея      Xa—@         	   еяся  шяея   яя 
-  шяжя    Xa—@       щя зя  
-  эя ля фя   ияшя  уяея  Xa—@       ияряюяхя   ыя мя эяоя чя     ля  Xa—@       чя еяшямяшяьякя рямяэя  ся  зясяыя   Xa—@             фя  сяеяуя   зяояня ыя жя  Xa—@       щяхяпя  кя ея 
- йя ияхячянятя ряйярякя  Xa—@       хяьяеяйя
-     	  	 щя йя фя ея  юя  Xa—@       щя  уяия зя зя  тяпяияшяфя    пя  Xa—@       ся  юя   	  ся хяйя   щя 
- ъякякя   Xa—@       жяъя     цяжяшяея  еяся дяеящя щячя  Xa—@       эяъя  йя    ияиящя  фя ря  кятя эя  Xa—@       мяоя   тя  эя    зя   ыя      Xa—@       хяоя ня   ъяфяляжя ъяюя лячя ия щяъя  Xa—@       ря  ия  чятя
- ляля    ояфяяяея йя  Xa—@       шячяэяюячяяя чя яя    зя   зяжя    Xa—@        ея   ыязя   рякя щя    тяцяняшя  Xa—@        пя ояоя кякя   кяйячяуя ыяеяфя йя   Xa—@       ыяья    тяья  чя
- ця    ояйя  яяшя  Xa—@       оязячя  кя уя  кядяуя	 эяшямяпяюяля жя  Xa—@       ъя	 ря
-   мя   
-  эя чяьяся   зя  зя  Xa—@          эя ляоятя  тя  оя жя ия      Xa—@        эяля  фя шя фяьяэя  уяья ья  ъямя  Xa—@       хяыя   уя яя шяря  ъяоя   ся мя   Xa—@         няся  юякяля пя фя ья юяеяйя	    Xa—@       ля    ия щя     ея   шяияшя ья   Xa—@        щя  юя тя ся   пя оя   тяляця  Xa—@       фя ыяжя	  ця юя   цязя цямяюяуя    Xa—@        ъяшя  	 цяляшя йя  хяуячя    ня   Xa—@       уя     эя      пя  еяъяля ряэя ея  Xa—@        кяйяшя 
- мя   пяфя  ояэяояня юяня  Xa—@       тяия   кя эя  ея     дяуяюяфя зя  Xa—@       пя   
-   жяыяэярянязячя   кя    ся  Xa—@         ъя яяуяхя шяхяря   зя зя пяюяжя  Xa—@       фя фя       ия    сяцяпя    чя  Xa—@       хяня ьяияоя    уя  фяця  ъя  уя  Xa—@         ия юя    	 чя йяья  яя  эя    Xa—@         дящяьяияья мя няояйязя   ияюяйя   Xa—@       ыя  ея тямя фякяоя  йя 
- шя   ъя  Xa—@       ля      щяыяеячя ъя
- ряуя  ря оя  Xa—@       уя  сяхя сяшя ля  	  фяюя ияия
- кя  Xa—@       юя  эящя  зяиящя чя  мя    ья   Xa—@       ия йящя
-     мя пяся    цяияоя    Xa—@        
- ъя	 цяфяья   уя мя     хяяя ъя  Xa—@         жярядя
-    дямяэя  ляжя ея фяжя  Xa—@       йя уяпя  
-   кя ъя хядяия	     ця  Xa—@       шящяияоя  чя  ыя няыяия
- эяпя шяэяйя	   Xa—@        фякя тяэясязя    	 ояшя  эятяря   Xa—@       
- щя  эяъя	 ъя    жяея  пя   юя  Xa—@       зяия       
- пясяхя    тя  ся кя  Xa—@       эя уя  ля ья ля   уяыя  щяояяячя  Xa—@       ля ьяоя чя лящя ряфя эя  зя    эя  Xa—@        хяйя кя	     хя 	    ья  уя   Xa—@           ля зякяея пя      ся     Xa—@          	  ея    эякяяяжя
-    	 йя  йя  Xa—@       тяъя
-    жяъя иятяжя    ъяюя щя сяья  Xa—@        цяхядя       ня   зя хя эяюя   Xa—@       уя   рямя	 шяья   хяюя уяяя фя юя   Xa—@       хяжязяия фя    пя ля   	  йя
- фятя  Xa—@         пяйя ияоя  ыяъя тя  яящямя оя ся  Xa—@       шяля   хя зя ряся ьяся   шяюятяйя  Xa—@       ъяняия      	 эяся    
-  юя хя	   Xa—@         ря  цяыя ыяпя  оя	  
-  щяъя зя   Xa—@        йя цяняйя ояняшя
- уя   мя     ъяыя  Xa—@       ъяэя         кя    щящясяэя ця  Xa—@         жя щяюя щя юяхяфя шя рящя ъяыя   Xa—@        щяэя      тя   ляьяяя  уя ря    Xa—@       чяяяеяеяря  
- ея     ыя	   ляйяйяияяя  Xa—@       няыя шяня сяжя  цяйя  щя     оя	   Xa—@       няшячяфя цячяояэя 	 ьямя эя  еяюя     Xa—@       эя
-  ояхякяшя    эя	 ыя кяря       Xa—@       пяыящязящя зя  жяняйя  зяня    дя  Xa—@       йяняня
-  щя юяшя мяряня   дяэя  шя  Xa—@        ояця ця     жяйяйяня мямя мя ця  Xa—@        пя    уяря   юяцямя  хя кя  жя  Xa—@       ья ъя  кящя    яя   тя  фя      Xa—@          шя       уя  	  
-   пя   эя  Xa—@         зязя  
- ся ъя ыяэя  	  
- ряпя   Xa—@       еяпяуя кя зя тяия ъя ня         Xa—@           пя йяхя няря   ця хяся	 щяця  Xa—@         ня   йя  ья ыя  зя    юяшя   Xa—@         ъя  ия ъятя юя ряжяряияъяуя ояфя  XЃ—b       эящяцяця ья   мяыя шяия эядя  ся   XЃ—b       ся чя  хя пя ьяля  уя    йяйяоя пя  XЃ—b        ьянясяля  фятяьяхя ия ляняхяня уяфя  XЃ—b        щяья  зя жяня  ияяя  эя        XЃ—b        ня зя ъязя 
- хя жяуя эяся        XЃ—b       мя  дяфя юя   шяйяъяоя  юя жядя   XЃ—b       ряряшя  щяяяуя ияйя пя  юяъя  цяыяхя  XЃ—b       ья чя     фя   ояня      жя     XЃ—b       ия чя  чя  ияцямяця ця ояуя ъяйязя  XЃ—b        эя яячясяэязя  цяляхяля	     мя 	   XЃ—b          оядяня кяыя	  фяся  ия    шя
-   XЃ—b       жя ля   ъя	 ъя уя  фясяфя  ря    XЃ—b         
- шякя эя ия
-   
- ия 
- ся жя йя  XЃ—b        кя  шя   хязящя  мя   ня фяяя  XЃ—b       рящя пячя    ъя       йя     XЃ—b       мяыя  ия яяья фяйяяяъяья   юя ля   XЃ—b       ияюя цямя щяняъяъяля ыяхяяя   чямя   XЃ—b       ыя дя ыя ия   ря	   хя уяюя  юязя  XЃ—b            чятяюя       ня   кяхя ъя  XЃ—b              щя      шяьяйяця
- хя ея  XЃ—b       тяыя   ьящя   жятя	  ыя  оя  ья  XЃ—b       	   ия ыяэяля   мяэя мя	 фяея  ия   XЃ—b          юяяямя  кяъя  тяхя мяжя	 ья    XЃ—b       рятя нятяеяляпяйя ня
- шя оя    ъяля  XЃ—b          ря  жя юяояия ня ья эяэя   шя  XЃ—b       ия чяйяэя  чяиярямямяняшямяпя
-       XЃ—b         тя  ияоя зяця      щя	 эя      XЃ—b       яя  йя ъясяня щяря пя зя	  ыя  жяжя  XЃ—b        хячязя зяпятя зя	 ляеяоя  ля  шяюя  XЃ—b       ыякя      щяня 	 хяхя  кя   оякя  XЃ—b       чя тя   кя    ия зя  цяуя фя шя  XЃ—b         шя    ияоя
-     фяюяжяшя  щя хя  XЃ—b       ьяняья         ыяряцячяуязяэя   ря  XЃ—b        ея    эяжяйятяюя  эяыяъя эя ля   XЃ—b        оя кя  	 
-        	 тя ня яяпя   XЃ—b       оя  ояеяжяяя   фямя  ъя фяля цящяяя  XЃ—b        яя мя щяъя щя хяея    ия
-    ня  XЃ—b       ыя     лясяъяия  хязяхяяя   
- ьяся  XЃ—b          жяоя зязяыя    	 пяыяья   чя    XЃ—b        ья
- зяшяхя нячя   зятя    зя   	   XЃ—b       щяияня пя фя  яящя   мячя  йя ея  XЃ—b            яяляцяья  шя    ця ця    XЃ—b       ся
- зясяфясяря  уяея 
- яяъя 	  оякяуя  XЃ—b        зяфя   юяеяыяъяьяэя зяря  тя     XЃ—b       ля 
- жямяъяшяшя  зя  ляшя  зязяяяэяэя  XЃ—b       
- ояшяюяьяцяйяжя ря  кяля
- фя  чя   шя  XЃ—b         фя	  эяйя ля уя жя    зя ьяоязя   XЃ—b         ъя  уянячя зя шякяхя    чя	 нямя  XЃ—b       яя рящяяя ряюя
- ыятящя	 жя яящя      XЃ—b          ея
-  юяйя жя 	 шяжя     кяся  XЃ—b       цяэя щякяоя зятя  кя  фя	    эя   XЃ—b        
-  эяяясяуяфяляъяцяряыя
-   ля
- щя юя  XЃ—b           зяня  шя  чяея   	    уя   XЃ—b        щяяяфящя  ояшяэякяия 	   
- ляия     XЃ—b       яя йя пя ия иякя   ьяяя хя   ыя  XЃ—b        цяряэя зя ыяуя	  тязяхя  
-   кяля   XЃ—b        някя ьямя  ея ря  ня  ляыя  ляуя  XЃ—b        ояоя фяйячя  ъя   уяюя   ыячяпяфя  XЃ—b       ея еяуя яя  сяця ъя   эя еяиядя ня  XЃ—b       ля  ця шяхя  оя чякяфяяя юя       XЃ—b        хядя  ея    хя  уя	 ля     фя   XЃ—b       яя йя  дяъяпя жя йяйя    фятякятяия  XЃ—b       уяъяряхящя цязячя ря        ляшя  XЃ—b       жямя   мя уя мя сякяся няэяия 
-  юя  XЃ—b       ляшя    эя 	 кямяля   йяфяня йя юя  XЃ—b       яяыячя ьяэя кя  кя  
-   	 мячя    XЃ—b        зяуязя  ряьяыяйяья щя ъя   мякяюя  XЃ—b       пя эя  щя    яящяъяфяея  ня ея    XЃ—b        шя ля  тяряря   эятя
-   яяяя     XЃ—b       яя цяжя	 кя  оя жя чя  тя  	 ья   XЃ—b       йязяряюянякя ыя	 дя ея эя   уяуяэя    XЃ—b         ля ояюя кятя  хя    пя        XЃ—b        кятя ьяья  	 уяюяця   	   юяия ыяхя  XЃ—b       ся   яящя ияяя  дя ляжячякя	  еярякя  XЃ—b       ъяпя яяеяня   хяшясямяця ця ояцяэя   XЃ—b                ияыя ся   рякясящя    XЃ—b        ыя
- 	 уяья  цяоя фя  цяияояэячяея   XЃ—b       зядяцящячя     йя
- шя  юя   йяяящя  XЃ—b          уя  ыякя  ъяшяяя фяфя  мя     XЃ—b       юяря	   ьяля зя  ияляэя жя      ня  XЃ—b       йя  йяоя   няйя     еяея  жя   XЃ—b          жяйя   эя мяъяцячя  уя кяьяхя  XЃ—b       	  ея ыя зяняэя  юя мяця йя       XЃ—b         юя    ъяжяря ля  зя зяхя тя   ў—‚       хяцямя фяфя щя  чязя    уяжяся яя  ў—‚        	  дямямя    цяуя  няеячяоя ряфяыя  ў—‚       мя   мяяянямя шя пязяхядя тяияфяюя   ў—‚       ояця  шяшя   юя  	 мяуя  пя ияхяпя  ў—‚       шя тя пя  пячя     жя  кя уяюяся  ў—‚        жя шямяря  эя  ияся  пя   уяпя   ў—‚         жящя	 	 ыя щя  юя  жя   чя
-  ьяуя  ў—‚       ояяя  ря ъяля ья кяыя 
-   щя
- 
-    ў—‚            чяйя    
- оякя  зязяпя  оязя    ў—‚        чяуяуя    цяуя  йяъяся  зячя ья  ў—‚           ыя    ияся шя ояояля   ыя   ў—‚       иязя
- кяхя эя  няця ля ля ьяоякяцяня  ў—‚            ияьяия кяхя  	  пяэяюяоя 	    ў—‚        юяъя  ля   ня  ияжя  мяйя    
-   ў—‚       ья  уязя тясяпяъязяжясяъяся зятя   хя  ў—‚        юяпярядяиячя  сяфяюяця  шяля жя  яя  ў—‚         жя   пя зя ья           ья  ў—‚                ъя уя шя щятяояря    ў—‚        чяхяйяияоя  ця  оя 
-   зяуяшя ыя  ў—‚        фяйятяюяйяпяуя уяпяея ия лямя ъя 
-   ў—‚       ряфяъяцяыя пя   эяуя  щяяя   мяфязя  ў—‚       щяшяжя   зяляфяеяся кя     мя  зя  ў—‚         эя  ря оя   жячя    ся оя тя  ў—‚              ня
-  кяыя   пя   пячя   ў—‚       хя шяцязясяйя еязячяэяяяля 
-  мя уя   ў—‚       чя ля чякя    эямятяшя ця  жякяъякя  ў—‚       
-  зя оя  ояыя зяъятяшя зяия йя
- ыя  ў—‚         еяжяля эя ля  фя	  щя фя      ў—‚             
- ля   йяня фя   яя  ъя  ў—‚            йя  ря ця  ся  нящя     ў—‚       ря       шя жя кяыя
- сяоя  оя    ў—‚       юя ея       юя зя ыя жяряжя щя
-    ў—‚       цязяряцяся щя тя   яяня   оя  шя   ў—‚       ыя      жяшяэя     уяхящя щячя ья   ў—‚           мя кяояиядяюянячяуя чямяцяхя кя  ў—‚       ся  фятя юяйяяя  ля   уятячя ня    ў—‚       мяжя  шя хя  	 ся хямя     йя   ў—‚           фяъяыя ня  шязя ея хяхя  мя  ў—‚       ъя  тяхя
-      ия  фяпя  
- ня   ў—‚        шя    
-   йяхяжямя  	 фядякяпяся оя  ў—‚        ця чяияэяхя   сяня   ся уя кя   ў—‚       ся оятя  жя рящя няня  лясяьяря    ў—‚       щяня оя  шяпя	 ея	 шя жя оя   уя      ў—‚       шя	 ьяэя  юяуя	     шяуяжя ня щядя  ў—‚       жя	 яя  
-     жячя юя       уя  ў—‚        кяояия кяяя     ся 
- йя 	 щя  ия  ў—‚       ляля  тяря       йя      ия    ў—‚        уяря юя
- хя еяйяйя  эякя   ея  ъя  ў—‚       ияня ря  жяфяяя  эяъя ля кя  эя	   ў—‚        яясяляфя  ся дя шя эя  цяхя яяхя  ў—‚       йя   хякя хяйя  ъяуя 
-  мя ля йя  ў—‚       уя фя  ряфя пя няпя   тямя  щячя   ў—‚            	  чя        ся ияяяцяпяья  шя  ў—‚       	  хяъя пя чя ня  ряля ея  щя яя   ў—‚       	 йяоямязяфя    цязя   
-   пяюя    ў—‚          ыя	  ыяоя  йяьяъя   фяыя  ия  ў—‚       ея  пяня юяпяжяияля	   зя  пяея     ў—‚       
- шяеяпя зящяхяряшячя фя     ъяпя ья  ў—‚          ля   ця ся щя	   ия	 фяяя оя  ў—‚       	       ся  яя  пя
-  ня цяшяья  ў—‚         ъяюяйялязя    ья	    ця яяья    ў—‚       яя       ия
-   уяшяояея яя яящя  ў—‚          ояъяияюяюяяя  оя
- йя мя уя     ў—‚          сяиячяшя    яячяэя дямямя
-     ў—‚           ея няряря    
-   ья  цяря   ў—‚       юяуяья эя дя  шякя кяпякя  зядяхяря  ў—‚        эяоя     кя ля ьяеяцяеямя  ля чя  ў—‚        зяъящя 
- ця  дя   щя
-      хя    ў—‚       хя   ъяжящя  
-   	 
- ыяйяьяря      ў—‚        яяюя яя  ня фяъяыяоящя щя   эя   ў—‚          яя      ия юя чяуя пя сяэя    ў—‚        ся   пя  яяэя ъя    эя  ияся ия  ў—‚        ья    ря   
- яя 
-  шя чя     ў—‚          йя ця  шя   ця    пяйя      ў—‚         щялящя      ця ея      уязяшя  ў—‚         ия ряэя ля
-  цяея яяяямя   ся
-   ў—‚       сяыякямя яя     тя кя    эя    ў—‚       ця   	  ыяжя     ся мя	  эя	       ў—‚        хяпяря  ьяря   	  ся   юялящя    ў—‚       ся  цятямяля
- ся  	 эяря ся йя	      ў—‚       эя  няся   юячя  юяхяля 
- ья чя   ў—‚       йя 	  яяля  ря  шя яя  яя  ляыя  ў—‚        зятяжя  чя ияяящяйя	  
- ляхя  	 мя  ў—‚        фя уяжяйя ыя  чяся сяъяняяяся ля    ВWЈ                 
-  ья  ряпя ия	  фя  ВWЈ       чязя зяэяйя   яя шя хя шя яяпячя   ВWЈ          сязя  ъя щяжяъяуяся цяыящя чяояря  ВWЈ          жякядя хя  уя эя  лякя тя      ВWЈ       тя   уячя сяцяшя  уяеяяяпяэя щя щя  ВWЈ        кяляыя   шя   	  яя
-  уяся  юя  ВWЈ       хя 	  пя  ьяея ъя яя тядяйя шя юя  ВWЈ       	 	    щякяжяюя  жя ся няыя щя     ВWЈ            нящя ряъя	   эяшя йя ря ляфя  ВWЈ       кя      юя яя       шя     ВWЈ       эяряья ея ияня мяхясяйяия     сятя  ВWЈ         юяюяоя ля 	  ря  жяря   юя  ця  ВWЈ       йяяя
- йя  ыяся чя  юяря оя сяцяпяяя  ВWЈ         ця   щя   ряюяьяйяляжядя ия    ВWЈ         ця  юянящяьячя  уя	  шяояия  юя  ВWЈ         ояяяця ия зяйяря мяяя  ля 
- 
- кя  ВWЈ       щя   ъя уя пяьяыя ря щя  ыя        ВWЈ        няеяшяжяря шяцяъяпяоя 
- чякяряэя  ря  ВWЈ       цяпя ля   йя ъя  уяряфя  ъя  щя  ВWЈ       ряяя лякяъя  ъяжя ья  йя жяцяэяюяшя  ВWЈ       	  уя  уя   йя кя        дя шяуя  ВWЈ       щя   ыяшя  щя  пя ся  пящякяня   ВWЈ        
-    ыяэяцямяэяля яяля  чяйя	     ВWЈ       кя  хяэяця жя  ъяъя    тяяя  зя  ВWЈ       зя цяпяняьяьяжячя
-  шяфяея  ляуядя щя  ВWЈ       юя   ряняяязя   ьяия	   дя      ВWЈ         сяоя  ия    ыяхяфя ля   зящя  ВWЈ       юя яя     чяэя зя  юяыя  яятятяля   ВWЈ         яя еяья    ряжя    щяяяхятяюя  ВWЈ       жяъя  ся   эяюяця ъямя  ьяьяоя     ВWЈ       кя	   йяея шя
- няюя уязяьяуяоя фяьяяя  ВWЈ       чя эя  ня	 ля        мяцяпяеяия  ВWЈ           фяьядя ия   ыяьяяя няеязязя   ВWЈ       тяшя    шя уяъя зяпя   ъяцяия	  шя  ВWЈ       еяыяняйя чяшя   ъя    ряуяояьяыяюя  ВWЈ          яя   ляря  шяияея кя жя ыя   ВWЈ       цяыя  ця  ця    лятяуя ья  еяжя   ВWЈ         эяьячяия   йя  
-   ня  ья     ВWЈ       ъя ряья шяюя 	     оя йяйярянямя    ВWЈ         ця  эя еяшяжяъя яячя   	   зяхя  ВWЈ          ияця мяеяъя    ся     пя	     ВWЈ                 тя	 яя  иярякя ря    ВWЈ         зячяляяяеяыяся ояйя   яящящя  ья  ВWЈ       мя  щяря  дя  цянячя      тя    ВWЈ       хяфя   щяхя ыяея кя щя  хя  зяля  ВWЈ       кяпя  ея ыя рясясяяя   сяъя  уяъя  ВWЈ       	 ыяйяоя   ля    ыя  эя ея  	     ВWЈ          ояияжя     юяуя    яяья      ВWЈ       кя зяыя тяья юяляфяля  	   юятя    ВWЈ         тятя яя уя ияыя  ъяця	 ия фя    ВWЈ        ъя  пяэя ия  фя    ъя    юяшя    ВWЈ          ряяя	 йяхяэя ня   юя ьяъя	 	 ля  ВWЈ       ьяшяоязяпя  чяяящяъя 	 ьяия дячя  йя   ВWЈ         еятя  ляиямяыя ья  ея ьямя    ъя  ВWЈ               пяьяья ья кятя мя ця   ВWЈ        ъятя эячяйяляюяяяъя ьяжя  еяия ьякя  ВWЈ        юяоязя чяия   эя сяцячя ыя 	     ВWЈ        ряеяияйя  зятяцяйя    хяъя   фя   ВWЈ       ъяуя   фячя   хятяиятяйя фя   уямя  ВWЈ         ряняря   оя          ря ряфя  ВWЈ       ъячяхясяря пясяьяеяня 	   еязя тя   ья  ВWЈ       оя ляяяряея йяйяняфяия ыя     фя   ВWЈ         
-  уяюяшя	  иящя ъя ъя ня      ВWЈ       пя
- мяря кячя   уяъя      ьячямя  ВWЈ        пя тя  ця ня    зящяъя  зя      ВWЈ       кя няпя цядя  	 тя   зя   уяья   ВWЈ        жя оясяшя   еячяыяшядя   щядя     ВWЈ         ояоя    ря ояья     эя  зячя  ВWЈ       ьяряфя уяхячяхя тяця сяйя	    уяхя	    ВWЈ       яя   яя зяпя ия ця ряэязяфяья
-     ВWЈ         ъя дяея           зяюяйя   ВWЈ       уя    щя  ия  ля  рякя лячяфя   ВWЈ        тяля кящямяоя пяяяяяйя	 яя ля      ВWЈ         
- ияъяря фя жя 	 
-  уядяця ия ря  ВWЈ          хя пясяуя уяыя  кяфяия юяяяря   ВWЈ       кя кяэя юяыя тя ъятяяя     уя      ВWЈ       ня эя  ыяйя  ря	 дяйя ъя  ся чямя   ВWЈ       уяюяъя    пя  ьяйяюящяяя   ея ояпя  ВWЈ       зя  ся ня ыя  жяэя  йя 
- тяяя      ВWЈ       хящя
- ьяйякя тя хя мя ияжя  няшящяоя  ВWЈ       яя фя мя	   ъя  ея  уяця    
-   ВWЈ        ыя   еяеяйяхяэя   	 эяпякя    ея   ВWЈ       цяня      яя 	 йя ся мя    ия  ВWЈ       шячя яя
- кя пя щя
- зя  жя    тя   вГ         ояця мяуя    тясяюя  зямяиямяея  вГ       ьяэя   тя  ея   ояхяряря  ряфяря  вГ        ия  ыя  еязяпя     тя кя щяеяэя    вГ       нясяфя уяся оя  ияуяяяйя    	 хя   вГ       тя  фя  хя ся	 хя хя цяйятядятяюя ря  вГ        ья  ся  сяэяня  ья  фя  ияияйя  вГ       ъяшяыяюя фя
- ыя уяияжяшяйяьятяяяыя     вГ       юяцясятяцяия уя   	 	 зя  	  ыя щя   вГ       хяья
- зя  ця ьяоя эяця ня   ья йя   вГ       ияия   хяляпякя 	 ъя  ля	 	 	 кяйяия  вГ       ся жяйяея
- 
- 	 ояпя   яяяяжя  оязяия   вГ            ъя тяхя  юя      кя	 ъя  ня  вГ        дяея  чяфя  шяця        хя    вГ       щя       ияряэяняыяеясяря ця  йя    вГ       уя йяюячяья ияияья    тя  оя       вГ       уя   ья  ря  жя  хяыяия   йящячя  вГ         яяьямяъя зя ияьяюяся уяйясяпя иязя  вГ         пя     юяфя     йя пяхя  мя  вГ       уя    ыя 
-    шяыя кя    йясяоя  вГ           цяюяжя юязямя    оямятя      вГ         ыя   тя     ьяэя    тядяпя    вГ        ля зя  йяряыя    щязя ья дяья   вГ       пя     чятяпя   уя   
- зя чяця  вГ       дяфяъя   няшя   яя ия  тя  мяюяфя  вГ           уяжя кя   ця    ця 
-  яя   вГ       	 пяйя хя     	 ъя ляцяяяфя ля ня  вГ       ця             дяшяяячя  ея   вГ       юя ыяьяся зя 
- яя  ыямя  лякя чя    вГ         пяья зя ляыя хяъя	 дя	 йя   шяхя   вГ       уязяея  йязячящятяияуя   ця ияыяия   вГ       сяхяфяея  цяря чя   чяся дя рязяпя   вГ          эя  хямяэя    шяря    юя юяшя   вГ        зя     ьякяэя   дяэя ыяжязя шя  вГ         тядящяъя   еямяцяшяфя     уяхя  вГ       ия ия юямяэяляояьяйяня  ия   зяия    вГ         ря ояюя яя  ья яяйящя    няля   вГ       ся  ея 
- уяуяюя  оя  ля   фяъя  ся  вГ             дяъя  щяяяпяпя   кя  ъя   вГ        жя  яяфяыя  мядя тя    
-  жящя  вГ        ыязя   яя   ня щяшяпя тя      вГ         фя хяояйя еяюя юяпя тяъячяеяея    вГ       ся
- ъяеяьяфя       жяшяня   еяшя     вГ       мя  шя мя яя  тяяя жя   ья   хядя  вГ        ия ъя рямя нятятяфяэя	  чя  лящя   вГ        эя   ия
-     еяжяняфя  зя   яя  вГ       тядяся   нядя ляхя	 пя чятя  ьядяня  вГ       ря эящя 
-   нязя
-  пя яя  йя     вГ       цятя  йяэяняряля  зя  	  ыячя чяыя  вГ          ня жя чя ыяця ъя  ря фя     вГ       кя ля  яяьяэя йяьяфя     жящя юя   вГ       
-  шяяяьяыя        хя   зяияиязя
-   вГ         ыя йяъя    ия ня зя    ця   вГ       рязя еякяюяряыяоя  ля  ря  яящя  ия  вГ       зямяся кя     еяпязя ияся    пя  вГ           ья дя	 яяеяуяшяэя оятя	 ъя   	    вГ        сяояюяыяъяля  щязя эямя    кяхяпяпя  вГ          мя зя чя  яяхя   йя сяфя ыя  вГ           уяжяйя мяжя
-   еялящя  ляпяоя  вГ            ця   щя тя ня     ъя  яя  вГ       фяця  ия   ыяцямя уяюя  юя  ея    вГ          жяпя дя ъя  ця   юя жяряжяця   вГ       ря  фя     зякя	 щячякяряуя ря  тя  вГ       ня  мя   уяяя  ояяяея  оя уя ея  вГ       тя жя ия    дяэяэяжя ля
-  ъя	 ря   вГ         тя
- мязя  кяояуя эямя   шя  оя  вГ       кяыямяжяжя  ыяця  зя     жяля
-    вГ       ья кя пяюякяня  	 жянякяея  кя шяюя  вГ         пя	  ня  ияоя 	 	 ця   фядяуяшя  вГ       дя  чя ля  уятяуяхя
-    фя фя     вГ       уя  ря мя         цяюя    	   вГ         ця дя ыя жясяся  ояыя   сяоя   вГ          юя      ця   пя ияпязя зя хя  вГ       
- ьяеяря   пя  ъяняця  щяеясящяйя   вГ       сяряця  ыя мя     	   ьяоя  ия   вГ         ия  ояхя ья  лякя
- ря ня
- фя  ня  вГ       юяяя     хя  чя	 фяяя  ся  тя   вГ          эяря тямя  мяся  ля фяыяняья   вГ        ря     эя   няъя йяряъя ця мякя  вГ         ляъя   дя  
-  ияжя ия 
- кядя	 ъя  вГ       яяшя  шя  ыяря   эяйячя шя  пя     вГ          пя жяуя  яя жяля хяця жяшя    вГ       зя пямяфя   хяфя чяшяйяфяцяхяйяюяуяюя  вГ       зязяяя   тя  пя  ия	 мяпяжя    жя
-   вГ           цящяжяшя  цяпя  ияня уя ця   8д Ђ      фя    ля   
- шязя    ояйя щя  8д Ђ     ря йяоя мя  кячящяяяця  цяфя  оя   8д Ђ     ля   пя  уя  ня    кяхя   йя     8д Ђ      ця  шяшя мя  мямяйятя  оя яяся	   8д Ђ     шяыяоя   юяуя лязяшя мяяяня  эяся   8д Ђ     яяуяеящя мязя ыя  юя иятя   хямя дя  8д Ђ     ъя ся дя   яя  	 мяфя уяйя шяеяхячя  8д Ђ         щя иящяюяля ря кяъя
-  	       8д Ђ       щяыяяяьяря    жя    
- кя   щя  8д Ђ       
- 
-   ляжятяуя      чяяя  мяея  8д Ђ     ья ыяья еяуя цяэя  еящя щящяюя ряюя  8д Ђ       чя  кямяия  пя  няэя йя  сяля   8д Ђ        чяъя   ыя ля   щя ыя  тяэяля   8д Ђ     тя   яяуяпяжяцяяя фя цяоя   фя ся   8д Ђ     мя  яя    ояьяыяыя еяэя  кяфя уя  8д Ђ     зяхяояжя ря   ия 	  цяля  ия     8д Ђ            пяря ся  
- ыяхя  кяряся   8д Ђ     тя жяьяуя  уяеятяпя   	 фямяпяшяюяшя  8д Ђ     рякя    цяуяуя
- чясяюя ця мя
- ъямяйя  8д Ђ     	    ця ряшяфямя  щящя   ияуяуя    8д Ђ     ряъяпяйя  яязя  уя ъя ияяя    ля  8д Ђ       ря   фяля пятяшяйя  ря   сяуя   8д Ђ     
-  уя ряжязя   эя
- ия   мя      8д Ђ      тятяья   кямяеяцяыя    еящяфяшя   8д Ђ      еямя
- кя ся хя   йяхя шяия  шя   8д Ђ         
- зя      шятя дя хяжя  ъяря  8д Ђ     юя  ояюяья    кязяжяоящя
- ьятякяся	 ня  8д Ђ      сясядяпя кя  ея ияпя  цякя оя цяуя  8д Ђ      уя       ья    лямяпя 
-   пя  8д Ђ      жя   чя  кя
-  фяяя тя  цяйя кяшя  8д Ђ        хя    шя     мя  пя ля    8д Ђ     шяюяпяыяцяъя  ья  дя  юя   ъя    8д Ђ      кя	 уя  щя эя  сяцядя  зя      8д Ђ     пяйя    оя яямяпямяфя	   фя ия  ня  8д Ђ      цяея ьяья ьямячящяеяеяояся юяхя  тя  8д Ђ       кя ля йяля зяюя   ряяяэя сяъя   8д Ђ      ця
- ся шя 
-  ляыяюяяя 	   уя  ея  8д Ђ        кякя       тяюя 	   ьяцяшяся сяйя  8д Ђ     оя цяхя  иячяъя  юя    уяця уяяяья  8д Ђ      ъяляюяжяшя  ыя  ряля
- ия     мяпя  8д Ђ     шя ея  пя хяья    хяуяняцямяья пя   8д Ђ        ся   
-  тякякя эя ояфя   яя  8д Ђ       кяпя чя фя    ыятясяжя уя няэя  8д Ђ     уяфя  жя	 оя   пя  ьяжя жяйяйядя  йя  8д Ђ       хяуя  ня ыя	 
-  щя	 яя чя   зякя  8д Ђ     эякя  эятяюяыя ея  ья    шя ня еямя  8д Ђ          фяряпяшя ня     чяря   ня  8д Ђ         зя мяья цящя
- пя  мя йя   кя  8д Ђ        ояоя  ея пядяшяця  жяля  жяояля  8д Ђ      фя  ыя жя чя мяяя  ъя  юя ьякя   8д Ђ       тяфяыяья  зя  ыяся еяляья пяшя хя  8д Ђ       чя   ляняья    мя юя хяьядя    8д Ђ     иякяэятядяия зяря       
-       	 оя  8д Ђ     ия ляея  ьязя     ыяся хя   щя  8д Ђ      жя шя  яя  йя
- ся  	 ъяця ьящяшя  8д Ђ      щяря   нятяняря йячяхя   яящякяря  8д Ђ     щямяфяыяжятя фя шя  шяпяья еяяя   фя  8д Ђ     тя    хяюяпяуя зя   уя кя  яя    8д Ђ     еяжя тя цяияря  ея пя цячяпяпя кя   8д Ђ       цяоя ея  ся пя  
- ыя шяъяля     8д Ђ        ляоя  щяьяояуячя яясяия уя  ья  8д Ђ     зя  рящя  ья 
- ряяя ия ыяця    фя  8д Ђ      уя   эя  эя йяьяыя     уя    8д Ђ     	  йя  кя    чя       шя жя   хя  8д Ђ       ряэя жя
- яячя кяфя мя мяфяъя 	    8д Ђ     ъя   тя пяэящя        юя  чя чя  8д Ђ     чя   ья   кя  ыя   шяияяяхя  мя  8д Ђ     иящя юящя  сяфяшяфяьяояуя     зя   8д Ђ     ыяпя ъя    эямя шяся чя    ьятядя  8д Ђ     ля мя  ъяфяоякя мя    эяэяоя
- ея	   8д Ђ       ея жятя	  рязяця       эя яя
-   8д Ђ      ъя	  эя  фяхя кяюя фя  	 жя фяыя  8д Ђ     тяэяияжяюя     
- эя     чялятячяья  8д Ђ     мязяюя ця пяфяшя  уякя яя  еякя юя  8д Ђ       ъяйяляъя кя  чя  	 хяшямяхя     8д Ђ     йятяея  	       ця  зя кящя      8д Ђ     ляйя ля  ця 
-   ця     дяояфя   8д Ђ       шя    цяпя мя         жя 
-    8д Ђ     оя    ъяиямя      пяйядя хя  мя  8д Ђ     кя   нятя  ряцяпяля 	  ля ея ъя   8д Ђ     ся  ся  няияыя йярясяуяня    ья   8д Ђ         яя            ря шя  кя   8д Ђ      ряжясяняря     тячя    ся сямяуя  8д Ђ     тя хяия шяпя   ея ияля шяэя  ъяшя
-   ш" Ђ     ьяхя зяшя  юя   жя  дямя  шяшя   ш" Ђ     йя  мя   оя оя    эя йящяфя фяоя  ш" Ђ        зя  яя  сяфяфямя    кяхя    ш" Ђ     ияуя ня тя   	 ея ля юя ья  уяря   ш" Ђ     оя   щячя ояэячя  чя  ря оя
-  фя  ш" Ђ     ия    ояжящяыяоярячяюя    ля  кя   ш" Ђ      зянячяоятяйя ия	    оя	   ъя     ш" Ђ      пяся  ця ця тяъя яя  фяпяиязяия	   ш" Ђ      ея   ья фятячя   
-  ыя      щя   ш" Ђ     ояпяьяпяоя сяиячяря ьясязяжямяйя кя     ш" Ђ           фя 	 тяия  хяня жя эя цячя  ш" Ђ     
- жя   	   жя   ряля яя  цяся ья  ш" Ђ     эя  пя сяоя  тя эя ля  	       ш" Ђ     яяхя ояхяъяня ся яякя  кяля лякяля   ш" Ђ       хяуя       ья сятячя юяъя ня  ш" Ђ      хя   юя  няюяжяйяйяуясяця ыяхяоя   ш" Ђ      йя   тяхя  яяря  ля  мякямя тя  ш" Ђ      тя  тя тяняля кяяя
-  ея        ш" Ђ      юя шяяячяня  мя     ря  фяэя     ш" Ђ     яяья  жя ыя пя  зя  ря  хятяыя   ш" Ђ         щя	   
- уяэячя мя	 
- ъяся  эя   ш" Ђ       оякячя   ияхя  тяьяыя	 	 	 сяжяыя  ш" Ђ     	 фяяя  эя зя цяяя   ияня  чяуя   ш" Ђ           пя нянящя уякяшя уя    йя  ш" Ђ       ъя   
-  тя  еятяцяияья  
- 	 ъя  ш" Ђ     
- ия  уяья  
-    фя     тятяъя  ш" Ђ          ояця   щя	 тя ляия ря  пяхя  ш" Ђ     ыяъя тя яя уя  ья
-  ия хяшя ця чя  ш" Ђ      ця   пяшя  ия  еяьяжя  ля яяуя  ш" Ђ     жямя мяпятяфя     фя цячя  сяея чя  ш" Ђ     щямя фя йя   рятя ия чящя мя  кя    ш" Ђ     жя хя  юяъя   тя чя  юяшящя   ля  ш" Ђ       мя   ьяыя шя зя ся   шяыяця  зя  ш" Ђ     чя хя ыямя 
- хя  уяшяпя чя  ъя    ш" Ђ     ья юя  оячя кяся эя  уяияця  ъяяя  ш" Ђ     зя    	 	   ея    ня
- хяюяяя      ш" Ђ     ея  кяъя   кя  ъязяшяыяпяыяия  тя  ш" Ђ     иякяйяня     хяьящя пя цяся пя уя   ш" Ђ     ьяьякяря  яя   ъя мя эямя ця      ш" Ђ     юя  юязя дя жяеяфя ля щяуя фя ия   ш" Ђ      пясячя  
-  зя   пяьяуя   мя хяхя  ш" Ђ     хя   хя    щятящя юяшяця  ояйя   ш" Ђ       ля   эяфя   ъя тя     щяъя  ш" Ђ      яячя ыя ояеяоя дя   	  яя  ся   ш" Ђ       ъяшя  ряъя  няея    пя ця щя  ш" Ђ     шямя     ня    зя   фя щя ыящя  ш" Ђ     кящяия  шя ьяцяря   ця 	 	 фяияшя    ш" Ђ      чятя эяэя    мя ъяыя щяйя фяхяня  ш" Ђ     щячяця фя  ья  пя уяшя   щяыя   хя  ш" Ђ     эя ля ыя   ряняхя 
-    кя
-  ля ряня  ш" Ђ      тяыя уяия ця чяпяля фяня   няыяся  ш" Ђ     	     яяия  рямя 	 кядяюя эя     ш" Ђ     уяхязяпя  цяюя мя  зяея
- ся  ъяля    ш" Ђ      ря      фя дяжя шяця ня ря эяся  ш" Ђ     	 ия  хящя  йя  ся  мя  мя шямя   ш" Ђ     ияря жя   ья уяцяля ря  зякя ьязя  ш" Ђ      ляжя ряоя  ряйяфя
- ыя      мя   ш" Ђ      ъя    фя ля   ояеяняья  кящяря   ш" Ђ       шяюя     дяпя	    ля	   ся    ш" Ђ     	  чя ея  
- зяъяшя ьяпячязя ля шя
- ъя  ш" Ђ     юя юя чя 	     эяуяия    хя  ъя  ш" Ђ     
- юяняляъяшя тя фящя   ня   юясячя  ш" Ђ     фяця  тятя 	 зя  	    ьящяъя  ня  ш" Ђ     мя пяня  кяфя   ыяряэяоя пя  	 ря  ш" Ђ       йя  сяпяыя  тя  кяюя  юякя  яя   ш" Ђ     юя  уя  	 оя кя   уя тя        ш" Ђ       ия щядяюя жяья тяфяня тя  юяэяъяхя   ш" Ђ     ряыя 	 хя яя  щя иясяхя
-   хя йяля  ш" Ђ     кяжяфя  ъя    юя  ця ия йящяцяля   ш" Ђ     йязямяряхя ьяхямяйямяля	 йяоя щя      ш" Ђ       ся чямячя иямя  ся  яя   ья ъя  ш" Ђ       чя	  няыя  фя яяця чя  пяшя 	   ш" Ђ     чя ъя  хяця фя ъя  	  яяыя  фя      ш" Ђ     уя тяхяоядя жя щяжяцяьяэякя  пяоя пя  ш" Ђ         еяяя
-  хяжя      пяляся чя   ш" Ђ     пясяояшя	  жя  ъяжяпя уяъя   жя жя  ш" Ђ     
-    уя    хятяэя  
- оя яя чя эя  ш" Ђ     ся
- ъя шящя фямя юяиярядя    ля оя  ш" Ђ     шя   жяуя	 ця       тяря 	     ш" Ђ     пя   зя йя  йяжяуяэяуя ня йяря ея  ш" Ђ     эя  ояэяоя ияся мя яяхяяяэя цялясяуядя  ш" Ђ      йяжя   фя уяфя     кясячяшя щя  ш" Ђ     
-  юяфяняюя ия    щяля хя  ця тя тя  ш" Ђ         чящя 
- юяуяеяыя
-  ея 
-       ШC$Ш @    ця  яяоя оя  тя  оя
-       мяъяыя  ШC$Ш @      кя    хя  няся    чяея ля чя  ШC$Ш @    кя ея   эяряжя  ыя еяыяыяхяся      ШC$Ш @    ря  ияйяия зя хя   щяюяпяея цяияья  ШC$Ш @    ыя      ъя юя тя  ря   чя    ШC$Ш @    цязяжяря оящя чяряюя тязя  ья      ШC$Ш @       ця зяюяяя   оя юяьяся шяшя     ШC$Ш @    пя
-    
-     пя ся  яяся  ьящяъя  ШC$Ш @      тя  шя эя жя   эя	 
-  ъяля  щя  ШC$Ш @     юяыячя      дяфя
- яяыяия       ШC$Ш @    хя юяйяьякяряяяшя фяшя	 иятяия пя     ШC$Ш @     мякяйя   уяфяця    ьяйя ляъя     ШC$Ш @     щя    мя   хя   щя  ьяэяшяья   ШC$Ш @    кя пяоя   цяляия   ья    юя
-      ШC$Ш @    ця   уяйяся  яя  ыяжяхя ня    кя  ШC$Ш @    мя     мячя 	     сяшя   йяхя шя  ШC$Ш @     	  мя   эя зя ля ся  	   ъяфя  ШC$Ш @    	    ия	 жя шя   щяоя    ья     ШC$Ш @     	      оя 
-         хя  мяия    ШC$Ш @      хя хя      шякя уящящя    чя   ШC$Ш @     ояыяря яя    йяяя шяяятящяфяля  кя  ШC$Ш @    щя ля
- яяюя тякяюя ря   фя  ияыя     ШC$Ш @    ея  оя  хяяя	 
- шяляуяфя   уя     ШC$Ш @     ъяья   
- йяоя пя         ыя   ШC$Ш @    кя ьяья  ляуяля ся  
-  мя  пя    ШC$Ш @      ня   юячяшяфяияпя  жятяияея уя   ШC$Ш @      ея ъя  шяця юяеяфя лячя
-       ШC$Ш @    щяъя    пя юя нячя шя 
- мя тя    ШC$Ш @       ояшяпяъя пяшя   щяжяпяпя  юясяшя  ШC$Ш @     ъя хя    жя йя    шя ъя      ШC$Ш @     яя щя  ъячя
-  
- жя
- пяня   ья ся   ШC$Ш @       жяья уяшя хяпяяяыяыя ьяфяъя  шя  ШC$Ш @      уяйяея  ья кяжя йя жяхя ля  тя  ШC$Ш @    эя уя ня ияюяля    ья фятя   	   ШC$Ш @     еяняшяшя  ьякя ъяяякякяияоя зя     ШC$Ш @        зяняья   йя пяйяжя юя   фятя  ШC$Ш @     ыя шяояуя 
- ияьяеяряояля  ья   кя  ШC$Ш @     ця яя шящяфятяыя ияхя  ыя       ШC$Ш @      юяшя   жяфя эя         яя 
-   ШC$Ш @     жяуяля ляфя ъяля ця     мя дя   ШC$Ш @    зя	  шя    эя ыя
-  жяэя ыя  пязя   ШC$Ш @    	 щяэя  мя мяоя  няояъя кя  ря чя  ШC$Ш @    фя	   цяояыя     тямяия ья  сяфя  ШC$Ш @    ляья
-   хя   оя 
-   уя 
- уя   нязя  ШC$Ш @        чя    тяря юяхя   чя ляжякя  ШC$Ш @     ыя    ьяняъяся   яя     ыякя   ШC$Ш @    жяжяпякяся няюя
-   эяцямя еяэя      ШC$Ш @    чяуя цяфя ъя  шяшя йяэя кя ьяяяряъяця  ШC$Ш @     зя  зя зяея  сямя    тяыя  ъя  ШC$Ш @    ня   хя       эя  мя фякя     ШC$Ш @       йя ця щя пя чяцяия мя уя 
- ыя  ШC$Ш @      пя шяья  ыя      тя  ея     ШC$Ш @    хя  ьяйя ся    ия   ея яя эя   ШC$Ш @      кя пяря  фя щя     ья кя    ШC$Ш @    хя  ля ья ьящя  сяъя яяья юясяяяфя  ШC$Ш @    ыя ряхязяъя  ыя пяеяхякя цяяя  жя   ШC$Ш @     шя ъя  эядяуякяъяоя щячя    зя   ШC$Ш @    жяэяпяья ря цяыя   еяфя ияея  юя   ШC$Ш @    шя   шяюяяя оя ия 
- юя
- оя  няжяшя  ШC$Ш @    фя пяия       жя ояняуя  ояея ыя  ШC$Ш @     эяэя зя    уя юя ля  пяжя  юя   ШC$Ш @    
-    мячя    ея     ояья эя ся  ШC$Ш @    	     уя  чя  оя  еяпяъяйя  пя ея   ШC$Ш @     оязяпяюямя яяря юяыяъяйяфяхя шя  жяея  ШC$Ш @      хя	    йя	 ня ья кя юя яяйяся	    ШC$Ш @     няьямя мя   
- яя  сяяясяея   дя   ШC$Ш @      ъяфя  пя сяся кя оя йя еяфя    ШC$Ш @    йя	  эяжяуя 	    жяэя   ъя йя    ШC$Ш @    ьяфясяфяйящя       ня   ря  	   ШC$Ш @    ляйяйя   тя  ия       эя фяня  ШC$Ш @     ця   ця йяюя   хя зятязяэятя    ШC$Ш @    хяряяя    жя мя
-  пяья           ШC$Ш @    сяэя юя фячя ыяюя тяяящя  ъяхяьяхяля  ШC$Ш @       пя шяляря  жя тя сяшяфя  ыяфя    ШC$Ш @    оя  ия йя	 шя дяшячя юязя фя кя  ля  ШC$Ш @    тя  ня  
- ъязя щя хя   зя  	   щя  ШC$Ш @        ряыя  щяья ря юяняля ця ыя    ШC$Ш @     ъяыяоя     юя   яяня юяыя ья   ШC$Ш @     чя еяыя  ья   еяря 
-   ъя	   зя  ШC$Ш @    пяяяфя эя оя фя юякяхяуя
-  эясямя     ШC$Ш @    пя оящяея  ця    кя йяйяйя кя яя  ШC$Ш @    
-  дя   фя еяюя  	 
-  мяияня  уя  ШC$Ш @    ьяъя    чянясясяжяояжяжя ьятякяхя яя  ШC$Ш @    X } q p … d d x \ q V j r _ ‹ U Ќ ѓ ~ w [   шcE`    d ~ ‹ h … f g W f | ~ ѓ ` p y Z „ ‹ † o    шcE`    Y j † ` t ‹ Ѓ m V d Љ o b w f Ђ } f j Y s   шcE`    Ѓ ‚ ` Z r [ m  s V c Y X u [ U ‚ Љ s ‡ o   шcE`    V Y p „ z q o o r t v ~ ‚ V V † e ‡ a c q   шcE`    ‡ r € ‚ Њ ] ^ ‹ Љ k † f Ђ j y t ^ _ U Њ k   шcE`    { a p p b ~ y ` V ѓ Ќ r x d ‹ r d c a ‰ ‰   шcE`    m l l Ѓ Y s „ ` † p Љ Z s l „ U o ѓ v Ђ W   шcE`    ‹ € k c t b a € Њ ` Z m s Y u c q s { † †   шcE`    d { q W ~ ѓ ‚ ] q \ † e ѓ u … b d g n i Љ   шcE`    Ѓ q u W | k Ђ b q { Y \ ‚ s ~ i o  t t Ђ   шcE`    e a Љ } † ‚ q o † n Ђ ^ v W Ѓ W Ђ X … g ~   шcE`    b U g x ~ f Њ { y t h j l Љ [ Љ ] o Ќ { ^   шcE`    Ђ z ‹ Z Њ u  n e u g w X w h ] y z e x u   шcE`    v d € l ‚ q k o ‚ U f n Њ ` q s b Ђ m i n   шcE`    v u ] u „ U „ Z u j „ ` ` \ € y †  o f r   шcE`    y ѓ V e  r U i ‡ „ ‰ p z ‡ x „ a ‡ [ € k   шcE`    Ђ ‰ p € ‹ ` \ s ] m p ~ f X m … a ‡ Z Y p   шcE`    | Ђ t r } y v ` „ Љ „ V p r n W „ b d € v   шcE`     Z ѓ u c v ] … { z Њ d X X X b \ ѓ y v {   шcE`    o n z  i s | Њ v Ѓ Ђ ~ [ { e z d Њ Љ „ {   шcE`    Њ ‡ Ѓ ] ] ` Ђ p s X o  Z ` } x „ y ‰ c w   шcE`    l m Y | b ‡ ‰ y ` m u X w a ‰ a X v X y [   шcE`    ‰ } ` Љ X y c h r ` … r m \ [ } q _ b z h   шcE`    ^ ‚ _ m v i ѓ a € ` € Z [ b z n ^ Y ` U p   шcE`    } v ‡ h x c m g W j u | { ^ j t g Њ „ d ‡   шcE`    € b c † ` | j t l p e Z x s { l z † d v o   шcE`    ` Ђ _ ‡ Ѓ g z t b f „ ‚ V ^ ‰ j x ѓ „ Љ …   шcE`    ‹ v ^ { ‹ Y W k v v Ќ h i | m a t t Z  X   шcE`    x s l o q Y _ o Y q † Њ q c a Љ { ~ ‡ o ‹   шcE`    Z b ‡ v x Z X ‡ z g m f h } l … ] k w i t   шcE`    Y Њ „ n w a } g t  ѓ ‡ ^ \ _ \ y  e ‚ n   шcE`    d j ~ s Љ o o g U ~ i ‡ | f … ‡ f _ } Љ ‰   шcE`    p r s c  d ‰  Y x a c Ђ n … v Њ Њ ] Ѓ `   шcE`    ‰ r W f V } y q W € \ q \ Ѓ „ q b ѓ b c }   шcE`    e U † r ‰ t f t [ m | W V X Њ Z c o s } z   шcE`    [ u Љ n ‚ x ‰ X w s ` ‰ U u c k { r ] s „   шcE`    \ c e ‰ \ | g U x l } d y [ ] r b V _ h h   шcE`    } € y \ ^ ^ m ‡ } „ g i … U Њ e Љ c g r X   шcE`    Љ z „ „ u } m Љ t Z ‚ l { ^ h \ s ‰ € a p   шcE`    t _ Љ ~ z z q Ќ j q † q Њ q j p r c ‰ j z   шcE`    ~ ‰ ^ ~ l ` Y ‰ d x V v j h ѓ v ` u W V a   шcE`    g € t _ Љ ~ n z Љ { ‰ { o Њ m Ќ ~ } ѓ † Љ   шcE`    [ € z { o r r Ѓ r V „ \ U g x Ѓ c l x } g   шcE`    U † } ` ^ ` i } z Ѓ ^ o i | f { f ‹ k Y U   шcE`    Љ f ‹ ‰ Ѓ ` V | W Ђ Ќ X a ‡ t ‚ w Љ z [ h   шcE`    i … _ Z j h U t Z Њ p v \ c v Ђ n ] Ќ ~ i   шcE`    ` p k } h W c z m q W r ^ V m Ѓ Z Ѓ W \ V   шcE`    € c \ ~ a Њ „ Ѓ k q r d } ~ m m q w € e Ѓ   шcE`    t  g † c ` n ‰ ‡ c z u € Z r h ‹ { ^ h \   шcE`    Y l l d Ѓ c { v j Ѓ u ѓ Y k _ V X  ‡ ` }   шcE`    „ z ‹ Z Z \ n g w ~ f v v g  Y „ Ќ v V ‚   шcE`    Z ‹ x o  ^ u ^ d † e \ e d n d j n Z p ‚   шcE`    | j x j y X Ѓ } m W v a c q |  Z | z ‚ m   шcE`    f { m ] Ђ ` t Z i f ^ € t ` x Z Y c V m €   шcE`    z q b ‚ k Ѓ ] ^ Y h \ t ` Љ i ‰ f  Ђ r w   шcE`    € r Њ Ѓ b Љ ‰ W Њ f k ‰ Y y | … „ w p X ‡   шcE`    Љ i Њ w \ U l } V Љ U k W e z t Ѓ Љ o s d   шcE`    p u Ђ j e r d } € X x r u € Y [ n x Ѓ z X   шcE`    a p Љ † U X … Њ m u Њ n [ U u ‚ † … { p k   шcE`    „ b t n † n † k Ќ z d V i z ‡ Ѓ h ] k m ‚   шcE`    q … n ‡ t j q } y Њ _ ‰ ^ _ v o } a q Ќ _   шcE`    W e x t d Ђ _ f [ s … l p  \ † b X k } ‹   шcE`    l q X „ Њ ] ‰ | V Z x ѓ Љ c Ќ ~ u n } p l   шcE`    c } m r Z c u c „ Њ Ђ „ c l n Ѓ ] v } l `   шcE`    v Y V x a | { _ n m c l ‡ U x ‚ y y ‡ i l   шcE`    p Z W k k Ѓ u y W m ‰ „ f x r q k i u e l   шcE`    ‡ y ѓ „ a † ^ | ‡ { Ќ ‹ x † † z f m o x ]   шcE`    p k U ‰ X V „ | € ~ h | [ € Ѓ „ x ` ‹ ` ‡   шcE`    y „ { † o z e v €  U } m | ] „ Љ Ѓ y z Љ   шcE`    | x ‰ Љ Њ c Њ c ~ „ p b p i g m j a ѓ d €   шcE`    } [ i € z Ђ g } ‹ m ‚ n a W ` ѓ { q [ f ‹   шcE`    i v Y x x Ђ f ^ ѓ e ‡ j „ Ѓ ` … ^ c ‹ c ‹   шcE`    Љ Y w h m Ќ u l } Ќ Ђ Ђ p r ` i ^ n ‚ \ _   шcE`     i y r \ a Ѓ } t ‰ [ x x o u ‚ l Ђ s b [   шcE`    q k z p { a V e i a v ‚ m Ќ t e g } z f a   шcE`    ‡ … u Y i Љ d j j U Ќ s d Ѓ o o V o ‡ y k   шcE`    y w w € \ d ‚ n V ѓ a q h Ќ e d ‹ V ‡ Y x   шcE`    U f † q x ‚ Ђ c ‚ X ‰ ‡ W f [ y | k ‡ y m   шcE`    ѓ ` p l s } i m Z k … r f V k Ќ Ђ u ‰ X t   шcE`    € i ` a ‰ } _ ‡ g i c Ђ n k ‰ ѓ V ] o \    шcE`    y ‰ ^ Љ V e b { { c { i q o k i ^ j ^ m ‰   шcE`    _ w ѓ † [ ~ j Ѓ k m ` _ w q c † W ‹ r m o   шcE`    t _ c o ` V W Љ ^ c Y …  W n X m € ] ~ ѓ   шcE`    эя  кя ъя яя  чя пя лячяпя   тя  „eё @    яя
- ъя цяыя   фящя ря      ня	 ия  „eё @      жя    мя  уя    ьяуя фя кя  „eё @      сяия ыя ея сяяяцядя
- цяняшя уяья
- ъя  „eё @       фяпяляъяхя  юя  зяъяыя дя     ея  „eё @    ся ьяяя ия  тя    уя     	      „eё @    иязя  ыя     кяяяыятяэяпя йя    	     „eё @    фя    хя  жя  ся    юятяшятя ряря  „eё @       
-   ря ря  дяпямя
- ня
- хямя лямя  „eё @    уяыя   оя  юяэя  юя  зя щяияйяфяляэя  „eё @       пяюяуяюя ляяящяея	   чя ряжя     „eё @     
-     тязя   кяюяъящярязяця     „eё @      ляпяся   нятя  тя   шяъя        „eё @    мяуязяжя    яяхятя ря	 яяюяся тячяця  „eё @    	  фяия
-        сятятя   йяьяня    „eё @     ьязя  
-         ся  ия    хяъя  „eё @    щяыя  пя  оя яя яя эяжяся   чя   „eё @    няляуя
-      	 жя 	 мяия  няуяяяыяня  „eё @    ъя тя
- ея   мяйяяячя   щя  тя  ъязя  „eё @      ля   фя юяфя пя зя ья   оя 	   „eё @        ня яяоя пя
-   пяъя   пя  ля   „eё @    ляшяфя ъя   юя 	     уя  еяеяяяия   „eё @     щяьяэяця      уяея   фя   щя ыя  „eё @     сяоя  ся  сяняяяья кяъяляхяоя ъя    „eё @    
-           ця  фяцячя	   кя оя   „eё @       ся уя    ъя   йя ыязя     „eё @    йя   мя
-  шя жяря зямяия ня  чяся  „eё @    ляняся  ьяфя   ся эяыяяя фя ья     „eё @    хя
-  ця 
-  ъяйя  кя  цяшя тяия  хя  „eё @     ыятяеякя  юя   шя жяэяъя   шяуя   „eё @    юя  эяйя ся    жя  няхя
- эямясяня  „eё @       ея   оя оя ня       оя	 	 ыя  „eё @    няряйя ля     щя 
-  юя жя фя ля  „eё @    йяня   жя   
- тя рячя             „eё @    йяуя   ця	 цяэяря фяфяця уя	   ця    „eё @     рязяпяьяцяря ця    уядяйя     ея  „eё @    шячячя  цяоячяняляеяюяняжя     тя мя  „eё @     ъяияйядяюя      эя кя      ыя  „eё @    ыяяяэя дяуяйярямя пякяяяуящя   ъямя    „eё @     еясяояъязя щяця  кяияыящя   юя яя  „eё @      еякяиязяияюя яя  
- ея   йя  оя  „eё @       иятязяъяпя еязя    ея ря	 мя   „eё @      эя ря     ляля   зяфяуя  шя   „eё @    кяля ля  мяуя  ея  	 чякя шя  кя  „eё @       шяъя  йя  тятяпя еяця  ъя яя   „eё @    
-   оя мяцяжя   мя   	 йяьяия     „eё @      еяьяоя ря   шяхятя ля   кя	 ряия  „eё @    чя   	  еяояця кя  ряфячяряьямяыя   „eё @    шяыя 
- ияыя  яя  жя  ыя няъятя щя  „eё @    еяья фя   юя        юя уя ыя  „eё @     сямящя   хя пя ня фящя  ыяря  чяия  „eё @     ыяряця ня   фяоя    ся  еяля   „eё @    яяшя  зя пякяжя зя     еяюяыяюя ляъя  „eё @    дяняеямяжя  цяжя юя ьяхя	 ияея ля щя  „eё @    хяэя цяуяля  юямя  ся щяйя  эязя   „eё @    яяоямя     йя   зяцяфя фя   йя   „eё @      цяоя  	 ыяйяъя  уя ря   эяся    „eё @       эяфячя    шяюяюя кя яя мя пя   „eё @        хя ця еятяжя       
- няия    „eё @    чя   яянящя    фя  жяояря   ля  „eё @    щязя       оя  ия ыяня тяияея    „eё @       ля кяжя ияфя ья
- уя йя  эя     „eё @     еяюя  ъя щя   ия фя чя  
- ьяця  фя  „eё @     ея   цязяэяпя оячяшяфяпяуя ея  щя  „eё @    цяйяеямяъя  шяъя ляцяшя  ля хя шя	   „eё @    ея ия сязя   ля юяыя ня пя шя йя  „eё @         ъя няья
-   мя  ия  ъя    „eё @     ня   уя  уя  оя     пяюяэя йя   „eё @     фя    жяъя   ся дя  жя 	  ья  „eё @    хяияояпяэяря юя
- ъя     ыяяяшятярязя  „eё @    фя    
-      эясяъяцяхя уя	 фя
-   „eё @      няця тяюя 
- фяуя жя зяэямяняоятя   „eё @    еясяфяпя  ця ьяыяьятяля ияся ияшя    „eё @    ря  яя	 ця    уяеяляия ияьяъяюяня ея  „eё @     зя  ля кяхяся  ея оя    шяэя    „eё @    ьяцяеязяеящяцямя хячя еяья ыяыя   ъя   „eё @     тя    рячямяыя ияня жя	    зящя  „eё @    
-   йя   юя  пячя  ця    ня фя  „eё @    ня щя эяря ляняпя  шяфя  пяля     „eё @    ея ыя    зя	 фя  мя 
-  ъяэяыя зя  „eё @    юяпя   эяыя
-  ря эяпя чя  	 ля	     „eё @    шя  эя     зя уякя	   мяряуяуя   „eё @    чя  пяфя уяяя хяряэямяьяья жя      „eё @     оя	 ояжя  щя  ляйя     ыя   эя  „eё @    кя   зятя мяъя  ъя уя   шякяьяеяъя ШҐx†X @     тя ъящя тя  яятяхяйя эя   ля тя ШҐx†X @    ьяся    щя     ря фя ряиямя пя   ШҐx†X @     кясяжяхя    тяея     пя ляыятяжя  ШҐx†X @    щяряпяъя  еяля уя  оя ня  яя  ря ШҐx†X @         шяяячя	 тя    щя    эя  ся  ШҐx†X @     оя    ся кяюя    хяоя  цяья  ШҐx†X @    тя пяцяхя мя ъящяья яя  
-  зя ся  ШҐx†X @    ияьяшя  йя	  ся  эя зякяея кякя зя ШҐx†X @       тяяя фящякяияся ия уяцяхя ояюя	   ШҐx†X @     хя  йя     ияля
-   зяияняпяхя    ШҐx†X @       эя пя  ля	 чяыя ыяуяйя  зяшя жя  ШҐx†X @    щя  
-  кя  цякя   чяпя  йя оячяфя ШҐx†X @    яя мя   кязя     ця        ШҐx†X @     
- уяэяйя тяляея    уя ся юя 
-  шя ШҐx†X @    яяоя чя   
-   ыя  щяжя сяся шятя ШҐx†X @    ряхяпяняця  еяоя      оятя щя     ШҐx†X @     ряфяпясяшяюя ья  уяфяуящя 	  иятяйя ШҐx†X @    юя    ця  мяжя  жя  кяся  ня   фя ШҐx†X @    щя жяпяжяшяця ця оя   пяся
-  ояшя  ШҐx†X @     мя  эя  тячя  чящя зяэя
- жя ця   ШҐx†X @    ця кя  хяыя  
-    щяья пяля чя   ШҐx†X @     пя  уя	  няпяняпямя    щя     ШҐx†X @    ця        мяляьяшяжя  пя      ШҐx†X @    ря
-   тяря ся  ъяъя фячяшя еяэя   ШҐx†X @     еяьящя ъяуя    жя  щя ря  йя   ШҐx†X @     хяыя фяюя пяья   зяшяияля дя     ШҐx†X @    ья  мяжя  ця ъящяяяйя  жя      ШҐx†X @    зяяяуяжяфя  ря ня мя  уяфя  щя шя  ШҐx†X @     зя  щяъя мяуялячя мя кяояоя тя жя ШҐx†X @       ея фя  чя  	 фячяья    ыяьятя ШҐx†X @    
-    мяря   оя ыя  ня   няэяря  ШҐx†X @      чя лясяэяюяпямя тяыязяуя ця	   ля  ШҐx†X @      яя    яя хяфяяя   мя хяря ия ШҐx†X @      юя уя  юя   ия     ця    щя  ШҐx†X @    
- ея  мя ря  щя  ляэя зя уя    ШҐx†X @    ря      
-      ьякяжя ся  
-  еяхя ШҐx†X @       ея   ыяюяжя  йя      мяшяяя  ШҐx†X @       яяхямящямя ля   чякя          ШҐx†X @    тя ця   шяэяля   ия  шяъя ня   ШҐx†X @         
- уясяпяжящя  сязяняяяояфяня ся ШҐx†X @    щя  ъя юя   няъя  зя тяия  жя мя ШҐx†X @    ряшя	  дя юяня сякящячяжя   эя   хя ШҐx†X @    чя    кя   ся  шя   шя  ъя  ШҐx†X @    кячя жя шя пяея ея	 юя хя	   йяуяюя ШҐx†X @    чя
- эя
- щя     юяъя эяоя  ляпяъя  ШҐx†X @     сядя ыяшяня пя пяоя пя  ря ояря  ШҐx†X @       тя дякяцяяя
-   эя хя  сяюя   ШҐx†X @    яяияйязя    
-  тя       чя   ШҐx†X @    уя фяоя  сямяэяхяля   хя ия     ШҐx†X @     ия  фя  ся мяшяляъячятяея ся   шя ШҐx†X @    ъя чя  еякяяяпя  юяряья	 яяйя   тяпя ШҐx†X @    
- ъя  йятя 
-  ъяняыя  мякяия  ля
- 	  ШҐx†X @    ляля   ряця йя      ця	  жя щяня ШҐx†X @     ря
- чятячяоя юяпядякямяхя кяюя ъя фя ШҐx†X @    ряъяяя хя уяьяфящя
- ыя кяяя уяляся   ШҐx†X @      уяьяжяйя
-  мяъя   пяля ря шя   ШҐx†X @     жя    ця
- жяеяфя  
-   ня тя  щя ШҐx†X @    ляуяжяля   	 ья яя  хя  йя  
-   ШҐx†X @    фя  жя     йятя мя      цяйя   ШҐx†X @        ия       ъя ря  йя  мяуяюя ШҐx†X @    тя	 сяояоятя  ыя иятя  кя фя  тя  ШҐx†X @    ня хяжякя оя пя  йяяяея     яя	  ШҐx†X @     пя
-    ря кя
- ляэяхя сяжящя юя    ШҐx†X @     ьякяря   тя
-    ряияеяшяыяхя чя  ШҐx†X @    
- юяяяья йяоясяпя   йя     щяюякя
-  ШҐx†X @    ия хя пяшяоя    щя  кя зяюя  ря ШҐx†X @    пяйя   фяфяцяъя    ояья тя     ШҐx†X @     шя  юякящякяшя зяпякя   ся     ШҐx†X @     чя няхя  щя 	 юяйякязя  пяъяжя   ШҐx†X @    уяня     фяфяйя 
-   уярясяъяуяся   ШҐx†X @    цяюя  тяуя  яямя   пя уяыязя  ря  ШҐx†X @    цяляуяея мяояхя  оя пя      фяжя  ШҐx†X @    йя  цяряняжя  сяъя ля уя сяфякя   ШҐx†X @       йя 	  тяпя яя яяшя уяляэяия    ШҐx†X @    уямяря  кя жя  фя  тяэятя ряхя ья ШҐx†X @       кя шя ляжя    оячяся  юя    ШҐx†X @    пя   
-  ля  ея зяяяыярямя   ьяоя  ШҐx†X @    	 эятя   хя 	 ля ряоя     оя   ШҐx†X @    ъя ыя  сяэяея  йяся  цяяя    оятяъя ШҐx†X @    чя  жясяняъя  яя	      
- кяфя ця   ШҐx†X @    чя шя тяоя юяъя  щяля  фя   кяшя ШҐx†X @     щятяця  ля чя хяъяпяхямяля      ШҐx†X @       ряыя
- йя	 оячя ня юяняяя  тяся ъя ШҐx†X @    юячяряьяся кя  шяья уя    хя хя  Зё§x @    йя йязяуячя     ня    хятяяя эя Зё§x @    фя шясярямячя кя йя   чя ияыя    Зё§x @    кя
- ця чяояэя  	 пя йячязя      ля Зё§x @    дяыя яяляюящя ея ыя яя     ля  уя Зё§x @     рятя  юя чя жя щяья фямя ья ся  Зё§x @    хяпякяеячя       ояся уя   щя  Зё§x @    	 	      чяюя хя   уя  зя еятя хя Зё§x @    сянякязя тя уя  кя	 щяуяйя  уя    Зё§x @        ъяля   фя   ляшя      ся ця Зё§x @    ьяъя юянячяшя ыяця  ья   юя зяля  Зё§x @      ля 
- пяря   мяля
- пя   ляця  	  Зё§x @      мя уя          	    ыяляхя Зё§x @      щязякясяяя  фяря  яящязя  чяря ля Зё§x @     ъя юя     зя  чяыя  оя уя пя   Зё§x @      хяуя ияэяхя ояхя   хяея   уя жя Зё§x @      сячя зя       оя фяря шяшя юя   Зё§x @    ыяыя  няья   юяшямяяямяряюяьяья  чя Зё§x @    щяъяхя    мячяця ьяйя тятя  шя хяля Зё§x @      ияшяэяжяйя тя    
- оя  сяфя ыя Зё§x @     эяия шя  пя   уя   дяояшя	   зя Зё§x @    уя    ыяпя щя ияьязясяйя чя йя кя Зё§x @    тятя      йя  
-       ыямяея Зё§x @       щя цяжя   жяня зяэящя  ояяяпя Зё§x @    жя чяря ея    ня        ъя пячя Зё§x @    ъя ыя яя  хя  уяьячя  ыя ня  юяся Зё§x @    ця пя хя  юя ея  няся ъя 	  	 ля Зё§x @     юякя уя     иякяля ея йяэяяя  жя Зё§x @     ляхяря ыящязя   ояяя   ся   зякя Зё§x @      ияьяняжя шя хяшя    эя эяъяоя ня Зё§x @      эяья шя яяхяся    цяья  иятяжя Зё§x @    ояйя 
-   ля  
-       яя  	    Зё§x @    ья жя   жяйя юяья эя      ея   Зё§x @     зяоячязяпяжя  хя цяюя шя  ця хя  Зё§x @    пяяя йя уямяюя  йя фя  ья
- цяня йяуя Зё§x @      оя цяхя ея кя кя   хящяфя няия Зё§x @     щя шя фя  зя  эя   дяея шя няця Зё§x @      дя   хячя ья йяеяряця   пяжяеямя Зё§x @    яяпяхя  ря ъя йя	  эя  ъя  пя цяья Зё§x @      шяюяэя  дяюязя  эя ыяляря     Зё§x @      юяляця юя ъяшя     пящя юя фя Зё§x @       ъяоя ея    уядяея чя  яя  йя Зё§x @    
- ояжя  жя пяня      хяйя  	     Зё§x @    ля
- 	 уяъяуяля    фяеяйя   ъякя  уя Зё§x @    уя	   фямяцяия      оя оя ья	    Зё§x @    чяйя  йяюя пя   жя	 ья шя  оя   Зё§x @    ея 	 рязя	   хя  яя 
- кящя  тя   Зё§x @    	  юя уя   ыя   ъяюя   кя       Зё§x @    тя  юячя  уя  ря   йя ыя     Зё§x @    ъятя    зя кяюя эя ся 
- юяэяйя чя Зё§x @    пяъя	   ъя   дя сяяяуя пяеяуяия   Зё§x @    шя  фя    ляпяфязя ояия шя  йя уя  Зё§x @    щя уяйязяия  дяюяняця тяляояжяняняся  Зё§x @    ъя зя   зя   ояюя еяяя   оя ъя Зё§x @    чя     ыя          цяняхя   Зё§x @        ыя  ыяуя
- 
- уя жя мя ся кясяыя Зё§x @     юяжя цяняля тя  юяэяфяья фя зя   Зё§x @     шя   мя  юя еяйя  
- 
- мя ыяпя  Зё§x @    дятя  уя няяяоящяхя  ия зя ъясяняця Зё§x @    йя ря нядя       
- жя ьяыя     Зё§x @     тя цяыя  ъязязяфя   ьяюя дя  ня Зё§x @    няйятя   кя ъяьяея  шячядя  пяыя юя Зё§x @    хя   ьямяря
-    юячя  юя  ряхя  Зё§x @        ыя        няуя ся ця   цяляля Зё§x @        уя ля чяъя пя фячяхя ыяфя фяюя Зё§x @    щячя    ояэяня    кяэя яятяця    Зё§x @    хя эяуяжя  кяуя йя      йяеятяяяэя Зё§x @     ня няояяя  йяня    мяйя  яяряуя Зё§x @       ця    пяюяья ця хяпя фяфя рятя Зё§x @    	 шя щяшя шяря ля  ря зяья щя  мя Зё§x @    ня тянятяря
- ыяея пя    уя уячясяияшяея Зё§x @       цяюя лятяцяся пяфятямя  хя йяця Зё§x @     хя нязяпя  няъяяя хя  мящя  йяъя  Зё§x @    сяия    ся    ия ця  ляья кя   Зё§x @       ъя ия    ия    дя  мяуяхя Зё§x @      мяйязяцяняряжя оя оямя     ыячя Зё§x @    фя ря
-  ыя  иякя фя юя зя   хяэя Зё§x @     	 еяхя ыяляря    эя  кя  
- ья   Зё§x @     яя сярясяся   юя  ъякя  эя  тяья  Зё§x @          чяуя    эя кя  щяуяжя    Зё§x @    ия фя жяея     шя ля  ыяуяяя    Зё§x @     цяцяуя   ляжяця уя  ряея  
-  	   Зё§x @     пяъя  пя     кя пя ря  жя жя
-  Зё§x @    мяря       ся   кядя жярязя   Зё§x @     жяфя  юя    ья   ея   щяняяя   8ишИX@     мящяля фя  ыяця хящя фяря 	 юяйя  8ишИX@    жя   хя   эя йяоя ъя   чя   ся 8ишИX@     уя ыяуяля юя чя    эяпя
- йя ояця 8ишИX@      чящящяхя хя ъя чяйя ся	 фя   ця 8ишИX@    ыя кязя  зяжя цяшя	 ъяия хяуяэя уяря 8ишИX@    ся зяяя  сяняяя  ря чя зяшяжякя жя 8ишИX@     жя  ья    тясячярящяжяья
- ляшяшя  8ишИX@      ля эя
-    
- тя   оя      оя 8ишИX@    фяжялямяэяоя        кя   эя   оя  8ишИX@    ря тятя йяхяяямя    	 чя  яя    8ишИX@    щяляюя   	      щякя  ояяяыязя ря   8ишИX@     ъя   ыя   юя    жяряхя щяхяля 8ишИX@       чя юя  ля  сятя	 	 цякящя дяьязяря 8ишИX@    няця   тя
- цяхяхя    зяжя 
- эя юя 8ишИX@     кяья оя цясяъя	    оя фя фя ся  8ишИX@    зя    дяйя ря
-     зясямя цяня  8ишИX@    мяэямя   	  мя  ияия  щя   шяэящя 8ишИX@    ья ьяяя хяшящяня     жя   юя   ия 8ишИX@    ыячя 
- 	    
-      ця    	    8ишИX@    ыяря ыя ля
-  пя тящяшя еясяыя жяхя  8ишИX@          хяюяжя ря ся ъяшя  жякяпя  8ишИX@    дяря   шя    дяояпя  мя 	    уя  8ишИX@      хякя щя       ряияхя  
-  
-  8ишИX@       эяыя шя яя  йя  эя шяняфя    8ишИX@    цяэяфя  
- ыя някяця ся хяъя ояфяхя	  8ишИX@     пя  ня    
- 	 жя           8ишИX@      юякяця 	  ыя        хя  ря 8ишИX@        юя   мя   сяуяыяья ья  	  8ишИX@    яяояэя цятяяя   тя   фя   ъя юя  8ишИX@    ъя цяья шя     эячя жяэя   ьяфя  8ишИX@     юяыяяя  уя кя юящяся 
-  
- ея жяяя 8ишИX@        ыякяця ыя  ояня  зя чяюя  	  8ишИX@    ыя  	      щя    ъяьязяня   ня 8ишИX@     ыя  ия   ия няняпя эяоя ияюя    8ишИX@    жя  
- ря ъя юяоязяхяуяуя йямя ояъяря 8ишИX@    ияэя ыя  ьяыя  мяэяея        мямя 8ишИX@    шя яяня  нятяуяся
- шя тя  чя зя ьяяя 8ишИX@     жя 	 ъяфячя   эя юя ряжя  ряпяся 8ишИX@     ыя кя ця	 ся    
- пя    оя няря 8ишИX@    ляря еяня шямя     ця тя рясяця  8ишИX@     
- пякя  ря     ня   ряоя    8ишИX@    ьяюя
-  ряпящя кяьяея  хяря шяиямяоя  8ишИX@      ця ьяхя   тяшя    оя   ця	 ыя 8ишИX@     эяжяыя  ия   ря еяуя чя   хякя 8ишИX@     цяпяляуя      ця ьяоя    щя
-    8ишИX@    зя
-    щяня  юя  уя щя ыя     8ишИX@    жяпяпязя хя  яя ряжя     ияфя     8ишИX@     кя нятя  ря  ияряря   ля ця   8ишИX@    пя  оя фя  ся   
-  ья ця    жя 8ишИX@     ыясяъяояия  нясяшя  ыя	 ня ъя
-    чя 8ишИX@       ляйя     уя	    няшяряюяъяья  8ишИX@      щя кя      ця шя шяпяыя
-   йя  8ишИX@     цяея   йя  яя мяцяфя оя мяшя сязя 8ишИX@    ня ья жя 
- щящя
- еяоя
-  хяхя ря  кя 8ишИX@    мя   ня  ия  
- кякязя шячя йя   8ишИX@     зя  дяся юяыя яя  дя 
- эя  еяпя 8ишИX@    	   лячя  тяьямящя уячя   	 юя   8ишИX@     ся мя 	  жяфя
- тя  ъяыя  мя пяря 8ишИX@        мя  фя оящяшяуяэя фязяня сязя 8ишИX@    щяпяеяхя зя хя ья  чятячя  эя   зя 8ишИX@     чя  чяся 
- пя кяся шя уятя 
-  шя 8ишИX@     ыяюя жя уя ояия чяьякя ця шяья   8ишИX@     
-     кяфядя  щя ьяоя  мя   мя 8ишИX@    кя     оямя 
-  зяця 
-     ияхяжя 8ишИX@    ля     ряйя  ля юя    ья  оя  8ишИX@      ъячямя йя оя  эя   сящя	     8ишИX@     	         ъя    рянякяъя   8ишИX@    юяшя  эятяия  ояряжячя кя
-  уя  щя  8ишИX@          мя   пяяяйяяя  зя ыяцяяя 8ишИX@       чяея кясяйяэя   зя	 ля юяияъя  8ишИX@    сяюякя   	 хяйя еяляэязя  ся  фя   8ишИX@    сяляюя     ья пякяхя жяыя ряъяня   8ишИX@    ряяяхя шя   шяря уякяця  ня оя
-  ьятя 8ишИX@     эя   сяжя 
-   мя  ыяшя тя ля  8ишИX@    эя кяжяня   фяыя  
-  иятя	 мяэя  пя 8ишИX@    фя  
- оя    эяъя фяйяляря    уя 8ишИX@           уя мякя  ия  уящяйяуяэяфя 8ишИX@    зя     ыя фяиякятяня кя   фя  зя 8ишИX@    ряжя  ся ця фя    хя     ъя кя 8ишИX@       еяхяняря    оя
-   
-   	 някя 8ишИX@     ояхяеяэяъя ояья      ряюя тяшяйя 8ишИX@    ъящя зяюяяя   ияяя   
- сяряоямя    8ишИX@    цямя тя ся ця ря эя тя     щярятякя 8ишИX@         яяляшяяя     фя   эяоя  x	9к@    чяюяуясякя ся ия ся зя        жя  x	9к@    эя
-  няшя чяуя   ря
-  	 шя  ряья  x	9к@    эя  яя фя      ияжя ся  ыяхяюя x	9к@      уяоя юя   йя     йя  чяея ояыя x	9к@      кя юя   эя   уяэя   ыя     x	9к@       ея  ея жяля зя   шя  пя  ъя x	9к@         ъямяфя тякяыя  
-   	 цяпяхя x	9к@    уя   йятятя  	   фяея   еяюяцяся  x	9к@    хяшямя ия пяеяэя	 йяяя  щя фятя    x	9к@    ся   яясяжя  шяуя  тяея  йяояуя  x	9к@     пя ыя
- зяуя яяыя   эяея мяся яяъя  x	9к@        ыя чяоя
-  мязящятямямя   ця	    x	9к@    ья фя уяоямя	  хясяэя мя  дя шяюя  x	9к@     лязя	   сяняъя уяля ряъя       x	9к@          ъя  ня   чя эя   ия    x	9к@    шяжя зя фя   юя ъяцяля  фя мямяхя x	9к@        яя     кяйя
- юя  зяся   
-  x	9к@      зяуя ияця  ся нядячяюя     ьяйя x	9к@     эя шя юяыятя фя нямя	 ря 
- ояня ъя x	9к@     ря ъяйя  ыя    еяояшя зя оя   x	9к@    йямя  хя сякя жя иязя  ря
- тя тяюя x	9к@    хяфязяжя  ля	 ря жяуяряия   
- сяляья x	9к@    шятяряияуяпяъясясяуя  еяыя	    ыячя  x	9к@    шя 
-  йя  тядя уя  фяяя	 йясяоямяйя x	9к@     няыя     шяуясяъячящя сяцяюячя  фя x	9к@     юятя  эязяйя оя юя хя   фя зя    x	9к@     няэя эя яяяя яя  мя  ыяйя юя     x	9к@    фящя   шяъя  еяшяуя  ня уя хя хя x	9к@    ья  юя юяхяия      йя	  хятяшя жяня x	9к@      
- кяяя чя  ыя  ояря	 ыяьязя    x	9к@    ыякя 	    щя   ыя  ояйяыяняья фя  x	9к@    ня щяфящя ъя  шяяямя  щяня    ья x	9к@     ыя   чя    ияня	    яя ця   x	9к@          фядя шя  мя   фяыяуяояхя чя  x	9к@        няня сящя	 уяжяфя пякяэякя
- йя   x	9к@    мя    кяшяжяшяшя   зя йя лязя жя x	9к@    жя юя
-    юяфяля мя  тя жя ня ся x	9к@     чя ия   шя ря  ря уя ся    	  x	9к@    сяуясяряыя    ця   тя оя   зя эя x	9к@    йя  зяня тя ля  
-   	 ея  уя  щя x	9к@    ья ъяюя кяня	 чяляъяыя  шяпяея ья    x	9к@       ря ся     ыя ъя ъяэя зяжясяся x	9к@     пярякяфя ляяя  яяшяляпя  ця  зя эя x	9к@     йячя мяея    мя цяеяоя  ряяя  ъя x	9к@      чя ояхяуяпячя    жя ъямя  еяюямя  x	9к@    
-     шя 
-  эятя  
-     фя   юя x	9к@     щя
-  шяьякякяоя    юя     хя щяыя x	9к@    	 йя  ця  ыя ояця   
- оя тя    x	9к@         
-  ыя     ыяэя чя   фя ъязя x	9к@      яя    чя мяуяуя	  мя рячя фя   x	9к@        ця   еяряся        хя шяхя x	9к@      ьядя   шякя  ъяхя эяшя
- ыя	 ля   x	9к@     
- 
- йя ъя ряйя    ся  уяжяпя  хя  x	9к@      ля         оя ияъя    ыянячя юя x	9к@    оя  	  ряпя ея  ьяця  уя шя    x	9к@    
-     ся      мя   ля нядяся	  x	9к@       фя хяъя   зякячя  рямя    уя x	9к@    ыяжяжя   ля  хяея  лясяыяпяхячяжя     x	9к@    кя   ия  уя уя ряля уяця щя    x	9к@     ыяхя      юяуя щящя  йя  ня   x	9к@    	   ря 	 ияюя юя    ия ляьяжя   x	9к@    йя   эя 	    хя ряцящя пя ыяфяря x	9к@     мя зя  хя яя няря   ьяюя цяйяыящя x	9к@    мя  щя   тя   хя  сяжя ля  ъя x	9к@    эяря	 зя   чя  ея    юя шя ня щя x	9к@      ряняияея  ся шячя ия  оя ояхя  x	9к@    пяся 	 уя  
- юяйя пяхяпя юяся  жящя x	9к@      йя пя   кяэящячя еячя  мя     x	9к@        ия   ея  зяря      шячя x	9к@     оя	 мя ея юяъя      мяляжя  ця щя x	9к@    уя ляля еякя	    чятя  ьяыя	 яя     x	9к@    уятяхязя  ояья   йязяля   яя  ияжя x	9к@    уятяьящя    юя   чя иязяцязя хяыя   x	9к@    чя  фя     сяцящяшяюя ця ыяюя    x	9к@    пя  ляпя тя пяия  ня оя	 ъяъяшя  ря x	9к@     ъяняшя   фя	 мятяоя   ця   эя  щя x	9к@      ся       зяьяйя    сяяя эя   x	9к@    жя эя   ъя  ъяьяъя  пяхяшя щя кя x	9к@      хя    ояеяюяхятяиятя жя кяъя  ня x	9к@     жя шяыя нясяюяляея   сямя  яя   x	9к@    щярящя	   шяфя  жя 
-  чя пячяляряця  x	9к@    	  ыя  еяйячя зя	  мяеяия
- сяэя    x	9к@     еяфя	 зя оязяояояфяяяня  
- мя      x	9к@      дя  щя
-       уя ця    ряъя X+Yщ @     щяхя
-    мя ъя тя    мя мя някя X+Yщ @    рякя ьяеяьяфяия фяэя  зяуя     эя   X+Yщ @    ря щямя
- хяыядяшятя нячя 
-  фя дяыямя X+Yщ @        жязя ся  ыя  щяоя  ьяьяуя   X+Yщ @    зящя няыя	    кя ыя  ыя тящякярящя  X+Yщ @      юяця   ыящятятя  щя  оя юя   X+Yщ @       
- ляеяйя йяжя   кя   тяыяляэячяхя X+Yщ @    ея    эя ояпяия    уяоя  ся   X+Yщ @    	 кя  тяуя   цячя	 нячяряжяняйя  тя эя X+Yщ @             чяияряеяшя цясякя   ъя X+Yщ @     чя жяйя  пяиякя сяъя  шяфяэямя  ия X+Yщ @       ця
- ия   цяея йя юя юя      X+Yщ @     ыя   ыя эяфяляжяяяюяряяязя няшя
-    X+Yщ @     няяя    юя ыя сяня рядя ея  оя  X+Yщ @        кя ыяця  кяэя   шя    йя   X+Yщ @    пя дя ляпя уя уядя   ся  ця    X+Yщ @    юя  ыяэя       ля   ья     X+Yщ @    юя  зя     ряжя     тя йя	 	 ря  X+Yщ @        ыя  ня   чяпяжяъя ся   ня X+Yщ @    ня жящяшяряья юя    ыя    пя  пя  X+Yщ @    уяцяця эямя 
-    цяуяыяжяляэя фя  жя X+Yщ @    фязя  жя  зя   уячяжяюяъя мяияыяпя X+Yщ @    яя   уя ьяцяся жя жя      ряия X+Yщ @         ья       ся	 цярязя ъя фя  X+Yщ @         хя хя ыяояуя  уя эя ця  зя X+Yщ @    зяня ия   юя уяшя
- 
- ья     пя щятя X+Yщ @    дя  зяня    	  еяуяйя зяюяжяьяхяья  X+Yщ @    ьячяъячяеяйяъяьяхя   ся ря цяпя      X+Yщ @    фяйя ляряхяйяця ня ья   уя няуяуя  тя X+Yщ @    ляйяияжя тякянячя     шяпя щя    X+Yщ @     дя  ояея чяъя ыямяья   юя ля  ия X+Yщ @    йякяыяея хяжя   ня мя
- ыяеяяя сяфяия X+Yщ @    ыя    ыяия юя    пя няйя  
- йящя X+Yщ @      ыя хя  чяьяцясящяия
- хя юя уя   X+Yщ @     ыя шяеяея  оя ия  зя
-   ця йя  X+Yщ @    
- ояеяня   ляшяжя   ця эяяя  ря   X+Yщ @      чя мя  
-  йярясяпящя рязя       X+Yщ @     ня   зя      уяхя
-  еятяюядя   X+Yщ @      пяъя шя  ня ья  цямялящяшяця   X+Yщ @       шяшя хя юя   ця   ыяцяйя   ия X+Yщ @    чя  фяяя 	 уя уя       ря хяляэя X+Yщ @    ья шяхящя  пяьяря шя   зяуякя 
-   X+Yщ @    ъяыя фя ъя  
- пящячяйяля жя  уяэяяя X+Yщ @    щяяя ця  хяья юя
- цялякя 	  хя   ья  X+Yщ @     дя 
-   няря юя  кя ряия  уяияйя  X+Yщ @    уя 	 оя  ря  кя    уя ляжя хязя	  X+Yщ @    ыяия ся  ця ея 	    ля    йяэя   X+Yщ @    ця  жя  
- фясяця  рятяэяяяэя     X+Yщ @    кя  цяиячяьяоя ояьяэя зя  йяняряйя  X+Yщ @      кя цятяья  йятя жя ля   чя эякя X+Yщ @      лязязя   ъя  пяъяря  ъятя ыяия  X+Yщ @      зяняря ъяпя зяяяыя  фя яя      X+Yщ @    ия мя	  ня фязяняыя  эя  ляйя оя  X+Yщ @     яя кяля   юяуя яя щя
-  ояйя зя  X+Yщ @    тяяяпяпя ья жяцяуя 	 ия ъя тя   щя X+Yщ @    шяояоя пяшя  тяюя     ояъяпя тяъя X+Yщ @     йяыя  жясятяйя
- юя шяъячя  ля  уя X+Yщ @    ъяхя цяуяеяцяжя ъящя мя  ъя ця яя  X+Yщ @     ъя	  ряцяяяря   ья ня оякяья  фя  X+Yщ @     ьяпяыяня ря   няля	 тяся юяшя ия  X+Yщ @      ыяуяхяшяряяяяя  ся йя     пяеяся X+Yщ @    уя   уя ея  уя  эя  мяия      X+Yщ @    пя  	   хячяфяия оязя  ля шя мя  X+Yщ @      ия     чя эя     фя зя	 йячя X+Yщ @    мя  няйяшяня
- эя кя  ря  ця
-  тя ля X+Yщ @      йяря    ъяхяхяся хяцялякяжяэя  мя X+Yщ @    оящя 	    ья ця	   ия мядя        X+Yщ @    уя
- ряуя эя  еящя    еядя чяья   X+Yщ @    ыя     йя оя фяжяня шяся пяняся
- 
-  X+Yщ @    пя  хяея  ьяжя йяэяоя цяця  хя ря   X+Yщ @    мя  шяля 	 жя эяяя   мяря ля     ля X+Yщ @     пяюяпяоя   фя      ъячяюя      X+Yщ @      йяея   кяуяъяпя пяняюя    яяжя X+Yщ @    фяея  кя 
- ля       кяхяфя	 ояуя X+Yщ @    чя	 шяяя  ня  тя фячя ня юя  няоя X+Yщ @    щя еяыяояжяия  дяхяпяйяуя  ря	 чяшя   X+Yщ @    мя ця   кящялямяря  ыяйя
- ня еякяря X+Yщ @    ря хяея	   пящяжячяэя чяля    ся	  X+Yщ @    йя     тя   ря   тяяя кя  тя сяоя X+Yщ @           ыяшя
- ся йяця  щяюячяяяля  X+Yщ @     кязя  пяляиясяэя жя 	   ыя ояхя  X+Yщ @       яяшящяхя йяья	  йя    	 оя  ея  X+Yщ @      ляхяюяфя    тяйяэя ияцяшякя эя  X+Yщ @     ея  кя эяяяфя шя лярякя зяяяфя  
- ШK9-9 @      йя    пя сячяжя пя   ыятя  ня
- ШK9-9 @    ся 
- ия  яя    ляуя эяюя   жяпяыя
- ШK9-9 @     уямя    еязяиязяшя эя        
- ШK9-9 @    хя ьяюя    ья     ояуяья   кя  
- ШK9-9 @      пяхяэядяъя тя ея  яяэяоясяжяея зя
- ШK9-9 @    пяфяцяъя	  йя   някяея 
- яя    йя
- ШK9-9 @      жя  чязя     ъя      мяуя 
- ШK9-9 @    ся  уяжяъя ля  сяцяхя эяйя   ыяля 
- ШK9-9 @    эя  няия уякя ня  оякя	   мя   
- ШK9-9 @      уя    ыя хяшяшя   оя эя   
- ШK9-9 @     чя юямя  чязя  мяья     уяйя  ця 
- ШK9-9 @      еяцяуя ъямяжяляпяяяяяея  кя хя  
- ШK9-9 @    жя   фяыя    йяия тя  фяжяляцяхя
- ШK9-9 @      юяйяшяця     ыя    ря ля    
- ШK9-9 @     щя  тяшямя 	    яяэяшяъя пя   
- ШK9-9 @    еяыя	  яяхя  пязя 	 ыяья   хя
- 	  
- ШK9-9 @     цяцяря	 яя юякя  хящя    кяжяжя 
- ШK9-9 @     шярякя йящяыякя  мяъя ояляьяяяья	 дя
- ШK9-9 @     дя  
- зя фя эя    ря жя   щяюя
- ШK9-9 @       хяэя   юядямя ия   няоя	  ея
- ШK9-9 @    кя  уятяъя   яя  ця йя
-    шяъя
- ШK9-9 @     зя  фяуятя  пязя
-  уя  щяжяяя  
- ШK9-9 @    кяня цяыяфя тя сяжя
- тя    фя   
- ШK9-9 @    яя  яя   фя ця   ияея  пяжя 	 
- 
- ШK9-9 @    мяуящя чя тяйя  дя юятяюя  ря 	  
- ШK9-9 @     юя  зя  эяйя  юя	  зяляия ыяеяьяняъя
- ШK9-9 @    
- шяуя яяеячяеясяъяыяуя ыялямяэярячяляоя
- ШK9-9 @    яятя кя  дяыя  ьяия юя  чякяхяцяъя
- ШK9-9 @      	   ияяяяя    щядя  эя яя ся
- ШK9-9 @     
-  шя     юямя юяэя   ея юяыя  
- ШK9-9 @      ряэямя жяся ня ляъящяяя  оя   
- ШK9-9 @    
- ня йя  
- жя чя   уя  юя 	  	  
- ШK9-9 @    
- шяыяхя   ря  ыя шяея шячяыяйя юя
- ШK9-9 @    жя   ия цяояшя 
- жяфяся     цяфяья
- ШK9-9 @    кя яяяяшя  
- мя ья кяэяъямяляуяйя  
- ШK9-9 @    чяшя       лятя ояйяшя зя  ья
- хя 
- ШK9-9 @     уя хяоя    эя   шякяяя тядяйя 
- ШK9-9 @    оя 	  ыяхя    някя   ця оя	  	  
- ШK9-9 @    чяояфяня хякяия  ъя ыяяя ия кяъя    
- ШK9-9 @        яя яя ря      жя      зя
- ШK9-9 @    зя   ля йякя хя ея ъя  ъяяячя 	 
- ШK9-9 @    ъяъя   йя   няиящяыяуякя     ея 
- ШK9-9 @     ьяпяпяуя хяея   ея   уятя  еятя
- ШK9-9 @    жя	 
-  ця йяияъя жя чя эя   кя ия
- ШK9-9 @      эяуя  ьяйя ияюяояля
-     ыяряцяея
- ШK9-9 @     	  няпя чяыяыя    тязя уя зязя 
- ШK9-9 @    лякяоя
-    ця  ряея пямя     щяря
- ШK9-9 @    мяйяляъяйяля   яяыяыя     ряляжяря
- ШK9-9 @     ця      няъя оя ляеяэяыя  кяяя ляуя
- ШK9-9 @     ъя ъяияцяцяця чя     	 уя     
- ШK9-9 @    кяцясяняэятя  тяоя    ыяйя еяшя  
- ШK9-9 @      
-   зя ця      жяряпя  чя 
- ШK9-9 @     ря   эя дяояряря   пя   тя   сяшя
- ШK9-9 @    оя дясяэяжяля кя   ья няеяля
- кяья 
- ШK9-9 @    
-   йя кя   эя сяйя    ря 	 зя ля
- ШK9-9 @        пяся ня цяфя ия  
- оя   	  
- ШK9-9 @    чя дя    ыя  ъя   ьяья  эящя 
- ШK9-9 @     тяйя       ъякя ся   кя хя   
- ШK9-9 @          ъяця йятяияэяьяцязя сячязя   
- ШK9-9 @    жя фяря дя   ьящя мя  ея    уя
- ШK9-9 @       пя юяня кяуяуящяцядя 
-   ьяыя 
- ШK9-9 @    хяжяпя рячя ня  ея  ся ъязя йякя 
- ШK9-9 @     кя  мя   йяжяия ся ья  ьякяшяеяюя
- ШK9-9 @    яяэя кя йя   рямя ыя 	    ня   
- ШK9-9 @     ляьязяря яя эямя     тязя    
- ШK9-9 @      жяэязяеяэяця ияеяэяуя   	  	   
- ШK9-9 @       ся кямяуятяня пя   ья ьяся  
- ШK9-9 @     нямя  уя  пя   йя    кя  хяюя
- ШK9-9 @     кя ся  чяшя     
-   мяиячяуя ня
- ШK9-9 @      ияея щяяялямя чя   эя     кя зяея
- ШK9-9 @     ряся мяшяияеяюяья  
-  уя ыя  уяоя
- ШK9-9 @     ля щяфяшя  ъязя ъяяяьяыя 	 уяъя  
- ШK9-9 @    эяея   эя жя зя мя    
-  шя жя 
- ШK9-9 @       
- ыя сямя зя   пяья ся  
- мяяяэя
- ШK9-9 @    ня ля ъяля  уяэя 
- чя ия ыя яяшя 
- 
- ШK9-9 @    ця мя    	 хя  оя    ыяэя  	   
- ШK9-9 @    	     щя   дятя ияцятяуя 
- 	     
- ШK9-9 @    тяця хяпя    еяья кя пя  ыя  эя 
- ШK9-9 @      чямя
- эя     ъя   уяъяыя  ляэя
- ШK9-9 @       кя кя 
- уя   ъятяия йящяжя  
- ШK9-9 @    зя  эяся    няфязя ояуяжяюяэя   
- ШK9-9 @    ьяъя тя шязя	     ъя   	   ьяня
- ШK9-9 @    фяыя      	 цяюя няея  ия   мя 
- ШK9-9 @    
-  зя       уя   ъяря  ця фя  m№My@    яя  шяыя чяяя   оямядя ияияля	  яя m№My@    ля   ья    няъя  ея ия
-  пяъяэяуя m№My@    ъя щя ъя   мяяячя 
-    ыя яяуя  m№My@       йядяйящя    ря  ъя пя  дя  m№My@    зя	     юя  	  ляоячяея ия тя	 ыя m№My@     
- яя  дяюяляяя  кя жяяяуя эяйя фяюя m№My@          еяфя чя яяия  ья      m№My@    мя      зя зяъя   ояйяряфящя   m№My@    мяуяляшяья  фя яя жя мя  ъяхя 
- ыяфя m№My@            зяня
-   пя ря	 пяуя ляяя  m№My@    ияцяояюякящя ря ряъякя эяся  зя     m№My@       фя      зя       ся кя  m№My@    фя  фя дя     ояюятя зядяфя
- няпя m№My@    йячякя фя    юяпяшяуя  ъя йясяъя   m№My@    фя  еяжя тямяряяя  юя шя    яя  m№My@    ьящя фя ея хя ся   щя    фямячяяя m№My@     мя   зя   шя  ея    оя   ия m№My@     юяыяья   щяяяюя пячя  тяэяжя       m№My@    юяся шяшяеяъя щя шя  	 ея  няоя уя m№My@       ня уяояня ыя ьясяря  кя    мя m№My@    зя яя   кямя   ьяйяуя ряря     m№My@    яя  зяхя ыя ця тяфяиякя кя
- яяйяиязямя m№My@    ьяря щя чя цятяияияжяоя ся мя пянящя m№My@    эячя   ъямяыязя 
-  ъяря  няия
- кяяя m№My@     ця    шятяюяея  зя ця    эятякя  m№My@       цячя ияня  тя
-  ьяуяняря  ояоя m№My@    пяея ья фя  хяняхячяцяия  ия 
- ля  m№My@      ся    ця 	  ея яя    зя   m№My@      щяэяся     нямя ыя ся ыя
- ня  ья m№My@    шя юяюяфя чя   ця хящяйя 	 оя
-    m№My@    ря      зя	 ъямяья  чя  щя    m№My@     кя эякящя  пяяяыя
- жя ея      ня m№My@      эя  ыя  ея     цяцяжяжятя зя m№My@    оя	  пяуящяэя  зя ся чякяпя зя ця   m№My@     яя
-   юяня тячя  ыя          ня m№My@     ея  юяряеяфяояуя  юяйяыя  ыямя   m№My@    щяня  кядязя рящящя   йяряуя ця чя m№My@    ия     пя   жямя яяхяня жячяяяюя  m№My@    уяшя рямяъя     эя ыя шяъяля    m№My@      ъякя чязяся хяця ъяляюя ъядяля   m№My@    ья зяхя зя     ця  ъя     ря тя m№My@    чя  ля   ъя ся     хяжямяья	  яя m№My@    ся   уя ля цяряхяяя пя   цяня   m№My@      мячяия ъя ля ря    шятя  хяояуя m№My@      хя пяйя     мя   пятя  ляъя  m№My@     ыяфя  ля   йя    эя    юя 
- ся m№My@     жяфя цяхяця  чя  тя хя уяюякя   m№My@      ьячяяяйя йя    иязяшя     йяыя m№My@      эя
-      
- ря  дяфя
- ыялякя    m№My@        зяуяюяхяъя  шяыяэя  ъяъяжя  хя m№My@     уяьяняжяряюяня   чя ря	  юя  йяля m№My@    ия    мя ия   мяця
- фятя  ья
- ъя m№My@    еяпя зятя 	 фя йя    фяся эя оя ъя m№My@    еяея  ия  эяоя  йя няюя ъяжяся
-   m№My@    хядя  шяцяыяуя  фяеяпяяя   	  ия	 ця m№My@    чядя 
-  эя уя  	 няцяйя ея     оя m№My@         ея   ряия   кя    эя  m№My@    хя ия цяиязя  хя мя йякя  ся щяия m№My@    цятя   	   зяеякяфя тяпя юяжяуя   m№My@    жяфя
- ея ляпя    уямямя    ия   m№My@    ьяхя ыя  ся  дя шяряця кя   жякя m№My@    кяуяшя  шятя  щяуя  ця   ляюяфяфяэя m№My@     шя    зясязя     ляяяяя 	  ця  m№My@    ъяья ряшяуяфяшя  зяэя    ця     ея m№My@    мяяяжяйя
- зяэя пясяьячятяья  кя ояуяея m№My@     мяыя
- цязя  хя    йя фя  шя    m№My@    ня ля    лятячя  сяшяуяйяфяня	 уя  m№My@      оя
- лязя   ня уязясяяяиямя кя пя m№My@     ояря  
-  яя   шялялялячяэярядяфяъя  m№My@        тя юя фя
-   жя  щя    цяуящя  m№My@    мя дяъя эя  ьячя   жятя   хяжя  m№My@      шя йя  ья   ея  юяыяся
-   мя  m№My@         щязяцяояшя   уя ияця ця   m№My@      ъя  уяряяямяжяеяйя пя  тя тя	   m№My@     тязя ья     хяйяля     
- чя    m№My@    
- хяыяшя ия цяыя
-   кяряця сяшяня  тя m№My@    цятяря кя   ря	 жя ья жя мя уяюяыя m№My@    шя мяэяья  тя яязя      уяря юяня m№My@        оя   чяхя
- мя  эя      фя фя m№My@        ьяъя оя мя  пя     ея жя фяжя m№My@    юя кя       	 
-  юяыяшяня  яящяюя m№My@    цякясяюя  фя  шязяля  тяяя  ля ея m№My@    шя цяюя тя    шя  яяея ня  	   m№My@     ия ся 	 пя йя   ыя  тяэя эяяя  8Ћyo9@    пя  кя    фя ея юя хянязя  ьяжя 8Ћyo9@    ля  фяяячяоя        лямя  ся кя 8Ћyo9@     эя  лязяця    юяцяэяоячяня    ья 8Ћyo9@    ия   ся ьянязяфя пямя	 ся оязяияюямя  8Ћyo9@      чя  ляияйя  мяся  ьяоямя мя  
-  8Ћyo9@       ея        шяья	 тя   чязя  8Ћyo9@     тя ъячя ыякядяпяйя     еязяьязяся 8Ћyo9@    ъя       ряьяоя  ля   яя зяпяря  8Ћyo9@      эяяяья  ия иямя   эяжяшя  тяфяфя 8Ћyo9@    мяря  ъяуя  ея   ъяхяря    фя   8Ћyo9@      лятяуя юя  ея хя жясятяжя   ояоя  8Ћyo9@     щяшяыя 	  оящя  ся  юя хя   тя   8Ћyo9@    ья  ъясяияэя   яяья ыяся  
-  оязя 8Ћyo9@    кя   пяыяряияфя  хя яя	 кяюя   ия   8Ћyo9@              мямямяуя рямяхяйяця 	    8Ћyo9@      
-   щя  пяхя     цяъя жя    8Ћyo9@    ъяъя  эя	    оя ея   хя   чяря  8Ћyo9@      яяюязя уя  сямяпя тяфяшяйякя   тя 8Ћyo9@    йя  мямя йя яякя   йяшяея     фя 8Ћyo9@     ряняия ляля ля чяыя жяья  щямяоя  8Ћyo9@       	    ця  уя  оя   жя  ъя   8Ћyo9@    оя  фякяоя  пяья жя	   кякя  жя  8Ћyo9@    чя  юя тяйяся шяья щя чяея  яяшяия 8Ћyo9@        шя   йяфя зяюя ьяоя ряця   8Ћyo9@       
- уя 	 ъя        няуячя мя 8Ћyo9@     уящяня мя
- ия фя ья    шя йяняля  8Ћyo9@    зя ияэяхя фяьяюя ря   кя яя  дяыяыя 8Ћyo9@    кя  фя жяоя  щяняря няюящя эя    8Ћyo9@    цятя  щяия	 хяияюя   шя ля ся хя  8Ћyo9@    чяьяхя ья фяья оя яяоямяся кяжяяяеяюя 8Ћyo9@     эяпя юя зя жяъячя   чя	  	 юя	 ря 8Ћyo9@    чя  зя оя    цяпя  уя йядяшя    8Ћyo9@    мя  ия жя ряуя  ьязяшяуя фя  ияля 8Ћyo9@    жямяъя фяяя мя кянякя фя зя  тя   8Ћyo9@    мязя         хя хяжя ыя    ъя 8Ћyo9@     ря
-  йя  еяхядяояьяья ляъя  чя
- 
- зя 8Ћyo9@    ья   ця  чяфяуя кяфяйяяя фя фя   8Ћyo9@    тяия  эя мя      чя чя яяфя ря  8Ћyo9@    уяъяпязя  хящя ня  кяляня    ъяся 8Ћyo9@    юяфячяуя 	 ияьяжя ря     сяня щяюя 8Ћyo9@    	   йятяряйя ояэячяця	    ия чя ся 8Ћyo9@     ся  фяыя йячя  щя эя   ъя      8Ћyo9@      цяыянязя
-    	 кяхянякяяя   кяряея 8Ћyo9@      йя  ъя ляжяфя    хя дятя  мя  8Ћyo9@    ия шяоязяся ыя ьяшя  щя  пяоя    8Ћyo9@       ъя уя чя пя зя       уя    8Ћyo9@     жя ояыя ряшя       йяжя   ья  ця 8Ћyo9@    сямя   ия  	 яяеяъяфяня 	 ьяняшяюяьяоя 8Ћyo9@       ня ря   ряэятя  ця 	  сяыяся 8Ћyo9@     	 ся цякя уяхя  ьяцяня  фямя    8Ћyo9@     яяия         ся ья  ля   оя 8Ћyo9@    ьяня пяюячя    мя  мя
- чя   щя	  8Ћyo9@       пя  еяья жя зя  еяья зяэя кящя  8Ћyo9@         щя ня	  эя оя оя уячяьятя  8Ћyo9@    тя кяья зяоя ня ряцяся  ия няпя    8Ћyo9@     жямясяяя жяэяуя пя фяяяйяхярясяия 	  8Ћyo9@    яя тя щя  ия цязяпяея  рящяеяия 
-   8Ћyo9@    
- ия ляюяцяьяея 
- кя 
-  ыяпяйя ыяшяфя 8Ћyo9@     ля  ояюяпяыя   щярякя  чя      8Ћyo9@       йяхяцяфя ля  пя    щя ъясянячяхя  8Ћyo9@    оя
- фя  ря ъя  юяжяыяэяия   ыящяря 8Ћyo9@    ья     ияояъяляюячяияеяуя эямя ья  8Ћyo9@        
- 	 жяляцяля тяэя ъяхя шятяжяыяря 8Ћyo9@    яячяця дя йяея чя жя  зяхя щя  ъя 8Ћyo9@    йяэясяхяшя       ояэя ыяня ия     8Ћyo9@    уя 	 ря яя       ья шя   мя    8Ћyo9@       шя    кящя  сяыя пяея пятя  8Ћyo9@    зякяйятя фяэя   яя ыяуяняфя оя  ля 8Ћyo9@    ця   чя кя юяоя ъяйя юяъяця     8Ћyo9@     ляля   ияуякяйяпяоя
- йя
- юя ся    8Ћyo9@    ьяня чя  шя ля  шяиясямяэяья яя эя 8Ћyo9@     мя ъяня зяря   
- юяяяцяря    фя
-  8Ћyo9@    зяця   жя  шяшяияоя ля цяцяпяпя ня 8Ћyo9@       йяья	 чя пя   ыя еяця
-  яящячя 8Ћyo9@    шя    шяьяфя    ня    ня эя    8Ћyo9@    зяля ия     жя  ыяшяюяпяцяшя 
- ыя  8Ћyo9@        уя  ря  эя щяхямя ня  кя    8Ћyo9@    еятяэясяля хяуя  дя  ся  цяюяюяюяйяпячя 8Ћyo9@    ця  яяэяця   ьящяья
-  чясязязяиязя  8Ћyo9@      яя мя хяыяьяжяея ляыячя сяня    8Ћyo9@      щя   пяыя  ыя     пя  шя зя 8Ћyo9@     тя тя  
- ля   ля   йя оя  ря 8Ћyo9@     щя ея уя  эядя   йя ея  мя  ыя 8Ћyo9@    Ђ n \ _ [  n m i Z i } q ‹ \ } s Љ V x g  xЇђ™ `    g w { ‹ ‚ t r z g l Ѓ c Њ f Ђ ‹ ѓ { U ‰ }  xЇђ™ `    j q † {  u z q t ~ x a ‡ X b ^ g … Њ l Y  xЇђ™ `    Ђ V ѓ € n } W ‡ q X p n l Ђ r f r v Ђ Z i  xЇђ™ `    ‚ t Ђ † e [ g i o Ѓ _ Z Њ U d W [ ‰ Њ [ ‰  xЇђ™ `    ‡ V † \ W e u { W Y ‹ ‡ l _ i s [ ‰ † \ g  xЇђ™ `    Љ t n t p \ ‹ w h v z … ѓ z s W ^ „  s   xЇђ™ `    ‚ X t t g e X | v w ` w X ] n k ^ f Ќ ‹ f  xЇђ™ `    c Ѓ ѓ ѓ _ s o o € o Z V x p ѓ ] ~ h s Њ _  xЇђ™ `    Ђ m t _ w y n b z d \ v r e ‚ ‹ } { ~ } ‹  xЇђ™ `    † s W j m Ѓ Љ Ђ t ‡ ѓ t } Y W ‡ v W X ‡ b  xЇђ™ `    w o i ~ h i ‹ i ‹ [ \ v Z € [ j Ѓ € w ] p  xЇђ™ `    W g ~ Ђ x [ m ‡ ` | g ‚ r X Љ q q ‡ X t n  xЇђ™ `    V s f ‹ e ^ b p w V b Y V Ѓ ‚ ^ Y W ~ _   xЇђ™ `    u j g ‚ Њ | _ f h V l y Ђ v Z a Ѓ † l ‰ X  xЇђ™ `    ‹ ‚ ѓ a p i p ] ^ } n o s h d [ y „ b Ѓ €  xЇђ™ `    \ ‰ [ ` e †  Љ j a p ‚ z Y h ] c W ^ w z  xЇђ™ `    ‡ X \ € t Њ l p † Ќ … [ ѓ ] ` ~ Њ [ e † s  xЇђ™ `    Ђ a ѓ i t b f j g e ‹ € † r b a j i † y u  xЇђ™ `    w a ^ a p ~ ‰ m j h o x W V m _ b h Z x d  xЇђ™ `    Ђ Њ Ќ { n e n a f ^ ] Љ Ђ Ѓ n ‚ | ѓ Ѓ _ [  xЇђ™ `    ‹ W i } c y Ѓ v } Ѓ o h f Њ ^ v a u V Ѓ c  xЇђ™ `    i  k n } | b p ~ e j p e y Љ V h q {  h  xЇђ™ `    v X ѓ Љ [ s ‹ i ] Љ Љ € Ќ ` † z v W l j †  xЇђ™ `    b ‰ † | j Z z ^ v y t _ o ] p _ Z …  e V  xЇђ™ `    n l | x ~ | z V … i { | y x v j X X v  ‚  xЇђ™ `    p y d u } | Љ  ‡ o ‹ b w ‹ q { U ‹ \ | ‚  xЇђ™ `    V w n u Ѓ ‡ } T z ‰ u Љ _ d ] f q z ‰ b W  xЇђ™ `    d ‡ ^ Ќ X d r j s u h ‚  v V W u V € j g  xЇђ™ `    d p ‚ n u j V | [ q { ] f „ X ‹ X Њ w s ѓ  xЇђ™ `    ^ p ‚ Ѓ w o z _ f ‚ q ^ p l ‡ f y e m r y  xЇђ™ `    k m o i r _ r ѓ ^ r o ‰ \ f _ ] p W v z W  xЇђ™ `    l o U { „ n c ‡ Z  ‡ s v z o Ђ ^ Z e l Y  xЇђ™ `    b „ j | l Ђ ѓ c „ q h m h Њ \ | … ‰ Њ ѓ €  xЇђ™ `    Ђ  | g ‰ g { _ l t € u w l g t … u q } g  xЇђ™ `    Њ e € Њ [ Ќ X † h z t V W t Z t Ѓ Љ ] ‹ u  xЇђ™ `    … w o X k \ Y ] u c } f [ b o ‚ j e „ d r  xЇђ™ `    | |  q „ \ Ѓ q d n h € _ \ { V Z f e Љ x  xЇђ™ `    ` ѓ m i u ` { q X | ` Ђ Y p w x o Y h ‚ _  xЇђ™ `    q ` „ ‡ _ a € Ђ W ~ d j U ^ d c ^ ѓ h g Y  xЇђ™ `    l {  d r { k p ѓ Њ c u T „ q \ † m ‡ ѓ y  xЇђ™ `    Ѓ ѓ p w ‡ ` g ‡ ] ‡ q  ‚ r i t p Ѓ † { ‰  xЇђ™ `    p … | \ c v Ѓ U j g Y ‹ ] Љ o [ † _ ] Ќ u  xЇђ™ `    w | Љ r m { } o b Y Ѓ n s † j ‹ d x l b w  xЇђ™ `    X … ‹ \ ѓ Ђ r X Љ w { v v i X m o b h w t  xЇђ™ `    v t t ` € Љ l Љ ‰ { W b { € ‡ ^ z \ Z Ѓ p  xЇђ™ `    U c ~ Ђ ‚ z ] [ f ] U k € Ђ q ‚ V † a ` b  xЇђ™ `    h ‰ „ y ] h r p e g Ђ Љ Ќ d i y } x x c V  xЇђ™ `     ^ l Ђ Ђ „ t V ‚ l z t Y ‹ ѓ ‡ x Y Y k i  xЇђ™ `    f h ~ b  } t j c \ s r ѓ } X Y n m € € ^  xЇђ™ `    V U d € ] _ z Љ b Z ѓ | t V t V o o v z …  xЇђ™ `    Y j a c ‰ ~ „ Ќ W | p w l } | f ` p Ђ U ‚  xЇђ™ `    Ѓ ` p Њ Y | u V V Ђ l W ‚ b b o Z … ^ w ^  xЇђ™ `    ‰ U Ђ e s U ] s Y a „ n ‚ r c r Ђ Ќ _ ] y  xЇђ™ `     ‹ } x w z | Z h h b k V n r € U i y k n  xЇђ™ `    e _ ] x ] n { Љ _ W u … n h ] Z d b ѓ p q  xЇђ™ `    } i ‚ Z r m U ` Ќ _ Y [ q z ` p l f € x k  xЇђ™ `    X  ^ h o _ ‰ q V V V d y | ~ Z ‹ ѓ ] ` …  xЇђ™ `    a Z Ќ k ` { Ђ Ќ y m u ‚ m † Ѓ c [ V n k €  xЇђ™ `    g r v g z { t _ ~ c ‚ Ђ ‚ o ] [ Ђ Ѓ t _ „  xЇђ™ `    v | ‹ k Z Z Љ … ` g x o € Њ v u g m € u t  xЇђ™ `    h i { „ l ‰ d z a Ѓ l Y … j y [ t n q Њ †  xЇђ™ `    ^ X ‚ V | n  Z ‚ j † ~ m Њ ] j Z k n } U  xЇђ™ `    X g u ~ w W [ ^ ‡ ^ † V f p k V u f ] | ‰  xЇђ™ `    h b ] ‚ w Љ | … Y ^ z Ќ a i \ i q b l Ђ d  xЇђ™ `    ѓ c ‹ X c f x Њ q l X t U p V t } a ‹ k a  xЇђ™ `    „ Ѓ i Љ z V p h f | ‹ ‡ i j w ^ p s l ` ѓ  xЇђ™ `    ~ n ` ] l o Њ } w ^ € … g Љ a n … k ‚ y Z  xЇђ™ `    V V m r U _ ‚ y † q Ђ Љ i ‡ x s ‹  Ђ c ‹  xЇђ™ `    Ђ i ‚ Ѓ g v [ U € Z _ l Ѓ U … [ Ѓ  t d €  xЇђ™ `    ^ Ђ Ќ ] ^ Ђ ‚  m Љ g Ђ a Ѓ l v c a p Љ U  xЇђ™ `    V ` r _ o x ‰ Y a ^ X ‰ k q Љ Ђ h ‡ j f g  xЇђ™ `    z f t [ € r v v l ] r r x b u X \ Ќ ѓ ‰   xЇђ™ `    „ ‰ X i b a g c  r u c d ‚ T W „ Ѓ Ѓ ~ z  xЇђ™ `    u i V x e „ \ … c d „ i ] Y q ‰ X v Z | z  xЇђ™ `    p e U w ‹ c q V k Ѓ y ѓ [ ‰ ] Љ x U ѓ ‹ a  xЇђ™ `    Љ … q † _ † x „ ~ ~ € m „ e Љ † t x r \ f  xЇђ™ `    ^ ~ \ ‹ € } „ U x ~ W ] … ‹ € [ † Љ w y X  xЇђ™ `    ‡ f † g Њ ‡ x u p Ђ m d p y € } c m g p |  xЇђ™ `    e a V r  i } € c k y ‚ z b „ a s „ … ^ \  xЇђ™ `    { ‰ Y z | \ ~ Њ Њ Y ^ Љ u c ^ V i Z Z Ќ Ђ  xЇђ™ `    Z f v } ‹ i x [ a ѓ ^ Љ Z b V j i … v ‰ r  xЇђ™ `    Ѓ ` a z € o Њ { ‡ ѓ x Ђ x ~ ‡ d n i Y y |  xЇђ™ `    … r z p n ` i ѓ U U i l { „ s Ѓ „ p Z m w  xЇђ™ `     	 яяъячя  ря уякяхяля  ияэяяя щя    Р9± Ђ    	 тяуя ъя жяяя  жяия иячяэяля ея ыя Р9± Ђ    ця  щяжяця
-    шя  ря  йя  
- кя Р9± Ђ     ля пя  лятя  	 	 ляжяжяпяуяяя    Р9± Ђ      чязязя   эя шя   иящя сяшячяэя Р9± Ђ       ия
- сяляфя ця   эярятя ря  ъя   Р9± Ђ     тямяия   шяхяъяояыя ня ея ляря    Р9± Ђ    оя   ыящя иякя мя	   ьящя еяня     Р9± Ђ    ня     ця	 	 щячя жятя 	 ея мяояэя Р9± Ђ     эяпяшя  ояиязя    щя  ся ня   Р9± Ђ    яя мязя щяшяюя   
- шя       фя Р9± Ђ     зяоя яяшя     ля  кямяця няпя
-   Р9± Ђ       
- хятяпя  сяхя  хякяыяпя	 ця  хяня Р9± Ђ    кя юя ня хя ся  пяця юяяя
-    ря	   Р9± Ђ    яяля       зящя юя  ся      Р9± Ђ      сяяя  ия   ся   юяся юясяюяряжя Р9± Ђ    сямяпяуяжя кя ия йяря ыяфя 	 сякяшяья Р9± Ђ    пя йячя ея ия     ря   пя чя юя Р9± Ђ    фяня ряря     
- фяця цякя    яяля Р9± Ђ    зя рящяфя  йя уяеящяяяня шя  хя
- шя Р9± Ђ    хя   чя  ия щяхя ыя няжя     	  Р9± Ђ      зяжя   мяхяйя   ря жяуя	 нятяюяяя Р9± Ђ     тятя   пя   кяэяуя хяхяяя ияяя
-  Р9± Ђ      тя жя шяпя ъя  чя    чяъя	 йя Р9± Ђ      пя  эяхяяязяияляья
-   мя	 тяуяэя    Р9± Ђ       мяэяря ея
-    юя  ряшя   шя ся Р9± Ђ      щя еяжя еяэятязяпя уя   ъя лямя  Р9± Ђ    зямя  няфя кя  ия      хя   ыя йя Р9± Ђ     йя ля ряъя ыя пя ьяуя   	 чязяця Р9± Ђ    хя йялящячя 	 эя ия ья           Р9± Ђ    пя  ия  чяжя эяня фяйяйя  дянячя  Р9± Ђ      ляэя хясяяяюя  няъяъя ъя  эя   Р9± Ђ      шяшяня ся      кячязя  чя няеяоя Р9± Ђ    ля ня    чя   эя   пя ыя	 жя    Р9± Ђ    ня	  жяяя ея  тя  пяняея       ря Р9± Ђ    пя  ыямя йя     щямяьяйя  ня кямя  Р9± Ђ    мячяэяьяъя юя хя
-    	 йячяяя фяыяфя Р9± Ђ     ояцяеяоя    ля няыяряоя  ея    Р9± Ђ    хячяляяя мя сятяьящяья щякя     эя Р9± Ђ       рящязяжя   шя   ця  ияоя   Р9± Ђ     шяйя сяля пякяфяряюяфяфя эя   	 жя Р9± Ђ     яякяжяоя уячя  оя цяъя   зяря фя Р9± Ђ    ияяяеяля ояпя юяыящя яяъя  ця сяпяяя Р9± Ђ     жяня  кя   щяьяжяпящяюяжя  мяъязяжя Р9± Ђ      уяяяяя   ляря
-  жя ся   ряря  Р9± Ђ     тяпямяпяеяхячя       зяля жячяуя  Р9± Ђ     цяця хя щякя ия 	 юя  ря   фя ъя Р9± Ђ    	  ся    жя   ыя  дяьяюяля   няня Р9± Ђ    тя   
-  мя ьяоядяняня  ья пяеяяяря
-  Р9± Ђ    тя   ся     	 юя   ъя   ыя   Р9± Ђ      	  оямя     йямя сяояуя щя   Р9± Ђ        дя	 шяця     шяуяця пя   юя  Р9± Ђ    хяъя	 щяпяфя  жя  эя ля     ияжякя   Р9± Ђ    юяяяжяцямя  сяжя    зякя ъя кя  чя Р9± Ђ    йяхяяя юящя эя	  тя  сямя  мяйясяжя Р9± Ђ     ляюяуя няуя яясяяя сяыя юя яя  дя Р9± Ђ     
- хя ья щяояфяшя кя	 ъятя ьяфя    Р9± Ђ    хяжя   мяыяуя фяуя ря    уя мязяпяня Р9± Ђ      яямяья      ця хяояыяоя ся     Р9± Ђ        йядямя тя чяйя   ыяъяияяя
- йя  Р9± Ђ    ряня ея   эясяея  шяпя
-   еяэя щя Р9± Ђ    чя  дя щяияхящяьяыяяя рякя ояхя шя тя Р9± Ђ    эязя    хя лятяьяия      ъя ьяъя Р9± Ђ     фя пя мя    ея оя	 уя	     юя Р9± Ђ    щя  
- кяшяюя   щя  тяняъяйяйяйя   ся Р9± Ђ    ыя  дя  эя оя  шящяйя  ия уя 	 мя Р9± Ђ    ля шя   эя   ня  зяыя   лязяыятя Р9± Ђ    ъятятящяыяся   фя    юя  кя  сяря Р9± Ђ        кямящя зя еяшяоя щяия  сяряыя  ья Р9± Ђ        сяшящя    жя    зя ыя хязя Р9± Ђ     сяся      ъяея чя  пяяя    ся Р9± Ђ     яяеяляжясяоя  яя ыя яя 
- ея  уяхя  Р9± Ђ    ьяшя ья   яяья йяфя ъямя нячяяя шя  Р9± Ђ    чя    ляыя  ъя  хя   уяуямя 
-    Р9± Ђ    мяуятя   эя        чяня   мя  Р9± Ђ    шяйящяуячяуя шя    тяэя жяияуяъя ля Р9± Ђ    ыядяияря йя ия ся еяия ьяэя   уяюя Р9± Ђ    ря  ря  мямяляшя йя 
-     тясяюя  Р9± Ђ    няиямяюяшяжяхяяяшя   оя 
-  оя йя   Р9± Ђ      кяфя эяеяуя     зя жяняуя мя   Р9± Ђ      ыя      
- ьяфя  ля  оя   пя Р9± Ђ    ыя   юяяя шязя йяюя     уя	  уячя Р9± Ђ      ыяея зяуя	 уяфя    яя     ьяня  Р9± Ђ    ся  сяуящятяряфя   ья ия   
-     Р9± Ђ    сяояэямяуя жяъясяйяыяияэяся мя  ъяфя 	 р9Т Ђ    зя   жя уяшяля
- уяля юя  еяиямя ояея 	 р9Т Ђ      
-  ея хяняжяэязяъя хяэяря рязяцяэя	 р9Т Ђ     ся йя  ря яя  ыяэя йя 
- еяэя   	 р9Т Ђ     йяшя	 някяляпя ыяжя
- уятя рячя    	 р9Т Ђ    йяпяпя	 ия   ыя шяья эяпяеяяя     мяяя	 р9Т Ђ    сядяля   ся  пя  яя  
- щя  йяъя	 р9Т Ђ    юя  щя йяуяжяняля       шяйя ия	 р9Т Ђ    йяэя   зя  фяпяья   ьятя  ияля жямя	 р9Т Ђ    ояяяыязя жяьядя  ъя  пя ия      	 р9Т Ђ    
-  цяфя кя  	   шяыякя    оя  	 р9Т Ђ    йяэяйяшя 	 мя ся  яя  эямя  шя   	 р9Т Ђ    ья  яяэяця юяюя ряня  эя зя  яяля	 р9Т Ђ     фя яякя    пя кя йя    	  ляжя	 р9Т Ђ     
- 	 ыя 	   ся ыя    	 юя  ляня	 р9Т Ђ    йя ыящя     жяля  ся хя  тя  	 р9Т Ђ      цяряся   тяуязязя зя пяяя щя  	 р9Т Ђ    яя      ня  яяхясяйяъяяя    кя	 р9Т Ђ    ияця	 оя    ня  ъя ря   цяня  шяъя	 р9Т Ђ    щя мяпя  оя  дяйязяъяжя  юя йяуяняуя	 р9Т Ђ     мяея шя шя  уя тя ня ля хя ъяыя	 р9Т Ђ      еяря    сяняюяуяюя    ияяя йяхя 	 р9Т Ђ    пяуяшя   юя  зячяця     ъя юя   	 р9Т Ђ    цяья   
- яя    цяря зя    уяня	 р9Т Ђ     уя еякя     мяряэя яяыя кя    	 р9Т Ђ    щя щя  ряэя   хянякя  
- ся пяпя 	 р9Т Ђ    ияйя  фя 	  пя  ыя  жя	    ея хя	 р9Т Ђ    тяся яяря    ря няшя хя йяияня 	 	 р9Т Ђ    ья пя
-   ыя юяеяяя ля    иятякяцяжя	 р9Т Ђ    шячя  ия  ыящя зяшя  ъяхя    ия	 р9Т Ђ    чя ыя ця   эя еяея  зятя ля  шя	 р9Т Ђ       жямяэяфякяяя 	 	 лядя  цяня	   ыя	 р9Т Ђ    шяшяеяия ыяъя оя кя  	  йязяцяияуя 	 р9Т Ђ     зя	 ря    хяьямя няхя	 жяфящяьячя 
- 	 р9Т Ђ    уя  ъя мя   йя  яящя  ря ъя   	 р9Т Ђ    тяэяуя   йящя  яя ояыя
- ся ляйяъя 	 р9Т Ђ    эяояшячя  ея пя ря йяия йя    ня	 р9Т Ђ    щя чятя ня 
-  кя ляъятячя	   жя фя	 р9Т Ђ    ся  жя чя  ея  эяяя ря юяыящя кя 	 р9Т Ђ    дяфя щя ья 
- уяпяпяъя	 ья  щя    	 р9Т Ђ      шяыяияыяяя   
- яякя еяуятя шяпя 	 р9Т Ђ    ня  шя 
-  
-  
- 	     шя
-  щя  шя	 р9Т Ђ    мяияяя  	   сящяря  фякя ля  ьяря	 р9Т Ђ    тя ъя уя     ояря   ся  тятя ся	 р9Т Ђ    ья мяпядяня     йя чядяыя уяыяняпя    	 р9Т Ђ    йящя шя яяня тяоя щя   фяоя юя ня	 р9Т Ђ       эяйяся зя жя  чя  йя оя няэя	 р9Т Ђ     пя еяояия 
- зятяфя	   фяья  
- фяря	 р9Т Ђ    щя кя  ьялямя  чяшякяся  ъязяея   	 р9Т Ђ    фя кя     
-  ья  жя    ця   	 р9Т Ђ    чя  эя 
- ляфятя фяоя няьяюяжящяняоятя	 р9Т Ђ    эя уячя  оя      жятяця зя цящя	 р9Т Ђ     пяьяия
- пящя мя ъяъяэя ля      жя	 р9Т Ђ    мя  фя юяйя ряъя ля ия    мя  	 р9Т Ђ      ьяюяшяоя	  ъя    
-   ия   сяея 	 р9Т Ђ    ля   кяоякяеятя мя  ся  чя  пя оя	 р9Т Ђ    уязя  ыя   яя    чя
-  уяъя   	 р9Т Ђ      ня  	  зя зя     щячя  жяея	 р9Т Ђ    фяпя пяляея  жяюяуя эя  ияпя
-    	 р9Т Ђ    ояэя мящяпя эя мяеяъяэя щя  няйя  ья	 р9Т Ђ      эя  шяжя    уяня 
-  хя  яя 	 р9Т Ђ    еяшя юяця  пячячя  жяфяшя      	 р9Т Ђ     ля ияжяйяоя 
- ряья    	   зя ця	 р9Т Ђ    жякя оя цяхяяя    кя      юяюя	 р9Т Ђ      няеяляфяъяояшяшя  жя   уяюя цяэя	 р9Т Ђ      	    яямяля юякякя чя эясяия  ея	 	 р9Т Ђ     кя  	 
- ыя  уя    чя  	   няяя	 р9Т Ђ       жяцяья  чяюяояшятя  фя  ця фя	 р9Т Ђ          ря  зяся мяся ия ъяшя   щя	 р9Т Ђ    ея фя мяжя  ря  цяэя       
- ля	 р9Т Ђ    рятя    хя  тя хязящяляйя  тяея 	 р9Т Ђ    ряфяхя юя юя  ся еямяия  ья   мячя	 р9Т Ђ    
- йя   мяля    мя фящя  ъяяя жяряпя	 р9Т Ђ    лязя мямя ця зя   ыя юяяяця	 ыяпя 	 р9Т Ђ    жя 	 йя  сяшя  тяпя 
- няпя  пя   зя	 р9Т Ђ    эя тя  мяэяля шяьяжя щяияыя ья кя 	 р9Т Ђ    ия   хя	 йяжя ъя  мя  кяцяся  хя 	 р9Т Ђ     пя  ня  щя    зя яяъяфя  ляияшя	 р9Т Ђ       йяэя  еяшяуятя
-  шя ъя  сяыякя	 р9Т Ђ    шясяъяня уячя  жяяяхя         ыя 	 р9Т Ђ    ля юя ыя   ыя юя    
-   зя ыя	 р9Т Ђ    цячя  юя уяуяжяюя ся    ъящя  зя	 р9Т Ђ       ъя  оясящяыя 
- ля яя жя	   эя	 р9Т Ђ     ця	   йяяяуя  эяоя фя ля  цяъя  	 р9Т Ђ      ня  юя      ля шяья ья пякя :т Ђ/ 
-  фя ся фя яя   ыя
- яя чямятяжя
-   :т Ђ/ 
-   юяся пяся  яя  йя  зяюя ря  ля :т Ђ/ 
- ня	  ляэяеяьяфя	  чяжя ия  пя зя   :т Ђ/ 
-   хя лячяйя  няжякяуя
- мязя     ля :т Ђ/ 
- няшя зя 
- уя
- ся      ыя     пящя :т Ђ/ 
-  хяяячя  жя йяшяхяря тяыяоя  ъяляуя :т Ђ/ 
- ъяояия юящяяя тязя ся ряшя  ояоя зя :т Ђ/ 
-  ея еяуяияшяъяия зяпяъяэяфя кятя ояся :т Ђ/ 
- эяыя жяэямяея   яяня  яя ия жящя  :т Ђ/ 
-   ъя 
-  нячя  эя 
- тямя юя     :т Ђ/ 
- жяхяця   ря жя      пя  ня ья  :т Ђ/ 
- ця 	  ыя   эяъя  лячя     ея  :т Ђ/ 
- ля ъя  
- ъякя кя ояшя
- сячяфяья  зя  :т Ђ/ 
- тячя кя ряйяшяжя    щяьяфя фяня   :т Ђ/ 
- зя ся  уя зямяуяся  дяуя	     
- йязя :т Ђ/ 
-   ня   йя кяфяяя эятя  жяъя оя  :т Ђ/ 
-  
-  пя ря   ия дяъячяея   шя  ея :т Ђ/ 
- жяея ияоя иячядя ья  яя     хяфяпя  :т Ђ/ 
-  ляйямяыякя ия    ся яямя ияия уя :т Ђ/ 
-      сяря   юяыяшяэяря  яя  фя ъя :т Ђ/ 
- шяеяцяъя ияия    чя ья    зядя   :т Ђ/ 
-   жя    лятя фянякяфя йяюяьянячящя  :т Ђ/ 
- 	 щя  няяя ля       ия ся ья  :т Ђ/ 
-   ля яя    сяяя  ияъя яя     :т Ђ/ 
-   эяия ря ия хя      ряяя ъя ья :т Ђ/ 
-  яяляхя зя  щячяряуяюя жяря       :т Ђ/ 
-   эя ъя ыя
- пя лядя  цящя тя яя  :т Ђ/ 
- шяпяюя мяеяшяйяхязяыя яя
-  ня
- ля кя   :т Ђ/ 
-   жя  ея   щящя йяхя щя юя чяйя :т Ђ/ 
- пяяяшяняпя мя  хяхя  зяця   щя    :т Ђ/ 
- лящя   чяяяшячяэяияюяяяеяеяшя ыяряряря :т Ђ/ 
-      ья  оя  няпямя эя тяляляъяъя :т Ђ/ 
- эяья йяйяжя    
-   щякяхя  чяюяэя :т Ђ/ 
- йяряняля  еяйя  ъя жящяуя  хя    :т Ђ/ 
-   щя  ея  чя  тя чя     мя  уя :т Ђ/ 
- ея зяияья   уя 
- мя    ряшя   ця :т Ђ/ 
-   чя ьяеящя пя 	 уя    	     пя :т Ђ/ 
-  щя  тяшя йя    тя жяяяья   хя :т Ђ/ 
-      ря пя      ляхя
- ляфяъя мя :т Ђ/ 
- иящя     юя ъячя яяояояья	  жя
-   :т Ђ/ 
-  ыяьякя	 ыяхяяя         	 хяыяся
-  :т Ђ/ 
- ляйячяьяшяфяхяшятяоянякя    ря  няхячя :т Ђ/ 
-  ея  ъязяюяля эяяя    ия ъя    :т Ђ/ 
-   чя  цяэяэяця   ыяжя ця   жя  :т Ђ/ 
- эя  фяця     тямя кяня  
- шячяфя :т Ђ/ 
- еяшя    еяюя йя   мя зяня     :т Ђ/ 
-  тяпя  ыя зя    	 ыяряия  ряжя йя :т Ђ/ 
-    цячя яя оя
- ря ля  эяшя иящячя :т Ђ/ 
- эя  кяхя ря  еяжя оя 
- мя  сяжя ъя :т Ђ/ 
-    дяйя  жятя жяхя   
- чя  дяря  :т Ђ/ 
- ся ля      эяшя	 фя  мяця  кя  :т Ђ/ 
-  ляияцяоямя дя   ъя  тяия    шя ля :т Ђ/ 
-  йяия    фя ря  дяыя 
- ряюя чя  :т Ђ/ 
-  юя сяфянязя   пя ля юя няияьяюяля :т Ђ/ 
-  ыя  фяхяся   кя уя уя 
- кяся ня :т Ђ/ 
- щяуяхяляця яя  ряьяюя	   ляеяояцяжя
-  :т Ђ/ 
- эя    хя     яяря эя ъячяпяяяля :т Ђ/ 
-  чя 
-  шяжя хяэя  ъя  кя жяря ля :т Ђ/ 
-     ья	     тяоя  мя хя
-   щяпяюя :т Ђ/ 
-   няля тя    зя   ъяяя яяуяыяюяря :т Ђ/ 
- хя 	    цяяятямякяия     йя  чяжя :т Ђ/ 
- мя  ця  кяляйя  дя
-   ия  яя   :т Ђ/ 
-         юяияуякя   мятяряяяшяхя  :т Ђ/ 
-   ря  ья ля еяия ияьяюяфящящя      :т Ђ/ 
- оя дятяэя  щяця мя     щянящяоя   :т Ђ/ 
- сячяфя шя ля  яя ояья юя  яяюя ся :т Ђ/ 
-  оя    юя яя 	 юямяеяжядя  оязяюяюя :т Ђ/ 
- хя  чяыя  ья чяся     	   ыя    :т Ђ/ 
- пяляжяья юяняояйя  дя  ъязя ияеяюяпя :т Ђ/ 
-  юя  щя хяжя жя яящя мя ьятяшя хя :т Ђ/ 
- ця	       шяяяоя юячя	 тя хя чяця  :т Ђ/ 
- 
- шя яя  
-      ъясяъя   зяйяяя   :т Ђ/ 
- иятя  ояюя  ияея  ря     ъяоя   :т Ђ/ 
-  лязяпя зяея ля	 хя    ия        :т Ђ/ 
-  жя   ьяля   уяряйя          щя :т Ђ/ 
-  эя еяыяъя  еяъя чяеящякя   ья ля  :т Ђ/ 
- ря    ья ня    юяеящяпя  няря ыяья  :т Ђ/ 
- ыяэяня йя  эяфя жядя  юя рязя  йя :т Ђ/ 
-   юяиякячя  ляяя      ля пяшяся  :т Ђ/ 
-   эя  ияья   тяыяцямя        ыя :т Ђ/ 
-   зяъя  уя еяыязяпяъяпя йя   ея  ня :т Ђ/ 
- пя
- жя   хя  сяля кязяыяня  хя   :т Ђ/ 
-  зятяшя
- ъя эя  ъячя еяфя ья шя тя  :т Ђ/ 
- ея   кя пя ыя   уящятячя   мя  ия  Ш1Z Ђ/ 
-  ля ыя цяьящя фяяя ця  ыя зя       Ш1Z Ђ/ 
-  зяьяфяпяжяня    ця уяця	 дятяъя ря   Ш1Z Ђ/ 
- юя мя ляея хя лясяыяшя  зяья      Ш1Z Ђ/ 
-  уяяяэятярямяэя  пя ояуячя  тя  чя  Ш1Z Ђ/ 
-  ьяхя  йя шяыя  шя   оя кя  ня  Ш1Z Ђ/ 
-  няйя юятячяэя кя  ця уяпя   дятяия  Ш1Z Ђ/ 
- жя ляияьящя   хя     эя  ыя     Ш1Z Ђ/ 
-  ця   цяэя   пя щяля
-  
-  хяфяья  Ш1Z Ђ/ 
- уя яя цяюя  тя   ия  	 цячяжяпячя    Ш1Z Ђ/ 
-  ъяня  кя  ояюя  кяъя  шяюяляшядяйя  Ш1Z Ђ/ 
-  ья   фяря        ня
- хящяояья   Ш1Z Ђ/ 
-  эятятяпя ояояьякятя        эя ья  Ш1Z Ђ/ 
-   хяжятяъячя      ляшя	 ьяйяфяфя   Ш1Z Ђ/ 
-  ьяуя ья 
-  эяляияуя шяуяуяея  мяхя  Ш1Z Ђ/ 
- шя  ея уя яя     жя кя щя     Ш1Z Ђ/ 
-  йятя ея еямяжя 
-   яя  щя шямяуя  Ш1Z Ђ/ 
-  хя щяхя   эямя  чя  оя щя  пяхя  Ш1Z Ђ/ 
-  
-   ея  уя  уя        зяея эя  Ш1Z Ђ/ 
-  жятя   уя  някя   няуя  щяэяля  Ш1Z Ђ/ 
- 	    иялякя  зяояэя  йя юяпя      Ш1Z Ђ/ 
- яя 
- ьяжя эяояъя    щя   уя      Ш1Z Ђ/ 
-  ыяияеяюяця ыяся ся хя  мя фя 
-    Ш1Z Ђ/ 
-  зяоя щя   ыяюяея эяъяпя   ьямяпядя  Ш1Z Ђ/ 
-   эяэя ъя ья 	 фя  ся  
- ъяеяцякя   Ш1Z Ђ/ 
-  ся   эя ьяияпяыя ня  
-   лязя   Ш1Z Ђ/ 
- щяьяуяля йя ля щя хя кятя   хя фя  Ш1Z Ђ/ 
- тя
- чя щяюяжя       оя 	 уя  ня  Ш1Z Ђ/ 
- йя	 мя 	   пя ияиямя
-    ъяуяня жя  Ш1Z Ђ/ 
-     ъяъяеяйяжя        щязячяюя
-   Ш1Z Ђ/ 
-  хя  шяйятяшя  ля ыяпя   яя 
- ня   Ш1Z Ђ/ 
-   рязяля мя тя     ъя   юяря     Ш1Z Ђ/ 
-             ия  чяйяия ця	    Ш1Z Ђ/ 
- рясяйяшятякя  ия няшяуя фяия  ця	 мя   Ш1Z Ђ/ 
-  ея  юя    ляэя еяея цяря	  дяуя  Ш1Z Ђ/ 
- ряоя хямя     шяъясяпяжя ъяпя ля    Ш1Z Ђ/ 
- юяяяря чяьящя   ця  яя     ьячя  Ш1Z Ђ/ 
-  	     ня эя шяыя  яя   ця  уяоя  Ш1Z Ђ/ 
-    рязящя	   ъяояжя   ояляря  ля    Ш1Z Ђ/ 
- эя  жя ря еямя
- еяуя  чя	 	       Ш1Z Ђ/ 
- уя    яя нящя ия  ля  ля   оячя  Ш1Z Ђ/ 
-    ея пя тяьязяйя  дя шя ыя    ря   Ш1Z Ђ/ 
- чя  ъящяжя  ляыякя ряуяшяэяня  юядя  Ш1Z Ђ/ 
- оямя    ья  ияфяля    пяняжя тя    Ш1Z Ђ/ 
-   йя шя пяфяля      еяхя фяиязяюя  Ш1Z Ђ/ 
-   кя фяоямя шя ыя хя  ья   	    Ш1Z Ђ/ 
-  ьяэя еяня      йя   сяяятя  ея   Ш1Z Ђ/ 
- эя  тя  	  юя  хя ияжяюя  юя ня   Ш1Z Ђ/ 
-  эя  кяшя ыяия пятя  тя сяюя      Ш1Z Ђ/ 
-         
- ня  ря юямямяояэяюя   Ш1Z Ђ/ 
-  хя
-  зяля  жя	 шя нящяжяня  ня    Ш1Z Ђ/ 
- юяля    щя ояуя   шя  еяцяья  ня  Ш1Z Ђ/ 
-  ыя йяюя      
-  зяъя  ия   хя  Ш1Z Ђ/ 
- зяпя еячя  яя шяля еяыя   цяня жя  Ш1Z Ђ/ 
-  мяия  ияйяся  ыя мярячя  ня  ця
-   Ш1Z Ђ/ 
-  	  хяуяъя
-       ыяъящяйяжяцящяжяпя  Ш1Z Ђ/ 
- еяэя яяня пяпя пя пяря щяфяуяфячя    Ш1Z Ђ/ 
-   кяпя   эяояуя     ьяйя ояня кя   Ш1Z Ђ/ 
- щя чяряея ня      йя ыятямякяъяыя   Ш1Z Ђ/ 
- тя	 уяуя     цяия	   йя няъяэя яя   Ш1Z Ђ/ 
- мяъяпя шящяйя   ьяяя пя  
-    ря  Ш1Z Ђ/ 
-   ея  ся юяыя  ця ня   ряьяшя   Ш1Z Ђ/ 
- ся  ояея ыя фя 	 ыяцянячя мяшяъяхя    Ш1Z Ђ/ 
-  ця фяпя
-  мя фяяя	 жяюязяня
-  ия    Ш1Z Ђ/ 
- дя ея   ыя хяыя ояияья 	 
-  тя    Ш1Z Ђ/ 
- шя  лямя    
- йяня кямя     пязя  Ш1Z Ђ/ 
- ья ня жямя кя   цяъя кяряня  пяоя   Ш1Z Ђ/ 
- ъяэя  цяцяпяхя    жя ыяфя  йяыяяя  Ш1Z Ђ/ 
- эяуяся фячя
-   эязяыя чяяя ьятяюя пя  Ш1Z Ђ/ 
- ря         ияъя щяня  цяъясякя   Ш1Z Ђ/ 
-  	    оячя     ряяя чяля  ыяля  Ш1Z Ђ/ 
-  ця    сяуя ляяя  фя  няряжя фя  Ш1Z Ђ/ 
- еяиясящя юяьяоя зя    юя   ся ня    Ш1Z Ђ/ 
-   
- ся   чя  уя  тяхя пя ляпяшяоя  Ш1Z Ђ/ 
- жяея   ся яяояпя  ся   ня ояуяхя  Ш1Z Ђ/ 
-    йяьяюязя   уяхя зяея юя ияця    Ш1Z Ђ/ 
-    юя   йя фяея  сязя сяняояхя ся  Ш1Z Ђ/ 
-  йящяоя фя  жяыякятя  щяжя ня ыя   Ш1Z Ђ/ 
-    жязякяпяэя оятя  	   зя   еяня  Ш1Z Ђ/ 
-  хямяэя ня   ъячя 	 йяъя оя  ря    Ш1Z Ђ/ 
-  эяэя ьязя жя кямя     кя щяпялятя  Ш1Z Ђ/ 
- зя	 мяля ыя йяуя уяэяйяря ея зяъя	    Ш1Z Ђ/ 
-    щяеяфя
-  тя кяыяяя    ея      Ш1Z Ђ/ 
- зя        цянякя     чя 	     Ш1Z Ђ/ 
- уя   ыяпя   ияхя щя   шя ия     ШQ3        пяця кя   тяжя мядяяя юяъя  ря    ШQ3        щя няея 
- нямя  ия ня	 эяуя   жяюя  ШQ3       уяцяея яя   юя   уяфяфяня еякяюя   ШQ3         пяюя   жя ияья ояяяпяюя  ия эя	   ШQ3       мяоячя пя    эяея зя кя	 
- ьяъяья    ШQ3       ьяцяяя ыя мя ня кя фя эя ья  ыя   ШQ3       ряэя   шя    щяуя хятяняшяыяфятя	   ШQ3         юя   ля   шяйя     зя	  кя  ШQ3           ия   юя ея
- лячяфя  ня  пя
-   ШQ3       мя зя  
-  зятяуяяячяпя ия  ьяпя    ШQ3       йя  шяжя   чячяшяеярящя йя ия ъятяъя  ШQ3       юяжяпя   хяяяыя 	  рякяуяняъя  ея ъя  ШQ3        шяюя эя      чяпя ъяжя      зя  ШQ3       сяляля   
- йяля 	 фя фяэяня       ШQ3       мяря пяуяряжя   ыя ря уяля оя 	 мя  ШQ3        эя  ья  фящяояыя эящя        жя  ШQ3        йя  зя шяъя  ьяжяря   еязя      ШQ3         ояфя    пя    зяцящяеяня 	    ШQ3       пя    уяжя    ояыямяняуящя  ля фя  ШQ3       фя  ояця  чяяя ъяуя кяня  йя  кяпя  ШQ3       тяця эя ъя щя сяия
- цяуя цяфячяияшяея  ШQ3          фяшя  чяья
- шя жяуячя  чяыятя
-  ня  ШQ3       кя ияпячяня ья   юя хяля 
- 
- щящя   ШQ3       фяпя  фятяфя
-   йяняйя ся шяия ряся  ШQ3       	 эя
-  чя ця сязя   дяъя  щя      ШQ3           ьяяяыязяфяйяхяуякяфяфяляфя тяля ся  ШQ3       кя   юяцяъяфяяяуя  кяея цяхяэязяиянячя  ШQ3       ъя кящя ия  ия      ояфя мя ия  ШQ3       пя оя  чяля     чя   юя ся    ШQ3       чя ъяцяхя ця щяцяшязя еялямя  ляуя    ШQ3       яятя еяпя       ляйя    хямя    ШQ3       ыямязямяоязя ыяуя   лясяоя   ея    ШQ3       яя  уяхяюяжяыя    уяюя пяыяйяцякяфя  ШQ3         ъя юя фя  ря юязятя   оятяия   ШQ3       мяъя пя щячя яя  
- ъя       ня   ШQ3        лятя чямя ия эя ия  хя ня
- ыя     ШQ3       ъяпяря чя   щя кя      зяяя  уя  ШQ3       жя  цяхяпяля
- ля  ляряьяияэяьяояяяшя   ШQ3       йя пясяэя ъя	 няуя 	    хяфяюя     ШQ3       ья  йящяпяъяуяжямяня тяия  ся юяшяеяея  ШQ3       ыятяюячяыя   ьярятя ряхяъяыя   зя ня  ШQ3        шямя     
- еяьятя цязя        ШQ3         ъяхящя     кя   яя  	 чяля ля    ШQ3       юя    яяяя    чяняжя   еяояжяыя    ШQ3       жя кя      щя  эяця 
- кя   юядя  ШQ3       ья      еяъя уяпязяся  хяля жяря щя  ШQ3       юяля чяля йя    тяоя   ляляйя ъя   ШQ3       уяця    ья ьяьяпяия  кящя  шяня   ШQ3       ыя  юятя  фя  лязяуяуяяя    кяюяйя  ШQ3        уяэя ояяяъяеяжяшяияеямя дя     уя    ШQ3       ляоя	 юя  мяоя эяхяьяня   дяфяфя   ця    ШQ3       дя ря       кяюя    ья ьямяея    ШQ3       ыя оякя  яя чяьятяфя    ияля     ШQ3        хяия   няэя   эяоя   йяья няояия  ШQ3         оя  ля  ря  ля дяжя ия   зя   ШQ3        йя   ияэя  мячя  ъя	  ря ыя  хяйя  ШQ3       ьяжяпя ня 
-    няеяья
-  зя 
-   ыя   ШQ3         йя хяря тяняияея рячяпя  мяшя  ця  ШQ3       ьяпя шя       цяжя мя мя 
-  яя  ШQ3         ияняня ияля    еяря ья 	  фяия  ШQ3          ъяня   хя 
-  ъяеяояйясяпя ня щя  ШQ3       ыя  шяфяеяля 	 мя ъя ия	 кя яяшя зячя  ШQ3       ья  ья  ыясямящяия  хяхя  яяляйяуя  ШQ3        ьямяхя уя   мя
-   цяюяуя ьяья ыяея  ШQ3       лямяоя   хя  оя еяояуяжя фя иякя   ШQ3          щядя     ьяря   
-  ляфяыя   ШQ3        кяшячя 
- шяэя   пя ея
-  оя няия   ШQ3       мяэя ияфя    ляря   	 няоя жясяяя  ШQ3       
- 
- яяфя   ляцяэяшя ыяуя ъяыяиямя  йя  ШQ3       ряця   пяия юяъяйяяяья  йяля  уямяся  ШQ3       някямяйяйяня  мя   ияхя фятя зя зя  ШQ3       фя пямящяъя    йящяыя ля  чя    ыя  ШQ3       зя	    кя  шя    фя  эяыя ля чя  ШQ3       уя йяхярячяля чяся    мя чя 
-  жя  ШQ3        ея  пя	 еялямя чя    зясянякяня    ШQ3        щя ряйя 	 ъя      ля пяюя жятя  ШQ3       дя ляяяся сяшя хякяия   хялячя  яя  ШQ3       ця ьяуя   юяфя 
-  фяюяэяшякяьяфяшя     ШQ3       ня ъякя шя хя пя еяыярякятя  эя    ШQ3            яя ъяуя   мяья  йя щяжя эя  ШQ3         ояяяляжясяся
- сязяюя      фя     ШQ3       яя щя уяуякя  ряия   зяяяыя    ея  ШQ3       йя  ня ыя    пя   сякяья
- тяьязя  ШQ3         оя ья   зячя ця ъяяящяия	 тя эя  Шq:S       ля
-  цяпя 	    дя      фя  ия  Шq:S       ля     мяжяяяуяцяоя  уя   пя йя    Шq:S       яясячя ья пя  шя   йя	  фя ьяхяжяуя  Шq:S       лясятя чя    ия яя   ья   
-    Шq:S       фя  ъя ъяэяся   уя тяфя уяея мячя  Шq:S          шятячясяйяьяфяся тяряняхя  ъячя   Шq:S       	 ся уя сятямя чя       ьяня    Шq:S       ея оя   йя  ця	   пяуяхя фяжя 
-  ия  Шq:S         ыя   фя ъя тячя 	  ояяяуя     Шq:S       кяояхя зя ия  пяшячя ня	 пя  ыя  шя  Шq:S       чя хя  ъя     тя     ся        Шq:S       чя  ня   яя  лямяжя фяся  ця    Шq:S        зяхямя сяэяояхя    фя зя  
- щяняря   Шq:S        
- ояпяцяся ияюя лякя  ля      пя  Шq:S       эя  цяшяоя  шя цяоялячяоя йякяняья    Шq:S       ляеямя  	   ля    ня	 ся    юя  Шq:S       жя    кяэяфяця  жя   яя    яя	 
-   Шq:S           жя  оякя    ея   кяеяря кямя  Шq:S       кя ияфя   шя  мя жяяя йя уя ряоя  Шq:S       еякяхяфяъяся еяшя  зя   оя эя     Шq:S          яя кяуя    ря 	  пязя тя 
-    Шq:S       тя    някя   жящя  мя ня ряля   Шq:S          ыя ъя  мя йяоя ея
- пя юяъя    Шq:S          хя
- ьяжяся кя шя  щя  яя  	   Шq:S         пя пя  йящяшяияъя ря  сяеяоя уя  Шq:S       фя  еяэя   фя	  еякя  чя эя      Шq:S        юяря пяуя  ля щя юя ияпя
-   тя     Шq:S       ия  тязяряъяяяыя 	 йяцящя     еячяюя  Шq:S       
-  юя фяцямя мя  эя йя ыязящяеячя   Шq:S       пяьяжяйяуяияпяъяря	   йяуяляйяьяля щямя  Шq:S       шяыя  яя    юя    юя уяця ря      Шq:S        ня
-  ъякяпя тя  жя   	  ъя  ия  Шq:S       кяэя	 хяря   
-  
-  ияия 	 шяняця     Шq:S        юяэяея    ея  мяэяэя
-  уя   тя  Шq:S       хякя
-  шясяцяяя ья эяйя  мя пямя уя  Шq:S          ряэя  ряояхящя    ея   ыя    Шq:S       зятярясяуя ыяхя     ея  ьякязя ля   Шq:S       юя ся              шя ьяыятя  Шq:S         щя   ъя  ыяняяяяяжякяьяэяря яя   Шq:S          ря уя фякя    эя ия чяыящя   Шq:S            мя ия яямя ия зя ряхя  
- яя  Шq:S        эяшя  ия ъя уяияхя   ля    зя    Шq:S        фя  шяхя ыяэяяя жякя яямя   цяпя  Шq:S          ъящячядя еяшя  еяея ряояыяця    Шq:S         щя юя фя   ъя кя ся 
- яя шяыяия  Шq:S         зяэя   мяияпясяэя мя  мя яянядя  Шq:S        еяфя   ия пя эя    шя  	  
- ня  Шq:S       пя   щя ря эятя  дятя  ия уя     Шq:S       чянямя  ъя     ияъя уяыяюяэяляъя
- пя  Шq:S         юяйячя   няъя  	 уяыясяоя  жяня  Шq:S         юя шяня     шясядяюя  кя рятя   Шq:S        ня  кяья  ця   ся  
- уямя  ия  Шq:S       ея юяоя зяъяяя   ця    шя   жяия   Шq:S       няцяжя   фя	 мяфямя  ыячя     юя   Шq:S       шятя  ыя 	  ня  нящя цяся  чя  	   Шq:S       ья   тя    эякяшяцяжящя оя  ияфяея  Шq:S        щяцящя   оя
-  ья 	 ня оя  зятяшя  Шq:S       	      рянясямяюяья  ыяуя    ся    Шq:S       ня 
- ея  яя
- дя юяйяеяяяхя  сяияэя оя  Шq:S           яяля ыя ря  зяля ъячя  пяья  Шq:S        ня ля  йяэяняря      щя   мя  Шq:S        эя   чя    ыя  пяхя	   ъяйя   Шq:S         яяюя     чяуямякя ляфязяюя ьяхя
-   Шq:S           ъя  жяъя      зя зяуяуя    Шq:S        тя ъя ня кя  
- юя   эя   юяфяхя  Шq:S       йямяэяюя     ня  чя   	    уя   Шq:S       хяфя  оякя   ця    жя  ья нямя  Шq:S       ряня эя    ыя эя       шя ояля  Шq:S       уяуя  ия  ряюя    дя      шячяъя  Шq:S         пя мяйяфя  хя      зя юяяящя   Шq:S       ъя 
- пя ся ря ся  ыяъязяся чяияхяуя  Шq:S        ыя   йясяряюяеяряуя  йя    жя   Шq:S       ця жя  кя ляфя оящяия	   жя  сяся  Шq:S         ия   шя    няжяляяяряряея       Шq:S       ряыячяхя  юяня  чяоя цяэя   ъяпя   Шq:S       ня юя цяшяьяяяня уя тя ъяия       Шq:S       кя   мяшяяя цяия жя   кячя ия  ия
-   Шq:S          дяяя  эяляоя  уя     ця     Шq:S       хямяля ъяся   кякя  ня   тяхя     Шq:S       фя  шя чя  
-  уяпя шя 	  цяъя    Шq:S       яя ляхя ья          ля  зяфяья  Шq:S       нясяжяшя эя хя    ея цяжядякяыя пяяя  Шq:S          жяюяуяюяэя зя  няпя ъя ляеятяъя  Шq:S          ъяшяъяьяпя ьяйяся ьяця   ця     ш‘Ъr        ня цяйяьяхя эя   зязязяпя   ся
-   ш‘Ъr        
-    ья    чяьяьякяыяфя фя зяня  ш‘Ъr       еякясячяля пяжякяъяняся   пя       ш‘Ъr       ея   	 няця           ля уяхякя  ш‘Ъr        ля      жяюя ся мяця  ъяпя ця    ш‘Ъr           рямяжя жя                ш‘Ъr       тясядясяъязя ня  ыяея 	  щяияйя      ш‘Ъr        мя тяхя няуя хящя тядяея тясядяфя   ш‘Ъr       эяэяжя	   эяоя  яя  фяеякя   ия     ш‘Ъr       ъя   щяуязя   зя    ияъя ья   тя  ш‘Ъr        фяиячяляйяфя ыя хяьяпя кя цяхяхяия   ш‘Ъr       ья кяхя няряхя  	 тя  уя  хя  еяпя  ш‘Ъr       ъяияояияняея ияжя 	  ьяюяцякяуяжяьящя    ш‘Ъr       ся щя  зя  хя ыяйя яя эя  ня    ш‘Ъr        ья  щяьяшяхяъятятя мя    пяияяя    ш‘Ъr           ця ляоя ыя ия хя эятя  уяэя  ш‘Ъr       мяъякяыямя     	 иямя ияэяля      ш‘Ъr        ея  дя  ояшяляияпядя  зяняюя  жя
-   ш‘Ъr       ря  жяжя йяыяяяея шяжяяя   еяся хячя  ш‘Ъr       йя  ея  ря  тя   уяжя
- жяяязяыя   ш‘Ъr         хя уяжя ия   няшяъя     яя    ш‘Ъr       уяяяъяфяяяияея дя      эя  зякяыя  ш‘Ъr       фя 
- ия   юя   юяня чяэязяфя ляья   ш‘Ъr       дяфя ия    мя пя
-  уя   кя	  
- ея  ш‘Ъr         фятяыяюя   уяяя щя   
-     ля  ш‘Ъr       ья цяьяря   ыяця  щяряця ьяияея ся  ш‘Ъr         ря ся     ня уя ыя     ряэя  ш‘Ъr        шящя шяря	 уяля    оя еящя ояияияья  ш‘Ъr       цямя  эя	 сяцяияшя	   ояся щя  хя   ш‘Ъr       пя мя оя   шяуя ся чя 	 ыяйя фя    ш‘Ъr       ня  цяхя  кящяшяюяэясяяязяня    щя  ш‘Ъr       ря   йяуяыя   
-  
-     ряъя щяюя  ш‘Ъr         цяэя сяняыя  йя ця   
- тязя ря    ш‘Ъr       ря ся   тя  ояряшячяыя шя  эя кя  ш‘Ъr       шяцяцякя кя	    эя    	  
-  зяхя   ш‘Ъr        уя     ыяьязяжяеяуяоя сяуя       ш‘Ъr        ця  ря ъящяля 
- фя ья иячяуящяэя эя  ш‘Ъr       чяря  мяьяяя      ляня         ш‘Ъr       уя жяоя  уякя зя       ьямяся   ш‘Ъr       ря   тя щяыя яяиязя   ня   зя  ияня  ш‘Ъr        мяъя    цяпя	 иячятя	 тя  сяняъяря	   ш‘Ъr        еяля ня ья    чя  цяшя  фязяйя  ш‘Ъr        ьяяя
- оя тя  эя     фяуячя ьяяяря  ш‘Ъr        жяыя йяояся  зяжя щяйя	 пя  рямяжя  ш‘Ъr            уя 	 хя  фяля      ьяряъя  ш‘Ъr       эяця шяия кя   яяуя    ояфя дяъя  ш‘Ъr         тяхя хяуя жя 
-     сякя
- мячяыя  ш‘Ъr        чяия	   йяяя эя эядяья пя ъя     ш‘Ъr            ия фя мяеятя  кяюя  щя    ш‘Ъr       эяся  оякя яямяьяхя ря  чя уя чя   ш‘Ъr         уя  ня     ря  ья    мя   ш‘Ъr       кясяия яя  уяхя
- ея 
-  
- ся  ся    ш‘Ъr          ся 
- зяфя      дя кя нятяяя    ш‘Ъr          ряеярящяфяяя       чя     шя  ш‘Ъr        ияця
-  кя  чя хязя  зя эя       ш‘Ъr        мяуяюяхя  чяуяцякяжя  юяля ня     ш‘Ъr               ея ря мяюяъя ия чящяпя   ш‘Ъr        зяня    йяуя    ыяцяюя   ияяяшя    ш‘Ъr          фязяпя юя яякя хя  пя  яя    ш‘Ъr       шяжяня 
- юячяшяня пя   юя  кя  ояяя  ш‘Ъr        юя    тячя	   
-  мя ия эя
-     ш‘Ъr        иямя    шязяря няшяшя	 ряоямяря эя   ш‘Ъr       ця тяшячяуяжяляряля      уяыя ря    ш‘Ъr       пяфяыя ья зяшя ля ря	   кязяяя  ня   ш‘Ъr         ыятяея  ыя   
-    юяфя   ся    ш‘Ъr       фя  иязятя ря  яярякяея  рящя  ня  ш‘Ъr         няыя   няуящя хячяжя жяюя 
-     ш‘Ъr       щяияеяыякяыяюяыя   цяоясяня юя   ля  ш‘Ъr       йяяятяряэяся   тя жя  юя   няняья  ш‘Ъr       ыяфя	      няляэясяэя  юя ея	  ия   ш‘Ъr       ряыяшяря      тя  ыятяжя йяйя  ся   ш‘Ъr         хя   ияыя   фя ияиясяыя нящя   ш‘Ъr       фя  ыямяэя йя тя ья 
-   сяшя ея   ш‘Ъr         кя   ляся жяеяцяъясятя     тя  ш‘Ъr       тяфядя жязя зяья мя чяфяйя   ляпя   ш‘Ъr         кя  ня жя няия кяля  ьяея ъяся  ш‘Ъr            ыящя юяеяюяыяюя жяфя
-    мя   ш‘Ъr       чяья   хя 
-   чяшя  яя    ияляця  ш‘Ъr        щя    ря уяъятяыяня яя    тя
- ыя  ш‘Ъr           яяыя   щя  уяъяцяряхяляця    ш‘Ъr       ояыя цяияшяняья эяля эя ьяэя тяыяряья  ш‘Ъr       пя     оя  эяьяйяняуяся зя   яя   ш‘Ъr       хя  мяия  тя   оя 	  ъядяиясясяия  ш‘Ъr       ря   тя  ъяжя  йяоя еямязяэя     ш±:“        
-  чянязяуя зя   ця  уя эя уя    ш±:“       
-   жя  зямя ыяжятя эяоя   тяэяпя  ш±:“        зяьяяяшяъяпя ия тя      зя  ия  ш±:“          жя   шя тя    ъяйя чяня     ш±:“       ья   ьяъя хя	  
- хя ля     
- ояцяэя  ш±:“         шя  чяея ся чя мя   фяуя       ш±:“        
-  ся пя щящя фя ья фящямяыя     ш±:“       ья   хя  щячящя ояпяхяуя ля  эя жя  ш±:“       пя  щя     фяляся чящятя	 фяхяря	 щя  ш±:“        хяхяеяхяъя   мя  фяия  ня  ияхя   ш±:“       ъярящяжяжяляняяяшяйяря  фя зякя	  жяъя  ш±:“       щя фя  	 ыяеяйя мяйя оя эя  ця пя  ш±:“             чя    мя ьяья ыя тяуямя  ш±:“       ия фя кя жя ця дя ряыяшя эя уя	    ш±:“       ыя жя	   ья рячясячяля  мя  кя чя  ш±:“         кяэящялящя   сяня ряфя	 	  зя ля  ш±:“       ыячяыя   жяяяня     йяря пя зя   ш±:“        ряняфя  кяйятя    еямязя  сяяя    ш±:“        уятяляьяся   мя ця зяря  еяря ея   ш±:“       жяця сяоя    дяъяъя    ья тя фяжя  ш±:“       пяжя     эя   тя   оя    щяыя  ш±:“       яя пя   	  кя   	 
-   ояья   чя   ш±:“         щятяйяияьятя      яяйятяюярямя   ш±:“       ьяюяыяся ря щя  эяия шячя ия	  оя   ш±:“       пя ъя яя иязяшя пятя ля   уящя ся  ш±:“       ея  хя  ыяхя ня ъяхяюяъя ъя   еязя  ш±:“       	  мязя   ля    йя   уя  ыяьяыя   ш±:“       жячя
-  пя	       мячя  йящя  пя   ш±:“       хя ря йя  ця оя  эя юяея яя
- 	 ья  ш±:“        ия мя зя шя     шякя тя  уя    ш±:“       ыя	 шя  няхяхя мя
- ояюя тяея  ся    ш±:“       ояяяуяжядя  юятя жя     уяыясяня   ш±:“         жя ия зяфяля  ня хяня   нямя	 оя   ш±:“       мя няжячяляья  
-  ъя     тя ля юя  ш±:“       дя  фя  эя фя  ня 	 зяея йя     ш±:“         шязяшя ыясяоящя йяйя 	  еяляфя    ш±:“        уя зящя няйя   ьяпя   ря  йяфяпя  ш±:“       фяхя  няуя тя цяжяпя ъя  
- пя ряья  ш±:“         ля   ыялякяжясяяя эякячя    кяжя  ш±:“          яяня кясяэя     юяуя  пяпя ыя   ш±:“         ляияшя  щяжяшякя    ся яя  эя   ш±:“              шя щяоя      чяця    ш±:“        ыяьяхяея щя  ия юя  эяияьяъя     ш±:“        юяияуяия ияшя еяря зя  яяля  фямя  ш±:“         ияеятяця кя ыя шяся ья     пя  ш±:“       сяыя оя  юяця    	  зя  йя     ш±:“        зяпякя чя   шя  	       кяяя  ш±:“       	   ля ня уя  дяия  зя еязязяся   ш±:“       яя         щя 
- ля юя   иякяшя  ш±:“       уяхя 	 ъя    чямя оя   	 мя  яяья  ш±:“        тя фязядяфя жяыя ея еяся	  йяояюяля  ш±:“       	 мяжяуя тяиячя  сяля ия  йяря   уя   ш±:“       кя  кя  мяюяия  зяыяея ня   тяняья  ш±:“       цякяхя  кя ьяьяьяця зя тя    ця   ш±:“       зяря  зя 
-       сяяяйя         ш±:“       оячя ряйяяяюяцячя чяяя
-  ыяьяжя      ш±:“         яя       мя жязя      пя   ш±:“       мя мяря ия	 уяжя     зя сяияля сяня  ш±:“          ря   цяэя   ияцяшяюя  ья    ш±:“       зятя тя  хяжяняря ря фяляьяня  жя   ш±:“          
- пя ря  мя    ряья    яя   ш±:“       ъяяящя  иякяця      эяпя хяляня  ря  ш±:“         мяэяея фя  тя ъя     кя     ш±:“        цяъя ьячя уя	  шя  уя     ья жя  ш±:“       	 шяня  
- еяжя       шяэя рящяйя  ш±:“       чяяяжяяя  ея ляфя   ря щяжяфяуятя    ш±:“         цяэя йя эя ся 	 пя хя   ря  хя  ш±:“       яяьяыямя     эя  эя еякяфяжяря    ш±:“       тякя  ыянякя ъя мя   пядя  цящя   ш±:“       ъяфясяяя   ыячячя ся  ыя чямя жязя  ш±:“       ия 
- оя тя яяля яядя     хя     ш±:“          ъя хя  ря зяня  ря   
-  эя  ш±:“        яя эя  	 йя иялярясяья
- ъя  еяхяэя   ш±:“       чячя  щя   юяяя ря      эяйяфя пя  ш±:“        ыякяжя   	 яяйяиясяшяйя ляия   юя  ш±:“         ця фя ия ряця  эяся       ня  ш±:“          ея
-    ня 
-   ъямя пя эящя   ш±:“        сяжя	 мя   зя ея  еяйя  йяня эя  ш±:“       пя   шя кя  щя      няяя жяыя  ш±:“       яяъясяхясяея уя чя    ня	  яяия    ш±:“       ыя  уя        
- ляия  няйяэя     ш±:“         жя  	 тяйяцятящяия пя  фя ья няфя  ш±:“        сяэя йясяия хяня  фяья	 лячяля  зя  ш±:“             
- пя ся еяжя  
- пя	 эяшяйя   xТі         юя ияяяфя кяья кя ья цяэя   
-   xТі         юяьяия шя ея  юя ця ея юяэя уя  xТі               эя    зя тяцяоя  зя фя  xТі          мяфя  шя  юя яясяцяцяфя юяшяэя  xТі       юяея   ояряшяоясяояияшя	 ея  пя
- эя     xТі        хя пяряшя юя фяшя  ця жямяеяжя     xТі        кяфяэящя  ея   жя яяхяняоязяфя  фя  xТі       щя      ыя  ыя     ъя щяшя   xТі        ыя ня шяюяъя ъя  ияъяыящяцяыяьяоя    xТі       кя ряйяия ъя    оя
- иякя зя юяля    xТі       эя жя        чямяля хя пя      xТі       ыя  жяеяюя  	  ся пятя ъя щяня    xТі        цяъямя     ся      	  тяюяця   xТі        кязя чя яяхяеяпя  ея    
- йя ия   xТі           ояжя   фяля юяья   юяня
-    xТі       сяшянясящя юя уямя   дяяя 	 хяшя    xТі        оя ня      ея яязяюяуяья  пяця   xТі           оя иячяуяряфяыя эяся
- нячя 
- уя   xТі             эяуяяяъяюяъяэяхя     оямя  xТі       ьяжяьятяля 	   	  уя щяшяья     ця   xТі        ъяфядяхя  ця   эяъяря нятяняъясящя  xТі        фя    уя яяся  ля        уя  xТі       
- нячясяяяря ряжяуя  кяпящяшяея ця    xТі         мящяпя   зятя    
- йядякяуяфя тя    xТі         ыя   ияояъящя   
- чя цяия   тя   xТі       эя
-     еяэя ля  йя чяыя   пяья  xТі       ряйясяпя  няля пяхяпяхяряхяюязя  зяшя  xТі       оя  ъяья	 чя     юяйя жяпящяфязяяяря  xТі       
-    эя  ця  щядякя яя  пя     xТі       кяъя уя  яя   ыямяйя 	  ця ляъя  фя  xТі       фяся щя   йя жяпя  пя    яя ояйя   xТі        щя  чящяуя ня ояуя ня          xТі       зя ъядя ояня   яя лямятя ъяйя   тя  xТі          тяря	 	 ияьяряря щя  кя       xТі        ия чяуяшя  ся  ия   пя яя 	     xТі       еяфя    ыя мя жяъяея   яяйяуя эя  xТі       тяоя  зящя ся   мя жяхямяея  кя    xТі         тя  пя 
- эяхя щя йяхя тя чяияпя  xТі         ця ыяця	     зя яяля   пя ля  xТі        оя   юяояэя няоязя   яяпяыя ея    xТі        ляея  яя    юячя  ояея  ьяся   xТі           ъя   шяшяьядя фяжяья ряся     xТі       	   
- йя  фяыя    юяся зяся уяляэя  xТі        зя  зятяуяпяияуяяя яя  шяуяюяюя йяря  xТі           юяея   ля    	   тяпя  йяря  xТі         яя    ря  зя шя кя ьяьяля ляця  xТі        чя  яя яя	  ня   щякякяляияья  	   xТі       ця     фя      юяня ня    уя  xТі           ля  	 тяуя ояця   зя ряияряоя  xТі         тя юяъялячя 	 кятяэяъяья     ья  xТі         ся  пяпяхяця   оя  ыя ъяцятя    xТі       уя ъяшя     фяжя сяжя хя   хяея  xТі        фяеяьяжя ояляпяья оя пязя  ця яякя  xТі           ыя  мя ьямязяряшятя зяля   кя  xТі        ряря    яяея  хяфячяшяйя няыя уя  xТі         чя  	 йяыяйя	 ияья  яяля 	 оя юя  xТі        
- ыяля ця   ыяъя   яя
- жяыяия ня  xТі       зяъя дя
- яя юяояряеяюя кя  шя  щяця  xТі        ыящяия  фя    сяфя мяся щя фяъя  xТі        пя щя   ыя	 юя фящяпя   ця  юяся   xТі       цящяюя  мя   тя сяфяняиятямясяшяшяуя  xТі       сяшя хя   	   цяоя  кя 
-   фя   xТі       ояья     зяия уяеяця иярятя йя     xТі       мя ея тя юяыя сяняшя
- яяряся яя
- жяйя  xТі       	 дя  пя      шя
-    пяфяйя кя  xТі        ся     уяъяыя   дяия зяюя	   ря  xТі        оя оя 
-  тяыяея     ъя  ья ня  xТі       эя  хя   ъя кяпя    ляуя   шяыя  xТі          эятя уя    ся ля фя ыяця йя  xТі       уя  тяряуяхя	  хярянязя жяьяня  сяжя   xТі       яяья дя  жямя  мяьяйя	 уя йячя     xТі       кяъя  мяняпяшяфяйяья  чяоя
-  кя уя оя  xТі       ия фяжя    ля эя еяуя чяця  юя   xТі       ъя сяоятя  ляюя      тяця фяоя мя  xТі       зяшя  
- зящя     ъяся  кяюя
- ьятя  xТі        ия  ыяняхячяля    кяня  ся чя   xТі       	 ся шяжяэяпя    чяцяхя кя уя ьяья   xТі        ся  ря ья еяея ея фя  чяяяфя зя   xТі       шящя яяыя  чяшя 
-  ся  тя  ряъяюя   xТі       лязяыя   хяпяжямя пя кя   ця фяхяъя  xТі       чя   	 яязя ляэячя  уяцяжя  юя    xТі         мяжязя    щя ця    
-  ця  ся  xТі        ся ыяця	 мяыя ыяхяэяфяяя	         xТі        шя зя  
- жякяля ияия чя  йяэя    xтєУ       кя  яяия ея хя    
- шямя ья  
- жя   xтєУ       жя ъяпяея йя ся	 чя       шя дя  xтєУ         жя    ря цятяыя  эя  яясяряшя  xтєУ       юяряиятя уя ъя  ця  шя        фя   xтєУ        тя зя пя рясязя няжяжяеяпяяяряуя кя  xтєУ       мяуязя  ня мя ья шя     уясяшяюя   xтєУ       юязяъя   хя  ия        
-  ыя  xтєУ       щя юя  ьясяоя    ояыя  ряця фяля   xтєУ        яяря	 ыямяъяиятя   ия хяхязяоя жяшяхя  xтєУ        щямя оя хязя	 ия чя фя пя   ля    xтєУ       мякя	  пяеяйя   цяяяея шя   жяйязя  xтєУ           оя       еяняшяьяжяоя	 чя   xтєУ       яяяяъя   юя  фяля  ияэя
- ця    ря  xтєУ          мя  яяляея ъя ляйячя	  сяъя    xтєУ       някяняпяжяшя ьяряшяияеязя  ея  ъяуя   xтєУ       яяея йя   ляяяня      иячя шя  эя  xтєУ        фяйяяямя ья ия  мяюя  ся шя     xтєУ         юяъяюя ся    ия 
- чяуя ьяия    xтєУ       оя мя хяуяуя фя  цяфяфя
-         xтєУ        ляхя  мячя   ыязя  ояжядя  ияоя  xтєУ       тя  няжя  ляряря жяэя ия  ыя  эя  xтєУ        
-  ъя
- кя   ня
-  чякя   уя       xтєУ       ыя    тя яя жякяйя ля мязяъяъя    xтєУ       ъяэя фя  чя   ряйяюя   цяяя зяыя  xтєУ       щя 	      жямяея иямяшяфя хякяйя    xтєУ       ьяъя  юя  ця   ня шяоя яя  щя    xтєУ          жякя уячя	 ця
- ляяя   няхя  мяцяэя  xтєУ         ъя  яямя еямя   щяыяйяйя уя    xтєУ        чя     уяея 	   юя пяья    ряыя  xтєУ            ъя ця  эямяыяряпя мяфя   шя  xтєУ       	 
-       яяяя  ъя           xтєУ       зя   ля ля  ьяея 	 кя зя  няшящя  xтєУ       ея  кяшяюя
-     ьяря  зящяюя ыя    xтєУ        
-     цяфяюяшяжя яяыя зятяоя  зя    xтєУ       шя шяжя 
- ця эяняхя   жя  ояуяшя
-   xтєУ         ря ыяияъя  ъяеяуяоя няжяьяия щяюя  xтєУ       хяря  ъя  оящяля  жя ляуя  пя  мя  xтєУ       
-  оя  чя  жя  тя
-      зя ця  xтєУ         хя яяшя  мяпяъяшяьяляыя ыя ъя мя  xтєУ       хя уя ря тяпяэя   эя сячяря ея ья  xтєУ        эяхяшя ъяъя    ья      кя     xтєУ       эяйя   няья ъя    ия ьяйя ия
-  
- ия  xтєУ         эяхяся  ыя     ляшя  фя мя   xтєУ       эяоя  ья   зяюя	  
-   ьяняэя   ця  xтєУ       уяъя  тя   чя уякяия
- кяшя
-     яя  xтєУ        ряцяияжяяя  оя яя мяйя пя	 жя  ьяия  xтєУ         чя   ея   хяяя хякя ля ия    xтєУ       ъящяея  мя юяжякящя шяуя   юямя ряжя  xтєУ        оя	   юя мяыяэя  тя ыя эя ыя оя  xтєУ            йя йя  ияня  шящямяиясязя    xтєУ        хяяя   шя     юяья ья ря ряхяхя   xтєУ       
-  уяхяяяоя  мяяя  хятя ияся  мячя   xтєУ         эящящяыя	 фяпяэя жя  ияшя ья ья    xтєУ       пя  ояря     шяюяшя  ця        xтєУ        фя  хяюяйя  йя    ъя
-    ря   xтєУ       ыя  ъяхяуя  ся  ляшяюякяоя  
-    цяъя  xтєУ       дяюятя щя  ля   	  щя  чясяьяыя    xтєУ       йя  
- ыямяшя эя  ея ея ня  няэяйя   xтєУ        оя   ця  эязямя ыяжя кяыяэякя  рямя  xтєУ        щяжя няоякя  сяюямя   мя   фя   xтєУ       	  уя яяыя дяляюящяъя    чяля эя   xтєУ        тя ояля     уя  уя фя  ия    мя   xтєУ        мя 
- фя  чя  оя  дятячяэяояеяяя    xтєУ       ея 	 ляэякяйяюяяяпя   няряеяоя       xтєУ       иярячяъя   шя	 мяяя  юяляыяюяня мя   xтєУ       йяця мяыямяеяыя йя кя пятярямяъя   ъя  xтєУ        яя 
-    еяйякя
- зя  ея 	  мяия   xтєУ         мя щя  эяця  чятяря
-  щя	 яяыяъяыяъя  xтєУ       мяся   эя  цяхя ыя      ья щя  xтєУ        ея фя   фяжя ья	    эя ряля    xтєУ       йяпякя    юятячя еяюяуяыясяцяля  ня  xтєУ        
-  шясяняфязя   ляшязя чя ня
- кязя  xтєУ         хя  
-   йяуя	 фя  пя  ня мяюя   xтєУ        уя    ця	  
- ряяящямя йясяля
-   ыя  xтєУ       мя яясяря хя
-   ыя ся  сяшяъя     xтєУ       ья ляйя ыя уя чяеяфя  чя  кя йя   xтєУ       жяоякя  щя ея эя    ьякяляшя	 йя   xтєУ         тя   юя 	 ья  цятя         xтєУ       кя оя  кя  ня фя  ляья  тяюя    xтєУ       зяыя ыяйяоя яя лятяяя   эяуяэякя  ыяея  xтєУ         ъя       юяхя фя  пямя  цяця  xтєУ        ъя   ея   юя чя эя ся ыяня тя     xтєУ         эяяяуя     ря  йясятя    ьяфя  xтєУ        еящя ья  ья   пяпя уязяэя ря зя  X{у         ся тя  тя юя  мя   нямя мя фя  X{у       ея ня  дя   юяцяпядяюя ея   зя ня  X{у        
-     ця оя ня мя       еячя  X{у        уя  йя зяйя        яя ряря ря  X{у       щяияря  
- ояжя   ся ряляуяэя ня мя  X{у       зяся    кя	  ляяя  шяля  ля     X{у       эя  хяця кя   ыячя зямяхя  яя ля  X{у       кязя хя чяия  оя ия   яя  уяеяря  X{у       ря
- чяпя мяъя  щятя  щяяячя эяыяыя юя  X{у        сяпя    цяыя  уяюя  	 шяюя юяеячя  X{у       зяфя   щядяия ья   щяря  ся  яяйя   X{у       эя       тя   кякяжя    ця ряжячя  X{у        сяия йяъяряфя	   зяйя  
-  ля эязяпя  X{у          ня  жя ся ня юя  сяъя  эя   X{у       чяся     чяья   яяшяря      кя   X{у       ля ея ся ня  ьяея  ияяямя  юя     X{у        ья
- ляоя ря шяфя         мяжяфя  X{у       ряъя  кя   ня мякямя   иярямя   эя  X{у       щя            ря щяжя йя  ня   X{у       еязяэяэя  чяяяэямя ця еяляля ля  зя  X{у         ряьячя няыяшякяия  ья  ъяыя	 ъя   X{у         ия яя   ря   	 ея тя    цярякя  X{у       няфя
- ця ьяея  уя  ря яяэязямяшя 	   X{у       дя юяряъя   ея  цяяя  яя  ря 
-    X{у       еячя яя     кя чяэя  ся юяряня   X{у        яяыя ияяящя мяфя  ся ня    яя ыя  X{у         жящякяияря     
-  уя эяця     X{у       зяйя ця  ря  еяъяья уя щякяйяпяля   X{у          юяля ця    	    	    ряпя  X{у       ъя
-  	 ця ъяся ряыяхя фя юяуя  	 тяся  X{у           
- йяья 
- шя яя ряяясячя  яяоя  X{у         ьямя чяхяпя  эяуяняпя цяоя   цяфя  X{у        яя хя яя       йяъя ля   ыяхя   X{у       пя цякясяхяжяфяюяфяяя жязя 
-  шя     X{у       нящяпя ня  жяеяля 	 юя уячячя 	 ряхя  X{у        яяяя еяияхя   юяняряъя  уяуя  
- оя  X{у         ьяеязя  хяшяуяояэяья ья         X{у       
- ия кя    хяжя    йямя    фя 	   X{у        йясяэя эя эя еяояпя	 пя
- лязяля цяля  X{у         цяуяшя зяеяуя      эя  ся  зяжяжя  X{у       ея ня    няля  ъя мяхя ея
- ья  уя  X{у             юяья  йя 	      дякя 
- ыя  X{у         кяляея	  йя зяря  пя жя  уя	    X{у        дя   шяеяхя   лязя    жясяйятя    X{у        пяшя   чямя    ця ря ия сяеяйя  X{у               ъя уямя фя кяпя      X{у         ыяояряхя  еяья  ыя    чя пяряюя  X{у        ъя    ся     пяюяэя шяоя  ря  X{у        яяия    эя  зяуя няця
-   зяюя   X{у       ьядя мямя фя  сятя ья  йя  ся чя  X{у       ля   чя ъяэя  ря пя    сяия	  чя  X{у       ия  ьяйяря      ья  жя  ъя  кяюя    X{у         хяцяэя ъяыя  
- тяъяъя    юя     X{у        ъяря	   оя   мя         пя   X{у       тя  жя 	   яяля  хя тяжяыя  мя   X{у       чяъя  фя   йяюя  еязя  
- эя
-      X{у        хяйя     кя ся жя ыяляия       X{у        йя   еяйя йямяыя уя оя   зя 	   X{у           юя йя фя   хямя	 тя ъяия   дя   X{у         эяхя  мятя  лязящя мяря  эяюя   X{у       мяея  юя  эятяряуя    ия   лязя   X{у        уяья ъя хяпя      шя шямя оя 	   X{у         фя хящя някяуя  ряшяйя оя     ия  X{у       жякя ря 
- сяжя      жя
-   ля юя  X{у       тяпяфящя йя щя ся  жя ряжятя  фя      X{у           ля  ъя ся яяояья жязяеязяхя   X{у        хяоядяыя  кя   ияжяья       	   X{у       жя    ея сяцяляняфя    яяфяхя юя  X{у         ия  ья   чя няпяояжяъя чя ыя   X{у       хяияяяся ыя	 еяпяюяхя ияэяья  шятя    X{у       	   ъя рякяфя эя уя эя      яя  X{у        пяэямяуя	   шякяояцяпяхямямя  ея эя  X{у        эя  эяряуя	 хяшяюя  шя   ля фя   X{у       шяуя        фязяюя  дямяря пяцямя  X{у         ся юя йя оя    уямя йяся 	     X{у         уя   оя щя     чя	  щя    жя  X{у       юяшялякяжя  
-   шя    пяля кя     X{у       пяйя     еямяеяня зя    шядя
-      X{у       жяъя йя эяйяъяуя    дя ыяеяъяжя пяэя  X{у         няля     шя зя  яяуяря эяря ця  X{у       тя кяьяхяыя эя	   еяяяняхя  эяяя	 яя  X{у         эяъя       зяхя ея      ьяшяйя   X{у           эяэя уяыядя ця ся жячя ояыя   X{у       
