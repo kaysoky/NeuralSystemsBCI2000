@@ -81,6 +81,10 @@ template<> class FunctionCall<void()> : public Runnable
   void OnRun() { f(); }
   void (*f)();
 };
+
+// With Borland C++ Builder 6, compilation will fail here because BCB6 does not
+// accept function signatures as types. This could be fixed by replacing
+// function signatures with function pointer signatures: void(T1) -> void(*)(T1).
 template<typename T1> class FunctionCall< void(T1) > : public Runnable
 {
  public:
