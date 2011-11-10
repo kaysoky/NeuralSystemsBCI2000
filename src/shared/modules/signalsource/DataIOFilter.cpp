@@ -199,7 +199,8 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   PreflightCondition( Parameter( "SamplingRate" ).InHertz() > 0 );
   PreflightCondition( Parameter( "SampleBlockSize" ).InHertz() > 0 );
 
-  if( Parameter( "SourceChOffset" )->NumValues() != Parameter( "SourceCh" ) )
+  bool sourceChOffsetConsistent = ( Parameter( "SourceChOffset" )->NumValues() == Parameter( "SourceCh" ) );
+  if( !sourceChOffsetConsistent )
   {
     bcierr << "The number of entries in the SourceChOffset parameter (currently "
            << Parameter( "SourceChOffset" )->NumValues()
@@ -209,7 +210,8 @@ DataIOFilter::Preflight( const SignalProperties& Input,
            << endl;
   }
 
-  if( Parameter( "SourceChGain" )->NumValues() != Parameter( "SourceCh" ) )
+  bool sourceChGainConsistent = ( Parameter( "SourceChGain" )->NumValues() == Parameter( "SourceCh" ) );
+  if( !sourceChGainConsistent )
   {
     bcierr << "The number of entries in the SourceChGain parameter (currently "
            << Parameter( "SourceChGain" )->NumValues()
@@ -265,10 +267,13 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   adcInput.SetChannels( Parameter( "SourceCh" ) )
           .SetElements( Parameter( "SampleBlockSize" ) )
           .SetUpdateRate( Parameter( "SamplingRate" ).InHertz() / Parameter( "SampleBlockSize" ) );
-  for( int ch = 0; ch < adcInput.Channels(); ++ch )
-    adcInput.ValueUnit( ch ).SetGain( Parameter( "SourceChGain" )( ch ) * 1e-6 )
-                            .SetOffset( Parameter( "SourceChOffset" )( ch ) )
-                            .SetSymbol( "V" );
+  if( sourceChOffsetConsistent && sourceChGainConsistent )
+  {
+    for( int ch = 0; ch < adcInput.Channels(); ++ch )
+      adcInput.ValueUnit( ch ).SetGain( Parameter( "SourceChGain" )( ch ) * 1e-6 )
+                              .SetOffset( Parameter( "SourceChOffset" )( ch ) )
+                              .SetSymbol( "V" );
+  }
   adcInput.ElementUnit().SetOffset( 0 )
                         .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
                         .SetSymbol( "s" );

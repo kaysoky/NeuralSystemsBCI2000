@@ -55,6 +55,20 @@ vAmpADC::vAmpADC()
   BEGIN_PARAMETER_DEFINITIONS
    "Source int SourceCh=      19 16 1 128 "
      "// number of digitized channels total",
+   "Source floatlist SourceChOffset= 19 "
+      "0 0 0 0 "
+      "0 0 0 0 "
+      "0 0 0 0 "
+      "0 0 0 0 "
+      "0 0 0 "
+      "0 % % // Offset for channels in A/D units",
+   "Source floatlist SourceChGain= 19 "
+      "1 1 1 1 "
+      "1 1 1 1 "
+      "1 1 1 1 "
+      "1 1 1 1 "
+      "1 1 1 "
+      "1 % % // gain for each channel",
    "Source int SampleBlockSize= 8 5 1 20000 "
      "// number of samples per block",
    "Source int SamplingRate=    2000 2000 100 20000 "
@@ -137,6 +151,7 @@ void vAmpADC::Preflight( const SignalProperties&,
 	tNumDevices = faGetCount();
 	if (tNumDevices < 1) {
 	  bcierr <<"No vAmp devices were found."<<endl;
+	  return;
 	}
 	if (tNumDevices > 1) {
 		bcierr << "Only one device can be present on the system at a time."<<endl;

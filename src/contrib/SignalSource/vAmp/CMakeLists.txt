@@ -19,12 +19,13 @@ SET( HDR_PROJECT
   vAmpChannelInfo.h
   vAmpThread.h
   vAmpDisplay.h
+  ${BCI2000_SRC_DIR}/shared/gui/GUI.h
 )
 
 # Tell the macro to link against the vAmp/FirstAmp API found in EXTLIB
 BCI2000_INCLUDE( "VAMP" )
 BCI2000_INCLUDE( "MATH" )
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/AppModule.cmake )
+INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/gui )
 
 IF( WIN32 )
   # Create the signal source module
