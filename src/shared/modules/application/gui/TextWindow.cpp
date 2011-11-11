@@ -42,8 +42,9 @@ TextWindow::TextWindow()
 : mpForm( new QWidget() ),
   mpEditField( new QTextEdit( mpForm ) )
 {
-  QGridLayout* pLayout = new QGridLayout( mpForm );
+  QHBoxLayout* pLayout = new QHBoxLayout( mpForm );
   pLayout->addWidget( mpEditField );
+  pLayout->setContentsMargins( 0, 0, 0, 0 );
   mpForm->setVisible( false );
 }
 #endif // __BORLANDC__
