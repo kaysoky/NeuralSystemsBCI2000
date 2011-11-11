@@ -62,11 +62,18 @@ gHIampDevice::Init( int inPort )
       bcierr << "Could not get configuration from gHIamp: serial " << mSerial
              << GetDeviceErrorMessage() << endl;
 
+    UCHAR channels[ cNumAnalogChannels ];
+    if( !GT_GetAvailableChannels( mDevice, channels, cNumAnalogChannels ) )
+      bcierr << "Could not get list of available channels from gHIamp: serial " << mSerial
+             << GetDeviceErrorMessage() << endl;    
+
     mHWVersion = GT_GetHWVersion( mDevice );
 
     // Initial configuration
     for( size_t i = 0; i < cNumAnalogChannels; i++ )
     {
+      mConfig.Channels[i].ChannelNumber = i + 1;
+      mConfig.Channels[i].Available = channels[i];
       mConfig.Channels[i].Acquire = true;
       mConfig.Channels[i].BandpassFilterIndex = -1;
       mConfig.Channels[i].NotchFilterIndex = -1;
