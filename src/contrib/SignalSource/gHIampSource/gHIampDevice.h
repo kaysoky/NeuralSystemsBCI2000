@@ -83,6 +83,7 @@ class gHIampDevice
   BYTE**      mpBuffers;
   OVERLAPPED* mpOverlapped;
   size_t      mBufferSizeBytes;
+  size_t      mExpectedBytes;
   std::map< int, int > mAnalogChannelMap;
   std::map< int, int > mDigitalChannelMap;
 };

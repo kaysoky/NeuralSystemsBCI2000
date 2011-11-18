@@ -29,12 +29,22 @@
 #include "gHIampADC.h"
 #include "BCIError.h"
 
+#include <sstream>
+
 using namespace std;
 
 // Valid Sampling Rates and Sample Block Sizes
 #define NUM_MODES 4
 static int ValidRates[NUM_MODES]      = { 256, 256, 512, 512 };
 static int ValidBlockSizes[NUM_MODES] = {  16,  32,  16,  32 };
+
+static string ValidModes = 
+  "256 Hz: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 64 128 256 \n"
+  "512 Hz: 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 64 128 256 \n"
+  "600 Hz: 4 5 6 7 8 9 10 11 12 13 15 16 17 32 64 128 256 \n"
+  "1200 Hz: 8 9 10 11 12 13 14 15 16 32 64 128 256 \n"
+  "2400 Hz: 16 32 64 128 256 \n"
+  "4800 Hz: 32 64 128 256 \n";
 
 RegisterFilter( gHIampADC, 1 );
 
@@ -91,6 +101,7 @@ gHIampADC::gHIampADC()
     //    "1 Calibration, "
     //    "2 Impedance "
     //    "(enumeration)",
+    // Digital "Trigger Lines" support not tested yet either
   END_PARAMETER_DEFINITIONS
 }
 
@@ -107,14 +118,16 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
   // Determine if the sampling rate and sample block size is valid
   if( Parameter( "SamplingRate" ).InHertz() < 1.0 )
     bcierr << "SamplingRate cannot be zero" << endl;
-  bool validMode = false;
-  for( size_t i = 0; i < NUM_MODES; i++ )
-    if( static_cast< int >( Parameter( "SamplingRate" ) ) == ValidRates[i]
-      && static_cast< int >( Parameter( "SampleBlockSize" ) ) == ValidBlockSizes[i] )
-      validMode = true;
+  int sampleRate = Parameter( "SamplingRate" );
+  int blockSize = Parameter( "SampleBlockSize" );
+  gHIampADC::ModeMap modes = ParseModes( ValidModes );
+  bool validMode = modes[ sampleRate ].find( blockSize ) != modes[ sampleRate ].end(); 
   if( !validMode )
+  {
     bciout << "You are using an unsupported sampling rate/sample block size combination!" << endl
            << "Be aware of your limited karma!" << endl;
+    bciout << "Supported SampleRate/SampleBlockSize combinations: \n" << ValidModes;
+  }
 
   // Determine if the requested amps are connected.
   gHIampDeviceContainer devices;
@@ -208,7 +221,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
   {
     // No SourceChList has been specified; just record SourceCh channels
     int channels = Parameter( "SourceCh" );
-    if( Parameter( "DeviceIDs" )(0) == "auto" )
+    if( Parameter( "DeviceIDs" )( 0 ) == "auto" )
     {
       for( size_t idx = 0; idx < devices.size(); idx++ )
         channels -= devices[idx].MapAllAnalogChannels( ( int )Parameter( "SourceCh" ) - channels, channels );
@@ -228,17 +241,6 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
     if( Parameter( "DeviceIDs" )(0) == "auto" )
       bcierr << "If you're going to specify SourceChList, you need "
              << "a corresponding mapping of amps in DeviceIDs." << endl;
-    if( Parameter( "RefChList" )->NumValues() != 0 )
-    {
-      if( Parameter( "RefChList" )->NumValues() != Parameter( "DeviceIDs" )->NumValues() )
-        bcierr << "Number of entries in RefChList must equal number of entries in DeviceIDs." << endl;
-
-      // Set up referencing
-      for( int i = 0; i < Parameter( "RefChList" )->NumValues(); i++ )
-        for( size_t dev = 0; dev < devices.size(); dev++ )
-          if( devices[dev].Serial() == Parameter( "DeviceIDs" )( i ) )
-            devices[dev].SetRefChan( ( ( int )Parameter( "RefChList" )( i ) ) - 1 );
-    }
     for( int i = 0; i < Parameter( "SourceChList" )->NumValues(); i++ )
     {
       // We need to process and map channels accordingly
@@ -263,6 +265,26 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
       }
     }
   }
+
+  // Set up referencing
+  if( Parameter( "RefChList" )->NumValues() != 0 )
+  {
+    if( Parameter( "RefChList" )->NumValues() != Parameter( "DeviceIDs" )->NumValues() )
+      bcierr << "Number of entries in RefChList must equal number of entries in DeviceIDs." << endl;
+
+    for( int i = 0; i < Parameter( "RefChList" )->NumValues(); i++ )
+    {
+      for( size_t dev = 0; dev < devices.size(); dev++ )
+      {
+        if( Parameter( "DeviceIDs" )( i ) == "auto" )
+          devices[i].SetRefChan( ( ( int )Parameter( "RefChList" )( i ) ) - 1 );
+        else if( devices[dev].Serial() == Parameter( "DeviceIDs" )( i ) )
+          devices[dev].SetRefChan( ( ( int )Parameter( "RefChList" )( i ) ) - 1 );
+      }
+    }
+  }
+
+  // Close the devices
   devices.Close();
 
   // Inform the system what our output will look like
@@ -339,14 +361,6 @@ gHIampADC::OnInitialize( const SignalProperties& Output )
             channels -= mDevices[idx].MapAllAnalogChannels( ( int )Parameter( "SourceCh" ) - channels, channels );
     }
   } else {
-
-    // Set up referencing
-    if( Parameter( "RefChList" )->NumValues() != 0 )
-      for( int i = 0; i < Parameter( "RefChList" )->NumValues(); i++ )
-        for( size_t dev = 0; dev < mDevices.size(); dev++ )
-          if( mDevices[dev].Serial() == Parameter( "DeviceIDs" )( i ) )
-            mDevices[dev].SetRefChan( ( ( int )Parameter( "RefChList" )( i ) ) - 1 );
-
     for( int i = 0; i < Parameter( "SourceChList" )->NumValues(); i++ )
     {
       // We need to process and map channels accordingly
@@ -357,6 +371,21 @@ gHIampADC::OnInitialize( const SignalProperties& Output )
             mDevices[dev].MapDigitalChannel( s.Channel() - 1, i );
           else
             mDevices[dev].MapAnalogChannel( s.Channel() - 1, i );
+    }
+  }
+
+  // Set up referencing
+  if( Parameter( "RefChList" )->NumValues() != 0 )
+  {
+    for( int i = 0; i < Parameter( "RefChList" )->NumValues(); i++ )
+    {
+      for( size_t dev = 0; dev < mDevices.size(); dev++ )
+      {
+        if( Parameter( "DeviceIDs" )( i ) == "auto" )
+          mDevices[i].SetRefChan( ( ( int )Parameter( "RefChList" )( i ) ) - 1 );
+        else if( mDevices[dev].Serial() == Parameter( "DeviceIDs" )( i ) )
+          mDevices[dev].SetRefChan( ( ( int )Parameter( "RefChList" )( i ) ) - 1 );
+      }
     }
   }
 
@@ -505,6 +534,24 @@ gHIampADC::DetermineNotchNumber( int& oFilterNumber ) const
   }
   delete [] filt;
   return found;
+}
+
+gHIampADC::ModeMap gHIampADC::ParseModes( string modes ) const
+{
+  gHIampADC::ModeMap ret;
+  istringstream ss( modes );
+  string line;
+  char label[4];
+  while( getline( ss, line ) )
+  {
+    stringstream sl( line );
+    int sampleRate = 0;
+    int blockSize = 0;
+    sl >> sampleRate >> label;
+    while( sl >> blockSize )
+      ret[ sampleRate ].insert( blockSize );
+  }
+  return ret;
 }
 
 // **************************************************************************

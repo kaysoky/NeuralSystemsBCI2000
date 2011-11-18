@@ -29,6 +29,9 @@
 #include "gHIampDevice.h"
 #include "BufferedADC.h"
 #include "PrecisionTime.h"
+#include <map>
+#include <set>
+#include <string>
 
 class gHIampADC : public BufferedADC
 {
@@ -45,6 +48,9 @@ class gHIampADC : public BufferedADC
  private:
   bool DetermineFilterNumber( int& oFilterNumber ) const;
   bool DetermineNotchNumber( int& oFilterNumber ) const;
+
+  typedef std::map< int, std::set< int > > ModeMap;
+  ModeMap ParseModes( std::string modes ) const;
 
   int mMasterIdx;
   gHIampDeviceContainer mDevices;
