@@ -29,7 +29,11 @@
 
 #include "BCIException.h"
 
-#define bciassert(x) { if( !bci::id_(x) ) throw bciexception( "Assertion failed: " << #x << "\n" ); }
+#if BCIDEBUG
+# define bciassert(x) { if( !bci::id_(x) ) throw bciexception( "Assertion failed: " << #x << "\n" ); }
+#else // BCIDEBUG
+# define bciassert(x)
+#endif // BCIDEBUG
 
 namespace bci
 { // The id_() function is there to avoid "condition is always false" and

@@ -31,7 +31,6 @@ IF( MINGW )
   ENDIF( NOT USE_STD_QT AND GCC_VERSION VERSION_LESS 4.0 )
 ENDIF( MINGW )
 
-
 # This will confuse non g++ compilers
 IF( CMAKE_COMPILER_IS_GNUCXX )
 
@@ -140,3 +139,8 @@ ADD_DEFINITIONS(
 # Add global definitions.
 ADD_DEFINITIONS( -DNO_PCHINCLUDES )
 ADD_DEFINITIONS( -D_USE_MATH_DEFINES )
+
+# Control behavior of bciassert() macro
+SET( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBCIDEBUG=1" )
+
+
