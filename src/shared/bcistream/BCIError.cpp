@@ -40,9 +40,9 @@ using namespace std;
 static ios_base::Init ios_base_Init_;
 
 // Definitions of the actual global objects.
-BCIError::OutStream bcierr___;
-BCIError::OutStream bciout___;
-BCIError::OutStream bcidbg___;
+BCIError::OutStream bcierr___( BCIError::RuntimeError );
+BCIError::OutStream bciout___( BCIError::Warning );
+BCIError::OutStream bcidbg___( BCIError::DebugMessage );
 
 namespace BCIError
 {

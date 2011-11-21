@@ -73,10 +73,15 @@ namespace BCIError
    friend class ::EnvironmentBase;
    friend class ::CoreModule;
 
+   typedef void ( *FlushHandler )( const std::string& );
+
    public:
-    OutStream()
+    OutStream( FlushHandler f = NULL )
       : std::ostream( 0 )
-      { this->init( &mBuf ); }
+      {
+        this->init( &mBuf );
+        mBuf.SetFlushHandler( f );
+      }
 
     OutStream& operator()( const std::string& );
     OutStream& operator()(); // in case CONTEXT_ is defined empty
@@ -99,7 +104,6 @@ namespace BCIError
     static void SetDebugLevel( int i )
       { sDebugLevel = i; }
 
-    typedef void ( *FlushHandler )( const std::string& );
     FlushHandler SetFlushHandler( FlushHandler f = NULL )
       { return mBuf.SetFlushHandler( f ); }
 
