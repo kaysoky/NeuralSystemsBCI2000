@@ -173,7 +173,7 @@ class GraphObject
                 mRectSet;
   float         mZOrder;
   int           mAspectRatioMode;
-  Rect          mObjectRect, // stored in normalized coordinates
+  GUI::Rect     mObjectRect, // stored in normalized coordinates
                 mBoundingRect; // stored in pixel coordinates
 };
 

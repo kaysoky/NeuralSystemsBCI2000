@@ -41,7 +41,9 @@
 #include <cmath>
 #include <cstdlib>
 
-#if !_WIN32
+#if _WIN32
+# include <MMSystem.h>
+#else // _WIN32
 # include <unistd.h>
 #endif // !_WIN32
 
@@ -96,6 +98,10 @@ OSThread::SleepFor( int inMs )
 static bool sInitialized = false;
 static OSMutex sMutex;
 
+#ifdef __BORLANDC__
+# pragma option push
+# pragma warn -8104 // local static with constructor warning
+#endif // __BORLANDC__
 void
 OSThread::PrecisionSleepFor( double inMs )
 {
@@ -136,6 +142,9 @@ OSThread::PrecisionSleepFor( double inMs )
   int sleepTime = static_cast<int>( ::floor( inMs ) ) + static_cast<int>( ::rand() < ( RAND_MAX + 1 ) * ::fmod( inMs, 1 ) );
   ::Sleep( sleepTime );
 }
+#ifdef __BORLANDC__
+# pragma option pop
+#endif // __BORLANDC__
 
 bool
 OSThread::IsMainThread()

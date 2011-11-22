@@ -10,7 +10,7 @@
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
-    <LIBFILES value="..\gUSBamp.lib"/>
+    <LIBFILES value="gUSBamp.lib"/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
@@ -25,7 +25,7 @@
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="gUSBampgetinfo.bpf"/>
     <INCLUDEPATH value=".;..\..\..\..\extlib\gtec\gUSBamp;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value=".;..\..\..\..\extlib\gtec\gUSBamp;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <LIBPATH value=".;..\..\..\..\extlib\gtec\gUSBamp\omf;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -47,7 +47,7 @@
       <FILE FILENAME="gUSBampgetinfo.res" FORMNAME="" UNITNAME="gUSBampgetinfo.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="gUSBampgetinfo.bpf" FORMNAME="" UNITNAME="gUSBampgetinfo" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="gUSBampgetinfo.cpp" FORMNAME="" UNITNAME="gUSBampgetinfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\gUSBamp.lib" FORMNAME="" UNITNAME="gUSBamp.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\extlib\gtec\gUSBamp\omf\gUSBamp.lib" FORMNAME="" UNITNAME="gUSBamp.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

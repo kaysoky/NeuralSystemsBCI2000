@@ -36,7 +36,7 @@
 
 using namespace GUI;
 
-static Rect sNullRect = { 0, 0, 0, 0 };
+static GUI::Rect sNullRect = { 0, 0, 0, 0 };
 
 GraphObject::GraphObject( GraphDisplay& display, float zOrder )
 : mDisplay( display ),
@@ -98,8 +98,9 @@ GraphObject::Paint()
     DrawContext dc =
     {
       mDisplay.Context().handle,
-      mBoundingRect
+      { 0, 0, 0, 0 }
     };
+    dc.rect = mBoundingRect;
 #ifndef __BORLANDC__
     dc.handle.painter->save();
 #endif // __BORLANDC__
@@ -119,8 +120,10 @@ GraphObject::Change( int inWhich )
     DrawContext dc =
     {
       mDisplay.Context().handle,
-      mDisplay.NormalizedToPixelCoords( mObjectRect ),
+      { 0, 0, 0, 0 }
     };
+    dc.rect = mDisplay.NormalizedToPixelCoords( mObjectRect );
+
     int considered = 0;
 
     if( inWhich & Position )
@@ -140,7 +143,7 @@ GraphObject::Change( int inWhich )
 }
 
 bool
-GraphObject::Click( const Point& p )
+GraphObject::Click( const GUI::Point& p )
 {
   Rect r = mDisplay.PixelToNormalizedCoords( mBoundingRect );
   return PointInRect( p, r ) && OnClick( p );

@@ -140,8 +140,10 @@ GraphDisplay&
 GraphDisplay::Add( GraphObject* inObj )
 {
   mObjects.insert( inObj );
+#ifndef __BORLANDC__
   if( !mUsingGL && inObj->NeedsGL() )
     Change();
+#endif // __BORLANDC__
   return *this;
 }
 
