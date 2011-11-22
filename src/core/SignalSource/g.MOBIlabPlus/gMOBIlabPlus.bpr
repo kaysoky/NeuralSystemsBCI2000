@@ -4,7 +4,7 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\..\prog\gMOBIlabPlus.exe"/>
-    <OBJFILES value="obj\gMOBIlabPlus.obj obj\gMOBIlabPlusADC.obj obj\ParamRef.obj 
+    <OBJFILES value="obj\gMOBIlab.obj obj\gMOBIlabADC.obj obj\ParamRef.obj 
       obj\Environment.obj obj\BCIError_module.obj obj\BCIError.obj 
       obj\BCIDirectory.obj obj\MessageHandler.obj obj\CoreModule.obj 
       obj\CoreModuleVCL.obj obj\GenericFilter.obj obj\SysCommand.obj 
@@ -23,10 +23,11 @@
       obj\BCIEvent.obj obj\OSThread.obj obj\OSError.obj obj\KeyLogger.obj 
       obj\JoystickLogger.obj obj\BCI2000OutputFormat.obj obj\GDFOutputFormat.obj 
       obj\EDFOutputBase.obj obj\EDFOutputFormat.obj obj\GenericFileWriter.obj 
-      obj\gMOBIlabThread.obj obj\OSEvent.obj obj\OSMutex.obj 
+      obj\OSEvent.obj obj\OSMutex.obj 
       obj\MessageQueue.obj obj\ExceptionCatcher.obj obj\CfgID.obj 
       obj\VisID.obj
-      obj\BCIException.obj"/>
+      obj\BCIException.obj
+      obj\BufferedADC.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -42,9 +43,9 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="MODTYPE=1"/>
+    <USERDEFINES value="MODTYPE=1;GMOBILABPLUS"/>
     <SYSDEFINES value="NO_STRICT"/>
-    <MAINSOURCE value="gMOBIlabPlus.cpp"/>
+    <MAINSOURCE value="gMOBIlab.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\modules\signalsource\logging;..\..\..\extlib\gtec;..\..\..\shared;..\..\..\shared\config;..\..\..\extlib\math;..\..\..\extlib\gtec\gMOBIlabPlus;..\..\..\shared\modules\signalprocessing;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl"/>
     <LIBPATH value="..\..\..\shared\modules\signalsource\logging;..\..\..\extlib\gtec;..\..\..\extlib\gtec\gMOBIlabPlus;..\..\..\extlib\math;..\..\..\shared\modules\signalprocessing;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\lib;$(BCB)\lib\obj"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
@@ -67,8 +68,8 @@
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
-      <FILE FILENAME="gMOBIlabPlus.cpp" FORMNAME="" UNITNAME="gMOBIlabPlus" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="gMOBIlabPlusADC.cpp" FORMNAME="" UNITNAME="gMOBIlabPlusADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\g.MOBIlab\gMOBIlab.cpp" FORMNAME="" UNITNAME="gMOBIlab" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\g.MOBIlab\gMOBIlabADC.cpp" FORMNAME="" UNITNAME="gMOBIlabADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\Environment.cpp" FORMNAME="" UNITNAME="Environment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\bcistream\BCIError_module.cpp" FORMNAME="" UNITNAME="BCIError_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -129,7 +130,6 @@
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFOutputBase.cpp" FORMNAME="" UNITNAME="EDFOutputBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFOutputFormat.cpp" FORMNAME="" UNITNAME="EDFOutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\GenericFileWriter.cpp" FORMNAME="" UNITNAME="GenericFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\extlib\gtec\gMOBIlabThread.cpp" FORMNAME="" UNITNAME="gMOBIlabThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -137,6 +137,7 @@
       <FILE FILENAME="..\..\..\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\VisID.cpp" FORMNAME="" UNITNAME="VisID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalsource\BufferedADC.cpp" FORMNAME="" UNITNAME="BufferedADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

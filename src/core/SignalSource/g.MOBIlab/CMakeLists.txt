@@ -13,7 +13,6 @@ SET( SRC_PROJECT
 )
 SET( HDR_PROJECT
   gMOBIlabADC.h
-  gMOBIlabDriver.h
 )
 
 # Tell the macro to link against the gMOBIlab libraries in extlib

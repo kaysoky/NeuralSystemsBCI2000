@@ -8,12 +8,11 @@ SET( EXECUTABLE_NAME gMOBIlabPlus )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  gMOBIlabPlus.cpp
-  gMOBIlabPlusADC.cpp 
+  ../g.MOBIlab/gMOBIlab.cpp
+  ../g.MOBIlab/gMOBIlabADC.cpp 
 )
 SET( HDR_PROJECT
-  gMOBIlabPlusADC.h
-  gMOBIlabDriver.h
+  ../g.MOBIlab/gMOBIlabADC.h
 )
 
 # Tell the macro to link against the gMOBIlabPlus API found in EXTLIB

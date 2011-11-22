@@ -12,37 +12,24 @@
 
 IF( WIN32 AND NOT CMAKE_CL_64 )
 
-# Define the source files
-SET( SRC_EXTLIB_GTEC
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabThread.cpp
-)
-
-# Define the headers
-SET( HDR_EXTLIB_GTEC
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabThread.h
-)
-SET( HDR_EXTLIB_GTEC_GMOBILABPLUS
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.h
-)
+ADD_DEFINITIONS( -DGMOBILABPLUS )
 
 # Set the final Source and headers
 SET( SRC_EXTLIB
-  ${SRC_EXTLIB_GTEC}
 )
+
 SET( HDR_EXTLIB
-  ${HDR_EXTLIB_GTEC}
-  ${HDR_EXTLIB_GTEC_GMOBILABPLUS}
+  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.h
 )
 
 # Define the include directory
 SET( INC_EXTLIB 
-  ${BCI2000_SRC_DIR}/extlib/gtec
   ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus 
 )
 
 # Define where the library is
 IF( BORLAND )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus )
+SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/omf )
 ENDIF( BORLAND )
 IF( MSVC )
 SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/coff )
@@ -59,9 +46,7 @@ SET( LIBS_EXTLIB gMOBIlabplus.lib )
 ENDIF( MINGW )
 
 # Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\gtec FILES ${SRC_EXTLIB_GTEC} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\gtec FILES ${HDR_EXTLIB_GTEC} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\gtec\\gMOBIlabPlus FILES ${HDR_EXTLIB_GTEC_GMOBILABPLUS} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\gtec\\gMOBIlabPlus FILES ${HDR_EXTLIB} )
 
 # Set success
 SET( EXTLIB_OK TRUE )
