@@ -99,7 +99,7 @@ void __fastcall TDemoWindow::FormPaint(TObject */*Sender*/)
   PrecisionTime t1 = PrecisionTime::Now();
   mGraphDisplay.Paint();
   PrecisionTime t2 = PrecisionTime::Now(),
-                dt = t2 - t1;
+                dt = PrecisionTime::UnsignedDiff( t2, t1 );
   if( mpFPSText && dt != 0 )
   {
     int fps = 1000 / dt;

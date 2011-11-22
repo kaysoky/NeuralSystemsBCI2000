@@ -8,7 +8,7 @@ SET( EXECUTABLE_NAME gMOBIlabPlus )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  ../g.MOBIlab/gMOBIlab.cpp
+  gMOBIlabPlus.cpp
   ../g.MOBIlab/gMOBIlabADC.cpp 
 )
 SET( HDR_PROJECT
