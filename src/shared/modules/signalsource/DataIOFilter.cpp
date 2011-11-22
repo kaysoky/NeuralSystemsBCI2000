@@ -199,7 +199,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   PreflightCondition( Parameter( "SamplingRate" ).InHertz() > 0 );
   PreflightCondition( Parameter( "SampleBlockSize" ).InHertz() > 0 );
 
-  bool sourceChOffsetConsistent = ( Parameter( "SourceChOffset" )->NumValues() == Parameter( "SourceCh" ) );
+  bool sourceChOffsetConsistent = ( Parameter( "SourceChOffset" )->NumValues() >= Parameter( "SourceCh" ) );
   if( !sourceChOffsetConsistent )
   {
     bcierr << "The number of entries in the SourceChOffset parameter (currently "
@@ -210,7 +210,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
            << endl;
   }
 
-  bool sourceChGainConsistent = ( Parameter( "SourceChGain" )->NumValues() == Parameter( "SourceCh" ) );
+  bool sourceChGainConsistent = ( Parameter( "SourceChGain" )->NumValues() >= Parameter( "SourceCh" ) );
   if( !sourceChGainConsistent )
   {
     bcierr << "The number of entries in the SourceChGain parameter (currently "
