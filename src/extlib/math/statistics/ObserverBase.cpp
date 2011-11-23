@@ -67,9 +67,9 @@ StatisticalObserver::RSquared( const ObserverBase& inObs1, const ObserverBase& i
 Matrix
 StatisticalObserver::ZScore( const ObserverBase& inDist, const ObserverBase& inRef )
 {
-  Vector mean = inDist.Mean(),
-         refMean = inRef.Mean(),
-         refStd = sqrt( inRef.Variance() );
+  Vector mean( inDist.Mean() ),
+         refMean( inRef.Mean() ),
+         refStd( sqrt( inRef.Variance() ) );
 
   Matrix result( mean.size(), refMean.size() );
   for( size_t i = 0; i < mean.size(); ++i )
@@ -277,7 +277,7 @@ ObserverBase::Mean() const
   Vector sum = PowerSum1();
   if( count < eps )
     throw bciexception( "Trying to compute mean without observation" );
-  return sum / count;
+  return Vector( sum / count );
 }
 
 Vector
@@ -287,7 +287,7 @@ ObserverBase::Variance() const
   Vector mean = Mean(),
          sqMean = PowerSum2Diag();
   sqMean /= Count();
-  return abs( sqMean - mean * mean );
+  return Vector( abs( sqMean - mean * mean ) );
 }
 
 Matrix
@@ -297,7 +297,7 @@ ObserverBase::Covariance() const
   Vector mean = Mean();
   Matrix sqMean = PowerSum2Full();
   sqMean /= Count();
-  return sqMean - mean.OuterProduct( mean );
+  return Matrix( sqMean - mean.OuterProduct( mean ) );
 }
 
 Matrix
@@ -344,16 +344,14 @@ ObserverBase::CentralMoment( unsigned int inN ) const
     case 2:
       return Variance();
   }
-  Vector result = Vector( Number( 0 ), SampleSize() ),
-         negativeMean = -Mean();
-  for( unsigned int j = 0; j <= inN; ++j )
+  Vector result( 0, SampleSize() ),
+         negativeMean( -Mean() ),
+         meanPower( 1, SampleSize() );
+  for( signed int j = inN; j >= 0; --j, meanPower *= negativeMean )
   {
     Number binomialCoeff = 1;
-    for( unsigned int i = 1; i <= j; ++i )
+    for( signed int i = 1; i <= j; ++i )
       binomialCoeff *= ( inN - ( j - i ) ) / i;
-    Vector meanPower( Number( 1 ), SampleSize() );
-    for( unsigned int i = 1; i <= inN - j; ++i )
-      meanPower *= negativeMean;
     result += binomialCoeff * meanPower * PowerSumDiag( j ) / PowerSum0();
   }
   return result;
@@ -363,9 +361,9 @@ Vector
 ObserverBase::Skewness() const
 {
   REQUIRE( Skewness );
-  Vector variance = Variance(),
-         denominator = sqrt( variance * variance * variance ),
-         result = CentralMoment( 3 );
+  Vector variance( Variance() ),
+         denominator( sqrt( variance * variance * variance ) ),
+         result( CentralMoment( 3 ) );
   for( size_t i = 0; i < result.size(); ++i )
   {
     if( denominator[i] < eps )
@@ -380,9 +378,9 @@ Vector
 ObserverBase::Kurtosis() const
 {
   REQUIRE( Kurtosis );
-  Vector variance = Variance(),
-         denominator = variance * variance,
-         result = CentralMoment( 4 );
+  Vector variance( Variance() ),
+         denominator( variance * variance ),
+         result( CentralMoment( 4 ) );
   for( size_t i = 0; i < result.size(); ++i )
   {
     if( denominator[i] < eps )
@@ -450,8 +448,8 @@ ObserverBase::Histogram( const Vector& inBinEdges ) const
   size_t bin = 0;
   while( bin < inBinEdges.size() )
   {
-    Vector rightCDF = CDF( inBinEdges[bin] ),
-           binValues = rightCDF - leftCDF;
+    Vector rightCDF( CDF( inBinEdges[bin] ) ),
+           binValues( rightCDF - leftCDF );
     leftCDF = rightCDF;
     for( size_t i = 0; i < result.size(); ++i )
       result[i][bin] = binValues[i];

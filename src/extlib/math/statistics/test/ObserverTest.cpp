@@ -15,7 +15,7 @@ using namespace StatisticalObserver;
 typedef vector<ObserverBase*> ObserverContainer;
 
 #define COLWIDTH 7
-
+#define SEPARATOR "====================================================================================================================="
 #define OPTION( x, f )  else if( !::stricmp( argv[i], "--" #x ) ) x = f( ++i<argc ? argv[i] : "" )
 #define PRINT( x )      cout << #x ":\t" << x << endl
 #define SHOW( x )       cout << setw( COLWIDTH ) << ( *i )->x << '\t'
@@ -86,6 +86,7 @@ main_( int argc, char** argv )
 {
   signal( SIGINT, &Sighandler );
 
+  bool help = false;
   int randseed = 0,
       numsamples = -1,
       metabins = 10,
@@ -99,12 +100,15 @@ main_( int argc, char** argv )
          accuracy = -2,
          leftaccuracy = -1,
          quantile = 0.5;
-  const char* left = "Full",
-            * right = "Window";
+  const char* left = "FullyConfigured",
+            * right = "WindowObserver";
 
   for( int i = 1; i < argc; ++i )
   {
-    if( false );
+    if( !stricmp( argv[i], "--help" ) )
+    {
+      help = true;
+    }
     OPTION( randseed, atoi );
     OPTION( numsamples, atoi );
     OPTION( mean, atof );
@@ -135,23 +139,29 @@ main_( int argc, char** argv )
   if( quantile < 0 )
     metabins = 0;
 
+  cout << "Parameters may be adjusted from the command line using --<name> <value>:" << endl;
+  if( !help )
+    cout << SEPARATOR << endl;
 
   PRINT( randseed );
   PRINT( numsamples );
   PRINT( mean );
   PRINT( sinefreq );
   PRINT( sinevar );
-  PRINT( sineamp );
   PRINT( noisevar );
-  PRINT( noiseamp );
   PRINT( gaussvar );
-  PRINT( gaussamp );
   PRINT( windowlength );
   PRINT( quantile );
   PRINT( metabins );
   PRINT( showskewkurtosis );
   PRINT( left );
   PRINT( right );
+
+  if( help )
+  {
+    cout << "\nUse output redirection to create a protocol file." << endl;
+    return 0;
+  }
 
   try
   {
@@ -172,15 +182,15 @@ main_( int argc, char** argv )
     leftaccuracy = pLeft->QuantileAccuracy();
     PRINT( leftaccuracy );
 
-    cout << "=======================================================" << endl;
-    cout << "        | Count, \tMean,  \tVariance";
+    cout << SEPARATOR << endl;
+    cout << "Displaying: Sample | " << left << " observer | " << right << " observer (unlimited accuracy)" << endl;
+    cout << "For each observer: Count, Mean, Variance";
     if( showskewkurtosis )
-      cout << ", \tSkewness,\tKurtosis";
+      cout << ", Skewness, Kurtosis";
     if( quantile >= 0 )
-      cout << ", \tQuantile(" << quantile << ")";
+      cout << ", Quantile(" << quantile << ")";
     cout << endl;
-    cout << "Sample  | " << left << "                          | " << right << " (unlimited accuracy)" << endl;
-    cout << "=============================================================================" << endl;
+    cout << SEPARATOR << endl;
     cout << fixed << setprecision( 3 );
     PrecisionTime t = PrecisionTime::Now();
 
@@ -258,7 +268,7 @@ main_( int argc, char** argv )
     // Statistics over data
     if( metabins > 0 )
     {
-      cout << "=============================================================================" << endl;
+      cout << SEPARATOR << endl;
       Vector edges;
       Vector histogram1 = pLeft->Histogram( mean, 3 * sqrt( pLeft->Variance()[0] ) / metabins, metabins, &edges )[0];
       Vector histogram2 = pRight->Histogram( edges )[0];
@@ -275,7 +285,7 @@ main_( int argc, char** argv )
     }
     if( quantile >= 0 )
     {
-      cout << "=============================================================================" << endl;
+      cout << SEPARATOR << endl;
       // Statistics over quantiles
       cout << "Quantiles: mean1, mean2, variance1, variance2, covariance, correlation, rsquared" << endl;
       double mean1 = p.Mean()[0],
@@ -323,7 +333,7 @@ main_( int argc, char** argv )
     // Statistics over quantiles, from observing resampled histograms
     if( metabins > 0 )
     {
-      cout << "=============================================================================" << endl;
+      cout << SEPARATOR << endl;
       cout << "Quantiles meta: mean1, mean2, variance1, variance2, covariance, correlation, rsquared" << endl;
       double mean1 = h.Mean()[0],
              mean2 = h.Mean()[1],

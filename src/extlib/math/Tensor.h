@@ -30,6 +30,8 @@
 #include <valarray>
 #include <iostream>
 
+#include "BCIAssert.h"
+
 namespace Tensor
 {
 
@@ -42,14 +44,36 @@ class Tensor : public std::valarray< Tensor<rank-1, D> >
 
   enum { Rank = rank };
 
-  template<typename T>
-  Tensor( const T& inT )
-  : ArrayType( inT )
+public:
+  explicit Tensor( const ArrayType& inArray )
+  : ArrayType( inArray )
   {
   }
 
-  Tensor( size_t s1 = 0, size_t s2 = 0, size_t s3 = 0, size_t s4 = 0 )
+  explicit Tensor( const Tensor<rank-1>& inT, size_t inSize )
+  : ArrayType( inT, 1 )
+  {
+  }
+
+  explicit Tensor( size_t s1, size_t s2, size_t s3, size_t s4 )
   : ArrayType( Tensor<rank-1, D>( s2, s3, s4 ), s1 )
+  {
+    bciassert( rank >= 4 );
+  }
+
+  explicit Tensor( size_t s1, size_t s2, size_t s3 )
+  : ArrayType( Tensor<rank-1, D>( s2, s3 ), s1 )
+  {
+    bciassert( rank >= 3 );
+  }
+
+  explicit Tensor( size_t s1, size_t s2 )
+  : ArrayType( Tensor<rank-1, D>( s2 ), s1 )
+  {
+  }
+
+  explicit Tensor( size_t s1 = 0 )
+  : ArrayType( s1 )
   {
   }
 
@@ -65,20 +89,6 @@ class Tensor : public std::valarray< Tensor<rank-1, D> >
     ArrayType::operator=( inT );
     return *this;
   }
-
-#if 0
-  Tensor& operator*=( Number inN )
-  {
-    for( size_t i = 0; i < this->size(); ++i )
-      ( *this )[i] *= inN;
-    return *this;
-  }
-
-  Tensor& operator/=( Number inN )
-  {
-    return operator*=( 1.0 / inN );
-  }
-#endif
 
   template<int inRank, typename inD>
   Tensor<rank+inRank, D> OuterProduct( const Tensor<inRank, inD>& inT ) const
@@ -104,18 +114,18 @@ class Tensor<1, D> : public std::valarray<D>
 
   enum { Rank = 1 };
 
-  template<typename T>
-  Tensor( const T& inT )
-  : ArrayType( inT )
+ public:
+  explicit Tensor( const ArrayType& inArray )
+  : ArrayType( inArray )
   {
   }
 
-  Tensor( Number inN, size_t inSize )
+  explicit Tensor( Number inN, size_t inSize )
   : ArrayType( inN, inSize )
   {
   }
 
-  Tensor( size_t inSize = 0, size_t = 0, size_t = 0, size_t = 0 )
+  explicit Tensor( size_t inSize = 0 )
   : ArrayType( inSize )
   {
   }
@@ -180,6 +190,31 @@ class Tensor<0, D>
  private:
   Number mNumber;
 };
+
+// Independent operators.
+template<int rank, typename D>
+Tensor<rank, D>&
+operator*=( Tensor<rank, D>& ioT, D inNumber )
+{
+  for( size_t i = 0; i < ioT.size(); ++i )
+    ioT[i] *= inNumber;
+  return ioT;
+}
+
+template<typename D>
+Tensor<0, D>&
+operator*=( Tensor<0, D>& ioT, D inNumber )
+{
+  return ioT *= inNumber;
+}
+
+template<int rank, typename D>
+Tensor<rank, D>&
+operator/=( Tensor<rank, D>& ioT, D inNumber )
+{
+  return ioT *= 1.0 / inNumber;
+}
+
 
 template<int rank, typename D>
 std::ostream&
