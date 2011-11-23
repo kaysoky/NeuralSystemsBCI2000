@@ -50,7 +50,7 @@
 using namespace std;
 
 TPresSpellerModel::TPresSpellerModel(   ParamList        *inParamList,
-                                        TPresBroadcaster *inBroadcaster )
+                                        TPresBroadcaster */*inBroadcaster*/ )
 : TPresModel( inParamList ),
   mode( 0 ),
   autoBackspace( 0 ),

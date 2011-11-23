@@ -137,7 +137,7 @@ class TGUIView
             TRect       viewTRect;
 
     // Mark a rectangle for redrawing.
-    static  void        InvalidateRect( TRect& inTRect );
+    static  void        InvalidateRect( const TRect& inTRect );
 
     // The feedback/stimulus display form.
     // There is no .dfm resource file for this form.
@@ -167,7 +167,7 @@ class TGUIView
         }
 
         // Mark a rectangle for redrawing.
-        void __fastcall InvalidateRect( TRect& );
+        void __fastcall InvalidateRect( const TRect& );
         // The invalidated region of the feedback window.
         HRGN            updateRgn;
 

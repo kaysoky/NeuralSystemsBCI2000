@@ -223,7 +223,7 @@ TGUIView::SetStyle( const char  *inStyleName )
 }
 
 void
-TGUIView::InvalidateRect( TRect& inTRect )
+TGUIView::InvalidateRect( const TRect& inTRect )
 {
 #ifndef VCL_DOUBLEBUF
   if( FBForm != NULL )
@@ -464,7 +464,7 @@ TGUIView::TFBForm::~TFBForm()
 #ifndef VCL_DOUBLEBUF
 void
 __fastcall
-TGUIView::TFBForm::InvalidateRect( TRect& inTRect )
+TGUIView::TFBForm::InvalidateRect( const TRect& inTRect )
 {
   RECT invalidRect =
   {
