@@ -1,21 +1,21 @@
 /* $BEGIN_BCI2000_LICENSE$
- * 
+ *
  * This file is part of BCI2000, a platform for real-time bio-signal research.
  * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
- * 
+ *
  * BCI2000 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * BCI2000 is distributed in the hope that it will be useful, but
  *                         WITHOUT ANY WARRANTY
  * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * $END_BCI2000_LICENSE$
 /*/
 #include "PCHIncludes.h"
@@ -586,7 +586,7 @@ AnsiString      selectedCaption;
  // if we selected a dummy (i.e., blank) target, just return
  // i.e., the next trial will start and the new targets will be the same as the old targets
  if (selectedtargetID == TARGETID_BLANK)
-    return;                   
+    return;
 
 
 
@@ -698,24 +698,22 @@ AnsiString      selectedCaption;
 // **************************************************************************
 void TTask::Process( const GenericSignal& Input, GenericSignal& Output )
 {
-  std::vector< float >&signals=std::vector< float >(2);
-  signals.at(0)=Input( 0, 0 );
-  signals.at(1)=Input( 1, 0 );
+  std::vector<float> signals;
+  signals.push_back( Input( 0, 0 ) );
+  signals.push_back( Input( 1, 0 ) );
 
-  TARGET  *selected;
-
- // use the current control signal to proceed within the trial sequence
-selected=trialsequence->Process((const std::vector< float >&)signals);
+  // use the current control signal to proceed within the trial sequence
+  TARGET  *selected = trialsequence->Process(signals);
 
 
- // only if a target has been selected,
- // get the next active targets as a subset of all the potential targets
- // and as a result of the selected target
- if (selected) HandleSelected(selected);
+  // only if a target has been selected,
+  // get the next active targets as a subset of all the potential targets
+  // and as a result of the selected target
+  if (selected) HandleSelected(selected);
 
- // write the current time, i.e., the "StimulusTime" into the state vector
- Statevector->SetStateValue("StimulusTime", PrecisionTime::Now());
- Output = Input;
+  // write the current time, i.e., the "StimulusTime" into the state vector
+  Statevector->SetStateValue("StimulusTime", PrecisionTime::Now());
+  Output = Input;
 }
 
 
