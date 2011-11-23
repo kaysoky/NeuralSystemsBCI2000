@@ -7,6 +7,7 @@
 #include "StatisticalObserver.h"
 #include "WindowObserver.h"
 #include "PrecisionTime.h"
+#include "ExceptionCatcher.h"
 
 using namespace std;
 using namespace StatisticalObserver;
@@ -81,7 +82,7 @@ Sighandler( int )
 }
 
 int
-main( int argc, char** argv )
+main_( int argc, char** argv )
 {
   signal( SIGINT, &Sighandler );
 
@@ -227,7 +228,7 @@ main( int argc, char** argv )
                  resolution = 3 * dev / metabins;
           Vector edges;
           Matrix histograms = p.Histogram( center, resolution, metabins + 2, &edges ),
-                 observedHistograms( Vector( metabins ), histograms.size() );
+                 observedHistograms( histograms.size(), metabins );
           histograms /= p.Count();
           Vector centers( metabins );
           for( int i = 0; i < metabins; ++i )
@@ -339,7 +340,7 @@ main( int argc, char** argv )
            << ",\t" << h.Correlation()[0][1]
            << ",\t" << RSquared( h, h )[0][1]
            << endl;
-      
+
       Vector edges;
       Matrix histograms = h.Histogram( ( mean1 + mean2 ) / 2, 3 * sqrt( var2 + meandiff * meandiff ) / metabins, metabins, &edges );
       cout << "Histograms:\n\tEdges:";
@@ -364,3 +365,14 @@ main( int argc, char** argv )
   }
   return 0;
 }
+
+int
+main( int argc, char** argv )
+{
+  FunctionCall< int(int,char**) > call( main_, argc, argv );
+  bool finished = ExceptionCatcher()
+                 .SetMessage( "Terminating" )
+                 .Run( call );
+  return finished ? call.Result() : -1;
+}
+

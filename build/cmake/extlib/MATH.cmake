@@ -28,6 +28,7 @@ SET( HDR_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/math/MEMPredictor.h
   ${BCI2000_SRC_DIR}/extlib/math/Polynomials.h
   ${BCI2000_SRC_DIR}/extlib/math/TransferSpectrum.h
+  ${BCI2000_SRC_DIR}/extlib/math/Tensor.h
 )
 
 SET( HDR_OBSERVER

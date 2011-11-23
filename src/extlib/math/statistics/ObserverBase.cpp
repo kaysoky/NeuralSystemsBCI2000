@@ -49,7 +49,7 @@ StatisticalObserver::RSquared( const ObserverBase& inObs1, const ObserverBase& i
   Vector sqSum1 = inObs1.PowerSum2Diag(),
          sqSum2 = inObs2.PowerSum2Diag();
 
-  Matrix result( Vector( sum2.size() ), sum1.size() );
+  Matrix result( sum1.size(), sum2.size() );
   for( size_t i = 0; i < sum1.size(); ++i )
     for( size_t j = 0; j < sum2.size(); ++j )
     {
@@ -69,63 +69,15 @@ StatisticalObserver::ZScore( const ObserverBase& inDist, const ObserverBase& inR
 {
   Vector mean = inDist.Mean(),
          refMean = inRef.Mean(),
-         refStd( sqrt( inRef.Variance() ) );
+         refStd = sqrt( inRef.Variance() );
 
-  Matrix result( Vector( refMean.size() ), mean.size() );
+  Matrix result( mean.size(), refMean.size() );
   for( size_t i = 0; i < mean.size(); ++i )
     for( size_t j = 0; j < refMean.size(); ++j )
       if( ::fabs( refStd[j] ) > eps )
         result[i][j] = ::fabs( mean[i] - refMean[j] ) / refStd[j];
   return result;
 }
-
-Matrix
-StatisticalObserver::OuterProduct( const Vector& v1, const Vector& v2 )
-{
-  Matrix m( Vector( v2.size() ), v1.size() );
-  for( size_t i = 0; i < v1.size(); ++i )
-    for( size_t j = 0; j < v2.size(); ++j )
-      m[i][j] = v1[i] * v2[j];
-  return m;
-}
-
-Matrix&
-StatisticalObserver::operator*=( Matrix& inM, Number inN )
-{
-  for( size_t i = 0; i < inM.size(); ++i )
-    inM[i] *= inN;
-  return inM;
-}
-
-Matrix&
-StatisticalObserver::operator/=( Matrix& inM, Number inN )
-{
-  return inM *= 1 / inN;
-}
-
-template<typename T>
-std::ostream&
-WriteList( std::ostream& ioStream, const T& inT )
-{
-  ioStream << "{ ";
-  for( size_t i = 0; i < inT.size(); ++i )
-    ioStream << inT[i] << " ";
-  ioStream << "}";
-  return ioStream;
-}
-
-std::ostream&
-StatisticalObserver::operator<<( std::ostream& ioStream, const Vector& inV )
-{
-  return WriteList( ioStream, inV );
-}
-
-std::ostream&
-StatisticalObserver::operator<<( std::ostream& ioStream, const Matrix& inM )
-{
-  return WriteList( ioStream, inM );
-}
-
 
 // ObserverBase definitions
 ObserverBase::ObserverBase( int inConfig, int inSupported )
@@ -345,7 +297,7 @@ ObserverBase::Covariance() const
   Vector mean = Mean();
   Matrix sqMean = PowerSum2Full();
   sqMean /= Count();
-  return sqMean - OuterProduct( mean, mean );
+  return sqMean - mean.OuterProduct( mean );
 }
 
 Matrix
@@ -456,7 +408,7 @@ ObserverBase::QQuantiles( unsigned int inQ ) const
 {
   REQUIRE( QQuantiles );
   Vector quantile = Quantile( 0 );
-  Matrix result( Vector( inQ + 1 ), quantile.size() );
+  Matrix result( quantile.size(), inQ + 1 );
   for( size_t j = 0; j < result.size(); ++j )
     result[j][0] = quantile[j];
   for( size_t i = 1; i <= inQ; ++i )
@@ -474,7 +426,11 @@ ObserverBase::Histogram( Number inCenter, Number inResolution, unsigned int inNu
   REQUIRE( Histogram );
   Vector binEdges;
   if( inNumBins == 0 )
+  {
+    if( outpEdges )
+      *outpEdges = binEdges;
     return Matrix( SampleSize() );
+  }
   if( ::fabs( inResolution ) < eps )
     throw bciexception( "Resolution argument is " << inResolution << ", may not be 0" );
   binEdges.resize( inNumBins - 1 );
@@ -489,8 +445,8 @@ Matrix
 ObserverBase::Histogram( const Vector& inBinEdges ) const
 {
   REQUIRE( Histogram );
-  Matrix result( Vector( inBinEdges.size() + 1 ), SampleSize() );
-  Vector leftCDF = Vector( Number( 0 ), SampleSize() );
+  Matrix result( SampleSize(), inBinEdges.size() + 1 );
+  Vector leftCDF( SampleSize() );
   size_t bin = 0;
   while( bin < inBinEdges.size() )
   {
@@ -576,7 +532,7 @@ ObserverBase::ImpliedConfig( int inConfig )
     StatisticalObserver::QQuantiles |
     StatisticalObserver::Histogram,
   };
-  
+
   int config = inConfig | MinConfig;
   for( size_t i = 0; i < sizeof( groups ) / sizeof( *groups ); ++i )
     if( config & groups[i] )

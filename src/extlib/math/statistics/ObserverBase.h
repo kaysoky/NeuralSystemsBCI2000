@@ -28,17 +28,17 @@
 #ifndef OBSERVER_BASE_H
 #define OBSERVER_BASE_H
 
-#include <valarray>
 #include <vector>
 #include <limits>
-#include <iostream>
+#include "Tensor.h"
 
 namespace StatisticalObserver
 {
 
 typedef double Number;
-typedef std::valarray<Number> Vector;
-typedef std::valarray<Vector> Matrix;
+typedef Tensor::Tensor<1, Number> Vector;
+typedef Tensor::Tensor<2, Number> Matrix;
+// A distribution is a list of weighted data points.
 typedef std::vector< std::pair<Vector, Number> > Distribution;
 
 const Number Unlimited = -1;
@@ -80,13 +80,6 @@ Matrix RSquared( const ObserverBase&, const ObserverBase& );
 // Computes pairwise z scores between channels in the first and second observer,
 // using the second observer as a reference.
 Matrix ZScore( const ObserverBase&, const ObserverBase& reference );
-
-// Independent helper functions
-Matrix OuterProduct( const Vector&, const Vector& );
-Matrix& operator*=( Matrix&, Number );
-Matrix& operator/=( Matrix&, Number );
-std::ostream& operator<<( std::ostream&, const Vector& );
-std::ostream& operator<<( std::ostream&, const Matrix& );
 
 
 class ObserverBase
@@ -177,7 +170,7 @@ class ObserverBase
   // The Quantile() function returns a vector of values corresponding to the specified argument of
   // the marginal distributions' quantile functions.
   Vector Quantile( Number ) const;
-  // The QQuantiles() function returns a number of vectors representing q-quantiles for 
+  // The QQuantiles() function returns a number of vectors representing q-quantiles for
   // marginal distributions, with the minimum added at the beginning, and the maximum added at the end.
   Matrix QQuantiles( unsigned int q ) const;
   // The QuantileAccuracy property describes the accuracy of the quantile
@@ -261,7 +254,7 @@ ObserverBase::ObserveData( const T& t )
 template<typename T> ObserverBase&
 ObserverBase::ObserveHistograms( const T& t )
 {
-  const PhysicalUnit& u = t.Properties().ElementUnit();
+  const class PhysicalUnit& u = t.Properties().ElementUnit();
   Vector values( t.Elements() );
   for( int el = 0; el < t.Elements(); ++el )
     values[el] = ( el - u.Offset() ) * u.Gain();

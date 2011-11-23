@@ -112,10 +112,9 @@ WindowObserver::PowerSum2Diag() const
 Matrix
 WindowObserver::PowerSum2Full() const
 {
-  size_t size = SampleSize();
-  Matrix result( Vector( size ), size );
+  Matrix result( SampleSize(), SampleSize() );
   for( const_iterator i = begin(); i != end(); ++i )
-    result += ( OuterProduct( i->first, i->first ) *= i->second.first );
+    result += i->first.OuterProduct( i->first * i->second.first );
   return result;
 }
 

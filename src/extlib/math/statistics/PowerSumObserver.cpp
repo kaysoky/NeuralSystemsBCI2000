@@ -65,7 +65,7 @@ PowerSumObserver::DoObserve( const Vector& inV, Number inWeight )
   mPowerSum1 += inV * inWeight;
   mPowerSum2Diag += inV * inV * inWeight;
   if( mCovarianceRequired )
-    mPowerSum2Full += ( OuterProduct( inV, inV ) *= inWeight );
+    mPowerSum2Full += inV.OuterProduct( inV * inWeight );
 }
 
 void
