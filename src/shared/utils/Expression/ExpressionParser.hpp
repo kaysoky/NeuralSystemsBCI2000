@@ -31,26 +31,29 @@
    enum yytokentype {
      NUMBER = 258,
      NAME = 259,
-     SIGNAL_ = 260,
-     NEG = 261
+     STATE = 260,
+     SIGNAL_ = 261,
+     NEG = 262
    };
 #endif
 #define NUMBER 258
 #define NAME 259
-#define SIGNAL_ 260
-#define NEG 261
+#define STATE 260
+#define SIGNAL_ 261
+#define NEG 262
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 53 "ExpressionParser.y"
+#line 54 "ExpressionParser.y"
 typedef union YYSTYPE {
-  double       value;
-  std::string* str;
+  double               value;
+  std::string*         str;
+  std::vector<double>* list;
 } YYSTYPE;
 /* Line 1252 of yacc.c.  */
-#line 54 "ExpressionParser.hpp"
+#line 57 "ExpressionParser.hpp"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

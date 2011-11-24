@@ -54,16 +54,22 @@
 class Expression : public ArithmeticExpression, private Environment
 {
  public:
+  typedef ArithmeticExpression::VariableContainer VariableContainer;
+
   Expression()
     : mpSignal( NULL ),
+      mpVariables( NULL ),
       mOptionalAccess( false ),
-      mDefaultValue( 0 )
+      mDefaultValue( 0 ),
+      mAllowStateAssignment( false )
     {}
   Expression( const std::string& s )
     : ArithmeticExpression( s ),
       mpSignal( NULL ),
+      mpVariables( NULL ),
       mOptionalAccess( false ),
-      mDefaultValue( 0 )
+      mDefaultValue( 0 ),
+      mAllowStateAssignment( false )
     {}
   ~Expression()
     {}
@@ -71,17 +77,20 @@ class Expression : public ArithmeticExpression, private Environment
   Expression& SetOptionalAccess( State::ValueType inDefault = 0 );
   Expression& ClearOptionalAccess();
 
-  bool   IsValid( const GenericSignal* = NULL );
-  double Evaluate( const GenericSignal* = NULL );
+  bool   IsValid( const GenericSignal* = NULL, const VariableContainer* = NULL );
+  double Evaluate( const GenericSignal* = NULL, VariableContainer* = NULL );
 
- private:
-  virtual double State( const std::string& );
+ protected:
+  virtual double Variable( const std::string& name );
   virtual double Signal( const std::string&, const std::string& );
+  virtual double State( const std::string& );
+  virtual void   StateAssignment( const std::string&, double );
 
   const GenericSignal* mpSignal;
+  const VariableContainer* mpVariables;
   bool                 mOptionalAccess;
   State::ValueType     mDefaultValue;
-
+  bool                 mAllowStateAssignment;
 };
 
 #endif // EXPRESSION_H

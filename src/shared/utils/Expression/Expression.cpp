@@ -32,7 +32,6 @@
 
 using namespace std;
 
-
 Expression&
 Expression::SetOptionalAccess( State::ValueType inDefaultValue )
 {
@@ -49,29 +48,35 @@ Expression::ClearOptionalAccess()
 }
 
 bool
-Expression::IsValid( const GenericSignal* inSignal )
+Expression::IsValid( const GenericSignal* inSignal, const VariableContainer* inVars )
 {
   mpSignal = inSignal;
-  bool result = ArithmeticExpression::IsValid();
+  mpVariables = inVars;
+  mAllowStateAssignment = false;
+  bool result = ArithmeticExpression::IsValid( inVars );
+  mpVariables = NULL;
   mpSignal = NULL;
   return result;
 }
 
 double
-Expression::Evaluate( const GenericSignal* inSignal )
+Expression::Evaluate( const GenericSignal* inSignal, VariableContainer* ioVars )
 {
   mpSignal = inSignal;
-  double result = ArithmeticExpression::Evaluate();
+  mpVariables = ioVars;
+  mAllowStateAssignment = ( Environment::Phase() != Environment::preflight );
+  double result = ArithmeticExpression::Evaluate( ioVars );
+  mpVariables = NULL;
   mpSignal = NULL;
   return result;
 }
 
 double
-Expression::State( const string& inName )
+Expression::Variable( const string& inName )
 {
-  return mOptionalAccess
-   ? Environment::OptionalState( inName, mDefaultValue )
-   : Environment::State( inName );
+  if( mpVariables && mpVariables->find( inName ) != mpVariables->end() )
+    return ArithmeticExpression::Variable( inName );
+  return State( inName );
 }
 
 double
@@ -101,4 +106,19 @@ Expression::Signal( const string& inChannelAddress, const string& inElementAddre
   return ( *mpSignal )( channel, element );
 }
 
+double
+Expression::State( const string& inName )
+{
+  return mOptionalAccess
+   ? Environment::OptionalState( inName, mDefaultValue )
+   : Environment::State( inName );
+}
 
+void
+Expression::StateAssignment( const string& inName, double inValue )
+{
+  if( mAllowStateAssignment )
+    Environment::State( inName ) = static_cast<State::ValueType>( inValue );
+  else
+    Environment::State( inName ); // display an error message if inaccessible
+}

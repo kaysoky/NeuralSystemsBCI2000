@@ -28,6 +28,7 @@
 ////////////////////////////////////////////////////////////////////////
 #include <sstream>
 #include <string>
+#include <vector>
 #include <cmath>
 #include <cstring>
 #include <cstdio>
@@ -51,8 +52,9 @@ using namespace std;
 %lex-param   { ::ArithmeticExpression* pInstance }
 %union
 {
-  double       value;
-  std::string* str;
+  double               value;
+  std::string*         str;
+  std::vector<double>* list;
 }
 
 
@@ -63,7 +65,7 @@ namespace ExpressionParser
 
 /* Bison declarations.  */
 %token <value>   NUMBER
-%token <str>     NAME SIGNAL_ /* avoid interference with Qt's SIGNAL macro */
+%token <str>     NAME STATE SIGNAL_ /* avoid interference with Qt's SIGNAL macro */
 %left '?' ':'
 %left '&' '|'
 %left '=' '~' '!' '>' '<'
@@ -71,17 +73,21 @@ namespace ExpressionParser
 %left '*' '/'
 %left NEG     /* negation--unary minus */
 %right '^'    /* exponentiation */
+%left '.'     /* element operator */
+%left ';'
 
-%type <value> exp input
-%type <str>   addr
+%type <value> input exp assignment
+%type <str>   quoted statename addr
+%type <list>  list
 
 %% /* The grammar follows.  */
 input: /* empty */                   { pInstance->mValue = 0; }
      | exp                           { pInstance->mValue = $1; }
+     | assignment                    { pInstance->mValue = $1; }
+     | input ';' input               { pInstance->mValue = $3; }
 ;
 
-exp:   NAME                          { $$ = pInstance->State( *$1 ); }
-     | NUMBER                        { $$ = $1;       }
+exp:   NUMBER                        { $$ = $1;       }
      | exp '+' exp                   { $$ = $1 + $3;  }
      | exp '-' exp                   { $$ = $1 - $3;  }
      | exp '*' exp                   { $$ = $1 * $3;  }
@@ -101,13 +107,41 @@ exp:   NAME                          { $$ = pInstance->State( *$1 ); }
      | '!' exp %prec NEG             { $$ = !$2;      }
      | '(' exp ')'                   { $$ = $2;       }
      | exp '?' exp ':' exp           { $$ = $1 ? $3 : $5 }
+     
+     | NAME                          { $$ = pInstance->Variable( *$1 ); }
+     | exp '.' NAME                  { $$ = pInstance->MemberVariable( $1, *$3 ); }
+     | NAME '(' list ')'             { $$ = pInstance->Function( *$1, *$3 ); }
+     | exp '.' NAME '(' list ')'     { $$ = pInstance->MemberFunction( $1, *$3, *$5 ); }
+
+     | STATE '(' statename ')'       { $$ = pInstance->State( *$3 ); }
      | SIGNAL_ '(' addr ',' addr ')' { $$ = pInstance->Signal( *$3, *$5 ); }
 ;
 
-addr:  exp                           { ostringstream oss; oss << $1; $$ = pInstance->AllocateCopy( oss.str() ); }
-     | exp NAME                      { ostringstream oss; oss << $1 << *$2; $$ = pInstance->AllocateCopy( oss.str() ); }
-     | '"' NAME '"'                  { $$ = $2; }
+quoted:
+       '"' NAME '"'                  { $$ = $2; }
      | '\'' NAME '\''                { $$ = $2; }
+;
+
+addr:  exp                           { ostringstream oss; oss << $1; $$ = pInstance->Allocate( &oss.str() ); }
+     | exp NAME                      { ostringstream oss; oss << $1 << *$2; $$ = pInstance->Allocate( &oss.str() ); }
+     | quoted                        { $$ = $1; }
+;
+
+statename:
+       NAME                          { $$ = $1; }
+     | quoted                        { $$ = $1; }
+;
+
+list: /* empty */                    { $$ = pInstance->Allocate< vector<double> >(); }
+     | exp                           { $$ = pInstance->Allocate< vector<double> >(); $$->push_back( $1 ); }
+     | list ',' exp                  { $$ = $1; $$->push_back( $3 ); }
+;
+
+assignment: /* assignment uses the := operator to prevent unwanted assignment */
+       NAME ':' '=' exp              { $$ = $4; pInstance->VariableAssignment( *$1, $4 ); }
+     | exp '.' NAME ':' '=' exp      { $$ = $6; pInstance->MemberVariableAssignment( $1, *$3, $6 ); }
+     | STATE '(' statename ')' ':' '=' exp
+                                     { $$ = $7; pInstance->StateAssignment( *$3, $7 ); }
 ;
 
 %%
@@ -128,14 +162,16 @@ addr:  exp                           { ostringstream oss; oss << $1; $$ = pInsta
     }
     else if( ::isalnum( c ) )
     {
-      pLval->str = pInstance->AllocateCopy( string() );
+      pLval->str = pInstance->Allocate<string>();
       while( ::isalnum( c ) )
       {
         *pLval->str += c;
         pInstance->mInput.ignore();
         c = pInstance->mInput.peek();
       }
-      if( ::stricmp( pLval->str->c_str(), "signal" ) == 0 )
+      if( ::stricmp( pLval->str->c_str(), "state" ) == 0 )
+        token = STATE;
+      else if( ::stricmp( pLval->str->c_str(), "signal" ) == 0 )
         token = SIGNAL_;
       else
         token = NAME;

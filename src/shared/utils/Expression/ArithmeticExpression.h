@@ -32,6 +32,8 @@
 #include <sstream>
 #include <string>
 #include <list>
+#include <vector>
+#include <map>
 
 #include "ExpressionParser.hpp"
 
@@ -56,29 +58,67 @@ class ArithmeticExpression
   ArithmeticExpression( const ArithmeticExpression& );
   virtual ~ArithmeticExpression();
 
-  const ArithmeticExpression& operator=( const ArithmeticExpression& e );
+  const ArithmeticExpression& operator=( const ArithmeticExpression& );
 
-  bool   IsValid();
-  double Evaluate();
+  typedef std::map<std::string, double> VariableContainer;
+  bool   IsValid( const VariableContainer* = NULL );
+  double Evaluate( VariableContainer* = NULL );
 
  protected:
-  virtual double State( const std::string& );
+  typedef std::vector<double> ArgumentList;
+
+  virtual double Variable( const std::string& name );
+  virtual void   VariableAssignment( const std::string& name, double value );
+
+  virtual double MemberVariable( double objectRef, const std::string& name );
+  virtual void   MemberVariableAssignment( double objectRef, const std::string& name, double value );
+
+  virtual double Function( const std::string& name, const ArgumentList& );
+  virtual double MemberFunction( double objectRef, const std::string& name, const ArgumentList& );
+
   virtual double Signal( const std::string&, const std::string& );
+  virtual double State( const std::string& );
+  virtual void   StateAssignment( const std::string&, double );
+
   std::ostream& Errors()
     { return mErrors; }
 
  private:
   void Parse();
   void Cleanup();
-  std::string* AllocateCopy( const std::string& );
 
   std::string        mExpression;
   std::istringstream mInput;
   std::ostringstream mErrors;
   double             mValue;
+  VariableContainer* mpVariables;
 
-  typedef std::list<std::string*> StringContainer;
-  StringContainer mAllocatedStrings;
+  // Memory management.
+  template<typename T>
+  T*
+  Allocate( const T* inpOriginal = NULL )
+  {
+    Pointer<T>* p = new Pointer<T>( inpOriginal ? new T( *inpOriginal ) : new T );
+    mAllocations.push_back( p );
+    return *p;
+  }   
+
+  struct StoredPointer
+  { virtual void Delete() = 0; };
+
+  template<typename T>
+  class Pointer : public StoredPointer
+  {
+   public:
+    Pointer( T* inPtr = 0 ) : mPtr( inPtr ) {}
+    virtual void Delete() { delete mPtr; mPtr = NULL; }
+    operator T*() const { return mPtr; }
+   private:
+    T* mPtr;
+  };
+
+  typedef std::list<StoredPointer*> PointerContainer;
+  PointerContainer mAllocations;
 };
 
 #endif // ARITHMETIC_EXPRESSION_H
