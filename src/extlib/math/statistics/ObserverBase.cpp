@@ -295,9 +295,10 @@ ObserverBase::Covariance() const
 {
   REQUIRE( Covariance );
   Vector mean = Mean();
-  Matrix sqMean = PowerSum2Full();
-  sqMean /= Count();
-  return Matrix( sqMean - mean.OuterProduct( mean ) );
+  Matrix result = PowerSum2Full();
+  result /= Count();
+  result -= mean.OuterProduct( mean );
+  return result;
 }
 
 Matrix
