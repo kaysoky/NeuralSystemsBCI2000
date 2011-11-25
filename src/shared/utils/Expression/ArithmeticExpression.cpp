@@ -151,10 +151,10 @@ ArithmeticExpression::Function( const std::string& inName, const ArgumentList& i
   typedef double (*func2Ptr)( double, double );
   typedef double (*func3Ptr)( double, double, double );
 
-  #define FUNC0( x )  { #x, 0, static_cast<func0Ptr>( &::x ) },
-  #define FUNC1( x )  { #x, 1, static_cast<func1Ptr>( &::x ) },
-  #define FUNC2( x )  { #x, 2, static_cast<func2Ptr>( &::x ) },
-  #define FUNC3( x )  { #x, 2, static_cast<func3Ptr>( &::x ) },
+  #define FUNC0( x )  { #x, 0, (void*)static_cast<func0Ptr>( &::x ) },
+  #define FUNC1( x )  { #x, 1, (void*)static_cast<func1Ptr>( &::x ) },
+  #define FUNC2( x )  { #x, 2, (void*)static_cast<func2Ptr>( &::x ) },
+  #define FUNC3( x )  { #x, 2, (void*)static_cast<func3Ptr>( &::x ) },
 
   static const struct
   {
@@ -167,10 +167,10 @@ ArithmeticExpression::Function( const std::string& inName, const ArgumentList& i
     FUNC1( sqrt )
 
     FUNC1( fabs )
-    { "abs", 1, static_cast<func1Ptr>( &::fabs ) },
+    { "abs", 1, (void*)static_cast<func1Ptr>( &::fabs ) },
 
     FUNC2( fmod )
-    { "mod", 2, static_cast<func2Ptr>( &::fmod ) },
+    { "mod", 2, (void*)static_cast<func2Ptr>( &::fmod ) },
 
     FUNC1( floor )  FUNC1( ceil )
 
@@ -178,7 +178,7 @@ ArithmeticExpression::Function( const std::string& inName, const ArgumentList& i
     FUNC2( pow )
 
     FUNC1( sin )    FUNC1( cos )    FUNC1( tan )
-    FUNC1( asin )   FUNC1( acos )   FUNC1( atan )   FUNC2( atan2 )  
+    FUNC1( asin )   FUNC1( acos )   FUNC1( atan )   FUNC2( atan2 )
     FUNC1( sinh )   FUNC1( cosh )   FUNC1( tanh )
 
   };
