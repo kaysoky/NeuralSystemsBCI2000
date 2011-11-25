@@ -67,6 +67,9 @@ bci::ClassName( const type_info& inTypeid )
     { ", ", "," },
     { "< ", "<" },
     { " >", ">" },
+    { "class ", "" },
+    { "struct ", "" },
+    { "enum ", "" },
   };
   size_t pos;
   for( size_t r = 0; r < sizeof( replacementTable ) / sizeof( *replacementTable ); ++r )
@@ -75,12 +78,6 @@ bci::ClassName( const type_info& inTypeid )
     while( string::npos != ( pos = result.find( original ) ) )
       result = result.replace( pos, original.length(), replacementTable[r].replacement );
   }
-
-  // We assume that remaining space characters separate the actual class name from a qualifier such as "class",
-  // so we return the last space-separated substring.
-  if( string::npos != ( pos = result.rfind( " " ) ) )
-    result = result.substr( pos + 1 );
-
   return result;
 }
 

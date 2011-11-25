@@ -291,6 +291,7 @@ ArithmeticExpression::Cleanup()
   while( !mAllocations.empty() )
   { // Deallocation in reverse order should prevent fragmentation.
     mAllocations.back()->Delete();
+    delete mAllocations.back();
     mAllocations.pop_back();
   }
 }
