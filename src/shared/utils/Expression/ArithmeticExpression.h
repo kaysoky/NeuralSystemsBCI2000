@@ -101,7 +101,13 @@ class ArithmeticExpression
     Pointer<T>* p = new Pointer<T>( inpOriginal ? new T( *inpOriginal ) : new T );
     mAllocations.push_back( p );
     return *p;
-  }   
+  }
+  template<typename T>
+  T*
+  Allocate( const T& inOriginal )
+  {
+    return Allocate( &inOriginal );
+  }
 
   struct StoredPointer
   { virtual void Delete() = 0; };

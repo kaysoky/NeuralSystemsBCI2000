@@ -111,18 +111,10 @@ double
 ArithmeticExpression::Variable( const string& inName )
 {
   double result = 0;
-  if( !mpVariables )
-  {
-    Errors() << inName << ": No variable container specified, so no variables allowed" << endl;
-  }
+  if( !mpVariables || mpVariables->find( inName ) == mpVariables->end() )
+    Errors() << "Variable \"" << inName << "\" does not exist" << endl;
   else
-  {
-    VariableContainer::const_iterator i = mpVariables->find( inName );
-    if( i == mpVariables->end() )
-      Errors() << "Variable \"" << inName << "\" does not exist" << endl;
-    else
-      result = i->second;
-  }
+    result = ( *mpVariables )[inName];
   return result;
 }
 
@@ -130,7 +122,7 @@ void
 ArithmeticExpression::VariableAssignment( const std::string& inName, double inValue )
 {
   if( !mpVariables )
-    ArithmeticExpression::Variable( inName ); // reports error
+    Errors() << inName << ": Cannot create variable" << endl;
   else
     ( *mpVariables )[inName] = inValue;
 }
