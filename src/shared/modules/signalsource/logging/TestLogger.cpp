@@ -62,7 +62,7 @@ TestLogger::Publish()
     END_PARAMETER_DEFINITIONS
 
     BEGIN_EVENT_DEFINITIONS
-      "TestLoggerCounter 32 -1 0 0",
+      "TestLoggerCounter 32 4294967295 0 0",
     END_EVENT_DEFINITIONS
   }
 }
