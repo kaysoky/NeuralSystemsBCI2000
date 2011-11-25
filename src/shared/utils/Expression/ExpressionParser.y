@@ -29,6 +29,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <limits>
 #include <cmath>
 #include <cstring>
 #include <cstdio>
@@ -195,7 +196,7 @@ statename:
       token = c;
       if( pInstance->mInput.peek() == '/' )
       {
-        pInstance->mInput.ignore( INT_MAX, '\n' );
+        pInstance->mInput.ignore( numeric_limits<streamsize>::max(), '\n' );
         token = yylex( pLval, pInstance );
       }
     }

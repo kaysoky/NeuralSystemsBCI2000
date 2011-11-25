@@ -46,7 +46,7 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 54 "ExpressionParser.y"
+#line 55 "ExpressionParser.y"
 typedef union YYSTYPE {
   double               value;
   std::string*         str;
