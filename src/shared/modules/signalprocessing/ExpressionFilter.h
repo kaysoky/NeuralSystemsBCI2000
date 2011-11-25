@@ -39,9 +39,21 @@ class ExpressionFilter : public GenericFilter
 
    void Preflight( const SignalProperties&, SignalProperties& ) const;
    void Initialize( const SignalProperties&, const SignalProperties& );
+   void StartRun();
+   void StopRun();
    void Process( const GenericSignal&, GenericSignal& );
 
  private:
-   std::vector<std::vector<Expression> >  mExpressions;
+   typedef std::vector< std::vector<Expression> > ExpressionMatrix;
+   typedef std::vector< std::vector< Expression::VariableContainer > > VariablesMatrix;
+
+   void LoadConfig( ExpressionMatrix&, ExpressionMatrix& startRun, ExpressionMatrix& stopRun, VariablesMatrix& ) const;
+   static void LoadExpressions( const ParamRef&, ExpressionMatrix& );
+   static void EvaluateExpressions( ExpressionMatrix&, VariablesMatrix&, const GenericSignal* = NULL, GenericSignal* = NULL );
+
+   ExpressionMatrix mExpressions,
+                    mStartRunExpressions,
+                    mStopRunExpressions;
+   VariablesMatrix  mVariables;
 };
 #endif // EXPRESSION_FILTER_H
