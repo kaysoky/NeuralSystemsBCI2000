@@ -37,6 +37,7 @@
 #include <string>
 #include <stdexcept>
 #include <iostream>
+#include <limits>
 #include "ArithmeticExpression.h"
 #include "BCIError.h"
 #include "ClassName.h"
@@ -44,23 +45,35 @@
 using namespace std;
 using namespace bci;
 
+static const pair<string, double> sConstants[] =
+{
+  make_pair( "pi", 4.0 * ::atan( 1.0 ) ),
+  make_pair( "e", ::exp( 1.0 ) ),
+  make_pair( "inf", numeric_limits<double>::infinity() ),
+  make_pair( "nan", numeric_limits<double>::quiet_NaN() ),
+};
+const ArithmeticExpression::VariableContainer ArithmeticExpression::Constants( &sConstants[0], &sConstants[sizeof(sConstants)/sizeof(*sConstants)] );
+
 ArithmeticExpression::ArithmeticExpression()
 : mValue( 0 ),
-  mpVariables( NULL )
+  mpVariables( NULL ),
+  mpConstants( NULL )
 {
 }
 
 ArithmeticExpression::ArithmeticExpression( const std::string& s )
 : mExpression( s ),
   mValue( 0 ),
-  mpVariables( NULL )
+  mpVariables( NULL ),
+  mpConstants( NULL )
 {
 }
 
 ArithmeticExpression::ArithmeticExpression( const ArithmeticExpression& e )
 : mExpression( e.mExpression ),
   mValue( 0 ),
-  mpVariables( NULL )
+  mpVariables( NULL ),
+  mpConstants( NULL )
 {
 }
 
@@ -83,27 +96,44 @@ ArithmeticExpression::operator=( const ArithmeticExpression& e )
 }
 
 double
-ArithmeticExpression::Evaluate( VariableContainer* iopVariables )
+ArithmeticExpression::Evaluate( VariableContainer* iopVariables, const VariableContainer* inpConstants )
 {
   mpVariables = iopVariables;
+  mpConstants = inpConstants;
   Parse();
+  mpConstants = NULL;
   mpVariables = NULL;
   if( !mErrors.str().empty() )
-    bcierr__ << "ArithmeticExpression::Evaluate: When evaluating \""
-             << mExpression << "\": "
-             << mErrors.str() << endl;
+  {
+    string errors = mErrors.str();
+    int numErrors = 0;
+    for( size_t pos = errors.find( '\n' ); pos != string::npos; pos = errors.find( '\n', pos + 1 ) )
+      ++numErrors;
+    errors = errors.substr( 0, errors.length() - 1 ) + '.';
+    if( numErrors > 1 )
+      for( size_t pos = errors.find( '\n' ); pos != string::npos; pos = errors.find( '\n', pos + 3 ) )
+        errors = errors.substr( 0, pos ) + ".\n * " + errors.substr( pos + 1 );
+    bcierr_ << "When evaluating \""
+            << mExpression << "\""
+            << ( numErrors == 1 ? ": " : ", multiple errors occurred.\n * " )
+            << errors
+            << flush;
+  }
   return mValue;
 }
 
 bool
-ArithmeticExpression::IsValid( const VariableContainer* inpVariables )
+ArithmeticExpression::IsValid( const VariableContainer* inpVariables, const VariableContainer* inpConstants )
 {
   if( inpVariables )
     mpVariables = new VariableContainer( *inpVariables );
   else
     mpVariables = NULL;
+  mpConstants = inpConstants;
   Parse();
+  mpConstants = NULL;
   delete mpVariables;
+  mpVariables = NULL;
   return mErrors.str().empty();
 }
 
@@ -111,18 +141,37 @@ double
 ArithmeticExpression::Variable( const string& inName )
 {
   double result = 0;
-  if( !mpVariables || mpVariables->find( inName ) == mpVariables->end() )
+  bool found = false;
+  if( mpConstants )
+  {
+    VariableContainer::const_iterator i = mpConstants->find( inName );
+    if( i != mpConstants->end() )
+    {
+      result = i->second;
+      found = true;
+    }
+  }
+  if( !found && mpVariables )
+  {
+    VariableContainer::const_iterator i = mpVariables->find( inName );
+    if( i != mpVariables->end() )
+    {
+      result = i->second;
+      found = true;
+    }
+  }
+  if( !found )
     Errors() << "Variable \"" << inName << "\" does not exist" << endl;
-  else
-    result = ( *mpVariables )[inName];
   return result;
 }
 
 void
 ArithmeticExpression::VariableAssignment( const std::string& inName, double inValue )
 {
-  if( !mpVariables )
-    Errors() << inName << ": Cannot create variable" << endl;
+  if( mpConstants && mpConstants->find( inName ) != mpConstants->end() )
+    Errors() << inName << ": Not assignable" << endl;
+  else if( !mpVariables )
+    Errors() << inName << ": Cannot create variables" << endl;
   else
     ( *mpVariables )[inName] = inValue;
 }

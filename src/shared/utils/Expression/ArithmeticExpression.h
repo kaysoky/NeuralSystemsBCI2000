@@ -61,8 +61,10 @@ class ArithmeticExpression
   const ArithmeticExpression& operator=( const ArithmeticExpression& );
 
   typedef std::map<std::string, double> VariableContainer;
-  bool   IsValid( const VariableContainer* = NULL );
-  double Evaluate( VariableContainer* = NULL );
+  static const VariableContainer Constants;
+
+  bool   IsValid( const VariableContainer* = NULL, const VariableContainer* = &Constants );
+  double Evaluate( VariableContainer* = NULL, const VariableContainer* = &Constants );
 
  protected:
   typedef std::vector<double> ArgumentList;
@@ -92,6 +94,7 @@ class ArithmeticExpression
   std::ostringstream mErrors;
   double             mValue;
   VariableContainer* mpVariables;
+  const VariableContainer* mpConstants;
 
   // Memory management.
   template<typename T>

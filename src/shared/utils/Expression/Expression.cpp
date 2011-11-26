@@ -32,6 +32,8 @@
 
 using namespace std;
 
+const Expression::VariableContainer& Expression::Constants = ArithmeticExpression::Constants;
+
 Expression&
 Expression::SetOptionalAccess( State::ValueType inDefaultValue )
 {
@@ -48,25 +50,21 @@ Expression::ClearOptionalAccess()
 }
 
 bool
-Expression::IsValid( const GenericSignal* inSignal, const VariableContainer* inVars )
+Expression::IsValid( const GenericSignal* inSignal, const VariableContainer* inVars, const VariableContainer* inConstVars )
 {
   mpSignal = inSignal;
-  mpVariables = inVars;
   mAllowStateAssignment = false;
-  bool result = ArithmeticExpression::IsValid( inVars );
-  mpVariables = NULL;
+  bool result = ArithmeticExpression::IsValid( inVars, inConstVars );
   mpSignal = NULL;
   return result;
 }
 
 double
-Expression::Evaluate( const GenericSignal* inSignal, VariableContainer* ioVars )
+Expression::Evaluate( const GenericSignal* inSignal, VariableContainer* ioVars, const VariableContainer* inConstVars )
 {
   mpSignal = inSignal;
-  mpVariables = ioVars;
   mAllowStateAssignment = ( Environment::Phase() != Environment::preflight );
-  double result = ArithmeticExpression::Evaluate( ioVars );
-  mpVariables = NULL;
+  double result = ArithmeticExpression::Evaluate( ioVars, inConstVars );
   mpSignal = NULL;
   return result;
 }
@@ -74,9 +72,9 @@ Expression::Evaluate( const GenericSignal* inSignal, VariableContainer* ioVars )
 double
 Expression::Variable( const string& inName )
 {
-  if( mpVariables && mpVariables->find( inName ) != mpVariables->end() )
-    return ArithmeticExpression::Variable( inName );
-  return State( inName );
+  if( mOptionalAccess || States->Exists( inName ) )
+    return State( inName );
+  return ArithmeticExpression::Variable( inName );
 }
 
 double
