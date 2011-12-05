@@ -17,12 +17,12 @@ SET( HDR_PROJECT
 
 # Define the library
 IF( BORLAND )
-  LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Emotiv/lib/omf )
+  LINK_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/lib/omf )
 ELSE( BORLAND )
-  LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Emotiv/lib/coff )
+  LINK_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/lib/coff )
 ENDIF( BORLAND )
 
-INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Emotiv/lib/include )
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/lib/include )
 
 BCI2000_INCLUDE( "SOURCEFILTER" )
 
