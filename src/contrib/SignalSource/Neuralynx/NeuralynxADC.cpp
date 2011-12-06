@@ -1,12 +1,28 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: NeuralynxADC.h 2656 2010-08-03 dimitriadis $
+// $Id$
 // Author: g.dimitriadis@donders.ru.nl s.klanke@donders.ru.nl
 // Description: A source class that interfaces to the Neuralynx DigitalLynx
-//             amplifier through its reversed engineered
-//              Matlab drivers
+//              amplifier through its reversed engineered Matlab drivers
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PCHIncludes.h"
@@ -34,7 +50,7 @@ NeuralynxADC::NeuralynxADC()
     "Source int EventCh= 0 0 0 1"                               " // Number of event channels (0 or 1)",
 
     "Source list ChannelNames= 33"
-    "CSC1 CSC2 CSC3 CSC4 CSC5 CSC6 CSC7 CSC8 CSC9 CSC10 CSC11 CSC12 CSC13 CSC14 CSC15 CSC16 "
+    "CSC01 CSC02 CSC03 CSC04 CSC05 CSC06 CSC07 CSC08 CSC09 CSC10 CSC11 CSC12 CSC13 CSC14 CSC15 CSC16 "
     "CSC17 CSC18 CSC19 CSC20 CSC21 CSC22 CSC23 CSC24 CSC25 CSC26 CSC27 CSC28 CSC29 CSC30 CSC31 CSC32 Events"
     " // Channel Names",
 

@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: CMakeLists.txt 2879 2010-08-03 dimitriadis $
+## $Id$
 ## Authors: g.dimitriadis@donders.ru.nl
 ## Description: Build information for Neuralynx
 

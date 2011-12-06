@@ -37,10 +37,10 @@ call portable.bat
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition%SESSION%.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm
 
-::@set LOGGERS=%LOGGERS% --LogWiimote=1
-
 ::@set SRC=Emotiv          && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=
 ::@set SRC=SignalGenerator && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=--EvaluateTiming=0
+
+::@set LOGGERS=%LOGGERS% --LogWiimote=1
 
 ::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PROG%\..\data\20110801_8502_A_S002R03_weights.prm
 ::@set OnConnect=%OnConnect% ; SET PARAMETER ShowSignalTime 1
