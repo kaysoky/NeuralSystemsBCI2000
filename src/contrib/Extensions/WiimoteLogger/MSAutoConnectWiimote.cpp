@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
 
               _tprintf(_T("    Found: %s \"%ls\"\n"), FormatBTAddress(btdi.Address), btdi.szName);
                
-              if (istarget || !wcscmp(btdi.szName, L"Nintendo RVL-WBC-01") || !wcscmp(btdi.szName, L"Nintendo RVL-CNT-01"))
+              if (istarget || !wcscmp(btdi.szName, L"Nintendo RVL-WBC-01") || !wcscmp(btdi.szName, L"Nintendo RVL-CNT-01") || !wcscmp(btdi.szName, L"Nintendo RVL-CNT-01-TR"))
               {
                  DWORD pcServices = 16;
                  GUID guids[16];
