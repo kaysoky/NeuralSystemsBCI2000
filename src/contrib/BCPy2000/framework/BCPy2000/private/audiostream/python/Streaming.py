@@ -61,10 +61,11 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Streams intlist   MaxTargets=                   2     3     3                      3     0 % // ",
 			"PythonSig:Streams intlist   ScopeForMinMax=               2     7     7                      7     1 % // ",
 			"PythonSig:Streams intlist   InitialStandards=                   2     2       2              3     0 % // how many stimuli at the beginning of each stream are guaranteed to be standards",
-			#"PythonSig:Streams int      SurroundSoundTrigger=                     0                      0     0 1 // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)",
+			#"PythonSig:Streams int      SurroundSoundTrigger=                     0                      0     0 1 // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)", # removed in favour of configurable SoundChannels parameter
 			"PythonSig:Streams matrix    SoundChannels=                4     3     1 % S1     % 1 S2     1 % F       % 1 F     %     % % // ",
 			"PythonSig:Streams int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
 			"PythonSig:Streams floatlist StreamVolumes=                      2     1.0 1.0              1.0     0 1 // ",
+			"PythonSig:Streams int       UseWiimotes=                              0                      0     0 1 // use Wiimote vibration instead of sound? (boolean)",
 			
 			"PythonSig:Epoch   float     EpochDurationMsec=                      600                    600   100 % // ",
 			"PythonSig:Epoch   floatlist EpochLowerBoundMsec=                2   100     100            100     0 % // after springing, each ERP trap will not spring again for this many milliseconds",
@@ -278,6 +279,13 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			except IOError: raise EndUserError("failed to load '%s' as a wav file" % prmval)
 		
 		if w.channels() != 1: raise EndUserError("StreamStimuli wav files must be single-channel: found %d channels in %s" % (w.channels(), w.filename))
+			
+		if int(self.params['UseWiimotes']):
+			if self.surround: raise EndUserError("cannot use trigger channels when using wiimotes")
+			import wiiplayer
+			if wiiplayer.wiimote_ptrs == None:  wiiplayer.init(self.nstreams)
+			return wiiplayer.wiiplayer(w, wiimote_index=istream)		# changed w -> prmval
+		
 		w.padendto(0.05) # causes some kind of stream-hanging/-silent-crashing problem on mac mini if wavs very short(??)
 		w *= float(self.params['StreamVolumes'][istream])
 		w *= self.soundmasks[istream]
