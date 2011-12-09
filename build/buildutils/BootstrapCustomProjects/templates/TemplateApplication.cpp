@@ -43,7 +43,8 @@ RegisterFilter( `, 3 );
      //  - filter locations within Application modules begin with "3."
 
 
-`::`()
+`::`() :
+  mrDisplay( Window() )
 {
 
   // Declare any parameters that the filter needs....

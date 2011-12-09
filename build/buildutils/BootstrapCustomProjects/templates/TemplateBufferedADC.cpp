@@ -30,7 +30,7 @@
 #include "`.h"
 #include "BCIError.h"
 
-#include "OSThread.h" // for OSThread::Sleep()
+#include "ThreadUtils.h" // for SleepFor()
 
 using namespace std;
 
@@ -179,7 +179,7 @@ void
 
   // Here is a wait loop to ensure that we do not deliver the signal faster than real-time
   // (In your final implementation, you should remove this: the hardware will play this role then.)
-  while( PrecisionTime::UnsignedDiff( PrecisionTime::Now(), mLastTime ) < mMsecPerBlock ) OSThread::Sleep(1);
+  while( PrecisionTime::UnsignedDiff( PrecisionTime::Now(), mLastTime ) < mMsecPerBlock ) ThreadUtils::SleepFor(1);
   mLastTime = PrecisionTime::Now();
 }
 

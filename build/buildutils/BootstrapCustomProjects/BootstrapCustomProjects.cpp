@@ -370,10 +370,10 @@ int NewFilter( string modtype, string name, string proj, string extra )
 		"\n"
 		"e.g. NewBCI2000Filter    2   MyCustomFilter  ../src/custom/VeryNiceSignalProcessing\n"
 		"\n"
-		"CLASSTYPE: 1 creates a subclass of GenericADC (for signal acquisition in SignalSource modules using buffered APIs)\n"
+		"CLASSTYPE: 0 creates a subclass of BufferedADC (for signal acquisition in SignalSource modules using non-buffered APIs)\n"
+        "           1 creates a subclass of GenericADC (for signal acquisition in SignalSource modules using buffered APIs)\n"
 		"           2 creates a subclass of GenericFilter (for all modules, especially SignalProcessing)\n"
 		"           3 creates a subclass of ApplicationBase (for Application modules)\n"
-        "           4 creates a subclass of BufferedADC (for signal acquisition in SignalSource modules using non-buffered APIs)\n"
 		"\n"
 		"NAME:      The name of the filter class, and of the .cpp and .h files in which it is implemented.\n"
 		"\n"
@@ -386,10 +386,10 @@ int NewFilter( string modtype, string name, string proj, string extra )
 	for( int i = 0; ; i++)
 	{
 		modtype = StripString( modtype );
+        if( modtype == "0" ) modtype = "BufferedADC";
 		if( modtype == "1" ) modtype = "GenericADC";
 		if( modtype == "2" ) modtype = "GenericFilter";
 		if( modtype == "3" ) modtype = "ApplicationBase";
-        if( modtype == "4" ) modtype = "BufferedADC";
 		if( modtype == "GenericADC" || modtype == "GenericFilter" || modtype == "ApplicationBase" || modtype == "BufferedADC" ) break;
 		
 		if( modtype.size() && i == 0 ) { cerr << "unrecognized filter type \"" << modtype << "\" - should be 1, 2 or 3\n"; return 1; }
@@ -593,8 +593,18 @@ int NewModule( string modtype, string name, string parent, string extra )
 		adcname = name;
 		if( adcname.size() > 6 && adcname.substr( adcname.size()-6 ) == "Source" ) adcname = adcname.substr( 0, adcname.size()-6 );
 		if( adcname.size() < 3 || adcname.substr( adcname.size()-3 ) != "ADC" )    adcname += "ADC";
-		if( NewFilter( "1", adcname, proj, "" ) != 0 ) adcname = "";
+		if( NewFilter( "0", adcname, proj, "" ) != 0 ) adcname = "";
 	}
+
+    string appname;
+	if( modtype == "Application" )
+	{
+		appname = name;
+		if( appname.size() > 4 && appname.substr( appname.size()-4 ) == "Task" ) appname += "Filter";
+		else if( appname.size() < 4 || appname.substr( appname.size()-4 ) != "Task" ) appname += "Task";
+		if( NewFilter( "3", appname, proj, "" ) != 0 ) appname = "";
+	}
+	
 	
 	bool cmOK = true;
 	cout << endl;

@@ -43,7 +43,8 @@ class ` : public ApplicationBase
   virtual void StopRun();
 
  private:
-   // Use this space to declare any `-specific methods and member variables you'll need
+   ApplicationWindow& mrDisplay;
+   // Use this space to declare any APPWINDOW-specific methods and member variables you'll need
 };
 
 #endif // INCLUDED_`_H
