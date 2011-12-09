@@ -63,9 +63,18 @@ RegisterFilter( `, 1 );
  END_PARAMETER_DEFINITIONS
 
 
-  // ...and likewise any state variables:
+  // ...and likewise any state variables.
 
  BEGIN_STATE_DEFINITIONS
+
+  // IMPORTANT NOTE ABOUT BUFFEREDADC AND STATES:  
+  // * BCI2000 States can only be populated "per sample" if they're populated synchronously.
+  // * States can only be populated synchronously by calling State( "Y" )( idx ) = X; in OnProcess.
+  // * States can also be populated asynchronously by calling bcievent << "Y" << x; in DoAcquire.
+  // * Asynchronous state population using bcievent cannot occur per sample, but only per sampleblock.
+  // * If a state changes multiple times in a single sample block, data WILL BE LOST using the bcievent interface.
+  // * This presents a problem for many amplifier APIs because many of them must be instantiated and run in a single
+  //   thread (they are not thread-safe) and access to API state data must be managed carefully if its needed in the main thread.
 
    "SomeState       8 0 0 0",    // These are just examples. Change them, or remove them.
    "SomeOtherState 16 0 0 0",
@@ -74,14 +83,14 @@ RegisterFilter( `, 1 );
 
 }
 
-
 `::~`()
 {
-  Halt();
+  // You should think twice before deallocating memory here as opposed to OnHalt().
+  // OnHalt() is automatically called by BufferedADC upon destruction of this object.
 }
 
 void
-`::Halt()
+`::OnHalt()
 {
   // De-allocate any memory reserved in Initialize, stop any threads, etc.
   // Good practice is to write the Halt() method such that it is safe to call it even *before*
@@ -90,7 +99,7 @@ void
 }
 
 void
-`::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
+`::OnPreflight( SignalProperties& Output ) const
 {
   // The user has pressed "Set Config" and we need to sanity-check everything.
   // For example, check that all necessary parameters and states are accessible:
@@ -119,19 +128,58 @@ void
   // Any methods called by Preflight must also be "const" in the same way.
 }
 
-
 void
-`::Initialize( const SignalProperties& Input, const SignalProperties& Output )
+`::OnInitialize( const SignalProperties& Output )
 {
   // The user has pressed "Set Config" and all Preflight checks have passed.
+  // The system will now transition into an "Initialized" state.
   // The signal properties can no longer be modified, but the const limitation has gone, so
-  // the ` instance itself can be modified. Allocate any memory you need, start any
-  // threads, store any information you need in private member variables.
+  // the ` instance itself can be modified. Allocate any memory you need
+  // store any information you need in private member variables.
+
+  // As long as the system is in an initialized state, the module should be pushing data from
+  // the amplifier through the system.  Initialized != Running, however.  The system can call
+  // StartRun and StopRun many times while remaining initialized.  The system will only become
+  // uninitialized again once OnHalt is called.
+
+  // Don't bother with any API stuff here 
+  // OnStartAcquisition() will be called in the acquisition thread immediately after this method finishes
 
   double samplesPerSecond = Parameter( "SamplingRate" );
   double samplesPerBlock  = Parameter( "SampleBlockSize" );
   mMsecPerBlock = 1000.0 * samplesPerBlock / samplesPerSecond;
 
+  mLastTime = PrecisionTime::Now();
+}
+
+void 
+`::OnStartAcquisition()
+{
+  // This method is called from the acquisition thread once the system is initialized.
+  // You should use this space to start up your amplifier using its API.  Any initialization
+  // here is done in the acquisition thread, so non-thread-safe APIs should work if initialized here.
+}
+
+void
+`::DoAcquire( GenericSignal& Output )
+{
+  // Now we're acquiring a single SampleBlock of data in the acquisition thread.
+  // Keep in mind that even though we're writing this data from another thread, the main thread
+  // will block until we've written the SampleBlock, so be sure this is done in a timely manner 
+  // or the system will not be able to perform in real-time.
+
+  // Internally, BufferedADC writes this data to a buffer, then locks a mutex and pushes the data
+  // into the GenericSignal output in the main thread.  The size of this buffer (in units of time)
+  // is parameterized by "SourceBufferSize" declared by BufferedADC.  Be careful not to overflow!
+
+  // For now, we output flat lines:
+  for( int ch = 0; ch < Output.Channels(); ch++ )
+    for( int el = 0; el < Output.Elements(); el++ )
+      Output( ch, el ) = 0.0f;
+
+  // Here is a wait loop to ensure that we do not deliver the signal faster than real-time
+  // (In your final implementation, you should remove this: the hardware will play this role then.)
+  while( PrecisionTime::UnsignedDiff( PrecisionTime::Now(), mLastTime ) < mMsecPerBlock ) OSThread::Sleep(1);
   mLastTime = PrecisionTime::Now();
 }
 
@@ -144,35 +192,22 @@ void
   mLastTime = PrecisionTime::Now();
 }
 
-
-void
-`::Process( const GenericSignal& Input, GenericSignal& Output )
-{
-
-  // Now we're acquiring a single SampleBlock of data.
-  // Remember not to take too much CPU time here, or you will break the real-time constraint.
-  // To avoid losing data, it is advisable to create a separate thread which reads from the
-  // hardware and writes into a ring buffer, and read from the buffer during Process.
-
-  // For now, we output flat lines:
-  for( int ch = 0; ch < Output.Channels(); ch++ )
-    for( int el = 0; el < Output.Elements(); el++ )
-      Output( ch, el ) = 0.0f;
-
-
-  // Here is a wait loop to ensure that we do not deliver the signal faster than real-time
-  // (In your final implementation, you should remove this: the hardware will play this role then.)
-  while( PrecisionTime::UnsignedDiff( PrecisionTime::Now(), mLastTime ) < mMsecPerBlock ) OSThread::Sleep(1);
-  mLastTime = PrecisionTime::Now();
-}
-
 void
 `::StopRun()
 {
   // The Running state has been set to 0, either because the user has pressed "Suspend",
   // because the run has reached its natural end.
   bciout << "Goodbye World." << endl;
-  // You know, you can delete methods if you're not using them.
-  // Remove the corresponding declaration from `.h too, if so.
+}
+
+void
+`::OnStopAcquisition()
+{
+  // This method is called from the acquisition thread just before it exits.  Use this method
+  // to shutdown the amplifier API, but the system should remain in an initialized state.
+  // The system will go into an un-initialized state when OnHalt is called (immediately after this)
+  // from the main thread.
+
+  // It is guaranteed that this method is called before OnHalt is called.
 }
 
