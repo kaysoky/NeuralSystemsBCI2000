@@ -93,6 +93,7 @@ P3TemporalFilter::Preflight( const SignalProperties& Input,
   Output.SetChannels( Input.Channels() )
         .SetElements( static_cast<size_t>( outputSamples ) )
         .SetType( SignalType::float32 )
+        .SetIsStream( false )
         .ElementUnit().SetRawMin( 0 )
                       .SetRawMax( outputSamples - 1 );
                       

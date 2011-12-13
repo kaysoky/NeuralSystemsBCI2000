@@ -38,7 +38,8 @@ class SignalProperties
   public:
     SignalProperties()
       : mType( SignalType::defaultType ),
-        mValueUnits( 1 )
+        mValueUnits( 1 ),
+        mIsStream( none )
       { InitMembers( 0, 0 ); }
 
     SignalProperties(
@@ -46,7 +47,8 @@ class SignalProperties
       size_t inElements,
       SignalType::Type inType = SignalType::defaultType )
       : mType( inType ),
-        mValueUnits( 1 )
+        mValueUnits( 1 ),
+        mIsStream( none )
       { InitMembers( inChannels, inElements ); }
 
     SignalProperties(
@@ -54,7 +56,8 @@ class SignalProperties
       size_t inElements,
       SignalType inType )
       : mType( inType ),
-        mValueUnits( 1 )
+        mValueUnits( 1 ),
+        mIsStream( none )
       { InitMembers( inChannels, inElements ); }
 
     virtual ~SignalProperties()
@@ -126,6 +129,11 @@ class SignalProperties
     SignalProperties& SetUpdateRate( double r )
                       { mUpdateRate = r; return *this; }
 
+    // Whether packets form a continuous stream of data.
+    bool              IsStream() const;
+    SignalProperties& SetIsStream( bool b = true )
+                      { mIsStream = b ? true_ : false_; return *this; }
+
     bool IsEmpty() const
                       { return Channels() == 0 || Elements() == 0; }
 
@@ -151,6 +159,7 @@ class SignalProperties
                                        mElementUnit;
     ValueList<PhysicalUnit>            mValueUnits;
     double                             mUpdateRate;
+    enum { none = -1, true_ = 1, false_ = 0 } mIsStream;
 };
 
 inline

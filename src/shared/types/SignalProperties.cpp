@@ -134,3 +134,12 @@ SignalProperties::AddressToIndex( const string& inAddress,
   return result;
 }
 
+bool
+SignalProperties::IsStream() const
+{
+  if( mIsStream == true_ )
+    return true;
+  if( mIsStream == false_ )
+    return false;
+  return Elements() == 1 || ElementUnit().Symbol() == "s";
+}
