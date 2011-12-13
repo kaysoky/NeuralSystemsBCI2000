@@ -64,10 +64,11 @@
 
 // Due to the use of a temporary, we need to use an inserter that's implemented as an ostream member first.
 // Especially, std::operator<<( ostream&, const char* ) cannot be used as an initial inserter because its
-// first argument (reference) cannot be initialized with a temporary. Thus, the expression gets resolved to
-// std::ostream::operator<<( void* ), and the address of the string literal is inserted into the stream
+// first argument (reference) cannot be initialized with a temporary. The expression would be resolved to
+// std::ostream::operator<<( void* ), and the address of the string literal inserted into the stream
 // rather than the string itself.
-#define bciexception(x) BCIException( std::ostringstream() << std::flush << x << EXCEPTION_CONTEXT_ )
+#define bciexception_(x) BCIException( std::ostringstream() << std::flush << x )
+#define bciexception(x)  bciexception_( x << EXCEPTION_CONTEXT_ )
 
 class BCIException : public std::exception
 {
