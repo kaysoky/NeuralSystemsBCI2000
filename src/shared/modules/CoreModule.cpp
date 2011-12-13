@@ -60,13 +60,11 @@ using namespace std;
 static const GenericSignal sNullSignal( 0, 0 );
 
 CoreModule::CoreModule()
-: mReceivingThread( *this ),
-  mTerminated( false ),
-  mFiltersInitialized( false ),
-  mLastRunning( false ),
+: mFiltersInitialized( false ),
   mResting( false ),
   mStartRunPending( false ),
   mStopRunPending( false ),
+  mStopSent( false ),
   mMutex( NULL ),
   mSampleBlockSize( 0 )
 #if _WIN32
@@ -106,6 +104,7 @@ CoreModule::Run( int inArgc, char** inArgv )
   ExceptionCatcher()
     .SetMessage( "Terminating " THISMODULE " module" )
     .Run( call );
+  TerminateWait();
   ShutdownSystem();
   return ( bcierr__.Flushes() == 0 );
 }
@@ -215,35 +214,35 @@ CoreModule::Initialize( int inArgc, char** inArgv )
   InitializeOperatorConnection( operatorAddress );
   bool success = ( bcierr__.Flushes() == 0 );
   if( success )
-    mReceivingThread.Start();
+    OSThread::Start();
   return success;
 }
 
 
 int
-CoreModule::ReceivingThread::Execute()
+CoreModule::Execute()
 {
   const int cSocketTimeout = 105;
-  while( !mrParent.mTerminated )
+  while( !IsTerminating() )
   {
-    mrParent.mConnectionLock.Acquire();
+    mConnectionLock.Acquire();
     streamsock::set_of_instances inputSockets;
-    if( mrParent.mOperator.is_open() )
-      inputSockets.insert( &mrParent.mOperatorSocket );
-    if( mrParent.mPreviousModule.is_open() )
-      inputSockets.insert( &mrParent.mPreviousModuleSocket );
-    mrParent.mConnectionLock.Release();
+    if( mOperator.is_open() )
+      inputSockets.insert( &mOperatorSocket );
+    if( mPreviousModule.is_open() )
+      inputSockets.insert( &mPreviousModuleSocket );
+    mConnectionLock.Release();
     if( !inputSockets.empty() )
       streamsock::wait_for_read( inputSockets, cSocketTimeout );
 
-    mrParent.mConnectionLock.Acquire();
-    while( mrParent.mOperator && mrParent.mOperator.rdbuf()->in_avail() )
-      mrParent.mMessageQueue.QueueMessage( mrParent.mOperator );
-    while( mrParent.mPreviousModule && mrParent.mPreviousModule.rdbuf()->in_avail() )
-      mrParent.mMessageQueue.QueueMessage( mrParent.mPreviousModule );
-    mrParent.mConnectionLock.Release();
+    mConnectionLock.Acquire();
+    while( mOperator && mOperator.rdbuf()->in_avail() )
+      mMessageQueue.QueueMessage( mOperator );
+    while( mPreviousModule && mPreviousModule.rdbuf()->in_avail() )
+      mMessageQueue.QueueMessage( mPreviousModule );
+    mConnectionLock.Release();
 
-    mrParent.mMessageEvent.Set();
+    mMessageEvent.Set();
   }
   return 0;
 }
@@ -256,7 +255,7 @@ CoreModule::MainMessageLoop()
 {
   const int bciMessageTimeout = 100; // ms, is max time a GUI event needs to wait
                                      // before it gets processed
-  while( !mTerminated )
+  while( !IsTerminating() )
   {
     mMessageEvent.Wait( bciMessageTimeout );
     mMessageEvent.Reset();
@@ -502,6 +501,7 @@ void
 CoreModule::StartRunFilters()
 {
   mStartRunPending = false;
+  mStopSent = false;
   EnvironmentBase::EnterStartRunPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::StartRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
@@ -566,11 +566,16 @@ CoreModule::ProcessFilters( const GenericSignal& input )
     Terminate();
     return;
   }
-  OSMutex::Lock lock( mConnectionLock );
-  MessageHandler::PutMessage( mNextModule, mStatevector );
+  bool running = mStatevector.StateValue( "Running" );
+  if( running || !mStopSent )
+  {
+    mStopSent = !running;
+    OSMutex::Lock lock( mConnectionLock );
+    MessageHandler::PutMessage( mNextModule, mStatevector );
 #if( MODTYPE != APP )
-  MessageHandler::PutMessage( mNextModule, mOutputSignal );
+    MessageHandler::PutMessage( mNextModule, mOutputSignal );
 #endif // APP
+  }
 }
 
 
@@ -634,15 +639,12 @@ CoreModule::HandleState( istream& is )
 
       // For the "Running" state, the module will undergo a more complex
       // state transition than for other states.
-      if( string( "Running" ) == s.Name() )
+      if( s.Name() == "Running" )
       {
-        bool running = mStatevector.StateValue( "Running" ),
-             nextRunning = s.Value();
-        if( !running && nextRunning )
+        if( s.Value() && mStartRunPending )
         {
-          mLastRunning = true;
+          mStatevector.CommitStateChanges();
           StartRunFilters();
-          mStatevector.SetStateValue( "Running", 1 );
           ProcessFilters( sNullSignal );
         }
       }
@@ -712,27 +714,19 @@ CoreModule::HandleStateVector( istream& is )
     mStatevector.CommitStateChanges();
     // The source module does not receive a signal, so handling must take place
     // on arrival of a StateVector message.
-    if( mLastRunning ) // For the first "Running" block, Process() is called from
-                       // HandleState(), and may not be called here.
-                       // For the first "Suspended" block, we need to call
-                       // Process() one last time.
-                       // By evaluating at "mLastRunning" instead of "running" we
-                       // obtain this behavior.
+    if( mStartRunPending )
+    {
+      mStatevector.SetStateValue( "Running", false );
+    }
+    else
     {
       ProcessFilters( sNullSignal );
+      if( !mStatevector.StateValue( "Running" ) )
+        StopRunFilters();
     }
-#endif // SIGSRC
-    // One of the filters might have set Running to 0 during ProcessFilters().
-    bool running = mStatevector.StateValue( "Running" );
-    if( !running && mLastRunning )
-    {
-#if( MODTYPE == SIGSRC )
-      StopRunFilters();
 #else // SIGSRC
-      mStopRunPending = true;
+    mStopRunPending = !mStatevector.StateValue( "Running" );
 #endif // SIGSRC
-    }
-    mLastRunning = running;
   }
   return is ? true : false;
 }

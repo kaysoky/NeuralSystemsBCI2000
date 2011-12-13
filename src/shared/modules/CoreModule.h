@@ -100,7 +100,7 @@
 #endif
 
 
-class CoreModule : private Uncopyable, private MessageHandler
+class CoreModule : private MessageHandler, private OSThread
 {
   static const int cInitialConnectionTimeout = 20000; // ms
 #if _WIN32
@@ -117,8 +117,6 @@ class CoreModule : private Uncopyable, private MessageHandler
   virtual void OnInitialize( int argc, char** argv ) {}
   virtual void OnProcessGUIMessages() {}
   virtual bool OnGUIMessagesPending() { return false; }
-  // Calling Terminate() will end message processing.
-  void Terminate() { mTerminated = true; }
 
  private:
   void DoRun( int argc, char** argv );
@@ -148,20 +146,13 @@ class CoreModule : private Uncopyable, private MessageHandler
   bool HandleStateVector( std::istream& );
   bool HandleSysCommand( std::istream& );
 
-  class ReceivingThread;
-  friend class ReceivingThread;
-  class ReceivingThread : public OSThread
-  {
-   public:
-    ReceivingThread( CoreModule& inParent ) : mrParent( inParent ) {}
-    virtual int Execute();
-   private:
-    CoreModule& mrParent;
-  }                mReceivingThread;
+  // OSThread interface
+  int Execute();
+
+ private:
   MessageQueue     mMessageQueue;
   OSEvent          mMessageEvent;
 
-  bool             mTerminated;
   ParamList        mParamlist;
   StateList        mStatelist;
   StateVector      mStatevector,
@@ -176,10 +167,10 @@ class CoreModule : private Uncopyable, private MessageHandler
                    mPreviousModule;
   OSMutex          mConnectionLock;
   bool             mFiltersInitialized,
-                   mLastRunning,
                    mResting,
                    mStartRunPending,
-                   mStopRunPending;
+                   mStopRunPending,
+                   mStopSent;
   void*            mMutex;
   int              mSampleBlockSize;
 #if _WIN32
