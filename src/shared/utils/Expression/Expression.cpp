@@ -28,9 +28,11 @@
 #pragma hdrstop
 
 #include "Expression.h"
+#include "BCIException.h"
 #include <sstream>
 
 using namespace std;
+using namespace ExpressionParser;
 
 const Expression::VariableContainer& Expression::Constants = ArithmeticExpression::Constants;
 
@@ -49,74 +51,127 @@ Expression::ClearOptionalAccess()
   return *this;
 }
 
-bool
-Expression::IsValid( const GenericSignal* inSignal, const VariableContainer* inVars, const VariableContainer* inConstVars )
-{
-  mpSignal = inSignal;
-  mAllowStateAssignment = false;
-  bool result = ArithmeticExpression::IsValid( inVars, inConstVars );
-  mpSignal = NULL;
-  return result;
-}
-
 double
-Expression::Evaluate( const GenericSignal* inSignal, VariableContainer* ioVars, const VariableContainer* inConstVars )
+Expression::Evaluate( const GenericSignal* inpSignal, int inSample )
 {
-  mpSignal = inSignal;
   mAllowStateAssignment = ( Environment::Phase() != Environment::preflight );
-  double result = ArithmeticExpression::Evaluate( ioVars, inConstVars );
-  mpSignal = NULL;
-  return result;
+  mpSignal = inpSignal;
+  mSample = inSample;
+  return ArithmeticExpression::Evaluate();
 }
 
-double
+Node*
 Expression::Variable( const string& inName )
 {
-  if( mOptionalAccess || States->Exists( inName ) )
-    return State( inName );
-  return ArithmeticExpression::Variable( inName );
+  Node* result = NewStateNode( inName );
+  if( !result )
+    result = ArithmeticExpression::Variable( inName );
+  return result;
 }
 
-double
-Expression::Signal( const string& inChannelAddress, const string& inElementAddress )
+Node*
+Expression::Signal( AddressNode* inChannelAddress, AddressNode* inElementAddress )
 {
-  if( mpSignal == NULL )
-  {
-    Errors() << "Trying to access NULL signal" << endl;
-    return 0;
-  }
-  int channel = static_cast<int>( mpSignal->Properties().ChannelIndex( inChannelAddress ) );
-  if( channel < 0 || channel >= mpSignal->Channels() )
-  {
-    Errors() << "Channel index or address ("
-             << inChannelAddress
-             << ") out of range";
-    return 0;
-  }
-  int element = static_cast<int>( mpSignal->Properties().ElementIndex( inElementAddress ) );
-  if( element < 0 || element >= mpSignal->Elements() )
-  {
-    Errors() << "Element index or address ("
-             << inElementAddress
-             << ") out of range";
-    return 0;
-  }
-  return ( *mpSignal )( channel, element );
+  return new SignalNode( mpSignal, inChannelAddress, inElementAddress );
 }
 
-double
+Node*
 Expression::State( const string& inName )
 {
-  return mOptionalAccess
-   ? Environment::OptionalState( inName, mDefaultValue )
-   : Environment::State( inName );
+  Node* result = NewStateNode( inName );
+  if( !result )
+    Environment::State( inName ); // This will display an error message.
+  return result;
 }
 
-void
-Expression::StateAssignment( const string& inName, double inValue )
+Node*
+Expression::NewStateNode( const string& inName )
 {
-  if( mAllowStateAssignment )
-    Environment::State( inName ) = static_cast<State::ValueType>( inValue );
-  else
-    Environment::State( inName ); // display an error message if inaccessible
+  Node* result = NULL;
+  if( States->Exists( inName ) )
+    result = new StateNode( Environment::State( inName ), mSample );
+  else if( mOptionalAccess )
+    result = new ConstantNode( mDefaultValue );
+  return result;
+}
+
+Node*
+Expression::StateAssignment( const string& inName, Node* inRHS )
+{
+  return new StateAssignmentNode( Environment::State( inName ), inRHS, mSample, mAllowStateAssignment );
+}
+
+// Additional Node classes
+//  SignalNode
+Expression::SignalNode::SignalNode( const SignalPointer& rpSignal, AddressNode* pCh, AddressNode* pEl )
+: mrpSignal( rpSignal ),
+  mpChannelAddress( pCh ),
+  mpElementAddress( pEl ),
+  mChannelIdx( -1 ),
+  mElementIdx( -1 )
+{
+  Add( pCh );
+  Add( pEl );
+}
+
+double
+Expression::SignalNode::OnEvaluate() const
+{
+  if( mrpSignal == NULL )
+    throw bciexception_( "No signal specified for expression evaluation" );
+
+  int channel = mChannelIdx;
+  if( channel < 0 )
+  {
+    string address = mpChannelAddress->EvaluateToString();
+    channel = static_cast<int>( mrpSignal->Properties().ChannelIndex( address ) );
+    if( mpChannelAddress->IsConst() )
+      mChannelIdx = channel;
+  }
+  if( channel < 0 || channel >= mrpSignal->Channels() )
+    throw bciexception_( "Channel index or address (" << mpChannelAddress->EvaluateToString() << ") out of range" );
+
+  int element = mElementIdx;
+  if( element < 0 )
+  {
+    string address = mpElementAddress->EvaluateToString();
+    element = static_cast<int>( mrpSignal->Properties().ElementIndex( address ) );
+    if( mpElementAddress->IsConst() )
+      mElementIdx = element;
+  }
+  if( element < 0 || element >= mrpSignal->Elements() )
+    throw bciexception_( "Element index or address (" << mpElementAddress->EvaluateToString() << ") out of range" );
+
+  return ( *mrpSignal )( channel, element );
+}
+
+// StateNode
+Expression::StateNode::StateNode( const StateRef& state, const int& sample )
+: mStateRef( state ),
+  mrSample( sample )
+{
+}
+
+double
+Expression::StateNode::OnEvaluate() const
+{
+  return mStateRef( mrSample );
+}
+
+// StateAssignmentNode
+Expression::StateAssignmentNode::StateAssignmentNode( const StateRef& state, Node* inRHS, const int& sample, const bool& allowed )
+: mStateRef( state ),
+  mrSample( sample ),
+  mrAllowed( allowed )
+{
+  Add( inRHS );
+}
+
+double
+Expression::StateAssignmentNode::OnEvaluate() const
+{
+  double rhs = mChildren[0]->Evaluate();
+  if( mrAllowed )
+    mStateRef( mrSample ) = static_cast<State::ValueType>( rhs );
+  return rhs;
 }

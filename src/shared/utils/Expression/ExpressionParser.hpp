@@ -46,14 +46,16 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 55 "ExpressionParser.y"
+#line 78 "ExpressionParser.y"
 typedef union YYSTYPE {
-  double               value;
-  std::string*         str;
-  std::vector<double>* list;
+  double                         value;
+  std::string*                   str;
+  ExpressionParser::Node*        node;
+  ExpressionParser::AddressNode* address;
+  ExpressionParser::NodeList*    list;
 } YYSTYPE;
 /* Line 1252 of yacc.c.  */
-#line 57 "ExpressionParser.hpp"
+#line 59 "ExpressionParser.hpp"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

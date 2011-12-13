@@ -43,19 +43,44 @@
 # pragma warning (disable:4065)
 #endif
 
+namespace ExpressionParser
+{
+
+// Addresses of built-in operators cannot be taken, so we need to 
+// provide them as functions.
+double Plus( double a, double b )                  { return a + b; }
+double Minus( double a, double b )                 { return a - b; }
+double Minus( double a )                           { return -a; }
+double Multiply( double a, double b )              { return a * b; }
+double Divide( double a, double b )                { return a / b; }
+double And( double a, double b )                   { return a && b; }
+double Or( double a, double b )                    { return a || b; }
+double Equal( double a, double b )                 { return a == b; }
+double NotEqual( double a, double b )              { return a != b; }
+double Greater( double a, double b )               { return a > b; }
+double GreaterEqual( double a, double b )          { return a >= b; }
+double Less( double a, double b )                  { return a < b; }
+double LessEqual( double a, double b )             { return a <= b; }
+double Not( double a )                             { return !a; }
+double Conditional( double a, double b, double c ) { return a ? b : c; }
+
+} // namespace ExpressionParser
 
 using namespace std;
 
 %}
 
 %pure-parser
-%parse-param { ::ArithmeticExpression* pInstance }
-%lex-param   { ::ArithmeticExpression* pInstance }
+%error-verbose
+%parse-param { ::ArithmeticExpression* p }
+%lex-param   { ::ArithmeticExpression* p }
 %union
 {
-  double               value;
-  std::string*         str;
-  std::vector<double>* list;
+  double                         value;
+  std::string*                   str;
+  ExpressionParser::Node*        node;
+  ExpressionParser::AddressNode* address;
+  ExpressionParser::NodeList*    list;
 }
 
 
@@ -77,20 +102,21 @@ namespace ExpressionParser
 %left '.'     /* element operator */
 %left ';'
 
-%type <value> input statements statement exp assignment
-%type <str>   quoted statename addr
+%type <node>  input statements statement exp assignment
+%type <str>   quoted statename
+%type <address> addr
 %type <list>  args list
 
 %% /* The grammar follows.  */
-input: /* empty */                   { pInstance->mValue = 0; }
-     | statements                    { pInstance->mValue = $1; }
+input: /* empty */                   { $$ = NULL; }
+     | statements                    { $$ = $1; }
 ;
 
 statements:
-       statement                     { $$ = $1; }
-     | statements ';' statement      { $$ = $3; }
+       statement                     { $$ = $1; p->Add( $1 ); }
+     | statements ';' statement      { $$ = $3; p->Add( $3 ); }
      | statements ';'                { $$ = $1; }
-     | ';'                           { $$ = 0; }
+     | ';'                           { $$ = NULL; }
 ;
 
 statement:     
@@ -98,48 +124,46 @@ statement:
      | assignment                    { $$ = $1; }
 ;
 
-exp:   NUMBER                        { $$ = $1;       }
-     | exp '+' exp                   { $$ = $1 + $3;  }
-     | exp '-' exp                   { $$ = $1 - $3;  }
-     | exp '*' exp                   { $$ = $1 * $3;  }
-     | exp '/' exp                   { $$ = $1 / $3;  }
-     | '-' exp %prec NEG             { $$ = -$2;      }
-     | exp '^' exp                   { $$ = ::pow( $1, $3 ); }
-     | exp '&' '&' exp               { $$ = $1 && $4; }
-     | exp '|' '|' exp               { $$ = $1 || $4; }
-     | exp '=' '=' exp               { $$ = $1 == $4; }
-     | exp '!' '=' exp               { $$ = $1 != $4; }
-     | exp '~' '=' exp               { $$ = $1 != $4; }
-     | exp '>' exp                   { $$ = $1 > $3;  }
-     | exp '<' exp                   { $$ = $1 < $3;  }
-     | exp '>' '=' exp               { $$ = $1 >= $4; }
-     | exp '<' '=' exp               { $$ = $1 <= $4; }
-     | '~' exp %prec NEG             { $$ = !$2;      }
-     | '!' exp %prec NEG             { $$ = !$2;      }
-     | '(' exp ')'                   { $$ = $2;       }
-     | exp '?' exp ':' exp           { $$ = $1 ? $3 : $5 }
+exp:   NUMBER                        { $$ = new ConstantNode( $1 );                             p->Track( $$ ); }
+     | exp '+' exp                   { $$ = new FunctionNode<2>( true, &Plus,         $1, $3 ); p->Track( $$, $1, $3 ); }
+     | exp '-' exp                   { $$ = new FunctionNode<2>( true, &Minus,        $1, $3 ); p->Track( $$, $1, $3 ); }
+     | exp '*' exp                   { $$ = new FunctionNode<2>( true, &Multiply,     $1, $3 ); p->Track( $$, $1, $3 ); }
+     | exp '/' exp                   { $$ = new FunctionNode<2>( true, &Divide,       $1, $3 ); p->Track( $$, $1, $3 ); }
+     | '-' exp %prec NEG             { $$ = new FunctionNode<1>( true, &Minus,        $2     ); p->Track( $$, $2 ); }
+     | exp '^' exp                   { $$ = new FunctionNode<2>( true, &pow,          $1, $3 ); p->Track( $$, $1, $3 ); }
+     | exp '&' '&' exp               { $$ = new FunctionNode<2>( true, &And,          $1, $4 ); p->Track( $$, $1, $4 ); }
+     | exp '|' '|' exp               { $$ = new FunctionNode<2>( true, &Or,           $1, $4 ); p->Track( $$, $1, $4 ); }
+     | exp '=' '=' exp               { $$ = new FunctionNode<2>( true, &Equal,        $1, $4 ); p->Track( $$, $1, $4 ); }
+     | exp '!' '=' exp               { $$ = new FunctionNode<2>( true, &NotEqual,     $1, $4 ); p->Track( $$, $1, $4 ); }
+     | exp '~' '=' exp               { $$ = new FunctionNode<2>( true, &NotEqual,     $1, $4 ); p->Track( $$, $1, $4 ); }
+     | exp '>' exp                   { $$ = new FunctionNode<2>( true, &Greater,      $1, $3 ); p->Track( $$, $1, $3 ); }
+     | exp '<' exp                   { $$ = new FunctionNode<2>( true, &Less,         $1, $3 ); p->Track( $$, $1, $3 ); }
+     | exp '>' '=' exp               { $$ = new FunctionNode<2>( true, &GreaterEqual, $1, $4 ); p->Track( $$, $1, $4 ); }
+     | exp '<' '=' exp               { $$ = new FunctionNode<2>( true, &LessEqual,    $1, $4 ); p->Track( $$, $1, $4 ); }
+     | '~' exp %prec NEG             { $$ = new FunctionNode<1>( true, &Not,          $2     ); p->Track( $$, $2 ); }
+     | '!' exp %prec NEG             { $$ = new FunctionNode<1>( true, &Not,          $2     ); p->Track( $$, $2 ); }
+     | '(' exp ')'                   { $$ = $2; }
+     | exp '?' exp ':' exp           { $$ = new FunctionNode<3>( true, &Conditional, $1, $3, $5 ); p->Track( $$, $1, $3, $5 ); }
      
-     | NAME                          { $$ = pInstance->Variable( *$1 ); }
-     | exp '.' NAME                  { $$ = pInstance->MemberVariable( $1, *$3 ); }
-     | NAME '(' args ')'             { $$ = pInstance->Function( *$1, *$3 ); }
-     | exp '.' NAME '(' args ')'     { $$ = pInstance->MemberFunction( $1, *$3, *$5 ); }
+     | NAME                          { $$ = p->Variable( *$1 );                 p->Track( $$ ); }
+     | NAME '(' args ')'             { $$ = p->Function( *$1, *$3 );            p->Track( $$, $3 ); }
+     | NAME '.' NAME '(' args ')'    { $$ = p->MemberFunction( *$1, *$3, *$5 ); p->Track( $$, $5 ); }
 
-     | STATE '(' statename ')'       { $$ = pInstance->State( *$3 ); }
-     | SIGNAL_ '(' addr ',' addr ')' { $$ = pInstance->Signal( *$3, *$5 ); }
+     | STATE '(' statename ')'       { $$ = p->State( *$3 );                    p->Track( $$ ); }
+     | SIGNAL_ '(' addr ',' addr ')' { $$ = p->Signal( $3, $5 );                p->Track( $$, $3, $5 ); }
 ;
 
 assignment: /* assignment uses the := operator to prevent unwanted assignment */
-       NAME ':' '=' exp              { $$ = $4; pInstance->VariableAssignment( *$1, $4 ); }
-     | exp '.' NAME ':' '=' exp      { $$ = $6; pInstance->MemberVariableAssignment( $1, *$3, $6 ); }
+       NAME ':' '=' exp              { $$ = p->VariableAssignment( *$1, $4 ); p->Track( $$, $4 ); }
      | STATE '(' statename ')' ':' '=' exp
-                                     { $$ = $7; pInstance->StateAssignment( *$3, $7 ); }
+                                     { $$ = p->StateAssignment( *$3, $7 ); p->Track( $$, $7 ); }
 ;
 
-args: /* empty */                    { $$ = pInstance->Allocate< vector<double> >(); }
+args: /* empty */                    { $$ = new NodeList; p->Track( $$ ); }
      | list                          { $$ = $1; }
 ;
 
-list:  exp                           { $$ = pInstance->Allocate< vector<double> >(); $$->push_back( $1 ); }
+list:  exp                           { $$ = new NodeList; $$->push_back( $1 ); p->Track( $$ ); }
      | list ',' exp                  { $$ = $1; $$->push_back( $3 ); }
 ;
 
@@ -148,9 +172,9 @@ quoted:
      | '\'' NAME '\''                { $$ = $2; }
 ;
 
-addr:  exp                           { ostringstream oss; oss << $1; $$ = pInstance->Allocate( oss.str() ); }
-     | exp NAME                      { ostringstream oss; oss << $1 << *$2; $$ = pInstance->Allocate( oss.str() ); }
-     | quoted                        { $$ = $1; }
+addr:  exp                           { $$ = new AddressNode( $1, NULL ) ; p->Track( $$, $1 ); }
+     | exp NAME                      { $$ = new AddressNode( $1, $2 );    p->Track( $$, $1 ); }
+     | quoted                        { $$ = new AddressNode( NULL, $1 );  p->Track( $$ ); }
 ;
 
 statename:
@@ -176,7 +200,7 @@ statename:
     }
     else if( ::isalnum( c ) )
     {
-      pLval->str = pInstance->Allocate<string>();
+      pLval->str = pInstance->Track( new string );
       while( ::isalnum( c ) )
       {
         *pLval->str += c;

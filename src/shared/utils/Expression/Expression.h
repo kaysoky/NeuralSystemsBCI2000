@@ -54,21 +54,16 @@
 class Expression : public ArithmeticExpression, private Environment
 {
  public:
-  typedef ArithmeticExpression::VariableContainer VariableContainer;
+  using ArithmeticExpression::VariableContainer;
   static const VariableContainer& Constants;
 
-  Expression()
-    : mpSignal( NULL ),
-      mOptionalAccess( false ),
-      mDefaultValue( 0 ),
-      mAllowStateAssignment( false )
-    {}
-  Expression( const std::string& s )
+  Expression( const std::string& s = "" )
     : ArithmeticExpression( s ),
-      mpSignal( NULL ),
       mOptionalAccess( false ),
       mDefaultValue( 0 ),
-      mAllowStateAssignment( false )
+      mAllowStateAssignment( false ),
+      mpSignal( NULL ),
+      mSample( 0 )
     {}
   ~Expression()
     {}
@@ -76,19 +71,70 @@ class Expression : public ArithmeticExpression, private Environment
   Expression& SetOptionalAccess( State::ValueType inDefault = 0 );
   Expression& ClearOptionalAccess();
 
-  bool   IsValid( const GenericSignal* = NULL, const VariableContainer* = NULL, const VariableContainer* = &Constants );
-  double Evaluate( const GenericSignal* = NULL, VariableContainer* = NULL, const VariableContainer* = &Constants );
+  double Evaluate( const GenericSignal* = NULL, int sample = 0 );
 
  protected:
-  virtual double Variable( const std::string& name );
-  virtual double Signal( const std::string&, const std::string& );
-  virtual double State( const std::string& );
-  virtual void   StateAssignment( const std::string&, double );
+  Node* Variable( const std::string& name );
+  Node* Signal( AddressNode*, AddressNode* );
+  Node* State( const std::string& );
+  Node* StateAssignment( const std::string&, Node* );
 
-  const GenericSignal* mpSignal;
+ private:
+  Node* NewStateNode( const std::string& );
+
+ private:
   bool                 mOptionalAccess;
   State::ValueType     mDefaultValue;
   bool                 mAllowStateAssignment;
+
+  const GenericSignal* mpSignal;
+  int                  mSample;
+
+ // Additional node classes
+ private:
+  class SignalNode : public Node
+  {
+   public:
+    typedef const GenericSignal* const SignalPointer;
+    SignalNode( const SignalPointer&, AddressNode*, AddressNode* );
+
+   protected:
+    double OnEvaluate() const;
+
+   private:
+    const SignalPointer& mrpSignal;
+    AddressNode* mpChannelAddress,
+               * mpElementAddress;
+    mutable int  mChannelIdx,
+                 mElementIdx;
+  };
+
+  class StateNode : public Node
+  {
+   public:
+    StateNode( const StateRef&, const int& sample );
+
+   protected:
+    double OnEvaluate() const;
+
+   private:
+    StateRef mStateRef;
+    const int& mrSample;
+  };
+
+  class StateAssignmentNode : public Node
+  {
+   public:
+    StateAssignmentNode( const StateRef&, Node*, const int& sample, const bool& allowed );
+
+   protected:
+    double OnEvaluate() const;
+
+   private:
+    StateRef mStateRef;
+    const int& mrSample;
+    const bool& mrAllowed;
+  };
 };
 
 #endif // EXPRESSION_H

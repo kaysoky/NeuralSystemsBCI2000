@@ -44,6 +44,7 @@
 
 using namespace std;
 using namespace bci;
+using namespace ExpressionParser;
 
 static const pair<string, double> sConstants[] =
 {
@@ -51,35 +52,28 @@ static const pair<string, double> sConstants[] =
   make_pair( "e", ::exp( 1.0 ) ),
   make_pair( "inf", numeric_limits<double>::infinity() ),
   make_pair( "nan", numeric_limits<double>::quiet_NaN() ),
+  make_pair( "true", 1 ),
+  make_pair( "false", 0 ),
 };
-const ArithmeticExpression::VariableContainer ArithmeticExpression::Constants( &sConstants[0], &sConstants[sizeof(sConstants)/sizeof(*sConstants)] );
-
-ArithmeticExpression::ArithmeticExpression()
-: mValue( 0 ),
-  mpVariables( NULL ),
-  mpConstants( NULL )
-{
-}
+const ArithmeticExpression::VariableContainer
+ArithmeticExpression::Constants( &sConstants[0], &sConstants[sizeof( sConstants ) / sizeof( *sConstants )] );
 
 ArithmeticExpression::ArithmeticExpression( const std::string& s )
 : mExpression( s ),
-  mValue( 0 ),
-  mpVariables( NULL ),
-  mpConstants( NULL )
+  mCompilationState( none )
 {
 }
 
 ArithmeticExpression::ArithmeticExpression( const ArithmeticExpression& e )
 : mExpression( e.mExpression ),
-  mValue( 0 ),
-  mpVariables( NULL ),
-  mpConstants( NULL )
+  mCompilationState( none )
 {
 }
 
 ArithmeticExpression::~ArithmeticExpression()
 {
   Cleanup();
+  ClearStatements();
 }
 
 const ArithmeticExpression&
@@ -90,145 +84,150 @@ ArithmeticExpression::operator=( const ArithmeticExpression& e )
   mInput.clear();
   mErrors.str( "" );
   mErrors.clear();
-  mValue = 0;
-  mpVariables = NULL;
+  mContext = Context();
+  mCompilationState = none;
+  Cleanup();
+  ClearStatements();
   return *this;
 }
 
-double
-ArithmeticExpression::Evaluate( VariableContainer* iopVariables, const VariableContainer* inpConstants )
+bool
+ArithmeticExpression::Compile( const Context& inContext )
 {
-  mpVariables = iopVariables;
-  mpConstants = inpConstants;
-  Parse();
-  mpConstants = NULL;
-  mpVariables = NULL;
-  if( !mErrors.str().empty() )
-  {
-    string errors = mErrors.str();
-    int numErrors = 0;
-    for( size_t pos = errors.find( '\n' ); pos != string::npos; pos = errors.find( '\n', pos + 1 ) )
-      ++numErrors;
-    errors = errors.substr( 0, errors.length() - 1 ) + '.';
-    if( numErrors > 1 )
-      for( size_t pos = errors.find( '\n' ); pos != string::npos; pos = errors.find( '\n', pos + 3 ) )
-        errors = errors.substr( 0, pos ) + ".\n * " + errors.substr( pos + 1 );
-    bcierr_ << "When evaluating \""
-            << mExpression << "\""
-            << ( numErrors == 1 ? ": " : ", multiple errors occurred.\n * " )
-            << errors
-            << flush;
-  }
-  return mValue;
+  mContext = inContext;
+  mCompilationState = Parse() ? success : attempted;
+  ReportErrors();
+  return mCompilationState == success;
 }
 
 bool
-ArithmeticExpression::IsValid( const VariableContainer* inpVariables, const VariableContainer* inpConstants )
+ArithmeticExpression::IsValid( const Context& inContext )
 {
-  if( inpVariables )
-    mpVariables = new VariableContainer( *inpVariables );
-  else
-    mpVariables = NULL;
-  mpConstants = inpConstants;
-  Parse();
-  mpConstants = NULL;
-  delete mpVariables;
-  mpVariables = NULL;
-  return mErrors.str().empty();
+  mErrors.clear();
+  mErrors.str( "" );
+  mContext = inContext;
+  if( mContext.variables )
+    mContext.variables = new VariableContainer( *mContext.variables );
+  if( Parse() )
+    DoEvaluate();
+  delete mContext.variables;
+  mContext = Context();
+  bool result = mErrors.str().empty();
+  mErrors.clear();
+  mErrors.str( "" );
+  return result;
 }
 
 double
-ArithmeticExpression::Variable( const string& inName )
+ArithmeticExpression::Evaluate()
 {
   double result = 0;
-  bool found = false;
-  if( mpConstants )
+  if( mCompilationState == none )
+    Compile();
+  if( mCompilationState == success )
+    result = DoEvaluate();
+  ReportErrors();
+  return result;
+}
+
+double
+ArithmeticExpression::DoEvaluate()
+{
+  double result = 0;
+  try
   {
-    VariableContainer::const_iterator i = mpConstants->find( inName );
-    if( i != mpConstants->end() )
-    {
-      result = i->second;
-      found = true;
-    }
+    for( size_t i = 0; i < mStatements.size(); ++i )
+      result = mStatements[i]->Evaluate();
   }
-  if( !found && mpVariables )
+  catch( const exception& e )
   {
-    VariableContainer::const_iterator i = mpVariables->find( inName );
-    if( i != mpVariables->end() )
-    {
-      result = i->second;
-      found = true;
-    }
+    Errors() << e.what() << endl;
   }
-  if( !found )
-    Errors() << "Variable \"" << inName << "\" does not exist" << endl;
+#ifdef VCL_EXCEPTIONS
+  catch( const class EMathError& e )
+  {
+    Errors() << e.Message.c_str() << endl;
+  }
+#endif
   return result;
 }
 
 void
-ArithmeticExpression::VariableAssignment( const std::string& inName, double inValue )
+ArithmeticExpression::Add( Node* inpNode )
 {
-  if( mpConstants && mpConstants->find( inName ) != mpConstants->end() )
+  if( inpNode )
+    mStatements.push_back( inpNode );
+}
+
+Node*
+ArithmeticExpression::Variable( const string& inName )
+{
+  Node* result = NULL;
+  if( mContext.constants )
+  {
+    VariableContainer::const_iterator i = mContext.constants->find( inName );
+    if( i != mContext.constants->end() )
+      result = new ConstantNode( i->second );
+  }
+  if( !result && mContext.variables )
+  {
+    VariableContainer::iterator i = mContext.variables->find( inName );
+    if( i != mContext.variables->end() )
+      result = new VariableNode( i->second );
+  }
+  if( !result )
+    Errors() << "Variable \"" << inName << "\" does not exist" << endl;
+  return result;
+}
+
+Node*
+ArithmeticExpression::VariableAssignment( const std::string& inName, Node* inRHS )
+{
+  Node* result = NULL;
+  if( mContext.constants &&  mContext.constants->find( inName ) !=  mContext.constants->end() )
     Errors() << inName << ": Not assignable" << endl;
-  else if( !mpVariables )
+  else if( ! mContext.variables )
     Errors() << inName << ": Cannot create variables" << endl;
   else
-    ( *mpVariables )[inName] = inValue;
+    result = new AssignmentNode( ( *mContext.variables )[inName], inRHS );
+  return result;
 }
 
-double
-ArithmeticExpression::MemberVariable( double, const string& inName )
+Node*
+ArithmeticExpression::Function( const std::string& inName, const NodeList& inArguments )
 {
-  Errors() << inName << ": Expressions of type " << ClassName( typeid( *this ) ) << " do not allow member variables"
-           << endl;
-  return 0;
-}
+  Node* result = NULL;
 
-void
-ArithmeticExpression::MemberVariableAssignment( double, const std::string& inName, double )
-{
-  ArithmeticExpression::MemberVariable( 0, inName ); // reports error
-}
-
-double
-ArithmeticExpression::Function( const std::string& inName, const ArgumentList& inArguments )
-{
-  double result = 0;
-
-  typedef double (*func0Ptr)();
-  typedef double (*func1Ptr)( double );
-  typedef double (*func2Ptr)( double, double );
-  typedef double (*func3Ptr)( double, double, double );
-
-  #define FUNC0( x )  { #x, 0, (void*)static_cast<func0Ptr>( &::x ) },
-  #define FUNC1( x )  { #x, 1, (void*)static_cast<func1Ptr>( &::x ) },
-  #define FUNC2( x )  { #x, 2, (void*)static_cast<func2Ptr>( &::x ) },
-  #define FUNC3( x )  { #x, 2, (void*)static_cast<func3Ptr>( &::x ) },
+  #define CONSTFUNC0( x )  { #x, true, 0, ( void* )static_cast<FunctionNode<0>::Pointer>( &::x ) },
+  #define CONSTFUNC1( x )  { #x, true, 1, ( void* )static_cast<FunctionNode<1>::Pointer>( &::x ) },
+  #define CONSTFUNC2( x )  { #x, true, 2, ( void* )static_cast<FunctionNode<2>::Pointer>( &::x ) },
+  #define CONSTFUNC3( x )  { #x, true, 3, ( void* )static_cast<FunctionNode<3>::Pointer>( &::x ) },
 
   static const struct
   {
     const char* name;
-    int         nargs;
-    void*       fptr;
+    bool        isConst; // same arguments give always the same result (e.g., for rand() this would be false)
+    int         numArgs;
+    void*       function;
   }
   functions[] =
   {
-    FUNC1( sqrt )
+    CONSTFUNC1( sqrt )
 
-    FUNC1( fabs )
-    { "abs", 1, (void*)static_cast<func1Ptr>( &::fabs ) },
+    CONSTFUNC1( fabs )
+    { "abs", true, 1, ( void* )static_cast<FunctionNode<1>::Pointer>( &::fabs ) },
 
-    FUNC2( fmod )
-    { "mod", 2, (void*)static_cast<func2Ptr>( &::fmod ) },
+    CONSTFUNC2( fmod )
+    { "mod", true, 2, ( void* )static_cast<FunctionNode<2>::Pointer>( &::fmod ) },
 
-    FUNC1( floor )  FUNC1( ceil )
+    CONSTFUNC1( floor )  CONSTFUNC1( ceil )
 
-    FUNC1( exp )    FUNC1( log )    FUNC1( log10 )
-    FUNC2( pow )
+    CONSTFUNC1( exp )    CONSTFUNC1( log )    CONSTFUNC1( log10 )
+    CONSTFUNC2( pow )
 
-    FUNC1( sin )    FUNC1( cos )    FUNC1( tan )
-    FUNC1( asin )   FUNC1( acos )   FUNC1( atan )   FUNC2( atan2 )
-    FUNC1( sinh )   FUNC1( cosh )   FUNC1( tanh )
+    CONSTFUNC1( sin )    CONSTFUNC1( cos )    CONSTFUNC1( tan )
+    CONSTFUNC1( asin )   CONSTFUNC1( acos )   CONSTFUNC1( atan )   CONSTFUNC2( atan2 )
+    CONSTFUNC1( sinh )   CONSTFUNC1( cosh )   CONSTFUNC1( tanh )
 
   };
   static const int numFunctions = sizeof( functions ) / sizeof( *functions );
@@ -239,25 +238,28 @@ ArithmeticExpression::Function( const std::string& inName, const ArgumentList& i
   {
     Errors() << inName << "(): Unknown function" << endl;
   }
-  else if( functions[i].nargs != inArguments.size() )
+  else if( functions[i].numArgs != inArguments.size() )
   {
-    Errors() << inName << "(): Wrong number of arguments, expected " << functions[i].nargs << ", got " << inArguments.size() << endl;
+    Errors() << inName << "(): Wrong number of arguments, expected "
+             << functions[i].numArgs << ", got " 
+             << inArguments.size()
+             << endl;
   }
   else
   {
-    switch( functions[i].nargs )
+    switch( functions[i].numArgs )
     {
       case 0:
-        result = func0Ptr( functions[i].fptr )();
+        result = new FunctionNode<0>( functions[i].isConst, FunctionNode<0>::Pointer( functions[i].function ) );
         break;
       case 1:
-        result = func1Ptr( functions[i].fptr )( inArguments[0] );
+        result = new FunctionNode<1>( functions[i].isConst, FunctionNode<1>::Pointer( functions[i].function ), inArguments[0] );
         break;
       case 2:
-        result = func2Ptr( functions[i].fptr )( inArguments[0], inArguments[1] );
+        result = new FunctionNode<2>( functions[i].isConst, FunctionNode<2>::Pointer( functions[i].function ), inArguments[0], inArguments[1] );
         break;
       case 3:
-        result = func3Ptr( functions[i].fptr )( inArguments[0], inArguments[1], inArguments[2] );
+        result = new FunctionNode<3>( functions[i].isConst, FunctionNode<3>::Pointer( functions[i].function ), inArguments[0], inArguments[1], inArguments[2] );
         break;
       default:
         Errors() << inName << "(): Unsupported number of function arguments" << endl;
@@ -266,83 +268,110 @@ ArithmeticExpression::Function( const std::string& inName, const ArgumentList& i
   return result;
 }
 
-double
-ArithmeticExpression::MemberFunction( double, const std::string& inName, const ArgumentList& )
+Node*
+ArithmeticExpression::MemberFunction( const string& inObject, const string& inFunction, const NodeList& )
 {
-  Errors() << inName << "(): Expressions of type " << ClassName( typeid( *this ) ) << " do not allow member functions"
+  Errors() << inObject << "." << inFunction << "(): Unknown object when calling member function"
            << endl;
-  return 0;
+  return NULL;
 }
 
-double
-ArithmeticExpression::Signal( const string&, const string& )
+Node*
+ArithmeticExpression::Signal( AddressNode*, AddressNode* )
 {
   Errors() << "Expressions of type " << ClassName( typeid( *this ) ) << " do not allow access to signals"
            << endl;
-  return 0;
+  return NULL;
 }
 
-double
+Node*
 ArithmeticExpression::State( const string& )
 {
   Errors() << "Expressions of type " << ClassName( typeid( *this ) ) << " do not allow access to states"
            << endl;
-  return 0;
+  return NULL;
 }
 
-void
-ArithmeticExpression::StateAssignment( const string& inName, double )
+Node*
+ArithmeticExpression::StateAssignment( const string& inName, Node* )
 {
-  ArithmeticExpression::State( inName );
+  return ArithmeticExpression::State( inName );
 }
 
 
-void
+bool
 ArithmeticExpression::Parse()
 {
+  ClearStatements();
   mInput.clear();
   mInput.str( mExpression );
-  mErrors.clear();
-  mErrors.str( "" );
   try
   {
-    if( ExpressionParser::yyparse( this ) != 0 )
-      mValue = 0;
-  }
-  catch( const char* s )
-  {
-    Errors() << s << endl;
-    mValue = 0;
+    ExpressionParser::yyparse( this );
   }
   catch( const exception& e )
   {
     Errors() << e.what() << endl;
-    mValue = 0;
   }
 #ifdef VCL_EXCEPTIONS
   catch( const class EMathError& e )
   {
     Errors() << e.Message.c_str() << endl;
-    mValue = 0;
   }
 #endif
   catch( ... )
   {
     Errors() << "Unknown exception caught" << endl;
-    mValue = 0;
   }
   Cleanup();
+  bool success = mErrors.str().empty();
+  if( success )
+    for( size_t i = 0; i < mStatements.size(); ++i )
+      mStatements[i] = mStatements[i]->Simplify();
+  else
+    ClearStatements();
+  return success;
+}
+
+void
+ArithmeticExpression::ReportErrors()
+{
+  string errors = mErrors.str();
+  if( !errors.empty() )
+  {
+    int numErrors = 0;
+    for( size_t pos = errors.find( '\n' ); pos != string::npos; pos = errors.find( '\n', pos + 1 ) )
+      ++numErrors;
+    errors = errors.substr( 0, errors.length() - 1 ) + '.';
+    if( numErrors > 1 )
+      for( size_t pos = errors.find( '\n' ); pos != string::npos; pos = errors.find( '\n', pos + 3 ) )
+        errors = errors.substr( 0, pos ) + ".\n * " + errors.substr( pos + 1 );
+    bcierr_ << "When processing \""
+            << mExpression << "\""
+            << ( numErrors == 1 ? ": " : ", multiple errors occurred.\n * " )
+            << errors
+            << flush;
+  }
+  mErrors.clear();
+  mErrors.str( "" );
 }
 
 void
 ArithmeticExpression::Cleanup()
 {
   while( !mAllocations.empty() )
-  { // Deallocation in reverse order should prevent fragmentation.
-    mAllocations.back()->Delete();
-    delete mAllocations.back();
-    mAllocations.pop_back();
+  { 
+    mAllocations.begin()->Delete();
+    mAllocations.erase( mAllocations.begin() );
   }
+}
+
+void
+ArithmeticExpression::ClearStatements()
+{
+  for( NodeList::const_reverse_iterator i = mStatements.rbegin(); i != mStatements.rend(); ++i )
+    delete *i;
+  mStatements.clear();
 }
 
 #ifdef VCL_EXCEPTIONS

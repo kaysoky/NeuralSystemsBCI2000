@@ -43,8 +43,14 @@ main( int argc, char** )
     return 0;
   }
   ArithmeticExpression::VariableContainer variables;
+  bool success = true;
   string line;
   while( getline( cin, line ) )
-    cout << "-> " << ArithmeticExpression( line ).Evaluate( &variables ) << endl;
-  return 0;
+  {
+    ArithmeticExpression exp( line );
+    success = exp.Compile( &variables );
+    if( success )
+      cout << "-> " << exp.Evaluate() << endl;
+  }
+  return success ? 0 : -1;
 }

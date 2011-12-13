@@ -44,16 +44,16 @@ class ExpressionFilter : public GenericFilter
    void Process( const GenericSignal&, GenericSignal& );
 
  private:
+   typedef Expression::VariableContainer VariableContainer;
    typedef std::vector< std::vector<Expression> > ExpressionMatrix;
-   typedef std::vector< std::vector< Expression::VariableContainer > > VariablesMatrix;
 
-   void LoadConfig( ExpressionMatrix&, ExpressionMatrix& startRun, ExpressionMatrix& stopRun, VariablesMatrix& ) const;
    static void LoadExpressions( const ParamRef&, ExpressionMatrix& );
-   static void EvaluateExpressions( ExpressionMatrix&, VariablesMatrix&, const GenericSignal* = NULL, GenericSignal* = NULL );
+   static void CompileExpressions( ExpressionMatrix&, VariableContainer& );
+   static void EvaluateExpressions( ExpressionMatrix&, const GenericSignal* = NULL, GenericSignal* = NULL );
 
-   ExpressionMatrix mExpressions,
-                    mStartRunExpressions,
-                    mStopRunExpressions;
-   VariablesMatrix  mVariables;
+   Expression mStartRunExpression,
+              mStopRunExpression;
+   ExpressionMatrix mExpressions;
+   VariableContainer mVariables;
 };
 #endif // EXPRESSION_FILTER_H

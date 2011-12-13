@@ -31,10 +31,10 @@
 
 #include <sstream>
 #include <string>
-#include <list>
-#include <vector>
 #include <map>
+#include <set>
 
+#include "ExpressionNodes.h"
 #include "ExpressionParser.hpp"
 
 class ArithmeticExpression;
@@ -53,80 +53,117 @@ class ArithmeticExpression
   friend void ExpressionParser::yyerror( ArithmeticExpression*, const char* );
 
  public:
-  ArithmeticExpression();
-  ArithmeticExpression( const std::string& );
+  typedef std::map<std::string, double> VariableContainer;
+  static const VariableContainer Constants;
+
+  struct Context
+  {
+    Context( VariableContainer* pVariables = NULL, const VariableContainer* pConstants = &Constants )
+    : variables( pVariables ), constants( pConstants ) {}
+    Context( VariableContainer& rVariables, const VariableContainer& rConstants = Constants )
+    : variables( &rVariables ), constants( &rConstants ) {}
+
+    VariableContainer* variables;
+    const VariableContainer* constants;
+  };
+
+  ArithmeticExpression( const std::string& = "" );
   ArithmeticExpression( const ArithmeticExpression& );
   virtual ~ArithmeticExpression();
 
   const ArithmeticExpression& operator=( const ArithmeticExpression& );
 
-  typedef std::map<std::string, double> VariableContainer;
-  static const VariableContainer Constants;
-
-  bool   IsValid( const VariableContainer* = NULL, const VariableContainer* = &Constants );
-  double Evaluate( VariableContainer* = NULL, const VariableContainer* = &Constants );
+  bool IsValid( const Context& = Context() );
+  bool Compile( const Context& = Context() );
+  double Evaluate();
 
  protected:
-  typedef std::vector<double> ArgumentList;
+  typedef ExpressionParser::Node Node;
+  typedef ExpressionParser::AddressNode AddressNode;
+  typedef ExpressionParser::NodeList NodeList;
 
-  virtual double Variable( const std::string& name );
-  virtual void   VariableAssignment( const std::string& name, double value );
+  void Add( Node* );
 
-  virtual double MemberVariable( double objectRef, const std::string& name );
-  virtual void   MemberVariableAssignment( double objectRef, const std::string& name, double value );
+  virtual Node* Variable( const std::string& name );
+  virtual Node* VariableAssignment( const std::string& name, Node* );
 
-  virtual double Function( const std::string& name, const ArgumentList& );
-  virtual double MemberFunction( double objectRef, const std::string& name, const ArgumentList& );
+  virtual Node* Function( const std::string& name, const NodeList& );
+  virtual Node* MemberFunction( const std::string& object, const std::string& function, const NodeList& );
 
-  virtual double Signal( const std::string&, const std::string& );
-  virtual double State( const std::string& );
-  virtual void   StateAssignment( const std::string&, double );
+  virtual Node* Signal( AddressNode*, AddressNode* );
+  virtual Node* State( const std::string& );
+  virtual Node* StateAssignment( const std::string&, Node* );
 
   std::ostream& Errors()
     { return mErrors; }
 
  private:
-  void Parse();
+  bool Parse();
+  double DoEvaluate();
+  void ReportErrors();
   void Cleanup();
+  void ClearStatements();
 
   std::string        mExpression;
   std::istringstream mInput;
   std::ostringstream mErrors;
-  double             mValue;
-  VariableContainer* mpVariables;
-  const VariableContainer* mpConstants;
+  NodeList           mStatements;
+  Context            mContext;
+  enum { none, attempted, success } mCompilationState;
 
   // Memory management.
   template<typename T>
   T*
-  Allocate( const T* inpOriginal = NULL )
+  Track( T* inNew, Node* inOld1 = NULL, Node* inOld2 = NULL, Node* inOld3 = NULL )
   {
-    Pointer<T>* p = new Pointer<T>( inpOriginal ? new T( *inpOriginal ) : new T );
-    mAllocations.push_back( p );
-    return *p;
-  }
-  template<typename T>
-  T*
-  Allocate( const T& inOriginal )
-  {
-    return Allocate( &inOriginal );
+    if( inNew )
+    {
+      mAllocations.insert( Pointer<T>( inNew ) );
+      if( inOld1 )
+        mAllocations.erase( Pointer<Node>( inOld1 ) );
+      if( inOld2 )
+        mAllocations.erase( Pointer<Node>( inOld2 ) );
+      if( inOld3 )
+        mAllocations.erase( Pointer<Node>( inOld3 ) );
+    }
+    return inNew;
   }
 
-  struct StoredPointer
-  { virtual void Delete() = 0; };
+  template<typename T>
+  T*
+  Track( T* inNew, NodeList* inNodes )
+  {
+    if( inNew )
+    {
+      for( NodeList::iterator i = inNodes->begin(); i != inNodes->end(); ++i )
+        mAllocations.erase( Pointer<Node>( *i ) );
+      mAllocations.erase( Pointer<NodeList>( inNodes ) );
+      delete inNodes;
+      mAllocations.insert( Pointer<T>( inNew ) );
+    }
+    return inNew;
+  }
+
+  class StoredPointer
+  {
+   public:
+    StoredPointer( void* p = NULL ) : mp( p ) {}
+    bool operator<( const StoredPointer& p ) const { return Pointer() < p.Pointer(); }
+    void* Pointer() const { return mp; }
+    virtual void Delete() {};
+   private:
+    void* mp;
+  };
 
   template<typename T>
   class Pointer : public StoredPointer
   {
    public:
-    Pointer( T* inPtr = 0 ) : mPtr( inPtr ) {}
-    virtual void Delete() { delete mPtr; mPtr = NULL; }
-    operator T*() const { return mPtr; }
-   private:
-    T* mPtr;
+    Pointer( T* inPtr ) : StoredPointer( inPtr ) {}
+    virtual void Delete() { delete reinterpret_cast<T*>( StoredPointer::Pointer() ); }
   };
 
-  typedef std::list<StoredPointer*> PointerContainer;
+  typedef std::set<StoredPointer> PointerContainer;
   PointerContainer mAllocations;
 };
 
