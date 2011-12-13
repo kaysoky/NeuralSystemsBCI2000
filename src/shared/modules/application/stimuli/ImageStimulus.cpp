@@ -347,7 +347,7 @@ QPixmap*
 ImageStimulus::NewBufferFromImage( QImage& inImage ) const
 {
   QPixmap* pBuffer = new QPixmap( QPixmap::fromImage( inImage ) );
-  if( mRenderingMode == GUI::RenderingMode::Transparent )
+  if( mRenderingMode == GUI::RenderingMode::Transparent && !inImage.hasAlphaChannel() )
   {
     QRgb c = inImage.pixel( 0, 0 );
     QImage mask = inImage.createMaskFromColor( c, Qt::MaskInColor );
