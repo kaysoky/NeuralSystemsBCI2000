@@ -268,10 +268,23 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
   // Exclude parameters from unwanted sections.
   const char* unwantedSections[] = { "System", };
   for( size_t j = 0; j < sizeof( unwantedSections ) / sizeof( *unwantedSections ); ++j )
-    for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
-                                         i != paramsFromFile.mParams.end(); ++i )
-      if( Param::strciequal( i->Param.Section(), unwantedSections[ j ] ) )
-        unwantedParams.insert( i->Param.mName );
+  {
+	  for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
+		  i != paramsFromFile.mParams.end(); ++i )
+	  {
+		  const HierarchicalLabel sections = i->Param.Sections();
+		  if (Param::strciequal(sections[0], unwantedSections[ j ]))
+		  {
+			  if (sections.size() > 1)
+			  {
+				  if (!Param::strciequal(sections[1], "Command Line Arguments"))
+					  unwantedParams.insert( i->Param.mName );
+			  }
+			  else
+				  unwantedParams.insert( i->Param.mName );
+		  }
+	  }
+  }
 
   // If desired, exclude parameters missing from the main parameter list.
   if( !inImportNonexisting )
