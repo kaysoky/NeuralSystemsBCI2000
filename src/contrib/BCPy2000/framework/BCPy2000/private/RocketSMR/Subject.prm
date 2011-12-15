@@ -1,0 +1,6 @@
+Storage:Data%20Location:DataIOFilter    string    DataDirectory=           ../data       		// path to top level data directory (directory)
+Storage:Session:DataIOFilter            string    SubjectRun=              00            		// two-digit run number
+
+Storage:Session:DataIOFilter            string    SubjectName=             2011XXXX_85XX_A_ 	// subject alias
+
+

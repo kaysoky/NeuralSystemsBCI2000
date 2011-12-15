@@ -1,0 +1,5 @@
+PythonApp:Settings string 	PaddleExpression= 		(((Wiimote2AccelX-128)^2+(Wiimote2AccelY-128)^2+(Wiimote2AccelZ-128)^2)^0.5-((Wiimote1AccelX-128)^2+(Wiimote1AccelY-128)^2+(Wiimote1AccelZ-128)^2)^0.5)*0.5 // Signal to use for paddle speed
+PythonApp:Settings int 		UseDirectWiimoteControl= 		1 // use direct control via Wiimotes (boolean)
+PythonApp:Settings float 	DirectControlZeroThreshold= 	1 // only for direct control mode
+PythonApp:Settings int 		DirectControlSmoothingLength= 	2 // how many past values to consider for smoothing
+Source:Log%20Input:WiimoteLogger int WiimoteDeriv= 1 0 0 1 // measure changes in accelerometer readings?: 0: no - measure raw, 1:yes - measure changes (enumeration)

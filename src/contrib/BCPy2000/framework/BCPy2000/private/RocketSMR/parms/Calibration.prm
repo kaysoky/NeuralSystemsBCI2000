@@ -1,0 +1,6 @@
+Application:Calibration matrix 	Prompts= 				2 { TargetCode String } 1 <<-%20Left 2 Right%20->> // calibration prompt strings and corresponding TargetCode values
+Application:Calibration intlist PromptSequence= 		40 1 2 1 2 2 1 2 1 1 1 2 2 1 2 1 2 2 1 2 1 1 1 2 2 1 2 1 2 1 2 1 1 2 2 1 2 1 2 1 2% 1 % // sequence of stimulus codes to present as prompts for calibration
+Application:Calibration float 	PromptDuration= 		5 % 0 % // duration of prompts in s
+Application:Calibration float	InterStimInterval= 		2 % 0 % // duration between prompts in s
+Application:Calibration float 	FeedbackStateDelay= 	1 % 0 % // delay between setting TargetCode state and Feedback state in s
+Application:Calibration int 	FeedbackVisibleAfter= 	36 4 0 % // number of trials to perform without visible feedback
