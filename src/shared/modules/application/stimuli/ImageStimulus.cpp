@@ -265,13 +265,13 @@ ImageStimulus::OnChange( DrawContext& ioDC )
         break;
 
       case Intensify:
-        img.convertToFormat( QImage::Format_Indexed8 );
+        img = img.convertToFormat( QImage::Format_Indexed8 );
         for( int i = 0; i < img.colorCount(); ++i )
           img.setColor( i, QColor( img.color( i ) ).lighter( static_cast<int>( 100 * DimFactor() ) ).rgb() );
         break;
 
       case Grayscale:
-        img.convertToFormat( QImage::Format_Indexed8 );
+        img = img.convertToFormat( QImage::Format_Indexed8 );
         for( int i = 0; i < img.colorCount(); ++i )
           img.setColor( i, QColor( img.color( i ) ).value() );
         break;
@@ -282,9 +282,9 @@ ImageStimulus::OnChange( DrawContext& ioDC )
         break;
 
       case Dim:
-        img.convertToFormat( QImage::Format_Indexed8 );
+        img = img.convertToFormat( QImage::Format_Indexed8 );
         for( int i = 0; i < img.colorCount(); ++i )
-          img.setColor( i, QColor( img.color( i ) ).lighter( static_cast<int>( 100 * DimFactor() ) ).rgb() );
+          img.setColor( i, QColor( img.color( i ) ).darker( static_cast<int>( 100 * DimFactor() ) ).rgb() );
         break;
     }
     mpImageBufferHighlighted = NewBufferFromImage( img );
