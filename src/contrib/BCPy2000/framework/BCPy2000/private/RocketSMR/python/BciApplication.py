@@ -75,20 +75,20 @@ class BciApplication(BciGenericApplication):
 			"PythonApp:Objects  float		BottomOfWater= 0.23 % % % //proportion of cart height were water starts to fill up cart",
 			
 			"PythonApp:BasicRound float	DropFrequency= 2 % 0 % // determines distance between different Drops falling from sky (DrFreq*PaddleHeight)",
-			"PythonApp:BasicRound float Gravity= 1 % 0.1 % // speed with which tools fall down",
+			"PythonApp:BasicRound float InitGravity= 1 % 0.1 % // speed with which drops fall down",
 			"PythonApp:BasicRound matrix	CloudPathes= 3 5	1 0.2 30 0.4 0.8	0.2 0.5 50 0.2 0.8	1 60 0.4 0.2 0 	% % % //path which cloud follows",
 			"PythonApp:BasicRound floatlist CloudSpeed= 5    0.5 1.5 0.8 2.3 2.0  % % %// List of Cloud Speeds to be used",
 			"PythonApp:BasicRound int		DropsTillBonus= 10 % 1 32 // number of drops that have to be collected to enter Bonus Round",
 			
 			"PythonApp:BonusRound matrix	RocketPattern= 6 {veryLeft Left Center Right veryRight} 	1 0 0 0 0	0 1 0 0 0	0 1 1 0 0  0 0 0 1 1  0 1 0 0 1  0 1 0 1 0 % 0 1 // Falling pattern of rockets (0 no rocket, 1 rocket)",
-			"PythonApp:BonusRound float		RocketSpeed= 	1	%	0.1	% //speed of rockets",
 			"PythonApp:BonusRound float		RocketFrequency= 2  %  0  % //determines distance between different RocketRows (RoFreq*SpaceshipHeight)",
 		
 			"PythonApp:PaddleSizeAdjusting int	  AdjustingFrequency=	5 % % % //Minutes after which the paddle size is adjusted again",	
 			"PythonApp:PaddleSizeAdjusting float  TargetAccuracy= 0.75 % 0.0 1.0 //HitRate to aim for in adjusting paddle size",
 			"PythonApp:PaddleSizeAdjusting float  InitGameDifficulty= 1.0 % % % // GameDifficulty for adjusting paddle size",
-			"PythonApp:PaddleSizeAdjusting float  PaddleWidthHitFactor= 0.9 % % % //determines the amount the paddle grows and shrinks with each it or miss",
+			"PythonApp:PaddleSizeAdjusting float  PaddleWidthHitFactor= 0.9 % % % //determines the amount the paddle grows and shrinks with each hit or miss",
 			"PythonApp:PaddleSizeAdjusting float  MaximumPaddleWidth= 0.5 % % % //maximum width paddle can grow to proprotional to gaming window width",
+			"PythonApp:PaddleSizeAdjusting float  GravityHitFactor= 0.1 % % % //determines the amount the speed increases or decreases with each hit or miss",
 			"PythonApp:PaddleSizeAdjusting int	  ReversalsToDiscard= 2 % % % // number of reversals in the beginning to be discarded before computing the new paddle size",
 			"PythonApp:PaddleSizeAdjusting int	  ReversalsToCompute= 6 % % % // number of reversals to be taken into account for new paddle size computation",
 		)
@@ -120,6 +120,7 @@ class BciApplication(BciGenericApplication):
 			"TargetDropPosXTimes10000 14 0 0 0",
 			"TargetDropPosYTimes10000 14 0 0 0",
 			"DropWidthTimes10000 14 0 0 0",
+			"GravityTimes100 14 0 0 0",
 			
 			"SpaceshipWidthTimes10000	14 0 0 0", ## constant during current implementation (set in StartRun)
 			"SpaceshipPosXTimes10000	14 0 0 0",
@@ -358,7 +359,8 @@ class BciApplication(BciGenericApplication):
 		drop_width = round(float(self.params['DropSize'][0])*self.gamingWindowWidth)
 		drop_height = round(float(self.params['DropSize'][1])*self.screen.size[1])
 		distance_between_releases = drop_height+self.stimuli['paddle'].size[1]*round(float(self.params['DropFrequency']),1)
-		self.DropReleaseInterval = distance_between_releases/round(float(self.params['Gravity']),1)
+		
+		self.DropReleaseInterval = distance_between_releases
 		self.DropReleaseCount = 0
 		maxDrops_onScreen = (self.screen.size[1]-self.stimuli['cloud'].size[1])/distance_between_releases
 		if round(maxDrops_onScreen) > maxDrops_onScreen:
@@ -427,7 +429,7 @@ class BciApplication(BciGenericApplication):
 		rocket_width = round(float(self.params['RocketSize'][0])*self.gamingWindowWidth)
 		rocket_height = round(float(self.params['RocketSize'][1])*self.screen.size[1])
 		distance_between_releases = rocket_height+self.stimuli['spaceship'].size[1]*round(float(self.params['RocketFrequency']),1)
-		self.RocketReleaseInterval = distance_between_releases/round(float(self.params['RocketSpeed']),1)
+		self.RocketReleaseInterval = distance_between_releases
 		self.RocketReleaseCount = 0
 		maxRocketRows_onScreen = self.screen.size[1]/distance_between_releases
 		if round(maxRocketRows_onScreen) > maxRocketRows_onScreen:
@@ -475,6 +477,11 @@ class BciApplication(BciGenericApplication):
 		#
 		#~ Assigning initial values to some State Variables:
 		self.states['PaddleWidthTimes10000'] = round((self.stimuli['paddle'].size[0]/self.gamingWindowWidth)*10000)
+		newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
+		if newGravity < float(self.params['InitGravity']):
+			newGravity = float(self.params['InitGravity'])
+		newGravity = round(newGravity,2)
+		self.states['GravityTimes100'] = newGravity*100
 		self.states['SpaceshipWidthTimes10000'] = round((self.stimuli['spaceship'].size[0]/self.gamingWindowWidth)*10000)
 		self.states['DropWidthTimes10000'] = round((self.stimuli['Drop_0'].size[0]/self.gamingWindowWidth)*10000)
 		self.states['Hits'] = 0
@@ -656,12 +663,12 @@ class BciApplication(BciGenericApplication):
 		
 	#~	Set State Variable CurrentPhase	
 		if phase in ['play']:
-			self.stimuli['GameMode'] = 1
+			self.states['GameMode'] = 1
 		if phase in ['bonus']:
 			self.stimuli['spaceship'].on = True
-			self.stimuli['GameMode'] = 2
+			self.states['GameMode'] = 2
 		if phase in ['determinePaddleSize']:
-			self.stimuli['GameMode'] =3			
+			self.states['GameMode'] = 3			
 	
 	#~ Reset Score etc.
 		if phase in ['pre_determinePaddleSize']:
@@ -781,7 +788,7 @@ class BciApplication(BciGenericApplication):
 				self.DropReleaseCount = self.DropReleaseInterval
 				if not self.targetDrop:
 					self.targetDrop = drop
-			else: self.DropReleaseCount = self.DropReleaseCount-1		
+			else: self.DropReleaseCount = self.DropReleaseCount-(float(self.states['GravityTimes100'])/100)		
 
 #~ 1.4.	Moving Drops down and checking for Catch by paddle
 			for d in self.activeDrops:
@@ -791,7 +798,7 @@ class BciApplication(BciGenericApplication):
 					self.activeDrops.remove(d)
 					self.inactiveDrops.append(d)
 				else:
-					d.position = (d.position[0], d.position[1]-float(self.params['Gravity']))					
+					d.position = (d.position[0], d.position[1]-(float(self.states['GravityTimes100'])/100))					
 			if self.targetDrop:
 				target = self.targetDrop
 				if target.position[1] <= paddle.size[1]+target.size[1]/2:
@@ -822,6 +829,11 @@ class BciApplication(BciGenericApplication):
 							# adjusting paddle size
 							self.gameDifficulty = self.gameDifficulty + 1
 							newPaddleWidth = float(self.params['InitPaddleSize'][0])*math.pow(float(self.params['PaddleWidthHitFactor']),self.gameDifficulty)
+							newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
+							if newGravity < float(self.params['InitGravity']):
+								newGravity = float(self.params['InitGravity'])
+							newGravity = round(newGravity,2)
+							self.states['GravityTimes100'] = newGravity*100
 							if newPaddleWidth > float(self.params['MaximumPaddleWidth']): newPaddleWidth = float(self.params['MaximumPaddleWidth'])
 							paddle_width = round(newPaddleWidth*self.gamingWindowWidth)
 							if self.growthDirection == -1:  #reversal occured
@@ -852,6 +864,11 @@ class BciApplication(BciGenericApplication):
 							# adjusting paddle size
 							self.gameDifficulty = self.gameDifficulty + (-1*float(self.params['TargetAccuracy'])/(1-float(self.params['TargetAccuracy'])))
 							newPaddleWidth = float(self.params['InitPaddleSize'][0])*math.pow(float(self.params['PaddleWidthHitFactor']),self.gameDifficulty)
+							newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
+							if newGravity < float(self.params['InitGravity']):
+								newGravity = float(self.params['InitGravity'])
+							newGravity = round(newGravity,2)
+							self.states['GravityTimes100'] = newGravity*100
 							if newPaddleWidth > float(self.params['MaximumPaddleWidth']): newPaddleWidth = float(self.params['MaximumPaddleWidth'])
 							paddle_width = round(newPaddleWidth*self.gamingWindowWidth)
 							if self.growthDirection == 1:  #reversal occured
@@ -890,6 +907,11 @@ class BciApplication(BciGenericApplication):
 					for d in self.activeDrops: d.size=(round(self.gamingWindowWidth*float(self.params['DropSize'][0]),1), d.size[1])
 					for d in self.inactiveDrops: d.size=(round(self.gamingWindowWidth*float(self.params['DropSize'][0]),1), d.size[1])		
 				self.gameDifficulty = round(math.log(((paddle_width/self.gamingWindowWidth)/float(self.params['InitPaddleSize'][0])),0.9))
+				newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
+				if newGravity < float(self.params['InitGravity']):
+					newGravity = float(self.params['InitGravity'])
+				newGravity = round(newGravity,2)
+				self.states['GravityTimes100'] = newGravity*100
 				self.change_phase()
 
 #~ 1.5.	Training Normalizer (Calibration during Game)
@@ -958,10 +980,10 @@ class BciApplication(BciGenericApplication):
 					self.stimuli['bigPlanet'].on = True
 					self.RocketReleaseCount = self.RocketReleaseInterval*10
 			else:			
-				self.RocketReleaseCount = self.RocketReleaseCount-1
+				self.RocketReleaseCount = self.RocketReleaseCount-(float(self.states['GravityTimes100'])/100)
 			#Moving big planet down if necessary
 			if self.stimuli['bigPlanet'].on == True and self.stimuli['instructions1'].on == False:
-				self.stimuli['bigPlanet'].position = (self.stimuli['bigPlanet'].position[0], self.stimuli['bigPlanet'].position[1]-round(float(self.params['RocketSpeed']),1))
+				self.stimuli['bigPlanet'].position = (self.stimuli['bigPlanet'].position[0], self.stimuli['bigPlanet'].position[1]-(float(self.states['GravityTimes100'])/100))
 			if self.stimuli['instructions1'].on == True:
 				time.sleep(3)
 				self.change_phase(phasename='pre_determinePaddleSize')
@@ -986,7 +1008,7 @@ class BciApplication(BciGenericApplication):
 #~		For Rockets of first row check for Collision with spaceship --> if there is one change phase
 			for row in self.activeRockets:
 				for r in row:
-					r.position = (r.position[0], r.position[1]-round(float(self.params['RocketSpeed']),1))
+					r.position = (r.position[0], r.position[1]-(float(self.states['GravityTimes100'])/100))
 			if self.activeRockets:
 				firstrow = self.activeRockets[0]
 				rocket = firstrow[0]
