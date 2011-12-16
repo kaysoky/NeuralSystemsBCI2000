@@ -31,7 +31,7 @@
 
 #include "BAlertADC.h"
 #include "BCIError.h"
-#include "BAlert.h"
+#include <BAlert.h>
 
 using namespace std;
 
