@@ -648,7 +648,8 @@ class BciApplication(BciGenericApplication):
 			self.stimuli['instructions2'].text = '(Press any KEY to continue)'
 			self.stimuli['instructions2'].on = True
 		if phase in ['past_determinePaddleSize']:
-			self.stimuli['instructions1'].text = 'New Paddle Size is calculated'
+			text = 'New Difficulty is: %s' %(str(self.gameDifficulty))
+			self.stimuli['instructions1'].text = text
 			self.stimuli['instructions1'].on = True
 			self.stimuli['instructions2'].text = '(Press any KEY to start next Round)'
 			self.stimuli['instructions2'].on = True
@@ -706,10 +707,7 @@ class BciApplication(BciGenericApplication):
 		if phasename in ['play', 'bonus']:
 			elapsedtime = time.time()-self.startTime
 			if elapsedtime >= int(self.params['AdjustingFrequency'])*60:
-				if self.gameDifficulty <= self.lowestGameDifficulty:
-					self.startTime = time.time()
-				else:
-					self.change_phase(phasename='pre_determinePaddleSize')
+				self.change_phase(phasename='pre_determinePaddleSize')
 		
 		if phasename in ['Feedback']:
 			# move paddle
@@ -756,7 +754,7 @@ class BciApplication(BciGenericApplication):
 					self.states['CloudSpeedTimes10']=self.cloudSpeed*10
 					self.cloudMoveEnd = round((self.gamingWindowWidth-cloud.size[0])*self.cloudMoveEnd+(cloud.size[0]/2),1)
 			if self.cloudSpeed == 0:		# cloud is currently stopping
-				self.cloudMoveEnd = self.cloudMoveEnd - 0.1
+				self.cloudMoveEnd = self.cloudMoveEnd - (0.1*(float(self.states['GravityTimes100'])/100))
 				if self.cloudMoveEnd <= 0:
 					self.cloudMoveEnd = None
 			else:		# cloud is moving
@@ -938,7 +936,7 @@ class BciApplication(BciGenericApplication):
 			#~ 2.3. Moving Rockets down and checking for Collision with Spaceship (TODO:Score)
 
 #~ Measuring Distance
-			self.distance = self.distance - 1
+			self.distance = self.distance - (float(self.states['GravityTimes100'])/100)
 			if self.distance < 0: self.distance = 0
 			normalized = 1-(self.distance/self.planetDistance)
 			self.stimuli['MiniSpaceship'].position = (self.stimuli['MiniSpaceship'].position[0], self.stimuli['Trajectory'].position[1]+self.stimuli['Trajectory'].size[1]*normalized)
