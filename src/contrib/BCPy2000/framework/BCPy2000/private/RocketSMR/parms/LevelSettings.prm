@@ -1,8 +1,7 @@
 PythonApp:BasicRound 	float 		DropFrequency= 	2 % 0 % // determines distance between different Drops falling from sky (DrFreq*PaddleHeight)
-PythonApp:BasicRound 	float 		Gravity= 		1 % 0.1 % // speed with which tools fall down
+PythonApp:BasicRound 	float 		InitGravity= 		1 % 0.1 % // speed with which drops fall down
 PythonApp:BasicRound 	matrix 		CloudPathes= 	3 7 0.6 0.2 30 0.4 0 0.8 0.2 0.2 0.5 50 0.2 1 0.8 30 1 0.6 60 0.4 0.2 0 0.5 // path which cloud follows
 PythonApp:BasicRound 	floatlist 	CloudSpeed= 	7 0.5 1.5 0.8 1.2 2.0 0.9 1.7 // List of Cloud Speeds to be used
 PythonApp:BasicRound 	int 		DropsTillBonus= 10 % 1 32 // number of drops that have to be collected to enter Bonus Round
 PythonApp:BonusRound 	matrix 		RocketPattern= 	10 { veryLeft Left Center Right veryRight } 1 0 0 0 0 1 1 0 0 0 0 1 1 0 0 0 0 1 0 1 0 0 0 1 1 1 1 0 0 0 1 1 0 0 1 1 0 1 0 1 0 1 0 1 0 1 1 0 1 1 % 0 1 // Falling pattern of rockets (0 no rocket, 1 rocket)
-PythonApp:BonusRound 	float 		RocketSpeed= 	1 % 0.1 % // speed of rockets
 PythonApp:BonusRound 	float 		RocketFrequency= 1.5 % 0 % // determines distance between different RocketRows (RoFreq*SpaceshipHeight)
