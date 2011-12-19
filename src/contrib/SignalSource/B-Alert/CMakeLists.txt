@@ -5,7 +5,7 @@
 ###########################################################################
 
 # Set the executable name
-SET( EXECUTABLE_NAME BAlert )
+SET( EXECUTABLE_NAME BAlertSource )
 
 # Set the project specific sources
 SET( SRC_PROJECT
