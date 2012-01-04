@@ -26,12 +26,8 @@ BCI2000_ADD_CMDLINE_FILTER( ARFilter              FROM ${SIGPROC_DIR} INCLUDING 
 BCI2000_ADD_CMDLINE_FILTER( ComplexDemodulator    FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( ConditionalIntegrator FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( ExpressionFilter      FROM ${SIGPROC_DIR} )
-BCI2000_ADD_CMDLINE_FILTER( FFTFilter             FROM ${SIGPROC_DIR} INCLUDING "FFT" )
 BCI2000_ADD_CMDLINE_FILTER( LinearClassifier      FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( LPFilter              FROM ${SIGPROC_DIR} )
-BCI2000_ADD_CMDLINE_FILTER( MatlabFilter          FROM ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab USING "MATLAB"
-                            EXTRA_SOURCES ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab/MatlabWrapper.cpp
-                            EXTRA_HEADERS ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab/MatlabWrapper.h   )
 BCI2000_ADD_CMDLINE_FILTER( Normalizer            FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( P3TemporalFilter      FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( SpatialFilter         FROM ${SIGPROC_DIR} # USING "QT"  # uncomment USING "QT" for a threaded speed-up at the expense of requiring the QT framework dylibs to be installed
@@ -41,3 +37,8 @@ BCI2000_ADD_CMDLINE_FILTER( SpatialFilter         FROM ${SIGPROC_DIR} # USING "Q
                                           ${SIGPROC_DIR}/SpatialFilterGroup.h     )
 BCI2000_ADD_CMDLINE_FILTER( StateTransform        FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( TransmissionFilter    FROM ${BCI2000_ROOT_DIR}/src/shared/modules/signalsource )
+BCI2000_ADD_CMDLINE_FILTER( FFTFilter             FROM ${SIGPROC_DIR} INCLUDING "FFT" )
+# The MatlabFilter must be listed last or all filter executables will depend on libeng and libmx.
+BCI2000_ADD_CMDLINE_FILTER( MatlabFilter          FROM ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab USING "MATLAB"
+                            EXTRA_SOURCES ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab/MatlabWrapper.cpp
+                            EXTRA_HEADERS ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab/MatlabWrapper.h   )

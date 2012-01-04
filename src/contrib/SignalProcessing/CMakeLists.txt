@@ -10,3 +10,20 @@ ADD_SUBDIRECTORY( PeakDetector )
 ADD_SUBDIRECTORY( SW )
 ADD_SUBDIRECTORY( Coherence )
 ADD_SUBDIRECTORY( CoherenceFFT )
+
+# Command line filters cannot be defined in their associated signal processing 
+# modules' CMakeLists.txt, so they are defined here:
+BCI2000_ADD_CMDLINE_FILTER( CoherenceFilter FROM Coherence )
+
+SET( SIGPROC ../../shared/modules/signalprocessing )
+INCLUDE_DIRECTORIES( Coherence )
+INCLUDE_DIRECTORIES( ${SIGPROC} )
+BCI2000_ADD_CMDLINE_FILTER(
+  CoherenceFFTFilter FROM CoherenceFFT
+  INCLUDING "FFT"
+  EXTRA_SOURCES Coherence/CoherenceFilter.cpp
+                ${SIGPROC}/FFTFilter.cpp
+  EXTRA_HEADERS Coherence/CoherenceFilter.h
+                ${SIGPROC}/FFTFilter.h
+)
+

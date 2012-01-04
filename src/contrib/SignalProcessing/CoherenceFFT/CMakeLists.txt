@@ -32,9 +32,3 @@ BCI2000_ADD_SIGNAL_PROCESSING_MODULE(
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
 )
 
-# You may also find it useful to produce a command-line version of your filters, for offline processing:
-BCI2000_ADD_CMDLINE_FILTER( CoherenceFFTFilter   # a more complicated example, with dependencies
-                            EXTRA_SOURCES ../Coherence/CoherenceFilter.cpp
-                            EXTRA_HEADERS ../Coherence/CoherenceFilter.h
-)
-
