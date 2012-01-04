@@ -88,6 +88,7 @@ class BciApplication(BciGenericApplication):
 			"PythonApp:PaddleSizeAdjusting float  InitGameDifficulty= 1.0 % % % // GameDifficulty for adjusting paddle size",
 			"PythonApp:PaddleSizeAdjusting float  PaddleWidthHitFactor= 0.9 % % % //determines the amount the paddle grows and shrinks with each hit or miss",
 			"PythonApp:PaddleSizeAdjusting float  MaximumPaddleWidth= 0.5 % % % //maximum width paddle can grow to proprotional to gaming window width",
+			"PythonApp:PaddleSizeAdjusting float  MinimumPaddleWidth= 0.05 % % % //minimum width paddle can grow to proprotional to gaming window width",
 			"PythonApp:PaddleSizeAdjusting float  GravityHitFactor= 0.1 % % % //determines the amount the speed increases or decreases with each hit or miss",
 			"PythonApp:PaddleSizeAdjusting int	  ReversalsToDiscard= 2 % % % // number of reversals in the beginning to be discarded before computing the new paddle size",
 			"PythonApp:PaddleSizeAdjusting int	  ReversalsToCompute= 6 % % % // number of reversals to be taken into account for new paddle size computation",
@@ -237,11 +238,12 @@ class BciApplication(BciGenericApplication):
 		self.expr = self.PythonizeExpression(self.params['PaddleExpression'])
 		self.smoothDirectControl = []
 		self.startTime = None
-		self.widthHistory = []
+		self.difficultyHistory = []
 		self.growthDirection = None
 		self.gameDifficulty = float(self.params['InitGameDifficulty'])
-		# theoretical highest for awarding scores
-		self.lowestGameDifficulty = round(math.log((0.5/float(self.params['InitPaddleSize'][0])),0.9))
+		# lowest and highest game difficulty for paddle growth
+		self.lowestGameDifficulty = round(math.log((float(self.params['MaximumPaddleWidth'])/float(self.params['InitPaddleSize'][0])),float(self.params['PaddleWidthHitFactor'])))
+		self.highestGameDifficulty = round(math.log((float(self.params['MinimumPaddleWidth'])/float(self.params['InitPaddleSize'][0])),float(self.params['PaddleWidthHitFactor'])))
 		
 #~ 1.1. Setting screen background to black
 #~		Creating Score display of specified Width (self.params['ScoreDisplayWidth'])
@@ -299,7 +301,12 @@ class BciApplication(BciGenericApplication):
 #~			from specified image(self.params['Images'][0]
 #~		Position it in the center at the bottom of the gaming window
 #~		Create water to fill up the cart
-		newPaddleWidth = float(self.params['InitPaddleSize'][0])*math.pow(float(self.params['PaddleWidthHitFactor']),self.gameDifficulty)
+		if self.gameDifficulty < self.lowestGameDifficulty:
+			newPaddleWidth = float(self.params['MaximumPaddleWidth'])
+		elif self.gameDifficulty > self.highestGameDifficulty:
+			newPaddleWidth = float(self.params['MinimumPaddleWidth'])
+		else:
+			newPaddleWidth = float(self.params['InitPaddleSize'][0])*math.pow(float(self.params['PaddleWidthHitFactor']),self.gameDifficulty)
 		paddle_width = round(newPaddleWidth*self.gamingWindowWidth)
 		paddle_height = round(float(self.params['InitPaddleSize'][1])*self.screen.size[1])
 		water_bottom_height = round(paddle_height*float(self.params['BottomOfWater']))
@@ -477,8 +484,13 @@ class BciApplication(BciGenericApplication):
 		#
 		#~ Assigning initial values to some State Variables:
 		self.states['PaddleWidthTimes10000'] = round((self.stimuli['paddle'].size[0]/self.gamingWindowWidth)*10000)
-		newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
-		if newGravity < float(self.params['InitGravity']):
+		# determine initial Gravity
+		if self.gameDifficulty > 1.0:
+			newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
+		elif self.gameDifficulty < self.lowestGameDifficulty:
+			negativeSpeedDiff = self.lowestGameDifficulty - self.gameDifficulty
+			newGravity = (float(self.params['InitGravity'])*(1-(float(self.params['GravityHitFactor'])*negativeSpeedDiff)))
+		else:
 			newGravity = float(self.params['InitGravity'])
 		newGravity = round(newGravity,2)
 		self.states['GravityTimes100'] = newGravity*100
@@ -673,10 +685,8 @@ class BciApplication(BciGenericApplication):
 	
 	#~ Reset Score etc.
 		if phase in ['pre_determinePaddleSize']:
-			self.widthHistory = []
+			self.difficultyHistory = []
 			self.growthDirection = None
-			# adjust Game difficulty to largest PaddleWidth Game Difficulty if necessary
-			if self.gameDifficulty < self.lowestGameDifficulty: self.gameDifficulty = self.lowestGameDifficulty
 			self.states['NumberOfGame'] = self.states['NumberOfGame']+1
 			self.startTime = None
 			self.distance = self.planetDistance
@@ -825,18 +835,26 @@ class BciApplication(BciGenericApplication):
 								self.change_phase()
 						else:
 							# adjusting paddle size
-							self.gameDifficulty = self.gameDifficulty + 1
-							newPaddleWidth = float(self.params['InitPaddleSize'][0])*math.pow(float(self.params['PaddleWidthHitFactor']),self.gameDifficulty)
-							newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
-							if newGravity < float(self.params['InitGravity']):
-								newGravity = float(self.params['InitGravity'])
-							newGravity = round(newGravity,2)
-							self.states['GravityTimes100'] = newGravity*100
-							if newPaddleWidth > float(self.params['MaximumPaddleWidth']): newPaddleWidth = float(self.params['MaximumPaddleWidth'])
-							paddle_width = round(newPaddleWidth*self.gamingWindowWidth)
 							if self.growthDirection == -1:  #reversal occured
-								self.widthHistory.append(paddle_width)
+								self.difficultyHistory.append(self.gameDifficulty)
 							self.growthDirection = 1
+							self.gameDifficulty = self.gameDifficulty + 1
+							if self.gameDifficulty < self.lowestGameDifficulty:
+								newPaddleWidth = float(self.params['MaximumPaddleWidth'])
+							elif self.gameDifficulty > self.highestGameDifficulty:
+								newPaddleWidth = float(self.params['MinimumPaddleWidth'])
+							else:
+								newPaddleWidth = float(self.params['InitPaddleSize'][0])*math.pow(float(self.params['PaddleWidthHitFactor']),self.gameDifficulty)
+							# determine Gravity
+							if self.gameDifficulty > 1.0:
+								newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
+							elif self.gameDifficulty < self.lowestGameDifficulty:
+								negativeSpeedDiff = self.lowestGameDifficulty - self.gameDifficulty
+								newGravity = (float(self.params['InitGravity'])*(1-(float(self.params['GravityHitFactor'])*negativeSpeedDiff)))
+							else:
+								newGravity = float(self.params['InitGravity'])
+							self.states['GravityTimes100'] = newGravity*100
+							paddle_width = round(newPaddleWidth*self.gamingWindowWidth)
 							paddle.size = (paddle_width, paddle.size[1])
 							if paddle_width*0.7 < round(self.gamingWindowWidth*float(self.params['DropSize'][0]),1):
 								for d in self.activeDrops: d.size=(paddle.size[0]*0.7, d.size[1])
@@ -860,18 +878,25 @@ class BciApplication(BciGenericApplication):
 						self.states['HitsInRow'] = 0
 						if phasename in ['determinePaddleSize']: 
 							# adjusting paddle size
-							self.gameDifficulty = self.gameDifficulty + (-1*float(self.params['TargetAccuracy'])/(1-float(self.params['TargetAccuracy'])))
-							newPaddleWidth = float(self.params['InitPaddleSize'][0])*math.pow(float(self.params['PaddleWidthHitFactor']),self.gameDifficulty)
-							newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
-							if newGravity < float(self.params['InitGravity']):
-								newGravity = float(self.params['InitGravity'])
-							newGravity = round(newGravity,2)
-							self.states['GravityTimes100'] = newGravity*100
-							if newPaddleWidth > float(self.params['MaximumPaddleWidth']): newPaddleWidth = float(self.params['MaximumPaddleWidth'])
-							paddle_width = round(newPaddleWidth*self.gamingWindowWidth)
 							if self.growthDirection == 1:  #reversal occured
-								self.widthHistory.append(paddle_width)
+								self.difficultyHistory.append(self.gameDifficulty)
 							self.growthDirection = -1
+							self.gameDifficulty = self.gameDifficulty + (-1*float(self.params['TargetAccuracy'])/(1-float(self.params['TargetAccuracy'])))
+							if self.gameDifficulty < self.lowestGameDifficulty:
+								newPaddleWidth = float(self.params['MaximumPaddleWidth'])
+							elif self.gameDifficulty > self.highestGameDifficulty:
+								newPaddleWidth = float(self.params['MinimumPaddleWidth'])
+							else:
+								newPaddleWidth = float(self.params['InitPaddleSize'][0])*math.pow(float(self.params['PaddleWidthHitFactor']),self.gameDifficulty)# determine Gravity
+							if self.gameDifficulty > 1.0:
+								newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
+							elif self.gameDifficulty < self.lowestGameDifficulty:
+								negativeSpeedDiff = self.lowestGameDifficulty - self.gameDifficulty
+								newGravity = (float(self.params['InitGravity'])*(1-(float(self.params['GravityHitFactor'])*negativeSpeedDiff)))
+							else:
+								newGravity = float(self.params['InitGravity'])
+							self.states['GravityTimes100'] = newGravity*100
+							paddle_width = round(newPaddleWidth*self.gamingWindowWidth)
 							paddle.size = (paddle_width, paddle.size[1])
 							if paddle_width*0.7 < round(self.gamingWindowWidth*float(self.params['DropSize'][0]),1):
 								for d in self.activeDrops: d.size=(paddle.size[0]*0.7, d.size[1])
@@ -893,9 +918,21 @@ class BciApplication(BciGenericApplication):
 				self.states['TargetDropPosXTimes10000'] = 0
 				self.states['TargetDropPosYTimes10000'] = 0
 			# check if adjusting period can be quit
-			if phasename=='determinePaddleSize' and len(self.widthHistory)==(int(self.params['ReversalsToDiscard'])+int(self.params['ReversalsToCompute'])):
-				paddle_width = sum(self.widthHistory[2:])/len(self.widthHistory[2:])
-				paddle.size = (paddle_width, paddle.size[1])
+			if phasename=='determinePaddleSize' and len(self.difficultyHistory)==(int(self.params['ReversalsToDiscard'])+int(self.params['ReversalsToCompute'])):
+				#find median of gameDifficutly at reversals
+				while len(self.difficultyHistory)>2:
+					self.difficultyHistory.remove(max(self.difficultyHistory))
+					self.difficultyHistory.remove(min(self.difficultyHistory))
+				self.gameDifficulty = round((sum(self.difficultyHistory)/2),2)
+				# determine PaddleSize
+				if self.gameDifficulty < self.lowestGameDifficulty:
+					newPaddleWidth = float(self.params['MaximumPaddleWidth'])
+				elif self.gameDifficulty > self.highestGameDifficulty:
+					newPaddleWidth = float(self.params['MinimumPaddleWidth'])
+				else:
+					newPaddleWidth = float(self.params['InitPaddleSize'][0])*math.pow(float(self.params['PaddleWidthHitFactor']),self.gameDifficulty)# determine Gravity
+				paddle_width = round(newPaddleWidth*self.gamingWindowWidth)
+				paddle.size = (paddle_width, paddle.size[1])				
 				self.stimuli['water'].size = (paddle.size[0], self.stimuli['water'].size[1])
 				self.states['PaddleWidthTimes10000'] = round((paddle_width/self.gamingWindowWidth)*10000)
 				if paddle_width*0.7 < round(self.gamingWindowWidth*float(self.params['DropSize'][0]),1):
@@ -904,11 +941,14 @@ class BciApplication(BciGenericApplication):
 				else:
 					for d in self.activeDrops: d.size=(round(self.gamingWindowWidth*float(self.params['DropSize'][0]),1), d.size[1])
 					for d in self.inactiveDrops: d.size=(round(self.gamingWindowWidth*float(self.params['DropSize'][0]),1), d.size[1])		
-				self.gameDifficulty = round(math.log(((paddle_width/self.gamingWindowWidth)/float(self.params['InitPaddleSize'][0])),0.9))
-				newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
-				if newGravity < float(self.params['InitGravity']):
+				# determine Gravity
+				if self.gameDifficulty > 1.0:
+					newGravity = (float(self.params['InitGravity'])*(1+(float(self.params['GravityHitFactor'])*self.gameDifficulty)))
+				elif self.gameDifficulty < self.lowestGameDifficulty:
+					negativeSpeedDiff = self.lowestGameDifficulty - self.gameDifficulty
+					newGravity = (float(self.params['InitGravity'])*(1-(float(self.params['GravityHitFactor'])*negativeSpeedDiff)))
+				else:
 					newGravity = float(self.params['InitGravity'])
-				newGravity = round(newGravity,2)
 				self.states['GravityTimes100'] = newGravity*100
 				self.change_phase()
 
