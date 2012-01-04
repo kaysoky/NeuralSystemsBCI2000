@@ -1,8 +1,9 @@
-PythonApp:PaddleSizeAdjusting int 	AdjustingFrequency= 5 // Minutes after which the paddle size is adjusted again
+PythonApp:PaddleSizeAdjusting int 	AdjustingFrequency= 4 // Minutes after which the paddle size is adjusted again
 PythonApp:PaddleSizeAdjusting float TargetAccuracy= 	0.65 % 0.0 1.0 // HitRate to aim for in adjusting paddle size
 PythonApp:PaddleSizeAdjusting float InitGameDifficulty= 1.0 // GameDifficulty for adjusting paddle size
 PythonApp:PaddleSizeAdjusting float PaddleWidthHitFactor= 0.9 // determines the amount the paddle grows and shrinks with each it or miss
 PythonApp:PaddleSizeAdjusting float MaximumPaddleWidth= 0.5 // maximum width paddle can grow to proprotional to gaming window width
+PythonApp:PaddleSizeAdjusting float MinimumPaddleWidth= 0.05
 PythonApp:PaddleSizeAdjusting float GravityHitFactor= 0.1 % % % //determines the amount the speed increases or decreases with each hit or miss",
 
 PythonApp:PaddleSizeAdjusting int 	ReversalsToDiscard= 2 // number of reversals in the beginning to be discarded before computing the new paddle size
