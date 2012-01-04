@@ -207,7 +207,7 @@ ArithmeticExpression::Function( const std::string& inName, const NodeList& inArg
   {
     const char* name;
     bool        isConst; // same arguments give always the same result (e.g., for rand() this would be false)
-    int         numArgs;
+    size_t      numArgs;
     void*       function;
   }
   functions[] =
@@ -230,7 +230,7 @@ ArithmeticExpression::Function( const std::string& inName, const NodeList& inArg
     CONSTFUNC1( sinh )   CONSTFUNC1( cosh )   CONSTFUNC1( tanh )
 
   };
-  static const int numFunctions = sizeof( functions ) / sizeof( *functions );
+  static const size_t numFunctions = sizeof( functions ) / sizeof( *functions );
   size_t i = 0;
   while( i < numFunctions && inName != functions[i].name )
     ++i;
@@ -361,15 +361,16 @@ ArithmeticExpression::Cleanup()
 {
   while( !mAllocations.empty() )
   { 
-    mAllocations.begin()->Delete();
-    mAllocations.erase( mAllocations.begin() );
+    StoredPointer p = *mAllocations.begin();
+    p.Delete();
+    mAllocations.erase( p );
   }
 }
 
 void
 ArithmeticExpression::ClearStatements()
 {
-  for( NodeList::const_reverse_iterator i = mStatements.rbegin(); i != mStatements.rend(); ++i )
+  for( NodeList::reverse_iterator i = mStatements.rbegin(); i != mStatements.rend(); ++i )
     delete *i;
   mStatements.clear();
 }
