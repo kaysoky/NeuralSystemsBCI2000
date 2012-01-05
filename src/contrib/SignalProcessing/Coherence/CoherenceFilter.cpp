@@ -179,7 +179,7 @@ CoherenceFilter::Process( const GenericSignal& Input, GenericSignal& Output )
       mInputBuffer[ch][sample + mInputBuffer[ch].size() - Input.Elements()] = Input( ch, sample );
     // Remove mean to avoid artifacts.
     valarray<real> zeroMeanBuffer = mInputBuffer[ch];
-    zeroMeanBuffer -= ::accumulate( &zeroMeanBuffer[0], &zeroMeanBuffer[zeroMeanBuffer.size()], 0.0 );
+    zeroMeanBuffer -= ::accumulate( &zeroMeanBuffer[0], &zeroMeanBuffer[zeroMeanBuffer.size()], 0.0 ) / zeroMeanBuffer.size();
     // Convolve with the FIR filter using the configured step size.
     for( size_t bin = 0; bin < mFIRCoefficients.size(); ++bin )
     {
@@ -187,7 +187,7 @@ CoherenceFilter::Process( const GenericSignal& Input, GenericSignal& Output )
       for( size_t sample = 0; sample < zeroMeanBuffer.size() - mFIRCoefficients[bin].size(); sample += mConvolutionStep )
         mFIRConvolution[ch][bin][i++] = inner_product(
                                           &mFIRCoefficients[bin][0],
-                                          &mFIRCoefficients[bin][mFIRCoefficients[bin].size() - 1],
+                                          &mFIRCoefficients[bin][mFIRCoefficients[bin].size()],
                                           &zeroMeanBuffer[sample],
                                           complex( 0.0 )
                                         );
