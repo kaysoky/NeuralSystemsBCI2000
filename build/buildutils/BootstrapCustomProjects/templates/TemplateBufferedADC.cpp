@@ -92,10 +92,13 @@ RegisterFilter( `, 1 );
 void
 `::OnHalt()
 {
-  // De-allocate any memory reserved in Initialize, stop any threads, etc.
-  // Good practice is to write the Halt() method such that it is safe to call it even *before*
-  // Initialize, and safe to call it twice (e.g. make sure you do not delete [] pointers that
+  // De-allocate any memory reserved in OnInitialize, stop any threads, etc.
+  // Good practice is to write the OnHalt() method such that it is safe to call it even *before*
+  // OnInitialize, and safe to call it twice (e.g. make sure you do not delete [] pointers that
   // have already been deleted:  set them to NULL after deletion).
+  
+  // Note that OnStopAcquisition() will be called immediately before this, in the acquisition
+  // thread. OnStopAcquisition() is the proper place to do any amplifier-API cleanup.
 }
 
 void
@@ -112,10 +115,10 @@ void
   if( (double)Parameter( "SamplingRate" ) == 0.0 )
     bcierr << "SamplingRate cannot be zero" << endl;
   //
-  // Errors issued in this way, during Preflight, still allow the user to open
-  // the Config dialog box, fix bad parameters and re-try.  By contrast, errors
-  // and C++ exceptions at any other stage (outside Preflight) will make the
-  // system stop, such that BCI2000 will need to be relaunched entirely.
+  // Errors issued in this way, during the Preflight phase, still allow the user
+  // to open the Config dialog box, fix bad parameters and re-try.  By contrast,
+  // errors and C++ exceptions at any other stage (outside Preflight) will make
+  // the system stop, such that BCI2000 will need to be relaunched entirely.
 
   int numberOfChannels = Parameter( "SourceCh" );
   int samplesPerBlock  = Parameter( "SampleBlockSize" );
@@ -123,9 +126,9 @@ void
   Output = SignalProperties( numberOfChannels, samplesPerBlock, sigType );
 
   //
-  // Note that the ` instance itself, and its members, are read-only during
-  // this phase, due to the "const" at the end of the Preflight prototype above.
-  // Any methods called by Preflight must also be "const" in the same way.
+  // Note that the ` instance itself, and its members, are read-only during the
+  // Preflight phase---note the "const" at the end of the OnPreflight prototype above.
+  // Any methods called by OnPreflight must also be declared as "const" in the same way.
 }
 
 void
@@ -142,8 +145,9 @@ void
   // StartRun and StopRun many times while remaining initialized.  The system will only become
   // uninitialized again once OnHalt is called.
 
-  // Don't bother with any API stuff here 
-  // OnStartAcquisition() will be called in the acquisition thread immediately after this method finishes
+  // Don't bother with any amplifier-API stuff here, however: instead, do this in
+  // OnStartAcquisition() which will be called in the acquisition thread immediately after this
+  // method finishes.
 
   double samplesPerSecond = Parameter( "SamplingRate" );
   double samplesPerBlock  = Parameter( "SampleBlockSize" );
@@ -204,10 +208,11 @@ void
 `::OnStopAcquisition()
 {
   // This method is called from the acquisition thread just before it exits.  Use this method
-  // to shutdown the amplifier API, but the system should remain in an initialized state.
-  // The system will go into an un-initialized state when OnHalt is called (immediately after this)
-  // from the main thread.
+  // to shut down the amplifier API (undoing whatever was done in OnStartAcquisition).
+  // Immediately after this returns, the system will go into an un-initialized state and
+  // OnHalt will be called in the main thread: (there you can undo whatever was done in
+  // OnInitialize). 
 
-  // It is guaranteed that this method is called before OnHalt is called.
+  // This method will always be called before OnHalt is called.
 }
 

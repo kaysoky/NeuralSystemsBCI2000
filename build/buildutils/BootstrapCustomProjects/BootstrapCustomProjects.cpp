@@ -370,8 +370,8 @@ int NewFilter( string modtype, string name, string proj, string extra )
 		"\n"
 		"e.g. NewBCI2000Filter    2   MyCustomFilter  ../src/custom/VeryNiceSignalProcessing\n"
 		"\n"
-		"CLASSTYPE: 0 creates a subclass of BufferedADC (for signal acquisition in SignalSource modules using non-buffered APIs)\n"
-        "           1 creates a subclass of GenericADC (for signal acquisition in SignalSource modules using buffered APIs)\n"
+		"CLASSTYPE: 0 creates a subclass of GenericADC (for signal acquisition in SignalSource modules using older non-buffered API)\n"
+        "           1 creates a subclass of BufferedADC (for signal acquisition in SignalSource modules using newer buffered API)\n"
 		"           2 creates a subclass of GenericFilter (for all modules, especially SignalProcessing)\n"
 		"           3 creates a subclass of ApplicationBase (for Application modules)\n"
 		"\n"
@@ -386,16 +386,17 @@ int NewFilter( string modtype, string name, string proj, string extra )
 	for( int i = 0; ; i++)
 	{
 		modtype = StripString( modtype );
-        if( modtype == "0" ) modtype = "BufferedADC";
-		if( modtype == "1" ) modtype = "GenericADC";
+		if( modtype == "0" ) modtype = "GenericADC";
+        if( modtype == "1" ) modtype = "BufferedADC";
 		if( modtype == "2" ) modtype = "GenericFilter";
 		if( modtype == "3" ) modtype = "ApplicationBase";
 		if( modtype == "GenericADC" || modtype == "GenericFilter" || modtype == "ApplicationBase" || modtype == "BufferedADC" ) break;
 		
-		if( modtype.size() && i == 0 ) { cerr << "unrecognized filter type \"" << modtype << "\" - should be 1, 2 or 3\n"; return 1; }
+		if( modtype.size() && i == 0 ) { cerr << "unrecognized filter type \"" << modtype << "\" - should be 0, 1, 2 or 3\n"; return 1; }
 		if( modtype.size() ) cout << "ERROR: please enter one of the strings exactly, or one of the numbers\n\n";
 
-		cout << "1 GenericADC (for SignalSource modules)\n";
+		cout << "0 GenericADC (for SignalSource modules - old style, unbuffered)\n";
+		cout << "1 BufferedADC (for SignalSource modules - new style, with inbuilt buffering)\n";
 		cout << "2 GenericFilter (for all modules, but usually SignalProcessing)\n";
 		cout << "3 ApplicationBase (for application modules)\n";
 		cout << "Enter filter type [default is 2]: ";
@@ -593,7 +594,7 @@ int NewModule( string modtype, string name, string parent, string extra )
 		adcname = name;
 		if( adcname.size() > 6 && adcname.substr( adcname.size()-6 ) == "Source" ) adcname = adcname.substr( 0, adcname.size()-6 );
 		if( adcname.size() < 3 || adcname.substr( adcname.size()-3 ) != "ADC" )    adcname += "ADC";
-		if( NewFilter( "0", adcname, proj, "" ) != 0 ) adcname = "";
+		if( NewFilter( "BufferedADC", adcname, proj, "" ) != 0 ) adcname = "";
 	}
 
     string appname;
