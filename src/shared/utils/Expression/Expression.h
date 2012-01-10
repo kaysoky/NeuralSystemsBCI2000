@@ -54,6 +54,7 @@
 class Expression : public ArithmeticExpression, private Environment
 {
  public:
+  using ArithmeticExpression::CompilationState;
   using ArithmeticExpression::VariableContainer;
   static const VariableContainer& Constants;
 
@@ -72,6 +73,8 @@ class Expression : public ArithmeticExpression, private Environment
   Expression& ClearOptionalAccess();
 
   double Evaluate( const GenericSignal* = NULL, int sample = 0 );
+  double Execute( const GenericSignal* signal = NULL, int sample = 0 )
+    { return Evaluate( signal, sample ); }
 
  protected:
   Node* Variable( const std::string& name );
@@ -99,7 +102,7 @@ class Expression : public ArithmeticExpression, private Environment
     SignalNode( const SignalPointer&, AddressNode*, AddressNode* );
 
    protected:
-    double OnEvaluate() const;
+    double OnEvaluate();
 
    private:
     const SignalPointer& mrpSignal;
@@ -115,7 +118,7 @@ class Expression : public ArithmeticExpression, private Environment
     StateNode( const StateRef&, const int& sample );
 
    protected:
-    double OnEvaluate() const;
+    double OnEvaluate();
 
    private:
     StateRef mStateRef;
@@ -128,7 +131,7 @@ class Expression : public ArithmeticExpression, private Environment
     StateAssignmentNode( const StateRef&, Node*, const int& sample, const bool& allowed );
 
    protected:
-    double OnEvaluate() const;
+    double OnEvaluate();
 
    private:
     StateRef mStateRef;

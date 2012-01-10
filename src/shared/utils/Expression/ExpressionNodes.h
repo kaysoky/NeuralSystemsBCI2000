@@ -39,17 +39,17 @@ class Node
   Node( bool isConst = false );
   virtual ~Node();
 
-  bool IsConst() { return mIsConst; }
+  bool IsConst() const { return mIsConst; }
 
   Node* Simplify();
-  double Evaluate() const { return OnEvaluate(); }
+  double Evaluate() { return OnEvaluate(); }
 
  protected:
   void Add( Node* );
 
  protected:
   virtual Node* OnSimplify() { return this; }
-  virtual double OnEvaluate() const = 0;
+  virtual double OnEvaluate() = 0 {}
 
  protected:
   NodeList mChildren;
@@ -62,7 +62,7 @@ class ConstantNode : public Node
   ConstantNode( double value ) : Node( true ), mValue( value ) {}
 
  protected:
-  double OnEvaluate() const { return mValue; }
+  double OnEvaluate() { return mValue; }
 
  private:
   double mValue;
@@ -74,7 +74,7 @@ class VariableNode : public Node
   VariableNode( double& valueRef ) : mrValue( valueRef ) {}
 
  protected:
-  double OnEvaluate() const { return mrValue; }
+  double OnEvaluate() { return mrValue; }
 
  private:
   double& mrValue;
@@ -86,7 +86,7 @@ class AssignmentNode : public Node
   AssignmentNode( double& valueRef, Node* rhs ) : mrValue( valueRef ) { Add( rhs ); }
 
  protected:
-  double OnEvaluate() const { return ( mrValue = mChildren[0]->Evaluate() ); }
+  double OnEvaluate() { return ( mrValue = mChildren[0]->Evaluate() ); }
 
 private:
  double& mrValue;
@@ -113,7 +113,7 @@ class FunctionNode<0> : public ConstPropagatingNode
   FunctionNode( bool c, Pointer f ) : ConstPropagatingNode( c ), p( f ) {}
 
  protected:
-  double OnEvaluate() const { return p(); }
+  double OnEvaluate() { return p(); }
 
  private:
   Pointer p;
@@ -127,7 +127,7 @@ class FunctionNode<1> : public ConstPropagatingNode
   FunctionNode( bool c, Pointer f, Node* arg1 ) : ConstPropagatingNode( c ), p( f ) { Add( arg1 ); }
 
  protected:
-  double OnEvaluate() const { return p( mChildren[0]->Evaluate() ); }
+  double OnEvaluate() { return p( mChildren[0]->Evaluate() ); }
 
  private:
   Pointer p;
@@ -141,7 +141,7 @@ class FunctionNode<2> : public ConstPropagatingNode
   FunctionNode( bool c, Pointer f, Node* arg1, Node* arg2 ) : ConstPropagatingNode( c ), p( f ) { Add( arg1 ); Add( arg2 ); }
 
  protected:
-  double OnEvaluate() const { return p( mChildren[0]->Evaluate(), mChildren[1]->Evaluate() ); }
+  double OnEvaluate() { return p( mChildren[0]->Evaluate(), mChildren[1]->Evaluate() ); }
 
  private:
   Pointer p;
@@ -155,7 +155,7 @@ class FunctionNode<3> : public ConstPropagatingNode
   FunctionNode( bool c, Pointer f, Node* arg1, Node* arg2, Node* arg3 ) : ConstPropagatingNode( c ), p( f ) { Add( arg1 ); Add( arg2 ); Add( arg3 ); }
 
  protected:
-  double OnEvaluate() const { return p( mChildren[0]->Evaluate(), mChildren[1]->Evaluate(), mChildren[2]->Evaluate() ); }
+  double OnEvaluate() { return p( mChildren[0]->Evaluate(), mChildren[1]->Evaluate(), mChildren[2]->Evaluate() ); }
 
  private:
   Pointer p;
@@ -169,7 +169,7 @@ class AddressNode : public Node
 
  protected:
   Node* OnSimplify();
-  double OnEvaluate() const;
+  double OnEvaluate();
 
  private:
   const std::string* mpString;

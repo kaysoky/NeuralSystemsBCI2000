@@ -73,9 +73,15 @@ class ArithmeticExpression
 
   const ArithmeticExpression& operator=( const ArithmeticExpression& );
 
+  enum { none, attempted, success };
+  int CompilationState() const
+    { return mCompilationState; }
+
   bool IsValid( const Context& = Context() );
   bool Compile( const Context& = Context() );
   double Evaluate();
+  double Execute()
+    { return Evaluate(); }
 
  protected:
   typedef ExpressionParser::Node Node;
@@ -109,7 +115,7 @@ class ArithmeticExpression
   std::ostringstream mErrors;
   NodeList           mStatements;
   Context            mContext;
-  enum { none, attempted, success } mCompilationState;
+  int                mCompilationState;
 
   // Memory management.
   template<typename T>
@@ -117,15 +123,13 @@ class ArithmeticExpression
   Track( T* inNew, Node* inOld1 = NULL, Node* inOld2 = NULL, Node* inOld3 = NULL )
   {
     if( inNew )
-    {
-      mAllocations.insert( Pointer<T>( inNew ) );
-      if( inOld1 )
-        mAllocations.erase( Pointer<Node>( inOld1 ) );
-      if( inOld2 )
-        mAllocations.erase( Pointer<Node>( inOld2 ) );
-      if( inOld3 )
-        mAllocations.erase( Pointer<Node>( inOld3 ) );
-    }
+      mAllocations.insert( inNew );
+    if( inOld1 )
+      mAllocations.erase( inOld1 );
+    if( inOld2 )
+      mAllocations.erase( inOld2 );
+    if( inOld3 )
+      mAllocations.erase( inOld3 );
     return inNew;
   }
 
@@ -136,34 +140,49 @@ class ArithmeticExpression
     if( inNew )
     {
       for( NodeList::iterator i = inNodes->begin(); i != inNodes->end(); ++i )
-        mAllocations.erase( Pointer<Node>( *i ) );
-      mAllocations.erase( Pointer<NodeList>( inNodes ) );
+        mAllocations.erase( *i );
+      mAllocations.erase( inNodes );
       delete inNodes;
-      mAllocations.insert( Pointer<T>( inNew ) );
+      mAllocations.insert( inNew );
     }
     return inNew;
   }
 
-  class StoredPointer
+  class DeleterBase
   {
    public:
-    StoredPointer( void* p = NULL ) : mp( p ) {}
-    bool operator<( const StoredPointer& p ) const { return Pointer() < p.Pointer(); }
-    void* Pointer() const { return mp; }
-    virtual void Delete() {};
+    virtual ~DeleterBase() {}
+    virtual DeleterBase* Copy() const = 0;
+    virtual void Delete() = 0;
+  };
+
+  template<typename T> class Deleter : public DeleterBase
+  {
+   private:
+    Deleter( Deleter& );
+   public:
+    Deleter( T* p ) : mp( p ) {}
+    Deleter* Copy() const { return new Deleter( mp ); }
+    void Delete() { delete mp; }
+   private:
+    T* mp;
+  };
+
+  class Pointer
+  {
+   public:
+    Pointer() : mp( NULL ) {}
+    Pointer( const Pointer& inP ) : mp( inP.mp ), mpDeleter( inP.mpDeleter->Copy() ) {}
+    template<typename T> Pointer( T* p ) : mp( p ), mpDeleter( new Deleter<T>( p ) ) {}
+    ~Pointer() { delete mpDeleter; }
+    bool operator<( const Pointer& p ) const { return mp < p.mp; }
+    void Delete() const { mpDeleter->Delete(); };
    private:
     void* mp;
+    DeleterBase* mpDeleter;
   };
 
-  template<typename T>
-  class Pointer : public StoredPointer
-  {
-   public:
-    Pointer( T* inPtr ) : StoredPointer( inPtr ) {}
-    virtual void Delete() { delete reinterpret_cast<T*>( StoredPointer::Pointer() ); }
-  };
-
-  typedef std::set<StoredPointer> PointerContainer;
+  typedef std::set<Pointer> PointerContainer;
   PointerContainer mAllocations;
 };
 

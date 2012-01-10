@@ -100,7 +100,7 @@ AddressNode::OnSimplify()
 }
 
 double
-AddressNode::OnEvaluate() const
+AddressNode::OnEvaluate()
 {
   throw bciexception( "This function should never be called" );
   return 0;

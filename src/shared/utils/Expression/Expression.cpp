@@ -115,7 +115,7 @@ Expression::SignalNode::SignalNode( const SignalPointer& rpSignal, AddressNode* 
 }
 
 double
-Expression::SignalNode::OnEvaluate() const
+Expression::SignalNode::OnEvaluate()
 {
   if( mrpSignal == NULL )
     throw bciexception_( "No signal specified for expression evaluation" );
@@ -153,7 +153,7 @@ Expression::StateNode::StateNode( const StateRef& state, const int& sample )
 }
 
 double
-Expression::StateNode::OnEvaluate() const
+Expression::StateNode::OnEvaluate()
 {
   return mStateRef( mrSample );
 }
@@ -168,7 +168,7 @@ Expression::StateAssignmentNode::StateAssignmentNode( const StateRef& state, Nod
 }
 
 double
-Expression::StateAssignmentNode::OnEvaluate() const
+Expression::StateAssignmentNode::OnEvaluate()
 {
   double rhs = mChildren[0]->Evaluate();
   if( mrAllowed )

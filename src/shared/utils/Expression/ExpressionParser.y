@@ -113,8 +113,8 @@ input: /* empty */                   { $$ = NULL; }
 ;
 
 statements:
-       statement                     { $$ = $1; p->Add( $1 ); }
-     | statements ';' statement      { $$ = $3; p->Add( $3 ); }
+       statement                     { $$ = $1; p->Add( $1 ); p->Track( reinterpret_cast<Node*>( NULL ), $1 ); }
+     | statements ';' statement      { $$ = $3; p->Add( $3 ); p->Track( reinterpret_cast<Node*>( NULL ), $3 ); }
      | statements ';'                { $$ = $1; }
      | ';'                           { $$ = NULL; }
 ;

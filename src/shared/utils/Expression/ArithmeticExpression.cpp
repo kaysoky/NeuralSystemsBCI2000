@@ -271,7 +271,7 @@ ArithmeticExpression::Function( const std::string& inName, const NodeList& inArg
 Node*
 ArithmeticExpression::MemberFunction( const string& inObject, const string& inFunction, const NodeList& )
 {
-  Errors() << inObject << "." << inFunction << "(): Unknown object when calling member function"
+  Errors() << inObject << ": Unknown object"
            << endl;
   return NULL;
 }
@@ -361,9 +361,8 @@ ArithmeticExpression::Cleanup()
 {
   while( !mAllocations.empty() )
   { 
-    StoredPointer p = *mAllocations.begin();
-    p.Delete();
-    mAllocations.erase( p );
+    mAllocations.begin()->Delete();
+    mAllocations.erase( mAllocations.begin() );
   }
 }
 

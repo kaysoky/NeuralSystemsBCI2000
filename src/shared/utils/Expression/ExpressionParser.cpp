@@ -1164,12 +1164,12 @@ yyreduce:
 
   case 4:
 #line 116 "ExpressionParser.y"
-    { yyval.node = yyvsp[0].node; p->Add( yyvsp[0].node ); ;}
+    { yyval.node = yyvsp[0].node; p->Add( yyvsp[0].node ); p->Track( reinterpret_cast<Node*>( NULL ), yyvsp[0].node ); ;}
     break;
 
   case 5:
 #line 117 "ExpressionParser.y"
-    { yyval.node = yyvsp[0].node; p->Add( yyvsp[0].node ); ;}
+    { yyval.node = yyvsp[0].node; p->Add( yyvsp[0].node ); p->Track( reinterpret_cast<Node*>( NULL ), yyvsp[0].node ); ;}
     break;
 
   case 6:
