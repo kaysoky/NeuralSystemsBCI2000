@@ -27,6 +27,7 @@
 #define EXPRESSION_NODES_H
 
 #include <vector>
+#include <string>
 
 namespace ExpressionParser
 {
