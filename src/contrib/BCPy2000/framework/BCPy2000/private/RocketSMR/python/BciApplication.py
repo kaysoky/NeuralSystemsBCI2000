@@ -512,6 +512,7 @@ class BciApplication(BciGenericApplication):
 		self.states['DistanceTimes10'] = 10000
 		self.states['Planets'] = 0
 		self.states['NumberOfGame'] = 1
+		self.states['GameMode'] = 0
 	#############################################################
 	
 	def Phases(self):
@@ -551,7 +552,7 @@ class BciApplication(BciGenericApplication):
 		self.states['HitsInRow'] = 0
 		self.states['AvoidedRows'] = 0
 		self.states['AvoidedSingle'] = 0
-		self.stimuli['GameMode'] = 0
+		self.states['GameMode'] = 0
 	#~ Reset activeDrops list
 		if self.activeDrops:
 			for d in self.activeDrops:
