@@ -39,14 +39,10 @@
 #include "twoDCursor.h"
 
 #include <QKeyEvent>
+#include <QApplication>
 
 #include <string>
 #include <sstream>
-#ifdef _MSC_VER
-# include "direct.h"
-#else // _MSC_VER
-# include "dir.h"
-#endif // _MSC_VER
 //---------------------------------------------------------------------------
 using namespace std;
 
@@ -324,7 +320,7 @@ DemoWindow::OnCollide( sceneObj& p1, sceneObj& p2 )
   }
   if( boundary && obj )
   {
-    ::MessageBeep( -1 );
+    QApplication::beep();
     n.x = 0, n.y = 0, n.z = 0;
     for( int i = 0; i < 6; ++i )
       if( sceneObj::VolumeIntersection( *obj, boundary->getHalfSpace( i ) ) )
@@ -339,7 +335,7 @@ DemoWindow::OnCollide( sceneObj& p1, sceneObj& p2 )
   {
     // For non-boundary objects, reflect the objects' velocities on the plane
     // perpendicular to the line connecting their centers.
-    ::MessageBeep( MB_ICONEXCLAMATION );
+    QApplication::beep();
     n = p1.getOrigin() - p2.getOrigin();
     doReflect = n * p2.getVelocity() > 0;
   }

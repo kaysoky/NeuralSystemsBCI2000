@@ -26,7 +26,6 @@ SET( SIGPROCSOURCES
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/AverageDisplay.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ConditionalIntegrator.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/RandomFilter.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/StateTransform.cpp 
@@ -47,7 +46,6 @@ SET( SIGPROCHEADERS
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/AverageDisplay.h 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.h 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ConditionalIntegrator.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/RandomFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/StateTransform.h
@@ -67,14 +65,15 @@ SET( HDR_BCI2000_FRAMEWORK
 )
 
 # Add Extlib dependencies
-BCI2000_INCLUDE( "FFT" )
 BCI2000_INCLUDE( "MATH" )
 
 # Create the library project
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/SigProcModule.cmake )
 BCI2000_ADD_REGISTRY( ${REGISTRY_NAME} SRC_BCI2000_FRAMEWORK DEPTARGETS )
 BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK DEPLIBS FAILED )
-IF( NOT FAILED )
+IF( FAILED )
+  MESSAGE( WARNING "Could not satisfy dependencies of the SignalProcessing library. SignalProcessing modules will not build." )
+ELSE( FAILED )
   ADD_LIBRARY( ${NAME} STATIC ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} )
   TARGET_LINK_LIBRARIES( ${NAME} ${DEPLIBS} BCI2000FrameworkCore )
   ADD_DEPENDENCIES( ${NAME} ${DEPTARGETS} )
@@ -90,5 +89,5 @@ IF( NOT FAILED )
   ELSE( BORLAND )
     TARGET_LINK_LIBRARIES( ${NAME} ${QT_LIBRARIES} )
   ENDIF( BORLAND )
-ENDIF( NOT FAILED )
+ENDIF( FAILED )
 

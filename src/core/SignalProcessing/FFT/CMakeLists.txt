@@ -9,10 +9,14 @@ SET( EXECUTABLE_NAME FFTSignalProcessing )
 # Set the project specific sources
 SET( SRC_PROJECT
   FFTSignalProcessing.cpp
-  PipeDefinition.cpp 
+  PipeDefinition.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.cpp
 )
 SET( HDR_PROJECT
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.h
 )
+
+BCI2000_INCLUDE( "FFT" )
 
 # Create the signal processing module
 BCI2000_ADD_SIGNAL_PROCESSING_MODULE( 

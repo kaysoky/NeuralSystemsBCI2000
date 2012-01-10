@@ -49,7 +49,7 @@ class Node
 
  protected:
   virtual Node* OnSimplify() { return this; }
-  virtual double OnEvaluate() = 0 {}
+  virtual double OnEvaluate() = 0;
 
  protected:
   NodeList mChildren;

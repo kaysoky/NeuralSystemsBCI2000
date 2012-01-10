@@ -19,8 +19,10 @@ ENDIF()
 # Include "usage header" to define include directories and extlib dependencies
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK DEPLIBS FAILED )
-IF( NOT FAILED )
+IF( FAILED )
+  MESSAGE( ERROR "Could not satisfy dependencies of the CoreLib library." )
+ELSE( FAILED )
   ADD_LIBRARY( ${NAME} STATIC ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} )
   TARGET_LINK_LIBRARIES( ${NAME} ${DEPLIBS} )
-ENDIF( NOT FAILED )
+ENDIF( FAILED )
 

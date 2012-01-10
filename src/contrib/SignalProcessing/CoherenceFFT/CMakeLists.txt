@@ -9,6 +9,8 @@
 # Set the executable name
 SET( EXECUTABLE_NAME CoherenceFFTSignalProcessing )
 
+BCI2000_INCLUDE( "FFT" )
+
 # Set the project specific sources
 SET( SRC_PROJECT
   CoherenceFFTSignalProcessing.cpp            # You probably will not need to edit this file
@@ -16,12 +18,14 @@ SET( SRC_PROJECT
   # MyNewCustomFilter.cpp    # and presumably you will be writing custom filters. This is where they go.
   CoherenceFFTFilter.cpp
   ../Coherence/CoherenceFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.cpp
 )
 
 SET( HDR_PROJECT
   # MyNewCustomFilter.h      # Don't forget the corresponding headers
   CoherenceFFTFilter.h
   ../Coherence/CoherenceFilter.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.h
 )
 
 INCLUDE_DIRECTORIES( ../Coherence )

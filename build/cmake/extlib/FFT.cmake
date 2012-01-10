@@ -23,17 +23,20 @@ SET( HDR_EXTLIB
 
 # Define the include directory
 SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/fftlib )
+IF( APPLE AND EXISTS /sw )
+  SET( HAVE_FINK true )
+ENDIF()
 
-IF( APPLE )
+IF( HAVE_FINK )
   SET( INC_EXTLIB
     ${INC_EXTLIB}
     /sw/include
   )
-ENDIF( APPLE )
+ENDIF( HAVE_FINK )
 
-IF( APPLE )
+IF( HAVE_FINK )
   SET( LIBDIR_EXTLIB /sw/lib )
-ENDIF( APPLE )
+ENDIF( HAVE_FINK )
 
 # Set Libs required
 IF( NOT WIN32 )
