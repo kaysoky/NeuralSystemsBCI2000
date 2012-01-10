@@ -33,6 +33,7 @@ IF( NOT FAILED )
 
   # Link against required libraries
   TARGET_LINK_LIBRARIES( ${NAME} ${LIBS} )
+  ADD_DEPENDENCIES( ${NAME} ${DEPENDS} )
 
   # Add Pre-processor defines
   IF( NOT BORLAND )
