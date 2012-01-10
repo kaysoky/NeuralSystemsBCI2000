@@ -104,7 +104,7 @@ IF( NOT FAILED )
   TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${LIBS} ${BCI2000_SIGSRCLIBS} )
 
   # Link the Neuroscan Library
-  TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} debug NicoletSDKd optimized NicoletSDK  )
+  TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} winmm debug NicoletSDKd optimized NicoletSDK  )
 
 ENDIF( NOT FAILED )
 

@@ -111,6 +111,7 @@ class CoreModule : private MessageHandler, private OSThread
   CoreModule();
   virtual ~CoreModule();
   bool Run( int argc, char** argv );
+  void Terminate() { OSThread::Terminate(); }
 
  protected:
   // Override to integrate with a GUI library.
