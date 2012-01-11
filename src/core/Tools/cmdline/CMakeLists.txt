@@ -18,7 +18,7 @@ BCI2000_ADD_CMDLINE_CONVERTER( bci_stream2table )
 
 SET( SIGPROC_DIR ${BCI2000_ROOT_DIR}/src/shared/modules/signalprocessing )
 
-BCI2000_ADD_CMDLINE_FILTER( ARFilter              FROM ${SIGPROC_DIR} INCLUDING "MATH" # "QT"  # uncomment the "QT" for a threaded speed-up at the expense of requiring the QT framework dylibs to be installed
+BCI2000_ADD_CMDLINE_FILTER( ARFilter              FROM ${SIGPROC_DIR} INCLUDING "MATH" # "QT"  # uncomment the "QT" for a threaded speed-up at the expense of requiring the QT framework dylibs to be installed at runtime
                             EXTRA_SOURCES ${SIGPROC_DIR}/ARChannel.cpp
                                           ${SIGPROC_DIR}/ARGroup.cpp
                             EXTRA_HEADERS ${SIGPROC_DIR}/ARChannel.h
@@ -30,7 +30,7 @@ BCI2000_ADD_CMDLINE_FILTER( LinearClassifier      FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( LPFilter              FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( Normalizer            FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( P3TemporalFilter      FROM ${SIGPROC_DIR} )
-BCI2000_ADD_CMDLINE_FILTER( SpatialFilter         FROM ${SIGPROC_DIR} # USING "QT"  # uncomment USING "QT" for a threaded speed-up at the expense of requiring the QT framework dylibs to be installed
+BCI2000_ADD_CMDLINE_FILTER( SpatialFilter         FROM ${SIGPROC_DIR} # INCLUDING "QT"  # uncomment INCLUDING "QT" for a threaded speed-up at the expense of requiring the QT framework dylibs to be installed at runtime
                             EXTRA_SOURCES ${SIGPROC_DIR}/SpatialFilterCell.cpp
                                           ${SIGPROC_DIR}/SpatialFilterGroup.cpp
                             EXTRA_HEADERS ${SIGPROC_DIR}/SpatialFilterCell.h
@@ -38,7 +38,10 @@ BCI2000_ADD_CMDLINE_FILTER( SpatialFilter         FROM ${SIGPROC_DIR} # USING "Q
 BCI2000_ADD_CMDLINE_FILTER( StateTransform        FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( TransmissionFilter    FROM ${BCI2000_ROOT_DIR}/src/shared/modules/signalsource )
 BCI2000_ADD_CMDLINE_FILTER( FFTFilter             FROM ${SIGPROC_DIR} INCLUDING "FFT" )
-# The MatlabFilter must be listed last or all filter executables will depend on libeng and libmx.
-BCI2000_ADD_CMDLINE_FILTER( MatlabFilter          FROM ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab USING "MATLAB"
+
+
+# The MatlabFilter must be listed last, else all filter executables will depend on libeng and libmx.
+
+BCI2000_ADD_CMDLINE_FILTER( MatlabFilter          FROM ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab INCLUDING "MATLAB"
                             EXTRA_SOURCES ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab/MatlabWrapper.cpp
                             EXTRA_HEADERS ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab/MatlabWrapper.h   )
