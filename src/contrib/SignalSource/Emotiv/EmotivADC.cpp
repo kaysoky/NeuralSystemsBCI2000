@@ -415,10 +415,13 @@ void EmotivADC::Process( const GenericSignal&, GenericSignal& Output )
         {
           int charge = 0, maxCharge = 0;
           ES_GetBatteryChargeLevel( mState, &charge, &maxCharge );
-          if( ( ( float )charge / ( float )maxCharge ) < 0.1 )
-          {
-            bciout << "Low Battery; Charge < 10%" << endl;
-            mLowBatt = true;
+          if( charge >= 0 )
+          { // charge may be -1, indicating "no information present"
+            if( ( 100 * charge ) / maxCharge < 10 )
+            {
+              bciout << "Low Battery; Charge < 10%" << endl;
+              mLowBatt = true;
+            }
           }
         }
       }
