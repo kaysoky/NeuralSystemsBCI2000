@@ -72,6 +72,7 @@ class Expression : public ArithmeticExpression, private Environment
   Expression& SetOptionalAccess( State::ValueType inDefault = 0 );
   Expression& ClearOptionalAccess();
 
+  bool IsValid( const GenericSignal* = NULL, int sample = 0, const Context& = Context() );
   double Evaluate( const GenericSignal* = NULL, int sample = 0 );
   double Execute( const GenericSignal* signal = NULL, int sample = 0 )
     { return Evaluate( signal, sample ); }

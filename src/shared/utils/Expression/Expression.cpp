@@ -29,6 +29,7 @@
 
 #include "Expression.h"
 #include "BCIException.h"
+#include "BCIError.h"
 #include <sstream>
 
 using namespace std;
@@ -49,6 +50,15 @@ Expression::ClearOptionalAccess()
 {
   mOptionalAccess = false;
   return *this;
+}
+
+bool
+Expression::IsValid( const GenericSignal* inpSignal, int inSample, const Context& inContext )
+{
+  mAllowStateAssignment = false;
+  mpSignal = inpSignal;
+  mSample = inSample;
+  return ArithmeticExpression::IsValid( inContext );
 }
 
 double
