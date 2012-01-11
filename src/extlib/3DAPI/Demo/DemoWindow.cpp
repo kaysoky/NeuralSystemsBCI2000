@@ -5,23 +5,23 @@
 //   the 3D Scene GraphObject class.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -40,6 +40,7 @@
 
 #include <QKeyEvent>
 #include <QApplication>
+#include <QDir>
 
 #include <string>
 #include <sstream>
@@ -113,14 +114,8 @@ DemoWindow::NewScene()
   mGraphDisplay.DeleteObjects();
   // Create the scene
   mpScene = new Scene( mGraphDisplay );
-  if( 0 == ::chdir( cImagePath.c_str() ) )
-  {
-    const int buflen = 2048;
-    char buf[buflen] = "";
-    const char* cwd = ::getcwd( buf, buflen );
-    if( cwd != NULL )
-      mpScene->SetImagePath( cwd );
-  }
+  if( QDir::setCurrent( cImagePath.c_str() ) )
+    mpScene->SetImagePath( QDir::currentPath().toLocal8Bit().constData() );
   PopulateScene();
   ResetPositions();
   GUI::Rect rect = { 0, 0, 1, 1 };
