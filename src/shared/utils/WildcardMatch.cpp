@@ -7,7 +7,7 @@
 //    "?" matches a single arbitrary character,
 //    "[abc]" matches any of the characters "abc",
 //    "[a-c]" matches any character from the range between "a" and "c",
-//    "[-abc]" and "[-a-c]" both match any character not in "abc".
+//    "[!abc]" and "[!a-c]" both match any character not in "abc".
 //    "\" is used as an escape character; write "\\" to match a single backslash.
 //
 // $BEGIN_BCI2000_LICENSE$
@@ -33,7 +33,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "GlobMatch.h"
+#include "WildcardMatch.h"
 #include "BCIException.h"
 
 using namespace std;
@@ -66,23 +66,23 @@ sNegativeCases[] =
   { "T*tring", "TestString" },
   { "*?String", "TestString" },
   { "?*TestString", "TestString" },
-  { "*[-s]tString", "TestString" },
+  { "*[!s]tString", "TestString" },
 };
 
 void RunTests()
 {
   for( size_t i = 0; i < sizeof( sPositiveCases ) / sizeof( *sPositiveCases ); ++i )
-	  if( !GlobMatch( sPositiveCases[i].pattern, sPositiveCases[i].match ) )
-	    throw bciexception(
-		    "GlobMatch test case failed: " << sPositiveCases[i].pattern
-		    << " does not match " << sPositiveCases[i].match
-	    );
+    if( !WildcardMatch( sPositiveCases[i].pattern, sPositiveCases[i].match ) )
+      throw bciexception(
+        "WildcardMatch test case failed: " << sPositiveCases[i].pattern
+        << " does not match " << sPositiveCases[i].match
+      );
   for( size_t i = 0; i < sizeof( sNegativeCases ) / sizeof( *sNegativeCases ); ++i )
-	  if( GlobMatch( sNegativeCases[i].pattern, sNegativeCases[i].match ) )
-	    throw bciexception(
-		    "GlobMatch test case failed: " << sNegativeCases[i].pattern
-		    << " should not match " << sNegativeCases[i].match
-	    );
+    if( WildcardMatch( sNegativeCases[i].pattern, sNegativeCases[i].match ) )
+      throw bciexception(
+        "WildcardMatch test case failed: " << sNegativeCases[i].pattern
+        << " should not match " << sNegativeCases[i].match
+      );
 }
 #endif // BCIDEBUG
 
@@ -131,13 +131,17 @@ class Pattern
         {
           switch( *p )
           {
-            case '-':
-              ++p;
+            case '!':
               if( charset.empty() )
                 negate = true;
               else
-                for( char c = *charset.rend(); c <= *p; ++c )
-                  charset += c;
+                charset += *p;
+              ++p;
+              break;
+            case '-':
+              ++p;
+              for( char c = *charset.rend(); c <= *p; ++c )
+                charset += c;
               break;
             case '\\':
               if( *( p+1 ) != '\0' )
@@ -177,7 +181,7 @@ class Pattern
 } // namespace
 
 bool
-bci::GlobMatch( const string& inPattern, const string& inString )
+bci::WildcardMatch( const string& inPattern, const string& inString )
 {
 #if BCIDEBUG
   static bool tested = false;

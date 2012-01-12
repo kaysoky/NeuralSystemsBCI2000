@@ -78,6 +78,9 @@ OSThread::~OSThread()
 void
 OSThread::Start()
 {
+  TerminateWait();
+  OSMutex::Lock lock( mMutex );
+  mTerminating = false;
   mHandle = ::CreateThread( NULL, 0, OSThread::StartThread, this, 0, &mThreadID );
   if( mHandle == NULL )
     bcierr << OSError().Message() << endl;
@@ -86,6 +89,7 @@ OSThread::Start()
 bool
 OSThread::IsTerminated() const
 {
+  OSMutex::Lock lock( mMutex );
   return mHandle == NULL;
 }
 
@@ -171,6 +175,10 @@ OSThread::~OSThread()
 void
 OSThread::Start()
 {
+  TerminateWait();
+  OSMutex::Lock lock( mMutex );
+  mIsTerminating = false;
+  mTerminated = false;
   ::pthread_attr_t attributes;
   if( !::pthread_attr_init( &attributes ) )
   {
@@ -185,6 +193,7 @@ OSThread::Start()
 bool
 OSThread::IsTerminated() const
 {
+  OSMutex::Lock lock( mMutex );
   return mTerminated;
 }
 
@@ -217,6 +226,7 @@ OSThread::PrecisionSleepUntil( PrecisionTime inWakeupTime )
 void
 OSThread::Terminate( OSEvent* inpEvent )
 {
+  OSMutex::Lock lock( mMutex );
   mpTerminationEvent = inpEvent;
   mTerminating = true;
   if( IsTerminated() && mpTerminationEvent )
@@ -248,14 +258,17 @@ DWORD WINAPI
 OSThread::StartThread( void* inInstance )
 {
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
-  this_->mTerminating = false;
-  this_->mResult = this_->CallExecute();
-  ::CloseHandle( this_->mHandle );
-  this_->mHandle = NULL;
-  if( this_->mpTerminationEvent )
-    this_->mpTerminationEvent->Set();
-  this_->mpTerminationEvent = NULL;
-  return this_->mResult;
+  int result = this_->CallExecute();
+  {
+    OSMutex::Lock lock( this_->mMutex );
+    this_->mResult = result;
+    ::CloseHandle( this_->mHandle );
+    this_->mHandle = NULL;
+    if( this_->mpTerminationEvent )
+      this_->mpTerminationEvent->Set();
+    this_->mpTerminationEvent = NULL;
+  }
+  return result;
 }
 
 #else // _WIN32
@@ -264,16 +277,18 @@ void*
 OSThread::StartThread( void* inInstance )
 {
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
-  this_->mTerminating = false;
-  this_->mTerminated = false;
   // Set the cancel state to asynchronous, so pthread_cancel() will
   // immediately cancel thread execution.
   ::pthread_setcancelstate( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
-  this_->mResult = this_->CallExecute();
-  this_->mTerminated = true;
-  if( this_->mpTerminationEvent )
-    this_->mpTerminationEvent->Set();
-  this_->mpTerminationEvent = NULL;
+  int result = this_->CallExecute();
+  {
+    OSMutex::Lock lock( this_->mMutex );
+    this_->mResult = result;
+    this_->mTerminated = true;
+    if( this_->mpTerminationEvent )
+      this_->mpTerminationEvent->Set();
+    this_->mpTerminationEvent = NULL;
+  }
   return &this_->mResult;
 }
 

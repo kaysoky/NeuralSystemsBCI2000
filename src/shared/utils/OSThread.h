@@ -37,6 +37,7 @@
 
 #include "Uncopyable.h"
 #include "OSEvent.h"
+#include "OSMutex.h"
 #include "PrecisionTime.h"
 
 class OSThread : private Uncopyable
@@ -71,18 +72,19 @@ class OSThread : private Uncopyable
   static DWORD WINAPI StartThread( void* inInstance );
 
   volatile HANDLE mHandle;
-  DWORD  mThreadID;
+  DWORD mThreadID;
   static DWORD sMainThreadID;
 #else // _WIN32
   static void* StartThread( void* inInstance );
 
   pthread_t mThread;
-  volatile bool mTerminated;
+  bool mTerminated;
   static pthread_t sMainThread;
 #endif // _WIN32
   int mResult;
-  OSEvent* volatile mpTerminationEvent;
-  volatile bool mTerminating;
+  OSMutex mMutex;
+  OSEvent* mpTerminationEvent;
+  bool mTerminating;
 };
 
 #endif // OS_THREAD_H

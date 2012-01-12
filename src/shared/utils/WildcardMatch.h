@@ -35,6 +35,6 @@
 namespace bci
 {
 
-bool GlobMatch( const std::string& inString, const std::string& inPattern );
+bool WildcardMatch( const std::string& inPattern, const std::string& inString );
 
 } // namespace bci
