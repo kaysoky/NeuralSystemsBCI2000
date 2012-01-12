@@ -254,7 +254,7 @@ if (mode == 1 || mode == 2)
   for (int i=1; i<NumSamples; i++)
   {
     state.trialnr(i-1) = cum;
-    if ((statePhaseInSequence[i-1] == 1) && (statePhaseInSequence[i] == 2))
+    if ((statePhaseInSequence[i-1] != 2) && (statePhaseInSequence[i] == 2))
       cum++;
   }
 }
@@ -286,7 +286,7 @@ if (mode == 3 || mode == 4)
     for( int i = 1; i < NumSamples; ++i )
     {
       state.trialnr( i - 1 ) = trial;
-      if( ( statePhaseInSequence[i - 1] == 1 ) && ( statePhaseInSequence[i] == 2 ) )
+      if( ( statePhaseInSequence[i - 1] != 2 ) && ( statePhaseInSequence[i] == 2 ) )
         ++trial;
     }
   }
@@ -298,7 +298,7 @@ if (mode == 3 || mode == 4)
     for( int i = 1; i < NumSamples; ++i )
     {
       state.trialnr( i - 1 ) = trial;
-      if( ( statePhaseInSequence[ i - 1 ] == 1 ) && ( statePhaseInSequence[i] == 2 ) )
+      if( ( statePhaseInSequence[ i - 1 ] != 2 ) && ( statePhaseInSequence[i] == 2 ) )
       {
         if( ++sequence == parms.NumberOfSequences + 1 )
         {

@@ -49,7 +49,7 @@ ap::real_1d_array score;
 ap::real_1d_array weights;
 
 vector<short int> trial;
-vector<short int> trial_copy;
+//vector<short int> trial_copy;
 vector<int> range;
 vector<int> code_indx;
 vector<short int>::iterator it;
