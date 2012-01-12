@@ -8,8 +8,10 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModule.cmake )
 
 # Define include directories
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/modules/signalprocessing )
+INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics )
 
 BCI2000_USE( "MATH" )
+BCI2000_USE( "STATISTICS" )
 
 SET( REGISTRY_NAME SigProcRegistry )
 FORCE_INCLUDE_OBJECT( ${REGISTRY_NAME} )

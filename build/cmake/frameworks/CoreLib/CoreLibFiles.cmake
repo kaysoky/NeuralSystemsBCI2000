@@ -29,7 +29,7 @@ SET( SRC_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
   ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.cpp
   ${BCI2000_SRC_DIR}/shared/utils/RunnerThread.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/GlobMatch.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/WildcardMatch.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
   ${BCI2000_SRC_DIR}/shared/utils/LogFile.h
@@ -50,7 +50,7 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.h
   ${BCI2000_SRC_DIR}/shared/utils/Runnable.h
   ${BCI2000_SRC_DIR}/shared/utils/RunnerThread.h
-  ${BCI2000_SRC_DIR}/shared/utils/GlobMatch.h
+  ${BCI2000_SRC_DIR}/shared/utils/WildcardMatch.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
   ${BCI2000_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp
