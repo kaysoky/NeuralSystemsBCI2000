@@ -49,6 +49,7 @@ sPositiveCases[] =
   { "*String", "TestString" },
   { "Test*", "TestString" },
   { "T*tString", "TestString" },
+  { "T*tString", "TtttString" },
   { "Tes?String", "TestString" },
   { "Test\?String", "Test?String" },
   { "?*estString", "TestString" },
@@ -57,14 +58,16 @@ sPositiveCases[] =
   { "TestString*", "TestString" },
   { "Te[s]tString", "TestString" },
   { "*[s]tString", "TestString" },
+  { "*Str*", "TestString" },
+  { "*TestString*", "TestString" },
+  { "T*tring", "TestString" },
+  { "*?String", "TestString" },
 },
 sNegativeCases[] =
 {
   { "TestString", "" },
   { "", "TestString" },
   { "TestString", "Test" },
-  { "T*tring", "TestString" },
-  { "*?String", "TestString" },
   { "?*TestString", "TestString" },
   { "*[!s]tString", "TestString" },
 };
@@ -74,109 +77,87 @@ void RunTests()
   for( size_t i = 0; i < sizeof( sPositiveCases ) / sizeof( *sPositiveCases ); ++i )
     if( !WildcardMatch( sPositiveCases[i].pattern, sPositiveCases[i].match ) )
       throw bciexception(
-        "WildcardMatch test case failed: " << sPositiveCases[i].pattern
-        << " does not match " << sPositiveCases[i].match
+        "WildcardMatch test case failed: \"" << sPositiveCases[i].pattern
+        << "\" does not match \"" << sPositiveCases[i].match << "\""
       );
   for( size_t i = 0; i < sizeof( sNegativeCases ) / sizeof( *sNegativeCases ); ++i )
     if( WildcardMatch( sNegativeCases[i].pattern, sNegativeCases[i].match ) )
       throw bciexception(
-        "WildcardMatch test case failed: " << sNegativeCases[i].pattern
-        << " should not match " << sNegativeCases[i].match
+        "WildcardMatch test case failed: \"" << sNegativeCases[i].pattern
+        << "\" should not match \"" << sNegativeCases[i].match << "\""
       );
 }
 #endif // BCIDEBUG
 
-class Pattern
+bool Match( const char* p, const char* s )
 {
- public:
-  Pattern( const std::string& inPattern )
-  : mrPattern( inPattern )
+  bool result = false;
+  switch( *p )
   {
-  }
-  bool Match( const std::string& inString )
-  {
-    const char* p = mrPattern.c_str(),
-              * s = inString.c_str();
-    while( MatchOne( *s, p ) && *s )
-      ++s;
-    return *s == '\0' && *p == '\0';
-  }
+    case '*':
+      result = Match( p + 1, s ) || ( *s != '\0' ) && ( Match( p + 1, s + 1 ) || Match( p, s + 1 ) );
+      break;
 
- private:
-  bool MatchOne( char c, const char*& p ) const
-  {
-    bool result = false;
-    switch( *p )
+    case '?':
+      result = ( *s != '\0' ) && Match( p + 1, s + 1 );
+      break;
+
+    case '[':
     {
-      case '*':
+      ++p;
+      string charset;
+      bool negate = false;
+      while( *p != '\0' && *p != ']' )
       {
-        result = true;
-        const char* q = p + 1;
-        if( MatchOne( c, q ) )
-          p = q;
-        break;
-      }
-
-      case '?':
-        result = true;
-        ++p;
-        break;
-
-      case '[':
-      {
-        ++p;
-        string charset;
-        bool negate = false;
-        while( *p != '\0' && *p != ']' )
+        switch( *p )
         {
-          switch( *p )
-          {
-            case '!':
-              if( charset.empty() )
-                negate = true;
-              else
-                charset += *p;
+          case '!':
+            if( charset.empty() )
+              negate = true;
+            else
+              charset += *p;
+            ++p;
+            break;
+          case '-':
+            ++p;
+            for( char c = *charset.rend(); c <= *p; ++c )
+              charset += c;
+            break;
+          case '\\':
+            if( *( p+1 ) != '\0' )
               ++p;
-              break;
-            case '-':
-              ++p;
-              for( char c = *charset.rend(); c <= *p; ++c )
-                charset += c;
-              break;
-            case '\\':
-              if( *( p+1 ) != '\0' )
-                ++p;
-              /* no break */
-            default:
-              charset += *p++;
-          }
-          if( *p == '\0' )
-            throw bciexception( "When parsing wildcard pattern \"" << mrPattern << "\": missing ']'" );
-          result = ( charset.find( c ) != string::npos );
+            /* no break */
+          default:
+            charset += *p++;
+        }
+        if( *p == '\0' )
+        {
+          result = false;
+        }
+        else
+        {
+          result = ( charset.find( *s ) != string::npos );
           if( negate )
             result = !result;
+          result = result && Match( p + 1, s + 1 );
         }
-        ++p;
-        break;
       }
-
-      case '\0':
-        result = ( c == '\0' );
-        break;
-
-      case '\\':
-        ++p;
-        /* no break */
-      default:
-        result = ( c == *p );
-        ++p;
+      break;
     }
-    return result;
+
+    case '\0':
+      result = ( *s == '\0' );
+      break;
+
+    case '\\':
+      result = ( *( p + 1 ) != '\0' ) && Match( p + 1, s );
+      break;
+
+    default:
+      result = ( *s == *p ) && Match( p + 1, s + 1 );
   }
- private:
-  const string& mrPattern;
-  const char* mpPatternPtr;
-};
+  return result;
+}
 
 } // namespace
 
@@ -191,5 +172,5 @@ bci::WildcardMatch( const string& inPattern, const string& inString )
     RunTests();
   }
 #endif // BCIDEBUG
-  return Pattern( inPattern ).Match( inString );
+  return Match( inPattern.c_str(), inString.c_str() );
 }
