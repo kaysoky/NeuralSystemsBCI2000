@@ -54,44 +54,18 @@ SET( SIGPROCHEADERS
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\signalprocessing FILES ${SIGPROCSOURCES} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\signalprocessing FILES ${SIGPROCHEADERS} )
 
-SET( STATSOURCES
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/StatisticsFilter.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/ViewSource.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/ChannelSetSource.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/DataSource.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/ExpressionSource.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/FunctionSource.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/ObserverSource.cpp
-)
-
-SET( STATHEADERS
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/StatisticsFilter.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/ViewSource.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/ChannelSetSource.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/DataSource.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/ExpressionSource.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/FunctionSource.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics/ObserverSource.h
-)
-
-SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\signalprocessing\\statistics FILES ${STATSOURCES} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\signalprocessing\\statistics FILES ${STATHEADERS} )
-
 # Add the required signal processing files into the framework for this project
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
   ${SIGPROCSOURCES}
-  ${STATSOURCES}
 )
 SET( HDR_BCI2000_FRAMEWORK
   ${HDR_BCI2000_FRAMEWORK}
   ${SIGPROCHEADERS}
-  ${STATHEADERS}
 )
 
 # Add Extlib dependencies
 BCI2000_INCLUDE( "MATH" )
-BCI2000_INCLUDE( "STATISTICS" )
 
 # Create the library project
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/SigProcModule.cmake )
