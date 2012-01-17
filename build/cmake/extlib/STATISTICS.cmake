@@ -1,12 +1,12 @@
 ###########################################################################
 ## $Id: MATH.cmake 3669 2011-11-23 16:54:53Z mellinger $
 ## Authors: griffin.milsap@gmail.com
-## Description: Sets up CMAKE variables for including the EXTLIB Math libs
+## Description: Sets up CMAKE variables for including the EXTLIB Statistics libs
 ## SETS:
-##       SRC_EXTLIB - Required source files for the math library
-##       HDR_EXTLIB - Required header files for the math library
-##       INC_EXTLIB - Include directory for the math library
-##       Also defines source groups for the math files
+##       SRC_EXTLIB - Required source files for the statistics library
+##       HDR_EXTLIB - Required header files for the statistics library
+##       INC_EXTLIB - Include directory for the statistics library
+##       Also defines source groups for the statistics files
 
 # Define the source files
 SET( SRC_EXTLIB

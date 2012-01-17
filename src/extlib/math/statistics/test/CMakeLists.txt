@@ -3,8 +3,8 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for ObserverTest
 
-# Let the macro know we want to use the 3D API
 BCI2000_INCLUDE( "MATH" )
+BCI2000_INCLUDE( "STATISTICS" )
 
 SET( SRC
   ObserverTest.cpp

@@ -24,13 +24,11 @@
 #if _WIN32
 # include <windows.h>    // Header file for windows
 #endif // _WIN32
-#ifdef __BORLANDC__
-#include <gl/gl.h>      // Header file for the OpenGL32 library
-#include <gl/glu.h>     // Header file for the GLu32 library
-#include <gl/glaux.h>   // Header file for the GLaux library
-#else // __BORLANDC__
+#ifndef __BORLANDC__
 #include <QGLWidget>
 #endif // __BORLANDC__
+#include <gl/gl.h>      // Header file for the OpenGL32 library
+#include <gl/glu.h>     // Header file for the GLu32 library
 
 #include <string>
 #include <vector>
