@@ -21,7 +21,7 @@
       obj\primObj.obj obj\Scene.obj obj\sphere.obj obj\threeDText.obj 
       obj\twoDCursor.obj obj\twoDOverlay.obj obj\twoDText.obj 
       obj\GraphObject.obj obj\DisplayWindow.obj obj\GraphDisplay.obj 
-      obj\ExpressionParser.obj obj\Expression.obj obj\BCIDirectory.obj 
+      obj\ExpressionParser.obj obj\ExpressionNodes.obj obj\Expression.obj obj\BCIDirectory.obj 
       obj\TextField.obj obj\OSError.obj obj\RandomGenerator.obj 
       obj\BitmapImage.obj obj\Shapes.obj obj\FeedbackScene3D.obj 
       obj\FeedbackScene2D.obj obj\ArithmeticExpression.obj 
@@ -128,6 +128,7 @@
       <FILE FILENAME="..\..\..\shared\gui\DisplayWindow.cpp" FORMNAME="" UNITNAME="DisplayWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\gui\GraphDisplay.cpp" FORMNAME="" UNITNAME="GraphDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\gui\TextField.cpp" FORMNAME="" UNITNAME="TextField" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

@@ -15,7 +15,7 @@
       obj\Label.obj obj\Param.obj obj\ParamList.obj obj\SignalProperties.obj 
       obj\SignalType.obj obj\VersionInfo.obj obj\ClassName.obj 
       obj\MeasurementUnits.obj obj\PrecisionTime.obj obj\SockStream.obj 
-      obj\ExpressionParser.obj obj\Expression.obj obj\AlignmentFilter.obj 
+      obj\ExpressionParser.obj obj\Expression.obj obj\ExpressionNodes.obj obj\AlignmentFilter.obj 
       obj\DataIOFilter.obj obj\TransmissionFilter.obj obj\GenericFilter.obj 
       obj\BitmapImage.obj obj\Brackets.obj obj\HierarchicalLabel.obj 
       obj\LabelIndex.obj obj\PhysicalUnit.obj obj\ArithmeticExpression.obj 
@@ -104,6 +104,7 @@
       <FILE FILENAME="..\..\..\shared\utils\MeasurementUnits.cpp" FORMNAME="" UNITNAME="MeasurementUnits" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalsource\AlignmentFilter.cpp" FORMNAME="" UNITNAME="AlignmentFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

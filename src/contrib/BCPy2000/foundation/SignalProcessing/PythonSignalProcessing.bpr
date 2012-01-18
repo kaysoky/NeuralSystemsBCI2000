@@ -17,7 +17,7 @@
       obj\EncodedString.obj obj\LabelIndex.obj obj\Environment.obj 
       obj\ParamRef.obj obj\BCIError.obj obj\BCIError_module.obj 
       obj\BitmapImage.obj obj\Color.obj obj\BCIDirectory.obj obj\OSError.obj 
-      obj\ExpressionParser.obj obj\Expression.obj obj\ArithmeticExpression.obj 
+      obj\ExpressionParser.obj obj\Expression.obj obj\ArithmeticExpression.obj obj\ExpressionNodes.obj 
       obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj 
       obj\SpatialFilter.obj obj\ExceptionCatcher.obj obj\CfgID.obj 
       obj\BCIException.obj obj\OSThread.obj obj\OSMutex.obj obj\OSEvent.obj 
@@ -102,6 +102,7 @@
       <FILE FILENAME="..\..\..\..\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

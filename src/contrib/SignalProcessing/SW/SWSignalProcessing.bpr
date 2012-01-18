@@ -14,7 +14,7 @@
       obj\SignalType.obj obj\State.obj obj\StateList.obj obj\StateVector.obj 
       obj\Status.obj obj\VersionInfo.obj obj\ClassName.obj 
       obj\MeasurementUnits.obj obj\PrecisionTime.obj obj\SockStream.obj 
-      obj\ExpressionParser.obj obj\Expression.obj obj\FFTLibWrap.obj 
+      obj\ExpressionParser.obj obj\Expression.obj obj\ExpressionNodes.obj obj\FFTLibWrap.obj 
       obj\SpatialFilter.obj obj\GenericFilter.obj obj\Normalizer.obj 
       obj\PhysicalUnit.obj obj\Brackets.obj obj\HierarchicalLabel.obj 
       obj\LabelIndex.obj obj\AverageDisplay.obj obj\FFTFilter.obj 
@@ -97,6 +97,7 @@
       <FILE FILENAME="..\..\..\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\fftlib\FFTLibWrap.cpp" FORMNAME="" UNITNAME="FFTLibWrap" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\SpatialFilter.cpp" FORMNAME="" UNITNAME="SpatialFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

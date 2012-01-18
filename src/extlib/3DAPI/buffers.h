@@ -31,7 +31,9 @@
 #include <map>
 #include <string>
 
-#ifndef __BORLANDC__
+#ifdef __BORLANDC__
+# include <gl/glaux.h>
+#else // __BORLANDC__
 # include <QImage>
 #endif // __BORLANDC__
 

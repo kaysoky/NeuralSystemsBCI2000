@@ -16,7 +16,7 @@
       obj\MeasurementUnits.obj obj\PrecisionTime.obj obj\SockStream.obj 
       obj\ApplicationBase.obj obj\ConnectorFilters.obj obj\FeedbackTask.obj 
       obj\TrialStatistics.obj obj\BlockRandSeq.obj obj\Localization.obj 
-      obj\GenericFilter.obj obj\ExpressionParser.obj obj\Expression.obj 
+      obj\GenericFilter.obj obj\ExpressionParser.obj obj\ExpressionNodes.obj obj\Expression.obj 
       obj\BCIDirectory.obj obj\KeystrokeFilter.obj obj\RandomGenerator.obj 
       obj\BitmapImage.obj obj\GraphDisplay.obj obj\DisplayWindow.obj obj\GUI.obj 
       obj\GraphObject.obj obj\ArithmeticExpression.obj obj\StateVectorSample.obj 
@@ -106,6 +106,7 @@
       <FILE FILENAME="..\..\..\shared\modules\application\utils\Localization.cpp" FORMNAME="" UNITNAME="Localization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\GenericFilter.cpp" FORMNAME="" UNITNAME="GenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\application\human_interface_devices\KeystrokeFilter.cpp" FORMNAME="" UNITNAME="KeystrokeFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

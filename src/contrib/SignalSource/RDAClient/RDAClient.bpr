@@ -18,7 +18,7 @@
       obj\TransmissionFilter.obj obj\AlignmentFilter.obj obj\DataIOFilter.obj 
       obj\FileWriterBase.obj obj\NullFileWriter.obj obj\BCI2000FileWriter.obj 
       obj\EDFFileWriter.obj obj\GDF.obj obj\GDFFileWriter.obj 
-      obj\ArithmeticExpression.obj obj\EventQueue.obj obj\OSError.obj 
+      obj\ArithmeticExpression.obj obj\ExpressionNodes.obj obj\EventQueue.obj obj\OSError.obj 
       obj\OSThread.obj obj\JoystickLogger.obj obj\KeyLogger.obj obj\BCIEvent.obj 
       obj\StateVectorSample.obj obj\GenericFileWriter.obj obj\EDFOutputBase.obj 
       obj\EDFOutputFormat.obj obj\GDFOutputFormat.obj 
@@ -113,6 +113,7 @@
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\GDF.cpp" FORMNAME="" UNITNAME="GDF" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\GDFFileWriter.cpp" FORMNAME="" UNITNAME="GDFFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

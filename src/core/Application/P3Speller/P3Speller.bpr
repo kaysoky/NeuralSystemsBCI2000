@@ -16,7 +16,7 @@
       obj\MeasurementUnits.obj obj\PrecisionTime.obj obj\SockStream.obj 
       obj\ApplicationBase.obj obj\ConnectorFilters.obj obj\TrialStatistics.obj 
       obj\BlockRandSeq.obj obj\Localization.obj obj\GenericFilter.obj 
-      obj\ExpressionParser.obj obj\Expression.obj obj\BCIDirectory.obj 
+      obj\ExpressionParser.obj obj\Expression.obj obj\ExpressionNodes.obj obj\BCIDirectory.obj 
       obj\Association.obj obj\SpellerCommand.obj obj\Speller.obj 
       obj\TextWindow.obj obj\StatusBar.obj obj\WavePlayer.obj 
       obj\StimulusTask.obj obj\GraphObject.obj obj\DisplayWindow.obj 
@@ -132,6 +132,7 @@
       <FILE FILENAME="..\..\..\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

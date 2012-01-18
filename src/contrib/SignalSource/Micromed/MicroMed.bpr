@@ -18,7 +18,7 @@
       obj\ParamRef.obj obj\Environment.obj obj\GenericFilter.obj 
       obj\TransmissionFilter.obj obj\AlignmentFilter.obj obj\DataIOFilter.obj 
       obj\PhysicalUnit.obj obj\Brackets.obj obj\HierarchicalLabel.obj 
-      obj\LabelIndex.obj obj\ArithmeticExpression.obj obj\EventQueue.obj 
+      obj\LabelIndex.obj obj\ArithmeticExpression.obj obj\ExpressionNodes.obj obj\EventQueue.obj 
       obj\OSError.obj obj\OSThread.obj obj\JoystickLogger.obj obj\KeyLogger.obj 
       obj\StateVectorSample.obj obj\BCIEvent.obj obj\GenericFileWriter.obj 
       obj\EDFOutputBase.obj obj\EDFOutputFormat.obj obj\GDFOutputFormat.obj 
@@ -116,6 +116,7 @@
       <FILE FILENAME="..\..\..\shared\types\HierarchicalLabel.cpp" FORMNAME="" UNITNAME="HierarchicalLabel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\LabelIndex.cpp" FORMNAME="" UNITNAME="LabelIndex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

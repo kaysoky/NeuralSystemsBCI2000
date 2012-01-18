@@ -17,7 +17,7 @@
       obj\ExpressionParser.obj obj\Expression.obj obj\TransmissionFilter.obj 
       obj\AlignmentFilter.obj obj\DataIOFilter.obj obj\FileWriterBase.obj 
       obj\NullFileWriter.obj obj\BCI2000FileWriter.obj obj\EDFFileWriter.obj 
-      obj\GDF.obj obj\GDFFileWriter.obj obj\SourceFilter.obj 
+      obj\GDF.obj obj\GDFFileWriter.obj obj\SourceFilter.obj obj\ExpressionNodes.obj 
       obj\IIRFilterBase.obj obj\FilterDesign.obj obj\ArithmeticExpression.obj 
       obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj 
       obj\KeyLogger.obj obj\JoystickLogger.obj obj\OSThread.obj obj\OSError.obj 
@@ -118,6 +118,7 @@
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\IIRFilterBase.cpp" FORMNAME="" UNITNAME="IIRFilterBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\math\FilterDesign.cpp" FORMNAME="" UNITNAME="FilterDesign" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

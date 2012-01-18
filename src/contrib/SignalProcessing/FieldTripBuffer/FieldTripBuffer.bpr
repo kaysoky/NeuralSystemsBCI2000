@@ -15,7 +15,7 @@
       obj\SignalType.obj obj\State.obj obj\StateList.obj obj\StateVector.obj 
       obj\Status.obj obj\VersionInfo.obj obj\ClassName.obj 
       obj\MeasurementUnits.obj obj\PrecisionTime.obj obj\SockStream.obj 
-      obj\ExpressionParser.obj obj\Expression.obj obj\ArithmeticExpression.obj 
+      obj\ExpressionParser.obj obj\Expression.obj obj\ExpressionNodes.obj obj\ArithmeticExpression.obj 
       obj\ExpressionFilter.obj obj\StateVectorSample.obj obj\EventQueue.obj 
       obj\BCIEvent.obj obj\tcpserver.obj obj\util.obj obj\clientrequest.obj 
       obj\dmarequest.obj obj\tcprequest.obj obj\tcpsocket.obj 
@@ -98,6 +98,7 @@
       <FILE FILENAME="..\..\..\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\ExpressionFilter.cpp" FORMNAME="" UNITNAME="ExpressionFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

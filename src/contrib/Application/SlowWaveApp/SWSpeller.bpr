@@ -36,6 +36,7 @@
       SWSpeller.obj\LogFile.obj SWSpeller.obj\MeasurementUnits.obj 
       SWSpeller.obj\PrecisionTime.obj SWSpeller.obj\SockStream.obj 
       SWSpeller.obj\ExpressionParser.obj SWSpeller.obj\Expression.obj 
+      SWSpeller.obj\ExpressionNodes.obj 
       SWSpeller.obj\Localization.obj SWSpeller.obj\TrialStatistics.obj 
       SWSpeller.obj\MidiPlayer.obj SWSpeller.obj\WavePlayer.obj 
       SWSpeller.obj\HierarchicalLabel.obj SWSpeller.obj\LabelIndex.obj 
@@ -155,6 +156,7 @@
       <FILE FILENAME="..\..\..\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\application\utils\Localization.cpp" FORMNAME="" UNITNAME="Localization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\application\utils\TrialStatistics.cpp" FORMNAME="" UNITNAME="TrialStatistics" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

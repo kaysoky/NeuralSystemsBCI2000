@@ -16,7 +16,7 @@
       obj\ClassName.obj obj\LogFile.obj obj\MeasurementUnits.obj 
       obj\PrecisionTime.obj obj\SockStream.obj obj\ApplicationBase.obj 
       obj\ConnectorFilters.obj obj\TrialStatistics.obj obj\BlockRandSeq.obj 
-      obj\Localization.obj obj\GenericFilter.obj obj\ExpressionParser.obj 
+      obj\Localization.obj obj\GenericFilter.obj obj\ExpressionParser.obj obj\ExpressionNodes.obj 
       obj\Expression.obj obj\BCIDirectory.obj obj\Association.obj 
       obj\SpellerCommand.obj obj\Speller.obj obj\TextWindow.obj 
       obj\StatusBar.obj obj\WavePlayer.obj obj\StimulusTask.obj 
@@ -110,6 +110,7 @@
       <FILE FILENAME="..\..\..\shared\modules\application\utils\Localization.cpp" FORMNAME="" UNITNAME="Localization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\GenericFilter.cpp" FORMNAME="" UNITNAME="GenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\application\stimuli\Association.cpp" FORMNAME="" UNITNAME="Association" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

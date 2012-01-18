@@ -14,7 +14,7 @@
       obj\SignalProperties.obj obj\SignalType.obj obj\State.obj 
       obj\StateList.obj obj\StateVector.obj obj\Status.obj obj\VersionInfo.obj 
       obj\ClassName.obj obj\MeasurementUnits.obj obj\PrecisionTime.obj 
-      obj\SockStream.obj obj\ExpressionParser.obj obj\Expression.obj 
+      obj\SockStream.obj obj\ExpressionParser.obj obj\Expression.obj obj\ExpressionNodes.obj 
       obj\SpatialFilter.obj obj\ARFilter.obj obj\ARGroup.obj obj\ARChannel.obj 
       obj\SpatialFilterGroup.obj obj\SpatialFilterCell.obj 
       obj\LinearClassifier.obj obj\LPFilter.obj obj\Normalizer.obj 
@@ -109,6 +109,7 @@
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\LPFilter.cpp" FORMNAME="" UNITNAME="LPFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\Normalizer.cpp" FORMNAME="" UNITNAME="Normalizer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\ExpressionFilter.cpp" FORMNAME="" UNITNAME="ExpressionFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

@@ -19,7 +19,7 @@
       obj\TransmissionFilter.obj obj\AlignmentFilter.obj obj\DataIOFilter.obj 
       obj\JoystickLogger.obj obj\KeyLogger.obj obj\PhysicalUnit.obj 
       obj\Brackets.obj obj\HierarchicalLabel.obj obj\LabelIndex.obj 
-      obj\NIADC.obj obj\ArithmeticExpression.obj obj\StateVectorSample.obj 
+      obj\NIADC.obj obj\ArithmeticExpression.obj obj\ExpressionNodes.obj obj\StateVectorSample.obj 
       obj\BCIEvent.obj obj\EventQueue.obj obj\GenericFileWriter.obj 
       obj\GDFOutputFormat.obj obj\EDFOutputBase.obj obj\EDFOutputFormat.obj 
       obj\BCI2000OutputFormat.obj obj\OSMutex.obj obj\OSEvent.obj 
@@ -102,6 +102,7 @@
       <FILE FILENAME="..\..\..\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\GenericFilter.cpp" FORMNAME="" UNITNAME="GenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalsource\TransmissionFilter.cpp" FORMNAME="" UNITNAME="TransmissionFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
