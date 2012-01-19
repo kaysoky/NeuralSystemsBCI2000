@@ -731,9 +731,9 @@ class BciApplication(BciGenericApplication):
 			paddle = self.stimuli['paddle']
 			paddle.position = (paddle.position[0]+self.paddleSpeed, paddle.position[1])
 			if paddle.position[0] < paddle.size[0]/2:
-				paddle.position = (paddle.size[0]/2, paddle.position[1])
+				paddle.position = (self.gamingWindowWidth-paddle.size[0]+paddle.size[0]/4, paddle.position[1])
 			if paddle.position[0] > self.gamingWindowWidth-paddle.size[0]/2:
-				paddle.position = (self.gamingWindowWidth-paddle.size[0]/2, paddle.position[1])
+				paddle.position = (paddle.size[0]-paddle.size[0]/4, paddle.position[1])
 			self.stimuli['water'].position = (paddle.position[0], paddle.size[1]-self.fullWaterHeight)
 		
 		if phasename in ['play', 'determinePaddleSize']:
