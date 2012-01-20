@@ -726,7 +726,7 @@ class BciApplication(BciGenericApplication):
 			if elapsedtime >= int(self.params['AdjustingFrequency'])*60:
 				self.change_phase(phasename='pre_determinePaddleSize')
 		
-		if phasename in ['Feedback']:
+		if phasename in ['Feedback','pre_Feedback','inter_Stimuli']:
 			# move paddle
 			paddle = self.stimuli['paddle']
 			paddle.position = (paddle.position[0]+self.paddleSpeed, paddle.position[1])
