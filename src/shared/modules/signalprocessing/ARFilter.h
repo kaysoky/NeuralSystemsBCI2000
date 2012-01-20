@@ -32,8 +32,10 @@
 #ifndef AR_FILTER_H
 #define AR_FILTER_H
 
-#include "ARGroup.h"
 #include "GenericFilter.h"
+#include <vector>
+
+class ARThread;
 
 class ARFilter : public GenericFilter
 {
@@ -43,12 +45,10 @@ class ARFilter : public GenericFilter
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize( const SignalProperties&, const SignalProperties& );
   virtual void Process( const GenericSignal&, GenericSignal& );
-  virtual void Halt();
 
-private:
-  int     mOutputType,
-          mDetrend;
-  ARGroup *mpAR;
+ private:
+  void Cleanup();
+  std::vector<ARThread*> mThreads;
 };
 
 #endif // AR_FILTER_H

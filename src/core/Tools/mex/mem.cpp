@@ -31,7 +31,7 @@
 #include "mex.h"
 
 #include "mexutils.h"
-#include "ARGroup.h"
+#include "ARThread.h"
 #include <limits>
 
 #define USAGE \
@@ -49,26 +49,20 @@
         " detrend option (optional, 0: none, 1: mean, 2: linear; defaults to none),\n" \
         " frequency (optional, defaults to 1),\n" \
         " sample block size (optional, defaults to size(signal,1)),\n" \
-        " number of windows (optional, defaults to 1)\n"
+        " window length in sample blocks (optional, defaults to 1)\n"
 
 using namespace std;
 
 const double eps = numeric_limits<double>::epsilon();
 
-enum detrendOptions {
-    none = 0,
-    mean = 1,
-    linear = 2,
-};
-
 void mexFunction( int nlhs, mxArray* plhs[],
-                int nrhs, const mxArray* prhs[] )
+                  int nrhs, const mxArray* prhs[] )
 {
     if( PrintVersion( __FILE__, nrhs, prhs ) )
         return;
 
-    const mxArray* inSignalArray = prhs[ 0 ],
-            * inParmsArray = prhs[ 1 ];
+    const mxArray* inSignalArray = prhs[0],
+                 * inParmsArray = prhs[1];
 
     // Check for proper number of arguments
     if( nrhs != 2 )
@@ -78,7 +72,7 @@ void mexFunction( int nlhs, mxArray* plhs[],
 
     int numSamples  = ::mxGetM( inSignalArray ),
         numChannels = ::mxGetN( inSignalArray );
-    mwSize numParms    = ::mxGetNumberOfElements( inParmsArray );
+    mwSize numParms = ::mxGetNumberOfElements( inParmsArray );
 
     if( !::mxIsDouble( inSignalArray ) || ::mxIsComplex( inSignalArray ) )
         ::mexErrMsgTxt( "Expected real double input signal -- " USAGE );
@@ -88,17 +82,17 @@ void mexFunction( int nlhs, mxArray* plhs[],
         ::mexErrMsgTxt( "Expected at least 5 MEM parameter values -- " USAGE );
 
     double* inSignal = ::mxGetPr( inSignalArray ),
-            * inParms  = ::mxGetPr( inParmsArray ),
-            * p = inParms;
+          * inParms  = ::mxGetPr( inParmsArray ),
+          * p = inParms;
     double  modelOrder        = *p++,
             firstBinCenter    = *p++,
             lastBinCenter     = *p++,
             binWidth          = *p++,
             evaluationsPerBin = *p++,
-            detrendOption     = numParms > ( p - inParms ) ? *p++ : none,
+            detrendOption     = numParms > ( p - inParms ) ? *p++ : ARThread::none,
             frequency         = numParms > ( p - inParms ) ? *p++ : 1.0,
-            sampleBlockSize = (numParms > (p - inParms)) ? *p++ : numSamples,
-            numWindows = (numParms > (p - inParms)) ? *p++ : 1;
+            sampleBlockSize   = numParms > ( p - inParms ) ? *p++ : numSamples,
+            windowLength      = numParms > ( p - inParms ) ? *p++ : 1;
 
     if( modelOrder >= numSamples )
         ::mexErrMsgTxt( "The number of input samples must exceed the model order." );
@@ -110,11 +104,17 @@ void mexFunction( int nlhs, mxArray* plhs[],
         ::mexErrMsgTxt( "Last bin center must be between firstBinCenter and half the sampling rate." );
     if( evaluationsPerBin < 1 )
         ::mexErrMsgTxt( "There must be at least 1 evaluation per bin." );
-
-    switch( static_cast<int>( detrendOption ) ) {
-        case none:
-        case mean:
-        case linear:
+    if( frequency < eps )
+        ::mexErrMsgTxt( "Frequency must be > 0." );
+    if( sampleBlockSize < 1 )
+        ::mexErrMsgTxt( "Sample block size must be >= 1." );
+    if( windowLength * sampleBlockSize < 1 )
+        ::mexErrMsgTxt( "Window must contain at least one sample." );
+    switch( static_cast<int>( detrendOption ) ) 
+    {
+        case ARThread::none:
+        case ARThread::mean:
+        case ARThread::linear:
             break;
         default:
             ::mexErrMsgTxt( "Unknown detrend option." );
@@ -123,51 +123,50 @@ void mexFunction( int nlhs, mxArray* plhs[],
     int numBins = static_cast<int>( ::floor( ( lastBinCenter - firstBinCenter + eps ) / binWidth + 1 ) ),
         numBlocks = static_cast<int>( numSamples / sampleBlockSize ),
         iSampleBlockSize = static_cast<int>( sampleBlockSize );
-    const mwSize dims[]={numBins, numChannels, numBlocks};
-    plhs[ 0 ] = ::mxCreateNumericArray( 3, dims, mxDOUBLE_CLASS, mxREAL );
-    double* outSpectrum = ::mxGetPr( plhs[ 0 ] );
-    if( nlhs > 1 ) {
-        plhs[ 1 ] = ::mxCreateDoubleMatrix( numBins, 1, mxREAL );
-        double* outBinFreqs = ::mxGetPr( plhs[ 1 ] );
+    const mwSize dims[] = { numBins, numChannels, numBlocks };
+    plhs[0] = ::mxCreateNumericArray( 3, dims, mxDOUBLE_CLASS, mxREAL );
+    double* outSpectrum = ::mxGetPr( plhs[0] );
+    if( nlhs > 1 )
+    {
+        plhs[1] = ::mxCreateDoubleMatrix( numBins, 1, mxREAL );
+        double* outBinFreqs = ::mxGetPr( plhs[1] );
         for( int bin = 0; bin < numBins; ++bin )
-            outBinFreqs[ bin ] = ( firstBinCenter + bin * binWidth );
+            outBinFreqs[bin] = ( firstBinCenter + bin * binWidth );
     }
 
-    ARparms parms;
+    vector<ARThread*> threads;
+    threads.resize( min( numChannels, OSThread::NumberOfProcessors() ) );
+    for( size_t i = 0; i < threads.size(); ++i )
+        threads[i] = new ARThread;
+    for( int ch = 0; ch < numChannels; ++ch )
+        threads[ch % threads.size()]->AddChannel( ch );
+    for( size_t i = 0; i < threads.size(); ++i )
+        threads[i]->SetWindowLength( static_cast<int>( sampleBlockSize * windowLength ) )
+                   .SetDetrend( static_cast<int>( detrendOption ) )
+                   .SetModelOrder( static_cast<int>( modelOrder ) )
+                   .SetFirstBinCenter( firstBinCenter / frequency )
+                   .SetBinWidth( binWidth / frequency )
+                   .SetNumBins( numBins )
+                   .SetEvaluationsPerBin( static_cast<int>( evaluationsPerBin ) )
+                   .SetOutputType( ARThread::SpectralPower );
 
-    parms.binWidth = binWidth / frequency;
-    parms.detrend = static_cast<int>( detrendOption );
-    parms.evalsPerBin = static_cast<int>( evaluationsPerBin );
-    parms.firstBinCenter = firstBinCenter / frequency;
-    parms.lastBinCenter = lastBinCenter / frequency;
-    parms.modelOrder = static_cast<int>( modelOrder );
-    parms.SBS = static_cast<int>( sampleBlockSize );
-    parms.outputType = 1;
-    parms.numWindows = numWindows;
+    GenericSignal input( numChannels, iSampleBlockSize ),
+                  output( numChannels, numBins );
+    for( int block = 0, blockNum = 0; block <= numSamples - iSampleBlockSize; block += iSampleBlockSize, ++blockNum )
+    {
+        for( int ch = 0; ch < numChannels; ++ch )
+            for( int s = 0; s < iSampleBlockSize; ++s )
+                input( ch, s ) = inSignal[s + block + ch*iSampleBlockSize];
 
-    ARGroup AR;
-    AR.Init(numChannels, parms);
-    AR.setDoThreaded(true);
+        for( size_t i = 0; i < threads.size(); ++i )
+            threads[i]->Start( input, output );
+        for( size_t i = 0; i < threads.size(); ++i )
+            threads[i]->Wait();
 
-    double *input = inSignal,
-           *output = outSpectrum;
-
-    double *tmpInBuf = (double*)mxCalloc(numChannels*iSampleBlockSize, sizeof(double));
-    double *tmpOutBuf = (double*)mxCalloc(numChannels*numBins, sizeof(double));
-    for (int block = 0,  blockNum=0; block <= numSamples - iSampleBlockSize; block += iSampleBlockSize, blockNum++){
-        for (int s = 0; s < iSampleBlockSize; s++){
-            for (int ch = 0; ch < numChannels; ch++){
-                tmpInBuf[s + ch*iSampleBlockSize] = input[s + block + ch*iSampleBlockSize];
-            }
-        }
-        AR.Calculate(tmpInBuf, tmpOutBuf);
-
-        for (int bin = 0; bin < numBins; bin++){
-            for (int ch = 0; ch < numChannels; ch++){
-                output[numChannels*numBins*blockNum + numBins*ch + bin] = tmpOutBuf[numBins*ch + bin];
-            }
-        }
+        for( int ch = 0; ch < numChannels; ++ch )
+            for( int bin = 0; bin < numBins; ++bin )
+                outSpectrum[numChannels*numBins*blockNum + numBins*ch + bin] = output( ch, bin );
     }
-    mxFree(tmpInBuf);
-    mxFree(tmpOutBuf);
+    for( size_t i = 0; i < threads.size(); ++i )
+        delete threads[i];
 }

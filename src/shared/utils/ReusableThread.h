@@ -4,7 +4,7 @@
 // Description: A class that wraps a thread, and allows clients to
 //   run code inside that thread. Unlike OSThread, which starts a new
 //   thread each time its Start() function is called, an instance of
-//   RunnerThread is bound to a single thread during its lifetime, and
+//   ReusableThread is bound to a single thread during its lifetime, and
 //   re-uses that thread for each call to Run(). After calling Run()
 //   for a Runnable, call Wait() to wait until execution of the
 //   Runnable has finished.
@@ -29,61 +29,29 @@
 //
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"
-#pragma hdrstop
+#ifndef REUSABLE_THREAD_H
+#define REUSABLE_THREAD_H
 
-#include "RunnerThread.h"
+#include "OSThread.h"
+#include "OSEvent.h"
+#include "Runnable.h"
 
-RunnerThread::RunnerThread()
-: mpRunnable( NULL )
+class ReusableThread : private OSThread
 {
-  mFinishedEvent.Set();
-  OSThread::Start();
-}
+ public:
+  ReusableThread();
+  ~ReusableThread();
 
-RunnerThread::~RunnerThread()
-{
-  OSEvent terminateEvent;
-  OSThread::Terminate( &terminateEvent );
-  mStartEvent.Set();
-  terminateEvent.Wait();
-}
+  bool Run( Runnable& );
+  bool Busy() const;
+  bool Wait( int timeout = OSEvent::cInfiniteTimeout );
 
-bool
-RunnerThread::Run( Runnable& inRunnable )
-{
-  if( Busy() )
-    return false;
+ private:
+  int Execute(); // overridden from OSThread
 
-  mpRunnable = &inRunnable;
-  mFinishedEvent.Reset();
-  mStartEvent.Set();
-  return true;
-}
+  OSEvent mStartEvent,
+          mFinishedEvent;
+  Runnable* volatile mpRunnable;
+};
 
-bool
-RunnerThread::Busy() const
-{
-  return mpRunnable != NULL;
-}
-
-bool
-RunnerThread::Wait( int inTimeout )
-{
-  return mFinishedEvent.Wait( inTimeout );
-}
-
-int
-RunnerThread::Execute()
-{
-  while( !OSThread::IsTerminating() )
-  {
-    mStartEvent.Wait();
-    mStartEvent.Reset();
-    if( !OSThread::IsTerminating() )
-      mpRunnable->Run();
-    mpRunnable = NULL;
-    mFinishedEvent.Set();
-  }
-  return 0;
-}
+#endif // RUNNER_THREAD_H

@@ -47,7 +47,7 @@ class LinearPredictor
   int ModelOrder() const
     { return mModelOrder; }
 
-  virtual void TransferFunction( std::valarray<T>&, Ratpoly< std::complex<T> >& ) const = 0;
+  virtual void TransferFunction( const std::valarray<T>&, Ratpoly<T>& ) const = 0;
 
  protected:
   int mModelOrder;

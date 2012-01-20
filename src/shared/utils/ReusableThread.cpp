@@ -4,7 +4,7 @@
 // Description: A class that wraps a thread, and allows clients to
 //   run code inside that thread. Unlike OSThread, which starts a new
 //   thread each time its Start() function is called, an instance of
-//   RunnerThread is bound to a single thread during its lifetime, and
+//   ReusableThread is bound to a single thread during its lifetime, and
 //   re-uses that thread for each call to Run(). After calling Run()
 //   for a Runnable, call Wait() to wait until execution of the
 //   Runnable has finished.
@@ -29,29 +29,61 @@
 //
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
-#ifndef RUNNER_THREAD_H
-#define RUNNER_THREAD_H
+#include "PCHIncludes.h"
+#pragma hdrstop
 
-#include "OSThread.h"
-#include "OSEvent.h"
-#include "Runnable.h"
+#include "ReusableThread.h"
 
-class RunnerThread : private OSThread
+ReusableThread::ReusableThread()
+: mpRunnable( NULL )
 {
- public:
-  RunnerThread();
-  ~RunnerThread();
+  mFinishedEvent.Set();
+  OSThread::Start();
+}
 
-  bool Run( Runnable& );
-  bool Busy() const;
-  bool Wait( int timeout = OSEvent::cInfiniteTimeout );
+ReusableThread::~ReusableThread()
+{
+  OSEvent terminateEvent;
+  OSThread::Terminate( &terminateEvent );
+  mStartEvent.Set();
+  terminateEvent.Wait();
+}
 
- private:
-  int Execute(); // overridden from OSThread
+bool
+ReusableThread::Run( Runnable& inRunnable )
+{
+  if( Busy() )
+    return false;
 
-  OSEvent mStartEvent,
-          mFinishedEvent;
-  Runnable* volatile mpRunnable;
-};
+  mpRunnable = &inRunnable;
+  mFinishedEvent.Reset();
+  mStartEvent.Set();
+  return true;
+}
 
-#endif // RUNNER_THREAD_H
+bool
+ReusableThread::Busy() const
+{
+  return mpRunnable != NULL;
+}
+
+bool
+ReusableThread::Wait( int inTimeout )
+{
+  return mFinishedEvent.Wait( inTimeout );
+}
+
+int
+ReusableThread::Execute()
+{
+  while( !OSThread::IsTerminating() )
+  {
+    mStartEvent.Wait();
+    mStartEvent.Reset();
+    if( !OSThread::IsTerminating() )
+      mpRunnable->Run();
+    mpRunnable = NULL;
+    mFinishedEvent.Set();
+  }
+  return 0;
+}

@@ -62,6 +62,7 @@ class OSThread : private Uncopyable
   static void PrecisionSleepFor( double ); // sleep for milliseconds
   static void PrecisionSleepUntil( PrecisionTime ); // sleep until absolute wakeup time
   static bool IsMainThread();
+  static int NumberOfProcessors();
 
  private:
   virtual int Execute() = 0;
@@ -69,11 +70,11 @@ class OSThread : private Uncopyable
 
  private:
 #ifdef _WIN32
-  static DWORD WINAPI StartThread( void* inInstance );
+  static unsigned int WINAPI StartThread( void* inInstance );
 
-  volatile HANDLE mHandle;
-  DWORD mThreadID;
-  static DWORD sMainThreadID;
+  HANDLE mHandle;
+  unsigned int mThreadID;
+  static unsigned int sMainThreadID;
 #else // _WIN32
   static void* StartThread( void* inInstance );
 

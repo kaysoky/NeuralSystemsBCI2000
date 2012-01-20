@@ -33,10 +33,6 @@
 #include <cmath>
 #include "Polynomials.h"
 
-#ifndef M_PI
-#define M_PI 3.141592653589793238462643
-#endif
-
 template<typename T>
 class TransferSpectrum
 {
@@ -49,14 +45,14 @@ class TransferSpectrum
   {}
   // Configuration
   //  Center of first and last bin in units of sampling rate
-  TransferSpectrum& SetFirstBinCenter( double d )
+  TransferSpectrum& SetFirstBinCenter( T d )
                     { mFirstBinCenter = d; return Init(); }
-  double            FirstBinCenter() const
+  T                 FirstBinCenter() const
                     { return mFirstBinCenter; }
   //  Bin width in terms of sampling rate
-  TransferSpectrum& SetBinWidth( double d )
+  TransferSpectrum& SetBinWidth( T d )
                     { mBinWidth = d; return Init(); }
-  double            BinWidth() const
+  T                 BinWidth() const
                     { return mBinWidth; }
   //  Number of bins
   TransferSpectrum& SetNumBins( int n )
@@ -70,15 +66,16 @@ class TransferSpectrum
                     { return mEvaluationsPerBin; }
 
   // Processing
-  const TransferSpectrum& Evaluate( const Ratpoly< std::complex<T> >&, std::valarray<T>& ) const;
+  template<typename U, typename V>
+  const TransferSpectrum& Evaluate( const Ratpoly<U>&, std::valarray<V>& ) const;
 
  private:
   TransferSpectrum& Init();
 
-  double  mFirstBinCenter,
-          mBinWidth;
-  int     mNumBins,
-          mEvaluationsPerBin;
+  T mFirstBinCenter,
+    mBinWidth;
+  int mNumBins,
+      mEvaluationsPerBin;
   std::valarray< std::complex<T> > mLookupTable;
 };
 
@@ -91,7 +88,7 @@ TransferSpectrum<T>::Init()
   mLookupTable.resize( mNumBins * mEvaluationsPerBin );
   for( int bin = 0; bin < mNumBins; ++bin )
   {
-    double binBegin = mFirstBinCenter + mBinWidth * ( ( 1.0 / mEvaluationsPerBin - 1.0 ) / 2.0 + bin );
+    T binBegin = mFirstBinCenter + mBinWidth * ( ( 1.0 / mEvaluationsPerBin - 1.0 ) / 2.0 + bin );
     for( int sample = 0; sample < mEvaluationsPerBin; ++sample )
     {
       double theta = 2.0 * M_PI * ( binBegin + ( mBinWidth * sample ) / mEvaluationsPerBin );
@@ -102,19 +99,20 @@ TransferSpectrum<T>::Init()
 }
 
 
-template<typename T>
+template<typename T> template<typename U, typename V>
 const TransferSpectrum<T>&
-TransferSpectrum<T>::Evaluate( const Ratpoly< std::complex<T> >& inFunction, std::valarray<T>& outResult ) const
+TransferSpectrum<T>::Evaluate( const Ratpoly<U>& inFunction, std::valarray<V>& outResult ) const
 {
-  outResult.resize( mNumBins );
+  if( outResult.size() != mNumBins )
+    outResult.resize( mNumBins );
   for( int bin = 0; bin < mNumBins; ++bin )
   {
     outResult[bin] = 0.0;
     for( int sample = 0; sample < mEvaluationsPerBin; ++sample )
     {
-      std::complex<double> value
+      std::complex<T> value
         = inFunction.Evaluate( mLookupTable[ mEvaluationsPerBin * bin + sample ] );
-      outResult[ bin ] += value.real() * value.real() + value.imag() * value.imag();
+      outResult[bin] += value.real() * value.real() + value.imag() * value.imag();
     }
   }
   outResult /= mEvaluationsPerBin;

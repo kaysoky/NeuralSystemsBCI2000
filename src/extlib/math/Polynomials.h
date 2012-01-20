@@ -31,11 +31,28 @@
 #include <valarray>
 #include <algorithm>
 #include <stdexcept>
+#include <complex>
+
+namespace {
+template<typename T>
+struct ComplexExtension
+{
+  typedef typename T Real;
+  typedef std::complex<T> Complex;
+};
+template<typename T>
+struct ComplexExtension< std::complex<T> > : ComplexExtension<T>
+{
+};
+} // namespace
+
 
 template<class T>
 class Polynomial
 {
  public:
+  typedef typename ComplexExtension<T>::Real Real;
+  typedef typename ComplexExtension<T>::Complex Complex;
   typedef std::vector<T> Vector;
 
  private:
@@ -62,21 +79,26 @@ class Polynomial
   const Vector& Roots() const;
   const T& ConstantFactor() const;
   // Compute the polynomial's value for a given argument.
-  T Evaluate( const T&, int derivative = 0 ) const;
+  T Evaluate( const Real& r, int derivative = 0 ) const { return DoEvaluate<T, Real>( r, derivative ); }
+  Complex Evaluate( const Complex& c, int derivative = 0 ) const { return DoEvaluate<Complex, Complex>( c, derivative ); }
 
  private:
-   void FindRoots() const { throw std::logic_error( "Polynomial::FindRoots: Root finding not implemented." ); }
+  template<class R, class Z> R DoEvaluate( const Z&, int ) const;
+  void FindRoots() const { throw std::logic_error( "Polynomial::FindRoots: Root finding not implemented." ); }
 
-  mutable bool   mRootsKnown;     //
-  mutable T      mConstantFactor; // These may change during a call to Roots().
-  mutable Vector mRoots;          //
+  mutable bool mRootsKnown;     //
+  mutable T mConstantFactor;    // These may change during a call to Roots().
+  mutable Vector mRoots;        //
 
-  mutable Vector mCoefficients;   // This may change during a call to Coefficients().
+  mutable Vector mCoefficients; // This may change during a call to Coefficients().
 };
 
 template<class T>
 class Ratpoly // A rational expression with a polynomial numerator and denominator.
 {
+  typedef typename Polynomial<T>::Real Real;
+  typedef typename Polynomial<T>::Complex Complex;
+
  public:
   Ratpoly( const T& = 1 );
   Ratpoly( const Polynomial<T>& numerator, const Polynomial<T>& denominator );
@@ -88,9 +110,11 @@ class Ratpoly // A rational expression with a polynomial numerator and denominat
 
   const Polynomial<T>& Numerator() const;
   const Polynomial<T>& Denominator() const;
-  T Evaluate( const T& ) const;
+  T Evaluate( const Real& r ) const { return DoEvaluate<T, Real>( r ); }
+  Complex Evaluate( const Complex& c ) const { return DoEvaluate<Complex, Complex>( c ); }
 
  private:
+  template<class R, class Z> R DoEvaluate( const Z& ) const;
   void Simplify(); // remove cancelling factors
 
  private:
@@ -152,11 +176,11 @@ Polynomial<T>::FromCoefficients( const std::valarray<U>& inCoefficients )
   return Polynomial<T>( coefficients );
 }
 
-template<class T>
-T
-Polynomial<T>::Evaluate( const T& z, int d ) const
+template<class T> template<class R, class Z>
+R
+Polynomial<T>::DoEvaluate( const Z& z, int d ) const
 {
-  T result = 0;
+  R result = 0;
   if( mRootsKnown && d == 0 )
   {
     result = mConstantFactor;
@@ -166,7 +190,7 @@ Polynomial<T>::Evaluate( const T& z, int d ) const
   else
   {
     Coefficients();
-    T powerOfZ = 1;
+    Z powerOfZ = 1;
     for( size_t i = 0; i < mCoefficients.size() - d; ++i, powerOfZ *= z )
       result += mCoefficients[ i + d ] * powerOfZ;
   }
@@ -341,27 +365,50 @@ Ratpoly<T>::Denominator() const
   return mDenominator;
 }
 
-template<class T>
-T
-Ratpoly<T>::Evaluate( const T& z ) const
+namespace {
+
+template<typename T>
+bool CloseToZero( const T& t )
 {
-  const float eps = 1e-20f;
-  T num = mNumerator.Evaluate( z ),
+  return std::fabs( t ) < std::numeric_limits<T>::epsilon();
+}
+
+template<typename T>
+bool CloseToZero( const std::complex<T>& t )
+{ // Avoid an expensive abs() call.
+  return CloseToZero( t.real() ) && CloseToZero( t.imag() );
+}
+
+} // namespace
+
+template<class T> template<class R, class Z>
+R
+Ratpoly<T>::DoEvaluate( const Z& z ) const
+{
+  R num = mNumerator.Evaluate( z ),
     denom = mDenominator.Evaluate( z );
-  int derivative = 0;
-  while( abs( denom ) < eps && derivative <= mDenominator.Order() && abs( num ) < eps )
+  if( CloseToZero( denom ) )
   {
-    num = mNumerator.Evaluate( z, derivative );
-    denom = mDenominator.Evaluate( z, derivative );
-    ++derivative;
-  }
-  if( abs( denom ) < eps )
-  {
-    denom = 1;
-    if( abs( num ) < eps )
-      num = 1;
-    else
-      num = 1 / eps;
+    int derivative = 0;
+    while( CloseToZero( denom ) && derivative <= mDenominator.Order() && CloseToZero( num ) )
+    {
+      num = mNumerator.Evaluate( z, derivative );
+      denom = mDenominator.Evaluate( z, derivative );
+      ++derivative;
+    }
+    if( CloseToZero( denom ) )
+    {
+      if( CloseToZero( num ) )
+      {
+        num = 1;
+        denom = 1;
+      }
+      else
+      {
+        num = 1;
+        denom = std::numeric_limits<T>::epsilon();
+      }
+    }
   }
   return num / denom;
 }

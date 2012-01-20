@@ -36,14 +36,17 @@ template<typename T>
 class MEMPredictor : public LinearPredictor<T>
 {
  public:
-  typedef std::complex<T>  Complex;
   typedef std::valarray<T> DataVector;
 
  public:
   MEMPredictor();
   virtual ~MEMPredictor() {}
 
-  virtual void TransferFunction(DataVector&, Ratpoly<Complex>& ) const;
+  virtual void TransferFunction( const DataVector&, Ratpoly<T>& ) const;
+
+ private:
+  mutable DataVector mWk1,
+                     mWk2;
 };
 
 
@@ -61,24 +64,27 @@ MEMPredictor<T>::MEMPredictor()
 
 template<typename T>
 void
-MEMPredictor<T>::TransferFunction(DataVector& inData, Ratpoly<Complex>& outResult) const
+MEMPredictor<T>::TransferFunction( const DataVector& inData, Ratpoly<T>& outResult ) const
 {
   typedef double D;
-  const T eps = std::numeric_limits<T>::epsilon();
-  DataVector  coeff, wkm, wk1, wk2;
+  static const T eps = std::numeric_limits<T>::epsilon();
   int n = inData.size();
 
+  DataVector coeff, wkm;
   coeff.resize( LinearPredictor<T>::mModelOrder + 1 );
   wkm.resize( coeff.size() );
-  wk1.resize( n );
-  wk1 = inData;
-  wk2.resize( n );
-  wk2 = inData;
+
+  if( mWk1.size() != n )
+    mWk1.resize( n );
+  mWk1 = inData;
+  if( mWk2.size() != n )
+    mWk2.resize( n );
+  mWk2 = inData;
 
   D meanPower = 0;
   D den = 0;
   for (int t = 0; t < n; t++)
-    meanPower += (wk1[t]*wk1[t]);
+    meanPower += (mWk1[t]*mWk1[t]);
   
   den = meanPower*2;
   meanPower /= n;
@@ -89,9 +95,9 @@ MEMPredictor<T>::TransferFunction(DataVector& inData, Ratpoly<Complex>& outResul
   {
     num = 0;
     for (int t = 0; t < n-k; t++)
-        num += wk1[t+1]*wk2[t];
+        num += mWk1[t+1]*mWk2[t];
 
-    den = den*q - wk1[0]*wk1[0] - wk2[n-k]*wk2[n-k];
+    den = den*q - mWk1[0]*mWk1[0] - mWk2[n-k]*mWk2[n-k];
 
     if (den < eps){
       num = 0.5;
@@ -101,7 +107,7 @@ MEMPredictor<T>::TransferFunction(DataVector& inData, Ratpoly<Complex>& outResul
       if (coeff[k] >= 1 || coeff[k] <= -1){
         den = 0;
         for (int t = 0; t < n-k; t++)
-          den += wk1[t+1]*wk1[t+1] + wk2[t]*wk2[t];
+          den += mWk1[t+1]*mWk1[t+1] + mWk2[t]*mWk2[t];
       }
     }
     coeff[k] = 2*num / den;
@@ -118,8 +124,8 @@ MEMPredictor<T>::TransferFunction(DataVector& inData, Ratpoly<Complex>& outResul
 
       for( int j = 0; j < n-k; ++j )
       {
-        wk1[j] = wk1[j+1] - wkm[k] * wk2[j];
-        wk2[j] = wk2[j] - wkm[k] * wk1[j+1];
+        mWk1[j] = mWk1[j+1] - wkm[k] * mWk2[j];
+        mWk2[j] = mWk2[j] - wkm[k] * mWk1[j+1];
       }
     }
   }
@@ -129,9 +135,9 @@ MEMPredictor<T>::TransferFunction(DataVector& inData, Ratpoly<Complex>& outResul
   for (int k = 1; k <= LinearPredictor<T>::mModelOrder; k++)
       coeff[k] *= -1;
  
-  outResult = Ratpoly<Complex>(
-               Polynomial<Complex>( std::sqrt( meanPower ) ),
-               Polynomial<Complex>::FromCoefficients( coeff )
+  outResult = Ratpoly<T>(
+               Polynomial<T>( std::sqrt( meanPower ) ),
+               Polynomial<T>::FromCoefficients( coeff )
               );
 }
 

@@ -18,11 +18,9 @@ BCI2000_ADD_CMDLINE_CONVERTER( bci_stream2table )
 
 SET( SIGPROC_DIR ${BCI2000_ROOT_DIR}/src/shared/modules/signalprocessing )
 
-BCI2000_ADD_CMDLINE_FILTER( ARFilter              FROM ${SIGPROC_DIR} INCLUDING "MATH" # "QT"  # uncomment the "QT" for a threaded speed-up at the expense of requiring the QT framework dylibs to be installed at runtime
-                            EXTRA_SOURCES ${SIGPROC_DIR}/ARChannel.cpp
-                                          ${SIGPROC_DIR}/ARGroup.cpp
-                            EXTRA_HEADERS ${SIGPROC_DIR}/ARChannel.h
-                                          ${SIGPROC_DIR}/ARGroup.h    )
+BCI2000_ADD_CMDLINE_FILTER( ARFilter              FROM ${SIGPROC_DIR} INCLUDING "MATH"
+                            EXTRA_SOURCES ${SIGPROC_DIR}/ARThread.cpp
+                            EXTRA_HEADERS ${SIGPROC_DIR}/ARThread.h )
 BCI2000_ADD_CMDLINE_FILTER( ComplexDemodulator    FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( ConditionalIntegrator FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( ExpressionFilter      FROM ${SIGPROC_DIR} )

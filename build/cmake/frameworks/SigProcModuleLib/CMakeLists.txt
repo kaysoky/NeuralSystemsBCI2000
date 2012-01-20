@@ -15,8 +15,7 @@ SET( SIGPROCSOURCES
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARGroup.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARChannel.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARThread.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/P3TemporalFilter.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LinearClassifier.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LPFilter.cpp
@@ -35,8 +34,7 @@ SET( SIGPROCHEADERS
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterCell.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARGroup.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARChannel.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARThread.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/P3TemporalFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LinearClassifier.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LPFilter.h

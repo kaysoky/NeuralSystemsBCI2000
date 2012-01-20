@@ -43,7 +43,8 @@ template<typename T>
 void
 Detrend::MeanDetrend( const std::valarray<T>& inData, std::valarray<T>& outResult )
 {
-  outResult.resize( inData.size(), 0.0 );
+  if( outResult.size() != inData.size() )
+    outResult.resize( inData.size(), 0.0 );
   if( inData.size() > 0 )
     outResult = inData - inData.sum() / inData.size();
 }
@@ -53,8 +54,8 @@ void
 Detrend::LinearDetrend( const std::valarray<T>& inData, std::valarray<T>& outResult )
 {
   size_t n = inData.size();
-
-  outResult.resize( n );
+  if( outResult.size() != n )
+    outResult.resize( n );
   outResult = inData;
   if( n > 0 )  
   {

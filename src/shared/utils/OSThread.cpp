@@ -40,9 +40,12 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
+#include <cerrno>
 
 #if _WIN32
 # include <MMSystem.h>
+# include <Process.h>
 #else // _WIN32
 # include <unistd.h>
 #endif // !_WIN32
@@ -50,7 +53,7 @@
 using namespace std;
 
 #if _WIN32
-DWORD OSThread::sMainThreadID = ::GetCurrentThreadId();
+unsigned int OSThread::sMainThreadID = ::GetCurrentThreadId();
 #else // _WIN32
 pthread_t OSThread::sMainThread = ::pthread_self();
 #endif // _WIN32
@@ -81,9 +84,9 @@ OSThread::Start()
   TerminateWait();
   OSMutex::Lock lock( mMutex );
   mTerminating = false;
-  mHandle = ::CreateThread( NULL, 0, OSThread::StartThread, this, 0, &mThreadID );
+  mHandle = reinterpret_cast<HANDLE>( ::_beginthreadex( NULL, 0, OSThread::StartThread, this, 0, &mThreadID ) );
   if( mHandle == NULL )
-    bcierr << OSError().Message() << endl;
+    bcierr << ::strerror( errno ) << endl;
 }
 
 bool
@@ -156,6 +159,14 @@ OSThread::IsMainThread()
   return ::GetCurrentThreadId() == sMainThreadID;
 }
 
+int
+OSThread::NumberOfProcessors()
+{
+  SYSTEM_INFO info;
+  ::GetSystemInfo( &info );
+  return info.dwNumberOfProcessors;
+}
+
 #else // _WIN32
 
 OSThread::OSThread()
@@ -215,6 +226,19 @@ OSThread::IsMainThread()
   return ::pthread_equal( pthread_self(), sMainThread );
 }
 
+int
+OSThread::NumberOfProcessors()
+{
+  int result = 1;
+#if __APPLE__
+  result = ::MPProcessorsScheduled();
+#else // __APPLE__
+  result = ::sysconf( _SC_NPROCESSORS_ONLN );
+#endif // __APPLE__
+  return result;
+}
+
+
 #endif // _WIN32
 
 void
@@ -254,7 +278,7 @@ OSThread::CallExecute()
 
 #if _WIN32
 
-DWORD WINAPI
+unsigned int WINAPI
 OSThread::StartThread( void* inInstance )
 {
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );

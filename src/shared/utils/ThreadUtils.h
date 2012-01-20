@@ -47,6 +47,9 @@ void PrecisionSleepFor( double ms ) // sleep for milliseconds
 void PrecisionSleepUntil( PrecisionTime wakeup ) // sleep until absolute wakeup time
     { OSThread::PrecisionSleepUntil( wakeup ); }
 
+int NumberOfProcessors()
+    { return OSThread::NumberOfProcessors(); }
+
 } // namespace ThreadUtils
 
 #endif // THREAD_UTILS_H

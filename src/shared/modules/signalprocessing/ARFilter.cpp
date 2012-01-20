@@ -33,17 +33,14 @@
 #pragma hdrstop
 
 #include "ARFilter.h"
-#include "Detrend.h"
+#include "ARThread.h"
 #include <limits>
 
 using namespace std;
 
-const float eps = numeric_limits<float>::epsilon();
-
 RegisterFilter( ARFilter, 2.C );
 
 ARFilter::ARFilter()
-: mpAR(NULL)
 {
  BEGIN_PARAMETER_DEFINITIONS
   "Filtering int WindowLength= 0.5s 0.5s % % "
@@ -72,7 +69,7 @@ ARFilter::ARFilter()
 
 ARFilter::~ARFilter()
 {
-  Halt();
+  Cleanup();
 }
 
 
@@ -80,6 +77,7 @@ void
 ARFilter::Preflight( const SignalProperties& Input,
                            SignalProperties& Output ) const
 {
+  const float eps = numeric_limits<float>::epsilon();
   // Parameter consistency checks.
   double windowLength = Parameter( "WindowLength" ).InSampleBlocks(),
          samplesInWindow = windowLength * Input.Elements();
@@ -91,8 +89,8 @@ ARFilter::Preflight( const SignalProperties& Input,
   Output = Input;
   switch( int( Parameter( "OutputType" ) ) )
   {
-    case ARparms::SpectralAmplitude:
-    case ARparms::SpectralPower:
+    case ARThread::SpectralAmplitude:
+    case ARThread::SpectralPower:
     {
       if( Input.SamplingRate() < eps )
       {
@@ -126,7 +124,7 @@ ARFilter::Preflight( const SignalProperties& Input,
                whiteNoisePowerPerBin = inputAmplitude * inputAmplitude / binWidth / 10;
         switch( int( Parameter( "OutputType" ) ) )
         {
-          case ARparms::SpectralAmplitude:
+          case ARThread::SpectralAmplitude:
             Output.SetName( "AR Amplitude Spectrum" );
             Output.ValueUnit().SetOffset( 0 )
                               .SetGain( 1e-6 )
@@ -134,7 +132,7 @@ ARFilter::Preflight( const SignalProperties& Input,
                               .SetRawMax( ::sqrt( whiteNoisePowerPerBin ) );
             break;
 
-          case ARparms::SpectralPower:
+          case ARThread::SpectralPower:
             Output.SetName( "AR Power Spectrum" );
             Output.ValueUnit().SetOffset( 0 )
                               .SetGain( 1 )
@@ -145,7 +143,7 @@ ARFilter::Preflight( const SignalProperties& Input,
       }
     } break;
 
-    case ARparms::ARCoefficients:
+    case ARThread::ARCoefficients:
       Output.SetName( "AR Coefficients" );
       Output.SetElements( Parameter( "ModelOrder" ) );
       Output.ElementUnit().SetOffset( 0 )
@@ -172,37 +170,38 @@ ARFilter::Preflight( const SignalProperties& Input,
 
 void
 ARFilter::Initialize( const SignalProperties& Input,
-                      const SignalProperties& /*Output*/ )
+                      const SignalProperties& Output )
 {
-  ARparms parms;
-  parms.binWidth = Parameter( "BinWidth" ).InHertz() / Input.SamplingRate();
-  parms.detrend = Parameter( "Detrend" );
-  parms.evalsPerBin = Parameter( "EvaluationsPerBin" );
-  parms.firstBinCenter = Parameter( "FirstBinCenter" ).InHertz() / Input.SamplingRate();
-  parms.lastBinCenter = Parameter( "LastBinCenter" ).InHertz() / Input.SamplingRate();
-  parms.modelOrder = Parameter( "ModelOrder" );
-  parms.SBS = Input.Elements();
-  parms.outputType = Parameter( "OutputType" );
-  parms.numWindows = Parameter( "WindowLength" ).InSampleBlocks();
-
-  delete mpAR;
-  mpAR = new ARGroup;
-  mpAR->Init(Input.Channels(), parms);
-  mpAR->setDoThreaded(true);
+  Cleanup();
+  mThreads.resize( min( Input.Channels(), OSThread::NumberOfProcessors() ) );
+  for( size_t i = 0; i < mThreads.size(); ++i )
+    mThreads[i] = new ARThread;
+  for( int i = 0; i < Input.Channels(); ++i )
+    mThreads[i % mThreads.size()]->AddChannel( i );
+  for( size_t i = 0; i < mThreads.size(); ++i )
+    mThreads[i]->SetModelOrder( Parameter( "ModelOrder" ) )
+                .SetWindowLength( static_cast<size_t>( Parameter( "WindowLength" ).InSampleBlocks() * Input.Elements() ) )
+                .SetDetrend( Parameter( "Detrend" ) )
+                .SetOutputType( Parameter( "OutputType" ) )
+                .SetFirstBinCenter( Parameter( "FirstBinCenter" ).InHertz() / Input.SamplingRate() )
+                .SetBinWidth( Parameter( "BinWidth" ).InHertz() / Input.SamplingRate() )
+                .SetNumBins( Output.Elements() )
+                .SetEvaluationsPerBin( Parameter( "EvaluationsPerBin" ) );
 }
-
 
 void
 ARFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
-  mpAR->Calculate(&Input, &Output);
+  for( size_t i = 0; i < mThreads.size(); ++i )
+    mThreads[i]->Start( Input, Output );
+  for( size_t i = 0; i < mThreads.size(); ++i )
+    mThreads[i]->Wait();
 }
-
 
 void
-ARFilter::Halt()
+ARFilter::Cleanup()
 {
-  delete mpAR;
-  mpAR = NULL;
+  for( size_t i = 0; i < mThreads.size(); ++i )
+    delete mThreads[i];
+  mThreads.clear();
 }
-
