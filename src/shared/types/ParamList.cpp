@@ -266,24 +266,15 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
   NameSet unwantedParams;
 
   // Exclude parameters from unwanted sections.
-  const char* unwantedSections[] = { "System", };
-  for( size_t j = 0; j < sizeof( unwantedSections ) / sizeof( *unwantedSections ); ++j )
+  for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
+    i != paramsFromFile.mParams.end(); ++i )
   {
-	  for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
-		  i != paramsFromFile.mParams.end(); ++i )
-	  {
-		  const HierarchicalLabel sections = i->Param.Sections();
-		  if (Param::strciequal(sections[0], unwantedSections[ j ]))
-		  {
-			  if (sections.size() > 1)
-			  {
-				  if (!Param::strciequal(sections[1], "Command Line Arguments"))
-					  unwantedParams.insert( i->Param.mName );
-			  }
-			  else
-				  unwantedParams.insert( i->Param.mName );
-		  }
-	  }
+    const HierarchicalLabel* pSections = &i->Param.Sections();
+    if( Exists( i->Param.mName ) )
+      pSections = &( *this )[i->Param.mName].Sections();
+    if( !pSections->empty() && Param::strciequal( ( *pSections )[0], "System" ) )
+      if( pSections->size() < 2 || !Param::strciequal( ( *pSections )[1], "Command Line Arguments" ) )
+        unwantedParams.insert( i->Param.mName );
   }
 
   // If desired, exclude parameters missing from the main parameter list.
