@@ -30,10 +30,12 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include <numeric>
+#include <limits>
 #include "SpatialFilter.h"
 
 using namespace std;
+
+static const GenericSignal::ValueType eps = numeric_limits<GenericSignal::ValueType>::epsilon();
 
 RegisterFilter( SpatialFilter, 2.B );
 
@@ -43,19 +45,24 @@ SpatialFilter::SpatialFilter()
 
   "Filtering int SpatialFilterType= 1 2 0 3 "
      "// spatial filter type "
-   "0: none, "
+     "0: none, "
      "1: full matrix, "
      "2: sparse matrix, "
      "3: common average reference (CAR) "
      "(enumeration)",
-  "Filtering:SpatialFilter intlist SpatialFilterCAROutput= 0 % % % % "
-    "// list of output channels for the CAR if used",
-   "Filtering:SpatialFilter matrix SpatialFilter= 4 4 "
+  "Filtering:SpatialFilter matrix SpatialFilter= 4 4 "
      "1 0 0 0 "
      "0 1 0 0 "
      "0 0 1 0 "
      "0 0 0 1 "
      "0 % % // columns represent input channels, rows represent output channels",
+  "Filtering:SpatialFilter intlist SpatialFilterCAROutput= 0 % % % % "
+    "// when using CAR filter type: list of output channels, or empty for all channels",
+  "Filtering:SpatialFilter int SpatialFilterMissingChannels= 1 0 0 1 "
+    "// how to handle missing channels "
+    "0: ignore, "
+    "1: report error "
+    "(enumeration)",
 
  END_PARAMETER_DEFINITIONS
 }
@@ -128,21 +135,14 @@ SpatialFilter::Process( const GenericSignal& Input,
 {
   switch( mSpatialFilterType )
   {
-    case none:
-      DoProcessNone( Input, Output );
-      break;
-
     case fullMatrix:
-      DoProcessFull( Input, Output );
-      break;
-
     case sparseMatrix:
-      DoProcessSparse( Input, Output );
+    case commonAverage:
+      mThreadGroup.Process( Input, Output );
       break;
 
-    case commonAverage:
-      DoProcessCAR( Input, Output );
-      break;
+     default:
+      Output = Input;
   }
 }
 
@@ -162,14 +162,6 @@ SpatialFilter::DoInitializeNone( const SignalProperties& /*Input*/,
 {
 }
 
-
-void
-SpatialFilter::DoProcessNone( const GenericSignal& Input,
-                                    GenericSignal& Output )
-{
-  Output = Input;
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////
 // SpatialFilter::fullMatrix
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -177,17 +169,20 @@ void
 SpatialFilter::DoPreflightFull( const SignalProperties& Input,
                                       SignalProperties& Output ) const
 {
+  ParamRef& SpatialFilter = Parameter( "SpatialFilter" );
   // Parameter/Input consistency.
-  if( Input.Channels() != Parameter( "SpatialFilter" )->NumColumns() )
-    bcierr << "The input signal's number of channels must match "
-           << "the number of columns in the SpatialFilter parameter"
+  if( Input.Channels() != SpatialFilter->NumColumns() )
+    bcierr << "The input signal's number of channels ("
+           << Input.Channels() << ") must match "
+           << "the number of columns in the SpatialFilter parameter ("
+           << SpatialFilter->NumColumns() << ")"
            << endl;
   // Output signal description.
   Output = Input;
-  Output.SetChannels( 0 ).SetChannels( Parameter( "SpatialFilter" )->NumRows() );
-  if( !Parameter( "SpatialFilter" )->RowLabels().IsTrivial() )
-    for( int i = 0; i < Parameter( "SpatialFilter" )->NumRows(); ++i )
-      Output.ChannelLabels()[ i ] = Parameter( "SpatialFilter" )->RowLabels()[ i ];
+  Output.SetChannels( 0 ).SetChannels( SpatialFilter->NumRows() );
+  if( !SpatialFilter->RowLabels().IsTrivial() )
+    for( int i = 0; i < SpatialFilter->NumRows(); ++i )
+      Output.ChannelLabels()[ i ] = SpatialFilter->RowLabels()[ i ];
 }
 
 void
@@ -196,20 +191,12 @@ SpatialFilter::DoInitializeFull( const SignalProperties& Input,
 {
   int numRows = Parameter( "SpatialFilter" )->NumRows(),
       numCols = Parameter( "SpatialFilter" )->NumColumns();
-  mFilterMatrix = GenericSignal( numRows, numCols );
+  mFullMatrix = GenericSignal( numRows, numCols );
   for( int row = 0; row < numRows; ++row )
     for( int col = 0; col < numCols; ++col )
-      mFilterMatrix( row, col ) = Parameter( "SpatialFilter" )( row, col );
-  mThreadGroup.Initialize( Input, mFilterMatrix );
+      mFullMatrix( row, col ) = Parameter( "SpatialFilter" )( row, col );
+  mThreadGroup.Initialize( Input, mFullMatrix );
 }
-
-void
-SpatialFilter::DoProcessFull( const GenericSignal& Input,
-                                    GenericSignal& Output )
-{
-  mThreadGroup.Process( Input, Output );
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // SpatialFilter::sparseMatrix
@@ -222,7 +209,8 @@ SpatialFilter::DoPreflightSparse( const SignalProperties& Input,
   Output.ChannelLabels().Clear();
   Output.ChannelUnit().Clear();
 
-  if( Parameter( "SpatialFilter" )->NumColumns() != 3 )
+  const ParamRef& SpatialFilter = Parameter( "SpatialFilter" );
+  if( SpatialFilter->NumColumns() != 3 )
   {
     bcierr << "The SpatialFilter parameter must have 3 columns when representing "
            << "a sparse matrix: input channel, output channel, weight"
@@ -232,30 +220,47 @@ SpatialFilter::DoPreflightSparse( const SignalProperties& Input,
   {
     // In the output field, the user may specify arbitrary labels but also
     // numeric indices. We make sure that labels will only be assigned to
-    // indices that have not been specified as numbers.
+    // indices that have not been specified as raw numbers.
+    enum { input, output, weight };
     set<string> labels;
-    set<int>    indices;
-    for( int i = 0; i < Parameter( "SpatialFilter" )->NumRows(); ++i )
+    set<int> indices;
+    for( int i = 0; i < SpatialFilter->NumRows(); ++i )
     {
-      string inputChannelAddress = Parameter( "SpatialFilter" )( i, 0 );
-      double inputIdx = Input.ChannelIndex( inputChannelAddress );
-      if( inputIdx < 0 || inputIdx >= Input.Channels() )
-        bcierr << "Invalid input channel specification \"" << inputChannelAddress
-               << "\" in SpatialFilter, row " << i + 1
-               << endl;
-
-      string outputAddress = Parameter( "SpatialFilter" )( i, 1 );
+      string outputAddress = SpatialFilter( i, output );
       double outputIdx = Output.ChannelIndex( outputAddress );
       if( outputIdx < 0 )
         labels.insert( outputAddress );
       else
         indices.insert( static_cast<int>( outputIdx ) );
     }
+    bool reportMissingChannels = ( Parameter( "SpatialFilterMissingChannels" ) != 0 );
+    for( int i = 0; i < SpatialFilter->NumRows(); ++i )
+    { // Remove output channels that depend on missing inputs.
+      string inputChannelAddress = SpatialFilter( i, input );
+      double inputIdx = Input.ChannelIndex( inputChannelAddress );
+      if( inputIdx < 0 || inputIdx >= Input.Channels() )
+      {
+        if( reportMissingChannels )
+          bcierr << "Invalid input channel specification \"" << inputChannelAddress
+                 << "\" in SpatialFilter, row " << i + 1
+                 << endl;
+        string outputAddress = SpatialFilter( i, output );
+        double outputIdx = Output.ChannelIndex( outputAddress );
+        if( outputIdx < 0 )
+          labels.erase( outputAddress );
+        else
+          indices.erase( static_cast<int>( outputIdx ) );
+      }
+    }
     int numOutputChannels = indices.empty() ? 0 : *indices.rbegin() + 1,
-        freeIndices = numOutputChannels - indices.size(),
-        requiredChannels = numOutputChannels - freeIndices + labels.size();
+        availableIndices = numOutputChannels - indices.size(),
+        requiredChannels = numOutputChannels - availableIndices + labels.size();
     if( requiredChannels > numOutputChannels )
       numOutputChannels = requiredChannels;
+    if( numOutputChannels < 1 )
+      bcierr << "SpatialFilter output is empty."
+             << ( reportMissingChannels ? "" : " Set SpatialFilterMissingChannels to report invalid input channels." )
+             << endl;
     Output.SetChannels( numOutputChannels );
 
     indices.insert( numOutputChannels );
@@ -280,33 +285,20 @@ SpatialFilter::DoInitializeSparse( const SignalProperties& Input,
   const ParamRef& SpatialFilter = Parameter( "SpatialFilter" );
   int numRows = SpatialFilter->NumRows(),
       numCols = SpatialFilter->NumColumns();
-  mFilterMatrix = GenericSignal( numRows, numCols );
+  mSparseMatrix.clear();
   for( int row = 0; row < numRows; ++row )
   {
     enum { input, output, weight };
-    mFilterMatrix( row, input ) = Input.ChannelIndex( SpatialFilter( row, input ) );
-    mFilterMatrix( row, output ) = Output.ChannelIndex( SpatialFilter( row, output ) );
-    if( mFilterMatrix( row, output ) < 0 )
-      bcierr << "Unexpected inconsistency in channel labels" << endl;
-    mFilterMatrix( row, weight ) = SpatialFilter( row, weight );
-  }
-}
-
-void
-SpatialFilter::DoProcessSparse( const GenericSignal& Input,
-                                      GenericSignal& Output )
-{
-  for (int sample = 0; sample < Input.Elements(); ++sample)
-  {
-    for (int ch = 0; ch < Output.Channels(); ch++)
-      Output(ch, sample) = 0;
-    for (int entry = 0; entry < mFilterMatrix.Channels(); ++entry)
+    SparseMatrixEntry entry =
     {
-      int chIn = static_cast<int>( mFilterMatrix( entry, 0 ) ),
-          chOut = static_cast<int>( mFilterMatrix( entry, 1 ) );
-      Output(chOut, sample) += Input(chIn, sample)*mFilterMatrix( entry, 2 );
-    }
+      static_cast<int>( Input.ChannelIndex( SpatialFilter( row, input ) ) ),
+      static_cast<int>( Output.ChannelIndex( SpatialFilter( row, output ) ) ),
+      SpatialFilter( row, weight )
+    };
+    if( entry.input >= 0 && entry.output >= 0 && ::fabs( entry.weight ) > eps )
+      mSparseMatrix.push_back( entry );
   }
+  mThreadGroup.Initialize( Input, mSparseMatrix );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -320,22 +312,26 @@ SpatialFilter::DoPreflightCAR( const SignalProperties& Input,
 
   if ( Parameter( "SpatialFilterCAROutput" )->NumValues() > 0 )
   {
+    Output.SetChannels( 0 );
     Output.ChannelLabels().Clear();
     Output.ChannelUnit().Clear();
-    Output.SetChannels( Parameter( "SpatialFilterCAROutput" )->NumValues() );
     for( int i = 0; i < Parameter( "SpatialFilterCAROutput" )->NumValues(); ++i )
     {
       string inputChannelAddress = Parameter( "SpatialFilterCAROutput" )( i );
       double inputIdx = Input.ChannelIndex( inputChannelAddress );
-      if( inputIdx < 0 || inputIdx >= Input.Channels() )
-      bcierr << "Invalid channel specification \"" << inputChannelAddress
-             << "\" in SpatialFilterCAROutput(" << i << ")."
-             << " The channel does not exist, or is outside of the allowed range."
-             << endl;
-
-      // propagate the channel labels
-      if( !Input.ChannelLabels().IsTrivial() )
-        Output.ChannelLabels()[ i ] = inputChannelAddress;
+      if( inputIdx >= 0 && inputIdx < Input.Channels() )
+      {
+        Output.SetChannels( Output.Channels() + 1 );
+        if( !Input.ChannelLabels().IsTrivial() )
+          Output.ChannelLabels()[ i ] = inputChannelAddress;
+      }
+      else if( Parameter( "SpatialFilterMissingChannels" ) != 0 )
+      {
+        bcierr << "Invalid channel specification \"" << inputChannelAddress
+               << "\" in SpatialFilterCAROutput(" << i << ")."
+               << " The channel does not exist, or is outside the allowed range."
+               << endl;
+      }
     }
   }
 }
@@ -344,7 +340,7 @@ void
 SpatialFilter::DoInitializeCAR( const SignalProperties& Input,
                                 const SignalProperties& /*Output*/ )
 {
-  mCARoutputList.clear();
+  mCAROutputList.clear();
   if (Parameter("SpatialFilterCAROutput")->NumValues() > 0)
   {
     string inputChannelAddress;
@@ -353,31 +349,15 @@ SpatialFilter::DoInitializeCAR( const SignalProperties& Input,
     {
       inputChannelAddress = (string)Parameter("SpatialFilterCAROutput")(i);
       inputIdx = static_cast<int>( Input.ChannelIndex( inputChannelAddress ) );
-      mCARoutputList.push_back(inputIdx);
+      if( inputIdx >= 0 && inputIdx < Input.Channels() )
+        mCAROutputList.push_back(inputIdx);
     }
   }
   else
   {
     for (int i = 0; i < Input.Channels(); ++i)
-      mCARoutputList.push_back(i);
+      mCAROutputList.push_back(i);
   }
+  mThreadGroup.Initialize( Input, mCAROutputList );
 }
-
-void
-SpatialFilter::DoProcessCAR( const GenericSignal& Input,
-                                   GenericSignal& Output )
-{
-  for (int sample = 0; sample < Input.Elements(); ++sample)
-  {
-    double meanVal = 0;
-    for (int channel = 0; channel < Input.Channels(); ++channel)
-      meanVal += Input(channel, sample);
-    meanVal /= double(Input.Channels());
-
-    for (size_t outChannel = 0; outChannel < mCARoutputList.size(); outChannel++)
-      Output(outChannel, sample) = Input(mCARoutputList[outChannel], sample) - meanVal;
-  }
-}
-
-
 

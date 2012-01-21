@@ -71,8 +71,9 @@ class SpatialFilter : public GenericFilter
   void DoProcessCAR( const GenericSignal&, GenericSignal& ) ;
 
   int mSpatialFilterType;
-  GenericSignal mFilterMatrix;
-  std::vector<int> mCARoutputList;
+  FullMatrix mFullMatrix;
+  SparseMatrix mSparseMatrix;
+  CAROutputList mCAROutputList;
   SpatialFilterGroup mThreadGroup;
 };
 

@@ -35,10 +35,6 @@
 #include "OSError.h"
 #include "ClassName.h"
 
-#ifndef CATCH_STRUCTURED_EXCEPTIONS
-# define CATCH_STRUCTURED_EXCEPTIONS (defined(_MSC_VER) && !defined(_DEBUG))
-#endif // CATCH_STRUCTURED_EXCEPTIONS
-
 using namespace std;
 
 bool
@@ -48,19 +44,19 @@ ExceptionCatcher::Run( Runnable& inRunnable )
   // Handling of those cannot coexist with C++ exception handling in the same function,
   // so we need another function Run2() that handles C++ exceptions.
   bool result = false;
-#if CATCH_STRUCTURED_EXCEPTIONS
+#if _MSC_VER
   __try
-#endif // CATCH_STRUCTURED_EXCEPTIONS
+#endif // _MSC_VER
   {
     result = Run2( inRunnable );
   }
-#if CATCH_STRUCTURED_EXCEPTIONS
+#if _MSC_VER
   // For breakpoint exceptions, we want to execute the default handler (which opens the debugger).
   __except( ::GetExceptionCode() == EXCEPTION_BREAKPOINT ? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER )
   {
     ReportWin32Exception( ::GetExceptionCode() );
   }
-#endif // CATCH_STRUCTURED_EXCEPTIONS
+#endif // _MSC_VER
   return result;
 }
 

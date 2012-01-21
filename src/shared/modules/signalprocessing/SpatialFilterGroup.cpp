@@ -52,17 +52,43 @@ void
 SpatialFilterThread::OnRun()
 {
   bciassert( mpInput != NULL && mpOutput != NULL );
-  for( size_t i = 0; i < mSamples.size(); ++i )
+  if( mpFullMatrix )
   {
-    int sample = mSamples[i];
-    for( int outCh = 0; outCh < mpOutput->Channels(); ++outCh )
+    for( size_t i = 0; i < mSamples.size(); ++i )
     {
-      GenericSignal::ValueType value = 0;
-      for( int inCh = 0; inCh < mpInput->Channels(); ++inCh )
-        value += ( *mpInput )( inCh, sample ) * mrMatrix( outCh, inCh );
-      ( *mpOutput )( outCh, sample ) = value;
+      for( int outCh = 0; outCh < mpOutput->Channels(); ++outCh )
+      {
+        GenericSignal::ValueType value = 0;
+        for( int inCh = 0; inCh < mpInput->Channels(); ++inCh )
+          value += ( *mpInput )( inCh, mSamples[i] ) * ( *mpFullMatrix )( outCh, inCh );
+        ( *mpOutput )( outCh, mSamples[i] ) = value;
+      }
     }
   }
+  else if( mpSparseMatrix )
+  {
+    for( size_t i = 0; i < mSamples.size(); ++i )
+    {
+      for( int outCh = 0; outCh < mpOutput->Channels(); ++outCh )
+        ( *mpOutput )( outCh, mSamples[i] ) = 0;
+      for( SparseMatrix::const_iterator j = mpSparseMatrix->begin(); j != mpSparseMatrix->end(); ++j )
+        ( *mpOutput )( j->output, mSamples[i] ) += ( *mpInput )( j->input, mSamples[i] ) * j->weight;
+    }
+  }
+  else if( mpCAROutputList )
+  {
+    for( size_t i = 0; i < mSamples.size(); ++i )
+    {
+      GenericSignal::ValueType meanVal = 0;
+      for( int inCh = 0; inCh < mpInput->Channels(); ++inCh )
+        meanVal += ( *mpInput )( inCh, mSamples[i] );
+      meanVal /= mpInput->Channels();
+      for( size_t outCh = 0; outCh < mpCAROutputList->size(); ++outCh )
+        ( *mpOutput )( outCh, mSamples[i] ) = ( *mpInput )( ( *mpCAROutputList )[ outCh ], mSamples[i] ) - meanVal;
+    }
+  }
+  else
+    throw bciexception( "Missing configuration" );
 }
 
 void
@@ -71,17 +97,6 @@ SpatialFilterGroup::Clear()
   for( size_t i = 0; i < size(); ++i )
     delete ( *this )[i];
   clear();
-}
-
-void
-SpatialFilterGroup::Initialize( const SignalProperties& inSignal, const GenericSignal& inMatrix )
-{
-  Clear();
-  resize( min( inSignal.Elements(), OSThread::NumberOfProcessors() ) );
-  for( size_t i = 0; i < size(); ++i )
-    ( *this )[i] = new SpatialFilterThread( inMatrix );
-  for( int i = 0; i < inSignal.Elements(); ++i )
-    ( *this )[i % size()]->AddSample( i );
 }
 
 void

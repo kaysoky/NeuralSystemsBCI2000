@@ -37,13 +37,30 @@
 #include "GenericSignal.h"
 #include <vector>
 
+// These types correspond to configurations that a SpatialFilterThread can handle.
+typedef GenericSignal FullMatrix;
+struct SparseMatrixEntry
+{
+  int input,
+      output;
+  GenericSignal::ValueType weight;
+};
+typedef std::vector<SparseMatrixEntry> SparseMatrix;
+typedef std::vector<int> CAROutputList;
+
 class SpatialFilterThread : public ReusableThread, private Runnable
 {
  public:
-  SpatialFilterThread( const GenericSignal& inMatrix )
-    : mrMatrix( inMatrix ) {}
+  SpatialFilterThread( const FullMatrix& inFullMatrix )
+    : mpFullMatrix( &inFullMatrix ), mpSparseMatrix( NULL ), mpCAROutputList( NULL ) {}
+  SpatialFilterThread( const SparseMatrix& inSparseMatrix )
+    : mpFullMatrix( NULL ), mpSparseMatrix( &inSparseMatrix ), mpCAROutputList( NULL ) {}
+  SpatialFilterThread( const CAROutputList& inCAROutputList )
+    : mpFullMatrix( NULL ), mpSparseMatrix( NULL ), mpCAROutputList( &inCAROutputList ) {}
+
   SpatialFilterThread& AddSample( int inSample )
     { mSamples.push_back( inSample ); return *this; }
+
   SpatialFilterThread& Start( const GenericSignal& Input, GenericSignal& Output );
 
  private:
@@ -52,7 +69,9 @@ class SpatialFilterThread : public ReusableThread, private Runnable
  private:
   const GenericSignal* mpInput;
   GenericSignal* mpOutput;
-  const GenericSignal& mrMatrix;
+  const FullMatrix* mpFullMatrix;
+  const SparseMatrix* mpSparseMatrix;
+  const CAROutputList* mpCAROutputList;
   std::vector<int> mSamples;
 };
 
@@ -61,8 +80,20 @@ class SpatialFilterGroup : private std::vector<SpatialFilterThread*>
  public:
   ~SpatialFilterGroup() { Clear(); }
   void Clear();
-  void Initialize( const SignalProperties&, const GenericSignal& );
+  template<class T> void Initialize( const SignalProperties&, const T& );
   void Process( const GenericSignal&, GenericSignal& );
 };
+
+template<class T>
+void
+SpatialFilterGroup::Initialize( const SignalProperties& inSignal, const T& inConfig )
+{
+  Clear();
+  resize( min( inSignal.Elements(), OSThread::NumberOfProcessors() ) );
+  for( size_t i = 0; i < size(); ++i )
+    ( *this )[i] = new SpatialFilterThread( inConfig );
+  for( int i = 0; i < inSignal.Elements(); ++i )
+    ( *this )[i % size()]->AddSample( i );
+}
 
 #endif // SPATIAL_FILTER_GROUP_H
