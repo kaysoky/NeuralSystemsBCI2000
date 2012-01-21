@@ -169,7 +169,7 @@ void
 SpatialFilter::DoPreflightFull( const SignalProperties& Input,
                                       SignalProperties& Output ) const
 {
-  ParamRef& SpatialFilter = Parameter( "SpatialFilter" );
+  const ParamRef& SpatialFilter = Parameter( "SpatialFilter" );
   // Parameter/Input consistency.
   if( Input.Channels() != SpatialFilter->NumColumns() )
     bcierr << "The input signal's number of channels ("

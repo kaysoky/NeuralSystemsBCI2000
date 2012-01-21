@@ -89,7 +89,7 @@ void
 SpatialFilterGroup::Initialize( const SignalProperties& inSignal, const T& inConfig )
 {
   Clear();
-  resize( min( inSignal.Elements(), OSThread::NumberOfProcessors() ) );
+  resize( std::min( inSignal.Elements(), OSThread::NumberOfProcessors() ) );
   for( size_t i = 0; i < size(); ++i )
     ( *this )[i] = new SpatialFilterThread( inConfig );
   for( int i = 0; i < inSignal.Elements(); ++i )
