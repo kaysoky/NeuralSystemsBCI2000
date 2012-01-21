@@ -28,11 +28,9 @@ BCI2000_ADD_CMDLINE_FILTER( LinearClassifier      FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( LPFilter              FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( Normalizer            FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( P3TemporalFilter      FROM ${SIGPROC_DIR} )
-BCI2000_ADD_CMDLINE_FILTER( SpatialFilter         FROM ${SIGPROC_DIR} # INCLUDING "QT"  # uncomment INCLUDING "QT" for a threaded speed-up at the expense of requiring the QT framework dylibs to be installed at runtime
-                            EXTRA_SOURCES ${SIGPROC_DIR}/SpatialFilterCell.cpp
-                                          ${SIGPROC_DIR}/SpatialFilterGroup.cpp
-                            EXTRA_HEADERS ${SIGPROC_DIR}/SpatialFilterCell.h
-                                          ${SIGPROC_DIR}/SpatialFilterGroup.h     )
+BCI2000_ADD_CMDLINE_FILTER( SpatialFilter         FROM ${SIGPROC_DIR}
+                            EXTRA_SOURCES ${SIGPROC_DIR}/SpatialFilterGroup.cpp
+                            EXTRA_HEADERS ${SIGPROC_DIR}/SpatialFilterGroup.h     )
 BCI2000_ADD_CMDLINE_FILTER( StateTransform        FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( TransmissionFilter    FROM ${BCI2000_ROOT_DIR}/src/shared/modules/signalsource )
 BCI2000_ADD_CMDLINE_FILTER( FFTFilter             FROM ${SIGPROC_DIR} INCLUDING "FFT" )

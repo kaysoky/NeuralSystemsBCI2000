@@ -11,7 +11,6 @@ MESSAGE( "---Adding Framework Library: ${NAME}" )
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleLib.cmake )
 
 SET( SIGPROCSOURCES 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterCell.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.cpp
@@ -31,7 +30,6 @@ SET( SIGPROCSOURCES
 )
 SET( SIGPROCHEADERS 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterCell.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARThread.h

@@ -56,8 +56,6 @@ SpatialFilter::SpatialFilter()
      "0 0 1 0 "
      "0 0 0 1 "
      "0 % % // columns represent input channels, rows represent output channels",
-   "Filtering:SpatialFilter int SFUseThreading= 1 0 0 1 "
-     "//Use threading to calculate spatial filter (boolean)",
 
  END_PARAMETER_DEFINITIONS
 }
@@ -95,16 +93,14 @@ SpatialFilter::Preflight( const SignalProperties& Input,
              << int( Parameter( "SpatialFilterType" ) )
              << ")"
              << endl;
-   }
-  Parameter("SFUseThreading");
+  }
 }
 
 void
 SpatialFilter::Initialize( const SignalProperties& Input,
                            const SignalProperties& Output )
 {
-  mSF.Clear();
-  mUseThreading = (bool)int(Parameter("SFUseThreading"));
+  mThreadGroup.Clear();
   mSpatialFilterType = Parameter( "SpatialFilterType" );
   switch( mSpatialFilterType )
   {
@@ -198,25 +194,20 @@ void
 SpatialFilter::DoInitializeFull( const SignalProperties& Input,
                                  const SignalProperties& /*Output*/ )
 {
-  size_t numRows = Parameter( "SpatialFilter" )->NumRows(),
-         numCols = Parameter( "SpatialFilter" )->NumColumns();
-
-  mFilterMatrix.resize(numRows);
-  //mSignalBuffer.resize(Input.Channels());
-  for( size_t row = 0; row < numRows; ++row )
-  {
-    mFilterMatrix[row].resize(numCols);
-    for( size_t col = 0; col < numCols; ++col )
-      mFilterMatrix[ row ][ col ] = Parameter( "SpatialFilter" )( row, col );
-  }
-  mSF.Init(Input.Channels(), numRows, Input.Elements(),&mFilterMatrix);
+  int numRows = Parameter( "SpatialFilter" )->NumRows(),
+      numCols = Parameter( "SpatialFilter" )->NumColumns();
+  mFilterMatrix = GenericSignal( numRows, numCols );
+  for( int row = 0; row < numRows; ++row )
+    for( int col = 0; col < numCols; ++col )
+      mFilterMatrix( row, col ) = Parameter( "SpatialFilter" )( row, col );
+  mThreadGroup.Initialize( Input, mFilterMatrix );
 }
 
 void
 SpatialFilter::DoProcessFull( const GenericSignal& Input,
                                     GenericSignal& Output )
 {
-  mSF.Calculate(&Input, &Output, mUseThreading);
+  mThreadGroup.Process( Input, Output );
 }
 
 
@@ -286,20 +277,19 @@ void
 SpatialFilter::DoInitializeSparse( const SignalProperties& Input,
                                    const SignalProperties& Output )
 {
-  size_t numRows = Parameter( "SpatialFilter" )->NumRows(),
-         numCols = Parameter( "SpatialFilter" )->NumColumns();
-  mFilterMatrix.resize(numRows);
+  int numRows = Parameter( "SpatialFilter" )->NumRows(),
+      numCols = Parameter( "SpatialFilter" )->NumColumns();
+  mFilterMatrix = GenericSignal( numRows, numCols );
   string inputChannelAddress, outputChannelAddress;
-  for( size_t row = 0; row < numRows; ++row )
+  for( int row = 0; row < numRows; ++row )
   {
-    mFilterMatrix[row].resize(numCols);
-    inputChannelAddress = (string)Parameter( "SpatialFilter" )( row, 0 );
-    outputChannelAddress = (string)Parameter( "SpatialFilter" )( row, 1 );
-    mFilterMatrix[ row ][ 0 ] = Input.ChannelIndex( inputChannelAddress );
-    mFilterMatrix[ row ][ 1 ] = Output.ChannelIndex( outputChannelAddress );
-    if( mFilterMatrix[ row ][ 1 ] < 0 )
+    inputChannelAddress = Parameter( "SpatialFilter" )( row, 0 );
+    outputChannelAddress = Parameter( "SpatialFilter" )( row, 1 );
+    mFilterMatrix( row, 0 ) = Input.ChannelIndex( inputChannelAddress );
+    mFilterMatrix( row, 1 ) = Output.ChannelIndex( outputChannelAddress );
+    if( mFilterMatrix( row, 1 ) < 0 )
       bcierr << "Unexpected inconsistency in channel labels" << endl;
-    mFilterMatrix[ row ][ 2 ] = Parameter( "SpatialFilter" )( row, 2 );
+    mFilterMatrix( row, 2 ) = Parameter( "SpatialFilter" )( row, 2 );
   }
 }
 
@@ -311,11 +301,11 @@ SpatialFilter::DoProcessSparse( const GenericSignal& Input,
   {
     for (int ch = 0; ch < Output.Channels(); ch++)
       Output(ch, sample) = 0;
-    for (size_t entry = 0; entry < mFilterMatrix.size(); ++entry)
+    for (int entry = 0; entry < mFilterMatrix.Channels(); ++entry)
     {
-      size_t chIn = static_cast<size_t>( mFilterMatrix[entry][0] ),
-             chOut = static_cast<size_t>( mFilterMatrix[entry][1] );
-      Output(chOut, sample) += Input(chIn, sample)*mFilterMatrix[entry][2];
+      int chIn = static_cast<int>( mFilterMatrix( entry, 0 ) ),
+          chOut = static_cast<int>( mFilterMatrix( entry, 1 ) );
+      Output(chOut, sample) += Input(chIn, sample)*mFilterMatrix( entry, 2 );
     }
   }
 }

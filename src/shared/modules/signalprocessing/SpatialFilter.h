@@ -32,16 +32,10 @@
 
 #include "GenericFilter.h"
 #include "SpatialFilterGroup.h"
-#include <valarray>
-#include <vector>
 
 class SpatialFilter : public GenericFilter
 {
  public:
-  typedef double NumType;
-  typedef std::valarray<NumType> DataVector;
-  typedef std::vector<DataVector> DataMatrix;
-
           SpatialFilter();
   virtual ~SpatialFilter();
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
@@ -49,14 +43,14 @@ class SpatialFilter : public GenericFilter
   virtual void Process( const GenericSignal& Input, GenericSignal& Output );
 
  private:
-	 enum
+   enum
   {
     none,
     fullMatrix,
     sparseMatrix,
     commonAverage
   };
-  int mSpatialFilterType;
+
   void DoPreflight( const SignalProperties&, SignalProperties& ) const;
   void DoInitialize( const SignalProperties&, const SignalProperties& );
   void DoProcess( const GenericSignal& Input, GenericSignal& Output );
@@ -76,12 +70,10 @@ class SpatialFilter : public GenericFilter
   void DoProcessSparse( const GenericSignal&, GenericSignal& ) ;
   void DoProcessCAR( const GenericSignal&, GenericSignal& ) ;
 
-  DataMatrix mFilterMatrix;
-  DataVector mSignalBuffer;
-
-  std::vector<int>   mCARoutputList;
-  SpatialFilterGroup mSF;
-  bool               mUseThreading;
+  int mSpatialFilterType;
+  GenericSignal mFilterMatrix;
+  std::vector<int> mCARoutputList;
+  SpatialFilterGroup mThreadGroup;
 };
 
 #endif // SPATIAL_FILTER_H

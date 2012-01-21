@@ -112,7 +112,7 @@ TransferSpectrum<T>::Evaluate( const Ratpoly<U>& inFunction, std::valarray<V>& o
     {
       std::complex<T> value
         = inFunction.Evaluate( mLookupTable[ mEvaluationsPerBin * bin + sample ] );
-      outResult[bin] += value.real() * value.real() + value.imag() * value.imag();
+      outResult[bin] += std::norm( value ); // it's actually the squared magnitude rather than a norm
     }
   }
   outResult /= mEvaluationsPerBin;
