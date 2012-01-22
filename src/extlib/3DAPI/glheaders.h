@@ -27,8 +27,8 @@
 #ifndef __BORLANDC__
 #include <QGLWidget>
 #endif // __BORLANDC__
-#include <gl/gl.h>      // Header file for the OpenGL32 library
-#include <gl/glu.h>     // Header file for the GLu32 library
+#include <GL/gl.h>      // Header file for the OpenGL32 library
+#include <GL/glu.h>     // Header file for the GLu32 library
 
 #include <string>
 #include <vector>

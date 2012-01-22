@@ -188,7 +188,7 @@ OSThread::Start()
 {
   TerminateWait();
   OSMutex::Lock lock( mMutex );
-  mIsTerminating = false;
+  mTerminating = false;
   mTerminated = false;
   ::pthread_attr_t attributes;
   if( !::pthread_attr_init( &attributes ) )

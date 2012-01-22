@@ -154,6 +154,7 @@ switch( computer )
     build_version_header = '(cd ../../../buildutils && ./update_version_header.sh)';
     CXXFLAGS = '-fPIC -include gccprefix.h';
     LDFLAGS = '-dead_strip';
+    LIBRARIES = { LIBRARIES{:} '-lrt' };
 end;
 
 options = {};
@@ -172,13 +173,13 @@ switch( target )
     
     case 'all'
         for( i = 1:length( TARGETS ) )
-            buildmex( options_{:}, TARGETS{i} );
+            buildmex( options{:}, TARGETS{i} );
         end
         buildmex test;
         
     case 'build'
         system( build_version_header );
-        buildmex( options_{:}, 'all' );
+        buildmex( options{:}, 'all' );
         
     case 'test'
         fprintf( 1, [ 'Testing mex files ... ' ] );
