@@ -266,7 +266,7 @@ DisplayWindow::UpdateContext()
 #else // __BORLANDC__
   DrawContext dc =
   {
-    { mpForm, NULL },
+    { mpForm, NULL, NULL },
     { 0, 0, mWidth, mHeight }
   };
 #endif // __BORLANDC__

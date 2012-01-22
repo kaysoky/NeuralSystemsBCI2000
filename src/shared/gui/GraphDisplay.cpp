@@ -140,10 +140,6 @@ GraphDisplay&
 GraphDisplay::Add( GraphObject* inObj )
 {
   mObjects.insert( inObj );
-#ifndef __BORLANDC__
-  if( !mUsingGL && inObj->NeedsGL() )
-    Change();
-#endif // __BORLANDC__
   return *this;
 }
 
@@ -190,13 +186,16 @@ GraphDisplay::Change()
       format.setDepthBufferSize( 16 );
       format.setOverlay( true );
       format.setSwapInterval( 0 ); // disable VSync
-      mContext.handle.glContext = new GLWidget( *this, format, pParent );
-      mpWidget = mContext.handle.glContext;
+      mpWidget = new GLWidget( *this, format, pParent );
     }
     else
     {
       mpWidget = new Widget( *this, pParent );
     }
+  }
+  if( mUsingGL && !mContext.handle.glContext )
+  {
+    mContext.handle.glContext = dynamic_cast<QGLWidget*>( mpWidget );
   }
   if( mpWidget )
   {

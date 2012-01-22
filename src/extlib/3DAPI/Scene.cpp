@@ -62,6 +62,7 @@ Scene::Scene( GraphDisplay& inDisplay )
 #endif // __BORLANDC__
   mfpOnCollide( NULL )
 {
+  inDisplay.Change(); // The base class constructor does not know about Scene::NeedsGL().
 }
 
 Scene::~Scene()
@@ -186,6 +187,7 @@ Scene::OnChange( DrawContext& inDC )
   {
     if( mGLRC )
     {
+      OnCleanupGL();
       DoneCurrent();
       ::wglDeleteContext( mGLRC );
     }
@@ -250,10 +252,17 @@ Scene::OnChange( DrawContext& inDC )
     DoneCurrent();
   }
 #else // __BORLANDC__
-  if( inDC.handle.glContext && mpGLContext != inDC.handle.glContext )
+  if( mpGLContext != inDC.handle.glContext )
   {
-    inDC.handle.glContext->makeCurrent();
-    OnInitializeGL();
+    if( mpGLContext )
+    {
+      OnCleanupGL();
+    }
+    if( inDC.handle.glContext )
+    {
+      inDC.handle.glContext->makeCurrent();
+      OnInitializeGL();
+    }
   }
   mpGLContext = inDC.handle.glContext;
 #endif // __BORLANDC__
