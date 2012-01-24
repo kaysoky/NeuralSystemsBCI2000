@@ -110,12 +110,11 @@ EmotivADC::EmotivADC()
   END_STATE_DEFINITIONS
 
   // Allocate 4 bits for each contact quality state
-  for( int i = 0; i < sizeof( electrodes ) / sizeof( EE_InputChannels_t ); i++ )
+  for( int i = 0; i < sizeof( electrodeNames ) / sizeof( *electrodeNames ); i++ )
   {
-    char state[30];
-    sprintf( state, "EmotivCQ%s 4 0 0 0", electrodeNames[i].c_str() );
+    string state = "EmotivCQ" + electrodeNames[i] + " 4 0 0 0";
     BEGIN_STATE_DEFINITIONS
-      state,
+      state.c_str(),
     END_STATE_DEFINITIONS
   }
 
@@ -399,15 +398,12 @@ void EmotivADC::Process( const GenericSignal&, GenericSignal& Output )
 
         // Warn about poor signal quality
         // Set up Contact Quality structure
-        EE_EEG_ContactQuality_t* mpCQ = new EE_EEG_ContactQuality_t[ sizeof( electrodes ) / sizeof( EE_InputChannels_t ) ];
-        int numCQChannels = ES_GetNumContactQualityChannels( mState );
-        int size = ES_GetContactQualityFromAllChannels( mState, mpCQ, numCQChannels );
-        for( int i = 0; i < size; i++ )
-        {
-          char state[30];
-          sprintf( state, "EmotivCQ%s", electrodeNames[i].c_str() );
-          State( state ) = mpCQ[i];
-        }
+        int numKnownChannels = sizeof( electrodeNames ) / sizeof( *electrodeNames ),
+            numQueriedCh = min( numKnownChannels, ES_GetNumContactQualityChannels( mState ) );
+        EE_EEG_ContactQuality_t* mpCQ = new EE_EEG_ContactQuality_t[numQueriedCh];
+        int size = ES_GetContactQualityFromAllChannels( mState, mpCQ, numQueriedCh );
+        for( int i = 0; i < min( size, numQueriedCh ); i++ )
+          State( "EmotivCQ" + electrodeNames[i] ) = mpCQ[i];
         delete [] mpCQ;
 
         // Warn about poor battery life
