@@ -78,7 +78,6 @@ class DataSource
     bool IsHistogram() const { return mIsHistogram; }
     bool& IsHistogram() { return mIsHistogram; }
 #endif
-
     DataProperties& OuterProduct( const DataProperties& );
 
     size_t DataSize() const;

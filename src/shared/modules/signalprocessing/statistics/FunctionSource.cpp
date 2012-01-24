@@ -245,16 +245,18 @@ FunctionSource::OnInitialize( const Context& inContext )
               throw bciexception_( "First 3 arguments to " << Name() << " function must be constant" );
           double center = mChildren[0]->Evaluate(),
                  resolution = mChildren[1]->Evaluate();
-          int numBins = static_cast<int>( mChildren[3]->Evaluate() );
+          int numBins = static_cast<int>( mChildren[2]->Evaluate() );
           if( resolution <= 0 || numBins <= 0 )
             throw bciexception_( "Second and third argument to " << Name() << " function must be greater 0" );
           Dimension d;
           d.labels.Resize( numBins );
           d.unit = observationProperties[0].Unit();
-          d.unit.SetGain( resolution )
-                .SetOffset( center / resolution - ( numBins - 1 ) / 2 )
+          d.unit.SetGain( resolution * d.unit.Gain() )
+                .SetOffset( center / resolution - ( numBins - 1.0 ) / 2.0 )
                 .SetRawMin( 0 )
                 .SetRawMax( numBins - 1 );
+          d.continuous = true;
+          d.streaming = false;
           mResultProperties.Dimensions().push_back( d );
         } break;
 
@@ -270,6 +272,12 @@ FunctionSource::OnInitialize( const Context& inContext )
                 .SetOffset( 0 )
                 .SetRawMin( 0 )
                 .SetRawMax( q );
+          for( int i = 0; i <= q; ++i )
+          {
+            ostringstream label;
+            label << i << "/" << q;
+            d.labels[i] = label.str();
+          }
           mResultProperties.Dimensions().push_back( d );
         } break;
       }
@@ -315,7 +323,7 @@ FunctionSource::OnInitialize( const Context& inContext )
       break;
     case Count:
     case Histogram:
-      u.SetRawMin( 0 ).SetRawMax( mObservers[0]->Window() );
+      u.SetRawMin( 0 ).SetRawMax( mObservers[0]->Window() / mChildren[2]->Evaluate() * 10 );
       break;
     case Mean:
     case Quantile:

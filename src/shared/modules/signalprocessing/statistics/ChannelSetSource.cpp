@@ -64,6 +64,6 @@ ChannelSetSource::OnData( size_t inIdx )
   bciassert( mpSignal != NULL );
   int ch = inIdx / mpSignal->Elements(),
       el = inIdx % mpSignal->Elements();
-  return ( *mpSignal )( ch, el );
+  return ( *mpSignal )( mChannelSet[ch], el );
 }
 

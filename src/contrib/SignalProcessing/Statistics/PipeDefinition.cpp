@@ -33,9 +33,6 @@ Filter( SpatialFilter, 2.B );
 #include "ARFilter.h"
 Filter( ARFilter, 2.C );
 
-#include "StatisticsFilter.h"
-Filter( StatisticsFilter, 2.C1 );
-
 #include "LinearClassifier.h"
 Filter( LinearClassifier, 2.D );
 
@@ -48,4 +45,19 @@ Filter( ExpressionFilter, 2.D2 );
 #include "Normalizer.h"
 Filter( Normalizer, 2.E );
 
+
+#include "StatisticsFilter.h"
+#ifndef STATISTICS_FILTER_POS
+Filter( StatisticsFilter, 2.C1 );
+#elif( STATISTICS_FILTER_POS == 1 )
+Filter( StatisticsFilter, 2.B1 );
+#elif( STATISTICS_FILTER_POS == 2 )
+Filter( StatisticsFilter, 2.C1 );
+#elif( STATISTICS_FILTER_POS == 3 )
+Filter( StatisticsFilter, 2.D3 );
+#elif( STATISTICS_FILTER_POS == 4 )
+Filter( StatisticsFilter, 2.E1 );
+#else
+# error Unknown value of STATISTICS_FILTER_POS
+#endif
 

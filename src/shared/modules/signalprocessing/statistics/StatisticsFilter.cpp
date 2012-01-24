@@ -55,8 +55,8 @@ StatisticsFilter::StatisticsFilter()
   mContext.visualizations = &mVisualizations;
 
  BEGIN_PARAMETER_DEFINITIONS
-  "Statistics matrix ChannelSets= { AllChannels Ch1 } 1 "
-    " : 1 "
+  "Statistics matrix ChannelSets= { AllChannels } 1 "
+    " : "
     " % % % //"
     " Rows represent channel sets, defined as space-separated lists of channel names. "
     " Use row labels to name channel sets. Channel names may include * and ? wildcards, "
@@ -292,6 +292,7 @@ StatisticsFilter::LoadChannelSets( const Context& ioContext ) const
 void
 StatisticsFilter::LoadViews( const Context& ioContext ) const
 {
+  BCIError::ContextFrame frame( "Views" );
   const ParamRef& Views = Parameter( "Views" );
   for( int row = 0; row < Views->NumRows(); ++row )
   {
@@ -321,6 +322,7 @@ StatisticsFilter::LoadViews( const Context& ioContext ) const
 void
 StatisticsFilter::LoadObservers( const Context& ioContext ) const
 {
+  BCIError::ContextFrame frame( "Observers" );
   enum { observeWhat, observeWhen, observeOver, observeWeighted, resetWhen, numCols };
   const ParamRef& Observers = Parameter( "Observers" );
   if( Observers->NumColumns() < numCols )
@@ -358,6 +360,7 @@ StatisticsFilter::LoadObservers( const Context& ioContext ) const
 void
 StatisticsFilter::LoadScripts( const Context& ioContext ) const
 {
+  BCIError::ContextFrame frame( "EventScripts" );
   ioContext.scripts->clear();
   ioContext.scripts->resize( NumEvents );
   const ParamRef& EventScripts = Parameter( "EventScripts" );
@@ -427,6 +430,7 @@ StatisticsFilter::InitializeVisualizations( const Context& ioContext ) const
       for( int el = 0; el < signal.Elements(); ++el )
         signal( ch, el ) = numeric_limits<GenericSignal::ValueType>::quiet_NaN();
     ioContext.visualizations->back().Send( CfgID::Visible, true )
+                                    .Send( CfgID::GraphType, properties.IsStream() ? CfgID::Polyline : CfgID::Field2d )
                                     .Send( properties )
                                     .Send( signal );
   }
