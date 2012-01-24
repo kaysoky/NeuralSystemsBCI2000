@@ -854,6 +854,7 @@ SignalDisplay::DrawNumericValues( const PaintInfo& p )
 {
   p.painter->setPen( p.labelColor );
   p.painter->setFont( p.monoFont );
+  p.painter->setBackgroundMode( Qt::TransparentMode );
   int nextLabelPos = mDataRect.top();
 
   if( !mData.Properties().IsEmpty() )
