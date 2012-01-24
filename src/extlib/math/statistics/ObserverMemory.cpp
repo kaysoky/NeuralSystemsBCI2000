@@ -100,9 +100,9 @@ MemPool::CollectGarbage()
 
 template<typename T>
 void
-MemPool::CollectGarbage( std::list<typename ObjectPtr<T>::Record>& ioList )
+MemPool::CollectGarbage( list<typename ObjectPtr<T>::Record>& ioList )
 {
-  list< ObjectPtr<T>::Record >::iterator i = ioList.begin();
+  typename list<typename ObjectPtr<T>::Record>::iterator i = ioList.begin();
   while( i != ioList.end() )
     if( i->usage < 1 )
       i = ioList.erase( i );
