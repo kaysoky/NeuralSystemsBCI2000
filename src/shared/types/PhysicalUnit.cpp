@@ -37,12 +37,28 @@
 #include "PhysicalUnit.h"
 #include "ArithmeticExpression.h"
 #include "BCIError.h"
+#include "BCIException.h"
 #include <limits>
 #include <cmath>
 #include <sstream>
 #include <iomanip>
 
 using namespace std;
+
+PhysicalUnit&
+PhysicalUnit::SetSymbol( const std::string& inSymbol, double inPower )
+{
+  mSymbolPowers.clear();
+  mSymbolPowers[inSymbol] = inPower;
+  mSymbol = mSymbolPowers.SingleSymbol();
+  return *this;
+}
+
+int
+PhysicalUnit::Size() const
+{
+  return static_cast<int>( ::fabs( mRawMax - mRawMin ) + 1 );
+}
 
 bool
 PhysicalUnit::IsPhysical( const string& inValue ) const
@@ -164,6 +180,45 @@ PhysicalUnit::RawToPhysical( ValueType inRawValue ) const
   return oss.str();
 }
 
+bool
+PhysicalUnit::operator==( const PhysicalUnit& inUnit ) const
+{
+  return mSymbol == inUnit.mSymbol
+      && mOffset == inUnit.mOffset
+      && mGain == inUnit.mGain;
+}
+
+PhysicalUnit&
+PhysicalUnit::operator*=( const PhysicalUnit& inUnit )
+{
+  if( mOffset != 0 || inUnit.mOffset != 0 )
+    throw bciexception( "Cannot multiply physical units with offsets" );
+  mSymbolPowers *= inUnit.mSymbolPowers;
+  mSymbol = mSymbolPowers.SingleSymbol();
+  mGain *= inUnit.mGain;
+  ValueType max1max2 = mRawMax * inUnit.mRawMax,
+            max1min2 = mRawMax * inUnit.mRawMin,
+            min1max2 = mRawMin * inUnit.mRawMax,
+            min1min2 = mRawMin * inUnit.mRawMin;
+  mRawMax = max( max( max1max2, max1min2 ), max( min1max2, min1min2 ) );
+  mRawMin = min( min( max1max2, max1min2 ), min( min1max2, min1min2 ) );
+  return *this;
+}
+
+PhysicalUnit&
+PhysicalUnit::Combine( const PhysicalUnit& inUnit )
+{
+  if( *this != inUnit )
+  {
+    mGain = 1;
+    mOffset = 0;
+    mSymbol = "";
+  }
+  mRawMax = max( mRawMax, inUnit.mRawMax );
+  mRawMin = min( mRawMin, inUnit.mRawMin );
+  return *this;
+}
+
 ostream&
 PhysicalUnit::WriteToStream( ostream& os ) const
 {
@@ -183,5 +238,27 @@ PhysicalUnit::ReadFromStream( istream& is )
             >> mSymbol
             >> mRawMin
             >> mRawMax;
+}
+
+PhysicalUnit::SymbolPowers&
+PhysicalUnit::SymbolPowers::operator*=( const SymbolPowers& inP )
+{
+  for( const_iterator i = inP.begin(); i != inP.end(); ++i )
+    ( *this )[i->first] += i->second;
+  return *this;
+}
+
+string
+PhysicalUnit::SymbolPowers::SingleSymbol() const
+{
+  ostringstream oss;
+  for( const_iterator i = begin(); i != end(); ++i )
+    if( i->second != 0 )
+    {
+      oss << i->first;
+      if( i->second != 1 )
+        oss << '^' << i->second;
+    }
+  return oss.str();
 }
 

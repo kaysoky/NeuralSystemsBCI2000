@@ -143,3 +143,4 @@ SignalProperties::IsStream() const
     return false;
   return Elements() == 1 || ElementUnit().Symbol() == "s";
 }
+

@@ -32,6 +32,8 @@
 #include <vector>
 #include "EncodedString.h"
 
+class PhysicalUnit;
+
 class LabelIndex
 {
   typedef std::map<EncodedString, size_t>  IndexBase;
@@ -41,6 +43,7 @@ class LabelIndex
   LabelIndex()
     : mNeedSync( false )
     { Reset(); }
+  LabelIndex( const PhysicalUnit& );
   ~LabelIndex() {}
 
   // Forward lookup.
@@ -51,6 +54,9 @@ class LabelIndex
   // A reverse lookup operator.
   const std::string& operator[]( size_t ) const;
   std::string& operator[]( size_t );
+  // Comparison.
+  bool operator==( const LabelIndex& inL ) const
+              { return mReverseIndex == inL.mReverseIndex; }
 
   bool IsTrivial() const;
   static std::string TrivialLabel( size_t );
@@ -64,6 +70,7 @@ class LabelIndex
   LabelIndex& Resize( size_t );
   int         Size() const
               { return mReverseIndex.size(); }
+  LabelIndex& operator*=( const LabelIndex& );
 
  private:
   void Sync() const;

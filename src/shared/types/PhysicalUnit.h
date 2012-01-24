@@ -34,6 +34,8 @@
 #define PHYSICAL_UNIT_H
 
 #include <iostream>
+#include <map>
+#include <string>
 #include "EncodedString.h"
 
 class PhysicalUnit
@@ -59,8 +61,7 @@ class PhysicalUnit
 
   const std::string& Symbol() const
                 { return mSymbol; }
-  PhysicalUnit& SetSymbol( const std::string& s )
-                { mSymbol = s; return *this; }
+  PhysicalUnit& SetSymbol( const std::string&, double power = 1 );
 
   ValueType     RawMin() const
                 { return mRawMin; }
@@ -72,9 +73,18 @@ class PhysicalUnit
   PhysicalUnit& SetRawMax( ValueType v )
                 { mRawMax = v; return *this; }
 
+  int           Size() const;
+
   bool          IsPhysical( const std::string& ) const;
   ValueType     PhysicalToRaw( const std::string& ) const;
   std::string   RawToPhysical( ValueType ) const;
+
+  bool          operator==( const PhysicalUnit& ) const;
+  bool          operator!=( const PhysicalUnit& u ) const
+                { return !( *this == u ); }
+  PhysicalUnit& operator*=( const PhysicalUnit& );
+
+  PhysicalUnit& Combine( const PhysicalUnit& );
 
   std::ostream& WriteToStream( std::ostream& os ) const;
   std::istream& ReadFromStream( std::istream& is );
@@ -82,7 +92,14 @@ class PhysicalUnit
  private:
   double        ExtractUnit( std::string& ) const;
 
+  struct SymbolPowers : std::map<std::string, double>
+  {
+    SymbolPowers& operator*=( const SymbolPowers& );
+    std::string SingleSymbol() const;
+  };
+
   EncodedString mSymbol;
+  SymbolPowers  mSymbolPowers;
   ValueType     mOffset,
                 mGain,
                 mRawMin,

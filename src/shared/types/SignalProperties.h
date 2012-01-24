@@ -141,7 +141,7 @@ class SignalProperties
                       { return Type() == sp.Type() && Elements() == sp.Elements() && Channels() == sp.Channels(); }
     bool operator!=( const SignalProperties& sp ) const
                       { return !( *this == sp ); }
-    bool Accommodates( const SignalProperties& sp ) const;
+    bool Accommodates( const SignalProperties& ) const;
 
     // Stream i/o
     std::ostream& WriteToStream( std::ostream& ) const;

@@ -29,11 +29,34 @@
 
 #include "LabelIndex.h"
 #include "Brackets.h"
+#include "PhysicalUnit.h"
+#include <cmath>
 #include <sstream>
 
 using namespace std;
 
 static string sNAString = "<n/a>";
+
+LabelIndex::LabelIndex( const PhysicalUnit& inP )
+: mNeedSync( false )
+{
+  Reset();
+  PhysicalUnit::ValueType range = inP.RawMax() - inP.RawMin();
+  mReverseIndex.resize( static_cast<size_t>( ::fabs( range ) + 1 ) );
+  if( range >= 0 )
+  {
+    for( int i = 0; i < range + 1; ++i )
+      mReverseIndex[i] = inP.RawToPhysical( inP.RawMin() + i );
+  }
+  else
+  {
+    range = -range;
+    for( int i = 0; i < range + 1; ++i )
+      mReverseIndex[i] = inP.RawToPhysical( inP.RawMin() - i );
+  }
+  mNeedSync = true;
+}
+
 
 // **************************************************************************
 // Function:   operator[]
@@ -156,6 +179,24 @@ LabelIndex::IsTrivial() const
   for( size_t i = 0; trivial && i < mReverseIndex.size(); ++i )
     trivial &= ( mReverseIndex[ i ] == TrivialLabel( i ) );
   return trivial;
+}
+
+// **************************************************************************
+// Function:   operator*=
+// Purpose:    Perform outer multiplication with another LabelIndex.
+// Parameters: LabelIndex to multiply with.
+// Returns:    Result of multiplication.
+// **************************************************************************
+LabelIndex&
+LabelIndex::operator*=( const LabelIndex& inL )
+{
+  IndexReverse newLabels( mReverseIndex.size() * inL.mReverseIndex.size() );
+  for( size_t i = 0; i < mReverseIndex.size(); ++i )
+    for( size_t j = 0; j < inL.mReverseIndex.size(); ++j )
+      newLabels[mReverseIndex.size() * i + j] = mReverseIndex[i] + '&' + inL.mReverseIndex[j];
+  mReverseIndex = newLabels;
+  mNeedSync = true;
+  return *this;
 }
 
 // **************************************************************************
