@@ -101,6 +101,7 @@ SpatialFilter::Preflight( const SignalProperties& Input,
              << ")"
              << endl;
   }
+  mThreadGroup.Preflight();
 }
 
 void

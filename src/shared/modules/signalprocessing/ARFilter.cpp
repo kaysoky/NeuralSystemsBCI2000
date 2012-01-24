@@ -165,6 +165,7 @@ ARFilter::Preflight( const SignalProperties& Input,
   Parameter( "FirstBinCenter" );
   Parameter( "LastBinCenter" );
   Parameter( "BinWidth" );
+  OptionalParameter( "NumberOfThreads" );
 }
 
 
@@ -173,7 +174,10 @@ ARFilter::Initialize( const SignalProperties& Input,
                       const SignalProperties& Output )
 {
   Cleanup();
-  mThreads.resize( min( Input.Channels(), OSThread::NumberOfProcessors() ) );
+  int numberOfThreads = OptionalParameter( "NumberOfThreads", -1 );
+  if( numberOfThreads <= 0 )
+    numberOfThreads = OSThread::NumberOfProcessors();
+  mThreads.resize( min( Input.Channels(), numberOfThreads ) );
   for( size_t i = 0; i < mThreads.size(); ++i )
     mThreads[i] = new ARThread;
   for( int i = 0; i < Input.Channels(); ++i )

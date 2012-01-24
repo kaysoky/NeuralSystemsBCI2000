@@ -100,6 +100,12 @@ SpatialFilterGroup::Clear()
 }
 
 void
+SpatialFilterGroup::Preflight() const
+{
+  OptionalParameter( "NumberOfThreads" );
+}
+
+void
 SpatialFilterGroup::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   for( size_t i = 0; i < size(); ++i )

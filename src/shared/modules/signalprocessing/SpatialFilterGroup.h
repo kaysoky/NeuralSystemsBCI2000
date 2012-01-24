@@ -35,6 +35,7 @@
 #include "ReusableThread.h"
 #include "Runnable.h"
 #include "GenericSignal.h"
+#include "Environment.h"
 #include <vector>
 
 // These types correspond to configurations that a SpatialFilterThread can handle.
@@ -75,11 +76,12 @@ class SpatialFilterThread : public ReusableThread, private Runnable
   std::vector<int> mSamples;
 };
 
-class SpatialFilterGroup : private std::vector<SpatialFilterThread*>
+class SpatialFilterGroup : private std::vector<SpatialFilterThread*>, private Environment
 {
  public:
   ~SpatialFilterGroup() { Clear(); }
   void Clear();
+  void Preflight() const;
   template<class T> void Initialize( const SignalProperties&, const T& );
   void Process( const GenericSignal&, GenericSignal& );
 };
@@ -89,7 +91,10 @@ void
 SpatialFilterGroup::Initialize( const SignalProperties& inSignal, const T& inConfig )
 {
   Clear();
-  resize( std::min( inSignal.Elements(), OSThread::NumberOfProcessors() ) );
+  int numberOfThreads = OptionalParameter( "NumberOfThreads", -1 );
+  if( numberOfThreads <= 0 )
+    numberOfThreads = OSThread::NumberOfProcessors();
+  resize( std::min( inSignal.Elements(), numberOfThreads ) );
   for( size_t i = 0; i < size(); ++i )
     ( *this )[i] = new SpatialFilterThread( inConfig );
   for( int i = 0; i < inSignal.Elements(); ++i )
