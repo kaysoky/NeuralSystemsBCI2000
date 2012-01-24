@@ -238,9 +238,11 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
   } else {
     if( Parameter( "SourceChList" )->NumValues() != Parameter( "SourceCh" ) )
       bcierr << "Number of entries in SourceChList must match the number in SourceCh" << endl;
-    if( Parameter( "DeviceIDs" )(0) == "auto" )
+    if( Parameter( "DeviceIDs" )(0) == "auto" ) {
       bcierr << "If you're going to specify SourceChList, you need "
              << "a corresponding mapping of amps in DeviceIDs." << endl;
+      return;
+    }
     for( int i = 0; i < Parameter( "SourceChList" )->NumValues(); i++ )
     {
       // We need to process and map channels accordingly
