@@ -324,19 +324,23 @@ DataIOFilter::Preflight( const SignalProperties& Input,
     bcierr << "Expected empty input signal" << endl;
 
   // Channel labels.
-  if( Parameters->Exists( "ChannelNames" ) && Parameter( "ChannelNames" )->NumValues() > 0 )
+  set<string> names;
+  LabelIndex& outputLabels = Output.ChannelLabels();
+  int namesFromParam = min( Output.Channels(), Parameter( "ChannelNames" )->NumValues() );
+  for( int i = 0; i < namesFromParam; ++i )
   {
-    set<string> names;
-    LabelIndex& outputLabels = Output.ChannelLabels();
-    for( int i = 0; i < min( Output.Channels(), Parameter( "ChannelNames" )->NumValues() ); ++i )
-    {
-      string name = Parameter( "ChannelNames" )( i );
-      if( names.find( name ) == names.end() )
-        names.insert( name );
-      else
-        bcierr << "Duplicate name: \"" << name << "\" in ChannelNames parameter" << endl;
-      outputLabels[ i ] = name;
-    }
+    string name = Parameter( "ChannelNames" )( i );
+    if( names.find( name ) == names.end() )
+      names.insert( name );
+    else
+      bcierr << "Duplicate name: \"" << name << "\" in ChannelNames parameter" << endl;
+    outputLabels[i] = name;
+  }
+  for( int i = namesFromParam; i < Output.Channels(); ++i )
+  {
+    ostringstream oss;
+    oss << "Ch" << i + 1;
+    outputLabels[i] = oss.str();
   }
   mInputBuffer.SetProperties( Output );
 
@@ -469,17 +473,16 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
               .Send( CfgID::ShowBaselines, true );
   }
   mTimingVis.Send( CfgID::Visible, mVisualizeTiming );
+#ifdef TODO
+# error Add BCIEvent::AllowEvents() and BCIEvent::DenyEvents(), call them from EnvironmentBase class.
+#endif // TODO
+  BCIEvent::SetEventQueue( &mBCIEvents );
 }
 
 
 void
 DataIOFilter::StartRun()
 {
-#ifdef TODO
-# error Add BCIEvent::AllowEvents() and BCIEvent::DenyEvents(), call them from EnvironmentBase class.
-#endif // TODO
-  BCIEvent::SetEventQueue( &mBCIEvents );
-
   mpADC->CallStartRun();
   mpFileWriter->CallStartRun();
 
@@ -504,8 +507,6 @@ DataIOFilter::StopRun()
   mpFileWriter->CallStopRun();
   mOutputBuffer = GenericSignal( 0, 0 );
   State( "Recording" ) = 0;
-
-  BCIEvent::SetEventQueue( NULL );
 }
 
 
