@@ -56,8 +56,11 @@ Histogram::Add( Number inValue, Number inWeight )
 }
 
 class Histogram&
-Histogram::Prune( Number inThreshold )
+Histogram::Prune( Number inWeightThreshold, Number inDistThreshold )
 {
+  if( inWeightThreshold > 0 && size() < 1 / inWeightThreshold )
+    return *this;
+
   iterator i = begin(),
            j = i;
   while( i != end() && ++j != end() )
@@ -72,18 +75,15 @@ Histogram::Prune( Number inThreshold )
     }
     else
     {
-      Number weight = i->second + j->second;
-      if( weight < inThreshold )
+      Number weight;
+      while( j != end() && ( ( weight = i->second + j->second ) < inWeightThreshold || j->first - i->first < inDistThreshold ) )
       {
         Number value = ( i->first * i->second + j->first * j->second ) / weight;
-        erase( i );
-        i = erase( j );
-        i = insert( i, make_pair( value, weight ) );
+        i->first = value;
+        i->second = weight;
+        j = erase( j );
       }
-      else
-      {
-        ++i;
-      }
+      ++i;
     }
     j = i;
   }

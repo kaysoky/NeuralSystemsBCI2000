@@ -48,8 +48,9 @@ class Histogram : private std::list< std::pair<Number, Number> >
   Histogram& operator*=( Number );
   // Add an observation with a certain weight.
   Histogram& Add( Number, Number );
-  // Collapse neighboring data points when their combined weight is below a threshold.
-  Histogram& Prune( Number );
+  // Collapse neighboring data points when their combined weight is below a threshold,
+  // or when their distance is below a threshold.
+  Histogram& Prune( Number weightThreshold, Number distThreshold );
   // Clear contents.
   Histogram& Clear();
   // Compute a power sum over weighted data points.

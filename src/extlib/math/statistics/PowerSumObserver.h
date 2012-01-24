@@ -56,17 +56,14 @@ class PowerSumObserver : public virtual ObserverBase
   virtual void DoClear();
 
  public:
-  virtual Number PowerSum0() const
+  virtual Number PowerSum0( MemPool& ) const
     { return mPowerSum0; }
-  virtual Vector PowerSum1() const
-    { return mPowerSum1; }
-  virtual Vector PowerSum2Diag() const
-    { return mPowerSum2Diag; }
-  virtual Matrix PowerSum2Full() const
-    { return mPowerSum2Full; }
+  virtual VectorPtr PowerSum1( MemPool& ) const;
+  virtual VectorPtr PowerSum2Diag( MemPool& ) const;
+  virtual MatrixPtr PowerSum2Full( MemPool& ) const;
 
  private:
-  bool   mCovarianceRequired;
+  bool mCovarianceRequired;
   Number mPowerSum0;
   Vector mPowerSum1,
          mPowerSum2Diag;

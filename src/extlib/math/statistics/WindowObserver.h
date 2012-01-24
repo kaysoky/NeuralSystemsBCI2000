@@ -58,13 +58,13 @@ class WindowObserver : public virtual ObserverBase, private WindowObserverDataCo
   virtual void DoClear();
 
  public:
-  virtual Number PowerSum0() const;
-  virtual Vector PowerSum1() const;
-  virtual Vector PowerSum2Diag() const;
-  virtual Matrix PowerSum2Full() const;
-  virtual Vector PowerSumDiag( unsigned int ) const;
-  virtual Vector CDF( Number ) const;
-  virtual Vector InverseCDF( Number ) const;
+  virtual Number PowerSum0( MemPool& ) const;
+  virtual VectorPtr PowerSum1( MemPool& ) const;
+  virtual VectorPtr PowerSum2Diag( MemPool& ) const;
+  virtual MatrixPtr PowerSum2Full( MemPool& ) const;
+  virtual VectorPtr PowerSumDiag( unsigned int, MemPool& ) const;
+  virtual VectorPtr CDF( Number, MemPool& ) const;
+  virtual VectorPtr InverseCDF( Number, MemPool& ) const;
 
  private:
   void RemoveOldSamples();

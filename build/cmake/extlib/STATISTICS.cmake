@@ -10,6 +10,7 @@
 
 # Define the source files
 SET( SRC_EXTLIB
+  ${BCI2000_SRC_DIR}/extlib/math/statistics/ObserverMemory.cpp
   ${BCI2000_SRC_DIR}/extlib/math/statistics/ObserverBase.cpp
   ${BCI2000_SRC_DIR}/extlib/math/statistics/PowerSumObserver.cpp 
   ${BCI2000_SRC_DIR}/extlib/math/statistics/HistogramObserver.cpp 
@@ -19,6 +20,7 @@ SET( SRC_EXTLIB
 # Define the headers
 SET( HDR_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/math/statistics/StatisticalObserver.h 
+  ${BCI2000_SRC_DIR}/extlib/math/statistics/ObserverMemory.h
   ${BCI2000_SRC_DIR}/extlib/math/statistics/ObserverBase.h 
   ${BCI2000_SRC_DIR}/extlib/math/statistics/PowerSumObserver.h 
   ${BCI2000_SRC_DIR}/extlib/math/statistics/HistogramObserver.h 

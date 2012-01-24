@@ -18,7 +18,7 @@ typedef vector<ObserverBase*> ObserverContainer;
 #define SEPARATOR "====================================================================================================================="
 #define OPTION( x, f )  else if( !::stricmp( argv[i], "--" #x ) ) x = f( ++i<argc ? argv[i] : "" )
 #define PRINT( x )      cout << #x ":\t" << x << endl
-#define SHOW( x )       cout << setw( COLWIDTH ) << ( *i )->x << '\t'
+#define SHOW( x )       cout << setw( COLWIDTH ) << (*i)->x << '\t'
 
 double normpdf( double x )
 {
@@ -168,10 +168,12 @@ main_( int argc, char** argv )
     ObserverBase* pLeft = CreateObserver( left ),
                 * pRight = CreateObserver( right );
     pLeft->SetQuantileAccuracy( leftaccuracy );
-    pRight->SetQuantileAccuracy( 0 );
+    pRight->SetQuantileAccuracy( -1 );
 
     Observer p( AllFunctions ); // This is used to observe the quantile output of the two observers.
+    p.SetWindowLength( 1000 );
     Observer h( AllFunctions ); // This is used to observe the histogram output of p.
+    h.SetWindowLength( 1000 );
 
     ObserverContainer observers;
     observers.push_back( pLeft );
@@ -208,46 +210,48 @@ main_( int argc, char** argv )
       Vector quantiles( 2 );
       for( ObserverContainer::iterator i = observers.begin(); i != observers.end(); ++i )
       {
-        ( *i )->Observe( value );
+        ( *i )->AgeBy( 1 ).Observe( value );
         cout << " | ";
         SHOW( Count() );
-        SHOW( Mean()[0] );
-        SHOW( Variance()[0] );
+        SHOW( Mean()()[0] );
+        SHOW( Variance()()[0] );
         if( showskewkurtosis )
         {
-          SHOW( Skewness()[0] );
-          SHOW( Kurtosis()[0] );
+          SHOW( Skewness()()[0] );
+          SHOW( Kurtosis()()[0] );
         }
         if( quantile >= 0 )
         {
-          SHOW( Quantile( quantile )[0] );
-          quantiles[i-observers.begin()] = ( *i )->Quantile( quantile )[0];
+          SHOW( Quantile( quantile )()[0] );
+          quantiles[i-observers.begin()] = ( *i )->Quantile( quantile )()[0];
         }
       }
       cout << '\n';
 
       if( quantile >= 0 )
       {
-        p.Observe( quantiles );
+        p.AgeBy( 1 ).Observe( quantiles );
 
-        Number meandiff = p.Mean()[1] - p.Mean()[0],
-               dev = sqrt( p.Variance()[0] + meandiff * meandiff );
+        Number meandiff = p.Mean()()[1] - p.Mean()()[0],
+               dev = sqrt( p.Variance()()[0] + meandiff * meandiff );
         if( dev > eps && metabins > 0 )
         {
-          Number center = p.Mean()[0] + meandiff / 2,
+          Number center = p.Mean()()[0] + meandiff / 2,
                  resolution = 3 * dev / metabins;
-          Vector edges;
-          Matrix histograms = p.Histogram( center, resolution, metabins + 2, &edges ),
-                 observedHistograms( histograms.size(), metabins );
+          Vector edges = BinEdges( center, resolution, metabins + 2 );
+          Matrix histograms = *p.Histogram( edges );
           histograms /= p.Count();
-          Vector centers( metabins );
+          h.AgeBy( 1 );
           for( int i = 0; i < metabins; ++i )
           {
-            centers[i] = edges[i] + resolution / 2;
+            Number value = edges[i] + resolution / 2;
             for( size_t j = 0; j < histograms.size(); ++j )
-              observedHistograms[j][i] = histograms[j][i + 1];
+            {
+              Vector buffer( histograms.size() );
+              buffer[j] = value;
+              h.Observe( buffer, histograms[j][i + 1] );
+            }
           }
-          h.ObserveHistograms( observedHistograms, centers );
         }
       }
 
@@ -269,9 +273,9 @@ main_( int argc, char** argv )
     if( metabins > 0 )
     {
       cout << SEPARATOR << endl;
-      Vector edges;
-      Vector histogram1 = pLeft->Histogram( mean, 3 * sqrt( pLeft->Variance()[0] ) / metabins, metabins, &edges )[0];
-      Vector histogram2 = pRight->Histogram( edges )[0];
+      Vector edges = BinEdges( mean, 3 * sqrt( pLeft->Variance()()[0] ) / metabins, metabins );
+      Vector histogram1 = pLeft->Histogram( edges )()[0];
+      Vector histogram2 = pRight->Histogram( edges )()[0];
       cout << "Histograms\n\tEdges:";
       for( size_t i = 0; i < edges.size(); ++i )
         cout << "\t" << edges[i];
@@ -288,27 +292,27 @@ main_( int argc, char** argv )
       cout << SEPARATOR << endl;
       // Statistics over quantiles
       cout << "Quantiles: mean1, mean2, variance1, variance2, covariance, correlation, rsquared" << endl;
-      double mean1 = p.Mean()[0],
-             mean2 = p.Mean()[1],
+      double mean1 = p.Mean()()[0],
+             mean2 = p.Mean()()[1],
              meandiff = mean1 - mean2,
-             var1 = p.Variance()[0],
-             var2 = p.Variance()[1],
-             cov = p.Covariance()[0][1];
+             var1 = p.Variance()()[0],
+             var2 = p.Variance()()[1],
+             cov = p.Covariance()()[0][1];
       cout << "\t\t"
            << '\t' << mean1
            << ",\t" << mean2
            << ",\t" << var1
            << ",\t" << var2
            << ",\t" << cov
-           << ",\t" << p.Correlation()[0][1]
-           << ",\t" << RSquared( p, p )[0][1]
+           << ",\t" << p.Correlation()()[0][1]
+           << ",\t" << RSquared( p, p )()[0][1]
            << endl;
       cout << "Full covariance: " << endl;
-      PrintMatrix( p.Covariance() );
+      PrintMatrix( *p.Covariance() );
       cout << "Full correlation: " << endl;
-      PrintMatrix( p.Correlation() );
+      PrintMatrix( *p.Correlation() );
       cout << "Full rsquared: " << endl;
-      PrintMatrix( RSquared( p, p ) );
+      PrintMatrix( *RSquared( p, p ) );
       cout << "Quantiles: requested accuracies: ";
       for( size_t i = 0; i < observers.size(); ++i )
         cout << '\t' << observers[i]->QuantileAccuracy();
@@ -335,24 +339,24 @@ main_( int argc, char** argv )
     {
       cout << SEPARATOR << endl;
       cout << "Quantiles meta: mean1, mean2, variance1, variance2, covariance, correlation, rsquared" << endl;
-      double mean1 = h.Mean()[0],
-             mean2 = h.Mean()[1],
+      double mean1 = h.Mean()()[0],
+             mean2 = h.Mean()()[1],
              meandiff = mean2 - mean1,
-             var1 = h.Variance()[0],
-             var2 = h.Variance()[1],
-             cov = h.Covariance()[0][1];
+             var1 = h.Variance()()[0],
+             var2 = h.Variance()()[1],
+             cov = h.Covariance()()[0][1];
       cout << "\t\t"
            << '\t' << mean1
            << ",\t" << mean2
            << ",\t" << var1
            << ",\t" << var2
            << ",\t" << cov
-           << ",\t" << h.Correlation()[0][1]
-           << ",\t" << RSquared( h, h )[0][1]
+           << ",\t" << h.Correlation()()[0][1]
+           << ",\t" << RSquared( h, h )()[0][1]
            << endl;
 
-      Vector edges;
-      Matrix histograms = h.Histogram( ( mean1 + mean2 ) / 2, 3 * sqrt( var2 + meandiff * meandiff ) / metabins, metabins, &edges );
+      Vector edges = BinEdges( ( mean1 + mean2 ) / 2, 3 * sqrt( var2 + meandiff * meandiff ) / metabins, metabins );
+      Matrix histograms = *h.Histogram( edges );
       cout << "Histograms:\n\tEdges:";
       for( size_t i = 0; i < edges.size(); ++i )
         cout << "\t" << edges[i];

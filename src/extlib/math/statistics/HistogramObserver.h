@@ -59,20 +59,17 @@ class HistogramObserver : public virtual ObserverBase
   virtual void DoClear();
 
  public:
-  virtual Number PowerSum0() const
+  virtual Number PowerSum0( MemPool& ) const
     { return mPowerSum0; }
-  virtual Vector PowerSum1() const
-    { return PowerSum( 1 ); }
-  virtual Vector PowerSum2Diag() const
-    { return PowerSum( 2 ); }
-  virtual Vector PowerSumDiag( unsigned int i ) const
-    { return PowerSum( i ); }
-  virtual Vector CDF( Number ) const;
-  virtual Vector InverseCDF( Number ) const;
+  virtual VectorPtr PowerSum1( MemPool& ioPool ) const
+    { return PowerSumDiag( 1, ioPool ); }
+  virtual VectorPtr PowerSum2Diag( MemPool& ioPool ) const
+    { return PowerSumDiag( 2, ioPool ); }
+  virtual VectorPtr PowerSumDiag( unsigned int i, MemPool& ioPool ) const;
+  virtual VectorPtr CDF( Number, MemPool& ioPool ) const;
+  virtual VectorPtr InverseCDF( Number, MemPool& ioPool ) const;
 
  private:
-  Vector PowerSum( unsigned int ) const;
-
   Number mPowerSum0; // This matches the sum of weights in every histogram, and is redundantly maintained for efficiency.
   std::vector<class Histogram> mHistograms;
 };

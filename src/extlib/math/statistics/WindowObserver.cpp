@@ -83,7 +83,7 @@ WindowObserver::DoClear()
 
 // Computational functions
 Number
-WindowObserver::PowerSum0() const
+WindowObserver::PowerSum0( MemPool& ) const
 {
   Number result = 0;
   for( const_iterator i = begin(); i != end(); ++i )
@@ -91,46 +91,55 @@ WindowObserver::PowerSum0() const
   return result;
 }
 
-Vector
-WindowObserver::PowerSum1() const
+VectorPtr
+WindowObserver::PowerSum1( MemPool& ioPool ) const
 {
-  Vector result( SampleSize() );
+  VectorPtr result = ioPool.NewVector( SampleSize() );
+  *result = 0;
   for( const_iterator i = begin(); i != end(); ++i )
-    result += i->first * i->second.first;
+    *result += i->first * i->second.first;
   return result;
 }
 
-Vector
-WindowObserver::PowerSum2Diag() const
+VectorPtr
+WindowObserver::PowerSum2Diag( MemPool& ioPool ) const
 {
-  Vector result( SampleSize() );
+  VectorPtr result = ioPool.NewVector( SampleSize() );
+  *result = 0;
   for( const_iterator i = begin(); i != end(); ++i )
-    result += i->first * i->first * i->second.first;
+    *result += i->first * i->first * i->second.first;
   return result;
 }
 
-Matrix
-WindowObserver::PowerSum2Full() const
+MatrixPtr
+WindowObserver::PowerSum2Full( MemPool& ioPool ) const
 {
-  Matrix result( SampleSize(), SampleSize() );
+  MatrixPtr result = ioPool.NewMatrix( SampleSize(), SampleSize() );
+  *result = 0;
   for( const_iterator i = begin(); i != end(); ++i )
-    result += i->first.OuterProduct( i->first * i->second.first );
+    for( int j = 0; j < SampleSize(); ++j )
+      for( int k = 0; k < SampleSize(); ++k )
+        ( *result )[j][k] += i->first[j] * i->first[k] * i->second.first;
   return result;
 }
 
-Vector
-WindowObserver::PowerSumDiag( unsigned int inP ) const
+VectorPtr
+WindowObserver::PowerSumDiag( unsigned int inP, MemPool& ioPool ) const
 {
+  VectorPtr result = ioPool.NewVector( SampleSize() );
   if( inP == 0 )
-    return Vector( PowerSum0(), SampleSize() );
+  {
+    *result = PowerSum0( ioPool );
+    return result;
+  }
 
-  Vector result( Number( 0 ), SampleSize() );
+  *result = 0;
   for( const_iterator i = begin(); i != end(); ++i )
   {
     Vector v = i->first;
     for( unsigned int j = 1; j < inP; ++j )
       v *= i->first;
-    result += v * i->second.first;
+    *result += v * i->second.first;
   }
   return result;
 }
@@ -159,29 +168,32 @@ class Index : public vector<WindowObserverDataContainer::const_iterator>
   };
 };
 
-Vector
-WindowObserver::CDF( Number inN ) const
+VectorPtr
+WindowObserver::CDF( Number inN, MemPool& ioPool ) const
 {
-  Vector result( SampleSize() );
   Index index( *this );
-  for( size_t i = 0; i < result.size(); ++i )
+  VectorPtr result = ioPool.NewVector( SampleSize() );
+  for( size_t i = 0; i < result->size(); ++i )
   {
     index.Sort( i );
     Number sum = 0;
     Index::const_iterator j = index.begin();
     while( j != index.end() && ( *j )->first[i] < inN )
       sum += ( *j++ )->second.first;
-    result[i] = sum;
+    ( *result )[i] = sum;
   }
   return result;
 }
 
-Vector
-WindowObserver::InverseCDF( Number inN ) const
+VectorPtr
+WindowObserver::InverseCDF( Number inN, MemPool& ioPool ) const
 {
-  Vector result( SampleSize() );
+  VectorPtr result = ioPool.NewVector( SampleSize() );
   if( empty() )
+  {
+    *result = 0;
     return result;
+  }
   // Check whether all weights are equal. If this is the case,
   // use a standard method for comparison reasons.
   const_iterator i = begin();
@@ -191,17 +203,17 @@ WindowObserver::InverseCDF( Number inN ) const
     equalWeights &= ( ( i++ )->second.first == weight );
   // The target index is only used for equal weights.
   // It is computed in accordance with the "R-1" method of computing quantiles.
-  int targetIndex = static_cast<int>( ::ceil( inN / PowerSum0() * size() ) - 1 );
+  int targetIndex = static_cast<int>( ::ceil( inN / Count() * size() ) - 1 );
   targetIndex = ::max<int>( targetIndex, 0 );
   targetIndex = ::min<int>( targetIndex, size() - 1 );
 
   Index index( *this );
-  for( size_t i = 0; i < result.size(); ++i )
+  for( size_t i = 0; i < result->size(); ++i )
   {
     index.Sort( i );
     if( equalWeights )
     { // For equal weights, we may use the pre-computed target index.
-      result[i] = index[targetIndex]->first[i];
+      ( *result )[i] = index[targetIndex]->first[i];
     }
     else
     { // For non-equal weights, we need to search for the appropriate
@@ -211,9 +223,9 @@ WindowObserver::InverseCDF( Number inN ) const
       while( sum < inN && j < index.size() )
         sum += index[j++]->second.first;
       if( j == 0 )
-        result[i] = index[0]->first[i];
+        ( *result )[i] = index[0]->first[i];
       else
-        result[i] = index[j-1]->first[i];
+        ( *result )[i] = index[j-1]->first[i];
     }
   }
   return result;

@@ -62,10 +62,14 @@ void
 PowerSumObserver::DoObserve( const Vector& inV, Number inWeight )
 {
   mPowerSum0 += inWeight;
-  mPowerSum1 += inV * inWeight;
-  mPowerSum2Diag += inV * inV * inWeight;
-  if( mCovarianceRequired )
-    mPowerSum2Full += inV.OuterProduct( inV * inWeight );
+  for( int i = 0; i < SampleSize(); ++i )
+  {
+    mPowerSum1[i] += inV[i] * inWeight;
+    mPowerSum2Diag[i] += inV[i] * inV[i] * inWeight;
+    if( mCovarianceRequired )
+      for( int j = 0; j < SampleSize(); ++j )
+        mPowerSum2Full[i][j] += inV[i] * inV[j] * inWeight;
+  }
 }
 
 void
@@ -79,5 +83,29 @@ PowerSumObserver::DoClear()
   mPowerSum2Diag.resize( SampleSize() );
   if( mCovarianceRequired )
     mPowerSum2Full.resize( SampleSize(), Vector( SampleSize() ) );
+}
+
+VectorPtr
+PowerSumObserver::PowerSum1( MemPool& ioPool ) const
+{
+  VectorPtr result = ioPool.NewVector( SampleSize() );
+  *result = mPowerSum1;
+  return result;
+}
+
+VectorPtr
+PowerSumObserver::PowerSum2Diag( MemPool& ioPool ) const
+{
+  VectorPtr result = ioPool.NewVector( SampleSize() );
+  *result = mPowerSum2Diag;
+  return result;
+}
+
+MatrixPtr
+PowerSumObserver::PowerSum2Full( MemPool& ioPool ) const
+{
+  MatrixPtr result = ioPool.NewMatrix( SampleSize(), SampleSize() );
+  *result = mPowerSum2Full;
+  return result;
 }
 

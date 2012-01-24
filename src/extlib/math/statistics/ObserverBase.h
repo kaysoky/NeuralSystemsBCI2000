@@ -28,18 +28,11 @@
 #ifndef OBSERVER_BASE_H
 #define OBSERVER_BASE_H
 
-#include <vector>
+#include "ObserverMemory.h"
 #include <limits>
-#include "Tensor.h"
 
 namespace StatisticalObserver
 {
-
-typedef double Number;
-typedef Tensor::Tensor<1, Number> Vector;
-typedef Tensor::Tensor<2, Number> Matrix;
-// A distribution is a list of weighted data points.
-typedef std::vector< std::pair<Vector, Number> > Distribution;
 
 const Number Unlimited = -1;
 const Number Auto = -1;
@@ -47,26 +40,28 @@ const Number eps = std::numeric_limits<Number>::epsilon();
 
 enum
 {
-  // Use these values, ORed together, as a constructor argument to
+  // Use the following values, ORed together, as a constructor argument to
   // indicate which functions you are going to use, or "AllFunctions"
   // to request all functions (this may entail performance penalties).
   None = 0,
   Count = 1 << 0,
   Mean = 1 << 1,
   Variance = 1 << 2,
-  Covariance = 1 << 3,
-  Correlation = 1 << 4,
-  CentralMoment = 1 << 5,
-  Skewness = 1 << 6,
-  Kurtosis = 1 << 7,
-  Quantile = 1 << 8,
-  QQuantiles = 1 << 9,
-  Histogram = 1 << 10,
+  RSquared_ = 1 << 3,
+  ZScore_ = 1 << 4,
+  Covariance = 1 << 5,
+  Correlation = 1 << 6,
+  CentralMoment = 1 << 7,
+  Skewness = 1 << 8,
+  Kurtosis = 1 << 9,
+  Quantile = 1 << 10,
+  QQuantiles = 1 << 11,
+  Histogram = 1 << 12,
   // Add new values immediately before the ConfigMax entry, and make sure
   // there are no gaps in the sequence of bits.
   ConfigMax,
 
-  MinConfig = Count | Mean | Variance, // Required by RSquared and ZScore functions
+  MinConfig = Count | Mean | Variance | RSquared_ | ZScore_,
   DefaultConfig = MinConfig,
   FullConfig = ( ConfigMax - 2 ) | ( ConfigMax - 1 ),
   AllFunctions = FullConfig,
@@ -75,11 +70,13 @@ enum
 // The base class for all Observers.
 class ObserverBase;
 
+// Computes a bin edges vector from parameters. To be used in conjunction with Histogram().
+Vector BinEdges( Number center, Number resolution, unsigned int numberOfBins );
 // Computes pairwise r squared values between channels in the first and second observer.
-Matrix RSquared( const ObserverBase&, const ObserverBase& );
+MatrixPtr RSquared( const ObserverBase&, const ObserverBase&, MemPool& = GlobalMemPool() );
 // Computes pairwise z scores between channels in the first and second observer,
 // using the second observer as a reference.
-Matrix ZScore( const ObserverBase&, const ObserverBase& reference );
+MatrixPtr ZScore( const ObserverBase&, const ObserverBase& reference, MemPool& = GlobalMemPool() );
 
 
 class ObserverBase
@@ -98,30 +95,10 @@ class ObserverBase
 
   // Methods, observation interface to the user
   //
-  //  Observe(Vector) ages existing data by one sample, and adds a sample
-  //  vector to the set of observations.
-  ObserverBase& Observe( Number );
-  ObserverBase& Observe( const Vector& );
-  //  For distribution-valued arguments, a number of observation vectors is expected,
-  //  paired with weights. For each observation of a distribution, the observer is
-  //  aged by 1.
-  ObserverBase& Observe( const Distribution& );
-  //  In ObserveData() for Matrix type arguments, the first index is regarded a sample index
-  //  (this is to simplify the case of a variable number of samples in the input
-  //  from the user's perspective).
-  //  Note that this is different from the GenericSignal case, where the second
-  //  index is treated as a sample index.
-  ObserverBase& ObserveData( const Matrix& );
-  //  In ObserveHistograms() for Matrix type arguments, the first index is regarded as a
-  //  channel index, so histograms extend along the second index.
-  ObserverBase& ObserveHistograms( const Matrix& weights, const Vector& values );
-  ObserverBase& ObserveHistograms( const Matrix& weights, const Matrix& values );
-  // The following templates accept GenericSignals.
-  template<typename T> ObserverBase& ObserveData( const T& ); // Interprets the signal as a sequence of data points.
-  template<typename T> ObserverBase& ObserveHistograms( const T& ); // Interprets the signal as a set of histograms (e.g., spectra).
+  ObserverBase& Observe( Number, Number weight = 1 );
+  ObserverBase& Observe( const Vector&, Number weight = 1 );
   //  AgeBy(n) ages the observer by the equivalent of n sample durations.
-  //  Observe() implies aging, so AgeBy() is only used to indicate missing
-  //  samples.
+  //  Typically, you call AgeBy(1) prior to Observe().
   ObserverBase& AgeBy( unsigned int count );
   ObserverBase& Clear();
 
@@ -155,24 +132,24 @@ class ObserverBase
 
   // Methods, statistics interface to the user
  public:
-  Number Count() const;
-  Vector Mean() const;
-  Vector Variance() const;   // Having no definition of unbiased (co)variance for aging observers,
-  Matrix Covariance() const; // this is always the biased (co)variance of the distribution.
-  Matrix Correlation() const;// Note that not all observers support computation of covariance.
+  Number Count( MemPool& = GlobalMemPool() ) const;
+  VectorPtr Mean( MemPool& = GlobalMemPool() ) const;
+  VectorPtr Variance( MemPool& = GlobalMemPool() ) const;   // Having no definition of unbiased (co)variance for aging observers,
+  MatrixPtr Covariance( MemPool& = GlobalMemPool() ) const; // this is always the biased (co)variance of the distribution.
+  MatrixPtr Correlation( MemPool& = GlobalMemPool() ) const;// Note that not all observers support computation of covariance.
                              // Calling the Covariance() function will then result in a BCIException
                              // which may be caught by the caller to avoid program termination.
   // Higher moments of marginal distributions.
-  Vector CentralMoment( unsigned int ) const; // Not all observers support computation of general central moments.
-  Vector Skewness() const; // Depends on CentralMoment(3).
-  Vector Kurtosis() const; // Excess Kurtosis, depends on CentralMoment(4).
+  VectorPtr CentralMoment( unsigned int, MemPool& = GlobalMemPool() ) const; // Not all observers support computation of general central moments.
+  VectorPtr Skewness( MemPool& = GlobalMemPool() ) const; // Depends on CentralMoment(3).
+  VectorPtr Kurtosis( MemPool& = GlobalMemPool() ) const; // Excess Kurtosis, depends on CentralMoment(4).
 
   // The Quantile() function returns a vector of values corresponding to the specified argument of
   // the marginal distributions' quantile functions.
-  Vector Quantile( Number ) const;
+  VectorPtr Quantile( Number, MemPool& = GlobalMemPool() ) const;
   // The QQuantiles() function returns a number of vectors representing q-quantiles for
   // marginal distributions, with the minimum added at the beginning, and the maximum added at the end.
-  Matrix QQuantiles( unsigned int q ) const;
+  MatrixPtr QQuantiles( unsigned int q, MemPool& = GlobalMemPool() ) const;
   // The QuantileAccuracy property describes the accuracy of the quantile
   // function in terms of its argument, i.e. a QuantileAccuracy of 0.05 means
   // Q(0.875) <= Quantile(0.9) < Q(0.925) where Q is the true quantile function
@@ -195,8 +172,8 @@ class ObserverBase
   // The Histogram() function returns vectors representing histograms of marginal distributions,
   // resampled to specified bins in the value domain. When bin edges are specified, bins may have
   // any width. In the result, the second index is a bin index.
-  Matrix Histogram( const Vector& binEdges ) const; // Returns binEdges.size() + 1 bins.
-  Matrix Histogram( Number center, Number resolution, unsigned int numberOfBins, Vector* outEdges = NULL ) const;
+  // Use the BinEdges( center, resolution, numberOfBins ) function to create a bin edge vector from parameters.
+  MatrixPtr Histogram( const Vector& binEdges, MemPool& = GlobalMemPool() ) const; // Returns binEdges.size() + 1 bins.
 
   // Interface to be implemented by descendants
  protected:
@@ -208,17 +185,18 @@ class ObserverBase
 
  public:
   //  Computation-related methods
+
   //   PowerSumX() should return the weighted sum of data points taken to the Xth power.
-  virtual Number PowerSum0() const = 0;
-  virtual Vector PowerSum1() const = 0;
-  virtual Vector PowerSum2Diag() const; // Return only the diagonal elements of the 2nd power.
-  virtual Matrix PowerSum2Full() const; // Return the full matrix of the 2nd power.
-                                        // An observer should provide at least one of the two PowerSum2 functions.
-  virtual Vector PowerSumDiag( unsigned int ) const; // The general diagonal power sum is not mandatory.
+  virtual Number PowerSum0( MemPool& ) const = 0;
+  virtual VectorPtr PowerSum1( MemPool& ) const = 0;
+  virtual VectorPtr PowerSum2Diag( MemPool& ) const; // Return only the diagonal elements of the 2nd power.
+  virtual MatrixPtr PowerSum2Full( MemPool& ) const; // Return the full matrix of the 2nd power.
+                                                     // An observer should provide at least one of the two PowerSum2 functions.
+  virtual VectorPtr PowerSumDiag( unsigned int, MemPool& ) const; // The general diagonal power sum is not mandatory.
   //   Cumulated distribution functions of marginal distributions.
   //   These are not mandatory but either both or none should be implemented by an observer.
-  virtual Vector CDF( Number ) const;        // The sum of weights below the value given as argument.
-  virtual Vector InverseCDF( Number ) const; // The inverse cumulated distribution function for each dimension (non-normalized argument).
+  virtual VectorPtr CDF( Number, MemPool& ) const;        // The sum of weights below the value given as argument.
+  virtual VectorPtr InverseCDF( Number, MemPool& ) const; // The inverse cumulated distribution function for each dimension (non-normalized argument).
 
   // Implied dependencies between computations.
   static int ImpliedConfig( int ); // Returns configuration with implied dependencies set.
@@ -236,34 +214,6 @@ class ObserverBase
   int    mSampleSize;
   Vector mBuffer;
 };
-
-// Template implementations
-template<typename T> ObserverBase&
-ObserverBase::ObserveData( const T& t )
-{
-  mBuffer.resize( t.Channels() );
-  for( int j = 0; j < t.Elements(); ++j )
-  {
-    for( int i = 0; i < t.Channels(); ++i )
-      mBuffer[i] = t( i, j );
-    Observe( mBuffer );
-  }
-  return *this;
-}
-
-template<typename T> ObserverBase&
-ObserverBase::ObserveHistograms( const T& t )
-{
-  const class PhysicalUnit& u = t.Properties().ElementUnit();
-  Vector values( t.Elements() );
-  for( int el = 0; el < t.Elements(); ++el )
-    values[el] = ( el - u.Offset() ) * u.Gain();
-  Matrix weights( Vector( t.Elements() ), t.Channels() );
-  for( int ch = 0; ch < t.Channels(); ++ch )
-    for( int el = 0; el < t.Elements(); ++el )
-      weights[ch][el] = t( ch, el );
-  return ObserveHistograms( weights, values );
-}
 
 } // namespace StatisticalObserver
 

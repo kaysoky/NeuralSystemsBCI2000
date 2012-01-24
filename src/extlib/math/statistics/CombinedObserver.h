@@ -26,8 +26,8 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef CONFIGURABLE_OBSERVER_H
-#define CONFIGURABLE_OBSERVER_H
+#ifndef COMBINED_OBSERVER_H
+#define COMBINED_OBSERVER_H
 
 #include "HistogramObserver.h"
 #include "PowerSumObserver.h"
@@ -48,8 +48,8 @@ class CombinedObserver : public virtual PowerSumObserver, public virtual Histogr
 
   CombinedObserver( int inConfig = DefaultConfig )
     : ObserverBase( inConfig, Supports ),
-      PowerSumObserver( inConfig & PowerSumObserver::Supports ),
-      HistogramObserver( inConfig & HistogramObserver::Supports ),
+      PowerSumObserver( ImpliedConfig( inConfig ) & PowerSumObserver::Supports ),
+      HistogramObserver( ImpliedConfig( inConfig ) & HistogramObserver::Supports ),
       mUseHistogram( ImpliedConfig( inConfig ) & ( StatisticalObserver::Quantile | StatisticalObserver::CentralMoment ) )
     {
     }
@@ -81,33 +81,33 @@ class CombinedObserver : public virtual PowerSumObserver, public virtual Histogr
     }
 
  public:
-  virtual Number PowerSum0() const
+  virtual Number PowerSum0( MemPool& ioPool ) const
     {
-      return PowerSumObserver::PowerSum0();
+      return PowerSumObserver::PowerSum0( ioPool );
     }
-  virtual Vector PowerSum1() const
+  virtual VectorPtr PowerSum1( MemPool& ioPool ) const
     {
-      return PowerSumObserver::PowerSum1();
+      return PowerSumObserver::PowerSum1( ioPool );
     }
-  virtual Vector PowerSum2Diag() const
+  virtual VectorPtr PowerSum2Diag( MemPool& ioPool ) const
     {
-      return PowerSumObserver::PowerSum2Diag();
+      return PowerSumObserver::PowerSum2Diag( ioPool );
     }
-  virtual Matrix PowerSum2Full() const
+  virtual MatrixPtr PowerSum2Full( MemPool& ioPool ) const
     {
-      return PowerSumObserver::PowerSum2Full();
+      return PowerSumObserver::PowerSum2Full( ioPool );
     }
-  virtual Vector PowerSumDiag( unsigned int i ) const
+  virtual VectorPtr PowerSumDiag( unsigned int i, MemPool& ioPool ) const
     {
-      return HistogramObserver::PowerSumDiag( i );
+      return HistogramObserver::PowerSumDiag( i, ioPool );
     }
-  virtual Vector CDF( Number p ) const
+  virtual VectorPtr CDF( Number p, MemPool& ioPool ) const
     {
-      return HistogramObserver::CDF( p );
+      return HistogramObserver::CDF( p, ioPool );
     }
-  virtual Vector InverseCDF( Number p ) const
+  virtual VectorPtr InverseCDF( Number p, MemPool& ioPool ) const
     {
-      return HistogramObserver::InverseCDF( p );
+      return HistogramObserver::InverseCDF( p, ioPool );
     }
 
  private:

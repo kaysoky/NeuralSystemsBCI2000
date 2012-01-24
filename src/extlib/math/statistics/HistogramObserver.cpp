@@ -54,7 +54,13 @@ HistogramObserver::DoAgeBy( unsigned int inCount )
   Number factor = ::pow( DecayFactor(), static_cast<int>( inCount ) );
   mPowerSum0 *= factor;
   for( size_t i = 0; i < mHistograms.size(); ++i )
+  {
     mHistograms[i] *= factor;
+    Number PowerSum1 = mHistograms[i].PowerSum( 1 ),
+           PowerSum2 = mHistograms[i].PowerSum( 2 ),
+           sdev = ::sqrt( ( PowerSum2 - PowerSum1 * PowerSum1 / mPowerSum0 ) / mPowerSum0 );
+    mHistograms[i].Prune( QuantileAccuracy(), sdev * QuantileAccuracy() );
+  }
 }
 
 void
@@ -62,8 +68,7 @@ HistogramObserver::DoObserve( const Vector& inV, Number inWeight )
 {
   mPowerSum0 += inWeight;
   for( size_t i = 0; i < mHistograms.size(); ++i )
-    mHistograms[i].Add( inV[i], inWeight )
-                  .Prune( QuantileAccuracy() );
+    mHistograms[i].Add( inV[i], inWeight );
 }
 
 void
@@ -74,29 +79,30 @@ HistogramObserver::DoClear()
   mHistograms.resize( SampleSize() );
 }
 
-Vector
-HistogramObserver::PowerSum( unsigned int inPower ) const
+VectorPtr
+HistogramObserver::PowerSumDiag( unsigned int inPower, MemPool& ioPool ) const
 {
-  Vector result( mHistograms.size() );
+  VectorPtr result = ioPool.NewVector( mHistograms.size() );
   for( size_t i = 0; i < mHistograms.size(); ++i )
-    result[i] = mHistograms[i].PowerSum( inPower );
+    ( *result )[i] = mHistograms[i].PowerSum( inPower );
   return result;
 }
 
-Vector
-HistogramObserver::CDF( Number inN ) const
+VectorPtr
+HistogramObserver::CDF( Number inN, MemPool& ioPool ) const
 {
-  Vector result( mHistograms.size() );
+  VectorPtr result = ioPool.NewVector( mHistograms.size() );
   for( size_t i = 0; i < mHistograms.size(); ++i )
-    result[i] = mHistograms[i].CDF( inN );
+    ( *result )[i] = mHistograms[i].CDF( inN );
   return result;
 }
 
-Vector
-HistogramObserver::InverseCDF( Number inN ) const
+VectorPtr
+HistogramObserver::InverseCDF( Number inN, MemPool& ioPool ) const
 {
-  Vector result( mHistograms.size() );
+  VectorPtr result = ioPool.NewVector( mHistograms.size() );
   for( size_t i = 0; i < mHistograms.size(); ++i )
-    result[i] = mHistograms[i].InverseCDF( inN );
+    ( *result )[i] = mHistograms[i].InverseCDF( inN );
   return result;
 }
+

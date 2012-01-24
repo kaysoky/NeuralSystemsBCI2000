@@ -36,48 +36,73 @@ using namespace bci;
 using namespace StatisticalObserver;
 
 // Independent function definitions
-Matrix
-StatisticalObserver::RSquared( const ObserverBase& inObs1, const ObserverBase& inObs2 )
+Vector
+StatisticalObserver::BinEdges( Number inCenter, Number inResolution, unsigned int inNumBins )
 {
+  Vector binEdges;
+  if( inNumBins < 1 )
+    throw bciexception( "NumBins argument is " << inNumBins << ", must be > 0" );
+  if( ::fabs( inResolution ) < eps )
+    throw bciexception( "Resolution argument is " << inResolution << ", may not be 0" );
+  binEdges.resize( inNumBins - 1 );
+  for( size_t i = 0; i < inNumBins - 1; ++i )
+    binEdges[i] = inResolution * ( i + 1 ) + inCenter - inResolution * inNumBins / 2;
+  return binEdges;
+}
+
+
+MatrixPtr
+StatisticalObserver::RSquared( const ObserverBase& inObs1, const ObserverBase& inObs2, MemPool& ioPool )
+{
+  if( inObs1.SampleSize() == 0 || inObs2.SampleSize() == 0 )
+    throw bciexception( "Trying to compute RSquared without observation" );
+
+  MatrixPtr result = ioPool.NewMatrix( inObs1.SampleSize(), inObs2.SampleSize() );
+
   Number n1 = inObs1.Count(),
          n2 = inObs2.Count();
   if( n1 < eps || n2 < eps )
-    throw bciexception( "Trying to compute r squared without observations" );
-
-  Vector sum1 = inObs1.PowerSum1(),
-         sum2 = inObs2.PowerSum1();
-  Vector sqSum1 = inObs1.PowerSum2Diag(),
-         sqSum2 = inObs2.PowerSum2Diag();
-
-  Matrix result( sum1.size(), sum2.size() );
-  for( size_t i = 0; i < sum1.size(); ++i )
-    for( size_t j = 0; j < sum2.size(); ++j )
-    {
-      Number G = ( sum1[i] + sum2[j] ) * ( sum1[i] + sum2[j] ) / ( n1 + n2 ),
-             numerator = sum1[i] * sum1[i] / n1 + sum2[j] * sum2[j] / n2 - G,
-             denominator = sqSum1[i] + sqSum2[j] - G,
-             rsq = 0;
-      if( ::fabs( denominator ) > eps )
-        rsq = ::max<Number>( numerator / denominator, 0 );
-      result[i][j] = rsq;
-    }
+  {
+    *result = 0;
+  }
+  else
+  {
+    VectorPtr sum1 = inObs1.PowerSum1( ioPool ),
+              sum2 = inObs2.PowerSum1( ioPool ),
+              sqSum1 = inObs1.PowerSum2Diag( ioPool ),
+              sqSum2 = inObs2.PowerSum2Diag( ioPool );
+    for( size_t i = 0; i < sum1->size(); ++i )
+      for( size_t j = 0; j < sum2->size(); ++j )
+      {
+        Number G = ( ( *sum1 )[i] + ( *sum2 )[j] ) * ( ( *sum1 )[i] + ( *sum2 )[j] ) / ( n1 + n2 ),
+               numerator = ( *sum1 )[i] * ( *sum1 )[i] / n1 + ( *sum2 )[j] * ( *sum2 )[j] / n2 - G,
+               denominator = ( *sqSum1 )[i] + ( *sqSum2 )[j] - G,
+               rsq = 0;
+        if( ::fabs( denominator ) > eps )
+          rsq = ::max<Number>( numerator / denominator, 0 );
+        ( *result )[i][j] = rsq;
+      }
+  }
   return result;
 }
 
-Matrix
-StatisticalObserver::ZScore( const ObserverBase& inDist, const ObserverBase& inRef )
+MatrixPtr
+StatisticalObserver::ZScore( const ObserverBase& inDist, const ObserverBase& inRef, MemPool& ioPool )
 {
-  Vector mean( inDist.Mean() ),
-         refMean( inRef.Mean() ),
-         refStd( sqrt( inRef.Variance() ) );
-
-  Matrix result( mean.size(), refMean.size() );
-  for( size_t i = 0; i < mean.size(); ++i )
-    for( size_t j = 0; j < refMean.size(); ++j )
-      if( ::fabs( refStd[j] ) > eps )
-        result[i][j] = ::fabs( mean[i] - refMean[j] ) / refStd[j];
+  VectorPtr mean = inDist.Mean(),
+            refMean = inRef.Mean(),
+            refStd = inRef.Variance();
+  refStd->transform( ::sqrt );
+  MatrixPtr result = ioPool.NewMatrix( mean->size(), refMean->size() );
+  for( size_t i = 0; i < mean->size(); ++i )
+    for( size_t j = 0; j < refMean->size(); ++j )
+      if( ::fabs( ( *refStd )[j] ) > eps )
+        ( *result )[i][j] = ::fabs( ( *mean )[i] - ( *refMean )[j] ) / ( *refStd )[j];
+      else
+        ( *result )[i][j] = 0;
   return result;
 }
+
 
 // ObserverBase definitions
 ObserverBase::ObserverBase( int inConfig, int inSupported )
@@ -95,15 +120,16 @@ ObserverBase::ObserverBase( int inConfig, int inSupported )
 
 // Observations
 ObserverBase&
-ObserverBase::Observe( Number inN )
+ObserverBase::Observe( Number inN, Number inWeight )
 {
-  mBuffer.resize( 1 );
+  if( mBuffer.size() != 1 )
+    mBuffer.resize( 1 );
   mBuffer[0] = inN;
-  return Observe( mBuffer );
+  return Observe( mBuffer, inWeight );
 }
 
 ObserverBase&
-ObserverBase::Observe( const Vector& inV )
+ObserverBase::Observe( const Vector& inV, Number inWeight )
 {
   if( mSampleSize == 0 )
   {
@@ -115,87 +141,9 @@ ObserverBase::Observe( const Vector& inV )
       "Observe(Vector) called with inconsistent sample sizes, expected: " << mSampleSize
       << ", got: " << inV.size()
     );
-  AgeBy( 1 );
-  DoObserve( inV, 1 );
+  DoObserve( inV, inWeight );
   return *this;
 }
-
-ObserverBase&
-ObserverBase::Observe( const Distribution& inD )
-{
-  if( mSampleSize == 0 && !inD.empty() )
-  {
-    mSampleSize = inD.front().first.size();
-    DoChange();
-  }
-  for( Distribution::const_iterator i = inD.begin(); i != inD.end(); ++i )
-    if( i->first.size() != mSampleSize )
-      throw bciexception(
-        "Observe(Distribution) called with inconsistent sample sizes, expected: " << mSampleSize
-        << ", got: " << i->first.size()
-      );
-  AgeBy( 1 );
-  for( Distribution::const_iterator i = inD.begin(); i != inD.end(); ++i )
-    DoObserve( i->first, i->second );
-  return *this;
-}
-
-ObserverBase&
-ObserverBase::ObserveData( const Matrix& inM )
-{
-  for( size_t i = 0; i < inM.size(); ++i )
-    Observe( inM[i] );
-  return *this;
-}
-
-ObserverBase&
-ObserverBase::ObserveHistograms( const Matrix& inWeights, const Vector& inValues )
-{
-  size_t numValues = inValues.size();
-  Matrix values( inWeights.size() );
-  for( size_t i = 0; i < inWeights.size(); ++i )
-  {
-    if( inWeights[i].size() != inValues.size() )
-      throw bciexception(
-        "Histogram length in Weights matrix differs from length of Values vector"
-       );
-    values[i] = inValues;
-  }
-  return ObserveHistograms( inWeights, values );
-}
-
-ObserverBase&
-ObserverBase::ObserveHistograms( const Matrix& inWeights, const Matrix& inValues )
-{
-  if( inWeights.size() != inValues.size() )
-    throw bciexception(
-      "Weights matrix size (" << inWeights.size() << ")"
-      " and Values matrix size (" << inValues.size() << ") disagree"
-    );
-  size_t numEntries = 0;
-  for( size_t i = 0; i < inWeights.size(); ++i )
-  {
-    if( inWeights[i].size() != inValues[i].size() )
-      throw bciexception(
-        "Histogram length differs between Weights matrix, and Values matrix, in index " << i
-      );
-     numEntries += inWeights[i].size();
-  }
-
-  Distribution dist( numEntries );
-  Distribution::iterator d = dist.begin();
-  for( size_t i = 0; i < inWeights.size(); ++i )
-  {
-    for( size_t j = 0; j < inWeights[i].size(); ++j, ++d )
-    {
-      d->first.resize( inWeights.size(), Number( 0 ) );
-      d->first[i] = inValues[i][j];
-      d->second = inWeights[i][j];
-    }
-  }
-  return Observe( dist );
-}
-
 
 ObserverBase&
 ObserverBase::AgeBy( unsigned int inCount )
@@ -263,255 +211,260 @@ ObserverBase::Change()
     throw bciexception( ClassName( typeid( *this ) ) << " was not configured to compute function " << #x << "()" )
 
 Number
-ObserverBase::Count() const
+ObserverBase::Count( MemPool& ioPool ) const
 {
   REQUIRE( Count );
-  return PowerSum0();
+  return PowerSum0( ioPool );
 }
 
-Vector
-ObserverBase::Mean() const
+VectorPtr
+ObserverBase::Mean( MemPool& ioPool ) const
 {
   REQUIRE( Mean );
-  Number count = Count();
-  Vector sum = PowerSum1();
-  if( count < eps )
-    throw bciexception( "Trying to compute mean without observation" );
-  return Vector( sum / count );
-}
-
-Vector
-ObserverBase::Variance() const
-{
-  REQUIRE( Variance );
-  Vector mean = Mean(),
-         sqMean = PowerSum2Diag();
-  sqMean /= Count();
-  return Vector( abs( sqMean - mean * mean ) );
-}
-
-Matrix
-ObserverBase::Covariance() const
-{
-  REQUIRE( Covariance );
-  Vector mean = Mean();
-  Matrix result = PowerSum2Full();
-  result /= Count();
-  result -= mean.OuterProduct( mean );
+  VectorPtr result = PowerSum1( ioPool );
+  *result /= Count( ioPool );
   return result;
 }
 
-Matrix
-ObserverBase::Correlation() const
+VectorPtr
+ObserverBase::Variance( MemPool& ioPool ) const
+{
+  REQUIRE( Variance );
+  VectorPtr result = PowerSum2Diag( ioPool );
+  *result /= Count( ioPool );
+  VectorPtr sqMean = Mean( ioPool );
+  *sqMean *= *sqMean;
+  *result -= *sqMean;
+  for( size_t i = 0; i < result->size(); ++i )
+    if( ( *result )[i] < 0 )
+      ( *result )[i] = 0;
+  return result;
+}
+
+MatrixPtr
+ObserverBase::Covariance( MemPool& ioPool ) const
+{
+  REQUIRE( Covariance );
+  MatrixPtr result = PowerSum2Full( ioPool );
+  *result /= Count();
+  result->SubtractOuterProduct( *Mean( ioPool ) );
+  return result;
+}
+
+MatrixPtr
+ObserverBase::Correlation( MemPool& ioPool ) const
 {
   REQUIRE( Correlation );
-  Matrix result = Covariance();
-  for( size_t i = 0; i < result.size(); ++i )
+  MatrixPtr result = Covariance( ioPool );
+  for( size_t i = 0; i < result->size(); ++i )
   {
-    Number varI = result[i][i];
-    result[i][i] = 1;
-    for( size_t j = i + 1; j < result.size(); ++j )
+    Number varI = ( *result )[i][i];
+    ( *result )[i][i] = 1;
+    for( size_t j = i + 1; j < result->size(); ++j )
     {
-      Number varJ = result[j][j];
+      Number varJ = ( *result )[j][j];
       if( varI < eps && varJ < eps )
       { // For a pair of constant values, we return 0
         // (midway between perfect correlation, and perfect anticorrelation).
-        result[i][j] = 0;
+        ( *result )[i][j] = 0;
       }
       else
       { // If only one of the values is constant,
         // covariance will be zero, and we return zero correlation.
         if( varI >= eps )
-          result[i][j] /= sqrt( varI );
+          ( *result )[i][j] /= ::sqrt( varI );
         if( varJ >= eps )
-          result[i][j] /= sqrt( varJ );
+          ( *result )[i][j] /= ::sqrt( varJ );
       }
-      result[j][i] = result[i][j];
+      ( *result )[j][i] = ( *result )[i][j];
     }
   }
   return result;
 }
 
-Vector
-ObserverBase::CentralMoment( unsigned int inN ) const
+VectorPtr
+ObserverBase::CentralMoment( unsigned int inN, MemPool& ioPool ) const
 {
   REQUIRE( CentralMoment );
-  switch( inN )
+  VectorPtr result = ioPool.NewVector( SampleSize() );
+  if( inN == 0 )
+    *result = 1;
+  else if( inN == 1 )
+    *result = 0;
+  else if( inN == 2 )
+    result = Variance( ioPool );
+  else
   {
-    case 0:
-      return Vector( Number( 1 ), SampleSize() );
-    case 1:
-      return Vector( Number( 0 ), SampleSize() );
-    case 2:
-      return Variance();
-  }
-  Vector result( 0, SampleSize() ),
-         negativeMean( -Mean() ),
-         meanPower( 1, SampleSize() );
-  for( signed int j = inN; j >= 0; --j, meanPower *= negativeMean )
-  {
-    Number binomialCoeff = 1;
-    for( signed int i = 1; i <= j; ++i )
-      binomialCoeff *= ( inN - ( j - i ) ) / i;
-    result += binomialCoeff * meanPower * PowerSumDiag( j ) / PowerSum0();
+    struct {
+      int operator()( int n, int k )
+      {
+        bciassert( n >= k );
+        if( k > n - k )
+          k = n - k;
+        int r = 1,
+            j = 0;
+        while( j < k )
+        {
+          r *= ( n - j );
+          r /= ++j;
+        }
+        return r;
+      }
+    } binomialCoeff;
+
+    VectorPtr negativeMean = Mean( ioPool ),
+              meanPower = ioPool.NewVector( SampleSize() );
+    *negativeMean *= -1;
+    *meanPower = 1;
+    Number count = PowerSum0( ioPool );
+    *result = 0;
+    for( signed int j = inN; j >= 0; --j, *meanPower *= *negativeMean )
+    {
+      VectorPtr summand = PowerSumDiag( j, ioPool );
+      *summand *= *meanPower;
+      *summand *= binomialCoeff( inN, j ) / count;
+      *result += *summand;
+    }
   }
   return result;
 }
 
-Vector
-ObserverBase::Skewness() const
+VectorPtr
+ObserverBase::Skewness( MemPool& ioPool ) const
 {
   REQUIRE( Skewness );
-  Vector variance( Variance() ),
-         denominator( sqrt( variance * variance * variance ) ),
-         result( CentralMoment( 3 ) );
-  for( size_t i = 0; i < result.size(); ++i )
+  VectorPtr variance = Variance( ioPool ),
+            denominator = ioPool.NewVector( SampleSize() );
+  *denominator = *variance;
+  *denominator *= *variance;
+  *denominator *= *variance;
+  denominator->transform( ::sqrt );
+  VectorPtr result = CentralMoment( 3, ioPool );
+  for( size_t i = 0; i < result->size(); ++i )
   {
-    if( denominator[i] < eps )
-      result[i] = 0; // For zero variance, skewness is 0.
+    if( ( *denominator )[i] < eps )
+      ( *result )[i] = 0; // For zero variance, skewness is 0.
     else
-      result[i] /= denominator[i];
+      ( *result )[i] /= ( *denominator )[i];
   }
   return result;
 }
 
-Vector
-ObserverBase::Kurtosis() const
+VectorPtr
+ObserverBase::Kurtosis( MemPool& ioPool ) const
 {
   REQUIRE( Kurtosis );
-  Vector variance( Variance() ),
-         denominator( variance * variance ),
-         result( CentralMoment( 4 ) );
-  for( size_t i = 0; i < result.size(); ++i )
+  VectorPtr denominator = Variance( ioPool );
+  *denominator *= *denominator;
+  VectorPtr result = CentralMoment( 4, ioPool );
+  for( size_t i = 0; i < result->size(); ++i )
   {
-    if( denominator[i] < eps )
-      result[i] = 1; // The zero variance limit of the standardized 4th central moment is 1.
+    if( ( *denominator )[i] < eps )
+      ( *result )[i] = 1; // The zero variance limit of the standardized 4th central moment is 1.
     else
-      result[i] /= denominator[i];
-    result[i] -= 3;
+      ( *result )[i] /= ( *denominator )[i];
   }
+  *result -= 3;
   return result;
 }
 
-Vector
-ObserverBase::Quantile( Number inP ) const
+VectorPtr
+ObserverBase::Quantile( Number inP, MemPool& ioPool ) const
 {
   REQUIRE( Quantile );
   if( inP < 0 || inP > 1 )
     throw bciexception( "Argument is " << inP << ", must be in [0,1]" );
-  return InverseCDF( inP * PowerSum0() );
+  return InverseCDF( inP * PowerSum0( ioPool ), ioPool );
 }
 
-Matrix
-ObserverBase::QQuantiles( unsigned int inQ ) const
+MatrixPtr
+ObserverBase::QQuantiles( unsigned int inQ, MemPool& ioPool ) const
 {
   REQUIRE( QQuantiles );
-  Vector quantile = Quantile( 0 );
-  Matrix result( quantile.size(), inQ + 1 );
-  for( size_t j = 0; j < result.size(); ++j )
-    result[j][0] = quantile[j];
-  for( size_t i = 1; i <= inQ; ++i )
+  MatrixPtr result = ioPool.NewMatrix( SampleSize(), inQ + 1 );
+  for( size_t i = 0; i <= inQ; ++i )
   {
-    quantile = Quantile( 1.0 * i / inQ );
-    for( size_t j = 0; j < result.size(); ++j )
-      result[j][i] = quantile[j];
+    VectorPtr quantile = Quantile( 1.0 * i / inQ, ioPool );
+    for( size_t j = 0; j < result->size(); ++j )
+      ( *result )[j][i] = ( *quantile )[j];
   }
   return result;
 }
 
-Matrix
-ObserverBase::Histogram( Number inCenter, Number inResolution, unsigned int inNumBins, Vector* outpEdges ) const
+MatrixPtr
+ObserverBase::Histogram( const Vector& inBinEdges, MemPool& ioPool ) const
 {
   REQUIRE( Histogram );
-  Vector binEdges;
-  if( inNumBins == 0 )
-  {
-    if( outpEdges )
-      *outpEdges = binEdges;
-    return Matrix( SampleSize() );
-  }
-  if( ::fabs( inResolution ) < eps )
-    throw bciexception( "Resolution argument is " << inResolution << ", may not be 0" );
-  binEdges.resize( inNumBins - 1 );
-  for( size_t i = 0; i < inNumBins - 1; ++i )
-    binEdges[i] = inResolution * ( i + 1 ) + inCenter - inResolution * inNumBins / 2;
-  if( outpEdges )
-    *outpEdges = binEdges;
-  return Histogram( binEdges );
-}
-
-Matrix
-ObserverBase::Histogram( const Vector& inBinEdges ) const
-{
-  REQUIRE( Histogram );
-  Matrix result( SampleSize(), inBinEdges.size() + 1 );
-  Vector leftCDF( SampleSize() );
+  MatrixPtr result = ioPool.NewMatrix( SampleSize(), inBinEdges.size() + 1 );
+  VectorPtr leftCDF = ioPool.NewVector( SampleSize() );
+  *leftCDF = 0;
   size_t bin = 0;
   while( bin < inBinEdges.size() )
   {
-    Vector rightCDF( CDF( inBinEdges[bin] ) ),
-           binValues( rightCDF - leftCDF );
-    leftCDF = rightCDF;
-    for( size_t i = 0; i < result.size(); ++i )
-      result[i][bin] = binValues[i];
+    VectorPtr rightCDF = CDF( inBinEdges[bin], ioPool );
+    *leftCDF -= *rightCDF;
+    for( size_t i = 0; i < result->size(); ++i )
+      ( *result )[i][bin] = -( *leftCDF )[i];
     ++bin;
+    leftCDF = rightCDF;
   }
-  for( size_t i = 0; i < result.size(); ++i )
-    result[i][bin] = PowerSum0() - leftCDF[i];
+  Number count = Count( ioPool );
+  for( size_t i = 0; i < result->size(); ++i )
+    ( *result )[i][bin] = count - ( *leftCDF )[i];
   return result;
 }
 
 // Default implementations of computation functions
-Vector
-ObserverBase::PowerSum2Diag() const
+VectorPtr
+ObserverBase::PowerSum2Diag( MemPool& ioPool ) const
 {
-  Matrix p = PowerSum2Full();
-  for( size_t i = 1; i < p.size(); ++i )
-  {
-    bciassert( p[i].size() > i );
-    p[0][i] = p[i][i];
-  }
-  return p[0];
+  MatrixPtr full = PowerSum2Full( ioPool );
+  VectorPtr result = ioPool.NewVector( SampleSize() );
+  for( size_t i = 1; i < result->size(); ++i )
+    ( *result )[i] = ( *full )[i][i];
+  return result;
 }
 
 #define UNSUPPORTED throw bciexception( ClassName( typeid( *this ) ) << " does not support this computation" )
 
-Matrix
-ObserverBase::PowerSum2Full() const
+MatrixPtr
+ObserverBase::PowerSum2Full( MemPool& ioPool ) const
 {
   UNSUPPORTED;
-  return Matrix();
+  return ioPool.NewMatrix( 0, 0 );
 }
 
-Vector
-ObserverBase::PowerSumDiag( unsigned int i ) const
+VectorPtr
+ObserverBase::PowerSumDiag( unsigned int i, MemPool& ioPool ) const
 {
+  VectorPtr result = ioPool.NewVector( SampleSize() );
   switch( i )
   {
     case 0:
-      return Vector( PowerSum0(), SampleSize() );
+      *result = PowerSum0( ioPool );
     case 1:
-      return PowerSum1();
+      result = PowerSum1( ioPool );
     case 2:
-      return PowerSum2Diag();
+      result = PowerSum2Diag( ioPool );
+    default:
+      UNSUPPORTED;
   }
-  UNSUPPORTED;
-  return Vector();
+  return result;
 }
 
-Vector
-ObserverBase::CDF( Number ) const
+VectorPtr
+ObserverBase::CDF( Number, MemPool& ioPool ) const
 {
   UNSUPPORTED;
-  return Vector();
+  return ioPool.NewVector( SampleSize() );
 }
 
 
-Vector
-ObserverBase::InverseCDF( Number ) const
+VectorPtr
+ObserverBase::InverseCDF( Number, MemPool& ioPool ) const
 {
   UNSUPPORTED;
-  return Vector();
+  return ioPool.NewVector( SampleSize() );
 }
 
 int
