@@ -5,23 +5,23 @@
 //   line tools.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////
 #include "bci_tool.h"
@@ -45,11 +45,6 @@ using namespace std;
 
 int main( int argc, const char** argv )
 {
-#ifdef HAVE_BIN_MODE
-  setmode( fileno( stdin ), O_BINARY );
-  setmode( fileno( stdout ), O_BINARY );
-#endif
-
   if( ToolInfo[ name ] == "" )
   {
     size_t nameBegin = string( argv[ 0 ] ).find_last_of( "/\\" );
@@ -79,17 +74,23 @@ int main( int argc, const char** argv )
     bool        help;
     bool        version;
     const char* inputFile;
+    int         bufferSize;
   } options =
   {
     true,
     false,
     false,
     NULL,
+    4096,
   };
   int i = 0;
   while( ++i < argc && argv[ i ][ 0 ] == '-' )
   {
-    switch( argv[ i ][ 1 ] )
+    if( ::strlen( argv[ i ] ) < 2 )
+    {
+      toolOptions.insert( argv[ i ] );
+    }
+    else switch( argv[ i ][ 1 ] )
     {
       case '-':
         {
@@ -106,11 +107,28 @@ int main( int argc, const char** argv )
           }
           else if( longOption == "input" )
           {
-            options.inputFile = argv[ i ] + 2;
-            if( options.inputFile == "" )
+            if( i == argc - 1 )
             {
               options.execute = false;
               options.help = true;
+            }
+            else
+            {
+              options.inputFile = argv[ i + 1 ];
+              ++i;
+            }
+          }
+          else if( longOption == "buffer" )
+          {
+            if( i == argc - 1 )
+            {
+              options.execute = false;
+              options.help = true;
+            }
+            else
+            {
+              options.bufferSize = ::atoi( argv[ i + 1 ] );
+              ++i;
             }
           }
           else
@@ -137,6 +155,20 @@ int main( int argc, const char** argv )
           options.help = true;
         }
         break;
+      case 'b':
+      case 'B':
+      {
+        const char* size = argv[ i ] + 2;
+        if( size == "" )
+        {
+          options.execute = false;
+          options.help = true;
+        }
+        else
+        {
+          options.bufferSize = ::atoi( size );
+        }
+      } break;
       default:
         toolOptions.insert( argv[ i ] );
     }
@@ -158,6 +190,23 @@ int main( int argc, const char** argv )
     cerr << "Could not open " << outputFile << " for output" << endl;
     result = fileIOError;
   }
+#endif
+
+  int mode = _IOFBF;
+  if( options.bufferSize < 1 )
+  {
+    options.bufferSize = 0;
+    mode = _IONBF;
+  }
+  if( ::setvbuf( stdin, NULL, mode, options.bufferSize )
+      ||::setvbuf( stdout, NULL, mode, options.bufferSize ) )
+  {
+    cerr << "Could not set buffer size to " << options.bufferSize << endl;
+    result = fileIOError;
+  }
+#ifdef HAVE_BIN_MODE
+  ::setmode( fileno( stdin ), O_BINARY );
+  ::setmode( fileno( stdout ), O_BINARY );
 #endif
 
   if( result == noError && options.execute )
@@ -192,7 +241,8 @@ int main( int argc, const char** argv )
         << "Options are:\n"
         << "\t-h,       --help        \tDisplay this help\n"
         << "\t-v,       --version     \tOutput version information\n"
-        << "\t-i<file>, --input<file> \tGet input from <file>\n";
+        << "\t-i<file>, --input<file> \tGet input from <file>\n"
+        << "\t-b<size>, --buffer<size>\tSet IO buffer to <size>\n";
     for( int i = firstOption; ToolInfo[ i ] != ""; ++i )
       out << '\t' << ToolInfo[ i ] << '\n';
     out << '\n' << ToolInfo[ description ] << '\n';
