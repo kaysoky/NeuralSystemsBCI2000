@@ -31,6 +31,7 @@
 #define BCI_ERROR_H
 
 #include <sstream>
+#include <list>
 #include "ClassName.h"
 #include "Lockable.h"
 
@@ -68,10 +69,13 @@ namespace BCIError
 
   void SetOperatorStream( std::ostream*, const OSMutex* = NULL );
 
+  class ContextFrame;
+
   class OutStream : public Lockable, public std::ostream
   {
    friend class ::EnvironmentBase;
    friend class ::CoreModule;
+   friend class ContextFrame;
 
    typedef void ( *FlushHandler )( const std::string& );
 
@@ -91,6 +95,8 @@ namespace BCIError
       { return Debug( debugLevel ); }
     OutStream& Debug( int debugLevel );
 
+    bool Empty()
+      { return Flushes() == 0; }
     int Flushes()
       { return mBuf.Flushes(); }
     void Clear()
@@ -99,8 +105,7 @@ namespace BCIError
       { std::ostream::clear(); mBuf.Reset(); }
 
    private:
-    static void SetContext( const std::string& s )
-      { sContext = s; }
+    static void SetContext( const std::string& );
     static void SetDebugLevel( int i )
       { sDebugLevel = i; }
 
@@ -116,8 +121,8 @@ namespace BCIError
         mNumFlushes( 0 )
       {}
 
-      void SetContext( const std::string& s )
-        { mContext = s; }
+      void SetContext( const std::list<std::string>& );
+      void SetContext( const std::string& );
       FlushHandler SetFlushHandler( FlushHandler f = NULL );
       int Flushes()
         { return mNumFlushes; }
@@ -136,10 +141,27 @@ namespace BCIError
       virtual int   sync();
     } mBuf;
 
-    static std::string sContext;
-    static int         sDebugLevel; // global debug level
+    static std::list<std::string> sContext;
+    static int sDebugLevel; // global debug level
   };
-}
+
+  class ContextFrame
+  {
+   public:
+    ContextFrame( const std::string& s )
+      : mCopied( false )
+      { OutStream::sContext.push_back( s ); }
+    ContextFrame( ContextFrame& c )
+      : mCopied( false )
+      { c.mCopied = true; }
+    ~ContextFrame()
+      { if( !mCopied ) OutStream::sContext.pop_back(); }
+
+   private:
+    bool mCopied;
+  };
+
+} // namespace BCIError
 
 extern BCIError::OutStream bcierr___;
 extern BCIError::OutStream bciout___;

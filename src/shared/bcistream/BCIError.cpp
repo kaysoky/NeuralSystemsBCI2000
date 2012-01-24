@@ -47,8 +47,8 @@ BCIError::OutStream bcidbg___( BCIError::DebugMessage );
 namespace BCIError
 {
 
-string OutStream::sContext = "";
-int    OutStream::sDebugLevel = 0;
+list<string> OutStream::sContext;
+int OutStream::sDebugLevel = 0;
 
 OutStream&
 OutStream::operator()( const string& inContext )
@@ -77,12 +77,42 @@ OutStream::Debug( int inDebugLevel )
   return *this;
 }
 
+void
+OutStream::SetContext( const std::string& s )
+{
+  if( s.empty() )
+  {
+    if( !OutStream::sContext.empty() )
+      OutStream::sContext.pop_back();
+  }
+  else
+    OutStream::sContext.push_back( s );
+}
+
+void
+OutStream::StringBuf::SetContext( const list<string>& s )
+{
+  mContext.clear();
+  if( !s.empty() )
+    for( list<string>::const_iterator i = s.begin(); i != s.end(); ++i )
+      mContext += *i + ": ";
+}
+
+void
+OutStream::StringBuf::SetContext( const std::string& s )
+{
+  if( s.empty() )
+    mContext.clear();
+  else
+    mContext = s + ": ";
+}
+
 OutStream::FlushHandler
 OutStream::StringBuf::SetFlushHandler( OutStream::FlushHandler f )
 {
   if( str().length() > 1 )
   {
-    string message = mContext.empty() ? str() : mContext + ": " + str();
+    string message = mContext + str();
     size_t pos;
     while( ( pos = message.find( '\0' ) ) != string::npos )
       message = message.substr( 0, pos ) + message.substr( pos + 1 );

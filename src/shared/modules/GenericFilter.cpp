@@ -286,8 +286,8 @@ GenericFilter::InstantiateFilters()
                                + " output (boolean)";
       pFilter->Parameters->Add( Param( paramDefinition ), sortingHint );
     }
+    ErrorContext( "" );
   }
-  ErrorContext( "" );
 }
 
 void
