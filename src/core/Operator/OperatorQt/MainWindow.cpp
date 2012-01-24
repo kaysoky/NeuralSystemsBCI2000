@@ -189,7 +189,8 @@ MainWindow::UpdateDisplay()
     windowCaption += mTitle;
   }
 
-  switch( BCI_GetStateOfOperation() )
+  int stateOfOperation = BCI_GetStateOfOperation();
+  switch( stateOfOperation )
   {
     case BCI_StateStartup:
       statusText = "System Status: <Idle>";
@@ -199,6 +200,7 @@ MainWindow::UpdateDisplay()
       break;
     case BCI_StateResting:
     case BCI_StateSuspended:
+    case BCI_StateParamsModified:
       windowCaption += " - " TXT_OPERATOR_SUSPENDED " " + timeElapsed.toString( "mm:ss" ) + " s";
       statusText = TXT_OPERATOR_SUSPENDED;
       break;
@@ -211,6 +213,9 @@ MainWindow::UpdateDisplay()
       break;
     case BCI_StateUnavailable:
       statusText = "Fatal Error ...";
+      break;
+    default:
+      statusText = "System Status: <" + QString::number( stateOfOperation ) + ">";
   }
 
   int nStatusLabels = sizeof( mpStatusLabels ) / sizeof( *mpStatusLabels );
