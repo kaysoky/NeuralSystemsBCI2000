@@ -1,5 +1,5 @@
 /*
- * @(#)thinkgear.h    4.1    Jun 26, 2009
+ * @(#)thinkgear.h    4.2    Sep 28, 2009
  *
  * Copyright (c) 2008-2009 NeuroSky, Inc. All Rights Reserved
  * NEUROSKY PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
@@ -29,11 +29,13 @@
  * Tier 2:  Requires TG_GetNewConnectionId()
  *     TG_SetStreamLog()
  *     TG_SetDataLog()
+ *     TG_EnableLowPassFilter()
  *     TG_Connect()
  *     TG_FreeConnection()
  *
  * Tier 3:  Requires TG_Connect()
  *     TG_ReadPackets()
+ *     TG_GetValueStatus()
  *     TG_GetValue()
  *     TG_SendByte()
  *     TG_SetBaudrate()
@@ -51,6 +53,9 @@
  *     COMPILE_FOR_JNI
  *
  * @author Kelvin Soo
+ * @version 4.2 Sep 28, 2009 Kelvin Soo
+ *   - Added TG_EnableLowPassFilter() function.  Compatible with TGCD
+ *     version 10 and above.
  * @version 4.1 Jun 26, 2009 Kelvin Soo
  *   - Updated name of library from ThinkGear Connection API to
  *     ThinkGear Communications Driver (TGCD). The library still
@@ -113,21 +118,26 @@ extern "C" {
 #define TG_STREAM_FILE_PACKETS 2
 
 /**
- * Data type that can be requested from TG_GetValue().
+ * Data types that can be requested from TG_GetValue().  Only
+ * certain data types are output by certain ThinkGear chips
+ * and headsets.  Please refer to the Communications Protocol
+ * document for your chip/headset to determine which data types
+ * are available for your hardware.
  */
-#define TG_DATA_BATTERY      0
-#define TG_DATA_POOR_SIGNAL  1
-#define TG_DATA_ATTENTION    2
-#define TG_DATA_MEDITATION   3
-#define TG_DATA_RAW          4
-#define TG_DATA_DELTA        5
-#define TG_DATA_THETA        6
-#define TG_DATA_ALPHA1       7
-#define TG_DATA_ALPHA2       8
-#define TG_DATA_BETA1        9
-#define TG_DATA_BETA2       10
-#define TG_DATA_GAMMA1      11
-#define TG_DATA_GAMMA2      12
+#define TG_DATA_BATTERY             0
+#define TG_DATA_POOR_SIGNAL         1
+#define TG_DATA_ATTENTION           2
+#define TG_DATA_MEDITATION          3
+#define TG_DATA_RAW                 4
+#define TG_DATA_DELTA               5
+#define TG_DATA_THETA               6
+#define TG_DATA_ALPHA1              7
+#define TG_DATA_ALPHA2              8
+#define TG_DATA_BETA1               9
+#define TG_DATA_BETA2              10
+#define TG_DATA_GAMMA1             11
+#define TG_DATA_GAMMA2             12
+#define TG_DATA_BLINK_STRENGTH     37
 
 
 /**
@@ -177,8 +187,8 @@ TG_GetNewConnectionId();
  *                     logging for, as obtained from TG_GetNewConnectionId().
  * @param filename     The name of the file to use for stream logging.
  *                     Any existing contents of the file will be erased.
- *                     Set to NULL to disable stream logging by the
- *                     ThinkGear Connection.
+ *                     Set to NULL or an empty string to disable stream
+ *                     logging by the ThinkGear Connection.
  *
  * @return -1 if @c connectionId does not refer to a valid ThinkGear
  *         Connection ID handle.
@@ -205,8 +215,8 @@ TG_SetStreamLog( int connectionId, const char *filename );
  *                     logging for, as obtained from TG_GetNewConnectionId().
  * @param filename     The name of the file to use for data logging.
  *                     Any existing contents of the file will be erased.
- *                     Set to NULL to disable stream logging by the
- *                     ThinkGear Connection.
+ *                     Set to NULL or an empty string to disable stream
+ *                     logging by the ThinkGear Connection.
  *
  * @return -1 if @c connectionId does not refer to a valid ThinkGear
  *         Connection ID handle.
@@ -218,6 +228,137 @@ TG_SetStreamLog( int connectionId, const char *filename );
  */
 THINKGEAR_API int
 TG_SetDataLog( int connectionId, const char *filename );
+
+
+/*
+ * Writes a message given by @c msg into the Connection's Stream Log.
+ * Optionally the message can be written onto a new line preceded by
+ * a timestamp.  The Connection's Stream Log must be already opened
+ * by TG_SetStreamLog(), otherwise this function returns an error.
+ *
+ * @param connectionId    The ID of the ThinkGear Connection to write
+ *                        into the Stream Log for, as obtained from
+ *                        TG_GetNewConnectionId().
+ * @param insertTimestamp If set to any non-zero number, a newline
+ *                        and timestamp are automatically prepended
+ *                        to the @c msg in the Stream Log file.  Pass
+ *                        a zero for this parameter to disable the
+ *                        insertion of newline and timestamp before
+ *                        @c msg.
+ * @param msg             The message to write into the Stream Log
+ *                        File.  For Stream Log parsers to ignore
+ *                        the message as a human-readable comment
+ *                        instead of hex bytes, prepend a '#' sign
+ *                        to indicate it is a comment.
+ *
+ * @return -1 if @c connectionId does not refer to a valid ThinkGear
+ *         Connection ID handle.
+ *
+ * @return -2 if Stream Log for the @c connectionId has not been
+ *         opened for writing via TG_SetStreamLog().
+ *
+ * @return 0 on success.
+ */
+THINKGEAR_API int
+TG_WriteStreamLog( int connectionId, int insertTimestamp, const char *msg );
+
+
+/*
+ * Writes a message given by @c msg into the Connection's Data Log.
+ * Optionally the message can be written onto a new line preceded by
+ * a timestamp.  The Connection's Data Log must be already opened
+ * by TG_SetDataLog(), otherwise this function returns an error.
+ *
+ * @param connectionId    The ID of the ThinkGear Connection to write
+ *                        into the Data Log for, as obtained from
+ *                        TG_GetNewConnectionId().
+ * @param insertTimestamp If set to any non-zero number, a newline
+ *                        and timestamp are automatically prepended
+ *                        to the @c msg in the Stream Log file.  Pass
+ *                        a zero for this parameter to disable the
+ *                        insertion of newline and timestamp before
+ *                        @c msg.
+ * @param msg             The message to write into the Data Log
+ *                        File.  For Data Log parsers to ignore
+ *                        the message as a human-readable comment
+ *                        instead of hex bytes, prepend a '#' sign
+ *                        to indicate it is a comment.
+ *
+ * @return -1 if @c connectionId does not refer to a valid ThinkGear
+ *         Connection ID handle.
+ *
+ * @return -2 if Data Log for the @c connectionId has not been
+ *         opened for writing via TG_SetDataLog().
+ *
+ * @return 0 on success.
+ */
+THINKGEAR_API int
+TG_WriteDataLog( int connectionId, int insertTimestamp, const char *msg );
+
+
+/**
+ * As a ThinkGear Connection reads and parses raw EEG wave values (via
+ * the TG_ReadPackets() function), the driver can automatically apply
+ * a 30Hz low pass filter to the raw wave data.  Subsequent calls to
+ * TG_GetValue() on TG_DATA_RAW will therefore return the filtered value.
+ * This is sometimes useful for visualizing (displaying) the raw wave
+ * when the ThinkGear is in an electrically noisy environment.  This
+ * function only applies the filtering within the driver and does not
+ * affect the behavior of the ThinkGear hardware in any way.  This
+ * function may be called at any time after calling TG_GetNewConnectionId().
+ *
+ * Automatic low pass filtering is disabled by default.
+ *
+ * NOTE: Automatic low pass filtering is currently only applicable to
+ * ThinkGear hardware that samples raw wave at 512Hz (such as TGAM in
+ * MindSet).  It is not applicable to hardware that samples at 128Hz
+ * or 256Hz and should NOT be enabled for those hardware.
+ *
+ * @param connectionId    The ID of the ThinkGear Connection to enable
+ *                        low pass filtering for, as obtained from
+ *                        TG_GetNewConnectionId().
+ * @param rawSamplingRate Specify the sampling rate that the hardware
+ *                        is currently sampling at.  Set this to 0 (zero)
+ *                        or any invalid rate at any time to immediately
+ *                        disable the driver's automatic low pass filtering.
+ *                        NOTE: Currently, the only valid raw sampling rate
+ *                        is 512 (MindSet headsets).  All other rates will
+ *                        return -2.
+ *
+ * @return -1 if @c connectionId does not refer to a valid ThinkGear
+ *         Connection ID handle.
+ *
+ * @return -2 if @c rawSamplingRate is not a valid rate.  Currently
+ *         only a sampling rate of 512 (Hz) is valid (which is the
+ *         raw sampling rate of MindSet headsets.
+ *
+ * @return 0 on success.
+ */
+THINKGEAR_API int
+TG_EnableLowPassFilter( int connectionId, int rawSamplingRate );
+
+
+/**
+ * Enables and disables the non-embedded eye blink detection.
+ *
+ * Non-embedded blink detection is disabled by default.
+ *
+ * NOTE: The constants and thresholds for the eye blink detection is
+ * adjusted for TGAM1 only.
+ *
+ * @param connectionId    The ID of the ThinkGear Connection to enable
+ *                        low pass filtering for, as obtained from
+ *                        TG_GetNewConnectionId().
+ * @param enable          Enables or disables the non-embedded eye
+ *                        blink detection.
+ *
+ * @return -1 if @c connectionId does not refer to a valid ThinkGear
+ *         Connection ID handle.
+ *
+ * @return 0 on success.
+ */
+THINKGEAR_API int
+TG_EnableBlinkDetection( int connectionId, int enable );
 
 
 /**
@@ -277,6 +418,11 @@ TG_Connect( int connectionId, const char *serialPortName, int serialBaudrate,
  * Set @c numPackets to -1 to attempt to read all Packets of data that
  * may be currently available on the serial stream.
  *
+ * Note that different models of ThinkGear hardware and headsets may
+ * output different types of data values at different rates.  Refer to
+ * the "Communications Protocol" document for your particular headset
+ * to determine the rate at which you need to call this function.
+ *
  * @param connectionId The ID of the ThinkGear Connection which should
  *                     read packets from its serial communication stream,
  *                     as obtained from TG_GetNewConnectionId().
@@ -304,30 +450,6 @@ TG_ReadPackets( int connectionId, int numPackets );
 
 
 /**
- * Returns the most recently read value of the given @c dataType, which
- * is one of the TG_DATA_* constants defined above.  Use @c TG_ReadPackets()
- * to read more Packets in order to obtain updated values.  Afterwards, use
- * @c TG_GetValueStatus() to check if a call to @c TG_ReadPackets() actually
- * updated a particular @c dataType.
- *
- * NOTE: This function will terminate the program with a message printed
- * to stderr if @c connectionId is not a valid ThinkGear Connection, or
- * if @c dataType is not a valid TG_DATA_* constant.
- *
- * @param connectionId The ID of the ThinkGear Connection to get a data
- *                     value from, as obtained from TG_GetNewConnectionId().
- * @param dataType     The type of data value desired.  Select from one of
- *                     the TG_DATA_* constants defined above.  Refer to the
- *                     documentation of each constant for details of how
- *                     to interpret its value.
- *
- * @return The most recent value of the requested @c dataType.
- */
-THINKGEAR_API float
-TG_GetValue( int connectionId, int dataType );
-
-
-/**
  * Returns Non-zero if the @c dataType was updated by the most recent call
  * to TG_ReadPackets().  Returns 0 otherwise.
  *
@@ -345,6 +467,37 @@ TG_GetValue( int connectionId, int dataType );
  */
 THINKGEAR_API int
 TG_GetValueStatus( int connectionId, int dataType );
+
+
+/**
+ * Returns the most recently read value of the given @c dataType, which
+ * is one of the TG_DATA_* constants defined above.  Use @c TG_ReadPackets()
+ * to read more Packets in order to obtain updated values.  Afterwards, use
+ * @c TG_GetValueStatus() to check if a call to @c TG_ReadPackets() actually
+ * updated a particular @c dataType.
+ *
+ * NOTE: This function will terminate the program with a message printed
+ * to stderr if @c connectionId is not a valid ThinkGear Connection, or
+ * if @c dataType is not a valid TG_DATA_* constant.
+ *
+ * @param connectionId The ID of the ThinkGear Connection to get a data
+ *                     value from, as obtained from TG_GetNewConnectionId().
+ * @param dataType     The type of data value desired.  Select from one of
+ *                     the TG_DATA_* constants defined above.  Although many
+ *                     types of TG_DATA_* constants are available, each model
+ *                     of ThinkGear hardware and headset will only output a
+ *                     certain subset of these data types. Refer to the
+ *                     Communication Protocol document for your particular
+ *                     ThinkGear hardware or headset to determine which data
+ *                     types are actually output by that hardware or headset.
+ *                     Data types that are not output by the headset will
+ *                     always return their default value of 0.0 when this
+ *                     function is called.
+ *
+ * @return The most recent value of the requested @c dataType.
+ */
+THINKGEAR_API float
+TG_GetValue( int connectionId, int dataType );
 
 
 /**
@@ -401,8 +554,8 @@ TG_SendByte( int connectionId, int b );
  *                       on the serial communication port.  Select from
  *                       one of the TG_BAUD_* constants defined above,
  *                       such as TG_BAUD_9600 or TG_BAUD_57600.
- *                       TG_BAUD_9600 is the typical default baud rate
- *                       for standard ThinkGear modules.
+ *                       TG_BAUD_57600 is the typical default baud rate
+ *                       for most ThinkGear models.
  *
  * @return -1 if @c connectionId does not refer to a valid ThinkGear
  *         Connection ID handle.
@@ -444,6 +597,52 @@ TG_SetBaudrate( int connectionId, int serialBaudrate );
  */
 THINKGEAR_API int
 TG_SetDataFormat( int connectionId, int serialDataFormat );
+
+
+/**
+ * Enables or disables background auto-reading of the connection.  This
+ * has the following implications:
+ *
+ *  - Setting @c enabled to anything other than 0 will enable background
+ *    auto-reading on the specified connection.  Setting @c enabled to 0
+ *    will disable it.
+ *  - Enabling causes a background thread to be spawned for the connection
+ *    (only if one was not already previously spawned), which continuously
+ *    calls TG_ReadPacket( connectionId, -1 ) at 1ms intervals.
+ *  - Disabling will kill the background thread for the connection.
+ *  - While background auto-reading is enabled, the calling program can use
+ *    TG_GetValue() at any time to get the most-recently-received value of
+ *    any data type. The calling program will have no way of knowing when
+ *    a value has been updated.  For most data types other than raw wave
+ *    value, this is not much of a problem if the program simply polls
+ *    TG_GetValue() once a second or so.
+ *  - The current implementation of this function will not include proper
+ *    data synchronization. This means it is possible for a value to be
+ *    read (by TG_GetValue()) at the same time it is being written to by
+ *    the background thread, resulting in a corrupted value being read.
+ *    However, this is extremely unlikely for most data types other than
+ *    raw wave value.
+ *  - While background auto-reading is enabled, the TG_GetValueStatus()
+ *    function is pretty much useless.  Also, the TG_ReadPackets()
+ *    function should probably not be called.
+ *
+ * @param connectionId The connection to enable/disable background
+ *                     auto-reading on.
+ * @param enable       Zero (0) to disable background auto-reading,
+ *                     any other value to enable.
+ *
+ * @return -1 if @c connectionId does not refer to a valid ThinkGear
+ *         Connection ID handle.
+ *
+ * @return -2 if unable to enable background auto-reading.
+ *
+ * @return -3 if an error occurs while attempting to disable background
+ *         auto-reading.
+ *
+ * @return 0 on success.
+ */
+THINKGEAR_API int
+TG_EnableAutoRead( int connectionId, int enable );
 
 
 /**
@@ -518,6 +717,22 @@ Java_ThinkGear_SetStreamLog( JNIEnv *, jclass, jint, jstring );
  */
 JNIEXPORT jint JNICALL
 Java_ThinkGear_SetDataLog( JNIEnv *, jclass, jint, jstring );
+
+/*
+ * Class:     ThinkGear
+ * Method:    WriteDataLog
+ * Signature: (IILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL
+Java_ThinkGear_WriteStreamLog( JNIEnv *, jclass, jint, jint, jstring );
+
+/*
+ * Class:     ThinkGear
+ * Method:    WriteDataLog
+ * Signature: (IILjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL
+Java_ThinkGear_WriteDataLog( JNIEnv *, jclass, jint, jint, jstring );
 
 /*
  * Class:     ThinkGear
