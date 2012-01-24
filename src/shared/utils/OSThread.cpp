@@ -71,11 +71,8 @@ OSThread::OSThread()
 
 OSThread::~OSThread()
 {
-  if( mHandle != NULL )
-  {
-    ::TerminateThread( mHandle, 0 );
-    ::CloseHandle( mHandle );
-  }
+  if( !IsTerminated() )
+    TerminateWait();
 }
 
 void
