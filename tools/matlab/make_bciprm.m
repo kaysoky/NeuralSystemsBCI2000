@@ -45,6 +45,11 @@ function [pstr, p] = make_bciprm(varargin)
 % The final outputs of the function are:
 %     PSTR:   collated parameters as text (format C)
 %        P:   collated parameters as a struct (format E)
+% 
+% MAKE_BCIPRM has the following dependencies:
+% 
+% M-files:   read_bciprm
+% Mex-files: load_bcidat, convert_bciprm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% $Id$ 

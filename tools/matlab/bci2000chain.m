@@ -28,6 +28,23 @@ function [out, err] = bci2000chain(datfile, chain, varargin)
 % filter chain, after substituting in the parameters specified in
 % ExampleParameters.prm, and switching the spatial filter to CAR mode.
 % 
+% Additional string arguments beginning with '-' may be inserted between CHAIN
+% and the remaining parameter arguments. These are flags, and they change the
+% behaviour as follows:
+% 
+%    '-v' or '--verbose'           : be verbose
+%    '-k' or '--keep'              : do not delete temporary files at the end
+%    '-3' or '--three-dimensional' : return signal as a three-dimensional array
+%    '-2' or '--two-dimensional'   : return signal as a two-dimensional array
+% 
+% A three-dimensional signal is SampleBlocks x Channels x Elements, whereas
+% a two-dimensional signal is Elements x Channels (the Elements of each
+% SampleBlock are concatenated along the first dimension). In the absence of a
+% flag explicitly specifying either two- or three-dimensional output,
+% BCI2000CHAIN makes its best guess as to what is appropriate given the output
+% ElementUnit, and/or the name, of the last filter in the chain.
+% 
+% 
 % BCI2000CHAIN has the following dependencies:
 % 
 % M-files:   make_bciprm, read_bcidate, read_bciprm
@@ -65,6 +82,17 @@ function [out, err] = bci2000chain(datfile, chain, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+% Setting the following two flags to 1 indicates that we are running new-style "single-chain"
+% versions of bci_dat2stream and bci_stream2mat, i.e. ones that were compiled from source files
+% whose version is >= r3203 (2011-04-13).  With older versions, we can still run, but the
+% corresponding flags need to be set to 0 and we will also need to build binaries for bci_prm2stream
+% and bci_stream2prm (furthermore, in the old-style bci_dat2stream, certain parameters cannot be
+% altered from the Matlab command-line at all).
+
+dat2stream_has_p_flag = 1;  % new-style bci_dat2stream has a -p flag allowing it to read a .prm file to override parameter values that came from the .dat file. Without this, some source parameters like SampleBlockSize and SourceChGain cannot be overridden.
+stream2mat_saves_parms = 1; % new-style bci_stream2mat saves a string representation of the collated output parameters in the mat file, so we don't have to rely on a separate parameter file.
+
+
 if nargin < 2, chain = ''; end
 if isempty(chain), chain = 'ARSignalProcessing'; end
 if isequal(chain, 'ARSignalProcessing')
@@ -88,7 +116,7 @@ if isempty(char(chain)), error('chain is empty'), end
 opts = {};
 prm = {};
 for i = 1:numel(varargin)
-	if ischar(varargin{i})
+	if isempty(prm) & ischar(varargin{i})
 		if strncmp(varargin{i}, '-', 1)
 			opts{end+1} = varargin{i};
 			continue
@@ -96,18 +124,26 @@ for i = 1:numel(varargin)
 	end
 	prm{end+1} = varargin{i};
 end
+[twodee,   opts, ind2]  = getopt(opts, '-2', '--two-dimensional');
+[threedee, opts, ind3]  = getopt(opts, '-3', '--three-dimensional');
 [preserve_tmpdir, opts] = getopt(opts, '-k', '--keep');
-[verbose, opts] = getopt(opts, '-v', '--verbose');
-[pretty,  opts] = getopt(opts, '-p', '--pretty');
+[verbose, opts]         = getopt(opts, '-v', '--verbose');
+[pretty,  opts]         = getopt(opts, '-p', '--pretty');
 if pretty, pretty = {'-p'}; else pretty = {}; end
 if ~isempty(opts)
 	opts(2, :) = {' '};
 	error(['unrecognized option(s): ' opts{1:end-1}])
 end
+if twodee & threedee, if ind3 >= ind2, twodee = 0; else threedee = 0; end, end
+% if both --two-dimensional and --three-dimensional are given, obey whichever one is last-mentioned later
+if twodee, dimensionality = 2; elseif threedee, dimensionality = 3; else dimensionality = 0; end
+% dimensionality = 0 means neither --two-dimensional nor --threedimensional was given explicitly ('auto' mode)
+
 
 cmd = {};
+binaries = {};
 tmpdir = tempname;
-if verbose, fprintf('creating directory %s\n', tmpdir); end
+if verbose, fprintf('# creating directory %s\n', tmpdir); end
 [success, msg] = mkdir(tmpdir);
 if ~success, error(msg), end
 
@@ -142,18 +178,33 @@ if isempty(prm)
 	cmd{end+1} = 'bci_dat2stream < "$DATFILE"';
 else
 	if ~iscell(prm), prm = {prm}; end
+	if verbose, fprintf('# writing custom parameter file %s\n', prmfile_in); end
 	make_bciprm(datfile, prm{:}, pretty{:}, '>', prmfile_in);
 	
-	%cmd{end+1} = '(';   % old-style bci_dat2stream with no -p option
-	%cmd{end+1} = '   bci_prm2stream < $PRMFILE_IN';
-	%cmd{end+1} = '&& bci_dat2stream --transmit-sd < $DATFILE';
-	%cmd{end+1} = ')';
-	
-	cmd{end+1} = 'bci_dat2stream -p$PRMFILE_IN < "$DATFILE"'; % new-style bci_dat2stream with -p option
+	if dat2stream_has_p_flag
+		cmd{end+1} = 'bci_dat2stream -p$PRMFILE_IN < "$DATFILE"'; % new-style bci_dat2stream with -p option
+		binaries{end+1} = 'bci_dat2stream';
+	else
+		cmd{end+1} = '(';   % old-style bci_dat2stream with no -p option
+		cmd{end+1} = '   bci_prm2stream < $PRMFILE_IN';
+		cmd{end+1} = '&& bci_dat2stream --transmit-sd < $DATFILE';
+		cmd{end+1} = ')';
+		binaries{end+1} = 'bci_dat2stream';
+		binaries{end+1} = 'bci_prm2stream';
+	end
 end
-for i = 1:numel(chain), cmd{end+1} = sprintf('| %s', chain{i}); end
-% cmd{end+1} = ' > $BCIFILE && bci_stream2mat < $BCIFILE > $MATFILE && bci_stream2prm < $BCIFILE > $PRMFILE_OUT';  % old-style bci_stream2mat without Parms output
-cmd{end+1} = '| bci_stream2mat > $MATFILE'; % new-style bci_stream2mat with Parms output
+for i = 1:numel(chain)
+	cmd{end+1} = sprintf('| %s', chain{i});
+	binaries{end+1} = chain{i};
+end
+if stream2mat_saves_parms
+	cmd{end+1} = '| bci_stream2mat > $MATFILE'; % new-style bci_stream2mat with Parms output
+	binaries{end+1} = 'bci_stream2mat';
+else
+	cmd{end+1} = ' > $BCIFILE && bci_stream2mat < $BCIFILE > $MATFILE && bci_stream2prm < $BCIFILE > $PRMFILE_OUT';  % old-style bci_stream2mat without Parms output
+	binaries{end+1} = 'bci_stream2mat';
+	binaries{end+1} = 'bci_stream2prm';
+end
 
 cmd = cmd(:)'; cmd(2, :) = {' '}; cmd = [cmd{1:end-1}];
 
@@ -163,24 +214,31 @@ if verbose, fprintf('%s\n', cmd); end
 t = clock;
 [failed output] = system(cmd);
 chaintime = etime(clock, t);
-output = deblank(output);
-output = fliplr(deblank(fliplr(output)));
-output = strrep(output, char([13 10]), char(10));
-output = strrep(output, char([13]), char(10));
+output = tidytext(output);
 failsig = 'Configuration Error: ';
 failmatch = findstr([failsig output], failsig);
 if length(failmatch) > 1, failed = 1; end % TODO: really SYSTEM should have caught this. Is this Windoze-specific?
-if verbose & (nargout>=2 | ~failed), fprintf('%s\n', output); end
+printable_output = output;
+maxlines = 10;
+newlines = find(printable_output==char(10));
+if numel(newlines) > maxlines-1, printable_output = sprintf('%s[%d more lines omitted]', printable_output(1:newlines(maxlines-1)), numel(newlines)-maxlines+2); end
+if verbose & (nargout>=2 | ~failed) & ~isempty(output), fprintf('%s\n', printable_output); end
 if failed
 	if verbose
-		err = sprintf('system call failed:\n%s', output); % cmd has already been printed, so don't clutter things further
+		err = sprintf('system call failed:\n%s', printable_output); % cmd has already been printed, so don't clutter things further
 	else
-		err = sprintf('system call failed:\n%s\n%s', cmd, output);
+		err = sprintf('system call failed:\n%s\n%s', cmd, printable_output);
 	end
 else
 	err = '';
 end
 
+if verbose, fprintf('# querying version information\n'); end
+binver = {};
+for i = 1:numel(binaries), [failed binver{i}] = system([binaries{i} ' --version']); binver{i} = strrep(tidytext(binver{i}), char(10), ' '); end
+binaries = [binaries(:)'; binver(:)']; binaries = struct(binaries{:});
+binaries.load_bcidat = strrep(tidytext(evalc('load_bcidat --version')), char(10), ' ');
+binaries.convert_bciprm = strrep(tidytext(evalc('convert_bciprm --version')), char(10), ' ');
 
 if isunix
 	setenv('DYLD_LIBRARY_PATH', DYLD_LIBRARY_PATH) % see above
@@ -188,21 +246,25 @@ if isunix
 end
 
 if isempty(err)
+	if verbose, fprintf('# loading %s\n', matfile); end
 	mat = load(matfile);
-	if ~isfield(mat, 'Data'), err = sprintf('chain must have failed: no ''Data'' variable found in %s', matfile); end
-	if ~isfield(mat, 'Index'), err = sprintf('chain must have failed: no ''Index'' variable found in %s', matfile); end
+	if ~isfield(mat, 'Data'), err = sprintf('chain must have failed: no ''Data'' variable found in %s\nShell output was as follows:\n%s', matfile, printable_output); end
+	if ~isfield(mat, 'Index'), err = sprintf('chain must have failed: no ''Index'' variable found in %s\nShell output was as follows:\n%s', matfile, printable_output); end
 end
 
 if isempty(err)
 	out.FileName = datfile;
-	if isfield(mat, 'Parms')  % should be there in the file, if your bci_stream2mat is up to date and we're using the new style (single chain)
+	if stream2mat_saves_parms
+		if verbose, fprintf('# decoding parameters loaded from the mat-file\n'); end
 		parms = read_bciprm(mat.Parms);
 	else
-		parms = read_bciprm(prmfile_out); % if you get an error that prmfile_out does not exist, either recompile your bci_dat2stream and bci_stream2mat binaries from up-to-date sources, or uncomment the calls to the old style, above 
+		if verbose, fprintf('# reading output parameter file %s\n', prmfile_out); end
+		parms = read_bciprm(prmfile_out); % if you get an error that prmfile_out does not exist, recompile your bci_dat2stream and bci_stream2mat binaries from up-to-date sources, and ensure that dat2stream_has_p_flag and stream2mat_saves_parms, at the top of this file, are both set to 1
 	end
 	out.DateStr = read_bcidate(parms, 'ISO');
 	out.DateNum = read_bcidate(parms);
-	out.FilterChain = chain(:)';
+	out.FilterChain = chain(:)';	
+	out.ToolVersions = binaries;
 	out.ShellInput = cmd;
 	out.ShellOutput = output;
 	out.ChainTime = chaintime;
@@ -224,17 +286,45 @@ if isempty(err)
 	if isfield(mat, 'ElementUnit'), out.ElementUnit = mat.ElementUnit; end
 	
 	out.Time = out.SecondsPerBlock * single(0:nBlocks-1)';
+	out.FullTime = out.Time;
+	if isfield(out, 'ElementValues'), out.FullElementValues = out.ElementValues; end
 	out.Signal = mat.Data(sigind(:), :);  % nChannels*nElements - by - nBlocks
-
-	switch chain{end}
-		case {'ARFilter', 'P3TemporalFilter'} % 3-dimensional output makes more sense than continuous 2-D: "elements" can't just be concatenated into an unbroken time-stream
-			out.Signal = reshape(out.Signal, [nChannels nElements nBlocks]); % nChannels - by - nElements - by - nBlocks
-			out.Signal = permute(out.Signal, [3 1 2]);                       % nBlocks - by - nChannels - by - nElements
-		otherwise
-			out.Signal = reshape(out.Signal, [nChannels nElements*nBlocks]); % nChannels - by - nSamples
-			out.Signal = permute(out.Signal, [2 1]);                         % nSamples - by - nChannels
+	
+	if dimensionality == 0 % dimensionality has not been specified explicitly: so guess, based on ElementUnit and/or filter name
+		% 3-dimensional output makes more sense than continuous 2-D whenever "elements" can't just be concatenated into an unbroken time-stream
+		lastfilter = lower(chain{end});
+		if strcmp(lastfilter, 'p3temporalfilter')
+			dimensionality = 3;
+		else
+			factor = seconds(out);
+			if factor > 0  % units of time.  TODO: could detect whether the out.ElementValues*factor are (close enough to) contiguous from block to block; then p3temporalfilter wouldn't have to be a special case above 
+				dimensionality = 2; 
+			elseif factor == 0 % not units of time: use 3D by default
+				dimensionality = 3;
+			elseif ismember(lastfilter, { 'p3temporalfilter', 'arfilter', 'fftfilter', 'coherencefilter', 'coherencefftfilter' })  % no ElementUnit info? guess based on filter name
+				dimensionality = 3;
+			else
+				dimensionality = 2;
+			end
+		end
 	end
-	out.States = rmfield(mat.Index, 'Signal');
+	if dimensionality == 3
+		out.Signal = reshape(out.Signal, [nChannels nElements nBlocks]); % nChannels - by - nElements - by - nBlocks
+		out.Signal = permute(out.Signal, [3 1 2]);                       % nBlocks - by - nChannels - by - nElements
+	elseif dimensionality == 2
+		t = repmat(out.Time', nElements, 1);
+		out.FullTime = t(:);
+		factor = seconds(out);
+		if isfield(out, 'ElementValues')
+			out.FullElementValues = repmat(out.ElementValues(:), nBlocks, 1);
+			if factor > 0, out.FullTime = out.FullTime + out.FullElementValues * factor; end
+		end
+		out.Signal = reshape(out.Signal, [nChannels nElements*nBlocks]); % nChannels - by - nSamples
+		out.Signal = permute(out.Signal, [2 1]);                         % nSamples - by - nChannels
+	else
+		error('internal error in bci2000chain.m')
+	end
+	out.States = rmfield(mat.Index, 'Signal');  % TODO: how do the command-line tools handle event states? this seems to be set up to deliver one value per block whatever kind of state we're dealing with
 	statenames = fieldnames(out.States);
 	for i = 1:numel(statenames)
 		out.States.(statenames{i}) = mat.Data(out.States.(statenames{i}), :)';
@@ -254,6 +344,7 @@ if preserve_tmpdir & exist(tmpdir, 'dir')
 		fprintf('    rmdir(''%s'')\n', tmpdir);
 	end
 else
+	if verbose, fprintf('# removing temp files and directory %s\n', tmpdir); end
 	if exist(prmfile_in,  'file'), delete(prmfile_in),  end
 	if exist(prmfile_out, 'file'), delete(prmfile_out), end
 	if exist(bcifile,     'file'), delete(bcifile),     end
@@ -265,12 +356,14 @@ if nargout < 2, error(err), end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ispresent,opts] = getopt(opts, shortform, longform)
+function [ispresent,opts,ind] = getopt(opts, shortform, longform)
 [ispresent(1) ind{1}] = ismember(shortform,opts);
 [ispresent(2) ind{2}] = ismember(longform,opts);
 ispresent = any(ispresent);
 rm = [ind{:}]; rm(rm == 0) = [];
 opts(rm) = [];
+ind = max([ind{:}]);
+if isempty(ind), ind = 0; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function p = resolve(p)
@@ -285,4 +378,35 @@ else
 		end
 		p = fullfile(pdir, [stem xtn]);
 	end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function x = tidytext(x)
+x = deblank(x);
+x = fliplr(deblank(fliplr(x)));
+x = strrep(x, char([13 10]), char(10));
+x = strrep(x, char([13]), char(10));
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function factor = seconds(s)  % -1 means "no information", 0 means "not units of time",  >0 means the scaling factor
+factor = -1;
+if ~isfield(s, 'ElementUnit'), return; end
+factor = 0;
+s = s.ElementUnit;
+if     strncmp(lower(fliplr(s)), fliplr('seconds'), 7), s(end-5:end) = [];
+elseif strncmp(lower(fliplr(s)), fliplr('second' ), 6), s(end-4:end) = [];
+elseif strncmp(lower(fliplr(s)), fliplr('sec'    ), 3), s(end-1:end) = [];
+end
+if strncmp(lower(fliplr(s)), 's', 1)
+	factors.ps = 1e-12;
+	factors.ns = 1e-9;
+	factors.us = 1e-6;  factors.mus = 1e-6;
+	factors.ms = 1e-3;
+	factors.s  = 1e+0;
+	factors.ks = 1e+3;
+	factors.Ms = 1e+6;
+	factors.Gs = 1e+9;
+	factors.Ts = 1e+12;
+	if isfield(factors, s), factor = getfield(factors, s); end
 end
