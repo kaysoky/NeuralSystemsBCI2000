@@ -58,8 +58,7 @@ string ToolInfo[] =
   "Reads a BCI2000 compliant binary stream from standard input, applies the\n"
     FILTER_NAME " BCI2000 filter, and writes its output to standard output\n"
     "as a BCI2000 compliant binary stream.",
-  "-o<file>, --operator<file>\tdirect visualization messages to <file>",
-  "                          \tinstead of /dev/null",
+  "            --operator<file>\tDirect visualization messages to <file>",
   ""
 };
 
@@ -119,13 +118,13 @@ ToolInit()
 }
 
 ToolResult
-ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
+ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
   ToolResult result = noError;
   ofstream operatorOut;
   if( arOptions.size() == 1 )
   {
-    string operatorFile = arOptions.getopt( "-o|-O|--operator", "" );
+    string operatorFile = arOptions.getopt( "--operator", "" );
     if( operatorFile == "" )
       return illegalOption;
     operatorOut.open( operatorFile.c_str() );

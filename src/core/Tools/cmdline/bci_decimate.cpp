@@ -93,7 +93,7 @@ ToolInit()
 }
 
 ToolResult
-ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
+ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
   int decimation = ::atoi( arOptions.getopt( "-d|-D|--decimation", "1" ).c_str() );
   Decimate decimator( decimation, arOut );

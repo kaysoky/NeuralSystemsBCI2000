@@ -4,23 +4,23 @@
 // Description: See the ToolInfo definition below.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
@@ -104,7 +104,7 @@ class StreamToMat : public MessageHandler
   void WriteDims(size_t nRows, size_t nCols) const;
   void WriteName(string name) const;
   void WriteString(string name, string str) const;
-  
+
   void WriteHeader();
   void WriteData( const GenericSignal& );
   void Write16( uint16 value ) const
@@ -129,7 +129,7 @@ ToolInit()
 }
 
 ToolResult
-ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
+ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
   if( arOptions.size() > 1 )
     return illegalOption;
@@ -221,7 +221,7 @@ StreamToMat::WriteHeader()
   streamoff indexSizePos = BeginVar( mxSTRUCT_CLASS );
   WriteDims( 1, 1 );
   WriteName( "Index" );
-  
+
   // Field name length
   const char signalName[] = "Signal";
   size_t fieldNameLength = sizeof( signalName ) - 1;
@@ -300,7 +300,7 @@ StreamToMat::WriteHeader()
 
   // A string denoting the element unit
   WriteString( "ElementUnit", mSignalProperties.ElementUnit().Symbol());
-  
+
   // A long string containing the prm text
   WriteString( "Parms", mParamsOut.str() );
   mParamsDumped = true;
@@ -337,7 +337,7 @@ StreamToMat::FinishHeader() const
   FinishVar( mDataSizePos );
   Pad();
   FinishVar( mDataElementSizePos );
-  
+
   streamoff endPos = mrOut.tellp();
   mrOut.seekp( mDataColsPos );
   Write32( mDataCols );
@@ -384,7 +384,7 @@ StreamToMat::HandleVisSignalProperties( istream& arIn )
   VisSignalProperties vsp;
   vsp.ReadBinary( arIn );
   mSignalProperties = vsp.SignalProperties();
-  
+
   // Write a header first.
   mStateNames.clear();
   for( int i = 0; i < mStatelist.Size(); ++i )

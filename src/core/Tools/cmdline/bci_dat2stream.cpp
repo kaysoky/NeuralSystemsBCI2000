@@ -4,23 +4,23 @@
 // Description: See the ToolInfo definition below.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////
 #include "bci_tool.h"
@@ -62,23 +62,16 @@ ToolResult ToolInit()
   return noError;
 }
 
-ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
+ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
 {
-#if defined( __BORLANDC__ ) && ( __BORLANDC__ <= 0x0560 ) // bug in STL coming with bcc32 5.5.1
-  OptionSet& options = const_cast<OptionSet&>( options_ );
-#else
-  const OptionSet& options = options_;
-#endif
   ToolResult result = noError;
-  string transmissionList = options.getopt( "-t|-T|--transmit", "-spd" );
+  string transmissionList = options.getopt( "-t|-T|--transmit", "spd" );
   bool transmitStates = ( transmissionList.find_first_of( "sS" ) != string::npos ),
        transmitParameters = ( transmissionList.find_first_of( "pP" ) != string::npos ),
        transmitData = ( transmissionList.find_first_of( "dD" ) != string::npos ),
-       calibrateData = ( options.find( "-r" ) == options.end()
-                         && options.find( "-R" ) == options.end()
-                         && options.find( "--raw" ) == options.end() );
+       calibrateData = options.findopt( "-r|-R|--raw" );
   string paramFileName = options.getopt( "-p|-P|--parameters", "" );
-  
+
   // Read the BCI2000 header.
   string token;
   int headerLength,
@@ -167,7 +160,7 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
         MessageHandler::PutMessage( out, param );
     }
   }
-  
+
   int sampleBlockSize = static_cast<int>( PhysicalUnit()
                                          .SetGain( 1.0 ).SetOffset( 0.0 ).SetSymbol( "" )
                                          .PhysicalToRaw( parameters[ "SampleBlockSize" ].Value() )

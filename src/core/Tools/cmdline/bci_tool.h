@@ -5,23 +5,23 @@
 //   line tools.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////
 #ifndef BCI_TOOL_H
@@ -29,7 +29,7 @@
 
 #include <iostream>
 #include <string>
-#include <set>
+#include <list>
 
 extern std::string ToolInfo[];
 enum ToolInfoIndex
@@ -51,13 +51,15 @@ typedef enum ToolResult
   genericError
 } ToolResult;
 
-class OptionSet : public std::set<std::string>
+class OptionSet : public std::list<std::string>
 {
  public:
-  std::string getopt( const std::string& optionNames, const std::string& optionDefault ) const;
+  static const char synonymSeparator = '|';
+  std::string getopt( const std::string& optionNames, const std::string& optionDefault );
+  bool findopt( const std::string& optionNames );
 };
 
 ToolResult ToolInit();
-ToolResult ToolMain( const OptionSet&, std::istream&, std::ostream& );
+ToolResult ToolMain( OptionSet&, std::istream&, std::ostream& );
 
 #endif // BCI_TOOL_H

@@ -67,151 +67,90 @@ int main( int argc, const char** argv )
     return result;
   }
   OptionSet toolOptions;
+  for( int i = 1; i < argc; ++i )
+    toolOptions.push_back( argv[i] );
 
   struct options
   {
-    bool        execute;
-    bool        help;
-    bool        version;
-    const char* inputFile;
-    int         bufferSize;
+    bool execute;
+    bool help;
+    bool version;
+    string inputFile;
+    string outputFile;
+    int bufferSize;
   } options =
   {
     true,
     false,
     false,
-    NULL,
-    4096,
+    "",
+    "",
+    0,
   };
-  int i = 0;
-  while( ++i < argc && argv[ i ][ 0 ] == '-' )
-  {
-    if( ::strlen( argv[ i ] ) < 2 )
-    {
-      toolOptions.insert( argv[ i ] );
-    }
-    else switch( argv[ i ][ 1 ] )
-    {
-      case '-':
-        {
-          string longOption( &argv[ i ][ 2 ] );
-          if( longOption == "help" )
-          {
-            options.help = true;
-            options.execute = false;
-          }
-          else if( longOption == "version" )
-          {
-            options.version = true;
-            options.execute = false;
-          }
-          else if( longOption == "input" )
-          {
-            if( i == argc - 1 )
-            {
-              options.execute = false;
-              options.help = true;
-            }
-            else
-            {
-              options.inputFile = argv[ i + 1 ];
-              ++i;
-            }
-          }
-          else if( longOption == "buffer" )
-          {
-            if( i == argc - 1 )
-            {
-              options.execute = false;
-              options.help = true;
-            }
-            else
-            {
-              options.bufferSize = ::atoi( argv[ i + 1 ] );
-              ++i;
-            }
-          }
-          else
-            toolOptions.insert( argv[ i ] );
-        }
-        break;
-      case 'v':
-      case 'V':
-        options.version = true;
-        options.execute = false;
-        break;
-      case 'h':
-      case 'H':
-      case '?':
-        options.help = true;
-        options.execute = false;
-        break;
-      case 'i':
-      case 'I':
-        options.inputFile = argv[ i ] + 2;
-        if( options.inputFile == "" )
-        {
-          options.execute = false;
-          options.help = true;
-        }
-        break;
-      case 'b':
-      case 'B':
-      {
-        const char* size = argv[ i ] + 2;
-        if( size == "" )
-        {
-          options.execute = false;
-          options.help = true;
-        }
-        else
-        {
-          options.bufferSize = ::atoi( size );
-        }
-      } break;
-      default:
-        toolOptions.insert( argv[ i ] );
-    }
-  }
-  if( i != argc )
-    result = illegalOption;
 
-  if( options.inputFile )
-    if( !::freopen( options.inputFile, "rb", stdin ) )
+  if( toolOptions.findopt( "-h|-H|--help|-?" ) )
+  {
+    options.help = true;
+    options.execute = false;
+  }
+  if( toolOptions.findopt( "-v|-V|--version" ) )
+  {
+    options.version = true;
+    options.execute = false;
+  }
+  options.inputFile = toolOptions.getopt( "-i|-I|--input", "" );
+  options.outputFile = toolOptions.getopt( "-o|-O|--output", "" );
+  string buffer = toolOptions.getopt( "-b|-B|--buffer", "4096" );
+  if( buffer.empty() )
+  {
+    options.execute = false;
+    options.help = true;
+  }
+  options.bufferSize = ::atoi( buffer.c_str() );
+
+  if( !options.inputFile.empty() )
+    if( !::freopen( options.inputFile.c_str(), "rb", stdin ) )
     {
       cerr << "Could not open " << options.inputFile << " for input" << endl;
       result = fileIOError;
     }
 
-#if 0
-  const char outputFile[] = "out.~tmp";
-  if( !::freopen( outputFile, "wb", stdout ) )
-  {
-    cerr << "Could not open " << outputFile << " for output" << endl;
-    result = fileIOError;
-  }
-#endif
+  if( !options.outputFile.empty() )
+    if( !::freopen( options.outputFile.c_str(), "wb", stdout ) )
+    {
+      cerr << "Could not open " << options.outputFile << " for output" << endl;
+      result = fileIOError;
+    }
 
-  int mode = _IOFBF;
-  if( options.bufferSize < 1 )
+  if( result == noError )
   {
-    options.bufferSize = 0;
-    mode = _IONBF;
+    if( options.bufferSize < 0 )
+      options.bufferSize *= -1;
+    int mode = _IOFBF;
+    if( options.bufferSize == 0 )
+    {
+      options.bufferSize = 0;
+      mode = _IONBF;
+    }
+    if( ::setvbuf( stdin, NULL, mode, options.bufferSize )
+        ||::setvbuf( stdout, NULL, mode, options.bufferSize ) )
+    {
+      cerr << "Could not set buffer size to " << options.bufferSize << endl;
+      result = fileIOError;
+    }
   }
-  if( ::setvbuf( stdin, NULL, mode, options.bufferSize )
-      ||::setvbuf( stdout, NULL, mode, options.bufferSize ) )
-  {
-    cerr << "Could not set buffer size to " << options.bufferSize << endl;
-    result = fileIOError;
-  }
+
 #ifdef HAVE_BIN_MODE
-  ::setmode( fileno( stdin ), O_BINARY );
-  ::setmode( fileno( stdout ), O_BINARY );
+  if( result == noError )
+  {
+    ::setmode( fileno( stdin ), O_BINARY );
+    ::setmode( fileno( stdout ), O_BINARY );
+  }
 #endif
 
   if( result == noError && options.execute )
   {
-    FunctionCall< ToolResult( const OptionSet&, istream&, ostream& ) >
+    FunctionCall< ToolResult( OptionSet&, istream&, ostream& ) >
       callMain( ToolMain, toolOptions, cin, cout );
     bool finished = ExceptionCatcher()
                    .SetMessage( "Aborting " + ToolInfo[ name ] )
@@ -239,10 +178,11 @@ int main( int argc, const char** argv )
     ostream& out = ( result == noError ? cout : cerr );
     out << "Usage: " << ToolInfo[ name ] << " [OPTION]\n"
         << "Options are:\n"
-        << "\t-h,       --help        \tDisplay this help\n"
-        << "\t-v,       --version     \tOutput version information\n"
-        << "\t-i<file>, --input<file> \tGet input from <file>\n"
-        << "\t-b<size>, --buffer<size>\tSet IO buffer to <size>\n";
+        << "\t-h,         --help        \tDisplay this help\n"
+        << "\t-v,         --version     \tOutput version information\n"
+        << "\t-i<file>,   --input<file> \tGet input from <file>\n"
+        << "\t-o<file>,   --output<file>\tWrite output to <file>\n"
+        << "\t-b<size>,   --buffer<size>\tSet IO buffer to <size>\n";
     for( int i = firstOption; ToolInfo[ i ] != ""; ++i )
       out << '\t' << ToolInfo[ i ] << '\n';
     out << '\n' << ToolInfo[ description ] << '\n';
@@ -259,15 +199,47 @@ int main( int argc, const char** argv )
   return result;
 }
 
-string OptionSet::getopt( const string& optionNames, const string& optionDefault ) const
+string OptionSet::getopt( const string& optionNames, const string& optionDefault )
 {
-  const char synonymSeparator = '|';
+  string result = optionDefault;
   istringstream is( optionNames );
   string token;
   while( getline( is, token, synonymSeparator ) )
-    for( const_iterator i = begin(); i != end(); ++i )
+  {
+    iterator i = begin();
+    while( i != end() )
       if( i->find( token ) == 0 )
-        return i->substr( token.length() );
-  return optionDefault;
+      {
+        string optionValue = i->substr( token.length() );
+        i = erase( i );
+        if( !optionValue.empty() && optionValue[0] == '-' )
+          result = optionValue.substr( 1 );
+        else
+          result = optionValue;
+      }
+      else
+        ++i;
+  }
+  return result;
+}
+
+bool OptionSet::findopt( const string& optionNames )
+{
+  bool result = false;
+  istringstream is( optionNames );
+  string token;
+  while( getline( is, token, synonymSeparator ) )
+  {
+    iterator i = begin();
+    while( i != end() )
+      if( i->find( token ) == 0 )
+      {
+        i = erase( i );
+        result = true;
+      }
+      else
+        ++i;
+  }
+  return result;
 }
 
