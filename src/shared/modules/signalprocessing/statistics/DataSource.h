@@ -128,11 +128,11 @@ class DataSource
   void Add( DataSource* p ) { mSources.AddUnique( p ); }
 
   virtual void OnDepends( const Context& ) {}
-  virtual void OnInitialize( const Context& ) = 0 {}
-  virtual void OnProcess( const Context& ) = 0 {}
+  virtual void OnInitialize( const Context& ) = 0;
+  virtual void OnProcess( const Context& ) = 0;
   // Access to data takes a single index, which may be obtained from multiple
   // indices using DataProperties::CalculateIndex().
-  virtual Value OnData( size_t ) = 0 {}
+  virtual Value OnData( size_t ) = 0;
 
  protected:
   DataProperties mProperties;

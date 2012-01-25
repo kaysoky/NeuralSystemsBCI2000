@@ -33,7 +33,7 @@
 class ExpressionSource : public DataSource, private Expression
 {
  public:
-  using DataSource::Context;
+  typedef DataSource::Context Context;
   typedef ExpressionParser::Node Node;
   typedef ExpressionParser::NodeList NodeList;
 

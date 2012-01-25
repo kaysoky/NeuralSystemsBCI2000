@@ -30,15 +30,13 @@
 #include "Expression.h"
 #include "StatisticalObserver.h"
 
-class ObserverSource;
-
 class ObserverNode : public ExpressionParser::Node
 {
  public:
-  ObserverNode( const std::string& inName, ObserverSource* inpObserverSource )
+  ObserverNode( const std::string& inName, class ObserverSource* inpObserverSource )
   : mName( inName ), mpObserverSource( inpObserverSource ) {}
   const std::string& Name() const { return mName; }
-  ObserverSource* ObserverSource() const { return mpObserverSource; }
+  class ObserverSource* ObserverSource() const { return mpObserverSource; }
 
  protected:
   double OnEvaluate();

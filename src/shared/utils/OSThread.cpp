@@ -227,11 +227,7 @@ int
 OSThread::NumberOfProcessors()
 {
   int result = 1;
-#if __APPLE__
-  result = ::MPProcessorsScheduled();
-#else // __APPLE__
   result = ::sysconf( _SC_NPROCESSORS_ONLN );
-#endif // __APPLE__
   return result;
 }
 

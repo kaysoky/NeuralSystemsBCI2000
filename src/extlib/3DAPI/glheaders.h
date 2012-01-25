@@ -22,13 +22,18 @@
 #define GL_HEADERS_H
 
 #if _WIN32
-# include <windows.h>    // Header file for windows
+# include <windows.h> 
 #endif // _WIN32
 #ifndef __BORLANDC__
-#include <QGLWidget>
+# include <QGLWidget>
 #endif // __BORLANDC__
-#include <GL/gl.h>      // Header file for the OpenGL32 library
-#include <GL/glu.h>     // Header file for the GLu32 library
+#if __APPLE__
+# include <OpenGL/gl.h>
+# include <OpenGL/glu.h>
+#else
+# include <GL/gl.h> 
+# include <GL/glu.h>
+#endif
 
 #include <string>
 #include <vector>

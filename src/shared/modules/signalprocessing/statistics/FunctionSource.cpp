@@ -110,7 +110,7 @@ FunctionSource::FunctionSource( const string& inName, int inFunctionID, const No
     throw bciexception( "Unknown function ID: " << mFunctionID );
   mReturnType = functions[functionIdx].returnType;
 
-  vector<ObserverNode*> observerNodes( functions[functionIdx].numObservers, NULL );
+  vector<ObserverNode*> observerNodes( functions[functionIdx].numObservers );
   for( size_t i = 0; i < min( inArgs.size(), observerNodes.size() ); ++i )
     observerNodes[i] = dynamic_cast<ObserverNode*>( inArgs[i] );
   mObservers.resize( observerNodes.size(), NULL );
