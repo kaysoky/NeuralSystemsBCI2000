@@ -154,7 +154,12 @@ switch( computer )
     build_version_header = '(cd ../../../buildutils && ./update_version_header.sh)';
     CXXFLAGS = '-fPIC -include gccprefix.h';
     LDFLAGS = '-dead_strip';
-    LIBRARIES = { LIBRARIES{:} '-lrt' };
+    switch( computer )
+      case { 'MACI', 'MACI64' }
+        ;
+      otherwise
+        LIBRARIES = { LIBRARIES{:} '-lrt' };
+    end
 end;
 
 options = {};
