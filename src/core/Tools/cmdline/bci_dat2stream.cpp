@@ -69,7 +69,7 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
   bool transmitStates = ( transmissionList.find_first_of( "sS" ) != string::npos ),
        transmitParameters = ( transmissionList.find_first_of( "pP" ) != string::npos ),
        transmitData = ( transmissionList.find_first_of( "dD" ) != string::npos ),
-       calibrateData = options.findopt( "-r|-R|--raw" );
+       calibrateData = !options.findopt( "-r|-R|--raw" );
   string paramFileName = options.getopt( "-p|-P|--parameters", "" );
 
   // Read the BCI2000 header.
