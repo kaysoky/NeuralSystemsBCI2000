@@ -58,7 +58,7 @@ string ToolInfo[] =
   "Reads a BCI2000 compliant binary stream from standard input, applies the\n"
     FILTER_NAME " BCI2000 filter, and writes its output to standard output\n"
     "as a BCI2000 compliant binary stream.",
-  "            --operator<file>\tDirect visualization messages to <file>",
+  "          --operator=<file>     Direct visualization messages to <file>",
   ""
 };
 

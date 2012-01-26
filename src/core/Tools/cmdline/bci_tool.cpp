@@ -178,11 +178,11 @@ int main( int argc, const char** argv )
     ostream& out = ( result == noError ? cout : cerr );
     out << "Usage: " << ToolInfo[ name ] << " [OPTION]\n"
         << "Options are:\n"
-        << "\t-h,         --help        \tDisplay this help\n"
-        << "\t-v,         --version     \tOutput version information\n"
-        << "\t-i<file>,   --input<file> \tGet input from <file>\n"
-        << "\t-o<file>,   --output<file>\tWrite output to <file>\n"
-        << "\t-b<size>,   --buffer<size>\tSet IO buffer to <size>\n";
+        << "\t-h,       --help                Display this help\n"
+        << "\t-v,       --version             Output version information\n"
+        << "\t-i<file>, --input=<file>        Get input from <file>\n"
+        << "\t-o<file>, --output=<file>       Write output to <file>\n"
+        << "\t-b<size>, --buffer=<size>       Set IO buffer to <size>\n";
     for( int i = firstOption; ToolInfo[ i ] != ""; ++i )
       out << '\t' << ToolInfo[ i ] << '\n';
     out << '\n' << ToolInfo[ description ] << '\n';
@@ -212,7 +212,7 @@ string OptionSet::getopt( const string& optionNames, const string& optionDefault
       {
         string optionValue = i->substr( token.length() );
         i = erase( i );
-        if( !optionValue.empty() && optionValue[0] == '-' )
+        if( !optionValue.empty() && optionValue[0] == '=' )
           result = optionValue.substr( 1 );
         else
           result = optionValue;
