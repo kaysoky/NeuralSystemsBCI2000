@@ -73,9 +73,20 @@ PhysicalUnit::IsPhysical( const string& inValue ) const
     if( pos != string::npos )
       result = ( pos == inValue.length() - mSymbol.length() );
     else
-      result = ( mSymbol == "s" && inValue.rfind( ":" ) != string::npos );
+      result = ( SexagesimalAllowed() && inValue.find_first_of( sSexagesimalSeparators ) != string::npos );
   }
   return result;
+}
+
+bool
+PhysicalUnit::SexagesimalAllowed() const
+{
+  const char* allowSexagesimal[] = { "", "s", "deg" };
+  size_t count = sizeof( allowSexagesimal ) / sizeof( *allowSexagesimal );
+  size_t i = 0;
+  while( i < count && allowSexagesimal[i] != mSymbol )
+    ++i;
+  return i < count;
 }
 
 PhysicalUnit::ValueType
@@ -124,12 +135,7 @@ PhysicalUnit::ExtractUnit( string& ioValue ) const
   }
   if( ioValue.find_first_of( sSexagesimalSeparators ) != string::npos )
   {
-    const char* allowSexagesimal[] = { "", "s", "deg" };
-    size_t count = sizeof( allowSexagesimal ) / sizeof( *allowSexagesimal );
-    size_t i = 0;
-    while( i < count && allowSexagesimal[i] != mSymbol )
-      ++i;
-    if( i == count )
+    if( !SexagesimalAllowed() )
     {
       bcierr << "Sexagesimal format not allowed for values of this type" << endl;
       ioValue = "1";
@@ -140,6 +146,9 @@ PhysicalUnit::ExtractUnit( string& ioValue ) const
     }
   }
   return unit;
+#ifdef TODO
+# error Issue an error when a unit is present but the string returned in ioValue is empty.
+#endif
 }
 
 PhysicalUnit::ValueType
@@ -151,30 +160,33 @@ PhysicalUnit::PhysicalToRaw( const string& inPhysicalValue ) const
 
   if( ::fabs( unit ) > numeric_limits<ValueType>::epsilon() )
   {
-    bool valid = true;
-    int count = 0;
-    size_t beginPos = 0;
-    while( beginPos < physValue.length() )
+    if( !physValue.empty() )
     {
-      ++count;
-      size_t endPos = physValue.find_first_of( sSexagesimalSeparators, beginPos );
-      if( endPos == string::npos )
-        endPos = physValue.length();
-      size_t length = endPos - beginPos;
-      valid &= ( length > 0 );
-      ValueType value = ArithmeticExpression( physValue.substr( beginPos, length ) ).Evaluate();
-      if( beginPos != 0 )
+      bool valid = true;
+      int count = 0;
+      size_t beginPos = 0;
+      while( beginPos <= physValue.length() )
       {
-        valid &= ( value >= 0 && value < 60 );
-        result *= 60;
+        ++count;
+        size_t endPos = physValue.find_first_of( sSexagesimalSeparators, beginPos );
+        if( endPos == string::npos )
+          endPos = physValue.length();
+        size_t length = endPos - beginPos;
+        valid &= ( length > 0 );
+        ValueType value = ArithmeticExpression( physValue.substr( beginPos, length ) ).Evaluate();
+        if( beginPos != 0 )
+        {
+          valid &= ( value >= 0 && value < 60 );
+          result *= 60;
+        }
+        result += value;
+        beginPos = endPos + 1;
       }
-      result += value;
-      beginPos = endPos + 1;
+      valid &= ( count <= 3 );
+      if( !valid )
+        bcierr << "Invalid sexagesimal number format: " << inPhysicalValue << endl;
+      result = result / unit + mOffset;
     }
-    valid &= ( count <= 3 );
-    if( !valid )
-      bcierr << "Invalid sexagesimal number format: " << inPhysicalValue << endl;
-    result = result / unit + mOffset;
   }
   else
   {

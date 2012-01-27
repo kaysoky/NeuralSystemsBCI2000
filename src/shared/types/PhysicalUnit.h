@@ -90,6 +90,7 @@ class PhysicalUnit
   std::istream& ReadFromStream( std::istream& is );
 
  private:
+  bool          SexagesimalAllowed() const;
   double        ExtractUnit( std::string& ) const;
 
   struct SymbolPowers : std::map<std::string, double>
