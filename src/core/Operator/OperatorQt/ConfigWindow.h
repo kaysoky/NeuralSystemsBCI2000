@@ -35,6 +35,7 @@
 class Param;
 class ParamList;
 class Preferences;
+class QScrollArea;
 
 namespace Ui
 {
@@ -86,6 +87,8 @@ class ConfigWindow : public QDialog
   std::string      mCurTab;
   bool             mUserSwitchedTabs;
   QString          mOriginalTitle;
+  QScrollArea*     mpScrollArea;
+  int              mScrollPos;
 };
 
 extern ConfigWindow* gpConfig;

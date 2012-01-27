@@ -32,6 +32,7 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QScrollArea>
+#include <QScrollBar>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QWhatsThis>
@@ -51,7 +52,9 @@ ConfigWindow* gpConfig = NULL;
 ConfigWindow::ConfigWindow(QWidget *parent)
 : QDialog(parent),
   m_ui(new Ui::ConfigWindow),
-  mUserSwitchedTabs( false )
+  mUserSwitchedTabs( false ),
+  mpScrollArea( NULL ),
+  mScrollPos( -1 )
 {
   m_ui->setupUi(this);
   connect( this, SIGNAL(finished(int)), this, SLOT(OnClose()) );
@@ -148,6 +151,8 @@ ConfigWindow::Initialize( ParamList* inParameters, Preferences* inPreferences )
   mUserSwitchedTabs = true;
   mCurTab = m_ui->cfgTabControl->tabText( curTabIdx ).toLocal8Bit().constData();
   RenderParameters( mCurTab );
+  if( mScrollPos >= 0 && mpScrollArea )
+    mpScrollArea->verticalScrollBar()->setValue( mScrollPos );
   return 0;
 }
 
@@ -175,12 +180,11 @@ ConfigWindow::RenderParameters( const string& inSection )
   string lastSubsection = "";
   QFrame* pLastBevel = NULL;
   QWidget* pTabWidget = m_ui->cfgTabControl->currentWidget();
-  QScrollArea* pScrollArea = dynamic_cast<QScrollArea*>( pTabWidget );
-  if( pScrollArea == NULL )
+  mpScrollArea = dynamic_cast<QScrollArea*>( pTabWidget );
+  if( mpScrollArea == NULL )
     return;
-  QWidget* pScrollingPane = new QWidget( pScrollArea );
-  delete pScrollArea->widget();
-  pScrollArea->setWidget( pScrollingPane );
+  QWidget* pScrollingPane = new QWidget( mpScrollArea );
+  delete mpScrollArea->widget();
   pScrollingPane->resize( DisplayBase::totalWidth + 2 * DisplayBase::leftMargin, 1 );
 
   map<string, int>      subsectionIndex;
@@ -263,6 +267,7 @@ ConfigWindow::RenderParameters( const string& inSection )
     i->second.Show();
 
   pScrollingPane->resize( pScrollingPane->width(), currentTop + DisplayBase::buttonHeight );
+  mpScrollArea->setWidget( pScrollingPane );
 }
 
 // update one particular parameter on the screen
@@ -298,6 +303,8 @@ ConfigWindow::OnCfgTabControlChange()
 void
 ConfigWindow::OnClose()
 {
+ if( mpScrollArea )
+   mScrollPos = mpScrollArea->verticalScrollBar()->value();
  UpdateParameters();
  mParamDisplays.clear();
  DisposeWidgets();
