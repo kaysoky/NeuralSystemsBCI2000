@@ -45,6 +45,8 @@
 
 using namespace std;
 
+static const string sSexagesimalSeparators = ":";
+
 PhysicalUnit&
 PhysicalUnit::SetSymbol( const std::string& inSymbol, double inPower )
 {
@@ -63,18 +65,25 @@ PhysicalUnit::Size() const
 bool
 PhysicalUnit::IsPhysical( const string& inValue ) const
 { // IsPhysical will always return false when the Symbol property is empty.
+  bool result = false;
   size_t pos = string::npos;
   if( !mSymbol.empty() )
+  {
     pos = inValue.rfind( mSymbol );
-  return pos != string::npos && pos == inValue.length() - mSymbol.length();
+    if( pos != string::npos )
+      result = ( pos == inValue.length() - mSymbol.length() );
+    else
+      result = ( mSymbol == "s" && inValue.rfind( ":" ) != string::npos );
+  }
+  return result;
 }
 
 PhysicalUnit::ValueType
 PhysicalUnit::ExtractUnit( string& ioValue ) const
 {
   ValueType unit = 1.0;
-  size_t pos = ioValue.find_first_not_of( "0123456789.Ee+-*/^() " );
-  if( pos != ioValue.npos )
+  size_t pos = ioValue.find_first_not_of( "0123456789.Ee+-*/^() " + sSexagesimalSeparators );
+  if( pos != string::npos )
   {
     string unitFromValue = ioValue.substr( pos );
     if( unitFromValue.length() >= mSymbol.length()
@@ -86,7 +95,7 @@ PhysicalUnit::ExtractUnit( string& ioValue ) const
     const struct
     {
       const char* name;
-      ValueType      value;
+      ValueType value;
     } prefixes[] =
     {
       { "p", 1e-12 },
@@ -113,6 +122,23 @@ PhysicalUnit::ExtractUnit( string& ioValue ) const
       unit = 0.0;
     }
   }
+  if( ioValue.find_first_of( sSexagesimalSeparators ) != string::npos )
+  {
+    const char* allowSexagesimal[] = { "", "s", "deg" };
+    size_t count = sizeof( allowSexagesimal ) / sizeof( *allowSexagesimal );
+    size_t i = 0;
+    while( i < count && allowSexagesimal[i] != mSymbol )
+      ++i;
+    if( i == count )
+    {
+      bcierr << "Sexagesimal format not allowed for values of this type" << endl;
+      ioValue = "1";
+    }
+    else if( unit == 1.0 )
+    {
+      unit = Gain();
+    }
+  }
   return unit;
 }
 
@@ -122,10 +148,33 @@ PhysicalUnit::PhysicalToRaw( const string& inPhysicalValue ) const
   string physValue( inPhysicalValue );
   ValueType unit = ExtractUnit( physValue ),
             result = 0;
-            
+
   if( ::fabs( unit ) > numeric_limits<ValueType>::epsilon() )
   {
-    result = ArithmeticExpression( physValue ).Evaluate() / unit + mOffset;
+    bool valid = true;
+    int count = 0;
+    size_t beginPos = 0;
+    while( beginPos < physValue.length() )
+    {
+      ++count;
+      size_t endPos = physValue.find_first_of( sSexagesimalSeparators, beginPos );
+      if( endPos == string::npos )
+        endPos = physValue.length();
+      size_t length = endPos - beginPos;
+      valid &= ( length > 0 );
+      ValueType value = ArithmeticExpression( physValue.substr( beginPos, length ) ).Evaluate();
+      if( beginPos != 0 )
+      {
+        valid &= ( value >= 0 && value < 60 );
+        result *= 60;
+      }
+      result += value;
+      beginPos = endPos + 1;
+    }
+    valid &= ( count <= 3 );
+    if( !valid )
+      bcierr << "Invalid sexagesimal number format: " << inPhysicalValue << endl;
+    result = result / unit + mOffset;
   }
   else
   {
