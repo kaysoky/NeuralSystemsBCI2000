@@ -48,8 +48,8 @@ string ToolInfo[] =
   "Reads a BCI2000 compliant binary stream from standard input, "
     "and writes it to standard output "
     "as a tab/newline separated table of values.",
+  "text",
   "",
-  "t",
 };
 
 class StreamToTable : public MessageHandler

@@ -43,6 +43,7 @@ string ToolInfo[] =
   "Reads a BCI2000 message stream from standard input and extracts "
     "parameter messages to the standard output as a BCI2000 parameter "
     "(.prm) file.",
+  "binary",
   ""
 };
 

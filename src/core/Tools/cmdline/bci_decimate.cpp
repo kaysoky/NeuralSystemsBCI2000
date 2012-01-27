@@ -56,6 +56,7 @@ string ToolInfo[] =
   "Reads a BCI2000 compliant binary stream from standard input, "
     "and writes it to standard output, retaining only every "
     "Nth statevector and signal message.",
+  "binary",
   "-d<N>,    --decimate=<N>        Decimation factor, defaults to 1",
   ""
 };

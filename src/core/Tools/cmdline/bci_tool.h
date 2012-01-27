@@ -38,8 +38,8 @@ enum ToolInfoIndex
   version,
   short_description,
   description,
+  outputType, // "b" or "" for binary, "t" for text
   firstOption,
-  outputType // "b" or "" for binary, "t" for text
 };
 
 

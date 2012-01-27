@@ -51,6 +51,7 @@ string ToolInfo[] =
   "Reads a BCI2000 data file (*.dat) compliant stream from "
     "standard input and writes it to the standard output as a BCI2000 "
     "compliant binary stream.",
+  "binary",
   "-t,       --transmit={spd}      Select States, Parameters, and/or",
   "                                Data for transmission",
   "-r,       --raw                 Transmit uncalibrated data",

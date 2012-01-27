@@ -48,6 +48,7 @@ string ToolInfo[] =
   "Convert a binary BCI2000 stream into a matlab .mat file",
   "Reads a BCI2000 compliant binary stream from standard input, "
     "and writes it to stdout in matlab level 5 MAT-file format.",
+  "binary",
   ""
 };
 
