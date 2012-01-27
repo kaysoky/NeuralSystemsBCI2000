@@ -55,7 +55,8 @@ string ToolInfo[] =
   "Reads a BCI2000 compliant binary stream from standard input, "
     "and writes it to standard output as a sequence of "
     "BCI2000 messages in a human readable representation.",
-  ""
+  "",
+  "t",
 };
 
 class StreamToAsc : public MessageHandler

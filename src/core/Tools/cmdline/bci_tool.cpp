@@ -144,7 +144,8 @@ int main( int argc, const char** argv )
   if( result == noError )
   {
     ::setmode( fileno( stdin ), O_BINARY );
-    ::setmode( fileno( stdout ), O_BINARY );
+    if( ToolInfo[outputType].empty() || ToolInfo[outputType][0] != 't' )
+      ::setmode( fileno( stdout ), O_BINARY );
   }
 #endif
 
