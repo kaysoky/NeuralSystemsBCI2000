@@ -24,6 +24,7 @@
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////
 #include "bci_tool.h"
+#include "MeasurementUnits.h"
 #include "Param.h"
 #include "ParamList.h"
 #include "State.h"
@@ -50,10 +51,16 @@ string ToolInfo[] =
   "Reads a BCI2000 data file (*.dat) compliant stream from "
     "standard input and writes it to the standard output as a BCI2000 "
     "compliant binary stream.",
-  "-t,       --transmit={spd}      Select States, Parameters,",
-  "                                and/or Data for transmission",
+  "-t,       --transmit={spd}      Select States, Parameters, and/or",
+  "                                Data for transmission",
   "-r,       --raw                 Transmit uncalibrated data",
   "-p<file>, --parameters=<file>   Incorporate parameters from named file",
+  "-s<time>, --start=<time>        Start at a given offset within the file",
+  "-d<time>, --duration=<time>     Transmit only a limited amount of signal",
+  " ",
+  "Amounts of <time> are expressed in SampleBlocks or (if the unit is",
+  "explicitly appended) as a number of seconds or milliseconds that",
+  "corresponds to a whole number of SampleBlocks.",
   ""
 };
 
@@ -71,7 +78,9 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
        transmitData = ( transmissionList.find_first_of( "dD" ) != string::npos ),
        calibrateData = !options.findopt( "-r|-R|--raw" );
   string paramFileName = options.getopt( "-p|-P|--parameters", "" );
-
+  string offsetString = options.getopt( "-s|-S|--start", "" );
+  string durationString = options.getopt( "-d|-D|--duration", "" );
+  
   // Read the BCI2000 header.
   string token;
   int headerLength,
@@ -160,6 +169,9 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
         MessageHandler::PutMessage( out, param );
     }
   }
+  MeasurementUnits::Initialize( parameters );
+  double   offset = (   offsetString.size() ? MeasurementUnits::TimeInSampleBlocks(   offsetString ) :  0.0 );
+  double duration = ( durationString.size() ? MeasurementUnits::TimeInSampleBlocks( durationString ) : -1.0 );
 
   int sampleBlockSize = static_cast<int>( PhysicalUnit()
                                          .SetGain( 1.0 ).SetOffset( 0.0 ).SetSymbol( "" )
@@ -232,8 +244,9 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
     }
 
     int curSample = 0;
+    int nBlocksRead = 0, nBlocksTransmitted = 0;
     GenericSignal inputSignal( inputProperties );
-    while( in && in.peek() != EOF )
+    while( in && in.peek() != EOF && ( duration < 0.0 || nBlocksTransmitted < duration ) )
     {
       for( int i = 0; i < sourceCh; ++i )
         inputSignal.ReadValueBinary( in, i, curSample );
@@ -242,26 +255,30 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
       if( ++curSample == sampleBlockSize )
       {
         curSample = 0;
-        if( transmitStates )
+        if ( ++nBlocksRead > offset )
         {
-          MessageHandler::PutMessage( out, statevector );
-        }
-        if( transmitData )
-        {
-          if( calibrateData )
+          if( transmitStates )
           {
-            SignalProperties outputProperties( inputProperties );
-            outputProperties.SetType( SignalType::float32 );
-            GenericSignal outputSignal( outputProperties );
-            for( int i = 0; i < sourceCh; ++i )
-              for( int j = 0; j < sampleBlockSize; ++j )
-                outputSignal( i, j )
-                  = ( inputSignal( i, j ) - offsets[ i ] ) * gains[ i ];
-            // Send the data.
-            MessageHandler::PutMessage( out, outputSignal );
+            MessageHandler::PutMessage( out, statevector );
           }
-          else
-            MessageHandler::PutMessage( out, inputSignal );
+          if( transmitData )
+          {
+            if( calibrateData )
+            {
+              SignalProperties outputProperties( inputProperties );
+              outputProperties.SetType( SignalType::float32 );
+              GenericSignal outputSignal( outputProperties );
+              for( int i = 0; i < sourceCh; ++i )
+                for( int j = 0; j < sampleBlockSize; ++j )
+                  outputSignal( i, j )
+                    = ( inputSignal( i, j ) - offsets[ i ] ) * gains[ i ];
+              // Send the data.
+              MessageHandler::PutMessage( out, outputSignal );
+            }
+            else
+              MessageHandler::PutMessage( out, inputSignal );
+          }
+          nBlocksTransmitted++;
         }
       }
     }

@@ -44,6 +44,17 @@ function [out, err] = bci2000chain(datfile, chain, varargin)
 % BCI2000CHAIN makes its best guess as to what is appropriate given the output
 % ElementUnit, and/or the name, of the last filter in the chain.
 % 
+% Finally, two optional time parameters can be passed through to bci_dat2stream,
+% specifying the offset within the file at which processing should start, and
+% the duration of the signal that should be processed.
+% 
+%    '-sTTT' or '--start=TTT'      : specify time offset TTT within file
+%    '-dTTT' or '--duration=TTT'   : specify maximum duration TTT
+% 
+% These should be expressed like any other BCI2000 time parameter: as a whole
+% number of SampleBlocks (e.g. --duration=10)  or as a number of seconds
+% corresponding to a whole number of SampleBlocks, with the unit explicitly
+% expressed (e.g. --duration=10s).
 % 
 % BCI2000CHAIN has the following dependencies:
 % 
@@ -129,15 +140,33 @@ end
 [preserve_tmpdir, opts] = getopt(opts, '-k', '--keep');
 [verbose, opts]         = getopt(opts, '-v', '--verbose');
 [pretty,  opts]         = getopt(opts, '-p', '--pretty');
-if pretty, pretty = {'-p'}; else pretty = {}; end
+
+[use_offset,   opts, ind, offset  ] = getopt(opts, '-s', '--start');
+[use_duration, opts, ind, duration] = getopt(opts, '-d', '--duration');
+
+if use_offset
+	if ~dat2stream_has_p_flag, error('older builds of bci_dat2stream have no -s or --start flag'), end % update your bci_dat2stream, and set the dat2stream_has_p_flag variable back to 1, above
+	if isempty(offset), error('the -s or --start option must be used with an argument (e.g. --start=10s)'), end
+	offset = [' --start=' offset];
+end
+if use_duration
+	if ~dat2stream_has_p_flag, error('older builds of bci_dat2stream have no -d or --duration flag'), end % update your bci_dat2stream, and set the dat2stream_has_p_flag variable back to 1, above
+	if isempty(duration), error('the -d or --duration option must be used with an argument (e.g. --duration=10s)'), end
+	duration = [' --duration=' duration];
+end
+
 if ~isempty(opts)
 	opts(2, :) = {' '};
 	error(['unrecognized option(s): ' opts{1:end-1}])
 end
+
+if pretty, pretty = {'-p'}; else pretty = {}; end
 if twodee & threedee, if ind3 >= ind2, twodee = 0; else threedee = 0; end, end
 % if both --two-dimensional and --three-dimensional are given, obey whichever one is last-mentioned later
 if twodee, dimensionality = 2; elseif threedee, dimensionality = 3; else dimensionality = 0; end
 % dimensionality = 0 means neither --two-dimensional nor --threedimensional was given explicitly ('auto' mode)
+
+%out = struct('use_offset', use_offset, 'offset', offset, 'use_duration', use_duration, 'duration', duration, 'pretty', pretty, 'dimensionality', dimensionality); return
 
 
 cmd = {};
@@ -175,14 +204,14 @@ mappings = {
 };
 
 if isempty(prm)
-	cmd{end+1} = 'bci_dat2stream < "$DATFILE"';
+	cmd{end+1} = ['bci_dat2stream' offset duration ' < "$DATFILE"'];
 else
 	if ~iscell(prm), prm = {prm}; end
 	if verbose, fprintf('# writing custom parameter file %s\n', prmfile_in); end
 	make_bciprm(datfile, prm{:}, pretty{:}, '>', prmfile_in);
 	
 	if dat2stream_has_p_flag
-		cmd{end+1} = 'bci_dat2stream -p$PRMFILE_IN < "$DATFILE"'; % new-style bci_dat2stream with -p option
+		cmd{end+1} = ['bci_dat2stream -p$PRMFILE_IN' offset duration ' < "$DATFILE"']; % new-style bci_dat2stream with -p option
 		binaries{end+1} = 'bci_dat2stream';
 	else
 		cmd{end+1} = '(';   % old-style bci_dat2stream with no -p option
@@ -356,14 +385,29 @@ if nargout < 2, error(err), end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ispresent,opts,ind] = getopt(opts, shortform, longform)
-[ispresent(1) ind{1}] = ismember(shortform,opts);
-[ispresent(2) ind{2}] = ismember(longform,opts);
-ispresent = any(ispresent);
-rm = [ind{:}]; rm(rm == 0) = [];
-opts(rm) = [];
-ind = max([ind{:}]);
-if isempty(ind), ind = 0; end
+function [ispresent,opts,lastind,arg] = getopt(opts, shortform, longform)
+arg = '';
+arg_expected = (nargout >= 4);
+matched = logical(zeros(size(opts)));
+for i = 1:numel(opts)
+	opt = opts{i};
+	if arg_expected
+		prefixes = {[longform '='],  longform,  [shortform '='], shortform};
+		for j = 1:numel(prefixes)
+			if strncmp(opt, prefixes{j}, length(prefixes{j}))
+				arg = opt(length(prefixes{j})+1:end);
+				matched(i) = 1;
+				break;
+			end
+		end
+	else
+		matched(i) = strcmp(opt, shortform) | strcmp(opt, longform);
+	end
+end
+ispresent = any(matched);
+opts(matched) = [];
+lastind = max(find(matched));
+if isempty(lastind), lastind = 0; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function p = resolve(p)
