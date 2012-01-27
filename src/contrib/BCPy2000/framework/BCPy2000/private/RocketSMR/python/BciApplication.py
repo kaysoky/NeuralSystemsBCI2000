@@ -61,6 +61,8 @@ class BciApplication(BciGenericApplication):
 			"PythonApp:ScoreDisplay floatlist ScoreFontColor= 3	 1.0 1.0 1.0 % 0.0 1.0 // color of Text displaying the Scores",
 			
 			"PythonApp:Settings	string		PaddleExpression= (Signal(2,1)-Signal(1,1))*2 % % %// Signal to use for paddle speed",
+			"PythonApp:Settings	int		NormalizerMode= 0 % 0 1 // 0: no normalization after calibration, 1: adaptive normalization",
+			"PythonApp:Settings float	NormalizerUpdate= 5.0 % % % // period in s after which normalizer variables are updated by default if adaptive normalization is employed",
 			"PythonApp:Settings int		UseDirectWiimoteControl= 0 % % % // use direct control via Wiimotes (boolean)",
 			"PythonApp:Settings float   DirectControlZeroThreshold= 1 % % % // only for direct control mode",
 			"PythonApp:Settings int		DirectControlSmoothingLength= 4 % % % // how many past values to consider for smoothing",
@@ -76,6 +78,7 @@ class BciApplication(BciGenericApplication):
 			
 			"PythonApp:BasicRound float	DropFrequency= 2 % 0 % // determines distance between different Drops falling from sky (DrFreq*PaddleHeight)",
 			"PythonApp:BasicRound float InitGravity= 1 % 0.1 % // speed with which drops fall down",
+			"PythonApp:BasicRound int	CloudMode= 0 % 0 1 // 0: cloud moves according to CloudPath and CloudSpeed, 1: cloud moves away from paddle",
 			"PythonApp:BasicRound matrix	CloudPathes= 3 5	1 0.2 30 0.4 0.8	0.2 0.5 50 0.2 0.8	1 60 0.4 0.2 0 	% % % //path which cloud follows",
 			"PythonApp:BasicRound floatlist CloudSpeed= 5    0.5 1.5 0.8 2.3 2.0  % % %// List of Cloud Speeds to be used",
 			"PythonApp:BasicRound int		DropsTillBonus= 10 % 1 32 // number of drops that have to be collected to enter Bonus Round",
@@ -117,6 +120,7 @@ class BciApplication(BciGenericApplication):
 			"PaddlePosXTimes10000	14 0 0 0",
 			"PaddlePosYTimes10000	14 0 0 0",
 			"CloudSpeedTimes10	14 0 0 0",
+			"CloudSpeedSign 1 0 0 0",
 			"CloudPosXTimes10000	14 0 0 0",
 			"CloudPosYTimes10000	14 0 0 0",
 			"TargetDropPosXTimes10000 14 0 0 0",
@@ -348,20 +352,22 @@ class BciApplication(BciGenericApplication):
 		self.allCloudSpeeds = copy.deepcopy(self.params['CloudSpeed'])
 		
 #~ 2.3. Transform given CloudPathes (self.params['CloudPathes'] into list in list structure
-		pathes = numpy.array(self.params['CloudPathes'])
-		list = []
-		for i in range(pathes.shape[0]):
-			path =[]
-			for j in range(pathes.shape[1]):
-				x = float(pathes[i,j])	
-				if not ((x >= 0 and x<=1.0) or (x>=10 and x<=100)):
-					raise EndUserError, "cloudpathes must hold values between 0.0-1.0 and 10-100 only"
-				path.append(x)
-			list.append(path)
-		self.cloudPathes = list
-		self.nextCloudPath = -1
-		self.currentCloudPath = copy.deepcopy(self.cloudPathes[0])
-		self.cloudMoveEnd = None
+		# unnecessary if CloudMode = 1
+		if float(self.params['CloudMode']) == 0:
+			pathes = numpy.array(self.params['CloudPathes'])
+			list = []
+			for i in range(pathes.shape[0]):
+				path =[]
+				for j in range(pathes.shape[1]):
+					x = float(pathes[i,j])	
+					if not ((x >= 0 and x<=1.0) or (x>=10 and x<=100)):
+						raise EndUserError, "cloudpathes must hold values between 0.0-1.0 and 10-100 only"
+					path.append(x)
+				list.append(path)
+			self.cloudPathes = list
+			self.nextCloudPath = -1
+			self.currentCloudPath = copy.deepcopy(self.cloudPathes[0])
+			self.cloudMoveEnd = None
 		
 #~ 2.4. Calculate DropReleaseInterval 
 #~		Calculate maximum number of necessary Drops
@@ -513,6 +519,7 @@ class BciApplication(BciGenericApplication):
 		self.states['Planets'] = 0
 		self.states['NumberOfGame'] = 1
 		self.states['GameMode'] = 0
+		self.states['CloudSpeedSign'] = 0
 	#############################################################
 	
 	def Phases(self):
@@ -641,10 +648,11 @@ class BciApplication(BciGenericApplication):
 			if not self.startTime:		# start timer
 				self.startTime = time.time()
 			self.stimuli['cloud'].on = True
-			self.nextCloudPath = self.nextCloudPath+1
-			if self.nextCloudPath >= len(self.cloudPathes):
-				self.nextCloudPath = 0
-			self.currentCloudPath = copy.deepcopy(self.cloudPathes[self.nextCloudPath])
+			if self.params['CloudMode'] == 0:
+				self.nextCloudPath = self.nextCloudPath+1
+				if self.nextCloudPath >= len(self.cloudPathes):
+					self.nextCloudPath = 0
+				self.currentCloudPath = copy.deepcopy(self.cloudPathes[self.nextCloudPath])
 	
 	#~ Set instructions	
 		if phase in ['preplay_text']:
@@ -756,41 +764,82 @@ class BciApplication(BciGenericApplication):
 			self.states['PaddlePosYTimes10000'] = round((paddle.position[1]/self.screen.size[1])*10000)			
 		
 #~ 1.2. Move Cloud according to self.cloudPathes at given Speed(self.params['CloudSpeed'])
-			cloud = self.stimuli['cloud']
-			if self.cloudMoveEnd == None:
-				if not self.currentCloudPath: # if path end reached start path from beginning
-					self.currentCloudPath = copy.deepcopy(self.cloudPathes[self.nextCloudPath])
-				self.cloudMoveEnd = self.currentCloudPath.pop(0)
-				if self.cloudMoveEnd > 1: # cloud supposed to stop
-					self.cloudSpeed = 0
-					self.states['CloudSpeedTimes10'] = 0
-				else:	# cloud supposed to move
-					if self.allCloudSpeeds==[]:
-						self.allCloudSpeeds = copy.deepcopy(self.params['CloudSpeed'])
-					self.cloudSpeed = round(float(self.allCloudSpeeds.pop()),1)
-					self.states['CloudSpeedTimes10']=self.cloudSpeed*10
-					self.cloudMoveEnd = round((self.gamingWindowWidth-cloud.size[0])*self.cloudMoveEnd+(cloud.size[0]/2),1)
-			if self.cloudSpeed == 0:		# cloud is currently stopping
-				self.cloudMoveEnd = self.cloudMoveEnd - (0.1*(float(self.states['GravityTimes100'])/100))
-				if self.cloudMoveEnd <= 0:
-					self.cloudMoveEnd = None
-			else:		# cloud is moving
-				speed = self.cloudSpeed
-				if cloud.position[0] > self.cloudMoveEnd: speed = speed*(-1)					
-				cloud.position = (cloud.position[0]+speed, cloud.position[1])
-				if cloud.position[0] < cloud.size[0]/2:	#screen end left reached
-					cloud.position = (cloud.size[0]/2, cloud.position[1])
-					self.cloudMoveEnd = None
-				if cloud.position[0] > self.gamingWindowWidth-cloud.size[0]/2: #screen end right reached
-					cloud.position = (self.gamingWindowWidth-cloud.size[0]/2, cloud.position[1])
-					self.cloudMoveEnd = None
-				if self.cloudMoveEnd:
-					if speed > 0:	# path end reached
-						if cloud.position[0] >= self.cloudMoveEnd:
-							self.cloudMoveEnd = None
-					else:
-						if cloud.position[0] <= self.cloudMoveEnd:
-							self.cloudMoveEnd = None
+			if float(self.params['CloudMode']) == 0:
+				cloud = self.stimuli['cloud']
+				if self.cloudMoveEnd == None:
+					if not self.currentCloudPath: # if path end reached start path from beginning
+						self.currentCloudPath = copy.deepcopy(self.cloudPathes[self.nextCloudPath])
+					self.cloudMoveEnd = self.currentCloudPath.pop(0)
+					if self.cloudMoveEnd > 1: # cloud supposed to stop
+						self.cloudSpeed = 0
+						self.states['CloudSpeedTimes10'] = 0
+					else:	# cloud supposed to move
+						if self.allCloudSpeeds==[]:
+							self.allCloudSpeeds = copy.deepcopy(self.params['CloudSpeed'])
+						self.cloudSpeed = round(float(self.allCloudSpeeds.pop()),1)
+						self.states['CloudSpeedTimes10']=self.cloudSpeed*10
+						self.cloudMoveEnd = round((self.gamingWindowWidth-cloud.size[0])*self.cloudMoveEnd+(cloud.size[0]/2),1)
+				if self.cloudSpeed == 0:		# cloud is currently stopping
+					self.cloudMoveEnd = self.cloudMoveEnd - (0.1*(float(self.states['GravityTimes100'])/100))
+					if self.cloudMoveEnd <= 0:
+						self.cloudMoveEnd = None
+				else:		# cloud is moving
+					speed = self.cloudSpeed
+					if cloud.position[0] > self.cloudMoveEnd: speed = speed*(-1)					
+					cloud.position = (cloud.position[0]+speed, cloud.position[1])
+					if cloud.position[0] < cloud.size[0]/2:	#screen end left reached
+						cloud.position = (cloud.size[0]/2, cloud.position[1])
+						self.cloudMoveEnd = None
+					if cloud.position[0] > self.gamingWindowWidth-cloud.size[0]/2: #screen end right reached
+						cloud.position = (self.gamingWindowWidth-cloud.size[0]/2, cloud.position[1])
+						self.cloudMoveEnd = None
+					if self.cloudMoveEnd:
+						if speed > 0:	# path end reached
+							if cloud.position[0] >= self.cloudMoveEnd:
+								self.cloudMoveEnd = None
+						else:
+							if cloud.position[0] <= self.cloudMoveEnd:
+								self.cloudMoveEnd = None
+#~ 1.2. Move Cloud away from Paddle
+			else:
+				cloud = self.stimuli['cloud']
+				spaceLeftOfPaddle = paddle.position[0]-paddle.size[0]/2
+				spaceRightOfPaddle = self.gamingWindowWidth-(paddle.position[0]+paddle.size[0]/2)
+				if spaceLeftOfPaddle > spaceRightOfPaddle:
+					Force = -0.2
+				else:
+					Force = 0.2
+				CloudLocation = cloud.position[0]/self.gamingWindowWidth
+				PaddleLocation = paddle.position[0]/self.gamingWindowWidth
+				ForceImpact = 1 - abs(CloudLocation-PaddleLocation)			
+				Force = Force*ForceImpact
+				Force = (round(Force*10)/10)
+				if Force <= 0.1 and Force >= -0.1:
+					Force = 0
+				speedChange = float(random.randint(0,6))/10-0.3+Force
+				currentCloudSpeed = float(self.states['CloudSpeedTimes10'])/10
+				if self.states['CloudSpeedSign'] == 1:
+					currentCloudSpeed = currentCloudSpeed*(-1);
+				newCloudSpeed = currentCloudSpeed+speedChange
+				if (newCloudSpeed < 0) and (cloud.position[0]<=cloud.size[0]/2):
+					newCloudSpeed = 1
+				elif (newCloudSpeed > 0) and (cloud.position[0]>=self.gamingWindowWidth-cloud.size[0]/2):
+					newCloudSpeed = -1
+				if newCloudSpeed < -3:
+					newCloudSpeed = -3
+				if newCloudSpeed > 3:
+					newCloudSpeed = 3
+				if newCloudSpeed < 0:
+					self.states['CloudSpeedSign'] = 1
+				else:
+					self.states['CloudSpeedSign'] = 0
+				self.states['CloudSpeedTimes10'] = abs(newCloudSpeed)*10
+				
+				cloudSpeed = float(self.states['CloudSpeedTimes10'])/10
+				if self.states['CloudSpeedSign'] == 1:
+					cloudSpeed = cloudSpeed*(-1)
+				cloud.position = (cloud.position[0]+cloudSpeed,cloud.position[1])
+				
 				self.states['CloudPosXTimes10000'] = round((cloud.position[0]/self.gamingWindowWidth)*10000)
 				self.states['CloudPosYTimes10000'] = round((cloud.position[1]/self.screen.size[1])*10000)				
 					
@@ -969,22 +1018,29 @@ class BciApplication(BciGenericApplication):
 				self.change_phase()
 
 #~ 1.5.	Training Normalizer (Calibration during Game)
-			#~ if self.activeDrops:
-				#~ allLeft = True
-				#~ allRight = True
-				#~ for d in self.activeDrops:
-					#~ if not d.position[0]+d.size[0] < paddle.position[0]-paddle.size[0]/2:
-						#~ allLeft = False
-					#~ if not d.position[0]-d.size[0] > paddle.position[0]+paddle.size[0]/2:
-						#~ allRight = False
-				#~ if allLeft or allRight:
-					#~ self.states['Feedback'] = 1
-					#~ if allLeft: self.states['TargetCode'] = 1
-					#~ else: self.states['TargetCode'] = 2
-				#~ else:
-					#~ self.states['Feedback'] = 0
-					#~ self.states['TargetCode'] = 0
-				
+			if float(self.params['NormalizerMode']) == 1:
+				if self.activeDrops:
+					allLeft = True
+					allRight = True
+					for d in self.activeDrops:
+						if not d.position[0]+d.size[0] < paddle.position[0]-paddle.size[0]/2:
+							allLeft = False
+						if not d.position[0]-d.size[0] > paddle.position[0]+paddle.size[0]/2:
+							allRight = False
+					if allLeft or allRight:  					
+						if self.states['Feedback'] == 0:
+							self.remember('Feedback_Change')						
+						self.states['Feedback'] = 1
+						if allLeft: self.states['TargetCode'] = 1
+						else: self.states['TargetCode'] = 2
+					else:
+						if self.states['Feedback'] == 1:
+							self.remember('Feedback_Change')
+						self.states['Feedback'] = 0
+						self.states['TargetCode'] = 0	
+				if self.states['Feedback'] == 1 and (self.since('Feedback_Change')['msec'] >= (float(self.params['NormalizerUpdate'])*1000)):
+					self.states['Feedback'] = 0
+
 				
 		if phasename in ['bonus']:
 			#~ 2.1. Spaceship Movement
