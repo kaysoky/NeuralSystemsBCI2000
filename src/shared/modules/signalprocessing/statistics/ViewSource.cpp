@@ -87,16 +87,16 @@ ViewSource::OnProcess( const Context& )
   {
     int el = 0;
     for( size_t i = 0; i < Sources().size(); ++i )
-      for( size_t j = 0; j < mElements[i]; ++j )
+      for( int j = 0; j < mElements[i]; ++j )
         mSignal( ch, el++ ) = Sources()[i]->Data( ch * mElements[i] + j );
   }
 }
 
 DataSource::Value
-ViewSource::OnData( size_t inIdx )
+ViewSource::OnData( int inIdx )
 {
-  size_t ch = inIdx / mSignal.Elements(),
-         el = inIdx % mSignal.Elements();
+  int ch = inIdx / mSignal.Elements(),
+      el = inIdx % mSignal.Elements();
   return mSignal( ch, el );
 }
 

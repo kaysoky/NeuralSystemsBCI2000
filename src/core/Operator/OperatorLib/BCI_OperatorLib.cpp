@@ -47,8 +47,8 @@ static MemorySet sAllocatedMemory;
 // An internal helper function that allocates output string buffers.
 static const char* AllocateCopy( const char* inString )
 {
-  int len = ::strlen( inString );
-  char* pCopy = new char[ len + 1 ];
+  size_t len = ::strlen( inString );
+  char* pCopy = new char[len + 1];
   if( pCopy != NULL )
   {
     ::strncpy( pCopy, inString, len + 1 );

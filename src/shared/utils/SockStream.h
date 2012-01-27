@@ -225,7 +225,7 @@ class sockbuf : public std::streambuf
     {
       // Use 512 as a small buffer size to trigger bugs with messages that exceed it.
       // For efficient operation, use something like 64k.
-      buf_size = 64 * 1024,
+      c_buf_size = 64 * 1024,
     };
 
   public:

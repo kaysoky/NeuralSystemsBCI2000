@@ -115,15 +115,15 @@ for (int i=0; i<row_Data; i++)
 
 //////////////////////////////////////////////////////////////////////
 // Section: Organize Data with the rows going from target to standard 
-for (size_t i=0; i<target.size(); i++)
+for (int i=0; i<static_cast<int>(target.size()); i++)
 {
 	 ap::vmove(data.getrow(i,0,col_Data-1), Data.getrow(target[i],0,col_Data-1));
 	 Label(i) = 2*(Type(target[i])- 0.5);
 }
 for (size_t i=0; i<standard.size(); i++)
 {
-	 ap::vmove(data.getrow(i+target.size(),0,col_Data-1), Data.getrow(standard[i],0,col_Data-1));
-	 Label(i+target.size()) = 2*(Type(standard[i])- 0.5);
+	 ap::vmove(data.getrow(static_cast<int>(i+target.size()),0,col_Data-1), Data.getrow(standard[i],0,col_Data-1));
+	 Label(static_cast<int>(i+target.size())) = 2*(Type(standard[i])- 0.5);
 }
 //////////////////////////////////////////////////////////////////////
 // Section: Compute SWLDA
@@ -150,11 +150,11 @@ for (int i=0; i<col_Data; i++)
 if (var_ind.size()==0)
 	return false;
 
-Variables.setbounds(0, var_ind.size()-1);
-var_tmp.setbounds(0, var_ind.size()-1);
-indx.setbounds(0, var_ind.size()-1);
+Variables.setbounds(0, static_cast<int>(var_ind.size())-1);
+var_tmp.setbounds(0, static_cast<int>(var_ind.size())-1);
+indx.setbounds(0, static_cast<int>(var_ind.size())-1);
 
-for (size_t i=0; i<var_ind.size(); i++)
+for (int i=0; i<static_cast<int>( var_ind.size() ); i++)
 {
 	 Variables(i) = B(var_ind[i]);
 	 indx(i) = i;
@@ -174,10 +174,10 @@ for (size_t i=0; i<var_ind.size(); i++)
 }
 //////////////////////////////////////////////////////////////////////
 // Section: Generate the MUD
-tMUD.MUD.setbounds(0,(var_ind.size()*DecFact)-1,0,2);
+tMUD.MUD.setbounds(0,static_cast<int>(var_ind.size()*DecFact)-1,0,2);
 vector_abs(Variables, var_tmp);
 ind = vect_get_max_element(var_tmp, indx);
-ap::vmul(Variables.getvector(0, var_ind.size()-1), 10/var_tmp(ind));
+ap::vmul(Variables.getvector(0, static_cast<int>(var_ind.size())-1), 10/var_tmp(ind));
 chused = channel;
 
 sort(chused.begin(), chused.end());
@@ -190,17 +190,17 @@ for (size_t i=0; i<chused.size(); i++)
 	 for (size_t j=0; j<channel.size(); j++)
 	 {
 		 if (channel[j] == chused[i])
-			 var_ind.push_back(j);
+			 var_ind.push_back(static_cast<int>(j));
 	 }
 	 for (size_t j=0; j<var_ind.size(); j++)
-		 ch.push_back(i+1);
+		 ch.push_back(static_cast<int>(i)+1);
 }
 //
 step = 0;
-for (size_t i=0; i<channel.size(); i++)
+for (int i=0; i<static_cast<int>(channel.size()); i++)
 {
 	 count = 0;
-	 for (size_t j=step; j<(i+1)*MAfilter; j++)
+	 for (int j=step; j<(i+1)*MAfilter; j++)
 	 {
 		//tMUD.MUD(j,0) = channel[i];
 		tMUD.MUD(j,0) = ch[i];
@@ -212,10 +212,10 @@ for (size_t i=0; i<channel.size(); i++)
 }
 
 /* Get MUD.channels */
-tMUD.channels.setbounds(0, chused.size()-1);
+tMUD.channels.setbounds(0, static_cast<int>(chused.size())-1);
 // Cristhian modification April 17, 2010
-tMUD.chSet.setbounds(0, chused.size()-1);
-for (size_t i=0; i<chused.size(); i++) 
+tMUD.chSet.setbounds(0, static_cast<int>(chused.size())-1);
+for (int i=0; i<static_cast<int>(chused.size()); i++) 
 {
 	tMUD.channels(i) = chused[i];
 	tMUD.chSet(i) = channels(chused[i]-1); //*** modified

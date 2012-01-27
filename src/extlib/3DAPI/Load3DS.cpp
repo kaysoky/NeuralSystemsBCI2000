@@ -136,11 +136,11 @@ void CLoad3DS::ReadChunk(tChunk& outChunk)
 	// This reads the chunk ID which is 2 bytes.
 	// The chunk ID is like OBJECT or MATERIAL.  It tells what data is
 	// able to be read in within the chunks section.
-	outChunk.bytesRead = fread(&outChunk.ID, 1, 2, m_FilePointer);
+	outChunk.bytesRead = static_cast<unsigned int>( fread(&outChunk.ID, 1, 2, m_FilePointer) );
 
 	// Then, we read the length of the chunk which is 4 bytes.
 	// This is how we know how much to read in, or read past.
-	outChunk.bytesRead += fread(&outChunk.length, 1, 4, m_FilePointer);
+	outChunk.bytesRead += static_cast<unsigned int>( fread(&outChunk.length, 1, 4, m_FilePointer) );
 }//read chunk
 
 
@@ -177,7 +177,7 @@ void CLoad3DS::ProcessNextChunk(t3DModel& outModel, tChunk& ioPreviousChunk)
 			// version length will be so we'll simply ignore the value
 
 			// Read the file version and add the bytes read to our bytesRead variable
-			currentChunk.bytesRead += fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer);
+			currentChunk.bytesRead += static_cast<unsigned int>( fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer) );
 
 			// If the file version is over 3, give a warning that there could be a problem
 			if ((currentChunk.length - currentChunk.bytesRead == 4) && (gBuffer[0] > 0x03)) {
@@ -199,7 +199,7 @@ void CLoad3DS::ProcessNextChunk(t3DModel& outModel, tChunk& ioPreviousChunk)
 			ReadChunk(tempChunk);
 
 			// Get the version of the mesh
-			tempChunk.bytesRead += fread(gBuffer, 1, tempChunk.length - tempChunk.bytesRead, m_FilePointer);
+			tempChunk.bytesRead += static_cast<unsigned int>( fread(gBuffer, 1, tempChunk.length - tempChunk.bytesRead, m_FilePointer) );
 
 			// Increase the bytesRead by the bytes read from the last chunk
 			currentChunk.bytesRead += tempChunk.bytesRead;
@@ -246,14 +246,14 @@ void CLoad3DS::ProcessNextChunk(t3DModel& outModel, tChunk& ioPreviousChunk)
 			//ProcessNextKeyFrameChunk(pModel, currentChunk);
 
 			// Read past this chunk and add the bytes read to the byte counter
-			currentChunk.bytesRead += fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer);
+			currentChunk.bytesRead += static_cast<unsigned int>( fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer) );
 			break;
 
 		default:
 
 			// If we didn't care about a chunk, then we get here.  We still need
 			// to read past the unknown or ignored chunk and add the bytes read to the byte counter.
-			currentChunk.bytesRead += fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer);
+			currentChunk.bytesRead += static_cast<unsigned int>( fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer) );
 			break;
 		}
 
@@ -315,7 +315,7 @@ void CLoad3DS::ProcessNextObjectChunk(t3DModel& outModel, t3DObject& outObject, 
 		default:
 
 			// Read past the ignored or unknown chunks
-			currentChunk.bytesRead += fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer);
+			currentChunk.bytesRead += static_cast<unsigned int>( fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer) );
 			break;
 		}
 
@@ -343,7 +343,7 @@ void CLoad3DS::ProcessNextMaterialChunk(t3DModel& outModel, tChunk& ioPreviousCh
 		case MATNAME:							// This chunk holds the name of the material
 
 			// Here we read in the material name
-			currentChunk.bytesRead += fread(outModel.materials.rbegin()->strName, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer);
+			currentChunk.bytesRead += static_cast<unsigned int>( fread(outModel.materials.rbegin()->strName, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer) );
 			break;
 
 		case MATDIFFUSE:						// This holds the R G B color of our object
@@ -359,13 +359,13 @@ void CLoad3DS::ProcessNextMaterialChunk(t3DModel& outModel, tChunk& ioPreviousCh
 		case MATMAPFILE:						// This stores the file name of the material
 
 			// Here we read in the material's file name
-			currentChunk.bytesRead += fread(outModel.materials.rbegin()->strFile, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer);
+			currentChunk.bytesRead += static_cast<unsigned int>( fread(outModel.materials.rbegin()->strFile, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer) );
 			break;
 
 		default:
 
 			// Read past the ignored or unknown chunks
-			currentChunk.bytesRead += fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer);
+			currentChunk.bytesRead += static_cast<unsigned int>( fread(gBuffer, 1, currentChunk.length - currentChunk.bytesRead, m_FilePointer) );
 			break;
 		}
 
@@ -546,14 +546,14 @@ void CLoad3DS::ReadVertices(t3DObject& outObject, tChunk& ioPreviousChunk)
 	// we then fread() them into our vertice array.
 
 	// Read in the number of vertices (int)
-	ioPreviousChunk.bytesRead += fread(&(outObject.numOfVerts), 1, 2, m_FilePointer);
+	ioPreviousChunk.bytesRead += static_cast<unsigned int>( fread(&(outObject.numOfVerts), 1, 2, m_FilePointer) );
 
 	// Allocate the memory for the verts and initialize the structure
 	outObject.pVerts = new CVector3 [outObject.numOfVerts];
 	memset(outObject.pVerts, 0, sizeof(CVector3) * outObject.numOfVerts);
 
 	// Read in the array of vertices (an array of 3 floats)
-	ioPreviousChunk.bytesRead += fread(outObject.pVerts, 1, ioPreviousChunk.length - ioPreviousChunk.bytesRead, m_FilePointer);
+	ioPreviousChunk.bytesRead += static_cast<unsigned int>( fread(outObject.pVerts, 1, ioPreviousChunk.length - ioPreviousChunk.bytesRead, m_FilePointer) );
 
 	// Now we should have all of the vertices read in.  Because 3D Studio Max
 	// Models with the Z-Axis pointing up (strange and ugly I know!), we need
@@ -602,7 +602,7 @@ int CLoad3DS::GetString(char *pBuffer)
 	}
 
 	// Return the string length, which is how many bytes we read in (including the NULL)
-	return strlen(pBuffer) + 1;
+	return static_cast<int>( strlen(pBuffer) + 1 );
 }//GetString
 
 
@@ -619,7 +619,7 @@ void CLoad3DS::ReadColorChunk(tMaterialInfo& outMaterial, tChunk& ioChunk)
 	ReadChunk(tempChunk);
 
 	// Read in the R G B color (3 bytes - 0 through 255)
-	tempChunk.bytesRead += fread(outMaterial.color, 1, tempChunk.length - tempChunk.bytesRead, m_FilePointer);
+	tempChunk.bytesRead += static_cast<unsigned int>( fread(outMaterial.color, 1, tempChunk.length - tempChunk.bytesRead, m_FilePointer) );
 
 	// Add the bytes read to our chunk
 	ioChunk.bytesRead += tempChunk.bytesRead;
@@ -655,7 +655,7 @@ void CLoad3DS::ReadObjectMaterial(t3DModel& outModel, t3DObject& ioObject, tChun
 		if(strcmp(strMaterial, outModel.materials[i].strName) == 0)
 		{
 			// Set the material ID to the current index 'i' and stop checking
-			ioObject.materialID = i;
+			ioObject.materialID = static_cast<int>( i );
 
 			// Now that we found the material, check if it's a texture map.
 			// If the strFile has a string length of 1 and over it's a texture
@@ -675,7 +675,7 @@ void CLoad3DS::ReadObjectMaterial(t3DModel& outModel, t3DObject& ioObject, tChun
 
 	// Read past the rest of the chunk since we don't care about shared vertices
 	// You will notice we subtract the bytes already read in this chunk from the total length.
-	ioPreviousChunk.bytesRead += fread(gBuffer, 1, ioPreviousChunk.length - ioPreviousChunk.bytesRead, m_FilePointer);
+	ioPreviousChunk.bytesRead += static_cast<unsigned int>( fread(gBuffer, 1, ioPreviousChunk.length - ioPreviousChunk.bytesRead, m_FilePointer) );
 }//ReadObjectMaterial
 
 
@@ -699,13 +699,13 @@ void CLoad3DS::ReadUVCoordinates(t3DObject& outObject, tChunk& ioPreviousChunk)
 	// read in the amount there are, then read them in.
 
 	// Read in the number of UV coordinates there are (int)
-	ioPreviousChunk.bytesRead += fread(&outObject.numTexVertex, 1, 2, m_FilePointer);
+	ioPreviousChunk.bytesRead += static_cast<unsigned int>( fread(&outObject.numTexVertex, 1, 2, m_FilePointer) );
 
 	// Allocate memory to hold the UV coordinates
 	outObject.pTexVerts = new CVector2 [outObject.numTexVertex];
 
 	// Read in the texture coodinates (an array 2 float)
-	ioPreviousChunk.bytesRead += fread(outObject.pTexVerts, 1, ioPreviousChunk.length - ioPreviousChunk.bytesRead, m_FilePointer);
+	ioPreviousChunk.bytesRead += static_cast<unsigned int>( fread(outObject.pTexVerts, 1, ioPreviousChunk.length - ioPreviousChunk.bytesRead, m_FilePointer) );
 }//READ UV COORDINATES
 
 
@@ -721,7 +721,7 @@ void CLoad3DS::ReadVertexIndices(t3DObject& outObject, tChunk& ioPreviousChunk)
 	// a visibility flag for 3D Studio Max that doesn't mean anything to us.
 
 	// Read in the number of faces that are in this object (int)
-	ioPreviousChunk.bytesRead += fread(&outObject.numOfFaces, 1, 2, m_FilePointer);
+	ioPreviousChunk.bytesRead += static_cast<unsigned int>( fread(&outObject.numOfFaces, 1, 2, m_FilePointer) );
 
 	// Alloc enough memory for the faces and initialize the structure
 	outObject.pFaces = new tFace [outObject.numOfFaces];
@@ -735,7 +735,7 @@ void CLoad3DS::ReadVertexIndices(t3DObject& outObject, tChunk& ioPreviousChunk)
 		for(int j = 0; j < 4; j++)
 		{
 			// Read the first vertice index for the current face
-			ioPreviousChunk.bytesRead += fread(&index, 1, sizeof(index), m_FilePointer);
+			ioPreviousChunk.bytesRead += static_cast<unsigned int>( fread(&index, 1, sizeof(index), m_FilePointer) );
 
 			if(j < 3)
 			{
@@ -837,10 +837,10 @@ void Load3dsFile(t3DModel &outModel, const string& fileName)
 		{
 			// Use the name of the texture file to load the bitmap, with a texture ID (i).
 			// We pass in our global texture array, the name of the texture, and an ID to reference it.
-			Create3dsTexture(g_Texture, outModel.materials[i].strFile, i);
+			Create3dsTexture(g_Texture, outModel.materials[i].strFile, static_cast<int>( i ) );
 		}
 		// Set the texture ID for this material
-		outModel.materials[i].textureId = i;
+		outModel.materials[i].textureId = static_cast<int>( i );
 	}
 }//Load3dsFile
 

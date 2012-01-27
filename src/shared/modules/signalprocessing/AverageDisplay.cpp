@@ -135,7 +135,7 @@ AverageDisplay::Initialize( const SignalProperties& Input, const SignalPropertie
     vis.Send( CfgID::ShowBaselines, 1 );
     vis.Send( CfgID::Visible, true );
 
-    mChannelIndices.push_back( static_cast<size_t>( Parameter( "AvgDisplayCh" )( i, 0 ) - 1 ) );
+    mChannelIndices.push_back( static_cast<int>( Parameter( "AvgDisplayCh" )( i, 0 ) - 1 ) );
   }
 
   mSignalOfCurrentRun.resize( numChannels );
@@ -149,7 +149,7 @@ AverageDisplay::Initialize( const SignalProperties& Input, const SignalPropertie
 void
 AverageDisplay::Process( const GenericSignal& Input, GenericSignal& Output )
 {
-  size_t targetCode = State( "TargetCode" );
+  int targetCode = State( "TargetCode" );
   if( targetCode == 0 && targetCode != mLastTargetCode )
   {
     size_t targetIndex = find( mTargetCodes.begin(), mTargetCodes.end(), mLastTargetCode ) - mTargetCodes.begin();
@@ -199,11 +199,11 @@ AverageDisplay::Process( const GenericSignal& Input, GenericSignal& Output )
     // - Compute and display the averages.
     for( size_t channel = 0; channel < mVisualizations.size(); ++channel )
     {
-      size_t numTargets = mPowerSums[ maxPower ][ channel ].size(),
-             numSamples = numeric_limits<size_t>::max();
-      for( size_t target = 0; target < numTargets; ++target )
+      int numTargets = static_cast<int>( mPowerSums[ maxPower ][ channel ].size() ),
+          numSamples = numeric_limits<int>::max();
+      for( int target = 0; target < numTargets; ++target )
         if( mPowerSums[ maxPower ][ channel ][ target ].size() < numSamples )
-          numSamples = mPowerSums[ maxPower ][ channel ][ target ].size();
+          numSamples = static_cast<int>( mPowerSums[ maxPower ][ channel ][ target ].size() );
 
       // To minimize user confusion, always send target averages in ascending order
       // of target codes. This ensures that colors in the display don't depend
@@ -217,7 +217,7 @@ AverageDisplay::Process( const GenericSignal& Input, GenericSignal& Output )
       // target code as "key" and the index as "value", and later iterate over
       // the map to get the indices sorted by their associated target code.
       map<int, int> targetCodesToIndex;
-      for( size_t target = 0; target < numTargets; ++target )
+      for( int target = 0; target < numTargets; ++target )
         targetCodesToIndex[ mTargetCodes[ target ] ] = target;
 
       GenericSignal average( numTargets, numSamples );

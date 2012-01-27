@@ -114,7 +114,7 @@ RDAQueue::open( const char* inHostName )
   // i.e. a sort of burst mode, so we use normal network access via hostname.
   if( hostName == "localhost" )
   {
-    ::gethostname( receiveBuffer, bufferSize );
+    ::gethostname( receiveBuffer, static_cast<int>( bufferSize ) );
     hostName = receiveBuffer;
   }
 

@@ -106,11 +106,11 @@ FileParts( string fullpath, string& parent, string& stem, string& extension )
 { // break a string into three parts: directory (before the last slash), stem (after the last slash, before the last dot) and extension (after the last slash, from the last dot onwards)
 	fullpath = StandardizePath( fullpath );
 	parent = ""; stem = ""; extension = "";
-	unsigned int parentLength = fullpath.size();
+	size_t parentLength = fullpath.size();
 	for( parentLength = fullpath.size(); parentLength > 0; parentLength-- )
 		if( fullpath[parentLength-1] == gFileSeparator[0] ) break;
-	unsigned int dotPos=fullpath.size();
-	for(  unsigned int i = parentLength; i < fullpath.size(); i++ )
+	size_t dotPos=fullpath.size();
+	for( size_t i = parentLength; i < fullpath.size(); i++ )
 		if( fullpath[i] == '.' ) dotPos = i;
 	
 	parent = StandardizePath( fullpath.substr( 0, parentLength ) );
@@ -162,9 +162,9 @@ string
 StripString( string x )
 { // return a version of x from which whitespace has been stripped from the beginning and end
 	string y;
-	int len = x.size();
+	size_t len = x.size();
 	while( len > 0 && isspace( x[len-1] ) ) len--;
-	for( int i = 0; i < len; i++ )
+	for( size_t i = 0; i < len; i++ )
 	{
 		char c = x[i];
 		if( y.size() > 0 || !::isspace(c) ) y += c;

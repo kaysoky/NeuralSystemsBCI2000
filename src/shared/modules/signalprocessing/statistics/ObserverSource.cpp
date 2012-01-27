@@ -146,8 +146,8 @@ ObserverSource::OnProcess( const Context& inContext )
 
   for( mCurSample = 0; mCurSample < mStreamingMax; ++mCurSample )
   {
-    size_t agingCount = ( ( mCurSample + 1 ) * mSampleBlockSize ) / mStreamingMax 
-                              - ( mCurSample * mSampleBlockSize ) / mStreamingMax;
+    int agingCount = ( ( mCurSample + 1 ) * mSampleBlockSize ) / mStreamingMax 
+                           - ( mCurSample * mSampleBlockSize ) / mStreamingMax;
     for( size_t i = 0; i < mObservers.size(); ++i )
       mObservers[i]->AgeBy( agingCount );
     Observe();
@@ -155,7 +155,7 @@ ObserverSource::OnProcess( const Context& inContext )
 }
 
 DataSource::Value
-ObserverSource::OnData( size_t )
+ObserverSource::OnData( int )
 {
   throw bciexception( "Function should never be called" );
   return 0;
@@ -182,12 +182,13 @@ ObserverSource::Observe( size_t inSource, size_t inSourceDim, size_t inSourceIdx
     {
       if( mObserveWeighted )
       {
-        Observe( inSource + 1, 0, 0, inBuffer, inObserverIdx, inWeight * Sources()[inSource]->Data( inSourceIdx ) );
+        Number weight = inWeight * Sources()[inSource]->Data( static_cast<int>( inSourceIdx ) );
+        Observe( inSource + 1, 0, 0, inBuffer, inObserverIdx, weight );
       }
       else
       {
         bciassert( inBuffer < mSampleBuffer.size() );
-        mSampleBuffer[inBuffer] = Sources()[inSource]->Data( inSourceIdx );
+        mSampleBuffer[inBuffer] = Sources()[inSource]->Data( static_cast<int>( inSourceIdx ) );
         Observe( inSource + 1, 0, 0, inBuffer + 1, inObserverIdx, inWeight );
       }
     }

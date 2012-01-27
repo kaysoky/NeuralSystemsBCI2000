@@ -39,9 +39,9 @@ bool in_out_variable(const ap::boolean_1d_array& in, const ap::real_2d_array& X,
 	if (stdVector.size()>0)
 	{
 		// Routine to extract the in/out variables
-		x.setbounds(0,X.gethighbound(1),0,stdVector.size()-1);
+		x.setbounds(0,X.gethighbound(1),0,static_cast<int>(stdVector.size())-1);
 		for (size_t i=0; i<stdVector.size(); i++)
-			ap::vmove(x.getcolumn(i,0,X.gethighbound(1)), X.getcolumn(stdVector[i],0,X.gethighbound(1)));
+			ap::vmove(x.getcolumn(static_cast<int>(i),0,X.gethighbound(1)), X.getcolumn(stdVector[i],0,X.gethighbound(1)));
 	
         flag=TRUE;
 	}

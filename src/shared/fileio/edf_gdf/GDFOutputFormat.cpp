@@ -30,6 +30,7 @@
 
 #include "GDF.h"
 #include "BCIError.h"
+#include <limits>
 #include <cstdlib>
 
 using namespace std;
@@ -149,15 +150,15 @@ GDFOutputFormat::StartRun( ostream& os, const string& inFileName )
 
   ostringstream bci2000info;
   bci2000info << *Parameters << ends;
-  int bci2000infoLength = bci2000info.str().length();
+  size_t bci2000infoLength = bci2000info.str().length();
   if( bci2000infoLength >= 1 << 24 )
     bciout << "Losing BCI2000 header information due to GDF tag length limitation"
            << endl;
-  int varHeaderLength = Channels().size(),
-      tlvHeaderLength = ( 4 + bci2000infoLength + 256 - 1 ) / 256,
-      tlvPaddingLength = tlvHeaderLength * 256 - 4 - bci2000infoLength;
+  size_t varHeaderLength = Channels().size(),
+         tlvHeaderLength = ( 4 + bci2000infoLength + 256 - 1 ) / 256,
+         tlvPaddingLength = tlvHeaderLength * 256 - 4 - bci2000infoLength;
 
-  const float cNaN = static_cast<float>( ::strtod( "+NAN", NULL ) );
+  const float cNaN = numeric_limits<float>::quiet_NaN();
 
   PutField< Str<8>              >( os, "GDF 2.10" );
   PutField< Str<66>             >( os, patient.str() );

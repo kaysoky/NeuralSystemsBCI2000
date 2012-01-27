@@ -110,7 +110,7 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
   for( int i = 0; i > userScaling; --i )
     ReduceSignal();
 
-  size_t numSamples = NominalDisplaySamples();
+  int numSamples = NominalDisplaySamples();
   if( inConfig.Get( CfgID::NumSamples, numSamples ) )
     SetNominalDisplaySamples( numSamples );
   int userZoom = mUserZoom;
@@ -120,7 +120,7 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
   for( int i = 0; i > userZoom; --i )
     MoreSamples();
 
-  size_t channelGroupSize = mDisplay.ChannelGroupSize();
+  int channelGroupSize = mDisplay.ChannelGroupSize();
   if( inConfig.Get( CfgID::ChannelGroupSize, channelGroupSize ) )
   {
     if( channelGroupSize < 1 )

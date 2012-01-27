@@ -59,7 +59,7 @@ ChannelSetSource::OnProcess( const Context& inContext )
 }
 
 DataSource::Value
-ChannelSetSource::OnData( size_t inIdx )
+ChannelSetSource::OnData( int inIdx )
 {
   bciassert( mpSignal != NULL );
   int ch = inIdx / mpSignal->Elements(),

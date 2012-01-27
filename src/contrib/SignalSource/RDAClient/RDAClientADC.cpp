@@ -70,7 +70,7 @@ RDAClientADC::Preflight( const SignalProperties&,
 {
   // Resource availability and parameter consistency checks.
   RDAQueue preflightQueue;
-  int numInputChannels = 0;
+  size_t numInputChannels = 0;
   preflightQueue.open( Parameter( "HostName" ).c_str() );
   if( !( preflightQueue && preflightQueue.is_open() ) )
     bcierr << "Cannot establish a connection to the recording software" << endl;
@@ -81,7 +81,7 @@ RDAClientADC::Preflight( const SignalProperties&,
     numInputChannels = preflightQueue.info().numChannels + 1;
     const char* matchMessage = " parameter must match the number of channels"
                                " in the recording software plus one";
-    if( Parameter( "SourceCh" ) != numInputChannels )
+    if( Parameter( "SourceCh" ) != static_cast<int>( numInputChannels ) )
       bcierr << "The SourceCh "
              << matchMessage
              << " (" << numInputChannels << ") "

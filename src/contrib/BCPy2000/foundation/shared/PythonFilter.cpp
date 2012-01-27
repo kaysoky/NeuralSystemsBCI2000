@@ -758,10 +758,10 @@ FILTER_NAME::ConvertSignalToPyArrayObject(const GenericSignal& sig, PyArrayObjec
   // see http://projects.scipy.org/scipy/numpy/wiki/NumPyCAPI
   if(array == NULL) array = (PyArrayObject *)PyObject_CallMethod(bci2000_instance, (char*)"_zeros", (char*)"ii", sig.Channels(), sig.Elements());
 
-  int nrows = PyArray_DIM(array, 0);
-  int ncols = PyArray_DIM(array, 1);
-  int rrstride = PyArray_STRIDE(array, 0);
-  int ccstride = PyArray_STRIDE(array, 1);
+  int nrows = static_cast<int>( PyArray_DIM(array, 0) );
+  int ncols = static_cast<int>( PyArray_DIM(array, 1) );
+  int rrstride = static_cast<int>( PyArray_STRIDE(array, 0) );
+  int ccstride = static_cast<int>( PyArray_STRIDE(array, 1) );
   char *data = (char*)PyArray_DATA(array);
   if(nrows != sig.Channels() || ncols != sig.Elements())
   {
@@ -785,10 +785,10 @@ FILTER_NAME::ConvertPyArrayObjectToSignal(PyArrayObject* array, GenericSignal& s
   //    Check that it has float64 precision
   //    Check that it is 2-dimensional
 
-  int nrows = PyArray_DIM(array, 0);
-  int ncols = PyArray_DIM(array, 1);
-  int rrstride = PyArray_STRIDE(array, 0);
-  int ccstride = PyArray_STRIDE(array, 1);
+  int nrows = static_cast<int>( PyArray_DIM(array, 0) );
+  int ncols = static_cast<int>( PyArray_DIM(array, 1) );
+  int rrstride = static_cast<int>( PyArray_STRIDE(array, 0) );
+  int ccstride = static_cast<int>( PyArray_STRIDE(array, 1) );
   char* data = (char*)PyArray_DATA(array);
   if(nrows != sig.Channels() || ncols != sig.Elements())
   {

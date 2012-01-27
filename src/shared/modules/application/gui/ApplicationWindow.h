@@ -115,7 +115,7 @@ class ApplicationWindow : public GUI::DisplayWindow, private EnvironmentExtensio
   void UnregisterUser( const ApplicationWindowClient* p )
   { mUsers.erase( p ); }
   int Users() const
-  { return mUsers.size(); }
+  { return static_cast<int>( mUsers.size() ); }
  private:
   std::set<const ApplicationWindowClient*> mUsers;
 
@@ -158,7 +158,7 @@ class ApplicationWindowList : public std::map<std::string, ApplicationWindow*>
   bool IsEmpty() const
        { return empty(); }
   int  Size() const 
-       { return size(); }
+       { return static_cast<int>( size() ); }
   bool Exists( const std::string& s ) const
        { return find( s ) != end(); }
   ApplicationWindow*& operator[]( const std::string& );

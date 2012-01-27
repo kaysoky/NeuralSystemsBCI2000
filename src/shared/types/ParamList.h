@@ -44,7 +44,7 @@ class ParamList
                 { return mParams.at( index ).Param; }
 
         int     Size() const
-                { return mParams.size(); }
+                { return static_cast<int>( mParams.size() ); }
         bool    Empty() const
                 { return mParams.empty(); }
         void    Clear();

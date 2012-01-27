@@ -79,7 +79,7 @@ StateMachine::Startup( const char* inModuleList )
     getline( iss >> ws, name, ':' );
     int port;
     iss >> port;
-    mConnections.push_back( new CoreConnection( *this, name, port, mConnections.size() + 1 ) );
+    mConnections.push_back( new CoreConnection( *this, name, port, static_cast<int>( mConnections.size() + 1 ) ) );
   }
   mpSourceModule = *mConnections.begin();
 
@@ -904,9 +904,9 @@ StateMachine::CoreConnection::HandleVisSignalProperties( istream& is )
             if( label[ 0 ] == groupLabels.begin()->Text() )
               ++channelGroupSize;
             if( label[ 0 ] != groupLabels.rbegin()->Text() )
-              groupLabels.push_back( Label( groupLabels.size(), label[ 0 ] ) );
+              groupLabels.push_back( Label( static_cast<int>( groupLabels.size() ), label[ 0 ] ) );
           }
-          channelLabels.push_back( Label( channelLabels.size(), label[ 1 ] ) );
+          channelLabels.push_back( Label( static_cast<int>( channelLabels.size() ), label[ 1 ] ) );
         }
         else
         {

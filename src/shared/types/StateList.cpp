@@ -64,7 +64,7 @@ StateList::operator[]( const std::string& inName )
   StateIndex::const_iterator i = mIndex.find( inName );
   if( i == mIndex.end() )
   {
-    mIndex[ inName ] = size();
+    mIndex[ inName ] = static_cast<int>( size() );
     resize( size() + 1 );
     i = mIndex.find( inName );
   }
@@ -296,5 +296,5 @@ StateList::RebuildIndex()
 {
   mIndex.clear();
   for( size_t i = 0; i < size(); ++i )
-    mIndex[ operator[]( i ).mName ] = i;
+    mIndex[ operator[]( i ).mName ] = static_cast<int>( i );
 }

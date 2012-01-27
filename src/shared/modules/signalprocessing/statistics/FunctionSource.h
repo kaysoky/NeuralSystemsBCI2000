@@ -39,21 +39,21 @@ class FunctionSource : public DataSource, public ExpressionParser::Node
   typedef ExpressionParser::Node Node;
   typedef ExpressionParser::NodeList NodeList;
 
-  static FunctionSource* NewFunctionSource( const std::string&, const NodeList&, const size_t& );
-  FunctionSource( const std::string& name, int functionID, const NodeList&, const size_t& );
+  static FunctionSource* NewFunctionSource( const std::string&, const NodeList&, const int& );
+  FunctionSource( const std::string& name, int functionID, const NodeList&, const int& );
 
   // DataSource interface
  protected:
   void OnInitialize( const Context& );
   void OnProcess( const Context& );
-  Value OnData( size_t );
+  Value OnData( int );
 
   // Node interface
  protected:
   double OnEvaluate();
 
  private:
-  void Compute( size_t );
+  void Compute( int );
   void CheckSizeArg( int pos, int value, int size = -1 ) const;
 
   enum { TypeNone, TypeNumber, TypeVector, TypeSymMatrix, TypeMatrix };
@@ -63,12 +63,12 @@ class FunctionSource : public DataSource, public ExpressionParser::Node
       mReturnType;
   DataProperties mResultProperties;
   std::vector<ObserverSource*> mObservers;
-  const size_t& mrDataIndex;
+  const int& mrDataIndex;
 
   IndexList mResultIdx;
   std::vector<double> mArgBuffer;
   bool mArgsChanged;
-  size_t mPreviousIndex;
+  int mPreviousIndex;
   StatisticalObserver::Number mNumberResult;
   StatisticalObserver::VectorPtr mVectorResult;
   StatisticalObserver::MatrixPtr mMatrixResult;

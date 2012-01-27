@@ -51,7 +51,7 @@ static struct
 {
   SignalType::Type type;
   const char*      name;
-  size_t           size;
+  int              size;
   double           min,
                    max;
 } SignalTypeProperties[] =
@@ -77,7 +77,7 @@ SignalType::Name() const
   return "n/a";
 };
 
-size_t
+int
 SignalType::Size() const
 {
   for( int i = 0; i < numSignalTypes; ++i )

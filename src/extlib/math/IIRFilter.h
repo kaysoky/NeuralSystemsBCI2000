@@ -76,7 +76,7 @@ class IIRFilter
   IIRFilter& SetGain( const Real& g )
     { mGain = g; return Initialize(); }
   int Channels() const
-    { return mDelays.size(); }
+    { return static_cast<int>( mDelays.size() ); }
   IIRFilter& SetChannels( int c )
     { return Initialize( c ); }
 
@@ -87,7 +87,6 @@ class IIRFilter
    IIRFilter& Process( const T&, T& );
 
  private:
-
   Real                       mGain;
   ComplexVector              mZeros,
                              mPoles;

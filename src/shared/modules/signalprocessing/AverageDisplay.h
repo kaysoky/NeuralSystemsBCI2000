@@ -49,8 +49,8 @@ class AverageDisplay : public GenericFilter
 
  private:
   std::vector<GenericVisualization> mVisualizations;
-  std::vector<size_t> mChannelIndices;
-  std::vector<size_t> mTargetCodes;
+  std::vector<int> mChannelIndices;
+  std::vector<int> mTargetCodes;
 
   // Indices are [ channel ][ sample ].
   std::vector<std::vector<double> > mSignalOfCurrentRun;
@@ -58,7 +58,7 @@ class AverageDisplay : public GenericFilter
   // Indices are [ power ][ channel ][ targetCode ][ sample ].
   std::vector<std::vector<std::vector<std::vector<double> > > > mPowerSums;
 
-  size_t mLastTargetCode;
+  int mLastTargetCode;
 
 #ifdef SET_BASELINE
   // Baseline stuff that should really be factored out.

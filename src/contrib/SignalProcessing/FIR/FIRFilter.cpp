@@ -113,8 +113,8 @@ FIRFilter::Process( const GenericSignal& Input, GenericSignal& Output )
     Output = Input;
   else for( size_t channel = 0; channel < mBuffer.size(); ++channel )
   {
-    int bufferLength = mBuffer[channel].size(),
-        filterLength = mFilter[channel].size(),
+    int bufferLength = static_cast<int>( mBuffer[channel].size() ),
+        filterLength = static_cast<int>( mFilter[channel].size() ),
         inputLength = Input.Elements();
     // Move buffer content towards the buffer's begin.
     for( int sample = 0; sample < bufferLength - inputLength; ++sample )

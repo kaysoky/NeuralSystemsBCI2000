@@ -202,7 +202,7 @@ template<class T>
 int
 Polynomial<T>::Order() const
 {
-  return mRootsKnown ? mRoots.size() : mCoefficients.size() - 1;
+  return static_cast<int>( mRootsKnown ? mRoots.size() : mCoefficients.size() - 1 );
 }
 
 template<class T>

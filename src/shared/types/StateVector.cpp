@@ -127,7 +127,7 @@ StateVector::SetStateValue( const string& inName, size_t inSample, State::ValueT
 void
 StateVector::SetStateValue( size_t inLocation, size_t inLength, size_t inSample, State::ValueType inValue )
 {
-  for( int i = inSample; i < Samples(); ++i )
+  for( int i = static_cast<int>( inSample ); i < Samples(); ++i )
     mSamples[ i ].SetStateValue( inLocation, inLength, inValue );
 }
 

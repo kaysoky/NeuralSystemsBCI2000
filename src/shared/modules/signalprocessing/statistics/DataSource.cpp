@@ -84,8 +84,7 @@ DataSource::Dimension::operator==( const Dimension& d ) const
 
 DataSource::DataProperties::DataProperties( const SignalProperties& s )
 : mDimensions( 2 ),
-  mUnit( s.ValueUnit() ),
-  mIsHistogram( !s.IsStream() )
+  mUnit( s.ValueUnit() )
 {
   Dimension& ch = mDimensions[0];
   ch.unit = s.ChannelUnit();
@@ -117,11 +116,11 @@ DataSource::DataProperties::operator SignalProperties() const
   {
     bciassert( mDimensions[i].Size() > 0 );
     if( mDimensions[i].Size() > 1 )
-      nonSingletonDims.push_back( i );
+      nonSingletonDims.push_back( static_cast<int>( i ) );
     if( mDimensions[i].streaming )
     {
       if( streamingDim == -1 )
-        streamingDim = i;
+        streamingDim = static_cast<int>( i );
       else if( mDimensions[i].unit != mDimensions[streamingDim].unit )
         throw bciexception( "Incompatible streaming dimensions" );
     }
@@ -193,20 +192,20 @@ DataSource::DataProperties::operator SignalProperties() const
   return result;
 }
 
-size_t
+int
 DataSource::DataProperties::DataSize() const
 {
-  size_t result = 1;
+  int result = 1;
   for( size_t i = 0; i < mDimensions.size(); ++i )
     result *= mDimensions[i].Size();
   return result;
 }
 
-size_t
+int
 DataSource::DataProperties::ToSingleIndex( const IndexList& inIdx ) const
 {
   bciassert( inIdx.size() == mDimensions.size() );
-  size_t result = 0;
+  int result = 0;
   for( size_t i = 0; i < inIdx.size(); ++i )
   {
     bciassert( inIdx[i] > 0 );
@@ -218,14 +217,14 @@ DataSource::DataProperties::ToSingleIndex( const IndexList& inIdx ) const
 }
 
 DataSource::IndexList
-DataSource::DataProperties::ToIndexList( size_t inIdx ) const
+DataSource::DataProperties::ToIndexList( int inIdx ) const
 {
   size_t dims = mDimensions.size();
   IndexList result( dims );
-  size_t idx = inIdx;
+  int idx = inIdx;
   for( size_t i = 0; i < dims; ++i )
   {
-    size_t size = mDimensions[dims - i].Size();
+    int size = mDimensions[dims - i].Size();
     result[dims - i] = idx % size;
     idx /= size;
   }
@@ -286,7 +285,7 @@ DataSource::Process( const Context& inContext )
 }
 
 DataSource::Value
-DataSource::Data( size_t inIdx )
+DataSource::Data( int inIdx )
 {
   return sAbortFlag ? 0 : OnData( inIdx );
 }

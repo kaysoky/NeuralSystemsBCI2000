@@ -170,7 +170,7 @@ FeedbackScene2D::SetCursorColor( RGBColor inColor )
 int
 FeedbackScene2D::NumTargets() const
 {
-  return mTargets.size();
+  return static_cast<int>( mTargets.size() );
 }
 
 bool

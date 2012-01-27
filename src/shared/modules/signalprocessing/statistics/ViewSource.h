@@ -41,13 +41,13 @@ class ViewSource : public DataSource
  protected:
   void OnInitialize( const Context& );
   void OnProcess( const Context& );
-  Value OnData( size_t );
+  Value OnData( int );
 
  private:
   static void AppendElements( SignalProperties&, const SignalProperties& );
 
  private:
-  std::vector<size_t> mElements;
+  std::vector<int> mElements;
   GenericSignal mSignal;
 };
 

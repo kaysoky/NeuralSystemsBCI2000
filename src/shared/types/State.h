@@ -65,9 +65,9 @@ class State
   State& SetKind( int k )
       { mKind = k; return *this; }
   int Location() const
-      { return mLocation; }
+      { return static_cast<int>( mLocation ); }
   int Length() const
-      { return mLength; }
+      { return static_cast<int>( mLength ); }
 
   State& AssignValue( const State& s )
       { return SetValue( s.Value() ); }

@@ -81,7 +81,7 @@ SignalProperties::Accommodates( const SignalProperties& sp ) const
 }
 
 void
-SignalProperties::InitMembers( int inChannels, int inElements )
+SignalProperties::InitMembers( size_t inChannels, size_t inElements )
 {
   SetChannels( inChannels );
   SetElements( inElements );
@@ -89,12 +89,12 @@ SignalProperties::InitMembers( int inChannels, int inElements )
                .SetGain( 1 )
                .SetSymbol( "" )
                .SetRawMin( 0 )
-               .SetRawMax( inChannels - 1 );
+               .SetRawMax( static_cast<int>( inChannels ) - 1 );
   ElementUnit().SetOffset( 0 )
                .SetGain( 1 )
                .SetSymbol( "" )
                .SetRawMin( 0 )
-               .SetRawMax( inElements - 1 );
+               .SetRawMax( static_cast<int>( inElements ) - 1 );
   ChannelLabels().Resize( inChannels );
   ElementLabels().Resize( inElements );
   SetUpdateRate( 0.0 );

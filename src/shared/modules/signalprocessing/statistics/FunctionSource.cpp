@@ -38,7 +38,7 @@ using namespace std;
 using namespace StatisticalObserver;
 
 FunctionSource*
-FunctionSource::NewFunctionSource( const std::string& inName, const NodeList& inArgs, const size_t& inrDataIndex )
+FunctionSource::NewFunctionSource( const std::string& inName, const NodeList& inArgs, const int& inrDataIndex )
 {
   const struct
   {
@@ -69,7 +69,7 @@ FunctionSource::NewFunctionSource( const std::string& inName, const NodeList& in
 }
 
 
-FunctionSource::FunctionSource( const string& inName, int inFunctionID, const NodeList& inArgs, const size_t& inrDataIndex )
+FunctionSource::FunctionSource( const string& inName, int inFunctionID, const NodeList& inArgs, const int& inrDataIndex )
 : DataSource( inName ),
   mFunctionID( inFunctionID ),
   mrDataIndex( inrDataIndex ),
@@ -140,7 +140,7 @@ FunctionSource::FunctionSource( const string& inName, int inFunctionID, const No
       ;
   }
 
-  size_t resultDimensions = 0;
+  int resultDimensions = 0;
   switch( mReturnType )
   {
     case TypeNumber:
@@ -158,7 +158,7 @@ FunctionSource::FunctionSource( const string& inName, int inFunctionID, const No
   }
   int minArgs = functions[functionIdx].numArgs,
       maxArgs = minArgs + resultDimensions;
-  int remainingArgs = inArgs.size() - mObservers.size();
+  int remainingArgs = static_cast<int>( inArgs.size() - mObservers.size() );
   if( remainingArgs < minArgs || remainingArgs > maxArgs )
     throw bciexception(
       inName << "(): Expected between "
@@ -186,7 +186,7 @@ FunctionSource::FunctionSource( const string& inName, int inFunctionID, const No
      && mObservers[0]->Sources().size() == 2
      && mIndexArgs == 0 )
   {
-    for( size_t i = 0; i < 2; ++i )
+    for( int i = 0; i < 2; ++i )
       Node::Add( new ExpressionParser::ConstantNode( i + 1 ) );
     mIndexArgs = 2;
   }
@@ -356,14 +356,14 @@ void
 FunctionSource::OnProcess( const Context& inContext )
 {
   mArgsChanged = true;
-  mPreviousIndex = numeric_limits<size_t>::max();
+  mPreviousIndex = numeric_limits<int>::max();
 }
 
 DataSource::Value
-FunctionSource::OnData( size_t inIdx )
+FunctionSource::OnData( int inIdx )
 {
-  size_t observerIdx = inIdx / mResultSize,
-         remIdx = inIdx % mResultSize;
+  int observerIdx = inIdx / mResultSize,
+      remIdx = inIdx % mResultSize;
   bool match = !mArgsChanged && observerIdx == mPreviousIndex;
   if( !match )
   {
@@ -373,14 +373,14 @@ FunctionSource::OnData( size_t inIdx )
 
   for( int i = 0; i < mIndexArgs; ++i )
   {
-    int idx = static_cast<int>( mArgBuffer[mArgBuffer.size() - mIndexArgs + i] ) - 1;
-    int size = mResultProperties.Dimensions()[i].Size();
+    int idx = static_cast<int>( mArgBuffer[mArgBuffer.size() - mIndexArgs + i] ) - 1,
+        size = mResultProperties.Dimensions()[i].Size();
     CheckSizeArg( i, idx, size );
     mResultIdx[i] = idx;
   }
-  for( int i = mResultIdx.size() - 1; i >= mIndexArgs; --i )
+  for( int i = static_cast<int>( mResultIdx.size() ) - 1; i >= mIndexArgs; --i )
   {
-    size_t size = mResultProperties.Dimensions()[i].Size();
+    int size = mResultProperties.Dimensions()[i].Size();
     mResultIdx[i] = remIdx % size;
     remIdx /= size;
   }
@@ -420,7 +420,7 @@ FunctionSource::OnEvaluate()
 }
 
 void
-FunctionSource::Compute( size_t inObserverIdx )
+FunctionSource::Compute( int inObserverIdx )
 {
   bciassert( mObservers.size() <= 2 );
   const StatisticalObserver::Observer* pObserver1 = NULL,

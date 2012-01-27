@@ -209,7 +209,7 @@ FeedbackScene3D::SetCursorColor( RGBColor inColor )
 int
 FeedbackScene3D::NumTargets() const
 {
-  return mTargets.size();
+  return static_cast<int>( mTargets.size() );
 }
 
 bool

@@ -600,7 +600,7 @@ bool CDataFile::CreateSection(t_Str szSection, t_Str szComment, KeyList Keys)
 // Simply returns the number of sections in the list.
 int CDataFile::SectionCount() 
 { 
-	return m_Sections.size(); 
+	return static_cast<int>(m_Sections.size()); 
 }
 
 // KeyCount
@@ -611,7 +611,7 @@ int CDataFile::KeyCount()
 	SectionItor s_pos;
 
 	for (s_pos = m_Sections.begin(); s_pos != m_Sections.end(); s_pos++)
-		nCounter += (*s_pos).Keys.size();
+		nCounter += static_cast<int>((*s_pos).Keys.size());
 
 	return nCounter;
 }
@@ -691,10 +691,10 @@ t_Str CDataFile::CommentStr(t_Str szComment)
 // remainder.  Returns the key
 t_Str GetNextWord(t_Str& CommandLine)
 {
-	int nPos = CommandLine.find_first_of(EqualIndicators);
+	size_t nPos = CommandLine.find_first_of(EqualIndicators);
 	t_Str sWord = t_Str("");
 
-	if ( nPos > -1 )
+	if ( nPos != string::npos )
 	{
 		sWord = CommandLine.substr(0, nPos);
 		CommandLine.erase(0, nPos+1);
@@ -730,7 +730,7 @@ void Trim(t_Str& szStr)
 	t_Str szTrimChars = WhiteSpace;
 	
 	szTrimChars += EqualIndicators;
-	int nPos, rPos;
+	size_t nPos, rPos;
 
 	// trim left
 	nPos = szStr.find_first_not_of(szTrimChars);
@@ -742,7 +742,7 @@ void Trim(t_Str& szStr)
 	nPos = szStr.find_last_not_of(szTrimChars);
 	rPos = szStr.find_last_of(szTrimChars);
 
-	if ( rPos > nPos && rPos > -1)
+	if ( rPos > nPos && rPos != string::npos)
 		szStr.erase(rPos, szStr.size()-rPos);
 }
 

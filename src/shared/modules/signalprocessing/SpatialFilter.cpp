@@ -254,8 +254,8 @@ SpatialFilter::DoPreflightSparse( const SignalProperties& Input,
       }
     }
     int numOutputChannels = indices.empty() ? 0 : *indices.rbegin() + 1,
-        availableIndices = numOutputChannels - indices.size(),
-        requiredChannels = numOutputChannels - availableIndices + labels.size();
+        availableIndices = numOutputChannels - static_cast<int>( indices.size() ),
+        requiredChannels = numOutputChannels - availableIndices + static_cast<int>( labels.size() );
     if( requiredChannels > numOutputChannels )
       numOutputChannels = requiredChannels;
     if( numOutputChannels < 1 )

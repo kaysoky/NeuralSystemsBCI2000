@@ -395,13 +395,13 @@ void DataPage::LoadSettings()
   QString chset;
   QString respwind;
 
-  for (size_t i=0; i<IniParam.channel_set.size(); i++)
-    if (i != IniParam.channel_set.size()-1)
+  for (size_t i=0; i<static_cast<int>(IniParam.channel_set.size()); i++)
+    if (i != static_cast<int>(IniParam.channel_set.size())-1)
       QTextStream(&chset) << IniParam.channel_set[i] << " ";
     else
       QTextStream(&chset) << IniParam.channel_set[i];
 
-  for (size_t i=0; i<IniParam.windlen.size(); i++)
+  for (size_t i=0; i<static_cast<int>(IniParam.windlen.size()); i++)
     QTextStream(&respwind) << IniParam.windlen[i] << " ";
 
   pParametersPage->ChSetLineEdit->setText(chset);
@@ -668,10 +668,10 @@ void DataPage::ValidateSettings()
   else
     this->GenerateFeatureWeights->setEnabled(false);
 
-  /*if((this->fPathArr_TrainingData.size() == 0) && (this->fPathArr_TestingData.size() == 0))
+  /*if((static_cast<int>(this->fPathArr_TrainingData.size()) == 0) && (static_cast<int>(this->fPathArr_TestingData.size()) == 0))
     this->GenerateFeatureWeights->setEnabled(false);*/
 
-  if(this->fPathArr_TrainingData.size() == 0)
+  if(static_cast<int>(this->fPathArr_TrainingData.size()) == 0)
     this->GenerateFeatureWeights->setEnabled(false);
 
 }
@@ -684,9 +684,9 @@ void DataPage::ReadVector(QString inputvector, QVector<int> *poutputvector)
   if (inputvector.length() > 0)
   {
     QStringList elements = inputvector.simplified().split(QString(" "));
-    poutputvector->resize(elements.size());
+    poutputvector->resize(static_cast<int>(elements.size()));
 
-    for (idx=0; idx<elements.size(); idx++)
+    for (idx=0; idx<static_cast<int>(elements.size()); idx++)
     {
       (*poutputvector)[idx] = elements.value(idx).toInt(&success);
 
@@ -1701,12 +1701,12 @@ void GenerateFeatureWeightsThread::run()
   clock_t Clock0;
   Clock0 = clock(); // start timer
 
-  windowlen.setbounds(0, g_pDataPage->IniParam.windlen.size()-1);
+  windowlen.setbounds(0, static_cast<int>(g_pDataPage->IniParam.windlen.size())-1);
 
   //g_pParametersPage->
-  chset.setbounds(0, g_pDataPage->IniParam.channel_set.size()-1);
+  chset.setbounds(0, static_cast<int>(g_pDataPage->IniParam.channel_set.size())-1);
 
-  for (size_t i=0; i<g_pDataPage->IniParam.channel_set.size(); i++)
+  for (int i=0; i<static_cast<int>(g_pDataPage->IniParam.channel_set.size()); i++)
       chset(i) = g_pDataPage->IniParam.channel_set[i];
 
   row_chset = chset.gethighbound(1)+1;
@@ -1727,7 +1727,7 @@ void GenerateFeatureWeightsThread::run()
     oss.str("");
   }
 
-  int TotalFiles = g_pDataPage->fPathArr_TrainingData.size();
+  int TotalFiles = static_cast<int>(g_pDataPage->fPathArr_TrainingData.size());
   for (files=0; files<TotalFiles; files++)
   {
     oss << "Loading file " << "[" << files+1 << "/" << TotalFiles << "]" << "...";
@@ -1789,17 +1789,17 @@ void GenerateFeatureWeightsThread::run()
     maxValue = *max_element(trialnr.begin(), trialnr.end());
   }
   parms.NumberOfSequences = numSequences;
-  signal_all_files.setbounds(0, trialnr.size()-1, 0, signal_tmp.gethighbound(0));
-  state.trialnr.setbounds(0, trialnr.size()-1);
-  state.StimulusCode.setbounds(0, trialnr.size()-1);
-  state.StimulusType.setbounds(0, trialnr.size()-1);
-  state.Flashing.setbounds(0, trialnr.size()-1);
+  signal_all_files.setbounds(0, static_cast<int>(trialnr.size())-1, 0, signal_tmp.gethighbound(0));
+  state.trialnr.setbounds(0, static_cast<int>(trialnr.size())-1);
+  state.StimulusCode.setbounds(0, static_cast<int>(trialnr.size())-1);
+  state.StimulusType.setbounds(0, static_cast<int>(trialnr.size())-1);
+  state.Flashing.setbounds(0, static_cast<int>(trialnr.size())-1);
   state.TargetDefinitions = state_tmp.TargetDefinitions;
   Target = 0;
   nonTarget = 0;
 
   int l = 0;
-  for (size_t i=0; i<trialnr.size(); i++)
+  for (int i=0; i<static_cast<int>(trialnr.size()); i++)
   {
     for (int j=0; j<signal_tmp.gethighbound(0)+1; j++)
     {
@@ -1848,7 +1848,7 @@ void GenerateFeatureWeightsThread::run()
     // Get score for input signal
     NumberOfChoices = parms.NumMatrixRows + parms.NumMatrixColumns;
   if (g_pDataPage->mode_TrainingData == 3 || g_pDataPage->mode_TrainingData == 4)
-    NumberOfChoices = state.TargetDefinitions.size();
+    NumberOfChoices = static_cast<int>(state.TargetDefinitions.size());
 
   if (!GetScore(signal_all_files, state.StimulusCode, g_pDataPage->tMUD, state.trialnr, windowlen, row_chset,
       parms.NumberOfSequences, NumberOfChoices, g_pDataPage->mode_TrainingData, pscore))
@@ -1889,7 +1889,7 @@ if (!g_pDataPage->IfMultipleMenusTrainingData)
   oss.precision(0);
   oss.setf(ios::fixed, ios::floatfield);
   oss.setf(ios::left, ios::adjustfield);
-  int width = predicted.size()/vresult.size();
+  int width = static_cast<int>(predicted.size())/static_cast<int>(vresult.size());
   oss << "\nClassifying Responses...\n\n";
   oss << setw(12) << "Flashes";
   oss << setw(12) << "% Correct";
@@ -1961,7 +1961,7 @@ void DataPage::slotProgressBar(int done, int total, int stage)
     FileWritePRMButton    ->setEnabled(true);
     IfMUD = true;
 
-    if ((fPathArr_TestingData.size() > 0) & (IfTrueTestingDataFiles))
+    if ((static_cast<int>(fPathArr_TestingData.size()) > 0) & (IfTrueTestingDataFiles))
       ApplyFeatureWeights   ->setEnabled(true);
   }
 }
@@ -2010,10 +2010,10 @@ void ApplyFeatureWeightsThread::run()
   clock_t Clock0;
   Clock0 = clock(); // start timer
 
-  windowlen.setbounds(0, g_pDataPage->IniParam.windlen.size()-1);
-  chset.setbounds(0, g_pDataPage->IniParam.channel_set.size()-1);
+  windowlen.setbounds(0, static_cast<int>(g_pDataPage->IniParam.windlen.size())-1);
+  chset.setbounds(0, static_cast<int>(g_pDataPage->IniParam.channel_set.size())-1);
 
-  for (size_t i=0; i<g_pDataPage->IniParam.channel_set.size(); i++)
+  for (int i=0; i<static_cast<int>(g_pDataPage->IniParam.channel_set.size()); i++)
       chset(i) = g_pDataPage->IniParam.channel_set[i];
 
   row_chset = chset.gethighbound(1)+1;
@@ -2034,7 +2034,7 @@ void ApplyFeatureWeightsThread::run()
     oss.str("");
   }
 
-  int TotalFiles = g_pDataPage->fPathArr_TestingData.size();
+  int TotalFiles = static_cast<int>(g_pDataPage->fPathArr_TestingData.size());
   for (files=0; files<TotalFiles; files++)
   {
     oss << "Loading file " << "[" << files+1 << "/" << TotalFiles << "]" << "...";
@@ -2096,16 +2096,16 @@ void ApplyFeatureWeightsThread::run()
     maxValue = *max_element(trialnr.begin(), trialnr.end());
   }
   parms.NumberOfSequences = numSequences;
-  signal_all_files.setbounds(0, trialnr.size()-1, 0, signal_tmp.gethighbound(0));
-  state.trialnr.setbounds(0, trialnr.size()-1);
-  state.StimulusCode.setbounds(0, trialnr.size()-1);
-  state.StimulusType.setbounds(0, trialnr.size()-1);
-  state.Flashing.setbounds(0, trialnr.size()-1);
+  signal_all_files.setbounds(0, static_cast<int>(trialnr.size())-1, 0, signal_tmp.gethighbound(0));
+  state.trialnr.setbounds(0, static_cast<int>(trialnr.size())-1);
+  state.StimulusCode.setbounds(0, static_cast<int>(trialnr.size())-1);
+  state.StimulusType.setbounds(0, static_cast<int>(trialnr.size())-1);
+  state.Flashing.setbounds(0, static_cast<int>(trialnr.size())-1);
   state.TargetDefinitions = state_tmp.TargetDefinitions;
 
   Target = 0; nonTarget = 0;
   int l = 0;
-  for (size_t i=0; i<trialnr.size(); i++)
+  for (int i=0; i<static_cast<int>(trialnr.size()); i++)
   {
     for (int j=0; j<signal_tmp.gethighbound(0)+1; j++)
     {
@@ -2133,7 +2133,7 @@ void ApplyFeatureWeightsThread::run()
     // Get score for input signal
     NumberOfChoices = parms.NumMatrixRows + parms.NumMatrixColumns;
   if (g_pDataPage->mode_TrainingData == 3 || g_pDataPage->mode_TrainingData == 4)
-    NumberOfChoices = state.TargetDefinitions.size();
+    NumberOfChoices = static_cast<int>(state.TargetDefinitions.size());
 
   GetScore(signal_all_files, state.StimulusCode, g_pDataPage->tMUD, state.trialnr, windowlen, row_chset,
       parms.NumberOfSequences, NumberOfChoices, g_pDataPage->mode_TrainingData, pscore);
@@ -2168,7 +2168,7 @@ if (!g_pDataPage->IfMultipleMenusTestingData)
   oss.precision(0);
   oss.setf(ios::fixed, ios::floatfield);
   oss.setf(ios::left, ios::adjustfield);
-  int width = predicted.size()/vresult.size();
+  int width = static_cast<int>(predicted.size())/static_cast<int>(vresult.size());
   oss << "Classifying Responses...\n\n";
   oss << setw(12) << "Flashes";
   oss << setw(12) << "% Correct";

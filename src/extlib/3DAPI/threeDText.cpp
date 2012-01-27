@@ -74,7 +74,7 @@ threeDText::onRender() const
 
       glPushAttrib( GL_LIST_BIT );  // Pushes the display list bits
       glListBase( mFontID );        // Sets the base character to 0
-      glCallLists( mCaption.length(), GL_UNSIGNED_BYTE, mCaption.data() ); // Draws the display list text
+      glCallLists( static_cast<GLsizei>( mCaption.length() ), GL_UNSIGNED_BYTE, mCaption.data() ); // Draws the display list text
       glPopAttrib();                // Pops the display list bits
     }
   }

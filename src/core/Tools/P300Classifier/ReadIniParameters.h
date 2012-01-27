@@ -59,7 +59,7 @@ template <class T>
 void read_vector(string inputvector, vector<T> &outputvector)
 {
 const char *inputline = inputvector.c_str();
-int length = inputvector.length();
+int length = static_cast<int>(inputvector.length());
 int num_samples = 0;
 int idx         = 0;
 outputvector.resize(length);

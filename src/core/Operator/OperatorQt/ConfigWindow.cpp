@@ -142,7 +142,7 @@ ConfigWindow::Initialize( ParamList* inParameters, Preferences* inPreferences )
   if( std::find( tabNames.begin(), tabNames.end(), mCurTab ) == tabNames.end() )
     mCurTab = "Storage";
   mUserSwitchedTabs = false;
-  size_t curTabIdx = std::find( tabNames.begin(), tabNames.end(), mCurTab ) - tabNames.begin();
+  int curTabIdx = std::find( tabNames.begin(), tabNames.end(), mCurTab ) - tabNames.begin();
   if( curTabIdx != tabNames.size() )
     m_ui->cfgTabControl->setCurrentIndex( curTabIdx );
   mUserSwitchedTabs = true;
@@ -198,7 +198,7 @@ ConfigWindow::RenderParameters( const string& inSection )
         subsection = p.Sections()[ 1 ];
       if( subsectionIndex.find( subsection ) == subsectionIndex.end() )
       {
-        subsectionIndex[ subsection ] = subsectionTable.size();
+        subsectionIndex[ subsection ] = static_cast<int>( subsectionTable.size() );
         subsectionTable.push_back( subsection );
         subsectionGroups.resize( subsectionGroups.size() + 1 );
       }

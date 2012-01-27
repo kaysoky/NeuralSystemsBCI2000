@@ -381,7 +381,7 @@ streamsock::wait_for_write( const streamsock::set_of_instances& inSockets,
 size_t
 streamsock::read( char* buffer, size_t count )
 {
-  int result = ::recv( m_handle, buffer, count, 0 );
+  int result = ::recv( m_handle, buffer, static_cast<int>( count ), 0 );
   if( result == SOCKET_ERROR || result < 1 && count > 0 ) // Connection has been reset or closed.
   {
     result = 0;
@@ -393,7 +393,7 @@ streamsock::read( char* buffer, size_t count )
 size_t
 streamsock::write( char* buffer, size_t count )
 {
-  int result = ::send( m_handle, buffer, count, 0 );
+  int result = ::send( m_handle, buffer, static_cast<int>( count ), 0 );
   if( result == SOCKET_ERROR || result < 1 && count > 0 )
   {
     result = 0;
@@ -546,7 +546,7 @@ sockbuf::underflow()
 
   if( !eback() )
   {
-    char* buf = new char[ buf_size ];
+    char* buf = new char[ c_buf_size ];
     if( !buf )
       return traits_type::eof();
     setg( buf, buf, buf );
@@ -565,11 +565,11 @@ sockbuf::underflow()
   // alternative to returning eof().
   if( m_socket->wait_for_read( m_timeout ) )
   {
-    int remaining_buf_size = buf_size;
+    size_t remaining_buf_size = c_buf_size;
     while( remaining_buf_size > 0 && m_socket->can_read() )
     {
       setg( eback(), gptr(), egptr() + m_socket->read( egptr(), remaining_buf_size ) );
-      remaining_buf_size = buf_size - ( egptr() - eback() );
+      remaining_buf_size = c_buf_size - ( egptr() - eback() );
     }
     if( gptr() != egptr() )
       result = traits_type::to_int_type( *gptr() );
@@ -599,10 +599,10 @@ sockbuf::sync()
   char* write_ptr = pbase();
   if( !write_ptr )
   {
-    char* buf = new char[ buf_size ];
+    char* buf = new char[ c_buf_size ];
     if( !buf )
       return traits_type::eof();
-    setp( buf, buf + buf_size );
+    setp( buf, buf + c_buf_size );
     write_ptr = pbase();
   }
   while( m_socket->wait_for_write( m_timeout ) && write_ptr < pptr() )

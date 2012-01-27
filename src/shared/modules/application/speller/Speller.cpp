@@ -86,7 +86,7 @@ Speller::SuggestTarget( const string& inFrom, const string& inTo ) const
   {
     int operator()( const string& from, const string& to )
     {
-      int result = from.length() + to.length();
+      int result = static_cast<int>( from.length() + to.length() );
       string::const_iterator p1 = from.begin(),
                              p2 = to.begin();
       while( p1 != from.end() && p2 != to.end() && *p1++ == *p2++ )

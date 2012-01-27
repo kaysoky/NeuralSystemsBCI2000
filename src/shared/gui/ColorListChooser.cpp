@@ -30,12 +30,14 @@
 #include <QColorDialog>
 #include <algorithm>
 
+using namespace std;
+
 const ColorListChooser&
 ColorListChooser::Display( ColorList& ioColors ) const
 {
-  for( int i = 0; i < std::min<int>( ioColors.size(), QColorDialog::customCount() ); ++i )
+  for( int i = 0; i < min( static_cast<int>( ioColors.size() ), QColorDialog::customCount() ); ++i )
     QColorDialog::setCustomColor( i, ioColors[ i ] );
-  for( int i = ioColors.size(); i < QColorDialog::customCount(); ++i )
+  for( int i = static_cast<int>( ioColors.size() ); i < QColorDialog::customCount(); ++i )
     QColorDialog::setCustomColor( i, RGBColor( RGBColor::Black ) );
   if( QColorDialog::getColor( Qt::white, NULL, mPrompt.c_str(), QColorDialog::DontUseNativeDialog ).isValid() )
   {

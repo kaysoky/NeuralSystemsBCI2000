@@ -64,11 +64,11 @@ LabelIndex::LabelIndex( const PhysicalUnit& inP )
 // Parameters: String label.
 // Returns:    Numerical index associated with the label.
 // **************************************************************************
-LabelIndex::IndexBase::mapped_type
+int
 LabelIndex::operator[]( const string& inLabel ) const
 {
   Sync();
-  IndexBase::mapped_type retIndex = 0;
+  int retIndex = 0;
   IndexBase::iterator i = mForwardIndex.find( inLabel );
   if( i != mForwardIndex.end() )
     retIndex = i->second;
@@ -143,7 +143,7 @@ LabelIndex::Sync() const
   {
     mForwardIndex.clear();
     for( size_t i = 0; i < mReverseIndex.size(); ++i )
-      mForwardIndex[ mReverseIndex[ i ] ] = i;
+      mForwardIndex[ mReverseIndex[ i ] ] = static_cast<int>( i );
     mNeedSync = false;
   }
 }

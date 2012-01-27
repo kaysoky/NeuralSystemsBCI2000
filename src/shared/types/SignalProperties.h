@@ -148,7 +148,7 @@ class SignalProperties
     std::istream& ReadFromStream( std::istream& );
 
   private:
-    void   InitMembers( int numChannels, int numElements );
+    void   InitMembers( size_t numChannels, size_t numElements );
     double AddressToIndex( const std::string&, const LabelIndex&, const PhysicalUnit& ) const;
 
     EncodedString                      mName;

@@ -41,7 +41,7 @@ BlockRandSeq::SetBlockSize( size_t inSize )
 {
   mSequence.resize( inSize );
   for( size_t i = 0; i < mSequence.size(); ++i )
-    mSequence[ i ] = i + 1;
+    mSequence[ i ] = static_cast<int>( i + 1 );
   mCurElement = mSequence.end();
   return *this;
 }

@@ -41,7 +41,7 @@ class StateVector
   const StateVector& CopyFromMasked( const StateVector&, const StateVectorSample& mask );
 
   int            Samples() const
-                 { return mSamples.size(); }
+                 { return static_cast<int>( mSamples.size() ); }
   int            Length() const
                  { return mSamples.empty() ? 0 : mSamples[0].Length(); }
   StateVectorSample& operator()( size_t inIdx )

@@ -104,7 +104,7 @@ class StateMachine : public CallbackBase, private OSThread
     { OSMutex::Lock lock( mStateMutex ); return mSystemState; }
 
   int NumConnections() const
-    { return mConnections.size(); }
+    { return static_cast<int>( mConnections.size() ); }
 
   //  Locking.
   void LockData()

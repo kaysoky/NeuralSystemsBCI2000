@@ -121,7 +121,9 @@ StateVectorSample::StateValue( size_t inLocation, size_t inLength ) const
     throw bciexception( "Accessing non-existent state vector data, location: " << inLocation );
 
   State::ValueType result = 0;
-  for( int bitIndex = inLocation + inLength - 1; bitIndex >= int( inLocation ); --bitIndex )
+  for( int bitIndex = static_cast<int>( inLocation + inLength ) - 1;
+       bitIndex >= static_cast<int>( inLocation );
+       --bitIndex )
   {
     result <<= 1;
     if( mpData[ bitIndex / 8 ] & ( 1 << ( bitIndex % 8 ) ) )

@@ -97,7 +97,7 @@ twoDText::onRender() const
       // Now comes the actually rendering.  We pass in the length of the string,
       // then the data types (which are characters so its a UINT), then the actually char array.
       // This will then take the ASCII value of each character and associate it with a bitmap.
-      glCallLists( line.length(), GL_UNSIGNED_BYTE, line.data() );
+      glCallLists( static_cast<GLsizei>( line.length() ), GL_UNSIGNED_BYTE, line.data() );
       glPopAttrib();
       ++i;
     }

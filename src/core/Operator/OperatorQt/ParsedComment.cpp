@@ -186,7 +186,7 @@ ParsedComment::ExtractEnumValues( const Param& p )
 
   // Each non-null value must be explained in the comment, thus appear exactly
   // once -- if in doubt, let's better return.
-  for( size_t i = 1; isEnum && i < mValues.size(); ++i )
+  for( int i = 1; isEnum && i < mValues.size(); ++i )
     if( histogram[ i ] != 1 )
       isEnum = false;
 

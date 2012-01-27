@@ -49,7 +49,7 @@ class StateList : private StateContainer
                { return at( idx ); }
 
   int  Size() const
-       { return size(); }
+       { return static_cast<int>( size() ); }
   bool Empty() const
        { return empty(); }
   void Clear();

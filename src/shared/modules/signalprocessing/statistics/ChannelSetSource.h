@@ -39,7 +39,7 @@ class ChannelSetSource : public DataSource
  protected:
   void OnInitialize( const Context& );
   void OnProcess( const Context& );
-  Value OnData( size_t );
+  Value OnData( int );
 
  private:
   const GenericSignal* mpSignal;

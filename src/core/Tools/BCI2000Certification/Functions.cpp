@@ -265,7 +265,7 @@ double vMin(vector<double> *a)
 void removeNPercentile(vector<double> *a, double perc)
 {
 	std::sort(a->begin(), a->end());
-	int s = a->size();
+	size_t s = a->size();
 	double b = (perc/100)*double(s)/2;
 	while (b > 0 && a->size() > 0){
 		a->erase(a->begin());

@@ -171,7 +171,7 @@ TrialStatistics::Bits() const
   if( numTrials < eps )
     return 0.0;
 
-  int numSymbols = mTargetsResultsMatrix.size();
+  int numSymbols = static_cast<int>( mTargetsResultsMatrix.size() );
   vector<double> targetFrequencies( numSymbols, 0.0 ),
                  resultFrequencies( numSymbols, 0.0 );
   for( int i = 0; i < numSymbols; ++i )

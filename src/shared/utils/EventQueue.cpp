@@ -39,9 +39,9 @@ using namespace std;
 void
 EventQueue::PushBack( const char* inDescriptor, PrecisionTime inTimeStamp )
 {
-  int descLen = ::strlen( inDescriptor ) + 1;
+  size_t descLen = ::strlen( inDescriptor ) + 1;
   Entry* pEntry = new Entry;
-  pEntry->mpDescriptor = new char[ descLen ];
+  pEntry->mpDescriptor = new char[descLen];
   ::memcpy( pEntry->mpDescriptor, inDescriptor, descLen );
   pEntry->mTimeStamp = inTimeStamp;
   pEntry->mpNext = NULL;

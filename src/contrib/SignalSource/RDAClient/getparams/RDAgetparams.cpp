@@ -99,7 +99,7 @@ int main( int argc, char** argv )
     paramlist.Add( ( string( params[ i ] ) + " // getparams " + hostname ).c_str() );
 
   paramlist[ "HostName" ].Value() = hostname;
-  int numInputChannels = q.info().numChannels + 1;
+  size_t numInputChannels = q.info().numChannels + 1;
   paramlist[ "SourceCh" ].Value() = str( numInputChannels );
   paramlist[ "SourceChOffset" ].SetNumValues( numInputChannels );
   paramlist[ "SourceChGain" ].SetNumValues( numInputChannels );

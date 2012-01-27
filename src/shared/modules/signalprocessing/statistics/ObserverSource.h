@@ -65,7 +65,7 @@ class ObserverSource : public DataSource
  protected:
   void OnInitialize( const Context& );
   void OnProcess( const Context& );
-  Value OnData( size_t );
+  Value OnData( int );
 
  private:
   void Observe( size_t = 0, size_t = 0, size_t = 0, size_t = 0, size_t = 0, double = 1 );

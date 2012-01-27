@@ -74,7 +74,7 @@ BrainVisionGDRConverter::InitOutput( OutputInfo& inInfo )
           lowerBaseName( baseName );
   for( string::iterator i = lowerBaseName.begin(); i != lowerBaseName.end(); ++i )
     *i = tolower( *i );
-  int lengthDiff = baseName.length() - bciExtension.length();
+  int lengthDiff = static_cast<int>( baseName.length() - bciExtension.length() );
   if( ( lengthDiff > 0 ) && ( lowerBaseName.substr( lengthDiff ) == bciExtension ) )
     baseName = baseName.substr( 0, lengthDiff );
 

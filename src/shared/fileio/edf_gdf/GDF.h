@@ -113,6 +113,8 @@ namespace GDF
       Str( const std::string& = "" );
       Str( const char* );
       Str( double );
+      template<class U>
+       Str( const U& );
       void WriteToStream( std::ostream& ) const;
     };
 
@@ -120,7 +122,8 @@ namespace GDF
     class Num // A numeric field with a binary representation.
     {
      public:
-      Num( typename T::ValueType = 0 );
+      template<class U>
+       Num( const U& );
       template<class U>
        Num( const U* );
       void WriteToStream( std::ostream& os ) const;
@@ -164,7 +167,7 @@ void
 GDF::PutArray( std::ostream& os, const C& c )
 {
   for( typename C::const_iterator i = c.begin(); i != c.end(); ++i )
-    F().WriteToStream( os );
+    F( 0 ).WriteToStream( os );
 }
 
 template<class F, class C, class P>
@@ -207,6 +210,16 @@ GDF::Str<tLength>::Str( double d )
 }
 
 template<int tLength>
+template<class U>
+GDF::Str<tLength>::Str( const U& u )
+{
+  std::ostringstream oss;
+  oss << u;
+  *this = oss.str();
+  resize( tLength, ' ' );
+}
+
+template<int tLength>
 void
 GDF::Str<tLength>::WriteToStream( std::ostream& os ) const
 {
@@ -214,10 +227,11 @@ GDF::Str<tLength>::WriteToStream( std::ostream& os ) const
 }
 
 template<class T, int N>
-GDF::Num<T, N>::Num( typename T::ValueType t )
+template<class U>
+GDF::Num<T, N>::Num( const U& u )
 {
   for( int i = 0; i < N; ++i )
-    mValues[ i ] = t;
+    mValues[ i ] = static_cast<T::ValueType>( u );
 }
 
 template<class T, int N>

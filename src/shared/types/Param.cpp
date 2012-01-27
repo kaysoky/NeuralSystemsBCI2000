@@ -213,21 +213,21 @@ Param::Value( size_t idx )
 }
 
 const Param::ParamValue&
-Param::Value( int row, int col ) const
+Param::Value( size_t row, size_t col ) const
 {
   BoundsCheck( row, col );
   return Value( row * NumColumns() + col );
 }
 
 Param::ParamValue&
-Param::Value( int row, int col )
+Param::Value( size_t row, size_t col )
 {
   BoundsCheck( row, col );
   return Value( row * NumColumns() + col );
 }
 
 void
-Param::BoundsCheck( int row, int col ) const
+Param::BoundsCheck( size_t row, size_t col ) const
 {
   if( row >= NumRows() )
     throw bciexception( "Row index " << row << " out of range when accessing parameter " << Name() );

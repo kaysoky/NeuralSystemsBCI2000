@@ -297,8 +297,8 @@ MatlabFilter::MatlabWSToParams()
   {
     Param& p = ( *Parameters )[ i ];
     MatlabEngine::StringMatrix values = MatlabEngine::GetCells( string( PARAMETERS "." ) + p.Name() );
-    int newRows = values.size(),
-        newCols = newRows ? values.at( 0 ).size() : 1;
+    int newRows = static_cast<int>( values.size() ),
+        newCols = static_cast<int>( newRows ? values.at( 0 ).size() : 1 );
     if( newRows != p.NumRows() || newCols != p.NumColumns() )
       p.SetDimensions( newRows, newCols );
     for( int row = 0; row < newRows; ++row )

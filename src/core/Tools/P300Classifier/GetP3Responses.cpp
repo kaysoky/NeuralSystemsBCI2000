@@ -25,9 +25,8 @@ void GetP3Responses(ap::template_2d_array<float,true>& signal,
 {
 ////////////////////////////////////////////////////////////////////////////
 // Section:  Define variables
-int i, bound_min, bound_max, row, col, row_windowlen,
+int bound_min, bound_max, row, col, row_windowlen,
     row_channels, numchannels, lenflash, sig_ds_len, siglen;
-size_t j;
 double val_temp;
 ap::template_1d_array<float, true> vect;
 ap::template_1d_array<float, true> vect_r;
@@ -58,7 +57,7 @@ if (row_windowlen == 1)
 }
 ////////////////////////////////////////////////////////////////////////////
 // Section:  Identify changes in Flashing 
-for (i=1; i<lenflash; i++)
+for (int i=1; i<lenflash; i++)
 {
   if (Flashing(i-1) == 0 && Flashing(i) ==1)
   {
@@ -66,34 +65,34 @@ for (i=1; i<lenflash; i++)
       tmp.push_back(i);
   }
 }
-Code.setbounds(0,tmp.size()-1);
-Type.setbounds(0,tmp.size()-1);
-trial.setbounds(0, tmp.size()-1);
+Code.setbounds(0,static_cast<int>(tmp.size())-1);
+Type.setbounds(0,static_cast<int>(tmp.size())-1);
+trial.setbounds(0, static_cast<int>(tmp.size())-1);
 ////////////////////////////////////////////////////////////////////////////
 // Section:  Filter and downsample the signal 
 sig_ds_len = ap::iceil((windowlen(1)-windowlen(0))/DecFact); 
 siglen = sig_ds_len * numchannels; 
-sig.setbounds(0,tmp.size()-1,0, siglen-1);
+sig.setbounds(0,static_cast<int>(tmp.size())-1,0, siglen-1);
 y_downsampled.setbounds(0, sig_ds_len-1);
 
 // Define filter coefficients (Moving Average Filter) 
 a.setbounds(0, MAfilter-1);
 b.setbounds(0, MAfilter-1);
-for (i=0; i<MAfilter; i++)
+for (int i=0; i<MAfilter; i++)
 {
   a(i) = (float) 1;
   b(i) = (float) 1/MAfilter;
 }
 // Extract the signal according to the specified window
 // then downsample and filtering it.
-for(j=0; j<tmp.size(); j++)
+for(int j=0; j<static_cast<int>(tmp.size()); j++)
 {
   bound_min = static_cast<int>( tmp[j] + windowlen(0) - 1 );
   bound_max = static_cast<int>( tmp[j] + windowlen(1) - 2 );
   vect.setbounds(0, bound_max-bound_min);
   vect_r.setbounds(0, bound_max-bound_min);
 
-  for (i=0; i<col; i++)
+  for (int i=0; i<col; i++)
   {
     ap::vmove(vect.getvector(0, bound_max-bound_min), signal.getcolumn(i, bound_min, bound_max));
     filter(MAfilter-1, a, b, bound_max-bound_min, vect, vect_r);
@@ -105,10 +104,10 @@ for(j=0; j<tmp.size(); j++)
   trial(j) = trialnr(tmp[j]);
 }
 // Overwrite signal and states
-signal.setbounds(0,tmp.size()-1,0, siglen-1);
-stimulusCode.setbounds(0, tmp.size()-1);
-stimulusType.setbounds(0, tmp.size()-1);
-trialnr.setbounds(0, tmp.size()-1);
+signal.setbounds(0,static_cast<int>(tmp.size())-1,0, siglen-1);
+stimulusCode.setbounds(0, static_cast<int>(tmp.size())-1);
+stimulusType.setbounds(0, static_cast<int>(tmp.size())-1);
+trialnr.setbounds(0, static_cast<int>(tmp.size())-1);
 
 signal = sig;
 stimulusCode = Code;

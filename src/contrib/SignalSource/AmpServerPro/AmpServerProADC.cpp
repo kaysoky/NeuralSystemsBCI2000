@@ -172,7 +172,7 @@ bool AmpServerProADC::Connect(char *sServerIP, unsigned int nCmdPort,
   if( nTmp > nAddrLen)
     nAddrLen= nTmp;
 
-  nAddrLen += strlen(sServerIP) + 5;
+  nAddrLen += static_cast<int>(strlen(sServerIP) + 5);
   sAddress = new char[nAddrLen];
 
   // Initialize command layer.
@@ -809,8 +809,8 @@ char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg)
 char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg, unsigned int nAmpId) const
 {
   // Estimate amount of memory to allocate.
-  int nCmdLen = strlen(ASP_CMD_SYNTAX);
-  nCmdLen += strlen(sCmd);
+  int nCmdLen = static_cast<int>(strlen(ASP_CMD_SYNTAX));
+  nCmdLen += static_cast<int>(strlen(sCmd));
   if (nAmpId <= 0)
     nCmdLen += 1;
   else
@@ -1029,7 +1029,7 @@ inline bool AmpServerProADC::ReadDataHeader()
 
   // We're at the beginning of a new data pack, set offset and length.
   m_nLastDataPackOffset = 0;
-  m_nLastDataPackSize = static_cast<size_t>( m_oLastHeader.length );
+  m_nLastDataPackSize = static_cast<unsigned int>( m_oLastHeader.length );
 
   return true;
 }

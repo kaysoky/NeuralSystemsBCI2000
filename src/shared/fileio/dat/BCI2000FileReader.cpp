@@ -452,8 +452,8 @@ BCI2000FileReader::BufferSample( long long inSample )
     mBufferEnd = mBufferBegin;
     while( !::feof( mpFile ) && !::ferror( mpFile ) && ( mBufferEnd - mBufferBegin < StateVectorLength() ) )
     {
-      int bytesRead = ::fread( mpBuffer + ( mBufferEnd - mBufferBegin ), 1,
-                               mBufferSize - static_cast<size_t>( mBufferEnd - mBufferBegin ), mpFile );
+      size_t bytesRead = ::fread( mpBuffer + ( mBufferEnd - mBufferBegin ), 1,
+                                  mBufferSize - static_cast<size_t>( mBufferEnd - mBufferBegin ), mpFile );
       mBufferEnd += bytesRead;
     }
     ::clearerr( mpFile );

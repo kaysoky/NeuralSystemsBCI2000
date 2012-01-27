@@ -184,7 +184,7 @@ class Param
   // Dimensions
   Param&             SetNumValues( size_t n );
   int                NumValues() const
-                     { return mValues.size(); }
+                     { return static_cast<int>( mValues.size() ); }
 
   Param&             SetNumRows( size_t rows )
                      { return SetDimensions( rows, NumColumns() ); }
@@ -202,10 +202,10 @@ class Param
   const ParamValue&  Value( size_t idx = 0 ) const;
   ParamValue&        Value( size_t idx = 0 );
 
-  const ParamValue&  Value( int row, int col ) const;
-  ParamValue&        Value( int row, int col );
+  const ParamValue&  Value( size_t row, size_t col ) const;
+  ParamValue&        Value( size_t row, size_t col );
  private:
-  void               BoundsCheck( int row, int col ) const;
+  void               BoundsCheck( size_t row, size_t col ) const;
 
  public:
   const ParamValue&  Value( const std::string& label ) const

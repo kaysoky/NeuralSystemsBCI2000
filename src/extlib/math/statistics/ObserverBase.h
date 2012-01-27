@@ -106,7 +106,7 @@ class ObserverBase
   //
   //  The number of dimensions in a data sample.
   int SampleSize() const
-    { return mSampleSize; }
+    { return static_cast<int>( mSampleSize ); }
   //
   //  Age represents the observer's age in terms of sample durations.
   Number Age() const
@@ -211,7 +211,7 @@ class ObserverBase
   Number mQuantileAccuracy,
          mActualAccuracy;
 
-  int    mSampleSize;
+  size_t mSampleSize;
   Vector mBuffer;
 };
 

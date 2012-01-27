@@ -42,7 +42,7 @@ class StateVectorSample
 
  public:
   int            Length() const
-                 { return mByteLength; }
+                 { return static_cast<int>( mByteLength ); }
   unsigned char* Data()
                  { return mpData; }
   const unsigned char* Data() const

@@ -197,7 +197,7 @@ FFTFilter::Process( const GenericSignal& Input, GenericSignal& Output )
     // Copy input signal values to the value buffer.
     vector<float>& buffer = mValueBuffers[ i ];
     int inputSize = Input.Elements(),
-        bufferSize = buffer.size();
+        bufferSize = static_cast<int>( buffer.size() );
     // Move old values towards the beginning of the buffer, if any.
     for( int j = 0; j < bufferSize - inputSize; ++j )
       buffer[ j ] = buffer[ j + inputSize ];

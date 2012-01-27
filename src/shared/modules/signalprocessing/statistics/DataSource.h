@@ -64,7 +64,7 @@ class DataSource
   class DataProperties
   {
    public:
-    DataProperties() /*: mIsHistogram( false )*/ {}
+    DataProperties() {}
     DataProperties( const SignalProperties& );
     operator SignalProperties() const;
 
@@ -74,15 +74,12 @@ class DataSource
     DimensionList& Dimensions() { return mDimensions; }
     const PhysicalUnit& Unit() const { return mUnit; }
     PhysicalUnit& Unit() { return mUnit; }
-#if 0
-    bool IsHistogram() const { return mIsHistogram; }
-    bool& IsHistogram() { return mIsHistogram; }
-#endif
+
     DataProperties& OuterProduct( const DataProperties& );
 
-    size_t DataSize() const;
-    size_t ToSingleIndex( const IndexList& ) const;
-    IndexList ToIndexList( size_t ) const;
+    int DataSize() const;
+    int ToSingleIndex( const IndexList& ) const;
+    IndexList ToIndexList( int ) const;
 
     bool Compatible( const DataProperties& ) const;
 
@@ -90,7 +87,6 @@ class DataSource
     std::string mName;
     DimensionList mDimensions;
     PhysicalUnit mUnit;
-    bool mIsHistogram;
   };
 
   struct Context
@@ -117,7 +113,7 @@ class DataSource
   void Initialize( const Context& );
   void Process( const Context& );
   Value Data( const IndexList& );
-  Value Data( size_t );
+  Value Data( int );
   // The abort flag is tested frequently, and synchronization is not critical.
   // It is thus not protected by a mutex.
   static void SetAbortFlag( bool inAbort = true ) { sAbortFlag = inAbort; }
@@ -132,7 +128,7 @@ class DataSource
   virtual void OnProcess( const Context& ) = 0;
   // Access to data takes a single index, which may be obtained from multiple
   // indices using DataProperties::CalculateIndex().
-  virtual Value OnData( size_t ) = 0;
+  virtual Value OnData( int ) = 0;
 
  protected:
   DataProperties mProperties;

@@ -526,7 +526,7 @@ StimulusPresentationTask::OnStartRun()
   mSequence.clear();
   int numSubSequences = mNumberOfSequences;
   if( Parameter( "InterpretMode" ) == InterpretModes::Copy )
-    numSubSequences *= mToBeCopied.size();
+    numSubSequences *= static_cast<int>( mToBeCopied.size() );
   switch( mSequenceType )
   {
     case SequenceTypes::Deterministic:

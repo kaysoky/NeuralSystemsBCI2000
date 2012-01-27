@@ -617,7 +617,7 @@ P3SpellerTask::OnClassResult( const ClassResult& inResult )
   State( "SelectedColumn" ) = targetID ? ( targetID - 1 ) % mNumMatrixCols + 1 : 0;
 
   // Write classification signal details into the application log.
-  int numAverages = 0;
+  size_t numAverages = 0;
   for( ClassResult::const_iterator i = inResult.begin(); i != inResult.end(); ++i )
     numAverages += i->second.size();
   AppLog << "This is the end of this sequence: "

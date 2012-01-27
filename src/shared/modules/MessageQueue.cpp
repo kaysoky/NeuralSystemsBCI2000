@@ -40,7 +40,7 @@ MessageQueue::QueueMessage( std::istream& is )
   entry.descSupp |= is.get();
   LengthField<2> length;
   length.ReadBinary( is );
-  entry.length = length;
+  entry.length = static_cast<int>( length );
   if( is )
   {
     entry.message = new char[ length ];

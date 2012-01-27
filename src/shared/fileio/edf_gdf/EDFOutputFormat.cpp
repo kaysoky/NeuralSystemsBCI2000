@@ -138,7 +138,7 @@ EDFOutputFormat::StartRun( ostream& os, const string& inFileName )
   PutField< Str<80> >( os, patient.str() );
   PutField< Str<80> >( os, recording.str() );
   PutField< Str<16> >( os, startdate.str() );
-  PutField< Str<8>  >( os, 256 * ( Channels().size() + 1 ) );
+  PutField< Str<8>  >( os, static_cast<int>( 256 * ( Channels().size() + 1 ) ) );
   PutField< Str<44> >( os );
   PutField< Str<8>  >( os, -1 );
   PutField< Str<8>  >( os, Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" ) );

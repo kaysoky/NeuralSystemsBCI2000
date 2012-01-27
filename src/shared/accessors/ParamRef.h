@@ -372,7 +372,7 @@ std::istream& operator>>( std::istream& s, ParamRef& t )
 ////////////////////////////////////////////////////////////////////////////////
 inline
 ParamRef::ParamRef( Param* param, size_t row, size_t column )
-: mpParam( param ), mIdx1( row ), mIdx2( column )
+: mpParam( param ), mIdx1( static_cast<int>( row ) ), mIdx2( static_cast<int>( column ) )
 {
 }
 

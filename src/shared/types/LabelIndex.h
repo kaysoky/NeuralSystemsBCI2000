@@ -36,7 +36,7 @@ class PhysicalUnit;
 
 class LabelIndex
 {
-  typedef std::map<EncodedString, size_t>  IndexBase;
+  typedef std::map<EncodedString, int>     IndexBase;
   typedef std::vector<IndexBase::key_type> IndexReverse;
 
  public:
@@ -47,7 +47,7 @@ class LabelIndex
   ~LabelIndex() {}
 
   // Forward lookup.
-  IndexBase::mapped_type operator[]( const std::string& ) const;
+  int operator[]( const std::string& ) const;
   // We need an additional Exists() function because operator[] must return 0
   // for nonexisting labels.
   bool Exists( const std::string& ) const;
@@ -69,7 +69,7 @@ class LabelIndex
               { return Resize( 0 ); }
   LabelIndex& Resize( size_t );
   int         Size() const
-              { return mReverseIndex.size(); }
+              { return static_cast<int>( mReverseIndex.size() ); }
   LabelIndex& operator*=( const LabelIndex& );
 
  private:

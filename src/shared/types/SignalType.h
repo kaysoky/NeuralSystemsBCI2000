@@ -50,7 +50,7 @@ class SignalType
   operator SignalType::Type() const { return mType; }
 
   const char* Name() const;
-  size_t      Size() const;
+  int         Size() const;
   double      Min()  const;
   double      Max()  const;
   static bool ConversionIsSafe( SignalType from, SignalType to );

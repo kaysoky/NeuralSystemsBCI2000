@@ -372,7 +372,7 @@ int TDTADC::AcquireThread::Execute()
 
 		for (size_t i = 0; i < mDataBuf.size(); i++){
 			for (int ch =0; ch < 16; ch++){
-				int curCh = i*16 + ch;
+				int curCh = static_cast<int>( i )*16 + ch;
 				if (find(mChList.begin(), mChList.end(), curCh) == mChList.end())
 					continue;
 				for (int sample = 0; sample < amp->mSampleBlockSize; sample++){

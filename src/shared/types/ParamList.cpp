@@ -48,7 +48,7 @@ ParamList::operator[]( const std::string& inName )
   NameIndex::const_iterator i = mNameIndex.find( inName );
   if( i == mNameIndex.end() )
   {
-    mNameIndex[ inName ] = mParams.size();
+    mNameIndex[ inName ] = static_cast<int>( mParams.size() );
     mParams.resize( mParams.size() + 1 );
     i = mNameIndex.find( inName );
   }
@@ -100,7 +100,7 @@ ParamList::Add( const Param& inParam, float inSortingHint )
     entry = &mParams[ i->second ];
   else
   {
-    mNameIndex[ inParam.mName ] = mParams.size();
+    mNameIndex[ inParam.mName ] = static_cast<int>( mParams.size() );
     mParams.resize( mParams.size() + 1 );
     entry = &mParams[ mParams.size() - 1 ];
   }
@@ -321,5 +321,5 @@ ParamList::RebuildIndex()
 {
   mNameIndex.clear();
   for( size_t i = 0; i < mParams.size(); ++i )
-    mNameIndex[ mParams[ i ].Param.mName ] = i;
+    mNameIndex[ mParams[ i ].Param.mName ] = static_cast<int>( i );
 }

@@ -62,7 +62,7 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData, Ratpoly<T>& outResu
 {
   typedef double D;
   static const T eps = std::numeric_limits<T>::epsilon();
-  int n = inData.size();
+  int n = static_cast<int>( inData.size() );
 
   DataVector coeff, wkm;
   coeff.resize( LinearPredictor<T>::mModelOrder + 1 );

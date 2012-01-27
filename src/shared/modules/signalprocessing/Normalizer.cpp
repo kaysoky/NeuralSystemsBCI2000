@@ -281,7 +281,7 @@ Normalizer::Update()
   for( size_t channel = 0; channel < mDataBuffers.size(); ++channel )
     if( mAdaptation[ channel ] != none )
     { // Compute raw moments for all buffers.
-      int numValues = 0;
+      size_t numValues = 0;
       vector<double> bufferMeans;
       vector<double> bufferSqMeans;
       for( size_t i = 0; i < mDataBuffers[ channel ].size(); ++i )

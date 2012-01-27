@@ -129,7 +129,7 @@ inline
 StateRef
 StateRef::operator()( size_t inOffset ) const
 {
-  return StateRef( mpState, mpStateVector, mSample + inOffset, mDefaultValue );
+  return StateRef( mpState, mpStateVector, static_cast<int>( mSample + inOffset ), mDefaultValue );
 }
 
 inline

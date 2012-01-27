@@ -77,7 +77,7 @@ public:
 	bool parseIni(QString);
     bool launchProgs();
 
-    int nTasks(){return tasks.size();}
+    int nTasks(){return static_cast<int>( tasks.size() );}
     int taskReturnCode(){return tasks.getReturnCode();}
 
 	TaskType& operator[](const int i){return tasks[i];}

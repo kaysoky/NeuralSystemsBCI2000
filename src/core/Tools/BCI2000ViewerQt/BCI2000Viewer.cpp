@@ -1041,7 +1041,7 @@ BCI2000Viewer::UpdateChannelLabels()
       for( int k = 0; k < labelParam->NumValues(); ++k )
         signalLabels.push_back( labelParam( k ) );
     }
-    for( int i = signalLabels.size(); i < mFile.SignalProperties().Channels(); ++i )
+    for( int i = static_cast<int>( signalLabels.size() ); i < mFile.SignalProperties().Channels(); ++i )
     {
       ostringstream oss;
       oss << i + 1;
@@ -1049,7 +1049,7 @@ BCI2000Viewer::UpdateChannelLabels()
     }
 
     LabelList channelLabels;
-    size_t numMarkerChannels = 0;
+    int numMarkerChannels = 0;
     int j = 1;
     while( j < ui->channelList->count()
            && ( ui->channelList->item( j )->flags() & Qt::ItemIsUserCheckable ) )
@@ -1060,7 +1060,7 @@ BCI2000Viewer::UpdateChannelLabels()
       if( ui->channelList->item( j )->checkState() == Qt::Checked )
         channelLabels.push_back(
           Label(
-            channelLabels.size(),
+            static_cast<int>( channelLabels.size() ),
             signalLabels[ j - chBase ]
           )
         );
@@ -1070,13 +1070,13 @@ BCI2000Viewer::UpdateChannelLabels()
       {
         channelLabels.push_back(
           Label(
-            channelLabels.size(),
+            static_cast<int>( channelLabels.size() ),
             ui->channelList->item( i )->text().toLocal8Bit().constData()
           )
         );
         ++numMarkerChannels;
       }
-    mNumSignalChannels = channelLabels.size() - numMarkerChannels;
+    mNumSignalChannels = static_cast<int>( channelLabels.size() ) - numMarkerChannels;
     ui->signalDisplay->Display().SetNumMarkerChannels( numMarkerChannels )
                                 .SetChannelLabels( channelLabels )
                                 .SetChannelLabelsVisible( true );
@@ -1128,7 +1128,7 @@ BCI2000Viewer::ConstructDisplaySignal( long inPos, long inLength )
     for( ; i < ui->channelList->count() && ( ui->channelList->item( i )->flags() & Qt::ItemIsUserCheckable ); ++i )
       if( ui->channelList->item( i )->checkState() == Qt::Checked )
         states.push_back( mFile.State( ui->channelList->item( i )->text().toLocal8Bit().constData() ) );
-    vector<size_t> channels;
+    vector<int> channels;
     int base = ++i;
     for( ; i < ui->channelList->count() && ( ui->channelList->item( i )->flags() & Qt::ItemIsUserCheckable ); ++i )
       if( ui->channelList->item( i )->checkState() == Qt::Checked )
@@ -1141,7 +1141,7 @@ BCI2000Viewer::ConstructDisplaySignal( long inPos, long inLength )
          sample < signal.Elements() && sampleInFile < mFile.NumSamples();
          ++sample, ++sampleInFile )
     {
-      for( size_t channelIdx = 0; channelIdx < channels.size(); ++channelIdx )
+      for( int channelIdx = 0; channelIdx < static_cast<int>( channels.size() ); ++channelIdx )
         signal( channelIdx, sample ) = mFile.CalibratedValue( channels[ channelIdx ], sampleInFile );
 
       mFile.ReadStateVector( sampleInFile );

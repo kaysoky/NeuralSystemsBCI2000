@@ -134,8 +134,8 @@ GDF::PhysicalUnitToGDFUnit( const std::string& inUnit )
     { "T",   65504 },
   };
 
-  int pos = 0,
-      prefixValue = 0;
+  size_t pos = 0;
+  int prefixValue = 0;
   for( size_t i = 0; prefixValue == 0 && i < sizeof( prefixes ) / sizeof( *prefixes ); ++i )
     if( inUnit.find( prefixes[ i ].name ) == 0 )
     {

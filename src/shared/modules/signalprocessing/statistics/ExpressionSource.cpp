@@ -92,7 +92,7 @@ ExpressionSource::OnProcess( const Context& inContext )
 }
 
 DataSource::Value
-ExpressionSource::OnData( size_t inIdx )
+ExpressionSource::OnData( int inIdx )
 {
   mDataIndex = inIdx;
   Value result = 0;

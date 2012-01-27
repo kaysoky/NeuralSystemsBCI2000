@@ -204,8 +204,8 @@ WindowObserver::InverseCDF( Number inN, MemPool& ioPool ) const
   // The target index is only used for equal weights.
   // It is computed in accordance with the "R-1" method of computing quantiles.
   int targetIndex = static_cast<int>( ::ceil( inN / Count() * size() ) - 1 );
-  targetIndex = ::max<int>( targetIndex, 0 );
-  targetIndex = ::min<int>( targetIndex, size() - 1 );
+  targetIndex = max( targetIndex, 0 );
+  targetIndex = min( targetIndex, static_cast<int>( size() ) - 1 );
 
   Index index( *this );
   for( size_t i = 0; i < result->size(); ++i )

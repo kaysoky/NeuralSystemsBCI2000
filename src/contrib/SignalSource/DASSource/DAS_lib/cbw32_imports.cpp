@@ -76,7 +76,7 @@ HINSTANCE GetDLL()
       if( ::RegQueryValueEx( ulKey, valueName, NULL, NULL,
                                              NULL, &valueSize ) == ERROR_SUCCESS )
       {
-        int dllPathLen = valueSize + ::strlen( dllName );
+        int dllPathLen = static_cast<int>( valueSize + ::strlen( dllName ) );
         char* dllPath = new char[ dllPathLen + 1 ];
         if( ::RegQueryValueEx( ulKey, valueName, NULL, NULL,
               reinterpret_cast<LPBYTE>( dllPath ), &valueSize ) == ERROR_SUCCESS )

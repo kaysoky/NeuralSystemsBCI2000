@@ -146,7 +146,7 @@ TMSiADC::StartDriver()
 
         if( psf != NULL )
         {
-                UINT Size = LocalSize( psf );
+                SIZE_T Size = LocalSize( psf );
                 if( Size < sizeof( SIGNAL_FORMAT ) * psf->Elements )
                 {
                         bcierr << "SignalFormat Error" << endl;
@@ -202,7 +202,7 @@ void
 TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties ) const
 {      // Might need a bit of work...
 
-        int softwareCh = Parameter( "SourceCh" );
+        SIZE_T softwareCh = Parameter( "SourceCh" );
         if ( softwareCh > mHardwareCh )
         {
          bcierr << "Trying to read more channels than available" << std::endl;
@@ -219,7 +219,7 @@ TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties 
         bool offsetWarning = false;
         for ( int i = 0; i < softwareCh ; ++i )
         {
-            int ind = int(Parameter("PhysicalChannels")(i)) - 1;
+            SIZE_T ind = int(Parameter("PhysicalChannels")(i)) - 1;
             if(ind < 0) bcierr << "A PhysicalChannels index of " << ind+1 << "is illegal" << endl;
             if(ind >= mHardwareCh) bcierr << "A PhysicalChannels index of " << ind+1 << "exceeds the hardware's maximum of " << mHardwareCh << endl;
 
@@ -296,13 +296,13 @@ TMSiADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
         mSoftwareCh           = Parameter( "SourceCh" );
         mSampleBlockSize      = Parameter( "SampleBlockSize" );
-        mSampleRate           = Parameter( "SamplingRate" ).InHertz();
+        mSampleRate           = static_cast<unsigned int>( Parameter( "SamplingRate" ).InHertz() );
 
         mBufferSize           = mBufferMulti*mSampleBlockSize; // in samples!: in waitfordata endblock is linked to this...
         mSrate                = 1000*mSampleRate;           // samplerate in mHz
 
         mPhysChanInd.clear();
-        for ( int i = 0; i < mSoftwareCh ; ++i) mPhysChanInd.push_back(int(Parameter("PhysicalChannels")(i)) - 1);
+        for ( SIZE_T i = 0; i < mSoftwareCh ; ++i) mPhysChanInd.push_back(int(Parameter("PhysicalChannels")(i)) - 1);
         mpMaster->SetSignalBuffer(&mSrate,&mBufferSize);
 
         //I wonder where the difference to mBuffersize is...
@@ -362,7 +362,7 @@ TMSiADC::WaitForData(LONG* SignalBuffer,ULONG size)
 {
         ULONG PercentFull, Overflow;
         static unsigned int mOverflow = 0;
-        ULONG endblock = 100.00 / mBufferMulti;
+        ULONG endblock = static_cast<ULONG>( 100.00 / mBufferMulti );
         mpMaster->GetBufferInfo(&Overflow,&PercentFull);
 
         while( PercentFull < endblock)

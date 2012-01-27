@@ -168,8 +168,8 @@ ExecutableHelp::InitializeContextHelp()
   for( string::iterator i = htmlPath.begin(); i != htmlPath.end(); ++i )
     if( *i == '/' )
       *i = '\\';
-  int bufLen = htmlPath.length() + 1;
-  char* pathBuffer = new char[ bufLen ];
+  DWORD bufLen = static_cast<DWORD>( htmlPath.length() + 1 );
+  char* pathBuffer = new char[bufLen];
   if( ::GetFullPathNameA( htmlPath.c_str(), bufLen, pathBuffer, NULL ) )
     htmlPath = string( pathBuffer );
   delete[] pathBuffer;

@@ -44,7 +44,7 @@ class ExpressionSource : public DataSource, private Expression
   void OnDepends( const Context& );
   void OnInitialize( const Context& );
   void OnProcess( const Context& );
-  Value OnData( size_t );
+  Value OnData( int );
 
  // ArithmeticExpression interface
  protected:
@@ -58,7 +58,7 @@ class ExpressionSource : public DataSource, private Expression
  private:
   std::string mExpression;
   const Context* mpContext;
-  size_t mDataIndex;
+  int mDataIndex;
 };
 
 #endif // EXPRESSION_SOURCE_H

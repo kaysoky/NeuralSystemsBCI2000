@@ -157,7 +157,7 @@ for (int i=0; i<NumberOfEpochs; i++)
   for (size_t j=0; j<trial.size(); j++)
   {
     if (trial[j] == i+1)
-      range.push_back(j);
+      range.push_back(static_cast<int>(j));
   }
   if ((range.size() != 0) && (range.size() == NumberOfSequences*NumberOfChoices))
   {
@@ -171,7 +171,7 @@ for (int i=0; i<NumberOfEpochs; i++)
       for (size_t j=0; j<code_indx.size(); j++)
       {
         if (code_indx.size() == NumberOfSequences)
-          pscore(k,(i*NumberOfSequences)+j) = score(code_indx[j]);
+          pscore(k,static_cast<int>((i*NumberOfSequences)+j)) = score(code_indx[j]);
       }
       code_indx.clear();
     }

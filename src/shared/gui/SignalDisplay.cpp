@@ -582,7 +582,7 @@ SignalDisplay::DrawSignalPolyline( const PaintInfo& p )
   }
   delete[] mpSignalPoints;
   mpSignalPoints = new QPoint[ mNumSamples ];
-  int numPens = p.signalPens.size();
+  int numPens = static_cast<int>( p.signalPens.size() );
 
   for( int j = sampleBegin; j < sampleEnd; ++j )
     mpSignalPoints[ j ].setX( SampleLeft( j ) );
@@ -722,7 +722,7 @@ SignalDisplay::DrawCursor( const PaintInfo& p )
 {
   if( mShowCursor )
   {
-    size_t cursorSample = mSampleCursor;
+    int cursorSample = mSampleCursor;
 
     QRect cursorRect(
       SampleLeft( cursorSample ) - p.cursorWidth,
