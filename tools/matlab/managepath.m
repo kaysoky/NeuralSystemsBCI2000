@@ -4,7 +4,7 @@ function [out, isd, isf, err] = managepath(varargin)
 % MANAGEPATH  .. foo bar/baz
 %     concatenates the input arguments into ../foo/bar/baz, and then makes
 %     sure that all the slashes go in the current operating system's
-%     preferred direction). Then, if the resulting path is a valid file or
+%     preferred direction. Then, if the resulting path is a valid file or
 %     directory, resolve it into an absolute path.
 % 
 % [D,  ISDIR, ISFILE] = MANAGEPATH(...)

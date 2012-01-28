@@ -1,4 +1,4 @@
-function rename_bcidat(f, dstdir)
+function rename_bcidat(f, dstdir, dateformat)
 % RENAME_BCIDAT  renames BCI2000 data files according to a datestamped convention.
 % 
 %     RENAME_BCIDAT(F)
@@ -12,7 +12,7 @@ function rename_bcidat(f, dstdir)
 % For each file, RENAME_BCIDAT finds the StorageTime datestamp, the
 % SubjectName, the SubjectSession and the SubjectRun parameters stored
 % inside the file. Then it moves/renames the file according to a certain
-% scheme that starts with an ISO date stamp  YYYYMMDD_HHMMSS.  This way,
+% scheme that starts with an ISO date stamp  yyyymmdd_HHMMSS.  This way,
 % all files will have a unique filename no matter what was originally
 % entered as session and run numbers, and they will appear in chronological
 % order in Windows.
@@ -28,12 +28,26 @@ function rename_bcidat(f, dstdir)
 % the top level in directory D.  One useful value for D is '.'  which means
 % the current directory that you're working in in Matlab.
 % 
-% So for example
+% So for example,
+% 
 %    RENAME_BCIDAT('.', '.')
+% 
 % would find all .dat files in the directory where you are working now, and
 % all its sub-directories and sub-sub-directories, and then it would rename
 % those files to have unique, date-coded names, and move them all to the
 % top level (directly in the directory you are working in now).
+% 
+% If you just want to see what WOULD happen, without the files actually being
+% renamed, then you can pass '-n' as the second input argument.
+% 
+% Finally, if you want to use a different format other than yyyymmdd_HHMMSS
+% (and have carefully thought through the implications of doing so) then
+% this can be specified using a third input argument. For example:
+% 
+%     RENAME_BCIDAT(F, '-n', 'yyyymmdd')   % preview only
+%     RENAME_BCIDAT(F, '',   'yyyymmdd')   % rename in-place
+%     RENAME_BCIDAT(F, D,    'yyyymmdd')   % rename and move to D
+% 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% $Id$ 
@@ -61,7 +75,13 @@ function rename_bcidat(f, dstdir)
 %% http://www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if nargin < 3, dateformat = ''; end
+if isempty(dateformat), dateformat = 'yyyymmdd_HHMMSS'; end
+
 if nargin < 2, dstdir = ''; end
+dryrun = isequal(dstdir, '-n');
+if dryrun, dstdir = ''; end
+
 if nargin < 1, f = ''; end
 if isempty(f), f = '.'; end
 
@@ -82,6 +102,8 @@ if ~isempty(dstdir)
 	cd(oldd)
 end
 
+if dryrun, verb = 'would move'; else verb = 'moving'; end
+blank = repmat(' ', size(verb));
 for i = 1:numel(f)
 	[srcdir srcname srcxtn] = fileparts(f{i});
 	oldd = cd;
@@ -94,7 +116,7 @@ for i = 1:numel(f)
 	subj = p.SubjectName.Value{1};
 	session = p.SubjectSession.NumericValue;
 	run = p.SubjectRun.NumericValue;
-	dstname = sprintf('%s_%s_S%03dR%03d.dat', datestr(d, 'yyyymmdd_HHMMSS'), upper(subj), session, run);
+	dstname = sprintf('%s_%s_S%03dR%03d.dat', datestr(d, dateformat), upper(subj), session, run);
 	if isempty(dstdir)
 		dstname = fullfile(fileparts(srcname), dstname);
 	else
@@ -103,10 +125,10 @@ for i = 1:numel(f)
 	if strcmp(lower(srcname), lower(dstname)) % assume a case-insensitive filesystem, for safety's sake
 		fprintf('%s is already where it should be\n', dstname);
 	else
-	    fprintf('moving from: %s\n         to: %s\n', srcname, dstname);
+	    fprintf('%s from: %s\n%s   to: %s\n', verb, srcname, blank, dstname);
         if exist(dstname, 'file')
 			fprintf('NOPE, CANCELLED: destination file already exists\n');
-		else
+		elseif ~dryrun
 			movefile(srcname, dstname);
 		end
 	end
