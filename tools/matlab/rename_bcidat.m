@@ -38,15 +38,15 @@ function rename_bcidat(f, dstdir, dateformat)
 % top level (directly in the directory you are working in now).
 % 
 % If you just want to see what WOULD happen, without the files actually being
-% renamed, then you can pass '-n' as the second input argument.
+% renamed, then you can append a question-mark to the file or directory name.
 % 
 % Finally, if you want to use a different format other than yyyymmdd_HHMMSS
 % (and have carefully thought through the implications of doing so) then
 % this can be specified using a third input argument. For example:
 % 
-%     RENAME_BCIDAT(F, '-n', 'yyyymmdd')   % preview only
-%     RENAME_BCIDAT(F, '',   'yyyymmdd')   % rename in-place
-%     RENAME_BCIDAT(F, D,    'yyyymmdd')   % rename and move to D
+%     RENAME_BCIDAT([F '?'], '',  'yyyymmdd')   % preview only
+%     RENAME_BCIDAT(F,       '',  'yyyymmdd')   % rename in-place
+%     RENAME_BCIDAT(F,       D,   'yyyymmdd')   % rename and move to D
 % 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,11 +79,13 @@ if nargin < 3, dateformat = ''; end
 if isempty(dateformat), dateformat = 'yyyymmdd_HHMMSS'; end
 
 if nargin < 2, dstdir = ''; end
-dryrun = isequal(dstdir, '-n');
-if dryrun, dstdir = ''; end
 
 if nargin < 1, f = ''; end
+dryrun = strncmp(fliplr(f), '?', 1);
+if dryrun, f(end) = []; end
 if isempty(f), f = '.'; end
+
+
 
 if ischar(f)
 	if isdir(f)
@@ -104,6 +106,7 @@ end
 
 if dryrun, verb = 'would move'; else verb = 'moving'; end
 blank = repmat(' ', size(verb));
+ghostfiles = {};
 for i = 1:numel(f)
 	[srcdir srcname srcxtn] = fileparts(f{i});
 	oldd = cd;
@@ -123,12 +126,18 @@ for i = 1:numel(f)
 		dstname = fullfile(dstdir, dstname);
 	end
 	if strcmp(lower(srcname), lower(dstname)) % assume a case-insensitive filesystem, for safety's sake
-		fprintf('%s is already where it should be\n', dstname);
+		fprintf('  %s is already where it should be\n', dstname);
 	else
-	    fprintf('%s from: %s\n%s   to: %s\n', verb, srcname, blank, dstname);
+	    fprintf('  %s from: %s\n%s     to: %s\n', verb, srcname, blank, dstname);
         if exist(dstname, 'file')
-			fprintf('NOPE, CANCELLED: destination file already exists\n');
-		elseif ~dryrun
+			fprintf('* NOPE, CANCELLED: destination file already exists\n');
+		elseif dryrun
+			if ismember(dstname, ghostfiles)
+				fprintf('* NOPE, CANCELLED: destination file would already exist\n');
+			else
+				ghostfiles{end+1,1} = dstname;
+			end
+		else
 			movefile(srcname, dstname);
 		end
 	end
