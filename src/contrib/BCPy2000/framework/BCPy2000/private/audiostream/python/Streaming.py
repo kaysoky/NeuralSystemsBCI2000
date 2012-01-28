@@ -86,6 +86,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Control float     EpochAveragingPersistence=                1.0                    1.0   0 % // persistence parameter for the running average of ERPs",
 			"PythonSig:Control float     ControlFilterCutoffHz=                    0                      0     0 % // output low-pass cutoff in Hz (0 to disable)",
 			"PythonSig:Control int       ControlFilterOrder=                       8                      8     0 % // ",
+			"PythonSig:Control float     NormalizerBufferSec=                      0.0                   60.0   0 % // length of buffer in which to remember non-zero control signal values",
+			"PythonSig:Control float     NormalizerIntervalSec=                    0.25                   0.25  0 % // interval between informative samples in the normalizer buffer",
 		]
 		states = [
 			"StreamingRequired  1 0 0 0",
@@ -277,6 +279,15 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if base == None: # no, don't turn this into an else
 			try: w = WavTools.wav(prmval)
 			except IOError: raise EndUserError("failed to load '%s' as a wav file" % prmval)
+		
+		self.normalizer = None
+		nrmlen_sec = float(self.params['NormalizerBufferSec'])
+		nrmlen_packets = round(nrmlen_sec * self.nominal.PacketsPerSecond)
+		nrmskip_sec = float(self.params['NormalizerIntervalSec'])
+		nrmskip_packets = round(nrmskip_sec * self.nominal.PacketsPerSecond)
+		if nrmlen_sec:
+			self.normalizer = SigTools.trap(nrmlen_packets, 1, leaky=True)
+			self.normalizer_decimation = max(1, min(nrmlen_packets-1,  nrmskip_packets))
 		
 		if w.channels() != 1: raise EndUserError("StreamStimuli wav files must be single-channel: found %d channels in %s" % (w.channels(), w.filename))
 			
@@ -523,7 +534,15 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			
 		control_signal = self.prediction / self.prediction_se
 		if self.controlfilter: control_signal = self.controlfilter.apply([[control_signal]])
-				
+		
+		if self.normalizer and control_signal != 0:
+			self.normalizer.process(control_signal)
+			history = numpy.abs( self.normalizer.read()[0][::self.normalizer_decimation] )
+			history.sort()
+			if history.size:
+				mag = 1.5 * numpy.diff(history[int(round(0.5*(history.size-1)))])  # for iid samples ~N(0,1) this statistic is around 1.0 (+/- 12% if history contains 100 samples at a time)
+				if mag: control_signal /= mag
+		
 		if max(self.out_signal_dim) == 1: return control_signal
 		else: return sig
 								
