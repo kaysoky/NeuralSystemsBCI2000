@@ -77,6 +77,8 @@ class ring(object):
 		Writes signal packet <x>, a channels-by-samples numpy array, to the
 		buffer.
 		"""###
+		x = numpy.asarray(x).view()
+		while len(x.shape) < 2: x.shape = tuple(x.shape) + (1,)
 		(nchan, nsamp) = x.shape
 		if nchan != self.channels(): raise ValueError, "incoming data has the wrong number of channels"
 		available = self.to_write()
@@ -122,7 +124,7 @@ class trap(object):
 	
 	A leaky trap is the simplest type:
 	
-	    t = trap(1000, leaky=True)
+	    t = trap(1000, nchannels, leaky=True)
 	    
 	    t += packet_1         # these three syntaxes
 	    t.process(packet_2)   # are all equivalent
@@ -195,7 +197,7 @@ class trap(object):
 		output = 0
 		if not isinstance(x, numpy.ndarray):
 			x = numpy.array(x)
-			if len(x.shape)==1: x.shape += (1,)
+			while len(x.shape) < 2: x.shape = tuple(x.shape) + (1,)
 		startx,stopx = 0,x.shape[1]
 		sprung_before = self.sprung
 		if arm and not self.sprung:
