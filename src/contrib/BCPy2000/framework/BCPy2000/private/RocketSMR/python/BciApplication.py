@@ -5,15 +5,25 @@ import AppTools.Displays
 import WavTools
 
 
-# TODO:
-#		optional: creating stars during flight period
-
-# Normalizing during game
-
+# Implementation of the SpaceGame including:
+# - initial Calibration session, where cues are presented
+# - the actual Game:
+#		- fueling phase: cloud moves at top of screen releasing drops
+#                        which need to be caught with a cart at the bottom of the screen
+#					     (phase change after specified amount of drops was caught)
+#		- flying phase: user navigates a spaceship at the bottom of the screen, avoiding
+#						rockets which approach from the top of the screen, till planet appears
+#						(phase change after planet was reached (adjusting phase)
+#						 or after hit by rocket (back to fueling phase))
+#		- adjusting phase: drop catching as in fueling phase, but size of cart and game speed changes
+#						   according to user ability
+#						   (phase change after certain number of reversals)
 
 	
 
 class BciApplication(BciGenericApplication):
+	
+	# functions used to interpret PaddleExpression (self.params) typed in by the user
 	
 	def Signal(self, ch, el):
 		return self.in_signal[ch-1,el-1]
@@ -52,7 +62,7 @@ class BciApplication(BciGenericApplication):
 			"Application:Calibration intlist PromptSequence= 6  1 2 1 2 1 2  % 1 % // sequence of stimulus codes to present as prompts for calibration",
 			"Application:Calibration float   PromptDuration= 4  % 0 % // duration of prompts in s",
 			"Application:Calibration float	 InterStimInterval= 2.5 % 0 % // duration between prompts in s",
-			"Application:Calibration float   FeedbackStateDelay= 0.5  % 0 % // delay between setting TargetCode state and Feedback state in s",
+			"Application:Calibration float   FeedbackStateDelay= 0.5  % 0 % // delay between setting TargetCode state and Feedback (for normalizer) state in s",
 			"Application:Calibration int     FeedbackVisibleAfter= 4  4 0 % // number of trials to perform without visible feedback",
 
 			"PythonApp:ScoreDisplay	float	ScoreDisplayWidth=	0.15  %		0.1	  0.2 // proportion of stimulus window used to display Scores",
@@ -61,10 +71,16 @@ class BciApplication(BciGenericApplication):
 			"PythonApp:ScoreDisplay floatlist ScoreFontColor= 3	 1.0 1.0 1.0 % 0.0 1.0 // color of Text displaying the Scores",
 			
 			"PythonApp:Settings	string		PaddleExpression= (Signal(2,1)-Signal(1,1))*2 % % %// Signal to use for paddle speed",
-			"PythonApp:Settings	int		NormalizerMode= 0 % 0 1 // 0: no normalization after calibration, 1: adaptive normalization",
+			"PythonApp:Settings	int		NormalizerMode= 0 % 0 1 // 0 no normalization after calibration, 1 adaptive normalization (enumeration)",
+			# Update Trigger of Normalizer needs to be set to "Feedback == 0"
+			# if adaptive normalization is used, the Normalizer variables are updated each time an input sequence
+			# into the normalizer stops, yet if an single input sequence lasts longer than the NormalizerUpdate value specified
+			# Normalizer variables are also updated
 			"PythonApp:Settings float	NormalizerUpdate= 5.0 % % % // period in s after which normalizer variables are updated by default if adaptive normalization is employed",
 			"PythonApp:Settings int		UseDirectWiimoteControl= 0 % % % // use direct control via Wiimotes (boolean)",
+			# necessary due to the variance in the signal wiimotes produce even if not in motion
 			"PythonApp:Settings float   DirectControlZeroThreshold= 1 % % % // only for direct control mode",
+			# necessary due to the variance in the signal wiimotes produce during motion
 			"PythonApp:Settings int		DirectControlSmoothingLength= 4 % % % // how many past values to consider for smoothing",
 			
 			"PythonApp:Objects	floatlist	InitPaddleSize=	{width height} 0.2	0.07    %	  0.0	1.0 // width and height of paddle proportional to gaming window size",
@@ -77,18 +93,23 @@ class BciApplication(BciGenericApplication):
 			"PythonApp:Objects  float		BottomOfWater= 0.23 % % % //proportion of cart height were water starts to fill up cart",
 			
 			"PythonApp:BasicRound float	DropFrequency= 2 % 0 % // determines distance between different Drops falling from sky (DrFreq*PaddleHeight)",
-			"PythonApp:BasicRound float InitGravity= 1 % 0.1 % // speed with which drops fall down",
-			"PythonApp:BasicRound int	CloudMode= 0 % 0 1 // 0: cloud moves according to CloudPath and CloudSpeed, 1: cloud moves away from paddle",
+			"PythonApp:BasicRound float InitGravity= 1 % 0.1 % // speed with which drops fall down (movement per frame)",
+			"PythonApp:BasicRound int	CloudMode= 0 % 0 1 // 0 cloud moves according to CloudPath and CloudSpeed, 1 cloud moves away from paddle (enumerate)",
+			# floats values from 0.0(left) to 1.0(right) give the fraction of the screen the cloud is supposed to move to next
+			# values from 10 - 100 define the length of a period were the cloud is supposed to stay at its current spot
+			#	the real length (i.e. seconds) defined varies according to game speed and frame rate
+			# the values in a single row repeat itself during a single phase
+			# upon entering a new phase (either adjusting or fueling) the next row is considered
 			"PythonApp:BasicRound matrix	CloudPathes= 3 5	1 0.2 30 0.4 0.8	0.2 0.5 50 0.2 0.8	1 60 0.4 0.2 0 	% % % //path which cloud follows",
 			"PythonApp:BasicRound floatlist CloudSpeed= 5    0.5 1.5 0.8 2.3 2.0  % % %// List of Cloud Speeds to be used",
 			"PythonApp:BasicRound int		DropsTillBonus= 10 % 1 32 // number of drops that have to be collected to enter Bonus Round",
 			
 			"PythonApp:BonusRound matrix	RocketPattern= 6 {veryLeft Left Center Right veryRight} 	1 0 0 0 0	0 1 0 0 0	0 1 1 0 0  0 0 0 1 1  0 1 0 0 1  0 1 0 1 0 % 0 1 // Falling pattern of rockets (0 no rocket, 1 rocket)",
 			"PythonApp:BonusRound float		RocketFrequency= 2  %  0  % //determines distance between different RocketRows (RoFreq*SpaceshipHeight)",
-		
-			"PythonApp:PaddleSizeAdjusting int	  AdjustingFrequency=	5 % % % //Minutes after which the paddle size is adjusted again",	
+			
+			"PythonApp:PaddleSizeAdjusting int	  AdjustingFrequency=	5 % % % //Minutes after which the paddle size is adjusted again, even if no planet was reached",	
 			"PythonApp:PaddleSizeAdjusting float  TargetAccuracy= 0.75 % 0.0 1.0 //HitRate to aim for in adjusting paddle size",
-			"PythonApp:PaddleSizeAdjusting float  InitGameDifficulty= 1.0 % % % // GameDifficulty for adjusting paddle size",
+			"PythonApp:PaddleSizeAdjusting float  InitGameDifficulty= 1.0 % % % // GameDifficulty",
 			"PythonApp:PaddleSizeAdjusting float  PaddleWidthHitFactor= 0.9 % 0.01 0.99 //determines the amount the paddle grows and shrinks with each hit or miss",
 			"PythonApp:PaddleSizeAdjusting float  MaximumPaddleWidth= 0.5 % % % //maximum width paddle can grow to proprotional to gaming window width",
 			"PythonApp:PaddleSizeAdjusting float  MinimumPaddleWidth= 0.05 % % % //minimum width paddle can grow to proprotional to gaming window width",
@@ -99,11 +120,11 @@ class BciApplication(BciGenericApplication):
 		)
 		
 		self.define_state(
-			"TargetCode    2 0 0 0", ## necessary for normalizer
-			"Feedback      1 0 0 0", ##
-			
-			"GameMode 2 0 0 0", ## 1:normal 2:bonus round 3:adjusting paddle size
-			"DistanceTimes10 14 0 0 0",
+			"TargetCode    2 0 0 0", # defines the required movement direction 1(left) 2(right)
+			"Feedback      1 0 0 0", # defines wether feedback is send to the signal processing module (i.e. normalizer)
+									 # Update Trigger of Normalizer should be "Feedback == 0"
+			"GameMode 2 0 0 0", # 1:fueling phase 2:flying phase 3:adjusting paddle size
+			"DistanceTimes10 14 0 0 0", # distance till the next planet is reached
 			"Hits 8 0 0 0",
 			"Misses	8 0 0 0",
 			"JustHit 1 0 0 0",
@@ -111,10 +132,10 @@ class BciApplication(BciGenericApplication):
 			"HitsInRow 14 0 0 0",
 			"Score	20 0 0 0",
 			"Highscore 20 0 0 0",
-			"AvoidedSingle 14 0 0 0",
-			"AvoidedRows 10 0 0 0",
+			"AvoidedSingle 14 0 0 0", # how many single rockets have been avoided
+			"AvoidedRows 10 0 0 0", # how many rows of rockets have been avoided
 			"Planets 7 0 0 0",
-			"NumberOfGame	7 0 0 0",
+			"NumberOfGame	7 0 0 0", # one game lasts from playing (adjusting phase) till planet was reached (or adjusting phase entered by default)
 			
 			"PaddleWidthTimes10000	14 0 0 0",
 			"PaddlePosXTimes10000	14 0 0 0",
@@ -128,14 +149,14 @@ class BciApplication(BciGenericApplication):
 			"DropWidthTimes10000 14 0 0 0",
 			"GravityTimes100 14 0 0 0",
 			
-			"SpaceshipWidthTimes10000	14 0 0 0", ## constant during current implementation (set in StartRun)
+			"SpaceshipWidthTimes10000	14 0 0 0", # constant in current implementation
 			"SpaceshipPosXTimes10000	14 0 0 0",
 			"SpaceshipPosYTimes10000	14 0 0 0",
-			"Rocket0PosXTimes10000	14 0 0 0",
-			"Rocket1PosXTimes10000	14 0 0 0",
-			"Rocket2PosXTimes10000	14 0 0 0",
-			"Rocket3PosXTimes10000	14 0 0 0",
-			"Rocket4PosXTimes10000	14 0 0 0",
+			"Rocket0PosXTimes10000	14 0 0 0", # gives positions of each rocket in the lowest rocket row
+			"Rocket1PosXTimes10000	14 0 0 0", # if it consits of only one rocket only Rocket0PosX.. will
+			"Rocket2PosXTimes10000	14 0 0 0", # have a value, others will be 0
+			"Rocket3PosXTimes10000	14 0 0 0", # if three rockets are present Rocket0Pos.. - Rocket2Pos..
+			"Rocket4PosXTimes10000	14 0 0 0", # will have value, others are 0
 			"Rocket5PosXTimes10000	14 0 0 0",
 			"Rocket6PosXTimes10000	14 0 0 0",
 			"Rocket7PosXTimes10000	14 0 0 0",
@@ -722,7 +743,7 @@ class BciApplication(BciGenericApplication):
 		#~ "Implementation of the Game"
 		#~ i.e. Movement of Objects, Behaviour during Collision of Objects etc.
 		#~ 
-		#~ 1. Play Phase:
+		#~ 1. Play Phase: catching drops
 		#~ 2. Bonus Phase: avoiding rockets
 		
 		self.states['JustHit'] = 0
@@ -1163,7 +1184,7 @@ class BciApplication(BciGenericApplication):
 #############################################################			
 			
 	def Event(self, phasename, event):
-		# to control spaceship with keyboard
+		# to control paddle with keyboard
 		if phasename in ['play','bonus', 'determinePaddleSize']:
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_RIGHT:
@@ -1182,6 +1203,7 @@ class BciApplication(BciGenericApplication):
 	#############################################################		
 
 	def Process(self, sig):
+		# control paddle with signal defined in PaddleExpression
 		val = eval(self.expr)
 		
 		if int(self.params['UseDirectWiimoteControl'])==1:
