@@ -93,7 +93,7 @@ RDAClientADC::Preflight( const SignalProperties&,
              << " (" << numInputChannels << ") "
              << endl;
     else
-      for( int i = 0; i < numInputChannels - 1; ++i )
+      for( size_t i = 0; i < numInputChannels - 1; ++i )
         goodOffsets &= ( Parameter( "SourceChOffset" )( i ) == 0 );
 
     if( !goodOffsets )
@@ -109,7 +109,7 @@ RDAClientADC::Preflight( const SignalProperties&,
              << " (" << numInputChannels << ") "
              << endl;
     else
-      for( int i = 0; i < numInputChannels - 1; ++i )
+      for( size_t i = 0; i < numInputChannels - 1; ++i )
       {
         double gain = preflightQueue.info().channelResolutions[ i ];
         double prmgain = Parameter( "SourceChGain")( i );

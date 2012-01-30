@@ -206,7 +206,7 @@ GDFOutputFormat::StartRun( ostream& os, const string& inFileName )
   PutField< Num<GDF::uint8>     >( os, bci2000infoLength >> 8 & 0xff );
   PutField< Num<GDF::uint8>     >( os, bci2000infoLength >> 16 & 0xff );
   os.write( bci2000info.str().data(), bci2000info.str().length() );
-  for( int i = 0; i < tlvPaddingLength; ++i )
+  for( size_t i = 0; i < tlvPaddingLength; ++i )
     os.put( 0 );
 }
 

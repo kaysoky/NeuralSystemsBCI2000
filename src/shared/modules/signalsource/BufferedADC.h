@@ -18,7 +18,7 @@
 //        From here, do all initialization except actually starting data
 //        acquisition.
 //     OnProcess()
-//        Called at the beginning of the standard Preflight() function.
+//        Called at the beginning of the standard Process() function.
 //        Override this method when you need to act on state variables,
 //        e.g. to set a digital output on the amplifier.
 //     OnStartAcquisition()
@@ -28,9 +28,9 @@
 //     DoAcquire( GenericSignal& output )
 //       Read data from the ADC into the GenericSignal object provided as an
 //       argument.
-//    The latter three functions are called from a data acquisition thread, whereas 
+//    The latter three functions are called from a data acquisition thread, whereas
 //    remaining ones are called from the main thread. Still, it is guaranteed that
-//    functions of this interface are not executed concurrently, so you may 
+//    functions of this interface are not executed concurrently, so you may
 //    read/write member variables of your derived class without using synchronizers.
 //    An important exception are OnProcess() and DoAcquire(), which may execute
 //    concurrently.

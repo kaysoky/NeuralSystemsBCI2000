@@ -199,11 +199,10 @@ AverageDisplay::Process( const GenericSignal& Input, GenericSignal& Output )
     // - Compute and display the averages.
     for( size_t channel = 0; channel < mVisualizations.size(); ++channel )
     {
-      int numTargets = static_cast<int>( mPowerSums[ maxPower ][ channel ].size() ),
-          numSamples = numeric_limits<int>::max();
+      int numTargets = static_cast<int>( mPowerSums[ maxPower ][ channel ].size() );
+      size_t numSamples = numeric_limits<size_t>::max();
       for( int target = 0; target < numTargets; ++target )
-        if( mPowerSums[ maxPower ][ channel ][ target ].size() < numSamples )
-          numSamples = static_cast<int>( mPowerSums[ maxPower ][ channel ][ target ].size() );
+        numSamples = min( numSamples, mPowerSums[ maxPower ][ channel ][ target ].size() );
 
       // To minimize user confusion, always send target averages in ascending order
       // of target codes. This ensures that colors in the display don't depend

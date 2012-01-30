@@ -106,7 +106,7 @@ int main( int argc, char** argv )
   paramlist[ "TransmitChList" ].SetNumValues( numInputChannels - 1 );
   paramlist[ "SpatialFilter" ].SetDimensions( numInputChannels - 1, numInputChannels - 1 );
 
-  for( int i = 0; i < numInputChannels - 1; ++i )
+  for( size_t i = 0; i < numInputChannels - 1; ++i )
   {
     paramlist[ "SourceChOffset" ].Value( i ) = "0";
     paramlist[ "SourceChGain" ].Value( i ) = str( q.info().channelResolutions[ i ] );

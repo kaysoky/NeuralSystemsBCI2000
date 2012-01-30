@@ -202,8 +202,8 @@ void
 TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties ) const
 {      // Might need a bit of work...
 
-        SIZE_T softwareCh = Parameter( "SourceCh" );
-        if ( softwareCh > mHardwareCh )
+        int softwareCh = Parameter( "SourceCh" );
+        if ( softwareCh > static_cast<int>( mHardwareCh ) )
         {
          bcierr << "Trying to read more channels than available" << std::endl;
         }

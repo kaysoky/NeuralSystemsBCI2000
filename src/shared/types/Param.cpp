@@ -229,9 +229,9 @@ Param::Value( size_t row, size_t col )
 void
 Param::BoundsCheck( size_t row, size_t col ) const
 {
-  if( row >= NumRows() )
+  if( static_cast<int>( row ) >= NumRows() )
     throw bciexception( "Row index " << row << " out of range when accessing parameter " << Name() );
-  if( col >= NumColumns() )
+  if( static_cast<int>( col ) >= NumColumns() )
     throw bciexception( "Column index" << col << " out of range when accessing parameter " << Name() );
 }
 
