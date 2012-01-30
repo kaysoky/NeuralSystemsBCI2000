@@ -875,10 +875,10 @@ P3SpellerTask::OnRetrieve()
 // Internally used functions which are not event handlers.
 void
 P3SpellerTask::DetermineAttendedTarget()
-{ // Determine the attended target if in copy spelling mode.
+{ // Determine the attended target for copy spelling mode.
+  SpellerTarget* pSuggestedTarget = NULL;
   if( mInterpretMode_ == InterpretModes::Copy )
   {
-    SpellerTarget* pSuggestedTarget = NULL;
     SequenceOfSpellerTargets currentlySpelled,
                              toBeSpelled;
     Speller::TrySpelling( mTextHistory.top(), &currentlySpelled );
@@ -907,9 +907,8 @@ P3SpellerTask::DetermineAttendedTarget()
       mGoalText += ")";
     }
     mpStatusBar->SetGoalText( mGoalText );
-
-    SetAttendedTarget( pSuggestedTarget );
   }
+  SetAttendedTarget( pSuggestedTarget );
 }
 
 
