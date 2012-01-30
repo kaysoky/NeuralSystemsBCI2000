@@ -56,8 +56,10 @@ class StreamToTable : public MessageHandler
 {
  public:
   StreamToTable( ostream& arOut )
-  : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0 ) {}
+  : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0 ),
+    mInitialized( false ), mWriteoutPending( false ) {}
   ~StreamToTable() { delete mpStatevector; }
+  void Finish();
 
  private:
   ostream&            mrOut;
@@ -66,10 +68,16 @@ class StreamToTable : public MessageHandler
   SignalProperties    mSignalProperties;
   typedef set<string> StringSet; // A set is a sorted container of unique values.
   StringSet           mStateNames;
+  bool                mInitialized,
+                      mWriteoutPending;
 
-  virtual bool HandleState(       istream& );
-  virtual bool HandleVisSignal(   istream& );
+  virtual bool HandleParam( istream& );
+  virtual bool HandleState( istream& );
+  virtual bool HandleVisSignalProperties( istream& );
+  virtual bool HandleVisSignal( istream& );
   virtual bool HandleStateVector( istream& );
+
+  void WriteOut( const GenericSignal& );
 };
 
 ToolResult
@@ -86,9 +94,23 @@ ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
   StreamToTable converter( arOut );
   while( arIn && arIn.peek() != EOF )
     converter.HandleMessage( arIn );
+  converter.Finish();
   if( !arIn )
     return illegalInput;
   return noError;
+}
+
+void
+StreamToTable::Finish()
+{
+  if( mWriteoutPending )
+    WriteOut( GenericSignal() );
+}
+
+bool
+StreamToTable::HandleParam( istream& arIn )
+{
+  return Param().ReadBinary( arIn );
 }
 
 bool
@@ -110,27 +132,56 @@ StreamToTable::HandleState( istream& arIn )
 }
 
 bool
+StreamToTable::HandleVisSignalProperties( istream& arIn )
+{
+  VisSignalProperties v;
+  v.ReadBinary( arIn );
+  mSignalProperties = v.SignalProperties();
+  return true;
+}
+
+bool
 StreamToTable::HandleVisSignal( istream& arIn )
 {
   VisSignal v;
   v.ReadBinary( arIn );
-  const GenericSignal& s = v;
+  WriteOut( v );
+  return true;
+}
+
+bool
+StreamToTable::HandleStateVector( istream& arIn )
+{
+  static GenericSignal nullSignal;
+  if( mWriteoutPending )
+    WriteOut( nullSignal );
+  if( mpStatevector == NULL )
+    mpStatevector = new StateVector( mStatelist );
+  mpStatevector->ReadBinary( arIn );
+  mWriteoutPending = true;
+  return true;
+}
+
+void
+StreamToTable::WriteOut( const GenericSignal& inSignal )
+{
   // Print a header line before the first line of data.
-  if( mSignalProperties.IsEmpty() )
+  if( !mInitialized )
   {
-    mSignalProperties = s.Properties();
+    mSignalProperties = inSignal.Properties();
     mrOut << "#";
     mStateNames.clear();
     for( int i = 0; i < mStatelist.Size(); ++i )
       mStateNames.insert( mStatelist[ i ].Name() );
     for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
       mrOut << "\t" << *i;
-    for( int i = 0; i < s.Channels(); ++i )
-      for( int j = 0; j < s.Elements(); ++j )
-        mrOut << "\tSignal(" << i << "," << j << ")";
+    for( int i = 0; i < inSignal.Channels(); ++i )
+      for( int j = 0; j < inSignal.Elements(); ++j )
+        mrOut << "\tSignal(" << mSignalProperties.ChannelLabels()[i] << "," << mSignalProperties.ElementLabels()[i] << ")";
     mrOut << endl;
+    mInitialized = true;
   }
-  if( s.Properties() != mSignalProperties )
+  if( inSignal.Properties() != mSignalProperties )
     bcierr << "Ignored signal with inconsistent properties" << endl;
   else
   {
@@ -141,19 +192,10 @@ StreamToTable::HandleVisSignal( istream& arIn )
       for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
         mrOut << "\t0";
 
-    for( int i = 0; i < s.Channels(); ++i )
-      for( int j = 0; j < s.Elements(); ++j )
-        mrOut << "\t" << s( i, j );
+    for( int i = 0; i < inSignal.Channels(); ++i )
+      for( int j = 0; j < inSignal.Elements(); ++j )
+        mrOut << "\t" << inSignal( i, j );
     mrOut << endl;
   }
-  return true;
-}
-
-bool
-StreamToTable::HandleStateVector( istream& arIn )
-{
-  if( mpStatevector == NULL )
-    mpStatevector = new StateVector( mStatelist );
-  mpStatevector->ReadBinary( arIn );
-  return true;
+  mWriteoutPending = false;
 }
