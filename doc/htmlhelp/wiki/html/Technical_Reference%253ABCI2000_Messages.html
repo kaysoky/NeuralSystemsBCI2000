@@ -4,7 +4,7 @@
 <head>
 <title>Technical Reference:BCI2000 Messages - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Technical Reference:BCI2000 Messages,BCI2000 Glossary,Technical Reference:Parameter Definition,Technical Reference:State Definition,Technical Reference:States of Operation" />
+<meta name="keywords" content="Technical Reference:BCI2000 Messages,BCI2000 Glossary,Technical Reference:Parameter Definition,Technical Reference:State Definition,Technical Reference:States of Operation,Technical Reference:Visualization Properties" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -191,14 +191,12 @@ The Signal Properties type represents information about a signal, i.e. a signal 
 </p><p>In a bitmap message, first width and height of the picture are transmitted as two-byte integers in little-endian format. Then, run-length data follow in this format: For each run, run-length reduced by 1 is transmitted as an unsigned byte first. Then, its associated color value follows, as a two-byte integer in little-endian format. Thus, maximum run length is 256. Runs are wrapped at the picture's right edge, and runs follow each other until the picture's specified height and width are filled with color data.
 </p>
 <a name="Descriptor_Supplement.3D255:_Visualization_Configuration"></a><h4>Descriptor Supplement=255: Visualization Configuration</h4>
-<p>The following figure illustrates the protocol when the visualization type is 255. Configuration IDs are defined in the <code>CfgID</code> enumeration in the  <a href="http://www.bci2000.org/tracproj/browser/trunk/src/shared/defines.h" class='external text' title="http://www.bci2000.org/tracproj/browser/trunk/src/shared/defines.h" rel="nofollow">shared/defines.h</a>
+<p>The following figure illustrates the protocol when the visualization type is 255. For a list of available visualization properties, see <a href="Technical_Reference%253AVisualization_Properties.html" title="Technical Reference:Visualization Properties">Technical Reference:Visualization Properties</a>. Constants for configuration IDs associated with visualization properties, as well as a function to convert between string and numeric representation of configuration IDs, are defined in the  <a href="http://www.bci2000.org/tracproj/browser/trunk/src/shared/types/CfgID.h" class='external text' title="http://www.bci2000.org/tracproj/browser/trunk/src/shared/types/CfgID.h" rel="nofollow">shared/types/CfgID.h</a>
 header file.
 </p><p>The ASCII string then contains the configuration option, as defined by the configuration ID. For example, it might contain "128" if the configuration ID is 4. This will configure the graph to contain exactly 128 samples.
 </p><p><br />
 </p>
 <div class="center"><div class="thumb tnone"><div style="width:502px;"><a href="../images/thumb/5/59/BCI2000_Messages_vistype255(visconfig).png/500px-BCI2000_Messages_vistype255(visconfig).png" class="internal" title="One message if the visualization type is 255 (i.e., visualization configuration)."><img src="../images/thumb/5/59/BCI2000_Messages_vistype255(visconfig).png/500px-BCI2000_Messages_vistype255(visconfig).png" alt="One message if the visualization type is 255 (i.e., visualization configuration)." width="500" height="107" longdesc="/wiki/index.php/Image:BCI2000_Messages_vistype255%28visconfig%29.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>One message if the visualization type is 255 (i.e., visualization configuration).</div></div></div></div>
-<p><br />
-</p>
 <a name="Brain_Signal_Format"></a><h4>Brain Signal Format</h4>
 <p>The brain signal is transmitted similarly to visualization data (i.e., as described in the Visualization and Brain Signal Data Format above). The <i>descriptor supplement</i> is set to 1 (i.e., signal data), and the source identifier is set to 0. Data type, channels and samples reflect the actual format of data transmitted.
 </p>

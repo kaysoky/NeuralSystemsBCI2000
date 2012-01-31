@@ -54,16 +54,23 @@ Still, recording information that is asynchronous to brain signal data acquisiti
 </li></ul>
 <a name="Implementation"></a><h2>Implementation</h2>
 <p>In the current version of BCI2000, events are mapped to <a href="BCI2000_Glossary.html#State" title="BCI2000 Glossary">state variables</a>. By comparing an event's time stamp to data acquisition time stamps, it is possible to associate events with single samples, and to map an event to a change in a state variable's value.
+</p><p>In order to make events available for writing, they must be first declared as in the following example:
+</p>
+<pre>BEGIN_EVENT_DEFINITIONS
+  "MyEvent 10 0 0 0",
+END_EVENT_DEFINITIONS
+</pre>
+<p>Here, an event's definition follows the rules applying to the definition of state variables: first, the name is given, then follow bit width and initial value. At the end, a pair of zeros needs to be added.
 </p>
 <a name="Limitations"></a><h2>Limitations</h2>
 <ul><li>Time stamps have millisecond resolution. Up to sampling rates of 1kHz, this is not a practical restriction though.
 </li><li>Association of event time stamps with sample positions cannot be more accurate than <a href="User_Reference%253ATiming.html" title="User Reference:Timing">time stamps assigned to data blocks</a> by the data acquisition module. If data transmission latency between data acquisition hardware, and its associated jitter, are large compared to a single sample's duration, then event positions cannot be expected to be precise. Still, for data acquisition devices that are connected directly to the machine running the data acquisition module (i.e., not over a network connection), and for sampling rates below 1kHz, transmission latency and jitter may be expected to be below a sample's duration.
-</li><li>Event time stamps must refer to the same physical time base that is used to stamp acquired data packets. This limits the use of events to BCI2000 modules that run on the same machine as the data acquisition module. While the event API is available to all BCI2000 modules, it is advisable to use events in data acquisition modules only, thereby ensuring correct operation also in situations where processing modules are distributed across multiple machines in a network.
+</li><li>Event time stamps must refer to the same physical time base that is used to stamp acquired data packets. This limits the use of events to BCI2000 modules that run on the same machine as the data acquisition module. To ensure correct operation also in situations where processing modules are distributed across multiple machines in a network, the event API may be used only in data acquisition modules.
 </li><li>The <tt>bcievent</tt> asynchronous stream interface should only be called between "StartRun" and "StopRun".  Logging events with <tt>bcievent</tt> outside of a run could result in delayed state logging through the <tt>bcievent</tt> interface.
 </li></ul>
 <a name="Event_API"></a><h2>Event API</h2>
 <p>When including the <tt>src/shared/accessors/BCIEvent.h</tt> header file into a source code file, a symbol <tt>bcievent</tt> will be available.
-The <tt>bcievent</tt> symbol behaves like a <tt>std::ostream</tt>; writing to that stream creates an event, fills it descriptor with whatever has been written into the stream, and stamps the event with the current time.
+The <tt>bcievent</tt> symbol behaves like a <tt>std::ostream</tt>; writing to that stream creates an event, fills its descriptor with whatever has been written into the stream, and stamps the event with current time.
 The <tt>bcievent</tt> symbol's <tt>ostream</tt> behavior makes it convenient to include numeric information into the event's string descriptor.
 To allow for true asynchrony, BCI2000 events may be issued from any thread within a BCI2000 module, i.e. the <tt>bcievent</tt> interface is thread-safe.
 </p>
@@ -74,7 +81,7 @@ To allow for true asynchrony, BCI2000 events may be issued from any thread withi
 </pre>
 <p>Currently, events are mapped to state variables, so the following restrictions apply:
 </p>
-<ul><li>The name field must match the name of a state variable, and that state variable must exist in the system before it appears in an event.
+<ul><li>The name field must match the name of an event kind state variable defined within BEGIN_EVENT_DEFINITIONS/END_EVENT_DEFINITIONS, and that state variable must exist in the system before it appears in an event.
 </li><li>The value field must specify an unsigned integer value that "fits into" the number of bits reserved for the corresponding state variable.
 </li><li>Currently, the duration must either be omitted, or 0. When mapping the event to a state variable, a duration of 0 means that the state variable is set to the specified value for a single sample only, and to zero for subsequent samples. A non-specified duration means that the state variable is changed, and keeps its value for subsequent samples.
 </li></ul>

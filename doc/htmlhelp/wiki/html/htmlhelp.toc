@@ -35,14 +35,14 @@ BCI2000Certification.html
 
 BCI2000_Binaries.html
 2 Access Access
-2 Latest_Version Latest Version
+2 Latest_Released_Build Latest Released Build
 2 Win64_Support Win64 Support
 2 Dependencies Dependencies
 2 Contributed_Code Contributed Code
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_3_Builds Version 3 Builds
-4 October_2011_Version_3.0.3 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_111013.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_111013.exe" rel="nofollow">October 2011 Version 3.0.3</a>
+4 October_2011_Version_3.0.3 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_111014.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_111014.exe" rel="nofollow">October 2011 Version 3.0.3</a>
 4 June_2011_Version_3.0.2 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" rel="nofollow">June 2011 Version 3.0.2</a>
 4 May_2011_Version_3.0.1 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" rel="nofollow">May 2011 Version 3.0.1</a>
 4 February_2011_Version_3_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" rel="nofollow">February 2011 Version 3 Release Build</a>
@@ -116,6 +116,25 @@ Contributions%253AAmpServerProADC.html
 2 See_also See also
 
 Contributions%253AApplications.html
+2 See_also See also
+
+Contributions%253AB-Alert.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Installation Installation
+2 Parameters Parameters
+3 SourceCh.2C_ChannelNames SourceCh, ChannelNames
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 SourceChOffset SourceChOffset
+3 SourceChGain SourceChGain
+3 AlignChannels AlignChannels
+2 States States
 2 See_also See also
 
 Contributions%253ABCITimeFrequency.html
@@ -580,6 +599,20 @@ Contributions%253ANIDAQLogger.html
 2 States States
 2 Acquired_Data Acquired Data
 
+Contributions%253ANeuralynx.html
+2 Synopsis Synopsis
+3 Known_Issues Known Issues
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Parameters Parameters
+3 EventCh EventCh
+2 States States
+2 See_also See also
+
 Contributions%253ANeuroSky.html
 2 Synopsis Synopsis
 3 Known_Issues Known Issues
@@ -901,9 +934,9 @@ Contributions%253AvAmpADC.html
 2 See_also See also
 
 Creating_a_User_Account.html
-2 Agreeing_to_the_GPL Agreeing to the GPL
+2 Creating_a_user_account_by_agreeing_to_the_GPL Creating a user account by agreeing to the GPL
 2 Creating_additional_accounts_for_your_lab Creating additional accounts for your lab
-3 Creating_an_account Creating an account
+3 Creating_an_additional_account Creating an additional account
 3 .22Upgrading.22_bciro "Upgrading" bciro
 2 Restrictions Restrictions
 3 Default_user_rights Default user rights
@@ -921,6 +954,8 @@ Gerwin_Schalk.html
 
 Glossary.html
 2 r2_.28Coefficient_of_Determination.29 <span class="texhtml"><i>r</i><sup>2</sup></span> (Coefficient of Determination)
+3 Computation Computation
+3 Significance_Test Significance Test
 2 Sensorimotor_Rhythm_.28SMR.29 Sensorimotor Rhythm (SMR)
 
 Juergen_Mellinger.html
@@ -962,6 +997,7 @@ Mu_Rhythm_Off-line_Analysis_Tutorial.html
 2 Troubleshooting Troubleshooting
 
 P300_GUI_Guide.html
+2 Note Note
 2 Introduction Introduction
 2 Using_the_GUI Using the GUI
 3 Getting_Started Getting Started
@@ -1277,6 +1313,20 @@ Programming_Reference%253ABlockRandSeq_Class.html
 3 unsigned_int_NextElement.28.29 unsigned int NextElement()
 2 See_also See also
 
+Programming_Reference%253ABufferedADC_Class.html
+2 Constructor Constructor
+2 OnPreflight.28_SignalProperties.26_output_.29_const OnPreflight( SignalProperties&amp; output ) const
+2 OnInitialize.28_const_SignalProperties.26_output_.29 OnInitialize( const SignalProperties&amp; output )
+2 OnProcess.28.29 OnProcess()
+2 OnStartAcquisition.28.29 OnStartAcquisition()
+2 OnStopAcquisition.28.29 OnStopAcquisition()
+2 DoAcquire.28_GenericSignal.26_output_.29 DoAcquire( GenericSignal&amp; output )
+2 Parameters Parameters
+3 SourceBufferSize SourceBufferSize
+2 States States
+3 SourceTime SourceTime
+2 See_also See also
+
 Programming_Reference%253ABuild_System.html
 2 Introduction  Introduction 
 2 Supported_Environments  Supported Environments 
@@ -1322,6 +1372,7 @@ Programming_Reference%253AClass_Hierarchies.html
 3 GraphObject_and_GraphDisplay GraphObject and GraphDisplay
 3 Stimulus Stimulus
 3 Target.2C_SpellerTarget_and_Speller Target, SpellerTarget and Speller
+2 See_Also See Also
 
 Programming_Reference%253AContents.html
 2 Getting_Started Getting Started
@@ -1542,6 +1593,7 @@ Programming_Reference%253AFilter_Chain.html
 2 The_Filter_Chain The Filter Chain
 2 Filter_Instantiation Filter Instantiation
 2 Signal_Processing_Filter_Instantiation Signal Processing Filter Instantiation
+2 Recreating_Filter_Chains_Offline Recreating Filter Chains Offline
 
 Programming_Reference%253AGenericADC_Class.html
 2 Purely_Virtual_Halt Purely Virtual <tt>Halt</tt>
@@ -2547,8 +2599,8 @@ Technical_Reference%253AOperator_Library.html
 3 BCI_OnDebugMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnDebugMessage( void* refdata, const char* msg )
 3 BCI_OnParameter.28_void.2A_refdata.2C_const_char.2A_parameterline_.29 BCI_OnParameter( void* refdata, const char* parameterline )
 3 BCI_OnState.28_void.2A_refdata.2C_const_char.2A_stateline_.29 BCI_OnState( void* refdata, const char* stateline )
-3 BCI_OnVisPropertyMessage.28_void.2A_refdata.2C_const_char.2A_name.2C_int_cfgID.2C_const_char.2A_value_.29 BCI_OnVisPropertyMessage( void* refdata, const char* name, int cfgID, const char* value )
-3 BCI_OnVisProperty.28_void.2A_refdata.2C_const_char.2A_name.2C_int_cfgID.2C_const_char.2A_value_.29 BCI_OnVisProperty( void* refdata, const char* name, int cfgID, const char* value )
+3 BCI_OnVisPropertyMessage.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_cfgID.2C_const_char.2A_value_.29 BCI_OnVisPropertyMessage( void* refdata, const char* visID, int cfgID, const char* value )
+3 BCI_OnVisProperty.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_cfgID.2C_const_char.2A_value_.29 BCI_OnVisProperty( void* refdata, const char* visID, int cfgID, const char* value )
 3 BCI_OnInitializeVis.28_void.2A_refdata.2C_const_char.2A_visID.2C_const_char.2A_kind_.29 BCI_OnInitializeVis( void* refdata, const char* visID, const char* kind )
 3 BCI_OnVisMemo.28_void.2A_refdata.2C_const_char.2A_visID.2C_const_char.2A_msg_.29 BCI_OnVisMemo( void* refdata, const char* visID, const char* msg )
 3 BCI_OnVisSignal.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_channels.2C_int_elements.2C_float.2A_data_.29 BCI_OnVisSignal( void* refdata, const char* visID, int channels, int elements, float* data )
@@ -2768,6 +2820,7 @@ User_Reference%253ABCI2000Viewer.html
 2 See_also See also
 
 User_Reference%253ABCI2000_Offline_Analysis.html
+2 Basic_Operation Basic Operation
 2 Installing_and_Running  Installing and Running 
 3 Systems_with_MATLAB_v7.0_or_greater_installed Systems with MATLAB v7.0 or greater installed
 4 Startup_Script Startup Script
@@ -2775,6 +2828,7 @@ User_Reference%253ABCI2000_Offline_Analysis.html
 3 Systems_that_do_not_have_MATLAB_installed_or_with_versions_that_predate_MATLAB_v7.0 Systems that do not have MATLAB installed or with versions that predate MATLAB v7.0
 2 Reference  Reference 
 2 Troubleshooting  Troubleshooting 
+2 See_also See also
 
 User_Reference%253ACommand_Line_Processing.html
 2 Introduction Introduction
@@ -2793,7 +2847,7 @@ User_Reference%253ACommand_Line_Processing.html
 4 bci_stream2mat <tt>bci_stream2mat</tt>
 2 Applying_BCI2000_filters_to_streams Applying BCI2000 filters to streams
 3 Compiling_an_existing_filter_as_a_command_line_tool Compiling an existing filter as a command line tool
-3 Off-line_only_filters Off-line only filters
+3 Offline-only_filters Offline-only filters
 2 Examples Examples
 3 Extracting_parameters Extracting parameters
 3 Processing_data_with_parameters_different_from_the_ones_contained_in_the_file Processing data with parameters different from the ones contained in the file
@@ -2884,6 +2938,8 @@ User_Reference%253ACursorTask.html
 4 TargetTexture TargetTexture
 4 TestAllTargets TestAllTargets
 3 Window_Properties Window Properties
+4 WindowWidth.2C_WindowHeight WindowWidth, WindowHeight
+4 WindowLeft.2C_WindowTop WindowLeft, WindowTop
 4 RenderingQuality RenderingQuality
 2 States States
 3 StimulusTime StimulusTime
@@ -2990,8 +3046,12 @@ User_Reference%253AExpression_Syntax.html
 3 Syntactic_Elements Syntactic Elements
 4 .22Real.22_Numbers "Real" Numbers
 4 Operators Operators
+4 Built-in_Functions Built-in Functions
+4 Variables Variables
 4 States States
 4 Signal_Values Signal Values
+4 Semicolon Semicolon
+4 Comments Comments
 3 Examples Examples
 3 Caveats Caveats
 
@@ -3134,6 +3194,16 @@ User_Reference%253AMatlab_MEX_Files.html
 3 convert_bciprm <tt>convert_bciprm</tt>
 3 mem <tt>mem</tt>
 2 See_also See also
+
+User_Reference%253AMatlab_Tools.html
+2 bci2000path bci2000path
+2 bci2000chain bci2000chain
+3 Dependencies Dependencies
+3 Example Example
+2 read_bciprm read_bciprm
+2 make_bciprm make_bciprm
+2 read_bcidate read_bcidate
+2 rename_bcidat rename_bcidat
 
 User_Reference%253AMethods.html
 2 Load_BCI2000_Data_Files  Load BCI2000 Data Files 
@@ -3412,7 +3482,7 @@ User_Reference%253ASpatialFilter.html
 4 Full_Matrix_Filter_Type Full Matrix Filter Type
 4 Sparse_Matrix_Filter_Type Sparse Matrix Filter Type
 3 SpatialFilterCAROutput SpatialFilterCAROutput
-3 SFUseThreading SFUseThreading
+3 SpatialFilterMissingChannels SpatialFilterMissingChannels
 2 States States
 2 Examples Examples
 3 Linked_Mastoids_.28Full_Matrix.29 Linked Mastoids (Full Matrix)
@@ -3450,6 +3520,8 @@ User_Reference%253AStimulusPresentationTask.html
 3 Free_Mode Free Mode
 3 Copy_Mode Copy Mode
 2 Parameters Parameters
+4 WindowWidth.2C_WindowHeight WindowWidth, WindowHeight
+4 WindowLeft.2C_WindowTop WindowLeft, WindowTop
 4 WindowBackgroundColor WindowBackgroundColor
 4 PreRunDuration PreRunDuration
 4 PostRunDuration PostRunDuration
@@ -3491,6 +3563,7 @@ User_Reference%253ATiming.html
 2 Measuring_Roundtrip_Time Measuring Roundtrip Time
 2 Measuring_Source-to-Stimulus_Delay Measuring Source-to-Stimulus Delay
 2 Timing_Display Timing Display
+2 Timing_Evaluation Timing Evaluation
 2 See_also See also
 
 User_Reference%253ATransmissionFilter.html
@@ -3598,6 +3671,7 @@ User_Tutorial%253AConfiguring_Online_Feedback.html
 User_Tutorial%253AData_Analysis.html
 2 Mu_Rhythm.2FSMR_Data_Analysis Mu Rhythm/SMR Data Analysis
 2 P300.2FERP_Data_Analysis P300/ERP Data Analysis
+2 Custom_Data_Analysis Custom Data Analysis
 2 See_also See also
 
 User_Tutorial%253ADesigning_an_Eloc_File.html

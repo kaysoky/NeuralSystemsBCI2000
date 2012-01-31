@@ -61,16 +61,16 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul><li><b>Supported Operating Systems</b>
 <ul><li>Windows XP, Windows 2000 (Vista and Windows 7 have poor Audio Video latencies - not recommended for BCI2000)
 </li><li>64-bit Windows systems--<a href="Programming_Reference%253ABuilding_BCI2000_for_Win64.html" title="Programming Reference:Building BCI2000 for Win64">please read this information</a>
-</li><li>Macintosh OSX support coming soon
-</li><li>Linux support coming soon 
+</li><li>Macintosh OSX: compiles most of the time, not officially supported
+</li><li>Linux: compiles, but networking is currently broken
 </li></ul>
 </li><li><b>Supported Compilers</b>
-<ul><li>Borland 6, 2007, 2009, 2010
+<ul><li>Borland/CodeGear/Embarcadero C++ Builder 2010 (core modules only, no GUI applications); C++ Builder XE2 is <b>not supported</b>
 </li><li>Visual Studio 9 (2008) and 10, download free Express version from <a href="http://www.microsoft.com/express/downloads/" class='external text' title="http://www.microsoft.com/express/downloads/" rel="nofollow">here</a> (although some BCI2000 modules require MFC, most modules may be built using the Express version)
 </li><li>MinGW with gcc 4.x
 </li></ul>
 </li><li><b>Supported IDEs</b>
-<ul><li>Borland 6, 2007, 2009, 2010 (Note: Use the project files in the src directory for Borland IDE support.  This support is being phased out)
+<ul><li>Borland/CodeGear/Embarcadero 6, 2007, 2009, 2010 (Note: Use the project files in the src directory for Borland IDE support. GUI application projects cannot be opened in the IDE. This support is being phased out)
 </li><li>Visual Studio 9 (2008), Visual Studio 10 (via CMake)
 </li><li>Code::Blocks - MinGW Makefiles (via CMake)
 </li><li>Other IDEs supported by CMake generators (Eclipse CDT, ...), as long as these use the compilers listed above

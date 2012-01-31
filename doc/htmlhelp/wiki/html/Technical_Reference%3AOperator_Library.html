@@ -79,8 +79,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnDebugMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29"><span class="tocnumber">3.12</span> <span class="toctext">BCI_OnDebugMessage( void* refdata, const char* msg )</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnParameter.28_void.2A_refdata.2C_const_char.2A_parameterline_.29"><span class="tocnumber">3.13</span> <span class="toctext">BCI_OnParameter( void* refdata, const char* parameterline )</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnState.28_void.2A_refdata.2C_const_char.2A_stateline_.29"><span class="tocnumber">3.14</span> <span class="toctext">BCI_OnState( void* refdata, const char* stateline )</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnVisPropertyMessage.28_void.2A_refdata.2C_const_char.2A_name.2C_int_cfgID.2C_const_char.2A_value_.29"><span class="tocnumber">3.15</span> <span class="toctext">BCI_OnVisPropertyMessage( void* refdata, const char* name, int cfgID, const char* value )</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnVisProperty.28_void.2A_refdata.2C_const_char.2A_name.2C_int_cfgID.2C_const_char.2A_value_.29"><span class="tocnumber">3.16</span> <span class="toctext">BCI_OnVisProperty( void* refdata, const char* name, int cfgID, const char* value )</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnVisPropertyMessage.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_cfgID.2C_const_char.2A_value_.29"><span class="tocnumber">3.15</span> <span class="toctext">BCI_OnVisPropertyMessage( void* refdata, const char* visID, int cfgID, const char* value )</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnVisProperty.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_cfgID.2C_const_char.2A_value_.29"><span class="tocnumber">3.16</span> <span class="toctext">BCI_OnVisProperty( void* refdata, const char* visID, int cfgID, const char* value )</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnInitializeVis.28_void.2A_refdata.2C_const_char.2A_visID.2C_const_char.2A_kind_.29"><span class="tocnumber">3.17</span> <span class="toctext">BCI_OnInitializeVis( void* refdata, const char* visID, const char* kind )</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnVisMemo.28_void.2A_refdata.2C_const_char.2A_visID.2C_const_char.2A_msg_.29"><span class="tocnumber">3.18</span> <span class="toctext">BCI_OnVisMemo( void* refdata, const char* visID, const char* msg )</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253AOperator_Library.html#BCI_OnVisSignal.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_channels.2C_int_elements.2C_float.2A_data_.29"><span class="tocnumber">3.19</span> <span class="toctext">BCI_OnVisSignal( void* refdata, const char* visID, int channels, int elements, float* data )</span></a></li>
@@ -209,6 +209,7 @@ the state of operation of the BCI2000 system.
 <a name="Callbacks"></a><h2>Callbacks</h2>
 <p>Whenever the Operator Library receives data, or its state is modified, a <i>callback event</i> is triggered. In response to this event, a callback function is called. Callback functions are registered with <tt>BCI_SetCallback()</tt> or <tt>BCI_SetExternalCallback()</tt>. The difference between the two registration functions is that the first registers a callback function to be called within the context of an internal thread of the Operator Library, while the second registers a callback function to be executed in a thread owned by the application that uses the Operator library, i.e. a thread that is "external" to the Operator library. That "external" thread needs to call <tt>BCI_CheckPendingCallback()</tt> regularly in order to execute callback functions. Typically, <tt>BCI_CheckPendingCallback()</tt> would be called from a GUI application's main thread within its message handling loop.
 </p><p>Callback events are listed with their event names, and their handler's arguments. A callback function has at least one argument, which is a void* named refdata. The refdata pointer is supplied by user code when registering the callback function, and provided to the callback function unchanged. Typically, it would be used to store an object pointer in C++, or to an application specific data structure in C.
+</p><p>In Windows, callbacks must follow the <i>stdcall</i> calling convention. In the Operator Library's header file, a macro STDCALL is provided that should be inserted after a callback function's return type in the function declaration. This macro allows setting the calling convention without confusing compilers when compiling for non-Windows systems.
 </p><p>When programming in C++, callback functions must be either global functions, or functions declared "static" within class scope. They may not be ordinary member functions of a class. In object oriented programming however, you will typically want an ordinary member function to be called as a callback. This is possible using the "refdata" pointer to store an object pointer, and then call a member function on that object from the callback function as in the following example:
 </p>
 <pre>
@@ -228,7 +229,7 @@ class MyOperator
   {
     ... // ordinary member function that gets executed when system state changes
   }
-  static void OnSystemStateChangeCallback( void* refdata )
+  static void STDCALL OnSystemStateChangeCallback( void* refdata )
   {
     MyOperator* pObject = reinterpret_cast&lt;MyOperator*&gt;( refdata );
     pObject-&gt;OnSystemStateChange();
@@ -279,11 +280,11 @@ class MyOperator
 <a name="BCI_OnState.28_void.2A_refdata.2C_const_char.2A_stateline_.29"></a><h3>BCI_OnState( void* refdata, const char* stateline )</h3>
 <p>Triggered whenever a state message arrives at the Operator module.
 </p>
-<a name="BCI_OnVisPropertyMessage.28_void.2A_refdata.2C_const_char.2A_name.2C_int_cfgID.2C_const_char.2A_value_.29"></a><h3>BCI_OnVisPropertyMessage( void* refdata, const char* name, int cfgID, const char* value )</h3>
-<p>Triggered whenever a visproperty message arrives at the Operator module.
+<a name="BCI_OnVisPropertyMessage.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_cfgID.2C_const_char.2A_value_.29"></a><h3>BCI_OnVisPropertyMessage( void* refdata, const char* visID, int cfgID, const char* value )</h3>
+<p>Triggered whenever a visproperty message arrives at the Operator module. For a list of available visualization properties, see <a href="Technical_Reference%253AVisualization_Properties.html" title="Technical Reference:Visualization Properties">Technical Reference:Visualization Properties</a>. Constants for the cfgID parameter are defined in the <tt>src/shared/types/CfgID.h</tt> header file.
 </p>
-<a name="BCI_OnVisProperty.28_void.2A_refdata.2C_const_char.2A_name.2C_int_cfgID.2C_const_char.2A_value_.29"></a><h3>BCI_OnVisProperty( void* refdata, const char* name, int cfgID, const char* value )</h3>
-<p>Triggered when a visualization property is modified from a script.
+<a name="BCI_OnVisProperty.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_cfgID.2C_const_char.2A_value_.29"></a><h3>BCI_OnVisProperty( void* refdata, const char* visID, int cfgID, const char* value )</h3>
+<p>Triggered when a visualization property is modified from a script. For a list of available visualization properties, see <a href="Technical_Reference%253AVisualization_Properties.html" title="Technical Reference:Visualization Properties">Technical Reference:Visualization Properties</a>. Constants for the cfgID parameter are defined in the <tt>src/shared/types/CfgID.h</tt> header file.
 </p>
 <a name="BCI_OnInitializeVis.28_void.2A_refdata.2C_const_char.2A_visID.2C_const_char.2A_kind_.29"></a><h3>BCI_OnInitializeVis( void* refdata, const char* visID, const char* kind )</h3>
 <p>Triggered when the first data message for a visualization window arrives. The <tt>kind</tt> argument contains a string describing the kind of visualization required for; it is one of "Graph", "Memo", or "Bitmap".

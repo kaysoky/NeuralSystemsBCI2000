@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:BCI2000 Offline Analysis - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:BCI2000 Offline Analysis,User Reference:Eloc Helper,User Tutorial:Performing a Time-Domain Offline Analysis of EEG Data,User Tutorial:Performing an Offline Analysis of EEG Data" />
+<meta name="keywords" content="User Reference:BCI2000 Offline Analysis,Glossary,User Reference:Eloc Helper,User Reference:Matlab Tools,User Tutorial:Performing a Time-Domain Offline Analysis of EEG Data,User Tutorial:Performing an Offline Analysis of EEG Data" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,26 +30,46 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">BCI2000 Offline Analysis</h1><p class="subtitle">User Reference</p><hr class="sep" /><p><i>BCI2000 Offline Analysis</i> is a tool for finding useful features in EEG and ECoG data.
-<a href="../images/a/a8/OfflineAnalysis.png" class="image" title="Image:offlineAnalysis.png"><img src="../images/a/a8/OfflineAnalysis.png" alt="Image:offlineAnalysis.png" width="554" height="513" longdesc="/wiki/index.php/Image:OfflineAnalysis.png" /></a> 
+<h1 class="pagetitle">BCI2000 Offline Analysis</h1><p class="subtitle">User Reference</p><hr class="sep" /><p><i>BCI2000 Offline Analysis</i> is a graphical tool for finding useful features in EEG and ECoG data.  It should not be confused with the <a href="User_Reference%253AMatlab_Tools.html" title="User Reference:Matlab Tools">matlab tools for offline data analysis</a>, which are of more interest to experienced Matlab users.
+</p><p><a href="../images/a/a8/OfflineAnalysis.png" class="image" title="Image:offlineAnalysis.png"><img src="../images/a/a8/OfflineAnalysis.png" alt="Image:offlineAnalysis.png" width="554" height="513" longdesc="/wiki/index.php/Image:OfflineAnalysis.png" /></a> 
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
-<li class='toclevel-1'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Installing_and_Running"><span class="tocnumber">1</span> <span class="toctext">Installing and Running</span></a>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Basic_Operation"><span class="tocnumber">1</span> <span class="toctext">Basic Operation</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Installing_and_Running"><span class="tocnumber">2</span> <span class="toctext">Installing and Running</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Systems_with_MATLAB_v7.0_or_greater_installed"><span class="tocnumber">1.1</span> <span class="toctext">Systems with MATLAB v7.0 or greater installed</span></a>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Systems_with_MATLAB_v7.0_or_greater_installed"><span class="tocnumber">2.1</span> <span class="toctext">Systems with MATLAB v7.0 or greater installed</span></a>
 <ul>
-<li class='toclevel-3'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Startup_Script"><span class="tocnumber">1.1.1</span> <span class="toctext">Startup Script</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#From_the_MATLAB_command_line"><span class="tocnumber">1.1.2</span> <span class="toctext">From the MATLAB command line</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Startup_Script"><span class="tocnumber">2.1.1</span> <span class="toctext">Startup Script</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#From_the_MATLAB_command_line"><span class="tocnumber">2.1.2</span> <span class="toctext">From the MATLAB command line</span></a></li>
 </ul>
 </li>
-<li class='toclevel-2'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Systems_that_do_not_have_MATLAB_installed_or_with_versions_that_predate_MATLAB_v7.0"><span class="tocnumber">1.2</span> <span class="toctext">Systems that do not have MATLAB installed or with versions that predate MATLAB v7.0</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Systems_that_do_not_have_MATLAB_installed_or_with_versions_that_predate_MATLAB_v7.0"><span class="tocnumber">2.2</span> <span class="toctext">Systems that do not have MATLAB installed or with versions that predate MATLAB v7.0</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Reference"><span class="tocnumber">2</span> <span class="toctext">Reference</span></a></li>
-<li class='toclevel-1'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Troubleshooting"><span class="tocnumber">3</span> <span class="toctext">Troubleshooting</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Reference"><span class="tocnumber">3</span> <span class="toctext">Reference</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#Troubleshooting"><span class="tocnumber">4</span> <span class="toctext">Troubleshooting</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000_Offline_Analysis.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
+<a name="Basic_Operation"></a><h2>Basic Operation</h2>
+<p>The OfflineAnalysis tool operates in two steps. In a first step, it transforms recorded data such that it is now represented by a certain set of features rather than by EEG time courses. The set of features differs by the type of data analyzed as follows:
+</p><p>For P300 (ERP) data, a single feature corresponds to
+</p>
+<ul><li> raw EEG amplitude
+</li><li> at a certain time offset after the stimulus
+</li><li> in a certain channel.
+</li></ul>
+<p>For mu rhythm (SMR) data, a single feature corresponds to
+</p>
+<ul><li> absolute value of EEG amplitude
+</li><li> at a certain frequency
+</li><li> in a certain channel.
+</li></ul>
+<p>After transformation from raw EEG into features, data are selected/sorted into two groups according to the conditions specified in the OfflineAnalysis GUI. Again, the meaning of these conditions depends on the type of data analyzed: For P300 data, one condition is the presentation of an unattended stimulus, while the other condition is the presentation of an attended stimulus. For mu rhythm data, one condition may be imagined movement of the left hand, while the other condition may be rest.
+</p><p>Now, for a single feature, there exists a number of sampled values, taken from two sets (conditions). What OfflineAnalysis now does is that it uses these values to compute a number representing how much a feature's value tells about the condition under which it was recorded. That measure is called "determination coefficient", or "r^2 (r squared)," and is a number between 0 and 1. The larger a feature's r^2, the more correlation exists between a feature's value and the condition under which it was recorded. For details about  how r^2 values are computed, see <a href="Glossary.html" title="Glossary">Coefficient of Determination</a>.
+</p><p>Finally, OfflineAnalysis produces a main graph that shows r^2 values, plotted over the two dimensions that locate a feature. Using this graph, one may identify and select individual channels and time offsets/frequencies for which to display more detailed information, i.e. topographic plots, ERP wave forms, spectra.
+</p>
 <a name="Installing_and_Running"></a><h2> Installing and Running </h2>
 <p>In order to run <i>BCI2000 Offline Analysis</i> you'll need a system running either Windows XP or 2000.  If your system meets this requirement, please choose from one of the following:
 </p><p><br />
@@ -99,6 +119,9 @@ In order to generate topographic plots, it is necessary to specify a montage fil
 In order to generate spectra or waveform plots, it is necessary to specify at least one spectra channel (for frequency domain analyses) or waveform channel (for time domain analyses).  If your analysis is not resulting in one of these plots, please ensure that you have entered values into the appropriate field.
 </p><p><i>I've typed in a valid target or trial change condition, but I get the error "Invalid ... condition specified".</i>
 Condition syntax is case-sensitive.  For instance, while states.TargetCode may be a valid state condition, states.targetcode is not.  Please double-check your conditions to ensure that the state variables are capitalized correctly.
+</p>
+<a name="See_also"></a><h2>See also</h2>
+<p><a href="User_Tutorial%253APerforming_an_Offline_Analysis_of_EEG_Data.html" title="User Tutorial:Performing an Offline Analysis of EEG Data">User Tutorial:Performing an Offline Analysis of EEG Data</a>, <a href="User_Tutorial%253APerforming_a_Time-Domain_Offline_Analysis_of_EEG_Data.html" title="User Tutorial:Performing a Time-Domain Offline Analysis of EEG Data">User Tutorial:Performing a Time-Domain Offline Analysis of EEG Data</a>
 </p>
 <div class="printfooter">
 </div>

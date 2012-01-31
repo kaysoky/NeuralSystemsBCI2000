@@ -4,7 +4,7 @@
 <head>
 <title>P300 GUI Guide - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="P300 GUI Guide" />
+<meta name="keywords" content="P300 GUI Guide,User Reference:P300Classifier" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -32,29 +32,35 @@ a.new, #quickbar a.new { color: #CC2200; }
 <div id='article'>
 <h1 class="pagetitle">P300 GUI Guide</h1><p class="subtitle"></p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
-<li class='toclevel-1'><a href="P300_GUI_Guide.html#Introduction"><span class="tocnumber">1</span> <span class="toctext">Introduction</span></a></li>
-<li class='toclevel-1'><a href="P300_GUI_Guide.html#Using_the_GUI"><span class="tocnumber">2</span> <span class="toctext">Using the GUI</span></a>
+<li class='toclevel-1'><a href="P300_GUI_Guide.html#Note"><span class="tocnumber">1</span> <span class="toctext">Note</span></a></li>
+<li class='toclevel-1'><a href="P300_GUI_Guide.html#Introduction"><span class="tocnumber">2</span> <span class="toctext">Introduction</span></a></li>
+<li class='toclevel-1'><a href="P300_GUI_Guide.html#Using_the_GUI"><span class="tocnumber">3</span> <span class="toctext">Using the GUI</span></a>
 <ul>
-<li class='toclevel-2'><a href="P300_GUI_Guide.html#Getting_Started"><span class="tocnumber">2.1</span> <span class="toctext">Getting Started</span></a>
+<li class='toclevel-2'><a href="P300_GUI_Guide.html#Getting_Started"><span class="tocnumber">3.1</span> <span class="toctext">Getting Started</span></a>
 <ul>
-<li class='toclevel-3'><a href="P300_GUI_Guide.html#System_Requirements"><span class="tocnumber">2.1.1</span> <span class="toctext">System Requirements</span></a></li>
-<li class='toclevel-3'><a href="P300_GUI_Guide.html#To_Launch_GUI"><span class="tocnumber">2.1.2</span> <span class="toctext">To Launch GUI</span></a></li>
-<li class='toclevel-3'><a href="P300_GUI_Guide.html#The_GUI_Control_Panel"><span class="tocnumber">2.1.3</span> <span class="toctext">The GUI Control Panel</span></a></li>
+<li class='toclevel-3'><a href="P300_GUI_Guide.html#System_Requirements"><span class="tocnumber">3.1.1</span> <span class="toctext">System Requirements</span></a></li>
+<li class='toclevel-3'><a href="P300_GUI_Guide.html#To_Launch_GUI"><span class="tocnumber">3.1.2</span> <span class="toctext">To Launch GUI</span></a></li>
+<li class='toclevel-3'><a href="P300_GUI_Guide.html#The_GUI_Control_Panel"><span class="tocnumber">3.1.3</span> <span class="toctext">The GUI Control Panel</span></a></li>
 </ul>
 </li>
-<li class='toclevel-2'><a href="P300_GUI_Guide.html#Training_a_Classifier"><span class="tocnumber">2.2</span> <span class="toctext">Training a Classifier</span></a></li>
-<li class='toclevel-2'><a href="P300_GUI_Guide.html#Testing_a_Classifier"><span class="tocnumber">2.3</span> <span class="toctext">Testing a Classifier</span></a></li>
-<li class='toclevel-2'><a href="P300_GUI_Guide.html#Results_Display"><span class="tocnumber">2.4</span> <span class="toctext">Results Display</span></a></li>
-<li class='toclevel-2'><a href="P300_GUI_Guide.html#Saving_Classifier_Weights"><span class="tocnumber">2.5</span> <span class="toctext">Saving Classifier Weights</span></a></li>
-<li class='toclevel-2'><a href="P300_GUI_Guide.html#Visualizing_data"><span class="tocnumber">2.6</span> <span class="toctext">Visualizing data</span></a></li>
+<li class='toclevel-2'><a href="P300_GUI_Guide.html#Training_a_Classifier"><span class="tocnumber">3.2</span> <span class="toctext">Training a Classifier</span></a></li>
+<li class='toclevel-2'><a href="P300_GUI_Guide.html#Testing_a_Classifier"><span class="tocnumber">3.3</span> <span class="toctext">Testing a Classifier</span></a></li>
+<li class='toclevel-2'><a href="P300_GUI_Guide.html#Results_Display"><span class="tocnumber">3.4</span> <span class="toctext">Results Display</span></a></li>
+<li class='toclevel-2'><a href="P300_GUI_Guide.html#Saving_Classifier_Weights"><span class="tocnumber">3.5</span> <span class="toctext">Saving Classifier Weights</span></a></li>
+<li class='toclevel-2'><a href="P300_GUI_Guide.html#Visualizing_data"><span class="tocnumber">3.6</span> <span class="toctext">Visualizing data</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="P300_GUI_Guide.html#Troubleshooting"><span class="tocnumber">3</span> <span class="toctext">Troubleshooting</span></a></li>
-<li class='toclevel-1'><a href="P300_GUI_Guide.html#References"><span class="tocnumber">4</span> <span class="toctext">References</span></a></li>
-<li class='toclevel-1'><a href="P300_GUI_Guide.html#Release_Notes"><span class="tocnumber">5</span> <span class="toctext">Release Notes</span></a></li>
-<li class='toclevel-1'><a href="P300_GUI_Guide.html#Contact.2FCredit"><span class="tocnumber">6</span> <span class="toctext">Contact/Credit</span></a></li>
+<li class='toclevel-1'><a href="P300_GUI_Guide.html#Troubleshooting"><span class="tocnumber">4</span> <span class="toctext">Troubleshooting</span></a></li>
+<li class='toclevel-1'><a href="P300_GUI_Guide.html#References"><span class="tocnumber">5</span> <span class="toctext">References</span></a></li>
+<li class='toclevel-1'><a href="P300_GUI_Guide.html#Release_Notes"><span class="tocnumber">6</span> <span class="toctext">Release Notes</span></a></li>
+<li class='toclevel-1'><a href="P300_GUI_Guide.html#Contact.2FCredit"><span class="tocnumber">7</span> <span class="toctext">Contact/Credit</span></a></li>
 </ul>
 </td></tr></table>
+<a name="Note"></a><h2>Note</h2>
+<p>This page talks about the Matlab-based P300GUI tool, which is now outdated, as of BCI2000 v3.0. It is still available at
+<a href="http://www.bci2000.org/svn/tags/BCI2000.v2.1/src/contrib/Tools/P300GUI" class='external free' title="http://www.bci2000.org/svn/tags/BCI2000.v2.1/src/contrib/Tools/P300GUI" rel="nofollow">http://www.bci2000.org/svn/tags/BCI2000.v2.1/src/contrib/Tools/P300GUI</a>
+but is no longer under development. It has been superseded by the standalone <a href="User_Reference%253AP300Classifier.html" title="User Reference:P300Classifier">P300Classifier tool</a>, which is part of the BCI2000 core distribution. There are minor differences between the two user interfaces.
+</p>
 <a name="Introduction"></a><h2>Introduction</h2>
 <p>The P300 GUI (Graphical User Interface) can be used to train and test a linear classifier for detection of evoked potentials collected with BCI2000[6] and visualize the waveforms and classification results.  It is designed for analysis of BCI2000 data collected using the P3Speller or P3AV paradigms.  The program generates feature weights derived via various regression techniques.  The specifics of the feature space and training routine can be manipulated using the GUI.  The feature weights derived by the GUI can be saved and imported into BCI2000 as a parameter file fragment for online testing.
 </p><p>The GUI is capable of performing several functions independently:

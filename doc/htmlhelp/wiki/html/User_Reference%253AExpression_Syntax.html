@@ -39,8 +39,12 @@ Expression syntax tries to be intuitive and is based on C and Matlab notation.
 <ul>
 <li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#.22Real.22_Numbers"><span class="tocnumber">1.1</span> <span class="toctext">"Real" Numbers</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#Operators"><span class="tocnumber">1.2</span> <span class="toctext">Operators</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#States"><span class="tocnumber">1.3</span> <span class="toctext">States</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#Signal_Values"><span class="tocnumber">1.4</span> <span class="toctext">Signal Values</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#Built-in_Functions"><span class="tocnumber">1.3</span> <span class="toctext">Built-in Functions</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#Variables"><span class="tocnumber">1.4</span> <span class="toctext">Variables</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#States"><span class="tocnumber">1.5</span> <span class="toctext">States</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#Signal_Values"><span class="tocnumber">1.6</span> <span class="toctext">Signal Values</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#Semicolon"><span class="tocnumber">1.7</span> <span class="toctext">Semicolon</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AExpression_Syntax.html#Comments"><span class="tocnumber">1.8</span> <span class="toctext">Comments</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AExpression_Syntax.html#Examples"><span class="tocnumber">2</span> <span class="toctext">Examples</span></a></li>
@@ -73,6 +77,28 @@ all refer to the same number. Complex numbers are not supported.
 <dl><dt>Precedence
 </dt><dd>Operator precedence follows the order of appearance in the above list. As usual, parentheses ( ) may be used to override operator precedence.
 </dd></dl>
+<a name="Built-in_Functions"></a><h4>Built-in Functions</h4>
+<p>By default, expressions know a number of mathematical functions by name. These are:
+</p>
+<dl><dd>sqrt
+</dd><dd>fabs, abs (alias to fabs)
+</dd><dd>fmod, mod (alias to fmod)
+</dd><dd>floor, ceil
+</dd><dd>exp, log, log10
+</dd><dd>pow
+</dd><dd>sin, cos, tan
+</dd><dd>asin, acos, atan, atan2
+</dd><dd>sinh, cosh, tanh
+</dd></dl>
+<p>By deriving from the <tt>Expression</tt> class, a programmer may support additional functions from his own code.
+</p>
+<a name="Variables"></a><h4>Variables</h4>
+<p>Expressions support the creation of variables, and may contain statements that perform assignment, as in
+</p>
+<pre>MyVariable:=MyOtherVariable+10;</pre>
+<p>On the right hand side of the assignment, only existing variables may occur. On the left side, when a non-existing variable is referenced, it is created.
+</p><p>The scope of variables depends on the expression's evaluation context. When calling <tt>Expression::Evaluate()</tt>, a pointer to an <tt>Expression::VariableContainer</tt> may be specified by the programmer. When no such container is specified, variables cannot be used. When the container is cleared each time before an expression is evaluated, variables are local to the expression. When the same container is specified across expression evaluation, variables keep their values across multiple evaluations. When the same container is specified when evaluating multiple expressions, variables and values are shared amongst these expressions.
+</p>
 <a name="States"></a><h4>States</h4>
 <p>Expressions may involve <a href="BCI2000_Glossary.html#State" title="BCI2000 Glossary">state variables</a>. These are referred to by name as in
 </p>
@@ -80,6 +106,12 @@ all refer to the same number. Complex numbers are not supported.
 <p>or
 </p>
 <pre>(TargetCode-1)*ResultCode</pre>
+<p>When a variable exists with the same name as a state, the state takes precedence. To address states unambiguously, use
+</p>
+<pre>State(TargetCode)==State(ResultCode)</pre>
+<p>When assigning to state variables, always use
+</p>
+<pre>State(ResultCode):=3</pre>
 <a name="Signal_Values"></a><h4>Signal Values</h4>
 <p>Depending on context, expressions may involve signal values:
 </p>
@@ -90,8 +122,18 @@ Similarly, labels and physical units may be used when defined for the signal in 
 </p>
 <pre>Signal( &quot;CPz&quot;, 10ms )</pre>
 <p>will address a channel labeled "CPz", and a physical sample position 10ms from the epoch begin when defined for the signal in question.
-(Note: In previous versions of BCI2000 (previous to the Apr 2008 build, up to source revision 1914), expressions used <i>zero-based</i> indices; you may have to update your configuration accordingly when using expressions that involving signals.)
+(Note: In previous versions of BCI2000 (previous to the Apr 2008 build, up to source revision 1914), expressions used <i>zero-based</i> indices; you may have to update your configuration accordingly when using expressions that involve signals.)
 </p>
+<a name="Semicolon"></a><h4>Semicolon</h4>
+<p>The semicolon may be used to concatenate multiple statements and expressions into a single expression. The expression will then evaluate to the value of the last statement or expression. Examples:
+The expression "4;5" evaluates to 5; the expression "x:=4; y:=3;" evaluates to 3.
+</p>
+<a name="Comments"></a><h4>Comments</h4>
+<p>Expressions support C++-style comments. Beginning with two slashes, a comment extends to the end of a line:
+</p>
+<pre>Result:=PreviousTargetCode-State(TargetCode); // Compute the return value
+PreviousTargetCode:=State(TargetCode); // Store the target code
+Result; // Return the result</pre>
 <a name="Examples"></a><h3>Examples</h3>
 <ul><li>An expression that evaluates to the ResultCode state only if that equals the TargetCode state (i.e., in case of a successful trial):
 </li></ul>

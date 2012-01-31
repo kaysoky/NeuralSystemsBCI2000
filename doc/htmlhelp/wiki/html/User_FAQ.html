@@ -4,7 +4,7 @@
 <head>
 <title>User FAQ - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User FAQ,Contributions:ADCs,Contributions:FilterGUI,Contributions:How to use a Contributed Source Module,User Reference:Command Line Processing,User Reference:Contents,User Reference:ExpressionFilter,User Reference:LinearClassifier,User Reference:Matlab MEX Files,User Reference:Module Command Line Options,User Reference:Timing" />
+<meta name="keywords" content="User FAQ,Contributions:ADCs,Contributions:FilePlayback,Contributions:FilterGUI,Contributions:How to use a Contributed Source Module,User Reference:Command Line Processing,User Reference:Contents,User Reference:ExpressionFilter,User Reference:LinearClassifier,User Reference:Matlab MEX Files,User Reference:Matlab Tools" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -105,13 +105,12 @@ Q: When I start the gUSBamp source module, I get the error message: "Cannot find
 </p>
 <a name="Replaying_Recorded_Data"></a><h3>Replaying Recorded Data</h3>
 <p>Q: Rather than controlling BCI2000 from a brain signal, I would like to use a recorded data file as input. Is there a kind of "replay mode" in BCI2000?
-</p><p>A: While this could easily be done by, e.g., writing a source module that reads from a file, we have not done this, and that for at least two reasons:
+</p><p>A: While there exists a <a href="Contributions%253AFilePlayback.html" title="Contributions:FilePlayback">contributed source module that reads from a file</a>, we have not included it into the BCI2000 core distribution, and that for at least two reasons:
 </p>
 <ol><li>If the version of BCI2000 that you are using is not the exact same as the one that was used to record the data, and/or you change some system parameters, then, depending on the experimental paradigm, results may be undefined. E.g., in a 2D cursor task, what should happen if you slow down the cursor such that the cursor has not yet reached a target when in the original data file it has (i.e., and the trial is over?). 
 </li><li>Scientifically, it is a bad idea to "simulate" online performance by loading a datafile, changing a few parameters, and seeing how it would have worked. If you are interested in evaluating the effect of different signal processing routines, you should write your own offline analysis routine that uses statistical analyses, together with a comprehensive body of data, or you need to run comprehensive online studies. 
 </li></ol>
-<p>Of course there is nothing in the code that would prohibit you from writing your own such module, but you should note the two caveats above. 
-</p><p>For off-line analyses, you might also check out the <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">Command Line Processing Environment</a> which allows you to feed existing data files into arbitrary BCI2000 filter chains.
+<p>For off-line analyses, you might also check out the <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">Command Line Processing Environment</a> which allows you to feed existing data files into arbitrary BCI2000 filter chains.
 </p>
 <a name="Random_Sequences"></a><h3>Random Sequences</h3>
 <p>Q: Is there a way to obtain the same random sequence each time BCI2000 is run? I don't care about the sequence itself, it should just be the same each time.
@@ -150,8 +149,9 @@ JoystickYpos
 <a name="Data_Analysis"></a><h2>Data Analysis</h2>
 <a name="Offline_Filtering"></a><h3>Offline Filtering</h3>
 <p>Q: I would like to apply a filter to recorded data, and then use the BCI2000 OfflineAnalysis and P300Classifier tools for data analysis.
-</p><p>A: You may achieve this using Matlab. First, use the <a href="User_Reference%253AMatlab_MEX_Files.html#load_bcidat" title="User Reference:Matlab MEX Files">load_bcidat</a> mex file to load data into Matlab. Then, apply the desired filtering to the "signal" output variable. Finally, save the resulting filtered data using the <a href="User_Reference%253AMatlab_MEX_Files.html#save_bcidat" title="User Reference:Matlab MEX Files">save_bcidat</a> mex file.
-</p><p>For elementary filtering operations, this procedure has been wrapped up in a simple Matlab GUI. See <a href="Contributions%253AFilterGUI.html" title="Contributions:FilterGUI">Contributions:FilterGUI</a> for a description of this program.
+</p><p>A: You may achieve this using Matlab. First, use the <a href="User_Reference%253AMatlab_MEX_Files.html#load_bcidat" title="User Reference:Matlab MEX Files">load_bcidat</a> mex file to load data into Matlab. Then, apply the desired filtering to the "signal" output variable. Finally, save the resulting filtered data using the <a href="User_Reference%253AMatlab_MEX_Files.html#save_bcidat" title="User Reference:Matlab MEX Files">save_bcidat</a> mex file.   For elementary filtering operations, this procedure has been wrapped up in a simple Matlab GUI. See <a href="Contributions%253AFilterGUI.html" title="Contributions:FilterGUI">Contributions:FilterGUI</a> for a description of this program.
+</p><p>Q: I would like to see what would have happened if I had set my online processing parameters differently.
+</p><p>A: You can perform an offline analysis by recreating a BCI2000 filter chain either <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">from the system command-line</a> or <a href="User_Reference%253AMatlab_Tools.html" title="User Reference:Matlab Tools">from within Matlab</a>.  In either case, it is possible to substitute different parameter values into the processing chain.  Naturally, however, if the original experiment included any kind of feedback that was dependent on the processed signal, you will not see the effects of this since you are working with a "frozen" data set that reflects the activity of a brain that was experiencing the results of the original parameters only.   Also, you should be aware that finding the "best" set of parameters for a given data-set is not the same thing as finding the parameter set that will work best next time. If you optimize parameters on a fixed data set, and do not hold out some data on which to perform (once only) a final evaluation, then you will almost certainly be looking at an unrealistically inflated level of performance, and may end up with parameters that will generalize <i>less</i> well to new data.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AContents.html" title="User Reference:Contents">User Reference:Contents</a>

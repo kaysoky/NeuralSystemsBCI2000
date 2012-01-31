@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:Filter Chain - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:Filter Chain,Programming Reference:GenericFilter Class,Programming Tutorial:Implementing a Signal Processing Filter" />
+<meta name="keywords" content="Programming Reference:Filter Chain,Programming Reference:GenericFilter Class,Programming Tutorial:Implementing a Signal Processing Filter,User Reference:Command Line Processing,User Reference:Filters,User Reference:Matlab Tools" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,9 +30,17 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Filter Chain</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><a name="The_Filter_Chain"></a><h2>The Filter Chain</h2>
+<h1 class="pagetitle">Filter Chain</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="Programming_Reference%253AFilter_Chain.html#The_Filter_Chain"><span class="tocnumber">1</span> <span class="toctext">The Filter Chain</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AFilter_Chain.html#Filter_Instantiation"><span class="tocnumber">2</span> <span class="toctext">Filter Instantiation</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AFilter_Chain.html#Signal_Processing_Filter_Instantiation"><span class="tocnumber">3</span> <span class="toctext">Signal Processing Filter Instantiation</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AFilter_Chain.html#Recreating_Filter_Chains_Offline"><span class="tocnumber">4</span> <span class="toctext">Recreating Filter Chains Offline</span></a></li>
+</ul>
+</td></tr></table>
+<a name="The_Filter_Chain"></a><h2>The Filter Chain</h2>
 <p>As noted in the <a href="Programming_Reference%253AGenericFilter_Class.html" title="Programming Reference:GenericFilter Class">discussion</a> of the <tt>GenericFilter::Process</tt> function, all <tt>GenericFilter</tt> descendants inside a BCI2000
-module form a single chain of filters. Each filter's output forms the input of the
+module form a single chain of <a href="User_Reference%253AFilters.html" title="User Reference:Filters">filters</a>. Each filter's output forms the input of the
 subsequent filter.
 </p><p>For each module, the filter chain is documented in its own <tt>FilterChain</tt> parameter, which is located in the System/Configuration section.
 </p>
@@ -67,6 +75,9 @@ sequence of
 an
 example).
 In other modules, filters' default position will be suitable in general. Still, you may add a <tt>PipeDefinition.cpp</tt> with a sequence of <tt>Filter</tt> statements to the module. In this case, positions defined in <tt>PipeDefinition.cpp</tt> will take precedence over the filters' default positions.
+</p>
+<a name="Recreating_Filter_Chains_Offline"></a><h2>Recreating Filter Chains Offline</h2>
+<p>The <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">BCI2000 command-line tools</a> can be used to recreate a filter-chain offline, from a system command-line. The Matlab function <tt>bci2000chain</tt>, part of BCI2000's suite of <a href="User_Reference%253AMatlab_Tools.html" title="User Reference:Matlab Tools">Matlab tools</a>, provides a convenient interface to this from within Matlab.
 </p>
 <div class="printfooter">
 </div>

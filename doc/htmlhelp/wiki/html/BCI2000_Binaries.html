@@ -33,7 +33,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <h1 class="pagetitle">BCI2000 Binaries</h1><p class="subtitle"></p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
 <li class='toclevel-1'><a href="BCI2000_Binaries.html#Access"><span class="tocnumber">1</span> <span class="toctext">Access</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Binaries.html#Latest_Version"><span class="tocnumber">2</span> <span class="toctext">Latest Version</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Binaries.html#Latest_Released_Build"><span class="tocnumber">2</span> <span class="toctext">Latest Released Build</span></a></li>
 <li class='toclevel-1'><a href="BCI2000_Binaries.html#Win64_Support"><span class="tocnumber">3</span> <span class="toctext">Win64 Support</span></a></li>
 <li class='toclevel-1'><a href="BCI2000_Binaries.html#Dependencies"><span class="tocnumber">4</span> <span class="toctext">Dependencies</span></a></li>
 <li class='toclevel-1'><a href="BCI2000_Binaries.html#Contributed_Code"><span class="tocnumber">5</span> <span class="toctext">Contributed Code</span></a></li>
@@ -82,8 +82,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Access"></a><h2>Access</h2>
 <p>Access to BCI2000 is provided to users who have agreed to the terms of the GNU General Public License (GPL). Thus, you need a <a href="Creating_a_User_Account.html" title="Creating a User Account">user account</a> to download the binary version of BCI2000.
 </p>
-<a name="Latest_Version"></a><h2>Latest Version</h2>
-<p>The latest binary version of BCI2000 is always available at
+<a name="Latest_Released_Build"></a><h2>Latest Released Build</h2>
+<p>The latest binary release of BCI2000 is always available at
 </p><p><a href="http://bci2000.org/downloads/bin/BCI2000Setup.exe" class='external free' title="http://bci2000.org/downloads/bin/BCI2000Setup.exe" rel="nofollow">http://bci2000.org/downloads/bin/BCI2000Setup.exe</a>
 </p>
 <a name="Win64_Support"></a><h2>Win64 Support</h2>
@@ -106,10 +106,12 @@ For convenience, we provide an extended binary distribution that includes binary
 </p>
 <a name="Version_History"></a><h2>Version History</h2>
 <a name="Version_3_Builds"></a><h3>Version 3 Builds</h3>
-<a name="October_2011_Version_3.0.3"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_111013.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_111013.exe" rel="nofollow">October 2011 Version 3.0.3</a></h4>
-<p><b>New features in this version:</b>
+<a name="October_2011_Version_3.0.3"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_111014.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_111014.exe" rel="nofollow">October 2011 Version 3.0.3</a></h4>
+<p><a href="http://bci2000.org/tracproj/changeset/3604" class='external text' title="http://bci2000.org/tracproj/changeset/3604" rel="nofollow">Source code revision: 3604</a>
+</p><p><b>New features in this version:</b>
 </p>
-<ul><li>Startup batch files in the batch directory are now loading amplifier configuration automatically. *Operator module
+<ul><li>Startup batch files in the batch directory are now loading amplifier configuration automatically. 
+</li><li>Operator module
 <ul><li>displays the batch file's name in its title bar,
 </li><li>displays last save/load operation in configuration dialog's window title,
 </li><li>"Configure Save/Load" dialogs display parameters in a hierarchical fashion.
@@ -146,8 +148,16 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Incorporated Linux compatibility patches by N. Urii.
 </li><li>Added Layering scheme to Operator visualizations; visualizations may now be displayed on top of each other (G. Milsap)
 </li><li>Introduced BufferedADC as a base class for ADCs that transparently handles buffering of acquired data.
-</li><li>Ported 3DAPI demo/test program to Qt.  *Drawing of GUI elements is now faster because it occurs directly on a widget rather than an offscreen bitmap.  *When a 3D scene is present, all drawing now uses OpenGL via QGLWidget. This allows for GUI::GraphObjects such as text messages to appear on top of the Scene.  *GraphObjects now have OnMove() and OnResize() event handlers to avoid triggering OnChange() for each call to GraphObject::SetDisplayRect(). Thus, ImageStimulus objects may be efficiently moved around in a scene.  *FilterCombination template classes allow serial and parallel combination of filters.
-</li><li>IdentityFilter to be used in a ParallelCombination, or in a dummy signal processing module.
+</li><li>Ported 3DAPI demo/test program to Qt.
+</li></ul>
+<p> *Drawing of GUI elements is now faster because it occurs directly on a widget rather than an offscreen bitmap. 
+</p>
+<ul><li>When a 3D scene is present, all drawing now uses OpenGL via QGLWidget. This allows for GUI::GraphObjects such as text messages to appear on top of the Scene. 
+</li><li>GraphObjects now have OnMove() and OnResize() event handlers to avoid triggering OnChange() for each call to GraphObject::SetDisplayRect(). Thus, ImageStimulus objects may be efficiently moved around in a scene.
+</li></ul>
+<p> *FilterCombination template classes allow serial and parallel combination of filters.
+</p>
+<ul><li>IdentityFilter to be used in a ParallelCombination, or in a dummy signal processing module.
 </li><li>New ApplicationWindow base class for application windows allows multiple filters to maintain GraphObjects in a common application window.
 </li><li>Reentrancy and exception safety for ArithmeticExpression and Expression classes. 
 </li><li>Thread-safety for bcierr, bciout, and bcidbg streams.
@@ -173,7 +183,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Reintroducing workaround for reinitialization problem in the Biosemi source module. (G. Schalk)
 </li></ul>
 <a name="June_2011_Version_3.0.2"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" rel="nofollow">June 2011 Version 3.0.2</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/3359" class='external text' title="http://bci2000.org/tracproj/changeset/3359" rel="nofollow">Latest changeset: 3359</a>
+<p><a href="http://bci2000.org/tracproj/changeset/3359" class='external text' title="http://bci2000.org/tracproj/changeset/3359" rel="nofollow">Source code revision: 3359</a>
 </p><p><b>New features in this version:</b>
 </p>
 <ul><li>Added a Matlab wrapper to simplify using BCI2000 command line tools for offline analysis (tools/matlab/bci2000chain.m) (J. Hill)
@@ -213,7 +223,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>New CoherenceFilter contribution computes magnitude squared coherence between spatially filtered input signals (J. Mellinger)
 </li></ul>
 <a name="May_2011_Version_3.0.1"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" rel="nofollow">May 2011 Version 3.0.1</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/3261" class='external text' title="http://bci2000.org/tracproj/changeset/3261" rel="nofollow">Latest changeset: 3261</a>
+<p><a href="http://bci2000.org/tracproj/changeset/3261" class='external text' title="http://bci2000.org/tracproj/changeset/3261" rel="nofollow">Source code revision: 3261</a>
 </p><p><b>New features in this version:</b>
 </p>
 <ul><li>SignalGenerator, FilePlayback and PythonSource all now have the option of *not* checking realtime operation,  since they may be used to play artificial signals in non-real time.  (J. Hill)
@@ -246,11 +256,11 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>NIDAQ-MX source module now includes NIDAQ logging components written by J. Renga: <a href="Contributions%253ANIDAQLogger.html" title="Contributions:NIDAQLogger">Contributions:NIDAQLogger</a> and <a href="Contributions%253ANIDAQFilter.html" title="Contributions:NIDAQFilter">Contributions:NIDAQFilter</a>
 </li></ul>
 <a name="February_2011_Version_3_Release_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110216.exe" rel="nofollow">February 2011 Version 3 Release Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/3113" class='external text' title="http://bci2000.org/tracproj/changeset/3113" rel="nofollow">Latest changeset: 3113</a>
+<p><a href="http://bci2000.org/tracproj/changeset/3113" class='external text' title="http://bci2000.org/tracproj/changeset/3113" rel="nofollow">Source code revision: 3113</a>
 </p>
 <a name="Version_2_Builds"></a><h3>Version 2 Builds</h3>
 <a name="November_2010_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_101124.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_101124.exe" rel="nofollow">November 2010 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2990" class='external text' title="http://bci2000.org/tracproj/changeset/2990" rel="nofollow">Latest changeset: 2990</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2990" class='external text' title="http://bci2000.org/tracproj/changeset/2990" rel="nofollow">Source code revision: 2990</a>
 </p><p><b>Changes in this version:</b>
 </p>
 <ul><li>Removed upper/lower bounds of 0 and 1 for the RandomSeed parameter, allowing for any parameter value.
@@ -261,7 +271,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>save_bcidat now uses signal dimensions to infer the value of the SourceCh parameter rather than the SourceCh parameter in the parameter struct.
 </li></ul>
 <a name="August_2010_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_100805.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100805.exe" rel="nofollow">August 2010 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2932" class='external text' title="http://bci2000.org/tracproj/changeset/2932" rel="nofollow">Latest changeset: 2932</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2932" class='external text' title="http://bci2000.org/tracproj/changeset/2932" rel="nofollow">Source code revision: 2932</a>
 </p><p><b>Changes in this version:</b>
 </p>
 <ul><li>SoundStimulus and SpeechStimulus objects now finish playback even when deleted (fixes some muted sound conditions in P3Speller and StimulusPresentation application modules).
@@ -269,7 +279,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Update to P300Classifier (C.M. Potes)
 </li></ul>
 <a name="June_2010_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_100623.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100623.exe" rel="nofollow">June 2010 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2860" class='external text' title="http://bci2000.org/tracproj/changeset/2860" rel="nofollow">Latest changeset: 2860</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2860" class='external text' title="http://bci2000.org/tracproj/changeset/2860" rel="nofollow">Source code revision: 2860</a>
 </p><p><b>New features in this version:</b>
 </p>
 <ul><li>Added lowpass option to SourceFilter which is present in a number of source modules (e.g. gMOBIlab source module).
@@ -294,7 +304,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li></ul>
 </li></ul>
 <a name="April_2010_Version_2.1_Release_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" rel="nofollow">April 2010 Version 2.1 Release Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2770" class='external text' title="http://bci2000.org/tracproj/changeset/2770" rel="nofollow">Latest changeset: 2770</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2770" class='external text' title="http://bci2000.org/tracproj/changeset/2770" rel="nofollow">Source code revision: 2770</a>
 </p><p><b>New features in this version:</b>
 </p>
 <ul><li>Operator module now allows for saving of matrices in parameter format, and allows to specify empty matrices in the GUI. 
@@ -320,7 +330,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Tucker-Davis source module now uses threading (A Wilson).
 </li></ul>
 <a name="February_2010_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_100217.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100217.exe" rel="nofollow">February 2010 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2671" class='external text' title="http://bci2000.org/tracproj/changeset/2671" rel="nofollow">Latest changeset: 2671</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2671" class='external text' title="http://bci2000.org/tracproj/changeset/2671" rel="nofollow">Source code revision: 2671</a>
 </p><p><b>Bug fixes in this version:</b>
 </p>
 <ul><li>Operator scripts now correctly report failure when an invalid state line is given. 
@@ -333,13 +343,13 @@ For convenience, we provide an extended binary distribution that includes binary
 <ul><li>RDAClient works more reliable for higher sampling rates and larger numbers of channels.
 </li></ul>
 <a name="December_2009_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_091203.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_091203.exe" rel="nofollow">December 2009 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2630" class='external text' title="http://bci2000.org/tracproj/changeset/2630" rel="nofollow">Latest changeset: 2630</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2630" class='external text' title="http://bci2000.org/tracproj/changeset/2630" rel="nofollow">Source code revision: 2630</a>
 </p><p><b>Bug fixes in this version:</b>
 </p>
 <ul><li>Fixed broken EEGLabImport contribution.
 </li></ul>
 <a name="November_2009_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_091110.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_091110.exe" rel="nofollow">November 2009 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2606" class='external text' title="http://bci2000.org/tracproj/changeset/2606" rel="nofollow">Latest changeset: 2606</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2606" class='external text' title="http://bci2000.org/tracproj/changeset/2606" rel="nofollow">Source code revision: 2606</a>
 </p><p><b>Bug fixes in this version:</b>
 </p>
 <ul><li>Mouse and joystick logging will now correctly record initial position at the beginning of a run.
@@ -349,7 +359,7 @@ For convenience, we provide an extended binary distribution that includes binary
 <ul><li>A number of bugfixes and improvements to the TMSi source module (J. Hill).
 </li></ul>
 <a name="August_2009_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_090827.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090827.exe" rel="nofollow">August 2009 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2514" class='external text' title="http://bci2000.org/tracproj/changeset/2514" rel="nofollow">Latest changeset: 2514</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2514" class='external text' title="http://bci2000.org/tracproj/changeset/2514" rel="nofollow">Source code revision: 2514</a>
 </p><p><b>Bug fixes in this version:</b>
 </p>
 <ul><li>Fixed treatment of state names beginning with "Signal" in ConnectorInput filter. 
@@ -364,7 +374,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Matlab-independent P300 classifier tool replaces P300GUI contribution.
 </li></ul>
 <a name="June_2009_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_090629.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090629.exe" rel="nofollow">June 2009 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2421" class='external text' title="http://bci2000.org/tracproj/changeset/2421" rel="nofollow">Latest changeset: 2421</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2421" class='external text' title="http://bci2000.org/tracproj/changeset/2421" rel="nofollow">Source code revision: 2421</a>
 </p><p><b>Bug fixes in this version</b>
 </p>
 <ul><li>P3Speller application log now correctly counts the number of intensifications.
@@ -377,7 +387,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Biosemi: Added the option to specify the TriggerChList? as a single '0', which means "read all triggers as a 16-bit integer" (J. Hill)
 </li></ul>
 <a name="May_2009_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_090514.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090514.exe" rel="nofollow">May 2009 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2355" class='external text' title="http://bci2000.org/tracproj/changeset/2355" rel="nofollow">Latest changeset: 2355</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2355" class='external text' title="http://bci2000.org/tracproj/changeset/2355" rel="nofollow">Source code revision: 2355</a>
 </p><p><b>Changes in this version:</b>
 </p>
 <ul><li>Added an offset of 32768 to mouse coordinates recorded by the KeyLogger component.
@@ -394,7 +404,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Contrib distribution now contains neurogetparams tool. 
 </li></ul>
 <a name="April_2009_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" rel="nofollow">April 2009 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2342" class='external text' title="http://bci2000.org/tracproj/changeset/2342" rel="nofollow">Latest changeset: 2342</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2342" class='external text' title="http://bci2000.org/tracproj/changeset/2342" rel="nofollow">Source code revision: 2342</a>
 </p><p><b>Changes in this version:</b>
 </p>
 <ul><li>Updated load_bcidat copies in tools directories to latest version.
@@ -406,7 +416,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>P300GUI is now more robust in case the system was suspended before a run was complete (J Temprano).
 </li></ul>
 <a name="February_2009_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" rel="nofollow">February 2009 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2245" class='external text' title="http://bci2000.org/tracproj/changeset/2245" rel="nofollow">Latest changeset: 2245</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2245" class='external text' title="http://bci2000.org/tracproj/changeset/2245" rel="nofollow">Source code revision: 2245</a>
 </p><p><b>Changes in this version:</b>
 </p>
 <ul><li>Improvements to gUSBamp source (A Wilson).
@@ -427,7 +437,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>StimulusPresentationTask did not handle empty image and sound file entries correctly.
 </li></ul>
 <a name="December_2008_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_081201.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081201.exe" rel="nofollow">December 2008 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2209" class='external text' title="http://bci2000.org/tracproj/changeset/2209" rel="nofollow">Latest changeset: 2209</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2209" class='external text' title="http://bci2000.org/tracproj/changeset/2209" rel="nofollow">Source code revision: 2209</a>
 </p><p><b>Changes in this version:</b>
 </p>
 <ul><li>Some issues in runtime/component deployment have been fixed in the Offline Analysis tool (J Fialkoff).
@@ -436,7 +446,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>RDAClient (BrainVision) source module now issues a notification rather than a runtime error when blocks are out-of-sequence.
 </li></ul>
 <a name="November_2008_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_081117.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081117.exe" rel="nofollow">November 2008 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2200" class='external text' title="http://bci2000.org/tracproj/changeset/2200" rel="nofollow">Latest changeset: 2200</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2200" class='external text' title="http://bci2000.org/tracproj/changeset/2200" rel="nofollow">Source code revision: 2200</a>
 </p><p><b>Enhancements in this version:</b>
 </p>
 <ul><li>P300 and Mu rhythm examples and tutorials use new SpatialFilter options.
@@ -472,7 +482,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>gUSBamp source module uses modified buffering scheme to avoid losing data (A Wilson).
 </li></ul>
 <a name="October_2008_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_081006.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081006.exe" rel="nofollow">October 2008 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2152" class='external text' title="http://bci2000.org/tracproj/changeset/2152" rel="nofollow">Latest changeset: 2152</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2152" class='external text' title="http://bci2000.org/tracproj/changeset/2152" rel="nofollow">Source code revision: 2152</a>
 </p><p>Enhancements in this version:
 </p>
 <ul><li>Example files are now more consistent with state names in BCI2000 v2 (J Fialkoff).
@@ -494,7 +504,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Audio stimuli for matrix rows/columns would be incorrectly associated with row/column flashes in P300 speller (reported by ariel).
 </li></ul>
 <a name="August_2008_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_080819.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080819.exe" rel="nofollow">August 2008 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/2104" class='external text' title="http://bci2000.org/tracproj/changeset/2104" rel="nofollow">Latest changeset: 2104</a>
+<p><a href="http://bci2000.org/tracproj/changeset/2104" class='external text' title="http://bci2000.org/tracproj/changeset/2104" rel="nofollow">Source code revision: 2104</a>
 </p><p>New features in this version:
 </p>
 <ul><li>Operator visualization windows now have a zoom function in their context menus ("More Samples"/"Fewer Samples").
@@ -523,7 +533,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Micromed Source module update: support for digital trigger packets, priority, note output to textfile; improved error handling (Erik Aarnoutse)
 </li></ul>
 <a name="May_2008_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_080529.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080529.exe" rel="nofollow">May 2008 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/1987" class='external text' title="http://bci2000.org/tracproj/changeset/1987" rel="nofollow">Latest changeset: 1987</a>
+<p><a href="http://bci2000.org/tracproj/changeset/1987" class='external text' title="http://bci2000.org/tracproj/changeset/1987" rel="nofollow">Source code revision: 1987</a>
 </p><p>New features in this version:
 </p>
 <ul><li>State variables may now be set and read for individual samples rather than entire sample blocks.
@@ -537,7 +547,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>Fixed "TransmitChList out of range" message when specifying channels by labels in TransmitChList.
 </li></ul>
 <a name="Apr_2008_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_080421.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080421.exe" rel="nofollow">Apr 2008 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/1921" class='external text' title="http://bci2000.org/tracproj/changeset/1921" rel="nofollow">Latest changeset: 1921</a>
+<p><a href="http://bci2000.org/tracproj/changeset/1921" class='external text' title="http://bci2000.org/tracproj/changeset/1921" rel="nofollow">Source code revision: 1921</a>
 </p><p>New features in this version:
 </p>
 <ul><li>Support for the gMOBIlab+ amplifier.
@@ -555,7 +565,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>EEGlabImport tool now makes sure that the imported signal is of "single" data type.
 </li></ul>
 <a name="Mar_2008_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_080312.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080312.exe" rel="nofollow">Mar 2008 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/1828" class='external text' title="http://bci2000.org/tracproj/changeset/1828" rel="nofollow">Latest changeset: 1828</a>
+<p><a href="http://bci2000.org/tracproj/changeset/1828" class='external text' title="http://bci2000.org/tracproj/changeset/1828" rel="nofollow">Source code revision: 1828</a>
 </p><p>New features in this version:
 </p>
 <ul><li>The operator module's <a href="User_Reference%253AOperator_Module.html#Parameter_Configuration_Window" title="User Reference:Operator Module">parameter configuration window</a> now has a help button. Clicking on the help button, and then on a parameter's name, will open the corresponding help file in a browser window.
@@ -569,7 +579,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>The <a href="User_Reference%253AP3TemporalFilter.html" title="User Reference:P3TemporalFilter">P3TemporalFilter's</a> visualization display would always display zero data.
 </li></ul>
 <a name="Feb_2008_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" rel="nofollow">Feb 2008 Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/1790" class='external text' title="http://bci2000.org/tracproj/changeset/1790" rel="nofollow">Latest changeset: 1790</a>
+<p><a href="http://bci2000.org/tracproj/changeset/1790" class='external text' title="http://bci2000.org/tracproj/changeset/1790" rel="nofollow">Source code revision: 1790</a>
 </p><p>New features in this version:
 </p>
 <ul><li>The <a href="User_Reference%253ACursorTask.html" title="User Reference:CursorTask">CursorTask</a> application module now uses fast 2D drawing when <i>RenderingQuality</i> is set to "low", and only uses OpenGL rendering when quality is set to "high".
@@ -582,7 +592,7 @@ For convenience, we provide an extended binary distribution that includes binary
 </li><li>A number of minor fixes in the <a href="User_Reference%253ABCI2000_Offline_Analysis.html" title="User Reference:BCI2000 Offline Analysis">OfflineAnalysis</a> tool.
 </li></ul>
 <a name="Jan_2008_Version_2_Release_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" rel="nofollow">Jan 2008 Version 2 Release Build</a></h4>
-<p><a href="http://bci2000.org/tracproj/changeset/1746" class='external text' title="http://bci2000.org/tracproj/changeset/1746" rel="nofollow">Latest changeset: 1746</a>
+<p><a href="http://bci2000.org/tracproj/changeset/1746" class='external text' title="http://bci2000.org/tracproj/changeset/1746" rel="nofollow">Source code revision: 1746</a>
 </p>
 <hr />
 <a name="Version_2_Preview_Builds"></a><h3>Version 2 Preview Builds</h3>

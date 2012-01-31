@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Timing - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Timing,BCI2000 Glossary,Programming Reference:ApplicationWindow Class,Programming Reference:GraphDisplay Class,Technical Reference:Core Modules,User Reference:DataIOFilter" />
+<meta name="keywords" content="User Reference:Timing,BCI2000 Glossary,Programming Reference:ApplicationWindow Class,Programming Reference:GraphDisplay Class,Technical Reference:Core Modules,User Reference:BCI2000Launcher,User Reference:DataIOFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -37,7 +37,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="User_Reference%253ATiming.html#Measuring_Roundtrip_Time"><span class="tocnumber">3</span> <span class="toctext">Measuring Roundtrip Time</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253ATiming.html#Measuring_Source-to-Stimulus_Delay"><span class="tocnumber">4</span> <span class="toctext">Measuring Source-to-Stimulus Delay</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253ATiming.html#Timing_Display"><span class="tocnumber">5</span> <span class="toctext">Timing Display</span></a></li>
-<li class='toclevel-1'><a href="User_Reference%253ATiming.html#See_also"><span class="tocnumber">6</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ATiming.html#Timing_Evaluation"><span class="tocnumber">6</span> <span class="toctext">Timing Evaluation</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ATiming.html#See_also"><span class="tocnumber">7</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Real-Time_Operation"></a><h2>Real-Time Operation</h2>
@@ -70,6 +71,13 @@ Using this graph, the experimentator can keep track of
 <ul><li>regularity of data acquisition -- the block duration curve should be a straight line;
 </li><li>real-time operation -- roundtrip time should stay below theoretical sample block length;
 </li><li>module communication overhead -- this is represented by the difference between <i>roundtrip</i> and <i>stimulus</i> curves.
+</li></ul>
+<a name="Timing_Evaluation"></a><h2>Timing Evaluation</h2>
+<p>During a run, BCI2000 continously monitors roundtrip time to ensure proper timing, and issues warnings when roundtrip time approaches more than 75% of a sample block duration. Once roundtrip time consistently exceeds sample block duration, the current run is aborted with an error message.
+</p><p>There are situations in which this behavior is undesired, such as when debugging or profiling BCI2000 modules. To handle these cases, the SignalGenerator and FilePlayback source modules provide a command line switch that disables timing evaluation.
+</p>
+<ul><li>Make sure that you are starting up BCI2000 from a batch file rather than <a href="User_Reference%253ABCI2000Launcher.html" title="User Reference:BCI2000Launcher">BCI2000Launcher</a>.
+</li><li>Edit the batch file, and add <tt>--EvaluateTiming=0</tt> to the command line that starts up the source module.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">Technical Reference:Core Modules</a>, <a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>

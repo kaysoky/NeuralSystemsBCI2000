@@ -45,8 +45,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 The following steps have been tested with Qt 4.6.3.
 </p><p>1. Download and install a recent version of Qt.
 </p><p>2. Add your Qt installation's qt/bin directory to the system search path.
-</p><p>3. From the Start menu, open the Visual Studio x64 Command Prompt.
-</p><p>4. <tt>cd</tt> to your Qt installation's qt directory, and execute the following command:
+</p><p>3. In the file <tt>qt/mkspecs/win32-msvc2008/qmake.conf</tt>, or the corresponding file for MSVC2010, apply these changes: In QMAKE_CFLAGS_RELEASE and QMAKE_CFLAGS_DEBUG, replace the -MD and -MDd switches with -MT and -MTd, respectively.
+</p><p>4. From the Start menu, open the Visual Studio x64 Command Prompt.
+</p><p>5. <tt>cd</tt> to your Qt installation's qt directory, and execute the following command:
 </p>
 <pre>configure -static
 -no-sql-sqlite
@@ -65,17 +66,23 @@ The following steps have been tested with Qt 4.6.3.
 -no-style-motif 
 -no-style-cde 
 </pre>
-<p>5. Compile Qt by executing <tt>nmake</tt>.
+<p>6. Compile the required parts of Qt by executing <tt>nmake</tt> in these directories:
 </p>
+<ul><li><tt>qt/src/corelib</tt>,
+</li><li><tt>qt/src/gui</tt>,
+</li><li><tt>qt/src/winmain</tt>,
+</li><li><tt>qt/src/opengl</tt>.
+</li></ul>
 <a name="Generate_the_Visual_Studio_Solution_file"></a><h2>Generate the Visual Studio Solution file</h2>
 <p>Edit the file <tt>build/cmake/FindQt.cmake</tt> to read SET( USE_STD_QT TRUE ) in line 10.
 </p><p>Then, from your BCI2000 installation's <tt>build</tt> directory, execute the "Make VS2008 Win64 Project Files" batch file.
 After successful execution, you will have a Visual Studio solution file ready to compile BCI2000.
 </p>
 <a name="Limitations"></a><h2>Limitations</h2>
-<p>You cannot build BCI2000 modules that depend on 32-bit libraries, as do most source modules.
-Consider building 32-bit executables instead--these will run fine on Win64.
-</p>
+<ul><li>You will get a number of warnings about unsafe type conversions. These warnings do not indicate serious problems, and may be safely ignored.
+</li><li>You cannot build BCI2000 modules that depend on 32-bit libraries, as do most source modules. Consider building 32-bit executables instead--these will run fine on Win64.
+</li><li>Note that the g.USBamp source module comes with a 64-bit library, so it is supported natively on Win64.
+</li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Programming_Reference%253ABuild_System.html" title="Programming Reference:Build System">Programming Reference:Build System</a>
 </p>

@@ -43,7 +43,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </li>
 <li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SpatialFilterCAROutput"><span class="tocnumber">2.3</span> <span class="toctext">SpatialFilterCAROutput</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SFUseThreading"><span class="tocnumber">2.4</span> <span class="toctext">SFUseThreading</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SpatialFilterMissingChannels"><span class="tocnumber">2.4</span> <span class="toctext">SpatialFilterMissingChannels</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#States"><span class="tocnumber">3</span> <span class="toctext">States</span></a></li>
@@ -91,7 +91,8 @@ Also, specifying <i>row labels</i> to identify output channels allows you to use
 </p>
 <a name="Sparse_Matrix_Filter_Type"></a><h4>Sparse Matrix Filter Type</h4>
 <p>The sparse matrix filter uses the SpatialFilter parameter to define the relationship between input channels and output channels with a given weight. In this case, the SpatialFilter matrix must have 3 columns, and a row for each input/output relationship. The first column contains the input channel, the third column defines the weight that the input channel is multiplied by before being assigned to the output channel, which is defined in the second column.
-</p><p>When specifying input channels in the first column, you may use <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">channel names</a>. In order to assign labels to output channels in sparse representation, use arbitrary labels in the (second) output channel column.
+</p><p>When specifying input channels in the first column, you may use <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">channel names</a>. In order to assign labels to output channels in sparse representation, use arbitrary labels in the (second) output channel column. You may also re-use input channel labels but you should not do so except when there exists a clear relation between input and output channels with the same name, as it is the case in Laplacian filtering (see below).
+</p><p>In order to allow for re-usability of sparse matrix filter configurations, it is not necessary for all specified input channels to exist in the current configuration. In case of missing input channels, only those output channels will be created for which all input channels exist. This way, it is possible to use the Laplacian configurations at <tt>parms/fragments/spatial_filters</tt> with only a subset of the channels specified there.
 </p><p>See the example below for more information on how to use the sparse matrix.
 </p>
 <a name="SpatialFilterCAROutput"></a><h3>SpatialFilterCAROutput</h3>
@@ -102,9 +103,14 @@ Also, specifying <i>row labels</i> to identify output channels allows you to use
 </p><p>It is important to note that <b>all</b> channels passed to the spatial filter (typically defined in the <a href="User_Reference%253AParameters.html#TransmitChList" title="User Reference:Parameters">TransmitChList parameter</a>) are used in the CAR calculation, but only a subset of these channels are actually output and passed to the next step in the signal processing chain.
 </p><p>If this parameter is left blank, then all input channels are passed to the output, and the number of input channels equals the number of output channels.
 </p>
-<a name="SFUseThreading"></a><h3>SFUseThreading</h3>
-<p>When set to 1, computation of a full-matrix type spatial filter is performed by multiple threads. On multiprocessor systems, this should result in improved performance. For spatial filter types other than "full matrix", the setting has no effect.
+<a name="SpatialFilterMissingChannels"></a><h3>SpatialFilterMissingChannels</h3>
+<p>This parameter determines what happens when the SpatialFilter configuration contains channels that are not present in the input signal. Typically, this should be reported as a configuration error. However, when using pre-defined parameter fragments, it is more appropriate to silently suppress output channels that depend on missing input channels. This parameter provides the following values:
 </p>
+<dl><dt>0 Ignore
+</dt><dd>The configuration is silently adapted to use available channels. Output channels are removed if they depend on a missing input channel.
+</dd><dt>1 Report Error
+</dt><dd>There is an error message generated for each channel missing from the input signal. This is the default.
+</dd></dl>
 <a name="States"></a><h2>States</h2>
 <p>None.
 </p>
@@ -236,6 +242,8 @@ In your spatial filter, you will want to re-reference all channels against "link
 <th> 10
 </th><td> F4 </td><td> C4 </td><td> -.25
 </td></tr></table>
+<p><b>Note:</b> This subset of a Large Laplacian filter is only provided as an illustration. BCI2000 provides full Small and Large Laplacian filter configurations in <tt>parms/fragments/spatial_filters</tt>.
+</p>
 <a name="Performance_Notes"></a><h2>Performance Notes</h2>
 <p>Each spatial filter type uses a different algorithm to compute the linear transformation, and can therefore have implications on CPU load and performance. In the following, <span class="texhtml"><i>N</i></span> denotes the filter's number of input channels, and <img class='tex' src="../images/math/0/f/4/0f40d29daf45fd641ba8d2ddfdd493aa.png" alt="M \leq N" /> denotes its number of output channels.
 </p>
@@ -257,7 +265,7 @@ Compared to those, it is associated with a number of disadvantages:
 <ul><li>Complexity of matrix-vector multiplication is <span class="texhtml"><i>O</i>(<i>N</i><i>M</i>)</span>. In situations with large sampling rates and/or a large number of channels, this may result in real-time problems due to high CPU load.
 </li><li><a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">Channel labels</a> are not preserved across the filter. Due to the filter's general nature, no relation between input and output channel names can be inferred, and all output labels must be specified manually.
 </li><li>The filter's specification depends on the order of input channels, which makes it interdependent with the <a href="User_Reference%253AParameters.html#TransmitChList" title="User Reference:Parameters"><i>TransmitChList</i> parameter</a>.
-</li><li>On multi-processor machines, the performance of the full matrix spatial filter may be improved by setting the <a href="User_Reference%253ASpatialFilter.html#SFUseThreading" title="">SFUseThreading</a> parameter to 1.
+</li><li>On multiprocessor systems, computation of a full-matrix type spatial filter is performed by multiple threads, one per processor core, such that the system's multiprocessing capability is fully utilized.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>, <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">User Reference:DataIOFilter#ChannelNames</a>

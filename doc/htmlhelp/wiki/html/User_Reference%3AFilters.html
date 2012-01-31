@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Filters - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Filters,Contributions:ADCs,Contributions:Contents,Contributions:FileWriters,Programming Reference:Filter Chain,Technical Reference:Core Modules,User Reference:ARFilter,User Reference:AlignmentFilter,User Reference:BCI2000FileWriter,User Reference:ConditionalIntegrator,User Reference:ConnectorInput" />
+<meta name="keywords" content="User Reference:Filters,Contributions:ADCs,Contributions:Contents,Contributions:FileWriters,Programming Reference:Filter Chain,Technical Reference:Core Modules,User Reference:ARFilter,User Reference:AlignmentFilter,User Reference:BCI2000FileWriter,User Reference:Command Line Processing,User Reference:ConditionalIntegrator" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -67,6 +67,7 @@ This document describes the <i>filter</i> concept for users who will configure B
 This is analogous to a water pipe: unlike a water stream (a brook, or a river), it is impossible to insert or remove water from inside the pipe without breaking it.
 Similarly, albeit signal portions may change their shape on their way through the pipe (filter chain), it is impossible to insert or remove any of them.
 Thus, each data portion acquired by the data acquisition module will run through the entire BCI2000 system, being processed by a sequence of filters.
+</p><p>This page is mostly about the way filters are used online in BCI2000 core modules. Note however that the same filter code can be accessed in order to recreate a processing chain offline, either <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">from the system command-line</a> or <a href="User_Reference%253AMatlab_Tools.html" title="User Reference:Matlab Tools">from within Matlab</a>.
 </p>
 <a name="Configuration_Overview"></a><h2>Configuration Overview</h2>
 <p>In principle, these filters may be placed in any order by the writer (programmer) of a BCI2000 module, and it is <a href="Programming_Reference%253AFilter_Chain.html" title="Programming Reference:Filter Chain">technically easy</a> to change the number, and order, of filters. 

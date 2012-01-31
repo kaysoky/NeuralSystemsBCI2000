@@ -49,6 +49,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </td></tr></table>
 <a name="Build_and_copy_MSVC_libraries_and_auxiliary_files"></a><h2>Build and copy MSVC libraries and auxiliary files</h2>
 <ul><li>In the file <tt>qt/mkspecs/win32-msvc2008/qmake.conf</tt>, add <tt>-Fd$(DESTDIR)$(QMAKE_TARGET).pdb</tt> as a compiler option to  <tt>QMAKE_CFLAGS_DEBUG</tt>. In <tt>QMAKE_CFLAGS_RELEASE</tt> and <tt>QMAKE_CFLAGS_DEBUG</tt>, replace the <tt>-MD</tt> and <tt>-MDd</tt> with <tt>-MT</tt> and  <tt>-MTd</tt>, respectively.
+</li><li>To optimize for size rather than speed, replace the <tt>-O2</tt> option in <tt>QMAKE_CFLAGS_RELEASE</tt> with <tt>-O1</tt>.
 </li><li>Open the VS2008 console window from the start menu, and from the Qt installation's <tt>qt</tt> directory, run <tt>configure</tt> with the following options:
 </li></ul>
 <pre>-platform win32-msvc2008 
