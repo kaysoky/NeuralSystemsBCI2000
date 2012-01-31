@@ -60,7 +60,7 @@ ARThread&
 ARThread::Modified()
 {
   mInputBuffers.clear();
-  mInputBuffers.resize( mChannels.size(), DataVector( mWindowLength ) );
+  mInputBuffers.resize( mChannels.size(), DataVector( Real( 0 ), mWindowLength ) );
   return *this;
 }
 

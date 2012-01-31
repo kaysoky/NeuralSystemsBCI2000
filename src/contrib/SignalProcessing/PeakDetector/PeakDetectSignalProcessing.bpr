@@ -19,8 +19,8 @@
       obj\Brackets.obj obj\HierarchicalLabel.obj obj\LabelIndex.obj 
       obj\ArithmeticExpression.obj obj\EventQueue.obj obj\OSError.obj 
       obj\OSThread.obj obj\BCIEvent.obj obj\StateVectorSample.obj 
-      obj\Normalizer.obj obj\LinearClassifier.obj obj\SpatialFilterGroup.obj 
-      obj\SpatialFilterCell.obj obj\OSMutex.obj obj\OSEvent.obj 
+      obj\Normalizer.obj obj\LinearClassifier.obj obj\ReusableThread.obj obj\SpatialFilterGroup.obj  
+      obj\OSMutex.obj obj\OSEvent.obj 
       obj\MessageQueue.obj obj\ExceptionCatcher.obj obj\CfgID.obj 
       obj\VisID.obj
       obj\BCIException.obj"/>
@@ -112,8 +112,8 @@
       <FILE FILENAME="..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\Normalizer.cpp" FORMNAME="" UNITNAME="Normalizer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\LinearClassifier.cpp" FORMNAME="" UNITNAME="LinearClassifier" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\SpatialFilterGroup.cpp" FORMNAME="" UNITNAME="SpatialFilterGroup" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\SpatialFilterCell.cpp" FORMNAME="" UNITNAME="SpatialFilterCell" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

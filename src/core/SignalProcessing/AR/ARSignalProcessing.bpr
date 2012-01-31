@@ -15,8 +15,8 @@
       obj\StateList.obj obj\StateVector.obj obj\Status.obj obj\VersionInfo.obj 
       obj\ClassName.obj obj\MeasurementUnits.obj obj\PrecisionTime.obj 
       obj\SockStream.obj obj\ExpressionParser.obj obj\Expression.obj obj\ExpressionNodes.obj 
-      obj\SpatialFilter.obj obj\ARFilter.obj obj\ARGroup.obj obj\ARChannel.obj 
-      obj\SpatialFilterGroup.obj obj\SpatialFilterCell.obj 
+      obj\SpatialFilter.obj obj\ARFilter.obj obj\ARThread.obj 
+      obj\ReusableThread.obj obj\SpatialFilterGroup.obj  
       obj\LinearClassifier.obj obj\LPFilter.obj obj\Normalizer.obj 
       obj\ArithmeticExpression.obj obj\ExpressionFilter.obj 
       obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj 
@@ -101,10 +101,9 @@
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\SpatialFilter.cpp" FORMNAME="" UNITNAME="SpatialFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\ARFilter.cpp" FORMNAME="" UNITNAME="ARFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\ARGroup.cpp" FORMNAME="" UNITNAME="ARGroup" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\ARChannel.cpp" FORMNAME="" UNITNAME="ARChannel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\ARThread.cpp" FORMNAME="" UNITNAME="ARGroup" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\SpatialFilterGroup.cpp" FORMNAME="" UNITNAME="SpatialFilterGroup" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\SpatialFilterCell.cpp" FORMNAME="" UNITNAME="SpatialFilterCell" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\LinearClassifier.cpp" FORMNAME="" UNITNAME="LinearClassifier" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\LPFilter.cpp" FORMNAME="" UNITNAME="LPFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\Normalizer.cpp" FORMNAME="" UNITNAME="Normalizer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

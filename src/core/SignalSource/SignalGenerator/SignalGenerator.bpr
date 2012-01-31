@@ -24,7 +24,7 @@
       obj\BCI2000OutputFormat.obj obj\EDFOutputFormat.obj 
       obj\GDFOutputFormat.obj obj\EDFOutputBase.obj obj\GenericFileWriter.obj 
       obj\OSEvent.obj obj\OSMutex.obj obj\MessageQueue.obj 
-      obj\VisID.obj
+      obj\VisID.obj obj\TestLogger.obj 
       obj\ExceptionCatcher.obj obj\CfgID.obj obj\BCIException.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
@@ -119,6 +119,7 @@
       <FILE FILENAME="..\..\..\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalsource\logging\KeyLogger.cpp" FORMNAME="" UNITNAME="KeyLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalsource\logging\JoystickLogger.cpp" FORMNAME="" UNITNAME="JoystickLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalsource\logging\TestLogger.cpp" FORMNAME="" UNITNAME="TestLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\dat\BCI2000OutputFormat.cpp" FORMNAME="" UNITNAME="BCI2000OutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

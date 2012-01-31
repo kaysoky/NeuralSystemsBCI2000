@@ -55,6 +55,7 @@ class StateVectorSample
   std::istream&  ReadBinary( std::istream& );
 
  private:
+  void           SetStateValue_( size_t, size_t, State::ValueType );
   size_t         mByteLength; // the length of the binary representation
   unsigned char* mpData;      // binary state data
 };

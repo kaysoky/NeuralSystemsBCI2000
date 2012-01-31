@@ -158,12 +158,17 @@ StateVectorSample::SetStateValue( size_t inLocation, size_t inLength, State::Val
     throw bciexception( "Invalid state length of " << inLength );
   if( inLocation + inLength > 8 * mByteLength )
     throw bciexception( "Accessing non-existent state vector data, location: " << inLocation );
+  SetStateValue_( inLocation, inLength, inValue );
+}
 
+void
+StateVectorSample::SetStateValue_( size_t inLocation, size_t inLength, State::ValueType inValue )
+{ // This is a separate function to work around a strange bug in C++ Builder 2010.
   State::ValueType value = inValue;
   for( size_t bitIndex = inLocation; bitIndex < inLocation + inLength; ++bitIndex )
   {
     unsigned char mask = 1 << ( bitIndex % 8 );
-    if( value & 1 )
+    if( value & 1 ) // When the Builder bug occurs, the constant 1 (or any value) is replaced with 8 in the assembly.
       mpData[ bitIndex / 8 ] |= mask;
     else
       mpData[ bitIndex / 8 ] &= ~mask;

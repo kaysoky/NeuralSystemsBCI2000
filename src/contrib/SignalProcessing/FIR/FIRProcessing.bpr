@@ -19,7 +19,7 @@
       obj\ArithmeticExpression.obj obj\EventQueue.obj obj\OSError.obj 
       obj\OSThread.obj obj\BCIEvent.obj obj\StateVectorSample.obj 
       obj\LinearClassifier.obj obj\LPFilter.obj obj\Normalizer.obj 
-      obj\SpatialFilterGroup.obj obj\SpatialFilterCell.obj obj\OSMutex.obj 
+      obj\ReusableThread.obj obj\SpatialFilterGroup.obj  obj\OSMutex.obj 
       obj\OSEvent.obj obj\MessageQueue.obj obj\ExceptionCatcher.obj 
       obj\VisID.obj
       obj\CfgID.obj obj\BCIException.obj"/>
@@ -113,7 +113,7 @@
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\LPFilter.cpp" FORMNAME="" UNITNAME="LPFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\Normalizer.cpp" FORMNAME="" UNITNAME="Normalizer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalprocessing\SpatialFilterGroup.cpp" FORMNAME="" UNITNAME="SpatialFilterGroup" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\SpatialFilterCell.cpp" FORMNAME="" UNITNAME="SpatialFilterCell" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
