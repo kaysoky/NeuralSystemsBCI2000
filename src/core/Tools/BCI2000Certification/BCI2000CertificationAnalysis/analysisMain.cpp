@@ -5,7 +5,7 @@ Author: Adam Wilson, University of Wisconsin-Madison, 2007
 $BEGIN_BCI2000_LICENSE$
 
 This file is part of BCI2000, a platform for real-time bio-signal research.
-[ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+[ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
 
 BCI2000 is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free Software
