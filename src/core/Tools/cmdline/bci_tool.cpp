@@ -30,6 +30,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <cstdlib>
 #include <fcntl.h>
 
 // Do we need to switch stdin/stdout into binary mode?
