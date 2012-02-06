@@ -1,42 +1,47 @@
-import os,sys
 import time
 import numpy
 import scipy.signal # for detrending
 import SigTools
 import WavTools
 
-class MyTrapSequence(SigTools.TrapSequence):
-	def onreset(self, discard=None, remember=None, persistence=None, detrend=None, bci=None, streamnumber=None):
-		if discard == None: discard = getattr(self, 'discard', 0)
-		if remember == None: remember = getattr(self, 'remember', 10)
-		if persistence == None: persistence = getattr(self, 'persistence', 1.0)
-		if detrend == None: detrend = getattr(self, 'detrend', None)
-		if bci == None: bci = getattr(self, 'bci', None)
-		if streamnumber == None: streamnumber = getattr(self, 'streamnumber', 0)
-				
-		self.discard = discard
-		self.remember = remember   # keep how many individual epochs in memory at any one time?
-		self.persistence = persistence  # for running mean
-		self.bci = bci
-		self.detrend = detrend  # None,  'constant' or 'linear'
-		self.streamnumber = streamnumber
-	
-		self.avg = SigTools.running_mean(persistence=self.persistence)
-		self.ndelivered = 0
-		self.recent = []
-		
-	def oncollect(self, x, n):
-		if self.detrend != None: x = scipy.signal.detrend(x, axis=1, type=self.detrend)		
-		self.ndelivered += 1
-		if self.ndelivered > self.discard: self.avg += x   # keep a running average
-		self.recent.append(x)
-		while len(self.recent) > self.remember: self.recent.pop(0)
+from BCPy2000.GenericSignalProcessing import BciGenericSignalProcessing
+from BCPy2000.GenericApplication import BciGenericApplication
 
-		if self.bci != None: self.bci.DoSomethingWith(x, self.streamnumber)
+def trapseq_onreset(self, discard=None, remember=None, persistence=None, detrend=None, bci=None, streamnumber=None):
+	if discard == None: discard = getattr(self, 'discard', 0)
+	if remember == None: remember = getattr(self, 'remember', 10)
+	if persistence == None: persistence = getattr(self, 'persistence', 1.0)
+	if detrend == None: detrend = getattr(self, 'detrend', None)
+	if bci == None: bci = getattr(self, 'bci', None)
+	if streamnumber == None: streamnumber = getattr(self, 'streamnumber', 0)
+			
+	self.discard = discard
+	self.remember = remember   # keep how many individual epochs in memory at any one time?
+	self.persistence = persistence  # for running mean
+	self.bci = bci
+	self.detrend = detrend  # None,  'constant' or 'linear'
+	self.streamnumber = streamnumber
+
+	self.avg = SigTools.running_mean(persistence=self.persistence)
+	self.ndelivered = 0
+	self.recent = []
+	
+def trapseq_oncollect(self, x, n):
+	if self.detrend != None: x = scipy.signal.detrend(x, axis=1, type=self.detrend)		
+	self.ndelivered += 1
+	if self.ndelivered > self.discard: self.avg += x   # keep a running average
+	self.recent.append(x)
+	while len(self.recent) > self.remember: self.recent.pop(0)
+
+	if self.bci != None: self.bci.DoSomethingWith(x, self.streamnumber)
+
+class MyTrapSequence(SigTools.TrapSequence):
+	onreset = trapseq_onreset
+	oncollect = trapseq_oncollect
 
 class MyTriggerlessTrapSequence(SigTools.TriggerlessTrapSequence):
-	onreset = MyTrapSequence.onreset
-	oncollect = MyTrapSequence.oncollect
+	onreset = trapseq_onreset
+	oncollect = trapseq_oncollect
 
 #################################################################
 #################################################################
@@ -48,10 +53,10 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	def Construct(self):
 			
 		self.define_param( 'PythonSig:Epoch   int       NumberOfStreams=                          2                      2     1 % // ' )
-		self.define_param( 'PythonSig:Epoch   float     EpochDurationMsec=                      600                    600   100 % // ' )
-		self.define_param( 'PythonSig:Epoch   floatlist EpochLowerBoundMsec=                2   100     100            100     0 % // after springing, each ERP trap will not spring again for this many milliseconds' )
-		self.define_param( 'PythonSig:Epoch   list      TriggerChannels=                    2  AUDL    AUDR              %     % % // ' )
-		self.define_param( 'PythonSig:Epoch   floatlist TriggerThreshold=                   2     0.1     0.1            %     0 % // ' )
+		self.define_param( 'PythonSig:Epoch   float     EpochDurationMsec=                      800                    600   100 % // ' )
+		self.define_param( 'PythonSig:Epoch   floatlist EpochLowerBoundMsec=                2   600     600            100     0 % // after springing, each ERP trap will not spring again for this many milliseconds' )
+		self.define_param( 'PythonSig:Epoch   list      TriggerChannels=                    2     L       R              %     % % // ' )
+		self.define_param( 'PythonSig:Epoch   floatlist TriggerThreshold=                   2    10      10              %     0 % // ' )
 		self.define_param( 'PythonSig:Epoch   float     TriggerHPCutoff=                          0.0                    0.0   0 % // ' )
 		self.define_param( 'PythonSig:Epoch   int       TriggerHPOrder=                           4                      4     0 % // ' )
 		self.define_param( 'PythonSig:Epoch   float     TriggerlessOffsetMsec=                   50.0                 50.0     0 % // used to compensate for stimulus output latency to make weights from triggered and triggerless versions as compatible as possible' )
@@ -87,9 +92,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 		# check length = number of streams
 		perStreamParams = [
-			'EpochLowerBoundMsec', 'DiscardEpochs', 'PeriodMsec', 'OffsetMsec',
-			'InitialStandards', 'MinTargets', 'MaxTargets', 'ScopeForMinMax',
-			'StreamVolumes',
+			'EpochLowerBoundMsec', 'DiscardEpochs',
 		]
 		if use_trigger: perStreamParams += ['TriggerChannels', 'TriggerThreshold']
 		for paramname in perStreamParams:
@@ -158,7 +161,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	def StartRun(self):
 	
 		for seq in self.seq:  seq.reset()
-		if len(self.trigchan): self.Last10SecondsTrigger.reset()
+		#if len(self.trigchan): self.Last10SecondsTrigger.reset()
 	
 	#############################################################
 
@@ -181,7 +184,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		for istream,seq in enumerate(self.seq):
 
 			kwargs = {}
-			if len(self.trigchan) == 0 and self.changed('Trigger', only=istream+1)
+			if len(self.trigchan) == 0 and self.changed('Trigger', only=istream+1):
 				# some extra fiddling for software-only triggering
 				eo = self.detect_event()  # decodes the EventOffset state
 				if eo == None:
@@ -259,7 +262,6 @@ class BciApplication(BciGenericApplication):
 		self.define_param( 'PythonApp:Stimuli floatlist SOARangeMsec=                       2  1000 2000                 0   500 % // ' )
 
 		self.define_state( 'Trigger 2 0 0 0' )		
-		self.transient( 'Trigger' )
 		
 	#############################################################
 	
@@ -270,13 +272,15 @@ class BciApplication(BciGenericApplication):
 		elif 'DirectSoundInterface' in sys.modules and sys.modules['DirectSoundInterface'].loaded:
 			raise EndUserError, 'once turned on, the DirectSound setting cannot be turned off without restarting BCI2000'
 	
-		self.sound = WavTools.player('bing.wav')
+		self.bing = WavTools.player('bing.wav')
+		
+		self.transient( 'Trigger' )
 		
 	#############################################################
 	
 	def Phases(self):
 		
-		soaRange = self.params.SOARangeMsec.val	
+		soaRange = numpy.array(self.params.SOARangeMsec.val)
 		soa = numpy.random.rand() * soaRange.ptp() + soaRange.min()
 		
 		self.phase(  duration=2000, name='leadin',    next='bing',  )
