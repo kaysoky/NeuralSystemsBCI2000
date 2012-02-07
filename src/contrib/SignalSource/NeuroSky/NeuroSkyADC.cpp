@@ -171,7 +171,7 @@ void NeuroSkyADC::Initialize( const SignalProperties&,
   int errCode = TG_Connect( mConnectionID, ss.str().c_str(), TG_BAUD_9600, TG_STREAM_PACKETS );
   if( errCode < 0 ) {
     bcierr << "Error connecting to Thinkgear - Connect error: " << errCode << endl;
-    bcierr << "Ensure your com port is set to 57600 baud." << endl;
+    bcierr << "Ensure your com port is set to 9600 baud." << endl;
   }
 }
 
