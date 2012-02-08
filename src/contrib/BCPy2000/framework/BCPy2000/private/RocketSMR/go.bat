@@ -68,6 +68,7 @@ goto SET_NORMALIZER
 :SKIPNORMALIZEROUTPUT
 
 @if %SESSION% == 006 goto BCIEEG
+@if %SESSION% == 016 goto BCIEEG
 goto PHYSICAL
 :BCIEEG
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\EEG_SelectedChannels.prm
@@ -94,6 +95,9 @@ goto SKIP_DirectControl
 :DirectControl
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\DirectControl.prm
 :SKIP_DirectControl
+@if %SESSION% == 016 (
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\AdaptiveNorm.prm
+)
 
 @set OnConnect=%OnConnect% ; SET PARAMETER VisualizeSource 1
 set LOGGERS=%LOGGERS% --LogDataGlove=1

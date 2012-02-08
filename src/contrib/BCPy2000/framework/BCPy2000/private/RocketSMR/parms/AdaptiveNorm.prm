@@ -1,0 +1,5 @@
+PythonApp:Settings 		int 		NormalizerMode= 	1 		// 0 no normalization after calibration, 1 adaptive normalization (enumeration)
+PythonApp:Settings 		float 		NormalizerUpdate= 	5.0 	// period in s after which normalizer variables are updated by default if adaptive normalization is employed
+
+PythonApp:BasicRound 	int 		CloudMode= 			1 		// 0 cloud moves according to CloudPath and CloudSpeed, 1 cloud moves away from paddle (enumerate)
+PythonApp:PaddleSizeAdjusting float InitGameDifficulty= -5.0 	// GameDifficulty for adjusting paddle size
