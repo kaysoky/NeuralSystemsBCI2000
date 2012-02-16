@@ -37,6 +37,7 @@ SET( HDR_STAT
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\signalprocessing\\statistics FILES ${SIGPROCSOURCES} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\signalprocessing\\statistics FILES ${SIGPROCHEADERS} )
 
+ADD_SUBDIRECTORY( Cmdline )
 
 # Set the project specific sources
 SET( SRC_PROJECT
