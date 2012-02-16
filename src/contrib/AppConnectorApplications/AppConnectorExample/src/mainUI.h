@@ -22,14 +22,11 @@
 #ifndef MAINWIDGET_H
 #define MAINWIDGET_H
 
-#include <QtGui>
 #include <string>
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <math.h>
 #include <map>
-#include <algorithm>
+
+#include <QtGui>
+#include <QThread>
 
 #include "SockStream.h"
 
@@ -47,8 +44,6 @@ class QButtonGroup;
 class QForm;
 class QTableWidget;
 
-using namespace std;
-
 /*
 Our main GUI class will be called mainUI. It inherits from the Qt
 QWidget class, allowing it to use slots/signals, layouts, and
@@ -56,83 +51,76 @@ everything a form would need.
 */
 class mainUI : public QWidget
 {
-	//this macro MUST be declared for any object which will use signals/slots
-	//it provides the ability to use the private slots: class declaration
+  //this macro MUST be declared for any object which will use signals/slots
+  //it provides the ability to use the private slots: class declaration
 
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	//the default constructor. In the implementation, this is where the form
-	//generation will occur
-	mainUI();
+  //the default constructor. In the implementation, this is where the form
+  //generation will occur
+  mainUI();
+  ~mainUI();
 
 private slots:
-	//these are our slots; if you are used to borland, these are basically
-	//the callback functions for different actions, such as a button-click
-	void connectButCallback();
-	void timerUpdate();
-	void changeStateValue(int row, int column);
+  //these are our slots; if you are used to borland, these are basically
+  //the callback functions for different actions, such as a button-click
+  void connectButCallback();
+  void timerUpdate();
+  void changeStateValue(int row, int column);
 
 private:
-	//although Qt Designer allows us to graphically design our UI, it is helpful
-	// to know what is going on in the actual code. Therefore, this class will manually
-	// setup the forms rather than using the Qt Designer ui file.
-	// layout ===========================================================
-	QVBoxLayout *mainLayout;
+  // QThread descendant
+  struct ReceivingThread;
+  friend struct ReceivingThread;
+  struct ReceivingThread : QThread
+  {
+    ReceivingThread( mainUI& p ) : parent( p ) {}
+    void run();
+    mainUI& parent;
+  } mReceivingThread;
 
-	//connection objects
-	QGroupBox *connectGroup;
-	QVBoxLayout *connectLayout;
-	QLabel *receiveLabel;
-	QLineEdit *receiveBox;
-	QLabel *sendLabel;
-	QLineEdit *sendBox;
-	QPushButton *connectBut;
-	QLineEdit *statusBox;
+private:
+  //although Qt Designer allows us to graphically design our UI, it is helpful
+  // to know what is going on in the actual code. Therefore, this class will manually
+  // setup the forms rather than using the Qt Designer ui file.
+  // layout ===========================================================
+  QVBoxLayout *mainLayout;
 
-	//perturbations objects
-	QGroupBox *statesGroup;
-	QGridLayout *statesLayout;
-	QTableWidget *stateTable;
+  //connection objects
+  QGroupBox *connectGroup;
+  QVBoxLayout *connectLayout;
+  QLabel *receiveLabel;
+  QLineEdit *receiveBox;
+  QLabel *sendLabel;
+  QLineEdit *sendBox;
+  QPushButton *connectBut;
+  QLineEdit *statusBox;
 
-	//layout setup functions
-	void setupUI();
-	void setupConnectionGroup();
-	void setupStatesGroup();
+  //table objects
+  QGroupBox *statesGroup;
+  QGridLayout *statesLayout;
+  QTableWidget *stateTable;
 
-	// data members ====================================================
-	string address;
-	//these are the objects used to connect to bci2000
-	receiving_udpsocket recSocket;
-	sockstream recConnection;
-	sending_udpsocket sendSocket;
-	sockstream sendConnection;
+  //layout setup functions
+  void setupUI();
+  void setupConnectionGroup();
+  void setupStatesGroup();
 
-	//this map holds the state names and associated values
-	map<string, int> states;
+  // data members ====================================================
+  std::string address;
+  //these are the objects used to connect to bci2000
+  receiving_udpsocket recSocket;
+  sockstream recConnection;
+  sending_udpsocket sendSocket;
+  sockstream sendConnection;
+  //this map holds the state names and associated values
+  std::map<std::string, std::string> states;
+  QMutex mMutex;
+  //a timer to update the display
+  QTimer* timer;
 
-	//a timer to update the states
-	QTimer *timer;
-
-	int prevTrigger, prevITI, prevFeedback;
-	string triggerType;
-	bool addMod;
-	int triggered;
-	int minDelay, maxDelay, delay;
-	short xMod, yMod;
-	unsigned short modCount;
-	short massInit, FCinit;
-	bool initialized;
-
-	int noGetStates;
-
-	//more private helper functions
-	void updateVars();
-	void writeValue(string name, short value);
-	void getInitialValues();
-	void resetInitialValues();
-	bool getStates();
-	void reset();
-	void updateCfg();
+  //more private helper functions
+  void writeValue(const std::string& name, double value);
 };
 #endif
