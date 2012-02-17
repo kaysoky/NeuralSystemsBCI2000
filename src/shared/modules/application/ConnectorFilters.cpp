@@ -177,7 +177,7 @@ ConnectorOutput::ConnectorOutput()
 {
   BEGIN_PARAMETER_DEFINITIONS
     SECTION " string ConnectorOutputAddress= % "
-      "localhost:20320 % % // IP address/port to write to, e.g. localhost:20320",
+      "localhost:20321 % % // IP address/port to write to, e.g. localhost:20321",
   END_PARAMETER_DEFINITIONS
 }
 
