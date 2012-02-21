@@ -69,10 +69,12 @@ class FunctionSource : public DataSource, public ExpressionParser::Node
   std::vector<double> mArgBuffer;
   bool mArgsChanged;
   int mPreviousIndex;
+  StatisticalObserver::MemPool mMemPool;
   StatisticalObserver::Number mNumberResult;
+  // MemPool must be listed before VectorPtr and MatrixPtr objects
+  // because their destructors depend on the MemPool object.
   StatisticalObserver::VectorPtr mVectorResult;
   StatisticalObserver::MatrixPtr mMatrixResult;
-  StatisticalObserver::MemPool mMemPool;
 };
 
 #endif // _SOURCE_H
