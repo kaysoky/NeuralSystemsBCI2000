@@ -43,10 +43,13 @@
 #pragma hdrstop
 
 #include "ConnectorFilters.h"
+#include "BCIException.h"
+#include "WildcardMatch.h"
 
 #define SECTION "Connector"
 
 using namespace std;
+using namespace bci;
 
 RegisterFilter( ConnectorInput,  2.9999 ); // Place the input filter
                                            // immediately before the task
@@ -55,9 +58,7 @@ RegisterFilter( ConnectorOutput, 3.9999 ); // Place the output filter
                                            // last in the application module.
 
 ConnectorInput::ConnectorInput()
-: mConnectorInputAddress( "" ),
-  mInputFilter( "" ),
-  mAllowAny( false )
+: mConnectorInputAddress( "" )
 {
   BEGIN_PARAMETER_DEFINITIONS
     SECTION " list ConnectorInputFilter= 0 "
@@ -95,19 +96,11 @@ ConnectorInput::Preflight( const SignalProperties& inSignalProperties,
 void
 ConnectorInput::Initialize( const SignalProperties&, const SignalProperties& )
 {
-  mConnectorInputAddress = ( string )Parameter( "ConnectorInputAddress" );
+  mConnectorInputAddress = string( Parameter( "ConnectorInputAddress" ) );
+  mInputFilters.clear();
   ParamRef ConnectorInputFilter = Parameter( "ConnectorInputFilter" );
-  if( mConnectorInputAddress != "" )
-  {
-    mInputFilter = "";
-    mAllowAny = ( ConnectorInputFilter->NumValues() > 0 && ConnectorInputFilter( 0 ) == "*" );
-    if( !mAllowAny )
-      for( int i = 0; i < ConnectorInputFilter->NumValues(); ++i )
-      {
-        mInputFilter += ConnectorInputFilter( i );
-        mInputFilter += ' ';
-      }
-  }
+    for( int i = 0; i < ConnectorInputFilter->NumValues(); ++i )
+      mInputFilters.push_back( ConnectorInputFilter( i ) );
 }
 
 void
@@ -133,68 +126,80 @@ ConnectorInput::StopRun()
 void
 ConnectorInput::Process( const GenericSignal& Input, GenericSignal& Output )
 {
-  Output = Input;
-  while( mConnection.rdbuf()->in_avail() )
+  try
   {
-    string line;
-    getline( mConnection, line );
-    istringstream iss( line );
+    Output = Input;
+    string buffer;
+    while( mConnection.rdbuf()->in_avail() )
+      buffer += mConnection.get();
+    istringstream iss( buffer );
     string name;
-    double value;
-    iss >> name >> value;
-    if( !iss )
-      bciout << "Unexpected input" << endl;
-    else if( mAllowAny || mInputFilter.find( name + ' ' ) != string::npos )
+    while( iss >> name )
     {
-      if( name.find( "Signal(" ) == 0 )
+      double value;
+      string remainder;
+      if( !::getline( iss >> value, remainder ) || !remainder.empty() )
+        throw bciexception_( "Malformed input, expected state name, followed by a single number as a value,"
+                             "space-separated, and terminated with a newline character" );
+      bool match = false;
+      for( vector<string>::const_iterator i = mInputFilters.begin(); i != mInputFilters.end() && !match; ++i )
+        match = match || WildcardMatch( *i, name, false );
+      if( match )
       {
-        istringstream iss( name.substr( name.find( '(' ) ) );
-        char ignore;
-        int channel = 0,
-            element = 0;
-        if( !( iss >> ignore >> channel >> ignore >> element >> ignore ) )
-          bciout << "Incorrect Signal index syntax: " << name << endl;
-        else if( channel >= Input.Channels() || element >= Input.Elements() )
-          bciout << "Received signal index out-of-bounds: " << name << endl;
-        else
+        if( name.find( "Signal(" ) == 0 )
+        {
+          istringstream iss( name.substr( name.find( '(' ) ) );
+          char ignore;
+          int channel = 0,
+              element = 0;
+          if( !( iss >> ignore >> channel >> ignore >> element >> ignore ) )
+            throw bciexception_( "Incorrect Signal index syntax: " << name );
+          if( channel >= Input.Channels() || element >= Input.Elements() )
+            throw bciexception_( "Received signal index out-of-bounds: " << name );
           Output( channel, element ) = value;
-      }
-      else
-      {
-        if( !States->Exists( name ) )
-          bciout << "Ignoring value for non-existent " << name << " state" << endl;
+        }
         else
+        {
+          if( !States->Exists( name ) )
+            throw bciexception_( "Ignoring value for non-existent " << name << " state" );
           State( name.c_str() ) = static_cast<int>( value );
+        }
       }
     }
+  }
+  catch( const BCIException& e )
+  {
+    bciout << e.what() << endl;
   }
 }
 
 
 // ConnectorOutput
 ConnectorOutput::ConnectorOutput()
-: mConnectorOutputAddress( "" )
 {
   BEGIN_PARAMETER_DEFINITIONS
     SECTION " string ConnectorOutputAddress= % "
-      "localhost:20321 % % // IP address/port to write to, e.g. localhost:20321",
+      "localhost:20321 % % // one or more IP:Port combinations, e.g. localhost:20321",
   END_PARAMETER_DEFINITIONS
 }
 
 ConnectorOutput::~ConnectorOutput()
 {
+  DeleteConnections();
 }
 
 void
 ConnectorOutput::Preflight( const SignalProperties& inSignalProperties,
                                   SignalProperties& outSignalProperties ) const
 {
-  string connectorOutputAddress( Parameter( "ConnectorOutputAddress" ) );
-  if( connectorOutputAddress != "" )
+  string connectorOutputAddresses = string( Parameter( "ConnectorOutputAddress" ) );
+  istringstream iss( connectorOutputAddresses );
+  string address;
+  while( iss >> address )
   {
-    sending_udpsocket preflightSocket( connectorOutputAddress.c_str() );
+    sending_udpsocket preflightSocket( address.c_str() );
     if( !preflightSocket.is_open() )
-      bcierr << "Could not connect to " << connectorOutputAddress << endl;
+      bcierr << "Could not connect to " << address << endl;
   }
   // Pre-flight access each state in the list.
   for( int state = 0; state < States->Size(); ++state )
@@ -206,41 +211,90 @@ ConnectorOutput::Preflight( const SignalProperties& inSignalProperties,
 void
 ConnectorOutput::Initialize( const SignalProperties&, const SignalProperties& )
 {
-  mConnectorOutputAddress = ( string )Parameter( "ConnectorOutputAddress" );
+  mConnectorOutputAddresses = string( Parameter( "ConnectorOutputAddress" ) );
 }
 
 void
 ConnectorOutput::StartRun()
 {
-  if( mConnectorOutputAddress != "" )
+  istringstream iss( mConnectorOutputAddresses );
+  string address;
+  while( iss >> address )
   {
-    mSocket.open( mConnectorOutputAddress.c_str() );
-    mConnection.open( mSocket );
-    if( !mConnection.is_open() )
-      bcierr << "Could not connect to " << mConnectorOutputAddress << endl;
+    mConnections.push_back( new Connection( address ) );
+    if( !mConnections.back()->IsOpen() )
+      bcierr << "Could not connect to " << address << endl;
+    else
+      mConnections.back()->Start();
   }
 }
 
 void
 ConnectorOutput::StopRun()
 {
-  mConnection.close();
-  mConnection.clear();
-  mSocket.close();
+  DeleteConnections();
 }
 
 void
 ConnectorOutput::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   Output = Input;
-  for( int state = 0; state < States->Size(); ++state )
+  for( vector<Connection*>::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
   {
-    string stateName = ( *States )[ state ].Name();
-    mConnection << stateName << ' '
-                << State( stateName.c_str() ) << endl;
+    {
+      Lock<Connection> lock( **i );
+      ( **i ).Clear();
+      for( int state = 0; state < States->Size(); ++state )
+      {
+        const string& stateName = ( *States )[ state ].Name();
+        **i << stateName << ' '
+            << State( stateName.c_str() )
+            << '\n';
+      }
+      for( int channel = 0; channel < Input.Channels(); ++channel )
+        for( int element = 0; element < Input.Elements(); ++element )
+          **i << "Signal(" << channel << "," << element << ") "
+              << Input( channel, element )
+              << '\n';
+      ( **i ).flush();
+    }
+    ( **i ).Set();
   }
-  for( int channel = 0; channel < Input.Channels(); ++channel )
-    for( int element = 0; element < Input.Elements(); ++element )
-      mConnection << "Signal(" << channel << "," << element << ") "
-                  << Input( channel, element ) << endl;
 }
+
+void
+ConnectorOutput::DeleteConnections()
+{
+  for( vector<Connection*>::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
+    delete *i;
+  mConnections.clear();
+}
+
+int
+ConnectorOutput::Connection::OnExecute()
+{
+  const int cReactionTimeMs = 100;
+  while( !IsTerminating() )
+  {
+    if( Wait( cReactionTimeMs ) )
+    {
+      Reset();
+      bool result = true;
+      while( result && !IsTerminating() )
+      {
+        string message;
+        {
+          ::Lock<Connection> lock( *this );
+          result = ::getline( *this, message );
+        }
+        if( result && !IsTerminating() )
+        {
+          mSocket.write( message.c_str(), message.length() );
+          mSocket.write( "\n", 1 );
+        }
+      }
+    }
+  }
+  return 0;
+}
+

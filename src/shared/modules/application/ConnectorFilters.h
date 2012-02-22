@@ -45,7 +45,10 @@
 #include "GenericFilter.h"
 
 #include "SockStream.h"
-#include <string>
+#include "Lockable.h"
+#include "OSThread.h"
+#include <sstream>
+#include <vector>
 
 class ConnectorInput : public GenericFilter
 {
@@ -63,8 +66,7 @@ class ConnectorInput : public GenericFilter
   std::string         mConnectorInputAddress;
   receiving_udpsocket mSocket;
   sockstream          mConnection;
-  std::string         mInputFilter;
-  bool                mAllowAny;
+  std::vector<std::string> mInputFilters;
 };
 
 class ConnectorOutput : public GenericFilter
@@ -80,9 +82,22 @@ class ConnectorOutput : public GenericFilter
   virtual bool AllowsVisualization() const { return false; }
 
  private:
-  std::string       mConnectorOutputAddress;
-  sending_udpsocket mSocket;
-  sockstream        mConnection;
+  void DeleteConnections();
+
+  class Connection : public std::stringstream, public Lockable, public OSThread, public OSEvent
+  {
+   public:
+    Connection( const std::string& inAddress ) : mSocket( inAddress.c_str() ) {}
+    ~Connection() { TerminateWait(); }
+    bool IsOpen() const { return mSocket.is_open(); }
+    void Clear() { str( "" ); clear(); }
+   private:
+    int OnExecute();
+   private:
+    sending_udpsocket mSocket;
+  };
+  std::string mConnectorOutputAddresses;
+  std::vector<Connection*> mConnections;
 };
 #endif // CONNECTOR_FILTERS_H
 
