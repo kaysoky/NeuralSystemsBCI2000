@@ -99,7 +99,7 @@ class streamsock
     bool        wait_for_write( int timeout = defaultTimeout, bool return_on_accept = false );
 
     size_t      read( char* buffer, size_t count );
-    size_t      write( char* buffer, size_t count );
+    size_t      write( const char* buffer, size_t count );
 
     typedef std::set<streamsock*> set_of_instances;
     // These functions block until the given sockets are prepared to read or write.

@@ -391,7 +391,7 @@ streamsock::read( char* buffer, size_t count )
 }
 
 size_t
-streamsock::write( char* buffer, size_t count )
+streamsock::write( const char* buffer, size_t count )
 {
   int result = ::send( m_handle, buffer, static_cast<int>( count ), 0 );
   if( result == SOCKET_ERROR || result < 1 && count > 0 )
