@@ -386,10 +386,11 @@ FILTER_NAME::StartRun()
   try {
     BlockThreads();
     SendParametersToPython();
+    SendStatesToPython();
     StateMap before = ReceiveStatesFromPython();
     CallHook("_StartRun");
     StateMap after = ReceiveStatesFromPython();
-	UpdateStateChangesFromPython(before, after);
+    UpdateStateChangesFromPython(before, after);
     UnblockThreads();
     if(shared_flag) *shared_flag = 0.0;
   }
@@ -660,6 +661,9 @@ FILTER_NAME::UpdateStateChangesFromPython( StateMap& before, StateMap& after ) c
 {
   for( int i = 0; i < States->Size(); ++i ) {
     const char* name = ( *States )[ i ].Name().c_str();
+    if( strcmp( name, "SourceTime" ) == 0 ) continue;
+    if( strcmp( name, "StimulusTime" ) == 0 ) continue;
+    if( strcmp( name, "AppStartTime" ) == 0 ) continue;
     StateType value = after[name];
     if( before.empty() || value != before[name] ) {
       StateRef s = State(name);
