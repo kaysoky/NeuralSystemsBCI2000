@@ -47,10 +47,13 @@ BCIError::DebugMessage( const string& message )
 }
 
 void
-BCIError::Warning( const string& message )
+BCIError::Warning( const string& inMessage )
 {
-  if( message.length() > 1 )
+  if( inMessage.length() > 1 )
   {
+    string message = inMessage;
+    if( message.find_last_of( '\n' ) == message.length() - 1 )
+      message = message.substr( 0, message.length() - 1 );
     if( gpStateMachine && gpStateMachine->CallbackFunction( BCI_OnWarningMessage ) )
       gpStateMachine->ExecuteCallback( BCI_OnWarningMessage, message.c_str() );
     else
@@ -65,10 +68,13 @@ BCIError::Warning( const string& message )
 }
 
 void
-BCIError::ConfigurationError( const string& message )
+BCIError::ConfigurationError( const string& inMessage )
 {
-  if( message.length() > 1 )
+  if( inMessage.length() > 1 )
   {
+    string message = inMessage;
+    if( message.find_last_of( '\n' ) == message.length() - 1 )
+      message = message.substr( 0, message.length() - 1 );
     if( gpStateMachine && gpStateMachine->CallbackFunction( BCI_OnErrorMessage ) )
       gpStateMachine->ExecuteCallback( BCI_OnErrorMessage, message.c_str() );
     else
