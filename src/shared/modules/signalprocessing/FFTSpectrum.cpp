@@ -144,7 +144,7 @@ FFTThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
         {
           Real sqMag = 0;
           for( int j = 0; j < mSpectrumOversampling; ++j )
-            sqMag += SqMag( mFFT.Output( k++ ) );
+            sqMag += norm( mFFT.Output( k++ ) );
           mSpectrum[i] = sqMag * mNormalizationFactor;
         }
         break;
@@ -157,10 +157,10 @@ FFTThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
           for( int j = 0; j < mSpectrumOversampling; ++j )
           {
             value += mFFT.Output( k );
-            sqMag += SqMag( mFFT.Output( k++ ) );
+            sqMag += norm( mFFT.Output( k++ ) );
           }
           if( ::fabs( value.real() ) > eps || ::fabs( value.imag() ) > eps )
-            value /= ::sqrt( SqMag( value ) );
+            value /= ::sqrt( norm( value ) );
           value *= ::sqrt( sqMag * mNormalizationFactor );
           mSpectrum[i] = value;
         }

@@ -53,9 +53,6 @@ class FFTThread : public SpectrumThread
   typedef FFTLibWrapper::Real Real;
   typedef std::valarray<Complex> ComplexVector;
 
-  // Strange behavior of std::abs( std::complex<> ) and std::norm( std::complex<> ) (STL bug?)
-  static Real SqMag( const Complex& c ) { return c.real()*c.real() + c.imag()*c.imag(); }
-
   ComplexVector mShiftCarrier,
                 mSpectrum;
   ComplexFFT mFFT;
