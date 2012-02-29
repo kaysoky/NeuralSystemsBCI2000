@@ -110,10 +110,22 @@ VersionInfo::ReadFromStream( istream& is )
 }
 
 ostream&
-VersionInfo::WriteToStream( ostream& os ) const
+VersionInfo::WriteToStream( ostream& os, bool pretty ) const
 {
-  for( const_iterator i = begin(); i != end(); ++i )
-    os << "$" << i->first << ": " << i->second << " $ ";
+  if( pretty )
+  {
+    for( size_t i = 0; i < sizeof( sNames ) / sizeof( *sNames ); ++i )
+    {
+      const_iterator j = find( sNames[i] );
+      if( j != end() && !j->second.empty() )
+        os << j->first << ": " << j->second << "\n";
+    }
+  }
+  else
+  {
+    for( const_iterator i = begin(); i != end(); ++i )
+      os << "$" << i->first << ": " << i->second << " $ ";
+  }
   return os;
 }
 
