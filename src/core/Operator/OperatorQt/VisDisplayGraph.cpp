@@ -174,9 +174,9 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
       mDisplayFilter.NotchCenter( 0 );
     }
   }
-  int sampleOffset;
+  float sampleOffset;
   if( inConfig.Get( CfgID::SampleOffset, sampleOffset ) )
-    mDisplay.SetSampleOffset( sampleOffset );
+    mDisplay.SetSampleOffset( -sampleOffset );
 
   if( inConfig.Get( CfgID::ChannelUnit, unit ) )
   {
