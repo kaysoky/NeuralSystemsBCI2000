@@ -65,7 +65,7 @@ EnvironmentBase::paramlistAccessor   EnvironmentBase::Parameters;
 EnvironmentBase::statelistAccessor   EnvironmentBase::States;
 EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
 
-int EnvironmentBase::sNumInstances = 0;
+int EnvironmentBase::sMaxInstanceID = 0;
 const EnvironmentBase* EnvironmentBase::sObjectContext = NULL;
 
 #ifdef __BORLANDC__
@@ -124,7 +124,6 @@ EnvironmentBase::StatesAccessedDuringPreflight()
 // Destructor
 EnvironmentBase::~EnvironmentBase()
 {
-  --sNumInstances;
 }
 
 

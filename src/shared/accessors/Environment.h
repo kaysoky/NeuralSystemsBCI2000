@@ -193,7 +193,7 @@ class EnvironmentBase
  // outside its descendants.
  protected:
   EnvironmentBase()
-    : mInstance( ++sNumInstances )
+    : mInstance( ++sMaxInstanceID )
     {}
   virtual ~EnvironmentBase();
   int Instance() const
@@ -375,7 +375,7 @@ class EnvironmentBase
 
  private:
          int mInstance;
-  static int sNumInstances;
+  static int sMaxInstanceID;
 };
 
 // Environment adds consistency checks for Preflight() vs.
