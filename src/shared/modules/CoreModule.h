@@ -174,6 +174,7 @@ class CoreModule : private MessageHandler, private OSThread
                    mStopSent;
   void*            mMutex;
   int              mSampleBlockSize;
+  bool             mOperatorBackLink;
 #if _WIN32
   FPExceptMask     mFPMask;
 #endif // _WIN32

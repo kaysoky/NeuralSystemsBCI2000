@@ -66,7 +66,8 @@ CoreModule::CoreModule()
   mStopRunPending( false ),
   mStopSent( false ),
   mMutex( NULL ),
-  mSampleBlockSize( 0 )
+  mSampleBlockSize( 0 ),
+  mOperatorBackLink( false )
 #if _WIN32
 , mFPMask( cDisabledFPExceptions )
 #endif // _WIN32
@@ -206,6 +207,9 @@ CoreModule::Initialize( int inArgc, char** inArgv )
     return false;
   }
 
+  if( mParamlist.Exists( "OperatorIP" ) )
+    operatorAddress = mParamlist["OperatorIP"].Value().ToString();
+
   if( operatorAddress.empty() )
     operatorAddress = "127.0.0.1";
   if( operatorAddress.find( ":" ) == string::npos )
@@ -225,22 +229,24 @@ CoreModule::Execute()
   const int cSocketTimeout = 105;
   while( !IsTerminating() )
   {
-    mConnectionLock.Acquire();
     streamsock::set_of_instances inputSockets;
-    if( mOperator.is_open() )
-      inputSockets.insert( &mOperatorSocket );
-    if( mPreviousModule.is_open() )
-      inputSockets.insert( &mPreviousModuleSocket );
-    mConnectionLock.Release();
+    {
+      OSMutex::Lock lock( mConnectionLock );
+      if( mOperator.is_open() )
+        inputSockets.insert( &mOperatorSocket );
+      if( mPreviousModule.is_open() )
+        inputSockets.insert( &mPreviousModuleSocket );
+    }
     if( !inputSockets.empty() )
       streamsock::wait_for_read( inputSockets, cSocketTimeout );
 
-    mConnectionLock.Acquire();
-    while( mOperator && mOperator.rdbuf()->in_avail() )
-      mMessageQueue.QueueMessage( mOperator );
-    while( mPreviousModule && mPreviousModule.rdbuf()->in_avail() )
-      mMessageQueue.QueueMessage( mPreviousModule );
-    mConnectionLock.Release();
+    {
+      OSMutex::Lock lock( mConnectionLock );
+      while( mOperator && mOperator.is_open() && mOperator.rdbuf()->in_avail() )
+        mMessageQueue.QueueMessage( mOperator );
+      while( mPreviousModule && mPreviousModule.is_open() && mPreviousModule.rdbuf()->in_avail() )
+        mMessageQueue.QueueMessage( mPreviousModule );
+    }
 
     mMessageEvent.Set();
   }
@@ -260,10 +266,8 @@ CoreModule::MainMessageLoop()
     mMessageEvent.Wait( bciMessageTimeout );
     mMessageEvent.Reset();
     ProcessBCIAndGUIMessages();
-    mConnectionLock.Acquire();
-    bool operatorOpen = mOperator.is_open();
-    mConnectionLock.Release();
-    if( !operatorOpen )
+    OSMutex::Lock lock( mConnectionLock );
+    if( !mOperator.is_open() )
       Terminate();
   }
 }
@@ -284,9 +288,10 @@ CoreModule::ProcessBCIAndGUIMessages()
     // function.
     if( mResting )
       HandleResting();
-    mConnectionLock.Acquire();
-    mResting &= mOperator.is_open();
-    mConnectionLock.Release();
+    {
+      OSMutex::Lock lock( mConnectionLock );
+      mResting &= mOperator.is_open();
+    }
     // Last of all, allow for the GUI to process messages from its message queue if there are any.
     OnProcessGUIMessages();
   }
@@ -314,6 +319,10 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   }
   BCIError::SetOperatorStream( &mOperator, &mConnectionLock );
   GenericVisualization::SetOutputStream( &mOperator, &mConnectionLock );
+  mParamlist.Add(
+    "System:Core%20Connections string OperatorIP= x"
+    " 127.0.0.1 % % // the Operator module's IP" );
+  mParamlist["OperatorIP"].Value() = mOperatorSocket.ip();
 
   if( mParamlist.Exists( THISMODULE "IP" ) )
     mPreviousModuleSocket.open( mParamlist[ THISMODULE "IP" ].Value().c_str() );
@@ -471,7 +480,12 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
   OSMutex::Lock lock( mConnectionLock );
   if( !errorOccurred )
   {
-#if( MODTYPE != APP )
+    if( mParamlist.Exists( "OperatorBackLink" ) )
+      mOperatorBackLink = ::atoi( mParamlist["OperatorBackLink"].Value().ToString().c_str() );
+#if( MODTYPE == APP )
+    if( mOperatorBackLink && !MessageHandler::PutMessage( mOperator, outputProperties ) )
+      BCIERR << "Could not send output properties to Operator module" << endl;
+#else // APP
     if( !MessageHandler::PutMessage( mNextModule, outputProperties ) )
       BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
 #endif // APP
@@ -572,7 +586,13 @@ CoreModule::ProcessFilters( const GenericSignal& input )
     mStopSent = !running;
     OSMutex::Lock lock( mConnectionLock );
     MessageHandler::PutMessage( mNextModule, mStatevector );
-#if( MODTYPE != APP )
+#if( MODTYPE == APP )
+    if( mOperatorBackLink )
+    {
+      MessageHandler::PutMessage( mOperator, mStatevector );
+      MessageHandler::PutMessage( mOperator, mOutputSignal );
+    }
+#else // APP
     MessageHandler::PutMessage( mNextModule, mOutputSignal );
 #endif // APP
   }
