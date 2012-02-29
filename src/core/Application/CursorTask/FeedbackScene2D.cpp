@@ -176,13 +176,13 @@ FeedbackScene2D::NumTargets() const
 bool
 FeedbackScene2D::TargetHit( int inIdx ) const
 {
-  return Shape::AreaIntersection( *mpCursor, *mTargets[ inIdx ] );
+  return Shape::AreaIntersection( *mpCursor, *mTargets.at( inIdx ) );
 }
 
 float
 FeedbackScene2D::CursorTargetDistance( int inIdx ) const
 {
-  GUI::Point targetCenter = mTargets[ inIdx ]->Center(),
+  GUI::Point targetCenter = mTargets.at( inIdx )->Center(),
              cursorCenter = mpCursor->Center();
   ObjectToSceneCoords( targetCenter, point );
   ObjectToSceneCoords( cursorCenter, point );
@@ -193,15 +193,15 @@ FeedbackScene2D::CursorTargetDistance( int inIdx ) const
 FeedbackScene2D&
 FeedbackScene2D::SetTargetVisible( bool inVisible, int inIdx )
 {
-  inVisible ? mTargets[ inIdx ]->Show() : mTargets[ inIdx ]->Hide();
+  inVisible ? mTargets.at( inIdx )->Show() : mTargets.at( inIdx )->Hide();
   return *this;
 }
 
 FeedbackScene2D&
 FeedbackScene2D::SetTargetColor( RGBColor inColor, int inIdx )
 {
-  mTargets[ inIdx ]->SetColor( inColor )
-                    .SetFillColor( inColor );
+  mTargets.at( inIdx )->SetColor( inColor )
+                       .SetFillColor( inColor );
   return *this;
 }
 
@@ -213,7 +213,7 @@ FeedbackScene2D::ClearObjects()
   delete mpCursor;
   mpCursor = NULL;
   for( size_t i = 0; i < mTargets.size(); ++i )
-    delete mTargets[ i ];
+    delete mTargets[i];
   mTargets.clear();
 }
 

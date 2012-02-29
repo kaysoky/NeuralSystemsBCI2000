@@ -215,13 +215,13 @@ FeedbackScene3D::NumTargets() const
 bool
 FeedbackScene3D::TargetHit( int inIdx ) const
 {
-  return geomObj::VolumeIntersection( *mpCursor, *mTargets[ inIdx ] );
+  return geomObj::VolumeIntersection( *mpCursor, *mTargets.at( inIdx ) );
 }
 
 float
 FeedbackScene3D::CursorTargetDistance( int inIdx ) const
 {
-  CVector3 targetOrigin = mTargets[ inIdx ]->getOrigin(),
+  CVector3 targetOrigin = mTargets.at( inIdx )->getOrigin(),
            cursorOrigin = mpCursor->getOrigin(),
            diff = targetOrigin - cursorOrigin;
   return ::sqrt( diff.x * diff.x + diff.y * diff.y + diff.z * diff.z );
@@ -230,7 +230,7 @@ FeedbackScene3D::CursorTargetDistance( int inIdx ) const
 FeedbackScene3D&
 FeedbackScene3D::SetTargetVisible( bool inVisible, int inIdx )
 {
-  mTargets[ inIdx ]->setVisible( inVisible );
+  mTargets.at( inIdx )->setVisible( inVisible );
   mpScene->Invalidate();
   return *this;
 }
@@ -238,7 +238,7 @@ FeedbackScene3D::SetTargetVisible( bool inVisible, int inIdx )
 FeedbackScene3D&
 FeedbackScene3D::SetTargetColor( RGBColor inColor, int inIdx )
 {
-  mTargets[ inIdx ]->setColor( inColor.R()/255., inColor.G()/255., inColor.B()/255. );
+  mTargets.at( inIdx )->setColor( inColor.R()/255., inColor.G()/255., inColor.B()/255. );
   mpScene->Invalidate();
   return *this;
 }
