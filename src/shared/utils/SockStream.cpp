@@ -437,10 +437,6 @@ server_tcpsocket::do_open()
   if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_STREAM, 0 ) ) )
       return;
 
-  int val = 1;
-  ::setsockopt( m_handle, SOL_SOCKET, SO_REUSEADDR,
-                              reinterpret_cast<const char*>( &val ), sizeof( val ) );
-
   if( ( SOCKET_ERROR == ::bind( m_handle, reinterpret_cast<sockaddr*>( &m_address ),
                                                               sizeof( m_address ) ) )
       ||
@@ -486,6 +482,18 @@ receiving_udpsocket::do_open()
     return;
   }
   set_socket_options();
+}
+
+void
+sending_udpsocket::set_socket_options()
+{
+  streamsock::set_socket_options();
+  if( m_handle != INVALID_SOCKET )
+  {
+    int val = !::strcmp( ::inet_ntoa( m_address.sin_addr ), "255.255.255.255" ); // Broadcast address
+    ::setsockopt( m_handle, SOL_SOCKET, SO_BROADCAST,
+                        reinterpret_cast<const char*>( &val ), sizeof( val ) );
+  }
 }
 
 void

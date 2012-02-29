@@ -215,6 +215,8 @@ class sending_udpsocket : public streamsock
       { open( address ); }
     virtual ~sending_udpsocket()
       {}
+  protected:
+    virtual void set_socket_options();
   private:
     virtual void do_open();
 };
