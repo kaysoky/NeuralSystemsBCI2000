@@ -5,11 +5,14 @@
 
 SET( SRC_BCI2000_SHARED_MODULES 
   ${BCI2000_SRC_DIR}/shared/modules/GenericFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/ChoiceCombination.cpp
   ${BCI2000_SRC_DIR}/shared/modules/MessageHandler.cpp
   ${BCI2000_SRC_DIR}/shared/modules/MessageQueue.cpp
 )
 SET( HDR_BCI2000_SHARED_MODULES 
   ${BCI2000_SRC_DIR}/shared/modules/GenericFilter.h
+  ${BCI2000_SRC_DIR}/shared/modules/FilterCombination.h
+  ${BCI2000_SRC_DIR}/shared/modules/ChoiceCombination.h
   ${BCI2000_SRC_DIR}/shared/modules/MessageHandler.h
   ${BCI2000_SRC_DIR}/shared/modules/MessageQueue.h
 )
@@ -30,6 +33,8 @@ SET( SRC_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.cpp
   ${BCI2000_SRC_DIR}/shared/utils/ReusableThread.cpp
   ${BCI2000_SRC_DIR}/shared/utils/WildcardMatch.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/EscapedString.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/HybridString.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
   ${BCI2000_SRC_DIR}/shared/utils/LogFile.h
@@ -51,6 +56,8 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/Runnable.h
   ${BCI2000_SRC_DIR}/shared/utils/ReusableThread.h
   ${BCI2000_SRC_DIR}/shared/utils/WildcardMatch.h
+  ${BCI2000_SRC_DIR}/shared/utils/EscapedString.h
+  ${BCI2000_SRC_DIR}/shared/utils/HybridString.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
   ${BCI2000_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp
