@@ -8,6 +8,7 @@
 
 # Set the executable name
 BCI2000_INCLUDE( "STATISTICS" )
+BCI2000_USE( "FFT" )
 
 SET( DIR_STAT
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/statistics

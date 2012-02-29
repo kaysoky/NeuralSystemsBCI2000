@@ -30,8 +30,11 @@
 #include "SpatialFilter.h"
 Filter( SpatialFilter, 2.B );
 
-#include "ARFilter.h"
-Filter( ARFilter, 2.C );
+#include "WindowingFilter.h"
+Filter( WindowingFilter, 2.C );
+
+#include "FFTSpectrum.h"
+Filter( FFTSpectrum, 2.C1 );
 
 #include "LinearClassifier.h"
 Filter( LinearClassifier, 2.D );
