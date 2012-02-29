@@ -257,7 +257,8 @@ Polynomial<T>::operator*=( const T& f )
 {
   if( mRootsKnown )
     mConstantFactor *= f;
-  mCoefficients *= f;
+  for( size_t i = 0; i < mCoefficients.size(); ++i )
+    mCoefficients[i] *= f;
   return *this;
 }
 
