@@ -92,7 +92,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
   {
     if( mFFT.LibAvailable() )
     {
-      FFTLibWrapper preflightFFT;
+      RealFFT preflightFFT;
       int fftWindowLength =
         static_cast<int>( Input.Elements() * Parameter( "FFTWindowLength" ).InSampleBlocks() );
       if( !preflightFFT.Initialize( fftWindowLength ) )

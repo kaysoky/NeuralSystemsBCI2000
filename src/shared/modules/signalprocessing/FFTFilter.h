@@ -69,7 +69,7 @@ class FFTFilter : public GenericFilter
   std::vector<std::vector<float> >  mValueBuffers;
   std::vector<float>                mWindow;
 
-  FFTLibWrapper mFFT;
+  RealFFT mFFT;
 };
 
 #endif // FFT_FILTER_H

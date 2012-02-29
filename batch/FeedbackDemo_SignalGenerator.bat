@@ -27,6 +27,6 @@ start operator.exe ^
    --Title %~n0 ^
    --OnConnect "-LOAD PARAMETERFILE ..\parms\examples\FeedbackDemo_SignalGenerator.prm"
 start SignalGenerator.exe 127.0.0.1
-start ARSignalProcessing.exe 127.0.0.1
+start SpectralSignalProcessing.exe 127.0.0.1
 start FeedbackDemo.exe 127.0.0.1
 cd ..

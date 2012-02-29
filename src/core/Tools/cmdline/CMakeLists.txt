@@ -19,8 +19,25 @@ BCI2000_ADD_CMDLINE_CONVERTER( bci_stream2table )
 SET( SIGPROC_DIR ${BCI2000_ROOT_DIR}/src/shared/modules/signalprocessing )
 
 BCI2000_ADD_CMDLINE_FILTER( ARFilter              FROM ${SIGPROC_DIR} INCLUDING "MATH"
-                            EXTRA_SOURCES ${SIGPROC_DIR}/ARThread.cpp
-                            EXTRA_HEADERS ${SIGPROC_DIR}/ARThread.h )
+                            EXTRA_SOURCES ${SIGPROC_DIR}/ARSpectrum.cpp
+                                          ${SIGPROC_DIR}/WindowingFilter.cpp
+                                          ${SIGPROC_DIR}/SpectrumThread.cpp
+                                          ${SIGPROC_DIR}/ThreadedFilter.cpp
+                            EXTRA_HEADERS ${SIGPROC_DIR}/ARSpectrum.h
+                                          ${SIGPROC_DIR}/WindowingFilter.h
+                                          ${SIGPROC_DIR}/SpectrumThread.h
+                                          ${SIGPROC_DIR}/ThreadedFilter.h )
+BCI2000_ADD_CMDLINE_FILTER( SpectralEstimator     FROM ${SIGPROC_DIR} INCLUDING "MATH" "FFT"
+                            EXTRA_SOURCES ${SIGPROC_DIR}/ARSpectrum.cpp
+                                          ${SIGPROC_DIR}/FFTSpectrum.cpp
+                                          ${SIGPROC_DIR}/WindowingFilter.cpp
+                                          ${SIGPROC_DIR}/SpectrumThread.cpp
+                                          ${SIGPROC_DIR}/ThreadedFilter.cpp
+                            EXTRA_HEADERS ${SIGPROC_DIR}/ARSpectrum.h
+                                          ${SIGPROC_DIR}/FFTSpectrum.cpp
+                                          ${SIGPROC_DIR}/WindowingFilter.h
+                                          ${SIGPROC_DIR}/SpectrumThread.h
+                                          ${SIGPROC_DIR}/ThreadedFilter.h )
 BCI2000_ADD_CMDLINE_FILTER( ComplexDemodulator    FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( ConditionalIntegrator FROM ${SIGPROC_DIR} )
 BCI2000_ADD_CMDLINE_FILTER( ExpressionFilter      FROM ${SIGPROC_DIR} )

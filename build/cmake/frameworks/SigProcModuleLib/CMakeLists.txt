@@ -11,15 +11,20 @@ MESSAGE( "---Adding Framework Library: ${NAME}" )
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleLib.cmake )
 
 SET( SIGPROCSOURCES 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ThreadedFilter.cpp  
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/WindowingFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpectrumThread.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARSpectrum.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTSpectrum.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpectralEstimator.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARThread.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/P3TemporalFilter.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LinearClassifier.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LPFilter.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ExpressionFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/Normalizer.cpp 
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/Normalizer.cpp
 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/AverageDisplay.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.cpp 
@@ -31,8 +36,13 @@ SET( SIGPROCSOURCES
 SET( SIGPROCHEADERS 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ThreadedFilter.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/WindowingFilter.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpectrumThread.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARSpectrum.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTSpectrum.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpectralEstimator.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARThread.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/P3TemporalFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LinearClassifier.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LPFilter.h
@@ -62,6 +72,7 @@ SET( HDR_BCI2000_FRAMEWORK
 
 # Add Extlib dependencies
 BCI2000_INCLUDE( "MATH" )
+BCI2000_INCLUDE( "FFT" )
 
 # Create the library project
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/SigProcModule.cmake )
