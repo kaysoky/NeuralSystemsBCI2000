@@ -32,6 +32,7 @@
 #include "VersionInfo.h"
 #include "SysLog.h"
 #include "ParamList.h"
+#include "OSMutex.h"
 #include "../OperatorLib/BCI_OperatorLib.h"
 
 #define TXT_WINDOW_CAPTION      "BCI2000/Operator"
@@ -70,7 +71,7 @@ class MainWindow : public QMainWindow
   void on_pushButton_Config_clicked();
   void on_pushButton_SetConfig_clicked();
   void on_pushButton_RunSystem_clicked();
-  void on_actionExit_triggered();
+  void on_actionQuit_triggered();
   void on_pushButton_Quit_clicked();
   void on_pushButton_Btn1_clicked();
   void on_pushButton_Btn2_clicked();
@@ -100,12 +101,14 @@ class MainWindow : public QMainWindow
   static void STDCALL OnResume( void* );
   static void STDCALL OnSuspend( void* );
   static void STDCALL OnCoreInput( void* );
-  static void STDCALL OnShutdown( void* );
+  static void STDCALL OnQuitRequest( void*, const char** );
   static void STDCALL OnDebugMessage( void*, const char* );
   static void STDCALL OnLogMessage( void*, const char* );
   static void STDCALL OnWarningMessage( void*, const char* );
   static void STDCALL OnErrorMessage( void*, const char* );
-  static void STDCALL OnUnknownCommand( void*, const char* );
+  static void STDCALL OnScriptError( void*, const char* );
+  static int  STDCALL OnUnknownCommand( void*, const char* );
+  static void STDCALL OnScriptHelp( void*, const char** );
   static void STDCALL OnParameter( void*, const char* );
   static void STDCALL OnVisSignal( void*, const char*, int, int, float* );
   static void STDCALL OnVisMemo( void*, const char*, const char* );
@@ -118,12 +121,13 @@ class MainWindow : public QMainWindow
   QLabel*        mpStatusLabels[4];
   SysLog         mSyslog;
   ParamList      mParameters;
-  volatile bool  mTerminating,
-                 mTerminated;
   QDateTime      mStarttime;
-  QString        mTitle;
+  QString        mTitle, mTelnet;
   VersionInfo    mVersionInfo;
   int            mUpdateTimerID;
+  volatile bool  mTerminating,
+                 mTerminated;
+  OSMutex        mTerminationMutex;
 };
 
 #endif // MAINWINDOW_H

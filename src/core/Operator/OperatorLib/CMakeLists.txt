@@ -13,15 +13,35 @@ MESSAGE( "-- Adding Project: " ${NAME} )
 SET( SRC_PROJECT
   BCI_OperatorLib.cpp
   CallbackBase.cpp
-  ScriptInterpreter.cpp
   StateMachine.cpp
+  ScriptInterpreter.cpp
+  ObjectType.cpp
+  ImpliedType.cpp
+  SystemTypes.cpp
+  ParameterTypes.cpp
+  StateTypes.cpp
+  EventTypes.cpp
+  SignalTypes.cpp
+  VisPropertyTypes.cpp
+  MessageTypes.cpp
+  TelnetServer.cpp
 )
 SET( HDR_PROJECT
   BCI_OperatorLib.h
   CallbackBase.h
-  ScriptInterpreter.h
   StateMachine.h
   VisTable.h
+  ScriptInterpreter.h
+  ObjectType.h
+  ImpliedType.h
+  SystemTypes.h
+  ParameterTypes.h
+  StateTypes.h
+  EventTypes.h
+  SignalTypes.h
+  VisPropertyTypes.h
+  MessageTypes.h
+  TelnetServer.h
 )
 
 IF( WIN32 )

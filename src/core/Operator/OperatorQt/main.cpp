@@ -79,8 +79,6 @@ main(int argc, char *argv[])
   Settings::SetFile();
   MainWindow w;
   VisDisplay::SetParentWindow( &w );
-  w.show();
-
   FunctionCall< void( QApplication&, MainWindow& ) >
     call( MainLoop, a, w );
   bool finished = ExceptionCatcher()

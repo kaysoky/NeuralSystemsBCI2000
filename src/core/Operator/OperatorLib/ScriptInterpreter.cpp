@@ -28,27 +28,26 @@
 
 #include "ScriptInterpreter.h"
 #include "StateMachine.h"
-#include "BCIDirectory.h"
-#include "CfgID.h"
 #include "BCI_OperatorLib.h"
-
-#include <sstream>
-#include <cstdio>
-#include <cstdlib>
+#include "HybridString.h"
+#include "BCIException.h"
+#include "ObjectType.h"
 
 using namespace std;
+using namespace Interpreter;
 
-#define PROPERTY_SETS_PARAM "VisPropertySets"
+// ScriptInterpreter definitions
 
-ScriptInterpreter::ScriptInterpreter( StateMachine& s )
+ScriptInterpreter::ScriptInterpreter( class StateMachine& inStateMachine )
 : mLine( 0 ),
-  mrStateMachine( s )
+  mrStateMachine( inStateMachine )
 {
-  Param p(
-    "Visualize:Property%20Sets matrix " PROPERTY_SETS_PARAM "= 0 1 % % % "
-    "// row titles are properties in the form \"SRCD.Left\", columns are property sets"
-  );
-  mrStateMachine.Parameters()[PROPERTY_SETS_PARAM] = p;
+}
+
+void
+ScriptInterpreter::Initialize( class StateMachine& inStateMachine )
+{
+  ObjectType::Initialize( inStateMachine );
 }
 
 bool
@@ -61,7 +60,7 @@ ScriptInterpreter::Execute( const char* inScript )
   {
     ++mLine;
     string line;
-    getline( iss, line );
+    ::getline( iss, line );
     syntaxOK = syntaxOK && ExecuteLine( line );
   }
   return syntaxOK;
@@ -78,7 +77,7 @@ ScriptInterpreter::ExecuteLine( const string& inLine )
   while( !iss.eof() )
   {
     string command;
-    getline( iss >> ws, command, ';' );
+    ::getline( iss >> ws, command, ';' );
     syntaxOK = syntaxOK && ExecuteCommand( command );
   }
   return syntaxOK;
@@ -87,346 +86,127 @@ ScriptInterpreter::ExecuteLine( const string& inLine )
 bool
 ScriptInterpreter::ExecuteCommand( const string& inCommand )
 {
-  bool unknownCommand = false,
-       syntaxOK = true;
-  istringstream iss( inCommand );
-  string token;
-  iss >> token;
-  if( 0 == ::stricmp( token.c_str(), "LOAD" ) )
-    syntaxOK = Execute_Load( iss );
-  else if( 0 == ::stricmp( token.c_str(), "SET" ) )
-    syntaxOK = Execute_Set( iss );
-  else if( 0 == ::stricmp( token.c_str(), "INSERT" ) )
-    syntaxOK = Execute_Insert( iss );
-  else if( 0 == ::stricmp( token.c_str(), "SYSTEM" ) )
-    syntaxOK = Execute_System( iss );
-  else if( 0 == ::stricmp( token.c_str(), "SETCONFIG" ) )
-    syntaxOK = Execute_SetConfig( iss );
-  else if( 0 == ::stricmp( token.c_str(), "START" ) )
-    syntaxOK = Execute_Start( iss );
-  else if( 0 == ::stricmp( token.c_str(), "STOP" ) )
-    syntaxOK = Execute_Stop( iss );
-  else if( 0 == ::stricmp( token.c_str(), "QUIT" ) )
-    syntaxOK = Execute_Quit( iss );
-  else if( token.empty() )
-    syntaxOK = true;
-  else
-    unknownCommand = true;
-  if( unknownCommand )
-    mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() );
-  if( !syntaxOK )
+  bool success = false;
+  try
   {
-    ostringstream oss;
-    oss << "Syntax error in line " << mLine << ": " << inCommand;
-    mrStateMachine.ExecuteCallback( BCI_OnScriptError, oss.str().c_str() );
-  }
-  return syntaxOK;
-}
-
-bool
-ScriptInterpreter::Execute_Load( istream& is )
-{
-  bool syntaxOK = false;
-  string token;
-  is >> ws >> token;
-  if( ::stricmp( token.c_str(), "PARAMETERFILE" ) == 0 )
-  {
-    syntaxOK = true;
-    EncodedString fileName;
-    is >> ws >> fileName;
-    fileName = BCIDirectory::AbsolutePath( fileName );
-    if( mrStateMachine.Parameters().Load( fileName.c_str(), false ) )
+    mResultStream.clear();
+    mResultStream.str( "" );
+    mInputStream.clear();
+    mInputStream.str( inCommand );
+    while( !mPosStack.empty() )
+      mPosStack.pop();
+    mPosStack.push( 0 );
+    
+    string verb = GetToken();
+    if( !verb.empty() )
     {
-      ostringstream oss;
-      oss << "Successfully loaded parameter file " << fileName;
-      mrStateMachine.ExecuteCallback( BCI_OnLogMessage, oss.str().c_str() );
-    }
-    else
-    {
-      ostringstream oss;
-      oss << "Could not load parameter file " << fileName;
-      mrStateMachine.ExecuteCallback( BCI_OnScriptError, oss.str().c_str() );
-    }
-  }
-  return syntaxOK;
-}
-
-bool
-ScriptInterpreter::Execute_Set( istream& is )
-{
-  bool syntaxOK = false;
-  string token;
-  is >> ws >> token;
-  if( ::stricmp( token.c_str(), "STATE" ) == 0 )
-  {
-    syntaxOK = true;
-    string name, value;
-    is >> ws >> name >> ws >> value;
-    State::ValueType intVal = atoi( value.c_str() );
-    if( mrStateMachine.SetStateValue( name.c_str(), intVal ) )
-    {
-      State state = mrStateMachine.States()[name];
-      state.SetValue( intVal );
-      ostringstream oss;
-      oss << state;
-      mrStateMachine.ExecuteCallback( BCI_OnState, oss.str().c_str() );
-      oss.str( "" );
-      oss << "Set state " << name << " to " << value;
-      mrStateMachine.ExecuteCallback( BCI_OnLogMessage, oss.str().c_str() );
-    }
-    else
-    {
-      ostringstream oss;
-      oss << "Could not set state " << name << " to " << value;
-      mrStateMachine.ExecuteCallback( BCI_OnScriptError, oss.str().c_str() );
-    }
-  }
-  else if( ::stricmp( token.c_str(), "PARAMETER" ) == 0 )
-  {
-    syntaxOK = true;
-    string name, value;
-    is >> ws >> name >> ws >> value;
-    mrStateMachine.LockData();
-    if( mrStateMachine.Parameters().Exists( name ) )
-    {
-      mrStateMachine.Parameters()[name].Value() = value;
-      mrStateMachine.UnlockData();
-      ostringstream oss;
-      oss << mrStateMachine.Parameters()[name];
-      mrStateMachine.ExecuteCallback( BCI_OnParameter, oss.str().c_str() );
-      oss.str( "" );
-      oss << "Set parameter " << name << " to " << value;
-      mrStateMachine.ExecuteCallback( BCI_OnLogMessage, oss.str().c_str() );
-    }
-    else
-    {
-      mrStateMachine.UnlockData();
-      ostringstream oss;
-      oss << "Parameter " << name << " does not exist";
-      mrStateMachine.ExecuteCallback( BCI_OnScriptError, oss.str().c_str() );
-    }
-  }
-  else if( ::stricmp( token.c_str(), "VISPROPERTY" ) == 0 )
-  {
-    string visID_enc, cfgID, value;
-    getline( is >> ws, visID_enc, '.' );
-    is >> cfgID >> ws >> value;
-    istringstream iss( visID_enc );
-    EncodedString visID;
-    iss >> visID;
-    IDType numCfgID = CfgID( cfgID );
-    mrStateMachine.LockData();
-    if( numCfgID != static_cast<IDType>( CfgID::None ) )
-    {
-      syntaxOK = true;
-      mrStateMachine.Visualizations()[visID].Put( numCfgID, value );
-      mrStateMachine.UnlockData();
-      mrStateMachine.ExecuteCallback( BCI_OnVisProperty, visID.c_str(), numCfgID, value.c_str() );
-      ostringstream oss;
-      oss << "Set vis property " << visID << "." << cfgID << " to " << value;
-      mrStateMachine.ExecuteCallback( BCI_OnLogMessage, oss.str().c_str() );
-    }
-    else
-    {
-      syntaxOK = false;
-      mrStateMachine.UnlockData();
-      ostringstream oss;
-      oss << "Invalid visconfig ID " << cfgID;
-      mrStateMachine.ExecuteCallback( BCI_OnScriptError, oss.str().c_str() );
-    }
-  }
-  else if( ::stricmp( token.c_str(), "VISPROPERTIES" ) == 0 )
-  {
-    syntaxOK = true;
-    string setID;
-    getline( is >> ws, setID );
-    if( ApplyVisPropertySet( setID ) )
-    {
-      ostringstream oss;
-      oss << "Applied vis property set " << setID;
-      mrStateMachine.ExecuteCallback( BCI_OnLogMessage, oss.str().c_str() );
-    }
-    else
-    {
-      ostringstream oss;
-      oss << "Invalid vis property set ID " << setID;
-      mrStateMachine.ExecuteCallback( BCI_OnScriptError, oss.str().c_str() );
-    }
-  }
-  return syntaxOK;
-}
-
-bool
-ScriptInterpreter::Execute_Insert( istream& is )
-{
-  bool syntaxOK = false;
-  string token;
-  is >> ws >> token;
-  if( ::stricmp( token.c_str(), "STATE" ) == 0 )
-  {
-    syntaxOK = true;
-    string name, line;
-    getline( is >> ws >> name, line );
-    mrStateMachine.LockData();
-    if( mrStateMachine.SystemState() == StateMachine::Idle
-        || mrStateMachine.SystemState() == StateMachine::Publishing
-        || mrStateMachine.SystemState() == StateMachine::Information )
-    {
-      string stateline = name + line + " 0 0";
-      mrStateMachine.States().Add( stateline );
-      mrStateMachine.UnlockData();
-      mrStateMachine.ExecuteCallback( BCI_OnState, stateline.c_str() );
-      ostringstream oss;
-      oss << "Added state " << name << " to list";
-      mrStateMachine.ExecuteCallback( BCI_OnLogMessage, oss.str().c_str() );
-    }
-    else
-    {
-      mrStateMachine.UnlockData();
-      ostringstream oss;
-      oss << "Could not add state " << name << " to list after information phase";
-      mrStateMachine.ExecuteCallback( BCI_OnScriptError, oss.str().c_str() );
-    }
-  }
-  else if( ::stricmp( token.c_str(), "PARAMETER" ) == 0 )
-  {
-    syntaxOK = true;
-    string line;
-    getline( is >> ws, line );
-    mrStateMachine.LockData();
-    if( mrStateMachine.SystemState() == StateMachine::Idle
-        || mrStateMachine.SystemState() == StateMachine::Publishing )
-    {
-      mrStateMachine.Parameters().Add( line );
-      mrStateMachine.UnlockData();
-      mrStateMachine.ExecuteCallback( BCI_OnParameter, line.c_str() );
-      ostringstream oss;
-      oss << "Added parameter to list: " << line;
-      mrStateMachine.ExecuteCallback( BCI_OnLogMessage, oss.str().c_str() );
-    }
-    else
-    {
-      mrStateMachine.UnlockData();
-      ostringstream oss;
-      oss << "Could not add parameter to list after publishing phase";
-      mrStateMachine.ExecuteCallback( BCI_OnScriptError, oss.str().c_str() );
-    }
-  }
-  return syntaxOK;
-}
-
-bool
-ScriptInterpreter::Execute_System( istream& is )
-{
-  EncodedString command;
-  is >> ws >> command;
-  if( ::system( command.c_str() ) == 0 )
-  {
-    ostringstream oss;
-    oss << "Successfully executed " << command;
-    mrStateMachine.ExecuteCallback( BCI_OnLogMessage, oss.str().c_str() );
-  }
-  else
-  {
-    ostringstream oss;
-    oss << "Could not start " << command;
-    mrStateMachine.ExecuteCallback( BCI_OnScriptError, oss.str().c_str() );
-  }
-  return true;
-}
-
-bool
-ScriptInterpreter::Execute_SetConfig( istream& )
-{
-  if( mrStateMachine.SetConfig() )
-    mrStateMachine.ExecuteCallback( BCI_OnLogMessage, "Set configuration" );
-  else
-    mrStateMachine.ExecuteCallback( BCI_OnScriptError, "Could not set configuration" );
-  return true;
-}
-
-bool
-ScriptInterpreter::Execute_Start( istream& )
-{
-  if( mrStateMachine.StartRun() )
-    mrStateMachine.ExecuteCallback( BCI_OnLogMessage, "Started operation" );
-  else
-    mrStateMachine.ExecuteCallback( BCI_OnScriptError, "Could not start operation" );
-  return true;
-}
-
-bool
-ScriptInterpreter::Execute_Stop( istream& )
-{
-  if( mrStateMachine.StopRun() )
-    mrStateMachine.ExecuteCallback( BCI_OnLogMessage, "Stopped operation" );
-  else
-    mrStateMachine.ExecuteCallback( BCI_OnScriptError, "Could not stop operation" );
-  return true;
-}
-
-bool
-ScriptInterpreter::Execute_Quit( istream& )
-{
-  if( mrStateMachine.Shutdown() )
-    mrStateMachine.ExecuteCallback( BCI_OnLogMessage, "Shut down system" );
-  else
-    mrStateMachine.ExecuteCallback( BCI_OnScriptError, "Could not shut down system" );
-  return true;
-}
-
-bool
-ScriptInterpreter::ApplyVisPropertySet( const std::string& inSetID )
-{
-  const string paramName = PROPERTY_SETS_PARAM;
-  bool result = false;
-  mrStateMachine.LockData();
-  const ParamList& parameters = mrStateMachine.Parameters();
-  if( parameters.Exists( paramName ) )
-  {
-    Param p = parameters[paramName];
-    int col = -1;
-    if( p.ColumnLabels().Exists( inSetID ) )
-    {
-      result = true;
-      col = p.ColumnLabels()[inSetID];
-    }
-    else
-    {
-      istringstream iss( inSetID );
-      if( iss >> col )
+      string type = GetToken();
+      ObjectType* pType = ObjectType::ByName( type );
+      if( !pType )
       {
-        if( --col < p.NumColumns() )
-          result = true;
-      }
-    }
-    if( result )
-    {
-      for( int row = 0; row < p.NumRows(); ++row )
-      {
-        if( !p.Value( row, col ).ToString().empty() )
-        {
-          istringstream iss( p.RowLabels()[row] );
-          string visID_enc, cfgID;
-          getline( iss >> ws, visID_enc, '.' );
-          iss >> cfgID;
-          istringstream iss2( visID_enc );
-          EncodedString visID;
-          iss2 >> visID;
-          IDType numCfgID = CfgID( cfgID );
-          if( numCfgID != static_cast<IDType>( CfgID::None ) )
-          {
-            string value = p.Value( row, col ).ToString();
-            mrStateMachine.Visualizations()[visID].Put( numCfgID, value );
-            mrStateMachine.UnlockData();
-            mrStateMachine.ExecuteCallback( BCI_OnVisProperty, visID.c_str(), numCfgID, value.c_str() );
-            mrStateMachine.LockData();
-          }
+        pType = ObjectType::ByName( "" );
+        Unget();
+        if( !pType || !pType->Execute( verb, *this ) )
+        { 
+          if( BCI_Handled == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) )
+            mInputStream.ignore( INT_MAX );
+          else
+            throw bciexception_( "Don't know how to " << verb << " " << type );
         }
       }
+      else if( !pType->Execute( verb, *this ) )
+      {
+        if( BCI_Handled == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) )
+          mInputStream.ignore( INT_MAX );
+        else if( type.empty() )
+          throw bciexception_( "Cannot " << verb << " without an object" );
+        else
+          throw bciexception_( "Cannot " << verb << " " << pType->Name() << " objects" );
+      }
+      if( !mInputStream.eof() )
+        throw bciexception_( "Extra argument" );
     }
+    success = true;
   }
-  mrStateMachine.UnlockData();
+  catch( const BCIException& e )
+  {
+    ostringstream oss;
+    if( mLine > 1 )
+      oss << "Line " << mLine;
+    else
+      oss << inCommand;
+    oss << ": " << e.what();
+    OnScriptError( oss.str() );
+  }
+  return success;
+}
+
+void
+ScriptInterpreter::OnScriptError( const string& inMessage )
+{
+  mrStateMachine.ExecuteCallback( BCI_OnScriptError, inMessage.c_str() );
+}
+
+string
+ScriptInterpreter::GetToken()
+{
+  mPosStack.push( mInputStream.tellg() );
+  HybridString result;
+  mInputStream >> ws >> result;
   return result;
 }
 
+string
+ScriptInterpreter::GetRemainder()
+{
+  mPosStack.push( mInputStream.tellg() );
+  string line;
+  ::getline( mInputStream >> ws, line, '\0' );
+  istringstream iss( line );
+  string result;
+  HybridString part;
+  if( iss >> ws >> part )
+    result = part;
+  while( iss >> ws >> part )
+    result += " " + part;
+  return result;
+}
+
+void
+ScriptInterpreter::Unget()
+{
+  if( mPosStack.empty() )
+    throw bciexception_( "Cannot unget" );
+  mInputStream.seekg( mPosStack.top() );
+  mPosStack.pop();
+}
+
+void
+ScriptInterpreter::ParseArguments( string& ioFunction, ArgumentList& outArgs )
+{
+  outArgs.clear();
+  size_t pos1 = ioFunction.find( '(' );
+  string name = ioFunction.substr( 0, pos1 );
+  while( pos1 != string::npos )
+  {
+    size_t pos2 = ioFunction.find( ')', pos1 + 1 );
+    if( pos2 == string::npos )
+      throw bciexception_( ioFunction << ": missing ')'" );
+    istringstream args( ioFunction.substr( pos1 + 1, pos2 - pos1 - 1 ) );
+    vector<string> arglist;
+    string arg;
+    while( ::getline( args >> ws, arg, ',' ) )
+      arglist.push_back( arg );
+    outArgs.push_back( arglist );
+    pos1 = ioFunction.find( '(', pos2 );
+  }
+  ioFunction = name;
+}
+
+// LogStream::LogBuffer definitions
+int
+ScriptInterpreter::LogStream::LogBuffer::sync()
+{
+  mrStateMachine.ExecuteCallback( BCI_OnLogMessage, str().c_str() );
+  return 0;
+}

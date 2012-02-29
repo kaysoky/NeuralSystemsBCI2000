@@ -59,95 +59,107 @@ StateMachine::StateMachine()
 : CallbackBase( &mDataMutex ),
   OSThread(),
   mSystemState( Idle ),
-  mpDataLock( NULL )
+  mpDataLock( NULL ),
+  mEventLink( *this )
 {
 }
-
 
 bool
 StateMachine::Startup( const char* inModuleList )
 {
   OSMutex::Lock lock( mDataMutex );
-
-  const char* moduleList = inModuleList;
-  if( moduleList == NULL )
-    moduleList = "Core Module:4000";
-  istringstream iss( moduleList );
-  while( !iss.eof() )
-  {
-    string name;
-    getline( iss >> ws, name, ':' );
-    int port;
-    iss >> port;
-    mConnections.push_back( new CoreConnection( *this, name, port, static_cast<int>( mConnections.size() + 1 ) ) );
-  }
-  mpSourceModule = *mConnections.begin();
-
-  iss.clear();
-  iss.str( BCI2000_VERSION );
-  iss >> mVersionInfo;
-  mParameters.Add(
-    "System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 Operator % %"
-    " % % % // operator module version information" );
-  mParameters[ "OperatorVersion" ].Value( "Framework" )
-    = mVersionInfo[ VersionInfo::VersionID ];
-  if( mVersionInfo[ VersionInfo::Revision ].empty() )
-  {
-    mParameters[ "OperatorVersion" ].Value( "Revision" )
-      = mVersionInfo[ VersionInfo::SourceDate ];
-  }
-  else
-  {
-    mParameters[ "OperatorVersion" ].Value( "Revision" )
-      = mVersionInfo[ VersionInfo::Revision ] + ", " +  mVersionInfo[ VersionInfo::SourceDate ];
-  }
-  mParameters[ "OperatorVersion" ].Value( "Build" )
-    = mVersionInfo[ VersionInfo::BuildDate ];
-
-  OSThread::Start();
-  bool result = ( bcierr__.Flushes() == 0 );
+  bool result = ( SystemState() == Idle );
   if( result )
-    ExecuteCallback( BCI_OnLogMessage, "BCI2000 Started" );
-  else
-    EnterState( StateMachine::Fatal );
+  {
+    string moduleList = inModuleList ? inModuleList : "";
+    if( moduleList.empty() )
+      moduleList = "Source:4000 SignalProcessing:4001 Application:4002";
+    istringstream iss( moduleList );
+    bool sourcePort = true;
+    while( !iss.eof() )
+    {
+      string name;
+      ::getline( iss >> ws, name, ':' );
+      int port;
+      iss >> port;
+      mConnections.push_back( new CoreConnection( *this, name, port, static_cast<int>( mConnections.size() + 1 ) ) );
+      if( sourcePort )
+      {
+        mEventLink.Open( port );
+        sourcePort = false;
+      }
+    }
+    result &= ( bcierr__.Flushes() == 0 );
+    if( !result )
+      CloseConnections();
+  }
+  if( result )
+  {
+    mpSourceModule = *mConnections.begin();
+
+    istringstream iss( BCI2000_VERSION );
+    iss >> mVersionInfo;
+    mParameters.Add(
+      "System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 Operator % %"
+      " % % % // operator module version information" );
+    mParameters[ "OperatorVersion" ].Value( "Framework" )
+      = mVersionInfo[ VersionInfo::VersionID ];
+    if( mVersionInfo[ VersionInfo::Revision ].empty() )
+    {
+      mParameters[ "OperatorVersion" ].Value( "Revision" )
+        = mVersionInfo[ VersionInfo::SourceDate ];
+    }
+    else
+    {
+      mParameters[ "OperatorVersion" ].Value( "Revision" )
+        = mVersionInfo[ VersionInfo::Revision ] + ", " +  mVersionInfo[ VersionInfo::SourceDate ];
+    }
+    mParameters[ "OperatorVersion" ].Value( "Build" )
+      = mVersionInfo[ VersionInfo::BuildDate ];
+
+    mParameters.Add(
+      "System:Additional%20Connections int OperatorBackLink= 1"
+      " 1 0 1 // Send final state and signal information to Operator (boolean)" );
+
+    OSThread::Start();
+    result &= ( bcierr__.Flushes() == 0 );
+  }
+  bcierr__.Clear();
+  if( result )
+    EnterState( WaitingForConnection );
   return result;
 }
 
 
-// Initiate program termination, and perform de-initialization.
+// Terminate the state machine thread, which will shut down connections.
 bool
 StateMachine::Shutdown()
 {
-  OSMutex::Lock lock( mDataMutex );
-  if( !OSThread::IsTerminating() )
+  bool result = ( SystemState() != Idle );
+  if( result )
   {
-    // Send a system command 'Reset' to the EEGsource.
-    mpSourceModule->PutMessage( SysCommand::Reset );
-    OSThread::Terminate();
-    mDebugLog.close();
-    ExecuteCallback( BCI_OnShutdown );
+    if( OSThread::InOwnThread() )
+      OSThread::Terminate();
+    else
+      OSThread::TerminateWait();
   }
-  return true;
+  return result;
 }
-
 
 StateMachine::~StateMachine()
 {
-  Shutdown();
-  while( !OSThread::IsTerminated() )
-    OSThread::Sleep( ConnectionTimeout / 2 );
-  DeleteConnections();
+  OSThread::TerminateWait();
 }
 
 // Send a state message containing a certain state value to the EEG source module.
-// This function is public because it is called from the SCRIPT class.
+// This function is public because it is called from the ScriptInterpreter class.
 bool
-StateMachine::SetStateValue( const char* inName, long inValue )
+StateMachine::SetStateValue( const char* inName, State::ValueType inValue )
 {
   OSMutex::Lock lock( mDataMutex );
   // We call EnterState() from here to have a consistent behavior if
   // UpdateState() is called for "Running" from a script or a button.
-  if( string( "Running" ) == inName )
+  if( !::stricmp( inName, "Running" ) )
   {
     switch( mSystemState )
     {
@@ -174,6 +186,27 @@ StateMachine::SetStateValue( const char* inName, long inValue )
     if( !mpSourceModule->PutMessage( s ) )
       return false;
   }
+  return true;
+}
+
+State::ValueType
+StateMachine::GetStateValue( const char* inName ) const
+{
+  OSMutex::Lock lock( mDataMutex );
+  return mStateVector.StateValue( inName );
+}
+
+bool
+StateMachine::SetEvent( const char* inName, State::ValueType inValue )
+{
+  if( !mEvents.Exists( inName ) )
+    return false;
+  if( mSystemState != StateMachine::Running )
+    return false;
+  ::Lock<EventLink> lock( mEventLink );
+  if( !mEventLink.Connected() )
+    return false;
+  mEventLink << inName << ' ' << inValue << endl;
   return true;
 }
 
@@ -340,7 +373,11 @@ StateMachine::EnterState( SysState inState )
   }
   switch( transition )
   {
-    case TRANSITION( Idle, Publishing ):
+    case TRANSITION( Idle, WaitingForConnection ):
+      ExecuteCallback( BCI_OnLogMessage, "BCI2000 Started" );
+      break;
+
+    case TRANSITION( WaitingForConnection, Publishing ):
       break;
 
     case TRANSITION( Publishing, Publishing ):
@@ -355,10 +392,12 @@ StateMachine::EnterState( SysState inState )
           " int StateVectorLength= 0 16 1 30 "
           "// length of the state vector in bytes" );
         mStates.AssignPositions();
+        mStateVector = StateVector( mStates );
         ostringstream length;
-        length << StateVector( mStates ).Length();
-        mParameters[ "StateVectorLength" ].Value() = length.str().c_str();
+        length << mStateVector.Length();
+        mParameters["StateVectorLength"].Value() = length.str().c_str();
       }
+      mEventLink.ConfirmConnection();
       ExecuteCallback( BCI_OnConnect );
       break;
 
@@ -437,6 +476,28 @@ StateMachine::EnterState( SysState inState )
     case TRANSITION( Resting, RestingParamsModified ):
       break;
 
+    case TRANSITION( WaitingForConnection, Idle ):
+    case TRANSITION( Publishing, Idle ):
+    case TRANSITION( Information, Idle ):
+    case TRANSITION( Initialization, Idle ):
+    case TRANSITION( Resting, Idle ):
+    case TRANSITION( RestingParamsModified, Idle ):
+    case TRANSITION( RunningInitiated, Idle ):
+    case TRANSITION( Running, Idle ):
+    case TRANSITION( SuspendInitiated, Idle ):
+    case TRANSITION( Suspended, Idle ):
+    case TRANSITION( SuspendedParamsModified, Idle ):
+      {
+        OSMutex::Lock lock( mDataMutex );
+        // Send a system command 'Reset' to the EEGsource.
+        mpSourceModule->PutMessage( SysCommand::Reset );
+        mDebugLog.close();
+        CloseConnections();
+      }
+      ExecuteCallback( BCI_OnShutdown );
+      ExecuteCallback( BCI_OnLogMessage, "Operator shut down connections" );
+      break;
+
     case TRANSITION( Idle, Fatal ):
     case TRANSITION( Publishing, Fatal ):
     case TRANSITION( Information, Fatal ):
@@ -463,6 +524,7 @@ int
 StateMachine::Execute()
 { // The state machine's main message loop.
   while( !OSThread::IsTerminating() )
+  {
     if( streamsock::wait_for_read( mSockets, ConnectionTimeout, true ) )
     {
       for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
@@ -470,6 +532,8 @@ StateMachine::Execute()
       if( !OSThread::IsTerminating() )
         ExecuteCallback( BCI_OnCoreInput );
     }
+  }
+  EnterState( Idle );
   return 0;
 }
 
@@ -648,6 +712,12 @@ StateMachine::CoreConnection::HandleStatus( istream& is )
                            << endl;
     }
 
+    if( mrParent.Confirmed( ConfirmEndOfStates ) && mrParent.SystemState() == Publishing )
+    {
+      mrParent.ClearConfirmation( ConfirmEndOfStates );
+      mrParent.EnterState( StateMachine::Information );
+    }
+
     if( mrParent.Confirmed( ConfirmInitialized ) && mrParent.SystemState() == Initialization )
     {
       mrParent.ClearConfirmation( ConfirmInitialized );
@@ -713,12 +783,6 @@ StateMachine::CoreConnection::HandleSysCommand( istream& is )
         mrParent.Shutdown();
       }
     }
-    // If we received EndOfStates from all the modules, then make the transition
-    // to the next system state.
-    if( mrParent.Confirmed( ConfirmEndOfStates ) && mrParent.SystemState() == Publishing )
-    {
-      mrParent.EnterState( StateMachine::Information );
-    }
   }
   return true;
 }
@@ -755,21 +819,34 @@ StateMachine::CoreConnection::HandleState( istream& is )
 }
 
 bool
+StateMachine::CoreConnection::HandleStateVector( istream& is )
+{
+  return mrParent.mStateVector.ReadBinary( is );
+}
+
+bool
 StateMachine::CoreConnection::HandleVisSignal( istream& is )
 {
   VisSignal v;
   if( v.ReadBinary( is ) )
   {
-    const string kind = "Graph";
-    mrParent.CheckInitializeVis( v.SourceID(), kind );
-    int channels = v.Signal().Channels(),
-        elements = v.Signal().Elements();
-    float* pData = new float[ channels * elements ];
-    for( int ch = 0; ch < channels; ++ch )
-      for( int el = 0; el < elements; ++el )
-        pData[ ch * elements + el ] = static_cast<float>( v.Signal()( ch, el ) );
-    mrParent.ExecuteCallback( BCI_OnVisSignal, v.SourceID().c_str(), channels, elements, pData );
-    delete[] pData;
+    if( v.SourceID().empty() )
+    {
+      mrParent.mControlSignal = v;
+    }
+    else
+    {
+      const string kind = "Graph";
+      mrParent.CheckInitializeVis( v.SourceID(), kind );
+      int channels = v.Signal().Channels(),
+          elements = v.Signal().Elements();
+      float* pData = new float[ channels * elements ];
+      for( int ch = 0; ch < channels; ++ch )
+        for( int el = 0; el < elements; ++el )
+          pData[ ch * elements + el ] = static_cast<float>( v.Signal()( ch, el ) );
+      mrParent.ExecuteCallback( BCI_OnVisSignal, v.SourceID().c_str(), channels, elements, pData );
+      delete[] pData;
+    }
   }
   return true;
 }
@@ -780,154 +857,161 @@ StateMachine::CoreConnection::HandleVisSignalProperties( istream& is )
   VisSignalProperties v;
   if( v.ReadBinary( is ) )
   {
-    // We treat a VisSignalProperties message as a set of VisCfg
-    // messages.
-#ifdef TODO
-# error Factor this out into a VisSignalProperties::ToVisCfg() method.
-#endif // TODO
-    const SignalProperties& s = v.SignalProperties();
-    const char* sourceID = v.SourceID().c_str();
-    VisProperties& p = mrParent.mVisualizations[sourceID];
-    if( !s.Name().empty() )
+    if( v.SourceID().empty() )
     {
-      p.Put( CfgID::WindowTitle, s.Name() );
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::WindowTitle, s.Name().c_str() );
-    }
-
-    string channelUnit = s.ChannelUnit().RawToPhysical( s.ChannelUnit().Offset() + 1 );
-    p.Put( CfgID::ChannelUnit, channelUnit );
-    mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ChannelUnit, channelUnit.c_str() );
-
-    int numSamples = static_cast<int>( s.ElementUnit().RawMax() - s.ElementUnit().RawMin() + 1 );
-    p.Put( CfgID::NumSamples, numSamples );
-    ostringstream oss;
-    oss << numSamples;
-    mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::NumSamples, oss.str().c_str() );
-
-    if( numSamples > 0 )
-    {
-      string symbol;
-      double value = s.ElementUnit().Gain() * numSamples;
-      int magnitude = static_cast<int>( ::log10( ::fabs( value ) ) );
-      if( magnitude > 0 )
-        --magnitude;
-      else if( magnitude < 0 )
-        ++magnitude;
-      magnitude /= 3;
-      if( magnitude < -3 )
-        magnitude = -3;
-      if( magnitude > 3 )
-        magnitude = 3;
-      switch( magnitude )
-      {
-        case -3:
-          symbol = "n";
-          value /= 1e-9;
-          break;
-        case -2:
-          symbol = "mu";
-          value /= 1e-6;
-          break;
-        case -1:
-          symbol = "m";
-          value /= 1e-3;
-          break;
-        case 0:
-          break;
-        case 1:
-          symbol = "k";
-          value /= 1e3;
-          break;
-        case 2:
-          symbol = "M";
-          value /= 1e6;
-          break;
-        case 3:
-          symbol = "G";
-          value /= 1e9;
-          break;
-      }
-      ostringstream oss;
-      oss << setprecision( 10 ) << value / numSamples << symbol << s.ElementUnit().Symbol();
-      p.Put( CfgID::SampleUnit, oss.str() );
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::SampleUnit, oss.str().c_str() );
-      p.Put( CfgID::SampleOffset, s.ElementUnit().Offset() );
-      oss.str( "" );
-      oss << s.ElementUnit().Offset();
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::SampleOffset, oss.str().c_str() );
-    }
-
-    // Although the SignalProperties class allows for individual units for
-    // individual channels, the SignalDisplay class is restricted to a single
-    // unit and range.
-    string valueUnit = s.ValueUnit().RawToPhysical( s.ValueUnit().Offset() + 1 );
-    p.Put( CfgID::ValueUnit, valueUnit );
-    mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ValueUnit, valueUnit.c_str() );
-
-    double rangeMin = s.ValueUnit().RawMin(),
-           rangeMax = s.ValueUnit().RawMax();
-    if( rangeMin == rangeMax )
-    {
-      p.erase( CfgID::MinValue );
-      p.erase( CfgID::MaxValue );
+      mrParent.mControlSignal.SetProperties( v );
     }
     else
     {
-      p.Put( CfgID::MinValue, rangeMin );
-      oss.str( "" );
-      oss << rangeMin;
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::MinValue, oss.str().c_str() );
-      p.Put( CfgID::MaxValue, rangeMax );
-      oss.str( "" );
-      oss << rangeMax;
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::MaxValue, oss.str().c_str() );
-    }
-
-    LabelList groupLabels,
-              channelLabels;
-    int channelGroupSize = 1;
-    if( !s.ChannelLabels().IsTrivial() )
-    {
-      for( int i = 0; i < s.ChannelLabels().Size(); ++i )
+      // We treat a VisSignalProperties message as a set of VisCfg
+      // messages.
+#ifdef TODO
+# error Factor this out into a VisSignalProperties::ToVisCfg() method.
+#endif // TODO
+      const SignalProperties& s = v.SignalProperties();
+      const char* sourceID = v.SourceID().c_str();
+      VisProperties& p = mrParent.mVisualizations[sourceID];
+      if( !s.Name().empty() )
       {
-        istringstream iss( s.ChannelLabels()[ i ] );
-        HierarchicalLabel label;
-        iss >> label;
-        if( label.size() == 2 )
+        p.Put( CfgID::WindowTitle, s.Name() );
+        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::WindowTitle, s.Name().c_str() );
+      }
+
+      string channelUnit = s.ChannelUnit().RawToPhysical( s.ChannelUnit().Offset() + 1 );
+      p.Put( CfgID::ChannelUnit, channelUnit );
+      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ChannelUnit, channelUnit.c_str() );
+
+      int numSamples = static_cast<int>( s.ElementUnit().RawMax() - s.ElementUnit().RawMin() + 1 );
+      p.Put( CfgID::NumSamples, numSamples );
+      ostringstream oss;
+      oss << numSamples;
+      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::NumSamples, oss.str().c_str() );
+
+      if( numSamples > 0 )
+      {
+        string symbol;
+        double value = s.ElementUnit().Gain() * numSamples;
+        int magnitude = static_cast<int>( ::log10( ::fabs( value ) ) );
+        if( magnitude > 0 )
+          --magnitude;
+        else if( magnitude < 0 )
+          ++magnitude;
+        magnitude /= 3;
+        if( magnitude < -3 )
+          magnitude = -3;
+        if( magnitude > 3 )
+          magnitude = 3;
+        switch( magnitude )
         {
-          if( groupLabels.empty() )
+          case -3:
+            symbol = "n";
+            value /= 1e-9;
+            break;
+          case -2:
+            symbol = "mu";
+            value /= 1e-6;
+            break;
+          case -1:
+            symbol = "m";
+            value /= 1e-3;
+            break;
+          case 0:
+            break;
+          case 1:
+            symbol = "k";
+            value /= 1e3;
+            break;
+          case 2:
+            symbol = "M";
+            value /= 1e6;
+            break;
+          case 3:
+            symbol = "G";
+            value /= 1e9;
+            break;
+        }
+        ostringstream oss;
+        oss << setprecision( 10 ) << value / numSamples << symbol << s.ElementUnit().Symbol();
+        p.Put( CfgID::SampleUnit, oss.str() );
+        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::SampleUnit, oss.str().c_str() );
+        p.Put( CfgID::SampleOffset, s.ElementUnit().Offset() );
+        oss.str( "" );
+        oss << s.ElementUnit().Offset();
+        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::SampleOffset, oss.str().c_str() );
+      }
+
+      // Although the SignalProperties class allows for individual units for
+      // individual channels, the SignalDisplay class is restricted to a single
+      // unit and range.
+      string valueUnit = s.ValueUnit().RawToPhysical( s.ValueUnit().Offset() + 1 );
+      p.Put( CfgID::ValueUnit, valueUnit );
+      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ValueUnit, valueUnit.c_str() );
+
+      double rangeMin = s.ValueUnit().RawMin(),
+             rangeMax = s.ValueUnit().RawMax();
+      if( rangeMin == rangeMax )
+      {
+        p.erase( CfgID::MinValue );
+        p.erase( CfgID::MaxValue );
+      }
+      else
+      {
+        p.Put( CfgID::MinValue, rangeMin );
+        oss.str( "" );
+        oss << rangeMin;
+        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::MinValue, oss.str().c_str() );
+        p.Put( CfgID::MaxValue, rangeMax );
+        oss.str( "" );
+        oss << rangeMax;
+        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::MaxValue, oss.str().c_str() );
+      }
+
+      LabelList groupLabels,
+                channelLabels;
+      int channelGroupSize = 1;
+      if( !s.ChannelLabels().IsTrivial() )
+      {
+        for( int i = 0; i < s.ChannelLabels().Size(); ++i )
+        {
+          istringstream iss( s.ChannelLabels()[ i ] );
+          HierarchicalLabel label;
+          iss >> label;
+          if( label.size() == 2 )
           {
-            groupLabels.push_back( Label( 0, label[ 0 ] ) );
+            if( groupLabels.empty() )
+            {
+              groupLabels.push_back( Label( 0, label[ 0 ] ) );
+            }
+            else
+            {
+              if( label[ 0 ] == groupLabels.begin()->Text() )
+                ++channelGroupSize;
+              if( label[ 0 ] != groupLabels.rbegin()->Text() )
+                groupLabels.push_back( Label( static_cast<int>( groupLabels.size() ), label[ 0 ] ) );
+            }
+            channelLabels.push_back( Label( static_cast<int>( channelLabels.size() ), label[ 1 ] ) );
           }
           else
           {
-            if( label[ 0 ] == groupLabels.begin()->Text() )
-              ++channelGroupSize;
-            if( label[ 0 ] != groupLabels.rbegin()->Text() )
-              groupLabels.push_back( Label( static_cast<int>( groupLabels.size() ), label[ 0 ] ) );
+            channelLabels.push_back( Label( i, s.ChannelLabels()[ i ] ) );
           }
-          channelLabels.push_back( Label( static_cast<int>( channelLabels.size() ), label[ 1 ] ) );
-        }
-        else
-        {
-          channelLabels.push_back( Label( i, s.ChannelLabels()[ i ] ) );
         }
       }
+      p.Put( CfgID::ChannelGroupSize, channelGroupSize );
+      oss.str( "" );
+      oss << channelGroupSize;
+      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ChannelGroupSize, oss.str().c_str() );
+
+      p.Put( CfgID::ChannelLabels, channelLabels );
+      oss.str( "" );
+      oss << channelLabels;
+      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ChannelLabels, oss.str().c_str() );
+
+      p.Put( CfgID::GroupLabels, groupLabels );
+      oss.str( "" );
+      oss << groupLabels;
+      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::GroupLabels, oss.str().c_str() );
     }
-    p.Put( CfgID::ChannelGroupSize, channelGroupSize );
-    oss.str( "" );
-    oss << channelGroupSize;
-    mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ChannelGroupSize, oss.str().c_str() );
-
-    p.Put( CfgID::ChannelLabels, channelLabels );
-    oss.str( "" );
-    oss << channelLabels;
-    mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ChannelLabels, oss.str().c_str() );
-
-    p.Put( CfgID::GroupLabels, groupLabels );
-    oss.str( "" );
-    oss << groupLabels;
-    mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::GroupLabels, oss.str().c_str() );
   }
   return true;
 }
@@ -971,5 +1055,49 @@ StateMachine::CoreConnection::HandleVisCfg( istream& is )
   return true;
 }
 
+// ---------- EventLink definitions ------------
+void
+StateMachine::EventLink::ConfirmConnection()
+{
+  TerminateWait();
+  bool shouldBeConnected = mrParent.Parameters().Exists( "EventLink" );
+  if( shouldBeConnected )
+    shouldBeConnected &= ( ::atoi( mrParent.Parameters()["EventLink"].Value().c_str() ) != 0 );
+  if( shouldBeConnected && !mConnected )
+    bcierr << "EventLink: Could not establish connection to Source module";
+}
 
+int
+StateMachine::EventLink::Execute()
+{
+  const int cReactionTimeMs = 100;
+  receiving_udpsocket serverSocket;
+  serverSocket.open( "localhost", mPort );
+  if( !serverSocket.is_open() )
+  {
+    bcierr << "EventLink: Could not open UDP port " << mPort << " for listening";
+  }
+  else
+  {
+    while( !serverSocket.wait_for_read( cReactionTimeMs ) && !IsTerminating() )
+      ;
+    serverSocket.close();
+    if( !IsTerminating() )
+    {
+      ::Lock<EventLink> lock1( *this );
+      string sourceIP;
+      ::getline( istringstream( mrParent.mpSourceModule->Info().Address ), sourceIP, ':' );
+      mSocket.open( sourceIP.c_str(), mPort + 1 );
+      this->clear();
+      this->open( mSocket );
+      ::Lock<StateMachine> lock2( mrParent );
+      StateList& events = mrParent.Events();
+      for( int i = 0; i < events.Size(); ++i )
+        *this << events[i] << endl;
+      *this << endl;
+      mConnected = true;
+    }
+  }
+  return 0;
+}
 

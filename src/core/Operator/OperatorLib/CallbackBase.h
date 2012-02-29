@@ -51,7 +51,7 @@
 class CallbackBase
 {
  public:
-  typedef void (STDCALL *Function)();
+  typedef int (STDCALL *Function)();
 
   enum Result
   {
@@ -61,11 +61,11 @@ class CallbackBase
   };
 
   // Callback thread context
-  //  InternalThread: The callback function is executed in the thread from
-  //                  which the call is issued.
-  //  MainThread:     The call is buffered, and executed when the main thread calls
-  //                  CallbackBase::CheckExternalCallback(). The calling thread is
-  //                  blocked until the buffered call exits.
+  //  CallingThread: The callback function is executed in the thread from
+  //                 which the call is issued.
+  //  MainThread:    The call is buffered, and executed when the main thread calls
+  //                 CallbackBase::CheckExternalCallback(). The calling thread is
+  //                 blocked until the buffered call exits.
   enum Context
   {
     CallingThread = 0,

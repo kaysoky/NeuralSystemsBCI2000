@@ -17,7 +17,8 @@
       obj\PhysicalUnit.obj obj\SignalType.obj obj\Label.obj 
       obj\ExceptionCatcher.obj obj\CfgID.obj obj\BCIException.obj 
       obj\VisID.obj
-      obj\ClassName.obj"/>
+      obj\ClassName.obj
+      obj\ObjectType obj\ImpliedType.obj obj\ParameterTypes.obj obj\StateTypes.obj obj\SystemTypes.obj obj\VisPropertyTypes.obj"/>
     <RESFILES value="OperatorLib.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -61,6 +62,12 @@
       <FILE FILENAME="BCI_OperatorLib.cpp" FORMNAME="" UNITNAME="BCI_OperatorLib" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="StateMachine.cpp" FORMNAME="" UNITNAME="StateMachine" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ScriptInterpreter.cpp" FORMNAME="" UNITNAME="ScriptInterpreter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ObjectType.cpp" FORMNAME="" UNITNAME="ObjectType" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ImpliedType.cpp" FORMNAME="" UNITNAME="ImpliedType" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ParameterTypes.cpp" FORMNAME="" UNITNAME="ParameterTypes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="StateTypes.cpp" FORMNAME="" UNITNAME="StateTypes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SystemTypes.cpp" FORMNAME="" UNITNAME="SystemTypes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="VisPropertyTypes.cpp" FORMNAME="" UNITNAME="VisPropertyTypes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="CallbackBase.cpp" FORMNAME="" UNITNAME="CallbackBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\StateList.cpp" FORMNAME="" UNITNAME="StateList" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\Param.cpp" FORMNAME="" UNITNAME="Param" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

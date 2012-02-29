@@ -40,6 +40,7 @@
 #include "BitmapImage.h"
 #include "Version.h"
 #include "OSThread.h"
+#include "HybridString.h"
 
 #include <QMessageBox>
 #include <sstream>
@@ -100,7 +101,7 @@ MainWindow::MainWindow( QWidget* parent )
   BCI_SetExternalCallback( BCI_OnStart, BCI_Function( OnStart ), this );
   BCI_SetExternalCallback( BCI_OnResume, BCI_Function( OnResume ), this );
   BCI_SetExternalCallback( BCI_OnSuspend, BCI_Function( OnSuspend ), this );
-  BCI_SetExternalCallback( BCI_OnShutdown, BCI_Function( OnShutdown ), this );
+  BCI_SetExternalCallback( BCI_OnQuitRequest, BCI_Function( OnQuitRequest ), this );
   BCI_SetExternalCallback( BCI_OnInitializeVis, BCI_Function( OnInitializeVis ), this );
 
   BCI_SetCallback( BCI_OnCoreInput, BCI_Function( OnCoreInput ), this );
@@ -117,9 +118,18 @@ MainWindow::MainWindow( QWidget* parent )
   BCI_SetExternalCallback( BCI_OnVisProperty, BCI_Function( OnVisProperty ), this );
 
   BCI_SetCallback( BCI_OnUnknownCommand, BCI_Function( OnUnknownCommand ), this );
-  BCI_SetCallback( BCI_OnScriptError, BCI_Function( OnErrorMessage ), this );
+  BCI_SetCallback( BCI_OnScriptHelp, BCI_Function( OnScriptHelp ), this );
+  BCI_SetCallback( BCI_OnScriptError, BCI_Function( OnScriptError ), this );
 
-  BCI_Startup( "SignalSource:4000 SignalProcessing:4001 Application:4002" );
+  if( mTelnet.length() && BCI_TelnetListen( mTelnet.toLocal8Bit().constData() ) )
+  {
+    this->hide();
+  }
+  else
+  {
+    BCI_Startup( "SignalSource:4000 SignalProcessing:4001 Application:4002" );
+    this->show();
+  }
 
   mUpdateTimerID = this->startTimer( 100 );
   UpdateDisplay();
@@ -139,9 +149,24 @@ MainWindow::~MainWindow()
 void
 MainWindow::Terminate()
 {
-  mTerminating = true;
-  BCI_Shutdown();
-  mTerminated = true;
+  bool doExecute = false;
+  {
+    OSMutex::Lock lock( mTerminationMutex );
+    doExecute = !mTerminating;
+    mTerminating = true;
+  }
+  if( doExecute )
+  {
+    // Execute the on-exit script ...
+    if( gpPreferences && gpPreferences->mScript[ Preferences::OnExit ] != "" )
+    {
+      mSyslog.AddEntry( "Executing OnExit script ..." );
+      ExecuteScript( gpPreferences->mScript[ Preferences::OnExit ] );
+    }
+    mSyslog.Close( true );
+    BCI_Shutdown();
+    mTerminated = true;
+  }
 }
 
 void
@@ -152,7 +177,7 @@ MainWindow::QuitOperator()
        "Question", "Do you really want to quit BCI2000?",
        QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes )
     )
-    this->Terminate();
+    Terminate();
 }
 
 void
@@ -162,6 +187,13 @@ MainWindow::ReadCommandLine()
   {
     if( qApp->arguments().at( i ) == "--Title" && ( i + 1 ) < qApp->arguments().size() )
       mTitle = qApp->arguments().at( i + 1 );
+    else if( qApp->arguments().at( i ) == "--Telnet" )
+    {
+      if( ( i + 1 ) < qApp->arguments().size() )
+        mTelnet = qApp->arguments().at( i + 1 );
+      else
+        mTelnet = "localhost:3999";
+    }
   }
 }
 
@@ -192,8 +224,11 @@ MainWindow::UpdateDisplay()
   int stateOfOperation = BCI_GetStateOfOperation();
   switch( stateOfOperation )
   {
-    case BCI_StateStartup:
+    case BCI_StateIdle:
       statusText = "System Status: <Idle>";
+      break;
+    case BCI_StateStartup:
+      statusText = "Waiting for connection";
       break;
     case BCI_StateInitialization:
       statusText = "Initialization Phase ...";
@@ -439,20 +474,10 @@ MainWindow::OnSuspend( void* inData )
 }
 
 void
-MainWindow::OnShutdown( void* inData )
+MainWindow::OnQuitRequest( void* inData, const char** )
 {
   MainWindow* this_ = static_cast<MainWindow*>( inData );
-  // Execute the on-exit script ...
-  if( gpPreferences && gpPreferences->mScript[ Preferences::OnExit ] != "" )
-  {
-    this_->mSyslog.AddEntry( "Executing OnExit script ..." );
-    this_->ExecuteScript( gpPreferences->mScript[ Preferences::OnExit ] );
-  }
-  if( !this_->Terminating() )
-  {
-    this_->mSyslog.Close( true );
-    this_->Terminate();
-  }
+  this_->Terminate();
 }
 
 void
@@ -516,12 +541,17 @@ MainWindow::OnErrorMessage( void* inData, const char* s )
 }
 
 void
-MainWindow::OnUnknownCommand( void* inData, const char* inCommand )
+MainWindow::OnScriptError( void* inData, const char* s )
 {
-  string s = "Unknown command: \"";
-  s += inCommand;
-  s += "\"";
-  OnErrorMessage( inData, s.c_str() );
+  MainWindow* this_ = static_cast<MainWindow*>( inData );
+  QString message = QString( "Script error: " ) + s;
+  // If we receive an error message, add a line to the system log and bring it to front.
+  QMetaObject::invokeMethod(
+    &this_->mSyslog,
+    "AddEntry",
+    Qt::QueuedConnection,
+    Q_ARG(QString, message),
+    Q_ARG(int, SysLog::logEntryError));
 }
 
 void
@@ -531,6 +561,92 @@ MainWindow::OnParameter( void*, const char* s )
   // Update the parameter in the configuration window.
   if( gpConfig != NULL )
     gpConfig->RenderParameter( &param );
+}
+
+int
+MainWindow::OnUnknownCommand( void* inData, const char* inCommand )
+{
+  int result = BCI_NotHandled;
+  MainWindow* this_ = static_cast<MainWindow*>( inData );
+  istringstream iss( inCommand );
+  HybridString verb,
+               type,
+               name;
+  iss >> verb >> type >> name;
+  enum { unknown, show, hide, set } action = unknown;
+  if( !::stricmp( verb.c_str(), "Show" ) )
+    action = show;
+  else if( !::stricmp( verb.c_str(), "Hide" ) )
+    action = hide;
+  else if( !::stricmp( verb.c_str(), "Close" ) )
+    action = hide;
+  else if( !::stricmp( verb.c_str(), "Set" ) )
+    action = set;
+  if( action != unknown && !::stricmp( type.c_str(), "Window" ) )
+  {
+    result = BCI_Handled;
+    enum { unknown, main, log, config } object = unknown;
+    if( name.empty() || !::stricmp( name.c_str(), "Main" ) )
+      object = main;
+    else if( !::stricmp( name.c_str(), "Log" ) )
+      object = log;
+    else if( !::stricmp( name.c_str(), "Configuration" ) || !::stricmp( name.c_str(), "Config" ) )
+      object = config;
+    else
+      result = BCI_NotHandled;
+
+    switch( object )
+    {
+      case main:
+        QMetaObject::invokeMethod(
+          this_,
+          "setVisible",
+          Qt::QueuedConnection,
+          Q_ARG(bool, action == show ));
+        break;
+      case log: 
+        QMetaObject::invokeMethod(
+          &this_->mSyslog,
+          "setVisible",
+          Qt::QueuedConnection,
+          Q_ARG(bool, action == show ));
+        break;
+      case config:
+      {
+        switch( action )
+        {
+          case show:
+            QMetaObject::invokeMethod(
+              this_,
+              "on_pushButton_Config_clicked",
+              Qt::QueuedConnection);
+            break;
+          case hide:
+            QMetaObject::invokeMethod(
+              gpConfig,
+              "close",
+              Qt::QueuedConnection);
+            break;
+            break;
+          default:
+            result = BCI_NotHandled;
+         }
+      }
+    }
+  }
+  else if( action == set && !::stricmp( type.c_str(), "Title" ) )
+  {
+    result = BCI_Handled;
+    this_->mTitle = QString::fromLocal8Bit( name.c_str() );
+  }
+  return result;
+}
+
+void
+MainWindow::OnScriptHelp( void*, const char** outHelp )
+{
+  *outHelp = "Show Window <name>, Hide Window <name>, Set Title <window title>, "
+             "names are: Main, Log, Configuration";
 }
 
 void
@@ -591,7 +707,7 @@ MainWindow::on_pushButton_Quit_clicked()
 }
 
 void
-MainWindow::on_actionExit_triggered()
+MainWindow::on_actionQuit_triggered()
 {
   QuitOperator();
 }

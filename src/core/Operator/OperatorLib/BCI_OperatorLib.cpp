@@ -31,15 +31,17 @@
 #include <set>
 #include "BCI_OperatorLib.h"
 #include "StateMachine.h"
+#include "Lockable.h"
 #include "ScriptInterpreter.h"
 #include "Version.h"
 #include "Param.h"
+#include "TelnetServer.h"
 #include "defines.h"
 
 using namespace std;
 
 StateMachine* gpStateMachine = NULL;
-static ScriptInterpreter* spInterpreter = NULL;
+static TelnetServer* spTelnetServer = NULL;
 
 typedef set<const char*> MemorySet;
 static MemorySet sAllocatedMemory;
@@ -113,9 +115,10 @@ STDCALL BCI_PutParameter( const char* inParameterLine )
   if( !param.ReadFromStream( iss ) )
     return 0;
 
-  gpStateMachine->LockData();
-  gpStateMachine->Parameters()[ param.Name() ] = param;
-  gpStateMachine->UnlockData();
+  {
+    ::Lock<StateMachine> lock( *gpStateMachine );
+    gpStateMachine->Parameters()[ param.Name() ] = param;
+  }
   gpStateMachine->ParameterChange();
   gpStateMachine->ExecuteCallback( BCI_OnParameter, inParameterLine );
   return 1;
@@ -137,14 +140,13 @@ STDCALL BCI_GetParameter( long inIndex )
     return NULL;
 
   const char* result = NULL;
-  gpStateMachine->LockData();
+  ::Lock<StateMachine> lock( *gpStateMachine );
   if( inIndex >= 0 && inIndex < gpStateMachine->Parameters().Size() )
   {
     ostringstream oss;
     oss << gpStateMachine->Parameters()[ inIndex ];
     result = AllocateCopy( oss.str().c_str() );
   }
-  gpStateMachine->UnlockData();
   return result;
 }
 
@@ -165,9 +167,10 @@ STDCALL BCI_PutState( const char* inStateLine )
   istringstream iss( inStateLine );
   if( !state.ReadFromStream( iss ) )
     return 0;
-  gpStateMachine->LockData();
-  gpStateMachine->States().Add( state );
-  gpStateMachine->UnlockData();
+  {
+    ::Lock<StateMachine> lock( *gpStateMachine );
+    gpStateMachine->States().Add( state );
+  }
   gpStateMachine->ExecuteCallback( BCI_OnState, inStateLine );
   return 1;
 }
@@ -213,6 +216,131 @@ STDCALL BCI_SetStateValue( const char* inStateName, long inValue )
 }
 
 /*
+function:  BCI_GetStateValue
+purpose:   Returns the value of a state.
+arguments: Pointer to a null-terminated state name string.
+returns:   State value, or 0 if the state does not exist.
+*/
+DLLEXPORT long
+STDCALL BCI_GetStateValue( const char* inStateName )
+{
+  if( gpStateMachine == NULL )
+    return 0;
+  if( gpStateMachine->States().Exists( inStateName ) )
+    return gpStateMachine->GetStateValue( inStateName );
+  return 0;
+}
+
+/*
+function:  BCI_PutEvent
+purpose:   Parses a BCI2000 event definition line, and adds the resulting
+           event to the operator library's event list.
+arguments: Pointer to a null-terminated event line string.
+returns:   1 if successful, 0 otherwise.
+*/
+DLLEXPORT int
+STDCALL BCI_PutEvent( const char* inEventLine )
+{
+  if( gpStateMachine == NULL )
+    return 0;
+
+  class State event;
+  istringstream iss( inEventLine );
+  if( !event.ReadFromStream( iss ) )
+    return 0;
+  {
+    ::Lock<StateMachine> lock( *gpStateMachine );
+    gpStateMachine->Events().Add( event );
+  }
+  return 1;
+}
+
+/*
+function:  BCI_GetEvent
+purpose:   Returns the event with the given index from the DLL's internal
+           event list.
+arguments: Event index.
+returns:   Pointer to a null-terminated string containing an event line, or NULL.
+           The output buffer is allocated by the library, and should be released
+           by the caller using BCI_ReleaseObject().
+*/
+DLLEXPORT const char*
+STDCALL BCI_GetEvent( long inIndex )
+{
+  if( gpStateMachine == NULL )
+    return NULL;
+
+  const char* result = NULL;
+  if( inIndex >= 0 && inIndex < gpStateMachine->Events().Size() )
+  {
+    ostringstream oss;
+    oss << gpStateMachine->Events()[ inIndex ];
+    result = AllocateCopy( oss.str().c_str() );
+  }
+  return result;
+}
+
+/*
+function:  BCI_SetEvent
+purpose:   Asynchronously sets an event to a given value.
+arguments: Pointer to a null-terminated state name string; new event value.
+returns:   1 if successful, 0 otherwise.
+*/
+DLLEXPORT int
+STDCALL BCI_SetEvent( const char* inEventName, long inValue )
+{
+  if( gpStateMachine == NULL )
+    return NULL;
+  return gpStateMachine->SetEvent( inEventName, inValue );
+}
+
+/*
+function:  BCI_GetSignalChannels
+purpose:   Returns the number of channels in the control signal.
+arguments: None
+returns:   Number of signal channels.
+*/
+DLLEXPORT int
+STDCALL BCI_GetSignalChannels( void )
+{
+  if( !gpStateMachine )
+    return 0;
+  return gpStateMachine->ControlSignal().Channels();
+}
+
+/*
+function:  BCI_GetSignalElements
+purpose:   Returns the number of elements in the control signal.
+arguments: None
+returns:   Number of signal elements.
+*/
+DLLEXPORT int
+STDCALL BCI_GetSignalElements( void )
+{
+  if( !gpStateMachine )
+    return 0;
+  return gpStateMachine->ControlSignal().Elements();
+}
+
+/*
+function:  BCI_GetSignal
+purpose:   Returns a value from the control signal.
+arguments: Channel index, element index (zero-based)
+returns:   Signal value, or 0 when indices out of bounds.
+*/
+DLLEXPORT float
+STDCALL BCI_GetSignal( int inChannel, int inElement )
+{
+  if( !gpStateMachine )
+    return 0;
+  const GenericSignal& signal = gpStateMachine->ControlSignal();
+  if( inChannel > 0 && inChannel < signal.Channels() 
+      && inElement > 0 && inElement < signal.Elements() )
+    return static_cast<float>( signal( inChannel, inElement ) );
+  return 0;
+}
+
+/*
 function:  BCI_PutVisProperty
 purpose:   Parses a BCI2000 vis property definition line, and adds the resulting
            property to the property list.
@@ -225,9 +353,10 @@ STDCALL BCI_PutVisProperty( const char* inVisID, int inCfgID, const char* inValu
 {
   if( !gpStateMachine )
     return 0;
-  gpStateMachine->LockData();
-  gpStateMachine->Visualizations()[ inVisID ][ inCfgID ] = inValue;
-  gpStateMachine->UnlockData();
+  {
+    ::Lock<StateMachine> lock( *gpStateMachine );
+    gpStateMachine->Visualizations()[ inVisID ][ inCfgID ] = inValue;
+  }
   gpStateMachine->ExecuteCallback( BCI_OnVisProperty, inVisID, inCfgID, inValue );
   return 1;
 }
@@ -249,7 +378,7 @@ STDCALL BCI_GetVisProperty( const char* inVisID, int inCfgID )
     return NULL;
 
   const char* result = NULL;
-  gpStateMachine->LockData();
+  ::Lock<StateMachine> lock( *gpStateMachine );
   VisTable::iterator i = gpStateMachine->Visualizations().find( inVisID );
   if( i != gpStateMachine->Visualizations().end() )
   {
@@ -257,7 +386,6 @@ STDCALL BCI_GetVisProperty( const char* inVisID, int inCfgID )
     if( j != i->second.end() )
       result = AllocateCopy( j->second.c_str() );
   }
-  gpStateMachine->UnlockData();
   return result;
 }
 
@@ -277,6 +405,9 @@ STDCALL BCI_GetStateOfOperation()
   switch( gpStateMachine->SystemState() )
   {
     case StateMachine::Idle:
+      return BCI_StateIdle;
+
+    case StateMachine::WaitingForConnection:
     case StateMachine::Publishing:
       return BCI_StateStartup;
 
@@ -358,11 +489,11 @@ STDCALL BCI_GetCoreModuleStatus( int inIndex )
 /*
 function:  BCI_Startup
 purpose:   Startup of the operator controller object.
-arguments: A string defining core module listening addresses in the form
-             <ip1>:<port1> <ip2:port2> ... <ipN:portN>
+arguments: A string defining core module names and listening ports in the form 
+             <name1>:<port1> <name2:port2> ... <nameN:portN>
            If NULL, a value of
-             localhost:4000 localhost:4001 localhost:4002
-           reflecting the standard BCI2000 configuration is used.
+             "Source:4000 SignalProcessing:4001 Application:4002"
+           representing a standard BCI2000 configuration is used.
 returns:   1 if successful, 0 otherwise.
 */
 DLLEXPORT int
@@ -404,10 +535,43 @@ STDCALL BCI_Initialize( void )
     return 0;
 
   gpStateMachine = new StateMachine;
-  spInterpreter = new ScriptInterpreter( *gpStateMachine );
+  ScriptInterpreter::Initialize( *gpStateMachine );
   return 1;
 }
 
+/*
+function:  BCI_TelnetListen
+purpose:   Start a telnet server, listening at the given address.
+arguments: Address in <ip>:<port> format, defaults to "localhost:3999".
+returns:   1 if no error occurred, 0 otherwise.
+*/
+DLLEXPORT int
+STDCALL BCI_TelnetListen( const char* inAddress )
+{
+  if( gpStateMachine == NULL )
+    return 0;
+  if( spTelnetServer != NULL )
+    return 0;
+  const char* pAddress = inAddress;
+  if( !pAddress || !*pAddress )
+    pAddress = "localhost:3999";
+  spTelnetServer = new TelnetServer( *gpStateMachine, pAddress );
+  return spTelnetServer != NULL;
+}
+
+/*
+function:  BCI_TelnetClose
+purpose:   Stop the telnet server, closing any open connections.
+arguments: <n/a>
+returns:   1 if no error occurred, 0 otherwise.
+*/
+DLLEXPORT int
+STDCALL BCI_TelnetClose()
+{
+  delete spTelnetServer;
+  spTelnetServer = NULL;
+  return 1;
+}
 
 /*
 function:  BCI_Dispose
@@ -418,8 +582,7 @@ returns:   1 if no error occurred, 0 otherwise.
 DLLEXPORT int
 STDCALL BCI_Dispose( void )
 {
-  delete spInterpreter;
-  spInterpreter = NULL;
+  BCI_TelnetClose();
   delete gpStateMachine;
   gpStateMachine = NULL;
   return 1;
@@ -476,9 +639,38 @@ returns:   0 if a syntax error is present, 1 otherwise.
 DLLEXPORT int
 STDCALL BCI_ExecuteScript( const char* inScript )
 {
-  if( spInterpreter == NULL )
-    return 0;
-  return spInterpreter->Execute( inScript );
+  return gpStateMachine ? ScriptInterpreter( *gpStateMachine ).Execute( inScript ) : 0;
+}
+
+/*
+function:  BCI_ExecuteScriptWithResult
+purpose:   Interprets and executes the specified script.
+arguments: Null-terminated string specifying script commands.
+returns:   Pointer to a null-terminated string containing the result.
+           In case of successful execution, the result of the last executed
+           script command is returned. In case of a script error, the 
+           result string starts with a backslash (as an escape character),
+           followed with "Error: ", and the actual error message.
+           The result string is allocated by the library, and should be 
+           released by the caller using BCI_ReleaseObject().
+*/
+DLLEXPORT const char*
+STDCALL BCI_ExecuteScriptWithResult( const char* inScript )
+{
+  const char* pResult = NULL;
+  if( gpStateMachine )
+  {
+    ScriptInterpreter interpreter( *gpStateMachine );
+    interpreter.Execute( inScript );
+    pResult = AllocateCopy( interpreter.Result().c_str() );
+  }
+  else
+  {
+    pResult = AllocateCopy(
+      "\\Error: Operator library not initialized when trying to execute a script"
+    );
+  }
+  return pResult;
 }
 
 /*
@@ -551,6 +743,22 @@ STDCALL BCI_GetCallbackData( long inEventID )
   return gpStateMachine->CallbackData( inEventID );
 }
 
+/*
+function:  BCI_GetCallbackIsExternal
+purpose:   Get information how callback was registered.
+arguments: Event ID.
+returns:   Returns 1 if the function was registered with BCI_SetExternalCallback(),
+           and 0 if it was registered with BCI_SetCallback(), or when no callback
+           was registered.
+*/
+DLLEXPORT int
+STDCALL BCI_GetCallbackIsExternal( long inEventID )
+{
+  if( gpStateMachine == NULL )
+    return NULL;
+
+  return gpStateMachine->CallbackContext( inEventID ) != CallbackBase::CallingThread;
+}
 
 /*
 function:  BCI_CheckPendingCallback

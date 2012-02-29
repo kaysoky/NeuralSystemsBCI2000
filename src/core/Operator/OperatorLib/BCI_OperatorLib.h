@@ -36,7 +36,7 @@
 #else
 # define STDCALL
 # define DLLEXPORT
-#endif // _WIN32
+#endif /* _WIN32 */
 
 #ifdef __cplusplus
 extern "C" {
@@ -108,6 +108,73 @@ DLLEXPORT int
 STDCALL BCI_SetStateValue( const char* stateName, long value );
 
 /*
+function:  BCI_GetStateValue
+purpose:   Returns the value of a state.
+arguments: Pointer to a null-terminated state name string.
+returns:   State value, or 0 if the state does not exist.
+*/
+DLLEXPORT long
+STDCALL BCI_GetStateValue( const char* stateName );
+
+/*
+function:  BCI_PutEvent
+purpose:   Parses a BCI2000 event definition line, and adds the resulting
+           event to the operator library's event list.
+arguments: Pointer to a null-terminated event line string.
+returns:   1 if successful, 0 otherwise.
+*/
+DLLEXPORT int
+STDCALL BCI_PutEvent( const char* eventLine );
+
+/*
+function:  BCI_GetEvent
+purpose:   Returns the event with the given index from the DLL's internal
+           event list.
+arguments: Event index.
+returns:   Pointer to a null-terminated string containing an event line, or NULL.
+           The output buffer is allocated by the library, and should be released
+           by the caller using BCI_ReleaseObject().
+*/
+DLLEXPORT const char*
+STDCALL BCI_GetEvent( long index );
+
+/*
+function:  BCI_SetEvent
+purpose:   Asynchronously sets an event to a given value.
+arguments: Pointer to a null-terminated state name string; new event value.
+returns:   1 if successful, 0 otherwise.
+*/
+DLLEXPORT int
+STDCALL BCI_SetEvent( const char* eventName, long value );
+
+/*
+function:  BCI_GetSignalChannels
+purpose:   Returns the number of channels in the control signal.
+arguments: None
+returns:   Number of signal channels.
+*/
+DLLEXPORT int
+STDCALL BCI_GetSignalChannels( void );
+
+/*
+function:  BCI_GetSignalElements
+purpose:   Returns the number of elements in the control signal.
+arguments: None
+returns:   Number of signal elements.
+*/
+DLLEXPORT int
+STDCALL BCI_GetSignalElements( void );
+
+/*
+function:  BCI_GetSignal
+purpose:   Returns a value from the control signal.
+arguments: Channel index, element index (zero-based)
+returns:   Signal value.
+*/
+DLLEXPORT float
+STDCALL BCI_GetSignal( int channel, int element );
+
+/*
 function:  BCI_PutVisProperty
 purpose:   Sets the a property to the given value, or adds the property to
            to the property list if it is not present.
@@ -145,6 +212,7 @@ enum BCI_State
   BCI_StateRunning,
   BCI_StateTermination,
   BCI_StateBusy,
+  BCI_StateIdle,
 };
 
 /*
@@ -182,11 +250,11 @@ STDCALL BCI_GetCoreModuleStatus( int index );
 /*
 function:  BCI_Startup
 purpose:   Startup of the operator controller object.
-arguments: A string defining core module listening addresses in the form
-             <ip1>:<port1> <ip2:port2> ... <ipN:portN>
+arguments: A string defining core module names and listening ports in the form
+             <name1>:<port1> <name2:port2> ... <nameN:portN>
            If NULL, a value of
-             localhost:4000 localhost:4001 localhost:4002
-           reflecting the standard BCI2000 configuration is used.
+             "Source:4000 SignalProcessing:4001 Application:4002"
+           representing a standard BCI2000 configuration is used.
 returns:   1 if successful, 0 otherwise.
 */
 DLLEXPORT int
@@ -220,6 +288,24 @@ returns:   1 if no error occurred, 0 otherwise.
 */
 DLLEXPORT int
 STDCALL BCI_Dispose( void );
+
+/*
+function:  BCI_TelnetListen
+purpose:   Start a telnet server, listening at the given address.
+arguments: Address in <ip>:<port> format, defaults to "localhost:3999"
+returns:   1 if no error occurred, 0 otherwise.
+*/
+DLLEXPORT int
+STDCALL BCI_TelnetListen( const char* );
+
+/*
+function:  BCI_TelnetClose
+purpose:   Stop the telnet server, closing any open connections.
+arguments: n/a
+returns:   1 if no error occurred, 0 otherwise.
+*/
+DLLEXPORT int
+STDCALL BCI_TelnetClose( void );
 
 /*
 function:  BCI_SetConfig
@@ -258,6 +344,20 @@ DLLEXPORT int
 STDCALL BCI_ExecuteScript( const char* script );
 
 /*
+function:  BCI_ExecuteScriptWithResult
+purpose:   Interprets and executes the specified script.
+           After successful execution, the result of the last
+           script command is returned.
+arguments: Null-terminated string specifying script commands.
+returns:   Pointer to a null-terminated string containing the result,
+           or NULL when a syntax error is present. The result is
+           allocated by the library, and should be released by the
+           caller using BCI_ReleaseObject().
+*/
+DLLEXPORT const char*
+STDCALL BCI_ExecuteScriptWithResult( const char* script );
+
+/*
 function:  BCI_ReleaseObject
 purpose:   Indicate that an object that has been allocated by the library is no longer
            needed by the library's client.
@@ -273,39 +373,49 @@ Event handler arguments are given following the event.
 */
 enum BCI_Event
 {
-  BCI_OnSystemStateChange, // ( void* refdata )
-  BCI_OnCoreInput,         // ( void* refdata )
+  BCI_OnSystemStateChange, /* ( void* refdata ) */
+  BCI_OnCoreInput,         /* ( void* refdata ) */
 
-  BCI_OnConnect,   // ( void* refdata )
-  BCI_OnSetConfig, // ( void* refdata )
-  BCI_OnStart,     // ( void* refdata )
-  BCI_OnSuspend,   // ( void* refdata )
-  BCI_OnResume,    // ( void* refdata )
-  BCI_OnShutdown,  // ( void* refdata )
+  BCI_OnConnect,   /* ( void* refdata ) */
+  BCI_OnSetConfig, /* ( void* refdata ) */
+  BCI_OnStart,     /* ( void* refdata ) */
+  BCI_OnSuspend,   /* ( void* refdata ) */
+  BCI_OnResume,    /* ( void* refdata ) */
+  BCI_OnShutdown,  /* ( void* refdata ) executed when closing connections */
 
-  BCI_OnLogMessage,     // ( void* refdata, const char* msg )
-  BCI_OnWarningMessage, // ( void* refdata, const char* msg )
-  BCI_OnErrorMessage,   // ( void* refdata, const char* msg )
-  BCI_OnDebugMessage,   // ( void* refdata, const char* msg )
+  BCI_OnLogMessage,     /* ( void* refdata, const char* msg ) */
+  BCI_OnWarningMessage, /* ( void* refdata, const char* msg ) */
+  BCI_OnErrorMessage,   /* ( void* refdata, const char* msg ) */
+  BCI_OnDebugMessage,   /* ( void* refdata, const char* msg ) */
 
-  BCI_OnParameter,          // ( void* refdata, const char* parameterline )
-  BCI_OnState,              // ( void* refdata, const char* stateline )
-  BCI_OnVisPropertyMessage, // ( void* refdata, const char* name, int cfgID, const char* value )
-  BCI_OnVisProperty,        // ( void* refdata, const char* name, int cfgID, const char* value )
+  BCI_OnParameter,          /* ( void* refdata, const char* parameterline ) */
+  BCI_OnState,              /* ( void* refdata, const char* stateline ) */
+  BCI_OnVisPropertyMessage, /* ( void* refdata, const char* name, int cfgID, const char* value ) */
+  BCI_OnVisProperty,        /* ( void* refdata, const char* name, int cfgID, const char* value ) */
 
-  BCI_OnInitializeVis, // ( void* refdata, const char* visID, const char* kind )
-  BCI_OnVisMemo,       // ( void* refdata, const char* visID, const char* msg )
-  BCI_OnVisSignal,     // ( void* refdata, const char* visID, int channels, int elements, float* data )
-  BCI_OnVisBitmap,     // ( void* refdata, const char* visID, int width, int height, unsigned short* data )
+  BCI_OnInitializeVis, /* ( void* refdata, const char* visID, const char* kind ) */
+  BCI_OnVisMemo,       /* ( void* refdata, const char* visID, const char* msg ) */
+  BCI_OnVisSignal,     /* ( void* refdata, const char* visID, int channels, int elements, float* data ) */
+  BCI_OnVisBitmap,     /* ( void* refdata, const char* visID, int width, int height, unsigned short* data ) */
 
-  BCI_OnUnknownCommand, // ( void* refdata, const char* command )
-  BCI_OnScriptError,    // ( void* refdata, const char* msg )
+  BCI_OnUnknownCommand, /* int ( void* refdata, const char* command ) */
+  BCI_OnScriptError,    /* ( void* refdata, const char* msg ) */
+  BCI_OnScriptHelp, /* ( void* refdata, const char** help ) */
+
+  BCI_OnQuitRequest, /* ( void* refdata, const char** message ) executed when a script executes the QUIT command */
 
   BCI_NumEvents
 };
 
+/* Callback result codes. */
+enum BCI_Result
+{
+  BCI_NotHandled = 0,
+  BCI_Handled = 1,
+};
+
 /* Callback function pointer type (callbacks must be declared STDCALL) */
-typedef void (STDCALL *BCI_Function)();
+typedef int (STDCALL *BCI_Function)();
 
 /*
 function:  BCI_SetCallback
@@ -359,6 +469,17 @@ returns:   Callback data, or NULL if no callback data has been
 */
 DLLEXPORT void*
 STDCALL BCI_GetCallbackData( long );
+
+/*
+function:  BCI_GetCallbackIsExternal
+purpose:   Get information how callback was registered.
+arguments: Event ID.
+returns:   Returns 1 if the function was registered with BCI_SetExternalCallback(),
+           and 0 if it was registered with BCI_SetCallback(), or when no callback
+           was registered.
+*/
+DLLEXPORT int
+STDCALL BCI_GetCallbackIsExternal( long );
 
 #ifdef __cplusplus
 }

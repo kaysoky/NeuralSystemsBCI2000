@@ -168,14 +168,14 @@ CallbackBase::CurrentlyInMainThread() const
 bool
 CallbackBase::CheckPendingCallback()
 {
-#ifdef _DEBUG
+#if BCIDEBUG
   if( ::GetCurrentThreadId() != mMainThreadID )
   {
     bcierr__ << "CallbackBase::CheckPendingCallback() called from a thread that is not the main thread"
              << endl;
     return false;
   }
-#endif // _DEBUG
+#endif // BCIDEBUG
   if( mpPendingCallback != NULL )
   {
     mpPendingCallback->Execute();

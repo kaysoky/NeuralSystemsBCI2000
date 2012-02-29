@@ -4,23 +4,23 @@
 // Description: A commandline version of the Operator module.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #include "../OperatorLib/BCI_OperatorLib.h"
@@ -39,20 +39,21 @@ void STDCALL OnSetConfig( void* );
 void STDCALL OnStart( void* );
 void STDCALL OnResume( void* );
 void STDCALL OnSuspend( void* );
-void STDCALL OnShutdown( void* );
+void STDCALL OnQuitRequest( void*, const char** );
 void STDCALL OnDebugMessage( void*, const char* );
 void STDCALL OnLogMessage( void*, const char* );
 void STDCALL OnWarningMessage( void*, const char* );
 void STDCALL OnErrorMessage( void*, const char* );
-void STDCALL OnUnknownCommand( void*, const char* inCommand );
+int  STDCALL OnUnknownCommand( void*, const char* inCommand );
+void STDCALL OnScriptHelp( void*, const char** outHelp );
 
-bool gTerminated = false;
+volatile bool gTerminated = false;
 const char* gScript_OnConnect = NULL;
 const char* gScript_OnSetConfig = NULL;
 const char* gScript_OnStart = NULL;
 const char* gScript_OnResume = NULL;
 const char* gScript_OnSuspend = NULL;
-const char* gScript_OnShutdown = NULL;
+const char* gScript_OnQuit = NULL;
 
 int
 main( int argc, char* argv[] )
@@ -63,7 +64,7 @@ main( int argc, char* argv[] )
     if( stricmp( "--OnConnect", argv[i] ) == 0 )
       gScript_OnConnect = argv[++i];
     else if( stricmp( "--OnExit", argv[i] ) == 0 )
-      gScript_OnShutdown = argv[++i];
+      gScript_OnQuit = argv[++i];
     else if( stricmp( "--OnSetConfig", argv[i] ) == 0 )
       gScript_OnSetConfig = argv[++i];
     else if( stricmp( "--OnSuspend", argv[i] ) == 0 )
@@ -82,22 +83,41 @@ main( int argc, char* argv[] )
   BCI_SetCallback( BCI_OnStart, BCI_Function( OnStart ), NULL );
   BCI_SetCallback( BCI_OnResume, BCI_Function( OnResume ), NULL );
   BCI_SetCallback( BCI_OnSuspend, BCI_Function( OnSuspend ), NULL );
-  BCI_SetCallback( BCI_OnShutdown, BCI_Function( OnShutdown ), NULL );
+  BCI_SetCallback( BCI_OnQuitRequest, BCI_Function( OnQuitRequest ), NULL );
 
   BCI_SetCallback( BCI_OnDebugMessage, BCI_Function( OnDebugMessage ), NULL );
   BCI_SetCallback( BCI_OnLogMessage, BCI_Function( OnLogMessage ), NULL );
   BCI_SetCallback( BCI_OnWarningMessage, BCI_Function( OnWarningMessage ), NULL );
   BCI_SetCallback( BCI_OnErrorMessage, BCI_Function( OnErrorMessage ), NULL );
 
-  BCI_SetCallback( BCI_OnUnknownCommand, BCI_Function( OnUnknownCommand ), NULL );
   BCI_SetCallback( BCI_OnScriptError, BCI_Function( OnErrorMessage ), NULL );
+  BCI_SetCallback( BCI_OnScriptHelp, BCI_Function( OnScriptHelp ), NULL );
+  BCI_SetCallback( BCI_OnUnknownCommand, BCI_Function( OnUnknownCommand ), NULL );
 
   BCI_Startup( "SignalSource:4000 SignalProcessing:4001 Application:4002" );
 
+  cout << "> " << flush;
   string line;
-  while( !gTerminated && cout << "> " && getline( cin, line ) )
-    BCI_ExecuteScript( line.c_str() );
-
+  while( !gTerminated && getline( cin, line ) )
+  {
+    const char* result = BCI_ExecuteScriptWithResult( line.c_str() );
+    if( result )
+    {
+      switch( *result )
+      {
+        case '\0':
+          break;
+        case '\\':
+          cout << result + 1 << '\n';
+          break;
+        default:
+          cout << result << '\n';
+      }
+      BCI_ReleaseObject( result );
+    }
+    if( !gTerminated )
+      cout << "> " << flush;
+  }
   BCI_Shutdown();
   BCI_Dispose();
 }
@@ -139,6 +159,7 @@ OnConnect( void* )
     cout << "Executing script after all modules connected ..." << endl;
     ExecuteScript( gScript_OnConnect );
   }
+  cout << "> " << flush;
 }
 
 void STDCALL
@@ -182,12 +203,12 @@ OnSuspend( void* )
 }
 
 void STDCALL
-OnShutdown( void* )
+OnQuitRequest( void* inData, const char** )
 {
-  if( gScript_OnShutdown )
+  if( gScript_OnQuit )
   {
     cout << "Executing OnExit script ..." << endl;
-    ExecuteScript( gScript_OnShutdown );
+    ExecuteScript( gScript_OnQuit );
   }
   gTerminated = true;
 }
@@ -216,23 +237,24 @@ OnErrorMessage( void*, const char* s )
   cout << "Error: " << s << endl;
 }
 
-void STDCALL
+int STDCALL
 OnUnknownCommand( void* inData, const char* inCommand )
 {
-  const char* runCommand = "run script";
-  if( strnicmp( inCommand, runCommand, strlen( runCommand ) ) == 0 )
+  int result = BCI_NotHandled;
+  const char* runCommand = "Run Script";
+  if( ::strnicmp( inCommand, runCommand, ::strlen( runCommand ) ) == 0 )
   {
+    result = BCI_Handled;
     const char* p = inCommand + ::strlen( runCommand );
     while( *p && ::isspace( *p ) )
       ++p;
     ExecuteScript( p );
   }
-  else
-  {
-    string s = "Unknown command: \"";
-    s += inCommand;
-    s += "\"";
-    OnErrorMessage( inData, s.c_str() );
-  }
+  return result;
 }
 
+void STDCALL
+OnScriptHelp( void* inData, const char** outHelp )
+{
+  *outHelp = "Run Script <script>";
+}

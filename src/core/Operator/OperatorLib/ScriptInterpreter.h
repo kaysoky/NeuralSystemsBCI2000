@@ -26,39 +26,85 @@
 #ifndef SCRIPT_INTERPRETER_H
 #define SCRIPT_INTERPRETER_H
 
-#include "StateMachine.h"
-#include <string>
-#include <iostream>
+#include <vector>
+#include <sstream>
+#include <stack>
+
+class StateMachine;
 
 class ScriptInterpreter
 {
  public:
-  ScriptInterpreter( class StateMachine& );
+  // Begin: Interface to users
+  ScriptInterpreter( StateMachine& );
   virtual ~ScriptInterpreter()
     {}
-
+  // Properties
+  //  The result of the last executed scripting command.
+  std::string Result() const
+    { return mResultStream.str(); }
   // Methods
   //  Interpret the argument script as a sequence of scripting commands.
   bool Execute( const char* script );
+  bool Execute( const std::string& s )
+    { return Execute( s.c_str() ); }
+  // Initialize a state machine for use with scripts..
+  static void Initialize( StateMachine& );
+  // End: Interface to users
+
+ protected:
+  // Begin: Interface to descendants
+  //  Re-implement this function to direct error messages somewhere else than
+  //  into the BCI_OnScriptError callback.
+  virtual void OnScriptError( const std::string& );
+  // End: Interface to descendants
+
+ public: 
+  // Begin: Interface to ObjectType instances.
+  std::string GetToken();
+  std::string GetRemainder();
+  void Unget();
+
+  typedef std::vector< std::vector<std::string> > ArgumentList;
+  static void ParseArguments( std::string&, ArgumentList& );
+
+  std::ostream& Out()
+    { return mResultStream; }
+  StateMachine& StateMachine() const
+    { return mrStateMachine; }
+
+  class LogStream : public std::ostream
+  {
+   public:
+    LogStream( class StateMachine& s ) : std::ostream( &mBuffer ), mBuffer( s ) {}
+    ~LogStream() { flush(); }
+    template<typename T> std::ostream& operator<<( T t ) const { return const_cast<LogStream&>( *this ) << t; }
+    template<typename T> std::ostream& operator<<( T t ) { return static_cast<std::ostream&>( *this ) << t; }
+   private:
+    class LogBuffer : public std::stringbuf
+    {
+     public:
+      LogBuffer( class StateMachine& s ) : mrStateMachine( s ) {}
+     private:
+      virtual int sync();
+      class StateMachine& mrStateMachine;
+    } mBuffer;
+  };
+  LogStream Log()
+    { return LogStream( mrStateMachine ); }
+  // End: Interface to ObjectType instances.
 
  private:
   bool ExecuteLine( const std::string& line );
   bool ExecuteCommand( const std::string& command );
 
-  bool Execute_Load( std::istream& );
-  bool Execute_Set( std::istream& );
-  bool Execute_Insert( std::istream& );
-  bool Execute_System( std::istream& );
-  bool Execute_SetConfig( std::istream& );
-  bool Execute_Start( std::istream& );
-  bool Execute_Stop( std::istream& );
-  bool Execute_Quit( std::istream& );
-
-  bool ApplyVisPropertySet( const std::string& setID );
-
-
-  int mLine;
+ private:
+  std::ostringstream mResultStream;
+  std::istringstream mInputStream;
+  std::stack<std::istream::pos_type> mPosStack;
+ 
   class StateMachine& mrStateMachine;
+  int mLine;
 };
 
 #endif // SCRIPT_INTERPRETER_H

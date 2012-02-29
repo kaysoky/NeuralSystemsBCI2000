@@ -39,6 +39,8 @@
 #include "ParamList.h"
 #include "State.h"
 #include "StateList.h"
+#include "StateVector.h"
+#include "GenericSignal.h"
 #include "VisTable.h"
 #include "VersionInfo.h"
 #include "ProtocolVersion.h"
@@ -85,6 +87,7 @@ class StateMachine : public CallbackBase, private OSThread
   enum SysState
   {
     Idle = 0,
+    WaitingForConnection,
     Publishing,
     Information,
     Initialization,
@@ -111,6 +114,10 @@ class StateMachine : public CallbackBase, private OSThread
     { if( !mpDataLock ) mpDataLock = new OSMutex::Lock( mDataMutex ); }
   void UnlockData()
     { delete mpDataLock; mpDataLock = NULL; }
+  void Lock()
+    { LockData(); }
+  void Unlock()
+    { UnlockData(); }
 
   //  Parameter list.
   ParamList& Parameters()
@@ -124,7 +131,19 @@ class StateMachine : public CallbackBase, private OSThread
     { return mStates; }
   const StateList& States() const
     { return mStates; }
-  bool SetStateValue( const char* name, long value );
+  bool SetStateValue( const char* name, State::ValueType value );
+  State::ValueType GetStateValue( const char* name ) const;
+
+  // Event list.
+  StateList& Events()
+    { return mEvents; }
+  const StateList& Events() const
+    { return mEvents; }
+  bool SetEvent( const char* name, State::ValueType value );
+
+  // Control signal.
+  const GenericSignal& ControlSignal() const
+    { return mControlSignal; }
 
   // Table of visualization properties.
   VisTable& Visualizations()
@@ -154,7 +173,10 @@ class StateMachine : public CallbackBase, private OSThread
   OSMutex::Lock*    mpDataLock;
 
   ParamList         mParameters;
-  StateList         mStates;
+  StateList         mStates,
+                    mEvents;
+  StateVector       mStateVector;
+  GenericSignal     mControlSignal;
   VisTable          mVisualizations;
 
   VersionInfo       mVersionInfo;
@@ -235,6 +257,7 @@ class StateMachine : public CallbackBase, private OSThread
     virtual bool HandleSysCommand( std::istream& );
     virtual bool HandleParam( std::istream& );
     virtual bool HandleState( std::istream& );
+    virtual bool HandleStateVector( std::istream& );
     virtual bool HandleVisSignal( std::istream& );
     virtual bool HandleVisSignalProperties( std::istream& );
     virtual bool HandleVisMemo( std::istream& );
@@ -279,17 +302,37 @@ class StateMachine : public CallbackBase, private OSThread
     return result;
   }
 
-  void DeleteConnections()
+  void CloseConnections()
   {
     for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
       delete *i;
     mConnections.clear();
+    mEventLink.Close();
   }
 
   ConnectionList mConnections;
 
  private:
   bool CheckInitializeVis( const std::string& sourceID, const std::string& kind );
+
+  class EventLink;
+  friend class EventLink;
+  class EventLink : public sockstream, public Lockable, private OSThread
+  {
+   public:
+    EventLink( StateMachine& s ) : mrParent( s ), mConnected( false ), mPort( 0 ) {}
+    void Open( int port ) { mPort = port; OSThread::Start(); }
+    void Close() { OSThread::TerminateWait(); mSocket.close(); }
+    void ConfirmConnection();
+    bool Connected() const { return mConnected; }
+   private:
+    int Execute();
+   private:
+    StateMachine& mrParent;
+    int mPort;
+    sending_udpsocket mSocket;
+    bool mConnected;
+  } mEventLink;
 };
 
 #endif // STATE_MACHINE_H
