@@ -69,6 +69,7 @@ EventType::Set( ScriptInterpreter& inInterpreter )
 bool
 EventType::Get( ScriptInterpreter& inInterpreter )
 {
+  // All events appear as states in the state vector, and have their values stored there.
   return StateType::Get( inInterpreter );
 }
 

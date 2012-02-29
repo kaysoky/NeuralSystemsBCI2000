@@ -63,7 +63,7 @@ class StateList : private StateContainer
   int  Index( const std::string& name ) const
        { return Exists( name ) ? mIndex.find( name )->second : Size(); };
   void Add( const State& s )
-       { ( *this )[ s.Name() ] = s; AssignPositions(); }
+       { ( *this )[ s.Name() ] = s; }
   bool Add( const std::string& stateDefinition );
   void Delete( const std::string& name );
   void AssignPositions();

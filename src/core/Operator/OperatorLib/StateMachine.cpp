@@ -137,12 +137,7 @@ StateMachine::Shutdown()
 {
   bool result = ( SystemState() != Idle );
   if( result )
-  {
-    if( OSThread::InOwnThread() )
-      OSThread::Terminate();
-    else
-      OSThread::TerminateWait();
-  }
+    OSThread::Terminate();
   return result;
 }
 
@@ -384,6 +379,14 @@ StateMachine::EnterState( SysState inState )
       break;
 
     case TRANSITION( Publishing, Information ):
+      mEventLink.ConfirmConnection();
+      ExecuteCallback( BCI_OnConnect );
+      break;
+
+    case TRANSITION( Information, Information ):
+      break;
+
+    case TRANSITION( Information, Initialization ):
       // Add the state vector's length to the system parameters.
       {
         OSMutex::Lock lock( mDataMutex );
@@ -396,17 +399,7 @@ StateMachine::EnterState( SysState inState )
         ostringstream length;
         length << mStateVector.Length();
         mParameters["StateVectorLength"].Value() = length.str().c_str();
-      }
-      mEventLink.ConfirmConnection();
-      ExecuteCallback( BCI_OnConnect );
-      break;
 
-    case TRANSITION( Information, Information ):
-      break;
-
-    case TRANSITION( Information, Initialization ):
-      {
-        OSMutex::Lock lock( mDataMutex );
         MaintainDebugLog();
         BroadcastParameters();
         BroadcastEndOfParameter();
