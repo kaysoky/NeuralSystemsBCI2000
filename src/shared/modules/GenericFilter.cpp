@@ -29,6 +29,7 @@
 #include "GenericFilter.h"
 #include "BCIError.h"
 #include "ClassName.h"
+#include <limits>
 
 using namespace std;
 using namespace bci;
@@ -329,6 +330,7 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
 void
 GenericFilter::InitializeFilters()
 {
+  const GenericSignal::ValueType NaN = numeric_limits<GenericSignal::ValueType>::quiet_NaN();
   const SignalProperties* currentInput = &OwnedSignals()[ NULL ].Properties();
   GenericFilter* currentFilter = NULL;
   for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
@@ -344,7 +346,8 @@ GenericFilter::InitializeFilters()
       visEnabled = int( currentFilter->Parameter( currentFilter->VisParamName() ) ) != 0;
       Visualizations()[ currentFilter ].SetEnabled( visEnabled );
       if( visEnabled )
-        Visualizations()[ currentFilter ].Send( currentOutput );
+        Visualizations()[ currentFilter ].Send( currentOutput )
+                                         .Send( GenericSignal( currentOutput, NaN ) );
       Visualizations()[ currentFilter ].Send( CfgID::Visible, visEnabled );
     }
     Visualizations()[ currentFilter ].SetEnabled( visEnabled );
