@@ -92,7 +92,7 @@ class ConnectorOutput : public GenericFilter
     bool IsOpen() const { return mSocket.is_open(); }
     void Clear() { str( "" ); clear(); }
    private:
-    int Execute();
+    int OnExecute();
    private:
     sending_udpsocket mSocket;
   };

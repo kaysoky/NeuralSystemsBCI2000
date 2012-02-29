@@ -143,7 +143,7 @@ ConnectorInput::Process( const GenericSignal& Input, GenericSignal& Output )
                              "space-separated, and terminated with a newline character" );
       bool match = false;
       for( vector<string>::const_iterator i = mInputFilters.begin(); i != mInputFilters.end() && !match; ++i )
-        match = match || WildcardMatch( *i, name );
+        match = match || WildcardMatch( *i, name, false );
       if( match )
       {
         if( name.find( "Signal(" ) == 0 )
@@ -271,7 +271,7 @@ ConnectorOutput::DeleteConnections()
 }
 
 int
-ConnectorOutput::Connection::Execute()
+ConnectorOutput::Connection::OnExecute()
 {
   const int cReactionTimeMs = 100;
   while( !IsTerminating() )
