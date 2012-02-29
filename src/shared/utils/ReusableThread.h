@@ -47,7 +47,7 @@ class ReusableThread : private OSThread
   bool Wait( int timeout = OSEvent::cInfiniteTimeout );
 
  private:
-  int Execute(); // overridden from OSThread
+  int OnExecute(); // overridden from OSThread
 
   OSEvent mStartEvent,
           mFinishedEvent;

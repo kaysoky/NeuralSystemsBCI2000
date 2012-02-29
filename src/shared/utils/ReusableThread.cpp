@@ -52,7 +52,7 @@ ReusableThread::~ReusableThread()
 bool
 ReusableThread::Run( Runnable& inRunnable )
 {
-  if( Busy() )
+  if( mpRunnable )
     return false;
 
   mpRunnable = &inRunnable;
@@ -74,7 +74,7 @@ ReusableThread::Wait( int inTimeout )
 }
 
 int
-ReusableThread::Execute()
+ReusableThread::OnExecute()
 {
   while( !OSThread::IsTerminating() )
   {

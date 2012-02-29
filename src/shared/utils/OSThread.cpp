@@ -69,12 +69,6 @@ OSThread::OSThread()
 {
 }
 
-OSThread::~OSThread()
-{
-  if( !IsTerminated() )
-    TerminateWait();
-}
-
 void
 OSThread::Start()
 {
@@ -151,9 +145,15 @@ OSThread::PrecisionSleepFor( double inMs )
 #endif // __BORLANDC__
 
 bool
-OSThread::IsMainThread()
+OSThread::InMainThread()
 {
   return ::GetCurrentThreadId() == sMainThreadID;
+}
+
+bool
+OSThread::InOwnThread() const
+{
+  return ::GetCurrentThreadId() == mThreadID;
 }
 
 int
@@ -172,12 +172,6 @@ OSThread::OSThread()
   mpTerminationEvent( NULL ),
   mTerminating( false )
 {
-}
-
-OSThread::~OSThread()
-{
-  if( !mTerminated )
-    ::pthread_cancel( mThread );
 }
 
 void
@@ -218,9 +212,15 @@ OSThread::PrecisionSleepFor( double inMs )
 }
 
 bool
-OSThread::IsMainThread()
+OSThread::InMainThread()
 {
   return ::pthread_equal( pthread_self(), sMainThread );
+}
+
+bool
+OSThread::InOwnThread()
+{
+  return ::pthread_equal( pthread_self(), mThread );
 }
 
 int
@@ -233,6 +233,15 @@ OSThread::NumberOfProcessors()
 
 
 #endif // _WIN32
+
+OSThread::~OSThread()
+{
+  if( !IsTerminated() )
+    throw bciexception(
+      "Thread still running when being destructed -- "
+      "call OSThread::TerminateWait() from your derived class' destructor for a fix"
+    );
+}
 
 void
 OSThread::PrecisionSleepUntil( PrecisionTime inWakeupTime )
@@ -253,6 +262,8 @@ OSThread::Terminate( OSEvent* inpEvent )
 bool
 OSThread::TerminateWait( int inTimeout )
 {
+  if( InOwnThread() )
+    throw bciexception( "Called from own thread, throwing exception to prevent deadlock" );
   OSEvent event;
   Terminate( &event );
   return event.Wait( inTimeout );
@@ -261,13 +272,21 @@ OSThread::TerminateWait( int inTimeout )
 int
 OSThread::CallExecute()
 {
-  MemberCall<int(OSThread*)> call( &OSThread::Execute, this );
+  MemberCall<int(OSThread*)> call( &OSThread::OnExecute, this );
   bool finished = ExceptionCatcher()
     .SetMessage( "Canceling thread of type " + bci::ClassName( typeid( *this ) ) )
     .Run( call );
   return finished ? call.Result() : -1;
 }
 
+void
+OSThread::CallFinished()
+{
+  MemberCall<void(OSThread*)> call( &OSThread::OnFinished, this );
+  ExceptionCatcher()
+  .SetMessage( "Canceling thread of type " + bci::ClassName( typeid( *this ) ) )
+  .Run( call );
+}
 
 #if _WIN32
 
@@ -276,15 +295,19 @@ OSThread::StartThread( void* inInstance )
 {
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
   int result = this_->CallExecute();
+  OSEvent* pTerminationEvent = NULL;
   {
     OSMutex::Lock lock( this_->mMutex );
     this_->mResult = result;
     ::CloseHandle( this_->mHandle );
     this_->mHandle = NULL;
-    if( this_->mpTerminationEvent )
-      this_->mpTerminationEvent->Set();
+    pTerminationEvent = this_->mpTerminationEvent;
     this_->mpTerminationEvent = NULL;
   }
+  this_->mThreadID = 0;
+  this_->CallFinished();
+  if( pTerminationEvent )
+    pTerminationEvent->Set();
   return result;
 }
 
@@ -298,15 +321,18 @@ OSThread::StartThread( void* inInstance )
   // immediately cancel thread execution.
   ::pthread_setcancelstate( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
   int result = this_->CallExecute();
+  OSEvent* pTerminationEvent = NULL;
   {
     OSMutex::Lock lock( this_->mMutex );
     this_->mResult = result;
     this_->mTerminated = true;
-    if( this_->mpTerminationEvent )
-      this_->mpTerminationEvent->Set();
+    pTerminationEvent = this_->mpTerminationEvent;
     this_->mpTerminationEvent = NULL;
   }
-  return &this_->mResult;
+  this_->CallFinished();
+  if( pTerminationEvent )
+    pTerminationEvent->Set();
+  return reinterpret_cast<void*>( result );
 }
 
 #endif // _WIN32

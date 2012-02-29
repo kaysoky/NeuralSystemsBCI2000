@@ -35,8 +35,8 @@
 namespace ThreadUtils
 {
 
-bool IsMainThread()
-    { return OSThread::IsMainThread(); }
+bool InMainThread()
+    { return OSThread::InMainThread(); }
 
 void SleepFor( int ms ) // sleep for milliseconds
 	{ OSThread::SleepFor( ms ); }
@@ -49,6 +49,10 @@ void PrecisionSleepUntil( PrecisionTime wakeup ) // sleep until absolute wakeup 
 
 int NumberOfProcessors()
     { return OSThread::NumberOfProcessors(); }
+
+// Deprecated because of ambiguous name.
+bool IsMainThread()
+    { return InMainThread(); }
 
 } // namespace ThreadUtils
 

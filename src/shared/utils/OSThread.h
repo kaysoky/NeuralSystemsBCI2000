@@ -4,7 +4,7 @@
 // Description: A thread class similar to the VCL's TThread.
 //   To implement your own thread, create a class that inherits from
 //   OSThread, and put your own functionality into its
-//   Execute() function.
+//   OnExecute() function.
 //
 // $BEGIN_BCI2000_LICENSE$
 // 
@@ -53,22 +53,31 @@ class OSThread : private Uncopyable
     { return mTerminating; }
   bool IsTerminated() const;
 
-  int  Result() const
+  bool InOwnThread() const;
+
+  int Result() const
     { return mResult; }
 
+ private:
+  virtual int Execute() { return 0; }
+  virtual int OnExecute() { return Execute(); } // Now named as an event handler.
+  virtual void OnFinished() {}
+
+ public: // These utility functions are now obsolete.
+         // Use their counterparts from the ThreadUtils.h header instead.
   static void SleepFor( int ); // sleep for milliseconds
   static void Sleep( int inMs )
     { OSThread::SleepFor( inMs ); }
   static void PrecisionSleepFor( double ); // sleep for milliseconds
   static void PrecisionSleepUntil( PrecisionTime ); // sleep until absolute wakeup time
-  static bool IsMainThread();
+  static bool IsMainThread() { return InMainThread(); }
+  static bool InMainThread();
   static int NumberOfProcessors();
 
  private:
-  virtual int Execute() = 0;
   int CallExecute();
+  void CallFinished();
 
- private:
 #ifdef _WIN32
   static unsigned int WINAPI StartThread( void* inInstance );
 
