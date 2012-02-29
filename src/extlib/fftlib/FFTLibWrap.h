@@ -30,78 +30,124 @@
 # define USE_DLL 1
 #endif
 
+#include <complex>
 #include "BCIAssert.h"
 
 class FFTLibWrapper
 {
   public:
-    typedef double number;
+    typedef double Real;
+    typedef std::complex<Real> Complex;
+
     enum FFTDirection
     {
-      FFTForward = 0,
+      FFTForward = -1,
       FFTBackward = 1,
     };
-    FFTLibWrapper();
-    ~FFTLibWrapper();
 
-    bool Initialize( int FFTSize, FFTDirection = FFTForward );
+    enum FFTOptimization
+    {
+      Measure = 0,
+      Estimate = 1U << 6,
+    };
+
     int Size() const;
-    number& Input( int index );
-    const number& Output( int index ) const;
-
     void Compute();
 
     static const char* LibName() { return sLibName; }
     static bool LibAvailable()   { return sLibRef != 0; }
 
-  private:
+  protected:
+    FFTLibWrapper();
+    virtual ~FFTLibWrapper();
     void Cleanup();
 
     int     mFFTSize;
-    number* mInputData,
-          * mOutputData;
+    void*   mpInputData,
+        *   mpOutputData;
     void*   mLibPrivateData;
 
-    static const char* sLibName;
-    static void*  sLibRef;
-
-    typedef void* ( *LibInitFn )( int, number*, number*, int, unsigned );
+    typedef void* ( *LibInitRealFn )( int, void*, void*, int, unsigned );
+    typedef void* ( *LibInitComplexFn )( int, void*, void*, int, unsigned );
     typedef void  ( *LibExecuteFn )( void* );
     typedef void  ( *LibDestroyFn )( void* );
     typedef void  ( *LibCleanupFn )();
     typedef void* ( *LibMallocFn )( unsigned long );
     typedef void  ( *LibFreeFn )( void* );
 
-    static LibInitFn    LibInit;
-    static LibExecuteFn LibExecute;
-    static LibDestroyFn LibDestroy;
-    static LibCleanupFn LibCleanup;
-    static LibMallocFn  LibMalloc;
-    static LibFreeFn    LibFree;
+    static LibInitRealFn    LibInitReal;
+    static LibInitComplexFn LibInitComplex;
+    static LibExecuteFn     LibExecute;
+    static LibDestroyFn     LibDestroy;
+    static LibCleanupFn     LibCleanup;
+    static LibMallocFn      LibMalloc;
+    static LibFreeFn        LibFree;
+
+  private:
+    static int sNumInstances;
+    static const char* sLibName;
+    static void*  sLibRef;
+
 #if USE_DLL
     typedef struct { void** mProc; const char* mName; } ProcNameEntry;
     static ProcNameEntry sProcNames[];
 #endif // USE_DLL
 };
 
-inline
-FFTLibWrapper::number&
-FFTLibWrapper::Input( int index )
+class RealFFT : public FFTLibWrapper
 {
-#if !defined( _NDEBUG ) || defined( _DEBUG )
-  bciassert( mInputData != 0 && index < mFFTSize );
+  public:
+    bool Initialize( int FFTSize, FFTDirection = FFTForward, FFTOptimization = Estimate );
+    Real& Input( int index );
+    const Real& Output( int index ) const;
+};
+
+class ComplexFFT : public FFTLibWrapper
+{
+  public:
+    bool Initialize( int FFTSize, FFTDirection = FFTForward, FFTOptimization = Estimate );
+    Complex& Input( int index );
+    const Complex& Output( int index ) const;
+};
+
+inline
+FFTLibWrapper::Real&
+RealFFT::Input( int index )
+{
+#if BCIDEBUG
+  bciassert( mpInputData != 0 && index < mFFTSize );
 #endif
-  return mInputData[ index ];
+  return static_cast<Real*>( mpInputData )[index];
 }
 
 inline
-const FFTLibWrapper::number&
-FFTLibWrapper::Output( int index ) const
+const FFTLibWrapper::Real&
+RealFFT::Output( int index ) const
 {
-#if !defined( _NDEBUG ) || defined( _DEBUG )
-  bciassert( mOutputData != 0 && index < mFFTSize );
+#if BCIDEBUG
+  bciassert( mpOutputData != 0 && index < mFFTSize );
 #endif
-  return mOutputData[ index ];
+  return static_cast<Real*>( mpOutputData )[index];
+}
+
+inline
+FFTLibWrapper::Complex&
+ComplexFFT::Input( int index )
+{
+#if BCIDEBUG
+  bciassert( mpInputData != 0 && index < mFFTSize );
+#endif
+  return static_cast<Complex*>( mpInputData )[index];
+}
+
+inline
+const FFTLibWrapper::Complex&
+ComplexFFT::Output( int index ) const
+{
+#if BCIDEBUG
+  bciassert( mpOutputData != 0 && index < mFFTSize );
+#endif
+  return static_cast<Complex*>( mpOutputData )[index];
 }
 
 #endif // FFT_LIB_WRAP_H

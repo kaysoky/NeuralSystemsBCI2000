@@ -32,9 +32,12 @@
 #endif
 
 const char* FFTLibWrapper::sLibName = "fftw3";
+int FFTLibWrapper::sNumInstances = 0;
+
 #if USE_DLL
 void* FFTLibWrapper::sLibRef = ::LoadLibrary( sLibName );
-FFTLibWrapper::LibInitFn FFTLibWrapper::LibInit = NULL;
+FFTLibWrapper::LibInitRealFn FFTLibWrapper::LibInitReal = NULL;
+FFTLibWrapper::LibInitComplexFn FFTLibWrapper::LibInitComplex = NULL;
 FFTLibWrapper::LibExecuteFn FFTLibWrapper::LibExecute = NULL;
 FFTLibWrapper::LibDestroyFn FFTLibWrapper::LibDestroy = NULL;
 FFTLibWrapper::LibCleanupFn FFTLibWrapper::LibCleanup = NULL;
@@ -43,17 +46,20 @@ FFTLibWrapper::LibFreeFn FFTLibWrapper::LibFree = NULL;
 
 FFTLibWrapper::ProcNameEntry FFTLibWrapper::sProcNames[] =
 {
-  { ( void** )&LibInit,    "fftw_plan_r2r_1d" },
-  { ( void** )&LibExecute, "fftw_execute" },
-  { ( void** )&LibDestroy, "fftw_destroy_plan" },
-  { ( void** )&LibCleanup, "fftw_cleanup" },
-  { ( void** )&LibMalloc,  "fftw_malloc" },
-  { ( void** )&LibFree,    "fftw_free" },
+  { ( void** )&LibInitReal,   "fftw_plan_r2r_1d" },
+  { ( void** )&LibInitComplex,"fftw_plan_dft_1d" },
+  { ( void** )&LibExecute,    "fftw_execute" },
+  { ( void** )&LibDestroy,    "fftw_destroy_plan" },
+  { ( void** )&LibCleanup,    "fftw_cleanup" },
+  { ( void** )&LibMalloc,     "fftw_malloc" },
+  { ( void** )&LibFree,       "fftw_free" },
 };
 #else // USE_DLL
 void* FFTLibWrapper::sLibRef = reinterpret_cast<void*>( 1 );
-FFTLibWrapper::LibInitFn FFTLibWrapper::LibInit
-  = reinterpret_cast<FFTLibWrapper::LibInitFn>( fftw_plan_r2r_1d );
+FFTLibWrapper::LibInitRealFn FFTLibWrapper::LibInitReal
+  = reinterpret_cast<FFTLibWrapper::LibInitRealFn>( fftw_plan_r2r_1d );
+FFTLibWrapper::LibInitComplexFn FFTLibWrapper::LibInitComplex
+  = reinterpret_cast<FFTLibWrapper::LibInitComplexFn>( fftw_plan_dft_1d );
 FFTLibWrapper::LibExecuteFn FFTLibWrapper::LibExecute
   = reinterpret_cast<FFTLibWrapper::LibExecuteFn>( fftw_execute );
 FFTLibWrapper::LibDestroyFn FFTLibWrapper::LibDestroy
@@ -69,12 +75,13 @@ FFTLibWrapper::LibFreeFn FFTLibWrapper::LibFree
 
 FFTLibWrapper::FFTLibWrapper()
 : mFFTSize( 0 ),
-  mInputData( NULL ),
-  mOutputData( NULL ),
+  mpInputData( NULL ),
+  mpOutputData( NULL ),
   mLibPrivateData( NULL )
 {
+  ++sNumInstances;
 #if USE_DLL
-  if( sLibRef && !LibInit )
+  if( sLibRef && !LibInitReal )
   {
     bool foundAllProcs = true;
     for( size_t i = 0; foundAllProcs && i < sizeof( sProcNames ) / sizeof( *sProcNames ); ++i )
@@ -94,6 +101,9 @@ FFTLibWrapper::~FFTLibWrapper()
 {
   if( LibAvailable() )
     Cleanup();
+  if( --sNumInstances < 1 )
+    LibCleanup();
+
 }
 
 void
@@ -104,29 +114,17 @@ FFTLibWrapper::Cleanup()
     LibDestroy( mLibPrivateData );
     mLibPrivateData = NULL;
   }
-  if( mInputData )
+  if( mpInputData )
   {
-    LibFree( mInputData );
-    mInputData = NULL;
+    LibFree( mpInputData );
+    mpInputData = NULL;
   }
-  if( mOutputData )
+  if( mpOutputData )
   {
-    LibFree( mOutputData );
-    mOutputData = NULL;
+    LibFree( mpOutputData );
+    mpOutputData = NULL;
   }
   mFFTSize = 0;
-  LibCleanup();
-}
-
-bool
-FFTLibWrapper::Initialize( int inFFTSize, FFTDirection inDirection )
-{
-  Cleanup();
-  mFFTSize = inFFTSize;
-  mInputData = reinterpret_cast<number*>( LibMalloc( mFFTSize * sizeof( number ) ) );
-  mOutputData = reinterpret_cast<number*>( LibMalloc( mFFTSize * sizeof( number ) ) );
-  mLibPrivateData = LibInit( mFFTSize, mInputData, mOutputData, inDirection, 1U << 6 );
-  return mInputData && mOutputData && mLibPrivateData;
 }
 
 int
@@ -139,6 +137,28 @@ void
 FFTLibWrapper::Compute()
 {
   LibExecute( mLibPrivateData );
+}
+
+bool
+RealFFT::Initialize( int inFFTSize, FFTDirection inDirection, FFTOptimization inOptimization )
+{
+  Cleanup();
+  mFFTSize = inFFTSize;
+  mpInputData = LibMalloc( mFFTSize * sizeof( Real ) );
+  mpOutputData = LibMalloc( mFFTSize * sizeof( Real ) );
+  mLibPrivateData = LibInitReal( mFFTSize, mpInputData, mpOutputData, inDirection, inOptimization );
+  return mpInputData && mpOutputData && mLibPrivateData;
+}
+
+bool
+ComplexFFT::Initialize( int inFFTSize, FFTDirection inDirection, FFTOptimization inOptimization )
+{
+  Cleanup();
+  mFFTSize = inFFTSize;
+  mpInputData = LibMalloc( mFFTSize * sizeof( Complex ) );
+  mpOutputData = LibMalloc( mFFTSize * sizeof( Complex ) );
+  mLibPrivateData = LibInitComplex( mFFTSize, mpInputData, mpOutputData, inDirection, inOptimization );
+  return mpInputData && mpOutputData && mLibPrivateData;
 }
 
 
