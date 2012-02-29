@@ -40,7 +40,7 @@
 #include "GenericFilter.h"
 #include <algorithm>
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 class FilterCombination : public GenericFilter
 {
  private:
@@ -53,23 +53,23 @@ class FilterCombination : public GenericFilter
    virtual void Halt();
 
  protected:
-   Filter1Type mFilter1;
-   Filter2Type mFilter2;
+   F2 mFilter2; // reverse order of instantiation matters
+   F1 mFilter1;
    mutable SignalProperties mProperties1,
                             mProperties2;
    GenericSignal mOutput1,
                  mOutput2;
 };
 
-template<class Filter1Type, class Filter2Type>
-class ParallelCombination : public FilterCombination<Filter1Type, Filter2Type>
+template<class F1, class F2>
+class ParallelCombination : public FilterCombination<F1, F2>
 {
  private:
    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
    virtual void Initialize( const SignalProperties&, const SignalProperties& );
    virtual void Process( const GenericSignal&, GenericSignal& );
 
-   typedef FilterCombination<Filter1Type, Filter2Type> Parent;
+   typedef FilterCombination<F1, F2> Parent;
    using Parent::mFilter1;
    using Parent::mFilter2;
    using Parent::mProperties1;
@@ -78,15 +78,15 @@ class ParallelCombination : public FilterCombination<Filter1Type, Filter2Type>
    using Parent::mOutput2;
 };
 
-template<class Filter1Type, class Filter2Type>
-class LinearCombination : public FilterCombination<Filter1Type, Filter2Type>
+template<class F1, class F2>
+class LinearCombination : public FilterCombination<F1, F2>
 {
  private:
    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
    virtual void Initialize( const SignalProperties&, const SignalProperties& );
    virtual void Process( const GenericSignal&, GenericSignal& );
 
-   typedef FilterCombination<Filter1Type, Filter2Type> Parent;
+   typedef FilterCombination<F1, F2> Parent;
    using Parent::mFilter1;
    using Parent::mFilter2;
    using Parent::mProperties1;
@@ -95,33 +95,33 @@ class LinearCombination : public FilterCombination<Filter1Type, Filter2Type>
 
 // FilterCombination implementation
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-FilterCombination<Filter1Type, Filter2Type>::StartRun()
+FilterCombination<F1, F2>::StartRun()
 {
   mFilter1.CallStartRun();
   mFilter2.CallStartRun();
 }
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-FilterCombination<Filter1Type, Filter2Type>::StopRun()
+FilterCombination<F1, F2>::StopRun()
 {
   mFilter1.CallStopRun();
   mFilter2.CallStopRun();
 }
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-FilterCombination<Filter1Type, Filter2Type>::Resting()
+FilterCombination<F1, F2>::Resting()
 {
   mFilter1.CallResting();
   mFilter2.CallResting();
 }
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-FilterCombination<Filter1Type, Filter2Type>::Halt()
+FilterCombination<F1, F2>::Halt()
 {
   mFilter1.CallHalt();
   mFilter2.CallHalt();
@@ -129,9 +129,9 @@ FilterCombination<Filter1Type, Filter2Type>::Halt()
 
 // ParallelCombination implementation
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-ParallelCombination<Filter1Type, Filter2Type>::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
+ParallelCombination<F1, F2>::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
 {
   mFilter1.CallPreflight( Input, mProperties1 );
   mFilter2.CallPreflight( Input, mProperties2 );
@@ -155,9 +155,9 @@ ParallelCombination<Filter1Type, Filter2Type>::Preflight( const SignalProperties
       Output.ChannelLabels()[ch + mProperties1.Channels()] = mProperties2.ChannelLabels()[ch];
 }
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-ParallelCombination<Filter1Type, Filter2Type>::Initialize( const SignalProperties& Input, const SignalProperties& Output )
+ParallelCombination<F1, F2>::Initialize( const SignalProperties& Input, const SignalProperties& Output )
 {
   mFilter1.CallInitialize( Input, mProperties1 );
   mFilter2.CallInitialize( Input, mProperties2 );
@@ -165,9 +165,9 @@ ParallelCombination<Filter1Type, Filter2Type>::Initialize( const SignalPropertie
   mOutput2 = GenericSignal( mProperties2 );
 }
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-ParallelCombination<Filter1Type, Filter2Type>::Process( const GenericSignal& Input, GenericSignal& Output )
+ParallelCombination<F1, F2>::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   mFilter1.CallProcess( Input, mOutput1 );
   mFilter2.CallProcess( Input, mOutput2 );
@@ -183,26 +183,26 @@ ParallelCombination<Filter1Type, Filter2Type>::Process( const GenericSignal& Inp
 
 // LinearCombination implementation
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-LinearCombination<Filter1Type, Filter2Type>::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
+LinearCombination<F1, F2>::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
 {
   mFilter1.CallPreflight( Input, mProperties1 );
   mFilter2.CallPreflight( mProperties1, Output );
 }
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-LinearCombination<Filter1Type, Filter2Type>::Initialize( const SignalProperties& Input, const SignalProperties& Output )
+LinearCombination<F1, F2>::Initialize( const SignalProperties& Input, const SignalProperties& Output )
 {
   mFilter1.CallInitialize( Input, mProperties1 );
   mFilter2.CallInitialize( mProperties1, Output );
   mOutput1 = GenericSignal( mProperties1 );
 }
 
-template<class Filter1Type, class Filter2Type>
+template<class F1, class F2>
 void
-LinearCombination<Filter1Type, Filter2Type>::Process( const GenericSignal& Input, GenericSignal& Output )
+LinearCombination<F1, F2>::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   mFilter1.CallProcess( Input, mOutput1 );
   mFilter2.CallProcess( mOutput1, Output );
