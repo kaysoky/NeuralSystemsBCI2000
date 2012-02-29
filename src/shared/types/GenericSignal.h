@@ -47,6 +47,7 @@ class GenericSignal
       size_t inMaxElements,
       SignalType inType );
     explicit GenericSignal( const SignalProperties& );
+    GenericSignal( const SignalProperties&, ValueType );
 
     GenericSignal&          SetProperties( const SignalProperties& );
     const SignalProperties& Properties() const

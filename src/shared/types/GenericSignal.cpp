@@ -62,6 +62,14 @@ GenericSignal::GenericSignal( const SignalProperties& inProperties )
   SetProperties( inProperties );
 }
 
+GenericSignal::GenericSignal( const SignalProperties& inProperties, ValueType inValue )
+{
+  SetProperties( inProperties );
+  for( int ch = 0; ch < Channels(); ++ch )
+    for( int el = 0; el < Elements(); ++el )
+      ( *this )( ch, el ) = inValue;
+}
+
 const GenericSignal::ValueType&
 GenericSignal::Value( size_t inChannel, size_t inElement ) const
 {
