@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id
+// $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
 //  Description: A function that matches strings against glob-like patterns.
 //    In patterns, the following special characters are recognized:
@@ -35,6 +35,6 @@
 namespace bci
 {
 
-bool WildcardMatch( const std::string& inPattern, const std::string& inString );
+bool WildcardMatch( const std::string& inPattern, const std::string& inString, bool inCaseSensitive = true );
 
 } // namespace bci

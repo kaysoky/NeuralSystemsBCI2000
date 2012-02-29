@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id
+// $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
 //  Description: A function that matches strings against glob-like patterns.
 //    In patterns, the following special characters are recognized:
@@ -89,17 +89,17 @@ void RunTests()
 }
 #endif // BCIDEBUG
 
-bool Match( const char* p, const char* s )
+bool Match( const char* p, const char* s, bool cs )
 {
   bool result = false;
   switch( *p )
   {
     case '*':
-      result = Match( p + 1, s ) || ( *s != '\0' ) && ( Match( p + 1, s + 1 ) || Match( p, s + 1 ) );
+      result = Match( p + 1, s, cs ) || ( *s != '\0' ) && ( Match( p + 1, s + 1, cs ) || Match( p, s + 1, cs ) );
       break;
 
     case '?':
-      result = ( *s != '\0' ) && Match( p + 1, s + 1 );
+      result = ( *s != '\0' ) && Match( p + 1, s + 1, cs );
       break;
 
     case '[':
@@ -139,7 +139,7 @@ bool Match( const char* p, const char* s )
           result = ( charset.find( *s ) != string::npos );
           if( negate )
             result = !result;
-          result = result && Match( p + 1, s + 1 );
+          result = result && Match( p + 1, s + 1, cs );
         }
       }
       break;
@@ -150,11 +150,12 @@ bool Match( const char* p, const char* s )
       break;
 
     case '\\':
-      result = ( *( p + 1 ) != '\0' ) && Match( p + 1, s );
+      result = ( *( p + 1 ) != '\0' ) && Match( p + 1, s, cs );
       break;
 
     default:
-      result = ( *s == *p ) && Match( p + 1, s + 1 );
+      result = cs ? ( *s == *p ) : ( ::tolower( *s ) == ::tolower( *p ) );
+      result = result && Match( p + 1, s + 1, cs );
   }
   return result;
 }
@@ -162,7 +163,7 @@ bool Match( const char* p, const char* s )
 } // namespace
 
 bool
-bci::WildcardMatch( const string& inPattern, const string& inString )
+bci::WildcardMatch( const string& inPattern, const string& inString, bool inCaseSensitive )
 {
 #if BCIDEBUG
   static bool tested = false;
@@ -172,5 +173,5 @@ bci::WildcardMatch( const string& inPattern, const string& inString )
     RunTests();
   }
 #endif // BCIDEBUG
-  return Match( inPattern.c_str(), inString.c_str() );
+  return Match( inPattern.c_str(), inString.c_str(), inCaseSensitive );
 }
