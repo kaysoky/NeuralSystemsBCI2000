@@ -79,6 +79,7 @@ FeedbackTask::FeedbackTask()
    "TargetCode 8 0 0 0",
    "ResultCode 8 0 0 0",
    "Feedback   1 0 0 0",
+   "PauseApplication 1 0 0 0",
   END_STATE_DEFINITIONS
 }
 
@@ -179,6 +180,12 @@ FeedbackTask::Halt()
 void
 FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
 {
+  if( State( "PauseApplication" ) )
+  {
+    Output = Input;
+    return;
+  }
+
   bool doProgress = true;
   while( doProgress )
   {

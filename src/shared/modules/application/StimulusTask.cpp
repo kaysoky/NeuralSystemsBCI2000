@@ -94,6 +94,7 @@ StimulusTask::StimulusTask()
    "StimulusType    1 0 0 0", // attended vs. non-attended
    "StimulusBegin   1 0 0 0", // 1: first block of stimulus presentation
    "PhaseInSequence 2 0 0 0", // 1: pre-sequence, 2: during sequence, 3: post-sequence
+   "PauseApplication 1 0 0 0",
   END_STATE_DEFINITIONS
 }
 
@@ -245,8 +246,13 @@ StimulusTask::Halt()
 
 void
 StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
-{ // Dispatch the Process() call to StimulusTask's handler functions.
-
+{
+  if( State( "PauseApplication" ) )
+  {
+    Output = Input;
+    return;
+  }
+  // Dispatch the Process() call to StimulusTask's handler functions.
   // Check for classification information before calling handlers.
   int stimulusCodeRes = OptionalState( "StimulusCodeRes", 0 );
   if( mInterpretMode != InterpretModes::None && stimulusCodeRes > 0 )
