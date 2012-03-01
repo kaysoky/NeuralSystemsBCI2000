@@ -34,7 +34,7 @@ Filter( SpatialFilter, 2.B );
 Filter( WindowingFilter, 2.C );
 
 #include "FFTSpectrum.h"
-Filter( FFTSpectrum, 2.C1 );
+Filter( FFTSpectrum, 2.C0 );
 
 #include "LinearClassifier.h"
 Filter( LinearClassifier, 2.D );
