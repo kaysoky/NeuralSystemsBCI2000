@@ -260,16 +260,27 @@ GenericFilter::CallHalt()
 void
 GenericFilter::InstantiateFilters()
 {
+  string prevFilterName,
+         prevPosString;
   for( RegistrarSet::reverse_iterator i = Registrar::Registrars().rbegin();
                                        i != Registrar::Registrars().rend(); ++i )
   {
     string filterName = ClassName( ( *i )->Typeid() );
+    const string& posString = ( *i )->Position();
+    if( posString == prevPosString )
+      bciout << "Filters " << prevFilterName
+             << " and " << filterName 
+             << " have the same position string: " << posString
+             << ", relative position undefined"
+             << endl;
+    prevPosString = posString;
+    prevFilterName = filterName;
+
     ErrorContext( filterName + "::Constructor" );
     GenericFilter* pFilter = ( *i )->NewInstance();
     OwnedFilters().push_front( pFilter );
     if( pFilter->AllowsVisualization() )
     {
-      const string& posString = ( *i )->Position();
       Visualizations()[ pFilter ].SetSourceID( posString );
       // Convert the position string to a float value with identical sort order.
       float placeValue = 1,
@@ -285,7 +296,12 @@ GenericFilter::InstantiateFilters()
                                + "= 0 0 0 1 // Visualize "
                                + filterName
                                + " output (boolean)";
-      pFilter->Parameters->Add( Param( paramDefinition ), sortingHint );
+      Param param( paramDefinition );
+      pFilter->Parameters->Add( param, sortingHint );
+      bcidbg( 10 ) << "Added visualization parameter " << param.Name() 
+                   << " with sorting hint " << sortingHint 
+                   << "/pos string " << posString 
+                   << endl;
     }
     ErrorContext( "" );
   }
@@ -344,7 +360,6 @@ GenericFilter::InitializeFilters()
     if( currentFilter->AllowsVisualization() )
     {
       visEnabled = int( currentFilter->Parameter( currentFilter->VisParamName() ) ) != 0;
-      Visualizations()[ currentFilter ].SetEnabled( visEnabled );
       if( visEnabled )
         Visualizations()[ currentFilter ].Send( currentOutput )
                                          .Send( GenericSignal( currentOutput, NaN ) );
