@@ -38,31 +38,53 @@
 #include <cmath>
 #include <cassert>
 
-#undef DEBUG_GENERIC_SIGNAL
-
 using namespace std;
 
 GenericSignal::GenericSignal()
+: mpValues( NULL )
 {
   SetProperties( mProperties );
 }
 
+GenericSignal::~GenericSignal()
+{
+  delete mpValues;
+}
+
+GenericSignal::GenericSignal( const GenericSignal& inSignal )
+: mpValues( NULL ),
+  mProperties( inSignal.mProperties )
+{
+  AssignValues( inSignal );
+}
+
+GenericSignal&
+GenericSignal::operator=( const GenericSignal& inSignal )
+{
+  mProperties = inSignal.Properties();
+  return AssignValues( inSignal );
+}
+
 GenericSignal::GenericSignal( size_t inChannels, size_t inElements, SignalType::Type inType )
+: mpValues( NULL )
 {
   SetProperties( SignalProperties( inChannels, inElements, inType ) );
 }
 
 GenericSignal::GenericSignal( size_t inChannels, size_t inElements, SignalType inType )
+: mpValues( NULL )
 {
   SetProperties( SignalProperties( inChannels, inElements, inType ) );
 }
 
 GenericSignal::GenericSignal( const SignalProperties& inProperties )
+: mpValues( NULL )
 {
   SetProperties( inProperties );
 }
 
 GenericSignal::GenericSignal( const SignalProperties& inProperties, ValueType inValue )
+: mpValues( NULL )
 {
   SetProperties( inProperties );
   for( int ch = 0; ch < Channels(); ++ch )
@@ -70,54 +92,44 @@ GenericSignal::GenericSignal( const SignalProperties& inProperties, ValueType in
       ( *this )( ch, el ) = inValue;
 }
 
-const GenericSignal::ValueType&
-GenericSignal::Value( size_t inChannel, size_t inElement ) const
-{
-  return operator()( inChannel, inElement );
-}
-
-GenericSignal&
-GenericSignal::SetValue( size_t inChannel, size_t inElement, ValueType inValue )
-{
-  operator()( inChannel, inElement ) = inValue;
-  return *this;
-}
-
 GenericSignal&
 GenericSignal::AssignValues( const GenericSignal& s )
 {
   mProperties.SetChannels( s.Channels() );
   mProperties.SetElements( s.Elements() );
-  mValues = s.mValues;
+  size_t numValues = s.Channels() * s.Elements();
+  delete mpValues;
+  if( numValues == 0 )
+  {
+    mpValues = NULL;
+  }
+  else
+  {
+    mpValues = new ValueType[numValues];
+    ::memcpy( mpValues, s.mpValues, numValues * sizeof( ValueType ) );
+  }
   return *this;
-}
-
-const GenericSignal::ValueType&
-GenericSignal::operator() ( size_t inChannel, size_t inElement ) const
-{
-#if DEBUG_GENERIC_SIGNAL
-   return mValues.at( inChannel ).at( inElement );
-#else
-   return mValues[ inChannel ][ inElement ];
-#endif
-}
-
-GenericSignal::ValueType&
-GenericSignal::operator() ( size_t inChannel, size_t inElement )
-{
-#if DEBUG_GENERIC_SIGNAL
-   return mValues.at( inChannel ).at( inElement );
-#else
-   return mValues[ inChannel ][ inElement ];
-#endif
 }
 
 GenericSignal&
 GenericSignal::SetProperties( const SignalProperties& inSp )
 {
-  mValues.resize( inSp.Channels() );
-  for( size_t i = 0; i != mValues.size(); ++i )
-    mValues[ i ].resize( inSp.Elements(), ValueType( 0 ) );
+  ValueType* pPrevious = mpValues;
+  size_t numValues = inSp.Channels() * inSp.Elements();
+  if( numValues == 0 )
+  {
+    mpValues = NULL;
+  }
+  else
+  {
+    mpValues = new ValueType[numValues];
+    ::memset( mpValues, 0, numValues * sizeof( ValueType ) );
+  }
+  if( pPrevious != NULL ) // Preserve values when resizing.
+    for( int ch = 0; ch < min( mProperties.Channels(), inSp.Channels() ); ++ch )
+      for( int el = 0; el < min( mProperties.Elements(), inSp.Elements() ); ++el )
+        mpValues[ch * inSp.Elements() + el] = pPrevious[ch * mProperties.Elements() + el];
+  delete pPrevious;
   mProperties = inSp;
   return *this;
 }
@@ -135,7 +147,7 @@ GenericSignal::WriteToStream( ostream& os ) const
   for( int j = 0; j < Elements(); ++j )
   {
     os << '\n' << setw( indent ) << "";
-    for( size_t i = 0; i < mValues.size(); ++i )
+    for( int i = 0; i < Channels(); ++i )
     {
       os << setw( 14 )
          << Value( i, j )

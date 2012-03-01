@@ -127,18 +127,6 @@ FFTLibWrapper::Cleanup()
   mFFTSize = 0;
 }
 
-int
-FFTLibWrapper::Size() const
-{
-  return mFFTSize;
-}
-
-void
-FFTLibWrapper::Compute()
-{
-  LibExecute( mLibPrivateData );
-}
-
 bool
 RealFFT::Initialize( int inFFTSize, FFTDirection inDirection, FFTOptimization inOptimization )
 {

@@ -38,6 +38,10 @@ class GenericSignal
     typedef double ValueType;
 
     GenericSignal();
+    ~GenericSignal();
+    GenericSignal( const GenericSignal& );
+    GenericSignal& operator=( const GenericSignal& );
+
     GenericSignal(
       size_t inChannels,
       size_t inMaxElements,
@@ -88,8 +92,8 @@ class GenericSignal
     template<typename T> static void GetLittleEndian( std::istream&, T& );
 
   private:
-    SignalProperties                     mProperties;
-    std::vector<std::vector<ValueType> > mValues;
+    SignalProperties mProperties;
+    ValueType* mpValues;
 };
 
 template<> void
@@ -110,14 +114,46 @@ GenericSignal::GetValueBinary<SignalType::float24>( std::istream&, size_t, size_
 template<> void
 GenericSignal::GetValueBinary<SignalType::float32>( std::istream&, size_t, size_t );
 
+inline
+const GenericSignal::ValueType&
+GenericSignal::Value( size_t inChannel, size_t inElement ) const
+{
+  return operator()( inChannel, inElement );
+}
+
+inline
+GenericSignal&
+GenericSignal::SetValue( size_t inChannel, size_t inElement, ValueType inValue )
+{
+  operator()( inChannel, inElement ) = inValue;
+  return *this;
+}
+
+inline
+const GenericSignal::ValueType&
+GenericSignal::operator() ( size_t inChannel, size_t inElement ) const
+{
+  return mpValues[inChannel * mProperties.Elements() + inElement];
+}
+
+inline
+GenericSignal::ValueType&
+GenericSignal::operator() ( size_t inChannel, size_t inElement )
+{
+  return mpValues[inChannel * mProperties.Elements() + inElement];
+}
 
 inline
 std::ostream& operator<<( std::ostream& os, const GenericSignal& s )
-{ return s.WriteToStream( os ); }
+{
+  return s.WriteToStream( os );
+}
 
 inline
 std::istream& operator>>( std::istream& is, GenericSignal& s )
-{ return s.ReadFromStream( is ); }
+{
+  return s.ReadFromStream( is );
+}
 
 #endif // GENERIC_SIGNAL_H
 

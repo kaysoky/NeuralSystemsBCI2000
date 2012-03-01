@@ -51,8 +51,8 @@ class FFTLibWrapper
       Estimate = 1U << 6,
     };
 
-    int Size() const;
-    void Compute();
+    int Size() const { return mFFTSize; }
+    void Compute()   { LibExecute( mLibPrivateData ); }
 
     static const char* LibName() { return sLibName; }
     static bool LibAvailable()   { return sLibRef != 0; }

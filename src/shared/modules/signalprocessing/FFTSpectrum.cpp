@@ -105,6 +105,8 @@ FFTThread::OnInitialize( const SignalProperties& Input, const SignalProperties& 
   mNormalizationFactor /= ( 1.0 * Input.Elements() / Input.SamplingRate() );
   // Output is per bin width.
   mNormalizationFactor /= binWidth;
+  // Resampling multiplies signal energy by the resampling factor.
+  mNormalizationFactor /= mInputResampling;
   // An extra factor of 1/fftSize to account for proper FFT normalization.
   mNormalizationFactor /= fftSize;
 }
@@ -113,6 +115,7 @@ void
 FFTThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
 {
   const Real eps = numeric_limits<Real>::epsilon();
+  Real indexOffset = ( mFFT.Size() - mInputResampling * Input.Elements() ) / 2;
   for( size_t ch = 0; ch < Channels().size(); ++ch )
   {
     for( int i = 0; i < mFFT.Size(); ++i )
@@ -120,16 +123,19 @@ FFTThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
     for( int i = 0; i < Input.Elements(); ++i )
     { // Resample input using linear interpolation.
       // First, project left and right boundary of the current input sample onto buffer samples.
-      Real left = i * mInputResampling + ( mFFT.Size() - mInputResampling * Input.Elements() ) / 2,
+      Real left = i * mInputResampling + indexOffset,
            right = left + mInputResampling,
-           value = Input( Channels()[ch], i ) / ::sqrt( mInputResampling ); // For a constant signal, preserve signal energy.
-      int idxLeft = static_cast<int>( ::floor( left ) ),
-          idxRight = static_cast<int>( ::floor( right ) );
+           value = Input( Channels()[ch], i );
       // Integrate linearly interpolated samples between left and right boundary.
-      mFFT.Input( idxLeft ) -= value * ::fmod( left, 1.0 );
+      Real intPart, fracPart;
+      fracPart = ::modf( left, &intPart );
+      int idxLeft = static_cast<int>( intPart );
+      mFFT.Input( idxLeft ) -= value * fracPart;
+      fracPart = ::modf( right, &intPart );
+      int idxRight = static_cast<int>( intPart );
       for( int j = idxLeft; j < idxRight; ++j )
         mFFT.Input( j ) += value;
-      mFFT.Input( idxRight ) += value * ::fmod( right, 1.0 );
+      mFFT.Input( idxRight ) += value * fracPart;
     }
     for( int i = 0; i < mFFT.Size(); ++i )
       mFFT.Input( i ) *= mShiftCarrier[i];
