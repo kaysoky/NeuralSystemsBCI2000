@@ -44,6 +44,11 @@ IF( CMAKE_COMPILER_IS_GNUCXX )
   SET( CMAKE_CXX_FLAGS 
       "${CMAKE_CXX_FLAGS} -include \"${BCI2000_SRC_DIR}/shared/config/gccprefix.h\""
   )
+  IF( USE_SSE2 )
+    SET( CMAKE_CXX_FLAGS 
+      "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse"
+    )
+  ENDIF()
 
   SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
   SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -66,6 +71,12 @@ IF( MSVC )
   SET( CMAKE_CXX_FLAGS 
     "${CMAKE_CXX_FLAGS} /EHsc /W3 /wd4355 /wd4800"
   )
+  IF( USE_SSE2 )
+    SET( CMAKE_CXX_FLAGS 
+      "${CMAKE_CXX_FLAGS} /arch:SSE2"
+    )
+  ENDIF()
+  
   ADD_DEFINITIONS(
     -DNOMINMAX
     -D_CRT_SECURE_NO_WARNINGS
