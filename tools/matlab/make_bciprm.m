@@ -140,7 +140,8 @@ while ~isempty(varargin)
 	fn = fieldnames(arg);
 	for i = 1:numel(fn)
 		if isfield(p, fn{i}) % if it already exists, preserve the meta-info from previous occurrences, and update the Value
-			s = rmfield(p.(fn{i}), 'NumericValue');
+			s = p.(fn{i});
+			if isfield(s, 'NumericValue'), s = rmfield(s, 'NumericValue'); end
 			s.Value = arg.(fn{i}).Value;
 		else  % otherwise use the whole new substructure
 			s = arg.(fn{i});

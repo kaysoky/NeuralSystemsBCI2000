@@ -1,4 +1,4 @@
-function rename_bcidat(f, dstdir, dateformat)
+function [srcnames, dstnames] = rename_bcidat(f, dstdir, dateformat)
 % RENAME_BCIDAT  renames BCI2000 data files according to a datestamped convention.
 % 
 %     RENAME_BCIDAT(F)
@@ -107,6 +107,7 @@ end
 if dryrun, verb = 'would move'; else verb = 'moving'; end
 blank = repmat(' ', size(verb));
 ghostfiles = {};
+dstnames = cell(size(f));
 for i = 1:numel(f)
 	[srcdir srcname srcxtn] = fileparts(f{i});
 	oldd = cd;
@@ -134,16 +135,18 @@ for i = 1:numel(f)
 		elseif dryrun
 			if ismember(dstname, ghostfiles)
 				fprintf('* NOPE, CANCELLED: destination file would already exist\n');
-			else
+            else
+                dstnames{i} = dstname;
 				ghostfiles{end+1,1} = dstname;
 			end
-		else
+        else
+            dstnames{i} = dstname;
 			movefile(srcname, dstname);
 		end
 	end
 	fprintf('\n');
 end
-
+if nargout, srcnames = f; end
 
 function aa = jdir(d, recursive)
 

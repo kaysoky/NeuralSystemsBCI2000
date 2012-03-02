@@ -1,4 +1,4 @@
-function d = read_bcidate(d, fmt)
+function [d, err] = read_bcidate(d, fmt)
 % READ_BCIDATE(X)
 %     X is anything that READ_BCIPRM can cope with (usually and most
 %     meaningfully a .dat filename). Returns a Matlab NOW-style date
@@ -38,13 +38,18 @@ function d = read_bcidate(d, fmt)
 %% http://www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+err = '';
 d = wrangle(d);
-if any(isnan(d(:))), error('failed to unpack a recognized date format from the input'), end
+if any(isnan(d(:))), err = 'failed to unpack a recognized date format from the input'; end
 if nargin >= 2
-	if isequal(lower(fmt), 'iso'), fmt = 'yyyy-mm-dd HH:MM:SS'; end
-	d = datestr(d, fmt);
+	if isempty(err)
+		if isequal(lower(fmt), 'iso'), fmt = 'yyyy-mm-dd HH:MM:SS'; end
+		d = datestr(d, fmt);
+	else
+		d = 'invalid date';
+	end
 end
+if nargout < 2, error(err), end
 
 
 function d = wrangle(d)

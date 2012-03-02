@@ -176,6 +176,7 @@ if verbose, fprintf('# creating directory %s\n', tmpdir); end
 [success, msg] = mkdir(tmpdir);
 if ~success, error(msg), end
 
+tmpdatfile  = fullfile(tmpdir, 'in.dat');
 prmfile_in  = fullfile(tmpdir, 'in.prm');
 prmfile_out = fullfile(tmpdir, 'out.prm');
 matfile     = fullfile(tmpdir, 'out.mat');
@@ -189,6 +190,14 @@ if isunix
 	% causing them to be dependent on the Qt framework dylibs, which for some reason cannot be accessed
 	% because of Matlab's setting of these two environment variables.  They are set back the way they
 	% were below.
+end
+
+if isstruct(datfile), datfile = {datfile}; end
+if iscell(datfile)
+	createArgs = datfile;
+	datfile = tmpdatfile;
+	if verbose, fprintf('# creating temporary data file %s\n', datfile); end
+	create_bcidat(datfile, createArgs{:});
 end
 
 if ~exist(datfile, 'file') | isdir(datfile), error(sprintf('file %s not found', datfile)), end
@@ -290,8 +299,8 @@ if isempty(err)
 		if verbose, fprintf('# reading output parameter file %s\n', prmfile_out); end
 		parms = read_bciprm(prmfile_out); % if you get an error that prmfile_out does not exist, recompile your bci_dat2stream and bci_stream2mat binaries from up-to-date sources, and ensure that dat2stream_has_p_flag and stream2mat_saves_parms, at the top of this file, are both set to 1
 	end
-	out.DateStr = read_bcidate(parms, 'ISO');
-	out.DateNum = read_bcidate(parms);
+	[out.DateStr, dateErr] = read_bcidate(parms, 'ISO');
+	[out.DateNum, dateErr] = read_bcidate(parms);
 	out.FilterChain = chain(:)';	
 	out.ToolVersions = binaries;
 	out.ShellInput = cmd;
@@ -364,21 +373,27 @@ else
 	out = [];
 end
 	
-if preserve_tmpdir & exist(tmpdir, 'dir')
+if exist(tmpdir, 'dir')
 	a = dir(tmpdir);
 	a = sort({a(~[a.isdir]).name});
-	if ~isempty(a)
+	if preserve_tmpdir
 		fprintf('The following commands should be executed to clean up the temporary files:\n');
-		for i = 1:numel(a), fprintf('    delete(''%s'')\n', fullfile(tmpdir, a{i})); end
-		fprintf('    rmdir(''%s'')\n', tmpdir);
+	elseif verbose
+		fprintf('# removing temp files and directory %s\n', tmpdir);
 	end
-else
-	if verbose, fprintf('# removing temp files and directory %s\n', tmpdir); end
-	if exist(prmfile_in,  'file'), delete(prmfile_in),  end
-	if exist(prmfile_out, 'file'), delete(prmfile_out), end
-	if exist(bcifile,     'file'), delete(bcifile),     end
-	if exist(matfile,     'file'), delete(matfile),     end
-	if exist(tmpdir,      'dir'),  rmdir(tmpdir),       end
+	for i = 1:numel(a)
+		filepath = fullfile(tmpdir, a{i});
+		if preserve_tmpdir
+			fprintf('    delete(''%s'')\n', filepath);
+		else
+			delete(filepath)
+		end
+	end
+	if preserve_tmpdir
+		fprintf('    rmdir(''%s'')\n', tmpdir);
+	else
+		rmdir(tmpdir);
+	end
 end
 
 if nargout < 2, error(err), end
