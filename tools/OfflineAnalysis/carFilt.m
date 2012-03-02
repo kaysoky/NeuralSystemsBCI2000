@@ -35,9 +35,6 @@ num_chans = size(signal, chanDim);
 
 spatfiltmatrix=[];
 % create a CAR spatial filter
-spatfiltmatrix=-ones(num_chans);
-for i=1:num_chans
- spatfiltmatrix(i, i)=num_chans-1;
-end
+spatfiltmatrix = eye(num_chans) - ones(num_chans)/num_chans;
 
 signalOut=double(signal)*spatfiltmatrix;
