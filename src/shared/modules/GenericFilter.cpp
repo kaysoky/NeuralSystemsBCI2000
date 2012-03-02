@@ -4,23 +4,23 @@
 //   which all BCI2000 filters are supposed to implement.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -88,7 +88,7 @@ GenericFilter::VisParamName() const
 }
 
 // GenericFilter::Registrar definitions
-GenericFilter::Registrar::Registrar( const char* inPos, int inPriority, bool inAutoDelete ) 
+GenericFilter::Registrar::Registrar( const char* inPos, int inPriority, bool inAutoDelete )
 : mPos( inPos ),
   mPriority( inPriority ),
   mInstance( sCreatedInstances++ )
@@ -107,7 +107,7 @@ GenericFilter::Registrar::Registrar( const char* inPos, int inPriority, bool inA
   }
   // Only insert if priority is high enough.
   if( inPriority >= maxPriority )
-    Registrars().insert( this ); 
+    Registrars().insert( this );
 
   if( inAutoDelete )
     AutoDeleteInstance().insert( this );
@@ -115,13 +115,13 @@ GenericFilter::Registrar::Registrar( const char* inPos, int inPriority, bool inA
 
 GenericFilter::Registrar::~Registrar()
 {
-  Registrars().erase( this ); 
+  Registrars().erase( this );
 }
 
 bool
 GenericFilter::Registrar::less::operator()( const Registrar* a, const Registrar* b ) const
-{ 
-  if( a->mPos != b->mPos ) 
+{
+  if( a->mPos != b->mPos )
     return ( a->mPos < b->mPos );
   return ( a->mInstance < b->mInstance );
 }
@@ -260,22 +260,11 @@ GenericFilter::CallHalt()
 void
 GenericFilter::InstantiateFilters()
 {
-  string prevFilterName,
-         prevPosString;
   for( RegistrarSet::reverse_iterator i = Registrar::Registrars().rbegin();
                                        i != Registrar::Registrars().rend(); ++i )
   {
     string filterName = ClassName( ( *i )->Typeid() );
     const string& posString = ( *i )->Position();
-    if( posString == prevPosString )
-      bciout << "Filters " << prevFilterName
-             << " and " << filterName 
-             << " have the same position string: " << posString
-             << ", relative position undefined"
-             << endl;
-    prevPosString = posString;
-    prevFilterName = filterName;
-
     ErrorContext( filterName + "::Constructor" );
     GenericFilter* pFilter = ( *i )->NewInstance();
     OwnedFilters().push_front( pFilter );
@@ -298,9 +287,9 @@ GenericFilter::InstantiateFilters()
                                + " output (boolean)";
       Param param( paramDefinition );
       pFilter->Parameters->Add( param, sortingHint );
-      bcidbg( 10 ) << "Added visualization parameter " << param.Name() 
-                   << " with sorting hint " << sortingHint 
-                   << "/pos string " << posString 
+      bcidbg( 10 ) << "Added visualization parameter " << param.Name()
+                   << " with sorting hint " << sortingHint
+                   << "/pos string " << posString
                    << endl;
     }
     ErrorContext( "" );
