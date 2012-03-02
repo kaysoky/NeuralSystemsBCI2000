@@ -53,7 +53,7 @@ function create_bcidat(datfilename, signal, varargin)
 %             load_bcidat (used by read_bciprm in some cases)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% $Id:  $ 
+%% $Id$ 
 %% Author: Jeremy Hill <jezhill@gmail.com>
 %%
 %% $BEGIN_BCI2000_LICENSE$
