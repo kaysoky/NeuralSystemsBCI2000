@@ -46,7 +46,7 @@ IF( CMAKE_COMPILER_IS_GNUCXX )
   )
   IF( USE_SSE2 )
     SET( CMAKE_CXX_FLAGS 
-      "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse"
+      "${CMAKE_CXX_FLAGS} -msse2"
     )
   ENDIF()
 
