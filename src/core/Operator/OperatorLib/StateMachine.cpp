@@ -11,23 +11,23 @@
 //   - triggering callback events to display text messages, or to visualize data.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -554,7 +554,7 @@ StateMachine::CoreConnection::CoreConnection( StateMachine& inParent, const std:
     mConfirmed[i] = false;
 
   {
-    OSMutex::Lock lock( mInfoMutex ); 
+    OSMutex::Lock lock( mInfoMutex );
     mInfo.Name = inName;
   }
   mrParent.mSockets.insert( &mSocket );
@@ -666,7 +666,7 @@ StateMachine::CoreConnection::HandleStatus( istream& is )
       }
       case Status::warning:
         mrParent.ExecuteCallback( BCI_OnWarningMessage, status.Message().c_str() );
-        mrParent.mDebugLog << ::ctime( &t ) 
+        mrParent.mDebugLog << ::ctime( &t )
                            << ": Warning: "
                            << status.Message()
                            << endl;
@@ -1061,7 +1061,7 @@ StateMachine::EventLink::ConfirmConnection()
 }
 
 int
-StateMachine::EventLink::Execute()
+StateMachine::EventLink::OnExecute()
 {
   const int cReactionTimeMs = 100;
   receiving_udpsocket serverSocket;
@@ -1078,8 +1078,9 @@ StateMachine::EventLink::Execute()
     if( !IsTerminating() )
     {
       ::Lock<EventLink> lock1( *this );
+      istringstream iss( mrParent.mpSourceModule->Info().Address );
       string sourceIP;
-      ::getline( istringstream( mrParent.mpSourceModule->Info().Address ), sourceIP, ':' );
+      ::getline( iss, sourceIP, ':' );
       mSocket.open( sourceIP.c_str(), mPort + 1 );
       this->clear();
       this->open( mSocket );

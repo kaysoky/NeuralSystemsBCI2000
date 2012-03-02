@@ -1,27 +1,27 @@
 /* $BEGIN_BCI2000_LICENSE$
- * 
+ *
  * This file is part of BCI2000, a platform for real-time bio-signal research.
  * [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
- * 
+ *
  * BCI2000 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * BCI2000 is distributed in the hope that it will be useful, but
  *                         WITHOUT ANY WARRANTY
  * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * $END_BCI2000_LICENSE$
  */
 #ifndef AmpServerProADCH
 #define AmpServerProADCH
 
-//#define STANDALONE 1 
+//#define STANDALONE 1
 
 #include "SockStream.h"
 
@@ -29,7 +29,7 @@
 #include <math.h>
 #include <ctime>
 #else
-#include "GenericADC.h"     
+#include "GenericADC.h"
 #include "GenericSignal.h"
 #include "BCIError.h"
 #endif
@@ -69,7 +69,7 @@
 #define ASP_TIMEOUT 2000
 #define ASP_NUM_CHANS 280
 
-class AmpServerProADC 
+class AmpServerProADC
 #ifndef STANDALONE
   : public GenericADC
 #endif
@@ -87,14 +87,14 @@ class AmpServerProADC
   void Process(float sampBlock[40][280]);
   void Initialize();
 #endif
-  virtual void Halt();   
+  virtual void Halt();
 
  private:
-  struct Connection 
+  struct Connection
   {
     sockstream *stream;
     client_tcpsocket *socket;
-  } m_oCmdConn, m_oNotifConn, m_oDataConn; 
+  } m_oCmdConn, m_oNotifConn, m_oDataConn;
 
   unsigned int m_nNumChans;
   unsigned int m_nAmpId;
@@ -110,16 +110,16 @@ class AmpServerProADC
   char m_sCmdResp[ASP_CMD_RESP_SIZE];
 
   bool Connect();
-  bool SendCommand(char *sCmd);
-  char *BuildCmdString(char *sCmd, int nChanId, int nArg);
-  char *GetCmdRespValue(char *sParamName);
+  bool SendCommand(const char *sCmd);
+  char *BuildCmdString(const char *sCmd, int nChanId, int nArg);
+  char *GetCmdRespValue(const char *sParamName);
   void InitGlobalVars();
 
   // A number of functions must have const entry points for use from Preflight
-  bool Connect(char *sServerIP, unsigned int nCmdPort, unsigned int nNotifPort, unsigned int nDataPort, Connection *pCmdConn, Connection *pNotifConn, Connection *pDataConn) const;
-  bool SendCommand(char *sCmd, Connection *pCmdConn, char *sCmdResp) const;
-  char *BuildCmdString(char *sCmd, int nChanId, int nArg, unsigned int nAmpId) const;
-  char *GetCmdRespValue(char *sParamName, char *sCmdResp) const;
+  bool Connect(const char *sServerIP, unsigned int nCmdPort, unsigned int nNotifPort, unsigned int nDataPort, Connection *pCmdConn, Connection *pNotifConn, Connection *pDataConn) const;
+  bool SendCommand(const char *sCmd, Connection *pCmdConn, char *sCmdResp) const;
+  char *BuildCmdString(const char *sCmd, int nChanId, int nArg, unsigned int nAmpId) const;
+  char *GetCmdRespValue(const char *sParamName, const char *sCmdResp) const;
   void Halt(Connection *pCmdConn, Connection *pNotifConn, Connection *pDataConn, unsigned int nAmpId) const;
   bool GetAmpId(unsigned int *pAmpId, Connection *pCmdConn) const;
 

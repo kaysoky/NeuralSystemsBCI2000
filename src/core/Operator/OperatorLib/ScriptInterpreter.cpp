@@ -4,23 +4,23 @@
 // Description: A class that encapsulates interpretation of operator scripts.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -32,6 +32,7 @@
 #include "HybridString.h"
 #include "BCIException.h"
 #include "ObjectType.h"
+#include <climits>
 
 using namespace std;
 using namespace Interpreter;
@@ -96,7 +97,7 @@ ScriptInterpreter::ExecuteCommand( const string& inCommand )
     while( !mPosStack.empty() )
       mPosStack.pop();
     mPosStack.push( 0 );
-    
+
     string verb = GetToken();
     if( !verb.empty() )
     {
@@ -107,8 +108,8 @@ ScriptInterpreter::ExecuteCommand( const string& inCommand )
         pType = ObjectType::ByName( "" );
         Unget();
         if( !pType || !pType->Execute( verb, *this ) )
-        { 
-          if( BCI_Handled == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) )
+        {
+          if( CallbackBase::OK == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) )
             mInputStream.ignore( INT_MAX );
           else
             throw bciexception_( "Don't know how to " << verb << " " << type );
@@ -116,7 +117,7 @@ ScriptInterpreter::ExecuteCommand( const string& inCommand )
       }
       else if( !pType->Execute( verb, *this ) )
       {
-        if( BCI_Handled == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) )
+        if( CallbackBase::OK == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) )
           mInputStream.ignore( INT_MAX );
         else if( type.empty() )
           throw bciexception_( "Cannot " << verb << " without an object" );

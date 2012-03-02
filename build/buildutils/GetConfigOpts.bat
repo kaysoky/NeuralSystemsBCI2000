@@ -5,7 +5,7 @@
 @echo BCI2000 core modules will always be built.
 
 @set OPT=USE_SSE2
-@set /p ANS=Use SSE2 instructions (when answering yes, BCI2000 may not run on older machines)? (y/n)
+@set /p ANS=Use SSE2 instructions -- when answering yes, BCI2000 may not run on older machines? (y/n)
 @if /i %ANS%==y ( set CMAKEOPTS=%CMAKEOPTS% -D%OPT%:BOOL=TRUE )
 
 @set OPT=BUILD_TOOLS

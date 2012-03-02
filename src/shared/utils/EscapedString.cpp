@@ -30,6 +30,7 @@
 #include "EscapedString.h"
 #include <iomanip>
 #include <sstream>
+#include <cstdio>
 
 using namespace std;
 
@@ -85,7 +86,7 @@ EscapedString::ReadFromStream( istream& is )
       case EOF:
         done = true;
         break;
-        
+
       case '\\':
       {
         is.get();

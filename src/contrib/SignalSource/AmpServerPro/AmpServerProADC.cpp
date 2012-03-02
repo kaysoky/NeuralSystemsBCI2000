@@ -12,23 +12,23 @@
  *         version 1.0.
  ******************************************************************************/
 /* $BEGIN_BCI2000_LICENSE$
- * 
+ *
  * This file is part of BCI2000, a platform for real-time bio-signal research.
  * [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
- * 
+ *
  * BCI2000 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * BCI2000 is distributed in the hope that it will be useful, but
  *                         WITHOUT ANY WARRANTY
  * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * $END_BCI2000_LICENSE$
 /*/
 
@@ -155,7 +155,7 @@ bool AmpServerProADC::Connect()
 // Returns:    True if all connections were made successfully, false
 //             otherwise
 // **************************************************************************
-bool AmpServerProADC::Connect(char *sServerIP, unsigned int nCmdPort,
+bool AmpServerProADC::Connect(const char *sServerIP, unsigned int nCmdPort,
   unsigned int nNotifPort, unsigned int nDataPort, Connection *pCmdConn,
   Connection *pNotifConn, Connection *pDataConn) const
 {
@@ -388,11 +388,8 @@ void AmpServerProADC::Preflight() const
 void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outSignalProperties ) const
 #endif
 {
-  char *sCmd;
-//  int nScanRes;
   bool bResp;
   char sServerIP[25];
-//  int nAmpState;
   unsigned int nCmdPort, nNotifPort, nDataPort;
   unsigned int nAmpId = -1;
   Connection oCmdConn, oNotifConn, oDataConn;
@@ -434,7 +431,7 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
   }
 
   // Make sure the amp is powered on.
-  sCmd = BuildCmdString(ASP_CMD_SETPOWER, 0, 1, 0);
+  char* sCmd = BuildCmdString(ASP_CMD_SETPOWER, 0, 1, 0);
   bResp = SendCommand(sCmd, &oCmdConn, sCmdResp);
   delete[] sCmd;
 
@@ -490,14 +487,13 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
 // **************************************************************************
 bool AmpServerProADC::GetAmpId(unsigned int *pAmpId, Connection *pCmdConn) const
 {
-  char *sCmd;
   int nAmpId = 0;
 //  bool bResp;
   char sCmdResp[ASP_CMD_RESP_SIZE];
   int nScanRes, nNumAmps;
 
   // Query server for number of amplifiers.
-  sCmd = BuildCmdString(ASP_CMD_NUMBEROFAMPS, 0, 0, nAmpId);
+  char* sCmd = BuildCmdString(ASP_CMD_NUMBEROFAMPS, 0, 0, nAmpId);
   if(!SendCommand(sCmd, pCmdConn, sCmdResp))
   {
     delete[] sCmd;
@@ -639,7 +635,7 @@ void AmpServerProADC::Initialize( const SignalProperties&, const SignalPropertie
 // Returns:    A string with the value corresponding to the name in
 //             sParamName
 // **************************************************************************
-char *AmpServerProADC::GetCmdRespValue(char *sParamName)
+char *AmpServerProADC::GetCmdRespValue(const char *sParamName)
 {
   return GetCmdRespValue(sParamName, m_sCmdResp);
 }
@@ -653,14 +649,14 @@ char *AmpServerProADC::GetCmdRespValue(char *sParamName)
 // Returns:    A string with the value corresponding to the name in
 //             sParamName
 // **************************************************************************
-char *AmpServerProADC::GetCmdRespValue(char *sParamName, char *sCmdResp) const
+char *AmpServerProADC::GetCmdRespValue(const char *sParamName, const char *sCmdResp) const
 {
   int nValStart = -1;
   unsigned int nCharsMatched = 0;
   int nStartIdx = -1, nEndIdx = -1;
 
 
-  char *sSExp = sCmdResp;
+  const char *sSExp = sCmdResp;
 
   //search for the string in sParamName in sCmdResp
   for(unsigned int i=0; i<strlen(sSExp); i++)
@@ -727,7 +723,7 @@ char *AmpServerProADC::GetCmdRespValue(char *sParamName, char *sCmdResp) const
 // Parameters: sCmd - the command string
 // Returns:    True if the command was sent successfully, false otherwise
 // **************************************************************************
-bool AmpServerProADC::SendCommand(char *sCmd)
+bool AmpServerProADC::SendCommand(const char *sCmd)
 {
   return SendCommand(sCmd, &m_oCmdConn, m_sCmdResp);
 }
@@ -741,7 +737,7 @@ bool AmpServerProADC::SendCommand(char *sCmd)
 //             sCmdResp - (out) the amp server's response to the command
 // Returns:    True if the command was sent successfully, false otherwise
 // **************************************************************************
-bool AmpServerProADC::SendCommand(char *sCmd, Connection *pCmdConn, char *sCmdResp) const
+bool AmpServerProADC::SendCommand(const char *sCmd, Connection *pCmdConn, char *sCmdResp) const
 {
   // Make sure connection is still valid.
   if (!(pCmdConn->stream))
@@ -790,7 +786,7 @@ bool AmpServerProADC::SendCommand(char *sCmd, Connection *pCmdConn, char *sCmdRe
 //             nArg - the value pertaining to the request.  Enter 0 if N/A.
 // Returns:    An s-expression compiled from the arguments
 // **************************************************************************
-char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg)
+char *AmpServerProADC::BuildCmdString(const char *sCmd, int nChanId, int nArg)
 {
   return BuildCmdString(sCmd, nChanId, nArg, m_nAmpId);
 }
@@ -806,7 +802,7 @@ char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg)
 //             nAmpId - the amplifier ID
 // Returns:    An s-expression compiled from the arguments
 // **************************************************************************
-char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg, unsigned int nAmpId) const
+char *AmpServerProADC::BuildCmdString(const char *sCmd, int nChanId, int nArg, unsigned int nAmpId) const
 {
   // Estimate amount of memory to allocate.
   int nCmdLen = static_cast<int>(strlen(ASP_CMD_SYNTAX));

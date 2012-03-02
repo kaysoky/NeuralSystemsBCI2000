@@ -4,23 +4,23 @@
 // Description: A class that encapsulates interpretation of operator scripts.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef SCRIPT_INTERPRETER_H
@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <sstream>
+#include <iostream>
 #include <stack>
 
 class StateMachine;
@@ -36,7 +37,7 @@ class ScriptInterpreter
 {
  public:
   // Begin: Interface to users
-  ScriptInterpreter( StateMachine& );
+  ScriptInterpreter( class StateMachine& );
   virtual ~ScriptInterpreter()
     {}
   // Properties
@@ -49,7 +50,7 @@ class ScriptInterpreter
   bool Execute( const std::string& s )
     { return Execute( s.c_str() ); }
   // Initialize a state machine for use with scripts..
-  static void Initialize( StateMachine& );
+  static void Initialize( class StateMachine& );
   // End: Interface to users
 
  protected:
@@ -59,7 +60,7 @@ class ScriptInterpreter
   virtual void OnScriptError( const std::string& );
   // End: Interface to descendants
 
- public: 
+ public:
   // Begin: Interface to ObjectType instances.
   std::string GetToken();
   std::string GetRemainder();
@@ -70,13 +71,14 @@ class ScriptInterpreter
 
   std::ostream& Out()
     { return mResultStream; }
-  StateMachine& StateMachine() const
+  class StateMachine& StateMachine() const
     { return mrStateMachine; }
 
   class LogStream : public std::ostream
   {
    public:
     LogStream( class StateMachine& s ) : std::ostream( &mBuffer ), mBuffer( s ) {}
+    LogStream( const LogStream& l ) : std::ostream( &mBuffer ), mBuffer( l.mBuffer ) {}
     ~LogStream() { flush(); }
     template<typename T> std::ostream& operator<<( T t ) const { return const_cast<LogStream&>( *this ) << t; }
     template<typename T> std::ostream& operator<<( T t ) { return static_cast<std::ostream&>( *this ) << t; }
@@ -85,6 +87,7 @@ class ScriptInterpreter
     {
      public:
       LogBuffer( class StateMachine& s ) : mrStateMachine( s ) {}
+      LogBuffer( const LogBuffer& l ) : mrStateMachine( l.mrStateMachine ) {}
      private:
       virtual int sync();
       class StateMachine& mrStateMachine;
@@ -102,7 +105,7 @@ class ScriptInterpreter
   std::ostringstream mResultStream;
   std::istringstream mInputStream;
   std::stack<std::istream::pos_type> mPosStack;
- 
+
   class StateMachine& mrStateMachine;
   int mLine;
 };
