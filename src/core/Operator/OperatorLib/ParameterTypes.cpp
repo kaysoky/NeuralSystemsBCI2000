@@ -36,6 +36,7 @@
 #include "BCIException.h"
 #include "BCIDirectory.h"
 #include "WildcardMatch.h"
+#include <cstdlib>
 
 using namespace std;
 using namespace bci;

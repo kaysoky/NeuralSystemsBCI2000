@@ -83,7 +83,7 @@ EventLink::Publish()
       else
       {
         string line;
-        while( ::getline( mInput, line ) && !line.empty() )
+        while( std::getline( mInput, line ) && !line.empty() )
         {
           BEGIN_EVENT_DEFINITIONS
             line.c_str(),

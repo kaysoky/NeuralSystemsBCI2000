@@ -61,7 +61,7 @@ ScriptInterpreter::Execute( const char* inScript )
   {
     ++mLine;
     string line;
-    ::getline( iss, line );
+    std::getline( iss, line );
     syntaxOK = syntaxOK && ExecuteLine( line );
   }
   return syntaxOK;
@@ -78,7 +78,7 @@ ScriptInterpreter::ExecuteLine( const string& inLine )
   while( !iss.eof() )
   {
     string command;
-    ::getline( iss >> ws, command, ';' );
+    std::getline( iss >> ws, command, ';' );
     syntaxOK = syntaxOK && ExecuteCommand( command );
   }
   return syntaxOK;
@@ -162,7 +162,7 @@ ScriptInterpreter::GetRemainder()
 {
   mPosStack.push( mInputStream.tellg() );
   string line;
-  ::getline( mInputStream >> ws, line, '\0' );
+  std::getline( mInputStream >> ws, line, '\0' );
   istringstream iss( line );
   string result;
   HybridString part;
@@ -196,7 +196,7 @@ ScriptInterpreter::ParseArguments( string& ioFunction, ArgumentList& outArgs )
     istringstream args( ioFunction.substr( pos1 + 1, pos2 - pos1 - 1 ) );
     vector<string> arglist;
     string arg;
-    while( ::getline( args >> ws, arg, ',' ) )
+    while( std::getline( args >> ws, arg, ',' ) )
       arglist.push_back( arg );
     outArgs.push_back( arglist );
     pos1 = ioFunction.find( '(', pos2 );

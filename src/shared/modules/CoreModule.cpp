@@ -45,6 +45,7 @@
 
 #include <string>
 #include <sstream>
+#include <cstdlib>
 
 #ifdef __BORLANDC__
 # include <vcl.h>

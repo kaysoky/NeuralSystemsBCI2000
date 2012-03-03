@@ -218,7 +218,7 @@ OSThread::InMainThread()
 }
 
 bool
-OSThread::InOwnThread()
+OSThread::InOwnThread() const
 {
   return ::pthread_equal( pthread_self(), mThread );
 }

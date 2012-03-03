@@ -79,7 +79,7 @@ StateMachine::Startup( const char* inModuleList )
     while( !iss.eof() )
     {
       string name;
-      ::getline( iss >> ws, name, ':' );
+      std::getline( iss >> ws, name, ':' );
       int port;
       iss >> port;
       mConnections.push_back( new CoreConnection( *this, name, port, static_cast<int>( mConnections.size() + 1 ) ) );
@@ -1080,7 +1080,7 @@ StateMachine::EventLink::OnExecute()
       ::Lock<EventLink> lock1( *this );
       istringstream iss( mrParent.mpSourceModule->Info().Address );
       string sourceIP;
-      ::getline( iss, sourceIP, ':' );
+      std::getline( iss, sourceIP, ':' );
       mSocket.open( sourceIP.c_str(), mPort + 1 );
       this->clear();
       this->open( mSocket );

@@ -44,9 +44,9 @@ HybridString::ReadFromStream( istream& is )
   clear();
   is >> ws;
   if( is.peek() == '"' )
-    ::getline( is.ignore(), *this, '"' );
+    std::getline( is.ignore(), *this, '"' );
   else if( is.peek() == '\'' )
-    ::getline( is.ignore(), *this, '\'' );
+    std::getline( is.ignore(), *this, '\'' );
   else
   {
     EncodedString s;

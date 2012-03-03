@@ -138,7 +138,7 @@ ConnectorInput::Process( const GenericSignal& Input, GenericSignal& Output )
     {
       double value;
       string remainder;
-      if( !::getline( iss >> value, remainder ) || !remainder.empty() )
+      if( !std::getline( iss >> value, remainder ) || !remainder.empty() )
         throw bciexception_( "Malformed input, expected state name, followed by a single number as a value,"
                              "space-separated, and terminated with a newline character" );
       bool match = false;
@@ -285,7 +285,7 @@ ConnectorOutput::Connection::OnExecute()
         string message;
         {
           ::Lock<Connection> lock( *this );
-          result = ::getline( *this, message );
+          result = std::getline( *this, message );
         }
         if( result && !IsTerminating() )
         {

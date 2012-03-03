@@ -33,6 +33,7 @@
 #include "Lockable.h"
 #include "WildcardMatch.h"
 #include "BCIException.h"
+#include <cstdlib>
 
 using namespace std;
 using namespace bci;

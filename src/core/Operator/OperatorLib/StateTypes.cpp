@@ -34,6 +34,7 @@
 #include "WildcardMatch.h"
 #include "BCIException.h"
 #include "BCI_OperatorLib.h"
+#include <cstdlib>
 
 using namespace std;
 using namespace bci;

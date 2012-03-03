@@ -152,7 +152,7 @@ void mainUI::ReceivingThread::run()
     if( parent.recSocket.wait_for_read( 10 ) )
     {
       string line;
-      ::getline( parent.recConnection, line );
+      std::getline( parent.recConnection, line );
       istringstream iss( line );
       string name, value;
       //get the name and the value of the state

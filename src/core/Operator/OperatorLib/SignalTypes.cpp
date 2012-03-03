@@ -32,6 +32,7 @@
 #include "StateMachine.h"
 #include "Lockable.h"
 #include "BCIException.h"
+#include <cstdlib>
 
 using namespace std;
 using namespace Interpreter;

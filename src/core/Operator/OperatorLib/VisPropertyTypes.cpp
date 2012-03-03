@@ -80,8 +80,8 @@ VisPropertyType::GetVisPropertyIDs( ScriptInterpreter& inInterpreter, string& ou
 {
   string visIDcfgID = inInterpreter.GetToken();
   istringstream iss( visIDcfgID );
-  ::getline( iss, outVisID, '.' );
-  ::getline( iss, outCfgID );
+  std::getline( iss, outVisID, '.' );
+  std::getline( iss, outCfgID );
   if( outVisID.empty() || outCfgID.empty() )
     throw bciexception_( "Expected <visID>.<configID> pair" );
   outNumCfgID = CfgID( outCfgID );
@@ -130,7 +130,7 @@ VisPropertiesType::Set( ScriptInterpreter& inInterpreter )
     {
       istringstream iss( p.RowLabels()[row] );
       string visID_enc, cfgID;
-      getline( iss >> ws, visID_enc, '.' );
+      std::getline( iss >> ws, visID_enc, '.' );
       iss >> cfgID;
       istringstream iss2( visID_enc );
       EncodedString visID;
