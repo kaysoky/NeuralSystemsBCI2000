@@ -66,27 +66,5 @@ MexAlloc( int inElements )
   return reinterpret_cast<T*>( mxCalloc( inElements, sizeof( T ) ) );
 }
 
-class FilterWrapper
-{
- private:
-  FilterWrapper( const FilterWrapper& );
-  FilterWrapper& operator=( const FilterWrapper& );
-
- protected:
-  FilterWrapper( GenericFilter& );
-
- public:
-  ParamRef Parameter( const std::string& );
-  void Initialize( const SignalProperties&, SignalProperties& );
-  void Process( const GenericSignal&, GenericSignal& );
-  void Halt();
-
- private:
-  GenericFilter& mrFilter;
-  ParamList mParameters;
-  StateList mStates;
-  StateVector mStatevector;
-};
-
 
 #endif // MEXUTILS_H

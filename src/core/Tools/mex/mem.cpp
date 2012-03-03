@@ -54,6 +54,67 @@
 using namespace std;
 
 const double eps = numeric_limits<double>::epsilon();
+
+class FilterWrapper // FilterWrappers are friends to the Environment class.
+{
+ private:
+  FilterWrapper( const FilterWrapper& );
+  FilterWrapper& operator=( const FilterWrapper& );
+
+ protected:
+  FilterWrapper( GenericFilter& inFilter )
+  : mrFilter( inFilter )
+  {
+    EnvironmentBase::EnterConstructionPhase( &mParameters, &mStates, NULL );
+  }
+
+ public:
+  ParamRef Parameter( const std::string& s )
+  {
+    return ParamRef( &mParameters[s] );
+  }
+  void Initialize( const SignalProperties& Input, SignalProperties& Output )
+  {
+    EnvironmentBase::EnterNonaccessPhase();
+    mStates.AssignPositions();
+    mStatevector = StateVector( mStates );
+    EnvironmentBase::EnterPreflightPhase( &mParameters, &mStates, &mStatevector );
+    mrFilter.CallPreflight( Input, Output );
+    EnvironmentBase::EnterNonaccessPhase();
+    if( bcierr__.Flushes() == 0 )
+    {
+      EnvironmentBase::EnterInitializationPhase( &mParameters, &mStates, &mStatevector );
+      mrFilter.CallInitialize( Input, Output );
+      EnvironmentBase::EnterNonaccessPhase();
+      EnvironmentBase::EnterStartRunPhase( &mParameters, &mStates, &mStatevector );
+      mrFilter.CallStartRun();
+      EnvironmentBase::EnterNonaccessPhase();
+      EnvironmentBase::EnterProcessingPhase( &mParameters, &mStates, &mStatevector );
+    }
+    if( bcierr__.Flushes() != 0 )
+      ::mexErrMsgTxt( "Could not initialize filter." );
+  }
+  void Process( const GenericSignal& Input, GenericSignal& Output )
+  {
+    mrFilter.CallProcess( Input, Output );
+  }
+  void Halt()
+  {
+    EnvironmentBase::EnterNonaccessPhase();
+    EnvironmentBase::EnterStopRunPhase( &mParameters, &mStates, &mStatevector );
+    mrFilter.CallStopRun();
+    EnvironmentBase::EnterNonaccessPhase();
+    mrFilter.CallHalt();
+  }
+
+ private:
+  GenericFilter& mrFilter;
+  ParamList mParameters;
+  StateList mStates;
+  StateVector mStatevector;
+};
+
+
     
 void mexFunction( int nlhs, mxArray* plhs[],
                   int nrhs, const mxArray* prhs[] )
@@ -70,9 +131,9 @@ void mexFunction( int nlhs, mxArray* plhs[],
     if( nlhs > 2 )
         ::mexErrMsgTxt( "Too many output arguments -- " USAGE );
 
-    int numSamples  = ::mxGetM( inSignalArray ),
-        numChannels = ::mxGetN( inSignalArray );
-    mwSize numParms = ::mxGetNumberOfElements( inParmsArray );
+    int numSamples  = static_cast<int>( ::mxGetM( inSignalArray ) ),
+        numChannels = static_cast<int>( ::mxGetN( inSignalArray ) );
+    mwSize numParms = static_cast<mwSize>( ::mxGetNumberOfElements( inParmsArray ) );
 
     if( !::mxIsDouble( inSignalArray ) || ::mxIsComplex( inSignalArray ) )
         ::mexErrMsgTxt( "Expected real double input signal -- " USAGE );
