@@ -31,7 +31,7 @@
 
 class SpectrumThread : public FilterThread
 {
- protected:
+ public:
   enum OutputType
   {
     SpectralAmplitude = 0,
@@ -39,6 +39,7 @@ class SpectrumThread : public FilterThread
     Coefficients = 2,
   };
 
+ protected:
   void OnPublish() const;
   void OnPreflight( const SignalProperties&, SignalProperties& ) const;
 };

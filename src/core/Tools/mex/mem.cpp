@@ -7,23 +7,23 @@
 //  For the calling syntax, see the USAGE macro below.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
@@ -31,7 +31,7 @@
 #include "mex.h"
 
 #include "mexutils.h"
-#include "ARThread.h"
+#include "ARFilter.h"
 #include <limits>
 
 #define USAGE \
@@ -54,7 +54,7 @@
 using namespace std;
 
 const double eps = numeric_limits<double>::epsilon();
-
+    
 void mexFunction( int nlhs, mxArray* plhs[],
                   int nrhs, const mxArray* prhs[] )
 {
@@ -89,7 +89,7 @@ void mexFunction( int nlhs, mxArray* plhs[],
             lastBinCenter     = *p++,
             binWidth          = *p++,
             evaluationsPerBin = *p++,
-            detrendOption     = numParms > ( p - inParms ) ? *p++ : ARThread::none,
+            detrendOption     = numParms > ( p - inParms ) ? *p++ : WindowingThread::None,
             frequency         = numParms > ( p - inParms ) ? *p++ : 1.0,
             sampleBlockSize   = numParms > ( p - inParms ) ? *p++ : numSamples,
             windowLength      = numParms > ( p - inParms ) ? *p++ : 1;
@@ -110,19 +110,40 @@ void mexFunction( int nlhs, mxArray* plhs[],
         ::mexErrMsgTxt( "Sample block size must be >= 1." );
     if( windowLength * sampleBlockSize < 1 )
         ::mexErrMsgTxt( "Window must contain at least one sample." );
-    switch( static_cast<int>( detrendOption ) ) 
+    switch( static_cast<int>( detrendOption ) )
     {
-        case ARThread::none:
-        case ARThread::mean:
-        case ARThread::linear:
+        case WindowingThread::None:
+        case WindowingThread::Mean:
+        case WindowingThread::Linear:
             break;
         default:
             ::mexErrMsgTxt( "Unknown detrend option." );
     }
 
-    int numBins = static_cast<int>( ::floor( ( lastBinCenter - firstBinCenter + eps ) / binWidth + 1 ) ),
-        numBlocks = static_cast<int>( numSamples / sampleBlockSize ),
-        iSampleBlockSize = static_cast<int>( sampleBlockSize );
+    struct ARWrapper : public FilterWrapper
+    {
+      ARWrapper() : FilterWrapper( mFilter ) {}
+      ARFilter mFilter;
+    } filter;
+
+    filter.Parameter( "WindowLength" ) = windowLength;
+    filter.Parameter( "Detrend" ) = detrendOption;
+    filter.Parameter( "ModelOrder" ) = modelOrder;
+    filter.Parameter( "FirstBinCenter" ) = firstBinCenter;
+    filter.Parameter( "LastBinCenter" ) = lastBinCenter;
+    filter.Parameter( "BinWidth" ) = binWidth;
+    filter.Parameter( "EvaluationsPerBin" ) = evaluationsPerBin;
+    filter.Parameter( "OutputType" ) = SpectrumThread::SpectralPower;
+
+    int iSampleBlockSize = static_cast<int>( sampleBlockSize );
+    SignalProperties inputProperties( numChannels, iSampleBlockSize );
+    inputProperties.ElementUnit().SetGain( 1.0 / frequency ).SetSymbol( "s" );
+    SignalProperties outputProperties( inputProperties );
+
+    filter.Initialize( inputProperties, outputProperties );
+
+    int numBins = outputProperties.Elements(),
+        numBlocks = static_cast<int>( numSamples / sampleBlockSize );
     const mwSize dims[] = { numBins, numChannels, numBlocks };
     plhs[0] = ::mxCreateNumericArray( 3, dims, mxDOUBLE_CLASS, mxREAL );
     double* outSpectrum = ::mxGetPr( plhs[0] );
@@ -134,39 +155,20 @@ void mexFunction( int nlhs, mxArray* plhs[],
             outBinFreqs[bin] = ( firstBinCenter + bin * binWidth );
     }
 
-    vector<ARThread*> threads;
-    threads.resize( min( numChannels, OSThread::NumberOfProcessors() ) );
-    for( size_t i = 0; i < threads.size(); ++i )
-        threads[i] = new ARThread;
-    for( int ch = 0; ch < numChannels; ++ch )
-        threads[ch % threads.size()]->AddChannel( ch );
-    for( size_t i = 0; i < threads.size(); ++i )
-        threads[i]->SetWindowLength( static_cast<int>( sampleBlockSize * windowLength ) )
-                   .SetDetrend( static_cast<int>( detrendOption ) )
-                   .SetModelOrder( static_cast<int>( modelOrder ) )
-                   .SetFirstBinCenter( firstBinCenter / frequency )
-                   .SetBinWidth( binWidth / frequency )
-                   .SetNumBins( numBins )
-                   .SetEvaluationsPerBin( static_cast<int>( evaluationsPerBin ) )
-                   .SetOutputType( ARThread::SpectralPower );
-
-    GenericSignal input( numChannels, iSampleBlockSize ),
-                  output( numChannels, numBins );
+    GenericSignal input( inputProperties ),
+                  output( outputProperties );
     for( int block = 0, blockNum = 0; block <= numSamples - iSampleBlockSize; block += iSampleBlockSize, ++blockNum )
     {
         for( int ch = 0; ch < numChannels; ++ch )
             for( int s = 0; s < iSampleBlockSize; ++s )
-                input( ch, s ) = inSignal[s + block + ch*iSampleBlockSize];
+                input( ch, s ) = inSignal[s + block + ch*numSamples];
 
-        for( size_t i = 0; i < threads.size(); ++i )
-            threads[i]->Start( input, output );
-        for( size_t i = 0; i < threads.size(); ++i )
-            threads[i]->Wait();
+        filter.Process( input, output );
 
         for( int ch = 0; ch < numChannels; ++ch )
             for( int bin = 0; bin < numBins; ++bin )
                 outSpectrum[numChannels*numBins*blockNum + numBins*ch + bin] = output( ch, bin );
     }
-    for( size_t i = 0; i < threads.size(); ++i )
-        delete threads[i];
+    
+    filter.Halt();
 }

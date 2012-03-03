@@ -5,23 +5,23 @@
 //         files.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
@@ -328,4 +328,54 @@ GetStringField( const mxArray* inStruct, const char* inName )
   return mxArrayToString( field );
 }
 
+
+FilterWrapper::FilterWrapper( GenericFilter& inFilter )
+: mrFilter( inFilter )
+{
+  EnvironmentBase::EnterConstructionPhase( &mParameters, &mStates, NULL );
+}
+
+ParamRef
+FilterWrapper::Parameter( const string& s )
+{
+   return ParamRef( &mParameters[s] );
+}
+
+void
+FilterWrapper::Initialize( const SignalProperties& Input, SignalProperties& Output )
+{
+  EnvironmentBase::EnterNonaccessPhase();
+  mStatevector = StateVector( mStates );
+  EnvironmentBase::EnterPreflightPhase( &mParameters, &mStates, &mStatevector );
+  mrFilter.CallPreflight( Input, Output );
+  EnvironmentBase::EnterNonaccessPhase();
+  if( bcierr__.Flushes() == 0 )
+  {
+	EnvironmentBase::EnterInitializationPhase( &mParameters, &mStates, &mStatevector );
+	mrFilter.CallInitialize( Input, Output );
+	EnvironmentBase::EnterNonaccessPhase();
+	EnvironmentBase::EnterStartRunPhase( &mParameters, &mStates, &mStatevector );
+	mrFilter.CallStartRun();
+	EnvironmentBase::EnterNonaccessPhase();
+	EnvironmentBase::EnterProcessingPhase( &mParameters, &mStates, &mStatevector );
+  }
+  if( bcierr__.Flushes() != 0 )
+	::mexErrMsgTxt( "Could not initialize filter." );
+}
+
+void
+FilterWrapper::Process( const GenericSignal& Input, GenericSignal& Output )
+{
+  mrFilter.CallProcess( Input, Output );
+}
+
+void
+FilterWrapper::Halt()
+{
+  EnvironmentBase::EnterNonaccessPhase();
+  EnvironmentBase::EnterStopRunPhase( &mParameters, &mStates, &mStatevector );
+  mrFilter.CallStopRun();
+  EnvironmentBase::EnterNonaccessPhase();
+  mrFilter.CallHalt();
+}
 

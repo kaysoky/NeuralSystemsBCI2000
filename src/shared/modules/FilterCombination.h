@@ -8,8 +8,8 @@
 //   #include "FilterCombinations.h"
 //   #include "Filter1.h"
 //   #include "Filter2.h"
-//   typedef ParallelCombination<Filter1, Filter2> CombinedFilter;
-//   Filter( CombinedFilter, 2.D );
+//   struct MyCombinedFilter : ParallelCombination<Filter1, Filter2> {};
+//   Filter( MyCombinedFilter, 2.D );
 //
 //   Using nested constructs from ParallelCombination<> and SerialCombination<>,
 //   one may build arbitrary networks of filters.

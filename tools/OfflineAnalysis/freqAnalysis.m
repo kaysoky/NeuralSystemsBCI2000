@@ -127,6 +127,16 @@ end
 if verbose
   fprintf(1, 'Calculating spectra for all trials ...\n');
 end
+memparms = parms;
+if( length(memparms) < 6 )
+  memparms(6) = 0;
+end
+if( length(memparms) < 7 )
+  memparms(7) = 1;
+end
+memparms(8) = spectral_stepping;
+memparms(9) = spectral_size/spectral_stepping;
+ 
 countall=0;
 countcond1=0;
 countcond2=0;
@@ -137,27 +147,18 @@ for cur_trial=min(trials):max(trials)
        fprintf(1, '* /%d\r', max(trials));
     end
  end
-
+ 
  % condition 1
  eval(condition1idxstr);
  if (isempty(condition1idx) == 0)
     % get the data for these samples
     condition1data=double(signal(condition1idx, :));
-    datalength=size(condition1data, 1);
-    cur_start=1;
-    count=0;
-    trialspectrum=zeros(spectral_bins, num_channels);
-    while (cur_start+spectral_size <= datalength)
-     [cur_spectrum, freq_bins]=mem(double(condition1data(cur_start:cur_start+spectral_size, :)), parms);
-     trialspectrum=trialspectrum+cur_spectrum;
-     countall=countall+1;
-     cur_start=cur_start+spectral_stepping;
-     count=count+1;
-    end
-    if (count > 0)
-       trialspectrum=trialspectrum/count;
-       countcond1=countcond1+1;
-       avgdata1(:, :, countcond1)=trialspectrum;
+    [trialspectrum, freq_bins] = mem( condition1data, memparms );
+    countall = countall + size( trialspectrum, 3 );
+    if( size( trialspectrum, 3 ) > 0 )
+      trialspectrum = mean( trialspectrum, 3 );
+      countcond1=countcond1+1;
+      avgdata1(:, :, countcond1)=trialspectrum;
     end
  end
 
@@ -167,23 +168,14 @@ for cur_trial=min(trials):max(trials)
    if (isempty(condition2idx) == 0)
       % get the data for these samples
       condition2data=double(signal(condition2idx, :));
-      datalength=size(condition2data, 1);
-      cur_start=1;
-      count=0;
-      trialspectrum=zeros(spectral_bins, num_channels);
-      while (cur_start+spectral_size <= datalength)
-       [cur_spectrum, freq_bins]=mem(double(condition2data(cur_start:cur_start+spectral_size, :)), parms);
-       trialspectrum=trialspectrum+cur_spectrum;
-       countall=countall+1;
-       cur_start=cur_start+spectral_stepping;
-       count=count+1;
+      [trialspectrum, freq_bins] = mem( condition2data, memparms );
+      countall = countall + size( trialspectrum, 3 );
+      if( size( trialspectrum, 3 ) > 0 )
+        trialspectrum = mean( trialspectrum, 3 );
+        countcond2=countcond2+1;
+        avgdata2(:, :, countcond2)=trialspectrum;
       end
-      if (count > 0)
-         trialspectrum=trialspectrum/count;
-         countcond2=countcond2+1;
-         avgdata2(:, :, countcond2)=trialspectrum;
-      end
-   end
+    end
   end % session
 end
 

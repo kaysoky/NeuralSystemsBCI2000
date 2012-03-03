@@ -39,6 +39,10 @@
 class WindowingThread : public FilterThread
 {
  public:
+  enum DetrendingOptions { None = 0, Mean, Linear };
+  enum WindowFunctions { Rectangular = 0, Hamming, Hann, Blackman };
+
+ public:
   WindowingThread();
 
  protected:
@@ -50,8 +54,6 @@ class WindowingThread : public FilterThread
   void OnStartRun();
 
  private:
-  enum DetrendingOptions { None = 0, Mean, Linear };
-  enum WindowFunctions { Rectangular = 0, Hamming, Hann, Blackman };
   typedef GenericSignal::ValueType Real;
   typedef std::valarray<Real> DataVector;
 

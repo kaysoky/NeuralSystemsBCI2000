@@ -100,7 +100,7 @@ ARThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
       mInput[i] = Input( Channels()[ch], i );
 
     mMEMPredictor.TransferFunction( mInput, mTransferFunction );
-    mTransferFunction *= 2; // Add negative and positive frequencies.
+    mTransferFunction *= ::sqrt( 2.0 ); // Multiply power by a factor of 2 to account for positive and negative frequencies.
     switch( mOutputType )
     {
       case SpectralAmplitude:
