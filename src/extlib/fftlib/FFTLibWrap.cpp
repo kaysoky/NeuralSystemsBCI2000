@@ -25,17 +25,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "FFTLibWrap.h"
 
-#if USE_DLL
+#if _WIN32
 # include <windows.h>
+# define dlopen( x, y )  LoadLibrary( x )
+# define dlsym( x, y )   GetProcAddress( ( HMODULE )x, y )
+#else // _WIN32
+# include <dlfcn.h>
+#endif // _WIN32
+
+#if _WIN32
+# define LIB_EXTENSION ""
+#elif __APPLE__
+# define LIB_EXTENSION ".dylib"
 #else
-# include <fftw3.h>
+# define LIB_EXTENSION ".so"
 #endif
 
-const char* FFTLibWrapper::sLibName = "fftw3";
+const char* FFTLibWrapper::sLibName = "fftw3" LIB_EXTENSION;
 int FFTLibWrapper::sNumInstances = 0;
 
-#if USE_DLL
-void* FFTLibWrapper::sLibRef = ::LoadLibrary( sLibName );
+void* FFTLibWrapper::sLibRef = ::dlopen( sLibName, RTLD_LAZY );
 FFTLibWrapper::LibInitRealFn FFTLibWrapper::LibInitReal = NULL;
 FFTLibWrapper::LibInitComplexFn FFTLibWrapper::LibInitComplex = NULL;
 FFTLibWrapper::LibExecuteFn FFTLibWrapper::LibExecute = NULL;
@@ -54,23 +63,6 @@ FFTLibWrapper::ProcNameEntry FFTLibWrapper::sProcNames[] =
   { ( void** )&LibMalloc,     "fftw_malloc" },
   { ( void** )&LibFree,       "fftw_free" },
 };
-#else // USE_DLL
-void* FFTLibWrapper::sLibRef = reinterpret_cast<void*>( 1 );
-FFTLibWrapper::LibInitRealFn FFTLibWrapper::LibInitReal
-  = reinterpret_cast<FFTLibWrapper::LibInitRealFn>( fftw_plan_r2r_1d );
-FFTLibWrapper::LibInitComplexFn FFTLibWrapper::LibInitComplex
-  = reinterpret_cast<FFTLibWrapper::LibInitComplexFn>( fftw_plan_dft_1d );
-FFTLibWrapper::LibExecuteFn FFTLibWrapper::LibExecute
-  = reinterpret_cast<FFTLibWrapper::LibExecuteFn>( fftw_execute );
-FFTLibWrapper::LibDestroyFn FFTLibWrapper::LibDestroy
-  = reinterpret_cast<FFTLibWrapper::LibDestroyFn>( fftw_destroy_plan );
-FFTLibWrapper::LibCleanupFn FFTLibWrapper::LibCleanup
-  = reinterpret_cast<FFTLibWrapper::LibCleanupFn>( fftw_cleanup );
-FFTLibWrapper::LibMallocFn FFTLibWrapper::LibMalloc
-  = reinterpret_cast<FFTLibWrapper::LibMallocFn>( fftw_malloc );
-FFTLibWrapper::LibFreeFn FFTLibWrapper::LibFree
-  = reinterpret_cast<FFTLibWrapper::LibFreeFn>( fftw_free );
-#endif // USE_DLL
 
 
 FFTLibWrapper::FFTLibWrapper()
@@ -80,13 +72,12 @@ FFTLibWrapper::FFTLibWrapper()
   mLibPrivateData( NULL )
 {
   ++sNumInstances;
-#if USE_DLL
   if( sLibRef && !LibInitReal )
   {
     bool foundAllProcs = true;
     for( size_t i = 0; foundAllProcs && i < sizeof( sProcNames ) / sizeof( *sProcNames ); ++i )
     {
-      void* libProc = ( void* )::GetProcAddress( ( HMODULE )sLibRef, sProcNames[ i ].mName );
+      void* libProc = ( void* )::dlsym( sLibRef, sProcNames[ i ].mName );
       if( libProc == NULL )
         foundAllProcs = false;
       *sProcNames[ i ].mProc = libProc;
@@ -94,7 +85,6 @@ FFTLibWrapper::FFTLibWrapper()
     if( !foundAllProcs )
       sLibRef = NULL;
   }
-#endif // USE_DLL
 }
 
 FFTLibWrapper::~FFTLibWrapper()
@@ -148,5 +138,3 @@ ComplexFFT::Initialize( int inFFTSize, FFTDirection inDirection, FFTOptimization
   mLibPrivateData = LibInitComplex( mFFTSize, mpInputData, mpOutputData, inDirection, inOptimization );
   return mpInputData && mpOutputData && mLibPrivateData;
 }
-
-

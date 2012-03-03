@@ -46,6 +46,9 @@ void
 FFTThread::OnPreflight( const SignalProperties& Input,
                               SignalProperties& Output ) const
 {
+  if( !mFFT.LibAvailable() )
+    bcierr << "Could not find the " << mFFT.LibName() << " library."
+           << endl;
   SpectrumThread::OnPreflight( Input, Output );
   if( Parameter( "OutputType" ) == Coefficients )
   {

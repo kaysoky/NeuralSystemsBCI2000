@@ -26,10 +26,6 @@
 #ifndef FFT_LIB_WRAP_H
 #define FFT_LIB_WRAP_H
 
-#ifdef _WIN32
-# define USE_DLL 1
-#endif
-
 #include <complex>
 #include "BCIAssert.h"
 
@@ -88,10 +84,8 @@ class FFTLibWrapper
     static const char* sLibName;
     static void*  sLibRef;
 
-#if USE_DLL
     typedef struct { void** mProc; const char* mName; } ProcNameEntry;
     static ProcNameEntry sProcNames[];
-#endif // USE_DLL
 };
 
 class RealFFT : public FFTLibWrapper
