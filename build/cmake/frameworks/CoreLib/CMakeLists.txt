@@ -13,7 +13,7 @@ IF( WIN32 )
   SET( DEPLIBS ws2_32 winmm )
 ENDIF() 
 IF( NOT APPLE AND NOT WIN32 )
-  SET( DEPLIBS rt pthread )
+  SET( DEPLIBS rt pthread dl )
 ENDIF()
 
 # Include "usage header" to define include directories and extlib dependencies
