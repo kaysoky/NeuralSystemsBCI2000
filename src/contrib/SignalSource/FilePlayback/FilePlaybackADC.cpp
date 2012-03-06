@@ -225,8 +225,9 @@ FilePlaybackADC::Preflight( const SignalProperties&,
   if (int(dataFile.Parameter("SamplingRate")) != int(Parameter("SamplingRate")))
     bcierr << "The SamplingRate in the data file ("<<dataFile.Parameter("SamplingRate")<<") should equal the configured SamplingRate."<<endl;
 
-  //if (int(dataFile.Parameter("SampleBlockSize")) != int(Parameter("SampleBlockSize")))
-  //  bcierr << "The SampleBlockSize in the data file ("<<dataFile.Parameter("SampleBlockSize")<<") should equal the configured SampleBlockSize."<<endl;
+  if (int(dataFile.Parameter("SampleBlockSize")) != int(Parameter("SampleBlockSize")) && int(Parameter("PlaybackStates")) != 0)
+    bciout << "The configured SampleBlockSize parameter (currently " << int(Parameter("SampleBlockSize")) << ") does not match the SampleBlockSize in the data file ("<<dataFile.Parameter("SampleBlockSize")<<") . This may lead to problems when accessing played-back state variables. "<<endl;
+    
   if (Parameter("SourceCh") > dataFile.Parameter("SourceCh"))
     bcierr << "The SourceCh value must be less than or equal to the SourceCh value in the data file ("<<dataFile.Parameter("SourceCh")<<")"<<endl;
 
