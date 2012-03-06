@@ -31,24 +31,27 @@
 #ifndef EVENT_QUEUE_H
 #define EVENT_QUEUE_H
 
-#include "Uncopyable.h"
+#include "Lockable.h"
 #include "PrecisionTime.h"
-#include <cstddef>
 
-class EventQueue : private Uncopyable
+class EventQueue : public Lockable
 {
  public:
   EventQueue()
-    : mLocked( false ),
-      mpFront( NULL ),
-      mpBack( NULL )
+    : mpFront( NULL ),
+      mpBack( NULL ),
+      mEventsAllowed( false )
     {}
   ~EventQueue()
     { Clear(); }
+  void AllowEvents()
+    { ::Lock<EventQueue> lock( *this ); mEventsAllowed = true; }
+  void DenyEvents()
+    { ::Lock<EventQueue> lock( *this ); mEventsAllowed = false; }
   bool IsEmpty()
     { return mpFront == NULL; }
   void Clear()
-    { while( !IsEmpty() ) PopFront(); }
+    { ::Lock<EventQueue> lock( *this ); while( !IsEmpty() ) PopFront(); }
   void PushBack( const char* inDescriptor, PrecisionTime );
   void PopFront();
   const char* FrontDescriptor() const
@@ -57,13 +60,6 @@ class EventQueue : private Uncopyable
     { return mpFront->mTimeStamp; }
 
  private:
-  void Lock()
-    { while( mLocked ) {}; mLocked = true; }
-  void Unlock()
-    { mLocked = false; }
-
-  volatile bool mLocked;
-
   struct Entry
   {
     char*         mpDescriptor;
@@ -73,6 +69,7 @@ class EventQueue : private Uncopyable
 
   Entry* mpFront,
        * mpBack;
+  bool mEventsAllowed;
 };
 
 #endif // EVENT_QUEUE_H

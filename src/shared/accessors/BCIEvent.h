@@ -36,10 +36,12 @@
 #define bcievent BCIEvent()()
 
 class DataIOFilter;
+class EnvironmentBase;
 
 class BCIEvent : public std::ostream
 {
  friend class ::DataIOFilter;
+ friend class ::EnvironmentBase;
 
  class StringBuf;
  friend class StringBuf;
@@ -56,6 +58,8 @@ class BCIEvent : public std::ostream
  private:
   static void SetEventQueue( EventQueue* inpQueue )
     { spQueue = inpQueue; }
+  static void AllowEvents();
+  static void DenyEvents();
 
   static EventQueue* spQueue;
 

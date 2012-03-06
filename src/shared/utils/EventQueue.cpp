@@ -32,6 +32,7 @@
 #pragma hdrstop
 
 #include "EventQueue.h"
+#include "BCIException.h"
 #include <cstring>
 
 using namespace std;
@@ -45,24 +46,30 @@ EventQueue::PushBack( const char* inDescriptor, PrecisionTime inTimeStamp )
   ::memcpy( pEntry->mpDescriptor, inDescriptor, descLen );
   pEntry->mTimeStamp = inTimeStamp;
   pEntry->mpNext = NULL;
-  Lock();
+  ::Lock<EventQueue> lock( *this );
   if( mpBack != NULL )
     mpBack->mpNext = pEntry;
   mpBack = pEntry;
   if( mpFront == NULL )
     mpFront = mpBack;
-  Unlock();
+  if( !mEventsAllowed ) // Defer test to avoid loss of memory references.
+    throw bciexception(
+      "No events allowed when receiving \"" << inDescriptor << "\" event "
+      "-- trying to record events outside the \"running\" state?"
+    );
 }
 
 void
 EventQueue::PopFront()
 {
-  Lock();
-  Entry* pEntry = mpFront;
-  mpFront = pEntry->mpNext;
-  if( mpFront == NULL )
-    mpBack = NULL;
-  Unlock();
+  Entry* pEntry = NULL;
+  {
+    ::Lock<EventQueue> lock( *this );
+    pEntry = mpFront;
+    mpFront = pEntry->mpNext;
+    if( mpFront == NULL )
+      mpBack = NULL;
+  }
   delete[] pEntry->mpDescriptor;
   delete pEntry;
 }

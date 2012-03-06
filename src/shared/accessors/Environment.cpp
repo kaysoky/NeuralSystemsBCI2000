@@ -43,6 +43,7 @@
 #include "MessageHandler.h"
 #include "PhysicalUnit.h"
 #include "MeasurementUnits.h"
+#include "BCIEvent.h"
 
 #include <cstdlib>
 
@@ -475,6 +476,7 @@ void EnvironmentBase::EnterStartRunPhase( ParamList*   inParamList,
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
+  BCIEvent::AllowEvents();
   phase_ = startRun;
   paramlist_ = inParamList;
   statelist_ = inStateList;
@@ -505,6 +507,7 @@ void EnvironmentBase::EnterStopRunPhase( ParamList*   inParamList,
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
+  BCIEvent::DenyEvents();
   phase_ = stopRun;
   paramlist_ = inParamList;
   statelist_ = inStateList;

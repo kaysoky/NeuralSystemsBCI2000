@@ -69,6 +69,8 @@ DataIOFilter::DataIOFilter()
   mTimingBufferCursor( 0 ),
   mEvaluateTiming( true )
 {
+  BCIEvent::SetEventQueue( &mBCIEvents );
+
   BEGIN_PARAMETER_DEFINITIONS
     // Parameters required to interpret a data file are listed here
     // to enforce their presence:
@@ -186,6 +188,7 @@ DataIOFilter::~DataIOFilter()
   delete mpADC;
   delete mpSourceFilter;
   delete mpFileWriter;
+  BCIEvent::SetEventQueue( NULL );
 }
 
 
@@ -473,10 +476,6 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
               .Send( CfgID::ShowBaselines, true );
   }
   mTimingVis.Send( CfgID::Visible, mVisualizeTiming );
-#ifdef TODO
-# error Add BCIEvent::AllowEvents() and BCIEvent::DenyEvents(), call them from EnvironmentBase class.
-#endif // TODO
-  BCIEvent::SetEventQueue( &mBCIEvents );
 }
 
 
