@@ -39,7 +39,17 @@ using namespace std;
 
 ApplicationBase::ApplicationBase()
 {
+  BEGIN_PARAMETER_DEFINITIONS
+    "Visualize:Application%20Log int ShowAppLog= 1 0 0 1 // Show application log window (boolean)",
+  END_PARAMETER_DEFINITIONS
   AppLog.Screen.Send( CfgID::WindowTitle, "Application Log" );
+}
+
+void
+ApplicationBase::Initialize( const SignalProperties&,
+                             const SignalProperties& )
+{
+  AppLog.Screen.Send( CfgID::Visible, Parameter( "ShowAppLog" ) );
 }
 
 int

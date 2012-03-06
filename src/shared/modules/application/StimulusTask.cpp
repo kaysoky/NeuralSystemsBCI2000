@@ -172,8 +172,10 @@ StimulusTask::Preflight( const SignalProperties& Input, SignalProperties& Output
 
 void
 StimulusTask::Initialize( const SignalProperties& Input,
-                          const SignalProperties& /*Output*/ )
+                          const SignalProperties& Output )
 {
+  ApplicationBase::Initialize( Input, Output );
+
   mPreRunDuration = static_cast<int>( Parameter( "PreRunDuration" ).InSampleBlocks() );
   mPostRunDuration = static_cast<int>( Parameter( "PostRunDuration" ).InSampleBlocks() );
   mPreSequenceDuration = static_cast<int>( Parameter( "PreSequenceDuration" ).InSampleBlocks() );

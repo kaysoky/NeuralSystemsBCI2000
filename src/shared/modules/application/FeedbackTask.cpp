@@ -115,8 +115,10 @@ FeedbackTask::Preflight( const SignalProperties& Input, SignalProperties& Output
 }
 
 void
-FeedbackTask::Initialize( const SignalProperties& Input, const SignalProperties& /*Output*/ )
+FeedbackTask::Initialize( const SignalProperties& Input, const SignalProperties& Output )
 {
+  ApplicationBase::Initialize( Input, Output );
+
   mBlockRandSeq.SetBlockSize( Parameter( "NumberTargets" ) );
 
   mFixedTargetSequence.clear();

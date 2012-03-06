@@ -51,7 +51,7 @@ class ApplicationBase : public GenericFilter, protected ApplicationWindowClient
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const = 0;
   virtual void Initialize( const SignalProperties& Input,
-                           const SignalProperties& Output ) = 0;
+                           const SignalProperties& Output );
 
   virtual void Process( const GenericSignal& Input,
                               GenericSignal& Output ) = 0;
