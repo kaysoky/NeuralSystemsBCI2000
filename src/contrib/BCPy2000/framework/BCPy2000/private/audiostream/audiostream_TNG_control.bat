@@ -31,7 +31,7 @@ call portable.bat
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %BREAKOUT%\breakout\parms\BCISYSTEM2_ExtendedDesktop.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\AudiostreamBreakoutGame.prm
 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\eyetracker.prm      && set LOGGERS=%LOGGERS% --LogEyetracker=1
+::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\eyetracker.prm      && set LOGGERS=%LOGGERS% --LogEyetracker=1
 
 :: NB AudiostreamBreakoutGame sets some control-signal-filtering parameters.  Overwrite these here
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\tng.prm 

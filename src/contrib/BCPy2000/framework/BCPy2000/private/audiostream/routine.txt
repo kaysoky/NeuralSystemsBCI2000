@@ -7,7 +7,7 @@ Before the subject arrives:
 	
 	- set up the camera
 	
-	- test communication with the eyetracker, and restart the laptop if necessary
+	- (if using eyetracker): test communication with the eyetracker, and restart the laptop if necessary
 	
 	- click on the blue musical note and verify that the soundcard is set to 8 channels
 		click on "L":  ONLY the left earphone should sound
@@ -15,6 +15,18 @@ Before the subject arrives:
 		click on "Ls" and "Rs": nothing through earphones (but blue and green traces, respectively, in BCI2000)
 		click on "Lb" and "Rb": nothing through earphones, maybe a little crosstalk in BCI2000, sound from the screen
 		click on "center" and "subwoofer":  tactile stimulator only, if plugged in (otherwise nothing)
+		
+		A full run-down of the audio channel assignments in the Startech box's 8-channel mode is:
+		
+		Plug in...    Address...                Click On...       Hear it say...
+		socket 3 L    DirectSound channel 1     L                 "left front"            \__ to headphones
+		socket 3 R    DirectSound channel 2     R                 "right front"		      /
+		socket 4 L    DirectSound channel 7     Ls                "left surround"         \__ to amp for use as triggers
+		socket 4 R    DirectSound channel 8     Rs                "right surround"		  /
+		socket 5 L    DirectSound channel 3     C                 "center"                \__ tactile stimulator / external speakers
+		socket 5 R    DirectSound channel 4     Sub-Woofer        "sub-woofer"		      /
+		socket 6 L    DirectSound channel 5     Lb                "left back surround"    \__ to screen's builtin speakers
+		socket 6 R    DirectSound channel 6     Rb                "right back surround"   /
 		
 	- edit subject_attention.prm, adjust SubjectName to code the date and subject
 	   number as 2011MMDD_85NN_A_   without spaces. Save. It's fine to do this in
@@ -32,7 +44,7 @@ When the subject arrives:
 	- If not, explain again what is involved (takes about 2 hours in total, it's not painful,
 	  but you get gel in your hair; you can wash your hair here, etc).
 	  
-	- Get them to sign the consent form.
+	- Get them to sign the consent form if we do not have one on file.
 	
 	- For state workers, draw their attention to the point on the form that, since we're
 	  paying them directly for their time, this time cannot be counted as work hours by the
@@ -55,7 +67,7 @@ EEG setup:
 
 	- Tape the EEG cable to chair, allowing slack before and after the tape.
 
-	- Turn mobile phones off or to silent.
+	- Turn mobile phones off or to silent (ask the subject to do the same).
 
 Eyetracker calibration:
 
@@ -176,15 +188,16 @@ At the end of the session:
 	
 	- if appropriate, pay the subject and get them to sign a receipt
 	
-	- return to Bill:  camera, tripod, ivory washing-liquid, subject paperwork
+	- return to Bill:  camera, tripod, subject paperwork
 	
 	- finish washing the cap
 	
 	- save the purple syringe tip, in an envelope marked with the subject's name,
 	  if there's any chance we'll measure them again soon
 	  
-	- turn out lights, close all doors
+	- power down everything (including the power strip under the desk), turn out
+	  lights, close all doors
 	
-	- Type up any session notes (including the condition order, 222444222444 or
-	  444222444222) into a 2011MMDD_85NN.txt file by the end of the day.
+	- Type up any session notes (including the condition order, eg 222444222444 or
+	  444222444222) into a 2011MMDD_NNNN.txt file by the end of the day.
 

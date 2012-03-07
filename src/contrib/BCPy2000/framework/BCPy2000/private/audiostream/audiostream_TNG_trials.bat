@@ -28,7 +28,7 @@ call portable.bat
 @set OnSetConfig=-
 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBB-Cap16+Audio2.prm
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\eyetracker.prm      && set LOGGERS=%LOGGERS% --LogEyetracker=1
+::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\eyetracker.prm      && set LOGGERS=%LOGGERS% --LogEyetracker=1
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\tng.prm 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\triggerless16.prm 
 @set OnConnect=%OnConnect% ; SET PARAMETER EpochAveragingPersistence 1.0
