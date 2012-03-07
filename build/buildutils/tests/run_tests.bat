@@ -38,7 +38,7 @@ start Operator.exe ^
   --OnConnect "-LOAD PARAMETERFILE ..\build\buildutils\tests\CursorTask_test.prm; SETCONFIG" ^
   --OnSetConfig "-SET STATE Running 1" ^
   --OnSuspend "-QUIT"
-start SignalGenerator.exe --TestLoggerFrequency=100Hz
+start SignalGenerator.exe --TestLoggerFrequency=100Hz --TestLoggerEmitDebug=0
 start ARSignalProcessing.exe
 start /wait CursorTask.exe
 
@@ -49,7 +49,7 @@ start Operator.exe ^
   --OnConnect "-LOAD PARAMETERFILE ..\build\buildutils\tests\StimulusPresentation_test.prm; SETCONFIG" ^
   --OnSetConfig "-SET STATE Running 1" ^
   --OnSuspend "-QUIT"
-start SignalGenerator.exe --TestLoggerFrequency=100Hz
+start SignalGenerator.exe --TestLoggerFrequency=100Hz --TestLoggerEmitDebug=0
 start DummySignalProcessing.exe 
 start /wait StimulusPresentation.exe 
 
@@ -60,7 +60,7 @@ start Operator.exe ^
   --OnConnect "-LOAD PARAMETERFILE ..\build\buildutils\tests\P3Speller_test.prm; SETCONFIG" ^
   --OnSetConfig "-SET STATE Running 1" ^
   --OnSuspend "-QUIT"
-start SignalGenerator.exe --TestLoggerFrequency=100Hz
+start SignalGenerator.exe --TestLoggerFrequency=100Hz --TestLoggerEmitDebug=0
 start P3SignalProcessing.exe 
 start /wait P3Speller.exe 
 
