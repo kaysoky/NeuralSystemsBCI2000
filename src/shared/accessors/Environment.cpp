@@ -346,6 +346,7 @@ void EnvironmentBase::EnterNonaccessPhase()
     case stopRun:
       for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
         ( *i )->CallPostStopRun();
+      BCIEvent::DenyEvents();
       break;
     case resting:
       break;
@@ -507,7 +508,6 @@ void EnvironmentBase::EnterStopRunPhase( ParamList*   inParamList,
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
-  BCIEvent::DenyEvents();
   phase_ = stopRun;
   paramlist_ = inParamList;
   statelist_ = inStateList;
