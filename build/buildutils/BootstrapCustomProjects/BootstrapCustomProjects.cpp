@@ -335,6 +335,44 @@ RemoveLine( string fileName, string targetLine, string2string proc=NULL )
 	return 0;
 }
 
+int
+PrependToFile( string fileName, string lineToInsert, string2string proc=NULL )
+{ // prepend the specified line to the specified file, with a DOS line-ending.  If proc is specified then empty, whitespace-only or comment-only lines can be identified: then, if the file begins with a block such lines, the line will be inserted after the block
+	bool inserted = false;
+	stringstream content;
+	ifstream sIn( fileName.c_str() );
+	if( sIn )
+	{
+		while( sIn.good() )
+		{
+			string line;
+			getline( sIn, line );
+			if( !inserted )
+			{
+				string processedLine = ( proc ? proc( line ) : line );
+				string strippedLine = StripString( line );
+				bool isEmpty = ( strippedLine.size() == 0 );
+				bool isComment = ( !isEmpty && processedLine.size() == 0 );
+				if( !isComment )
+				{
+					if( isEmpty ) content << gDosLineEnding;
+					content << lineToInsert << gDosLineEnding;
+					inserted = true;
+				}
+			}
+			content << line << gDosLineEnding;
+		}
+		sIn.close();
+	}
+	if( !inserted ) return AppendToFile( fileName, lineToInsert );
+	
+	ofstream sOut( fileName.c_str() );
+	if( !sOut ) { cerr << "internal error: failed to open file " << fileName << " for writing\n"; return 1; }
+	sOut << content.str();
+	sOut.close();
+	return 0;
+}
+
 string gSrcTree       = RealPath( "../src" );
 string gDefaultParent = StandardizePath( "../src/custom" );
 string gTemplatesDir  = StandardizePath( "./buildutils/BootstrapCustomProjects/templates" );
@@ -642,6 +680,95 @@ int NewModule( string modtype, string name, string parent, string extra )
 		cout << "                       and " << RealPath( Fullfile( proj, adcname+".cpp" ) ) << endl;
 	cout << endl;
 	
+	return 0;
+}
+
+int SetupFilterTool( string arg1, string arg2, string arg3, string arg4 )
+{
+	string usage =
+		"NewBCI2000CommandlineTarget CPPFILE\n"
+		"\n"
+		"e.g. NewBCI2000Module    ../src/custom/MyCustomModule/MyCustomFilter.cpp\n"
+		"\n"
+		"CPPFILE:   TODO\n"
+		"           TODO\n"
+	;
+	
+	if( arg2.size() || arg3.size() || arg4.size() ) { cerr << "Too many inputs. Usage is as follows:\n\n" << usage << endl; return 1; }
+	if( arg1 == "--help" ) { cout << endl << usage << endl; return 0; }
+	
+	string cppfile = arg1;
+	while( cppfile.size() == 0 )
+	{
+		cout << "Enter path to an existing C++ filter file: ";
+		getline( cin, cppfile );
+		cppfile = StripString( cppfile );
+		if( cppfile.size() ) cout << endl;
+		if( !FileExists( cppfile ) ) { cout << "file " << cppfile << " not found.\n"; cppfile = ""; }
+	}
+	if( !FileExists( cppfile ) ) { cerr << "file " << cppfile << " not found.\n"; return 1; }
+
+	string parentPath, stem, extension;
+	FileParts( cppfile, parentPath, stem, extension );
+	parentPath = RealPath( parentPath );
+	cppfile = Fullfile( parentPath, stem + extension );
+	
+	string childDirName = "cmdline";
+	string childDirPath = Fullfile( parentPath, childDirName );
+	string parentCMakeLists = Fullfile( parentPath, "CMakeLists.txt" );
+	string childCMakeLists = Fullfile( childDirPath, "CMakeLists.txt" );
+	string addSubdirectoryLine = "ADD_SUBDIRECTORY( " + childDirName + " )";
+	string testLine = "BCI2000_ADD_CMDLINE_FILTER( " + stem + " FROM ..";
+	string payload = testLine + " )";
+	int err = 0;
+	bool rerunCMake = false;
+
+	cout << endl;
+	cout << "Setting up " << stem << " as a command-line filter-tool target:" << endl;
+	
+	if( DirectoryExists( childDirPath ) )
+	{
+		cout << "    Directory " << childDirPath << " already exists." << endl;
+	}
+	else
+	{
+		err = MakePath( childDirPath );
+		if( err ) return err;
+		cout << "    Created directory " << childDirPath << endl;
+	}
+	cout << endl;
+
+	if( FileExists( parentCMakeLists ) && ContainsLine( parentCMakeLists, addSubdirectoryLine, ProcessCMakeLine, false ) )
+	{
+		cout << "    " << parentCMakeLists << " already contains the line " << addSubdirectoryLine << endl;
+	}
+	else
+	{
+		err = PrependToFile( parentCMakeLists, addSubdirectoryLine, ProcessCMakeLine );
+		if( err ) return err;
+		cout << "    The following line has been appended to " << parentCMakeLists << endl << "        " << addSubdirectoryLine << endl;
+		rerunCMake = true;
+	}
+	cout << endl;
+
+	if( FileExists( childCMakeLists ) && ContainsLine( childCMakeLists, testLine, ProcessCMakeLine, true ) )
+	{
+		cout << "    " << childCMakeLists << " already contains the line " << payload << endl;
+	}
+	else
+	{
+		err = AppendToFile( childCMakeLists, payload );
+		if( err ) return err;
+		cout << "    The following line has been appended to " << childCMakeLists << endl << "        " << payload << endl;
+		rerunCMake = true;
+	}
+	cout << endl;
+
+	if( rerunCMake )
+	{
+		cout << "    Run CMake again to ensure that the new filter-tool is included in the build." << endl;
+		cout << endl;
+	}
 	return 0;
 }
 

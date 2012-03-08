@@ -10,9 +10,10 @@ SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/build )
 
 ADD_EXECUTABLE( NewBCI2000Module BootstrapCustomProjects.cpp ${BCI2000_SRC_DIR}/shared/fileio/dirent_win.h )
 ADD_EXECUTABLE( NewBCI2000Filter BootstrapCustomProjects.cpp ${BCI2000_SRC_DIR}/shared/fileio/dirent_win.h )
+ADD_EXECUTABLE( NewBCI2000FilterTool BootstrapCustomProjects.cpp ${BCI2000_SRC_DIR}/shared/fileio/dirent_win.h )
 
 SET_PROPERTY( TARGET NewBCI2000Module APPEND PROPERTY COMPILE_FLAGS "-DMAIN_FUNCTION=NewModule" )
 SET_PROPERTY( TARGET NewBCI2000Filter APPEND PROPERTY COMPILE_FLAGS "-DMAIN_FUNCTION=NewFilter" )
-
+SET_PROPERTY( TARGET NewBCI2000FilterTool APPEND PROPERTY COMPILE_FLAGS "-DMAIN_FUNCTION=SetupFilterTool" )
 
 MESSAGE( "-- Added Custom-Development Bootstrapping Tools" )
