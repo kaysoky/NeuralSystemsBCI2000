@@ -76,8 +76,9 @@ EventLink::Publish()
 
       if( !mInputSocket.wait_for_read( cTimeoutMs ) )
       {
-        bciout << "Did not receive event definitions from Operator module within "
-               << 1e-3 * cTimeoutMs << "s" 
+        bciout << "Operator does not seem to support EventLink: "
+               << "no additional event definitions were received within " << 1e-3 * cTimeoutMs << "s of query. "
+               << "Using core-module event definitions only."
                << endl;
       }
       else
