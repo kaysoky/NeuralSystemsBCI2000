@@ -55,21 +55,38 @@ const ObjectType::MethodEntry ParameterType::sMethodTable[] =
 bool
 ParameterType::Set( ScriptInterpreter& inInterpreter )
 {
-  string name, value;
-  ostringstream oss;
+  string line = inInterpreter.GetRemainder();
+  istringstream iss( line );
+  Param param;
+  if( iss >> param )
   {
     Lock<StateMachine> lock( inInterpreter.StateMachine() );
-    ParamRef param = GetParamRef( inInterpreter );
-    name = param->Name();
-    value = inInterpreter.GetRemainder();
-    param = value;
-    if( !name.empty() )
-      param->WriteToStream( oss );
+    ParamList& list = inInterpreter.StateMachine().Parameters();
+    if( !list.Exists( param.Name() ) )
+      throw bciexception_( "Parameter " << param.Name() << " does not exist" );
+    list[param.Name()] = param;
+    inInterpreter.StateMachine().ExecuteCallback( BCI_OnParameter, line.c_str() );
+    inInterpreter.Log() << "Set parameter " << param.Name();
   }
-  if( !oss.str().empty() )
+  else
   {
-    inInterpreter.StateMachine().ExecuteCallback( BCI_OnParameter, oss.str().c_str() );
-    inInterpreter.Log() << "Set parameter " << name << " to " << value;
+    inInterpreter.Unget();
+    string name, value;
+    ostringstream oss;
+    {
+      Lock<StateMachine> lock( inInterpreter.StateMachine() );
+      ParamRef param = GetParamRef( inInterpreter );
+      name = param->Name();
+      value = inInterpreter.GetRemainder();
+      param = value;
+      if( !name.empty() )
+        param->WriteToStream( oss );
+    }
+    if( !oss.str().empty() )
+    {
+      inInterpreter.StateMachine().ExecuteCallback( BCI_OnParameter, oss.str().c_str() );
+      inInterpreter.Log() << "Set parameter " << name << " to " << value;
+    }
   }
   return true;
 }
