@@ -171,6 +171,8 @@ BCIMexFunction( int nlhs, mxArray* plhs[],
     throw bciexception_( "Sample block size must be >= 1." );
   if( windowLength * sampleBlockSize < modelOrder )
     throw bciexception_( "Window must contain more samples than the model order." );
+  if( windowLength * sampleBlockSize > numSamples )
+    throw bciexception_( "Window may not exceed the number of samples." );
   switch( static_cast<int>( detrendOption ) )
   {
     case WindowingThread::None:
@@ -204,7 +206,8 @@ BCIMexFunction( int nlhs, mxArray* plhs[],
   filter.Initialize( inputProperties, outputProperties );
 
   int numBins = outputProperties.Elements(),
-      numBlocks = static_cast<int>( numSamples / sampleBlockSize );
+      samplesInWindow = static_cast<int>( windowLength * sampleBlockSize ),
+      numBlocks = static_cast<int>( ( numSamples - samplesInWindow + sampleBlockSize ) / sampleBlockSize );
   const mwSize dims[] = { numBins, numChannels, numBlocks };
   plhs[0] = ::mxCreateNumericArray( 3, dims, mxDOUBLE_CLASS, mxREAL );
   double* outSpectrum = ::mxGetPr( plhs[0] );
@@ -218,18 +221,28 @@ BCIMexFunction( int nlhs, mxArray* plhs[],
 
   GenericSignal input( inputProperties ),
                 output( outputProperties );
-  for( int block = 0, blockNum = 0; block <= numSamples - iSampleBlockSize; block += iSampleBlockSize, ++blockNum )
-  {
+  
+  int start = 0;
+  while( start < ( samplesInWindow - iSampleBlockSize ) && start <= numSamples - iSampleBlockSize )
+  { // Ignore filter output until its internal buffer has been filled with data.
     for( int ch = 0; ch < numChannels; ++ch )
       for( int s = 0; s < iSampleBlockSize; ++s )
-        input( ch, s ) = inSignal[ch*numSamples + s + block];
-
+        input( ch, s ) = inSignal[ch*numSamples + s + start];
     filter.Process( input, output );
-
+    start += iSampleBlockSize;
+  }
+  int blockNum = 0;
+  while( start <= numSamples - iSampleBlockSize )
+  { 
+    for( int ch = 0; ch < numChannels; ++ch )
+      for( int s = 0; s < iSampleBlockSize; ++s )
+        input( ch, s ) = inSignal[ch*numSamples + s + start];
+    filter.Process( input, output );
     for( int ch = 0; ch < numChannels; ++ch )
       for( int bin = 0; bin < numBins; ++bin )
         outSpectrum[bin + ch*numBins + blockNum*numBins*numChannels] = output( ch, bin );
+    start += iSampleBlockSize;
+    ++blockNum;
   }
-
   filter.Halt();
 }
