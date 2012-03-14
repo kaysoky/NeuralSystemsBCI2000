@@ -34,12 +34,14 @@
 #pragma hdrstop
 
 #include "VersionInfo.h"
+#include "Version.h"
 #include <sstream>
 #include <cstring>
 
 using namespace std;
 
 const string VersionInfo::sEmptyString;
+const VersionInfo VersionInfo::Current( BCI2000_VERSION );
 
 const char* VersionInfo::sNames[] =
 {
@@ -49,6 +51,15 @@ const char* VersionInfo::sNames[] =
  "Build Date",
 };
 const size_t VersionInfo::sNumNames = sizeof( sNames ) / sizeof( *sNames );
+
+VersionInfo::VersionInfo( const string& inString )
+{
+  if( !inString.empty() )
+  {
+    istringstream iss( inString );
+    ReadFromStream( iss );
+  }
+}
 
 const std::string&
 VersionInfo::operator[]( size_t inIdx )

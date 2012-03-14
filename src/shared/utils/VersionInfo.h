@@ -49,11 +49,14 @@ class VersionInfo : public VersionInfoBase
     SourceDate,
     BuildDate,
   };
+  VersionInfo( const std::string& inString = "" );
   const std::string& operator[]( const std::string& s )
     { return VersionInfoBase::operator[]( s ); }
   const std::string& operator[]( size_t );
   std::istream& ReadFromStream( std::istream& is );
   std::ostream& WriteToStream( std::ostream& os, bool pretty = false ) const;
+
+  static const VersionInfo Current;
 
  private:
   static const std::string sEmptyString;

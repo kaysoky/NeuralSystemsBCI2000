@@ -33,6 +33,14 @@
 #include "GenericFilter.h"
 #include "mex.h"
 
+#define mexFunction Use_BCIMexFunction_WithSameParametersInstead*
+#define mexErrMsgTxt ThrowA_bciexception_Instead
+#define mexErrMsgIdAndTxt ThrowA_bciexception_Instead
+#undef mxAssert
+#define mxAssert Use_bciassert_Instead
+#undef mxAssertS
+#define mxAssertS Use_bciassert_Instead
+
 typedef signed char        int8;
 typedef unsigned char      uint8;
 typedef signed short       int16;
@@ -66,5 +74,8 @@ MexAlloc( int inElements )
   return reinterpret_cast<T*>( mxCalloc( inElements, sizeof( T ) ) );
 }
 
+void
+BCIMexFunction( int nargout, mxArray* varargout[],
+                int nargin,  const mxArray* varargin[] );
 
 #endif // MEXUTILS_H

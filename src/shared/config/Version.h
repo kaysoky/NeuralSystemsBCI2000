@@ -38,7 +38,7 @@
                          "$Build Date: " __DATE__ " " __TIME__ " $" \
                          "$Compiler: " COMPILER_NAME " $"
 
-#define BCI2000_COPYRIGHT "(C) 2000-2011, BCI2000 Project\n" \
+#define BCI2000_COPYRIGHT "(C) 2000-2012, BCI2000 Project\n" \
                           "http://www.bci2000.org"
 
 #endif // VERSION_H

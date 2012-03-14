@@ -32,6 +32,8 @@
 
 #include "mexutils.h"
 #include "ARFilter.h"
+#include "BCIError.h"
+#include "BCIException.h"
 #include <limits>
 
 #define USAGE \
@@ -91,8 +93,6 @@ class FilterWrapper // FilterWrappers are friends to the Environment class.
       EnvironmentBase::EnterNonaccessPhase();
       EnvironmentBase::EnterProcessingPhase( &mParameters, &mStates, &mStatevector );
     }
-    if( bcierr__.Flushes() != 0 )
-      ::mexErrMsgTxt( "Could not initialize filter." );
   }
   void Process( const GenericSignal& Input, GenericSignal& Output )
   {
@@ -115,121 +115,121 @@ class FilterWrapper // FilterWrappers are friends to the Environment class.
 };
 
 
-    
-void mexFunction( int nlhs, mxArray* plhs[],
-                  int nrhs, const mxArray* prhs[] )
+void
+BCIMexFunction( int nlhs, mxArray* plhs[],
+                int nrhs, const mxArray* prhs[] )
 {
-    if( PrintVersion( __FILE__, nrhs, prhs ) )
-        return;
+  if( PrintVersion( __FILE__, nrhs, prhs ) )
+    return;
 
-    const mxArray* inSignalArray = prhs[0],
-                 * inParmsArray = prhs[1];
+  const mxArray* inSignalArray = prhs[0],
+               * inParmsArray = prhs[1];
 
-    // Check for proper number of arguments
-    if( nrhs != 2 )
-        ::mexErrMsgTxt( "Two input arguments required -- " USAGE );
-    if( nlhs > 2 )
-        ::mexErrMsgTxt( "Too many output arguments -- " USAGE );
+  // Check for proper number of arguments
+  if( nrhs != 2 )
+    throw bciexception_( "Two input arguments required -- " USAGE );
+  if( nlhs > 2 )
+    throw bciexception_( "Too many output arguments -- " USAGE );
 
-    int numSamples  = static_cast<int>( ::mxGetM( inSignalArray ) ),
-        numChannels = static_cast<int>( ::mxGetN( inSignalArray ) );
-    mwSize numParms = static_cast<mwSize>( ::mxGetNumberOfElements( inParmsArray ) );
+  int numSamples  = static_cast<int>( ::mxGetM( inSignalArray ) ),
+      numChannels = static_cast<int>( ::mxGetN( inSignalArray ) );
+  mwSize numParms = static_cast<mwSize>( ::mxGetNumberOfElements( inParmsArray ) );
 
-    if( !::mxIsDouble( inSignalArray ) || ::mxIsComplex( inSignalArray ) )
-        ::mexErrMsgTxt( "Expected real double input signal -- " USAGE );
-    if( !::mxIsDouble( inParmsArray ) || ::mxIsComplex( inParmsArray ) )
-        ::mexErrMsgTxt( "Expected real double parameter vector -- " USAGE );
-    if ( numParms < 5 )
-        ::mexErrMsgTxt( "Expected at least 5 MEM parameter values -- " USAGE );
+  if( !::mxIsDouble( inSignalArray ) || ::mxIsComplex( inSignalArray ) )
+    throw bciexception_( "Expected real double input signal -- " USAGE );
+  if( !::mxIsDouble( inParmsArray ) || ::mxIsComplex( inParmsArray ) )
+    throw bciexception_( "Expected real double parameter vector -- " USAGE );
+  if ( numParms < 5 )
+    throw bciexception_( "Expected at least 5 MEM parameter values -- " USAGE );
 
-    double* inSignal = ::mxGetPr( inSignalArray ),
-          * inParms  = ::mxGetPr( inParmsArray ),
-          * p = inParms;
-    double  modelOrder        = *p++,
-            firstBinCenter    = *p++,
-            lastBinCenter     = *p++,
-            binWidth          = *p++,
-            evaluationsPerBin = *p++,
-            detrendOption     = numParms > ( p - inParms ) ? *p++ : WindowingThread::None,
-            frequency         = numParms > ( p - inParms ) ? *p++ : 1.0,
-            sampleBlockSize   = numParms > ( p - inParms ) ? *p++ : numSamples,
-            windowLength      = numParms > ( p - inParms ) ? *p++ : 1;
+  double* inSignal = ::mxGetPr( inSignalArray ),
+        * inParms  = ::mxGetPr( inParmsArray ),
+        * p = inParms;
+  double  modelOrder        = *p++,
+          firstBinCenter    = *p++,
+          lastBinCenter     = *p++,
+          binWidth          = *p++,
+          evaluationsPerBin = *p++,
+          detrendOption     = numParms > ( p - inParms ) ? *p++ : WindowingThread::None,
+          frequency         = numParms > ( p - inParms ) ? *p++ : 1.0,
+          sampleBlockSize   = numParms > ( p - inParms ) ? *p++ : numSamples,
+          windowLength      = numParms > ( p - inParms ) ? *p++ : 1;
 
-    if( modelOrder >= numSamples )
-        ::mexErrMsgTxt( "The number of input samples must exceed the model order." );
-    if( binWidth <= 0.0 || binWidth > frequency/2 )
-        ::mexErrMsgTxt( "Bin width must be between 0 and half the sampling rate." );
-    if( firstBinCenter < 0.0 || firstBinCenter > frequency/2 )
-        ::mexErrMsgTxt( "First bin center must be between 0 and half the sampling rate." );
-    if( lastBinCenter < firstBinCenter || lastBinCenter > frequency/2 )
-        ::mexErrMsgTxt( "Last bin center must be between firstBinCenter and half the sampling rate." );
-    if( evaluationsPerBin < 1 )
-        ::mexErrMsgTxt( "There must be at least 1 evaluation per bin." );
-    if( frequency < eps )
-        ::mexErrMsgTxt( "Frequency must be > 0." );
-    if( sampleBlockSize < 1 )
-        ::mexErrMsgTxt( "Sample block size must be >= 1." );
-    if( windowLength * sampleBlockSize < 1 )
-        ::mexErrMsgTxt( "Window must contain at least one sample." );
-    switch( static_cast<int>( detrendOption ) )
-    {
-        case WindowingThread::None:
-        case WindowingThread::Mean:
-        case WindowingThread::Linear:
-            break;
-        default:
-            ::mexErrMsgTxt( "Unknown detrend option." );
-    }
+  if( modelOrder >= numSamples )
+    throw bciexception_( "The number of input samples must exceed the model order." );
+  if( binWidth <= 0.0 || binWidth > frequency/2 )
+    throw bciexception_( "Bin width must be between 0 and half the sampling rate." );
+  if( firstBinCenter < 0.0 || firstBinCenter > frequency/2 )
+    throw bciexception_( "First bin center must be between 0 and half the sampling rate." );
+  if( lastBinCenter < firstBinCenter || lastBinCenter > frequency/2 )
+    throw bciexception_( "Last bin center must be between firstBinCenter and half the sampling rate." );
+  if( evaluationsPerBin < 1 )
+    throw bciexception_( "There must be at least 1 evaluation per bin." );
+  if( frequency < eps )
+    throw bciexception_( "Frequency must be > 0." );
+  if( sampleBlockSize < 1 )
+    throw bciexception_( "Sample block size must be >= 1." );
+  if( windowLength * sampleBlockSize < modelOrder )
+    throw bciexception_( "Window must contain more samples than the model order." );
+  switch( static_cast<int>( detrendOption ) )
+  {
+    case WindowingThread::None:
+    case WindowingThread::Mean:
+    case WindowingThread::Linear:
+      break;
+    default:
+      throw bciexception_( "Unknown detrend option." );
+  }
 
-    struct ARWrapper : public FilterWrapper
-    {
-      ARWrapper() : FilterWrapper( mFilter ) {}
-      ARFilter mFilter;
-    } filter;
+  struct ARWrapper : public FilterWrapper
+  {
+    ARWrapper() : FilterWrapper( mFilter ) {}
+    ARFilter mFilter;
+  } filter;
 
-    filter.Parameter( "WindowLength" ) = windowLength;
-    filter.Parameter( "Detrend" ) = detrendOption;
-    filter.Parameter( "ModelOrder" ) = modelOrder;
-    filter.Parameter( "FirstBinCenter" ) = firstBinCenter;
-    filter.Parameter( "LastBinCenter" ) = lastBinCenter;
-    filter.Parameter( "BinWidth" ) = binWidth;
-    filter.Parameter( "EvaluationsPerBin" ) = evaluationsPerBin;
-    filter.Parameter( "OutputType" ) = SpectrumThread::SpectralPower;
+  filter.Parameter( "WindowLength" ) = windowLength;
+  filter.Parameter( "Detrend" ) = detrendOption;
+  filter.Parameter( "ModelOrder" ) = modelOrder;
+  filter.Parameter( "FirstBinCenter" ) = firstBinCenter;
+  filter.Parameter( "LastBinCenter" ) = lastBinCenter;
+  filter.Parameter( "BinWidth" ) = binWidth;
+  filter.Parameter( "EvaluationsPerBin" ) = evaluationsPerBin;
+  filter.Parameter( "OutputType" ) = SpectrumThread::SpectralPower;
 
-    int iSampleBlockSize = static_cast<int>( sampleBlockSize );
-    SignalProperties inputProperties( numChannels, iSampleBlockSize );
-    inputProperties.ElementUnit().SetGain( 1.0 / frequency ).SetSymbol( "s" );
-    SignalProperties outputProperties( inputProperties );
+  int iSampleBlockSize = static_cast<int>( sampleBlockSize );
+  SignalProperties inputProperties( numChannels, iSampleBlockSize );
+  inputProperties.ElementUnit().SetGain( 1.0 / frequency ).SetSymbol( "s" );
+  SignalProperties outputProperties( inputProperties );
 
-    filter.Initialize( inputProperties, outputProperties );
+  filter.Initialize( inputProperties, outputProperties );
 
-    int numBins = outputProperties.Elements(),
-        numBlocks = static_cast<int>( numSamples / sampleBlockSize );
-    const mwSize dims[] = { numBins, numChannels, numBlocks };
-    plhs[0] = ::mxCreateNumericArray( 3, dims, mxDOUBLE_CLASS, mxREAL );
-    double* outSpectrum = ::mxGetPr( plhs[0] );
-    if( nlhs > 1 )
-    {
-        plhs[1] = ::mxCreateDoubleMatrix( numBins, 1, mxREAL );
-        double* outBinFreqs = ::mxGetPr( plhs[1] );
-        for( int bin = 0; bin < numBins; ++bin )
-            outBinFreqs[bin] = ( firstBinCenter + bin * binWidth );
-    }
+  int numBins = outputProperties.Elements(),
+      numBlocks = static_cast<int>( numSamples / sampleBlockSize );
+  const mwSize dims[] = { numBins, numChannels, numBlocks };
+  plhs[0] = ::mxCreateNumericArray( 3, dims, mxDOUBLE_CLASS, mxREAL );
+  double* outSpectrum = ::mxGetPr( plhs[0] );
+  if( nlhs > 1 )
+  {
+    plhs[1] = ::mxCreateDoubleMatrix( numBins, 1, mxREAL );
+    double* outBinFreqs = ::mxGetPr( plhs[1] );
+    for( int bin = 0; bin < numBins; ++bin )
+      outBinFreqs[bin] = ( firstBinCenter + bin * binWidth );
+  }
 
-    GenericSignal input( inputProperties ),
-                  output( outputProperties );
-    for( int block = 0, blockNum = 0; block <= numSamples - iSampleBlockSize; block += iSampleBlockSize, ++blockNum )
-    {
-        for( int ch = 0; ch < numChannels; ++ch )
-            for( int s = 0; s < iSampleBlockSize; ++s )
-                input( ch, s ) = inSignal[s + block + ch*numSamples];
+  GenericSignal input( inputProperties ),
+                output( outputProperties );
+  for( int block = 0, blockNum = 0; block <= numSamples - iSampleBlockSize; block += iSampleBlockSize, ++blockNum )
+  {
+    for( int ch = 0; ch < numChannels; ++ch )
+      for( int s = 0; s < iSampleBlockSize; ++s )
+        input( ch, s ) = inSignal[ch*numSamples + s + block];
 
-        filter.Process( input, output );
+    filter.Process( input, output );
 
-        for( int ch = 0; ch < numChannels; ++ch )
-            for( int bin = 0; bin < numBins; ++bin )
-                outSpectrum[numChannels*numBins*blockNum + numBins*ch + bin] = output( ch, bin );
-    }
-    
-    filter.Halt();
+    for( int ch = 0; ch < numChannels; ++ch )
+      for( int bin = 0; bin < numBins; ++bin )
+        outSpectrum[bin + ch*numBins + blockNum*numBins*numChannels] = output( ch, bin );
+  }
+
+  filter.Halt();
 }

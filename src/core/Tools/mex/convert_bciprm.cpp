@@ -41,6 +41,8 @@
 #include "mexutils.h"
 #include "Param.h"
 #include "ParamList.h"
+#include "BCIError.h"
+#include "BCIException.h"
 #include <sstream>
 
 using namespace std;
@@ -49,16 +51,14 @@ mxArray* StringsToStruct( const mxArray* );
 mxArray* StructToStrings( const mxArray* );
 
 void
-mexFunction( int nargout, mxArray* varargout[],
-             int nargin,  const mxArray* varargin[] )
+BCIMexFunction( int nargout, mxArray* varargout[],
+                int nargin,  const mxArray* varargin[] )
 {
-  std::ios_base::Init();
-
   if( PrintVersion( __FILE__, nargin, varargin ) )
     return;
 
   if( nargin < 1 )
-    mexErrMsgTxt( "No input given." );
+    throw bciexception_( "No input given." );
 
   switch( mxGetClassID( varargin[ 0 ] ) )
   {
@@ -71,7 +71,7 @@ mexFunction( int nargout, mxArray* varargout[],
       break;
 
     default:
-      mexErrMsgTxt( "Expected a cell array or a struct as input." );
+      throw bciexception_( "Expected a cell array or a struct as input." );
   }
 }
 
@@ -86,20 +86,11 @@ StringsToStruct( const mxArray* inStrings )
     if( mxGetClassID( cell ) == mxCHAR_CLASS )
     {
       char* line = mxArrayToString( cell );
-      try
-      {
-        params.Add( Param( line ) );
-      }
-      catch( const char* s )
-      {
-        ostringstream oss;
-        oss << "Error: " << s << " when processing \"" << line << "\".";
-        mexErrMsgTxt( oss.str().c_str() );
-      }
+      params.Add( Param( line ) );
       mxFree( line );
     }
     else
-      mexErrMsgTxt( "Expected a cell array of strings as input." );
+      throw bciexception_( "Expected a cell array of strings as input." );
   }
   return ParamlistToStruct( params );
 }

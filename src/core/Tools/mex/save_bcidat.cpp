@@ -42,6 +42,7 @@
 #include "StateList.h"
 #include "StateVector.h"
 #include "BCIError.h"
+#include "BCIException.h"
 #include <sstream>
 #include <fstream>
 
@@ -163,29 +164,24 @@ class FilterWrapper
 
 
 void
-mexFunction( int nargout, mxArray* varargout[],
-             int nargin,  const mxArray* varargin[] )
+BCIMexFunction( int nargout, mxArray* varargout[],
+                int nargin,  const mxArray* varargin[] )
 {
-  std::ios_base::Init();
-  bcierr__.Reset();
-
   if( PrintVersion( __FILE__, nargin, varargin ) )
     return;
 
-  TypeCheck();
-
   if( nargin < 1 || !mxIsChar( varargin[0] ) )
-    bcierr__ << "No file name given." << endl;
+    throw bciexception_( "No file name given." );
   const char* outputFileName = mxArrayToString( varargin[0] );
 
   if( nargin < 2 || !mxIsNumeric( varargin[1] ) )
-    bcierr__ << "No signal data given." << endl;
+    throw bciexception_( "No signal data given." );
 
   const mxArray* pSignal = varargin[1];
   mwSize nDim = mxGetNumberOfDimensions( pSignal );
   const mwSize* dims = mxGetDimensions( pSignal );
   if( nDim != 2 )
-    bcierr__ << "Signal data must have two dimensions." << endl;
+    throw bciexception_( "Signal data must have two dimensions." );
   mwSize totalSamples = dims[0];
 
   void ( *fpReadSignal )( void*, sint64, sint64, GenericSignal& ) = NULL;
@@ -228,10 +224,11 @@ mexFunction( int nargout, mxArray* varargout[],
       break;
 
     default:
-      bcierr << "Cannot handle signal data in "
+      throw bciexception_(
+              "Cannot handle signal data in "
              << mxGetClassName( pSignal )
              << " format."
-             << endl;
+            );
   }
   void* pSignalData = mxGetData( pSignal );
   SignalProperties properties;
@@ -239,10 +236,11 @@ mexFunction( int nargout, mxArray* varargout[],
             .SetType( type );
 
   if( nargin < 3 || !mxIsStruct( varargin[2] ) )
-    bcierr__ << "No state information given. "
+    throw bciexception_( 
+            "No state information given. "
              << "Please provide state information in the format "
              << "returned by load_bcidat."
-             << endl;
+            );
 
   FilterWrapper wrapper;
   typedef map<string, StateInfo> StateInfoMap;
@@ -255,12 +253,10 @@ mexFunction( int nargout, mxArray* varargout[],
     const mxArray* pField = mxGetFieldByNumber( pStates, 0, i );
     const mwSize* dims = mxGetDimensions( pField );
     if( dims[0] < totalSamples )
-      bcierr__ << "Too little samples in state \"" << name << "\": "
-               << "state variables should provide a value for each sample point."
-               << endl;
+      throw bciexception_( "Too little samples in state \"" << name << "\": "
+               << "state variables should provide a value for each sample point." );
     if( dims[1] != 1 )
-      bcierr__ << "State variables should provide a single value per sample point."
-               << endl;
+      throw bciexception_( "State variables should provide a single value per sample point." );
 
     StateInfo entry;
     entry.mLocation = 0;
@@ -296,10 +292,11 @@ mexFunction( int nargout, mxArray* varargout[],
         break;
 
       default:
-        bcierr__ << "Cannot handle state data in "
+        throw bciexception_(
+                 "Cannot handle state data in "
                  << mxGetClassName( pField )
                  << " format."
-                 << endl;
+              );
     }
     entry.mpData = mxGetData( pField );
     stateInfo[name] = entry;
@@ -310,10 +307,11 @@ mexFunction( int nargout, mxArray* varargout[],
   };
 
   if( nargin < 4 || !mxIsStruct( varargin[3] ) )
-    bcierr__ << "No parameter information given. "
+    throw bciexception_( 
+            "No parameter information given. "
              << "Please provide parameter information in the format "
              << "returned by load_bcidat."
-             << endl;
+          );
 
   StructToParamlist( varargin[3], wrapper.Parameters() );
   ParamList& Params = wrapper.Parameters();
@@ -387,10 +385,11 @@ mexFunction( int nargout, mxArray* varargout[],
 
   ofstream outputFile( outputFileName, ios::out | ios::binary );
   if( !outputFile.is_open() )
-    bcierr__ << "Could not open file \""
+    throw bciexception_(
+             "Could not open file \""
              << outputFileName
              << "\" for output."
-             << endl;
+          );
   wrapper.StartRun( outputFile, outputFileName );
 
   GenericSignal signal( properties );
