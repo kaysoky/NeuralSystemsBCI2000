@@ -4,10 +4,10 @@ function [seconds, err] = decode_bcitime( paramVal, varargin )
 % SECONDS = DECODE_BCITIME(P  [, ... ])
 % 
 % P might be:
-%       a numeric value (or array of numeric values)
-%       a string (or cell array of strings)
-%       a scalar structure with a .Value field whose value is one of the above
-%         (i.e. a subfield of the structure output of convert_bciprm / read_bciprm / make_bciprm)
+%      a numeric value (or array of numeric values)
+%      a string (or cell array of strings)
+%      a scalar structure with a cell array of strings in its .Value field 
+%        (i.e. a substruct of the structure output of convert_bciprm / read_bciprm / make_bciprm)
 % 
 % P (or each element of P) should be a string with a BCI2000 PhysicalUnit string appended to it
 % ending in 's', hence indicating some number of seconds, milliseconds, microseconds, etc.
@@ -18,12 +18,20 @@ function [seconds, err] = decode_bcitime( paramVal, varargin )
 % additional arguments are required in order to specify the SamplingRate and SampleBlockSize
 % for conversion of the values of P to seconds.  The additional arguments may be:
 %
-%       a scalar parameter structure (such as the structure output of the various _bciprm functions)
-%           that contains validly-formatted .SampleBlockSize and .SamplingRate subfields.
-%       a scalar structure with a subfield .Parms whose format is the above  (e.g. the output
-%           of BCI2000CHAIN)
-%       any sequence of arguments that can be interpreted and collated by MAKE_BCIPRM to provide
-%           the necessary information
+%      a scalar parameter structure (such as the structure output of the various *_bciprm functions)
+%          that contains validly-formatted .SampleBlockSize and .SamplingRate fields.
+%      a scalar structure with a field .Parms which in turn provides .Parms.SampleBlockSize and
+%          .Parms.SamplingRate subfields as above  (e.g. the output of BCI2000CHAIN)
+%      any sequence of arguments that can be interpreted and collated by MAKE_BCIPRM to provide
+%          the necessary information
+% 
+% The following examples all return 0.2 :
+% 
+%      decode_bcitime( '200ms' )
+%      decode_bcitime( '0.2s' )
+%      decode_bcitime( '00:00.2' )
+%      decode_bcitime( 5, 'SampleBlockSize', 40, 'SamplingRate', 1000 )
+%      decode_bcitime( '5', 'SampleBlockSize', 20, 'SamplingRate', 500 )
 % 
 % [SECONDS, ERR] = DECODE_BCITIME( ... ) catches any interpretation error instead of crashing.
 
@@ -110,7 +118,7 @@ for i = 1:numel(paramVal)
 		factor = 1;
 	else                                              % raw value: must convert from SampleBlocks
 		if isempty(SecondsPerBlock)
-			if numel(varargin) == 1, if isstruct(varargin{1}) & numel(varargin{1}) == 1, if isfield(varargin{1}, 'Parms'), varargin = {varargin{1}.Parms}; end, end, end
+			if numel(varargin) > 0, if isstruct(varargin{1}) & numel(varargin{1}) == 1, if isfield(varargin{1}, 'Parms'), varargin{1} = varargin{1}.Parms; end, end, end
 			[pstr parms] = make_bciprm(template, varargin{:});
 			SamplesPerSecond = parms.SamplingRate.NumericValue;
 			SamplesPerBlock = parms.SampleBlockSize.NumericValue;
