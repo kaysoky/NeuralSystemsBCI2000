@@ -25,6 +25,9 @@ function [pstr, p] = make_bciprm(varargin)
 % 
 % (E) Already-parsed structures (the other format output by CONVERT_BCIPRM)
 % 
+% (F) Structures, such as those output by BCI2000CHAIN, that contain
+%     format (E) in a subfield called .Parms
+% 
 % Parameters may also be overwritten singly on the command-line:
 % 
 %     PSTR = MAKE_BCIPRM( someDataFile, someParameterFile, ...

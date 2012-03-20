@@ -69,6 +69,15 @@ end
 function p = wrangle(p)
 
 if isstruct(p)
+	if numel(p) ~= 1, error('non-scalar struct'), end
+	if isfield(p, 'Parms')
+		if isstruct(p.Parms) & numel(p.Parms) == 1
+			ppval = struct2cell(p.Parms);
+			if isstruct(ppval{1}) & numel(ppval{1}) == 1
+				p = p.Parms;
+			end
+		end
+	end
 	return
 end
 
