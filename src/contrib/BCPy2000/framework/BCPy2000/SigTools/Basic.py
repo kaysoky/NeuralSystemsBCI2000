@@ -26,7 +26,7 @@
 #
 __all__ = [
 	'getfs', 'msec2samples', 'samples2msec', 
-	'ampmod', 'wavegen',
+	'window', 'ampmod', 'wavegen',
 	'sinewave', 'squarewave', 'trianglewave', 'sawtoothwave',
 	'fftfreqs', 'fft2ap', 'ap2fft', 'reconstruct', 'toy',
 	'fft', 'ifft', 'hanning', 'shoulder', 'hilbert',
@@ -79,6 +79,22 @@ def samples2msec(samples, samplingfreq_hz):
 	else: samples = float(samples)
 	return 1000.0 * samples / float(fs)
 
+def window(w, func=hanning, axis=0):
+	"""
+	Return a copy of <w> (a numpy.ndarray or a WavTools.wav object) multiplied
+	by the specified window function, along the specified time <axis>.
+	"""###
+	if isnumpyarray(w): y = w
+	elif hasattr(w, 'y'): w = w.copy(); y = w.y
+	else: raise TypeError, "don't know how to handle this kind of carrier object"
+	envelope = func(y.shape[0])
+	envelope.shape = [{True:envelope.size, False:1}[dim==axis] for dim in range(y.ndim)]
+	y = y * envelope
+	if isnumpyarray(w): w = y
+	else: w.y = y
+	return w
+		
+	
 def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,samplingfreq_hz=None,duration_msec=None,duration_samples=None,axis=None,waveform=numpy.sin,**kwargs):
 	"""
 	Return a copy of <w> (a numpy.ndarray or a WavTools.wav object) in which
