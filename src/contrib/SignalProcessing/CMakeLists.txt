@@ -11,6 +11,7 @@ ADD_SUBDIRECTORY( SW )
 ADD_SUBDIRECTORY( Coherence )
 ADD_SUBDIRECTORY( CoherenceFFT )
 ADD_SUBDIRECTORY( Statistics )
+ADD_SUBDIRECTORY( HilbertSignalProcessing )
 
 # Command line filters cannot be defined in their associated signal processing 
 # modules' CMakeLists.txt, so they are defined here:
