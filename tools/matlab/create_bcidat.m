@@ -148,5 +148,6 @@ if numel(parms.SourceChGain.Value) ~= nChannels, error(sprintf('SourceChGain par
 if numel(parms.ChannelNames.Value) ~= nChannels & numel(parms.ChannelNames.Value) ~= 0, error(sprintf('ChannelNames parameter must have %d elements to match the number of channels', nChannels)), end
 if max(parms.TransmitChList.NumericValue) > nChannels, error(sprintf('TransmitChList contains values that exceed the number of channels (%d)', nChannels)), end
 
-% Do it!  Note that no states are saved at the moment
-save_bcidat(datfilename, signal, struct, parms);
+% Do it!  Note that no states are saved at the moment - except the Running state which is essential for healthy FilterTool operation
+states = struct('Running', uint8(ones(size(signal,1), 1)));
+save_bcidat(datfilename, signal, states, parms);

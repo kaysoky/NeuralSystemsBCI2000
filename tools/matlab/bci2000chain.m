@@ -104,8 +104,8 @@ dat2stream_has_p_flag = 1;  % new-style bci_dat2stream has a -p flag allowing it
 stream2mat_saves_parms = 1; % new-style bci_stream2mat saves a string representation of the collated output parameters in the mat file, so we don't have to rely on a separate parameter file.
 
 
-if nargin < 2, chain = ''; end
-if isempty(chain), chain = 'ARSignalProcessing'; end
+if nargin < 2, chain = []; end
+if isnumeric(chain) & isempty(chain), chain = 'ARSignalProcessing'; end
 if isequal(chain, 'ARSignalProcessing')
 	chain = 'TransmissionFilter|SpatialFilter|ARFilter|LinearClassifier|LPFilter|ExpressionFilter|Normalizer';
 end
@@ -122,7 +122,7 @@ for i = 1:numel(chain)
 	rm(i) = isempty(chain{i});
 end
 chain(rm) = [];
-if isempty(char(chain)), error('chain is empty'), end
+if isempty(char(chain)), warning('chain is empty'), end
 
 opts = {};
 prm = {};
@@ -330,7 +330,7 @@ if isempty(err)
 	
 	if dimensionality == 0 % dimensionality has not been specified explicitly: so guess, based on ElementUnit and/or filter name
 		% 3-dimensional output makes more sense than continuous 2-D whenever "elements" can't just be concatenated into an unbroken time-stream
-		lastfilter = lower(chain{end});
+		if isempty(chain), lastfilter = ''; else lastfilter = lower(chain{end}); end
 		if strcmp(lastfilter, 'p3temporalfilter')
 			dimensionality = 3;
 		else
