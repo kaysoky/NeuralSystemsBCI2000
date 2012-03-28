@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Authors: Cristhian Potes - Jeremy Hills 
+// Authors: Cristhian Potes - Jeremy Hill
 // Description: HilbertFilter implementation
 //   
 //   
@@ -65,11 +65,11 @@ HilbertFilter::~HilbertFilter()
 void
 HilbertFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
 {
-	int offset = 
-	static_cast<int>( Input.Elements() * Parameter( "Delay" ).InSampleBlocks() );
-	
-	if ((2*offset+1) < 201)
-		bciout << "To get a good estimation of the magnitude or phase, increase the Delay parameter " << endl;
+	int offset = static_cast<int>( 0.5 + Input.Elements() * (double)Parameter( "Delay" ).InSampleBlocks() );
+	int minOffset = 100; // corresponding to mFilterLength = 201
+	if ( offset < minOffset ) 
+		bciout << "Delay translates to " << offset << "samples, but for good estimation of "
+			"the magnitude or phase, it should be at least " << minOffset << " samples" << endl;
 
     switch( ( int )Parameter( "OutputSignal" ) )
 	{
@@ -92,18 +92,15 @@ HilbertFilter::Initialize( const SignalProperties& Input, const SignalProperties
 {
     mBuffer.clear();
 	int numChannels = Input.Channels();
-	int offset = 
-	static_cast<int>( Input.Elements() * Parameter( "Delay" ).InSampleBlocks() );
+	int offset =  static_cast<int>( Input.Elements() * Parameter( "Delay" ).InSampleBlocks() );
 	mFilterLength = 2*offset+1;
 	
-	mAcc.resize( numChannels, 0);
 	mFilter.resize( mFilterLength, 0.0 );
 	for( int sample = 1; sample < mFilterLength; sample+=2 )
 		mFilter[sample] = ( sample==offset ? 0.0 : 2.0/(Pi*double(sample-offset)) ); 
 	
 	int bufferLength = mFilterLength + Input.Elements() - 1;
 	mBuffer.resize( numChannels, DataVector( 0.0, bufferLength ) );
-	mInputDelay.resize(numChannels, DataVector( 0.0, offset ) );
 	
     mOutputSignal = ( eOutputSignal )( int )Parameter( "OutputSignal" );
 }
@@ -117,7 +114,6 @@ HilbertFilter::Process( const GenericSignal& Input, GenericSignal& Output )
   else for( size_t channel = 0; channel < mBuffer.size(); ++channel )
   {
     int bufferLength = static_cast<int>( mBuffer[channel].size() ),
-        mFilterLength = static_cast<int>( mFilter.size() ),
 		offset  = (mFilterLength-1)/2, 
         inputLength = Input.Elements();
 
@@ -138,10 +134,7 @@ HilbertFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 		double real;
 		double imag = inner_product( &mFilter[0], &mFilter[mFilterLength], &mBuffer[channel][sample], 0.0 );
 
-		if ( (sample + (int)mAcc[channel]) < offset )
-			real = mInputDelay[channel][sample + mAcc[channel]];
-		else
-			real = mInputDelay[channel][mAcc[channel]+sample-offset];
+		real = mBuffer[channel][ mFilterLength + sample - 1 - offset];
 
 		if ( mOutputSignal == eMagnitude )
 			Output( channel, sample ) = sqrt( real*real + imag*imag  );
@@ -153,21 +146,5 @@ HilbertFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 			Output( channel, sample ) = imag;
 	}
 
-	// circular buffer
-	// mInputDelay is a buffer that contains delayLength input samples
-	// mAcc contains the index position to store input samples
-	for( int sample = 0; sample < inputLength; ++sample )
-	{
-		if ( (int) mAcc[channel] < offset)
-		{
-			mInputDelay[channel][mAcc[channel]] = Input(channel,sample);
-			mAcc[channel]++;
-		}
-		else
-		{
-			mInputDelay[channel][0] = Input(channel,sample);
-			mAcc[channel] = 1;
-		}
-	}		 
   }
 }

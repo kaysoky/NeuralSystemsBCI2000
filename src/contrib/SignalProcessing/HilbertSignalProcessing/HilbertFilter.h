@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Authors: 
+// Authors: Cristhian Potes, Jeremy Hill
 // Description: HilbertFilter header
 //   
 //   
@@ -46,9 +46,7 @@ class HilbertFilter : public GenericFilter
   
 	 typedef std::valarray<double> DataVector;
   DataVector                    mFilter;
-  std::vector<DataVector>       mBuffer,
-								mInputDelay;
-  std::vector<unsigned int>     mAcc;
+  std::vector<DataVector>       mBuffer;
 
   int mFilterLength;
   enum eOutputSignal
