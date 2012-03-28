@@ -54,7 +54,7 @@ output = bci2000chain(fn, chain, pdef, fn, varargin{:});
 
 raw = bci2000chain(fn, chain(1:2), pdef, fn, varargin{:});
 filtered = bci2000chain(fn, chain(1:find(strcmp(chain, 'HilbertFilter'))-1), pdef, fn, varargin{:});
-delay = decode_bcitime(output.Parms.Delay, output);
+delay = decode_bcitime(output.Parms.Delay, '-RoundToSamples', output);
 channel = 1;
 plot(raw.FullTime, raw.Signal(:, channel)-mean(raw.Signal(:, channel)), 'kx-', filtered.FullTime, filtered.Signal(:, channel), 'bx-', filtered.FullTime + delay, filtered.Signal(:, channel), 'cx-', output.FullTime, output.Signal(:, channel), 'rx-')
 grid on, zoom xon, figure(gcf), drawnow

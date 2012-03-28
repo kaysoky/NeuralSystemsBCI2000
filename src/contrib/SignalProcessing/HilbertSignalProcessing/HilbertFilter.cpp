@@ -92,7 +92,7 @@ HilbertFilter::Initialize( const SignalProperties& Input, const SignalProperties
 {
     mBuffer.clear();
 	int numChannels = Input.Channels();
-	int offset =  static_cast<int>( Input.Elements() * Parameter( "Delay" ).InSampleBlocks() );
+	int offset =  static_cast<int>( 0.5 + Input.Elements() * Parameter( "Delay" ).InSampleBlocks() );
 	mFilterLength = 2*offset+1;
 	
 	mFilter.resize( mFilterLength, 0.0 );

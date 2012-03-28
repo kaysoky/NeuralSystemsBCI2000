@@ -16,14 +16,9 @@ function [seconds, err] = decode_bcitime( paramVal, varargin )
 % Alternatively, each element of P may be (possibly a string representations of) a bare number
 % without any PhysicalUnit string. In this case it indicates a number of SampleBlocks, and
 % additional arguments are required in order to specify the SamplingRate and SampleBlockSize
-% for conversion of the values of P to seconds.  The additional arguments may be:
-%
-%      a scalar parameter structure (such as the structure output of the various *_bciprm functions)
-%          that contains validly-formatted .SampleBlockSize and .SamplingRate fields.
-%      a scalar structure with a field .Parms which in turn provides .Parms.SampleBlockSize and
-%          .Parms.SamplingRate subfields as above  (e.g. the output of BCI2000CHAIN)
-%      any sequence of arguments that can be interpreted and collated by MAKE_BCIPRM to provide
-%          the necessary information
+% for conversion of the values of P to seconds.  The additional arguments may be any sequence
+% of arguments that can be interpreted and collated by MAKE_BCIPRM to provide the necessary
+% information.
 % 
 % The following examples all return 0.2 :
 % 
@@ -32,6 +27,12 @@ function [seconds, err] = decode_bcitime( paramVal, varargin )
 %      decode_bcitime( '00:00.2' )
 %      decode_bcitime( 5, 'SampleBlockSize', 40, 'SamplingRate', 1000 )
 %      decode_bcitime( '5', 'SampleBlockSize', 20, 'SamplingRate', 500 )
+% 
+% Optionally, DECODE_BCITIME can also automatically round its output (still expressed seconds)
+% such that it corresponds to a whole number of samples, or to a whole number of SampleBlocks:
+% 
+%      SECONDS = DECODE_BCITIME( P, '-RoundToSamples', ... ) 
+%      SECONDS = DECODE_BCITIME( P, '-RoundToBlocks', ... ) 
 % 
 % [SECONDS, ERR] = DECODE_BCITIME( ... ) catches any interpretation error instead of crashing.
 
@@ -62,10 +63,41 @@ function [seconds, err] = decode_bcitime( paramVal, varargin )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 err = {};
-SecondsPerBlock = [];
 
 if isstruct(paramVal), paramVal = paramVal.Value; end
 if ~iscell(paramVal), paramVal = {paramVal}; end
+
+rounding = 'none';
+if numel(varargin)
+	if ischar(varargin{1}) & size(varargin{1}, 1) == 1
+		switch lower(varargin{1})
+			case {'-roundtosamples'}
+				rounding = 'samples';
+				varargin(1) = [];
+			case {'-roundtoblocks', '-roundtosampleblocks'}
+				rounding = 'blocks';
+				varargin(1) = [];
+		end
+	end
+end
+
+SamplesPerSecond = 0; SamplesPerBlock = 0; 
+SecondsPerBlock = 0; BlocksPerSecond = 0;
+if numel(varargin)
+	template = {
+		'Blah float SamplingRate= 0 0 % % // '
+		'Blah float SampleBlockSize= 0 0 % % // '
+	};
+	[pstr parms] = make_bciprm(template, varargin{:});
+	SamplesPerSecond = parms.SamplingRate.NumericValue;
+	SamplesPerBlock = parms.SampleBlockSize.NumericValue;
+	if SamplesPerSecond & SamplesPerBlock
+		BlocksPerSecond = SamplesPerSecond / SamplesPerBlock;
+		SecondsPerBlock = SamplesPerBlock / SamplesPerSecond;
+	end
+end
+
+
 seconds = nan + zeros(size(paramVal));
 
 factors.ps = 1e-12;
@@ -78,10 +110,6 @@ factors.Ms = 1e+6;
 factors.Gs = 1e+9;
 factors.Ts = 1e+12;
 
-template = {
-	'Blah float SamplingRate= 0 0 % % // '
-	'Blah float SampleBlockSize= 0 0 % % // '
-};
 
 for i = 1:numel(paramVal)
 	t = paramVal{i};
@@ -117,23 +145,21 @@ for i = 1:numel(paramVal)
 		[t, err] = evaluate([t unit], err);
 		factor = 1;
 	else                                              % raw value: must convert from SampleBlocks
-		if isempty(SecondsPerBlock)
-			if numel(varargin) > 0, if isstruct(varargin{1}) & numel(varargin{1}) == 1, if isfield(varargin{1}, 'Parms'), varargin{1} = varargin{1}.Parms; end, end, end
-			[pstr parms] = make_bciprm(template, varargin{:});
-			SamplesPerSecond = parms.SamplingRate.NumericValue;
-			SamplesPerBlock = parms.SampleBlockSize.NumericValue;
-			if SamplesPerBlock == 0 | SamplesPerSecond == 0
-				error('need information about SamplingRate and SampleBlockSize in order to convert unitless parameter values')
-			end
-			BlocksPerSecond = SamplesPerSecond / SamplesPerBlock;
-			SecondsPerBlock = SamplesPerBlock / SamplesPerSecond;
-		end
+		if SecondsPerBlock == 0, error('need information about SamplingRate and SampleBlockSize in order to convert unitless parameter values'), end
 		[t, err] = evaluate(t, err);
 		factor = SecondsPerBlock;
 	end
 	seconds(i) = t * factor;
+	switch rounding
+		case 'samples'
+			if SamplesPerSecond == 0, error('need information about SamplingRate in order to round values to an integer number of samples'), end
+			seconds(i) = round(seconds(i) * SamplesPerSecond) / SamplesPerSecond;
+		case 'blocks'
+			if BlocksPerSecond == 0, error('need information about SamplingRate and SampleBlockSize in order to round values to an integer number of blocks'), end
+			seconds(i) = round(seconds(i) * BlocksPerSecond) / BlocksPerSecond;
+	end
 end
-if ~isempty(err), err = [{'failed to decode BCI2000 parameter value'} err]; end
+if ~isempty(err), err = [{'failed to decode BCI2000 parameter value:'} err]; end
 err(2, :) = {sprintf('\n   ')};
 err = [err{1:end-1}];
 if nargout < 2, error(err), end
