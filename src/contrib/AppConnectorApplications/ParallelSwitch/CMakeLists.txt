@@ -33,6 +33,9 @@ INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/utils )
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/src/contrib/AppConnectorApplications/ParallelSwitch )
 ADD_EXECUTABLE( ${NAME} ${SRC_PROJECT} ${HDR_PROJECT} )
 
+# Set the target build folder
+SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER ${DIR_NAME} )
+
 IF( WIN32 )
   TARGET_LINK_LIBRARIES( ${NAME} ws2_32 )
 ENDIF( WIN32 )

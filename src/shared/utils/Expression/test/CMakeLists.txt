@@ -3,6 +3,8 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for Calculator
 
+SET( DIR_NAME "${DIR_NAME}Shared/" )
+
 SET( SRC
   Calculator.cpp
 )

@@ -44,6 +44,9 @@ BCI2000_ADD_TO_INVENTORY( Tool ${NAME} )
 # Add the executable to the project
 ADD_EXECUTABLE( ${NAME} ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
 
+# Set the project build folder
+SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER "${DIR_NAME}" )
+
 # Link against the Qt/VCL Libraries
 IF( BORLAND )
   TARGET_LINK_LIBRARIES( ${NAME} vcl rtl ${VXL_VGUI_LIBRARIES} ${LIBS} )

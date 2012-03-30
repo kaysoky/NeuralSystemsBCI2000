@@ -3,6 +3,8 @@
 ## Author: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for extlib projects
 
+SET( DIR_NAME "${DIR_NAME}Extlib/" )
+
 ADD_SUBDIRECTORY(
   ${BCI2000_SRC_DIR}/extlib/3DAPI/Demo
   "${CMAKE_CURRENT_BINARY_DIR}/3DAPI/Demo"

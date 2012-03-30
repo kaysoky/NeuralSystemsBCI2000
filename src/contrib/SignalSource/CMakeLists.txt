@@ -3,6 +3,9 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for BCI2000 and CMake
 
+# Set this directory name
+SET( DIR_NAME "${DIR_NAME}SignalSource/" )
+
 # Recurse down into all project subdirectories
 IF( WIN32 )
   ADD_SUBDIRECTORY( AmpServerPro )

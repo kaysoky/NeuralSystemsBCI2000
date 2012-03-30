@@ -99,3 +99,6 @@ IF( APPLE )
     LINK_FLAGS "-install_name @executable_path/OperatorLib.dylib"
   )
 ENDIF( APPLE )
+
+# Set the project build folder
+SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER "${DIR_NAME}" )

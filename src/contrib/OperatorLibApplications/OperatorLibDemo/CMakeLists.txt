@@ -56,5 +56,8 @@ IF( NOT FAILED )
 
   # Link against the Qt Libraries and other dependencies
   TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${QT_LIBRARIES} ${LIBS} )
+
+  # Set the project build folder
+  SET_PROPERTY( TARGET ${EXECUTABLE_NAME} PROPERTY FOLDER "${DIR_NAME}" )
 ENDIF( NOT FAILED )
 
