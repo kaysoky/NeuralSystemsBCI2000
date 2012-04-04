@@ -40,6 +40,7 @@ class ImpliedType : public ObjectType
  public:
   static bool Get( ScriptInterpreter& );
   static bool Set( ScriptInterpreter& );
+  static bool Wait( ScriptInterpreter& );
   static bool System( ScriptInterpreter& );
   static bool SetConfig( ScriptInterpreter& );
   static bool Start( ScriptInterpreter& );
@@ -56,6 +57,20 @@ class ImpliedType : public ObjectType
  private:
   static const MethodEntry sMethodTable[];
   static ImpliedType sInstance;
+};
+
+class ExecutableType : public ObjectType
+{
+ protected:
+  virtual const char* Name() const { return "Executable"; }
+  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+
+ public:
+  static bool Start( ScriptInterpreter& );
+
+ private:
+  static const MethodEntry sMethodTable[];
+  static ExecutableType sInstance;
 };
 
 } // namespace

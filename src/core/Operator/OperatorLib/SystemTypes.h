@@ -40,6 +40,7 @@ class SystemType : public ObjectType
   static bool Get( ScriptInterpreter& );
   static bool GetState( ScriptInterpreter& );
   static bool GetVersion( ScriptInterpreter& );
+  static bool WaitFor( ScriptInterpreter& );
   static bool SetConfig( ScriptInterpreter& );
   static bool Start( ScriptInterpreter& );
   static bool Stop( ScriptInterpreter& );

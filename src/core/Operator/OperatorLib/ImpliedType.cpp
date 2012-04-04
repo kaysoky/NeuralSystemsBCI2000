@@ -47,10 +47,14 @@
 using namespace std;
 using namespace Interpreter;
 
+static bool ExecuteSynchronously( const string&, ScriptInterpreter& );
+static bool ExecuteAsynchronously( const string&, ScriptInterpreter& );
+
 ImpliedType ImpliedType::sInstance;
 const ObjectType::MethodEntry ImpliedType::sMethodTable[] =
 {
   METHOD( Get ), METHOD( Set ),
+  METHOD( Wait ),
   METHOD( System ), METHOD( SetConfig ),
   METHOD( Start ), { "Resume", &Start }, METHOD( Stop ), { "Suspend", &Stop },
   METHOD( Startup ), METHOD( Shutdown ), METHOD( Reset ),
@@ -114,85 +118,12 @@ ImpliedType::Set( ScriptInterpreter& inInterpreter )
 }
 
 bool
-ImpliedType::System( ScriptInterpreter& inInterpreter )
+ImpliedType::Wait( ScriptInterpreter& inInterpreter )
 {
-  string command = inInterpreter.GetRemainder();
-
-  bool success = false;
-  int exitCode = 0;
-  static const int bufferSize = 512;
-  char buffer[bufferSize];
-
-#if _WIN32
-  // In Windows, popen() does not work unless a console exists in the application.
-  // Thus, we need to use CreatePipe() in conjunction with CreateProcess().
-  // The remaining code ensures that pipe handles are set up to be closed automatically
-  // when the created process terminates. This is important because ReadFile() would
-  // hang otherwise.
-  // MS KB Article ID 190351: How to spawn console processes with redirected standard handles.
-  BOOL result = TRUE;
-  SECURITY_ATTRIBUTES sa;
-  sa.nLength = sizeof( sa );
-  sa.bInheritHandle = TRUE;
-  sa.lpSecurityDescriptor = NULL;
-  HANDLE pipeReadTmp = NULL,
-         pipeRead = NULL,
-         pipeWrite = NULL,
-         pipeWrite2 = NULL;
-  result &= ::CreatePipe( &pipeReadTmp, &pipeWrite, &sa, 0 );
-  result &= ::DuplicateHandle( ::GetCurrentProcess(), pipeWrite, ::GetCurrentProcess(), &pipeWrite2, 0, TRUE, DUPLICATE_SAME_ACCESS );
-  result &= ::DuplicateHandle( ::GetCurrentProcess(), pipeReadTmp, ::GetCurrentProcess(), &pipeRead, 0, FALSE, DUPLICATE_SAME_ACCESS );
-  result &= ::CloseHandle( pipeReadTmp );
-
-  PROCESS_INFORMATION procInfo;
-  ::ZeroMemory( &procInfo, sizeof( procInfo ) );
-  STARTUPINFO startInfo;
-  ::ZeroMemory( &startInfo, sizeof( startInfo ) );
-  startInfo.cb = sizeof( startInfo );
-  startInfo.hStdError = pipeWrite2;
-  startInfo.hStdOutput = pipeWrite;
-  startInfo.hStdInput = ::GetStdHandle( STD_INPUT_HANDLE );
-  startInfo.dwFlags |= STARTF_USESTDHANDLES;
-
-  char* pCommand = new char[command.length() + 1];
-  ::strcpy( pCommand, command.c_str() );
-  result &= ::CreateProcess( NULL, pCommand, NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &startInfo, &procInfo );
-  delete[] pCommand;
-  result &= ::CloseHandle( pipeWrite );
-  result &= ::CloseHandle( pipeWrite2 );
-
-  DWORD dwExitCode;
-  while( ( result &= ::GetExitCodeProcess( procInfo.hProcess, &dwExitCode ) ) && dwExitCode == STILL_ACTIVE )
-  {
-    DWORD bytesRead;
-    while( ::ReadFile( pipeRead, buffer, bufferSize, &bytesRead, NULL ) && bytesRead > 0 )
-      inInterpreter.Out() << string( buffer, bytesRead );
-  }
-  exitCode = dwExitCode;
-  ::CloseHandle( pipeRead );
-  ::CloseHandle( procInfo.hProcess );
-  ::CloseHandle( procInfo.hThread );
-  success = ( result == TRUE );
-
-#else // _WIN32
-
-  FILE* pipe = ::popen( command.c_str(), "rt" );
-  if( pipe != NULL )
-  {
-    while( ::fgets( buffer, bufferSize, pipe ) )
-      inInterpreter.Out() << buffer;
-    exitCode = ::pclose( pipe );
-    success = true;
-  }
-
-#endif // _WIN32
-
-  if( !success )
-    throw bciexception_( "Could not run \"" << command.c_str() << "\"" );
-  if( exitCode != 0 )
-    inInterpreter.Out() << "\\ExitCode: " << exitCode;
-  inInterpreter.Log() << "Executed \"" << command.c_str() << "\"";
-  return true;
+  string token = inInterpreter.GetToken();
+  if( !::stricmp( token.c_str(), "for" ) )
+    return Interpreter::SystemType::WaitFor( inInterpreter );
+  return false;
 }
 
 bool
@@ -261,3 +192,152 @@ ImpliedType::Error( ScriptInterpreter& inInterpreter )
   return ErrorType::Report( inInterpreter );
 }
 
+bool
+ImpliedType::System( ScriptInterpreter& inInterpreter )
+{
+#if _WIN32
+  string command = "cmd /c " + inInterpreter.GetRemainder();
+#else
+  string command = "/bin/sh -c " + inInterpreter.GetRemainder();
+#endif
+  return ExecuteSynchronously( command, inInterpreter );
+}
+
+
+//// ExecutableType
+ExecutableType ExecutableType::sInstance;
+const ObjectType::MethodEntry ExecutableType::sMethodTable[] =
+{
+  METHOD( Start ), { "Run", &Start },
+  END
+};
+
+bool
+ExecutableType::Start( ScriptInterpreter& inInterpreter )
+{
+  return ExecuteAsynchronously( inInterpreter.GetRemainder(), inInterpreter );
+}
+
+bool
+ExecuteSynchronously( const string& inCommand, ScriptInterpreter& inInterpreter )
+{
+  bool success = false;
+  int exitCode = 0;
+  static const int bufferSize = 512;
+  char buffer[bufferSize];
+
+#if _WIN32
+  // In Windows, popen() does not work unless a console exists in the application.
+  // Thus, we need to use CreatePipe() in conjunction with CreateProcess().
+  // The remaining code ensures that pipe handles are set up to be closed automatically
+  // when the created process terminates. This is important because ReadFile() would
+  // hang otherwise.
+  // MS KB Article ID 190351: How to spawn console processes with redirected standard handles.
+  BOOL result = TRUE;
+  SECURITY_ATTRIBUTES sa;
+  sa.nLength = sizeof( sa );
+  sa.bInheritHandle = TRUE;
+  sa.lpSecurityDescriptor = NULL;
+  HANDLE pipeReadTmp = NULL,
+         pipeRead = NULL,
+         pipeWrite = NULL,
+         pipeWrite2 = NULL;
+  result &= ::CreatePipe( &pipeReadTmp, &pipeWrite, &sa, 0 );
+  result &= ::DuplicateHandle( ::GetCurrentProcess(), pipeWrite, ::GetCurrentProcess(), &pipeWrite2, 0, TRUE, DUPLICATE_SAME_ACCESS );
+  result &= ::DuplicateHandle( ::GetCurrentProcess(), pipeReadTmp, ::GetCurrentProcess(), &pipeRead, 0, FALSE, DUPLICATE_SAME_ACCESS );
+  result &= ::CloseHandle( pipeReadTmp );
+
+  PROCESS_INFORMATION procInfo;
+  ::ZeroMemory( &procInfo, sizeof( procInfo ) );
+  STARTUPINFO startInfo;
+  ::ZeroMemory( &startInfo, sizeof( startInfo ) );
+  startInfo.cb = sizeof( startInfo );
+  startInfo.hStdError = pipeWrite2;
+  startInfo.hStdOutput = pipeWrite;
+  startInfo.hStdInput = ::GetStdHandle( STD_INPUT_HANDLE );
+  startInfo.wShowWindow = SW_SHOWNA;
+  startInfo.dwFlags |= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+
+  char* pCommand = new char[inCommand.length() + 1];
+  ::strcpy( pCommand, inCommand.c_str() );
+  result &= ::CreateProcessA( NULL, pCommand, NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &startInfo, &procInfo );
+  delete[] pCommand;
+  result &= ::CloseHandle( pipeWrite );
+  result &= ::CloseHandle( pipeWrite2 );
+
+  DWORD dwExitCode;
+  while( ( result &= ::GetExitCodeProcess( procInfo.hProcess, &dwExitCode ) ) && dwExitCode == STILL_ACTIVE )
+  {
+    DWORD bytesRead;
+    while( ::ReadFile( pipeRead, buffer, bufferSize, &bytesRead, NULL ) && bytesRead > 0 )
+      inInterpreter.Out() << string( buffer, bytesRead );
+  }
+  exitCode = dwExitCode;
+  ::CloseHandle( pipeRead );
+  ::CloseHandle( procInfo.hProcess );
+  ::CloseHandle( procInfo.hThread );
+  success = ( result == TRUE );
+
+#else // _WIN32
+
+  FILE* pipe = ::popen( inCommand.c_str(), "rt" );
+  if( pipe != NULL )
+  {
+    while( ::fgets( buffer, bufferSize, pipe ) )
+      inInterpreter.Out() << buffer;
+    exitCode = ::pclose( pipe );
+    success = true;
+  }
+
+#endif // _WIN32
+
+  if( !success )
+    throw bciexception_( "Could not run \"" << inCommand.c_str() << "\"" );
+  if( exitCode != 0 )
+    inInterpreter.Out() << "\\ExitCode: " << exitCode;
+  inInterpreter.Log() << "Executed \"" << inCommand.c_str() << "\"";
+  return true;
+}
+
+bool
+ExecuteAsynchronously( const string& inCommand, ScriptInterpreter& inInterpreter )
+{
+  bool success = false;
+  int exitCode = 0;
+
+#if _WIN32
+
+  PROCESS_INFORMATION procInfo;
+  ::ZeroMemory( &procInfo, sizeof( procInfo ) );
+  STARTUPINFO startInfo;
+  ::ZeroMemory( &startInfo, sizeof( startInfo ) );
+  startInfo.cb = sizeof( startInfo );
+  startInfo.dwFlags = STARTF_USESHOWWINDOW;
+  startInfo.wShowWindow = SW_SHOWNA;
+
+  success = ( TRUE == ::CreateProcessA( NULL, const_cast<char*>( inCommand.c_str() ), NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &startInfo, &procInfo ) );
+  if( success )
+  {
+    DWORD dwExitCode = 0;
+    ::WaitForInputIdle( procInfo.hProcess, INFINITE );
+    ::GetExitCodeProcess( procInfo.hProcess, &dwExitCode );
+    if( STILL_ACTIVE != dwExitCode )
+      exitCode = dwExitCode;
+    ::CloseHandle( procInfo.hProcess );
+    ::CloseHandle( procInfo.hThread );
+  }
+
+#else // _WIN32
+
+  exitCode = ::system( ( inCommand + " &" ).c_str() );
+  success = ( 0 == exitCode );
+
+#endif // _WIN32
+
+  if( !success )
+    throw bciexception_( "Could not run \"" << inCommand.c_str() << "\"" );
+  if( exitCode != 0 )
+    inInterpreter.Out() << "\\ExitCode: " << exitCode;
+  inInterpreter.Log() << "Executed \"" << inCommand.c_str() << "\"";
+  return true;
+}

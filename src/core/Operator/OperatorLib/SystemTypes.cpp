@@ -45,11 +45,28 @@ using namespace Interpreter;
 SystemType SystemType::sInstance;
 const ObjectType::MethodEntry SystemType::sMethodTable[] =
 {
-  METHOD( Get ), METHOD( SetConfig ),
+  METHOD( Get ), METHOD( WaitFor ), METHOD( SetConfig ),
   METHOD( Start ), METHOD( Stop ), { "Suspend", &Stop },
   METHOD( Startup ), METHOD( Shutdown ), METHOD( Reset ),
   METHOD( Quit ), { "Exit", &Quit },
   END
+};
+
+static const struct { int value; const char* name; }
+sSystemStates[] =
+{
+  #define ENTRY(x) { BCI_State##x, #x }
+  ENTRY( Unavailable ),
+  ENTRY( Idle ),
+  ENTRY( Startup ),
+  ENTRY( Initialization ),
+  ENTRY( Resting ),
+  ENTRY( Suspended ),
+  ENTRY( ParamsModified ),
+  ENTRY( Running ),
+  ENTRY( Termination ),
+  ENTRY( Busy ),
+  #undef ENTRY
 };
 
 bool
@@ -68,28 +85,12 @@ SystemType::Get( ScriptInterpreter& inInterpreter )
 bool
 SystemType::GetState( ScriptInterpreter& inInterpreter )
 {
-  const struct { int value; const char* name; }
-  states[] =
-  {
-    #define ENTRY(x) { BCI_State##x, #x }
-    ENTRY( Unavailable ),
-    ENTRY( Idle ),
-    ENTRY( Startup ),
-    ENTRY( Initialization ),
-    ENTRY( Resting ),
-    ENTRY( Suspended ),
-    ENTRY( ParamsModified ),
-    ENTRY( Running ),
-    ENTRY( Termination ),
-    ENTRY( Busy ),
-    #undef ENTRY
-  };
   int state = BCI_GetStateOfOperation();
   size_t i = 0;
   string result;
-  while( result.empty() && i < sizeof( states ) / sizeof( *states ) )
-    if( states[i].value == state )
-      result = states[i].name;
+  while( result.empty() && i < sizeof( sSystemStates ) / sizeof( *sSystemStates ) )
+    if( sSystemStates[i].value == state )
+      result = sSystemStates[i].name;
     else
       ++i;
   if( result.empty() )
@@ -101,10 +102,45 @@ SystemType::GetState( ScriptInterpreter& inInterpreter )
 bool
 SystemType::GetVersion( ScriptInterpreter& inInterpreter )
 {
-  istringstream iss( BCI2000_VERSION );
-  VersionInfo info;
-  iss >> info;
-  info.WriteToStream( inInterpreter.Out(), true );
+  VersionInfo::Current.WriteToStream( inInterpreter.Out(), true );
+  return true;
+}
+
+bool
+SystemType::WaitFor( ScriptInterpreter& inInterpreter )
+{
+  string stateName = inInterpreter.GetToken();
+  size_t i = 0;
+  int desiredState;
+  bool found = false;
+  while( !found && i < sizeof( sSystemStates ) / sizeof( *sSystemStates ) )
+    if( !::stricmp( sSystemStates[i].name, stateName.c_str() ) )
+    {
+      desiredState = sSystemStates[i].value;
+      found = true;
+    }
+    else
+      ++i;
+  if( !found )
+    throw bciexception_( "Unknown system state: " << stateName );
+
+  double timeout = 0;
+  if( !( istringstream( inInterpreter.GetToken() ) >> timeout ) )
+    timeout = 5;
+  if( timeout < 0 )
+    throw bciexception_( "Timeout must be >= 0" );
+
+  const int resolution = 50; // ms
+  int timeElapsed = 0;
+  int state = BCI_GetStateOfOperation();
+  while( state != desiredState && timeElapsed < 1e3 * timeout )
+  {
+    OSThread::Sleep( resolution );
+    timeElapsed += resolution;
+    state = BCI_GetStateOfOperation();
+  }
+  if( state != desiredState )
+    inInterpreter.Out() << "Timeout occurred after " << timeout << " seconds";
   return true;
 }
 
