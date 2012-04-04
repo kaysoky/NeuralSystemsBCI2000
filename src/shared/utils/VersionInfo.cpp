@@ -62,7 +62,7 @@ VersionInfo::VersionInfo( const string& inString )
 }
 
 const std::string&
-VersionInfo::operator[]( size_t inIdx )
+VersionInfo::operator[]( size_t inIdx ) const
 {
   const string* result = &sEmptyString;
   if( inIdx < sNumNames )
@@ -109,7 +109,7 @@ VersionInfo::ReadFromStream( istream& is )
     if( getline( linestream, keyword, ':' ) && getline( linestream >> ws, value ) )
     {
       for( size_t i = 0; i < sizeof( substitutions ) / sizeof( *substitutions ); ++i )
-        if( !::stricmp( keyword.c_str(), substitutions[ i ].keyword ) )
+        if( !::_stricmp( keyword.c_str(), substitutions[ i ].keyword ) )
           keyword = sNames[ substitutions[ i ].replaceBy ];
       while( !value.empty() && iswspace( *value.rbegin() ) )
         value = value.substr( 0, value.length() - 1 );

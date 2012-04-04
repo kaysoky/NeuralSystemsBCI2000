@@ -52,7 +52,7 @@ class VersionInfo : public VersionInfoBase
   VersionInfo( const std::string& inString = "" );
   const std::string& operator[]( const std::string& s )
     { return VersionInfoBase::operator[]( s ); }
-  const std::string& operator[]( size_t );
+  const std::string& operator[]( size_t ) const;
   std::istream& ReadFromStream( std::istream& is );
   std::ostream& WriteToStream( std::ostream& os, bool pretty = false ) const;
 
