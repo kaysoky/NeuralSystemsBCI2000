@@ -38,7 +38,6 @@
 #include "GenericSignal.h"
 #include "VisDisplay.h"
 #include "BitmapImage.h"
-#include "Version.h"
 #include "OSThread.h"
 #include "HybridString.h"
 
@@ -56,13 +55,12 @@ extern ConnectionInfo* gpConnectionInfo;
 MainWindow::MainWindow( QWidget* parent )
 : QMainWindow( parent ), ui( new Ui::MainWindow ),
   mSyslog( this ),
+  mHide( false ),
+  mStartupIdle( false ),
   mTerminating( false ),
   mTerminated( false ),
   mUpdateTimerID( 0 )
 {
-  istringstream iss( BCI2000_VERSION );
-  iss >> mVersionInfo;
-
   ReadCommandLine();
 
   if( gpPreferences == NULL )
@@ -121,15 +119,21 @@ MainWindow::MainWindow( QWidget* parent )
   BCI_SetCallback( BCI_OnScriptHelp, BCI_Function( OnScriptHelp ), this );
   BCI_SetCallback( BCI_OnScriptError, BCI_Function( OnScriptError ), this );
 
-  if( mTelnet.length() && BCI_TelnetListen( mTelnet.toLocal8Bit().constData() ) )
+  if( mTelnet.length() )
+    BCI_TelnetListen( mTelnet.toLocal8Bit().constData() );
+
+  if( !mStartupIdle )
   {
+    if( mStartup.length() )
+      BCI_Startup( mStartup.toLocal8Bit().constData() );
+    else
+      BCI_Startup( "SignalSource:4000 SignalProcessing:4001 Application:4002" );
+  }
+
+  if( mHide )
     this->hide();
-  }
   else
-  {
-    BCI_Startup( "SignalSource:4000 SignalProcessing:4001 Application:4002" );
     this->show();
-  }
 
   mUpdateTimerID = this->startTimer( 100 );
   UpdateDisplay();
@@ -183,17 +187,40 @@ MainWindow::QuitOperator()
 void
 MainWindow::ReadCommandLine()
 {
-  for( int i = 1; i < qApp->arguments().size(); ++i )
+  mHide = false;
+  mTitle = "";
+  mTelnet = "";
+  mStartupIdle = false;
+  mStartup = "";
+
+  int i = 1;
+  while( i < qApp->arguments().size() )
   {
-    if( qApp->arguments().at( i ) == "--Title" && ( i + 1 ) < qApp->arguments().size() )
-      mTitle = qApp->arguments().at( i + 1 );
+    if( qApp->arguments().at( i ) == "--Title" )
+    {
+      if( ( i + 1 ) < qApp->arguments().size() )
+        mTitle = qApp->arguments().at( ++i );
+      else
+        mTitle = "";
+    }
     else if( qApp->arguments().at( i ) == "--Telnet" )
     {
       if( ( i + 1 ) < qApp->arguments().size() )
-        mTelnet = qApp->arguments().at( i + 1 );
+        mTelnet = qApp->arguments().at( ++i );
       else
         mTelnet = "localhost:3999";
     }
+    else if( qApp->arguments().at( i ) == "--Hide" )
+      mHide = true;
+    else if( qApp->arguments().at( i ) == "--StartupIdle" )
+      mStartupIdle = true;
+    else if( qApp->arguments().at( i ) == "--Startup" )
+    {
+      if( ( i + 1 ) < qApp->arguments().size() )
+        mStartup = qApp->arguments().at( ++i );
+      mStartupIdle = false;
+    }
+    ++i;
   }
 }
 
@@ -214,7 +241,7 @@ MainWindow::UpdateDisplay()
   QTime timeElapsed( t / 3600, ( t / 60 ) % 60, t % 60 );
   QString windowCaption = TXT_WINDOW_CAPTION " ",
           statusText = "N/A";
-  windowCaption += mVersionInfo[ "Version" ].c_str();
+  windowCaption += VersionInfo::Current[VersionInfo::VersionID].c_str();
   if( mTitle.length() > 0 )
   {
     windowCaption += " - ";
@@ -604,7 +631,7 @@ MainWindow::OnUnknownCommand( void* inData, const char* inCommand )
           Qt::QueuedConnection,
           Q_ARG(bool, action == show ));
         break;
-      case log: 
+      case log:
         QMetaObject::invokeMethod(
           &this_->mSyslog,
           "setVisible",
