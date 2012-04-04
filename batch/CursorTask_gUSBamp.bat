@@ -25,7 +25,8 @@
 cd ..\prog
 start operator.exe ^
    --Title %~n0 ^
-   --OnConnect "-LOAD PARAMETERFILE ..\parms\examples\CursorTask_SignalGenerator.prm; LOAD PARAMETERFILE ..\parms\fragments\amplifiers\gUSBamp.prm"
+   --OnConnect "-LOAD PARAMETERFILE ..\parms\examples\CursorTask_SignalGenerator.prm; LOAD PARAMETERFILE ..\parms\fragments\amplifiers\gUSBamp.prm" ^
+   %*
 start gUSBampSource.exe 127.0.0.1
 start SpectralSignalProcessing.exe 127.0.0.1
 start CursorTask.exe 127.0.0.1

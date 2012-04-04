@@ -25,7 +25,8 @@
 cd ..\prog
 start operator.exe ^
    --Title %~n0 ^
-   --OnConnect "-LOAD PARAMETERFILE ..\parms\examples\StimulusPresentation_SignalGenerator.prm; LOAD PARAMETERFILE ..\parms\fragments\amplifiers\gMOBIlab.prm"
+   --OnConnect "-LOAD PARAMETERFILE ..\parms\examples\StimulusPresentation_SignalGenerator.prm; LOAD PARAMETERFILE ..\parms\fragments\amplifiers\gMOBIlab.prm" ^
+   %*
 start gMOBIlabPlus.exe 127.0.0.1
 start P3SignalProcessing.exe 127.0.0.1
 start StimulusPresentation.exe 127.0.0.1
