@@ -8,7 +8,10 @@
 	ClassFile
 	Shell
 
-	Called from C code:
+	CallModuleMember, EscapePythonString and EvalPythonString are no longer used
+	
+	Called from C code via CallHook, which calls self._call_hook():
+	
 		paramDefList, stateDefList = self._Construct()
 						  outProps = self._Preflight(inProps)
 									 self._Initialize(inProps, outProps)
@@ -18,30 +21,51 @@
 									 self._Resting()
 									 self._Halt()
 									 self._Destruct()
+
+	inProps['ValueUnit']['Gain'] = 1.0
+	inProps['ValueUnit']['Symbol'] = 'Hz'
+	inProps['ChannelLabels'][0] = 'Cz'
+	parameter:   string, list of strings, or list of lists of strings
+	             (depending on type specifier, e.g., "floatlist", stored on C++ side)
+	
+	Called from C code via CallMethod:
+	
+		paramDict = self._get_parameters()
 		
+		stateDict = self._get_states()
 		
-		paramDict = _get_parameters()
-		stateDict = _get_states()
+					self._set_parameters(paramDict)
+					self._param_labels(paramName, rowLabelList, colLabelList)
+						TODO: maybe collapse these together?
 		
-					_set_parameters(paramDict)
-					_param_labels(paramName, rowLabelList, colLabelList)
-		TODO: maybe collapse these together?
-		
-					_set_states(stateDict)
-					_set_state_precisions(statePrecisionDict)
-		TODO: maybe collapse these together?
-					
-				
-		inSigArray,outSigArray,stateValArray,flagArray = _sharing_setup(inDimList, outDimList, stateList)
-		TODO:  make this gracefully omittable	
+					self._set_states(stateDict)
+					self._set_state_precisions(statePrecisionDict)
+						TODO: maybe collapse these together?
+									
+		inSigArray,outSigArray,stateValArray,flagArray
+		          = self._sharing_setup(inDimList, outDimList, stateList)
+						TODO:  make this gracefully omittable
+			
+	Called from C code directly via PyObject_CallMethod and PyObject_CallMethodObjArgs:
+	
+		    output = self._call_hook(*inputs)      # called from CallHook
+		emptyArray = self._zeros(nrows, ncols)     # called from ConvertSignalToPyArrayObject
+		   errInfo = self._flush_error_info()      # called from HandlePythonError
+	
+	Accessed via PyObject_GetAttrString
+		   self._error_reported                    # integer, accessed in HandlePythonError
+		   self._writeable_params                  # list of strings, accessed in Preflight
 """
 
 def go(BCI2000):
 	import sys,os
-	os.chdir(BCI2000['InstallationDir'])
-	logfile = open(BCI2000['Log'], 'w', 0)
-	sys.stderr = logfile
-	sys.stdout = logfile
+	os.chdir(BCI2000.get('InstallationDir', '.'))
+	
+	logfilename = BCI2000.get('Log', '')
+	if len(logfilename) and logfilename != '-':
+		import time
+		logfilename = logfilename.replace('###', time.strftime('%Y%m%d%H%M%S'))
+		sys.stderr = sys.stdout = open(logfilename, 'w', 0)
 	
 	MODTYPE = int(BCI2000['MODTYPE'])
 	moduleNames = {
