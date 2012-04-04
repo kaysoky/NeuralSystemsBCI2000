@@ -303,8 +303,8 @@ GenericFilter::DisposeFilters()
   {
     ErrorContext( "Destructor", *i );
     delete *i;
+    ErrorContext( "" );
   }
-  ErrorContext( "" );
   OwnedFilters().clear();
   Visualizations().clear();
 }
