@@ -51,6 +51,7 @@ class P3SpellerTask : public StimulusTask, public Speller
   virtual void    OnStartRun();
   virtual void    OnStopRun();
   virtual void    OnPreSequence();
+  virtual void    DoPreSequence( const GenericSignal&, bool& doProgress );
   virtual void    OnSequenceBegin();
   virtual void    OnPostRun();
   virtual void    DoPostSequence( const GenericSignal&, bool& doProgress );
@@ -72,6 +73,7 @@ class P3SpellerTask : public StimulusTask, public Speller
   virtual void    OnRetrieve();
 
  private:
+  void CheckSwitchMenu();
   void DetermineAttendedTarget();
   void InitSequence();
   void ClearSequence();

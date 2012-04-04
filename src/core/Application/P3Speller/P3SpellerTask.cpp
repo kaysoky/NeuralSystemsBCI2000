@@ -169,6 +169,7 @@ P3SpellerTask::P3SpellerTask()
    "SelectedTarget 16 0 0 0",
    "SelectedRow     8 0 0 0",
    "SelectedColumn  8 0 0 0",
+   "SpellerMenu     8 0 0 0",
  END_STATE_DEFINITIONS
 
  LANGUAGES "German",
@@ -390,6 +391,7 @@ P3SpellerTask::OnStartRun()
   mSleepDuration = 0;
   mSleepMode = dontSleep;
   mPaused = false;
+  State( "SpellerMenu" ) = mCurMenu + 1;
 
   // Summary file
   mSummaryFile << "System ID = "  << OptionalParameter( "ID_System", "N/A" )  << '\t'
@@ -487,6 +489,12 @@ P3SpellerTask::OnPreSequence()
 }
 
 void
+P3SpellerTask::DoPreSequence( const GenericSignal&, bool& /*doProgress*/ )
+{
+  CheckSwitchMenu();
+}
+
+void
 P3SpellerTask::OnSequenceBegin()
 {
   State( "SelectedRow" ) = 0;
@@ -549,26 +557,7 @@ P3SpellerTask::OnNextStimulusCode()
 void
 P3SpellerTask::DoPostSequence( const GenericSignal&, bool& /*doProgress*/ )
 {
-  if( mMenuHistory.top() != mCurMenu )
-  { // One of the commands modified the menu history -- we need to load a
-    // different menu.
-    // We cannot switch menus from the OnEnter() handler because it originates
-    // from a target member function, and switching menus will delete target
-    // objects.
-    mCurMenu = mMenuHistory.top();
-    LoadMenu(
-      mCurMenu,
-      mMatrixRect,
-      Display(),
-      mStimuli,
-      Associations(),
-      *this
-    );
-    mNumMatrixRows = MenuRows( mCurMenu );
-    mNumMatrixCols = MenuCols( mCurMenu );
-    InitSequence();
-    DetermineAttendedTarget();
-  }
+  CheckSwitchMenu();
 }
 
 Target*
@@ -804,7 +793,7 @@ void
 P3SpellerTask::OnGoto( int inMenu )
 {
   if( inMenu >= 0 )
-    mMenuHistory.push( inMenu );
+    State( "SpellerMenu" ) = inMenu + 1;
   else
     bcierr << "Invalid menu number in GOTO command" << endl;
 }
@@ -813,7 +802,10 @@ void
 P3SpellerTask::OnBack()
 {
   if( mMenuHistory.size() > 1 )
+  {
     mMenuHistory.pop();
+    State( "SpellerMenu" ) = mMenuHistory.top() + 1;
+  }
 }
 
 void
@@ -873,6 +865,32 @@ P3SpellerTask::OnRetrieve()
 }
 
 // Internally used functions which are not event handlers.
+void
+P3SpellerTask::CheckSwitchMenu()
+{
+  if( State( "SpellerMenu" ) != mCurMenu + 1 )
+  { // One of the commands modified the current menu -- we need to load a
+    // different menu.
+    // We cannot switch menus from the OnEnter() handler because it originates
+    // from a target member function, and switching menus will delete target
+    // objects.
+    mCurMenu = State( "SpellerMenu" ) - 1;
+    mMenuHistory.push( mCurMenu );
+    LoadMenu(
+      mCurMenu,
+      mMatrixRect,
+      Display(),
+      mStimuli,
+      Associations(),
+      *this
+    );
+    mNumMatrixRows = MenuRows( mCurMenu );
+    mNumMatrixCols = MenuCols( mCurMenu );
+    InitSequence();
+    DetermineAttendedTarget();
+  }
+}
+
 void
 P3SpellerTask::DetermineAttendedTarget()
 { // Determine the attended target for copy spelling mode.
@@ -980,7 +998,12 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
   ioSpeller.DeleteObjects();
   ioAssociations.clear();
 
-  // Read relevant parameters.
+  if( inMenuIdx < 0 || inMenuIdx >= NumMenus() )
+  {
+    bcierr << "Menu index specifies non-existent menu" << endl;
+    return;
+  }
+
   float targetWidth = MenuParam( "TargetWidth", inMenuIdx ) / 100.0,
         targetHeight = MenuParam( "TargetHeight", inMenuIdx ) / 100.0,
         targetTextHeight = MenuParam( "TargetTextHeight", inMenuIdx ) / 100.0 / targetHeight;
@@ -993,142 +1016,137 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
       numMatrixRows = MenuRows( inMenuIdx ),
       numMatrixCols = MenuCols( inMenuIdx );
 
-  if( inMenuIdx >= numMenus )
-    bcierr << "Menu index specifies non-existent menu" << endl;
-  else
+  ParamRef TargetDefinitions = MultipleMenus() ?
+                                Parameter( "TargetDefinitions" )( inMenuIdx, 0 ) :
+                                Parameter( "TargetDefinitions" );
+  if( TargetDefinitions->NumColumns() <= Enter )
   {
-    ParamRef TargetDefinitions = MultipleMenus() ?
-                                  Parameter( "TargetDefinitions" )( inMenuIdx, 0 ) :
-                                  Parameter( "TargetDefinitions" );
-    if( TargetDefinitions->NumColumns() <= Enter )
-    {
-      bcierr << "Number of TargetDefinition columns in menu #" << inMenuIdx + 1
-             << " must be " << Enter + 1 << " or greater"
-             << endl;
-      return;
+    bcierr << "Number of TargetDefinition columns in menu #" << inMenuIdx + 1
+           << " must be " << Enter + 1 << " or greater"
+           << endl;
+    return;
+  }
+  // Compute the enclosing rectangle's dimensions.
+  // The speller matrix will be centered vertically and horizontally in the
+  // rectangle as specified when LoadMenu() is called.
+  float inputRectWidth = ioRect.right - ioRect.left,
+        inputRectHeight = ioRect.bottom - ioRect.top,
+        outputRectHeight = numMatrixRows * targetHeight,
+        outputRectWidth = numMatrixCols * targetWidth;
+  ioRect.left += ( inputRectWidth - outputRectWidth ) / 2;
+  ioRect.top += ( inputRectHeight - outputRectHeight ) / 2;
+  ioRect.right = ioRect.left + outputRectWidth;
+  ioRect.bottom = ioRect.top + outputRectHeight;
+
+  // For each target definition, create stimuli and speller targets.
+  int numElements = TargetDefinitions->NumRows();
+  if( numElements != numMatrixRows * numMatrixCols )
+    bcierr << "Number of elements in menu #" << inMenuIdx + 1
+           << " does not match matrix rows and columns as defined in "
+           << "NumMatrixRows and NumMatrixColumns parameters"
+           << endl;
+  for( int i = 0; i < numElements; ++i )
+  {
+    int targetCol = i % numMatrixCols,
+        targetRow = i / numMatrixCols;
+    Association& rowSet = ioAssociations[ targetRow + 1 ],
+               & colSet = ioAssociations[ numMatrixRows + targetCol + 1 ];
+
+    string entryText = TargetDefinitions( i, Enter );
+    { // Check for legal entry text
+      istringstream iss( entryText );
+      SpellerCommand command;
+      while( iss >> command )
+        if( ( command.Code() == "GOTO" || command.Code() == "GTO" )
+            && ::atoi( command.Value().c_str() ) > numMenus )
+          bcierr << "GOTO target index in Menu "
+                 << inMenuIdx + 1 << ", entry "
+                 << i << ", exceeds number of available menus ("
+                 << numMenus << ")."
+                 << endl;
     }
-    // Compute the enclosing rectangle's dimensions.
-    // The speller matrix will be centered vertically and horizontally in the
-    // rectangle as specified when LoadMenu() is called.
-    float inputRectWidth = ioRect.right - ioRect.left,
-          inputRectHeight = ioRect.bottom - ioRect.top,
-          outputRectHeight = numMatrixRows * targetHeight,
-          outputRectWidth = numMatrixCols * targetWidth;
-    ioRect.left += ( inputRectWidth - outputRectWidth ) / 2;
-    ioRect.top += ( inputRectHeight - outputRectHeight ) / 2;
-    ioRect.right = ioRect.left + outputRectWidth;
-    ioRect.bottom = ioRect.top + outputRectHeight;
 
-    // For each target definition, create stimuli and speller targets.
-    int numElements = TargetDefinitions->NumRows();
-    if( numElements != numMatrixRows * numMatrixCols )
-      bcierr << "Number of elements in menu #" << inMenuIdx + 1
-             << " does not match matrix rows and columns as defined in "
-             << "NumMatrixRows and NumMatrixColumns parameters"
-             << endl;
-    for( int i = 0; i < numElements; ++i )
+    AudioSpellerTarget* pTarget = new AudioSpellerTarget( ioSpeller );
+    pTarget->SetEntryText( entryText )
+            .SetTag( i + 1 );
+    if( TargetDefinitions->NumColumns() > SoundFile )
+      pTarget->SetSound( TargetDefinitions( i, SoundFile ) );
+    rowSet.Add( pTarget );
+    colSet.Add( pTarget );
+
+    TextStimulus* pTextStimulus = new TextStimulus( ioDisplay );
+    GUI::Rect targetRect =
     {
-      int targetCol = i % numMatrixCols,
-          targetRow = i / numMatrixCols;
-      Association& rowSet = ioAssociations[ targetRow + 1 ],
-                 & colSet = ioAssociations[ numMatrixRows + targetCol + 1 ];
+      ioRect.left + targetCol * targetWidth,
+      ioRect.top  + targetRow * targetHeight,
+      ioRect.left + ( targetCol + 1 ) * targetWidth,
+      ioRect.top  + ( targetRow + 1 ) * targetHeight
+    };
+    float displaySize = 1.0;
+    if( TargetDefinitions->NumColumns() > DisplaySize )
+      displaySize = TargetDefinitions( i, DisplaySize );
+    pTextStimulus->SetText( TargetDefinitions( i, Display ) )
+                  .SetTextHeight( targetTextHeight * displaySize )
+                  .SetTextColor( textColor )
+                  .SetColor( RGBColor::NullColor )
+                  .SetObjectRect( targetRect );
+    pTextStimulus->SetIntensifiedColor( textColorIntensified )
+                  .SetPresentationMode( VisualStimulus::Intensify );
+    ioStimuli.Add( pTextStimulus );
+    rowSet.Add( pTextStimulus );
+    colSet.Add( pTextStimulus );
 
-      string entryText = TargetDefinitions( i, Enter );
-      { // Check for legal entry text
-        istringstream iss( entryText );
-        SpellerCommand command;
-        while( iss >> command )
-          if( ( command.Code() == "GOTO" || command.Code() == "GTO" )
-              && ::atoi( command.Value().c_str() ) > numMenus )
-            bcierr << "GOTO target index in Menu "
-                   << inMenuIdx + 1 << ", entry "
-                   << i << ", exceeds number of available menus ("
-                   << numMenus << ")."
-                   << endl;
-      }
-
-      AudioSpellerTarget* pTarget = new AudioSpellerTarget( ioSpeller );
-      pTarget->SetEntryText( entryText )
-              .SetTag( i + 1 );
-      if( TargetDefinitions->NumColumns() > SoundFile )
-        pTarget->SetSound( TargetDefinitions( i, SoundFile ) );
-      rowSet.Add( pTarget );
-      colSet.Add( pTarget );
-
-      TextStimulus* pTextStimulus = new TextStimulus( ioDisplay );
-      GUI::Rect targetRect =
+    if( TargetDefinitions->NumColumns() > IconFile )
+    {
+      string iconFile = TargetDefinitions( i, IconFile );
+      if( !iconFile.empty() )
       {
-        ioRect.left + targetCol * targetWidth,
-        ioRect.top  + targetRow * targetHeight,
-        ioRect.left + ( targetCol + 1 ) * targetWidth,
-        ioRect.top  + ( targetRow + 1 ) * targetHeight
-      };
-      float displaySize = 1.0;
-      if( TargetDefinitions->NumColumns() > DisplaySize )
-        displaySize = TargetDefinitions( i, DisplaySize );
-      pTextStimulus->SetText( TargetDefinitions( i, Display ) )
-                    .SetTextHeight( targetTextHeight * displaySize )
-                    .SetTextColor( textColor )
-                    .SetColor( RGBColor::NullColor )
-                    .SetObjectRect( targetRect );
-      pTextStimulus->SetIntensifiedColor( textColorIntensified )
-                    .SetPresentationMode( VisualStimulus::Intensify );
-      ioStimuli.Add( pTextStimulus );
-      rowSet.Add( pTextStimulus );
-      colSet.Add( pTextStimulus );
-
-      if( TargetDefinitions->NumColumns() > IconFile )
-      {
-        string iconFile = TargetDefinitions( i, IconFile );
-        if( !iconFile.empty() )
-        {
-          ImageStimulus* pIcon = new ImageStimulus( ioDisplay );
-          pIcon->SetFile( iconFile )
-                .SetRenderingMode( GUI::RenderingMode::Transparent )
-                .SetObjectRect( targetRect );
-          pIcon->SetPresentationMode( VisualStimulus::Mode( iconHighlightMode ) )
-                .SetDimFactor( 1.0 / iconHighlightFactor );
-          ioStimuli.insert( pIcon );
-          rowSet.Add( pIcon );
-          colSet.Add( pIcon );
-        }
+        ImageStimulus* pIcon = new ImageStimulus( ioDisplay );
+        pIcon->SetFile( iconFile )
+              .SetRenderingMode( GUI::RenderingMode::Transparent )
+              .SetObjectRect( targetRect );
+        pIcon->SetPresentationMode( VisualStimulus::Mode( iconHighlightMode ) )
+              .SetDimFactor( 1.0 / iconHighlightFactor );
+        ioStimuli.insert( pIcon );
+        rowSet.Add( pIcon );
+        colSet.Add( pIcon );
       }
     }
-    // Create audio stimuli for rows and columns.
-    if( Parameter( "AudioStimuliOn" ) != 0 )
+  }
+  // Create audio stimuli for rows and columns.
+  if( Parameter( "AudioStimuliOn" ) != 0 )
+  {
+    ParamRef AudioStimuliRowsFiles = Parameter( "AudioStimuliRowsFiles" );
+    int entry = 0;
+    if( AudioStimuliRowsFiles->NumColumns() > inMenuIdx )
+      entry = inMenuIdx;
+    for( int i = 0; i < AudioStimuliRowsFiles->NumRows(); ++i )
     {
-      ParamRef AudioStimuliRowsFiles = Parameter( "AudioStimuliRowsFiles" );
-      int entry = 0;
-      if( AudioStimuliRowsFiles->NumColumns() > inMenuIdx )
-        entry = inMenuIdx;
-      for( int i = 0; i < AudioStimuliRowsFiles->NumRows(); ++i )
-      {
-        int row = ::atoi( AudioStimuliRowsFiles->RowLabels()[ i ].c_str() );
-        AudioStimulus* pStimulus = new AudioStimulus;
-        pStimulus->SetSound( AudioStimuliRowsFiles( i, entry ) );
-        if( !pStimulus->Error().empty() )
-          bcierr << "AudioStimulusRowsFiles(" << i << ", " << entry << "): "
-                 << pStimulus->Error()
-                 << endl;
-        ioStimuli.Add( pStimulus );
-        ioAssociations[ row ].Add( pStimulus );
-      }
-      ParamRef AudioStimuliColsFiles = Parameter( "AudioStimuliColsFiles" );
-      entry = 0;
-      if( AudioStimuliColsFiles->NumColumns() > inMenuIdx )
-        entry = inMenuIdx;
-      for( int i = 0; i < AudioStimuliColsFiles->NumRows(); ++i )
-      {
-        int col = ::atoi( AudioStimuliColsFiles->RowLabels()[ i ].c_str() );
-        AudioStimulus* pStimulus = new AudioStimulus;
-        pStimulus->SetSound( AudioStimuliColsFiles( i, entry ) );
-        if( !pStimulus->Error().empty() )
-          bcierr << "AudioStimulusColsFiles(" << i << ", " << entry << "): "
-                 << pStimulus->Error()
-                 << endl;
-        ioStimuli.Add( pStimulus );
-        ioAssociations[ numMatrixRows + col ].Add( pStimulus );
-      }
+      int row = ::atoi( AudioStimuliRowsFiles->RowLabels()[ i ].c_str() );
+      AudioStimulus* pStimulus = new AudioStimulus;
+      pStimulus->SetSound( AudioStimuliRowsFiles( i, entry ) );
+      if( !pStimulus->Error().empty() )
+        bcierr << "AudioStimulusRowsFiles(" << i << ", " << entry << "): "
+               << pStimulus->Error()
+               << endl;
+      ioStimuli.Add( pStimulus );
+      ioAssociations[ row ].Add( pStimulus );
+    }
+    ParamRef AudioStimuliColsFiles = Parameter( "AudioStimuliColsFiles" );
+    entry = 0;
+    if( AudioStimuliColsFiles->NumColumns() > inMenuIdx )
+      entry = inMenuIdx;
+    for( int i = 0; i < AudioStimuliColsFiles->NumRows(); ++i )
+    {
+      int col = ::atoi( AudioStimuliColsFiles->RowLabels()[ i ].c_str() );
+      AudioStimulus* pStimulus = new AudioStimulus;
+      pStimulus->SetSound( AudioStimuliColsFiles( i, entry ) );
+      if( !pStimulus->Error().empty() )
+        bcierr << "AudioStimulusColsFiles(" << i << ", " << entry << "): "
+               << pStimulus->Error()
+               << endl;
+      ioStimuli.Add( pStimulus );
+      ioAssociations[ numMatrixRows + col ].Add( pStimulus );
     }
   }
 }
