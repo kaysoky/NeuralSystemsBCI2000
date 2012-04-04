@@ -67,7 +67,9 @@ MatlabFilter::MatlabFilter()
   if( !MatlabEngine::IsOpen() )
   {
     bcierr << "Could not connect to Matlab engine. "
-           << "Please make sure that Matlab is available on your machine."
+           << "Please make sure that Matlab is available on your machine.\n"
+           << "On Windows, Matlab's bin/win32 directory must be on your system's %PATH% variable, "
+           << "and \"Matlab /regserver\" must have been executed with administrative privileges."
            << endl;
   }
   else
@@ -139,23 +141,25 @@ MatlabFilter::MatlabFilter()
 
 MatlabFilter::~MatlabFilter()
 {
-  { // Make sure bci_Destruct is out of scope when calling MatlabEngine::Close().
-    MatlabFunction bci_Destruct( DESTRUCT );
-    CallMatlab( bci_Destruct );
-  }
-
-  delete mpBci_Process;
-
-  if( mMatlabStayOpen != dontClear )
+  if( MatlabEngine::IsOpen() )
   {
-    MatlabEngine::ClearVariable( IN_SIGNAL );
-    MatlabEngine::ClearVariable( OUT_SIGNAL );
-    MatlabEngine::ClearVariable( PARAMETERS );
-    MatlabEngine::ClearVariable( STATES );
-  }
-  if( mMatlabStayOpen == closeEngine )
-    MatlabEngine::Close();
+    { // Make sure bci_Destruct is out of scope when calling MatlabEngine::Close().
+      MatlabFunction bci_Destruct( DESTRUCT );
+      CallMatlab( bci_Destruct );
+    }
 
+    delete mpBci_Process;
+
+    if( mMatlabStayOpen != dontClear )
+    {
+      MatlabEngine::ClearVariable( IN_SIGNAL );
+      MatlabEngine::ClearVariable( OUT_SIGNAL );
+      MatlabEngine::ClearVariable( PARAMETERS );
+      MatlabEngine::ClearVariable( STATES );
+    }
+    if( mMatlabStayOpen == closeEngine )
+      MatlabEngine::Close();
+  }
 }
 
 void
