@@ -28,7 +28,6 @@
 #pragma hdrstop
 
 #include "TelnetServer.h"
-#include "Version.h"
 #include "VersionInfo.h"
 #include "BCIException.h"
 
@@ -171,10 +170,7 @@ TelnetServer::ReadCharacter()
 TelnetServer&
 TelnetServer::WriteHello()
 {
-  istringstream iss( BCI2000_VERSION );
-  VersionInfo info;
-  iss >> info;
-  mStream << "BCI2000 Version " << info[VersionInfo::VersionID];
+  mStream << "BCI2000 Version " << VersionInfo::Current[VersionInfo::VersionID];
   char hostname[512] = "";
   ::gethostname( hostname, sizeof( hostname ) );
   if( *hostname )
@@ -204,7 +200,7 @@ TelnetServer::Write( const string& inString )
 TelnetServer&
 TelnetServer::WriteNewline()
 {
-  mStream.put( '\n' ).put( '\r' );
+  mStream.put( '\r' ).put( '\n' );
   return *this;
 }
 

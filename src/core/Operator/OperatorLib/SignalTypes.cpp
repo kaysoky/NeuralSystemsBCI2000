@@ -70,7 +70,7 @@ Interpreter::SignalType::Get( ScriptInterpreter& inInterpreter )
     int idx1 = ::atoi( args[0][0].c_str() ) - 1,
         idx2 = ::atoi( args[0][1].c_str() ) - 1;
     if( idx1 < 0 || idx2 < 0 || idx1 >= signal.Channels() || idx2 >= signal.Elements() )
-      throw bciexception_( "Signal indices out of range" );
+      throw bciexception_( "Signal index out of range" );
     inInterpreter.Out() << signal( idx1, idx2 );
   }
   return true;
