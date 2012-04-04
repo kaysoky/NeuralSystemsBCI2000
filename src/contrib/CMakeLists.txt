@@ -25,6 +25,7 @@ IF( BUILD_CONTRIB )
   ADD_SUBDIRECTORY( SignalProcessing )
   ADD_SUBDIRECTORY( Application )
   ADD_SUBDIRECTORY( Extensions )
+  ADD_SUBDIRECTORY( ExternalLinks )
 ENDIF( BUILD_CONTRIB )
 
 
