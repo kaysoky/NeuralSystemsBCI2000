@@ -59,7 +59,7 @@ EventType::Set( ScriptInterpreter& inInterpreter )
     State& event = GetEvent( inInterpreter );
     name = event.Name();
     value = ::atoi( inInterpreter.GetToken().c_str() );
-    if( ( value & ~( ( 1 << event.Length() ) - 1 ) ) != 0 )
+    if( ( value & ~( ( 1LL << event.Length() ) - 1LL ) ) != 0 )
       throw bciexception_( "Event value " << value << " out of range" );
     if( !inInterpreter.StateMachine().SetEvent( name.c_str(), value ) )
       throw bciexception_( "Could not set event " << name << " to " << value );
