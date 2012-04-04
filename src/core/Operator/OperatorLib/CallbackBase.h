@@ -74,7 +74,7 @@ class CallbackBase
   };
 
  protected:
-  CallbackBase( const OSMutex* unlockMutex );
+  CallbackBase();
 
  public:
   ~CallbackBase() {}
@@ -213,13 +213,13 @@ class CallbackBase
   DataMap        mData;
   ContextMap     mContext;
 
-  const OSMutex* mpUnlockMutex; // A mutex that will be unlocked during callback execution, or NULL.
 #if _WIN32
   size_t         mMainThreadID; // ID of the thread in which the CallbackBase constructor was executed.
 #else
   pthread_t      mMainThreadID;
 #endif
-  OSMutex        mPendingCallbackAccess; // A mutex that protects access to the currently pending callback.
+  OSMutex        mMainThreadAccess, // A mutex that blocks multiple threads while waiting for the main thread to become available.
+                 mPendingCallbackAccess; // A mutex that protects access to the mpPendingCallback variable.
   Callback*      mpPendingCallback;
 };
 

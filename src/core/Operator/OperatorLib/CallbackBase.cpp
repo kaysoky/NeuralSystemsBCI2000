@@ -42,9 +42,8 @@
 
 using namespace std;
 
-CallbackBase::CallbackBase( const OSMutex* inpUnlockMutex )
-: mpUnlockMutex( inpUnlockMutex ),
-  mMainThreadID( 0 ),
+CallbackBase::CallbackBase()
+: mMainThreadID( 0 ),
   mpPendingCallback( NULL )
 {
 #if _WIN32
@@ -130,23 +129,19 @@ CallbackBase::DoExecute( Callback& inCallback )
   {
     case MainThread:
       {
-        OSMutex::Lock lock( mPendingCallbackAccess );
-        mpPendingCallback = &inCallback;
+        OSMutex::Lock lock( mMainThreadAccess );
         {
-          OSMutex::Unlock unlock( mpUnlockMutex );
-          // Suspend execution of the calling thread while the callback function 
-          // is being executed in the main thread.
-          inCallback.SuspendThread();
+          OSMutex::Lock lock( mPendingCallbackAccess );
+          mpPendingCallback = &inCallback;
         }
-        mpPendingCallback = NULL;
+        // Suspend execution of the calling thread while the callback function 
+        // is being executed in the main thread.
+        inCallback.SuspendThread();
       }
       break;
 
     case CallingThread:
-      {
-        OSMutex::Unlock unlock( mpUnlockMutex );
-        inCallback.Execute();
-      }
+      inCallback.Execute();
       break;
 
     default:
@@ -176,10 +171,12 @@ CallbackBase::CheckPendingCallback()
     return false;
   }
 #endif // BCIDEBUG
+  OSMutex::Lock lock( mPendingCallbackAccess );
   if( mpPendingCallback != NULL )
   {
     mpPendingCallback->Execute();
     mpPendingCallback->ResumeThread();
+    mpPendingCallback = NULL;
     return true;
   }
   return false;

@@ -99,6 +99,7 @@ class StateMachine : public CallbackBase, private OSThread
     Suspended,
     SuspendedParamsModified,
     Fatal,
+    Transition,
 
     NumStates
   };
@@ -110,14 +111,10 @@ class StateMachine : public CallbackBase, private OSThread
     { return static_cast<int>( mConnections.size() ); }
 
   //  Locking.
-  void LockData()
-    { if( !mpDataLock ) mpDataLock = new OSMutex::Lock( mDataMutex ); }
-  void UnlockData()
-    { delete mpDataLock; mpDataLock = NULL; }
   void Lock()
-    { LockData(); }
+    { mDataMutex.Acquire(); }
   void Unlock()
-    { UnlockData(); }
+    { mDataMutex.Release(); }
 
   //  Parameter list.
   ParamList& Parameters()
@@ -156,12 +153,16 @@ class StateMachine : public CallbackBase, private OSThread
 
   void Terminate();
   void EnterState( enum SysState );
+
+  void PerformTransition( int transition );
   void BroadcastParameters();
   void BroadcastEndOfParameter();
   void BroadcastStates();
   void BroadcastEndOfState();
   void InitializeModules();
   void MaintainDebugLog();
+
+  void ExecuteTransitionCallbacks( int transition );
 
  private:
   enum SysState mSystemState;
@@ -170,7 +171,8 @@ class StateMachine : public CallbackBase, private OSThread
   // A mutex to be acquired while manipulating StateMachine data members,
   // and released during callbacks:
   OSMutex           mDataMutex;
-  OSMutex::Lock*    mpDataLock;
+  // A mutex to serialize incoming BCI messages:
+  OSMutex           mBCIMessageMutex;
 
   ParamList         mParameters;
   StateList         mStates,
@@ -304,6 +306,7 @@ class StateMachine : public CallbackBase, private OSThread
 
   void CloseConnections()
   {
+    mpSourceModule = NULL;
     for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
       delete *i;
     mConnections.clear();
