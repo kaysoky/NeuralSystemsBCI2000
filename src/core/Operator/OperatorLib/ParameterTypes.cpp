@@ -64,8 +64,11 @@ ParameterType::Set( ScriptInterpreter& inInterpreter )
     ParamList& list = inInterpreter.StateMachine().Parameters();
     if( !list.Exists( param.Name() ) )
       throw bciexception_( "Parameter " << param.Name() << " does not exist" );
+    if( list[param.Name()].Section() == "System" )
+      throw bciexception_( "Cannot set system parameter" );
     list[param.Name()] = param;
     inInterpreter.StateMachine().ExecuteCallback( BCI_OnParameter, line.c_str() );
+    inInterpreter.StateMachine().ParameterChange();
     inInterpreter.Log() << "Set parameter " << param.Name();
   }
   else
@@ -76,6 +79,8 @@ ParameterType::Set( ScriptInterpreter& inInterpreter )
     {
       Lock<StateMachine> lock( inInterpreter.StateMachine() );
       ParamRef param = GetParamRef( inInterpreter );
+      if( param->Section() == "System" )
+        throw bciexception_( "Cannot set system parameter" );
       name = param->Name();
       value = inInterpreter.GetRemainder();
       param = value;
@@ -85,6 +90,7 @@ ParameterType::Set( ScriptInterpreter& inInterpreter )
     if( !oss.str().empty() )
     {
       inInterpreter.StateMachine().ExecuteCallback( BCI_OnParameter, oss.str().c_str() );
+      inInterpreter.StateMachine().ParameterChange();
       inInterpreter.Log() << "Set parameter " << name << " to " << value;
     }
   }
@@ -273,6 +279,7 @@ ParameterfileType::Load( ScriptInterpreter& inInterpreter )
   fileName = BCIDirectory::AbsolutePath( fileName );
   if( !inInterpreter.StateMachine().Parameters().Load( fileName.c_str(), false ) )
     throw bciexception_( "Could not load " << fileName << " as a parameter file" );
+  inInterpreter.StateMachine().ParameterChange();
   inInterpreter.Log() << "Loaded parameter file " << fileName;
   return true;
 }
