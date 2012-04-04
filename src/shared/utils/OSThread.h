@@ -7,23 +7,23 @@
 //   OnExecute() function.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #ifndef OS_THREAD_H
@@ -39,6 +39,8 @@
 #include "OSEvent.h"
 #include "OSMutex.h"
 #include "PrecisionTime.h"
+#include "SharedPointer.h"
+#include <vector>
 
 class OSThread : private Uncopyable
 {
@@ -47,7 +49,7 @@ class OSThread : private Uncopyable
   virtual ~OSThread();
 
   void Start();
-  void Terminate( OSEvent* = NULL );
+  SharedPointer<OSEvent> Terminate();
   bool TerminateWait( int timeout_ms = OSEvent::cInfiniteTimeout ); // returns false on timeout
   bool IsTerminating() const
     { return mTerminating; }
@@ -80,12 +82,14 @@ class OSThread : private Uncopyable
 
 #ifdef _WIN32
   static unsigned int WINAPI StartThread( void* inInstance );
+  void FinishThread( int );
 
   HANDLE mHandle;
   unsigned int mThreadID;
   static unsigned int sMainThreadID;
 #else // _WIN32
   static void* StartThread( void* inInstance );
+  void FinishThread( int );
 
   pthread_t mThread;
   bool mTerminated;
@@ -93,7 +97,7 @@ class OSThread : private Uncopyable
 #endif // _WIN32
   int mResult;
   OSMutex mMutex;
-  OSEvent* mpTerminationEvent;
+  SharedPointer<OSEvent> mpTerminationEvent;
   bool mTerminating;
 };
 

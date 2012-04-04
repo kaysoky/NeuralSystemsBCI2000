@@ -189,34 +189,31 @@ FileWriterBase::StopRun()
 void
 FileWriterBase::Halt()
 {
-  OSEvent terminationEvent;
-  OSThread::Terminate( &terminationEvent );
+  SharedPointer<OSEvent> pTerminationEvent = OSThread::Terminate();
   mEvent.Set(); // Trigger a last execution of the thread's while loop.
-  terminationEvent.Wait(); // Wait for actual termination of the thread.
+  pTerminationEvent->Wait();
 }
 
 void
 FileWriterBase::Write( const GenericSignal& Signal,
                        const StateVector&   Statevector )
 {
-  mMutex.Acquire();
+  OSMutex::Lock lock( mMutex );
   mSignalQueue.push( Signal );
   mStateVectorQueue.push( Statevector );
   mEvent.Set();
-  mMutex.Release();
 }
 
 int FileWriterBase::Execute()
 {
-  mMutex.Acquire();
+  OSMutex::Lock lock( mMutex );
   while( !IsTerminating() || !mSignalQueue.empty() )
   {
     if( !IsTerminating() && mSignalQueue.empty() )
     {
-      mMutex.Release();
+      OSMutex::Unlock unlock( mMutex );
       mEvent.Wait();
       mEvent.Reset();
-      mMutex.Acquire();
     }
     while( !mSignalQueue.empty() )
     {
@@ -224,9 +221,8 @@ int FileWriterBase::Execute()
       StateVector stateVector = mStateVectorQueue.front();
       mSignalQueue.pop();
       mStateVectorQueue.pop();
-      mMutex.Release(); // Allow queue buffering during file writes (which may block).
+      OSMutex::Unlock unlock( mMutex );// Allow queue buffering during file writes (which may block).
       mrOutputFormat.Write( mOutputFile, signal, stateVector );
-      mMutex.Acquire();
     }
     if( !mOutputFile )
     {
@@ -234,7 +230,6 @@ int FileWriterBase::Execute()
       State( "Recording" ) = 0;
     }
   }
-  mMutex.Release();
   return 0;
 }
 

@@ -64,9 +64,10 @@ OSThread::OSThread()
 : mHandle( NULL ),
   mThreadID( 0 ),
   mResult( 0 ),
-  mpTerminationEvent( NULL ),
-  mTerminating( false )
+  mTerminating( false ),
+  mpTerminationEvent( new OSEvent )
 {
+  mpTerminationEvent->Set();
 }
 
 void
@@ -74,6 +75,7 @@ OSThread::Start()
 {
   TerminateWait();
   OSMutex::Lock lock( mMutex );
+  mpTerminationEvent->Reset();
   mTerminating = false;
   mHandle = reinterpret_cast<HANDLE>( ::_beginthreadex( NULL, 0, OSThread::StartThread, this, 0, &mThreadID ) );
   if( mHandle == NULL )
@@ -169,9 +171,10 @@ OSThread::NumberOfProcessors()
 OSThread::OSThread()
 : mTerminated( true ),
   mResult( 0 ),
-  mpTerminationEvent( NULL ),
-  mTerminating( false )
+  mTerminating( false ),
+  mpTerminationEvent( new OSEvent )
 {
+  mpTerminationEvent->Set();
 }
 
 void
@@ -179,6 +182,7 @@ OSThread::Start()
 {
   TerminateWait();
   OSMutex::Lock lock( mMutex );
+  mpTerminationEvent->Reset();
   mTerminating = false;
   mTerminated = false;
   ::pthread_attr_t attributes;
@@ -249,14 +253,12 @@ OSThread::PrecisionSleepUntil( PrecisionTime inWakeupTime )
   PrecisionSleepFor( PrecisionTime::SignedDiff( inWakeupTime, PrecisionTime::Now() ) );
 }
 
-void
-OSThread::Terminate( OSEvent* inpEvent )
+SharedPointer<OSEvent>
+OSThread::Terminate()
 {
   OSMutex::Lock lock( mMutex );
-  mpTerminationEvent = inpEvent;
   mTerminating = true;
-  if( IsTerminated() && mpTerminationEvent )
-    mpTerminationEvent->Set();
+  return mpTerminationEvent;
 }
 
 bool
@@ -264,9 +266,7 @@ OSThread::TerminateWait( int inTimeout )
 {
   if( InOwnThread() )
     throw bciexception( "Called from own thread, throwing exception to prevent deadlock" );
-  OSEvent event;
-  Terminate( &event );
-  return event.Wait( inTimeout );
+  return Terminate()->Wait( inTimeout );
 }
 
 int
@@ -295,19 +295,7 @@ OSThread::StartThread( void* inInstance )
 {
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
   int result = this_->CallExecute();
-  OSEvent* pTerminationEvent = NULL;
-  {
-    OSMutex::Lock lock( this_->mMutex );
-    this_->mResult = result;
-    ::CloseHandle( this_->mHandle );
-    this_->mHandle = NULL;
-    pTerminationEvent = this_->mpTerminationEvent;
-    this_->mpTerminationEvent = NULL;
-  }
-  this_->mThreadID = 0;
-  this_->CallFinished();
-  if( pTerminationEvent )
-    pTerminationEvent->Set();
+  this_->FinishThread( result );
   return result;
 }
 
@@ -321,18 +309,31 @@ OSThread::StartThread( void* inInstance )
   // immediately cancel thread execution.
   ::pthread_setcancelstate( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
   int result = this_->CallExecute();
-  OSEvent* pTerminationEvent = NULL;
-  {
-    OSMutex::Lock lock( this_->mMutex );
-    this_->mResult = result;
-    this_->mTerminated = true;
-    pTerminationEvent = this_->mpTerminationEvent;
-    this_->mpTerminationEvent = NULL;
-  }
-  this_->CallFinished();
-  if( pTerminationEvent )
-    pTerminationEvent->Set();
+  this_->FinishThread( result );
   return reinterpret_cast<void*>( result );
 }
 
 #endif // _WIN32
+
+void
+OSThread::FinishThread( int inResult )
+{
+  // The OnFinished() handler may delete the OSThread object, so we
+  // use a temporary shared pointer to the termination event.
+  SharedPointer<OSEvent> pTerminationEvent;
+  {
+    OSMutex::Lock lock( mMutex );
+    mResult = inResult;
+#if _WIN32
+    ::CloseHandle( mHandle );
+    mHandle = NULL;
+    mThreadID = 0;
+#else // _WIN32
+    mTerminated = true;
+#endif // _WIN32
+    pTerminationEvent = mpTerminationEvent;
+  }
+  CallFinished();
+  pTerminationEvent->Set();
+}
+

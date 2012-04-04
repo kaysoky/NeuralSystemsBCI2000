@@ -43,10 +43,10 @@ ReusableThread::ReusableThread()
 
 ReusableThread::~ReusableThread()
 {
-  OSEvent terminateEvent;
-  OSThread::Terminate( &terminateEvent );
+  SharedPointer<OSEvent> pTerminationEvent = OSThread::Terminate();
   mStartEvent.Set();
-  terminateEvent.Wait();
+  if( !OSThread::InOwnThread() )
+    pTerminationEvent->Wait();
 }
 
 bool
