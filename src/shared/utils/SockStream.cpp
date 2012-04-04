@@ -257,6 +257,7 @@ streamsock::connected()
 void
 streamsock::close()
 {
+  ::shutdown( m_handle, 2 );
   ::closesocket( m_handle );
   m_handle = INVALID_SOCKET;
   m_listening = false;
@@ -416,6 +417,11 @@ streamsock::accept()
     set_socket_options();
     update_address();
   }
+}
+
+void
+streamsock::set_socket_options()
+{
 }
 
 void

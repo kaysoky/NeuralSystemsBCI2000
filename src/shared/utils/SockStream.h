@@ -125,8 +125,7 @@ class streamsock
     void         set_address( const char* ip, unsigned short port );
 
   protected:
-    virtual void set_socket_options()
-                 {}
+    virtual void set_socket_options();
     void         update_address();
 
   protected:
