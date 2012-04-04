@@ -24,6 +24,7 @@
 #define IDC_STATICDesc2                 212
 #define IDC_CHECKHide2                  213
 #define IDC_CHECKUseResumePause         213
+#define IDC_STATIC (-1)
 
 // Next default values for new objects
 // 

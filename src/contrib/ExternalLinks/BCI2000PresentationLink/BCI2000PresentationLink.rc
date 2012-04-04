@@ -1,49 +1,8 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "Resource.h"
-
-#define APSTUDIO_READONLY_SYMBOLS
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 2 resource.
-//
-#include "afxres.h"
-
-/////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
-
-/////////////////////////////////////////////////////////////////////////////
-// German (Germany) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
-#ifdef _WIN32
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
-#pragma code_page(1252)
-#endif //_WIN32
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\r\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include ""afxres.h""\r\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
+#include "Winuser.h"
+#include "Commctrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -54,19 +13,6 @@ STRINGTABLE
 BEGIN
     IDS_OperatorName        "Operator.exe"
 END
-
-#endif    // German (Germany) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -91,7 +37,7 @@ BEGIN
     LTEXT           "Specify an Operator module or batch file to run when starting up BCI2000. When you leave the field empty, the Operator module is started from the directory in which BCI2000PresentationLink resides.",IDC_STATICDesc1,22,36,245,28
     PUSHBUTTON      "Clear",IDC_BUTTONClearProgPath,146,111,50,14
     GROUPBOX        "Network Address",IDC_STATIC,7,161,273,66
-    LTEXT           "When an Operator module is specified rather than a batch file, you may use the bci2000::controller::startup_modules() function to start up modules in a PCL script.",IDC_STATICDesc2,22,63,244,25
+    LTEXT           "When an Operator module is specified rather than a batch file, you need to to start up modules from a PCL script, using bci2000::controller::startup_modules().",IDC_STATICDesc2,22,63,244,25
     LTEXT           "BCI2000PresentationLink uses a network connection to establish a link with BCI2000. To override the default port, or to connect to a remote BCI2000 installation, you may enter a network address in the form ""myhost:3999"".",IDC_STATIC,22,175,248,28
     EDITTEXT        IDC_EDITEventTypes,22,278,246,13,ES_AUTOHSCROLL
     GROUPBOX        "Event Types",IDC_STATIC,7,234,273,103
@@ -145,9 +91,9 @@ END
 // REGISTRY
 //
 
-IDR_BCI2000_DATA_PORT_EXTENSION REGISTRY                "BCI2000DataPortExtension.rgs"
-IDR_BCI2000_PCL_LIBRARY REGISTRY                "BCI2000PCLLibrary.rgs"
-IDR_BCI2000_PRESENTATION_LINK REGISTRY                "BCI2000PresentationLink.rgs"
+1 REGISTRY                "BCI2000DataPortExtension.rgs"
+2 REGISTRY                "BCI2000PCLLibrary.rgs"
+3 REGISTRY                "BCI2000PresentationLink.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -155,34 +101,4 @@ IDR_BCI2000_PRESENTATION_LINK REGISTRY                "BCI2000PresentationLink.r
 //
 
 1                       TYPELIB                 "BCI2000PresentationLink.tlb"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_DataPortProperties, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 358
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
 
