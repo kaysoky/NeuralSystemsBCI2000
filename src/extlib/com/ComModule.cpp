@@ -284,7 +284,7 @@ struct RegScriptInfo
 HRESULT
 Module::RunRegScripts( int inAction )
 {
-  RegScriptInfo info = { inAction, E_FAIL };
+  RegScriptInfo info = { inAction, ERROR_SUCCESS };
 #ifdef __GNUC__ // Bug in EnumResourceNamesW declaration in Winbase.h
 #define ENUMRESNAMEPROCW ENUMRESNAMEPROC
 #endif // __GNUC__
