@@ -39,13 +39,19 @@ DeleteSubentries( HKEY inKey )
   DWORD length = sizeof( nameBuffer ) / sizeof( *nameBuffer );
   DWORD idx = 0;
   while( ERROR_SUCCESS == ::RegEnumValue( inKey, idx++, nameBuffer, &length, NULL, NULL, NULL, NULL ) )
-    if( ERROR_SUCCESS != ( result = ::RegDeleteValue( inKey, nameBuffer ) ) )
-      return result;
+  {
+    LONG subResult = ::RegDeleteValue( inKey, nameBuffer );
+    if( result == ERROR_SUCCESS )
+      result = subResult;
+  }
   idx = 0;
   length = sizeof( nameBuffer ) / sizeof( *nameBuffer );
   while( ERROR_SUCCESS == ::RegEnumKeyEx( inKey, idx++, nameBuffer, &length, NULL, NULL, NULL, NULL ) )
-    if( ERROR_SUCCESS != ( result = ::RegDeleteKey( inKey, nameBuffer ) ) )
-      return result;
+  {
+    LONG subResult = ::RegDeleteKey( inKey, nameBuffer );
+    if( result == ERROR_SUCCESS )
+      result = subResult;
+  }
   return result;
 }
 
@@ -238,6 +244,6 @@ Registrar::Value::Execute( HKEY inParent, int inAction ) const
   if( inAction & Create )
     result = ::RegSetValueExA( inParent, mName.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>( mValue.c_str() ), mValue.length() + 1 );
   if( inAction & Remove )
-    result = ::RegDeleteValueA( inParent, mName.c_str() );
+    ::RegDeleteValueA( inParent, mName.c_str() ); // no error on nonexisting value
   return result;
 }

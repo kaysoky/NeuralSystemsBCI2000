@@ -285,9 +285,9 @@ HRESULT
 Module::RunRegScripts( int inAction )
 {
   RegScriptInfo info = { inAction, E_FAIL };
-#ifndef ENUMRESNAMEPROC
-# define ENUMRESNAMEPROCW ENUMRESNAMEPROC
-#endif // MinGW header bug?
+#ifdef __GNUC__ // Bug in EnumResourceNamesW declaration in Winbase.h
+#define ENUMRESNAMEPROCW ENUMRESNAMEPROC
+#endif // __GNUC__
   ::EnumResourceNamesW( sHInstance, L"REGISTRY", reinterpret_cast<ENUMRESNAMEPROCW>( &Module::RunRegScript ), reinterpret_cast<LONG_PTR>( &info ) );
   return info.result;
 }
@@ -311,12 +311,13 @@ Module::RunRegScript( HMODULE inHModule, LPCWSTR inType, LPWSTR inName, LONG_PTR
   std::string script( reinterpret_cast<const char*>( pRes ), size );
   Registrar::Environment environment;
   environment["MODULE"] = DualString( GetFileName() );
-  Registrar parser;
-  if( !parser.Parse( script, environment ) )
+  Registrar registrar;
+  if( !registrar.Parse( script, environment ) )
     return FALSE;
-  LONG status = parser.Execute( pInfo->action );
-  pInfo->result = ( status == ERROR_SUCCESS ) ? S_OK : TYPE_E_REGISTRYACCESS;
-  return ( pInfo->result == S_OK );
+  LONG status = registrar.Execute( pInfo->action );
+  if( pInfo->result == S_OK )
+    pInfo->result = ( status == ERROR_SUCCESS ) ? S_OK : TYPE_E_REGISTRYACCESS;
+  return ( pInfo->action & Registrar::Remove ) ? TRUE : ( pInfo->result == S_OK );
 }
 
 Module::Cleanup::~Cleanup()
