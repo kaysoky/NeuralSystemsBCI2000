@@ -29,6 +29,10 @@
 #include <sstream>
 #include <cstdlib>
 
+#if _WIN32
+#include <Shlwapi.h>
+#endif // _WIN32
+
 using namespace std;
 
 BCI2000Connection&
@@ -166,19 +170,12 @@ BCI2000Connection::StartExecutable( const string& inExecutable, const string& in
   mResult.clear();
   string commandLine = "\"" + inExecutable + "\" " + inOptions;
 
-  char pDrive[_MAX_DRIVE],
-       pExt[_MAX_EXT];
   char* pWorkingDir = new char[inExecutable.length() + 1];
-  if( 0 != ::_splitpath_s( inExecutable.c_str(), pDrive, _MAX_DRIVE, pWorkingDir, inExecutable.length() + 1, NULL, 0, pExt, _MAX_EXT ) )
-  {
-    pWorkingDir[0] = '\0';
-    pExt[0] = '\0';
-  }
-  string workingDir = pDrive;
-  workingDir += pWorkingDir;
-  delete[] pWorkingDir;
+  ::strcpy( pWorkingDir, inExecutable.c_str() );
+  ::PathRemoveFileSpecA( pWorkingDir );
 
-  bool isScript = ( 0 != ::_stricmp( pExt, ".exe" ) );
+  const char* pExt = ::PathFindExtensionA( inExecutable.c_str() );
+  bool isScript = ( 0 != ::stricmp( pExt, ".exe" ) );
   if( isScript )
     commandLine = "cmd /c call " + commandLine;
 
@@ -187,15 +184,16 @@ BCI2000Connection::StartExecutable( const string& inExecutable, const string& in
   si.dwFlags = STARTF_USESHOWWINDOW;
   si.wShowWindow = SW_SHOWNOACTIVATE;
   PROCESS_INFORMATION pi = { 0 };
-  bool success =( TRUE == ::CreateProcessA( NULL, const_cast<char*>( commandLine.c_str() ), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, workingDir.c_str(), &si, &pi ) );
+  bool success =( TRUE == ::CreateProcessA( NULL, const_cast<char*>( commandLine.c_str() ), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, pWorkingDir, &si, &pi ) );
   if( !success )
   {
     ostringstream oss;
     oss << "Could not execute: " << commandLine << "\n"
-        << "in working directory: " << workingDir << "\n"
+        << "in working directory: " << pWorkingDir << "\n"
         << "Error code: 0x" << hex << ::GetLastError();
     mResult = oss.str();
   }
+  delete[] pWorkingDir;
   if( success )
   {
     ::WaitForInputIdle( pi.hProcess, INFINITE );

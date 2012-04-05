@@ -50,11 +50,13 @@ class Module
 
   static HRESULT DllCanUnloadNow();
   static HRESULT DllGetClassObject( REFCLSID, REFIID, LPVOID* );
-  static HRESULT DllRegisterServer( bool forUser = false );
-  static HRESULT DllUnregisterServer( bool forUser = false );
+  static HRESULT DllRegisterServer();
+  static HRESULT DllUnregisterServer();
   static HRESULT DllInstall( BOOL, LPCWSTR );
 
  private:
+  enum { none, system, user };
+  static LONG RedirectHKCR( int type );
   static HRESULT RunRegScripts( int action );
   static BOOL CALLBACK RunRegScript( HMODULE, LPCWSTR, LPWSTR, LONG_PTR );
 

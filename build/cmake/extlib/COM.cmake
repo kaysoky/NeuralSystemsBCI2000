@@ -39,6 +39,11 @@ SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/com )
 SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\com FILES ${SRC_EXTLIB} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\com FILES ${HDR_EXTLIB} )
 
+# Define libraries
+SET( LIBS_EXTLIB
+  shlwapi
+)
+
 # Set success
 SET( EXTLIB_OK TRUE )
 

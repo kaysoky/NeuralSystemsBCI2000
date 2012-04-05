@@ -73,7 +73,7 @@ namespace com {
 class Registrar
 {
  public:
-  enum Action { Create = 1, Remove = 2, ForUser = 4 };
+  enum Action { Create = 1, Remove = 2 };
   typedef std::map<std::string, std::string> Environment;
 
   Registrar() : mpRootNode( new Node ) {}

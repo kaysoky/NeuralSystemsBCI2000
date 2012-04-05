@@ -30,14 +30,14 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 STDAPI DllRegisterServer(void)
 {
     // registers object, typelib and all interfaces in typelib
-  return Module::DllRegisterServer( false );
+  return Module::DllRegisterServer();
 }
 
 
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer(void)
 {
-  return Module::DllUnregisterServer( false );
+  return Module::DllUnregisterServer();
 }
 
 // DllInstall - Adds/Removes entries to the system registry per user

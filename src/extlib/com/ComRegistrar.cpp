@@ -191,26 +191,7 @@ Registrar::Key::Execute( HKEY inParent, int inAction ) const
       key = HKEY_USERS;
     else
       return ERROR_BADKEY;
-
-    if( key == HKEY_CLASSES_ROOT )
-    {
-      key = ( inAction & ForUser ) ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-      HKEY subKey = 0;
-      result = ::RegCreateKeyExA( key, "Software", 0, NULL, 0, KEY_ALL_ACCESS, NULL, &subKey, NULL );
-      if( ERROR_SUCCESS != result )
-        return result;
-      ::RegCloseKey( key );
-      key = subKey;
-      result = ::RegCreateKeyExA( key, "Classes", 0, NULL, 0, KEY_ALL_ACCESS, NULL, &subKey, NULL );
-      if( ERROR_SUCCESS != result )
-        return result;
-      ::RegCloseKey( key );
-      key = subKey;
-    }
-    else
-    {
-      result = ::RegOpenKeyEx( key, NULL, 0, KEY_ALL_ACCESS, &key );
-    }
+    result = ::RegOpenKeyEx( key, NULL, 0, KEY_ALL_ACCESS, &key );
   }
   else
   {

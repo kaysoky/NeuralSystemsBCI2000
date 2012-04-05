@@ -33,6 +33,8 @@
 #include "ComClassFactory.h"
 #include "ComRegistrar.h"
 #include "ComStrings.h"
+#include <Windows.h>
+#include <Shlwapi.h>
 
 using namespace com;
 
@@ -85,17 +87,10 @@ Module::GetLocation()
     const wchar_t* pPath = Module::GetFileName();
     if( pPath != 0 )
     {
-      DWORD size = ::wcslen( pPath );
-      wchar_t pDrive[_MAX_DRIVE];
-      wchar_t* pDir = new wchar_t[size];
-      errno_t err = ::_wsplitpath_s( pPath, pDrive, _MAX_DRIVE, pDir, size, NULL, 0, NULL, 0 );
-      if( err == 0 )
-      {
-        spLocation = new wchar_t[size];
-        ::wcscpy( spLocation, pDrive );
-        ::wcscat( spLocation, pDir );
-      }
-      delete[] pDir;
+      spLocation = new wchar_t[::wcslen( pPath ) + 1];
+      ::wcscpy( spLocation, pPath );
+      ::PathRemoveFileSpecW( spLocation );
+      ::PathAddBackslashW( spLocation );
     }
   }
   return spLocation;
@@ -122,29 +117,21 @@ Module::DllGetClassObject( REFCLSID inCSLID, REFIID inIID, LPVOID* outObject )
 }
 
 HRESULT
-Module::DllRegisterServer( bool inForUser )
+Module::DllRegisterServer()
 {
   Ptr<ITypeLib> pTypeLib;
   HRESULT result = ::LoadTypeLibEx( GetFileName(), REGKIND_NONE, &pTypeLib );
   if( S_OK != result )
     return result;
-  if( inForUser )
-    result = ::RegisterTypeLibForUser( pTypeLib, const_cast<wchar_t*>( GetFileName() ), NULL );
-  else
-    result = ::RegisterTypeLib( pTypeLib, GetFileName(), NULL );
+  result = ::RegisterTypeLib( pTypeLib, const_cast<wchar_t*>( GetFileName() ), NULL );
   if( S_OK != result )
     return result;
-
-  int action = Registrar::Create;
-  if( inForUser )
-    action |= Registrar::ForUser;
-  result = RunRegScripts( action );
-
+  result = RunRegScripts( Registrar::Create );
   return result;
 }
 
 HRESULT
-Module::DllUnregisterServer( bool inForUser )
+Module::DllUnregisterServer()
 {
   Ptr<ITypeLib> pTypeLib;
   HRESULT result = ::LoadTypeLibEx( GetFileName(), REGKIND_NONE, &pTypeLib );
@@ -155,22 +142,16 @@ Module::DllUnregisterServer( bool inForUser )
   result = pTypeLib->GetLibAttr( &pLibAttr );
   if( FAILED( result ) || pLibAttr == NULL )
     return result;
+
   GUID guid = pLibAttr->guid;
   LCID lcid = pLibAttr->lcid;
   SYSKIND syskind = pLibAttr->syskind;
   WORD majorVerNum = pLibAttr->wMajorVerNum,
        minorVerNum = pLibAttr->wMinorVerNum;
   pTypeLib->ReleaseTLibAttr( pLibAttr );
+  result = ::UnRegisterTypeLib( guid, majorVerNum, minorVerNum, lcid, syskind );
 
-  if( inForUser )
-    result = ::UnRegisterTypeLibForUser( guid, majorVerNum, minorVerNum, lcid, syskind );
-  else
-    result = ::UnRegisterTypeLib( guid, majorVerNum, minorVerNum, lcid, syskind );
-
-  int action = Registrar::Remove;
-  if( inForUser )
-    action |= Registrar::ForUser;
-  HRESULT regScriptResult = RunRegScripts( action );
+  HRESULT regScriptResult = RunRegScripts( Registrar::Remove );
 
   if( FAILED( result ) )
     return result;
@@ -210,27 +191,77 @@ Module::DllInstall( BOOL inInstall, LPCWSTR inpCmdLine )
   {
     if( system || any )
     {
-      resultSystem = Module::DllRegisterServer( false );
+      if( ERROR_SUCCESS != RedirectHKCR( system ) )
+        return E_FAIL;
+      resultSystem = Module::DllRegisterServer();
       if( FAILED( resultSystem ) )
-        Module::DllUnregisterServer( false );
+        Module::DllUnregisterServer();
     }
     if( user || any && FAILED( resultSystem ) )
     {
-      resultUser = Module::DllRegisterServer( true );
+      if( ERROR_SUCCESS != RedirectHKCR( user ) )
+        return E_FAIL;
+      resultUser = Module::DllRegisterServer();
       if( FAILED( resultUser ) )
-        Module::DllUnregisterServer( true );
+        Module::DllUnregisterServer();
     }
   }
   else // Uninstall
   {
     if( system || any )
-      resultSystem = Module::DllUnregisterServer( false );
+    {
+      if( ERROR_SUCCESS != RedirectHKCR( system ) )
+        return E_FAIL;
+      resultSystem = Module::DllUnregisterServer();
+    }
     if( user || any && FAILED( resultSystem ) )
-      resultUser = Module::DllUnregisterServer( true );
+    {
+      if( ERROR_SUCCESS != RedirectHKCR( user ) )
+        return E_FAIL;
+      resultUser = Module::DllUnregisterServer();
+    }
   }
+  if( ERROR_SUCCESS != RedirectHKCR( none ) )
+    return E_FAIL;
+
   HRESULT result = resultSystem;
   if( user && FAILED( resultUser ) || any && FAILED( resultSystem ) )
     result = resultUser;
+  return result;
+}
+
+LONG
+Module::RedirectHKCR( int inType )
+{
+  LONG result = ERROR_SUCCESS;
+  HKEY key = NULL;
+  switch( inType )
+  {
+    case system:
+      key = HKEY_LOCAL_MACHINE;
+      break;
+    case user:
+      key = HKEY_CURRENT_USER;
+      break;
+  }
+  if( key )
+    result = ::RegCreateKeyExA( key, "Software\\Classes", 0, NULL, 0, KEY_ALL_ACCESS, NULL, &key, NULL );
+
+  if( ERROR_SUCCESS != result )
+    return result;
+
+  HINSTANCE module = ::LoadLibraryA( "Advapi32.dll" );
+  if( !module )
+    return ::GetLastError();
+
+  typedef LONG WINAPI (*funcType)( HKEY, HKEY );
+  funcType RegOverridePredefKey = reinterpret_cast<funcType>( ::GetProcAddress( module, "RegOverridePredefKey" ) );
+  if( !RegOverridePredefKey )
+    return ::GetLastError();
+  result = RegOverridePredefKey( HKEY_CLASSES_ROOT, key );
+
+  if( key )
+    ::RegCloseKey( key );
   return result;
 }
 
@@ -244,7 +275,7 @@ HRESULT
 Module::RunRegScripts( int inAction )
 {
   RegScriptInfo info = { inAction, E_FAIL };
-  ::EnumResourceNamesW( sHInstance, L"REGISTRY", &Module::RunRegScript, reinterpret_cast<LONG_PTR>( &info ) );
+  ::EnumResourceNamesW( sHInstance, L"REGISTRY", reinterpret_cast<ENUMRESNAMEPROC>( &Module::RunRegScript ), reinterpret_cast<LONG_PTR>( &info ) );
   return info.result;
 }
 

@@ -62,7 +62,9 @@ class DualString : public std::wstring
  public:
   DualString() {}
   DualString( const std::wstring& w ) : std::wstring( w ) {}
+  DualString( const wchar_t* p ) : std::wstring( p ) {}
   DualString( const std::string& s ) : std::wstring( FromNarrow( s.c_str() ) ) {}
+  DualString( const char* p ) : std::wstring( FromNarrow( p ) ) {}
   DualString& operator=( const wchar_t* p ) { std::wstring::operator=( p ); return *this; }
   DualString& operator=( const char* p ) { return *this = FromNarrow( p ); }
   operator std::string() const { return ToNarrow( c_str() ); }
