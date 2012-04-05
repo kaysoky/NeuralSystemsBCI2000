@@ -150,14 +150,15 @@ Registrar::Token::ReadFromStream( istream& is )
 LONG
 Registrar::Node::Execute( HKEY inParent, int inAction ) const
 {
+  LONG result = ERROR_SUCCESS;
   vector<Node*>::const_iterator i = mNodes.begin();
   while( i != mNodes.end() )
   {
-    LONG result = ( *i++ )->Execute( inParent, inAction );
-    if( result != ERROR_SUCCESS )
-      return result;
+    LONG subResult = ( *i++ )->Execute( inParent, inAction );
+    if( result == ERROR_SUCCESS )
+      result = subResult;
   }
-  return ERROR_SUCCESS;
+  return result;
 }
 
 void
@@ -204,11 +205,14 @@ Registrar::Key::Execute( HKEY inParent, int inAction ) const
   result = Node::Execute( key, inAction );
   if( inParent )
   {
-    if( result == ERROR_SUCCESS && ( inAction & Remove ) && ( mFlags & ForceRemove ) )
-      result = DeleteSubentries( key );
+    LONG subResult = ERROR_SUCCESS;
+    if( ( inAction & Remove ) && ( mFlags & ForceRemove ) )
+      subResult = DeleteSubentries( key );
     ::RegCloseKey( key );
-    if( result == ERROR_SUCCESS && ( inAction & Remove ) && !( mFlags & NoRemove ) )
-      result = ::RegDeleteKeyA( inParent, mName.c_str() );
+    if( subResult == ERROR_SUCCESS && ( inAction & Remove ) && !( mFlags & NoRemove ) )
+      subResult = ::RegDeleteKeyA( inParent, mName.c_str() );
+    if( result == ERROR_SUCCESS )
+      result = subResult;
   }
   return result;
 }

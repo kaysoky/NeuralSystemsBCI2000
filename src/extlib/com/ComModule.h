@@ -55,8 +55,8 @@ class Module
   static HRESULT DllInstall( BOOL, LPCWSTR );
 
  private:
-  enum { none, system, user };
-  static LONG RedirectHKCR( int type );
+  enum RedirectionType { None, System, User };
+  static LONG RedirectHKCR( RedirectionType );
   static HRESULT RunRegScripts( int action );
   static BOOL CALLBACK RunRegScript( HMODULE, LPCWSTR, LPWSTR, LONG_PTR );
 

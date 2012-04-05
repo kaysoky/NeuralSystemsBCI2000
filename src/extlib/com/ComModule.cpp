@@ -33,7 +33,6 @@
 #include "ComClassFactory.h"
 #include "ComRegistrar.h"
 #include "ComStrings.h"
-#include <Windows.h>
 #include <Shlwapi.h>
 
 using namespace com;
@@ -172,7 +171,12 @@ Module::DllInstall( BOOL inInstall, LPCWSTR inpCmdLine )
        any = false;
   if( inpCmdLine != NULL )
   {
-    if( !::_wcsicmp( inpCmdLine, L"user" ) )
+    if( !::_wcsicmp( inpCmdLine, L"system" ) )
+    {
+      system = true;
+      user = false;
+    }
+    else if( !::_wcsicmp( inpCmdLine, L"user" ) )
     {
       user = true;
       system = false;
@@ -186,12 +190,14 @@ Module::DllInstall( BOOL inInstall, LPCWSTR inpCmdLine )
       user = true;
       system = true;
     }
+    else
+      return E_FAIL;
   }
   if( inInstall )
   {
     if( system || any )
     {
-      if( ERROR_SUCCESS != RedirectHKCR( system ) )
+      if( ERROR_SUCCESS != RedirectHKCR( System ) )
         return E_FAIL;
       resultSystem = Module::DllRegisterServer();
       if( FAILED( resultSystem ) )
@@ -199,7 +205,7 @@ Module::DllInstall( BOOL inInstall, LPCWSTR inpCmdLine )
     }
     if( user || any && FAILED( resultSystem ) )
     {
-      if( ERROR_SUCCESS != RedirectHKCR( user ) )
+      if( ERROR_SUCCESS != RedirectHKCR( User ) )
         return E_FAIL;
       resultUser = Module::DllRegisterServer();
       if( FAILED( resultUser ) )
@@ -210,19 +216,18 @@ Module::DllInstall( BOOL inInstall, LPCWSTR inpCmdLine )
   {
     if( system || any )
     {
-      if( ERROR_SUCCESS != RedirectHKCR( system ) )
+      if( ERROR_SUCCESS != RedirectHKCR( System ) )
         return E_FAIL;
       resultSystem = Module::DllUnregisterServer();
     }
-    if( user || any && FAILED( resultSystem ) )
+    if( user || any )
     {
-      if( ERROR_SUCCESS != RedirectHKCR( user ) )
+      if( ERROR_SUCCESS != RedirectHKCR( User ) )
         return E_FAIL;
       resultUser = Module::DllUnregisterServer();
     }
   }
-  if( ERROR_SUCCESS != RedirectHKCR( none ) )
-    return E_FAIL;
+  RedirectHKCR( None );
 
   HRESULT result = resultSystem;
   if( user && FAILED( resultUser ) || any && FAILED( resultSystem ) )
@@ -231,18 +236,23 @@ Module::DllInstall( BOOL inInstall, LPCWSTR inpCmdLine )
 }
 
 LONG
-Module::RedirectHKCR( int inType )
+Module::RedirectHKCR( RedirectionType inType )
 {
   LONG result = ERROR_SUCCESS;
   HKEY key = NULL;
   switch( inType )
   {
-    case system:
+    case None:
+      key = NULL;
+      break;
+    case System:
       key = HKEY_LOCAL_MACHINE;
       break;
-    case user:
+    case User:
       key = HKEY_CURRENT_USER;
       break;
+    default:
+      return -1;
   }
   if( key )
     result = ::RegCreateKeyExA( key, "Software\\Classes", 0, NULL, 0, KEY_ALL_ACCESS, NULL, &key, NULL );
@@ -254,7 +264,7 @@ Module::RedirectHKCR( int inType )
   if( !module )
     return ::GetLastError();
 
-  typedef LONG WINAPI (*funcType)( HKEY, HKEY );
+  typedef LONG (WINAPI *funcType)( HKEY, HKEY );
   funcType RegOverridePredefKey = reinterpret_cast<funcType>( ::GetProcAddress( module, "RegOverridePredefKey" ) );
   if( !RegOverridePredefKey )
     return ::GetLastError();
@@ -275,7 +285,10 @@ HRESULT
 Module::RunRegScripts( int inAction )
 {
   RegScriptInfo info = { inAction, E_FAIL };
-  ::EnumResourceNamesW( sHInstance, L"REGISTRY", reinterpret_cast<ENUMRESNAMEPROC>( &Module::RunRegScript ), reinterpret_cast<LONG_PTR>( &info ) );
+#ifndef ENUMRESNAMEPROC
+# define ENUMRESNAMEPROCW ENUMRESNAMEPROC
+#endif // MinGW header bug?
+  ::EnumResourceNamesW( sHInstance, L"REGISTRY", reinterpret_cast<ENUMRESNAMEPROCW>( &Module::RunRegScript ), reinterpret_cast<LONG_PTR>( &info ) );
   return info.result;
 }
 

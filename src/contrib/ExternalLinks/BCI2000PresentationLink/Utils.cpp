@@ -53,7 +53,7 @@ ArgList::Get##pclType( int inIdx ) \
   CHECK_TYPE( inIdx, pclType, pInterface ); \
   comType value; \
   pInterface->getValue( &value ); \
-  return value; \
+  return cType( value ); \
 }
 
 #undef SETTER

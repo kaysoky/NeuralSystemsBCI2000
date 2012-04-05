@@ -46,7 +46,7 @@ class BString
   ~BString() { Free(); }
   BString& operator=( const wchar_t* p ) { Free(); mp = Copy( p ); return *this; }
   operator wchar_t*() { return mp; }
-  operator std::wstring() { return mp; }
+  operator const wchar_t*() const { return mp; }
   wchar_t** operator&() { Free(); return &mp; }
   bool operator==( const wchar_t* p ) { return ( !p && !mp ) || ( p && mp && !::wcscmp( mp, p ) ); }
   bool operator!=( const wchar_t* p ) { return !operator==( p ); }
