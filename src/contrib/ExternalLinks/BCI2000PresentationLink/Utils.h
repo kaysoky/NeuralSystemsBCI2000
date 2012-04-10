@@ -41,7 +41,9 @@
 } catch( const BCIException& e ) { \
   mLastError = com::DualString( e.what() ); return E_FAIL;\
 } catch( ... ) { \
-  mLastError = L"Unknown exception in " OLESTR_( __FUNCTION__ ); return E_FAIL;\
+  mLastError = L"Unknown exception in "; \
+  mLastError += com::DualString( __FUNCTION__ ); \
+  return E_FAIL;\
 } return S_OK;
 
 template<class T>
@@ -84,9 +86,9 @@ template<class T>
 ArgList::ArgList( const struct Method<T>& inMethod, IPCLArguments* pArgs )
 {
   com::Ptr<IPCLArgument> pArg;
-  pArgs->getReturnValue( &pArg );
+  pArgs->getReturnValue( pArg.Assignee() );
   push_back( pArg );
-#ifdef _DEBUG
+#ifdef BCIDEBUG
   std::string methodName = com::DualString( inMethod.name );
   if( inMethod.result.type )
   {
@@ -99,24 +101,24 @@ ArgList::ArgList( const struct Method<T>& inMethod, IPCLArguments* pArgs )
     if( !match )
       throw bciexception_( "Return type does not match when calling " << methodName );
   }
-#endif // _DEBUG
+#endif // BCIDEBUG
 
   long numArgs = -1;
   pArgs->getCount( &numArgs );
-#ifdef _DEBUG
+#ifdef BCIDEBUG
   int maxArgs = sizeof( inMethod.arguments ) / sizeof( *inMethod.arguments ),
       methodArgs = 0;
   while( numArgs < maxArgs && inMethod.arguments[methodArgs].name != NULL )
     ++methodArgs;
   if( numArgs != methodArgs )
     throw bciexception_( "Number of arguments does not match when calling " << methodName );
-#endif // _DEBUG
+#endif // BCIDEBUG
 
   for( long i = 0; i < numArgs; ++i )
   {
-    pArgs->getArgument( i, &pArg );
+    pArgs->getArgument( i, pArg.Assignee() );
     push_back( pArg );
-#ifdef _DEBUG
+#ifdef BCIDEBUG
     com::BString type;
     pArg->getType( &type );
     bool match = ( type == inMethod.arguments[i].type );
@@ -130,7 +132,7 @@ ArgList::ArgList( const struct Method<T>& inMethod, IPCLArguments* pArgs )
         << ( rank > 0 ? " array" : "" )
         << "\", does not match when calling " << methodName
       );
-#endif // _DEBUG
+#endif // BCIDEBUG
   }
 }
 

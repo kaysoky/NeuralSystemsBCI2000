@@ -31,7 +31,7 @@
 #include "BCI2000ActiveDataPort.h"
 #include <string>
 
-#define METHOD( x ) &CBCI2000Controller::x, L#x
+#define METHOD( x ) &CBCI2000Controller::x, OLESTR( #x )
 static const struct Method<CBCI2000Controller> sConstructors[] =
 {
   {
@@ -219,7 +219,7 @@ CBCI2000Controller::getMethods(IPCLMethodList* ioList)
   for( int i = 0; i < sNumConstructors; ++i )
   {
     com::Ptr<IPCLMethod> pMethod = NULL;
-    pList->addNew( &pMethod );
+    pList->addNew( pMethod.Assignee() );
     pMethod->setDescription( com::BString( sConstructors[i].description ) );
     for( int j = 0; j < sMaxArguments && sConstructors[i].arguments[j].name != NULL; ++j )
     {
@@ -230,7 +230,7 @@ CBCI2000Controller::getMethods(IPCLMethodList* ioList)
   for( int i = 0; i < sNumMethods; ++i )
   {
     com::Ptr<IPCLMethod> pMethod = NULL;
-    pList->addMethod( &pMethod );
+    pList->addMethod( pMethod.Assignee() );
     pMethod->setName( com::BString( sMethods[i].name ) );
     pMethod->setDescription( com::BString( sMethods[i].description ) );
     for( int j = 0; j < sMaxArguments && sMethods[i].arguments[j].name != NULL; ++j )
@@ -262,7 +262,7 @@ void
 CBCI2000Controller::constructor_data_port_ext( ArgList& ioArgs )
 {
   com::Ptr<IActiveDataPort> pInterface;
-  ioArgs[1]->QueryInterface( IID_IActiveDataPort, &pInterface );
+  ioArgs[1]->QueryInterface( IID_IActiveDataPort, pInterface.Assignee() );
   if( !pInterface )
     throw bciexception_( "Argument is not an IActiveDataPort descendant" );
   mpDataPort = dynamic_cast<CBCI2000ActiveDataPort*>( static_cast<IActiveDataPort*>( pInterface ) );

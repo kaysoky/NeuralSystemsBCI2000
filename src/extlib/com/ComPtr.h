@@ -38,8 +38,8 @@ class Ptr
   struct PtrToPtr
   {
     PtrToPtr( T** p ) : mp( p ) {}
-    operator void**() { return reinterpret_cast<void**>( mp ); }
     operator T**() { return mp; }
+    operator void**() { return reinterpret_cast<void**>( mp ); }
     T** mp;
   };
 
@@ -50,7 +50,7 @@ class Ptr
   ~Ptr() { Dec(); }
   Ptr& operator=( T* pT ) { Dec(); mp = pT; Inc(); return *this; }
   Ptr& operator=( const Ptr& c ) { Dec(); mp = c.mp; Inc(); return *this; }
-  PtrToPtr operator&() { Dec(); mp = NULL; return &mp; }
+  PtrToPtr Assignee() { Dec(); mp = NULL; return &mp; }
   T* operator->() { return mp; }
   const T* operator->() const { return mp; }
   operator T*() { return mp; }

@@ -30,6 +30,7 @@
 #include "BCI2000DataPortExtension.h"
 #include "Utils.h"
 #include <algorithm>
+#include <cstdio>
 
 using namespace std;
 

@@ -58,8 +58,7 @@ class CoClass : public T
     mpTypeInfo( NULL )
   {
     sFactory.IncObjectCount();
-    Ptr<ITypeInfo> pTypeInfo;
-    Module::GetTypeLib()->GetTypeInfoOfGuid( *U, &mpTypeInfo );
+    Module::GetTypeLib()->GetTypeInfoOfGuid( *U, mpTypeInfo.Assignee() );
   }
   virtual ~CoClass()
   {

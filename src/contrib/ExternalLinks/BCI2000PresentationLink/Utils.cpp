@@ -34,7 +34,7 @@ using namespace std;
 #undef CHECK_IDX
 #define CHECK_IDX( idx ) \
   if( idx < 0 || idx >= static_cast<int>( size() ) ) \
-    throw bciexception_( "Index: " << idx << " out of bounds in " __FUNCTION__ );
+    throw bciexception_( "Index: " << idx << " out of bounds in " << __FUNCTION__ );
 
 #undef CHECK_TYPE
 #define CHECK_TYPE( idx, type, ptr ) \
@@ -49,7 +49,7 @@ ArgList::Get##pclType( int inIdx ) \
   CHECK_IDX( inIdx ); \
   Ptr<IPCL##pclType> pInterface = NULL; \
   if( ( *this )[inIdx] ) \
-    ( *this )[inIdx]->QueryInterface( IID_IPCL##pclType, &pInterface ); \
+    ( *this )[inIdx]->QueryInterface( IID_IPCL##pclType, pInterface.Assignee() ); \
   CHECK_TYPE( inIdx, pclType, pInterface ); \
   comType value; \
   pInterface->getValue( &value ); \
@@ -64,7 +64,7 @@ ArgList::Set##pclType( int inIdx, const cType& inValue ) \
   CHECK_IDX( inIdx ); \
   Ptr<IPCL##pclType> pInterface = NULL; \
   if( ( *this )[inIdx] ) \
-    ( *this )[inIdx]->QueryInterface( IID_IPCL##pclType, &pInterface ); \
+    ( *this )[inIdx]->QueryInterface( IID_IPCL##pclType, pInterface.Assignee() ); \
   CHECK_TYPE( inIdx, pclType, pInterface ); \
   pInterface->setValue( comType( inValue ) ); \
 }
@@ -78,7 +78,7 @@ ArgList::Get##pclType##Array( int inIdx ) \
   vector<cType> result; \
   Ptr<IPCL##pclType##Array> pInterface; \
   if( ( *this )[inIdx] ) \
-    ( *this )[inIdx]->QueryInterface( IID_IPCL##pclType##Array, &pInterface ); \
+    ( *this )[inIdx]->QueryInterface( IID_IPCL##pclType##Array, pInterface.Assignee() ); \
   CHECK_TYPE( inIdx, pclType##Array, pInterface ); \
   long count; \
   pInterface->getCount( &count ); \

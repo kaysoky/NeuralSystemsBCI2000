@@ -115,7 +115,7 @@ InitDialog( HWND inDialog )
 static void
 ChooseProgDir( HWND inDialog )
 {
-  wchar_t* pOperatorName = NULL;
+  const wchar_t* pOperatorName = NULL;
   if( !::LoadStringW( com::Module::GetHInstance(), IDS_OperatorName, reinterpret_cast<LPWSTR>( &pOperatorName ), 0 ) )
     pOperatorName = L"Operator.exe";
 
@@ -141,16 +141,18 @@ ChooseProgDir( HWND inDialog )
   filterStream << L"BCI2000 Startup File" << ends << pOperatorName << L";*.bat" << ends << ends;
   wstring filter = filterStream.str();
   ofName.lpstrFilter = filter.data();
-  const int bufSize = 2048;
-  wchar_t buffer[bufSize] = L"";
-  ::wcscpy_s( buffer, bufSize, curOperator.c_str() );
-  ofName.lpstrFile = buffer;
+  size_t bufSize = max( 2048, _MAX_PATH );
+  bufSize = max( bufSize, 2 * curOperator.length() );
+  wchar_t* pBuffer = new wchar_t[bufSize];
+  ::wcscpy( pBuffer, curOperator.c_str() );
+  ofName.lpstrFile = pBuffer;
   ofName.nMaxFile = bufSize;
   ofName.lpstrTitle = L"Select a BCI2000 Operator module, or BCI2000 batch file";
   ofName.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
   ofName.lpstrDefExt = L"exe";
   if( ::GetOpenFileNameW( &ofName ) )
     ::SetWindowTextW( control, ofName.lpstrFile );
+  delete[] pBuffer;
 }
 
 static void

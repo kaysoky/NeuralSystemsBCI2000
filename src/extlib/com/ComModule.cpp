@@ -99,7 +99,7 @@ Ptr<ITypeLib>
 Module::GetTypeLib()
 {
   if( !spTypeLib )
-    ::LoadRegTypeLib( *spLibID, 1, 0, 0, &spTypeLib );
+    ::LoadRegTypeLib( *spLibID, 1, 0, 0, spTypeLib.Assignee() );
   return spTypeLib;
 }
 
@@ -119,7 +119,7 @@ HRESULT
 Module::DllRegisterServer()
 {
   Ptr<ITypeLib> pTypeLib;
-  HRESULT result = ::LoadTypeLibEx( GetFileName(), REGKIND_NONE, &pTypeLib );
+  HRESULT result = ::LoadTypeLibEx( GetFileName(), REGKIND_NONE, pTypeLib.Assignee() );
   if( S_OK != result )
     return result;
   result = ::RegisterTypeLib( pTypeLib, const_cast<wchar_t*>( GetFileName() ), NULL );
@@ -133,7 +133,7 @@ HRESULT
 Module::DllUnregisterServer()
 {
   Ptr<ITypeLib> pTypeLib;
-  HRESULT result = ::LoadTypeLibEx( GetFileName(), REGKIND_NONE, &pTypeLib );
+  HRESULT result = ::LoadTypeLibEx( GetFileName(), REGKIND_NONE, pTypeLib.Assignee() );
   if( FAILED( result ) )
     return result;
 
