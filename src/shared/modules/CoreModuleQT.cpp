@@ -27,6 +27,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
+#include "ThreadUtils.h"
 #include "CoreModuleQT.h"
 #include <QApplication>
 
@@ -55,6 +56,9 @@ CoreModuleQT::OnProcessGUIMessages()
     qApp->sendPostedEvents();
     qApp->processEvents();
   }
+#ifdef __APPLE__
+  ThreadUtils::SleepFor(2);  // prevents core modules from taking 100% CPU on OSX under Qt 4.7
+#endif // __APPLE__
 }
 
 bool

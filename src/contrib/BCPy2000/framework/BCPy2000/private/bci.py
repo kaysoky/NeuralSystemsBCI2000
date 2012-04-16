@@ -711,19 +711,22 @@ def wrap(text, width):
 	text = text.replace('\r\n', '\n').replace('\r', '\n')
 	return reduce(wraphelper, text.split(' '))
 
-def plural(number, noun, include_number='%g', override=False):
+def plural(number, noun, include_number='%g', override=False, pluralform=None):
 	s = noun
 	if number != 1.0 and not override:
-		noun = noun.lower()
-		if 0: pass
-		elif noun.endswith(('sis')): s = s[:-2]; ending = 'es'
-		elif noun.endswith(('x','ss')) and len(noun) > 1: ending = 'es'
-		elif noun.endswith(('s')) and len(noun) > 1: ending = 'ses'
-		elif noun.endswith(('y')) and len(noun) > 2 and not noun[:-1].endswith(('a','e','i','o','u')): s = s[:-1]; ending = 'ies'
-		elif noun.endswith(('um')) and len(noun) >= 5: s = s[:-2]; ending = 'a'
-		else: ending = 's'
-		if len(s) and s[-1] != s[-1].lower(): ending = ending.upper()
-		s += ending
+		if pluralform == None:
+			noun = noun.lower()
+			if 0: pass
+			elif noun.endswith(('sis', 'xis')): s = s[:-2]; ending = 'es'
+			elif noun.endswith(('x','ss')) and len(noun) > 1: ending = 'es'
+			elif noun.endswith(('s')) and len(noun) > 1: ending = 'ses'
+			elif noun.endswith(('y')) and len(noun) > 2 and not noun[:-1].endswith(('a','e','i','o','u')): s = s[:-1]; ending = 'ies'
+			elif noun.endswith(('um')) and len(noun) >= 5: s = s[:-2]; ending = 'a'
+			else: ending = 's'
+			if len(s) and s[-1] != s[-1].lower(): ending = ending.upper()
+			s += ending
+		else:
+			s = pluralform
 		
 	if include_number in [True]: include_number = '%g'
 	if include_number not in [False, None, '']: s = (include_number % number) + ' ' + s
