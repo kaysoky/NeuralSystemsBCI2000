@@ -43,7 +43,7 @@ class BCI2000Connection
     mWindowVisible( true ),
     mTimeout( DefaultTimeout() ),
     mTelnetAddress( DefaultTelnetAddress() )
-  {}
+  { mSocket.set_tcpnodelay( true ); }
   virtual ~BCI2000Connection() { Disconnect(); }
 
   // ==Properties==

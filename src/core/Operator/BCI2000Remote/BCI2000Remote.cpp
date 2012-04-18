@@ -77,13 +77,18 @@ BCI2000Remote::StartupModules( const std::vector<string>& inModules )
   }
   if( success )
   {
-    string errors;
+    ostringstream errors;
     for( size_t i = 0; i < inModules.size(); ++i )
-      if( Execute( "start executable " + inModules[i] ) != 0 )
-        errors += "\n" + Result();
-    success = errors.empty();
+    {
+      int code = Execute( "start executable " + inModules[i] );
+      if( code )
+        errors << "\n" << inModules[i] << " returned " << code;
+      else if( !Result().empty() )
+        errors << "\n" << Result();
+    }
+    success = errors.str().empty();
     if( !success )
-      mResult = "Could not start modules: " + errors;
+      mResult = "Could not start modules: " + errors.str();
   }
   if( success )
     success = WaitForSystemState( "Initialization" );
@@ -118,9 +123,13 @@ BCI2000Remote::SetConfig()
   SubjectID( mSubjectID );
   SessionID( mSessionID );
   DataDirectory( mDataDirectory );
-  bool success = SimpleCommand( "set config" );
-  if( success )
-    success = WaitForSystemState( "Resting" );
+  Execute( "capture messages none warnings errors" );
+  if( SimpleCommand( "set config" ) )
+    WaitForSystemState( "Resting|Initialization" );
+  Execute( "capture messages none" );
+  Execute( "get system state" );
+  bool success = !::stricmp( "Resting", Result().c_str() );
+  Execute( "flush messages" );
   return success;
 }
 
@@ -130,11 +139,15 @@ BCI2000Remote::Start()
   bool success = true;
   Execute( "get system state" );
   string state = Result();
-  success = ( 0 != ::_stricmp( state.c_str(), "Running" ) );
-  if( !success )
+  if( !::stricmp( state.c_str(), "Running" ) )
+  {
     mResult = "System is already in running state";
-  if( success && 0 != ::_stricmp( state.c_str(), "Suspended" ) && 0 != ::_stricmp( state.c_str(), "Resting" ) )
+    success = false;
+  }
+  else if( ::stricmp( state.c_str(), "Resting" ) && ::stricmp( state.c_str(), "Suspended" ) )
+  {
     success = SetConfig();
+  }
   if( success )
     success = SimpleCommand( "start system" );
   if( success )
@@ -146,7 +159,7 @@ bool
 BCI2000Remote::Stop()
 {
   Execute( "get system state" );
-  bool success = !::_stricmp( Result().c_str(), "Running" );
+  bool success = !::stricmp( Result().c_str(), "Running" );
   if( !success )
     mResult = "System is not in running state";
   if( success )

@@ -81,7 +81,10 @@ BCI2000Connection::Connect()
   {
     mSocket.open( mTelnetAddress.c_str() );
     mConnection.open( mSocket );
-    success = mSocket.wait_for_read( static_cast<int>( 1e3 * mTimeout ) );
+    if( mOperatorPath.empty() )
+      success = mConnection.is_open();
+    else
+      success = mSocket.wait_for_read( static_cast<int>( 1e3 * mTimeout ) );
     if( !success )
       mResult = "Could not connect to Operator module at " + mTelnetAddress;
     else while( mConnection.rdbuf()->in_avail() )
@@ -149,7 +152,7 @@ BCI2000Connection::Execute( const string& inCommand )
       mResult += c;
   }
   int exitCode = 0;
-  const string marker = "\\Result";
+  const string marker = "\\ExitCode";
   size_t pos = Result().find( marker );
   if( pos != string::npos )
     istringstream( mResult.substr( pos + marker.length() ) ) >> exitCode;
