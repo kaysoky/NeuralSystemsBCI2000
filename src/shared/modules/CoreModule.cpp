@@ -144,7 +144,11 @@ CoreModule::Initialize( int inArgc, char** inArgv )
     {
       printVersion = true;
     }
-    if( curArg.find( "--" ) == 0 )
+    else if( curArg == "--help" || curArg == "-?" || curArg == "?" )
+    {
+      printHelp = true;
+    }
+    else if( curArg.find( "--" ) == 0 )
     {
       string paramDef = curArg.substr( 2 );
       size_t nameEnd = paramDef.find_first_of( "-=:" );
@@ -179,15 +183,13 @@ CoreModule::Initialize( int inArgc, char** inArgv )
   bciout__.SetFlushHandler( BCIError::PlainMessage );
   if( printVersion )
   {
-    VersionInfo versionInfo;
-    istringstream iss( BCI2000_VERSION );
-    iss >> versionInfo;
+    const VersionInfo& info = VersionInfo::Current;
     bciout__ << "BCI2000 " THISMODULE " \n\n"
-             << " Framework: " << versionInfo[ VersionInfo::VersionID ] << " \n";
-    if( !versionInfo[ VersionInfo::Revision ].empty() )
-      bciout__ << " Revision: " << versionInfo[ VersionInfo::Revision ]
-               <<          ", " << versionInfo[ VersionInfo::SourceDate ] << " \n";
-    bciout__ << " Build: " << versionInfo[ VersionInfo::BuildDate ]
+             << " Framework: " << info[VersionInfo::VersionID] << " \n";
+    if( !info[VersionInfo::Revision].empty() )
+      bciout__ << " Revision: " << info[VersionInfo::Revision]
+               <<          ", " << info[VersionInfo::SourceDate] << " \n";
+    bciout__ << " Build: " << info[VersionInfo::BuildDate]
              << endl;
     return true;
   }
@@ -199,8 +201,8 @@ CoreModule::Initialize( int inArgc, char** inArgv )
       executableName = executableName.substr( pos + 1 );
 
     bciout__ << "Usage:\n"
-             << executableName << " <address>:<port> --<option>-<value>\n"
-             << " address:\tip address of operator module (default 127.0.0.1)\n"
+             << executableName << " <address>:<port> --<option>=<value>\n"
+             << " address:\tIP address of operator module (default 127.0.0.1)\n"
              << " port:   \toperator port (default " THISOPPORT ")\n"
              << "Options will appear as parameters in the System section."
              << "Specifying --version will display version information."
@@ -308,7 +310,7 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   if( !mOperatorSocket.is_open() )
   { // wait if connection to operator module fails
     const int operatorWaitInterval = 2000; // ms
-    mOperatorSocket.wait_for_write( operatorWaitInterval );
+    OSThread::Sleep( operatorWaitInterval );
     mOperatorSocket.open( inOperatorAddress.c_str() );
   }
   mOperator.clear();
