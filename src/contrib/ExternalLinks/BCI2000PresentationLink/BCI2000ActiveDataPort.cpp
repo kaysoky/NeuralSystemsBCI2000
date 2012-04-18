@@ -82,7 +82,7 @@ CBCI2000ActiveDataPort::sendData( BSTR inEventType, BSTR inEventCode, double, do
       *i = '_';
 
   bool success = true;
-  if( mUseResumePause && !::_stricmp( eventType.c_str(), "Resume" ) )
+  if( mUseResumePause && !::stricmp( eventType.c_str(), "Resume" ) )
   {
     string eventCode = com::DualString( inEventCode );
     istringstream iss( eventCode );
@@ -95,7 +95,7 @@ CBCI2000ActiveDataPort::sendData( BSTR inEventType, BSTR inEventCode, double, do
       mBCI2000.DataDirectory( directory );
     success = mBCI2000.Start();
   }
-  else if( mUseResumePause && !::_stricmp( eventType.c_str(), "Pause" ) )
+  else if( mUseResumePause && !::stricmp( eventType.c_str(), "Pause" ) )
   {
     success = mBCI2000.Stop();
   }
