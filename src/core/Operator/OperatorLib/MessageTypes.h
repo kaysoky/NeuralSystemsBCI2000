@@ -44,6 +44,21 @@ class MessageType : public ObjectType
   static MessageType sInstance;
 };
 
+class MessagesType : public ObjectType
+{
+ protected:
+  virtual const char* Name() const { return "Messages"; }
+  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+
+ public:
+  static bool Capture( ScriptInterpreter& );
+  static bool Flush( ScriptInterpreter& );
+
+ private:
+  static const MethodEntry sMethodTable[];
+  static MessagesType sInstance;
+};
+
 class WarningType : public ObjectType
 {
  protected:

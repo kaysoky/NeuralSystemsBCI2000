@@ -43,6 +43,14 @@ ScriptInterpreter::ScriptInterpreter( class StateMachine& inStateMachine )
 : mLine( 0 ),
   mrStateMachine( inStateMachine )
 {
+  OSMutex::Lock lock( mMutex );
+  mrStateMachine.AddListener( *this );
+}
+
+ScriptInterpreter::~ScriptInterpreter()
+{
+  OSMutex::Lock lock( mMutex );
+  mrStateMachine.RemoveListener( *this );
 }
 
 void
@@ -161,15 +169,8 @@ string
 ScriptInterpreter::GetRemainder()
 {
   mPosStack.push( mInputStream.tellg() );
-  string line;
-  std::getline( mInputStream >> ws, line, '\0' );
-  istringstream iss( line );
   string result;
-  HybridString part;
-  if( iss >> ws >> part )
-    result = part;
-  while( iss >> ws >> part )
-    result += " " + part;
+  std::getline( mInputStream >> ws, result, '\0' );
   return result;
 }
 
@@ -204,10 +205,29 @@ ScriptInterpreter::ParseArguments( string& ioFunction, ArgumentList& outArgs )
   ioFunction = name;
 }
 
+void
+ScriptInterpreter::HandleLogMessage( int inMessageCallbackID, const std::string& inMessage )
+{
+  OSMutex::Lock lock( mMutex );
+  if( mLogCapture.find( inMessageCallbackID ) != mLogCapture.end() )
+  {
+    switch( inMessageCallbackID )
+    {
+      case BCI_OnErrorMessage:
+        mLogBuffer.append( "Error: " );
+        break;
+      case BCI_OnWarningMessage:
+        mLogBuffer.append( "Warning: " );
+        break;
+    }
+    mLogBuffer.append( inMessage ).append( "\n" );
+  }
+}
+
 // LogStream::LogBuffer definitions
 int
 ScriptInterpreter::LogStream::LogBuffer::sync()
 {
-  mrStateMachine.ExecuteCallback( BCI_OnLogMessage, str().c_str() );
+  mrStateMachine.LogMessage( BCI_OnLogMessage, str().c_str() );
   return 0;
 }

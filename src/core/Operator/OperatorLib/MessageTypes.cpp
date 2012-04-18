@@ -52,7 +52,57 @@ MessageType::Log( ScriptInterpreter& inInterpreter )
   string message = inInterpreter.GetRemainder();
   if( message.empty() )
     message = "<empty log entry>";
-  inInterpreter.StateMachine().ExecuteCallback( BCI_OnLogMessage, message.c_str() );
+  inInterpreter.StateMachine().LogMessage( BCI_OnLogMessage, message.c_str() );
+  return true;
+}
+
+//// MessagesType
+MessagesType MessagesType::sInstance;
+const ObjectType::MethodEntry MessagesType::sMethodTable[] =
+{
+  METHOD( Capture ), METHOD( Flush ),
+  END
+};
+
+bool
+MessagesType::Capture( ScriptInterpreter& inInterpreter )
+{
+  string types = inInterpreter.GetRemainder();
+  if( types.empty() )
+  {
+    inInterpreter.DontCaptureLog();
+    inInterpreter.CaptureLog( BCI_OnErrorMessage );
+    inInterpreter.CaptureLog( BCI_OnWarningMessage );
+    inInterpreter.CaptureLog( BCI_OnDebugMessage );
+    inInterpreter.CaptureLog( BCI_OnLogMessage );
+  }
+  else
+  {
+    istringstream iss( types );
+    string type;
+    while( iss >> type )
+    {
+      if( !::stricmp( type.c_str(), "None" ) )
+        inInterpreter.DontCaptureLog();
+      else if( !::stricmp( type.c_str(), "Error" ) || !::stricmp( type.c_str(), "Errors" ) )
+        inInterpreter.CaptureLog( BCI_OnErrorMessage );
+      else if( !::stricmp( type.c_str(), "Warning" ) || !::stricmp( type.c_str(), "Warnings" ) )
+        inInterpreter.CaptureLog( BCI_OnWarningMessage );
+      else if( !::stricmp( type.c_str(), "Debug" ) )
+        inInterpreter.CaptureLog( BCI_OnDebugMessage );
+      else if( !::stricmp( type.c_str(), "Log" ) )
+        inInterpreter.CaptureLog( BCI_OnLogMessage );
+      else
+        throw bciexception_( "Unknown message type" );
+    }
+  }
+  return true;
+}
+
+bool
+MessagesType::Flush( ScriptInterpreter& inInterpreter )
+{
+  inInterpreter.FlushCapturedLog();
   return true;
 }
 
@@ -70,7 +120,7 @@ WarningType::Issue( ScriptInterpreter& inInterpreter )
   string message = inInterpreter.GetRemainder();
   if( message.empty() )
     message = "unspecified warning";
-  inInterpreter.StateMachine().ExecuteCallback( BCI_OnWarningMessage, message.c_str() );
+  inInterpreter.StateMachine().LogMessage( BCI_OnWarningMessage, message.c_str() );
   return true;
 }
 
@@ -88,6 +138,6 @@ ErrorType::Report( ScriptInterpreter& inInterpreter )
   string message = inInterpreter.GetRemainder();
   if( message.empty() )
     message = "unspecified error";
-  inInterpreter.StateMachine().ExecuteCallback( BCI_OnErrorMessage, message.c_str() );
+  inInterpreter.StateMachine().LogMessage( BCI_OnErrorMessage, message.c_str() );
  return true;
 }

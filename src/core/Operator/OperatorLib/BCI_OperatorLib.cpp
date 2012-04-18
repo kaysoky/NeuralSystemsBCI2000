@@ -429,6 +429,7 @@ STDCALL BCI_GetStateOfOperation()
       return BCI_StateRunning;
 
     case StateMachine::Transition:
+    case StateMachine::SetConfigIssued:
     case StateMachine::RunningInitiated:
     case StateMachine::SuspendInitiated:
       return BCI_StateBusy;

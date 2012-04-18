@@ -249,7 +249,7 @@ STDCALL BCI_GetCoreModuleStatus( int index );
 
 /*
 function:  BCI_Startup
-purpose:   Startup of the operator controller object.
+purpose:   Listens on core module connection ports.
 arguments: A string defining core module names and listening ports in the form
              <name1>:<port1> <name2:port2> ... <nameN:portN>
            If NULL, a value of
@@ -262,8 +262,7 @@ STDCALL BCI_Startup( const char* moduleList );
 
 /*
 function:  BCI_Shutdown
-purpose:   Close all connections opened by the library, and dispose of all
-           resources allocated.
+purpose:   Close connections to core modules, and go into idle state.
 arguments: n/a
 returns:   1 if successful, 0 otherwise.
 */
@@ -273,7 +272,8 @@ STDCALL BCI_Shutdown( void );
 /*
 function:  BCI_Initialize
 purpose:   Initialize the library. Must be called before any other library
-           function is used.
+           function is used. This function should be called from your
+           application's main thread.
 arguments: n/a
 returns:   1 if no error occurred, 0 otherwise.
 */
@@ -282,7 +282,8 @@ STDCALL BCI_Initialize( void );
 
 /*
 function:  BCI_Dispose
-purpose:   Dispose of all resources allocated by the library.
+purpose:   Dispose of all resources allocated by the library. This function
+           must be called from the thread that called BCI_Initialize().
 arguments: n/a
 returns:   1 if no error occurred, 0 otherwise.
 */
@@ -292,7 +293,7 @@ STDCALL BCI_Dispose( void );
 /*
 function:  BCI_TelnetListen
 purpose:   Start a telnet server, listening at the given address.
-arguments: Address in <ip>:<port> format, defaults to "localhost:3999"
+arguments: Address in <IP>:<port> format, defaults to "localhost:3999"
 returns:   1 if no error occurred, 0 otherwise.
 */
 DLLEXPORT int

@@ -37,6 +37,7 @@
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include "BCIException.h"
+#include "HybridString.h"
 
 #if _WIN32
 # include <windows.h>
@@ -48,7 +49,7 @@ using namespace std;
 using namespace Interpreter;
 
 static bool ExecuteSynchronously( const string&, ScriptInterpreter& );
-static bool ExecuteAsynchronously( const string&, ScriptInterpreter& );
+static bool ExecuteAsynchronously( const string& executable, const string& arguments, ScriptInterpreter& );
 
 ImpliedType ImpliedType::sInstance;
 const ObjectType::MethodEntry ImpliedType::sMethodTable[] =
@@ -215,7 +216,9 @@ const ObjectType::MethodEntry ExecutableType::sMethodTable[] =
 bool
 ExecutableType::Start( ScriptInterpreter& inInterpreter )
 {
-  return ExecuteAsynchronously( inInterpreter.GetRemainder(), inInterpreter );
+  string executable = inInterpreter.GetToken(),
+         arguments = inInterpreter.GetRemainder();
+  return ExecuteAsynchronously( executable, arguments, inInterpreter );
 }
 
 bool
@@ -300,31 +303,38 @@ ExecuteSynchronously( const string& inCommand, ScriptInterpreter& inInterpreter 
 }
 
 bool
-ExecuteAsynchronously( const string& inCommand, ScriptInterpreter& inInterpreter )
+ExecuteAsynchronously( const string& inExecutable, const string& inArguments, ScriptInterpreter& inInterpreter )
 {
   bool success = false;
   int exitCode = 0;
 
 #if _WIN32
 
-  PROCESS_INFORMATION procInfo;
-  ::ZeroMemory( &procInfo, sizeof( procInfo ) );
-  STARTUPINFO startInfo;
-  ::ZeroMemory( &startInfo, sizeof( startInfo ) );
-  startInfo.cb = sizeof( startInfo );
-  startInfo.dwFlags = STARTF_USESHOWWINDOW;
-  startInfo.wShowWindow = SW_SHOWNA;
+  string executable = inExecutable,
+         extension = ".exe";
+  if( executable.length() < extension.length()
+    || ::stricmp( extension.c_str(), executable.substr( executable.length() - extension.length() ).c_str() ) )
+    executable += extension;
 
-  success = ( TRUE == ::CreateProcessA( NULL, const_cast<char*>( inCommand.c_str() ), NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &startInfo, &procInfo ) );
+  // When CreateProcess() is used to start up a core module, listening sockets in the Operator module are not closed properly.
+  // ShellExecute() seems not to have this problem.
+  SHELLEXECUTEINFOA info = { 0 };
+  info.cbSize = sizeof( info );
+  info.fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
+  info.hwnd = NULL;
+  info.lpVerb = "open";
+  info.lpFile = executable.c_str();
+  info.lpParameters = inArguments.c_str();
+  info.nShow = SW_SHOWNA;
+  success = ::ShellExecuteExA( &info );
   if( success )
   {
     DWORD dwExitCode = 0;
-    ::WaitForInputIdle( procInfo.hProcess, INFINITE );
-    ::GetExitCodeProcess( procInfo.hProcess, &dwExitCode );
+    ::WaitForInputIdle( info.hProcess, INFINITE );
+    ::GetExitCodeProcess( info.hProcess, &dwExitCode );
     if( STILL_ACTIVE != dwExitCode )
       exitCode = dwExitCode;
-    ::CloseHandle( procInfo.hProcess );
-    ::CloseHandle( procInfo.hThread );
+    ::CloseHandle( info.hProcess );
   }
 
 #else // _WIN32
@@ -335,9 +345,9 @@ ExecuteAsynchronously( const string& inCommand, ScriptInterpreter& inInterpreter
 #endif // _WIN32
 
   if( !success )
-    throw bciexception_( "Could not run \"" << inCommand.c_str() << "\"" );
+    throw bciexception_( "Could not run \"" << executable.c_str() << "\"" );
   if( exitCode != 0 )
     inInterpreter.Out() << "\\ExitCode: " << exitCode;
-  inInterpreter.Log() << "Executed \"" << inCommand.c_str() << "\"";
+  inInterpreter.Log() << "Executed \"" << executable.c_str() << "\"";
   return true;
 }

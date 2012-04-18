@@ -109,20 +109,27 @@ SystemType::GetVersion( ScriptInterpreter& inInterpreter )
 bool
 SystemType::WaitFor( ScriptInterpreter& inInterpreter )
 {
-  string stateName = inInterpreter.GetToken();
-  size_t i = 0;
-  int desiredState;
-  bool found = false;
-  while( !found && i < sizeof( sSystemStates ) / sizeof( *sSystemStates ) )
-    if( !::stricmp( sSystemStates[i].name, stateName.c_str() ) )
-    {
-      desiredState = sSystemStates[i].value;
-      found = true;
-    }
-    else
-      ++i;
-  if( !found )
-    throw bciexception_( "Unknown system state: " << stateName );
+  string states = inInterpreter.GetToken();
+  set<int> desiredStates;
+  istringstream iss( states );
+  string stateName;
+  while( std::getline( iss, stateName, '|' ) )
+  {
+    size_t i = 0;
+    int stateCode;
+    bool found = false;
+    while( !found && i < sizeof( sSystemStates ) / sizeof( *sSystemStates ) )
+      if( !::stricmp( sSystemStates[i].name, stateName.c_str() ) )
+      {
+        stateCode = sSystemStates[i].value;
+        found = true;
+      }
+      else
+        ++i;
+    if( !found )
+      throw bciexception_( "Unknown system state: " << stateName );
+    desiredStates.insert( stateCode );
+  }
 
   double timeout = 0;
   if( !( istringstream( inInterpreter.GetToken() ) >> timeout ) )
@@ -133,13 +140,13 @@ SystemType::WaitFor( ScriptInterpreter& inInterpreter )
   const int resolution = 50; // ms
   int timeElapsed = 0;
   int state = BCI_GetStateOfOperation();
-  while( state != desiredState && timeElapsed < 1e3 * timeout )
+  while( desiredStates.find( state ) == desiredStates.end() && timeElapsed < 1e3 * timeout )
   {
     OSThread::Sleep( resolution );
     timeElapsed += resolution;
     state = BCI_GetStateOfOperation();
   }
-  if( state != desiredState )
+  if( desiredStates.find( state ) == desiredStates.end() )
     inInterpreter.Out() << "Timeout occurred after " << timeout << " seconds";
   return true;
 }

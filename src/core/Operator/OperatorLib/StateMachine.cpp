@@ -37,15 +37,16 @@
 
 #include "BCI_OperatorLib.h"
 #include "BCIError.h"
+#include "BCIException.h"
 #include "ProtocolVersion.h"
 #include "Status.h"
 #include "SysCommand.h"
 #include "StateVector.h"
-#include "Version.h"
 #include "BCIDirectory.h"
 #include "SignalProperties.h"
 #include "GenericVisualization.h"
 #include "Label.h"
+#include "ScriptInterpreter.h"
 
 #include <sstream>
 #include <iomanip>
@@ -79,7 +80,7 @@ StateMachine::Startup( const char* inModuleList )
         string name;
         std::getline( iss >> ws, name, ':' );
         int port;
-        iss >> port;
+        iss >> port >> ws;
         mConnections.push_back( new CoreConnection( *this, name, port, static_cast<int>( mConnections.size() + 1 ) ) );
         if( sourcePort )
         {
@@ -95,25 +96,24 @@ StateMachine::Startup( const char* inModuleList )
     {
       mpSourceModule = *mConnections.begin();
 
-      istringstream iss( BCI2000_VERSION );
-      iss >> mVersionInfo;
+      const VersionInfo& info = VersionInfo::Current;
       mParameters.Add(
         "System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 Operator % %"
         " % % % // operator module version information" );
-      mParameters[ "OperatorVersion" ].Value( "Framework" )
-        = mVersionInfo[ VersionInfo::VersionID ];
-      if( mVersionInfo[ VersionInfo::Revision ].empty() )
+      mParameters["OperatorVersion"].Value( "Framework" )
+        = info[VersionInfo::VersionID];
+      if( info[VersionInfo::Revision].empty() )
       {
-        mParameters[ "OperatorVersion" ].Value( "Revision" )
-          = mVersionInfo[ VersionInfo::SourceDate ];
+        mParameters["OperatorVersion"].Value( "Revision" )
+          = info[VersionInfo::SourceDate];
       }
       else
       {
-        mParameters[ "OperatorVersion" ].Value( "Revision" )
-          = mVersionInfo[ VersionInfo::Revision ] + ", " +  mVersionInfo[ VersionInfo::SourceDate ];
+        mParameters["OperatorVersion"].Value( "Revision" )
+          = info[VersionInfo::Revision] + ", " +  info[VersionInfo::SourceDate];
       }
-      mParameters[ "OperatorVersion" ].Value( "Build" )
-        = mVersionInfo[ VersionInfo::BuildDate ];
+      mParameters["OperatorVersion"].Value( "Build" )
+        = info[VersionInfo::BuildDate];
 
       mParameters.Add(
         "System:Additional%20Connections int OperatorBackLink= 1"
@@ -142,7 +142,16 @@ StateMachine::Shutdown()
 
 StateMachine::~StateMachine()
 {
-  OSThread::TerminateWait();
+  // The StateMachine destructor must be called from the same (main) thread that
+  // called its constructor.
+  SharedPointer<OSEvent> pEvent = OSThread::Terminate();
+  while( mSystemState != Idle )
+  {
+    const int cReactionTime = 50;
+    OSThread::Sleep( cReactionTime );
+    while( CheckPendingCallback() ) ;
+  }
+  pEvent->Wait();
 }
 
 // Send a state message containing a certain state value to the EEG source module.
@@ -246,7 +255,7 @@ StateMachine::SetConfig()
     case Suspended:
     case SuspendedParamsModified:
       result = true;
-      EnterState( Initialization );
+      EnterState( SetConfigIssued );
       break;
 
     default:
@@ -388,7 +397,7 @@ StateMachine::PerformTransition( int inTransition )
     case TRANSITION( Information, Information ):
       break;
 
-    case TRANSITION( Information, Initialization ):
+    case TRANSITION( Information, SetConfigIssued ):
     {
       // Add the state vector's length to the system parameters.
       mParameters.Add(
@@ -409,24 +418,22 @@ StateMachine::PerformTransition( int inTransition )
       InitializeModules();
     } break;
 
-    case TRANSITION( Initialization, Resting ):
-      break;
-
-    case TRANSITION( Initialization, Initialization ):
-    case TRANSITION( Resting, Initialization ):
-    case TRANSITION( Suspended, Initialization ):
-    case TRANSITION( SuspendedParamsModified, Initialization ):
-    case TRANSITION( RestingParamsModified, Initialization ):
+    case TRANSITION( Initialization, SetConfigIssued ):
+    case TRANSITION( Resting, SetConfigIssued ):
+    case TRANSITION( Suspended, SetConfigIssued ):
+    case TRANSITION( SuspendedParamsModified, SetConfigIssued ):
+    case TRANSITION( RestingParamsModified, SetConfigIssued ):
       MaintainDebugLog();
       BroadcastParameters();
       BroadcastEndOfParameter();
       InitializeModules();
       break;
 
-    case TRANSITION( Resting, RunningInitiated ):
-      MaintainDebugLog();
+    case TRANSITION( SetConfigIssued, Resting ):
+    case TRANSITION( SetConfigIssued, Initialization ):
       break;
 
+    case TRANSITION( Resting, RunningInitiated ):
     case TRANSITION( Suspended, RunningInitiated ):
       MaintainDebugLog();
       break;
@@ -448,6 +455,7 @@ StateMachine::PerformTransition( int inTransition )
     case TRANSITION( Publishing, Idle ):
     case TRANSITION( Information, Idle ):
     case TRANSITION( Initialization, Idle ):
+    case TRANSITION( SetConfigIssued, Idle ):
     case TRANSITION( Resting, Idle ):
     case TRANSITION( RestingParamsModified, Idle ):
     case TRANSITION( RunningInitiated, Idle ):
@@ -465,6 +473,7 @@ StateMachine::PerformTransition( int inTransition )
     case TRANSITION( Publishing, Fatal ):
     case TRANSITION( Information, Fatal ):
     case TRANSITION( Initialization, Fatal ):
+    case TRANSITION( SetConfigIssued, Fatal ):
     case TRANSITION( Resting, Fatal ):
     case TRANSITION( RestingParamsModified, Fatal ):
     case TRANSITION( RunningInitiated, Fatal ):
@@ -489,38 +498,38 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
   switch( inTransition )
   {
     case TRANSITION( Idle, WaitingForConnection ):
-      ExecuteCallback( BCI_OnLogMessage, "BCI2000 Started" );
+      LogMessage( BCI_OnLogMessage, "BCI2000 Started" );
       break;
 
     case TRANSITION( Publishing, Information ):
       ExecuteCallback( BCI_OnConnect );
       break;
 
-    case TRANSITION( Information, Initialization ):
-    case TRANSITION( Initialization, Initialization ):
-    case TRANSITION( Resting, Initialization ):
-    case TRANSITION( Suspended, Initialization ):
-    case TRANSITION( SuspendedParamsModified, Initialization ):
-    case TRANSITION( RestingParamsModified, Initialization ):
-      ExecuteCallback( BCI_OnLogMessage, "Operator set configuration" );
+    case TRANSITION( Information, SetConfigIssued ):
+    case TRANSITION( Initialization, SetConfigIssued ):
+    case TRANSITION( Resting, SetConfigIssued ):
+    case TRANSITION( Suspended, SetConfigIssued ):
+    case TRANSITION( SuspendedParamsModified, SetConfigIssued ):
+    case TRANSITION( RestingParamsModified, SetConfigIssued ):
+      LogMessage( BCI_OnLogMessage, "Operator set configuration" );
       break;
 
-    case TRANSITION( Initialization, Resting ):
+    case TRANSITION( SetConfigIssued, Resting ):
       ExecuteCallback( BCI_OnSetConfig );
       break;
 
     case TRANSITION( Resting, RunningInitiated ):
       ExecuteCallback( BCI_OnStart );
-      ExecuteCallback( BCI_OnLogMessage, "Operator started operation" );
+      LogMessage( BCI_OnLogMessage, "Operator started operation" );
       break;
 
     case TRANSITION( Suspended, RunningInitiated ):
       ExecuteCallback( BCI_OnResume );
-      ExecuteCallback( BCI_OnLogMessage, "Operator resumed operation" );
+      LogMessage( BCI_OnLogMessage, "Operator resumed operation" );
       break;
 
     case TRANSITION( Running, SuspendInitiated ):
-      ExecuteCallback( BCI_OnLogMessage, "Operation suspended" );
+      LogMessage( BCI_OnLogMessage, "Operation suspended" );
       break;
 
     case TRANSITION( SuspendInitiated, Suspended ):
@@ -531,6 +540,7 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
     case TRANSITION( Publishing, Idle ):
     case TRANSITION( Information, Idle ):
     case TRANSITION( Initialization, Idle ):
+    case TRANSITION( SetConfigIssued, Idle ):
     case TRANSITION( Resting, Idle ):
     case TRANSITION( RestingParamsModified, Idle ):
     case TRANSITION( RunningInitiated, Idle ):
@@ -539,7 +549,7 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
     case TRANSITION( Suspended, Idle ):
     case TRANSITION( SuspendedParamsModified, Idle ):
       ExecuteCallback( BCI_OnShutdown );
-      ExecuteCallback( BCI_OnLogMessage, "Operator shut down connections" );
+      LogMessage( BCI_OnLogMessage, "Operator shut down connections" );
       break;
   }
   ExecuteCallback( BCI_OnSystemStateChange );
@@ -572,6 +582,33 @@ StateMachine::CheckInitializeVis( const string& inSourceID, const string& inKind
     ExecuteCallback( BCI_OnInitializeVis, inSourceID.c_str(), inKind.c_str() );
   }
   return kindDiffers;
+}
+
+void
+StateMachine::LogMessage( int inCallbackID, const string& inMessage )
+{
+  string separator;
+  switch( inCallbackID )
+  {
+    case BCI_OnDebugMessage:
+    case BCI_OnLogMessage:
+      separator = ": ";
+      break;
+    case BCI_OnWarningMessage:
+      separator = ": Warning: ";
+      break;
+    case BCI_OnErrorMessage:
+      separator = ": Error: ";
+      break;
+    default:
+      throw bciexception( "Unknown log message callback ID: " << inCallbackID );
+  }
+  ExecuteCallback( inCallbackID, inMessage.c_str() );
+  time_t t = ::time( NULL );
+  mDebugLog << ::ctime( &t ) << separator << inMessage << endl;
+  ::Lock<Listeners> lock( mListeners );
+  for( Listeners::iterator i = mListeners.begin(); i != mListeners.end(); ++i )
+    ( *i )->HandleLogMessage( inCallbackID, inMessage );
 }
 
 // ------------------------ CoreConnection definitions -------------------------
@@ -696,49 +733,26 @@ StateMachine::CoreConnection::HandleStatus( istream& is )
       OSMutex::Lock lock( mInfoMutex );
       mInfo.Status = status.Message().c_str();
     }
-    time_t t = ::time( NULL );
     switch( status.Content() )
     {
       case Status::debug:
-      {
-        mrParent.ExecuteCallback( BCI_OnDebugMessage, status.Message().c_str() );
-        OSMutex::Lock lock( mrParent.mDataMutex );
-        mrParent.mDebugLog << ::ctime( &t ) << ": "
-                           << status.Message()
-                           << endl;
-      } break;
+        mrParent.LogMessage( BCI_OnDebugMessage, status.Message() );
+        break;
       case Status::warning:
-      {
-        mrParent.ExecuteCallback( BCI_OnWarningMessage, status.Message().c_str() );
-        OSMutex::Lock lock( mrParent.mDataMutex );
-        mrParent.mDebugLog << ::ctime( &t )
-                           << ": Warning: "
-                           << status.Message()
-                           << endl;
-      } break;
+        mrParent.LogMessage( BCI_OnWarningMessage, status.Message() );
+        break;
       case Status::error:
-      {
-        mrParent.ExecuteCallback( BCI_OnErrorMessage, status.Message().c_str() );
-        OSMutex::Lock lock( mrParent.mDataMutex );
-        mrParent.mDebugLog << ::ctime( &t )
-                           << ": Error: "
-                           << status.Message()
-                           << endl;
-      } break;
+        mrParent.LogMessage( BCI_OnErrorMessage, status.Message() );
+        break;
       case Status::initialized:
       { // If the operator received successful status messages from
         // all core modules, then this is the end of the initialization phase.
-        Confirm( ConfirmInitialized );
         string message;
         {
           OSMutex::Lock lock( mInfoMutex );
           message = mInfo.Name + " confirmed new parameters ...";
         }
-        mrParent.ExecuteCallback( BCI_OnLogMessage, message.c_str() );
-        OSMutex::Lock lock( mrParent.mDataMutex );
-        mrParent.mDebugLog << ::ctime( &t )
-                           << message
-                           << endl;
+        mrParent.LogMessage( BCI_OnLogMessage, message );
       } break;
       case Status::running:
         Confirm( ConfirmRunning );
@@ -747,37 +761,53 @@ StateMachine::CoreConnection::HandleStatus( istream& is )
         Confirm( ConfirmSuspended );
         break;
       default:
-      {
-        mrParent.ExecuteCallback( BCI_OnLogMessage, status.Message().c_str() );
-        OSMutex::Lock lock( mrParent.mDataMutex );
-        mrParent.mDebugLog << ::ctime( &t )
-                           << status.Message()
-                           << endl;
-      }
+        mrParent.LogMessage( BCI_OnLogMessage, status.Message() );
     }
 
-    if( mrParent.Confirmed( ConfirmEndOfStates ) && mrParent.SystemState() == Publishing )
+    switch( mrParent.SystemState() )
     {
-      mrParent.ClearConfirmation( ConfirmEndOfStates );
-      mrParent.EnterState( StateMachine::Information );
-    }
+      case Publishing:
+        if( mrParent.Confirmed( ConfirmEndOfStates ) )
+        {
+          mrParent.ClearConfirmation( ConfirmEndOfStates );
+          mrParent.EnterState( StateMachine::Information );
+        }
+        break;
 
-    if( mrParent.Confirmed( ConfirmInitialized ) && mrParent.SystemState() == Initialization )
-    {
-      mrParent.ClearConfirmation( ConfirmInitialized );
-      mrParent.EnterState( StateMachine::Resting );
-    }
+      case SetConfigIssued:
+        switch( status.Content() )
+        {
+          case Status::error:
+            mrParent.ClearConfirmation( ConfirmInitialized );
+            mrParent.EnterState( StateMachine::Initialization );
+            break;
 
-    if( mrParent.Confirmed( ConfirmSuspended ) && mrParent.SystemState() == SuspendInitiated )
-    {
-      mrParent.ClearConfirmation( ConfirmSuspended );
-      mrParent.EnterState( StateMachine::Suspended );
-    }
+          case Status::initialized:
+            Confirm( ConfirmInitialized );
+            if( mrParent.Confirmed( ConfirmInitialized ) )
+            {
+              mrParent.ClearConfirmation( ConfirmInitialized );
+              mrParent.EnterState( StateMachine::Resting );
+            }
+            break;
+        }
+        break;
 
-    if( mrParent.Confirmed( ConfirmRunning ) && mrParent.SystemState() == RunningInitiated )
-    {
-      mrParent.ClearConfirmation( ConfirmRunning );
-      mrParent.EnterState( StateMachine::Running );
+      case SuspendInitiated:
+        if( mrParent.Confirmed( ConfirmSuspended ) )
+        {
+          mrParent.ClearConfirmation( ConfirmSuspended );
+          mrParent.EnterState( StateMachine::Suspended );
+        }
+        break;
+
+      case RunningInitiated:
+        if( mrParent.Confirmed( ConfirmRunning ) )
+        {
+          mrParent.ClearConfirmation( ConfirmRunning );
+          mrParent.EnterState( StateMachine::Running );
+        }
+        break;
     }
   }
   return true;

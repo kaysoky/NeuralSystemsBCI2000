@@ -47,10 +47,12 @@
 #include "MessageHandler.h"
 #include "OSThread.h"
 #include "OSMutex.h"
+#include "Lockable.h"
 
 #include <set>
 #include <fstream>
 
+class ScriptInterpreter;
 
 class StateMachine : public CallbackBase, private OSThread
 {
@@ -91,6 +93,7 @@ class StateMachine : public CallbackBase, private OSThread
     Publishing,
     Information,
     Initialization,
+    SetConfigIssued,
     Resting,
     RestingParamsModified,
     RunningInitiated,
@@ -148,21 +151,30 @@ class StateMachine : public CallbackBase, private OSThread
   const VisTable& Visualizations() const
     { return mVisualizations; }
 
+  // Issue a log message.
+  void LogMessage( int messageCallbackID, const std::string& );
+
+  // Interface to ScriptInterpreter class.
+  void AddListener( ScriptInterpreter& listener )
+    { ::Lock<Listeners> lock( mListeners ); mListeners.insert( &listener ); }
+  void RemoveListener( ScriptInterpreter& listener )
+    { ::Lock<Listeners> lock( mListeners ); mListeners.erase( &listener ); }
+
  private:
   virtual int Execute();
 
   void Terminate();
-  void EnterState( enum SysState );
 
+  void EnterState( enum SysState );
   void PerformTransition( int transition );
+  void ExecuteTransitionCallbacks( int transition );
+
   void BroadcastParameters();
   void BroadcastEndOfParameter();
   void BroadcastStates();
   void BroadcastEndOfState();
   void InitializeModules();
   void MaintainDebugLog();
-
-  void ExecuteTransitionCallbacks( int transition );
 
  private:
   enum SysState mSystemState;
@@ -181,8 +193,11 @@ class StateMachine : public CallbackBase, private OSThread
   GenericSignal     mControlSignal;
   VisTable          mVisualizations;
 
-  VersionInfo       mVersionInfo;
   std::ofstream     mDebugLog;
+
+  struct Listeners : std::set<ScriptInterpreter*>, Lockable
+  {
+  } mListeners;
 
  public:
   struct ConnectionInfo

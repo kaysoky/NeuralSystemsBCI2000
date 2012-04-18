@@ -30,16 +30,16 @@
 #include <sstream>
 #include <iostream>
 #include <stack>
-
-class StateMachine;
+#include <set>
+#include "StateMachine.h"
+#include "OSMutex.h"
 
 class ScriptInterpreter
 {
  public:
   // Begin: Interface to users
   ScriptInterpreter( class StateMachine& );
-  virtual ~ScriptInterpreter()
-    {}
+  virtual ~ScriptInterpreter();
   // Properties
   //  The result of the last executed scripting command.
   std::string Result() const
@@ -73,6 +73,16 @@ class ScriptInterpreter
     { return mResultStream; }
   class StateMachine& StateMachine() const
     { return mrStateMachine; }
+
+  // Log and error message capturing.
+  void CaptureLog( int messageCallbackID )
+    { OSMutex::Lock lock( mMutex ); mLogCapture.insert( messageCallbackID ); }
+  void DontCaptureLog()
+    { OSMutex::Lock lock( mMutex ); mLogCapture.clear(); }
+  void FlushCapturedLog()
+    { OSMutex::Lock lock( mMutex ); Out() << mLogBuffer; mLogBuffer.clear(); }
+  // HandleLogMessage() is called by StateMachine to report a message.
+  void HandleLogMessage( int messageCallbackID, const std::string& );
 
   class LogStream : public std::ostream
   {
@@ -108,6 +118,11 @@ class ScriptInterpreter
 
   class StateMachine& mrStateMachine;
   int mLine;
+
+  OSMutex mMutex;
+
+  std::set<int> mLogCapture;
+  std::string mLogBuffer;
 };
 
 #endif // SCRIPT_INTERPRETER_H
