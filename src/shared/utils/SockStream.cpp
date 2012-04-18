@@ -257,7 +257,6 @@ streamsock::connected()
 void
 streamsock::close()
 {
-  ::shutdown( m_handle, 2 );
   ::closesocket( m_handle );
   m_handle = INVALID_SOCKET;
   m_listening = false;
@@ -412,8 +411,8 @@ streamsock::accept()
     if( new_handle == INVALID_SOCKET )
       return;
     ::closesocket( m_handle );
-    m_handle = new_handle;
     m_listening = false;
+    m_handle = new_handle;
     set_socket_options();
     update_address();
   }
@@ -424,9 +423,8 @@ streamsock::set_socket_options()
 {
   if( m_handle != INVALID_SOCKET )
   {
-    struct linger val = { 1, 0 }; // close immediately
-    ::setsockopt( m_handle, SOL_SOCKET, SO_LINGER,
-                        reinterpret_cast<const char*>( &val ), sizeof( val ) );
+    struct linger val = { 1, 1 }; // close after one second
+    ::setsockopt( m_handle, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
 }
 
@@ -446,20 +444,22 @@ void
 server_tcpsocket::do_open()
 {
   close();
-  if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_STREAM, 0 ) ) )
-      return;
-
-  if( ( SOCKET_ERROR == ::bind( m_handle, reinterpret_cast<sockaddr*>( &m_address ),
-                                                              sizeof( m_address ) ) )
-      ||
-      ( SOCKET_ERROR == ::listen( m_handle, 1 ) ) )
+  m_handle = ::socket( PF_INET, SOCK_STREAM, 0 );
+  bool success = ( m_handle != INVALID_SOCKET );
+  if( success )
+    success = SOCKET_ERROR != ::bind( m_handle, reinterpret_cast<sockaddr*>( &m_address ), sizeof( m_address ) );
+  if( success )
+    success = SOCKET_ERROR != ::listen( m_handle, 1 );
+  if( success )
+  {
+    m_listening = true;
+    set_socket_options();
+    update_address();
+  }
+  else
   {
     close();
-    return;
   }
-  m_listening = true;
-  set_socket_options();
-  update_address();
 }
 
 void
