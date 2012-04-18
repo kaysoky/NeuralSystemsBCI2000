@@ -125,27 +125,27 @@ public:
         }
 
     virtual /* [helpstring] */ HRESULT __stdcall StartupModules(
-        /* [in] */ SAFEARRAY * modules,
+        /* [in,out] */ SAFEARRAY ** modules,
         /* [retval][out] */ VARIANT_BOOL *success)
         {
-          int nDim = ::SafeArrayGetDim( modules );
+          int nDim = ::SafeArrayGetDim( *modules );
           if( nDim < 1 )
             return E_INVALIDARG;
           LONG lBound = 0, uBound = 0;
-          HRESULT result = ::SafeArrayGetLBound( modules, nDim, &lBound );
+          HRESULT result = ::SafeArrayGetLBound( *modules, nDim, &lBound );
           if( FAILED( result ) )
             return result;
-          result = ::SafeArrayGetUBound( modules, nDim, &uBound );
+          result = ::SafeArrayGetUBound( *modules, nDim, &uBound );
           if( FAILED( result ) )
             return result;
           std::vector<std::string> modules2;
           BSTR* pStrings = NULL;
-          result = ::SafeArrayAccessData( modules, reinterpret_cast<void**>( &pStrings ) );
+          result = ::SafeArrayAccessData( *modules, reinterpret_cast<void**>( &pStrings ) );
           if( FAILED( result ) )
             return result;
           for( LONG i = 0; i < uBound - lBound + 1; ++i )
             modules2.push_back( com::DualString( pStrings[i] ) );
-          ::SafeArrayUnaccessData( modules );
+          ::SafeArrayUnaccessData( *modules );
           *success = BCI2000Remote::StartupModules( modules2 ) ? VARIANT_TRUE : VARIANT_FALSE;
           return S_OK;
         }

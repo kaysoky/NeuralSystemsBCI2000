@@ -1,5 +1,5 @@
 // This file will be processed by the MIDL tool to
-// produce the type library (BCI2000RemoteCOM.tlb) and marshalling code.
+// produce the type library (BCI2000Automation.tlb) and marshalling code.
 
 import "oaidl.idl";
 import "ocidl.idl";
@@ -80,7 +80,7 @@ interface IBCI2000Remote: IDispatch
 	[
 	helpstring( "Start BCI2000 core modules, listed by executable name, including possible command line arguments." )
 	]
-	HRESULT _stdcall StartupModules( [in] SAFEARRAY( BSTR ) modules, [out,retval] VARIANT_BOOL* success );
+	HRESULT _stdcall StartupModules( [in,out] SAFEARRAY( BSTR )* modules, [out,retval] VARIANT_BOOL* success );
 
 //  Parameters
 	[

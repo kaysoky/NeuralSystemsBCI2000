@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Wed Apr 04 13:11:35 2012
+/* at Tue Apr 10 17:28:15 2012
  */
 /* Compiler settings for BCI2000Automation.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -131,7 +131,7 @@ EXTERN_C const IID IID_IBCI2000Remote;
             /* [retval][out] */ int *exitCode) = 0;
         
         virtual /* [helpstring] */ HRESULT __stdcall StartupModules( 
-            /* [in] */ SAFEARRAY * modules,
+            /* [out][in] */ SAFEARRAY * *modules,
             /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
         virtual /* [helpstring] */ HRESULT __stdcall LoadParametersLocal( 
@@ -297,7 +297,7 @@ EXTERN_C const IID IID_IBCI2000Remote;
         
         /* [helpstring] */ HRESULT ( __stdcall *StartupModules )( 
             IBCI2000Remote * This,
-            /* [in] */ SAFEARRAY * modules,
+            /* [out][in] */ SAFEARRAY * *modules,
             /* [retval][out] */ VARIANT_BOOL *success);
         
         /* [helpstring] */ HRESULT ( __stdcall *LoadParametersLocal )( 
