@@ -68,12 +68,14 @@ SysLog::AddEntry( const QString& inText, int inMode )
 {
   QMutexLocker lock( &mCritsec );
   QTextCharFormat format = mDefaultFormat;
+  QString kind = "";
   switch( inMode )
   {
     case logEntryWarning:
       format.setFontPointSize( 10 );
       format.setForeground( QBrush( Qt::darkGreen ) );
       format.setFontWeight( QFont::Bold );
+      kind = "Warning: ";
       mDontClose = true;
       break;
 
@@ -88,7 +90,7 @@ SysLog::AddEntry( const QString& inText, int inMode )
     default:
       break;
   }
-  QString line = ( mEmpty ? "" : "\n" ) + QDateTime::currentDateTime().toString( Qt::ISODate ) + " - " + inText;
+  QString line = ( mEmpty ? "" : "\n" ) + QDateTime::currentDateTime().toString( Qt::ISODate ) + " - " + kind + inText;
   mEmpty = false;
   mpLog->moveCursor( QTextCursor::End );
   mpLog->setCurrentCharFormat( format );

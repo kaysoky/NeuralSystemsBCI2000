@@ -41,7 +41,7 @@ static const OSMutex* spOutputLock = NULL;
 void
 StatusMessage( const string& inText, int inCode )
  {
-  string text = inText;
+  string text = inText.empty() ? inText : inText.substr( 0, inText.length() - 1 );
   if( text.find_last_of( ".!?" ) != text.length() - 1 )
     text += '.';
 
@@ -79,37 +79,37 @@ StatusMessage( const string& inText, int inCode )
 void
 BCIError::DebugMessage( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::debugMessage );
+  StatusMessage( message, Status::debugMessage );
 }
 
 void
 BCIError::PlainMessage( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::plainMessage );
+  StatusMessage( message, Status::plainMessage );
 }
 
 void
 BCIError::Warning( const string& message )
 {
-  StatusMessage( string( "Warning: " ) + message.substr( 0, message.length() - 1 ), Status::warningMessage );
+  StatusMessage( message, Status::warningMessage );
 }
 
 void
 BCIError::ConfigurationError( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::configurationError );
+  StatusMessage( message, Status::configurationError );
 }
 
 void
 BCIError::RuntimeError( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::runtimeError );
+  StatusMessage( message, Status::runtimeError );
 }
 
 void
 BCIError::LogicError( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::logicError );
+  StatusMessage( message, Status::logicError );
 }
 
 void
