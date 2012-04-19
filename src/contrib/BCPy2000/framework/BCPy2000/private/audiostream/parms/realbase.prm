@@ -1,0 +1,46 @@
+PythonSig:Streams                             int       NumberOfStreams=                    2                     // 
+PythonSig:Streams                             matrix    StreamStimuli=              2 { Standard Target } yesno/mac_victoria_no.wav yesno/mac_victoria_nope.wav   yesno/mac_alex_yes.wav yesno/mac_alex_yep.wav  //
+PythonSig:Streams                             matrix    StreamStimuli=              2 { Standard Target } 8500LeftStandard.wav 8500LeftTarget.wav   8500RightStandard.wav 8500RightTarget.wav  //
+PythonSig:Streams                             floatlist PeriodMsec=                   2   500   500               // 
+PythonSig:Streams                             floatlist OffsetMsec=                   2     0   250               // 
+PythonSig:Streams                             intlist   MinTargets=                   2     1     1               // 
+PythonSig:Streams                             intlist   MaxTargets=                   2     3     3               // 
+PythonSig:Streams                             intlist   ScopeForMinMax=               2     7     7               // 
+PythonSig:Streams                             intlist   InitialStandards=             2     2     2               // how many stimuli at the beginning of each stream are guaranteed to be standards
+PythonSig:Streams                             matrix    SoundChannels=              4 3     1 % S1   % 1 S2   1 % F   % 1 F  //
+PythonSig:Streams                             int       DirectSound=                        1                     // use DirectSound interface or not? (boolean)
+PythonSig:Streams                             floatlist StreamVolumes=                2     0.2 0.2               // 
+PythonSig:Streams                             int       UseWiimotes=                        0                     // use Wiimote vibration instead of sound? (boolean)
+
+Filtering:SpatialFilter                       int       SpatialFilterType=                  0                     // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)
+PythonSig:Epoch                               list      TriggerChannels=              0                           // 
+PythonSig:Epoch                               floatlist TriggerThreshold=             2     0.1     0.1           // 
+PythonSig:Epoch                               float     TriggerHPCutoff=                    0.0                   // 
+PythonSig:Epoch                               int       TriggerHPOrder=                     4                     // 
+PythonSig:Epoch                               float     TriggerlessOffsetMsec=             50.0                   // used to compensate for stimulus output latency to make weights from triggered and triggerless versions as compatible as possible
+PythonSig:Epoch                               floatlist ERPFilterFreqHz=              2     0.1     8             // lower and upper frequencies of bandpass filter for ERP feature set
+PythonSig:Epoch                               int       ERPFilterOrder=                     6                     // order of bandpass filter for ERP feature set
+PythonSig:Epoch                               float     EpochDurationMsec=                600                     // 
+PythonSig:Epoch                               floatlist EpochLowerBoundMsec=          2   400     400             // after springing, each ERP trap will not spring again for this many milliseconds
+PythonSig:Epoch                               intlist   DiscardEpochs=                2     2       2             // for classification, discard this many epochs at the beginning
+PythonSig:Epoch                               int       DetrendEpochs=                      2                     // Detrend data? 0: no, 1: mean, 2: linear (enumeration)
+PythonSig:Epoch                               int       DiffFeatureSets=                    1                     // for 2-stream designs, whether to use the difference between the two feature sets (boolean)
+PythonSig:Epoch                               int       SaveTrainingData=                   1                     // dump epochs to .pk file (boolean)
+PythonSig:Epoch                               float     ERPClassifierBias=                  0.0                   // 
+PythonSig:Epoch                               matrix    ERPClassifierWeights=       0 0                           // 
+
+PythonSig:Control                             float     EpochAveragingPersistence=          1.0         0.7       // persistence parameter for the running average of ERPs
+PythonSig:Control                             float     ControlFilterCutoffHz=              0           3         // output low-pass cutoff in Hz (0 to disable)
+PythonSig:Control                             int       ControlFilterOrder=                 8                     // 
+PythonSig:Control                             float     NormalizerBufferSec=                0.0                   // length of buffer in which to remember non-zero control signal values
+PythonSig:Control                             float     NormalizerIntervalSec=              0.25                  // interval between informative samples in the normalizer buffer
+
+PythonApp:Task                                int       FreeChoice=                         1                      // allow user to choose freely? (boolean)
+PythonApp:Task                                int       ShowCountFeedback=                  0                      // show correct counts after each trial? (boolean)
+PythonApp:Task                                matrix    Cues=                       { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> % % NO YES no.wav yes.wav // 
+
+Visualize:Processing%20Stages                 int       VisualizeTiming=                    1                      // 
+Visualize:Processing%20Stages                 int       VisualizeSource=                    1                      // Visualize raw brain signal (boolean)
+Visualize:Source%20Signal:DataIOFilter        int       SourceMin=                         -50muV                  // raw signal vis Min Value
+Visualize:Source%20Signal:DataIOFilter        int       SourceMax=                          50muV                  // raw signal vis Max Value
+Visualize:Processing%20Stages                 int       VisualizePythonSigFilter=           1                      // Visualize PythonSigFilter output (boolean)

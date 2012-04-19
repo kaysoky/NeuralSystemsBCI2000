@@ -15,9 +15,6 @@ Filtering:SpatialFilter                       int       SpatialFilterType=      
 Source:Alignment:AlignmentFilter              int       AlignChannels=               0             // align channels in time (0=no, 1=yes)
 Source:Alignment:AlignmentFilter              floatlist SourceChTimeOffset=    0     %             // time offsets for all source channels (may be empty)
 
-PythonSig:Epoch                               list      TriggerChannels=             0             // 
-PythonSig:Streams                             int       SurroundSoundTrigger=        0             // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
-PythonSig:Streams                             matrix    SoundChannels=         4 3   1 % S1   % 1 S2   1 % F   % 1 F  // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
 Source:Source%20Filter                        int       HighPassFilter=              1             // 
 Source:Source%20Filter                        int       LowPassFilter=               0             // 
 Source:Source%20Filter                        int       NotchFilter=                 0             // 

@@ -5,6 +5,7 @@ import scipy.signal # for detrending
 import SigTools
 import WavTools
 import BCI2000Tools.DataFiles  # adds self.load and self.dump methods
+import BCI2000Tools.Expressions # adds self.Expression method
 
 def trapseq_onreset(self, discard=None, remember=None, persistence=None, detrend=None, bci=None):
 	if discard == None: discard = getattr(self, 'discard', 0)
@@ -62,7 +63,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Streams intlist   ScopeForMinMax=               2     7     7                      7     1 % // ",
 			"PythonSig:Streams intlist   InitialStandards=                   2     2       2              3     0 % // how many stimuli at the beginning of each stream are guaranteed to be standards",
 			#"PythonSig:Streams int      SurroundSoundTrigger=                     0                      0     0 1 // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)", # removed in favour of configurable SoundChannels parameter
-			"PythonSig:Streams matrix    SoundChannels=                4     3     1 % S1     % 1 S2     1 % F       % 1 F     %     % % // ",
+			"PythonSig:Streams matrix    SoundChannels=                4     3     1 % S1     % 1 S2     1 % F       % 1 F     %     % % // stimuli x output-channels mixing matrix - last column contains codes like S1, S2, T1, T2, F",
 			"PythonSig:Streams int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
 			"PythonSig:Streams floatlist StreamVolumes=                      2     1.0 1.0              1.0     0 1 // ",
 			"PythonSig:Streams int       UseWiimotes=                              0                      0     0 1 // use Wiimote vibration instead of sound? (boolean)",
@@ -83,6 +84,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Epoch   int       DiffFeatureSets=                          1                      1     0 1 // for 2-stream designs, whether to use the difference between the two feature sets (boolean)",
 			"PythonSig:Epoch   int       SaveTrainingData=                         0                      0     0 1 // dump epochs to .pk file (boolean)",
 			
+			"PythonSig:Control string    StreamingExpression=                      %                      %     % % // if supplied, drive the StreamingRequired state using this expression",
 			"PythonSig:Control float     EpochAveragingPersistence=                1.0                    1.0   0 % // persistence parameter for the running average of ERPs",
 			"PythonSig:Control float     ControlFilterCutoffHz=                    0                      0     0 % // output low-pass cutoff in Hz (0 to disable)",
 			"PythonSig:Control int       ControlFilterOrder=                       8                      8     0 % // ",
@@ -245,6 +247,10 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.targets   = [self.prepwav(prmval, istream, base=stim[istream,0]) for istream,prmval in enumerate(stim[:,1])]
 			time.sleep(0.1)
 			for p in self.standards + self.targets: p.stop(); p.vol = 1.0
+		
+		e = self.params['StreamingExpression']
+		if e == '': self.expr = None
+		else: self.expr = self.Expression(e)
 		
 	#############################################################
 	
@@ -428,6 +434,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				sig[self.trigchan,:] = self.triggerfilter(sig[self.trigchan,:], axis=1)				
 			self.Last10SecondsTrigger.process(sig[self.trigchan,:])
 		
+		if self.expr != None: self.states['StreamingRequired'] = self.expr.Evaluate(sig)
 		starting = self.changed('StreamingRequired', fromVals=0)
 		presenting = self.states['StreamingRequired'] != 0
 		if starting:

@@ -37,8 +37,8 @@ call portable.bat
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition%SESSION%.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm
 
-::@set SRC=Emotiv          && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=
-::@set SRC=SignalGenerator && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=--EvaluateTiming=0
+::@set SRC=Emotiv          && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm ; LOAD PARAMETERFILE %parms%\SoundCard_2Channels.prm && set LOGGERS=
+::@set SRC=SignalGenerator && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm ; LOAD PARAMETERFILE %parms%\SoundCard_2Channels.prm && set LOGGERS=--EvaluateTiming=0
 
 ::@set LOGGERS=%LOGGERS% --LogWiimote=1
 

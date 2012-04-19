@@ -3,27 +3,35 @@
 @set PARMS=%WD%\parms
 @set PYPROG=%WD%\prog
 
-cd ..\prog
-@set PROG=%CD%
+:: parasitizing the VA setup:  v3.x binaries for operator/SIG/APP will be packed in the local %PYPROG% subdir, but SRC will be in ../prog
+@set PROG=%WD%\..\prog
+@if exist %PROG% cd %PROG%
+@if exist %PROG% goto gotprog
+
+:: last fallback = E1001 setup: one 3.x prog directory only
+@set PROG=%WD%\..\..\..\..\..\..\..\prog
+@set PYPROG=%PROG%
+call portable.bat
+@if exist %PROG% cd %PROG%
+@if exist %PROG% goto gotprog
+
+:gotprog
+
 
 @set SESSION=002
 @if [%1]==[] goto SKIPSESSIONARG
 @set SESSION=%1
 :SKIPSESSIONARG
 
-::call portable.bat
 
 @set SRC=gUSBampSource
 @set LOGGERS=
 @set OnConnect=-
 @set OnSetConfig=-
 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBampsBBAAA-Cap8-SMR.prm
-::@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\eyetracker.prm      && set LOGGERS=%LOGGERS% --LogEyetracker=1
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\tng.prm 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\triggerless8.prm 
-@set OnConnect=%OnConnect% ; SET PARAMETER EpochAveragingPersistence 1.0
-@set OnConnect=%OnConnect% ; SET PARAMETER ControlFilterCutoffHz     0.0
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBamp-Cap8-SMR.prm
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\realbase.prm 
+
 @set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession        %SESSION%
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition%SESSION%.prm
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WD%\subject_attention.prm
@@ -55,6 +63,6 @@ start              %SRC% %LOGGERS%
 :: remove driver version warning
 :: inpout32.dll
 :: double-click to run training blocks, double-click to run test blocks
-:: DirectSound dependency, etc
-:: simplify parameters
-:: cheap headphones
+:: DirectSound dependency, etc (? what about it ?)
+:: simplify parameters (? how ?)
+:: obtain cheap head- or ear-phones

@@ -1,0 +1,23 @@
+photos of correct cap and headphone placement
+	murphy-proof headphone construction:  accidentally swapping L&R could be a disaster
+impedance view for our different montage
+
+double-click to start calibration
+
+	calibration with Wadsworth tech present:  could be verbal, with keypress trigger
+	but even if so, subsequent calibration without tech must be automated:   subject hears audio prompts
+		so create audio prompts (must be adapted to individual streaming-stimuli)
+
+	with Wadsworth tech present:  subject could receive verbal feedback on counting task result
+		parameterize: constant display of which side should be attended, and what the correct count is
+	without Wadsworth tech:  subject receives no feedback about counting task (we must just assume they have got the hang of counting by now)
+
+	creation of weights must happen automatically
+	loading of weights must happen automatically
+	
+	after first weights are loaded:
+		inform subject about the bell feedback
+	
+	judge somehow which runs are "good" (to be included in the training) and which not
+	
+	
