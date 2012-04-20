@@ -247,7 +247,7 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
       for( size_t k = 0; k < sizeof( timeParams ) / sizeof( *timeParams ); ++k )
       { // Check individual stimulus durations.
         double value = StimulusProperty( Parameter( stimParams[ i ] ), j, timeParams[ k ] ).InSampleBlocks();
-        if( value < 1.0 || ::fmod( value, 1.0 ) > oneMillisecond )
+        if( value > 0 && value < 1.0 || ::fmod( value, 1.0 ) > oneMillisecond )
           bciout << "Due to a sample block duration of "
                  << 1.0f / oneMillisecond << "ms,"
                  << " the actual value of " << timeParams[ k ]
