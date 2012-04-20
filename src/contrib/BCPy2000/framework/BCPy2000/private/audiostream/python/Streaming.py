@@ -152,9 +152,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.trigthresh = numpy.asarray(self.params['TriggerThreshold'].val)
 		
 		self.weights = self.params['ERPClassifierWeights'].val
-		self.weights2 = numpy.multiply(self.weights, self.weights)
 		if len(self.weights) == 0:
-			self.weights = self.weights2 = None
+			self.weights = None
 		else:
 			if self.weights.shape[0] != len(chn): raise EndUserError, "ERPClassifierWeights should have %d rows to match the number of channels" % len(chn)
 			if self.weights.shape[1] != self.epoch_samples: raise EndUserError, "ERPClassifierWeights should have %d cols to match the number of samples in an epoch" % self.epoch_samples
@@ -547,7 +546,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			history = numpy.abs( self.normalizer.read()[0][::self.normalizer_decimation] )
 			history.sort()
 			if history.size:
-				mag = 1.5 * numpy.diff(history[int(round(0.5*(history.size-1)))])  # for iid samples ~N(0,1) this statistic is around 1.0 (+/- 12% if history contains 100 samples at a time)
+				mag = 1.5 * numpy.median(history)  # for iid samples ~N(0,1) this statistic is around 1.0 (+/- 12% if history contains 100 samples at a time)
 				if mag: control_signal /= mag
 		
 		if max(self.out_signal_dim) == 1: return control_signal
@@ -573,8 +572,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.prediction = 0.0
 			self.prediction_se = 1.0
 		else:
-			self.prediction    = sum(numpy.multiply(self.weights,  xi).flat) + self.bias
-			#self.prediction_se = sum(numpy.multiply(self.weights2, vi).flat) ** 0.5
+			self.prediction = sum(numpy.multiply(self.weights,  xi).flat) + self.bias
 		
 		return xi
 	
@@ -695,6 +693,32 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		del self.prepseq
 		self.nbeats = [0] * self.nstreams
 		WavTools.player(ww).play(bg=False)
+	
+	#############################################################
+	
+	def MakeFocusOn(self, ignore=None, listenTo=None, count='prompts/ATT-Crystal-CountThese.wav'):
+		ww = [None for i in range(self.nstreams)]
+		for row in self.params['SoundChannels']:
+			w = 0
+			code = row[-1].upper()
+			if not code.startswith('S'): continue
+			istream = int(code[1:]) - 1
+			row = [int({'':'0'}.get(x,x)) for x in row[:-1]]
+			#print istream,row
+			if ignore != None and self.nstreams == 2:
+				sound = self.standards[1-istream].wav
+				w = w % (WavTools.wav(ignore).resample(sound.fs) * row) % 0.2 % sound
+			if listenTo != None:
+				sound = self.standards[istream].wav
+				if w != 0: w %= 0.5
+				w = w % (WavTools.wav(listenTo).resample(sound.fs) * row) % 0.2 % sound
+			if count != None:
+				sound = self.targets[istream].wav
+				if w != 0: w %= 0.5
+				w = w % (WavTools.wav(count).resample(sound.fs) * row) % 0.2 % sound
+			ww[istream] = w
+		return ww
+			
 		
 #################################################################
 #################################################################

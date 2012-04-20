@@ -645,4 +645,10 @@ class wav:
 	
 	def msec2samples(self, msec): return msec2samples(msec, self)
 	def samples2msec(self, msec): return samples2msec(msec, self)
-		
+	
+	def resample(self, newfs):
+		w = self.copy()
+		newN = w.samples() * newfs / w.fs
+		w.y = interpsamples(w.y, numpy.linspace(0, w.samples(), newN, endpoint=False))
+		w.fs = newfs
+		return w

@@ -53,10 +53,13 @@ start              %PYPROG%\PythonSignalProcessing   --PythonSigWD=%WD%\python -
 ::start              %PYPROG%\%SRC% %LOGGERS%
 start              %SRC% %LOGGERS%
 
+
 :: check normalizer works for non-zero signals (playback? epoc?)
 :: online visual feedback (for onlookers)
 :: shells off
 :: datestamped logs
+::     --PythonAppLog=%WD%\log\###-app.txt
+::     --PythonSigLog=%WD%\log\###-sig.txt
 :: visualizations off
 :: auto-quit?
 :: go button on operator?  or go with trialsperblock 1 for test?

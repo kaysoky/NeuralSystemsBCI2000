@@ -48,9 +48,12 @@ def addstatemonitor(bci,name,showtime=False,**kwargs):
 		defaultfontsize = 13
 	if not kwargs.has_key('font_size'):
 		kwargs['font_size'] = defaultfontsize
+	mfunc = kwargs.pop('func',None)
+	mpargs = kwargs.pop('pargs',())
+	mkwargs = kwargs.pop('kwargs',{})
 	nmon = len(bci.statemonitors.keys()) + 1
 	right,top=bci.screen.get_size()
-	m = statemonitor(name=name, position=(150,top-nmon*15), showtime=showtime, params=kwargs)
+	m = statemonitor(name=name, position=(150,top-nmon*15), showtime=showtime, params=kwargs, func=mfunc, pargs=mpargs, kwargs=mkwargs)
 	mp = getattr(m.value, 'parameters', m.value) # .parameters would be for VisionEgg objects
 	mp.text = str(bci.states.get(name, 'no such state'))
 	bci.statemonitors[name] = m

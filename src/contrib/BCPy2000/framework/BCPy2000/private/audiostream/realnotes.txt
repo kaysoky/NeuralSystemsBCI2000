@@ -1,17 +1,21 @@
-photos of correct cap and headphone placement
-	murphy-proof headphone construction:  accidentally swapping L&R could be a disaster
-impedance view for our different montage
+	
+double-click for alternative wizard
+	* impedance view for our different montage
+	* photos of correct cap and headphone placement
+	* murphy-proof headphone construction:  accidentally swapping L&R could be a disaster
 
-double-click to start calibration
+double-click to start calibration session
 
 	calibration with Wadsworth tech present:  could be verbal, with keypress trigger
 	but even if so, subsequent calibration without tech must be automated:   subject hears audio prompts
-		so create audio prompts (must be adapted to individual streaming-stimuli)
+		* so create audio prompts (must be adapted to individual streaming-stimuli)
 
 	with Wadsworth tech present:  subject could receive verbal feedback on counting task result
 		parameterize: constant display of which side should be attended, and what the correct count is
 	without Wadsworth tech:  subject receives no feedback about counting task (we must just assume they have got the hang of counting by now)
-
+		or: implement audio feedback about the count
+		
+		
 	creation of weights must happen automatically
 	loading of weights must happen automatically
 	

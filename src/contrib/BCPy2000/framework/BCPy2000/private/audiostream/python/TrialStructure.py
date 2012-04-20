@@ -34,6 +34,7 @@ class BciApplication(BciGenericApplication):
 			"PythonApp:Task    int       TestEyeTracker=                           0                      0     0 1 // display gaze feedback stimulus? (boolean)",
 			"PythonApp:Task    int       FreeChoice=                               0                      0     0 1 // allow user to choose freely? (boolean)",
 			"PythonApp:Task    int       ShowCountFeedback=                        1                      0     0 1 // show correct counts after each trial? (boolean)",
+			"PythonApp:Task    int       ScreenIsForOperator=                      1                      0     0 1 //  (boolean)",
 			"PythonApp:Task    int       InvertCount=                              0                      0     0 1 // check if the subject should count standards rather than oddballs (boolean)",
 			"PythonApp:Task    intlist   BeatsPerTrial=                         1  7                      7     1 % // ",
 			"PythonApp:Task    matrix    Cues=                                  { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20LEFT RIGHT%20>>> % % NO YES no.wav yes.wav                  %     % % // ",
@@ -144,7 +145,12 @@ class BciApplication(BciGenericApplication):
 			self.addstatemonitor('CurrentTrial')
 			self.addstatemonitor('TargetStream')
 			self.addstatemonitor('PredictedStream')
-						
+			
+		if int(self.params['ScreenIsForOperator']):
+			for istream in range(self.nstreams):
+				self.addstatemonitor('# targets in stream %d'%(istream+1), func=self.ReportNumberOfTargets, kwargs={'istream':istream})
+			
+			
 		self.freechoice = int(self.params['FreeChoice'])
 		self.showcounts = int(self.params['ShowCountFeedback'])
 		self.invertcount = int(self.params['InvertCount'])
@@ -154,6 +160,17 @@ class BciApplication(BciGenericApplication):
 				
 		if int(self.params.TestEyeTracker):
 			self.stimulus('eye', VisualStimuli.Text, text='o', anchor='center', on=False)
+		
+		self.logging = int(self.params.get('PythonAppShell', 1)) == 0 or self.params.get('PythonAppLog','') not in ['','-']
+		
+	#############################################################
+
+	def ReportNumberOfTargets(self, istream):
+		nt = self.count['targets'][istream]
+		if self.invertcount: nt = self.nbeats[istream] - nt
+		nt = str(nt)
+		if istream+1 == self.states['TargetStream']: nt += ' <- should be counting this one'
+		return nt
 		
 	#############################################################
 	
@@ -230,6 +247,7 @@ class BciApplication(BciGenericApplication):
 			self.stimuli['cue'].text = self.FocusOnText[self.target]
 			self.stimuli['cue'].on = True
 			self.FocusOnAudio[self.target].play()
+
 		elif phase == 'respond':
 			if self.target > 0:
 				correct = self.count['targets'][self.target-1]
@@ -251,6 +269,8 @@ class BciApplication(BciGenericApplication):
 		if phase == 'stimulus':
 			self.reset_count()
 			self.states['StreamingRequired'] = 1
+			self.log('\n%04d-%02d-%02d %02d:%02d:%02d  Start stimuli for trial %d' % ((time.localtime()[:6])+(self.states['CurrentTrial'],)))
+			if self.target: self.log('Focusing on stream %d' % self.target)
 		
 		if phase == 'feedback':
 			correct = self.states['CorrectResponse']
@@ -258,7 +278,8 @@ class BciApplication(BciGenericApplication):
 			self.acknowledge('Response')
 			self.acknowledge('CorrectResponse')
 			self.user_responses.append([response, correct])
-			
+			if response == correct: self.log('Response correct')
+			else: self.log('Response incorrect')
 			for istream in range(self.nstreams):
 				#nt = self.current_stream.ntargets[istream]
 				nt = self.count['targets'][istream]
@@ -294,6 +315,7 @@ class BciApplication(BciGenericApplication):
 				self.change_phase()
 				
 		if self.changed('StreamingFinished', fromVals=0):
+			self.log(self.count)
 			if self.nstreams == 2:
 				result = numpy.sign(sig.flat[0])
 				self.states['PredictedStream'] = {-1.0:1, 0.0:0, 1.0:2}.get(result)
@@ -322,6 +344,7 @@ class BciApplication(BciGenericApplication):
 			if key in range(256, 266): self.states['Response'] = key - 256
 			elif key in range(48,58):  self.states['Response'] = key - 48
 			self.change_phase()
+			self.log('Response: %d' % self.states['Response'])
 		if self.freechoice and phase == 'cue' and event.type == pygame.locals.KEYUP:
 			self.change_phase()
 			
@@ -349,8 +372,13 @@ class BciApplication(BciGenericApplication):
 	def decide(self, predicted, target):
 		self.predictions.append([predicted, target])
 		self.last_prediction = predicted
+		self.log('BCI predicted stream %d' % predicted)
 		if target:
-			if predicted == target: self.ding.play()
+			if predicted == target:
+				self.ding.play()
+				self.log('BCI correct')
+			else:
+				self.log('BCI incorrect')
 		
 	#############################################################
 	
@@ -434,7 +462,12 @@ class BciApplication(BciGenericApplication):
 			print confmat
 			print ' overall accuracy of %s = %3.1f%% +/- %3.1f from %d trials' % (type, 100-100*pc, 100*stc, c.sum())
 			print 'balanced accuracy of %s = %3.1f%% +/- %3.1f from %d trials' % (type, 100-100*pb, 100*stb, c.sum())
-			
+	
+	#############################################################
+	
+	def log(self, string):
+		if self.logging: print string
+		
 #################################################################
 #################################################################
 

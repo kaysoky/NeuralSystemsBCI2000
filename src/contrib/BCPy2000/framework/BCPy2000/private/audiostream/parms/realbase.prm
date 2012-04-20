@@ -32,11 +32,11 @@ PythonSig:Epoch                               matrix    ERPClassifierWeights=   
 PythonSig:Control                             float     EpochAveragingPersistence=          1.0         0.7       // persistence parameter for the running average of ERPs
 PythonSig:Control                             float     ControlFilterCutoffHz=              0           3         // output low-pass cutoff in Hz (0 to disable)
 PythonSig:Control                             int       ControlFilterOrder=                 8                     // 
-PythonSig:Control                             float     NormalizerBufferSec=                0.0                   // length of buffer in which to remember non-zero control signal values
+PythonSig:Control                             float     NormalizerBufferSec=               10.0                   // length of buffer in which to remember non-zero control signal values
 PythonSig:Control                             float     NormalizerIntervalSec=              0.25                  // interval between informative samples in the normalizer buffer
 
-PythonApp:Task                                int       FreeChoice=                         1                      // allow user to choose freely? (boolean)
-PythonApp:Task                                int       ShowCountFeedback=                  0                      // show correct counts after each trial? (boolean)
+PythonApp:Task                                int       FreeChoice=                         0                      // allow user to choose freely? (boolean)
+PythonApp:Task                                int       ShowCountFeedback=                  1                      // show correct counts after each trial? (boolean)
 PythonApp:Task                                matrix    Cues=                       { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> % % NO YES no.wav yes.wav // 
 
 Visualize:Processing%20Stages                 int       VisualizeTiming=                    1                      // 
