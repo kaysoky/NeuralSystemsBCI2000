@@ -106,7 +106,20 @@ BCI2000Remote::LoadParametersLocal( const string& inFileName )
   {
     string line;
     while( std::getline( file, line ) )
-      Execute( "set parameter " + line );
+    {
+      ostringstream oss;
+      oss << "set parameter ";
+      // Encode characters that are special to the ScriptInterpreter.
+      const string escapeThese = "\";";
+      for( string::const_iterator i = line.begin(); i != line.end(); ++i )
+      {
+        if( escapeThese.find( *i ) != string::npos )
+          oss << "%" << hex << *i;
+        else
+          oss.put( *i );
+      }
+      Execute( oss.str() );
+    }
   }
   return success;
 }
