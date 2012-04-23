@@ -68,22 +68,15 @@ BCI2000Connection::Connect()
     mTelnetAddress = DefaultTelnetAddress();
   if( !mOperatorPath.empty() )
   {
-    string options = "--Telnet \"" + mTelnetAddress + "\"";
-    options += " --StartupIdle";
-    if( !mWindowTitle.empty() )
-      options += " --Title \"" + mWindowTitle + "\"";
-    if( !mWindowVisible )
-      options += " --Hide";
-    success = StartExecutable( mOperatorPath, options );
+    success = Run( mOperatorPath );
     mTerminateOperator = success;
   }
   if( success )
   {
     mSocket.open( mTelnetAddress.c_str() );
     mConnection.open( mSocket );
-    if( mOperatorPath.empty() )
-      success = mConnection.is_open();
-    else
+    success = mConnection.is_open();
+    if( success )
       success = mSocket.wait_for_read( static_cast<int>( 1e3 * mTimeout ) );
     if( !success )
       mResult = "Could not connect to Operator module at " + mTelnetAddress;
@@ -114,13 +107,8 @@ bool
 BCI2000Connection::Disconnect()
 {
   mResult.clear();
-  if( mSocket.connected() )
-  {
-    if( mTerminateOperator )
-      Execute( "quit" );
-    else
-      Execute( "shutdown system" );
-  }
+  if( mSocket.connected() && mTerminateOperator )
+    Quit();
   mTerminateOperator = false;
   mSocket.close();
   mConnection.close();
@@ -166,6 +154,41 @@ BCI2000Connection::Execute( const string& inCommand )
   return exitCode;
 }
 
+bool
+BCI2000Connection::Run( const string& inOperatorPath )
+{
+  string options = "--Telnet \"" + mTelnetAddress + "\"";
+  options += " --StartupIdle";
+  if( !mWindowTitle.empty() )
+    options += " --Title \"" + mWindowTitle + "\"";
+  if( !mWindowVisible )
+    options += " --Hide";
+  bool success = StartExecutable( inOperatorPath, options );
+  if( success )
+  {
+    const int cReactionTime = 50; // ms
+    double timeElapsed = 0; // s
+    client_tcpsocket testSocket;
+    while( timeElapsed < mTimeout && !testSocket.is_open() )
+    {
+      testSocket.open( mTelnetAddress.c_str() );
+      testSocket.wait_for_read( cReactionTime );
+      timeElapsed += 1e-3 * cReactionTime;
+    }
+    success = testSocket.is_open();
+    if( !success )
+      mResult = "Operator module does not listen on " + mTelnetAddress;
+  }
+  return success;
+}
+
+bool
+BCI2000Connection::Quit()
+{
+  Execute( "quit" );
+  return Result().empty();
+}
+
 #if _WIN32
 bool
 BCI2000Connection::StartExecutable( const string& inExecutable, const string& inOptions )
@@ -176,6 +199,11 @@ BCI2000Connection::StartExecutable( const string& inExecutable, const string& in
   char* pWorkingDir = new char[inExecutable.length() + 1];
   ::strcpy( pWorkingDir, inExecutable.c_str() );
   ::PathRemoveFileSpecA( pWorkingDir );
+  if( *pWorkingDir == '\0' )
+  {
+    delete[] pWorkingDir;
+    pWorkingDir = NULL;
+  }
 
   const char* pExt = ::PathFindExtensionA( inExecutable.c_str() );
   bool isScript = ( 0 != ::stricmp( pExt, ".exe" ) );

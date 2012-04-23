@@ -48,6 +48,7 @@ class BCI2000Connection
 
   // ==Properties==
   // The timeout to use for the connection to be established, and for a command to finish.
+  // Given in seconds.
   double Timeout() const { return mTimeout; }
   BCI2000Connection& Timeout( double inTimeout ) { mTimeout = inTimeout; return *this; }
   // Path to operator module, or batch file. When empty, a connection to an already running
@@ -80,6 +81,13 @@ class BCI2000Connection
   // Execute a BCI2000 scripting command. If the command executed a shell
   // command, returns the command's exit code, and 0 otherwise.
   int Execute( const std::string& );
+  // Run a BCI2000 operator module, or batch file, with parameters appropriate for
+  // remote control. Normally, BCI2000 is started up by the Connect() method, so you
+  // will not need to call this function.
+  bool Run( const std::string& );
+  // Quit BCI2000. Normally, BCI2000 is terminated automatically when it was started
+  // by the Connect() method, so you will not need to call this function.
+  bool Quit();
 
  private:
   BCI2000Connection( const BCI2000Connection& );
