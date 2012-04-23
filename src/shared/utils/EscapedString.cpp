@@ -1,8 +1,7 @@
 //////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A string class that handles C-style backslash
-//   escaping, and quoting.
+// Description: See header file.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -24,13 +23,8 @@
 //
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"
-#pragma hdrstop
-
 #include "EscapedString.h"
 #include <iomanip>
-#include <sstream>
-#include <cstdio>
 
 using namespace std;
 
@@ -41,11 +35,15 @@ EscapedString::WriteToStream( ostream& os ) const
   replacements[] =
   {
     { ' ', "\\ " },
-    { '\t', "\\t" },
-    { '\n', "\\n" },
-    { '\r', "\\r" },
     { '\"', "\\\"" },
-    { '\'', "\\'" },
+    { '\\', "\\\\" },
+    { '\0', "\\0" },
+    { '\a', "\\a" },
+    { '\t', "\\t" },
+    { '\v', "\\v" },
+    { '\f', "\\f" },
+    { '\r', "\\r" },
+    { '\n', "\\n" },
   };
   const size_t count = sizeof( replacements ) / sizeof( *replacements );
   for( const_iterator i = begin(); i != end(); ++i )
@@ -63,77 +61,3 @@ EscapedString::WriteToStream( ostream& os ) const
   return os;
 }
 
-istream&
-EscapedString::ReadFromStream( istream& is )
-{
-  const struct { char code; char ch; }
-  escapeCodes[] =
-  {
-    { 't', '\t' },
-    { 'n', '\n' },
-    { 'r', '\r' },
-  };
-  const size_t count = sizeof( escapeCodes ) / sizeof( *escapeCodes );
-
-  clear();
-  bool done = false,
-       withinQuotes = false;
-  while( !done )
-  {
-    int c = is.peek();
-    switch( c )
-    {
-      case EOF:
-        done = true;
-        break;
-
-      case '\\':
-      {
-        is.get();
-        int next = is.peek();
-        if( next == EOF )
-        {
-          done = true;
-          ( *this ) += '\\';
-        }
-        else
-        {
-          is.get();
-          size_t i = 0;
-          while( i < count && next != escapeCodes[i].code )
-            ++i;
-          if( i < count )
-            ( *this ) += escapeCodes[i].ch;
-          else if( next == 'x' )
-          {
-            if( ::isxdigit( is.peek() ) )
-            {
-              istringstream iss;
-              iss.str() += is.get();
-              if( ::isxdigit( is.peek() ) )
-                iss.str() += is.get();
-              int ch;
-              iss >> hex >> ch;
-              ( *this ) += ch;
-            }
-            else
-              ( *this ) += "\\x";
-          }
-          else
-            ( *this ) += next;
-        }
-      } break;
-
-      case '\"':
-        withinQuotes = !withinQuotes;
-        break;
-
-      default:
-        if( ::isspace( c ) && !withinQuotes )
-          done = true;
-        else
-          ( *this ) += is.get();
-    }
-  }
-  return is;
-}

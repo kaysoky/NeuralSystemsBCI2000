@@ -29,6 +29,9 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
+#include <cstdio>
+#include <functional>
 
 struct EscapedString : std::string
 {
@@ -37,8 +40,18 @@ struct EscapedString : std::string
   EscapedString( const char* s ) : std::string( s ) {}
 
   std::ostream& WriteToStream( std::ostream& ) const;
-  std::istream& ReadFromStream( std::istream& );
+  std::istream& ReadFromStream( std::istream& is ) { return ReadUntil( is >> std::ws, ::isspace ); }
+  template<typename T> std::istream& ReadUntil( std::istream&, T& predicate );
 };
+
+namespace std {
+  inline
+  istream& getline( istream& is, EscapedString& e, char delim = '\n' )
+  {
+    e.ReadUntil( is, bind2nd( equal_to<int>(), delim ) );
+    return is.ignore();
+  }
+}
 
 inline
 std::ostream& operator<<( std::ostream& s, const EscapedString& e )
@@ -51,5 +64,83 @@ std::istream& operator>>( std::istream& s, EscapedString& e )
 {
   return e.ReadFromStream( s );
 }
+
+template<typename T>
+std::istream&
+EscapedString::ReadUntil( std::istream& is, T& predicate )
+{
+  const struct { char code; char ch; }
+  escapeCodes[] =
+  {
+    { '0', '\0' },
+    { 'a', '\a' },
+    { 't', '\t' },
+    { 'v', '\v' },
+    { 'f', '\f' },
+    { 'r', '\r' },
+    { 'n', '\n' },
+  };
+  const size_t count = sizeof( escapeCodes ) / sizeof( *escapeCodes );
+
+  clear();
+  bool done = false,
+       withinQuotes = false;
+  while( !done )
+  {
+    int c = is.peek();
+    switch( c )
+    {
+      case EOF:
+        done = true;
+        break;
+
+      case '\\':
+      {
+        is.get();
+        int next = is.peek();
+        if( next == EOF )
+        {
+          done = true;
+          ( *this ) += c;
+        }
+        else
+        {
+          is.get();
+          size_t i = 0;
+          while( i < count && next != escapeCodes[i].code )
+            ++i;
+          if( i < count )
+            ( *this ) += escapeCodes[i].ch;
+          else if( next == 'x' && ::isxdigit( is.peek() ) )
+          {
+            string code;
+            code += is.get();
+            if( ::isxdigit( is.peek() ) )
+              code += is.get();
+            istringstream iss( code );
+            int ch;
+            iss >> hex >> ch;
+            ( *this ) += ch;
+          }
+          else
+            ( *this ) += next;
+        }
+      } break;
+
+      case '\"':
+        withinQuotes = !withinQuotes;
+        is.get();
+        break;
+
+      default:
+        if( !withinQuotes && predicate( c ) )
+          done = true;
+        else
+          ( *this ) += is.get();
+    }
+  }
+  return is;
+}
+
 
 #endif // ESCAPED_STRING_H

@@ -29,6 +29,8 @@
 
 #include "HybridString.h"
 #include "EncodedString.h"
+#include <sstream>
+#include <functional>
 
 using namespace std;
 
@@ -41,17 +43,27 @@ HybridString::WriteToStream( ostream& os ) const
 istream&
 HybridString::ReadFromStream( istream& is )
 {
-  clear();
-  is >> ws;
-  if( is.peek() == '"' )
-    std::getline( is.ignore(), *this, '"' );
-  else if( is.peek() == '\'' )
-    std::getline( is.ignore(), *this, '\'' );
-  else
-  {
-    EncodedString s;
-    s.ReadFromStream( is );
-    *this = s;
-  }
+  if( ReadUntil( is >> ws, ::isspace ) )
+    Decode();
   return is;
 };
+
+istream&
+HybridString::GetLine( istream& is, char delim )
+{
+  if( ReadUntil( is, bind2nd( equal_to<int>(), delim ) ) )
+  {
+    is.ignore();
+    Decode();
+  }
+  return is;
+}
+
+void
+HybridString::Decode()
+{
+  istringstream iss( *this );
+  EncodedString s;
+  iss >> s;
+  *this = s;
+}

@@ -36,9 +36,22 @@ struct HybridString : public std::string
   HybridString( const std::string& s ) : std::string( s ) {}
   HybridString( const char* s ) : std::string( s ) {}
 
-  std::ostream& WriteToStream( std::ostream& os ) const;
-  std::istream& ReadFromStream( std::istream& is );
+  std::ostream& WriteToStream( std::ostream& ) const;
+  std::istream& ReadFromStream( std::istream& );
+  std::istream& GetLine( std::istream&, char );
+  template<typename T> std::istream& ReadUntil( std::istream&, T& predicate );
+
+ private:
+  void Decode();
 };
+
+namespace std {
+  inline
+  istream& getline( istream& s, HybridString& h, char delim = '\n' )
+  {
+    return h.GetLine( s, delim );
+  }
+}
 
 inline
 std::ostream& operator<<( std::ostream& os, const HybridString& s )
@@ -50,6 +63,37 @@ inline
 std::istream& operator>>( std::istream& is, HybridString& s )
 {
   return s.ReadFromStream( is );
+}
+
+template<typename T>
+std::istream&
+HybridString::ReadUntil( std::istream& is, T& predicate )
+{
+  clear();
+  bool done = false,
+       withinQuotes = false;
+  while( !done )
+  {
+    int c = is.peek();
+    switch( c )
+    {
+      case EOF:
+        done = true;
+        break;
+
+      case '\"':
+        withinQuotes = !withinQuotes;
+        is.get();
+        break;
+
+      default:
+        if( !withinQuotes && predicate( c ) )
+          done = true;
+        else
+          ( *this ) += is.get();
+    }
+  }
+  return is;
 }
 
 #endif // HYBRID_STRING
