@@ -45,7 +45,7 @@ class TelnetServer : private ScriptInterpreter, private OSThread
 
   // OSThread interface
   int OnExecute();
-  void OnDone();
+  void OnFinished();
   // ScriptInterpreter interface
   void OnScriptError( const std::string& );
 

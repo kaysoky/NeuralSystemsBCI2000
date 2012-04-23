@@ -67,8 +67,9 @@ TelnetServer::Initialize()
 
 TelnetServer::~TelnetServer()
 {
+  if( !OSThread::InOwnThread() )
+    OSThread::TerminateWait();
   OSMutex::Lock lock( mMutex );
-  OSThread::TerminateWait();
   delete mpChild;
 }
 
@@ -94,24 +95,26 @@ TelnetServer::OnExecute()
 }
 
 void
-TelnetServer::OnDone()
+TelnetServer::OnFinished()
 {
   // When the connection has been closed from the other side,
   // remove ourselves from the chain of TelnetServer instances,
   // and delete ourselves.
   if( !IsTerminating() && mpParent )
   {
-    OSMutex::Lock lock( mpParent->mMutex );
-    if( mpChild )
     {
-      OSMutex::Lock lock( mpChild->mMutex );
-      mpChild->mpParent = mpParent;
-      mpParent->mpChild = mpChild;
-      mpChild = NULL;
-    }
-    else
-    {
-      mpParent->mpChild = NULL;
+      OSMutex::Lock lock( mpParent->mMutex );
+      if( mpChild )
+      {
+        OSMutex::Lock lock( mpChild->mMutex );
+        mpChild->mpParent = mpParent;
+        mpParent->mpChild = mpChild;
+        mpChild = NULL;
+      }
+      else
+      {
+        mpParent->mpChild = NULL;
+      }
     }
     delete this;
   }
