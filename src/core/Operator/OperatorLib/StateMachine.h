@@ -44,10 +44,10 @@
 #include "VisTable.h"
 #include "VersionInfo.h"
 #include "ProtocolVersion.h"
+#include "ScriptEvents.h"
 #include "MessageHandler.h"
 #include "OSThread.h"
 #include "OSMutex.h"
-#include "Lockable.h"
 
 #include <set>
 #include <fstream>
@@ -151,10 +151,17 @@ class StateMachine : public CallbackBase, private OSThread
   const VisTable& Visualizations() const
     { return mVisualizations; }
 
+  // Scripting events.
+  ScriptEvents& EventScripts()
+    { return mScriptEvents; }
+  const ScriptEvents& EventScripts() const
+    { return mScriptEvents; }
+
   // Issue a log message.
   void LogMessage( int messageCallbackID, const std::string& );
 
   // Interface to ScriptInterpreter class.
+ public:
   void AddListener( ScriptInterpreter& listener )
     { ::Lock<Listeners> lock( mListeners ); mListeners.insert( &listener ); }
   void RemoveListener( ScriptInterpreter& listener )
@@ -176,6 +183,8 @@ class StateMachine : public CallbackBase, private OSThread
   void InitializeModules();
   void MaintainDebugLog();
 
+  void TriggerEvent( int eventCallbackID );
+
  private:
   enum SysState mSystemState;
   // A mutex protecting access to the SystemState property:
@@ -192,6 +201,7 @@ class StateMachine : public CallbackBase, private OSThread
   StateVector       mStateVector;
   GenericSignal     mControlSignal;
   VisTable          mVisualizations;
+  ScriptEvents      mScriptEvents;
 
   std::ofstream     mDebugLog;
 

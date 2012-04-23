@@ -53,12 +53,15 @@ Preferences::ReadFromCommandLine()
     int         event;
   } paramNames[] =
   {
-    { "--OnConnect",   AfterModulesConnected },
-    { "--OnExit",      OnExit },
-    { "--OnSetConfig", OnSetConfig },
-    { "--OnSuspend",   OnSuspend },
-    { "--OnResume",    OnResume },
-    { "--OnStart",     OnStart }
+  #define PARAM(x) { "--" #x, x },
+    PARAM( OnConnect )
+    PARAM( OnExit )
+    PARAM( OnSetConfig )
+    PARAM( OnSuspend )
+    PARAM( OnResume )
+    PARAM( OnStart )
+    PARAM( OnShutdown )
+  #undef PARAM
   };
   int i = 1;
   while( i + 1 < qApp->arguments().size() )
@@ -91,6 +94,7 @@ void Preferences::ReadSettings()
   READ_SCRIPT( OnResume );
   READ_SCRIPT( OnSuspend );
   READ_SCRIPT( OnStart );
+  READ_SCRIPT( OnShutdown );
 
   #define READ_BUTTON( number ) \
     mButtons[ number - 1 ].Name = settings.value( KEY_CONFIG "/Buttons/Button" #number "Name", "" ).toString();\
@@ -117,6 +121,7 @@ void Preferences::WriteSettings()
   WRITE_SCRIPT( OnResume );
   WRITE_SCRIPT( OnSuspend );
   WRITE_SCRIPT( OnStart );
+  WRITE_SCRIPT( OnShutdown );
 
   #define WRITE_BUTTON( number ) \
     settings.setValue( KEY_CONFIG "/Buttons/Button" #number "Name", mButtons[ number - 1 ].Name ); \

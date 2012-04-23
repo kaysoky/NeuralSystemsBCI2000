@@ -94,11 +94,11 @@ MainWindow::MainWindow( QWidget* parent )
   OperatorUtils::RestoreWidget( this );
   BCI_Initialize();
 
-  BCI_SetExternalCallback( BCI_OnConnect, BCI_Function( OnConnect ), this );
-  BCI_SetExternalCallback( BCI_OnSetConfig, BCI_Function( OnSetConfig ), this );
-  BCI_SetExternalCallback( BCI_OnStart, BCI_Function( OnStart ), this );
-  BCI_SetExternalCallback( BCI_OnResume, BCI_Function( OnResume ), this );
-  BCI_SetExternalCallback( BCI_OnSuspend, BCI_Function( OnSuspend ), this );
+  BCI_SetCallback( BCI_OnSetConfig, BCI_Function( SetStartTime ), this );
+  BCI_SetCallback( BCI_OnStart, BCI_Function( SetStartTime ), this );
+  BCI_SetCallback( BCI_OnResume, BCI_Function( SetStartTime ), this );
+  BCI_SetCallback( BCI_OnSuspend, BCI_Function( SetStartTime ), this );
+
   BCI_SetExternalCallback( BCI_OnQuitRequest, BCI_Function( OnQuitRequest ), this );
   BCI_SetExternalCallback( BCI_OnInitializeVis, BCI_Function( OnInitializeVis ), this );
 
@@ -118,6 +118,8 @@ MainWindow::MainWindow( QWidget* parent )
   BCI_SetCallback( BCI_OnUnknownCommand, BCI_Function( OnUnknownCommand ), this );
   BCI_SetCallback( BCI_OnScriptHelp, BCI_Function( OnScriptHelp ), this );
   BCI_SetCallback( BCI_OnScriptError, BCI_Function( OnScriptError ), this );
+
+  SetupScripts();
 
   if( mTelnet.length() )
     BCI_TelnetListen( mTelnet.toLocal8Bit().constData() );
@@ -162,10 +164,10 @@ MainWindow::Terminate()
   if( doExecute )
   {
     // Execute the on-exit script ...
-    if( gpPreferences && gpPreferences->mScript[ Preferences::OnExit ] != "" )
+    if( !mExitScript.empty() )
     {
       mSyslog.AddEntry( "Executing OnExit script ..." );
-      ExecuteScript( gpPreferences->mScript[ Preferences::OnExit ] );
+      BCI_ExecuteScript( mExitScript.c_str() );
     }
     mSyslog.Close( true );
     BCI_Shutdown();
@@ -376,32 +378,57 @@ MainWindow::SetFunctionButtons()
 }
 
 void
-MainWindow::ExecuteScript( const QString& inScript )
+MainWindow::SetupScripts()
 {
-  string s = inScript.toLocal8Bit().constData();
-  if( !s.empty() )
+  if( !gpPreferences )
+    throw exception( "Global preferences object does not exist" );
+
+  static const struct { int id; const char* name; }
+  events[] =
   {
-    if( s[ 0 ] == '-' )
-    {
-      s = s.substr( 1 );
-      BCI_ExecuteScript( s.c_str() );
+    #define EVENT(x) { Preferences::x, #x },
+    EVENT( OnConnect )
+    EVENT( OnSetConfig )
+    EVENT( OnResume )
+    EVENT( OnSuspend )
+    EVENT( OnStart )
+    #undef EVENT
+  };
+  QString* scripts = gpPreferences->mScript;
+  for( size_t i = 0; i < sizeof( events ) / sizeof( *events ); ++i )
+  {
+    string command = "SET SCRIPT " + string( events[i].name ) + " " + FormatScript( events[i].name, scripts[events[i].id] );
+    BCI_ExecuteScript( command.c_str() );
+  }
+  mExitScript = FormatScript( "OnExit", scripts[Preferences::OnExit] );
+}
+
+string
+MainWindow::FormatScript( const char* inEventName, const QString& inScript )
+{
+  string result = inScript.toLocal8Bit().constData();
+  if( !result.empty() )
+  {
+    if( result[0] == '-' )
+    { // Immediate script specified
+      result = result.substr( 1 );
+      ostringstream oss;
+      EncodedString( result ).WriteToStream( oss, "\";" );
+      result = oss.str();
     }
     else
-    {
-      ifstream file( s.c_str() );
+    { // Script file specified
+      ifstream file( result.c_str() );
       if( !file.is_open() )
       {
-        string err = "Could not open script file ";
-        err += s;
-        OnErrorMessage( this, err.c_str() );
+        OnErrorMessage( this, ( "Could not open " + string( inEventName ) + " script file \"" + result + "\"" ).c_str() );
+        result = "";
       }
       else
-      {
-        getline( file, s, '\0' );
-        BCI_ExecuteScript( s.c_str() );
-      }
+        result = "EXECUTE SCRIPT " + result;
     }
   }
+  return result;
 }
 
 void
@@ -438,65 +465,9 @@ MainWindow::PutParameters()
 //----------    Callback functions called by the OperatorLib    --------------
 ////////////////////////////////////////////////////////////////////////////////
 void
-MainWindow::OnConnect( void* inData )
+MainWindow::SetStartTime( void* inData )
 {
   MainWindow* this_ = static_cast<MainWindow*>( inData );
-  // Execute the script after all modules are connected ...
-  if( gpPreferences && gpPreferences->mScript[ Preferences::AfterModulesConnected ] != "" )
-  {
-    this_->mSyslog.AddEntry( "Executing script after all modules connected ..." );
-    this_->ExecuteScript( gpPreferences->mScript[ Preferences::AfterModulesConnected ] );
-  }
-}
-
-void
-MainWindow::OnSetConfig( void* inData )
-{
-  MainWindow* this_ = static_cast<MainWindow*>( inData );
-  if( gpPreferences && gpPreferences->mScript[ Preferences::OnSetConfig ] != "" )
-  {
-    this_->mSyslog.AddEntry( "Executing OnSetConfig script ..." );
-    this_->ExecuteScript( gpPreferences->mScript[ Preferences::OnSetConfig ] );
-  }
-  this_->mStarttime = QDateTime::currentDateTime();
-}
-
-void
-MainWindow::OnStart( void* inData )
-{
-  MainWindow* this_ = static_cast<MainWindow*>( inData );
-  // Execute the on-start script ...
-  if( gpPreferences && gpPreferences->mScript[ Preferences::OnStart ] != "" )
-  {
-    this_->mSyslog.AddEntry( "Executing OnStart script ..." );
-    this_->ExecuteScript( gpPreferences->mScript[ Preferences::OnStart ] );
-  }
-  this_->mStarttime = QDateTime::currentDateTime();
-}
-
-void
-MainWindow::OnResume( void* inData )
-{
-  MainWindow* this_ = static_cast<MainWindow*>( inData );
-  // Execute the on-resume script ...
-  if( gpPreferences && gpPreferences->mScript[ Preferences::OnResume ] != "" )
-  {
-    this_->mSyslog.AddEntry( "Executing OnResume script ..." );
-    this_->ExecuteScript( gpPreferences->mScript[ Preferences::OnResume ] );
-  }
-  this_->mStarttime = QDateTime::currentDateTime();
-}
-
-void
-MainWindow::OnSuspend( void* inData )
-{
-  MainWindow* this_ = static_cast<MainWindow*>( inData );
-  // Execute the on-suspend script ...
-  if( gpPreferences && gpPreferences->mScript[ Preferences::OnSuspend ] != "" )
-  {
-    this_->mSyslog.AddEntry( "Executing OnSuspend script ..." );
-    this_->ExecuteScript( gpPreferences->mScript[ Preferences::OnSuspend ] );
-  }
   this_->mStarttime = QDateTime::currentDateTime();
 }
 

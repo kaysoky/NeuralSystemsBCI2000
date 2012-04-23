@@ -78,15 +78,19 @@ ScriptInterpreter::Execute( const char* inScript )
 bool
 ScriptInterpreter::ExecuteLine( const string& inLine )
 {
-  if( inLine.empty() )
+  if( inLine.empty() || inLine[0] == '#' )
     return true;
 
   bool syntaxOK = true;
   istringstream iss( inLine );
   while( !iss.eof() )
   {
-    string command;
-    std::getline( iss >> ws, command, ';' );
+    iss >> ws;
+    streampos startpos = iss.tellg();
+    HybridString().ReadUntil( iss, bind2nd( equal_to<int>(), ';' ) );
+    streamoff length = iss.tellg() - startpos;
+    iss.ignore();
+    string command = iss.str().substr( startpos, length );
     syntaxOK = syntaxOK && ExecuteCommand( command );
   }
   return syntaxOK;

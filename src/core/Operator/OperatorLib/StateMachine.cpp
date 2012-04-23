@@ -502,7 +502,7 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
       break;
 
     case TRANSITION( Publishing, Information ):
-      ExecuteCallback( BCI_OnConnect );
+      TriggerEvent( BCI_OnConnect );
       break;
 
     case TRANSITION( Information, SetConfigIssued ):
@@ -515,16 +515,16 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
       break;
 
     case TRANSITION( SetConfigIssued, Resting ):
-      ExecuteCallback( BCI_OnSetConfig );
+      TriggerEvent( BCI_OnSetConfig );
       break;
 
     case TRANSITION( Resting, RunningInitiated ):
-      ExecuteCallback( BCI_OnStart );
+      TriggerEvent( BCI_OnStart );
       LogMessage( BCI_OnLogMessage, "Operator started operation" );
       break;
 
     case TRANSITION( Suspended, RunningInitiated ):
-      ExecuteCallback( BCI_OnResume );
+      TriggerEvent( BCI_OnResume );
       LogMessage( BCI_OnLogMessage, "Operator resumed operation" );
       break;
 
@@ -533,7 +533,7 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
       break;
 
     case TRANSITION( SuspendInitiated, Suspended ):
-      ExecuteCallback( BCI_OnSuspend );
+      TriggerEvent( BCI_OnSuspend );
       break;
 
     case TRANSITION( WaitingForConnection, Idle ):
@@ -548,7 +548,7 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
     case TRANSITION( SuspendInitiated, Idle ):
     case TRANSITION( Suspended, Idle ):
     case TRANSITION( SuspendedParamsModified, Idle ):
-      ExecuteCallback( BCI_OnShutdown );
+      TriggerEvent( BCI_OnShutdown );
       LogMessage( BCI_OnLogMessage, "Operator shut down connections" );
       break;
   }
@@ -609,6 +609,22 @@ StateMachine::LogMessage( int inCallbackID, const string& inMessage )
   ::Lock<Listeners> lock( mListeners );
   for( Listeners::iterator i = mListeners.begin(); i != mListeners.end(); ++i )
     ( *i )->HandleLogMessage( inCallbackID, inMessage );
+}
+
+void
+StateMachine::TriggerEvent( int inCallbackID )
+{
+  const char* pName = ScriptEvents::Name( inCallbackID );
+  if( !pName )
+    throw bciexception( "Unknown operator event callback ID: " << inCallbackID );
+
+  ExecuteCallback( inCallbackID );
+  string script = mScriptEvents.Get( inCallbackID );
+  if( !script.empty() )
+  {
+    LogMessage( BCI_OnLogMessage, "Executing " + string( pName ) + " script ..." );
+    ScriptInterpreter( *this ).Execute( script );
+  }
 }
 
 // ------------------------ CoreConnection definitions -------------------------
@@ -809,6 +825,9 @@ StateMachine::CoreConnection::HandleStatus( istream& is )
         }
         break;
     }
+
+    if( status.Content() == Status::error && mrParent.SystemState() != Initialization )
+      mrParent.EnterState( Fatal );
   }
   return true;
 }

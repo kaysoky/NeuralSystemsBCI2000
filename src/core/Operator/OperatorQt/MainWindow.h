@@ -85,7 +85,8 @@ class MainWindow : public QMainWindow
   void ReadCommandLine();
   void UpdateDisplay();
   void SetFunctionButtons();
-  void ExecuteScript( const QString& );
+  void SetupScripts();
+  std::string FormatScript( const char* eventName, const QString& script );
 
   void GetParameters();
 
@@ -95,11 +96,7 @@ class MainWindow : public QMainWindow
  private:
   virtual void timerEvent( QTimerEvent* );
 
-  static void STDCALL OnConnect( void* );
-  static void STDCALL OnSetConfig( void* );
-  static void STDCALL OnStart( void* );
-  static void STDCALL OnResume( void* );
-  static void STDCALL OnSuspend( void* );
+  static void STDCALL SetStartTime( void* );
   static void STDCALL OnCoreInput( void* );
   static void STDCALL OnQuitRequest( void*, const char** );
   static void STDCALL OnDebugMessage( void*, const char* );
@@ -128,6 +125,7 @@ class MainWindow : public QMainWindow
   volatile bool  mTerminating,
                  mTerminated;
   OSMutex        mTerminationMutex;
+  std::string    mExitScript;
 };
 
 #endif // MAINWINDOW_H

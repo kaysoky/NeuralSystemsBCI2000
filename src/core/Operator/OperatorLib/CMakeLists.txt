@@ -24,6 +24,8 @@ SET( SRC_PROJECT
   SignalTypes.cpp
   VisPropertyTypes.cpp
   MessageTypes.cpp
+  ScriptType.cpp
+  ScriptEvents.cpp
   TelnetServer.cpp
 )
 SET( HDR_PROJECT
@@ -41,6 +43,8 @@ SET( HDR_PROJECT
   SignalTypes.h
   VisPropertyTypes.h
   MessageTypes.h
+  ScriptType.h
+  ScriptEvents.h
   TelnetServer.h
 )
 

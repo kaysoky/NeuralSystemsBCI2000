@@ -374,8 +374,10 @@ Event handler arguments are given following the event.
 */
 enum BCI_Event
 {
-  BCI_OnSystemStateChange, /* ( void* refdata ) */
-  BCI_OnCoreInput,         /* ( void* refdata ) */
+  BCI_None = -1,
+
+  BCI_OnSystemStateChange = 0, /* ( void* refdata ) */
+  BCI_OnCoreInput,             /* ( void* refdata ) */
 
   BCI_OnConnect,   /* ( void* refdata ) */
   BCI_OnSetConfig, /* ( void* refdata ) */

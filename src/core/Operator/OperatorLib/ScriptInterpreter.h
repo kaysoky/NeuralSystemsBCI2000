@@ -62,8 +62,11 @@ class ScriptInterpreter
 
  public:
   // Begin: Interface to ObjectType instances.
+  //  GetToken() reads a single string, which may be quoted and URL-encoded.
   std::string GetToken();
+  //  GetRemainder() reads the remainder of the command line.
   std::string GetRemainder();
+  //  Unget() undoes a read operation. Without a previous read operation, it does nothing.
   void Unget();
 
   typedef std::vector< std::vector<std::string> > ArgumentList;

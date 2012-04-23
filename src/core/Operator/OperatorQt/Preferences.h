@@ -49,11 +49,13 @@ class Preferences
   enum
   {
     AfterModulesConnected = 0,
+    OnConnect = AfterModulesConnected,
     OnSetConfig,
     OnExit,
     OnResume,
     OnSuspend,
     OnStart,
+    OnShutdown,
     numScriptEvents
   };
   QString mScript[ numScriptEvents ];
