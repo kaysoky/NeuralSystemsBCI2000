@@ -84,7 +84,6 @@ class OSThread : private Uncopyable
   static unsigned int WINAPI StartThread( void* inInstance );
   void FinishThread( int );
 
-  HANDLE mHandle;
   unsigned int mThreadID;
   static unsigned int sMainThreadID;
 #else // _WIN32
@@ -92,13 +91,13 @@ class OSThread : private Uncopyable
   void FinishThread( int );
 
   pthread_t mThread;
-  bool mTerminated;
   static pthread_t sMainThread;
 #endif // _WIN32
   int mResult;
   OSMutex mMutex;
   SharedPointer<OSEvent> mpTerminationEvent;
-  bool mTerminating;
+  bool mTerminating,
+       mTerminated;
 };
 
 #endif // OS_THREAD_H

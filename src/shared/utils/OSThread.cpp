@@ -61,10 +61,10 @@ pthread_t OSThread::sMainThread = ::pthread_self();
 #if _WIN32
 
 OSThread::OSThread()
-: mHandle( NULL ),
-  mThreadID( 0 ),
+: mThreadID( 0 ),
   mResult( 0 ),
   mTerminating( false ),
+  mTerminated( true ),
   mpTerminationEvent( new OSEvent )
 {
   mpTerminationEvent->Set();
@@ -77,16 +77,11 @@ OSThread::Start()
   OSMutex::Lock lock( mMutex );
   mpTerminationEvent->Reset();
   mTerminating = false;
-  mHandle = reinterpret_cast<HANDLE>( ::_beginthreadex( NULL, 0, OSThread::StartThread, this, 0, &mThreadID ) );
-  if( mHandle == NULL )
+  uintptr_t handle = ::_beginthreadex( NULL, 0, OSThread::StartThread, this, 0, &mThreadID );
+  if( handle == NULL )
     bcierr << ::strerror( errno ) << endl;
-}
-
-bool
-OSThread::IsTerminated() const
-{
-  OSMutex::Lock lock( mMutex );
-  return mHandle == NULL;
+  else
+    ::CloseHandle( HANDLE( handle ) );
 }
 
 void
@@ -196,13 +191,6 @@ OSThread::Start()
   }
 }
 
-bool
-OSThread::IsTerminated() const
-{
-  OSMutex::Lock lock( mMutex );
-  return mTerminated;
-}
-
 void
 OSThread::SleepFor( int inMs )
 {
@@ -251,6 +239,13 @@ void
 OSThread::PrecisionSleepUntil( PrecisionTime inWakeupTime )
 {
   PrecisionSleepFor( PrecisionTime::SignedDiff( inWakeupTime, PrecisionTime::Now() ) );
+}
+
+bool
+OSThread::IsTerminated() const
+{
+  OSMutex::Lock lock( mMutex );
+  return mTerminated;
 }
 
 SharedPointer<OSEvent>
@@ -324,13 +319,7 @@ OSThread::FinishThread( int inResult )
   {
     OSMutex::Lock lock( mMutex );
     mResult = inResult;
-#if _WIN32
-    ::CloseHandle( mHandle );
-    mHandle = NULL;
-    mThreadID = 0;
-#else // _WIN32
     mTerminated = true;
-#endif // _WIN32
     pTerminationEvent = mpTerminationEvent;
   }
   CallFinished();
