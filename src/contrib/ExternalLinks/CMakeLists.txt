@@ -5,4 +5,5 @@
 
 # Recurse down into all project subdirectories
 ADD_SUBDIRECTORY( BCI2000Automation )
+ADD_SUBDIRECTORY( BCI2000Command )
 ADD_SUBDIRECTORY( BCI2000PresentationLink )
