@@ -43,6 +43,9 @@ MESSAGE( "-- Creating Project files for BCI2000 Version " ${BCI2000_VERSION} )
 INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )
 INCLUDE( "${BCI2000_SRC_DIR}/contrib/Extensions/Extensions.cmake" )
+IF ( EXISTS ${BCI2000_SRC_DIR}/private AND NOT "$ENV{BCI2000_NO_PRIVATE}" )
+  INCLUDE( "${BCI2000_SRC_DIR}/private/PrivateConfig.cmake" )
+ENDIF ( EXISTS ${BCI2000_SRC_DIR}/private AND NOT "$ENV{BCI2000_NO_PRIVATE}" )
 ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/frameworks "${CMAKE_CURRENT_BINARY_DIR}/frameworks" )
 ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/extlib "${CMAKE_CURRENT_BINARY_DIR}/extlib" )
 ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/shared/utils/Expression/test "${CMAKE_CURRENT_BINARY_DIR}/shared" )
@@ -57,7 +60,6 @@ SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
 
 # src/private : stuff we use that is not released yet
 IF ( EXISTS ${BCI2000_SRC_DIR}/private AND NOT "$ENV{BCI2000_NO_PRIVATE}" )
-  INCLUDE( "${BCI2000_SRC_DIR}/private/PrivateConfig.cmake" )
   ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/private "${CMAKE_CURRENT_BINARY_DIR}/private" )
 ENDIF( EXISTS ${BCI2000_SRC_DIR}/private AND NOT "$ENV{BCI2000_NO_PRIVATE}" )
 
