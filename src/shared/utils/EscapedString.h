@@ -41,7 +41,7 @@ struct EscapedString : std::string
 
   std::ostream& WriteToStream( std::ostream& ) const;
   std::istream& ReadFromStream( std::istream& is ) { return ReadUntil( is >> std::ws, ::isspace ); }
-  template<typename T> std::istream& ReadUntil( std::istream&, T& predicate );
+  template<typename T> std::istream& ReadUntil( std::istream&, T predicate );
 };
 
 namespace std {
@@ -67,7 +67,7 @@ std::istream& operator>>( std::istream& s, EscapedString& e )
 
 template<typename T>
 std::istream&
-EscapedString::ReadUntil( std::istream& is, T& predicate )
+EscapedString::ReadUntil( std::istream& is, T predicate )
 {
   const struct { char code; char ch; }
   escapeCodes[] =
@@ -113,13 +113,13 @@ EscapedString::ReadUntil( std::istream& is, T& predicate )
             ( *this ) += escapeCodes[i].ch;
           else if( next == 'x' && ::isxdigit( is.peek() ) )
           {
-            string code;
+            std::string code;
             code += is.get();
             if( ::isxdigit( is.peek() ) )
               code += is.get();
-            istringstream iss( code );
+            std::istringstream iss( code );
             int ch;
-            iss >> hex >> ch;
+            iss >> std::hex >> ch;
             ( *this ) += ch;
           }
           else

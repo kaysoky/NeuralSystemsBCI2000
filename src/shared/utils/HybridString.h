@@ -39,7 +39,7 @@ struct HybridString : public std::string
   std::ostream& WriteToStream( std::ostream& ) const;
   std::istream& ReadFromStream( std::istream& );
   std::istream& GetLine( std::istream&, char );
-  template<typename T> std::istream& ReadUntil( std::istream&, T& predicate );
+  template<typename T> std::istream& ReadUntil( std::istream&, T predicate );
 
  private:
   void Decode();
@@ -67,7 +67,7 @@ std::istream& operator>>( std::istream& is, HybridString& s )
 
 template<typename T>
 std::istream&
-HybridString::ReadUntil( std::istream& is, T& predicate )
+HybridString::ReadUntil( std::istream& is, T predicate )
 {
   clear();
   bool done = false,

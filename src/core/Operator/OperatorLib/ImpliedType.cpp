@@ -307,11 +307,11 @@ ExecuteAsynchronously( const string& inExecutable, const string& inArguments, Sc
 {
   bool success = false;
   int exitCode = 0;
+  string executable = inExecutable;
 
 #if _WIN32
 
-  string executable = inExecutable,
-         extension = ".exe";
+  string extension = ".exe";
   if( executable.length() < extension.length()
     || ::stricmp( extension.c_str(), executable.substr( executable.length() - extension.length() ).c_str() ) )
     executable += extension;
@@ -339,7 +339,7 @@ ExecuteAsynchronously( const string& inExecutable, const string& inArguments, Sc
 
 #else // _WIN32
 
-  exitCode = ::system( ( inCommand + " &" ).c_str() );
+  exitCode = ::system( ( executable + " " + inArguments + " &" ).c_str() );
   success = ( 0 == exitCode );
 
 #endif // _WIN32

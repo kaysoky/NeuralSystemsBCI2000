@@ -40,6 +40,7 @@
 #include "BitmapImage.h"
 #include "OSThread.h"
 #include "HybridString.h"
+#include "BCIException.h"
 
 #include <QMessageBox>
 #include <sstream>
@@ -381,7 +382,7 @@ void
 MainWindow::SetupScripts()
 {
   if( !gpPreferences )
-    throw exception( "Global preferences object does not exist" );
+    throw bciexception( "Global preferences object does not exist" );
 
   static const struct { int id; const char* name; }
   events[] =
