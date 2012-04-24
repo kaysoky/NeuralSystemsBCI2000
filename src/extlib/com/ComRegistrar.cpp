@@ -204,7 +204,7 @@ Registrar::Key::Execute( HKEY inParent, int inAction ) const
   {
     result = ::RegCreateKeyExA( key, mName.c_str(), 0, NULL, 0, KEY_ALL_ACCESS, NULL, &key, NULL );
     if( ERROR_SUCCESS == result && ( mFlags & SetValue ) && ( inAction & Create ) )
-      result = ::RegSetValueExA( key, NULL, 0, REG_SZ, reinterpret_cast<const BYTE*>( mValue.c_str() ), mValue.length() + 1 );
+      result = ::RegSetValueExA( key, NULL, 0, REG_SZ, reinterpret_cast<const BYTE*>( mValue.c_str() ), static_cast<DWORD>( mValue.length() + 1 ) );
   }
   if( result != ERROR_SUCCESS )
     return result;
@@ -242,7 +242,7 @@ Registrar::Value::Execute( HKEY inParent, int inAction ) const
 {
   LONG result = ERROR_SUCCESS;
   if( inAction & Create )
-    result = ::RegSetValueExA( inParent, mName.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>( mValue.c_str() ), mValue.length() + 1 );
+    result = ::RegSetValueExA( inParent, mName.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>( mValue.c_str() ), static_cast<DWORD>( mValue.length() + 1 ) );
   if( inAction & Remove )
     ::RegDeleteValueA( inParent, mName.c_str() ); // no error on nonexisting value
   return result;

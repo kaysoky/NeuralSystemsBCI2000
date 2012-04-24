@@ -72,7 +72,7 @@
 { \
   const char* pValue = NULL, \
             * pOption = OPTION( name ); \
-  int len = ::strlen( pOption ); \
+  size_t len = ::strlen( pOption ); \
   int i = 1; \
   while( !pValue && i < argc && *argv[i] == '-' ) \
   { \
