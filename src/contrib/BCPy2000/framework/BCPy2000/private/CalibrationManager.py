@@ -1,4 +1,6 @@
 import os,sys
+import BCI2000.DataFiles as DataFiles
+import BCI2000.Classification as Classification
 
 class CalibrationRun( object ):
 	
@@ -25,6 +27,8 @@ class CalibrationRun( object ):
 		
 	def Describe( self, attr ):
 		if attr == 'selected': return {True:'[x]', False:'[ ]'}.get( self.selected, '???' )
+		if attr == 'datfile': return {True:'(no .dat file)'}.get( self.datfile=='', self.datfile ) 
+		if attr == 'pkfile': return {True:'(no .pk file)'}.get( self.pkfile=='', self.pkfile ) 
 		return '???'
 		
 	def __repr__( self ):
@@ -36,8 +40,8 @@ class CalibrationRun( object ):
 	def report( self ):
 		s = []
 		s.append( self.Describe( 'selected' ) )
-		s.append( self.datfile )
-		s.append( self.pkfile )
+		s.append( self.Describe( 'datfile' ) )
+		s.append( self.Describe( 'pkfile' ) )
 		return s
 		
 class CalibrationManager( object ):

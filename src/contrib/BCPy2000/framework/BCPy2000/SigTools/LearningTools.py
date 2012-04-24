@@ -2355,7 +2355,10 @@ def shrinkcov(cov, gamma, nu='mean', copy=False):
 	For copy=True, operate on and return a copy of <cov>.
 	"""###
 	if not 0.0 <= gamma <= 1.0: raise ValueError("illegal shrinkage value")
+	if not isinstance(cov, numpy.ndarray): cov = numpy.array(cov, dtype=numpy.float64)
 	if nu == 'mean': nu = cov.diagonal().mean()
+	elif nu == 'diag': nu = cov.diagonal() 
+	if isinstance(nu, (list,tuple,numpy.ndarray)): nu = numpy.asarray(nu, dtype=cov.dtype).flatten()
 	else: nu = float(nu)
 	if copy: cov = cov * (1.0 - gamma)
 	elif gamma: cov *= 1.0 - gamma
