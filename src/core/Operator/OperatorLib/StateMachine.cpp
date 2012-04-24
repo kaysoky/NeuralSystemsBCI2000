@@ -145,7 +145,8 @@ StateMachine::~StateMachine()
   // The StateMachine destructor must be called from the same (main) thread that
   // called its constructor.
   SharedPointer<OSEvent> pEvent = OSThread::Terminate();
-  while( mSystemState != Idle )
+  while( CheckPendingCallback() ) ;
+  while( mSystemState != Idle && mSystemState != Fatal )
   {
     const int cReactionTime = 50;
     OSThread::Sleep( cReactionTime );
@@ -366,17 +367,20 @@ StateMachine::InitializeModules()
 void
 StateMachine::EnterState( SysState inState )
 {
-  int transition = TRANSITION( mSystemState, inState ),
-      prevState;
+  if( mSystemState != Fatal || inState == Fatal )
   {
-    OSMutex::Lock lock( mStateMutex );
-    prevState = mSystemState;
-    mSystemState = Transition;
-    PerformTransition( transition );
-    mSystemState = inState;
+    int transition = TRANSITION( mSystemState, inState ),
+        prevState;
+    {
+      OSMutex::Lock lock( mStateMutex );
+      prevState = mSystemState;
+      mSystemState = Transition;
+      PerformTransition( transition );
+      mSystemState = inState;
+    }
+    ExecuteTransitionCallbacks( transition );
+    ExecuteCallback( BCI_OnSystemStateChange );
   }
-  ExecuteTransitionCallbacks( transition );
-  ExecuteCallback( BCI_OnSystemStateChange );
 }
 
 void
@@ -470,6 +474,7 @@ StateMachine::PerformTransition( int inTransition )
       break;
 
     case TRANSITION( Idle, Fatal ):
+    case TRANSITION( WaitingForConnection, Fatal ):
     case TRANSITION( Publishing, Fatal ):
     case TRANSITION( Information, Fatal ):
     case TRANSITION( Initialization, Fatal ):
