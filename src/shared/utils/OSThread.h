@@ -53,7 +53,8 @@ class OSThread : private Uncopyable
   bool TerminateWait( int timeout_ms = OSEvent::cInfiniteTimeout ); // returns false on timeout
   bool IsTerminating() const
     { return mTerminating; }
-  bool IsTerminated() const;
+  bool IsTerminated() const
+    { OSMutex::Lock lock( mMutex ); return mTerminated; }
 
   bool InOwnThread() const;
 

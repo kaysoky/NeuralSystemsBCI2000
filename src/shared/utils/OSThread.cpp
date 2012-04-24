@@ -75,13 +75,16 @@ OSThread::Start()
 {
   TerminateWait();
   OSMutex::Lock lock( mMutex );
-  mpTerminationEvent->Reset();
   mTerminating = false;
   uintptr_t handle = ::_beginthreadex( NULL, 0, OSThread::StartThread, this, 0, &mThreadID );
-  if( handle == NULL )
-    bcierr << ::strerror( errno ) << endl;
-  else
+  if( handle != NULL )
+  {
     ::CloseHandle( HANDLE( handle ) );
+    mTerminated = false;
+    mpTerminationEvent->Reset();
+  }
+  else
+    bcierr << ::strerror( errno ) << endl;
 }
 
 void
@@ -177,16 +180,18 @@ OSThread::Start()
 {
   TerminateWait();
   OSMutex::Lock lock( mMutex );
-  mpTerminationEvent->Reset();
   mTerminating = false;
-  mTerminated = false;
   ::pthread_attr_t attributes;
   if( !::pthread_attr_init( &attributes ) )
   {
     // Create a thread in detached mode, i.e. thread resources are
     // auto-released when the thread terminates.
     ::pthread_attr_setdetachstate( &attributes, PTHREAD_CREATE_DETACHED );
-    ::pthread_create( &mThread, &attributes, OSThread::StartThread, this );
+    if( !::pthread_create( &mThread, &attributes, OSThread::StartThread, this ) )
+    {
+      mTerminated = false;
+      mpTerminationEvent->Reset();
+    }
     ::pthread_attr_destroy( &attributes );
   }
 }
@@ -239,13 +244,6 @@ void
 OSThread::PrecisionSleepUntil( PrecisionTime inWakeupTime )
 {
   PrecisionSleepFor( PrecisionTime::SignedDiff( inWakeupTime, PrecisionTime::Now() ) );
-}
-
-bool
-OSThread::IsTerminated() const
-{
-  OSMutex::Lock lock( mMutex );
-  return mTerminated;
 }
 
 SharedPointer<OSEvent>
