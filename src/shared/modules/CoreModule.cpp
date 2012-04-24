@@ -66,6 +66,7 @@ CoreModule::CoreModule()
   mStartRunPending( false ),
   mStopRunPending( false ),
   mStopSent( false ),
+  mNeedStopRun( false ),
   mMutex( NULL ),
   mSampleBlockSize( 0 ),
   mOperatorBackLink( false )
@@ -227,7 +228,7 @@ CoreModule::Initialize( int inArgc, char** inArgv )
 
 
 int
-CoreModule::Execute()
+CoreModule::OnExecute()
 {
   const int cSocketTimeout = 105;
   while( !IsTerminating() )
@@ -254,6 +255,13 @@ CoreModule::Execute()
     mMessageEvent.Set();
   }
   return 0;
+}
+
+void
+CoreModule::OnFinished()
+{
+  if( mNeedStopRun )
+    StopRunFilters();
 }
 
 // This function contains the main event handling loop.
@@ -522,6 +530,7 @@ CoreModule::StartRunFilters()
   EnvironmentBase::EnterStartRunPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::StartRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
+  mNeedStopRun = true;
   if( bcierr__.Flushes() == 0 )
   {
     OSMutex::Lock lock( mConnectionLock );
@@ -539,6 +548,7 @@ CoreModule::StopRunFilters()
   EnvironmentBase::EnterStopRunPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::StopRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
+  mNeedStopRun = false;
   ResetStatevector();
   if( bcierr__.Flushes() == 0 )
   {

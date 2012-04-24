@@ -148,7 +148,8 @@ class CoreModule : private MessageHandler, private OSThread
   bool HandleSysCommand( std::istream& );
 
   // OSThread interface
-  int Execute();
+  int OnExecute();
+  void OnFinished();
 
  private:
   MessageQueue     mMessageQueue;
@@ -171,7 +172,8 @@ class CoreModule : private MessageHandler, private OSThread
                    mResting,
                    mStartRunPending,
                    mStopRunPending,
-                   mStopSent;
+                   mStopSent,
+                   mNeedStopRun;
   void*            mMutex;
   int              mSampleBlockSize;
   bool             mOperatorBackLink;
