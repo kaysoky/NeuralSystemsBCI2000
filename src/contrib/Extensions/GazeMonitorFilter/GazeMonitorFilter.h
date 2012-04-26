@@ -64,7 +64,7 @@ class GazeMonitorFilter : public ApplicationBase
   void AcquiredFixation();
 
   // Private member variables
-  bool mEnforceFixation, mVisualizeGaze;
+  bool mEnforceFixation, mVisualizeGaze, mShowFixationZone;
   Expression mFixationX, mFixationY;
   float mFixationRadius, mFixationSize;
   WavePlayer mViolationSound;

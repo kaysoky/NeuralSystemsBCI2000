@@ -47,6 +47,7 @@ RegisterFilter( GazeMonitorFilter, 3.A );
 GazeMonitorFilter::GazeMonitorFilter() :
   mEnforceFixation( false ),
   mFixationRadius( 0.0f ),
+  mShowFixationZone( false ),
   mpFixationImage( NULL ),
   mpFixationViolationImage( NULL ),
   mFixationSize( 0 ),
@@ -86,6 +87,8 @@ GazeMonitorFilter::GazeMonitorFilter() :
       " // X coordinate of fixation center - 0.0 to 1.0 (expression)",
     "Application:GazeMonitor string FixationY= 0.5 0.5 % % "
       " // Y coordinate of fixation center - 0.0 to 1.0 (expression)",
+    "Application:GazeMonitor int ShowFixationZone= 0 0 0 1 "
+      " // Show the legal fixation zone with a ring (boolean)",
     "Application:GazeMonitor float BlinkTime= 100ms 100ms 0 %"
       " // Maximum allowed time for invalid eyes",
     "Application:GazeMonitor float SaccadeTime= 100ms 100ms 0 %"
@@ -162,6 +165,7 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
 
   bool enforceFixation = ( int )Parameter( "EnforceFixation" );
   bool visGaze = ( int )Parameter( "VisualizeGazeMonitorFilter" );
+  bool showFixationZone = ( int )Parameter( "ShowFixationZone" );
 
   if( enforceFixation || visGaze )
   {
@@ -240,16 +244,19 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
     mVis.SetVisID( "GAZE" );
   }
 
-  delete mpFixationImage;
-  delete mpFixationViolationImage;
-  delete mpZone;
-  delete mpPrompt;
+  delete mpFixationImage; mpFixationImage = NULL;
+  delete mpFixationViolationImage; mpFixationViolationImage = NULL;
+  delete mpZone; mpZone = NULL;
+  delete mpPrompt; mpPrompt = NULL;
+
+  mShowFixationZone = ( int )Parameter( "ShowFixationZone" );
+
   if( mpAppDisplay )
   {
     mpFixationImage = new ImageStimulus( *mpAppDisplay );
     mpFixationViolationImage = new ImageStimulus( *mpAppDisplay );
-    mpZone = new EllipticShape( *mpAppDisplay );
     mpPrompt = new TextField( *mpAppDisplay );
+    if( mShowFixationZone ) mpZone = new EllipticShape( *mpAppDisplay );
   }
 
   delete mpRightEye;
@@ -356,13 +363,15 @@ GazeMonitorFilter::Initialize( const SignalProperties &Input, const SignalProper
         InitSound( filename, mViolationSound );
 
       // Set up fixation zone visualization
-      mpZone->SetColor( RGBColor::Gray );
-      mpZone->SetFillColor( RGBColor::NullColor );
-      mpZone->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
-      mpZone->SetLineWidth( 4.0f );
-      SetObjectRect( mpZone, cx, cy, mFixationRadius );
-      mpZone->Show();
-
+      if( mpZone )
+      {
+        mpZone->SetColor( RGBColor::Gray );
+        mpZone->SetFillColor( RGBColor::NullColor );
+        mpZone->SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth );
+        mpZone->SetLineWidth( 4.0f );
+        SetObjectRect( mpZone, cx, cy, mFixationRadius );
+        mpZone->Show();
+      }
       // Create a prompt for user correction
       mpPrompt->SetTextColor( RGBColor::White );
       GUI::Rect textRect = { 0.45f, 0.50f, 0.55f, 0.60f };
@@ -406,7 +415,7 @@ GazeMonitorFilter::StopRun()
   if( mpAppDisplay )
   {
     mpPrompt->Hide();
-    mpZone->SetColor( RGBColor::Gray );
+    if( mpZone ) mpZone->SetColor( RGBColor::Gray );
   }
 
   // Hide visualizations
@@ -521,7 +530,8 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     {
       if( mpFixationViolationImage )
         SetObjectRect( mpFixationViolationImage, fx, fy, mFixationSize );
-      SetObjectRect( mpZone, fx, fy, mFixationRadius );
+      if( mpZone )
+        SetObjectRect( mpZone, fx, fy, mFixationRadius );
 
       // Calculate distance of gaze from fixation center
       float dist = pow( ( gx - fx ) * mAspectRatio, 2.0f ) + pow( gy - fy, 2.0f );
@@ -561,26 +571,26 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
         if( mFixated && eyedist >= CLOSE_PLANE && eyedist < FAR_PLANE )
         {
           mCorrection++;
-          mpZone->SetColor( RGBColor::Green );
+          if( mpZone ) mpZone->SetColor( RGBColor::Green );
           if( mCorrection >= correctionTime ) 
           {
             //Disable drawing to the subject's screen
             State( "GazeCorrectionMode" ) = 0;
             mCorrection = 0;
             mpPrompt->Hide();
-            mpZone->SetColor( RGBColor::Gray );
+            if( mpZone ) mpZone->SetColor( RGBColor::Gray );
           }
         } else if( mFixated && eyedist < CLOSE_PLANE ) {
           prompt = "Further";
           mCorrection = 0;
-          mpZone->SetColor( RGBColor::Gray );
+          if( mpZone ) mpZone->SetColor( RGBColor::Gray );
         } else if( mFixated && eyedist >= FAR_PLANE ) {
           prompt = "Closer";
           mCorrection = 0;
-          mpZone->SetColor( RGBColor::Gray );
+          if( mpZone ) mpZone->SetColor( RGBColor::Gray );
         } else {
           mCorrection = 0;
-          mpZone->SetColor( RGBColor::Gray );
+          if( mpZone ) mpZone->SetColor( RGBColor::Gray );
         }
         mpPrompt->SetText( prompt );
       }
