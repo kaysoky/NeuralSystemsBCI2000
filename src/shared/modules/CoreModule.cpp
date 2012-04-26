@@ -112,6 +112,14 @@ CoreModule::Run( int inArgc, char** inArgv )
   return ( bcierr__.Flushes() == 0 );
 }
 
+void
+CoreModule::Terminate()
+{
+  if( mNeedStopRun )
+    StopRunFilters();
+  OSThread::Terminate();
+}
+
 // Internal functions.
 bool
 CoreModule::Initialize( int inArgc, char** inArgv )
@@ -255,13 +263,6 @@ CoreModule::OnExecute()
     mMessageEvent.Set();
   }
   return 0;
-}
-
-void
-CoreModule::OnFinished()
-{
-  if( mNeedStopRun )
-    StopRunFilters();
 }
 
 // This function contains the main event handling loop.
