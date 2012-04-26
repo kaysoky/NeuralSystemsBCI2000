@@ -59,7 +59,7 @@ def ClassifyERPs (
 		
 	n = len(y)
 	uy = numpy.unique(y)
-	if uy.size != 2: raise ValueError("expected 2 classes in dataset, found %d" % uy.size)
+	if uy.size != 2: raise ValueError("expected 2 classes in dataset, found %d : %s" % (uy.size, str(uy)))
 	y = numpy.sign(y - uy.mean())
 
 	cov,trchvar = SigTools.spcov(x=x, y=y, balance=False, return_trchvar=True) # NB: symwhitenkern would not be able to balance
@@ -90,7 +90,8 @@ def ClassifyERPs (
 	if not isinstance(C, (tuple,list,numpy.ndarray,type(None))): C = [C]
 	if not isinstance(gamma, (tuple,list,numpy.ndarray,type(None))): gamma = [gamma]
 
-	c = SigTools.klr2class(lossfunc=SigTools.balanced_loss, relcost='balance').varyhyper({})
+	c = SigTools.klr2class(lossfunc=SigTools.balanced_loss, relcost='balance')
+	c.varyhyper({})
 	if c != None: c.hyper.C=list(C)
 	if gamma == None: c.hyper.kernel.func = SigTools.linkern
 	else: c.varyhyper({'kernel.func':SigTools.symwhitenkern, 'kernel.cov':[cov], 'kernel.gamma':list(gamma)})

@@ -117,9 +117,7 @@ class bcistream(object):
 		nsamp = self.samples()
 		s = ["<%s.%s instance at 0x%08X>" % (self.__class__.__module__,self.__class__.__name__,id(self))]
 		s.append('file ' + self.filename.replace('\\', '/'))
-		d = self.datestamp
-		if not isinstance(d, basestring): d = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.datestamp))
-		s.append('recorded ' + d)
+		s.append('recorded ' + self.date())
 		s.append('%d samples @ %gHz = %s' % (nsamp, self.samplingfreq_hz, self.sample2time(nsamp),) )
 		s.append('%d channels, total %.3g MB' % (self.nchan, self.datasize()/1024.0**2,) )
 		if not self.file.closed:
@@ -141,7 +139,11 @@ class bcistream(object):
 	def samples(self):
 		return self.datasize() / self.bytesperframe
 
-		
+	def date(self):
+		d = self.datestamp
+		if not isinstance(d, basestring): d = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.datestamp))
+		return d
+	
 	def readHeader(self):
 		line = self.file.readline().split()
 		k = [x.rstrip('=') for x in line[::2]]

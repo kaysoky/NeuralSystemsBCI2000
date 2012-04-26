@@ -1,69 +1,143 @@
-import os,sys
-import BCI2000.DataFiles as DataFiles
-import BCI2000.Classification as Classification
+import os,sys,time,glob
+import BCI2000Tools.FileReader as FileReader
+import BCI2000Tools.DataFiles as DataFiles
+import BCI2000Tools.Classification as Classification
 
 class CalibrationRun( object ):
 	
-	def __init__( self, directory, filestem ):
+	def __init__( self, directory, filestem=None, datfile=None, pkfile=None ):
 		self.directory = directory
 		self.filestem = filestem
-		self.datfile = None
-		self.pkfile = None
+		self.datfile = datfile
+		self.pkfile = pkfile
 		self.date = None
 		self.ntrials = None
 		self.loto = None
 		self.loro = None
 		self.selected = False
-		self.CheckFiles()
+		self.datestamp = None
+		self.bcistream = None
 		
-	def CheckFiles( self ):
-		datfile = self.filestem + '.dat'
-		if os.path.isfile( os.path.join( self.directory, datfile ) ): self.datfile = datfile
-		else: self.datfile = ''
+	def GetPkFile( self ):
+		f = self.pkfile
+		if f == None:
+			if self.filestem != None:
+				f = os.path.join( self.directory, self.filestem + '.pk' )
+				if os.path.isfile( f ): return f
+		else:
+			if not os.path.isabs( f ): f = os.path.join( self.directory, f )
+			if os.path.isfile( f ): return f
+		return None
+	
+	def GetDatFile( self ):
+		f = self.datfile
+		if f == None:
+			if self.filestem != None:
+				f = os.path.join( self.directory, self.filestem + '.dat' )
+				if os.path.isfile( f ): return f
+		else:
+			if not os.path.isabs( f ): f = os.path.join( self.directory, f )
+			if os.path.isfile( f ): return f
+		return None
+		
+	def GetStream( self, reread=False ):
+		if self.bcistream == None or reread: self.bcistream = FileReader.bcistream( self.GetDatFile() )
+		self.bcistream.close()
+		return self.bcistream
+		
+	def GetDate( self, reread=False ):
+		if self.datestamp == None or reread:
+			if self.datfile != None and self.GetStream( reread=reread ) != None:
+				self.datestamp = self.GetStream().date()
+		return self.datestamp
+	
+	def GetParameter( self, paramName, reread=False ):
+		b = self.GetStream( reread=reread )
+		if b == None: return None
+		return b.params.get( paramName, None )
 
-		pkfile = self.filestem + '.pk'
-		if os.path.isfile( os.path.join( self.directory, pkfile ) ): self.pkfile = pkfile
-		else: self.pkfile = ''
-		
 	def Describe( self, attr ):
 		if attr == 'selected': return {True:'[x]', False:'[ ]'}.get( self.selected, '???' )
-		if attr == 'datfile': return {True:'(no .dat file)'}.get( self.datfile=='', self.datfile ) 
-		if attr == 'pkfile': return {True:'(no .pk file)'}.get( self.pkfile=='', self.pkfile ) 
+		if attr == 'datfile': f = self.GetDatFile(); return ( f == None ) and '(no .dat file)' or os.path.basename( f )
+		if attr == 'pkfile':  f = self.GetPkFile();  return ( f == None ) and '(no .pk file)'  or os.path.basename( f )
+		if attr == 'datestamp': d = self.GetDate();  return { None:'(unknown date)' }.get( d, d )
+		if attr == 'informal_date':
+			d = self.GetDate()
+			try: then = time.strptime( d, '%Y-%m-%d %H:%M:%S' )
+			except: return '-'
+			now = time.localtime()
+			seconds = time.mktime( now ) - time.mktime( then )
+			day  = int( time.mktime( then ) / ( 60.0 * 60.0 * 24.0 ) ) 
+			today = int( time.mktime( now ) / ( 60.0 * 60.0 * 24.0 ) )
+			days = today - day
+			if   seconds < 50.0: return '%d seconds ago' % round( seconds )
+			elif seconds < 90.0: return 'about a minute ago'
+			elif seconds < 50*60.0: return '%d minutes ago' % round( seconds / 60.0 )
+			elif days == 0: return '%d hours ago' % round( seconds / 3600.0 )
+			elif days == 1: return 'yesterday'
+			else: return '%d days ago' % days
+			
 		return '???'
 		
-	def __repr__( self ):
-		return '<%s object at 0x%08X>: %s' % ( self.__class__.__name__, id( self ), str( self ) )	
-
-	def __str__( self ):
-		return '   '.join( self.report() )
-	
 	def report( self ):
 		s = []
 		s.append( self.Describe( 'selected' ) )
-		s.append( self.Describe( 'datfile' ) )
-		s.append( self.Describe( 'pkfile' ) )
+		s.append( self.Describe( 'datfile'  ) )
+		s.append( self.Describe( 'pkfile'   ) )
 		return s
 		
+	def __str__( self ):
+		return '   '.join( self.report() )
+		
+	def __repr__( self ):
+		return '<%s object at 0x%08X>: %s' % ( self.__class__.__name__, id( self ), str( self ) )
+
+	
 class CalibrationManager( object ):
 	
-	def __init__( self, directory='.' ):
+	def __init__( self, directory='.', depth=0 ):
+		"""
+		<depth> may be an integer, or a range of integers.
+		depth=0 means that files are expected to be directly in the specified <directory>.
+		"""
 		self.directory = None
+		self.depth = None
 		self.runs = {}
-		self.ScanDirectory( directory  )
+		self.ScanDirectory( directory, depth=depth  )
 		
-	def ScanDirectory( self, directory=None ):
+	def ScanDirectory( self, directory=None, depth=None ):
 		if directory != None:
 			newdir = os.path.abspath( directory )
 			if newdir != self.directory:
 				self.runs.clear()
 				self.directory = newdir
-				
 		if self.directory == None: raise ValueError( 'no directory set' )
-		stems = sorted( set( [os.path.splitext( x )[0] for x in os.listdir( self.directory ) if x.lower().endswith( ('.dat', '.pk') ) ] ) )
-		for stem in stems:
-			if stem not in self.runs: self.runs[stem] = CalibrationRun( self.directory, stem )
-			else: self.runs[stem].CheckFiles()
-	
+		if depth != None: self.depth = depth
+		if self.depth == None: self.depth = 0
+			
+		def findfiles( directory, pattern, depth ):
+			ff = []
+			if not isinstance( depth, ( tuple, list ) ): depth = [ depth ]
+			for d in depth:
+				path = [ directory ] + [ '*' ] * d + [ pattern ]
+				ff += glob.glob( os.path.join( *path ) )
+			d = {}
+			for f in ff:
+				key = os.path.splitext( os.path.basename( f ) )[0]
+				d[ key ] = d.get( key, [] ) + [ f ]
+			dup = sorted( [ k for k,v in d.items() if len( v ) > 1 ] )
+			if len( dup ) == 0: return [ ( k, v[0] ) for k,v in sorted( d.items() ) ]
+			msg = 'duplicate filenames found for ' + dup[0]
+			if len( dup ) == 1: msg += ' and ' + dup[1]
+			if len( dup ) > 1:  msg += ' and %d others' % ( len( dup ) - 1 )
+			raise ValueError( msg )
+		
+		pkfiles  = dict( findfiles( self.directory, '*.pk',  depth=self.depth ) )
+		datfiles = dict( findfiles( self.directory, '*.dat', depth=self.depth ) )
+		
+		for stem in sorted( set( pkfiles.keys() + datfiles.keys() ) ):
+			if stem not in self.runs: self.runs[stem] = CalibrationRun( self.directory, datfile=datfiles.get( stem, None ), pkfile=pkfiles.get( stem, None ) )
+			
 	def GetRuns( self ):
 		return [ v for k,v in sorted( self.runs.items() ) ]  # TODO: sort magically taking into account numbers in filenames
 	
@@ -74,12 +148,15 @@ class CalibrationManager( object ):
 		s = []
 		s.append( 'directory: %s' % self.directory )
 		if len( self.runs ):
-			rows = [ x.report() for x in self.GetRuns() ]
+			rows = [ [ '[%d]' % i ] + x.report() for i,x in enumerate( self.GetRuns() ) ]
 			lengths = [ 2+max([len(row[colIndex]) for row in rows]) for colIndex,blah in enumerate( rows[0] ) ]
 			s += [ ''.join([ (x+' '*(width-len(x))) for width,x in zip( lengths,row ) ] ) for row in rows]				
 		else:
 			s.append( 'no files found' )
 		return '\n'.join( s )
+	
+	def __getitem__( self, index ):
+		return self.GetRuns()[index]
 
 import Tkinter as tk
 
@@ -131,7 +208,7 @@ class Table( tk.Frame ):
 			if 'borderwidth' not in kwargs: kwargs['borderwidth'] = '1'
 			if 'relief' not in kwargs: kwargs['relief'] = 'ridge'
 			cell = self.__cells[key] = tk.Frame( self.__frame, **kwargs )
-			cell.grid( row=row, column=column )
+			cell.grid( row=row, column=column, sticky='NSEW' )
 		return cell
 	
 	def DestroyCells( self ):
@@ -155,20 +232,28 @@ class CalibrationTableRow( object ):
 		Manages all the Tk Widgets in one row of the Table g.table belonging to a CalibrationGUI g.
 		"""
 		self.run = run
-		self.datfileLabel = tk.Label( table.GetCell( rowNumber, 0 ), text=run.datfile ); self.datfileLabel.pack()
-		self.pkfileLabel  = tk.Label( table.GetCell( rowNumber, 1 ), text=run.pkfile  ); self.pkfileLabel.pack()
-		self.selectedCheckbutton = tk.Checkbutton( table.GetCell( rowNumber, 2 ) ); self.selectedCheckbutton.pack()
-		self.selected = tk.IntVar( self.selectedCheckbutton, run.selected )
-		self.selectedCheckbutton.config( variable = self.selected, command=self.CheckbuttonCallback ) # couldja make this mechanism *any* more awkward??
+		self.__widgets = {}
+		self.widget( 'selectedCheckbutton',   tk.Checkbutton( table.GetCell( rowNumber, 0 ) ) ).pack()
+		self.widget( 'informaldateLabel',     tk.Label(       table.GetCell( rowNumber, 1 ), text=run.Describe( 'informal_date' ) ) ).pack()
+		self.widget( 'datestampLabel',        tk.Label(       table.GetCell( rowNumber, 2 ), text=run.Describe( 'datestamp' )     ) ).pack()
+		self.widget( 'datfileLabel',          tk.Label(       table.GetCell( rowNumber, 3 ), text=run.Describe( 'datfile' )       ) ).pack()
+		self.widget( 'pkfileLabel',           tk.Label(       table.GetCell( rowNumber, 4 ), text=run.Describe( 'pkfile' )        ) ).pack()
+		
+		self.selected = tk.IntVar( self.widget( 'selectedCheckbutton' ), run.selected )
+		self.widget( 'selectedCheckbutton' ).config( variable = self.selected, command=self.CheckbuttonCallback ) # couldja make this mechanism *any* more awkward??
 		
 	def CheckbuttonCallback( self ):
 		self.run.selected = bool( self.selected.get() )
+		
+	def widget( self, name, w=None ):
+		if w == None: w = self.__widgets[name]
+		self.__widgets[name] = w
+		return w
 	
 	def destroy( self ):
 		self.selected = None
-		self.selectedCheckbutton.destroy()
-		self.pkfileLabel.destroy()
-		self.datfileLabel.destroy()
+		for v in self.__widgets.values(): v.destroy()
+		self.__widgets.clear()
 		self.run = None
 		
 	def __del__( self ):
@@ -191,6 +276,7 @@ class CalibrationGUI( tk.Tk ):
 		self.Render()
 		
 		if go: self.mainloop()
+		else: self.update()
 		
 	def Render( self ):
 	
@@ -198,7 +284,7 @@ class CalibrationGUI( tk.Tk ):
 		self.directoryEntry = tk.Entry( fr, validatecommand=self.UpdateTable )
 		self.directoryEntry.delete( 0, tk.END )
 		self.directoryEntry.insert(0, self.__manager.directory )
-		tk.Button( fr, text='Update', command=self.UpdateTable ).pack( side='right' )
+		tk.Button( fr, text='Refresh / update', command=self.UpdateTable ).pack( side='right' )
 		self.directoryEntry.pack( fill='x' )
 		
 		self.table = Table( self, vscroll=True, hscroll=True )
@@ -217,6 +303,15 @@ class CalibrationGUI( tk.Tk ):
 		for row,(stem,run) in enumerate( sorted( self.__manager.runs.items() ) ):
 			self.__rows.append( CalibrationTableRow( self.table, row, run ) )
 	
-if __name__ == "__main__":
+	def GetManager( self ):
+		return self.__manager
+	
+	def destroy( self ):
+		while len( self.__rows ): self.__rows.pop( 0 ).destroy()
+		tk.Tk.destroy( self )
+	
+def test():
 	m = CalibrationManager( directory='20111006_8525_A_002' )
-	j = CalibrationGUI( manager=m )
+	j = CalibrationGUI( manager=m, go=False )
+	return m,j
+if __name__ == "__main__": m,j = test()

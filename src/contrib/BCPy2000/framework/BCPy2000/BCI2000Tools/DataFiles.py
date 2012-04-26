@@ -314,8 +314,10 @@ def loadmethod(self, f=None, catdim=0):
 	return load(f=f, catdim=catdim) 
 
 #############################################################
-
-try: from BCI2000PythonCore import BciCore
-except ImportError: from BCPy2000.Generic import BciCore
-BciCore.load = loadmethod
-BciCore.dump = dumpmethod
+try:
+	try: from BCI2000PythonCore import BciCore
+	except ImportError: from BCPy2000.Generic import BciCore
+except ImportError: pass
+else:
+	BciCore.load = loadmethod
+	BciCore.dump = dumpmethod
