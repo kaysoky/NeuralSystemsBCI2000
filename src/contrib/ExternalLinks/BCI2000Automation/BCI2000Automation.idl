@@ -75,6 +75,15 @@ interface IBCI2000Remote: IDispatch
 	HRESULT _stdcall ExecuteScriptCommand( [in] BSTR command, [out,retval] int* exitCode );
 
 // Higher-level functions
+//  Event Scripts
+	[
+	helpstring( "Associates scripting commands with an event." )
+	]
+	HRESULT _stdcall SetScript( [in] BSTR eventName, [in] BSTR script, [out,retval] VARIANT_BOOL* success );
+	[
+	helpstring( "Gets scripting commands associated with an event." )
+	]
+	HRESULT _stdcall GetScript( [in] BSTR eventName, [in,out] BSTR* script, [out,retval] VARIANT_BOOL* success );
 
 //  Module startup
 	[

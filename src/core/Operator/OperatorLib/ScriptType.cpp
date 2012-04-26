@@ -40,6 +40,7 @@ ScriptType ScriptType::sInstance;
 const ObjectType::MethodEntry ScriptType::sMethodTable[] =
 {
   METHOD( Set ), METHOD( Clear ),
+  METHOD( Get ),
   METHOD( Execute ),
   END
 };
@@ -61,18 +62,14 @@ ScriptType::Clear( ScriptInterpreter& inInterpreter )
   return true;
 }
 
-void
-ScriptType::SetScript( ScriptInterpreter& inInterpreter, const string& inEvents, const string& inScript )
+bool
+ScriptType::Get( ScriptInterpreter& inInterpreter )
 {
-  istringstream iss( inEvents );
-  string eventName;
-  while( getline( iss >> ws, eventName, '|' ) )
-  {
-    int eventID = ScriptEvents::ID( eventName );
-    if( eventID == BCI_None )
-      throw bciexception_( "Unknown scripting event: " << eventName );
-    inInterpreter.StateMachine().EventScripts().Set( eventID, inScript );
-  }
+  string eventName = inInterpreter.GetToken();
+  int eventID = EventID( eventName );
+  string script = inInterpreter.StateMachine().EventScripts().Get( eventID );
+  inInterpreter.Out() << script << endl;
+  return true;
 }
 
 bool
@@ -98,3 +95,22 @@ ScriptType::Execute( ScriptInterpreter& inInterpreter )
   }
   return success;
 }
+
+int
+ScriptType::EventID( const string& inEventName )
+{
+  int eventID = ScriptEvents::ID( inEventName );
+  if( eventID == BCI_None )
+    throw bciexception_( "Unknown scripting event: " << inEventName );
+  return eventID;
+}
+
+void
+ScriptType::SetScript( ScriptInterpreter& inInterpreter, const string& inEvents, const string& inScript )
+{
+  istringstream iss( inEvents );
+  string eventName;
+  while( getline( iss >> ws, eventName, '|' ) )
+    inInterpreter.StateMachine().EventScripts().Set( EventID( eventName ), inScript );
+}
+

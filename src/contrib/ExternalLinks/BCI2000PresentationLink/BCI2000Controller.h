@@ -57,6 +57,8 @@ public:
   void constructor_void( ArgList& );
   void constructor_data_port_ext( ArgList& );
   void constructor_string( ArgList& );
+  void set_script( ArgList& );
+  void get_script( ArgList& );
   void start_modules( ArgList& );
   void load_parameters_local( ArgList& );
   void load_parameters_remote( ArgList& );
@@ -70,6 +72,7 @@ public:
   void start( ArgList& );
   void stop( ArgList& );
   void get_state_variable( ArgList& );
+  void set_state_variable( ArgList& );
   void get_control_signal( ArgList& );
   void execute( ArgList& );
 

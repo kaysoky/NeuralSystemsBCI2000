@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Tue Apr 10 17:28:15 2012
+/* at Thu Apr 26 13:40:14 2012
  */
 /* Compiler settings for BCI2000Automation.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)

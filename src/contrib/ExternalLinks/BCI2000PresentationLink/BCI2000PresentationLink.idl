@@ -6,8 +6,8 @@
 
 import "oaidl.idl";
 import "ocidl.idl";
-import "PCLExtension.idl";
-import "DataPortExtension.idl";
+import "../../../extlib/nbs/PCLExtension/interface/PCLExtension.idl";
+import "../../../extlib/nbs/DataPortExtension/interfaces/DataPortExtension.idl";
 
 [
 	uuid(92EB0322-0798-48D0-BB72-D2ADDE4B7781),

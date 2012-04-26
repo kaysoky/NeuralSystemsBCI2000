@@ -61,6 +61,40 @@ BCI2000Remote::DataDirectory( const std::string& inDataDirectory )
 }
 
 bool
+BCI2000Remote::SetScript( const string& inEvent, const string& inScript )
+{
+  return SimpleCommand( "set script " + inEvent + "\"" + EscapeSpecialChars( inScript ) + "\"" );
+}
+
+bool
+BCI2000Remote::GetScript( const string& inEvent, string& outScript )
+{
+  Execute( "get script " + inEvent );
+  bool success = true;
+  const string tag = "scripting event:";
+  size_t pos = Result().find( tag );
+  if( pos != string::npos )
+  {
+    istringstream iss( Result().substr( pos + tag.length() ) );
+    string event;
+    iss >> ws >> event;
+    string::const_iterator i = event.begin();
+    string::iterator j = event.begin();
+    while( i != event.end() )
+      if( *i != '\"' )
+        *j++ = *i++;
+      else
+        ++i;
+    event.erase( j, event.end() );
+    if( inEvent.find( event ) != string::npos )
+      success = false;
+  }
+  if( success )
+    outScript = Result();
+  return success;
+}
+
+bool
 BCI2000Remote::StartupModules( const std::vector<string>& inModules )
 {
   Execute( "shutdown system" );
@@ -106,20 +140,7 @@ BCI2000Remote::LoadParametersLocal( const string& inFileName )
   {
     string line;
     while( std::getline( file, line ) )
-    {
-      ostringstream oss;
-      oss << "set parameter ";
-      // Encode characters that are special to the ScriptInterpreter.
-      const string escapeThese = "\";";
-      for( string::const_iterator i = line.begin(); i != line.end(); ++i )
-      {
-        if( escapeThese.find( *i ) != string::npos )
-          oss << "%" << hex << *i;
-        else
-          oss.put( *i );
-      }
-      Execute( oss.str() );
-    }
+      Execute( "set parameter " + EscapeSpecialChars( line ) );
   }
   return success;
 }
@@ -231,3 +252,18 @@ BCI2000Remote::SimpleCommand( const string& inCommand )
   return Result().empty();
 }
 
+string
+BCI2000Remote::EscapeSpecialChars( const string& inString )
+{
+  // Encode characters that are special to the ScriptInterpreter.
+  ostringstream oss;
+  const string escapeThese = "\";\n";
+  for( string::const_iterator i = inString.begin(); i != inString.end(); ++i )
+  {
+    if( escapeThese.find( *i ) != string::npos )
+      oss << "%" << hex << *i;
+    else
+      oss.put( *i );
+  }
+  return oss.str();
+}

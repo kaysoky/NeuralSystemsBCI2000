@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Tue Apr 10 17:28:15 2012
+/* at Thu Apr 26 13:40:14 2012
  */
 /* Compiler settings for BCI2000Automation.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -129,6 +129,16 @@ EXTERN_C const IID IID_IBCI2000Remote;
         virtual /* [helpstring] */ HRESULT __stdcall ExecuteScriptCommand( 
             /* [in] */ BSTR command,
             /* [retval][out] */ int *exitCode) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall SetScript( 
+            /* [in] */ BSTR eventName,
+            /* [in] */ BSTR script,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall GetScript( 
+            /* [in] */ BSTR eventName,
+            /* [out][in] */ BSTR *script,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
         virtual /* [helpstring] */ HRESULT __stdcall StartupModules( 
             /* [out][in] */ SAFEARRAY * *modules,
@@ -295,6 +305,18 @@ EXTERN_C const IID IID_IBCI2000Remote;
             /* [in] */ BSTR command,
             /* [retval][out] */ int *exitCode);
         
+        /* [helpstring] */ HRESULT ( __stdcall *SetScript )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR eventName,
+            /* [in] */ BSTR script,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *GetScript )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR eventName,
+            /* [out][in] */ BSTR *script,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
         /* [helpstring] */ HRESULT ( __stdcall *StartupModules )( 
             IBCI2000Remote * This,
             /* [out][in] */ SAFEARRAY * *modules,
@@ -447,6 +469,12 @@ EXTERN_C const IID IID_IBCI2000Remote;
 
 #define IBCI2000Remote_ExecuteScriptCommand(This,command,exitCode)	\
     ( (This)->lpVtbl -> ExecuteScriptCommand(This,command,exitCode) ) 
+
+#define IBCI2000Remote_SetScript(This,eventName,script,success)	\
+    ( (This)->lpVtbl -> SetScript(This,eventName,script,success) ) 
+
+#define IBCI2000Remote_GetScript(This,eventName,script,success)	\
+    ( (This)->lpVtbl -> GetScript(This,eventName,script,success) ) 
 
 #define IBCI2000Remote_StartupModules(This,modules,success)	\
     ( (This)->lpVtbl -> StartupModules(This,modules,success) ) 

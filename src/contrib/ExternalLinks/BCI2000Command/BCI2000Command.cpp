@@ -17,9 +17,9 @@
 //  BCI2000Command LoadParametersLocal myfile.prm
 //  BCI2000Command Start
 //  :loop
-//  for /f "tokens=*" %%i in ('BCI2000Command GetSystemState') do set state=%%i
 //  BCI2000Command GetControlSignal 1 1
 //  if %state%==Running goto loop
+//  for /f "tokens=*" %%i in ('BCI2000Command GetSystemState') do set state=%%i
 //  BCI2000Command Quit
 //
 //  Linux/Unix bash shell (assuming the BCI2000/prog directory is in the path):
@@ -94,11 +94,13 @@ using namespace std;
 enum { ok = 0, error = -1 };
 
 void Help( bool full );
-int PreprocessScript( istream&, string& );
+int PreprocessBCIScript( istream&, string& );
 
 int Run( int, char**, BCI2000Remote& );
 int Quit( int, char**, BCI2000Remote& );
 int Execute( int, char**, BCI2000Remote& );
+int SetScript( int, char**, BCI2000Remote& );
+int GetScript( int, char**, BCI2000Remote& );
 int StartupModules( int, char**, BCI2000Remote& );
 int LoadParametersLocal( int, char**, BCI2000Remote& );
 int LoadParametersRemote( int, char**, BCI2000Remote& );
@@ -121,6 +123,8 @@ sCommands[] =
   COMMAND( Run, -1, "[<script file 1> <script file 2> ...]", "Makes sure BCI2000 is started up, and optionally executes BCI2000 script files" )
   COMMAND( Quit, 0, "", "Terminates BCI2000" )
   COMMAND( Execute, 1, "<scripting command>", "Executes a scripting command" )
+  COMMAND( SetScript, 2, "<event> <script commands>", "Associates Operator scripting commands with event, which is one of OnConnect, OnSetConfig, OnStart, OnResume, OnStop, OnShutdown" )
+  COMMAND( GetScript, 1, "<event>", "Returns Operator scripting commands associated with event, which is one of OnConnect, OnSetConfig, OnStart, OnResume, OnStop, OnShutdown" )
   COMMAND( StartupModules, -1, "<module1> <module2> ...", "Starts up BCI2000 modules" )
   COMMAND( LoadParametersLocal, 1, "<parameter file>", "Loads a parameter file relative to the current working directory" )
   COMMAND( LoadParametersRemote, 1, "<parameter file>", "Loads a parameter file relative to BCI2000's working directory" )
@@ -229,7 +233,7 @@ Help( bool inFull )
          << "address given by the TelnetAddress property (defaults to localhost:3999).\n"
          << "You may use the \"Run\" command to start up BCI2000 locally with appropriate "
          << "parameters.\n"
-         << "Available commands are:";
+         << "Available BCI2000 control commands are:";
     for( size_t i = 0; i < sizeof( sCommands ) / sizeof( *sCommands ); ++i )
       cout << "\n\n" << sCommands[i].name << " " << sCommands[i].args << "\n" << sCommands[i].desc << ".";
     cout << "\n\nFor further information, see the BCI2000 wiki at http://doc.bci2000.org.";
@@ -238,15 +242,12 @@ Help( bool inFull )
 }
 
 int
-PreprocessScript( istream& is, string& result )
+PreprocessBCIScript( istream& inStream, string& outResult )
 {
-#ifdef TODO
-# error Add more preprocessing to this function, e.g. expansion of environment variables, and conditionals
-#endif // TODO
   string line;
-  while( getline( is, line ) )
+  while( getline( inStream, line ) )
     if( !line.empty() && line[0] != '#' )
-      result.append( line ).append( ";" );
+      outResult.append( line ).append( ";" );
   return ok;
 }
 
@@ -263,7 +264,7 @@ Run( int inArgc, char** inArgs, BCI2000Remote& ioBCI )
       cerr << "Could not open script file \"" << inArgs[i] << "\" for reading" << endl;
       return error;
     }
-    result = PreprocessScript( file, script );
+    result = PreprocessBCIScript( file, script );
   }
   if( result == ok && !script.empty() )
     result = ioBCI.Execute( script );
@@ -280,6 +281,19 @@ int
 Execute( int, char** inArgs, BCI2000Remote& ioBCI )
 {
   return ioBCI.Execute( inArgs[0] );
+}
+
+int
+SetScript( int, char** inArgs, BCI2000Remote& ioBCI )
+{
+  return ioBCI.SetScript( inArgs[0], inArgs[1] ) ? ok : error;
+}
+
+int
+GetScript( int, char** inArgs, BCI2000Remote& ioBCI )
+{
+  string script;
+  return ioBCI.GetScript( inArgs[0], script ) ? ok : error;
 }
 
 int

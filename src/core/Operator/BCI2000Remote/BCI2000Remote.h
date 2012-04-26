@@ -48,6 +48,9 @@ class BCI2000Remote : public BCI2000Connection
   BCI2000Remote& SessionID( const std::string& );
   const std::string& DataDirectory() const { return mDataDirectory; }
   BCI2000Remote& DataDirectory( const std::string& );
+  // Set event scripts.
+  bool SetScript( const std::string&, const std::string& );
+  bool GetScript( const std::string&, std::string& );
   // Start BCI2000 core modules, listed by executable name, including possible
   // command line arguments.
   bool StartupModules( const std::vector<std::string>& );
@@ -68,6 +71,7 @@ class BCI2000Remote : public BCI2000Connection
  private:
   bool WaitForSystemState( const std::string& );
   bool SimpleCommand( const std::string& );
+  std::string EscapeSpecialChars( const std::string& );
 
   std::string mSubjectID,
               mSessionID,

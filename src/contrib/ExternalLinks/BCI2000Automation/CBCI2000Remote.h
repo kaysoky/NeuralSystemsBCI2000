@@ -67,28 +67,28 @@ public:
           return S_OK;
         }
 
-    virtual /* [helpstring][propget][id] */ HRESULT __stdcall get_WindowVisible( 
+    virtual /* [helpstring][propget][id] */ HRESULT __stdcall get_WindowVisible(
         /* [retval][out] */ VARIANT_BOOL *visible)
         {
           *visible = WindowVisible() ? VARIANT_TRUE : VARIANT_FALSE;
           return S_OK;
         }
 
-    virtual /* [helpstring][propput] */ HRESULT __stdcall put_WindowVisible( 
+    virtual /* [helpstring][propput] */ HRESULT __stdcall put_WindowVisible(
         /* [in] */ VARIANT_BOOL visible)
         {
           WindowVisible( visible );
           return S_OK;
         }
-    
-    virtual /* [helpstring][propget][id] */ HRESULT __stdcall get_WindowTitle( 
+
+    virtual /* [helpstring][propget][id] */ HRESULT __stdcall get_WindowTitle(
         /* [retval][out] */ BSTR *title)
         {
           *title = ::SysAllocString( com::DualString( WindowTitle() ).c_str() );
           return S_OK;
         }
-        
-    virtual /* [helpstring][propput] */ HRESULT __stdcall put_WindowTitle( 
+
+    virtual /* [helpstring][propput] */ HRESULT __stdcall put_WindowTitle(
         /* [in] */ BSTR title)
         {
           WindowTitle( com::DualString( title ) );
@@ -102,25 +102,45 @@ public:
           return S_OK;
         }
 
-    virtual /* [helpstring] */ HRESULT __stdcall Connect( 
+    virtual /* [helpstring] */ HRESULT __stdcall Connect(
         /* [retval][out] */ VARIANT_BOOL *success)
         {
           BOOLRESULT( Connect() );
           return S_OK;
         }
-    
-    virtual /* [helpstring] */ HRESULT __stdcall Disconnect( 
+
+    virtual /* [helpstring] */ HRESULT __stdcall Disconnect(
         /* [retval][out] */ VARIANT_BOOL *success)
         {
           BOOLRESULT( Disconnect() );
           return S_OK;
         }
-    
+
     virtual /* [helpstring] */ HRESULT __stdcall ExecuteScriptCommand(
         /* [in] */ BSTR command,
         /* [retval][out] */ int *exitCode)
         {
           *exitCode = Execute( com::DualString( command ) );
+          return S_OK;
+        }
+
+    virtual /* [helpstring] */ HRESULT __stdcall SetScript(
+        /* [in] */ BSTR eventName,
+        /* [in] */ BSTR script,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          BOOLRESULT( SetScript( com::DualString( eventName ), com::DualString( script ) ) );
+          return S_OK;
+        }
+
+    virtual /* [helpstring] */ HRESULT __stdcall GetScript(
+        /* [in] */ BSTR eventName,
+        /* [out][in] */ BSTR *script,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          std::string result;
+          BOOLRESULT( GetScript( com::DualString( eventName ), result ) );
+          *script = ::SysAllocString( com::DualString( result ).c_str() );
           return S_OK;
         }
 
@@ -166,42 +186,42 @@ public:
           return S_OK;
         }
 
-    virtual /* [helpstring][propget] */ HRESULT __stdcall get_SubjectID( 
+    virtual /* [helpstring][propget] */ HRESULT __stdcall get_SubjectID(
         /* [retval][out] */ BSTR *subjectID)
         {
           *subjectID = ::SysAllocString( com::DualString( SubjectID() ).c_str() );
           return S_OK;
         }
-    
-    virtual /* [helpstring][propput] */ HRESULT __stdcall put_SubjectID( 
+
+    virtual /* [helpstring][propput] */ HRESULT __stdcall put_SubjectID(
         /* [in] */ BSTR subjectID)
         {
           SubjectID( com::DualString( subjectID ) );
           return S_OK;
         }
-    
-    virtual /* [helpstring][propget] */ HRESULT __stdcall get_SessionID( 
+
+    virtual /* [helpstring][propget] */ HRESULT __stdcall get_SessionID(
         /* [retval][out] */ BSTR *sessionID)
         {
           *sessionID = ::SysAllocString( com::DualString( SessionID() ).c_str() );
           return S_OK;
         }
-    
-    virtual /* [helpstring][propput] */ HRESULT __stdcall put_SessionID( 
+
+    virtual /* [helpstring][propput] */ HRESULT __stdcall put_SessionID(
         /* [in] */ BSTR sessionID)
         {
           SessionID( com::DualString( sessionID ) );
           return S_OK;
         }
-    
-    virtual /* [helpstring][propget] */ HRESULT __stdcall get_DataDirectory( 
+
+    virtual /* [helpstring][propget] */ HRESULT __stdcall get_DataDirectory(
         /* [retval][out] */ BSTR *directory)
         {
           *directory = ::SysAllocString( com::DualString( DataDirectory() ).c_str() );
           return S_OK;
         }
-    
-    virtual /* [helpstring][propput] */ HRESULT __stdcall put_DataDirectory( 
+
+    virtual /* [helpstring][propput] */ HRESULT __stdcall put_DataDirectory(
         /* [in] */ BSTR directory)
         {
           DataDirectory( com::DualString( directory ) );
@@ -229,7 +249,7 @@ public:
           return S_OK;
         }
 
-    virtual /* [helpstring] */ HRESULT __stdcall GetSystemState( 
+    virtual /* [helpstring] */ HRESULT __stdcall GetSystemState(
         /* [out][in] */ BSTR *state,
         /* [retval][out] */ VARIANT_BOOL *success)
         {
@@ -239,7 +259,7 @@ public:
           return S_OK;
         }
 
-    virtual /* [helpstring] */ HRESULT __stdcall SetStateVariable( 
+    virtual /* [helpstring] */ HRESULT __stdcall SetStateVariable(
         /* [in] */ BSTR stateName,
         /* [in] */ double value,
         /* [retval][out] */ VARIANT_BOOL *success)

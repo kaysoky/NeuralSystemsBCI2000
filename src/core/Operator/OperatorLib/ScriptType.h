@@ -38,10 +38,12 @@ class ScriptType : public ObjectType
 
  public:
   static bool Set( ScriptInterpreter& );
+  static bool Get( ScriptInterpreter& );
   static bool Clear( ScriptInterpreter& );
   static bool Execute( ScriptInterpreter& );
 
  private:
+  static int EventID( const std::string& );
   static void SetScript( ScriptInterpreter&, const std::string&, const std::string& );
 
   static const MethodEntry sMethodTable[];

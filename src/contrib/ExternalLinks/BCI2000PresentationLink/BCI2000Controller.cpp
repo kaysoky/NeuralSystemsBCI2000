@@ -67,6 +67,22 @@ static const struct Method<CBCI2000Controller> sConstructors[] =
 static const struct Method<CBCI2000Controller> sMethods[] =
 {
   {
+    METHOD( set_script ),
+    L"Associates BCI2000 Operator scripting commands with an event.",
+    {
+      { L"event_name", L"string", 0, false, L"name of event" },
+      { L"script", L"string", 0, false, L"sequence of scripting commands" },
+    },
+  },
+  {
+    METHOD( get_script ),
+    L"Returns BCI2000 Operator scripting commands associated with an event.",
+    {
+      { L"event_name", L"string", 0, false, L"name of event" },
+    },
+    { L"string", 0, L"scripting commands" },
+  },
+  {
     METHOD( start_modules ),
     L"Starts up BCI2000 core modules.",
     {
@@ -151,6 +167,14 @@ static const struct Method<CBCI2000Controller> sMethods[] =
       { L"name", L"string", 0, false, L"name of state variable" },
     },
     { L"double", 0, L"State variable value" }
+  },
+  {
+    METHOD( set_state_variable ),
+    L"Sets the value of a BCI2000 state variable.",
+    {
+      { L"name", L"string", 0, false, L"name of state variable" },
+      { L"value", L"double", 0, false, L"state variable value" },
+    },
   },
   {
     METHOD( get_control_signal ),
@@ -296,6 +320,20 @@ CBCI2000Controller::constructor_string( ArgList& ioArgs )
 #define CALL(x) if( !mBCI2000.x ) throw bciexception_( mBCI2000.Result() )
 
 void
+CBCI2000Controller::set_script( ArgList& ioArgs )
+{
+  CALL( SetScript( ioArgs.GetString( 1 ), ioArgs.GetString( 2 ) ) );
+}
+
+void
+CBCI2000Controller::get_script( ArgList& ioArgs )
+{
+  std::string result;
+  CALL( GetScript( ioArgs.GetString( 1 ), result ) );
+  ioArgs.SetString( 0, result );
+}
+
+void
 CBCI2000Controller::start_modules( ArgList& ioArgs )
 {
   std::vector<com::DualString> modules_ = ioArgs.GetStringArray( 1 );
@@ -367,6 +405,12 @@ void
 CBCI2000Controller::stop( ArgList& )
 {
   CALL( Stop() );
+}
+
+void
+CBCI2000Controller::set_state_variable( ArgList& ioArgs )
+{
+  CALL( SetStateVariable( ioArgs.GetString( 1 ), ioArgs.GetDouble( 2 ) ) );
 }
 
 void

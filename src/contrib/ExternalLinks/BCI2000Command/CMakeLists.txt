@@ -3,8 +3,6 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for BCI2000Command
 
-IF( WIN32 )
-
 # Set the executable name
 SET( EXECUTABLE_NAME BCI2000Command )
 
@@ -75,5 +73,3 @@ IF( NOT FAILED )
   TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${LIBS} )
 
 ENDIF( NOT FAILED )
-
-ENDIF( WIN32 )
