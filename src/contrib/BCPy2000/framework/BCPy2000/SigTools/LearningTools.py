@@ -1530,6 +1530,9 @@ class predictor(sstruct):
 		and in self.output.*[self.input.istrain] ) come from a cross-validation
 		within the <istrain> set.
 		
+		Additional **kwargs are passed through to the construction of a
+		foldguide() object.
+		
 		"""###
 
 		if isinstance(self.hyper, experiment):
@@ -1975,9 +1978,9 @@ class foldguide(object):
 		elif ntest != None: foldsize = float(ntest)
 		else:
 			if folds == None: folds = min(len(ids),10)
+			if isinstance(folds, basestring) and folds.lower() == 'loo': folds = len(ids)
 			foldsize = float(self.n) / folds
 		if folds == None: folds = int(round( numpy.ceil(self.n / float(foldsize)) ))
-
 
 		self.balanced = balance
 		

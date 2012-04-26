@@ -33,18 +33,21 @@ try: import SigTools
 except ImportError: import BCPy2000.SigTools as SigTools
 
 def ClassifyERPs (
-		featurefile,
+		featurefiles,
 		C = (10.0, 1.0, 0.1, 0.01),
 		gamma = (1.0, 0.8, 0.6, 0.4, 0.2, 0.0),
+		keepchan = (),
 		rmchan = (),
+		rmchan_usualsuspects = ('AUDL','AUDR','LAUD','RAUD','SYNC','VSYNC', 'VMRK', 'OLDREF'),
 		rebias = True,
 		save = False,
 		description='ERPs to attended vs unattended events',
 		maxcount=None,
 		classes=None,
+		folds=None,
 	):
 
-	d = DataFiles.load(featurefile, catdim=0, maxcount=maxcount)
+	d = DataFiles.load(featurefiles, catdim=0, maxcount=maxcount)
 
 	x = d['x']
 	y = numpy.array(d['y'].flat)
@@ -66,12 +69,20 @@ def ClassifyERPs (
 	
 	starttime = time.time()
 	
-	if isinstance(rmchan, basestring): rmchan = rmchan.split()
-	allrmchan = tuple([ch.lower() for ch in rmchan]) + ('audl','audr','laud','raud','sync','vsync', 'vmrk', 'oldref')
 	chlower = [ch.lower() for ch in d['channels']]
-	unwanted = numpy.array([ch in allrmchan for ch in chlower])
+	if keepchan in [None,(),'',[]]:
+		if isinstance(rmchan, basestring): rmchan = rmchan.split()
+		if isinstance(rmchan_usualsuspects, basestring): rmchan_usualsuspects = rmchan_usualsuspects.split()
+		allrmchan = [ch.lower() for ch in list(rmchan)+list(rmchan_usualsuspects)]
+		unwanted = numpy.array([ch in allrmchan for ch in chlower])
+		notfound = [ch for ch in rmchan if ch.lower() not in chlower]
+	else:
+		if isinstance(keepchan, basestring): keepchan = keepchan.split()
+		lowerkeepchan = [ch.lower() for ch in keepchan]
+		unwanted = numpy.array([ch not in lowerkeepchan for ch in chlower])
+		notfound = [ch for ch in keepchan if ch.lower() not in chlower]
+		
 	wanted = numpy.logical_not(unwanted)
-	notfound = [ch for ch in rmchan if ch.lower() not in chlower]
 	print ' '
 	if len(notfound): print "WARNING: could not find channel%s %s\n" % ({1:''}.get(len(notfound),'s'), ', '.join(notfound))
 	removed = [ch for removing,ch in zip(unwanted, d['channels']) if removing]
@@ -95,7 +106,7 @@ def ClassifyERPs (
 	if c != None: c.hyper.C=list(C)
 	if gamma == None: c.hyper.kernel.func = SigTools.linkern
 	else: c.varyhyper({'kernel.func':SigTools.symwhitenkern, 'kernel.cov':[cov], 'kernel.gamma':list(gamma)})
-	c.cvtrain(x=x,y=y)
+	c.cvtrain(x=x, y=y, folds=folds)
 	if rebias: c.rebias()
 	c.calibrate()
 
@@ -132,7 +143,7 @@ def ClassifyERPs (
 	
 	if save:
 		if not isinstance(save, basestring):
-			save = featurefile
+			save = featurefiles
 			if isinstance(save, (tuple,list)): save = save[-1]
 			if save.lower().endswith('.gz'): save = save[:-3]
 			if save.lower().endswith('.pk'): save = save[:-3]

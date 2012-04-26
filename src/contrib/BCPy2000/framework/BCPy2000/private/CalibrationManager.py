@@ -12,8 +12,7 @@ class CalibrationRun( object ):
 		self.pkfile = pkfile
 		self.date = None
 		self.ntrials = None
-		self.loto = None
-		self.loro = None
+		self.cv = None
 		self.selected = False
 		self.datestamp = None
 		self.bcistream = None
@@ -56,6 +55,11 @@ class CalibrationRun( object ):
 		if b == None: return None
 		return b.params.get( paramName, None )
 
+	def CrossValidate( self ):
+		pkfile = self.GetPkFile()
+		if pkfile == None: raise ValueError('cannot cross-validate without .pk file')
+		self.cv = Classification.ClassifyERPs( pkfile, gamma=1.0, folds='LOO' ) # TODO: inject options
+
 	def Describe( self, attr ):
 		if attr == 'selected': return {True:'[x]', False:'[ ]'}.get( self.selected, '???' )
 		if attr == 'datfile': f = self.GetDatFile(); return ( f == None ) and '(no .dat file)' or os.path.basename( f )
@@ -76,14 +80,17 @@ class CalibrationRun( object ):
 			elif days == 0: return '%d hours ago' % round( seconds / 3600.0 )
 			elif days == 1: return 'yesterday'
 			else: return '%d days ago' % days
-			
+		if attr == 'cv':
+			if self.cv == None: return '----'
+			return '(result)' # TODO
 		return '???'
 		
 	def report( self ):
 		s = []
-		s.append( self.Describe( 'selected' ) )
-		s.append( self.Describe( 'datfile'  ) )
-		s.append( self.Describe( 'pkfile'   ) )
+		s.append( self.Describe( 'selected'  ) )
+		s.append( self.Describe( 'datestamp' ) )
+		s.append( self.Describe( 'datfile'   ) )
+		s.append( self.Describe( 'pkfile'    ) )
 		return s
 		
 	def __str__( self ):
@@ -159,6 +166,7 @@ class CalibrationManager( object ):
 		return self.GetRuns()[index]
 
 import Tkinter as tk
+import Tix; import Tix as tk
 
 class Table( tk.Frame ):
 	'''
@@ -236,11 +244,27 @@ class CalibrationTableRow( object ):
 		self.widget( 'selectedCheckbutton',   tk.Checkbutton( table.GetCell( rowNumber, 0 ) ) ).pack()
 		self.widget( 'informaldateLabel',     tk.Label(       table.GetCell( rowNumber, 1 ), text=run.Describe( 'informal_date' ) ) ).pack()
 		self.widget( 'datestampLabel',        tk.Label(       table.GetCell( rowNumber, 2 ), text=run.Describe( 'datestamp' )     ) ).pack()
-		self.widget( 'datfileLabel',          tk.Label(       table.GetCell( rowNumber, 3 ), text=run.Describe( 'datfile' )       ) ).pack()
+		self.widget( 'cvLabel',               tk.Label(       table.GetCell( rowNumber, 3 ), text=run.Describe( 'cv' )            ) ).pack( side='left' )
+		self.widget( 'cvButton',              tk.Button(      table.GetCell( rowNumber, 3 ), text='Assess', command=self.Assess   ) ).pack( side='right', fill='x' )
 		self.widget( 'pkfileLabel',           tk.Label(       table.GetCell( rowNumber, 4 ), text=run.Describe( 'pkfile' )        ) ).pack()
+		self.widget( 'datfileLabel',          tk.Label(       table.GetCell( rowNumber, 5 ), text=run.Describe( 'datfile' )       ) ).pack()
+		
+		w = self.widget( 'selectedCheckbutton' )
+		self.widget( 'tooltip', Tix.Balloon( w ) ).bind_widget( w, balloonmsg='hello!' )
+		
+		if self.run.cv != None: self.widget( 'cvButton' ).config( text='Re-Run' )
 		
 		self.selected = tk.IntVar( self.widget( 'selectedCheckbutton' ), run.selected )
 		self.widget( 'selectedCheckbutton' ).config( variable = self.selected, command=self.CheckbuttonCallback ) # couldja make this mechanism *any* more awkward??
+		if run.GetPkFile() == None:
+			self.widget( 'selectedCheckbutton' ).config( state='disabled' )
+			self.widget( 'cvButton' ).config( state='disabled' )
+	
+	def Assess( self ):
+		self.run.CrossValidate()
+		if self.run.cv != None:
+			self.widget( 'cvLabel' ).config( text=self.run.Describe( 'cv' ) ) # TODO: colour
+			self.widget( 'cvButton' ).config( text='Re-Run' )
 		
 	def CheckbuttonCallback( self ):
 		self.run.selected = bool( self.selected.get() )
@@ -314,4 +338,5 @@ def test():
 	m = CalibrationManager( directory='20111006_8525_A_002' )
 	j = CalibrationGUI( manager=m, go=False )
 	return m,j
+	
 if __name__ == "__main__": m,j = test()
