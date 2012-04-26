@@ -55,10 +55,11 @@ class CalibrationRun( object ):
 		if b == None: return None
 		return b.params.get( paramName, None )
 
-	def CrossValidate( self ):
+	def CrossValidate( self, **opts ):
 		pkfile = self.GetPkFile()
 		if pkfile == None: raise ValueError('cannot cross-validate without .pk file')
-		self.cv = Classification.ClassifyERPs( pkfile, gamma=1.0, folds='LOO' ) # TODO: inject options
+		opts['folds'] = opts.get( 'folds', 'LOO' )
+		self.cv = Classification.ClassifyERPs( pkfile, **opts )[1]
 
 	def Describe( self, attr ):
 		if attr == 'selected': return {True:'[x]', False:'[ ]'}.get( self.selected, '???' )
@@ -81,8 +82,8 @@ class CalibrationRun( object ):
 			elif days == 1: return 'yesterday'
 			else: return '%d days ago' % days
 		if attr == 'cv':
-			if self.cv == None: return '----'
-			return '(result)' # TODO
+			if self.cv == None: return ''
+			return '%g%%' % round(100.0 - 100.0 * self.cv.loss.train) # TODO
 		return '???'
 		
 	def report( self ):
@@ -99,7 +100,22 @@ class CalibrationRun( object ):
 	def __repr__( self ):
 		return '<%s object at 0x%08X>: %s' % ( self.__class__.__name__, id( self ), str( self ) )
 
+def cmprun( a, b ):
+	ab = [ a.GetDate(), b.GetDate() ]
+	if None in ab or ab[0] == ab[1]:
+		ab = [a,b]
+		width = 20
+		import re
+		for i,x in enumerate( ab ):
+			if x.GetPkFile() != None: x = x.GetPkFile()
+			else: x = x.GetDatFile()
+			if x != None:
+				x = os.path.splitext( os.path.basename( x ) )[0]
+				x = re.sub('[0-9]+', lambda m: m.group().rjust(width,'0'), x)
+			ab[i] = x
+	return cmp( ab[0], ab[1] )
 	
+
 class CalibrationManager( object ):
 	
 	def __init__( self, directory='.', depth=0 ):
@@ -146,6 +162,7 @@ class CalibrationManager( object ):
 			if stem not in self.runs: self.runs[stem] = CalibrationRun( self.directory, datfile=datfiles.get( stem, None ), pkfile=pkfiles.get( stem, None ) )
 			
 	def GetRuns( self ):
+		return sorted( self.runs.values(), cmp=cmprun )[::-1]
 		return [ v for k,v in sorted( self.runs.items() ) ]  # TODO: sort magically taking into account numbers in filenames
 	
 	def __repr__( self ):
@@ -174,12 +191,16 @@ class Table( tk.Frame ):
 	Scrollbars plus a Canvas which reacts to the Scrollbars and which in turn contains
 	another Frame.
 	
-	This was made from a magic recipe given by Bryan Oakley 2010-06-23 in answer to
+	This was adapted from a magic recipe given by Bryan Oakley 2010-06-23 in answer to
 	http://stackoverflow.com/questions/3085696/adding-a-scrollbar-to-a-grid-of-widgets-in-tkinter
 	namely: make a Canvas and a Scrollbar, put a Frame inside the Canvas, and configure some
 	rather incomprehensible interrelationships between the three. I put the whole thing in
 	an additional Frame (self) to bind the Scrollbar and Canvas together and make it a
 	modular pack()able Widget. I also added the GetCell method (delivering yet more Frames).
+	
+	Tix appears to have a ScrolledGrid object but I could not find any doc on it, and
+	the one example I found on the web failed to run, in non-obvious ways, with the Tix
+	version packaged with Python 2.5.4
 	'''
 	def __init__( self, parent, *pargs, **kwargs ):
 		vscroll = kwargs.pop( 'vscroll', True )
@@ -240,8 +261,9 @@ class CalibrationTableRow( object ):
 		Manages all the Tk Widgets in one row of the Table g.table belonging to a CalibrationGUI g.
 		"""
 		self.run = run
+		self.__opts = { 'gamma':0.0 } # TODO
 		self.__widgets = {}
-		self.widget( 'selectedCheckbutton',   tk.Checkbutton( table.GetCell( rowNumber, 0 ) ) ).pack()
+		self.widget( 'selectedCheckbutton',   tk.Checkbutton( table.GetCell( rowNumber, 0 ), command=self.CheckbuttonCallback     ) ).pack()
 		self.widget( 'informaldateLabel',     tk.Label(       table.GetCell( rowNumber, 1 ), text=run.Describe( 'informal_date' ) ) ).pack()
 		self.widget( 'datestampLabel',        tk.Label(       table.GetCell( rowNumber, 2 ), text=run.Describe( 'datestamp' )     ) ).pack()
 		self.widget( 'cvLabel',               tk.Label(       table.GetCell( rowNumber, 3 ), text=run.Describe( 'cv' )            ) ).pack( side='left' )
@@ -255,14 +277,17 @@ class CalibrationTableRow( object ):
 		if self.run.cv != None: self.widget( 'cvButton' ).config( text='Re-Run' )
 		
 		self.selected = tk.IntVar( self.widget( 'selectedCheckbutton' ), run.selected )
-		self.widget( 'selectedCheckbutton' ).config( variable = self.selected, command=self.CheckbuttonCallback ) # couldja make this mechanism *any* more awkward??
+		self.widget( 'selectedCheckbutton' ).config( variable = self.selected ) # couldja make this mechanism *any* more awkward??
 		if run.GetPkFile() == None:
 			self.widget( 'selectedCheckbutton' ).config( state='disabled' )
 			self.widget( 'cvButton' ).config( state='disabled' )
 	
 	def Assess( self ):
-		self.run.CrossValidate()
+		self.widget( 'cvLabel' ).config( text='...' )
+		self.widget( 'cvLabel' ).update()
+		self.run.CrossValidate( **self.__opts )
 		if self.run.cv != None:
+			q = self.run.cv.loss.train
 			self.widget( 'cvLabel' ).config( text=self.run.Describe( 'cv' ) ) # TODO: colour
 			self.widget( 'cvButton' ).config( text='Re-Run' )
 		
@@ -324,7 +349,7 @@ class CalibrationGUI( tk.Tk ):
 		self.directoryEntry.delete( 0, tk.END ); self.directoryEntry.insert(0, self.__manager.directory )
 		while len( self.__rows ): self.__rows.pop( 0 ).destroy()
 		self.table.DestroyCells()
-		for row,(stem,run) in enumerate( sorted( self.__manager.runs.items() ) ):
+		for row,run in enumerate( self.__manager.GetRuns() ):
 			self.__rows.append( CalibrationTableRow( self.table, row, run ) )
 	
 	def GetManager( self ):
