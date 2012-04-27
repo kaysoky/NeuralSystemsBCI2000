@@ -115,9 +115,9 @@ CoreModule::Run( int inArgc, char** inArgv )
 void
 CoreModule::Terminate()
 {
+  OSThread::Terminate();
   if( mNeedStopRun )
     StopRunFilters();
-  OSThread::Terminate();
 }
 
 // Internal functions.
@@ -551,7 +551,7 @@ CoreModule::StopRunFilters()
   EnvironmentBase::EnterNonaccessPhase();
   mNeedStopRun = false;
   ResetStatevector();
-  if( bcierr__.Flushes() == 0 )
+  if( bcierr__.Flushes() == 0 && !OSThread::IsTerminating() )
   {
     BroadcastParameterChanges();
 
