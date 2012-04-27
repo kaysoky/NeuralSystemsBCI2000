@@ -41,7 +41,7 @@ Picture Sound Video Nothing Response
 </props>
 </dp>
 </dp_list>
-<dsd></dsd>
+<dsd>.</dsd>
 <dxv>8</dxv>
 <efs>
 <filename>C:\StimulusPresentation.sce</filename>
@@ -98,7 +98,7 @@ Picture Sound Video Nothing Response
 </chan>
 </ip_chans>
 <isb>10000</isb>
-<lfd></lfd>
+<lfd>C:\</lfd>
 <lnb>2</lnb>
 <lno>0</lno>
 <log>
