@@ -194,7 +194,6 @@ bool showusage=false;
     "Filtering int AlignChannels= ",
     "Filtering floatlist SourceChGain= 0 ",
     "Filtering floatlist SourceChOffset= 0 ",
-    "Filtering floatlist SourceChTimeOffset= 0 ",
   };
 
   // create a parameter list from these individual parameters
@@ -206,11 +205,9 @@ bool showusage=false;
   paramlist[ "SamplingRate" ].Value() = str(m_BasicInfo.nRate);
   paramlist[ "ServerAddress" ].Value() = address;
   paramlist[ "SourceCh" ].Value() = str(m_BasicInfo.nEegChan);
-  paramlist[ "AlignChannels" ].Value() = str(-1);
+  paramlist[ "AlignChannels" ].Value() = "0";
   paramlist[ "SourceChGain" ].SetNumValues( m_BasicInfo.nEegChan );
   paramlist[ "SourceChOffset" ].SetNumValues( m_BasicInfo.nEegChan );
-  paramlist[ "SourceChTimeOffset" ].SetNumValues( 1 );
-  paramlist[ "SourceChTimeOffset" ].Value() = str(-1);             // default behavior; do not know how Neuroscan samples
 
   // set offset for all channels to 0 and gain to the value for LSB as communicated from the server
   for( int i = 0; i < m_BasicInfo.nEegChan; ++i )
