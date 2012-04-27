@@ -57,49 +57,6 @@ interface IBCI2000Remote: IDispatch
 	propget, helpstring( "Text output of the previously executed command, or error message." )
 	]
 	HRESULT _stdcall Result( [out,retval] BSTR* result );
-	
-// Connection methods
-	[
-    helpstring( "Connect to BCI2000. When OperatorPath is not empty, this starts up the operator module before connecting." )
-	]
-	HRESULT _stdcall Connect( [out,retval] VARIANT_BOOL* success );
-	[
-	helpstring( "Disconnect from an existing connection. Terminates the running operator module if it was started by the previous Connect() call." )
-	]
-	HRESULT _stdcall Disconnect( [out,retval] VARIANT_BOOL* success );
-
-// Execute any BCI2000 Operator script command
-	[
-	helpstring( "Execute a BCI2000 scripting command. If the command executed a shell command, returns the command's exit code, and 0 otherwise." )
-	]
-	HRESULT _stdcall ExecuteScriptCommand( [in] BSTR command, [out,retval] int* exitCode );
-
-// Higher-level functions
-//  Event Scripts
-	[
-	helpstring( "Associates scripting commands with an event." )
-	]
-	HRESULT _stdcall SetScript( [in] BSTR eventName, [in] BSTR script, [out,retval] VARIANT_BOOL* success );
-	[
-	helpstring( "Gets scripting commands associated with an event." )
-	]
-	HRESULT _stdcall GetScript( [in] BSTR eventName, [in,out] BSTR* script, [out,retval] VARIANT_BOOL* success );
-
-//  Module startup
-	[
-	helpstring( "Start BCI2000 core modules, listed by executable name, including possible command line arguments." )
-	]
-	HRESULT _stdcall StartupModules( [in,out] SAFEARRAY( BSTR )* modules, [out,retval] VARIANT_BOOL* success );
-
-//  Parameters
-	[
-	helpstring( "Load parameters from a file, relative to the current working directory." )
-	]
-	HRESULT _stdcall LoadParametersLocal( [in] BSTR file, [out,retval] VARIANT_BOOL* success );
-	[
-	helpstring( "Load parameters from a file, relative to BCI2000's working directory." )
-	]
-	HRESULT _stdcall LoadParametersRemote( [in] BSTR file, [out,retval] VARIANT_BOOL* success );
 
 //  Recording information
 	[
@@ -129,7 +86,21 @@ interface IBCI2000Remote: IDispatch
 	]
 	HRESULT _stdcall DataDirectory( [in] BSTR directory );
 
-//  Control of operation
+// Connection methods
+	[
+    helpstring( "Connect to BCI2000. When OperatorPath is not empty, this starts up the operator module before connecting." )
+	]
+	HRESULT _stdcall Connect( [out,retval] VARIANT_BOOL* success );
+	[
+	helpstring( "Disconnect from an existing connection. Terminates the running operator module if it was started by the previous Connect() call." )
+	]
+	HRESULT _stdcall Disconnect( [out,retval] VARIANT_BOOL* success );
+
+// Control of operation
+	[
+	helpstring( "Start BCI2000 core modules, listed by executable name, including possible command line arguments." )
+	]
+	HRESULT _stdcall StartupModules( [in,out] SAFEARRAY( BSTR )* modules, [out,retval] VARIANT_BOOL* success );
 	[
 	helpstring( "Apply current set of parameters. Will be called from Start() automatically." )
 	]
@@ -143,12 +114,29 @@ interface IBCI2000Remote: IDispatch
 	]
 	HRESULT _stdcall Stop( [out,retval] VARIANT_BOOL* success );
 	
-
-//  Runtime information
+//  Parameters
 	[
-	helpstring( "Gets the current system state (state of operation)." )
+	helpstring( "Load parameters from a file, relative to the current working directory." )
 	]
-	HRESULT _stdcall GetSystemState( [in,out] BSTR* state, [out,retval] VARIANT_BOOL* success );
+	HRESULT _stdcall LoadParametersLocal( [in] BSTR file, [out,retval] VARIANT_BOOL* success );
+	[
+	helpstring( "Load parameters from a file, relative to BCI2000's working directory." )
+	]
+	HRESULT _stdcall LoadParametersRemote( [in] BSTR file, [out,retval] VARIANT_BOOL* success );
+	[
+	helpstring( "Gets the value of a BCI2000 parameter." )
+	]
+	HRESULT _stdcall GetParameter( [in] BSTR name, [in,out] BSTR* value, [out,retval] VARIANT_BOOL* success );
+	[
+	helpstring( "Sets the value of a BCI2000 parameter." )
+	]
+	HRESULT _stdcall SetParameter( [in] BSTR name, [in] BSTR value, [out,retval] VARIANT_BOOL* success );
+
+//  State variables
+	[
+	helpstring( "Creates a new BCI2000 state variable." )
+	]
+	HRESULT _stdcall AddStateVariable( [in] BSTR stateName, [in] int bitWidth, [in] int initialValue, [out,retval] VARIANT_BOOL* success );
 	[
 	helpstring( "Gets the value of a BCI2000 state variable." )
 	]
@@ -158,10 +146,30 @@ interface IBCI2000Remote: IDispatch
 	]
 	HRESULT _stdcall SetStateVariable( [in] BSTR stateName, [in] double value, [out,retval] VARIANT_BOOL* success );
 	
+//  Runtime information
+	[
+	helpstring( "Gets the current system state (state of operation)." )
+	]
+	HRESULT _stdcall GetSystemState( [in,out] BSTR* state, [out,retval] VARIANT_BOOL* success );
 	[
 	helpstring( "Gets the value of the BCI2000 control signal." )
 	]
 	HRESULT _stdcall GetControlSignal( [in] int channel, [in] int element, [in,out] double* value, [out,retval] VARIANT_BOOL* success );
+
+// Scripts
+	[
+	helpstring( "Execute a BCI2000 scripting command. If the command executed a shell command, returns the command's exit code, and 0 otherwise." )
+	]
+	HRESULT _stdcall Execute( [in] BSTR command, [out,retval] int* exitCode );
+	[
+	helpstring( "Associates scripting commands with an event." )
+	]
+	HRESULT _stdcall SetScript( [in] BSTR eventName, [in] BSTR script, [out,retval] VARIANT_BOOL* success );
+	[
+	helpstring( "Gets scripting commands associated with an event." )
+	]
+	HRESULT _stdcall GetScript( [in] BSTR eventName, [in,out] BSTR* script, [out,retval] VARIANT_BOOL* success );
+
 
 };
 

@@ -98,19 +98,27 @@ int PreprocessBCIScript( istream&, string& );
 
 int Run( int, char**, BCI2000Remote& );
 int Quit( int, char**, BCI2000Remote& );
-int Execute( int, char**, BCI2000Remote& );
-int SetScript( int, char**, BCI2000Remote& );
-int GetScript( int, char**, BCI2000Remote& );
+
 int StartupModules( int, char**, BCI2000Remote& );
-int LoadParametersLocal( int, char**, BCI2000Remote& );
-int LoadParametersRemote( int, char**, BCI2000Remote& );
 int SetConfig( int, char**, BCI2000Remote& );
 int Start( int, char**, BCI2000Remote& );
 int Stop( int, char**, BCI2000Remote& );
-int GetSystemState( int, char**, BCI2000Remote& );
+
+int LoadParametersLocal( int, char**, BCI2000Remote& );
+int LoadParametersRemote( int, char**, BCI2000Remote& );
+int GetParameter( int, char**, BCI2000Remote& );
+int SetParameter( int, char**, BCI2000Remote& );
+
+int AddStateVariable( int, char**, BCI2000Remote& );
 int GetStateVariable( int, char**, BCI2000Remote& );
 int SetStateVariable( int, char**, BCI2000Remote& );
+
+int GetSystemState( int, char**, BCI2000Remote& );
 int GetControlSignal( int, char**, BCI2000Remote& );
+
+int Execute( int, char**, BCI2000Remote& );
+int SetScript( int, char**, BCI2000Remote& );
+int GetScript( int, char**, BCI2000Remote& );
 
 static const struct
 {
@@ -122,20 +130,28 @@ sCommands[] =
 {
   COMMAND( Run, -1, "[<script file 1> <script file 2> ...]", "Makes sure BCI2000 is started up, and optionally executes BCI2000 script files" )
   COMMAND( Quit, 0, "", "Terminates BCI2000" )
-  COMMAND( Execute, 1, "<scripting command>", "Executes a scripting command" )
-  COMMAND( SetScript, 2, "<event> <script commands>", "Associates Operator scripting commands with event, which is one of OnConnect, OnSetConfig, OnStart, OnResume, OnStop, OnShutdown" )
-  COMMAND( GetScript, 1, "<event>", "Returns Operator scripting commands associated with event, which is one of OnConnect, OnSetConfig, OnStart, OnResume, OnStop, OnShutdown" )
+
   COMMAND( StartupModules, -1, "<module1> <module2> ...", "Starts up BCI2000 modules" )
-  COMMAND( LoadParametersLocal, 1, "<parameter file>", "Loads a parameter file relative to the current working directory" )
-  COMMAND( LoadParametersRemote, 1, "<parameter file>", "Loads a parameter file relative to BCI2000's working directory" )
   COMMAND( SetConfig, 0, "", "Applies the current set of parameters" )
   COMMAND( Start, 0, "", "Starts a new run (recording)" )
   COMMAND( Stop, 0, "", "Stops the current run (recording)" )
-  COMMAND( GetSystemState, 0, "", "Returns the current system state (i.e., state of operation). This will be one of "
-                                  "Unavailable, Idle, Startup, Initialization, Resting, Suspended, ParamsModified, Running, Termination, Busy" )
+
+  COMMAND( LoadParametersLocal, 1, "<parameter file>", "Loads a parameter file relative to the current working directory" )
+  COMMAND( LoadParametersRemote, 1, "<parameter file>", "Loads a parameter file relative to BCI2000's working directory" )
+  COMMAND( SetParameter, 2, "<name> <value>", "Sets a parameter to the given value" )
+  COMMAND( GetParameter, 1, "<name>", "Gets the value of the named parameter" )
+
+  COMMAND( AddStateVariable, 3, "<variable name> <bit width> <initial value>", "Creates a new state variable" )
   COMMAND( GetStateVariable, 1, "<variable name>", "Returns the value of the named BCI2000 state variable" )
   COMMAND( SetStateVariable, 2, "<variable name> <variable value>", "Sets the value of the named BCI2000 state variable" )
+
+  COMMAND( GetSystemState, 0, "", "Returns the current system state (i.e., state of operation). This will be one of "
+                                  "Unavailable, Idle, Startup, Initialization, Resting, Suspended, ParamsModified, Running, Termination, Busy" )
   COMMAND( GetControlSignal, 2, "<channel index> <element index>", "Gets the value of the BCI2000 control signal. Indices are 1-based" )
+
+  COMMAND( Execute, 1, "<scripting command>", "Executes a scripting command" )
+  COMMAND( SetScript, 2, "<event> <script commands>", "Associates Operator scripting commands with event, which is one of OnConnect, OnSetConfig, OnStart, OnResume, OnStop, OnShutdown" )
+  COMMAND( GetScript, 1, "<event>", "Returns Operator scripting commands associated with event, which is one of OnConnect, OnSetConfig, OnStart, OnResume, OnStop, OnShutdown" )
 };
 
 static vector<const char*> sProperties;
@@ -278,43 +294,12 @@ Quit( int, char**, BCI2000Remote& ioBCI )
 }
 
 int
-Execute( int, char** inArgs, BCI2000Remote& ioBCI )
-{
-  return ioBCI.Execute( inArgs[0] );
-}
-
-int
-SetScript( int, char** inArgs, BCI2000Remote& ioBCI )
-{
-  return ioBCI.SetScript( inArgs[0], inArgs[1] ) ? ok : error;
-}
-
-int
-GetScript( int, char** inArgs, BCI2000Remote& ioBCI )
-{
-  string script;
-  return ioBCI.GetScript( inArgs[0], script ) ? ok : error;
-}
-
-int
 StartupModules( int inArgc, char** inArgs, BCI2000Remote& ioBCI )
 {
   vector<string> modules;
   for( int i = 0; i < inArgc; ++i )
     modules.push_back( inArgs[i] );
   return ioBCI.StartupModules( modules ) ? ok : error;
-}
-
-int
-LoadParametersLocal( int, char** inArgs, BCI2000Remote& ioBCI )
-{
-  return ioBCI.LoadParametersLocal( inArgs[0] ) ? ok : error;
-}
-
-int
-LoadParametersRemote( int, char** inArgs, BCI2000Remote& ioBCI )
-{
-  return ioBCI.LoadParametersRemote( inArgs[0] ) ? ok : error;
 }
 
 int
@@ -336,9 +321,34 @@ Stop( int, char**, BCI2000Remote& ioBCI )
 }
 
 int
-GetSystemState( int, char**, BCI2000Remote& ioBCI )
+LoadParametersLocal( int, char** inArgs, BCI2000Remote& ioBCI )
 {
-  return ioBCI.GetSystemState( string() ) ? ok : error;
+  return ioBCI.LoadParametersLocal( inArgs[0] ) ? ok : error;
+}
+
+int
+LoadParametersRemote( int, char** inArgs, BCI2000Remote& ioBCI )
+{
+  return ioBCI.LoadParametersRemote( inArgs[0] ) ? ok : error;
+}
+
+int
+GetParameter( int, char** inArgs, BCI2000Remote& ioBCI )
+{
+  string s;
+  return ioBCI.GetParameter( inArgs[0], s ) ? ok : error;
+}
+
+int
+SetParameter( int, char** inArgs, BCI2000Remote& ioBCI )
+{
+  return ioBCI.SetParameter( inArgs[0], inArgs[1] ) ? ok : error;
+}
+
+int
+AddStateVariable( int, char** inArgs, BCI2000Remote& ioBCI )
+{
+  return ioBCI.AddStateVariable( inArgs[0], ::atoi( inArgs[1] ), ::atoi( inArgs[2] ) ) ? ok : error;
 }
 
 int
@@ -355,9 +365,34 @@ SetStateVariable( int, char** inArgs, BCI2000Remote& ioBCI )
 }
 
 int
+GetSystemState( int, char**, BCI2000Remote& ioBCI )
+{
+  return ioBCI.GetSystemState( string() ) ? ok : error;
+}
+
+int
 GetControlSignal( int, char** inArgs, BCI2000Remote& ioBCI )
 {
   double d;
   return ioBCI.GetControlSignal( ::atoi( inArgs[0] ), ::atoi( inArgs[1] ), d ) ? ok : error;
+}
+
+int
+Execute( int, char** inArgs, BCI2000Remote& ioBCI )
+{
+  return ioBCI.Execute( inArgs[0] );
+}
+
+int
+SetScript( int, char** inArgs, BCI2000Remote& ioBCI )
+{
+  return ioBCI.SetScript( inArgs[0], inArgs[1] ) ? ok : error;
+}
+
+int
+GetScript( int, char** inArgs, BCI2000Remote& ioBCI )
+{
+  string script;
+  return ioBCI.GetScript( inArgs[0], script ) ? ok : error;
 }
 

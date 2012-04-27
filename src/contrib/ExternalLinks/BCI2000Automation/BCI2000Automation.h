@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Thu Apr 26 13:40:14 2012
+/* at Fri Apr 27 08:29:39 2012
  */
 /* Compiler settings for BCI2000Automation.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -120,38 +120,6 @@ EXTERN_C const IID IID_IBCI2000Remote;
         virtual /* [helpstring][propget] */ HRESULT __stdcall get_Result( 
             /* [retval][out] */ BSTR *result) = 0;
         
-        virtual /* [helpstring] */ HRESULT __stdcall Connect( 
-            /* [retval][out] */ VARIANT_BOOL *success) = 0;
-        
-        virtual /* [helpstring] */ HRESULT __stdcall Disconnect( 
-            /* [retval][out] */ VARIANT_BOOL *success) = 0;
-        
-        virtual /* [helpstring] */ HRESULT __stdcall ExecuteScriptCommand( 
-            /* [in] */ BSTR command,
-            /* [retval][out] */ int *exitCode) = 0;
-        
-        virtual /* [helpstring] */ HRESULT __stdcall SetScript( 
-            /* [in] */ BSTR eventName,
-            /* [in] */ BSTR script,
-            /* [retval][out] */ VARIANT_BOOL *success) = 0;
-        
-        virtual /* [helpstring] */ HRESULT __stdcall GetScript( 
-            /* [in] */ BSTR eventName,
-            /* [out][in] */ BSTR *script,
-            /* [retval][out] */ VARIANT_BOOL *success) = 0;
-        
-        virtual /* [helpstring] */ HRESULT __stdcall StartupModules( 
-            /* [out][in] */ SAFEARRAY * *modules,
-            /* [retval][out] */ VARIANT_BOOL *success) = 0;
-        
-        virtual /* [helpstring] */ HRESULT __stdcall LoadParametersLocal( 
-            /* [in] */ BSTR file,
-            /* [retval][out] */ VARIANT_BOOL *success) = 0;
-        
-        virtual /* [helpstring] */ HRESULT __stdcall LoadParametersRemote( 
-            /* [in] */ BSTR file,
-            /* [retval][out] */ VARIANT_BOOL *success) = 0;
-        
         virtual /* [helpstring][propget] */ HRESULT __stdcall get_SubjectID( 
             /* [retval][out] */ BSTR *subjectID) = 0;
         
@@ -170,6 +138,16 @@ EXTERN_C const IID IID_IBCI2000Remote;
         virtual /* [helpstring][propput] */ HRESULT __stdcall put_DataDirectory( 
             /* [in] */ BSTR directory) = 0;
         
+        virtual /* [helpstring] */ HRESULT __stdcall Connect( 
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall Disconnect( 
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall StartupModules( 
+            /* [out][in] */ SAFEARRAY * *modules,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
         virtual /* [helpstring] */ HRESULT __stdcall SetConfig( 
             /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
@@ -179,8 +157,28 @@ EXTERN_C const IID IID_IBCI2000Remote;
         virtual /* [helpstring] */ HRESULT __stdcall Stop( 
             /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
-        virtual /* [helpstring] */ HRESULT __stdcall GetSystemState( 
-            /* [out][in] */ BSTR *state,
+        virtual /* [helpstring] */ HRESULT __stdcall LoadParametersLocal( 
+            /* [in] */ BSTR file,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall LoadParametersRemote( 
+            /* [in] */ BSTR file,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall GetParameter( 
+            /* [in] */ BSTR name,
+            /* [out][in] */ BSTR *value,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall SetParameter( 
+            /* [in] */ BSTR name,
+            /* [in] */ BSTR value,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall AddStateVariable( 
+            /* [in] */ BSTR stateName,
+            /* [in] */ int bitWidth,
+            /* [in] */ int initialValue,
             /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
         virtual /* [helpstring] */ HRESULT __stdcall GetStateVariable( 
@@ -193,10 +191,28 @@ EXTERN_C const IID IID_IBCI2000Remote;
             /* [in] */ double value,
             /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
+        virtual /* [helpstring] */ HRESULT __stdcall GetSystemState( 
+            /* [out][in] */ BSTR *state,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
         virtual /* [helpstring] */ HRESULT __stdcall GetControlSignal( 
             /* [in] */ int channel,
             /* [in] */ int element,
             /* [out][in] */ double *value,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall Execute( 
+            /* [in] */ BSTR command,
+            /* [retval][out] */ int *exitCode) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall SetScript( 
+            /* [in] */ BSTR eventName,
+            /* [in] */ BSTR script,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
+        
+        virtual /* [helpstring] */ HRESULT __stdcall GetScript( 
+            /* [in] */ BSTR eventName,
+            /* [out][in] */ BSTR *script,
             /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
     };
@@ -292,46 +308,6 @@ EXTERN_C const IID IID_IBCI2000Remote;
             IBCI2000Remote * This,
             /* [retval][out] */ BSTR *result);
         
-        /* [helpstring] */ HRESULT ( __stdcall *Connect )( 
-            IBCI2000Remote * This,
-            /* [retval][out] */ VARIANT_BOOL *success);
-        
-        /* [helpstring] */ HRESULT ( __stdcall *Disconnect )( 
-            IBCI2000Remote * This,
-            /* [retval][out] */ VARIANT_BOOL *success);
-        
-        /* [helpstring] */ HRESULT ( __stdcall *ExecuteScriptCommand )( 
-            IBCI2000Remote * This,
-            /* [in] */ BSTR command,
-            /* [retval][out] */ int *exitCode);
-        
-        /* [helpstring] */ HRESULT ( __stdcall *SetScript )( 
-            IBCI2000Remote * This,
-            /* [in] */ BSTR eventName,
-            /* [in] */ BSTR script,
-            /* [retval][out] */ VARIANT_BOOL *success);
-        
-        /* [helpstring] */ HRESULT ( __stdcall *GetScript )( 
-            IBCI2000Remote * This,
-            /* [in] */ BSTR eventName,
-            /* [out][in] */ BSTR *script,
-            /* [retval][out] */ VARIANT_BOOL *success);
-        
-        /* [helpstring] */ HRESULT ( __stdcall *StartupModules )( 
-            IBCI2000Remote * This,
-            /* [out][in] */ SAFEARRAY * *modules,
-            /* [retval][out] */ VARIANT_BOOL *success);
-        
-        /* [helpstring] */ HRESULT ( __stdcall *LoadParametersLocal )( 
-            IBCI2000Remote * This,
-            /* [in] */ BSTR file,
-            /* [retval][out] */ VARIANT_BOOL *success);
-        
-        /* [helpstring] */ HRESULT ( __stdcall *LoadParametersRemote )( 
-            IBCI2000Remote * This,
-            /* [in] */ BSTR file,
-            /* [retval][out] */ VARIANT_BOOL *success);
-        
         /* [helpstring][propget] */ HRESULT ( __stdcall *get_SubjectID )( 
             IBCI2000Remote * This,
             /* [retval][out] */ BSTR *subjectID);
@@ -356,6 +332,19 @@ EXTERN_C const IID IID_IBCI2000Remote;
             IBCI2000Remote * This,
             /* [in] */ BSTR directory);
         
+        /* [helpstring] */ HRESULT ( __stdcall *Connect )( 
+            IBCI2000Remote * This,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *Disconnect )( 
+            IBCI2000Remote * This,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *StartupModules )( 
+            IBCI2000Remote * This,
+            /* [out][in] */ SAFEARRAY * *modules,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
         /* [helpstring] */ HRESULT ( __stdcall *SetConfig )( 
             IBCI2000Remote * This,
             /* [retval][out] */ VARIANT_BOOL *success);
@@ -368,9 +357,33 @@ EXTERN_C const IID IID_IBCI2000Remote;
             IBCI2000Remote * This,
             /* [retval][out] */ VARIANT_BOOL *success);
         
-        /* [helpstring] */ HRESULT ( __stdcall *GetSystemState )( 
+        /* [helpstring] */ HRESULT ( __stdcall *LoadParametersLocal )( 
             IBCI2000Remote * This,
-            /* [out][in] */ BSTR *state,
+            /* [in] */ BSTR file,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *LoadParametersRemote )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR file,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *GetParameter )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR name,
+            /* [out][in] */ BSTR *value,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *SetParameter )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR name,
+            /* [in] */ BSTR value,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *AddStateVariable )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR stateName,
+            /* [in] */ int bitWidth,
+            /* [in] */ int initialValue,
             /* [retval][out] */ VARIANT_BOOL *success);
         
         /* [helpstring] */ HRESULT ( __stdcall *GetStateVariable )( 
@@ -385,11 +398,33 @@ EXTERN_C const IID IID_IBCI2000Remote;
             /* [in] */ double value,
             /* [retval][out] */ VARIANT_BOOL *success);
         
+        /* [helpstring] */ HRESULT ( __stdcall *GetSystemState )( 
+            IBCI2000Remote * This,
+            /* [out][in] */ BSTR *state,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
         /* [helpstring] */ HRESULT ( __stdcall *GetControlSignal )( 
             IBCI2000Remote * This,
             /* [in] */ int channel,
             /* [in] */ int element,
             /* [out][in] */ double *value,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *Execute )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR command,
+            /* [retval][out] */ int *exitCode);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *SetScript )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR eventName,
+            /* [in] */ BSTR script,
+            /* [retval][out] */ VARIANT_BOOL *success);
+        
+        /* [helpstring] */ HRESULT ( __stdcall *GetScript )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR eventName,
+            /* [out][in] */ BSTR *script,
             /* [retval][out] */ VARIANT_BOOL *success);
         
         END_INTERFACE
@@ -461,30 +496,6 @@ EXTERN_C const IID IID_IBCI2000Remote;
 #define IBCI2000Remote_get_Result(This,result)	\
     ( (This)->lpVtbl -> get_Result(This,result) ) 
 
-#define IBCI2000Remote_Connect(This,success)	\
-    ( (This)->lpVtbl -> Connect(This,success) ) 
-
-#define IBCI2000Remote_Disconnect(This,success)	\
-    ( (This)->lpVtbl -> Disconnect(This,success) ) 
-
-#define IBCI2000Remote_ExecuteScriptCommand(This,command,exitCode)	\
-    ( (This)->lpVtbl -> ExecuteScriptCommand(This,command,exitCode) ) 
-
-#define IBCI2000Remote_SetScript(This,eventName,script,success)	\
-    ( (This)->lpVtbl -> SetScript(This,eventName,script,success) ) 
-
-#define IBCI2000Remote_GetScript(This,eventName,script,success)	\
-    ( (This)->lpVtbl -> GetScript(This,eventName,script,success) ) 
-
-#define IBCI2000Remote_StartupModules(This,modules,success)	\
-    ( (This)->lpVtbl -> StartupModules(This,modules,success) ) 
-
-#define IBCI2000Remote_LoadParametersLocal(This,file,success)	\
-    ( (This)->lpVtbl -> LoadParametersLocal(This,file,success) ) 
-
-#define IBCI2000Remote_LoadParametersRemote(This,file,success)	\
-    ( (This)->lpVtbl -> LoadParametersRemote(This,file,success) ) 
-
 #define IBCI2000Remote_get_SubjectID(This,subjectID)	\
     ( (This)->lpVtbl -> get_SubjectID(This,subjectID) ) 
 
@@ -503,6 +514,15 @@ EXTERN_C const IID IID_IBCI2000Remote;
 #define IBCI2000Remote_put_DataDirectory(This,directory)	\
     ( (This)->lpVtbl -> put_DataDirectory(This,directory) ) 
 
+#define IBCI2000Remote_Connect(This,success)	\
+    ( (This)->lpVtbl -> Connect(This,success) ) 
+
+#define IBCI2000Remote_Disconnect(This,success)	\
+    ( (This)->lpVtbl -> Disconnect(This,success) ) 
+
+#define IBCI2000Remote_StartupModules(This,modules,success)	\
+    ( (This)->lpVtbl -> StartupModules(This,modules,success) ) 
+
 #define IBCI2000Remote_SetConfig(This,success)	\
     ( (This)->lpVtbl -> SetConfig(This,success) ) 
 
@@ -512,8 +532,20 @@ EXTERN_C const IID IID_IBCI2000Remote;
 #define IBCI2000Remote_Stop(This,success)	\
     ( (This)->lpVtbl -> Stop(This,success) ) 
 
-#define IBCI2000Remote_GetSystemState(This,state,success)	\
-    ( (This)->lpVtbl -> GetSystemState(This,state,success) ) 
+#define IBCI2000Remote_LoadParametersLocal(This,file,success)	\
+    ( (This)->lpVtbl -> LoadParametersLocal(This,file,success) ) 
+
+#define IBCI2000Remote_LoadParametersRemote(This,file,success)	\
+    ( (This)->lpVtbl -> LoadParametersRemote(This,file,success) ) 
+
+#define IBCI2000Remote_GetParameter(This,name,value,success)	\
+    ( (This)->lpVtbl -> GetParameter(This,name,value,success) ) 
+
+#define IBCI2000Remote_SetParameter(This,name,value,success)	\
+    ( (This)->lpVtbl -> SetParameter(This,name,value,success) ) 
+
+#define IBCI2000Remote_AddStateVariable(This,stateName,bitWidth,initialValue,success)	\
+    ( (This)->lpVtbl -> AddStateVariable(This,stateName,bitWidth,initialValue,success) ) 
 
 #define IBCI2000Remote_GetStateVariable(This,stateName,value,success)	\
     ( (This)->lpVtbl -> GetStateVariable(This,stateName,value,success) ) 
@@ -521,8 +553,20 @@ EXTERN_C const IID IID_IBCI2000Remote;
 #define IBCI2000Remote_SetStateVariable(This,stateName,value,success)	\
     ( (This)->lpVtbl -> SetStateVariable(This,stateName,value,success) ) 
 
+#define IBCI2000Remote_GetSystemState(This,state,success)	\
+    ( (This)->lpVtbl -> GetSystemState(This,state,success) ) 
+
 #define IBCI2000Remote_GetControlSignal(This,channel,element,value,success)	\
     ( (This)->lpVtbl -> GetControlSignal(This,channel,element,value,success) ) 
+
+#define IBCI2000Remote_Execute(This,command,exitCode)	\
+    ( (This)->lpVtbl -> Execute(This,command,exitCode) ) 
+
+#define IBCI2000Remote_SetScript(This,eventName,script,success)	\
+    ( (This)->lpVtbl -> SetScript(This,eventName,script,success) ) 
+
+#define IBCI2000Remote_GetScript(This,eventName,script,success)	\
+    ( (This)->lpVtbl -> GetScript(This,eventName,script,success) ) 
 
 #endif /* COBJMACROS */
 

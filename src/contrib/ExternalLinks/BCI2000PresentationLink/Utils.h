@@ -108,7 +108,7 @@ ArgList::ArgList( const struct Method<T>& inMethod, IPCLArguments* pArgs )
 #ifdef BCIDEBUG
   int maxArgs = sizeof( inMethod.arguments ) / sizeof( *inMethod.arguments ),
       methodArgs = 0;
-  while( numArgs < maxArgs && inMethod.arguments[methodArgs].name != NULL )
+  while( methodArgs < maxArgs && inMethod.arguments[methodArgs].name != NULL )
     ++methodArgs;
   if( numArgs != methodArgs )
     throw bciexception_( "Number of arguments does not match when calling " << methodName );

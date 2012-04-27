@@ -57,24 +57,34 @@ public:
   void constructor_void( ArgList& );
   void constructor_data_port_ext( ArgList& );
   void constructor_string( ArgList& );
-  void set_script( ArgList& );
-  void get_script( ArgList& );
-  void start_modules( ArgList& );
-  void load_parameters_local( ArgList& );
-  void load_parameters_remote( ArgList& );
+
   void hide_window( ArgList& );
   void show_window( ArgList& );
   void set_window_title( ArgList& );
   void set_subject( ArgList& );
   void set_session( ArgList& );
   void set_data_directory( ArgList& );
+
+  void startup_modules( ArgList& );
   void set_config( ArgList& );
   void start( ArgList& );
   void stop( ArgList& );
+
+  void load_parameters_local( ArgList& );
+  void load_parameters_remote( ArgList& );
+  void get_parameter( ArgList& );
+  void set_parameter( ArgList& );
+
+  void add_state_variable( ArgList& );
   void get_state_variable( ArgList& );
   void set_state_variable( ArgList& );
+
+  void get_system_state( ArgList& );
   void get_control_signal( ArgList& );
+
   void execute( ArgList& );
+  void set_script( ArgList& );
+  void get_script( ArgList& );
 
 private:
   std::wstring mLastError;

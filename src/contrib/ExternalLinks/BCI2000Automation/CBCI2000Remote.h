@@ -102,90 +102,6 @@ public:
           return S_OK;
         }
 
-    virtual /* [helpstring] */ HRESULT __stdcall Connect(
-        /* [retval][out] */ VARIANT_BOOL *success)
-        {
-          BOOLRESULT( Connect() );
-          return S_OK;
-        }
-
-    virtual /* [helpstring] */ HRESULT __stdcall Disconnect(
-        /* [retval][out] */ VARIANT_BOOL *success)
-        {
-          BOOLRESULT( Disconnect() );
-          return S_OK;
-        }
-
-    virtual /* [helpstring] */ HRESULT __stdcall ExecuteScriptCommand(
-        /* [in] */ BSTR command,
-        /* [retval][out] */ int *exitCode)
-        {
-          *exitCode = Execute( com::DualString( command ) );
-          return S_OK;
-        }
-
-    virtual /* [helpstring] */ HRESULT __stdcall SetScript(
-        /* [in] */ BSTR eventName,
-        /* [in] */ BSTR script,
-        /* [retval][out] */ VARIANT_BOOL *success)
-        {
-          BOOLRESULT( SetScript( com::DualString( eventName ), com::DualString( script ) ) );
-          return S_OK;
-        }
-
-    virtual /* [helpstring] */ HRESULT __stdcall GetScript(
-        /* [in] */ BSTR eventName,
-        /* [out][in] */ BSTR *script,
-        /* [retval][out] */ VARIANT_BOOL *success)
-        {
-          std::string result;
-          BOOLRESULT( GetScript( com::DualString( eventName ), result ) );
-          *script = ::SysAllocString( com::DualString( result ).c_str() );
-          return S_OK;
-        }
-
-    virtual /* [helpstring] */ HRESULT __stdcall StartupModules(
-        /* [in,out] */ SAFEARRAY ** modules,
-        /* [retval][out] */ VARIANT_BOOL *success)
-        {
-          int nDim = ::SafeArrayGetDim( *modules );
-          if( nDim < 1 )
-            return E_INVALIDARG;
-          LONG lBound = 0, uBound = 0;
-          HRESULT result = ::SafeArrayGetLBound( *modules, nDim, &lBound );
-          if( FAILED( result ) )
-            return result;
-          result = ::SafeArrayGetUBound( *modules, nDim, &uBound );
-          if( FAILED( result ) )
-            return result;
-          std::vector<std::string> modules2;
-          BSTR* pStrings = NULL;
-          result = ::SafeArrayAccessData( *modules, reinterpret_cast<void**>( &pStrings ) );
-          if( FAILED( result ) )
-            return result;
-          for( LONG i = 0; i < uBound - lBound + 1; ++i )
-            modules2.push_back( com::DualString( pStrings[i] ) );
-          ::SafeArrayUnaccessData( *modules );
-          *success = BCI2000Remote::StartupModules( modules2 ) ? VARIANT_TRUE : VARIANT_FALSE;
-          return S_OK;
-        }
-
-    virtual /* [helpstring] */ HRESULT __stdcall LoadParametersLocal(
-        /* [in] */ BSTR file,
-        /* [retval][out] */ VARIANT_BOOL *success)
-        {
-          BOOLRESULT( LoadParametersLocal( com::DualString( file ) ) );
-          return S_OK;
-        }
-
-    virtual /* [helpstring] */ HRESULT __stdcall LoadParametersRemote(
-        /* [in] */ BSTR file,
-        /* [retval][out] */ VARIANT_BOOL *success)
-        {
-          BOOLRESULT( LoadParametersRemote( com::DualString( file ) ) );
-          return S_OK;
-        }
-
     virtual /* [helpstring][propget] */ HRESULT __stdcall get_SubjectID(
         /* [retval][out] */ BSTR *subjectID)
         {
@@ -228,10 +144,43 @@ public:
           return S_OK;
         }
 
-    virtual /* [helpstring] */ HRESULT __stdcall SetConfig(
+    virtual /* [helpstring] */ HRESULT __stdcall Connect(
         /* [retval][out] */ VARIANT_BOOL *success)
         {
-          BOOLRESULT( SetConfig() );
+          BOOLRESULT( Connect() );
+          return S_OK;
+        }
+
+    virtual /* [helpstring] */ HRESULT __stdcall Disconnect(
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          BOOLRESULT( Disconnect() );
+          return S_OK;
+        }
+
+    virtual /* [helpstring] */ HRESULT __stdcall StartupModules(
+        /* [in,out] */ SAFEARRAY ** modules,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          int nDim = ::SafeArrayGetDim( *modules );
+          if( nDim < 1 )
+            return E_INVALIDARG;
+          LONG lBound = 0, uBound = 0;
+          HRESULT result = ::SafeArrayGetLBound( *modules, nDim, &lBound );
+          if( FAILED( result ) )
+            return result;
+          result = ::SafeArrayGetUBound( *modules, nDim, &uBound );
+          if( FAILED( result ) )
+            return result;
+          std::vector<std::string> modules2;
+          BSTR* pStrings = NULL;
+          result = ::SafeArrayAccessData( *modules, reinterpret_cast<void**>( &pStrings ) );
+          if( FAILED( result ) )
+            return result;
+          for( LONG i = 0; i < uBound - lBound + 1; ++i )
+            modules2.push_back( com::DualString( pStrings[i] ) );
+          ::SafeArrayUnaccessData( *modules );
+          *success = BCI2000Remote::StartupModules( modules2 ) ? VARIANT_TRUE : VARIANT_FALSE;
           return S_OK;
         }
 
@@ -249,16 +198,59 @@ public:
           return S_OK;
         }
 
-    virtual /* [helpstring] */ HRESULT __stdcall GetSystemState(
-        /* [out][in] */ BSTR *state,
+    virtual /* [helpstring] */ HRESULT __stdcall SetConfig(
         /* [retval][out] */ VARIANT_BOOL *success)
         {
-          std::string buf;
-          BOOLRESULT( GetSystemState( buf ) );
-          *state = ::SysAllocString( com::DualString( buf ).c_str() );
+          BOOLRESULT( SetConfig() );
           return S_OK;
         }
 
+    virtual /* [helpstring] */ HRESULT __stdcall LoadParametersLocal(
+        /* [in] */ BSTR file,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          BOOLRESULT( LoadParametersLocal( com::DualString( file ) ) );
+          return S_OK;
+        }
+
+    virtual /* [helpstring] */ HRESULT __stdcall LoadParametersRemote(
+        /* [in] */ BSTR file,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          BOOLRESULT( LoadParametersRemote( com::DualString( file ) ) );
+          return S_OK;
+        }
+
+    virtual /* [helpstring] */ HRESULT __stdcall GetParameter( 
+        /* [in] */ BSTR name,
+        /* [out][in] */ BSTR *value,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          std::string result;
+          BOOLRESULT( GetParameter( com::DualString( name ), result ) );
+          *value = ::SysAllocString( com::DualString( result.c_str() ) );
+          return S_OK;
+        }
+    
+    virtual /* [helpstring] */ HRESULT __stdcall SetParameter( 
+        /* [in] */ BSTR name,
+        /* [in] */ BSTR value,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          BOOLRESULT( SetParameter( com::DualString( name ), com::DualString( value ) ) );
+          return S_OK;
+        }
+    
+    virtual /* [helpstring] */ HRESULT __stdcall AddStateVariable( 
+        /* [in] */ BSTR stateName,
+        /* [in] */ int bitWidth,
+        /* [in] */ int initialValue,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          BOOLRESULT( AddStateVariable( com::DualString( stateName ), bitWidth, initialValue ) );
+          return S_OK;
+        }
+    
     virtual /* [helpstring] */ HRESULT __stdcall SetStateVariable(
         /* [in] */ BSTR stateName,
         /* [in] */ double value,
@@ -277,6 +269,16 @@ public:
           return S_OK;
         }
 
+    virtual /* [helpstring] */ HRESULT __stdcall GetSystemState(
+        /* [out][in] */ BSTR *state,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          std::string buf;
+          BOOLRESULT( GetSystemState( buf ) );
+          *state = ::SysAllocString( com::DualString( buf ).c_str() );
+          return S_OK;
+        }
+
     virtual /* [helpstring] */ HRESULT __stdcall GetControlSignal(
         /* [in] */ int channel,
         /* [in] */ int element,
@@ -286,6 +288,35 @@ public:
           BOOLRESULT( GetControlSignal( channel, element, *value ) );
           return S_OK;
         }
+
+    virtual /* [helpstring] */ HRESULT __stdcall Execute(
+        /* [in] */ BSTR command,
+        /* [retval][out] */ int *exitCode)
+        {
+          *exitCode = BCI2000Remote::Execute( com::DualString( command ) );
+          return S_OK;
+        }
+
+    virtual /* [helpstring] */ HRESULT __stdcall SetScript(
+        /* [in] */ BSTR eventName,
+        /* [in] */ BSTR script,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          BOOLRESULT( SetScript( com::DualString( eventName ), com::DualString( script ) ) );
+          return S_OK;
+        }
+
+    virtual /* [helpstring] */ HRESULT __stdcall GetScript(
+        /* [in] */ BSTR eventName,
+        /* [out][in] */ BSTR *script,
+        /* [retval][out] */ VARIANT_BOOL *success)
+        {
+          std::string result;
+          BOOLRESULT( GetScript( com::DualString( eventName ), result ) );
+          *script = ::SysAllocString( com::DualString( result ).c_str() );
+          return S_OK;
+        }
+
 };
 
 #endif // C_BCI2000_REMOTE_H

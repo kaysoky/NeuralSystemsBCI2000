@@ -9,7 +9,7 @@
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_OperatorName        "Operator.exe"
 END
@@ -21,7 +21,7 @@ END
 
 IDD_DataPortProperties DIALOGEX 0, 0, 287, 364
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
+CAPTION "BCI2000PresentationLink Data Port Properties"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,175,344,50,14
@@ -37,7 +37,7 @@ BEGIN
     LTEXT           "Specify an Operator module or batch file to run when starting up BCI2000. When you leave the field empty, the Operator module is started from the directory in which BCI2000PresentationLink resides.",IDC_STATICDesc1,22,36,245,28
     PUSHBUTTON      "Clear",IDC_BUTTONClearProgPath,146,111,50,14
     GROUPBOX        "Network Address",IDC_STATIC,7,161,273,66
-    LTEXT           "When an Operator module is specified rather than a batch file, you need to to start up modules from a PCL script, using bci2000::controller::startup_modules().",IDC_STATICDesc2,22,63,244,25
+    LTEXT           "When an Operator module is specified rather than a batch file, you need to start up modules from a PCL script, using bci2000::controller::startup_modules().",IDC_STATICDesc2,22,63,244,25
     LTEXT           "BCI2000PresentationLink uses a network connection to establish a link with BCI2000. To override the default port, or to connect to a remote BCI2000 installation, you may enter a network address in the form ""myhost:3999"".",IDC_STATIC,22,175,248,28
     EDITTEXT        IDC_EDITEventTypes,22,278,246,13,ES_AUTOHSCROLL
     GROUPBOX        "Event Types",IDC_STATIC,7,234,273,103

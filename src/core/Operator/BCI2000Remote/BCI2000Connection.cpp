@@ -94,6 +94,9 @@ BCI2000Connection::Connect()
 bool
 BCI2000Connection::Connect( const BCI2000Connection& inRemote )
 {
+  mWindowVisible = inRemote.mWindowVisible;
+  mWindowTitle = inRemote.mWindowTitle;
+
   mResult.clear();
   bool success = inRemote.mSocket.is_open();
   if( success )

@@ -61,40 +61,6 @@ BCI2000Remote::DataDirectory( const std::string& inDataDirectory )
 }
 
 bool
-BCI2000Remote::SetScript( const string& inEvent, const string& inScript )
-{
-  return SimpleCommand( "set script " + inEvent + "\"" + EscapeSpecialChars( inScript ) + "\"" );
-}
-
-bool
-BCI2000Remote::GetScript( const string& inEvent, string& outScript )
-{
-  Execute( "get script " + inEvent );
-  bool success = true;
-  const string tag = "scripting event:";
-  size_t pos = Result().find( tag );
-  if( pos != string::npos )
-  {
-    istringstream iss( Result().substr( pos + tag.length() ) );
-    string event;
-    iss >> ws >> event;
-    string::const_iterator i = event.begin();
-    string::iterator j = event.begin();
-    while( i != event.end() )
-      if( *i != '\"' )
-        *j++ = *i++;
-      else
-        ++i;
-    event.erase( j, event.end() );
-    if( inEvent.find( event ) != string::npos )
-      success = false;
-  }
-  if( success )
-    outScript = Result();
-  return success;
-}
-
-bool
 BCI2000Remote::StartupModules( const std::vector<string>& inModules )
 {
   Execute( "shutdown system" );
@@ -213,6 +179,40 @@ BCI2000Remote::GetSystemState( string& outResult )
 }
 
 bool
+BCI2000Remote::GetControlSignal( int inChannel, int inElement, double& outValue )
+{
+  ostringstream oss;
+  oss << "get signal(" << inChannel << "," << inElement << ")";
+  Execute( oss.str() );
+  return istringstream( Result() ) >> outValue;
+}
+
+bool
+BCI2000Remote::SetParameter( const std::string& inName, const std::string& inValue )
+{
+  return SimpleCommand( "set parameter \"" + inName + "\" " + inValue );
+}
+
+bool
+BCI2000Remote::GetParameter( const std::string& inName, std::string& outValue )
+{
+  Execute( "get parameter \"" + inName + "\"" );
+  bool success = ( Result().find( inName ) == string::npos
+                  && Result().find( "not exist" ) == string::npos );
+  if( success )
+    outValue = Result();
+  return success;
+}
+
+bool
+BCI2000Remote::AddStateVariable( const std::string& inName, unsigned int inBitWidth, unsigned int inInitialValue )
+{
+  ostringstream oss;
+  oss << "add state \"" << inName << "\" " << inBitWidth << " " << inInitialValue;
+  return SimpleCommand( oss.str() );
+}
+
+bool
 BCI2000Remote::SetStateVariable( const string& inStateName, double inValue )
 {
   ostringstream value;
@@ -229,12 +229,37 @@ BCI2000Remote::GetStateVariable( const string& inStateName, double& outValue )
 }
 
 bool
-BCI2000Remote::GetControlSignal( int inChannel, int inElement, double& outValue )
+BCI2000Remote::SetScript( const string& inEvent, const string& inScript )
 {
-  ostringstream oss;
-  oss << "get signal(" << inChannel << "," << inElement << ")";
-  Execute( oss.str() );
-  return istringstream( Result() ) >> outValue;
+  return SimpleCommand( "set script " + inEvent + "\"" + EscapeSpecialChars( inScript ) + "\"" );
+}
+
+bool
+BCI2000Remote::GetScript( const string& inEvent, string& outScript )
+{
+  Execute( "get script " + inEvent );
+  bool success = true;
+  const string tag = "scripting event:";
+  size_t pos = Result().find( tag );
+  if( pos != string::npos )
+  {
+    istringstream iss( Result().substr( pos + tag.length() ) );
+    string event;
+    iss >> ws >> event;
+    string::const_iterator i = event.begin();
+    string::iterator j = event.begin();
+    while( i != event.end() )
+      if( *i != '\"' )
+        *j++ = *i++;
+      else
+        ++i;
+    event.erase( j, event.end() );
+    if( inEvent.find( event ) != string::npos )
+      success = false;
+  }
+  if( success )
+    outScript = Result();
+  return success;
 }
 
 bool

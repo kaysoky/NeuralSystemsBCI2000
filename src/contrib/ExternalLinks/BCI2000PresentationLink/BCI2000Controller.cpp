@@ -67,46 +67,6 @@ static const struct Method<CBCI2000Controller> sConstructors[] =
 static const struct Method<CBCI2000Controller> sMethods[] =
 {
   {
-    METHOD( set_script ),
-    L"Associates BCI2000 Operator scripting commands with an event.",
-    {
-      { L"event_name", L"string", 0, false, L"name of event" },
-      { L"script", L"string", 0, false, L"sequence of scripting commands" },
-    },
-  },
-  {
-    METHOD( get_script ),
-    L"Returns BCI2000 Operator scripting commands associated with an event.",
-    {
-      { L"event_name", L"string", 0, false, L"name of event" },
-    },
-    { L"string", 0, L"scripting commands" },
-  },
-  {
-    METHOD( start_modules ),
-    L"Starts up BCI2000 core modules.",
-    {
-      {
-        L"list_of_modules", L"string", 1, false,
-        L"array containing module names (typically, Source, Signal Processing, and Application module)"
-      },
-    },
-  },
-  {
-    METHOD( load_parameters_local ),
-    L"Loads a parameter file relative to Presentation's working directory.",
-    {
-      { L"parameter_file", L"string", 0, false, L"path to parameter file" },
-    },
-  },
-  {
-    METHOD( load_parameters_remote ),
-    L"Loads a parameter file relative to the BCI2000/prog directory.",
-    {
-      { L"parameter_file", L"string", 0, false, L"path to parameter file" },
-    },
-  },
-  {
     METHOD( hide_window ),
     L"Hides the BCI2000 Operator main window.",
     {},
@@ -146,6 +106,16 @@ static const struct Method<CBCI2000Controller> sMethods[] =
     },
   },
   {
+    METHOD( startup_modules ),
+    L"Starts up BCI2000 core modules.",
+    {
+      {
+        L"list_of_modules", L"string", 1, false,
+        L"array containing module names (typically, Source, Signal Processing, and Application module)"
+      },
+    },
+  },
+  {
     METHOD( set_config ),
     L"Applies current set of parameters to the BCI2000 system.",
     {},
@@ -161,19 +131,58 @@ static const struct Method<CBCI2000Controller> sMethods[] =
     {},
   },
   {
+    METHOD( get_parameter ),
+    L"Returns the value of a BCI2000 parameter.",
+    {
+      { L"name", L"string", 0, false, L"parameter name" },
+    },
+    { L"string", 0, L"Parameter value" }
+  },
+  {
+    METHOD( set_parameter ),
+    L"Sets the value of a BCI2000 parameter.",
+    {
+      { L"name", L"string", 0, false, L"parameter name" },
+      { L"value", L"string", 0, false, L"parameter value" },
+    },
+  },
+  {
+    METHOD( load_parameters_local ),
+    L"Loads a parameter file relative to Presentation's working directory.",
+    {
+      { L"parameter_file", L"string", 0, false, L"path to parameter file" },
+    },
+  },
+  {
+    METHOD( load_parameters_remote ),
+    L"Loads a parameter file relative to the BCI2000/prog directory.",
+    {
+      { L"parameter_file", L"string", 0, false, L"path to parameter file" },
+    },
+  },
+  {
+    METHOD( add_state_variable ),
+    L"Adds a BCI2000 state variable.",
+    {
+      { L"name", L"string", 0, false, L"name of state variable" },
+      { L"bit_width", L"int", 0, false, L"number of bits in the state variable" },
+      { L"initial_value", L"int", 0, false, L"initial value of the state variable" },
+    },
+  },
+  {
     METHOD( get_state_variable ),
     L"Returns the value of a BCI2000 state variable.",
     {
       { L"name", L"string", 0, false, L"name of state variable" },
     },
-    { L"double", 0, L"State variable value" }
+    { L"int", 0, L"State variable value" }
   },
   {
     METHOD( set_state_variable ),
     L"Sets the value of a BCI2000 state variable.",
     {
       { L"name", L"string", 0, false, L"name of state variable" },
-      { L"value", L"double", 0, false, L"state variable value" },
+      { L"value", L"int", 0, false, L"state variable value" },
     },
   },
   {
@@ -193,6 +202,22 @@ static const struct Method<CBCI2000Controller> sMethods[] =
       { L"output", L"string", 0, true, L"command output" },
     },
     { L"int", 0, L"command exit code, or 0" }
+  },
+  {
+    METHOD( set_script ),
+    L"Associates BCI2000 Operator scripting commands with an event.",
+    {
+      { L"event_name", L"string", 0, false, L"name of event" },
+      { L"script", L"string", 0, false, L"sequence of scripting commands" },
+    },
+  },
+  {
+    METHOD( get_script ),
+    L"Returns BCI2000 Operator scripting commands associated with an event.",
+    {
+      { L"event_name", L"string", 0, false, L"name of event" },
+    },
+    { L"string", 0, L"scripting commands" },
   },
 };
 
@@ -320,40 +345,6 @@ CBCI2000Controller::constructor_string( ArgList& ioArgs )
 #define CALL(x) if( !mBCI2000.x ) throw bciexception_( mBCI2000.Result() )
 
 void
-CBCI2000Controller::set_script( ArgList& ioArgs )
-{
-  CALL( SetScript( ioArgs.GetString( 1 ), ioArgs.GetString( 2 ) ) );
-}
-
-void
-CBCI2000Controller::get_script( ArgList& ioArgs )
-{
-  std::string result;
-  CALL( GetScript( ioArgs.GetString( 1 ), result ) );
-  ioArgs.SetString( 0, result );
-}
-
-void
-CBCI2000Controller::start_modules( ArgList& ioArgs )
-{
-  std::vector<com::DualString> modules_ = ioArgs.GetStringArray( 1 );
-  std::vector<std::string> modules( modules_.begin(), modules_.end() );
-  CALL( StartupModules( modules ) );
-}
-
-void
-CBCI2000Controller::load_parameters_local( ArgList& ioArgs )
-{
-  CALL( LoadParametersLocal( ioArgs.GetString( 1 ) ) );
-}
-
-void
-CBCI2000Controller::load_parameters_remote( ArgList& ioArgs )
-{
-  CALL( LoadParametersRemote( ioArgs.GetString( 1 ) ) );
-}
-
-void
 CBCI2000Controller::hide_window( ArgList& )
 {
   mBCI2000.WindowVisible( false );
@@ -390,6 +381,14 @@ CBCI2000Controller::set_data_directory( ArgList& ioArgs )
 }
 
 void
+CBCI2000Controller::startup_modules( ArgList& ioArgs )
+{
+  std::vector<com::DualString> modules_ = ioArgs.GetStringArray( 1 );
+  std::vector<std::string> modules( modules_.begin(), modules_.end() );
+  CALL( StartupModules( modules ) );
+}
+
+void
 CBCI2000Controller::set_config( ArgList& )
 {
   CALL( SetConfig() );
@@ -408,9 +407,41 @@ CBCI2000Controller::stop( ArgList& )
 }
 
 void
+CBCI2000Controller::set_parameter( ArgList& ioArgs )
+{
+  CALL( SetParameter( ioArgs.GetString( 1 ), ioArgs.GetString( 2 ) ) );
+}
+
+void
+CBCI2000Controller::get_parameter( ArgList& ioArgs )
+{
+  std::string result;
+  CALL( GetParameter( ioArgs.GetString( 1 ), result ) );
+  ioArgs.SetString( 0, result );
+}
+
+void
+CBCI2000Controller::load_parameters_local( ArgList& ioArgs )
+{
+  CALL( LoadParametersLocal( ioArgs.GetString( 1 ) ) );
+}
+
+void
+CBCI2000Controller::load_parameters_remote( ArgList& ioArgs )
+{
+  CALL( LoadParametersRemote( ioArgs.GetString( 1 ) ) );
+}
+
+void
+CBCI2000Controller::add_state_variable( ArgList& ioArgs )
+{
+  CALL( AddStateVariable( ioArgs.GetString( 1 ), ioArgs.GetInt( 2 ), ioArgs.GetInt( 3 ) ) );
+}
+
+void
 CBCI2000Controller::set_state_variable( ArgList& ioArgs )
 {
-  CALL( SetStateVariable( ioArgs.GetString( 1 ), ioArgs.GetDouble( 2 ) ) );
+  CALL( SetStateVariable( ioArgs.GetString( 1 ), ioArgs.GetInt( 2 ) ) );
 }
 
 void
@@ -418,7 +449,7 @@ CBCI2000Controller::get_state_variable( ArgList& ioArgs )
 {
   double result = 0;
   CALL( GetStateVariable( ioArgs.GetString( 1 ), result ) );
-  ioArgs.SetDouble( 0, result );
+  ioArgs.SetInt( 0, static_cast<unsigned int>( result ) );
 }
 
 void
@@ -437,3 +468,18 @@ CBCI2000Controller::execute( ArgList& ioArgs )
   ioArgs.SetString( 2, com::DualString( mBCI2000.Result() ).ToWin() );
   ioArgs.SetInt( 0, result );
 }
+
+void
+CBCI2000Controller::set_script( ArgList& ioArgs )
+{
+  CALL( SetScript( ioArgs.GetString( 1 ), ioArgs.GetString( 2 ) ) );
+}
+
+void
+CBCI2000Controller::get_script( ArgList& ioArgs )
+{
+  std::string result;
+  CALL( GetScript( ioArgs.GetString( 1 ), result ) );
+  ioArgs.SetString( 0, result );
+}
+
