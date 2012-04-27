@@ -43,13 +43,11 @@ ScriptInterpreter::ScriptInterpreter( class StateMachine& inStateMachine )
 : mLine( 0 ),
   mrStateMachine( inStateMachine )
 {
-  OSMutex::Lock lock( mMutex );
   mrStateMachine.AddListener( *this );
 }
 
 ScriptInterpreter::~ScriptInterpreter()
 {
-  OSMutex::Lock lock( mMutex );
   mrStateMachine.RemoveListener( *this );
 }
 
