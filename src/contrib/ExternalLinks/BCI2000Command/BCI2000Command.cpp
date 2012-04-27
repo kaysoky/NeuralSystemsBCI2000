@@ -348,7 +348,7 @@ SetParameter( int, char** inArgs, BCI2000Remote& ioBCI )
 int
 AddStateVariable( int, char** inArgs, BCI2000Remote& ioBCI )
 {
-  return ioBCI.AddStateVariable( inArgs[0], ::atoi( inArgs[1] ), ::atoi( inArgs[2] ) ) ? ok : error;
+  return ioBCI.AddStateVariable( inArgs[0], ::atoi( inArgs[1] ), ::atof( inArgs[2] ) ) ? ok : error;
 }
 
 int

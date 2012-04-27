@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Fri Apr 27 08:29:39 2012
+/* at Fri Apr 27 13:12:52 2012
  */
 /* Compiler settings for BCI2000Automation.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -178,7 +178,7 @@ EXTERN_C const IID IID_IBCI2000Remote;
         virtual /* [helpstring] */ HRESULT __stdcall AddStateVariable( 
             /* [in] */ BSTR stateName,
             /* [in] */ int bitWidth,
-            /* [in] */ int initialValue,
+            /* [in] */ double initialValue,
             /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
         virtual /* [helpstring] */ HRESULT __stdcall GetStateVariable( 
@@ -383,7 +383,7 @@ EXTERN_C const IID IID_IBCI2000Remote;
             IBCI2000Remote * This,
             /* [in] */ BSTR stateName,
             /* [in] */ int bitWidth,
-            /* [in] */ int initialValue,
+            /* [in] */ double initialValue,
             /* [retval][out] */ VARIANT_BOOL *success);
         
         /* [helpstring] */ HRESULT ( __stdcall *GetStateVariable )( 

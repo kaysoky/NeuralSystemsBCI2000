@@ -136,7 +136,7 @@ interface IBCI2000Remote: IDispatch
 	[
 	helpstring( "Creates a new BCI2000 state variable." )
 	]
-	HRESULT _stdcall AddStateVariable( [in] BSTR stateName, [in] int bitWidth, [in] int initialValue, [out,retval] VARIANT_BOOL* success );
+	HRESULT _stdcall AddStateVariable( [in] BSTR stateName, [in] int bitWidth, [in] double initialValue, [out,retval] VARIANT_BOOL* success );
 	[
 	helpstring( "Gets the value of a BCI2000 state variable." )
 	]

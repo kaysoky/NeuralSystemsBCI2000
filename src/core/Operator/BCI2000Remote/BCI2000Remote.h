@@ -65,7 +65,7 @@ class BCI2000Remote : public BCI2000Connection
   // Parameters and States
   bool SetParameter( const std::string& name, const std::string& value );
   bool GetParameter( const std::string& name, std::string& value );
-  bool AddStateVariable( const std::string& name, unsigned int bitWidth, unsigned int initialValue );
+  bool AddStateVariable( const std::string& name, unsigned int bitWidth, double initialValue );
   bool SetStateVariable( const std::string&, double );
   bool GetStateVariable( const std::string&, double& );
   // Set event scripts.

@@ -221,7 +221,7 @@ public:
           return S_OK;
         }
 
-    virtual /* [helpstring] */ HRESULT __stdcall GetParameter( 
+    virtual /* [helpstring] */ HRESULT __stdcall GetParameter(
         /* [in] */ BSTR name,
         /* [out][in] */ BSTR *value,
         /* [retval][out] */ VARIANT_BOOL *success)
@@ -231,8 +231,8 @@ public:
           *value = ::SysAllocString( com::DualString( result.c_str() ) );
           return S_OK;
         }
-    
-    virtual /* [helpstring] */ HRESULT __stdcall SetParameter( 
+
+    virtual /* [helpstring] */ HRESULT __stdcall SetParameter(
         /* [in] */ BSTR name,
         /* [in] */ BSTR value,
         /* [retval][out] */ VARIANT_BOOL *success)
@@ -240,17 +240,17 @@ public:
           BOOLRESULT( SetParameter( com::DualString( name ), com::DualString( value ) ) );
           return S_OK;
         }
-    
-    virtual /* [helpstring] */ HRESULT __stdcall AddStateVariable( 
+
+    virtual /* [helpstring] */ HRESULT __stdcall AddStateVariable(
         /* [in] */ BSTR stateName,
         /* [in] */ int bitWidth,
-        /* [in] */ int initialValue,
+        /* [in] */ double initialValue,
         /* [retval][out] */ VARIANT_BOOL *success)
         {
           BOOLRESULT( AddStateVariable( com::DualString( stateName ), bitWidth, initialValue ) );
           return S_OK;
         }
-    
+
     virtual /* [helpstring] */ HRESULT __stdcall SetStateVariable(
         /* [in] */ BSTR stateName,
         /* [in] */ double value,

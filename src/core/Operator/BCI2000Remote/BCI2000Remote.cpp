@@ -96,28 +96,6 @@ BCI2000Remote::StartupModules( const std::vector<string>& inModules )
 }
 
 bool
-BCI2000Remote::LoadParametersLocal( const string& inFileName )
-{
-  ifstream file( inFileName.c_str() );
-  bool success = file.is_open();
-  if( !success )
-    mResult = "Could not open file \"" + inFileName + "\" for input.";
-  if( success )
-  {
-    string line;
-    while( std::getline( file, line ) )
-      Execute( "set parameter " + EscapeSpecialChars( line ) );
-  }
-  return success;
-}
-
-bool
-BCI2000Remote::LoadParametersRemote( const string& inFileName )
-{
-  return SimpleCommand( "load parameters " + inFileName );
-}
-
-bool
 BCI2000Remote::SetConfig()
 {
   SubjectID( mSubjectID );
@@ -168,26 +146,6 @@ BCI2000Remote::Stop()
 }
 
 bool
-BCI2000Remote::GetSystemState( string& outResult )
-{
-  bool success = ( 0 == Execute( "get system state" ) );
-  if( success )
-    outResult = Result();
-  else
-    outResult.clear();
-  return success;
-}
-
-bool
-BCI2000Remote::GetControlSignal( int inChannel, int inElement, double& outValue )
-{
-  ostringstream oss;
-  oss << "get signal(" << inChannel << "," << inElement << ")";
-  Execute( oss.str() );
-  return istringstream( Result() ) >> outValue;
-}
-
-bool
 BCI2000Remote::SetParameter( const std::string& inName, const std::string& inValue )
 {
   return SimpleCommand( "set parameter \"" + inName + "\" " + inValue );
@@ -205,7 +163,29 @@ BCI2000Remote::GetParameter( const std::string& inName, std::string& outValue )
 }
 
 bool
-BCI2000Remote::AddStateVariable( const std::string& inName, unsigned int inBitWidth, unsigned int inInitialValue )
+BCI2000Remote::LoadParametersLocal( const string& inFileName )
+{
+  ifstream file( inFileName.c_str() );
+  bool success = file.is_open();
+  if( !success )
+    mResult = "Could not open file \"" + inFileName + "\" for input.";
+  if( success )
+  {
+    string line;
+    while( std::getline( file, line ) )
+      Execute( "set parameter " + EscapeSpecialChars( line ) );
+  }
+  return success;
+}
+
+bool
+BCI2000Remote::LoadParametersRemote( const string& inFileName )
+{
+  return SimpleCommand( "load parameters " + inFileName );
+}
+
+bool
+BCI2000Remote::AddStateVariable( const std::string& inName, unsigned int inBitWidth, double inInitialValue )
 {
   ostringstream oss;
   oss << "add state \"" << inName << "\" " << inBitWidth << " " << inInitialValue;
@@ -225,6 +205,26 @@ bool
 BCI2000Remote::GetStateVariable( const string& inStateName, double& outValue )
 {
   Execute( "get state " + inStateName );
+  return istringstream( Result() ) >> outValue;
+}
+
+bool
+BCI2000Remote::GetSystemState( string& outResult )
+{
+  bool success = ( 0 == Execute( "get system state" ) );
+  if( success )
+    outResult = Result();
+  else
+    outResult.clear();
+  return success;
+}
+
+bool
+BCI2000Remote::GetControlSignal( int inChannel, int inElement, double& outValue )
+{
+  ostringstream oss;
+  oss << "get signal(" << inChannel << "," << inElement << ")";
+  Execute( oss.str() );
   return istringstream( Result() ) >> outValue;
 }
 
