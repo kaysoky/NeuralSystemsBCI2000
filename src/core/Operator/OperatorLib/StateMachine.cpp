@@ -210,7 +210,7 @@ StateMachine::SetEvent( const char* inName, State::ValueType inValue )
   ::Lock<EventLink> lock( mEventLink );
   if( !mEventLink.Connected() )
     return false;
-  mEventLink << inName << ' ' << inValue << endl;
+  mEventLink << inName << ' ' << inValue << " 0" << endl;
   return true;
 }
 
