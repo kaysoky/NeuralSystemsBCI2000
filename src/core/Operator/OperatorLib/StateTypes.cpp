@@ -93,10 +93,16 @@ StateType::Insert( ScriptInterpreter& inInterpreter )
     throw bciexception_( "Invalid state definition: " << stateline );
   {
     Lock<StateMachine> lock( inInterpreter.StateMachine() );
-    if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle
-        && inInterpreter.StateMachine().SystemState() != StateMachine::Publishing
-        && inInterpreter.StateMachine().SystemState() != StateMachine::Information )
-      throw bciexception_( "Could not add state " << name << " to list after information phase" );
+    switch( inInterpreter.StateMachine().SystemState() )
+    {
+      case StateMachine::Idle:
+      case StateMachine::WaitingForConnection:
+      case StateMachine::Publishing:
+      case StateMachine::Information:
+        break;
+      default:
+        throw bciexception_( "Could not add state " << name << " to list after information phase" );
+    }
     inInterpreter.StateMachine().States().Add( state );
   }
   inInterpreter.StateMachine().ExecuteCallback( BCI_OnState, stateline.c_str() );
