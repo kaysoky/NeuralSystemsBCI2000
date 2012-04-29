@@ -16,6 +16,13 @@ class CalibrationRun( object ):
 		self.selected = False
 		self.datestamp = None
 		self.bcistream = None
+	
+	def GetStem( self ):
+		f = self.GetPkFile()
+		if f != None: return os.path.splitext( os.path.basename( f ) )[0]
+		f = self.GetDatFile()
+		if f != None: return os.path.splitext( os.path.basename( f ) )[0]
+		return self.filestem
 		
 	def GetPkFile( self ):
 		f = self.pkfile
@@ -160,7 +167,12 @@ class CalibrationManager( object ):
 		
 		for stem in sorted( set( pkfiles.keys() + datfiles.keys() ) ):
 			if stem not in self.runs: self.runs[stem] = CalibrationRun( self.directory, datfile=datfiles.get( stem, None ), pkfile=pkfiles.get( stem, None ) )
-			
+	
+	def GetCacheDirectory( self ):
+		pass # TODO
+		# TODO:  save and load run assessment info and weights from training on one run
+		# run method: applyweights
+		
 	def GetRuns( self ):
 		return sorted( self.runs.values(), cmp=cmprun )[::-1]
 		return [ v for k,v in sorted( self.runs.items() ) ]  # TODO: sort magically taking into account numbers in filenames
