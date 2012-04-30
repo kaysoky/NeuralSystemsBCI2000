@@ -57,6 +57,9 @@ def UpdateHash( h, x, **opts ):
 		if opts.get( 'sstructFieldOrderMatters', False ) == False: x = sorted( x )
 		h.update( cl + ' ' )
 		UpdateHash( h, x, **opts )
+	elif isinstance( x, type(None) ):
+		cl = 'None'
+		h.update( cl + ' ' )
 	elif isinstance( x, dict ):
 		x = sorted( x.items() )
 		h.update( cl + ' ' )

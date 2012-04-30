@@ -2,71 +2,75 @@ import os,sys,time,glob
 import BCI2000Tools.FileReader as FileReader
 import BCI2000Tools.DataFiles as DataFiles
 import BCI2000Tools.Classification as Classification
+import Hashing
+
+# TODO:  save and load run assessment info and weights from training on one run
+# run method: applyweights
 
 class CalibrationRun( object ):
 	
-	def __init__( self, directory, filestem=None, datfile=None, pkfile=None ):
-		self.directory = directory
-		self.filestem = filestem
-		self.datfile = datfile
-		self.pkfile = pkfile
-		self.date = None
-		self.ntrials = None
+	def __init__( self, directory, filestem=None, datfile=None, pkfile=None, opts=None ):
+		self.__directory = directory
+		self.__filestem = filestem
+		self.__datfile = datfile
+		self.__pkfile = pkfile
+		self.__datestamp = None
+		self.__bcistream = None
+		if opts == None: self.__opts = {}
+		else: self.__opts = dict(opts)
+		self.result = None
 		self.cv = None
 		self.selected = False
-		self.datestamp = None
-		self.bcistream = None
 	
 	def GetStem( self ):
 		f = self.GetPkFile()
 		if f != None: return os.path.splitext( os.path.basename( f ) )[0]
 		f = self.GetDatFile()
 		if f != None: return os.path.splitext( os.path.basename( f ) )[0]
-		return self.filestem
+		return self.__filestem
 		
 	def GetPkFile( self ):
-		f = self.pkfile
+		f = self.__pkfile
 		if f == None:
-			if self.filestem != None:
-				f = os.path.join( self.directory, self.filestem + '.pk' )
+			if self.__filestem != None:
+				f = os.path.join( self.__directory, self.__filestem + '.pk' )
 				if os.path.isfile( f ): return f
 		else:
-			if not os.path.isabs( f ): f = os.path.join( self.directory, f )
+			if not os.path.isabs( f ): f = os.path.join( self.__directory, f )
 			if os.path.isfile( f ): return f
 		return None
 	
 	def GetDatFile( self ):
-		f = self.datfile
+		f = self.__datfile
 		if f == None:
-			if self.filestem != None:
-				f = os.path.join( self.directory, self.filestem + '.dat' )
+			if self.__filestem != None:
+				f = os.path.join( self.__directory, self.__filestem + '.dat' )
 				if os.path.isfile( f ): return f
 		else:
-			if not os.path.isabs( f ): f = os.path.join( self.directory, f )
+			if not os.path.isabs( f ): f = os.path.join( self.__directory, f )
 			if os.path.isfile( f ): return f
 		return None
 		
 	def GetStream( self, reread=False ):
-		if self.bcistream == None or reread: self.bcistream = FileReader.bcistream( self.GetDatFile() )
-		self.bcistream.close()
-		return self.bcistream
+		if self.__bcistream == None or reread: self.__bcistream = FileReader.bcistream( self.GetDatFile() )
+		self.__bcistream.close()
+		return self.__bcistream
 		
 	def GetDate( self, reread=False ):
-		if self.datestamp == None or reread:
-			if self.datfile != None and self.GetStream( reread=reread ) != None:
-				self.datestamp = self.GetStream().date()
-		return self.datestamp
+		if self.__datestamp == None or reread:
+			if self.__datfile != None and self.GetStream( reread=reread ) != None:
+				self.__datestamp = self.GetStream().date()
+		return self.__datestamp
 	
 	def GetParameter( self, paramName, reread=False ):
 		b = self.GetStream( reread=reread )
 		if b == None: return None
 		return b.params.get( paramName, None )
 
-	def CrossValidate( self, **opts ):
+	def CrossValidate( self ):
 		pkfile = self.GetPkFile()
 		if pkfile == None: raise ValueError('cannot cross-validate without .pk file')
-		opts['folds'] = opts.get( 'folds', 'LOO' )
-		self.cv = Classification.ClassifyERPs( pkfile, **opts )[1]
+		self.result,self.cv = Classification.ClassifyERPs( pkfile, **self.__opts )
 
 	def Describe( self, attr ):
 		if attr == 'selected': return {True:'[x]', False:'[ ]'}.get( self.selected, '???' )
@@ -130,18 +134,22 @@ class CalibrationManager( object ):
 		<depth> may be an integer, or a range of integers.
 		depth=0 means that files are expected to be directly in the specified <directory>.
 		"""
-		self.directory = None
 		self.depth = None
-		self.runs = {}
+		self.__directory = None
+		self.__runs = {}
+		self.__opts = { 'gamma':0.0 }  # TODO
 		self.ScanDirectory( directory, depth=depth  )
+		
+	def GetDirectory( self ):
+		return self.__directory
 		
 	def ScanDirectory( self, directory=None, depth=None ):
 		if directory != None:
 			newdir = os.path.abspath( directory )
-			if newdir != self.directory:
-				self.runs.clear()
-				self.directory = newdir
-		if self.directory == None: raise ValueError( 'no directory set' )
+			if newdir != self.__directory:
+				self.__runs.clear()
+				self.__directory = newdir
+		if self.__directory == None: raise ValueError( 'no directory set' )
 		if depth != None: self.depth = depth
 		if self.depth == None: self.depth = 0
 			
@@ -162,28 +170,33 @@ class CalibrationManager( object ):
 			if len( dup ) > 1:  msg += ' and %d others' % ( len( dup ) - 1 )
 			raise ValueError( msg )
 		
-		pkfiles  = dict( findfiles( self.directory, '*.pk',  depth=self.depth ) )
-		datfiles = dict( findfiles( self.directory, '*.dat', depth=self.depth ) )
+		pkfiles  = dict( findfiles( self.__directory, '*.pk',  depth=self.depth ) )
+		datfiles = dict( findfiles( self.__directory, '*.dat', depth=self.depth ) )
 		
+		runopts = dict( self.__opts )
+		runopts['folds'] = 'LOO'
 		for stem in sorted( set( pkfiles.keys() + datfiles.keys() ) ):
-			if stem not in self.runs: self.runs[stem] = CalibrationRun( self.directory, datfile=datfiles.get( stem, None ), pkfile=pkfiles.get( stem, None ) )
+			if stem not in self.__runs: self.__runs[stem] = CalibrationRun( self.__directory, datfile=datfiles.get( stem, None ), pkfile=pkfiles.get( stem, None ), opts=runopts)
 	
-	def GetCacheDirectory( self ):
-		pass # TODO
-		# TODO:  save and load run assessment info and weights from training on one run
-		# run method: applyweights
-		
+	def GetCacheDirectory( self, mkdir=False ):
+		parts = [ 'CalibrationManager', 'opts_' + Hashing.hash( self.__opts )[:10] ]
+		if mkdir:
+			for i,d in enumerate( parts ):
+				d = os.path.join( self.__directory, *parts[:i+1] )
+				if not os.path.isdir( d ): os.mkdir( d )
+		d = os.path.join( self.__directory, *parts )
+		return d
+				
 	def GetRuns( self ):
-		return sorted( self.runs.values(), cmp=cmprun )[::-1]
-		return [ v for k,v in sorted( self.runs.items() ) ]  # TODO: sort magically taking into account numbers in filenames
+		return sorted( self.__runs.values(), cmp=cmprun )[::-1]
 	
 	def __repr__( self ):
 		return '<%s object at 0x%08X>:\n  %s' % ( self.__class__.__name__, id( self ), str( self ).replace( '\n', '\n  ' ) )	
 
 	def __str__( self ):
 		s = []
-		s.append( 'directory: %s' % self.directory )
-		if len( self.runs ):
+		s.append( 'directory: %s' % self.__directory )
+		if len( self.__runs ):
 			rows = [ [ '[%d]' % i ] + x.report() for i,x in enumerate( self.GetRuns() ) ]
 			lengths = [ 2+max([len(row[colIndex]) for row in rows]) for colIndex,blah in enumerate( rows[0] ) ]
 			s += [ ''.join([ (x+' '*(width-len(x))) for width,x in zip( lengths,row ) ] ) for row in rows]				
@@ -273,7 +286,6 @@ class CalibrationTableRow( object ):
 		Manages all the Tk Widgets in one row of the Table g.table belonging to a CalibrationGUI g.
 		"""
 		self.run = run
-		self.__opts = { 'gamma':0.0 } # TODO
 		self.__widgets = {}
 		self.widget( 'selectedCheckbutton',   tk.Checkbutton( table.GetCell( rowNumber, 0 ), command=self.CheckbuttonCallback     ) ).pack()
 		self.widget( 'informaldateLabel',     tk.Label(       table.GetCell( rowNumber, 1 ), text=run.Describe( 'informal_date' ) ) ).pack()
@@ -297,10 +309,19 @@ class CalibrationTableRow( object ):
 	def Assess( self ):
 		self.widget( 'cvLabel' ).config( text='...' )
 		self.widget( 'cvLabel' ).update()
-		self.run.CrossValidate( **self.__opts )
+		self.run.CrossValidate( )
 		if self.run.cv != None:
 			q = self.run.cv.loss.train
-			self.widget( 'cvLabel' ).config( text=self.run.Describe( 'cv' ) ) # TODO: colour
+			goodness = 1 - 2 * min( 0.5, q )
+			badness = 2 * max( q - 0.5, 0.0 )
+			goodness = goodness**2
+			badness = badness**2
+			neutral = 0.8
+			somethingness = max( goodness, badness )
+			red = badness + (1-somethingness)*neutral
+			green = goodness + (1-somethingness)*neutral			
+			blue = (1-somethingness)*neutral
+			self.widget( 'cvLabel' ).config( text=self.run.Describe( 'cv' ), bg='#%02x%02x%02x'%(red*255.0,green*255.0,blue*255.0) )
 			self.widget( 'cvButton' ).config( text='Re-Run' )
 		
 	def CheckbuttonCallback( self ):
@@ -328,6 +349,7 @@ class CalibrationGUI( tk.Tk ):
 	def __init__( self, manager=None, go=True ):
 		tk.Tk.__init__( self )
 		self.minsize( width=800, height=200 )
+		self.title( 'Calibration Manager' )
 		
 		self.__rows = []
 
@@ -344,7 +366,7 @@ class CalibrationGUI( tk.Tk ):
 		fr = tk.Frame( self ); fr.pack( fill='x' )
 		self.directoryEntry = tk.Entry( fr, validatecommand=self.UpdateTable )
 		self.directoryEntry.delete( 0, tk.END )
-		self.directoryEntry.insert(0, self.__manager.directory )
+		self.directoryEntry.insert(0, self.__manager.GetDirectory() )
 		tk.Button( fr, text='Refresh / update', command=self.UpdateTable ).pack( side='right' )
 		self.directoryEntry.pack( fill='x' )
 		
@@ -358,11 +380,11 @@ class CalibrationGUI( tk.Tk ):
 	
 	def UpdateTable( self ):
 		self.__manager.ScanDirectory( self.directoryEntry.get() )
-		self.directoryEntry.delete( 0, tk.END ); self.directoryEntry.insert(0, self.__manager.directory )
+		self.directoryEntry.delete( 0, tk.END ); self.directoryEntry.insert(0, self.__manager.GetDirectory() )
 		while len( self.__rows ): self.__rows.pop( 0 ).destroy()
 		self.table.DestroyCells()
 		for row,run in enumerate( self.__manager.GetRuns() ):
-			self.__rows.append( CalibrationTableRow( self.table, row, run ) )
+			self.__rows.append( CalibrationTableRow( self.table, rowNumber=row, run=run ) )
 	
 	def GetManager( self ):
 		return self.__manager
