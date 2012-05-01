@@ -693,10 +693,10 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		del self.prepseq
 		self.nbeats = [0] * self.nstreams
 		WavTools.player(ww).play(bg=False)
-	
+				
 	#############################################################
 	
-	def MakeFocusOn(self, ignore=None, listenTo=None, count='prompts/ATT-Crystal-CountThese.wav'):
+	def MakeFocusOn(self, pre=('prompts/ATT-Mike-FocusOn.wav', 'prompts/ATT-Crystal-FocusOn.wav'), post=('prompts/ATT-Mike-ToSayNo.wav', 'prompts/ATT-Crystal-ToSayYes.wav') ):
 		ww = [None for i in range(self.nstreams)]
 		for row in self.params['SoundChannels']:
 			w = 0
@@ -705,20 +705,10 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			istream = int(code[1:]) - 1
 			row = [int({'':'0'}.get(x,x)) for x in row[:-1]]
 			#print istream,row
-			if ignore != None and self.nstreams == 2:
-				sound = self.standards[1-istream].wav
-				w = w % (WavTools.wav(ignore).resample(sound.fs) * row) % 0.2 % sound
-			if listenTo != None:
-				sound = self.standards[istream].wav
-				if w != 0: w %= 0.5
-				w = w % (WavTools.wav(listenTo).resample(sound.fs) * row) % 0.2 % sound
-			if count != None:
-				sound = self.targets[istream].wav
-				if w != 0: w %= 0.5
-				w = w % (WavTools.wav(count).resample(sound.fs) * row) % 0.2 % sound
+			sound = self.standards[istream].wav
+			w = (WavTools.wav(pre[istream]).resample(sound.fs) * row) % 0.2 % sound % 0.2 % (WavTools.wav(post[istream]).resample(sound.fs) * row)
 			ww[istream] = w
 		return ww
-			
 		
 #################################################################
 #################################################################

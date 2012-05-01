@@ -210,6 +210,8 @@ class BciApplication(BciGenericApplication):
 		else:
 			cuelen = 2000
 			resplen = 5000
+			if len(self.FocusOnAudio) > 1:
+				cuelen += 1000 * max([ self.FocusOnAudio[i].wav.duration() for i in range(1, self.nstreams+1)])
 		
 		if self.showcounts:
 			after_reponse = 'feedback'

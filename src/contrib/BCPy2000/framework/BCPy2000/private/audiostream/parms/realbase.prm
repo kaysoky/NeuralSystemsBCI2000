@@ -25,6 +25,7 @@ PythonSig:Epoch                               floatlist EpochLowerBoundMsec=    
 PythonSig:Epoch                               intlist   DiscardEpochs=                2     2       2             // for classification, discard this many epochs at the beginning
 PythonSig:Epoch                               int       DetrendEpochs=                      2                     // Detrend data? 0: no, 1: mean, 2: linear (enumeration)
 PythonSig:Epoch                               int       DiffFeatureSets=                    1                     // for 2-stream designs, whether to use the difference between the two feature sets (boolean)
+PythonSig:Epoch                               int       CheckNumberOfEpochs=                1                     // verify that the correct number of epochs has been trapped (boolean)
 PythonSig:Epoch                               int       SaveTrainingData=                   1                     // dump epochs to .pk file (boolean)
 PythonSig:Epoch                               float     ERPClassifierBias=                  0.0                   // 
 PythonSig:Epoch                               matrix    ERPClassifierWeights=       0 0                           // 
@@ -35,9 +36,12 @@ PythonSig:Control                             int       ControlFilterOrder=     
 PythonSig:Control                             float     NormalizerBufferSec=               10.0                   // length of buffer in which to remember non-zero control signal values
 PythonSig:Control                             float     NormalizerIntervalSec=              0.25                  // interval between informative samples in the normalizer buffer
 
+
+PythonApp:Design                              int       TrialsPerBlock=                    20                      // number of trials in one block
+PythonApp:Task                                int       PerceptualOnly=                     0                      // if checked, mute non-target streams (boolean)
 PythonApp:Task                                int       FreeChoice=                         0                      // allow user to choose freely? (boolean)
 PythonApp:Task                                int       ShowCountFeedback=                  1                      // show correct counts after each trial? (boolean)
-PythonApp:Task                                matrix    Cues=                       { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> % % NO YES no.wav yes.wav // 
+PythonApp:Task                                matrix    Cues=                       { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> focusOn-8500Left.wav focusOn-8500Right.wav NO YES no.wav yes.wav // 
 
 Visualize:Processing%20Stages                 int       VisualizeTiming=                    1                      // 
 Visualize:Processing%20Stages                 int       VisualizeSource=                    1                      // Visualize raw brain signal (boolean)
