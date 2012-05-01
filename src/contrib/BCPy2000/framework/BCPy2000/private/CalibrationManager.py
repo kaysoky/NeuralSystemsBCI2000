@@ -4,49 +4,53 @@ import BCI2000Tools.DataFiles as DataFiles
 import BCI2000Tools.Classification as Classification
 import Hashing
 
-# TODO:  save and load run assessment info and weights from training on one run
-# run method: applyweights
+# TODO
+#     save and load run assessment info and weights from training on one run
+#     run method: applyweights
+
+# -+- ORDINARY CLASSIFIER TRAINING
+#  |   |
+#  |   +- ORDINARY CV 
+#  |   +- LEAVE-ONE-RUN-OUT 
+#  |
+#  +- AVERAGE OF PER-BLOCK WEIGHTS
+#  |   |
+#  |   +- LEAVE-ONE-RUN-OUT 
+
+
 
 class CalibrationRun( object ):
 	
-	def __init__( self, directory, filestem=None, datfile=None, pkfile=None, opts=None ):
+	def __init__( self, directory, datfile, pkfile, opts, cachedir ):
 		self.__directory = directory
-		self.__filestem = filestem
 		self.__datfile = datfile
 		self.__pkfile = pkfile
 		self.__datestamp = None
+		self.__cachedir = cachedir
 		self.__bcistream = None
 		if opts == None: self.__opts = {}
 		else: self.__opts = dict(opts)
 		self.result = None
 		self.cv = None
-		self.selected = False
+		self.selected = self.GetPkFile() != None
 	
 	def GetStem( self ):
 		f = self.GetPkFile()
 		if f != None: return os.path.splitext( os.path.basename( f ) )[0]
 		f = self.GetDatFile()
 		if f != None: return os.path.splitext( os.path.basename( f ) )[0]
-		return self.__filestem
+		return None
 		
 	def GetPkFile( self ):
 		f = self.__pkfile
-		if f == None:
-			if self.__filestem != None:
-				f = os.path.join( self.__directory, self.__filestem + '.pk' )
-				if os.path.isfile( f ): return f
-		else:
+		if f != None:
 			if not os.path.isabs( f ): f = os.path.join( self.__directory, f )
 			if os.path.isfile( f ): return f
 		return None
 	
 	def GetDatFile( self ):
 		f = self.__datfile
-		if f == None:
-			if self.__filestem != None:
-				f = os.path.join( self.__directory, self.__filestem + '.dat' )
-				if os.path.isfile( f ): return f
-		else:
+		if f != None:
 			if not os.path.isabs( f ): f = os.path.join( self.__directory, f )
 			if os.path.isfile( f ): return f
 		return None
@@ -69,7 +73,7 @@ class CalibrationRun( object ):
 
 	def CrossValidate( self ):
 		pkfile = self.GetPkFile()
-		if pkfile == None: raise ValueError('cannot cross-validate without .pk file')
+		if pkfile == None: raise ValueError('cannot cross-validate without a .pk file')
 		self.result,self.cv = Classification.ClassifyERPs( pkfile, **self.__opts )
 
 	def Describe( self, attr ):
@@ -173,10 +177,11 @@ class CalibrationManager( object ):
 		pkfiles  = dict( findfiles( self.__directory, '*.pk',  depth=self.depth ) )
 		datfiles = dict( findfiles( self.__directory, '*.dat', depth=self.depth ) )
 		
+		cachedir = self.GetCacheDirectory( mkdir=True )
 		runopts = dict( self.__opts )
 		runopts['folds'] = 'LOO'
 		for stem in sorted( set( pkfiles.keys() + datfiles.keys() ) ):
-			if stem not in self.__runs: self.__runs[stem] = CalibrationRun( self.__directory, datfile=datfiles.get( stem, None ), pkfile=pkfiles.get( stem, None ), opts=runopts)
+			if stem not in self.__runs: self.__runs[stem] = CalibrationRun( self.__directory, datfile=datfiles.get( stem, None ), pkfile=pkfiles.get( stem, None ), opts=runopts, cachedir=cachedir )
 	
 	def GetCacheDirectory( self, mkdir=False ):
 		parts = [ 'CalibrationManager', 'opts_' + Hashing.hash( self.__opts )[:10] ]
@@ -298,7 +303,7 @@ class CalibrationTableRow( object ):
 		w = self.widget( 'selectedCheckbutton' )
 		self.widget( 'tooltip', Tix.Balloon( w ) ).bind_widget( w, balloonmsg='hello!' )
 		
-		if self.run.cv != None: self.widget( 'cvButton' ).config( text='Re-Run' )
+		self.UpdateAssessmentDisplay()
 		
 		self.selected = tk.IntVar( self.widget( 'selectedCheckbutton' ), run.selected )
 		self.widget( 'selectedCheckbutton' ).config( variable = self.selected ) # couldja make this mechanism *any* more awkward??
@@ -306,10 +311,7 @@ class CalibrationTableRow( object ):
 			self.widget( 'selectedCheckbutton' ).config( state='disabled' )
 			self.widget( 'cvButton' ).config( state='disabled' )
 	
-	def Assess( self ):
-		self.widget( 'cvLabel' ).config( text='...' )
-		self.widget( 'cvLabel' ).update()
-		self.run.CrossValidate( )
+	def UpdateAssessmentDisplay( self ):
 		if self.run.cv != None:
 			q = self.run.cv.loss.train
 			goodness = 1 - 2 * min( 0.5, q )
@@ -323,6 +325,12 @@ class CalibrationTableRow( object ):
 			blue = (1-somethingness)*neutral
 			self.widget( 'cvLabel' ).config( text=self.run.Describe( 'cv' ), bg='#%02x%02x%02x'%(red*255.0,green*255.0,blue*255.0) )
 			self.widget( 'cvButton' ).config( text='Re-Run' )
+			
+	def Assess( self ):
+		self.widget( 'cvLabel' ).config( text='...' )
+		self.widget( 'cvLabel' ).update()
+		self.run.CrossValidate( )
+		self.UpdateAssessmentDisplay()
 		
 	def CheckbuttonCallback( self ):
 		self.run.selected = bool( self.selected.get() )
