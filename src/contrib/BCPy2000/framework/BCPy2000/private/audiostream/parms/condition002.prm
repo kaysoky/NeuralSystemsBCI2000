@@ -1,2 +1,2 @@
-PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } 8500LeftStandard.wav 8500LeftTarget.wav   8500RightStandard.wav 8500RightTarget.wav  //
+PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } ../sounds/8500/8500LeftStandard.wav ../sounds/8500/8500LeftTarget.wav   ../sounds/8500/8500RightStandard.wav ../sounds/8500/8500RightTarget.wav  //
  

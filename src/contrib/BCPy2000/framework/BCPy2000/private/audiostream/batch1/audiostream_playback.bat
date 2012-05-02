@@ -1,8 +1,8 @@
 @set WD=%CD%
-@set PYWD=%WD%\python
-@set PARMS=%WD%\parms
+@set PYWD=%WD%\..\python
+@set PARMS=%WD%\..\parms
 
-@set PROG=%WD%\..\..\..\..\..\..\..\prog
+@set PROG=%WD%\..\..\..\..\..\..\..\..\prog
 @if exist %PROG% cd %PROG%
 @if exist %PROG% goto gotprog
 
@@ -32,7 +32,7 @@ call portable.bat
 ::@set OnSetConfig=- SET STATE Running 1
 
 start           Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
-start           PythonSignalProcessing   --PythonSigWD=%WD%\python
-start           PythonApplication        --PythonAppWD=%WD%\python
+start           PythonSignalProcessing   --PythonSigWD=%WD%\..\python
+start           PythonApplication        --PythonAppWD=%WD%\..\python
 ping -n 3 127.0.0.1 >nul
 start           FilePlayback             --PlaybackFileName=%PLAYBACK%

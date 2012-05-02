@@ -2,7 +2,7 @@ PythonApp:Design                              int       TrialsPerBlock=         
 PythonApp:Task                                int       PerceptualOnly=                     0                      // if checked, mute non-target streams (boolean)
 PythonApp:Task                                int       FreeChoice=                         1                      // allow user to choose freely? (boolean)
 PythonApp:Task                                int       ShowCountFeedback=                  0                      // show correct counts after each trial? (boolean)
-PythonApp:Task                                matrix    Cues=                       { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> % % NO YES no.wav yes.wav // 
+PythonApp:Task                                matrix    Cues=                       { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> % % NO YES ../sounds/application/no.wav ../sounds/application/yes.wav // 
 
 Visualize:Processing%20Stages                 int       VisualizeTiming=                    0                      // 
 Visualize:Processing%20Stages                 int       VisualizeSource=                    0                      // Visualize raw brain signal (boolean)

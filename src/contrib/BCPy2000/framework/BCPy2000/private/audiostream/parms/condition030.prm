@@ -1,4 +1,4 @@
-PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } yesno/mac_alex_no.wav yesno/mac_alex_nope.wav   yesno/mac_victoria_yes.wav yesno/mac_victoria_yep.wav  //
-PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } yesno/mac_victoria_no.wav yesno/mac_victoria_nope.wav   yesno/mac_alex_yes.wav yesno/mac_alex_yep.wav  //
+PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } ../sounds/yesno/mac_alex_no.wav     ../sounds/yesno/mac_alex_nope.wav       ../sounds/yesno/mac_victoria_yes.wav ../sounds/yesno/mac_victoria_yep.wav  //
+PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } ../sounds/yesno/mac_victoria_no.wav ../sounds/yesno/mac_victoria_nope.wav   ../sounds/yesno/mac_alex_yes.wav     ../sounds/yesno/mac_alex_yep.wav  //
 PythonSig:Streams                             floatlist StreamVolumes=            2       0.2      0.2  //
-PythonApp:Task                                matrix    Cues=                   { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> % % NO YES no.wav yes.wav // ",
+PythonApp:Task                                matrix    Cues=                   { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> % % NO YES ../sounds/application/no.wav ../sounds/application/yes.wav // ",

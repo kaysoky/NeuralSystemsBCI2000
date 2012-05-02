@@ -1,8 +1,8 @@
 @set WD=%CD%
-@set PYWD=%WD%\python
-@set PARMS=%WD%\parms
+@set PYWD=%WD%\..\python
+@set PARMS=%WD%\..\parms
 
-@set PROG=%WD%\..\..\..\..\..\..\..\prog
+@set PROG=%WD%\..\..\..\..\..\..\..\..\prog
 @if exist %PROG% cd %PROG%
 @if exist %PROG% goto gotprog
 
@@ -12,7 +12,7 @@
 :gotprog
 @set PROG=%CD%
 
-@set BREAKOUT=%WD%\..\..\..\..\..\..\private\Application\Games\Breakout
+@set BREAKOUT=%WD%\..\..\..\..\..\..\..\private\Application\Games\Breakout
 @if exist %BREAKOUT% goto gotbreakout
 :gotbreakout
 
@@ -53,6 +53,6 @@ start              Operator                 --OnConnect "%OnConnect%" --OnSetCon
 
 start /D%BREAKOUT% GameBreakout
 
-start              PythonSignalProcessing   --PythonSigWD=%WD%\python --PythonSigClassFile=Streaming.py
+start              PythonSignalProcessing   --PythonSigWD=%PYWD% --PythonSigClassFile=Streaming.py
 
 start              gUSBampSource %LOGGERS%

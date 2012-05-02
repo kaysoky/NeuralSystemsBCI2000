@@ -1,6 +1,6 @@
 PythonSig:Streams                             int       NumberOfStreams=                    2                     // 
-PythonSig:Streams                             matrix    StreamStimuli=              2 { Standard Target } yesno/mac_victoria_no.wav yesno/mac_victoria_nope.wav   yesno/mac_alex_yes.wav yesno/mac_alex_yep.wav  //
-PythonSig:Streams                             matrix    StreamStimuli=              2 { Standard Target } 8500LeftStandard.wav 8500LeftTarget.wav   8500RightStandard.wav 8500RightTarget.wav  //
+PythonSig:Streams                             matrix    StreamStimuli=              2 { Standard Target } ../sounds/yesno/mac_victoria_no.wav ../sounds/yesno/mac_victoria_nope.wav   ../sounds/yesno/mac_alex_yes.wav     ../sounds/yesno/mac_alex_yep.wav  //
+PythonSig:Streams                             matrix    StreamStimuli=              2 { Standard Target } ../sounds/8500/8500LeftStandard.wav ../sounds/8500/8500LeftTarget.wav       ../sounds/8500/8500RightStandard.wav ../sounds/8500/8500RightTarget.wav  //
 PythonSig:Streams                             floatlist PeriodMsec=                   2   500   500               // 
 PythonSig:Streams                             floatlist OffsetMsec=                   2     0   250               // 
 PythonSig:Streams                             intlist   MinTargets=                   2     1     1               // 
@@ -41,7 +41,7 @@ PythonApp:Design                              int       TrialsPerBlock=         
 PythonApp:Task                                int       PerceptualOnly=                     0                      // if checked, mute non-target streams (boolean)
 PythonApp:Task                                int       FreeChoice=                         0                      // allow user to choose freely? (boolean)
 PythonApp:Task                                int       ShowCountFeedback=                  1                      // show correct counts after each trial? (boolean)
-PythonApp:Task                                matrix    Cues=                       { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> focusOn-8500Left.wav focusOn-8500Right.wav NO YES no.wav yes.wav // 
+PythonApp:Task                                matrix    Cues=                       { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> ../sounds/8500/focusOn-8500Left.wav ../sounds/8500/focusOn-8500Right.wav NO YES ../sounds/application/no.wav ../sounds/application/yes.wav // 
 
 Visualize:Processing%20Stages                 int       VisualizeTiming=                    1                      // 
 Visualize:Processing%20Stages                 int       VisualizeSource=                    1                      // Visualize raw brain signal (boolean)

@@ -1,0 +1,5 @@
+Storage:Session:DataIOFilter   string    SubjectName=  2011XXXX_85XX_A_     // subject alias
+
+PythonApp:Design               int       TrialsPerBlock=             20     // number of trials in one block
+PythonApp                      int       PerceptualOnly=              0     // if checked, mute non-target streams (boolean)
+PythonSig                      int       CheckNumberOfEpochs=         1     // verify that the correct number of epochs has been trapped (boolean)

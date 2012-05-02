@@ -18,10 +18,26 @@ double-click to start calibration session
 		
 	creation of weights must happen automatically
 	loading of weights must happen automatically
+	judge somehow which runs are "good" (to be included in the training) and which not
 	
 	after first weights are loaded:
 		inform subject about the bell feedback
 	
-	judge somehow which runs are "good" (to be included in the training) and which not
 	
-	
+:: pause between carer's triggering of trial and actual start of stimuli
+:: update pyprog source and operator
+:: 		remove driver version warning  (go with updated source module?)
+:: check normalizer performance (playback? epoc?)
+:: online visual feedback (for onlookers)
+:: shells off
+:: datestamped logs
+::     --PythonAppLog=%WD%\log\###-app.txt
+::     --PythonSigLog=%WD%\log\###-sig.txt
+:: visualizations off
+:: auto-quit?
+:: go button on operator?  or go with trialsperblock 1 for test?
+:: inpout32.dll
+:: double-click to run training blocks, double-click to run test blocks
+:: DirectSound dependency, etc (? what about it ?)
+:: obtain cheap head- or ear-phones
+:: obtain a few two-channel sliders

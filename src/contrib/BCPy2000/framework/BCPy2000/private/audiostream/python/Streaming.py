@@ -251,6 +251,15 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if e == '': self.expr = None
 		else: self.expr = self.Expression(e)
 		
+		self.normalizer = None
+		nrmlen_sec = float(self.params['NormalizerBufferSec'])
+		nrmlen_packets = round(nrmlen_sec * self.nominal.PacketsPerSecond)
+		nrmskip_sec = float(self.params['NormalizerIntervalSec'])
+		nrmskip_packets = round(nrmskip_sec * self.nominal.PacketsPerSecond)
+		if nrmlen_sec:
+			self.normalizer = SigTools.trap(nrmlen_packets, 1, leaky=True)
+			self.normalizer_decimation = max(1, min(nrmlen_packets-1,  nrmskip_packets))
+		
 	#############################################################
 	
 	def RoundToPackets(self, paramname, index=None, minval=0):
@@ -284,16 +293,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if base == None: # no, don't turn this into an else
 			try: w = WavTools.wav(prmval)
 			except IOError: raise EndUserError("failed to load '%s' as a wav file" % prmval)
-		
-		self.normalizer = None
-		nrmlen_sec = float(self.params['NormalizerBufferSec'])
-		nrmlen_packets = round(nrmlen_sec * self.nominal.PacketsPerSecond)
-		nrmskip_sec = float(self.params['NormalizerIntervalSec'])
-		nrmskip_packets = round(nrmskip_sec * self.nominal.PacketsPerSecond)
-		if nrmlen_sec:
-			self.normalizer = SigTools.trap(nrmlen_packets, 1, leaky=True)
-			self.normalizer_decimation = max(1, min(nrmlen_packets-1,  nrmskip_packets))
-		
+				
 		if w.channels() != 1: raise EndUserError("StreamStimuli wav files must be single-channel: found %d channels in %s" % (w.channels(), w.filename))
 			
 		if int(self.params['UseWiimotes']):
@@ -696,8 +696,12 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				
 	#############################################################
 	
-	def MakeFocusOn(self, pre=('prompts/ATT-Mike-FocusOn.wav', 'prompts/ATT-Crystal-FocusOn.wav'), post=('prompts/ATT-Mike-ToSayNo.wav', 'prompts/ATT-Crystal-ToSayYes.wav') ):
+	def MakeFocusOn(self, pre=('ATT-Mike-FocusOn.wav', 'ATT-Crystal-FocusOn.wav'), post=('ATT-Mike-ToSayNo.wav', 'ATT-Crystal-ToSayYes.wav'), directory='../sounds/prompts' ):
 		ww = [None for i in range(self.nstreams)]
+		def getwav(filename, fs, row):
+			return WavTools.wav(os.path.join(directory, filename)).resample(fs) * row
+		if isinstance(pre, basestrign): pre = [pre] * self.nstreams
+		if isinstance(post, basestrign): post = [post] * self.nstreams
 		for row in self.params['SoundChannels']:
 			w = 0
 			code = row[-1].upper()
@@ -706,7 +710,11 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			row = [int({'':'0'}.get(x,x)) for x in row[:-1]]
 			#print istream,row
 			sound = self.standards[istream].wav
-			w = (WavTools.wav(pre[istream]).resample(sound.fs) * row) % 0.2 % sound % 0.2 % (WavTools.wav(post[istream]).resample(sound.fs) * row)
+			if pre[istream] != None:
+				w = w % getwav(pre[istream], sound.fs, row) % 0.2
+			w = w % sound
+			if post[istream] != None:
+				w = w % 0.2 % getwav(post[istream], sound.fs, row)
 			ww[istream] = w
 		return ww
 		

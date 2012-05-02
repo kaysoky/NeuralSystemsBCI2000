@@ -1,8 +1,8 @@
 @set WD=%CD%
-@set PYWD=%WD%\python
-@set PARMS=%WD%\parms
+@set PYWD=%WD%\..\python
+@set PARMS=%WD%\..\parms
 
-@set PROG=%WD%\..\..\..\..\..\..\..\prog
+@set PROG=%WD%\..\..\..\..\..\..\..\..\prog
 @if exist %PROG% cd %PROG%
 @if exist %PROG% goto gotprog
 
@@ -62,11 +62,11 @@ if [%DEMO%] == [] goto SKIPDEMO
 
 start           Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
 start           gUSBampSource %LOGGERS%
-::start           PythonSource             --PythonSrcWD=%WD%\python --PythonSrcShell=1 --PythonSrcLog=%WD%\log\###-src.txt
+::start           PythonSource             --PythonSrcWD=%PYWD% --PythonSrcShell=1 --PythonSrcLog=%WD%\..\log\###-src.txt
 
 ::start           DummySignalProcessing
-start           PythonSignalProcessing   --PythonSigWD=%WD%\python
+start           PythonSignalProcessing   --PythonSigWD=%PYWD%
 
 ::start           DummyApplication
 ::start           StimulusPresentation
-start           PythonApplication        --PythonAppWD=%WD%\python
+start           PythonApplication        --PythonAppWD=%PYWD%
