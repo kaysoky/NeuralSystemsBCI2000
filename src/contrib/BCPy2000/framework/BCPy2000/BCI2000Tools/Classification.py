@@ -63,6 +63,11 @@ def ClassifyERPs (
 	n = len(y)
 	uy = numpy.unique(y)
 	if uy.size != 2: raise ValueError("expected 2 classes in dataset, found %d : %s" % (uy.size, str(uy)))
+	for uyi in uy:
+		nyi = sum([yi==uyi for yi in y])
+		nyi_min = 2
+		if nyi < nyi_min: raise ValueError('only %d exemplars of class %s - need at least %d' % (nyi,str(uyi),nyi_min))
+			
 	y = numpy.sign(y - uy.mean())
 
 	cov,trchvar = SigTools.spcov(x=x, y=y, balance=False, return_trchvar=True) # NB: symwhitenkern would not be able to balance

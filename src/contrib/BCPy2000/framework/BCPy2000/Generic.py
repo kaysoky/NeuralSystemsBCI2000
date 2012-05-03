@@ -1577,6 +1577,9 @@ class BciList(list):
 	#############################################################
 	
 	def __getitem__(self, i):
+		if isinstance(i, basestring):
+			if i in self.labels: return self[self.labels.index(i)]
+			else: return None
 		if isinstance(i, tuple): i, furtherdims = i[0],i[1:]
 		else: furtherdims = ()
 		scalar_out = False
@@ -1642,12 +1645,13 @@ class BciList(list):
 	def __getattr__(self, key):
 		if key in self.__dict__: return self.__dict__[key]
 		elif key == 'val': return param2val(self)
+		elif key in self.labels: return self[key]
 		else: raise AttributeError, "'%s' object has no attribute '%s'"%(self.__class__.__name__, key)
 	
 	#############################################################
 		
 	def _getAttributeNames(self):
-		return ('val',)
+		return tuple(set(['val'] + self.labels))
 		
 #################################################################
 ### A string that's easy to convert into whatever it can be

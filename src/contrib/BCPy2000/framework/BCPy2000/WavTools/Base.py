@@ -648,7 +648,8 @@ class wav:
 	
 	def resample(self, newfs):
 		w = self.copy()
-		newN = w.samples() * newfs / w.fs
-		w.y = interpsamples(w.y, numpy.linspace(0, w.samples(), newN, endpoint=False))
-		w.fs = newfs
+		if newfs != w.fs:
+			newN = w.samples() * newfs / w.fs
+			w.y = interpsamples(w.y, numpy.linspace(0, w.samples(), newN, endpoint=False))
+			w.fs = newfs
 		return w
