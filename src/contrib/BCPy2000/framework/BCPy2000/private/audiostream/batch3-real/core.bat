@@ -1,5 +1,5 @@
 @set WD=%CD%
-@set PYWD=%WD%\..\python
+set PYWD=%WD%\..\python
 @set PARMS=%WD%\..\parms
 @set PYPROG=%WD%\..\prog
 
@@ -18,27 +18,22 @@ call portable.bat
 :gotprog
 
 @set SUBJECT=TestSubject
-@if [%1]==[] goto SKIPSUBJECTARG
-@set SUBJECT=%1
-:SKIPSUBJECTARG
+@if not [%1]==[] set SUBJECT=%1
 
 @set CONDITION=002
-@if [%2]==[] goto SKIPCONDITIONARG
-@set CONDITION=%2
-:SKIPCONDITIONARG
+@if not [%2]==[] set CONDITION=%2
 
 @set MODE=CALIB
-@if [%3]==[] goto SKIPMODEARG
-@set MODE=%3
-:SKIPMODEARG
+@if not [%3]==[] set MODE=%3
 
 @set SRC=gUSBampSource
+@if not [%4]==[] set SRC=%4
+
 @set LOGGERS=
 @set OnConnect=-
 @set OnSetConfig=-
 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBamp-Cap8-SMR.prm
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\Cap8-Reversed-Lemo-Wiring.prm
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBamp-Cap8-SMR-REVERSED-WIRING.prm
 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\realbase.prm 
 
@@ -46,23 +41,28 @@ call portable.bat
 @set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession        %CONDITION%
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition%CONDITION%.prm
 
-@if %MODE% == CALIB goto SKIPFREE
+@if /i not %MODE% == FREE goto SkipFreeParams
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\realfree.prm
-:SKIPFREE
+:SkipFreeParams
 
-::@set SRC=Emotiv          && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=
-::@set SRC=SignalGenerator && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=--EvaluateTiming=0
+@if /i not %SRC% == Emotiv goto SkipEmotivParams
+@set SRC=Emotiv          && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=
+:SkipEmotivParams
+
+@if /i not %SRC% == SignalGenerator goto SkipSignalGeneratorParams
+@set SRC=SignalGenerator && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=--EvaluateTiming=0
+:SkipSignalGeneratorParams
+
 
 @set OnConnect=%OnConnect% ; SETCONFIG
 ::@set OnSetConfig=%OnSetConfig% ; SET STATE Running 1
 
 start              %PYPROG%\Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
-start              %PYPROG%\PythonApplication        --PythonAppWD=%WD%\python --PythonAppLog=- --PythonAppShell=1 --PythonAppClassFile=TrialStructure.py
-start              %PYPROG%\PythonSignalProcessing   --PythonSigWD=%WD%\python --PythonSigLog=- --PythonSigShell=1 --PythonSigClassFile=Streaming.py
-start              %PYPROG%\%SRC% %LOGGERS%
-::start              %SRC% %LOGGERS%
-
+start              %PYPROG%\PythonApplication        --PythonAppWD=%PYWD% --PythonAppShell=1 --PythonAppClassFile=TrialStructure.py --PythonAppLog=%PYWD%\..\log\###-app.txt
+start              %PYPROG%\PythonSignalProcessing   --PythonSigWD=%PYWD% --PythonSigShell=1 --PythonSigClassFile=Streaming.py      --PythonSigLog=%PYWD%\..\log\###-sig.txt
+::start              %PYPROG%\%SRC% %LOGGERS%
+start              %SRC% %LOGGERS%
 
 :: datestamped logs
-::     --PythonAppLog=%WD%\log\###-app.txt
-::     --PythonSigLog=%WD%\log\###-sig.txt
+::     --PythonAppLog=%PYWD%\..\log\###-app.txt
+::     --PythonSigLog=%PYWD%\..\log\###-sig.txt

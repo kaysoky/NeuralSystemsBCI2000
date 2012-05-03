@@ -53,6 +53,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	#############################################################
 
 	def Construct(self):
+		self.require_version(39850)
 		parameters = [
 			"PythonSig:Streams int       NumberOfStreams=                          2                      2     2 % // ",
 			"PythonSig:Streams matrix    StreamStimuli=                    2 { Standard Target } % % % %  %     % % // ",
@@ -214,7 +215,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		tstrings = ['T%d'%(istream+1) for istream in range(self.nstreams)]
 		for row in self.params['SoundChannels']:
 			code = row[-1].upper()
-			try: row = [int({'':'0'}.get(x,x)) for x in row[:-1]]
+			try: row = [float({'':'0'}.get(x,x)) for x in row[:-1]]
 			except: raise EndUserError("failed to interpret %s as floating-point numbers" % str(row))
 			if code in sstrings:
 				istream = int(code[1:])-1
@@ -224,7 +225,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				istream = int(code[1:])-1
 				triggers.append(istream)
 				self.triggermasks[istream] = row
-			elif code not in ['F', 'B']:
+			elif code not in ['F', 'B']: # F for feedback (audible to user and bystanders);  B for background/back-channel: audible to user only (e.g. white-noise mask and prompts in tactile expt)
 				raise EndUserError('unrecognized SoundChannels code "%s": legal values for a %d-stream system are F B %s'%(code, self.nstreams,' '.join(sstrings+tstrings)))
 		self.surround = len(triggers) > 0
 		if self.surround and sorted(triggers) != range(self.nstreams): raise EndUserError("if Tx values are specified in SoundChannels, all T1 through T%d must be specified without repetition"%self.nstreams)
@@ -355,8 +356,6 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 	def StartRun(self):
 		
-		self.x = []
-		self.y = []
 		self.nbeats = [0] * self.nstreams
 		self.TriggerTrouble = [None] * self.nstreams
 		self.started = False
@@ -373,27 +372,18 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		
 		if self.saving:
 			self.dump('flush') # the newer, python way
-			# and now, the older, matlab way (TODO: remove this)  :
-			if len(self.x) and self.x[0] != None:
-				if not isinstance(self.data_file, str): raise RuntimeError,'StopRun failed in PythonSig because self.data_file is not valid'
-				x = [numpy.matrix(numpy.asarray(xi).T.flatten()).A for xi in self.x]
-				xsiz = numpy.matrix((len(x),) + self.x[0].shape, dtype=numpy.float64)
-				unexpected = [y-1 not in range(self.nstreams) for y in self.y]
-				if any(unexpected): print "WARNING: unexpected labels: self.y = ",self.y
-				a = {
-					'x':numpy.concatenate(x, axis=0),
-					'xsiz':xsiz,
-					'y':numpy.matrix(self.y).T,
-					'channels':'\n'.join(self.inchannels()),
-					'fs':self.eegfs,
-				}
-				SigTools.savemat(self.data_file.replace('.dat', '_features.mat'), a)
 		else:
 			print "features not saved (traps not verified)"
 		
 		p = getattr(self, 'player', None)
 		if p: p.stop()
 				
+	#############################################################
+
+	def ResetVariants(self):
+		self.prepseq = [[] for i in range(self.nstreams)]
+		self.nbeats = [0 for i in range(self.nstreams)]
+			
 	#############################################################
 
 	def GetVariant(self, istream):
@@ -418,7 +408,6 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			
 		return s.pop(0)
 		
-		
 	#############################################################
 
 	def Process(self, sig):
@@ -439,6 +428,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		if starting:
 			self.started = True
 			self.remember('streaming')
+			self.ResetVariants()
+			
 		resetStates = False
 		stimDelivered = 0
 		
@@ -533,8 +524,6 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				
 			if xi != None:
 				self.dump(x=xi,y=yi) # the new python way
-				self.x.append(xi) # the old matlab way
-				self.y.append(yi) # the old matlab way
 		else:
 			self.states['StreamingFinished'] = 0
 			
@@ -659,7 +648,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	#############################################################
 	
 	def play(self, channels='left', reps=None):
-		if self.states['Running']: print "not now"; return
+		if self.states['Running']: print "not now, a run is in progress"; return
 		if isinstance(channels, basestring):
 			if channels == 'both': channels = 'left+right'
 			channels = [c for c in channels.replace(',',' ').replace('&',' ').replace('+',' ').split() if len(c)]
@@ -690,33 +679,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 				self.nbeats[istream] += 1
 			print "%d targets in %s" % (ntargets, streamstring)
 			ww = ww + w
-		del self.prepseq
-		self.nbeats = [0] * self.nstreams
+		self.ResetVariants()
 		WavTools.player(ww).play(bg=False)
-				
-	#############################################################
-	
-	def MakeFocusOn(self, pre=('ATT-Mike-FocusOn.wav', 'ATT-Crystal-FocusOn.wav'), post=('ATT-Mike-ToSayNo.wav', 'ATT-Crystal-ToSayYes.wav'), directory='../sounds/prompts' ):
-		ww = [None for i in range(self.nstreams)]
-		def getwav(filename, fs, row):
-			return WavTools.wav(os.path.join(directory, filename)).resample(fs) * row
-		if isinstance(pre, basestrign): pre = [pre] * self.nstreams
-		if isinstance(post, basestrign): post = [post] * self.nstreams
-		for row in self.params['SoundChannels']:
-			w = 0
-			code = row[-1].upper()
-			if not code.startswith('S'): continue
-			istream = int(code[1:]) - 1
-			row = [int({'':'0'}.get(x,x)) for x in row[:-1]]
-			#print istream,row
-			sound = self.standards[istream].wav
-			if pre[istream] != None:
-				w = w % getwav(pre[istream], sound.fs, row) % 0.2
-			w = w % sound
-			if post[istream] != None:
-				w = w % 0.2 % getwav(post[istream], sound.fs, row)
-			ww[istream] = w
-		return ww
-		
+						
 #################################################################
 #################################################################

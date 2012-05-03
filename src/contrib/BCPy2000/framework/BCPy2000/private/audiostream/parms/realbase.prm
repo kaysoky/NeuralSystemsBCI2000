@@ -7,9 +7,9 @@ PythonSig:Streams                             intlist   MinTargets=             
 PythonSig:Streams                             intlist   MaxTargets=                   2     3     3               // 
 PythonSig:Streams                             intlist   ScopeForMinMax=               2     7     7               // 
 PythonSig:Streams                             intlist   InitialStandards=             2     2     2               // how many stimuli at the beginning of each stream are guaranteed to be standards
-PythonSig:Streams                             matrix    SoundChannels=              4 3     1 % S1   % 1 S2   1 % F   % 1 F  //
+PythonSig:Streams                             matrix    SoundChannels=              6 3     1 % S1   % 1 S2   1 % F   % 1 F   1 % B   % 1 B  //
 PythonSig:Streams                             int       DirectSound=                        1                     // use DirectSound interface or not? (boolean)
-PythonSig:Streams                             floatlist StreamVolumes=                2     0.2 0.2               // 
+PythonSig:Streams                             floatlist StreamVolumes=                2     0.15  0.2              // 
 PythonSig:Streams                             int       UseWiimotes=                        0                     // use Wiimote vibration instead of sound? (boolean)
 
 Filtering:SpatialFilter                       int       SpatialFilterType=                  0                     // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)
@@ -37,11 +37,26 @@ PythonSig:Control                             float     NormalizerBufferSec=    
 PythonSig:Control                             float     NormalizerIntervalSec=              0.25                  // interval between informative samples in the normalizer buffer
 
 
-PythonApp:Design                              int       TrialsPerBlock=                    20                      // number of trials in one block
-PythonApp:Task                                int       PerceptualOnly=                     0                      // if checked, mute non-target streams (boolean)
-PythonApp:Task                                int       FreeChoice=                         0                      // allow user to choose freely? (boolean)
-PythonApp:Task                                int       ShowCountFeedback=                  1                      // show correct counts after each trial? (boolean)
+PythonApp:Design                              int       TrialsPerBlock=                    20                     // number of trials in one block
+PythonApp:Task                                int       PerceptualOnly=                     0                     // if checked, mute non-target streams (boolean)
+PythonApp:Task                                int       FreeChoice=                         0                     // allow user to choose freely? (boolean)
+PythonApp:Task                                int       ExpectResponse=                     0                     // should the user press a key to indicate the target count? (boolean)
+PythonApp:Task                                int       ShowCountFeedback=                  1                     // show correct counts after each trial? (boolean)
+PythonApp:Task                                string    CountSounds=                        ../sounds/counts/%%02d.wav                      // user's auditory feedback about the correct count
 PythonApp:Task                                matrix    Cues=                       { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> ../sounds/8500/focusOn-8500Left.wav ../sounds/8500/focusOn-8500Right.wav NO YES ../sounds/application/no.wav ../sounds/application/yes.wav // 
+PythonApp:Task                                int       ScreenIsForOperator=                1                     //  (boolean)
+
+PythonApp:Task                                int       HeadPhones=                         1                     // use headphones or not? (boolean)
+PythonApp:Task                                int       TestEyeTracker=                     0                     // display gaze feedback stimulus? (boolean)
+PythonApp:Task                                int       InvertCount=                        0                     // check if the subject should count standards rather than oddballs (boolean)
+PythonApp:Task                                string    BackgroundSound=                    %                     // 
+PythonApp:Task                                matrix    SoundEffects=               { Success EndOfRun } 1    ../sounds/application/ding.wav ../sounds/application/chimes.wav       // 
+PythonApp:Task                                float     Hurry=                              0.2                   // decrease to slow down pauses
+PythonApp:System                              int       ScreenID=                          -1                     // monitor id (0,1,2..., or -1 for last)
+PythonApp:System                              float     WindowSize=                         0.8                   // subject window size from 0 to 1, when ScreenID is not -1
+PythonApp:System                              float     FontSize=                          80                     // font size for cue text
+PythonApp:System                              float     SystemMasterVolume=                 0.25                  // operating-system volume setting from 0 to 1
+
 
 Visualize:Processing%20Stages                 int       VisualizeTiming=                    1                      // 
 Visualize:Processing%20Stages                 int       VisualizeSource=                    1                      // Visualize raw brain signal (boolean)

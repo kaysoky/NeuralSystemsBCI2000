@@ -1,43 +1,56 @@
-	
+
+sound to both user and visitor
+make visual yes/no answers peristent
+make grey screen smaller if operator-only
+
+
+hardware:
+	various pairs of head- and ear-phones
+		be aware of murphy-proof headphone construction:  accidentally swapping L&R could be a disaster
+	speakers
+	various multi-channel soundcards
+
+configuring the subject number and condition number
+
+introducing the stimuli to the subject
+	pre-recorded? otherwise standardized? otherwise automated?
+
+	on initial one-sided self.play('left'): pre-cue how many targets to expect
+
+introducing the task to the subject
+
 double-click for alternative wizard
 	* impedance view for our different montage
 	* photos of correct cap and headphone placement
 	* murphy-proof headphone construction:  accidentally swapping L&R could be a disaster
 
 double-click to start calibration session
+				
+creation of weights must happen automatically
+loading of weights must happen automatically
+judge somehow which runs are "good" (to be included in the training) and which not
+	
+after first weights are loaded: inform subject about the bell feedback
 
-	calibration with Wadsworth tech present:  could be verbal, with keypress trigger
-	but even if so, subsequent calibration without tech must be automated:   subject hears audio prompts
-		* so create audio prompts (must be adapted to individual streaming-stimuli)
-
-	with Wadsworth tech present:  subject could receive verbal feedback on counting task result
-		parameterize: constant display of which side should be attended, and what the correct count is
-	without Wadsworth tech:  subject receives no feedback about counting task (we must just assume they have got the hang of counting by now)
-		or: implement audio feedback about the count
-		
-		
-	creation of weights must happen automatically
-	loading of weights must happen automatically
-	judge somehow which runs are "good" (to be included in the training) and which not
+double-click to run calibration-with-feedback blocks
+double-click to run test blocks
 	
-	after first weights are loaded:
-		inform subject about the bell feedback
-	
-	
-:: pause between carer's triggering of trial and actual start of stimuli
 :: update pyprog source and operator
-:: 		remove driver version warning  (go with updated source module?)
+:: 		remove driver version warning  (by going with updated source module?)
 :: check normalizer performance (playback? epoc?)
 :: online visual feedback (for onlookers)
-:: shells off
-:: datestamped logs
-::     --PythonAppLog=%WD%\log\###-app.txt
-::     --PythonSigLog=%WD%\log\###-sig.txt
+:: shells off (app shell off at the very least)
 :: visualizations off
 :: auto-quit?
 :: go button on operator?  or go with trialsperblock 1 for test?
-:: inpout32.dll
-:: double-click to run training blocks, double-click to run test blocks
 :: DirectSound dependency, etc (? what about it ?)
-:: obtain cheap head- or ear-phones
-:: obtain a few two-channel sliders
+
+
+probably solved:
+	why sometimes count=4?? - 
+	supply visible feedback that run has ended
+	prevent operator from dragging grey window
+	sort out the 'respond' phase
+	voice feedback on # targets
+	datestamped logs
+
