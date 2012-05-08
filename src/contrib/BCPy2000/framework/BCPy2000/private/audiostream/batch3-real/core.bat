@@ -58,10 +58,10 @@ call portable.bat
 ::@set OnSetConfig=%OnSetConfig% ; SET STATE Running 1
 
 start              %PYPROG%\Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
-start              %PYPROG%\PythonApplication        --PythonAppWD=%PYWD% --PythonAppShell=1 --PythonAppClassFile=TrialStructure.py --PythonAppLog=%PYWD%\..\log\###-app.txt
-start              %PYPROG%\PythonSignalProcessing   --PythonSigWD=%PYWD% --PythonSigShell=1 --PythonSigClassFile=Streaming.py      --PythonSigLog=%PYWD%\..\log\###-sig.txt
-::start              %PYPROG%\%SRC% %LOGGERS%
-start              %SRC% %LOGGERS%
+start              %PYPROG%\PythonApplication        AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=%PYWD% --PythonAppShell=0 --PythonAppClassFile=TrialStructure.py --PythonAppLog=%PYWD%\..\log\###-app.txt
+start              %PYPROG%\PythonSignalProcessing   AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=%PYWD% --PythonSigShell=1 --PythonSigClassFile=Streaming.py      --PythonSigLog=%PYWD%\..\log\###-sig.txt
+start              %PYPROG%\%SRC%                    AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     %LOGGERS%
+::start              %SRC%                             AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     %LOGGERS%
 
 :: datestamped logs
 ::     --PythonAppLog=%PYWD%\..\log\###-app.txt

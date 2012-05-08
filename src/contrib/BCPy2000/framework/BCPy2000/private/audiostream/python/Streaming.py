@@ -647,7 +647,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			
 	#############################################################
 	
-	def play(self, channels='left', reps=None):
+	def play(self, channels='left', reps=None, pause=3.0):
 		if self.states['Running']: print "not now, a run is in progress"; return
 		if isinstance(channels, basestring):
 			if channels == 'both': channels = 'left+right'
@@ -663,7 +663,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			else:
 				streamstring = 'stream %d' % c
 			istream = c - 1
-			w = float(self.params['OffsetMsec'][istream]) / 1000.0
+			w = pause + float(self.params['OffsetMsec'][istream]) / 1000.0
 			period = float(self.params['PeriodMsec'][istream]) / 1000.0
 			ntargets = 0
 			standard = self.standards[istream].wav.copy(); standard.padendto(period)
