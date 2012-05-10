@@ -280,13 +280,13 @@ BCI2000Remote::SimpleCommand( const string& inCommand )
 string
 BCI2000Remote::EscapeSpecialChars( const string& inString )
 {
-  // Encode characters that are special to the ScriptInterpreter.
+  // Encode characters that might be special to the ScriptInterpreter shell.
   ostringstream oss;
-  const string escapeThese = "\";\n";
+  const string escapeThese = "#\"${}`&|<>;\n";
   for( string::const_iterator i = inString.begin(); i != inString.end(); ++i )
   {
     if( escapeThese.find( *i ) != string::npos )
-      oss << "%" << hex << *i;
+      oss << "%" << hex << ( *i >> 8 ) << ( *i & 0xf );
     else
       oss.put( *i );
   }
