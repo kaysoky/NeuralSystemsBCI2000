@@ -73,6 +73,11 @@ class ArithmeticExpression
 
   const ArithmeticExpression& operator=( const ArithmeticExpression& );
 
+  bool ThrowOnError() const
+    { return mThrowOnError; }
+  ArithmeticExpression& ThrowOnError( bool inThrow )
+    { mThrowOnError = inThrow; return *this; }
+
   enum { none, attempted, success };
   int CompilationState() const
     { return mCompilationState; }
@@ -115,6 +120,7 @@ class ArithmeticExpression
   std::ostringstream mErrors;
   NodeList           mStatements;
   Context            mContext;
+  bool               mThrowOnError;
   int                mCompilationState;
 
   // Memory management.

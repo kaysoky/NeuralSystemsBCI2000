@@ -40,6 +40,7 @@
 #include <limits>
 #include "ArithmeticExpression.h"
 #include "BCIError.h"
+#include "BCIException.h"
 #include "ClassName.h"
 
 using namespace std;
@@ -60,6 +61,7 @@ ArithmeticExpression::Constants( &sConstants[0], &sConstants[sizeof( sConstants 
 
 ArithmeticExpression::ArithmeticExpression( const std::string& s )
 : mExpression( s ),
+  mThrowOnError( false ),
   mCompilationState( none )
 {
 }
@@ -337,6 +339,7 @@ void
 ArithmeticExpression::ReportErrors()
 {
   string errors = mErrors.str();
+  ostringstream errorReport;
   if( !errors.empty() )
   {
     int numErrors = 0;
@@ -346,14 +349,20 @@ ArithmeticExpression::ReportErrors()
     if( numErrors > 1 )
       for( size_t pos = errors.find( '\n' ); pos != string::npos; pos = errors.find( '\n', pos + 3 ) )
         errors = errors.substr( 0, pos ) + ".\n * " + errors.substr( pos + 1 );
-    bcierr_ << "When processing \""
-            << mExpression << "\""
-            << ( numErrors == 1 ? ": " : ", multiple errors occurred.\n * " )
-            << errors
-            << flush;
+    errorReport << "When processing \""
+                << mExpression << "\""
+                << ( numErrors == 1 ? ": " : ", multiple errors occurred.\n * " )
+                << errors;
   }
   mErrors.clear();
   mErrors.str( "" );
+  if( !errorReport.str().empty() )
+  {
+    if( mThrowOnError )
+      throw bciexception_( errorReport.str() );
+    else
+      bcierr_ << errorReport.str() << flush;
+  }
 }
 
 void
