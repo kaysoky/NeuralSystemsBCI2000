@@ -1,0 +1,2 @@
+PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } ../sounds/yesno/att_mike_no.wav     ../sounds/yesno/att_mike_nope.wav       ../sounds/yesno/att_lauren_yes.wav ../sounds/yesno/att_lauren_yepq.wav  //
+PythonApp:Task                                matrix    Cues=                   { FocusOnText FocusOnAudio AnswerText AnswerAudio } 2    <<<%20NO YES%20>>> ../sounds/yesno/focusOn-mikeNoLeft.wav ../sounds/yesno/focusOn-laurenYesRight.wav % NO YES ../sounds/application/no.wav ../sounds/application/yes.wav // ",

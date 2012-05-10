@@ -215,9 +215,15 @@ class BciApplication(BciGenericApplication):
 		
 	#############################################################
 	
-	def MakeFocusOn(self, pre=('ATT-Mike-FocusOn.wav', 'ATT-Crystal-FocusOn.wav'), post=('ATT-Mike-ToSayNo.wav', 'ATT-Crystal-ToSayYes.wav'), directory='../sounds/prompts' ):
+	def MakeFocusOn(self,
+	         pre=('ATT-Mike-FocusOn.wav', 'ATT-Crystal-FocusOn.wav'),
+	         count=('ATT-Mike-AndCount.wav', 'ATT-Crystal-AndCount.wav'),
+	         post=('ATT-Mike-ToSayNo.wav', 'ATT-Crystal-ToSayYes.wav'),
+	         directory='../sounds/prompts'
+	    ):
 		ww = [None for i in range(self.nstreams)]
 		if not isinstance(pre,  (list,tuple)): pre  = [pre]  * self.nstreams
+		if not isinstance(count, (list,tuple)): count = [count] * self.nstreams
 		if not isinstance(post, (list,tuple)): post = [post] * self.nstreams
 		for istream in range(self.nstreams):
 			w = 0
@@ -230,6 +236,13 @@ class BciApplication(BciGenericApplication):
 				if directory != None: filename = os.path.join(directory, filename)
 				w = w % self.PrepareFeedback(filename, lettercode=code, fs=standard.fs, returnWav=True) % 0.2
 			w = w % standard
+			
+			filename = count[istream]
+			if filename not in (None,''):
+				if directory != None: filename = os.path.join(directory, filename)
+				w = w % 0.2 % self.PrepareFeedback(filename, lettercode=code, fs=standard.fs, returnWav=True) % 0.2
+				w = w % target % 0.2
+				
 			filename = post[istream]
 			if filename not in (None,''):
 				if directory != None: filename = os.path.join(directory, filename)
