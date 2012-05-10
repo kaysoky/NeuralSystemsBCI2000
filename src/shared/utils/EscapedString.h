@@ -40,7 +40,7 @@ struct EscapedString : std::string
   EscapedString( const char* s ) : std::string( s ) {}
 
   std::ostream& WriteToStream( std::ostream& ) const;
-  std::istream& ReadFromStream( std::istream& is ) { return ReadUntil( is >> std::ws, ::isspace ); }
+  std::istream& ReadFromStream( std::istream& );
   template<typename T> std::istream& ReadUntil( std::istream&, T predicate );
 };
 

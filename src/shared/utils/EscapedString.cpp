@@ -28,6 +28,17 @@
 
 using namespace std;
 
+istream&
+EscapedString::ReadFromStream( std::istream& is )
+{
+  if( ( is >> ws ).eof() )
+    is.setstate( ios::failbit );
+  else
+    ReadUntil( is >> std::ws, ::isspace );
+  return is;
+}
+
+
 ostream&
 EscapedString::WriteToStream( ostream& os ) const
 {
