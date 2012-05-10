@@ -31,32 +31,22 @@
 
 #include "OSThread.h"
 #include "OSEvent.h"
-#include "BCIError.h"
 #include "BCIException.h"
 #include "OSError.h"
 #include "ClassName.h"
 #include "ExceptionCatcher.h"
-#include "PrecisionTime.h"
-
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <cerrno>
 
 #if _WIN32
-# include <MMSystem.h>
 # include <Process.h>
 #else // _WIN32
 # include <unistd.h>
 #endif // !_WIN32
 
-using namespace std;
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
 
-#if _WIN32
-unsigned int OSThread::sMainThreadID = ::GetCurrentThreadId();
-#else // _WIN32
-pthread_t OSThread::sMainThread = ::pthread_self();
-#endif // _WIN32
+using namespace std;
 
 #if _WIN32
 
@@ -84,84 +74,13 @@ OSThread::Start()
     mpTerminationEvent->Reset();
   }
   else
-    bcierr << ::strerror( errno ) << endl;
-}
-
-void
-OSThread::SleepFor( int inMs )
-{
-  ::Sleep( inMs );
-}
-
-static bool sInitialized = false;
-static OSMutex sMutex;
-
-#ifdef __BORLANDC__
-# pragma option push
-# pragma warn -8104 // local static with constructor warning
-#endif // __BORLANDC__
-void
-OSThread::PrecisionSleepFor( double inMs )
-{
-  if( inMs < 0 )
-    return;
-
-  // MSDN warns against frequent calls to timeBeginPeriod(), so we use a static RAAI object to set
-  // timing precision once, and clear it on application exit.
-  // We also don't want to call timeBeginPeriod() unless PrecisionSleepFor() is actually used,
-  // so we use RAAI object that's local to the function.
-  static class SetHighestPrecision
-  {
-   public:
-    SetHighestPrecision()
-    : mPrecision( 0 )
-    {
-      OSMutex::Lock lock( sMutex );
-      if( !sInitialized )
-      {
-        TIMECAPS tc = { 0, 0 };
-        ::timeGetDevCaps( &tc, sizeof( tc ) );
-        mPrecision = tc.wPeriodMin;
-        ::timeBeginPeriod( mPrecision );
-        sInitialized = true;
-      }
-    }
-    ~SetHighestPrecision()
-    {
-      ::timeEndPeriod( mPrecision );
-    }
-   private:
-    UINT mPrecision;
-    bool mInitialized;
-    OSMutex mMutex;
-  } setHighestPrecision;
-
-  // Use "dithering" to achieve sub-millisecond accuracy of mean sleeping time.
-  int sleepTime = static_cast<int>( ::floor( inMs ) ) + static_cast<int>( ::rand() < ( RAND_MAX + 1 ) * ::fmod( inMs, 1 ) );
-  ::Sleep( sleepTime );
-}
-#ifdef __BORLANDC__
-# pragma option pop
-#endif // __BORLANDC__
-
-bool
-OSThread::InMainThread()
-{
-  return ::GetCurrentThreadId() == sMainThreadID;
+    throw bciexception( ::strerror( errno ) );
 }
 
 bool
 OSThread::InOwnThread() const
 {
   return ::GetCurrentThreadId() == mThreadID;
-}
-
-int
-OSThread::NumberOfProcessors()
-{
-  SYSTEM_INFO info;
-  ::GetSystemInfo( &info );
-  return info.dwNumberOfProcessors;
 }
 
 #else // _WIN32
@@ -196,38 +115,11 @@ OSThread::Start()
   }
 }
 
-void
-OSThread::SleepFor( int inMs )
-{
-  OSThread::PrecisionSleepFor( inMs );
-}
-
-void
-OSThread::PrecisionSleepFor( double inMs )
-{
-  ::usleep( inMs * 1000 );
-}
-
-bool
-OSThread::InMainThread()
-{
-  return ::pthread_equal( pthread_self(), sMainThread );
-}
-
 bool
 OSThread::InOwnThread() const
 {
   return ::pthread_equal( pthread_self(), mThread );
 }
-
-int
-OSThread::NumberOfProcessors()
-{
-  int result = 1;
-  result = ::sysconf( _SC_NPROCESSORS_ONLN );
-  return result;
-}
-
 
 #endif // _WIN32
 
@@ -238,12 +130,6 @@ OSThread::~OSThread()
       "Thread still running when being destructed -- "
       "call OSThread::TerminateWait() from your derived class' destructor for a fix"
     );
-}
-
-void
-OSThread::PrecisionSleepUntil( PrecisionTime inWakeupTime )
-{
-  PrecisionSleepFor( PrecisionTime::SignedDiff( inWakeupTime, PrecisionTime::Now() ) );
 }
 
 SharedPointer<OSEvent>

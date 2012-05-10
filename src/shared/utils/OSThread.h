@@ -36,6 +36,7 @@
 #endif // _WIN32
 
 #include "Uncopyable.h"
+#include "ThreadUtils.h"
 #include "OSEvent.h"
 #include "OSMutex.h"
 #include "PrecisionTime.h"
@@ -68,14 +69,20 @@ class OSThread : private Uncopyable
 
  public: // These utility functions are now obsolete.
          // Use their counterparts from the ThreadUtils.h header instead.
-  static void SleepFor( int ); // sleep for milliseconds
+  static void SleepFor( int inMs )
+    { ThreadUtils::SleepFor( inMs ); }// sleep for milliseconds
   static void Sleep( int inMs )
-    { OSThread::SleepFor( inMs ); }
-  static void PrecisionSleepFor( double ); // sleep for milliseconds
-  static void PrecisionSleepUntil( PrecisionTime ); // sleep until absolute wakeup time
-  static bool IsMainThread() { return InMainThread(); }
-  static bool InMainThread();
-  static int NumberOfProcessors();
+    { SleepFor( inMs ); }
+  static void PrecisionSleepFor( double inMs ) // sleep for milliseconds
+    { ThreadUtils::PrecisionSleepFor( inMs ); }
+  static void PrecisionSleepUntil( PrecisionTime inWakeup ) // sleep until absolute wakeup time
+    { ThreadUtils::PrecisionSleepUntil( inWakeup ); }
+  static bool IsMainThread()
+    { return InMainThread(); }
+  static bool InMainThread()
+    { return ThreadUtils::InMainThread(); }
+  static int NumberOfProcessors()
+    { return ThreadUtils::NumberOfProcessors(); }
 
  private:
   int CallExecute();

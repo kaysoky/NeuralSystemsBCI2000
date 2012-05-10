@@ -1,7 +1,7 @@
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Author: juergen.mellinger@uni-tuebingen.de
-// Description: Thread-related utility functions.
+// Authors: juergen.mellinger@uni-tuebingen.de
+// Description: Utility functions for executing processes.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -22,27 +22,18 @@
 // this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // $END_BCI2000_LICENSE$
-///////////////////////////////////////////////////////////////////////
-#ifndef THREAD_UTILS_H
-#define THREAD_UTILS_H
+////////////////////////////////////////////////////////////////////////////////
+#ifndef PROCESS_UTILS_H
+#define PROCESS_UTILS_H
 
-#include "PrecisionTime.h"
+#include <string>
+#include <iostream>
 
-namespace ThreadUtils
-{
+namespace ProcessUtils {
 
-bool InMainThread();
+bool ExecuteSynchronously( const std::string& executable, const std::string& arguments, std::ostream&, int& );
+bool ExecuteAsynchronously( const std::string& executable, const std::string& arguments, int& );
 
- // sleep for milliseconds
-void SleepFor( int ms );
- // sleep for milliseconds, with maximum precision
-void PrecisionSleepFor( double ms );
-// sleep until absolute wakeup time
-void PrecisionSleepUntil( PrecisionTime wakeup );
+} // namespace
 
-int NumberOfProcessors();
-
-} // namespace ThreadUtils
-
-#endif // THREAD_UTILS_H
-
+#endif // PROCESS_UTILS_H
