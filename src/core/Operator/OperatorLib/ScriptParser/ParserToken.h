@@ -1,8 +1,7 @@
 //////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A string that may be both quoted, and URL-encoded.
-//   For output, quotes are used when necessary.
+// Description: A string class representing a ScriptInterpreter parser token.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -24,17 +23,18 @@
 //
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
-#ifndef HYBRID_STRING
-#define HYBRID_STRING
+#ifndef PARSER_TOKEN_H
+#define PARSER_TOKEN_H
 
 #include <string>
 #include <iostream>
 
-struct HybridString : public std::string
+class ParserToken : public std::string
 {
-  HybridString() {}
-  HybridString( const std::string& s ) : std::string( s ) {}
-  HybridString( const char* s ) : std::string( s ) {}
+ public:
+  ParserToken() {}
+  ParserToken( const std::string& s ) : std::string( s ) {}
+  ParserToken( const char* s ) : std::string( s ) {}
 
   std::ostream& WriteToStream( std::ostream& ) const;
   std::istream& ReadFromStream( std::istream& );
@@ -47,31 +47,32 @@ struct HybridString : public std::string
 
 namespace std {
   inline
-  istream& getline( istream& s, HybridString& h, char delim = '\n' )
+  istream& getline( istream& s, ParserToken& h, char delim = '\n' )
   {
     return h.GetLine( s, delim );
   }
 }
 
 inline
-std::ostream& operator<<( std::ostream& os, const HybridString& s )
+std::ostream& operator<<( std::ostream& os, const ParserToken& s )
 {
   return s.WriteToStream( os );
 }
 
 inline
-std::istream& operator>>( std::istream& is, HybridString& s )
+std::istream& operator>>( std::istream& is, ParserToken& s )
 {
   return s.ReadFromStream( is );
 }
 
 template<typename T>
 std::istream&
-HybridString::ReadUntil( std::istream& is, T predicate )
+ParserToken::ReadUntil( std::istream& is, T predicate )
 {
   clear();
   bool done = false,
        withinQuotes = false;
+  int braceLevel = 0;
   while( !done )
   {
     int c = is.peek();
@@ -86,8 +87,19 @@ HybridString::ReadUntil( std::istream& is, T predicate )
         is.get();
         break;
 
+      case '{':
+        ++braceLevel;
+        ( *this ) += is.get();
+        break;
+
+      case '}':
+        if( braceLevel > 0 )
+          --braceLevel;
+        ( *this ) += is.get();
+        break;
+
       default:
-        if( !withinQuotes && predicate( c ) )
+        if( !withinQuotes && braceLevel == 0 && predicate( c ) )
           done = true;
         else
           ( *this ) += is.get();
@@ -96,4 +108,4 @@ HybridString::ReadUntil( std::istream& is, T predicate )
   return is;
 }
 
-#endif // HYBRID_STRING
+#endif // PARSER_TOKEN_H

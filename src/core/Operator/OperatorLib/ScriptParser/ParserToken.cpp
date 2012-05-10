@@ -1,8 +1,7 @@
 //////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A string that may be both quoted, and URL-encoded.
-//   For output, quotes are used when necessary.
+// Description: A string class representing a ScriptInterpreter parser token.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -27,29 +26,36 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "HybridString.h"
+#include "ParserToken.h"
 #include "EncodedString.h"
 #include <sstream>
+#include <ios>
 #include <functional>
 
 using namespace std;
 
 ostream&
-HybridString::WriteToStream( ostream& os ) const
+ParserToken::WriteToStream( ostream& os ) const
 {
-  return EncodedString( *this ).WriteToStream( os );
+  return EncodedString( *this ).WriteToStream( os, ";#" );
 }
 
 istream&
-HybridString::ReadFromStream( istream& is )
+ParserToken::ReadFromStream( istream& is )
 {
-  if( ReadUntil( is >> ws, ::isspace ) )
+  struct
+  { bool operator()( int c )
+    { return ::isspace( c ) || c == ';'; }
+  } terminateIf;
+  if( ( is >> ws ).eof() )
+    is.setstate( ios::failbit );
+  else if( ReadUntil( is, terminateIf ) )
     Decode();
   return is;
 };
 
 istream&
-HybridString::GetLine( istream& is, char delim )
+ParserToken::GetLine( istream& is, char delim )
 {
   if( ReadUntil( is, bind2nd( equal_to<int>(), delim ) ) )
   {
@@ -60,10 +66,16 @@ HybridString::GetLine( istream& is, char delim )
 }
 
 void
-HybridString::Decode()
+ParserToken::Decode()
 {
   istringstream iss( *this );
+  clear();
   EncodedString s;
-  iss >> s;
-  *this = s;
+  while( iss )
+  {
+    if( iss >> s )
+      *this += s;
+    while( ::isspace( iss.peek() ) )
+      *this += iss.get();
+  }
 }
