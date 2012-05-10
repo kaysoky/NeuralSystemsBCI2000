@@ -37,8 +37,8 @@ call portable.bat
 
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\realbase.prm 
 
-@set OnConnect=%OnConnect% ; SET PARAMETER SubjectName           %SUBJECT%
-@set OnConnect=%OnConnect% ; SET PARAMETER SubjectSession        %CONDITION%
+@set OnConnect=%OnConnect% ; SET PARAMETER Storage:Session string SubjectName=    %SUBJECT%%MODE%
+@set OnConnect=%OnConnect% ; SET PARAMETER Storage:Session string SubjectSession= %CONDITION%
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition%CONDITION%.prm
 
 @if /i not %MODE% == FREE goto SkipFreeParams
