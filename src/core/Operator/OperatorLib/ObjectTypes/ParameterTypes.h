@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: System-related object types for the script interpreter.
+// Description: Parameter-related object types for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,51 +23,65 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef SYSTEM_TYPES_H
-#define SYSTEM_TYPES_H
+#ifndef PARAMETER_TYPES_H
+#define PARAMETER_TYPES_H
 
 #include "ObjectType.h"
+#include "ParamRef.h"
 
 namespace Interpreter {
 
-class SystemType : public ObjectType
+class ParameterType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "System"; }
+  virtual const char* Name() const { return "Parameter"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Get( ScriptInterpreter& );
-  static bool GetState( ScriptInterpreter& );
-  static bool GetVersion( ScriptInterpreter& );
-  static bool WaitFor( ScriptInterpreter& );
-  static bool SetConfig( ScriptInterpreter& );
-  static bool Start( ScriptInterpreter& );
-  static bool Stop( ScriptInterpreter& );
-  static bool Startup( ScriptInterpreter& );
-  static bool Shutdown( ScriptInterpreter& );
-  static bool Reset( ScriptInterpreter& );
-  static bool Quit( ScriptInterpreter& );
+  static bool Set( CommandInterpreter& );
+  static bool Get( CommandInterpreter& );
+  static bool Insert( CommandInterpreter& );
+  static bool List( CommandInterpreter& );
 
  private:
+  static ParamRef GetParamRef( CommandInterpreter& );
+  static size_t GetIndex( const std::string&, const LabelIndex& );
+
   static const MethodEntry sMethodTable[];
-  static SystemType sInstance;
+  static ParameterType sInstance;
 };
 
-class ConfigType : public SystemType
+class ParametersType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Config"; }
+  virtual const char* Name() const { return "Parameters"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Set( ScriptInterpreter& );
+  static bool Load( CommandInterpreter& );
+  static bool List( CommandInterpreter& );
+  static bool Apply( CommandInterpreter& );
+  static bool Clear( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
-  static ConfigType sInstance;
+  static ParametersType sInstance;
+};
+
+class ParameterfileType : public ObjectType
+{
+ protected:
+  virtual const char* Name() const { return "ParameterFile"; }
+  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+
+ public:
+  static bool Load( CommandInterpreter& );
+
+ private:
+  static const MethodEntry sMethodTable[];
+  static ParameterfileType sInstance;
 };
 
 } // namespace
 
-#endif // SYSTEM_TYPES_H
+#endif // PARAMETER_TYPES_H

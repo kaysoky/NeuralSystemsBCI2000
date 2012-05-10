@@ -537,7 +537,6 @@ STDCALL BCI_Initialize( void )
     return 0;
 
   gpStateMachine = new StateMachine;
-  ScriptInterpreter::Initialize( *gpStateMachine );
   return 1;
 }
 

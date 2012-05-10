@@ -46,7 +46,7 @@
 #include "SignalProperties.h"
 #include "GenericVisualization.h"
 #include "Label.h"
-#include "ScriptInterpreter.h"
+#include "CommandInterpreter.h"
 
 #include <sstream>
 #include <iomanip>
@@ -144,6 +144,11 @@ StateMachine::~StateMachine()
 {
   // The StateMachine destructor must be called from the same (main) thread that
   // called its constructor.
+  {
+    ::Lock<Listeners> lock( mListeners );
+    for( Listeners::iterator i = mListeners.begin(); i != mListeners.end(); ++i )
+      ( *i )->Abort();
+  }
   SharedPointer<OSEvent> pEvent = OSThread::Terminate();
   while( CheckPendingCallback() ) ;
   while( mSystemState != Idle && mSystemState != Fatal )
@@ -156,7 +161,7 @@ StateMachine::~StateMachine()
 }
 
 // Send a state message containing a certain state value to the EEG source module.
-// This function is public because it is called from the ScriptInterpreter class.
+// This function is public because it is called from the CommandInterpreter class.
 bool
 StateMachine::SetStateValue( const char* inName, State::ValueType inValue )
 {
@@ -197,6 +202,8 @@ State::ValueType
 StateMachine::GetStateValue( const char* inName ) const
 {
   OSMutex::Lock lock( mDataMutex );
+  if( !mStates.Exists( inName ) )
+    return 0;
   return mStateVector.StateValue( inName );
 }
 
@@ -628,7 +635,7 @@ StateMachine::TriggerEvent( int inCallbackID )
   if( !script.empty() )
   {
     LogMessage( BCI_OnLogMessage, "Executing " + string( pName ) + " script ..." );
-    ScriptInterpreter( *this ).Execute( script );
+    CommandInterpreter( *this ).Execute( script );
   }
 }
 

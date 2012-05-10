@@ -29,7 +29,7 @@
 #include <vector>
 #include <string>
 
-class ScriptInterpreter;
+class CommandInterpreter;
 class StateMachine;
 
 #define METHOD( verb ) { #verb, &verb }
@@ -41,27 +41,27 @@ class ObjectType
 {
  public:
   virtual const char* Name() const = 0;
-  bool Execute( const std::string& inVerb, ScriptInterpreter& ) const;
-  void Help( ScriptInterpreter& ) const;
-  void ListMethods( ScriptInterpreter& ) const;
-  
+  bool Execute( const std::string& inVerb, CommandInterpreter& ) const;
+  void Help( CommandInterpreter& ) const;
+  void ListMethods( std::ostream& ) const;
+
   static ObjectType* ByName( const std::string& );
   static ObjectType* Next( const ObjectType* );
   static void Initialize( StateMachine& );
-  
+
  protected:
   struct MethodEntry
   {
     const char* verb;
-    bool (*action)( ScriptInterpreter& );
+    bool (*action)( CommandInterpreter& );
   };
 
   ObjectType() { Dictionary().push_back( this ); }
   virtual ~ObjectType() {}
   virtual const MethodEntry* MethodTable() const = 0;
   virtual void OnInitialize( StateMachine& ) const {}
-  virtual void OnHelp( ScriptInterpreter& ) const;
-  virtual void OnListMethods( ScriptInterpreter& ) const;
+  virtual void OnHelp( CommandInterpreter& ) const;
+  virtual void OnListMethods( std::ostream& ) const;
 
  private:
   typedef std::vector<ObjectType*> TypeDictionary;

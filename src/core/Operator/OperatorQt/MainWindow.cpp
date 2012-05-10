@@ -413,9 +413,6 @@ MainWindow::FormatScript( const char* inEventName, const QString& inScript )
     if( result[0] == '-' )
     { // Immediate script specified
       result = result.substr( 1 );
-      ostringstream oss;
-      EncodedString( result ).WriteToStream( oss, "\";" );
-      result = oss.str();
     }
     else
     { // Script file specified
@@ -429,6 +426,9 @@ MainWindow::FormatScript( const char* inEventName, const QString& inScript )
         result = "EXECUTE SCRIPT " + result;
     }
   }
+  ostringstream oss;
+  EncodedString( result ).WriteToStream( oss, "\";`" );
+  result = oss.str();
   return result;
 }
 

@@ -28,7 +28,7 @@
 
 #include "EventTypes.h"
 #include "StateTypes.h"
-#include "ScriptInterpreter.h"
+#include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "Lockable.h"
 #include "WildcardMatch.h"
@@ -50,7 +50,7 @@ const ObjectType::MethodEntry EventType::sMethodTable[] =
 };
 
 bool
-EventType::Set( ScriptInterpreter& inInterpreter )
+EventType::Set( CommandInterpreter& inInterpreter )
 {
   string name;
   State::ValueType value = 0;
@@ -68,14 +68,14 @@ EventType::Set( ScriptInterpreter& inInterpreter )
 }
 
 bool
-EventType::Get( ScriptInterpreter& inInterpreter )
+EventType::Get( CommandInterpreter& inInterpreter )
 {
   // All events appear as states in the state vector, and have their values stored there.
   return StateType::Get( inInterpreter );
 }
 
 bool
-EventType::Insert( ScriptInterpreter& inInterpreter )
+EventType::Insert( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
   string line = inInterpreter.GetRemainder(),
@@ -94,7 +94,7 @@ EventType::Insert( ScriptInterpreter& inInterpreter )
 }
 
 bool
-EventType::List( ScriptInterpreter& inInterpreter )
+EventType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   inInterpreter.Out() << GetEvent( inInterpreter );
@@ -102,7 +102,7 @@ EventType::List( ScriptInterpreter& inInterpreter )
 }
 
 State&
-EventType::GetEvent( ScriptInterpreter& inInterpreter )
+EventType::GetEvent( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
   if( name.empty() )
@@ -121,12 +121,15 @@ const ObjectType::MethodEntry EventsType::sMethodTable[] =
 };
 
 bool
-EventsType::List( ScriptInterpreter& inInterpreter )
+EventsType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   string pattern = inInterpreter.GetRemainder();
   if( pattern.empty() )
+  {
+    inInterpreter.Unget();
     pattern = "*";
+  }
   const StateList& events = inInterpreter.StateMachine().Events();
   for( int i = 0; i < events.Size(); ++i )
     if( WildcardMatch( pattern, events[i].Name(), false ) )
@@ -135,7 +138,7 @@ EventsType::List( ScriptInterpreter& inInterpreter )
 }
 
 bool
-EventsType::Clear( ScriptInterpreter& inInterpreter )
+EventsType::Clear( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )

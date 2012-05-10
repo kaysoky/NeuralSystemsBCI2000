@@ -47,7 +47,7 @@ TelnetServer::TelnetServer( class StateMachine& inStateMachine, const string& in
 }
 
 TelnetServer::TelnetServer( TelnetServer* pParent )
-: ScriptInterpreter( pParent->StateMachine() ),
+: ScriptInterpreter( *pParent ),
   mpChild( NULL ),
   mpParent( pParent ),
   mAddress( pParent->mAddress ),
@@ -67,6 +67,7 @@ TelnetServer::Initialize()
 
 TelnetServer::~TelnetServer()
 {
+  ScriptInterpreter::Abort();
   if( !OSThread::InOwnThread() )
     OSThread::TerminateWait();
   OSMutex::Lock lock( mMutex );
@@ -77,15 +78,15 @@ int
 TelnetServer::OnExecute()
 {
   const int cReactionTimeMs = 100;
-  while( !IsTerminating() && !mSocket.wait_for_read( cReactionTimeMs, true ) )
+  while( !OSThread::IsTerminating() && !mSocket.wait_for_read( cReactionTimeMs, true ) )
     ;
-  if( !IsTerminating() )
+  if( !OSThread::IsTerminating() )
   {
     mpChild = new TelnetServer( this );
     WriteHello().WriteNewline().WritePrompt();
   }
   string line;
-  while( mStream && mSocket.connected() && !IsTerminating() )
+  while( mStream && mSocket.connected() && !OSThread::IsTerminating() )
   {
     while( mStream && mStream.rdbuf()->in_avail() )
       ReadCharacter();
@@ -100,7 +101,7 @@ TelnetServer::OnFinished()
   // When the connection has been closed from the other side,
   // remove ourselves from the chain of TelnetServer instances,
   // and delete ourselves.
-  if( !IsTerminating() && mpParent )
+  if( !OSThread::IsTerminating() && mpParent )
   {
     {
       OSMutex::Lock lock( mpParent->mMutex );
@@ -133,13 +134,15 @@ TelnetServer::ReadCharacter()
   switch( c )
   {
     case '\n':
-      ScriptInterpreter::Execute( mLineBuffer );
-      mLineBuffer.clear();
-      Write( ScriptInterpreter::Result() );
-      if( !ScriptInterpreter::Result().empty()
-          && *ScriptInterpreter::Result().rbegin() != '\n' )
-        WriteNewline();
+      if( ScriptInterpreter::Execute( mLineBuffer ) )
+      {
+        Write( ScriptInterpreter::Result() );
+        if( !ScriptInterpreter::Result().empty()
+            && *ScriptInterpreter::Result().rbegin() != '\n' )
+          WriteNewline();
+      }
       WritePrompt();
+      mLineBuffer.clear();
       break;
     case '\r':
     case '\x07': // Bell

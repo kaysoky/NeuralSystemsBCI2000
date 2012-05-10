@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: State-related object types for the script interpreter.
+// Description: VisProperty-related object types for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,50 +23,47 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef STATE_TYPES_H
-#define STATE_TYPES_H
+#ifndef VISPROPERTY_TYPES_H
+#define VISPROPERTY_TYPES_H
 
 #include "ObjectType.h"
-
-class State;
+#include "CfgID.h"
 
 namespace Interpreter {
 
-class StateType : public ObjectType
+class VisPropertyType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "State"; }
+  virtual const char* Name() const { return "VisProperty"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Set( ScriptInterpreter& );
-  static bool Get( ScriptInterpreter& );
-  static bool Insert( ScriptInterpreter& );
-  static bool List( ScriptInterpreter& );
+  static bool Set( CommandInterpreter& );
+  static bool Get( CommandInterpreter& );
 
  private:
-  static State& GetState( ScriptInterpreter& );
+  static void GetVisPropertyIDs( CommandInterpreter&, std::string& outVisID, std::string& outCfgID, CfgID::IDType& outNumCfgID );
 
   static const MethodEntry sMethodTable[];
-  static StateType sInstance;
+  static VisPropertyType sInstance;
 };
 
-class StatesType : public ObjectType
+class VisPropertiesType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "States"; }
+  virtual const char* Name() const { return "VisProperties"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
-
- public:
-  static bool Insert( ScriptInterpreter& );
-  static bool List( ScriptInterpreter& );
-  static bool Clear( ScriptInterpreter& );
+  virtual void OnInitialize( StateMachine& ) const;
 
  private:
+  static bool Set( CommandInterpreter& );
+
+  void ApplyVisPropertySet( const std::string& setID );
+
   static const MethodEntry sMethodTable[];
-  static StatesType sInstance;
+  static VisPropertiesType sInstance;
 };
 
 } // namespace
 
-#endif // STATE_TYPES_H
+#endif // VISPROPERTY_TYPES_H

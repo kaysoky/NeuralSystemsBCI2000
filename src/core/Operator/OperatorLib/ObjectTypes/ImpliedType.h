@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: Message-related object types for the script interpreter.
+// Description: A script interpreter type that handles global commands.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,70 +23,58 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef MESSAGE_TYPES_H
-#define MESSAGE_TYPES_H
+#ifndef IMPLIED_TYPE_H
+#define IMPLIED_TYPE_H
 
 #include "ObjectType.h"
 
 namespace Interpreter {
 
-class MessageType : public ObjectType
+class ImpliedType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Message"; }
+  virtual const char* Name() const { return ""; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+  virtual void OnHelp( CommandInterpreter& ) const;
 
  public:
-  static bool Log( ScriptInterpreter& );
+  static bool Get( CommandInterpreter& );
+  static bool Set( CommandInterpreter& );
+  static bool Wait( CommandInterpreter& );
+  static bool Sleep( CommandInterpreter& );
+  static bool System( CommandInterpreter& );
+  static bool SetConfig( CommandInterpreter& );
+  static bool Start( CommandInterpreter& );
+  static bool Stop( CommandInterpreter& );
+  static bool Startup( CommandInterpreter& );
+  static bool Shutdown( CommandInterpreter& );
+  static bool Reset( CommandInterpreter& );
+  static bool Quit( CommandInterpreter& );
+  static bool Version( CommandInterpreter& );
+  static bool Log( CommandInterpreter& );
+  static bool Warn( CommandInterpreter& );
+  static bool Error( CommandInterpreter& );
+  static bool Square( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
-  static MessageType sInstance;
+  static ImpliedType sInstance;
 };
 
-class MessagesType : public ObjectType
+class ExecutableType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Messages"; }
+  virtual const char* Name() const { return "Executable"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Capture( ScriptInterpreter& );
-  static bool Flush( ScriptInterpreter& );
+  static bool Start( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
-  static MessagesType sInstance;
-};
-
-class WarningType : public ObjectType
-{
- protected:
-  virtual const char* Name() const { return "Warning"; }
-  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
-
- public:
-  static bool Issue( ScriptInterpreter& );
-
- private:
-  static const MethodEntry sMethodTable[];
-  static WarningType sInstance;
-};
-
-class ErrorType : public ObjectType
-{
- protected:
-  virtual const char* Name() const { return "Error"; }
-  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
-
- public:
-  static bool Report( ScriptInterpreter& );
-
- private:
-  static const MethodEntry sMethodTable[];
-  static ErrorType sInstance;
+  static ExecutableType sInstance;
 };
 
 } // namespace
 
-#endif // MESSAGE_TYPES_H
+#endif // IMPLIED_TYPE_H

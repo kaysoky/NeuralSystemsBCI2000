@@ -29,7 +29,7 @@
 #include "ParameterTypes.h"
 
 #include "SystemTypes.h"
-#include "ScriptInterpreter.h"
+#include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include "Lockable.h"
@@ -53,7 +53,7 @@ const ObjectType::MethodEntry ParameterType::sMethodTable[] =
 };
 
 bool
-ParameterType::Set( ScriptInterpreter& inInterpreter )
+ParameterType::Set( CommandInterpreter& inInterpreter )
 {
   string line = inInterpreter.GetRemainder();
   istringstream iss( line );
@@ -65,8 +65,8 @@ ParameterType::Set( ScriptInterpreter& inInterpreter )
     if( !list.Exists( param.Name() ) )
       throw bciexception_( "Parameter " << param.Name() << " does not exist" );
     if( list[param.Name()].Section() == "System" )
-      throw bciexception_( "Cannot set system parameter" );
-    list[param.Name()] = param;
+      throw bciexception_( "Cannot set parameter from the \"System\" section" );
+    list[param.Name()].AssignValues( param );
     inInterpreter.StateMachine().ExecuteCallback( BCI_OnParameter, line.c_str() );
     inInterpreter.StateMachine().ParameterChange();
     inInterpreter.Log() << "Set parameter " << param.Name();
@@ -82,7 +82,7 @@ ParameterType::Set( ScriptInterpreter& inInterpreter )
       if( param->Section() == "System" )
         throw bciexception_( "Cannot set system parameter" );
       name = param->Name();
-      value = inInterpreter.GetRemainder();
+      value = inInterpreter.GetToken();
       param = value;
       if( !name.empty() )
         param->WriteToStream( oss );
@@ -98,7 +98,7 @@ ParameterType::Set( ScriptInterpreter& inInterpreter )
 }
 
 bool
-ParameterType::Get( ScriptInterpreter& inInterpreter )
+ParameterType::Get( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   inInterpreter.Out() << GetParamRef( inInterpreter );
@@ -106,7 +106,7 @@ ParameterType::Get( ScriptInterpreter& inInterpreter )
 }
 
 bool
-ParameterType::Insert( ScriptInterpreter& inInterpreter )
+ParameterType::Insert( CommandInterpreter& inInterpreter )
 {
   string line = inInterpreter.GetRemainder();
   istringstream iss( line );
@@ -126,7 +126,7 @@ ParameterType::Insert( ScriptInterpreter& inInterpreter )
 }
 
 bool
-ParameterType::List( ScriptInterpreter& inInterpreter )
+ParameterType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   ParamRef param = GetParamRef( inInterpreter );
@@ -135,12 +135,12 @@ ParameterType::List( ScriptInterpreter& inInterpreter )
 }
 
 ParamRef
-ParameterType::GetParamRef( ScriptInterpreter& inInterpreter )
+ParameterType::GetParamRef( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
   if( name.empty() )
     throw bciexception_( "Expected a parameter name, with optional indices in parentheses" );
-  ScriptInterpreter::ArgumentList args;
+  CommandInterpreter::ArgumentList args;
   inInterpreter.ParseArguments( name, args );
   if( !inInterpreter.StateMachine().Parameters().Exists( name ) )
     throw bciexception_( "Parameter " << name << " does not exist" );
@@ -227,18 +227,21 @@ const ObjectType::MethodEntry ParametersType::sMethodTable[] =
 };
 
 bool
-ParametersType::Load( ScriptInterpreter& inInterpreter )
+ParametersType::Load( CommandInterpreter& inInterpreter )
 {
   return ParameterfileType::Load( inInterpreter );
 }
 
 bool
-ParametersType::List( ScriptInterpreter& inInterpreter )
+ParametersType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   string pattern = inInterpreter.GetRemainder();
   if( pattern.empty() )
+  {
+    inInterpreter.Unget();
     pattern = "*";
+  }
   const ParamList& parameters = inInterpreter.StateMachine().Parameters();
   for( int i = 0; i < parameters.Size(); ++i )
     if( WildcardMatch( pattern, parameters[i].Name(), false ) )
@@ -247,13 +250,13 @@ ParametersType::List( ScriptInterpreter& inInterpreter )
 }
 
 bool
-ParametersType::Apply( ScriptInterpreter& inInterpreter )
+ParametersType::Apply( CommandInterpreter& inInterpreter )
 {
   return SystemType::SetConfig( inInterpreter );
 }
 
 bool
-ParametersType::Clear( ScriptInterpreter& inInterpreter )
+ParametersType::Clear( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )
@@ -271,7 +274,7 @@ const ObjectType::MethodEntry ParameterfileType::sMethodTable[] =
 };
 
 bool
-ParameterfileType::Load( ScriptInterpreter& inInterpreter )
+ParameterfileType::Load( CommandInterpreter& inInterpreter )
 {
   string fileName = inInterpreter.GetRemainder();
   if( fileName.empty() )

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: A script interpreter type that handles global commands.
+// Description: Event object types for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,56 +23,50 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef IMPLIED_TYPE_H
-#define IMPLIED_TYPE_H
+#ifndef EVENT_TYPES_H
+#define EVENT_TYPES_H
 
 #include "ObjectType.h"
 
+class State;
+
 namespace Interpreter {
 
-class ImpliedType : public ObjectType
+class EventType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return ""; }
+  virtual const char* Name() const { return "Event"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
-  virtual void OnHelp( ScriptInterpreter& ) const;
 
  public:
-  static bool Get( ScriptInterpreter& );
-  static bool Set( ScriptInterpreter& );
-  static bool Wait( ScriptInterpreter& );
-  static bool System( ScriptInterpreter& );
-  static bool SetConfig( ScriptInterpreter& );
-  static bool Start( ScriptInterpreter& );
-  static bool Stop( ScriptInterpreter& );
-  static bool Startup( ScriptInterpreter& );
-  static bool Shutdown( ScriptInterpreter& );
-  static bool Reset( ScriptInterpreter& );
-  static bool Quit( ScriptInterpreter& );
-  static bool Version( ScriptInterpreter& );
-  static bool Log( ScriptInterpreter& );
-  static bool Warn( ScriptInterpreter& );
-  static bool Error( ScriptInterpreter& );
+  static bool Set( CommandInterpreter& );
+  static bool Get( CommandInterpreter& );
+  static bool Insert( CommandInterpreter& );
+  static bool List( CommandInterpreter& );
 
  private:
+  static State& GetEvent( CommandInterpreter& );
+
   static const MethodEntry sMethodTable[];
-  static ImpliedType sInstance;
+  static EventType sInstance;
 };
 
-class ExecutableType : public ObjectType
+class EventsType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Executable"; }
+  virtual const char* Name() const { return "Events"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Start( ScriptInterpreter& );
+  static bool Insert( CommandInterpreter& );
+  static bool List( CommandInterpreter& );
+  static bool Clear( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
-  static ExecutableType sInstance;
+  static EventsType sInstance;
 };
 
 } // namespace
 
-#endif // IMPLIED_TYPE_H
+#endif // EVENT_TYPES_H

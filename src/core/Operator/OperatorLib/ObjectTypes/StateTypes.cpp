@@ -28,7 +28,7 @@
 
 #include "StateTypes.h"
 #include "State.h"
-#include "ScriptInterpreter.h"
+#include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "Lockable.h"
 #include "WildcardMatch.h"
@@ -51,7 +51,7 @@ const ObjectType::MethodEntry StateType::sMethodTable[] =
 };
 
 bool
-StateType::Set( ScriptInterpreter& inInterpreter )
+StateType::Set( CommandInterpreter& inInterpreter )
 {
   string name;
   State::ValueType value = 0;
@@ -73,7 +73,7 @@ StateType::Set( ScriptInterpreter& inInterpreter )
 }
 
 bool
-StateType::Get( ScriptInterpreter& inInterpreter )
+StateType::Get( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   const State& state = GetState( inInterpreter ); // GetState() tests for existence of the state.
@@ -82,7 +82,7 @@ StateType::Get( ScriptInterpreter& inInterpreter )
 }
 
 bool
-StateType::Insert( ScriptInterpreter& inInterpreter )
+StateType::Insert( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
   string line = inInterpreter.GetRemainder(),
@@ -90,7 +90,7 @@ StateType::Insert( ScriptInterpreter& inInterpreter )
   State state;
   istringstream iss( stateline );
   if( !( iss >> state ) )
-    throw bciexception_( "Invalid state definition: " << stateline );
+    throw bciexception_( "Invalid state definition" );
   {
     Lock<StateMachine> lock( inInterpreter.StateMachine() );
     switch( inInterpreter.StateMachine().SystemState() )
@@ -111,7 +111,7 @@ StateType::Insert( ScriptInterpreter& inInterpreter )
 }
 
 bool
-StateType::List( ScriptInterpreter& inInterpreter )
+StateType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   inInterpreter.Out() << GetState( inInterpreter );
@@ -119,7 +119,7 @@ StateType::List( ScriptInterpreter& inInterpreter )
 }
 
 State&
-StateType::GetState( ScriptInterpreter& inInterpreter )
+StateType::GetState( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
   if( name.empty() )
@@ -138,12 +138,15 @@ const ObjectType::MethodEntry StatesType::sMethodTable[] =
 };
 
 bool
-StatesType::List( ScriptInterpreter& inInterpreter )
+StatesType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   string pattern = inInterpreter.GetRemainder();
   if( pattern.empty() )
+  {
+    inInterpreter.Unget();
     pattern = "*";
+  }
   const StateList& states = inInterpreter.StateMachine().States();
   for( int i = 0; i < states.Size(); ++i )
     if( WildcardMatch( pattern, states[i].Name(), false ) )
@@ -152,7 +155,7 @@ StatesType::List( ScriptInterpreter& inInterpreter )
 }
 
 bool
-StatesType::Clear( ScriptInterpreter& inInterpreter )
+StatesType::Clear( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: Parameter-related object types for the script interpreter.
+// Description: Message-related object types for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,65 +23,70 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef PARAMETER_TYPES_H
-#define PARAMETER_TYPES_H
+#ifndef MESSAGE_TYPES_H
+#define MESSAGE_TYPES_H
 
 #include "ObjectType.h"
-#include "ParamRef.h"
 
 namespace Interpreter {
 
-class ParameterType : public ObjectType
+class MessageType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Parameter"; }
+  virtual const char* Name() const { return "Message"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Set( ScriptInterpreter& );
-  static bool Get( ScriptInterpreter& );
-  static bool Insert( ScriptInterpreter& );
-  static bool List( ScriptInterpreter& );
+  static bool Log( CommandInterpreter& );
 
  private:
-  static ParamRef GetParamRef( ScriptInterpreter& );
-  static size_t GetIndex( const std::string&, const LabelIndex& );
-
   static const MethodEntry sMethodTable[];
-  static ParameterType sInstance;
+  static MessageType sInstance;
 };
 
-class ParametersType : public ObjectType
+class MessagesType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Parameters"; }
+  virtual const char* Name() const { return "Messages"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Load( ScriptInterpreter& );
-  static bool List( ScriptInterpreter& );
-  static bool Apply( ScriptInterpreter& );
-  static bool Clear( ScriptInterpreter& );
+  static bool Capture( CommandInterpreter& );
+  static bool Flush( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
-  static ParametersType sInstance;
+  static MessagesType sInstance;
 };
 
-class ParameterfileType : public ObjectType
+class WarningType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "ParameterFile"; }
+  virtual const char* Name() const { return "Warning"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Load( ScriptInterpreter& );
+  static bool Issue( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
-  static ParameterfileType sInstance;
+  static WarningType sInstance;
+};
+
+class ErrorType : public ObjectType
+{
+ protected:
+  virtual const char* Name() const { return "Error"; }
+  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+
+ public:
+  static bool Report( CommandInterpreter& );
+
+ private:
+  static const MethodEntry sMethodTable[];
+  static ErrorType sInstance;
 };
 
 } // namespace
 
-#endif // PARAMETER_TYPES_H
+#endif // MESSAGE_TYPES_H

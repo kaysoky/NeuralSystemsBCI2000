@@ -28,7 +28,7 @@
 
 #include "SignalTypes.h"
 
-#include "ScriptInterpreter.h"
+#include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "Lockable.h"
 #include "BCIException.h"
@@ -46,7 +46,7 @@ const ObjectType::MethodEntry Interpreter::SignalType::sMethodTable[] =
 };
 
 bool
-Interpreter::SignalType::Get( ScriptInterpreter& inInterpreter )
+Interpreter::SignalType::Get( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   const GenericSignal& signal = inInterpreter.StateMachine().ControlSignal();
@@ -61,7 +61,7 @@ Interpreter::SignalType::Get( ScriptInterpreter& inInterpreter )
   }
   else
   {
-    ScriptInterpreter::ArgumentList args;
+    CommandInterpreter::ArgumentList args;
     inInterpreter.ParseArguments( name, args );
     if( ::stricmp( name.c_str(), "Signal" ) )
       throw bciexception_( "Use 'Signal' to address the signal" );

@@ -9,43 +9,67 @@ SET( NAME OperatorLib )
 # DEBUG
 MESSAGE( "-- Adding Project: " ${NAME} )
 
-# Set the project specific sources
 SET( SRC_PROJECT
   BCI_OperatorLib.cpp
   CallbackBase.cpp
   StateMachine.cpp
-  ScriptInterpreter.cpp
-  ObjectType.cpp
-  ImpliedType.cpp
-  SystemTypes.cpp
-  ParameterTypes.cpp
-  StateTypes.cpp
-  EventTypes.cpp
-  SignalTypes.cpp
-  VisPropertyTypes.cpp
-  MessageTypes.cpp
-  ScriptType.cpp
-  ScriptEvents.cpp
   TelnetServer.cpp
+  ScriptInterpreter.cpp
+  CommandInterpreter.cpp
 )
+SET( SRC_OBJECT_TYPES
+  ObjectTypes/ObjectType.cpp
+  ObjectTypes/ConditionType.cpp
+  ObjectTypes/ImpliedType.cpp
+  ObjectTypes/SystemTypes.cpp
+  ObjectTypes/ParameterTypes.cpp
+  ObjectTypes/StateTypes.cpp
+  ObjectTypes/EventTypes.cpp
+  ObjectTypes/VariableType.cpp
+  ObjectTypes/SignalTypes.cpp
+  ObjectTypes/VisPropertyTypes.cpp
+  ObjectTypes/MessageTypes.cpp
+  ObjectTypes/ScriptType.cpp
+  ObjectTypes/ExpressionType.cpp
+  ObjectTypes/ScriptEvents.cpp
+)
+SET( SRC_SCRIPT_PARSER
+  ScriptParser/Script.cpp
+  ScriptParser/ParserToken.cpp
+  ScriptParser/ParserNodes.cpp
+  ScriptParser/ScriptParser.cpp
+)
+
 SET( HDR_PROJECT
   BCI_OperatorLib.h
   CallbackBase.h
   StateMachine.h
   VisTable.h
-  ScriptInterpreter.h
-  ObjectType.h
-  ImpliedType.h
-  SystemTypes.h
-  ParameterTypes.h
-  StateTypes.h
-  EventTypes.h
-  SignalTypes.h
-  VisPropertyTypes.h
-  MessageTypes.h
-  ScriptType.h
-  ScriptEvents.h
   TelnetServer.h
+  ScriptInterpreter.h
+  CommandInterpreter.h
+)
+SET( HDR_OBJECT_TYPES
+  ObjectTypes/ObjectType.h
+  ObjectTypes/ConditionType.h
+  ObjectTypes/ImpliedType.h
+  ObjectTypes/SystemTypes.h
+  ObjectTypes/ParameterTypes.h
+  ObjectTypes/StateTypes.h
+  ObjectTypes/EventTypes.h
+  ObjectTypes/VariableType.h
+  ObjectTypes/SignalTypes.h
+  ObjectTypes/VisPropertyTypes.h
+  ObjectTypes/MessageTypes.h
+  ObjectTypes/ScriptType.h
+  ObjectTypes/ExpressionType.h
+  ObjectTypes/ScriptEvents.h
+)
+SET( HDR_SCRIPT_PARSER
+  ScriptParser/Script.h
+  ScriptParser/ParserToken.h
+  ScriptParser/ParserNodes.h
+  ScriptParser/ScriptParser.h
 )
 
 IF( WIN32 )
@@ -70,13 +94,21 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES
 # Set the Project Source Groups
 SOURCE_GROUP( Source\\Project FILES ${SRC_PROJECT} )
 SOURCE_GROUP( Headers\\Project FILES ${HDR_PROJECT} )
+SOURCE_GROUP( Source\\Project\\ObjectTypes FILES ${SRC_OBJECT_TYPES} )
+SOURCE_GROUP( Headers\\Project\\ObjectTypes FILES ${HDR_OBJECT_TYPES} )
+SOURCE_GROUP( Source\\Project\\ScriptParser FILES ${SRC_SCRIPT_PARSER} )
+SOURCE_GROUP( Headers\\Project\\ScriptParser FILES ${HDR_SCRIPT_PARSER} )
+
+INCLUDE_DIRECTORIES( ObjectTypes ScriptParser )
 
 # Add the executable to the project
 ADD_LIBRARY(  
   ${NAME} 
   SHARED
   ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} 
-  ${SRC_PROJECT} ${HDR_PROJECT} 
+  ${SRC_PROJECT} ${HDR_PROJECT}
+  ${SRC_OBJECT_TYPES} ${HDR_OBJECT_TYPES}
+  ${SRC_SCRIPT_PARSER} ${HDR_SCRIPT_PARSER}
 )
 
 # Add Pre-processor defines

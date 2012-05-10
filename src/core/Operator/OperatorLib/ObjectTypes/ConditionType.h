@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: VisProperty-related object types for the script interpreter.
+// Description: A CommandInterpreter type for logical conditions.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,47 +23,28 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef VISPROPERTY_TYPES_H
-#define VISPROPERTY_TYPES_H
+#ifndef CONDITION_TYPE_H
+#define CONDITION_TYPE_H
 
 #include "ObjectType.h"
-#include "CfgID.h"
 
 namespace Interpreter {
 
-class VisPropertyType : public ObjectType
+class ConditionType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "VisProperty"; }
+  virtual const char* Name() const { return "Condition"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Set( ScriptInterpreter& );
-  static bool Get( ScriptInterpreter& );
-  
- private:
-  static void GetVisPropertyIDs( ScriptInterpreter&, std::string& outVisID, std::string& outCfgID, CfgID::IDType& outNumCfgID );
-
-  static const MethodEntry sMethodTable[];
-  static VisPropertyType sInstance;
-};
-
-class VisPropertiesType : public ObjectType
-{
- protected:
-  virtual const char* Name() const { return "VisProperties"; }
-  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
-  virtual void OnInitialize( StateMachine& ) const;
+  static bool Evaluate( CommandInterpreter& );
+  static bool EvaluateExpression( CommandInterpreter& );
 
  private:
-  static bool Set( ScriptInterpreter& );
-  
-  void ApplyVisPropertySet( const std::string& setID );
-
   static const MethodEntry sMethodTable[];
-  static VisPropertiesType sInstance;
+  static ConditionType sInstance;
 };
 
 } // namespace
 
-#endif // VISPROPERTY_TYPES_H
+#endif // CONDITION_TYPE_H

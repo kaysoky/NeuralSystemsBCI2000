@@ -28,7 +28,7 @@
 
 #include "SystemTypes.h"
 
-#include "ScriptInterpreter.h"
+#include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include "BCIException.h"
@@ -45,7 +45,7 @@ using namespace Interpreter;
 SystemType SystemType::sInstance;
 const ObjectType::MethodEntry SystemType::sMethodTable[] =
 {
-  METHOD( Get ), METHOD( WaitFor ), METHOD( SetConfig ),
+  METHOD( Get ), METHOD( WaitFor ), METHOD( Sleep ), METHOD( SetConfig ),
   METHOD( Start ), METHOD( Stop ), { "Suspend", &Stop },
   METHOD( Startup ), METHOD( Shutdown ), METHOD( Reset ),
   METHOD( Quit ), { "Exit", &Quit },
@@ -70,7 +70,7 @@ sSystemStates[] =
 };
 
 bool
-SystemType::Get( ScriptInterpreter& inInterpreter )
+SystemType::Get( CommandInterpreter& inInterpreter )
 {
   string noun = inInterpreter.GetToken();
   if( !::stricmp( noun.c_str(), "State" ) )
@@ -83,7 +83,7 @@ SystemType::Get( ScriptInterpreter& inInterpreter )
 }
 
 bool
-SystemType::GetState( ScriptInterpreter& inInterpreter )
+SystemType::GetState( CommandInterpreter& inInterpreter )
 {
   int state = BCI_GetStateOfOperation();
   size_t i = 0;
@@ -100,14 +100,14 @@ SystemType::GetState( ScriptInterpreter& inInterpreter )
 }
 
 bool
-SystemType::GetVersion( ScriptInterpreter& inInterpreter )
+SystemType::GetVersion( CommandInterpreter& inInterpreter )
 {
   VersionInfo::Current.WriteToStream( inInterpreter.Out(), true );
   return true;
 }
 
 bool
-SystemType::WaitFor( ScriptInterpreter& inInterpreter )
+SystemType::WaitFor( CommandInterpreter& inInterpreter )
 {
   string states = inInterpreter.GetToken();
   set<int> desiredStates;
@@ -142,7 +142,8 @@ SystemType::WaitFor( ScriptInterpreter& inInterpreter )
   int state = BCI_GetStateOfOperation();
   while( desiredStates.find( state ) == desiredStates.end() && timeElapsed < 1e3 * timeout )
   {
-    OSThread::Sleep( resolution );
+    inInterpreter.Background();
+    ThreadUtils::SleepFor( resolution );
     timeElapsed += resolution;
     state = BCI_GetStateOfOperation();
   }
@@ -152,7 +153,26 @@ SystemType::WaitFor( ScriptInterpreter& inInterpreter )
 }
 
 bool
-SystemType::SetConfig( ScriptInterpreter& inInterpreter )
+SystemType::Sleep( CommandInterpreter& inInterpreter )
+{
+  double duration = 0;
+  if( !( istringstream( inInterpreter.GetToken() ) >> duration ) )
+    throw bciexception_( "Invalid sleep duration" );
+  if( duration < 0 )
+    throw bciexception_( "Sleep duration must be >= 0" );
+  const int resolution = 100; // ms
+  int timeElapsed = 0;
+  while( timeElapsed < 1e3 * duration )
+  {
+    inInterpreter.Background();
+    ThreadUtils::SleepFor( resolution );
+    timeElapsed += resolution;
+  }
+  return true;
+}
+
+bool
+SystemType::SetConfig( CommandInterpreter& inInterpreter )
 {
   if( !inInterpreter.StateMachine().SetConfig() )
     throw bciexception_( "Could not set configuration" );
@@ -160,7 +180,7 @@ SystemType::SetConfig( ScriptInterpreter& inInterpreter )
 }
 
 bool
-SystemType::Start( ScriptInterpreter& inInterpreter )
+SystemType::Start( CommandInterpreter& inInterpreter )
 {
   if( !inInterpreter.StateMachine().StartRun() )
     throw bciexception_( "Could not start operation" );
@@ -168,7 +188,7 @@ SystemType::Start( ScriptInterpreter& inInterpreter )
 }
 
 bool
-SystemType::Stop( ScriptInterpreter& inInterpreter )
+SystemType::Stop( CommandInterpreter& inInterpreter )
 {
   if( !inInterpreter.StateMachine().StopRun() )
     throw bciexception_( "Could not stop operation" );
@@ -176,7 +196,7 @@ SystemType::Stop( ScriptInterpreter& inInterpreter )
 }
 
 bool
-SystemType::Startup( ScriptInterpreter& inInterpreter )
+SystemType::Startup( CommandInterpreter& inInterpreter )
 {
   string args = inInterpreter.GetRemainder();
   if( !inInterpreter.StateMachine().Startup( args.c_str() ) )
@@ -185,7 +205,7 @@ SystemType::Startup( ScriptInterpreter& inInterpreter )
 }
 
 bool
-SystemType::Shutdown( ScriptInterpreter& inInterpreter )
+SystemType::Shutdown( CommandInterpreter& inInterpreter )
 {
   if( !inInterpreter.StateMachine().Shutdown() )
     throw bciexception_( "Could not shut down system" );
@@ -193,19 +213,19 @@ SystemType::Shutdown( ScriptInterpreter& inInterpreter )
 }
 
 bool
-SystemType::Reset( ScriptInterpreter& inInterpreter )
+SystemType::Reset( CommandInterpreter& inInterpreter )
 {
   inInterpreter.StateMachine().StopRun();
   inInterpreter.StateMachine().Shutdown();
   ParametersType::Clear( inInterpreter );
   StatesType::Clear( inInterpreter );
   EventsType::Clear( inInterpreter );
-  ScriptInterpreter::Initialize( inInterpreter.StateMachine() );
+  ObjectType::Initialize( inInterpreter.StateMachine() );
   return true;
 }
 
 bool
-SystemType::Quit( ScriptInterpreter& inInterpreter )
+SystemType::Quit( CommandInterpreter& inInterpreter )
 {
   if( !inInterpreter.StateMachine().CallbackFunction( BCI_OnQuitRequest ) )
     throw bciexception_( "Quit request not handled by application" );
@@ -225,7 +245,7 @@ const ObjectType::MethodEntry ConfigType::sMethodTable[] =
 };
 
 bool
-ConfigType::Set( ScriptInterpreter& inInterpreter )
+ConfigType::Set( CommandInterpreter& inInterpreter )
 {
   return SystemType::SetConfig( inInterpreter );
 }

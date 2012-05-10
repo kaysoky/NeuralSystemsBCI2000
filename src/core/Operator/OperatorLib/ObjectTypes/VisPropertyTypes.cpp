@@ -28,7 +28,7 @@
 
 #include "VisPropertyTypes.h"
 
-#include "ScriptInterpreter.h"
+#include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include "BCIException.h"
@@ -47,7 +47,7 @@ const ObjectType::MethodEntry VisPropertyType::sMethodTable[] =
 };
 
 bool
-VisPropertyType::Set( ScriptInterpreter& inInterpreter )
+VisPropertyType::Set( CommandInterpreter& inInterpreter )
 {
   string visID, cfgID;
   IDType numCfgID;
@@ -63,7 +63,7 @@ VisPropertyType::Set( ScriptInterpreter& inInterpreter )
 }
 
 bool
-VisPropertyType::Get( ScriptInterpreter& inInterpreter )
+VisPropertyType::Get( CommandInterpreter& inInterpreter )
 {
   string visID, cfgID;
   IDType numCfgID;
@@ -76,7 +76,7 @@ VisPropertyType::Get( ScriptInterpreter& inInterpreter )
 }
 
 void
-VisPropertyType::GetVisPropertyIDs( ScriptInterpreter& inInterpreter, string& outVisID, string& outCfgID, IDType& outNumCfgID )
+VisPropertyType::GetVisPropertyIDs( CommandInterpreter& inInterpreter, string& outVisID, string& outCfgID, IDType& outNumCfgID )
 {
   string visIDcfgID = inInterpreter.GetToken();
   istringstream iss( visIDcfgID );
@@ -101,15 +101,18 @@ const ObjectType::MethodEntry VisPropertiesType::sMethodTable[] =
 void
 VisPropertiesType::OnInitialize( StateMachine& s ) const
 {
-  Param p(
-    "Visualize:Property%20Sets matrix " PROPERTY_SETS_PARAM "= 0 1 % % % "
-    "// row titles are properties in the form \"SRCD.Left\", columns are property sets"
-  );
-  s.Parameters()[PROPERTY_SETS_PARAM] = p;
+  if( !s.Parameters().Exists( PROPERTY_SETS_PARAM ) )
+  {
+    Param p(
+      "Visualize:Property%20Sets matrix " PROPERTY_SETS_PARAM "= 0 1 % % % "
+      "// row titles are properties in the form \"SRCD.Left\", columns are property sets"
+    );
+    s.Parameters()[PROPERTY_SETS_PARAM] = p;
+  }
 }
 
 bool
-VisPropertiesType::Set( ScriptInterpreter& inInterpreter )
+VisPropertiesType::Set( CommandInterpreter& inInterpreter )
 {
   Param p;
   {

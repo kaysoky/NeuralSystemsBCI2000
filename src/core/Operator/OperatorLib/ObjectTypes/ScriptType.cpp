@@ -28,7 +28,8 @@
 
 #include "ScriptType.h"
 #include "ScriptEvents.h"
-#include "ScriptInterpreter.h"
+#include "Script.h"
+#include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "BCIException.h"
 #include "BCI_OperatorLib.h"
@@ -46,7 +47,7 @@ const ObjectType::MethodEntry ScriptType::sMethodTable[] =
 };
 
 bool
-ScriptType::Set( ScriptInterpreter& inInterpreter )
+ScriptType::Set( CommandInterpreter& inInterpreter )
 {
   string events = inInterpreter.GetToken(),
          script = inInterpreter.GetToken();
@@ -55,7 +56,7 @@ ScriptType::Set( ScriptInterpreter& inInterpreter )
 }
 
 bool
-ScriptType::Clear( ScriptInterpreter& inInterpreter )
+ScriptType::Clear( CommandInterpreter& inInterpreter )
 {
   string events = inInterpreter.GetToken();
   SetScript( inInterpreter, events, "" );
@@ -63,7 +64,7 @@ ScriptType::Clear( ScriptInterpreter& inInterpreter )
 }
 
 bool
-ScriptType::Get( ScriptInterpreter& inInterpreter )
+ScriptType::Get( CommandInterpreter& inInterpreter )
 {
   string eventName = inInterpreter.GetToken();
   int eventID = EventID( eventName );
@@ -73,27 +74,27 @@ ScriptType::Get( ScriptInterpreter& inInterpreter )
 }
 
 bool
-ScriptType::Execute( ScriptInterpreter& inInterpreter )
+ScriptType::Execute( CommandInterpreter& inInterpreter )
 {
   string token = inInterpreter.GetToken();
   int eventID = ScriptEvents::ID( token );
-  bool success = false;
+  string script, name;
   if( eventID != BCI_None )
   {
-    success = inInterpreter.Execute( inInterpreter.StateMachine().EventScripts().Get( eventID ) );
+    script = inInterpreter.StateMachine().EventScripts().Get( eventID );
+    name = token + " script";
   }
   else
   {
     inInterpreter.Unget();
-    string name = inInterpreter.GetRemainder();
+    name = inInterpreter.GetRemainder();
     ifstream file( name.c_str() );
     if( !file.is_open() )
       throw bciexception_( "Could not open script file \"" << name << "\"" );
-    string script;
     getline( file, script, '\0' );
-    success = inInterpreter.Execute( script.c_str() );
   }
-  return success;
+  Script( script, name ).Compile().Execute( CommandInterpreter( inInterpreter ) );
+  return true;
 }
 
 int
@@ -106,7 +107,7 @@ ScriptType::EventID( const string& inEventName )
 }
 
 void
-ScriptType::SetScript( ScriptInterpreter& inInterpreter, const string& inEvents, const string& inScript )
+ScriptType::SetScript( CommandInterpreter& inInterpreter, const string& inEvents, const string& inScript )
 {
   istringstream iss( inEvents );
   string eventName;

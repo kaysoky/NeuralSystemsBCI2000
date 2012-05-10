@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: Event object types for the script interpreter.
+// Description: Script object type for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,50 +23,33 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef EVENT_TYPES_H
-#define EVENT_TYPES_H
+#ifndef SCRIPT_TYPE_H
+#define SCRIPT_TYPE_H
 
 #include "ObjectType.h"
 
-class State;
-
 namespace Interpreter {
 
-class EventType : public ObjectType
+class ScriptType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Event"; }
+  virtual const char* Name() const { return "Script"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Set( ScriptInterpreter& );
-  static bool Get( ScriptInterpreter& );
-  static bool Insert( ScriptInterpreter& );
-  static bool List( ScriptInterpreter& );
+  static bool Set( CommandInterpreter& );
+  static bool Get( CommandInterpreter& );
+  static bool Clear( CommandInterpreter& );
+  static bool Execute( CommandInterpreter& );
 
  private:
-  static State& GetEvent( ScriptInterpreter& );
+  static int EventID( const std::string& );
+  static void SetScript( CommandInterpreter&, const std::string&, const std::string& );
 
   static const MethodEntry sMethodTable[];
-  static EventType sInstance;
-};
-
-class EventsType : public ObjectType
-{
- protected:
-  virtual const char* Name() const { return "Events"; }
-  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
-
- public:
-  static bool Insert( ScriptInterpreter& );
-  static bool List( ScriptInterpreter& );
-  static bool Clear( ScriptInterpreter& );
-
- private:
-  static const MethodEntry sMethodTable[];
-  static EventsType sInstance;
+  static ScriptType sInstance;
 };
 
 } // namespace
 
-#endif // EVENT_TYPES_H
+#endif // SCRIPT_TYPE_H

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: Script object type for the script interpreter.
+// Description: State-related object types for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,33 +23,50 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef SCRIPT_TYPE_H
-#define SCRIPT_TYPE_H
+#ifndef STATE_TYPES_H
+#define STATE_TYPES_H
 
 #include "ObjectType.h"
 
+class State;
+
 namespace Interpreter {
 
-class ScriptType : public ObjectType
+class StateType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Script"; }
+  virtual const char* Name() const { return "State"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Set( ScriptInterpreter& );
-  static bool Get( ScriptInterpreter& );
-  static bool Clear( ScriptInterpreter& );
-  static bool Execute( ScriptInterpreter& );
+  static bool Set( CommandInterpreter& );
+  static bool Get( CommandInterpreter& );
+  static bool Insert( CommandInterpreter& );
+  static bool List( CommandInterpreter& );
 
  private:
-  static int EventID( const std::string& );
-  static void SetScript( ScriptInterpreter&, const std::string&, const std::string& );
+  static State& GetState( CommandInterpreter& );
 
   static const MethodEntry sMethodTable[];
-  static ScriptType sInstance;
+  static StateType sInstance;
+};
+
+class StatesType : public ObjectType
+{
+ protected:
+  virtual const char* Name() const { return "States"; }
+  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+
+ public:
+  static bool Insert( CommandInterpreter& );
+  static bool List( CommandInterpreter& );
+  static bool Clear( CommandInterpreter& );
+
+ private:
+  static const MethodEntry sMethodTable[];
+  static StatesType sInstance;
 };
 
 } // namespace
 
-#endif // SCRIPT_TYPE_H
+#endif // STATE_TYPES_H

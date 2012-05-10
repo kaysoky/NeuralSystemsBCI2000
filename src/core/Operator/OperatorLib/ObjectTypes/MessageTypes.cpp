@@ -28,7 +28,7 @@
 
 #include "MessageTypes.h"
 
-#include "ScriptInterpreter.h"
+#include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include "BCIException.h"
@@ -47,7 +47,7 @@ const ObjectType::MethodEntry MessageType::sMethodTable[] =
 };
 
 bool
-MessageType::Log( ScriptInterpreter& inInterpreter )
+MessageType::Log( CommandInterpreter& inInterpreter )
 {
   string message = inInterpreter.GetRemainder();
   if( message.empty() )
@@ -65,7 +65,7 @@ const ObjectType::MethodEntry MessagesType::sMethodTable[] =
 };
 
 bool
-MessagesType::Capture( ScriptInterpreter& inInterpreter )
+MessagesType::Capture( CommandInterpreter& inInterpreter )
 {
   string types = inInterpreter.GetRemainder();
   if( types.empty() )
@@ -100,7 +100,7 @@ MessagesType::Capture( ScriptInterpreter& inInterpreter )
 }
 
 bool
-MessagesType::Flush( ScriptInterpreter& inInterpreter )
+MessagesType::Flush( CommandInterpreter& inInterpreter )
 {
   inInterpreter.FlushCapturedLog();
   return true;
@@ -115,7 +115,7 @@ const ObjectType::MethodEntry WarningType::sMethodTable[] =
 };
 
 bool
-WarningType::Issue( ScriptInterpreter& inInterpreter )
+WarningType::Issue( CommandInterpreter& inInterpreter )
 {
   string message = inInterpreter.GetRemainder();
   if( message.empty() )
@@ -133,7 +133,7 @@ const ObjectType::MethodEntry ErrorType::sMethodTable[] =
 };
 
 bool
-ErrorType::Report( ScriptInterpreter& inInterpreter )
+ErrorType::Report( CommandInterpreter& inInterpreter )
 {
   string message = inInterpreter.GetRemainder();
   if( message.empty() )

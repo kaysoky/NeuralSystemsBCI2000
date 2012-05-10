@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Authors: schalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
-// Description: A class that encapsulates interpretation of operator scripts.
+// Authors: juergen.mellinger@uni-tuebingen.de
+// Description: Arithmetic expression type for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,30 +23,28 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef SCRIPT_INTERPRETER_H
-#define SCRIPT_INTERPRETER_H
+#ifndef EXPRESSION_TYPE_H
+#define EXPRESSION_TYPE_H
 
-#include "StateMachine.h"
-#include "CommandInterpreter.h"
+#include "ObjectType.h"
 
-class ScriptInterpreter : private CommandInterpreter
+namespace Interpreter {
+
+class ExpressionType : public ObjectType
 {
- public:
-  ScriptInterpreter( class StateMachine& );
-  virtual ~ScriptInterpreter();
-  // Properties
-  //  The result of the last executed scripting command.
-  std::string Result() const;
-  // Methods
-  //  Compile and execute a sequence of scripting commands.
-  bool Execute( const std::string& script, const std::string& name = "" );
-  //  Force termination of a script.
-  void Abort();
-
  protected:
-  // Re-implement this function to direct error messages somewhere else than
-  // into the BCI_OnScriptError callback.
-  virtual void OnScriptError( const std::string& );
+  virtual const char* Name() const { return "Expression"; }
+  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+
+ public:
+  static bool Evaluate( CommandInterpreter& );
+  static bool Clear( CommandInterpreter& );
+
+ private:
+  static const MethodEntry sMethodTable[];
+  static ExpressionType sInstance;
 };
 
-#endif // SCRIPT_INTERPRETER_H
+} // namespace
+
+#endif // EXPRESSION_TYPE_H

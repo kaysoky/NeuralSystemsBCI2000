@@ -37,7 +37,7 @@ class SignalType : public ObjectType
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Get( ScriptInterpreter& );
+  static bool Get( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];

@@ -27,13 +27,13 @@
 #pragma hdrstop
 
 #include "ObjectType.h"
-#include "ScriptInterpreter.h"
+#include "CommandInterpreter.h"
 
 using namespace std;
 using namespace Interpreter;
 
 bool
-ObjectType::Execute( const string& inVerb, ScriptInterpreter& inInterpreter ) const
+ObjectType::Execute( const string& inVerb, CommandInterpreter& inInterpreter ) const
 {
   const MethodEntry* pEntry = MethodTable();
   while( pEntry->verb )
@@ -52,16 +52,15 @@ ObjectType::Execute( const string& inVerb, ScriptInterpreter& inInterpreter ) co
 }
 
 void
-ObjectType::Help( ScriptInterpreter& inInterpreter ) const
+ObjectType::Help( CommandInterpreter& inInterpreter ) const
 {
   OnHelp( inInterpreter );
-  inInterpreter.GetRemainder();
 }
 
 void
-ObjectType::ListMethods( ScriptInterpreter& inInterpreter ) const
+ObjectType::ListMethods( std::ostream& os ) const
 {
-  OnListMethods( inInterpreter );
+  OnListMethods( os );
 }
 
 void
@@ -99,26 +98,25 @@ ObjectType::Next( const ObjectType* inP )
 }
 
 void
-ObjectType::OnHelp( ScriptInterpreter& inInterpreter ) const
+ObjectType::OnHelp( CommandInterpreter& inInterpreter ) const
 {
-  const MethodEntry* pEntry = MethodTable();
   if( MethodTable()->verb )
   {
     inInterpreter.Out() << "Commands for objects of type " << Name() << ": ";
-    ListMethods( inInterpreter );
+    ListMethods( inInterpreter.Out() );
   }
   else
     inInterpreter.Out() << "There are no commands associated with type " << Name();
 }
 
 void
-ObjectType::OnListMethods( ScriptInterpreter& inInterpreter ) const
+ObjectType::OnListMethods( std::ostream& os ) const
 {
   const MethodEntry* pEntry = MethodTable();
   if( pEntry->verb )
-    inInterpreter.Out() << ( pEntry++ )->verb;
+    os << ( pEntry++ )->verb;
   while( pEntry->verb )
-    inInterpreter.Out() << ", " << ( pEntry++ )->verb;
+    os << ", " << ( pEntry++ )->verb;
 }
 
 ObjectType::TypeDictionary&

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Authors: schalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
-// Description: A class that encapsulates interpretation of operator scripts.
+// Authors: juergen.mellinger@uni-tuebingen.de
+// Description: Environment variable object type for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,30 +23,30 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef SCRIPT_INTERPRETER_H
-#define SCRIPT_INTERPRETER_H
+#ifndef VARIABLE_TYPE_H
+#define VARIABLE_TYPE_H
 
-#include "StateMachine.h"
-#include "CommandInterpreter.h"
+#include "ObjectType.h"
 
-class ScriptInterpreter : private CommandInterpreter
+namespace Interpreter {
+
+class VariableType : public ObjectType
 {
- public:
-  ScriptInterpreter( class StateMachine& );
-  virtual ~ScriptInterpreter();
-  // Properties
-  //  The result of the last executed scripting command.
-  std::string Result() const;
-  // Methods
-  //  Compile and execute a sequence of scripting commands.
-  bool Execute( const std::string& script, const std::string& name = "" );
-  //  Force termination of a script.
-  void Abort();
-
  protected:
-  // Re-implement this function to direct error messages somewhere else than
-  // into the BCI_OnScriptError callback.
-  virtual void OnScriptError( const std::string& );
+  virtual const char* Name() const { return "Variable"; }
+  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+
+ public:
+  static bool Set( CommandInterpreter& );
+  static bool Get( CommandInterpreter& );
+  static bool Clear( CommandInterpreter& );
+  static bool GetVariable( const std::string&, std::string& );
+
+ private:
+  static const MethodEntry sMethodTable[];
+  static VariableType sInstance;
 };
 
-#endif // SCRIPT_INTERPRETER_H
+} // namespace
+
+#endif // VARIABLE_TYPE_H

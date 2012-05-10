@@ -52,7 +52,7 @@
 #include <set>
 #include <fstream>
 
-class ScriptInterpreter;
+class CommandInterpreter;
 
 class StateMachine : public CallbackBase, private OSThread
 {
@@ -160,11 +160,11 @@ class StateMachine : public CallbackBase, private OSThread
   // Issue a log message.
   void LogMessage( int messageCallbackID, const std::string& );
 
-  // Interface to ScriptInterpreter class.
+  // Interface to CommandInterpreter class.
  public:
-  void AddListener( ScriptInterpreter& listener )
+  void AddListener( CommandInterpreter& listener )
     { ::Lock<Listeners> lock( mListeners ); mListeners.insert( &listener ); }
-  void RemoveListener( ScriptInterpreter& listener )
+  void RemoveListener( CommandInterpreter& listener )
     { ::Lock<Listeners> lock( mListeners ); mListeners.erase( &listener ); }
 
  private:
@@ -205,7 +205,7 @@ class StateMachine : public CallbackBase, private OSThread
 
   std::ofstream     mDebugLog;
 
-  struct Listeners : std::set<ScriptInterpreter*>, Lockable
+  struct Listeners : std::set<CommandInterpreter*>, Lockable
   {
   } mListeners;
 
