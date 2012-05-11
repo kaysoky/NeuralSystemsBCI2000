@@ -41,6 +41,8 @@
 using namespace std;
 using namespace Interpreter;
 
+static const int cTimeResolution = 50; // for Sleep and Wait commands, in ms
+
 //// SystemType
 SystemType SystemType::sInstance;
 const ObjectType::MethodEntry SystemType::sMethodTable[] =
@@ -137,13 +139,12 @@ SystemType::WaitFor( CommandInterpreter& inInterpreter )
   if( timeout < 0 )
     throw bciexception_( "Timeout must be >= 0" );
 
-  const int resolution = 50; // ms
   int timeElapsed = 0;
   int state = BCI_GetStateOfOperation();
   while( desiredStates.find( state ) == desiredStates.end() && timeElapsed < 1e3 * timeout )
   {
-    ThreadUtils::SleepFor( resolution );
-    timeElapsed += resolution + inInterpreter.Background();
+    ThreadUtils::SleepFor( cTimeResolution );
+    timeElapsed += cTimeResolution + inInterpreter.Background();
     state = BCI_GetStateOfOperation();
   }
   if( desiredStates.find( state ) == desiredStates.end() )
@@ -159,12 +160,11 @@ SystemType::Sleep( CommandInterpreter& inInterpreter )
     throw bciexception_( "Invalid sleep duration" );
   if( duration < 0 )
     throw bciexception_( "Sleep duration must be >= 0" );
-  const int resolution = 100; // ms
   int timeElapsed = 0;
   while( timeElapsed < 1e3 * duration )
   {
-    ThreadUtils::SleepFor( resolution );
-    timeElapsed += resolution + inInterpreter.Background();
+    ThreadUtils::SleepFor( cTimeResolution );
+    timeElapsed += cTimeResolution + inInterpreter.Background();
   }
   return true;
 }
