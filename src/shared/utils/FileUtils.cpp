@@ -51,7 +51,7 @@ using namespace FileUtils;
 
 static string sSeparators = SeparatorSet();
 static string sOriginalWD = GetCWD();
-static string sInstallationDirectory = UpDirectory( ExecutablePath() );
+static string sInstallationDirectory = ParentDirectory( ExecutablePath() );
 static OSMutex sWorkingDirMutex;
 
 const string&
@@ -157,7 +157,7 @@ FileUtils::CanonicalPath( const std::string& inPath )
 }
 
 string
-FileUtils::UpDirectory( const std::string& inPath )
+FileUtils::ParentDirectory( const std::string& inPath )
 {
   if( IsFile( inPath ) )
     return FileUtils::ExtractDirectory( inPath );

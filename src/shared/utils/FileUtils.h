@@ -56,7 +56,7 @@ namespace FileUtils
   std::string CanonicalPath( const std::string& );
 
   // This returns the parent of the specified object (file or directory).
-  std::string UpDirectory( const std::string& );
+  std::string ParentDirectory( const std::string& );
 
   // These return the directory portion, file name, base name portion, and extension of a path.
   std::string ExtractDirectory( const std::string& );
