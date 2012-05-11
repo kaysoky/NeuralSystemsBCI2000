@@ -11,7 +11,7 @@ set PYWD=%WD%\..\python
 :: last fallback = E1001 setup: one 3.x prog directory only
 @set PROG=%WD%\..\..\..\..\..\..\..\..\prog
 @set PYPROG=%PROG%
-call portable.bat
+::call %WD%\portable.bat C:\FullMonty254-20110710\App
 @if exist %PROG% cd %PROG%
 @if exist %PROG% goto gotprog
 
@@ -50,7 +50,7 @@ call portable.bat
 :SkipEmotivParams
 
 @if /i not %SRC% == SignalGenerator goto SkipSignalGeneratorParams
-@set SRC=SignalGenerator && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=--EvaluateTiming=0
+@set SRC=SignalGenerator && set LOGGERS=--EvaluateTiming=0
 :SkipSignalGeneratorParams
 
 
