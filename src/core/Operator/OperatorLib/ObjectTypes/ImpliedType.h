@@ -40,9 +40,7 @@ class ImpliedType : public ObjectType
  public:
   static bool Get( CommandInterpreter& );
   static bool Set( CommandInterpreter& );
-  static bool Wait( CommandInterpreter& );
-  static bool Sleep( CommandInterpreter& );
-  static bool System( CommandInterpreter& );
+
   static bool SetConfig( CommandInterpreter& );
   static bool Start( CommandInterpreter& );
   static bool Stop( CommandInterpreter& );
@@ -50,11 +48,24 @@ class ImpliedType : public ObjectType
   static bool Shutdown( CommandInterpreter& );
   static bool Reset( CommandInterpreter& );
   static bool Quit( CommandInterpreter& );
+
+  static bool System( CommandInterpreter& );
+  static bool Echo( CommandInterpreter& );
+  static bool Ls( CommandInterpreter& );
+  static bool Cd( CommandInterpreter& );
+  static bool Pwd( CommandInterpreter& );
+
+  static bool Wait( CommandInterpreter& );
+  static bool Sleep( CommandInterpreter& );
+
   static bool Version( CommandInterpreter& );
+
   static bool Log( CommandInterpreter& );
   static bool Warn( CommandInterpreter& );
   static bool Error( CommandInterpreter& );
+
   static bool Square( CommandInterpreter& );
+  
 
  private:
   static const MethodEntry sMethodTable[];

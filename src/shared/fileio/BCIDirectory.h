@@ -27,15 +27,19 @@
 #ifndef BCI_DIRECTORY_H
 #define BCI_DIRECTORY_H
 
-#include <string>
+#include "FileUtils.h"
 
 class BCIDirectory
 {
   enum { none = -1 };
 
  public:
-  static const std::string& InstallationDirectory();
+#if 0
+  static const std::string& InstallationDirectory()
+                            { return FileUtils::InstallationDirectory(); }
+#endif
 
+  // Class interface: Creating output directory, and file names for recorded files.
   BCIDirectory();
   // Write accessors return an instance reference
   // -- this allows for "named parameter" constructs as in
@@ -65,32 +69,17 @@ class BCIDirectory
   // This returns the full path to the current file, but without the .dat extension.
   std::string        FilePath() const;
   std::string        DirectoryPath() const;
-  // This transforms relative paths into absolute paths, using the executable's
-  // installation directory as a reference.
-  static std::string AbsolutePath( const std::string& );
   // This creates all directories contained in the file path if they don't exist.
   const BCIDirectory& CreatePath() const;
-  // This returns the current working directory.
-  static std::string GetCWD();
 
  private:
   static int         GetLargestRun( const std::string& path,
                                     const std::string& extension );
   static int         ExtractRunNumber( const std::string& fileName );
-  static int         ChangeForceDir( const std::string& );
-  static int         MkDir( const std::string& );
-  static bool        IsAbsolutePath( const std::string& );
+  static bool        ChangeForceDir( const std::string& );
 
   BCIDirectory&      UpdateRunNumber();
   std::string        ConstructFileName() const;
-
-#ifdef _WIN32
-  static const char  DirSeparator = '\\';
-  static const char  DriveSeparator = ':';
-#else
-  static const char  DirSeparator = '/';
-  static const char  DriveSeparator = '/';
-#endif
 
   std::string        mDataDirectory,
                      mSubjectName,
@@ -98,7 +87,6 @@ class BCIDirectory
   int                mSessionNumber,
                      mDesiredRunNumber,
                      mActualRunNumber;
-  static std::string sInstallationDirectory;
 };
 
 #endif // BCI_DIRECTORY_H

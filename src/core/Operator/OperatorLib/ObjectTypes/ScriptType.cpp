@@ -31,6 +31,7 @@
 #include "Script.h"
 #include "CommandInterpreter.h"
 #include "StateMachine.h"
+#include "FileUtils.h"
 #include "BCIException.h"
 #include "BCI_OperatorLib.h"
 
@@ -78,7 +79,7 @@ ScriptType::Execute( CommandInterpreter& inInterpreter )
 {
   string token = inInterpreter.GetToken();
   int eventID = ScriptEvents::ID( token );
-  string script, name;
+  string script, name, path;
   if( eventID != BCI_None )
   {
     script = inInterpreter.StateMachine().EventScripts().Get( eventID );
@@ -92,8 +93,11 @@ ScriptType::Execute( CommandInterpreter& inInterpreter )
     if( !file.is_open() )
       throw bciexception_( "Could not open script file \"" << name << "\"" );
     getline( file, script, '\0' );
+    path = FileUtils::AbsolutePath( name );
   }
-  Script( script, name ).Compile().Execute( CommandInterpreter( inInterpreter ) );
+  CommandInterpreter subInterpreter( inInterpreter );
+  subInterpreter.LocalVariables()["BCI2000SCRIPT"] = path;
+  Script( script, name ).Compile().Execute( subInterpreter );
   return true;
 }
 
@@ -114,4 +118,3 @@ ScriptType::SetScript( CommandInterpreter& inInterpreter, const string& inEvents
   while( getline( iss >> ws, eventName, '|' ) )
     inInterpreter.StateMachine().EventScripts().Set( EventID( eventName ), inScript );
 }
-

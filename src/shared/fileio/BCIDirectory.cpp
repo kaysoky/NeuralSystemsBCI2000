@@ -42,22 +42,15 @@
 # include <sys/stat.h>
 # include <dirent.h>
 #endif // _WIN32
-#include <stdlib.h>
-#include <errno.h>
+#include <cstdlib>
+#include <cerrno>
 #include <sstream>
 #include <iomanip>
 
 using namespace std;
+using namespace FileUtils;
 
 static const char* BCIFileExtension = ".dat";
-
-string BCIDirectory::sInstallationDirectory = BCIDirectory::GetCWD();
-
-const string&
-BCIDirectory::InstallationDirectory()
-{
-  return sInstallationDirectory;
-}
 
 BCIDirectory::BCIDirectory()
 : mFileExtension( BCIFileExtension ),
@@ -104,24 +97,6 @@ BCIDirectory::DirectoryPath() const
 }
 
 string
-BCIDirectory::AbsolutePath( const std::string& inPath )
-{
-  string result;
-  if( !IsAbsolutePath( inPath ) )
-  {
-    result = InstallationDirectory();
-    if( result.empty() || *result.rbegin() != DirSeparator )
-      result += DirSeparator;
-    result += inPath;
-  }
-  else
-  {
-    result = inPath;
-  }
-  return result;
-}
-
-string
 BCIDirectory::FilePath() const
 {
   return DirectoryPath() + ConstructFileName();
@@ -133,12 +108,12 @@ BCIDirectory::CreatePath() const
 {
   string wd = GetCWD();
   ChangeForceDir( DirectoryPath() );
-  ::chdir( wd.c_str() );
+  ChDir( wd );
   return *this;
 }
 
 
-int
+bool
 BCIDirectory::ChangeForceDir( const string& inPath )
 {
   string fullPath = inPath;
@@ -147,26 +122,26 @@ BCIDirectory::ChangeForceDir( const string& inPath )
   if( fullPath.length() < 1 || fullPath[ fullPath.length() - 1 ] != DirSeparator )
     fullPath += DirSeparator;
   // Changing directory is necessary to verify that the directory exists and is accessible.
-  int err = ::chdir( fullPath.c_str() );
-  if( err )
+  bool success = ChDir( fullPath.c_str() );
+  if( !success )
   {
     if( errno == EACCES )
-      return err;
+      return false;
     else
     {
       size_t p = fullPath.rfind( DirSeparator, fullPath.length() - 2 );
       if( p == string::npos )
-        return err;
-      err = ChangeForceDir( fullPath.substr( 0, p ) );
-      if( err )
-        return err;
-      err = MkDir( fullPath );
-      if( err )
-        return err;
-      err = ::chdir( fullPath.c_str() );
+        return false;
+      success = ChangeForceDir( fullPath.substr( 0, p ) );
+      if( !success )
+        return false;
+      success = MkDir( fullPath );
+      if( !success )
+        return false;
+      success = ChDir( fullPath.c_str() );
     }
   }
-  return err;
+  return success;
 }
 
 
@@ -225,47 +200,3 @@ BCIDirectory::ExtractRunNumber( const string& inFileName )
   }
   return result;
 }
-
-string
-BCIDirectory::GetCWD()
-{
-  string result;
-  int bufSize = 512;
-  char* buf = NULL;
-  const char* cwd = NULL;
-  do
-  {
-    delete[] buf;
-    buf = new char[ bufSize ];
-    cwd = ::getcwd( buf, bufSize );
-    bufSize += bufSize;
-  } while( cwd == NULL && ( errno == ERANGE || errno == ENOMEM ) );
-  if( cwd != NULL )
-    result = cwd;
-  delete[] buf;
-  if( !result.empty() && result[ result.length() - 1 ] != DirSeparator )
-    result += DirSeparator;
-  return result;
-}
-
-int
-BCIDirectory::MkDir( const string& inName )
-{
-#ifdef _WIN32
-  return ::mkdir( inName.c_str() );
-#else
-  const int rwxr_xr_x = 0755;
-  return ::mkdir( inName.c_str(), rwxr_xr_x );
-#endif
-}
-
-bool
-BCIDirectory::IsAbsolutePath( const string& inPath )
-{
-#ifdef _WIN32
-  return inPath.length() > 1 && ( inPath[ 1 ] == DriveSeparator || inPath[ 0 ] == DirSeparator && inPath[ 1 ] == DirSeparator );
-#else
-  return inPath.length() > 0 && inPath[ 0 ] == DirSeparator;
-#endif
-}
-

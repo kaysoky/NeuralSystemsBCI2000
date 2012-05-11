@@ -42,11 +42,13 @@
 #include "Status.h"
 #include "SysCommand.h"
 #include "StateVector.h"
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include "SignalProperties.h"
 #include "GenericVisualization.h"
 #include "Label.h"
 #include "CommandInterpreter.h"
+#include "EnvVariable.h"
+#include "BCIDirectory.h"
 
 #include <sstream>
 #include <iomanip>
@@ -60,6 +62,12 @@ StateMachine::StateMachine()
 : mSystemState( Idle ),
   mEventLink( *this )
 {
+  string path;
+  EnvVariable::Get( "PATH", path );
+  path = FileUtils::InstallationDirectory() + ";" + path;
+  EnvVariable::Set( "PATH", path );
+  EnvVariable::Set( "BCI2000LAUNCHDIR", FileUtils::InstallationDirectory() );
+  EnvVariable::Set( "BCI2000BINARY", FileUtils::ExecutablePath() );
 }
 
 bool

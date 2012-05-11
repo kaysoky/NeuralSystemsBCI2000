@@ -112,7 +112,6 @@ void
 Command::OnExecute( CommandInterpreter& inInterpreter ) const
 {
   inInterpreter.Execute( mCommand );
-  ThreadUtils::SleepFor( 1 );
 }
 
 bool

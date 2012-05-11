@@ -142,9 +142,8 @@ SystemType::WaitFor( CommandInterpreter& inInterpreter )
   int state = BCI_GetStateOfOperation();
   while( desiredStates.find( state ) == desiredStates.end() && timeElapsed < 1e3 * timeout )
   {
-    inInterpreter.Background();
     ThreadUtils::SleepFor( resolution );
-    timeElapsed += resolution;
+    timeElapsed += resolution + inInterpreter.Background();
     state = BCI_GetStateOfOperation();
   }
   if( desiredStates.find( state ) == desiredStates.end() )
@@ -164,9 +163,8 @@ SystemType::Sleep( CommandInterpreter& inInterpreter )
   int timeElapsed = 0;
   while( timeElapsed < 1e3 * duration )
   {
-    inInterpreter.Background();
     ThreadUtils::SleepFor( resolution );
-    timeElapsed += resolution;
+    timeElapsed += resolution + inInterpreter.Background();
   }
   return true;
 }

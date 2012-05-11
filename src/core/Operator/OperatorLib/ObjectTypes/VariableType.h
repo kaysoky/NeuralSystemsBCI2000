@@ -40,7 +40,6 @@ class VariableType : public ObjectType
   static bool Set( CommandInterpreter& );
   static bool Get( CommandInterpreter& );
   static bool Clear( CommandInterpreter& );
-  static bool GetVariable( const std::string&, std::string& );
 
  private:
   static const MethodEntry sMethodTable[];

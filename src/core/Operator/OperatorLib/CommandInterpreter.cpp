@@ -43,7 +43,9 @@
 #include "BCIException.h"
 #include "ObjectType.h"
 #include "ImpliedType.h"
+#include "VariableType.h"
 #include <climits>
+#include <ctime>
 
 using namespace std;
 using namespace Interpreter;
@@ -68,6 +70,22 @@ CommandInterpreter::Init()
 {
   ObjectType::Initialize( mrStateMachine );
   mrStateMachine.AddListener( *this );
+  
+  static const struct { const char* name, *format; }
+  timevars[] = 
+  {
+    { "YYYYMMDD", "%Y%d%m" },
+    { "HHMMSS", "%H%M%S" },
+  };
+  time_t t = ::time( NULL );
+  struct tm* pTime = ::localtime( &t );
+  char buffer[10] = "";
+  for( size_t i = 0; i < sizeof( timevars ) / sizeof( *timevars ); ++i )
+  {
+    if( !::strftime( buffer, sizeof( buffer ) / sizeof( *buffer ), timevars[i].format, pTime ) )
+      throw bciexception( "Could not format time variable: " << timevars[i].name );
+    mLocalVariables[timevars[i].name] = buffer;
+  }
 }
 
 CommandInterpreter::~CommandInterpreter()
@@ -202,7 +220,7 @@ CommandInterpreter::SubstituteCommands( const string& input )
   return output;
 }
 
-void
+int
 CommandInterpreter::Background()
 {
   if( mAbort )
@@ -210,7 +228,9 @@ CommandInterpreter::Background()
     mAbort = false;
     throw bciexception_( "Script execution aborted" );
   }
-  ThreadUtils::SleepFor( 1 );
+  const int sleepDuration = 1;
+  ThreadUtils::SleepFor( sleepDuration );
+  return sleepDuration;
 }
 
 string

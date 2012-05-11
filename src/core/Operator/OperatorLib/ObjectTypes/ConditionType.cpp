@@ -28,7 +28,7 @@
 
 #include "ConditionType.h"
 #include "CommandInterpreter.h"
-#include "VariableType.h"
+#include "EnvVariable.h"
 #include "BCIException.h"
 
 using namespace std;
@@ -138,7 +138,7 @@ ConditionType::EvaluateExpression( CommandInterpreter& inInterpreter )
         return false;
       object = object.substr( 1, object.length() - 2 );
     }
-    else if( !VariableType::GetVariable( object, object ) )
+    else if( !EnvVariable::Get( object, object ) )
       return false;
   }
   if( !func( args[0].c_str(), args[1].c_str() ) )

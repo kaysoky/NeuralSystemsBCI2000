@@ -30,8 +30,9 @@ SET( SRC_OBJECT_TYPES
   ObjectTypes/VisPropertyTypes.cpp
   ObjectTypes/MessageTypes.cpp
   ObjectTypes/ScriptType.cpp
-  ObjectTypes/ExpressionType.cpp
   ObjectTypes/ScriptEvents.cpp
+  ObjectTypes/ExpressionType.cpp
+  ObjectTypes/FileSystemTypes.cpp
 )
 SET( SRC_SCRIPT_PARSER
   ScriptParser/Script.cpp
@@ -62,8 +63,9 @@ SET( HDR_OBJECT_TYPES
   ObjectTypes/VisPropertyTypes.h
   ObjectTypes/MessageTypes.h
   ObjectTypes/ScriptType.h
-  ObjectTypes/ExpressionType.h
   ObjectTypes/ScriptEvents.h
+  ObjectTypes/ExpressionType.h
+  ObjectTypes/FileSystemTypes.h
 )
 SET( HDR_SCRIPT_PARSER
   ScriptParser/Script.h

@@ -27,6 +27,7 @@
 #pragma hdrstop
 
 #include "ImpliedType.h"
+
 #include "SystemTypes.h"
 #include "StateTypes.h"
 #include "ParameterTypes.h"
@@ -34,20 +35,16 @@
 #include "SignalTypes.h"
 #include "VariableType.h"
 #include "MessageTypes.h"
+#include "ExpressionType.h"
 #include "ConditionType.h"
+#include "FileSystemTypes.h"
 #include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include "BCIException.h"
 #include "ParserToken.h"
 #include "ProcessUtils.h"
-#include "ExpressionType.h"
-
-#if _WIN32
-# include <windows.h>
-#else // _WIN32
-# include <cstdio>
-#endif // _WIN32
+#include "EnvVariable.h"
 
 using namespace std;
 using namespace Interpreter;
@@ -57,12 +54,13 @@ const ObjectType::MethodEntry ImpliedType::sMethodTable[] =
 {
   METHOD( Get ), METHOD( Set ),
   METHOD( Wait ), METHOD( Sleep ),
-  METHOD( System ), METHOD( SetConfig ),
+  METHOD( SetConfig ),
   METHOD( Start ), { "Resume", &Start }, METHOD( Stop ), { "Suspend", &Stop },
   METHOD( Startup ), METHOD( Shutdown ), METHOD( Reset ),
   METHOD( Quit ), { "Exit", &Quit },
   METHOD( Version ),
   METHOD( Log ), METHOD( Warn ), METHOD( Error ),
+  METHOD( System ), METHOD( Echo ), METHOD( Ls ), { "Dir", &Ls }, METHOD( Cd ), METHOD( Pwd ),
   { "[", &Square },
   END
 };
@@ -104,7 +102,7 @@ ImpliedType::Get( CommandInterpreter& inInterpreter )
     return StateType::Get( inInterpreter );
   if( inInterpreter.StateMachine().Parameters().Exists( object ) )
     return ParameterType::Get( inInterpreter );
-  if( VariableType::GetVariable( object, string() ) )
+  if( inInterpreter.LocalVariables().Exists( object ) || EnvVariable::Get( object, string() ) )
     return VariableType::Get( inInterpreter );
   try
   {
@@ -236,6 +234,44 @@ ImpliedType::System( CommandInterpreter& inInterpreter )
     inInterpreter.Out() << inInterpreter.ExitCodeTag() << exitCode;
   inInterpreter.Log() << "Executed \"" << command.c_str() << "\"";
   return true;
+}
+
+bool
+ImpliedType::Echo( CommandInterpreter& inInterpreter )
+{
+  string token = inInterpreter.GetToken();
+  if( !token.empty() )
+    inInterpreter.Out() << token;
+  token = inInterpreter.GetToken();
+  while( !token.empty() )
+  {
+    inInterpreter.Out() << " " << token;
+    token = inInterpreter.GetToken();
+  }
+  inInterpreter.Unget();
+  return true;
+}
+
+bool
+ImpliedType::Ls( CommandInterpreter& inInterpreter )
+{
+  return DirectoryType::List( inInterpreter );
+}
+
+bool
+ImpliedType::Cd( CommandInterpreter& inInterpreter )
+{
+  string newWd = inInterpreter.GetToken();
+  inInterpreter.Unget();
+  if( newWd.empty() )
+    return Pwd( inInterpreter );
+  return DirectoryType::Change( inInterpreter );
+}
+
+bool
+ImpliedType::Pwd( CommandInterpreter& inInterpreter )
+{
+  return DirectoryType::Current( inInterpreter );
 }
 
 bool

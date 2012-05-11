@@ -43,6 +43,7 @@
 #include "StateMachine.h"
 #include "OSMutex.h"
 #include "ArithmeticExpression.h"
+#include "EnvVariable.h"
 
 class CommandInterpreter
 {
@@ -79,10 +80,20 @@ class CommandInterpreter
 
   std::ostream& Out()
     { return mResultStream; }
+
   class StateMachine& StateMachine() const
     { return mrStateMachine; }
+
   ArithmeticExpression::VariableContainer& ExpressionVariables()
     { return mExpressionVariables; }
+    
+  struct VariableContainer : std::map<std::string, std::string>
+  {
+    bool Exists( const std::string& key )
+      { return find( key ) != end(); }
+  };
+  VariableContainer& LocalVariables()
+    { return mLocalVariables; }
 
   // Log and error message capturing.
   void CaptureLog( int messageCallbackID )
@@ -114,7 +125,8 @@ class CommandInterpreter
   LogStream Log()
     { return LogStream( mrStateMachine ); }
   //  Allow for background processing (e.g., from long-running commands).
-  void Background();
+  //  Returns an estimate for the time spent inside the Background() call, in ms.
+  int Background();
   // End: Interface to ObjectType instances.
 
   // Begin: StateMachine listener interface.
@@ -136,6 +148,7 @@ class CommandInterpreter
 
   class StateMachine& mrStateMachine;
   ArithmeticExpression::VariableContainer mExpressionVariables;
+  VariableContainer mLocalVariables;
 
   OSMutex mMutex;
   volatile bool mAbort;

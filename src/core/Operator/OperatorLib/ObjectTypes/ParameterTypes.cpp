@@ -34,7 +34,7 @@
 #include "BCI_OperatorLib.h"
 #include "Lockable.h"
 #include "BCIException.h"
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include "WildcardMatch.h"
 #include <cstdlib>
 
@@ -279,7 +279,7 @@ ParameterfileType::Load( CommandInterpreter& inInterpreter )
   string fileName = inInterpreter.GetRemainder();
   if( fileName.empty() )
     throw bciexception_( "Must specify a file name" );
-  fileName = BCIDirectory::AbsolutePath( fileName );
+  fileName = FileUtils::AbsolutePath( fileName );
   if( !inInterpreter.StateMachine().Parameters().Load( fileName.c_str(), false ) )
     throw bciexception_( "Could not load " << fileName << " as a parameter file" );
   inInterpreter.StateMachine().ParameterChange();
