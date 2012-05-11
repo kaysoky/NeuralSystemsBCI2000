@@ -32,10 +32,13 @@ SET( SRC_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
   ${BCI2000_SRC_DIR}/shared/utils/ThreadUtils.cpp
   ${BCI2000_SRC_DIR}/shared/utils/ProcessUtils.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/FileUtils.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/StringUtils.cpp  
   ${BCI2000_SRC_DIR}/shared/utils/ExceptionCatcher.cpp
   ${BCI2000_SRC_DIR}/shared/utils/ReusableThread.cpp
   ${BCI2000_SRC_DIR}/shared/utils/WildcardMatch.cpp
   ${BCI2000_SRC_DIR}/shared/utils/EscapedString.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/EnvVariable.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
   ${BCI2000_SRC_DIR}/shared/utils/LogFile.h
@@ -50,8 +53,10 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h
   ${BCI2000_SRC_DIR}/shared/utils/OSEvent.h
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
-  ${BCI2000_SRC_DIR}/shared/utils/ThreadUtils.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/ProcessUtils.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/ThreadUtils.h
+  ${BCI2000_SRC_DIR}/shared/utils/ProcessUtils.h
+  ${BCI2000_SRC_DIR}/shared/utils/FileUtils.h
+  ${BCI2000_SRC_DIR}/shared/utils/StringUtils.h
   ${BCI2000_SRC_DIR}/shared/utils/FPExceptMask.h
   ${BCI2000_SRC_DIR}/shared/utils/Lockable.h
   ${BCI2000_SRC_DIR}/shared/utils/Uncopyable.h
@@ -60,6 +65,7 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/ReusableThread.h
   ${BCI2000_SRC_DIR}/shared/utils/WildcardMatch.h
   ${BCI2000_SRC_DIR}/shared/utils/EscapedString.h
+  ${BCI2000_SRC_DIR}/shared/utils/EnvVariable.h
   ${BCI2000_SRC_DIR}/shared/utils/SharedPointer.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
