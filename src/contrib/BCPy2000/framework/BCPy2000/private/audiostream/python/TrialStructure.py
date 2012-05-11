@@ -227,26 +227,26 @@ class BciApplication(BciGenericApplication):
 		if not isinstance(post, (list,tuple)): post = [post] * self.nstreams
 		for istream in range(self.nstreams):
 			w = 0
-			code = 'S%d' % (istream+1)
-			if 'B' in [row[-1] for row in self.params['SoundChannels']]: code = 'B' # use the "background sound" channel to deliver audio prompts if the streaming output goes to non-audio devices
-			standard = self.PrepareFeedback(self.params['StreamStimuli'][istream][0], lettercode=code, returnWav=True)
-			target   = self.PrepareFeedback(self.params['StreamStimuli'][istream][1], lettercode=code, returnWav=True)
+			promptcode = stimcode = 'S%d' % (istream+1)
+			if 'B' in [row[-1] for row in self.params['SoundChannels']]: promptcode = 'B' # use the "background sound" channel to deliver audio prompts if the streaming output goes to non-audio devices
+			standard = self.PrepareFeedback(self.params['StreamStimuli'][istream][0], lettercode=stimcode, returnWav=True)
+			target   = self.PrepareFeedback(self.params['StreamStimuli'][istream][1], lettercode=stimcode, returnWav=True)
 			filename = pre[istream]
 			if filename not in (None,''):
 				if directory != None: filename = os.path.join(directory, filename)
-				w = w % self.PrepareFeedback(filename, lettercode=code, fs=standard.fs, returnWav=True) % 0.2
+				w = w % self.PrepareFeedback(filename, lettercode=promptcode, fs=standard.fs, returnWav=True) % 0.2
 			w = w % standard
 			
 			filename = count[istream]
 			if filename not in (None,''):
 				if directory != None: filename = os.path.join(directory, filename)
-				w = w % 0.2 % self.PrepareFeedback(filename, lettercode=code, fs=standard.fs, returnWav=True) % 0.2
+				w = w % 0.2 % self.PrepareFeedback(filename, lettercode=promptcode, fs=standard.fs, returnWav=True) % 0.2
 				w = w % target % 0.2
 				
 			filename = post[istream]
 			if filename not in (None,''):
 				if directory != None: filename = os.path.join(directory, filename)
-				w = w % 0.2 % self.PrepareFeedback(filename, lettercode=code, fs=standard.fs, returnWav=True)
+				w = w % 0.2 % self.PrepareFeedback(filename, lettercode=promptcode, fs=standard.fs, returnWav=True)
 			w *= float(self.params['StreamVolumes'][istream])
 			ww[istream] = w
 		return ww
