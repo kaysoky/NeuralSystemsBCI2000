@@ -58,7 +58,7 @@ namespace ScriptParser
 %type <token> exttoken
 %type <tokenlist> tokenlist
 %type <command> command
-%type <node> input statements statement chain condition
+%type <node> statements statement chain condition
 %type <node> ifconstruct elseifs whileconstruct doconstruct forconstruct
 
 %left AND OR ';'
@@ -66,7 +66,7 @@ namespace ScriptParser
 
 
 %% /* The grammar follows.  */
-input:
+script:
   /* empty */              { p->mpRootNode = NULL; }
 | statements               { p->mpRootNode = $1; }
 ;
@@ -137,6 +137,8 @@ exttoken:
 | WHILE  { $$ = $1; }
 | DO     { $$ = $1; }
 | UNTIL  { $$ = $1; }
+| FOR    { $$ = $1; }
+| IN     { $$ = $1; }
 | NOT    { $$ = $1; }
 ;
 
@@ -146,7 +148,8 @@ exttoken:
   yylex( YYSTYPE* pLval, Script* p )
   {
     istream& is = p->mInputStream;
-    is >> ws;
+    while( ::isspace( is.peek() ) && is.peek() != '\n' )
+      is.get();
     if( is.peek() == '#' )
       while( is.peek() != '\n' && is.peek() != EOF )
         is.get();

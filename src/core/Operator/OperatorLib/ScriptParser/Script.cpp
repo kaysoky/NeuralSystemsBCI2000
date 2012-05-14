@@ -49,6 +49,32 @@ Script::Compile()
 {
   Cleanup();
   mLine = 1;
+  static const string shebang = "#!";
+  streampos start = mInputStream.tellg();
+  string line;
+  if( getline( mInputStream, line ) )
+  {
+    if( line.find( shebang ) == string::npos )
+    {
+      mInputStream.clear();
+      mInputStream.seekg( start );
+    }
+    else
+    {
+      ++mLine;
+      start = mInputStream.tellg();
+      if( getline( mInputStream, line ) )
+      {
+        if( line.find( shebang ) == string::npos )
+        {
+          mInputStream.clear();
+          mInputStream.seekg( start );
+        }
+        else
+          ++mLine;
+      }
+    }
+  }
   if( ScriptParser::yyparse( this ) )
     ReportError( mError );
   return *this;
