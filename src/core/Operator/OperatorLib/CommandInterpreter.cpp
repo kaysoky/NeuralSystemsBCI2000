@@ -37,6 +37,7 @@
 #pragma hdrstop
 
 #include "CommandInterpreter.h"
+
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include "ParserToken.h"
@@ -96,11 +97,10 @@ CommandInterpreter::~CommandInterpreter()
 void
 CommandInterpreter::Execute( const string& inCommand )
 {
-  string command = SubstituteCommands( inCommand );
   mResultStream.clear();
   mResultStream.str( "" );
   mInputStream.clear();
-  mInputStream.str( command );
+  mInputStream.str( inCommand );
   while( !mPosStack.empty() )
     mPosStack.pop();
   mPosStack.push( 0 );
@@ -121,7 +121,7 @@ CommandInterpreter::Execute( const string& inCommand )
     }
     if( !pType->Execute( verb, *this ) )
     {
-      if( CallbackBase::OK == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, command.c_str() ) )
+      if( CallbackBase::OK == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) )
       {
         mInputStream.ignore( INT_MAX );
       }
@@ -133,7 +133,7 @@ CommandInterpreter::Execute( const string& inCommand )
         if( !ImpliedType::Get( *this ) )
         {
           if( type.empty() || !::isalpha( type[0] ) )
-            throw bciexception_( "Cannot make sense of \"" << command << "\"" );
+            throw bciexception_( "Cannot make sense of \"" << inCommand << "\"" );
           else if( *pType->Name() != '\0' )
             throw bciexception_( "Cannot " << verb << " " << pType->Name() << " objects" );
           else

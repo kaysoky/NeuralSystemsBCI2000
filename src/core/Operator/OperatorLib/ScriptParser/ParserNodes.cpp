@@ -31,6 +31,9 @@
 #include "Script.h"
 #include "CommandInterpreter.h"
 #include "ThreadUtils.h"
+#include "ParserToken.h"
+
+#include <sstream>
 
 using namespace std;
 using namespace ScriptParser;
@@ -95,6 +98,19 @@ Token::~Token()
   delete[] mpData;
 }
 
+// TokenList
+TokenList::TokenList( Script& inScript, const Token* inpToken )
+: ParserNode( inScript )
+{
+  Append( inpToken );
+}
+
+void
+TokenList::Append( const Token* inpToken )
+{
+  mTokens.push_back( inpToken );
+}
+
 // Command
 Command::Command( Script& inScript, const Token* inpToken )
 : ParserNode( inScript ),
@@ -111,7 +127,7 @@ Command::Append( const Token* inpToken )
 void
 Command::OnExecute( CommandInterpreter& inInterpreter ) const
 {
-  inInterpreter.Execute( mCommand );
+  inInterpreter.Execute( inInterpreter.SubstituteCommands( mCommand ) );
 }
 
 bool
@@ -230,6 +246,37 @@ DoUntil::OnExecute( CommandInterpreter& inInterpreter ) const
     if( mpStatements )
       mpStatements->Execute( inInterpreter );
   } while( mpCondition && !mpCondition->Evaluate( inInterpreter ) );
+}
+
+// For
+For::For( Script& inScript, Token* inVariable, TokenList* inTokens, ParserNode* inStatements )
+: ParserNode( inScript ),
+  mpVariable( inVariable ),
+  mpTokens( inTokens ),
+  mpStatements( inStatements )
+{
+}
+
+void
+For::OnExecute( CommandInterpreter& inInterpreter ) const
+{
+  TokenList::TokenContainer::const_iterator i = mpTokens->Tokens().begin();
+  for( ; i != mpTokens->Tokens().end(); ++i )
+  {
+    string sublist = inInterpreter.SubstituteCommands( ( *i )->Data() );
+    istringstream iss( sublist );
+    ParserToken token;
+    iss >> token;
+    iss.clear();
+    iss.str( token );
+    string element;
+    while( getline( iss, element ) )
+    {
+      inInterpreter.LocalVariables()[mpVariable->Data()] = element;
+      if( mpStatements )
+        mpStatements->Execute( inInterpreter );
+    }
+  }
 }
 
 // And

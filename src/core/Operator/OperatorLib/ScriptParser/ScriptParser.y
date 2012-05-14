@@ -54,11 +54,12 @@ namespace ScriptParser
 
 /* Bison declarations.  */
 %token <token> TOKEN
-%token <token> IF ELSEIF ELSE END WHILE DO UNTIL AND OR NOT
+%token <token> IF ELSEIF ELSE END WHILE DO UNTIL FOR IN AND OR NOT
 %type <token> exttoken
+%type <tokenlist> tokenlist
 %type <command> command
 %type <node> input statements statement chain condition
-%type <node> ifconstruct elseifs whileconstruct doconstruct
+%type <node> ifconstruct elseifs whileconstruct doconstruct forconstruct
 
 %left AND OR ';'
 %right NOT
@@ -82,6 +83,7 @@ statement:
 | ifconstruct    { $$ = $1; }
 | whileconstruct { $$ = $1; }
 | doconstruct    { $$ = $1; }
+| forconstruct   { $$ = $1; }
 ;
 
 chain:
@@ -112,6 +114,14 @@ whileconstruct:
 doconstruct:
   DO ';' statements ';' UNTIL condition { $$ = new DoUntil( *p, $6, $3 ); }
 ;
+
+forconstruct:
+  FOR TOKEN IN tokenlist ';' statements ';' END { $$ = new For( *p, $2, $4, $6 ); }
+;
+
+tokenlist:
+  exttoken           { $$ = new TokenList( *p, $1 ); }
+| tokenlist exttoken { $$ = $1; $1->Append( $2 ); }
 
 command:
   TOKEN            { $$ = new Command( *p, $1 ); }
@@ -168,6 +178,7 @@ exttoken:
       #define KEYWORD(x) { #x, x }
       KEYWORD( IF ), KEYWORD( ELSEIF ), KEYWORD( ELSE ), KEYWORD( END ),
       KEYWORD( WHILE ), KEYWORD( DO ), KEYWORD( UNTIL ),
+      KEYWORD( FOR ), KEYWORD( IN ),
       { "&&", AND }, { "||", OR }, KEYWORD( NOT ),
     };
     for( size_t i = 0; i < sizeof( keywords ) / sizeof( *keywords ); ++i )

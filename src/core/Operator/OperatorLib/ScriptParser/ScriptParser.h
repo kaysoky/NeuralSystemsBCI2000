@@ -32,6 +32,7 @@ namespace ScriptParser {
 
 typedef union YYSTYPE {
   Token* token;
+  TokenList* tokenlist;
   Command* command;
   ParserNode* node;
 } YYSTYPE;

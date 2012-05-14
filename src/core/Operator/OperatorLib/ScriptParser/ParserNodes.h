@@ -27,6 +27,7 @@
 #define PARSER_NODES_H
 
 #include <string>
+#include <vector>
 
 class Script;
 class CommandInterpreter;
@@ -66,6 +67,17 @@ class Token : public ParserNode
   char* mpData;
 };
 
+class TokenList : public ParserNode
+{
+ public:
+  TokenList( Script&, const Token* );
+  void Append( const Token* );
+  typedef std::vector<const Token*> TokenContainer;
+  const TokenContainer& Tokens() { return mTokens; }
+
+ private:
+  TokenContainer mTokens;
+};
 
 class Command : public ParserNode
 {
@@ -125,6 +137,19 @@ class DoUntil : public ParserNode
   void OnExecute( CommandInterpreter& ) const;
 
   ParserNode* mpCondition, *mpStatements;
+};
+
+class For : public ParserNode
+{
+ public:
+  For( Script&, Token*, TokenList*, ParserNode* );
+
+ private:
+  void OnExecute( CommandInterpreter& ) const;
+
+  Token* mpVariable;
+  TokenList* mpTokens;
+  ParserNode* mpStatements;
 };
 
 class And : public ParserNode

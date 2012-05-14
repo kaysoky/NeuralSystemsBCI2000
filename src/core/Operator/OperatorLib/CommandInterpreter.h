@@ -64,6 +64,8 @@ class CommandInterpreter
   // Methods
   // Interpret the argument as a single scripting command.
   void Execute( const std::string& );
+  // Perform command substitution on the argument.
+  std::string SubstituteCommands( const std::string& );
   // End: Interface to users
 
  public:
@@ -139,7 +141,6 @@ class CommandInterpreter
  private:
   CommandInterpreter& operator=( const CommandInterpreter& );
   void Init();
-  std::string SubstituteCommands( const std::string& );
 
  private:
   std::ostringstream mResultStream;
