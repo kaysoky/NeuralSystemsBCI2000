@@ -1505,7 +1505,8 @@ yyreturn:
     }
     
     streampos start = is.tellg();
-    is >> ParserToken();
+    ParserToken ignored;
+    is >> ignored;
     streamsize length = is.tellg() - start;
     pLval->token = new Token( *p, static_cast<int>( length ) );
     is.clear();
