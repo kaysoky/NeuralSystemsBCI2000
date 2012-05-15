@@ -75,8 +75,7 @@ int main( int argc, char** argv )
   bci.TelnetAddress( telnetAddress );
   if( !bci.Connect() )
   {
-    if( !bci.Run( FileUtils::InstallationDirectory() + "Operator.exe", additionalArgs ) 
-        || !bci.Connect() )
+    if( !bci.Run( FileUtils::InstallationDirectory() + "Operator.exe", additionalArgs ) || !bci.Connect() )
     {
       cerr << bci.Result();
       return -1;

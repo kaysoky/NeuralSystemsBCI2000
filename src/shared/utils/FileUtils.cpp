@@ -120,6 +120,8 @@ FileUtils::ChDir( const string& inDir )
 string
 FileUtils::AbsolutePath( const string& inPath )
 {
+  if( IsAbsolutePath( inPath ) )
+    return inPath;
   return GetCWD() + inPath;
 }
 
