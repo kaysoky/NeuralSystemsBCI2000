@@ -94,7 +94,6 @@ using namespace std;
 enum { ok = 0, error = -1 };
 
 void Help( bool full );
-int PreprocessBCIScript( istream&, string& );
 
 int Run( int, char**, BCI2000Remote& );
 int Quit( int, char**, BCI2000Remote& );
@@ -258,21 +257,11 @@ Help( bool inFull )
 }
 
 int
-PreprocessBCIScript( istream& inStream, string& outResult )
-{
-  string line;
-  while( getline( inStream, line ) )
-    if( !line.empty() && line[0] != '#' )
-      outResult.append( line ).append( ";" );
-  return ok;
-}
-
-int
 Run( int inArgc, char** inArgs, BCI2000Remote& ioBCI )
 {
   int result = ok;
   string script;
-  for( int i = 0; result == ok && i < inArgc; ++i )
+  for( int i = 0; i < inArgc; ++i )
   {
     ifstream file( inArgs[i] );
     if( !file.is_open() )
@@ -280,7 +269,7 @@ Run( int inArgc, char** inArgs, BCI2000Remote& ioBCI )
       cerr << "Could not open script file \"" << inArgs[i] << "\" for reading" << endl;
       return error;
     }
-    result = PreprocessBCIScript( file, script );
+    getline( file, script, '\0' );
   }
   if( result == ok && !script.empty() )
     result = ioBCI.Execute( script );

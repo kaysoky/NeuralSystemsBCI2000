@@ -144,7 +144,7 @@ BCI2000Connection::Execute( const string& inCommand )
   }
   int exitCode = 0;
   const string marker = "\\ExitCode";
-  size_t pos = Result().find( marker );
+  size_t pos = mResult.find( marker );
   if( pos != string::npos )
     istringstream( mResult.substr( pos + marker.length() ) ) >> exitCode;
   else
@@ -158,9 +158,10 @@ BCI2000Connection::Execute( const string& inCommand )
 }
 
 bool
-BCI2000Connection::Run( const string& inOperatorPath )
+BCI2000Connection::Run( const string& inOperatorPath, const string& inOptions )
 {
-  string options = "--Telnet \"" + mTelnetAddress + "\"";
+  string options = inOptions;
+  options += " --Telnet \"" + mTelnetAddress + "\"";
   options += " --StartupIdle";
   if( !mWindowTitle.empty() )
     options += " --Title \"" + mWindowTitle + "\"";
@@ -230,16 +231,23 @@ BCI2000Connection::StartExecutable( const string& inExecutable, const string& in
   delete[] pWorkingDir;
   if( success )
   {
-    ::WaitForInputIdle( pi.hProcess, INFINITE );
-    if( !isScript )
+    DWORD exitCode = 0;
+    ::GetExitCodeProcess( pi.hProcess, &exitCode );
+    if( exitCode == STILL_ACTIVE )
     {
-      DWORD exitCode = 0;
+      ::WaitForInputIdle( pi.hProcess, static_cast<DWORD>( mTimeout * 1e3 ) );
       ::GetExitCodeProcess( pi.hProcess, &exitCode );
-      if( exitCode != STILL_ACTIVE )
-      {
-        success = false;
-        mResult = "Application initialization failed";
-      }
+    }
+    if( isScript )
+    {
+      success = ( exitCode == 0 );
+      if( !success )
+        mResult = "Execution of script \"" + inExecutable + "\" failed";
+    }
+    else if( exitCode != STILL_ACTIVE )
+    {
+      success = false;
+      mResult = "Application initialization failed";
     }
     ::CloseHandle( pi.hProcess );
     ::CloseHandle( pi.hThread );

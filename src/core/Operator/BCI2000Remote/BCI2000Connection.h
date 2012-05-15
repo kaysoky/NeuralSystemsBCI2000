@@ -65,6 +65,8 @@ class BCI2000Connection
   // nonempty, the IP address must be "localhost".
   const std::string& TelnetAddress() const { return mTelnetAddress; }
   BCI2000Connection& TelnetAddress( const std::string s ) { mTelnetAddress = s; return *this; }
+  // Connection status.
+  bool Connected() { return mSocket.connected(); }
   // Result or error message resulting from a method call.
   const std::string& Result() const { return mResult; }
 
@@ -84,7 +86,7 @@ class BCI2000Connection
   // Run a BCI2000 operator module, or batch file, with parameters appropriate for
   // remote control. Normally, BCI2000 is started up by the Connect() method, so you
   // will not need to call this function.
-  bool Run( const std::string& );
+  bool Run( const std::string&, const std::string& options = "" );
   // Quit BCI2000. Normally, BCI2000 is terminated automatically when it was started
   // by the Connect() method, so you will not need to call this function.
   bool Quit();
