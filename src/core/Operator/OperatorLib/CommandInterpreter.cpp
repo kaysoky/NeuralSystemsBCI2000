@@ -71,9 +71,9 @@ CommandInterpreter::Init()
 {
   ObjectType::Initialize( mrStateMachine );
   mrStateMachine.AddListener( *this );
-  
+
   static const struct { const char* name, *format; }
-  timevars[] = 
+  timevars[] =
   {
     { "YYYYMMDD", "%Y%d%m" },
     { "HHMMSS", "%H%M%S" },
@@ -94,7 +94,7 @@ CommandInterpreter::~CommandInterpreter()
   mrStateMachine.RemoveListener( *this );
 }
 
-void
+int
 CommandInterpreter::Execute( const string& inCommand )
 {
   mResultStream.clear();
@@ -108,38 +108,38 @@ CommandInterpreter::Execute( const string& inCommand )
   string verb = GetToken();
   if( !verb.empty() )
   {
-    string type = GetToken();
-    if( mInputStream.fail() )
-      Unget();
+    string type = GetOptionalToken();
     ObjectType* pType = ObjectType::ByName( type );
-    if( !pType )
+    bool success = ( pType && pType->Execute( verb, *this ) );
+    if( !success )
     {
+      success = ( CallbackBase::OK == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) );
+      if( success )
+        mInputStream.ignore( INT_MAX );
+    }
+    if( !success && !pType )
+    {
+      Unget();
       pType = ObjectType::ByName( "" );
       if( !pType )
         throw bciexception( "No implied type available" );
-      Unget();
+      success = pType->Execute( verb, *this );
     }
-    if( !pType->Execute( verb, *this ) )
+    if( !success )
+    {     
+      mInputStream.clear();
+      mInputStream.seekg( 0 );
+      mPosStack.push( 0 );
+      success = ImpliedType::Get( *this );
+    }
+    if( !success )
     {
-      if( CallbackBase::OK == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) )
-      {
-        mInputStream.ignore( INT_MAX );
-      }
+      if( type.empty() || !::isalpha( type[0] ) )
+        throw bciexception_( "Cannot make sense of \"" << inCommand << "\"" );
+      else if( *pType->Name() != '\0' )
+        throw bciexception_( "Cannot " << verb << " " << pType->Name() << " objects" );
       else
-      {
-        mInputStream.clear();
-        mInputStream.seekg( 0 );
-        mPosStack.push( 0 );
-        if( !ImpliedType::Get( *this ) )
-        {
-          if( type.empty() || !::isalpha( type[0] ) )
-            throw bciexception_( "Cannot make sense of \"" << inCommand << "\"" );
-          else if( *pType->Name() != '\0' )
-            throw bciexception_( "Cannot " << verb << " " << pType->Name() << " objects" );
-          else
-            throw bciexception_( "Don't know how to " << verb << " " << type );
-        }
-      }
+        throw bciexception_( "Don't know how to " << verb << " " << type );
     }
     if( mInputStream.fail() )
       throw bciexception_( "Missing argument" );
@@ -147,6 +147,7 @@ CommandInterpreter::Execute( const string& inCommand )
       throw bciexception_( "Extra argument" );
   }
   Background();
+  return EvaluateResult( inCommand );
 }
 
 string
@@ -167,8 +168,8 @@ CommandInterpreter::SubstituteCommands( const string& input )
         {
           if( braceLevel > 0 )
           {
-            output += '$';
-            output += *i;
+            command += '$';
+            command += *i;
           }
           ++braceLevel;
         }
@@ -188,7 +189,7 @@ CommandInterpreter::SubstituteCommands( const string& input )
       case '}':
         if( braceLevel == 1 )
         {
-          Execute( command );
+          Execute( SubstituteCommands( command ) );
           ParserToken result = Result();
           command.clear();
           while( result.length() > 0 && !::isprint( *result.rbegin() ) )
@@ -197,6 +198,8 @@ CommandInterpreter::SubstituteCommands( const string& input )
           oss << result;
           output += oss.str();
         }
+        else if( braceLevel > 1 )
+          command += *i;
         else
           output += *i;
         if( braceLevel > 0 )
@@ -218,6 +221,42 @@ CommandInterpreter::SubstituteCommands( const string& input )
     output += command;
   }
   return output;
+}
+
+int
+CommandInterpreter::EvaluateResult( const string& inCommand )
+{
+  string result = Result();
+  
+  if( result.empty() )
+    return 0;
+
+  if( !::stricmp( result.c_str(), "true" ) )
+    return 0;
+
+  double number;
+  istringstream iss( result );
+  if( ( iss >> number ) && iss.eof() )
+    return number != 0 ? 0 : 1;
+
+  static const string tag = ExitCodeTag();
+  size_t pos = result.find( tag );
+  if( pos != string::npos )
+  {
+    istringstream exitStream( result.substr( pos + tag.length() ) );
+    int exitCode;
+    if( exitStream >> exitCode )
+      return exitCode;
+  }
+
+  // For some commands, the absence of an exit code indicates success.
+  static const string specialCommands[] =
+  { "system ", "start executable ", };
+  for( size_t i = 0; i < sizeof( specialCommands ) / sizeof( *specialCommands ); ++i )
+    if( !::stricmp( specialCommands[i].c_str(), inCommand.substr( 0, specialCommands[i].length() ).c_str() ) )
+      return 0;
+
+  return 1;
 }
 
 int
@@ -243,11 +282,29 @@ CommandInterpreter::GetToken()
 }
 
 string
+CommandInterpreter::GetOptionalToken()
+{
+  string result = GetToken();
+  if( result.empty() )
+    Unget();
+  return result;
+}
+
+string
 CommandInterpreter::GetRemainder()
 {
   mPosStack.push( mInputStream.tellg() );
   string result;
   std::getline( mInputStream >> ws, result, '\0' );
+  return result;
+}
+
+string
+CommandInterpreter::GetOptionalRemainder()
+{
+  string result = GetRemainder();
+  if( result.empty() )
+    Unget();
   return result;
 }
 

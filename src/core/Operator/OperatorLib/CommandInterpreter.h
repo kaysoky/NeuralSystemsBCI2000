@@ -63,7 +63,7 @@ class CommandInterpreter
     { return "\\ExitCode: "; }
   // Methods
   // Interpret the argument as a single scripting command.
-  void Execute( const std::string& );
+  int Execute( const std::string& );
   // Perform command substitution on the argument.
   std::string SubstituteCommands( const std::string& );
   // End: Interface to users
@@ -72,8 +72,10 @@ class CommandInterpreter
   // Begin: Interface to ObjectType instances.
   //  GetToken() reads a single string, which may be quoted and URL-encoded.
   std::string GetToken();
+  std::string GetOptionalToken();
   //  GetRemainder() reads the remainder of the command line.
   std::string GetRemainder();
+  std::string GetOptionalRemainder();
   //  Unget() undoes a read operation. Without a previous read operation, it does nothing.
   void Unget();
 
@@ -88,7 +90,7 @@ class CommandInterpreter
 
   ArithmeticExpression::VariableContainer& ExpressionVariables()
     { return mExpressionVariables; }
-    
+
   struct VariableContainer : std::map<std::string, std::string>
   {
     bool Exists( const std::string& key )
@@ -141,6 +143,7 @@ class CommandInterpreter
  private:
   CommandInterpreter& operator=( const CommandInterpreter& );
   void Init();
+  int EvaluateResult( const std::string& inCommand );
 
  private:
   std::ostringstream mResultStream;

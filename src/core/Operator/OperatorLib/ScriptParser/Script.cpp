@@ -99,7 +99,7 @@ void
 Script::ReportError( const string& inError ) const
 {
   if( mName.empty() )
-    throw bciexception_( mInputStream.str() << ": " << inError );
+    throw bciexception_( inError );
   else
     throw bciexception_( mName << ", line " << mLine << ": " << inError );
 }

@@ -141,12 +141,9 @@ bool
 StatesType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
-  string pattern = inInterpreter.GetRemainder();
+  string pattern = inInterpreter.GetOptionalRemainder();
   if( pattern.empty() )
-  {
-    inInterpreter.Unget();
     pattern = "*";
-  }
   const StateList& states = inInterpreter.StateMachine().States();
   for( int i = 0; i < states.Size(); ++i )
     if( WildcardMatch( pattern, states[i].Name(), false ) )

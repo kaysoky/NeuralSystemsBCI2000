@@ -106,9 +106,7 @@ DirectoryType::List( CommandInterpreter& inInterpreter )
 #else
   args = "-l ";
 #endif
-  string remainder = inInterpreter.GetRemainder();
-  if( remainder.empty() )
-    inInterpreter.Unget();
+  string remainder = inInterpreter.GetOptionalRemainder();
   args += remainder;
   inInterpreter.Out() << ListDirectory( args );
   return true;
@@ -155,7 +153,11 @@ const ObjectType::MethodEntry FileType::sMethodTable[] =
 bool
 FileType::Extract( CommandInterpreter& inInterpreter )
 {
-  inInterpreter.Out() << ExtractFile( inInterpreter.GetToken() );
+  string file = inInterpreter.GetToken();
+  if( !::stricmp( file.c_str(), "Base" ) )
+    inInterpreter.Out() << ExtractBase( inInterpreter.GetToken() );
+  else
+    inInterpreter.Out() << ExtractFile( file );
   return true;
 }
 
@@ -184,9 +186,7 @@ const ObjectType::MethodEntry FilesType::sMethodTable[] =
 bool
 FilesType::List( CommandInterpreter& inInterpreter )
 {
-  string args = inInterpreter.GetRemainder();
-  if( args.empty() )
-    inInterpreter.Unget();
+  string args = inInterpreter.GetOptionalRemainder();
   return ListFiles( inInterpreter, args );
 }
 

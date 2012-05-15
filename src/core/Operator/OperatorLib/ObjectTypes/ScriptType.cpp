@@ -88,7 +88,7 @@ ScriptType::Execute( CommandInterpreter& inInterpreter )
   else
   {
     inInterpreter.Unget();
-    name = inInterpreter.GetRemainder();
+    name = inInterpreter.GetToken();
     ifstream file( name.c_str() );
     if( !file.is_open() )
       throw bciexception_( "Could not open script file \"" << name << "\"" );
@@ -96,7 +96,13 @@ ScriptType::Execute( CommandInterpreter& inInterpreter )
     path = FileUtils::AbsolutePath( name );
   }
   CommandInterpreter subInterpreter( inInterpreter );
-  subInterpreter.LocalVariables()["BCI2000SCRIPT"] = path;
+  subInterpreter.LocalVariables()["Arg0"] = path;
+  for( int idx = 1; idx < 10; ++idx )
+  {
+    ostringstream oss;
+    oss << "Arg" << idx;
+    subInterpreter.LocalVariables()[oss.str()] = inInterpreter.GetOptionalToken();
+  }
   Script( script, name ).Compile().Execute( subInterpreter );
   return true;
 }

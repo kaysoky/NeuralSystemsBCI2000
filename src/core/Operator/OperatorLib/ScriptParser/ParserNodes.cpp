@@ -81,7 +81,7 @@ ParserNode::OnExecute( CommandInterpreter& inInterpreter ) const
 bool
 ParserNode::OnEvaluate( CommandInterpreter& ) const
 {
-  throw bciexception( "Cannot evaluate this kind of object" );
+  return true;
 }
 
 // Token
@@ -127,44 +127,13 @@ Command::Append( const Token* inpToken )
 void
 Command::OnExecute( CommandInterpreter& inInterpreter ) const
 {
-  inInterpreter.Execute( inInterpreter.SubstituteCommands( mCommand ) );
+  OnEvaluate( inInterpreter );
 }
 
 bool
 Command::OnEvaluate( CommandInterpreter& inInterpreter ) const
 {
-  OnExecute( inInterpreter );
-  string result = inInterpreter.Result();
-
-  if( result.empty() )
-    return true;
-
-  if( !::stricmp( result.c_str(), "true" ) )
-    return true;
-
-  double number;
-  istringstream iss( result );
-  if( ( iss >> number ) && iss.eof() )
-    return number != 0;
-
-  const string tag = inInterpreter.ExitCodeTag();
-  size_t pos = result.find( tag );
-  if( pos != string::npos )
-  {
-    istringstream exitStream( result.substr( pos + tag.length() ) );
-    int exitCode;
-    if( exitStream >> exitCode )
-      return exitCode == 0;
-  }
-
-  // For some commands, the absence of an exit code indicates success.
-  static const string specialCommands[] =
-  { "system ", "start executable ", };
-  for( size_t i = 0; i < sizeof( specialCommands ) / sizeof( *specialCommands ); ++i )
-    if( !::stricmp( specialCommands[i].c_str(), mCommand.substr( 0, specialCommands[i].length() ).c_str() ) )
-      return true;
-
-  return false;
+  return 0 == inInterpreter.Execute( inInterpreter.SubstituteCommands( mCommand ) );
 }
 
 // If

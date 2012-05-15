@@ -236,12 +236,9 @@ bool
 ParametersType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
-  string pattern = inInterpreter.GetRemainder();
+  string pattern = inInterpreter.GetOptionalRemainder();
   if( pattern.empty() )
-  {
-    inInterpreter.Unget();
     pattern = "*";
-  }
   const ParamList& parameters = inInterpreter.StateMachine().Parameters();
   for( int i = 0; i < parameters.Size(); ++i )
     if( WildcardMatch( pattern, parameters[i].Name(), false ) )
@@ -276,7 +273,7 @@ const ObjectType::MethodEntry ParameterfileType::sMethodTable[] =
 bool
 ParameterfileType::Load( CommandInterpreter& inInterpreter )
 {
-  string fileName = inInterpreter.GetRemainder();
+  string fileName = inInterpreter.GetToken();
   if( fileName.empty() )
     throw bciexception_( "Must specify a file name" );
   fileName = FileUtils::AbsolutePath( fileName );

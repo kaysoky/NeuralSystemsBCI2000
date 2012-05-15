@@ -124,12 +124,9 @@ bool
 EventsType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
-  string pattern = inInterpreter.GetRemainder();
+  string pattern = inInterpreter.GetOptionalRemainder();
   if( pattern.empty() )
-  {
-    inInterpreter.Unget();
     pattern = "*";
-  }
   const StateList& events = inInterpreter.StateMachine().Events();
   for( int i = 0; i < events.Size(); ++i )
     if( WildcardMatch( pattern, events[i].Name(), false ) )

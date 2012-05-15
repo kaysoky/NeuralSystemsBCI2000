@@ -292,7 +292,7 @@ bool
 ExecutableType::Start( CommandInterpreter& inInterpreter )
 {
   string executable = inInterpreter.GetToken(),
-         arguments = inInterpreter.GetRemainder();
+         arguments = inInterpreter.GetOptionalRemainder();
   int exitCode = 0;
   if( !ProcessUtils::ExecuteAsynchronously( executable, arguments, exitCode ) )
     throw bciexception_( "Could not run \"" << executable.c_str() << "\"" );

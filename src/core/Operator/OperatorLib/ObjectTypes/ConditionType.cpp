@@ -69,9 +69,7 @@ ConditionType::Evaluate( CommandInterpreter& inInterpreter )
   vector<string> args;
   do
   {
-    args.push_back( inInterpreter.GetToken() );
-    if( args.back().empty() )
-      inInterpreter.Unget();
+    args.push_back( inInterpreter.GetOptionalToken() );
   } while( !args.back().empty() && args.back() != "]" );
   if( args.size() > 4 )
     throw bciexception_( "Evaluate Condition: Expected up to 3 arguments, got " << args.size() - 1 );
@@ -141,7 +139,9 @@ ConditionType::EvaluateExpression( CommandInterpreter& inInterpreter )
     else if( !EnvVariable::Get( object, object ) )
       return false;
   }
-  if( !func( args[0].c_str(), args[1].c_str() ) )
+  if( func( args[0].c_str(), args[1].c_str() ) )
+    inInterpreter.Out() << "true";
+  else
     inInterpreter.Out() << "false";
   return true;
 }

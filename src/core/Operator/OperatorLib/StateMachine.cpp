@@ -144,7 +144,10 @@ StateMachine::Shutdown()
 {
   bool result = ( mSystemState != Idle );
   if( result )
+  {
+    StopRun();
     OSThread::Terminate();
+  }
   return result;
 }
 

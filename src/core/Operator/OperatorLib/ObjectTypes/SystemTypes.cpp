@@ -134,7 +134,7 @@ SystemType::WaitFor( CommandInterpreter& inInterpreter )
   }
 
   double timeout = 0;
-  if( !( istringstream( inInterpreter.GetToken() ) >> timeout ) )
+  if( !( istringstream( inInterpreter.GetOptionalToken() ) >> timeout ) )
     timeout = 5;
   if( timeout < 0 )
     throw bciexception_( "Timeout must be >= 0" );
@@ -196,7 +196,7 @@ SystemType::Stop( CommandInterpreter& inInterpreter )
 bool
 SystemType::Startup( CommandInterpreter& inInterpreter )
 {
-  string args = inInterpreter.GetRemainder();
+  string args = inInterpreter.GetOptionalRemainder();
   if( !inInterpreter.StateMachine().Startup( args.c_str() ) )
     throw bciexception_( "Could not start up system" );
   return true;

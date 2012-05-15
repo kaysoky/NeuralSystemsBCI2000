@@ -67,19 +67,17 @@ namespace ScriptParser
 
 %% /* The grammar follows.  */
 script:
-  /* empty */              { p->mpRootNode = NULL; }
-| statements               { p->mpRootNode = $1; }
+  statements               { p->mpRootNode = $1; }
 ;
 
 statements:
   statement                { $$ = $1; }
 | statements ';' statement { $$ = $1; $$->Append( $3 ); }
-| statements ';'           { $$ = $1; }
-| ';'                      { $$ = NULL; }
 ;
 
-statement:     
-  chain          { $$ = $1; }
+statement:
+/* empty */      { $$ = new ParserNode( *p ); }     
+| chain          { $$ = $1; }
 | ifconstruct    { $$ = $1; }
 | whileconstruct { $$ = $1; }
 | doconstruct    { $$ = $1; }
