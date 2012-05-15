@@ -24,8 +24,10 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import os
 import numpy
 import time
+import glob
 import DataFiles
 import Parameters
 
@@ -158,3 +160,30 @@ def ClassifyERPs (
 		Parameters.Param(c.model.bias, name='ERPClassifierBias', tab='PythonSig', section='Epoch', comment=csummary).appendto(save)
 		Parameters.Param(description, name='SignalProcessingDescription', tab='PythonSig').appendto(save)
 	return u,c
+	
+	
+def Assess( files='*.pk', each=False, return_full=False, C=(1e+4,1e+2,1e-0,1e-2,1e-4,1e-6), gamma=0.0, **kwargs ):
+	if isinstance( files, basestring ):
+		if os.path.isdir( files ): files = os.path.join( files, '*.pk' )
+		files = glob.glob( files )
+	if each: return dict( [ ( file, Assess( files=[ file ], each=False, return_full=return_full, C=C, gamma=gamma, **kwargs ) ) for file in files ] )
+	try:
+		u, c = ClassifyERPs( files, C=C, gamma=gamma, save=False, **kwargs )
+	except Exception, e:
+		print '\n***  ERROR: %s ***\n' % str( e )
+		out = ( None, None )
+	else:
+		if return_full: out = u; out.classifier = [ c ]
+		else: out = ( c.loss.train, len( c.input.x ) )
+	return out
+
+def PlotSCD( files='*.pk' ):
+	import pylab
+	if isinstance( files, basestring ):
+		if os.path.isdir( files ): files = os.path.join( files, '*.pk' )
+		files = glob.glob( files )
+	d = DataFiles.load( files )
+	r = SigTools.correlate( d['x'], d['y'], axis=0 )
+	SigTools.imagesc( r*numpy.abs(r), y=d['channels'], x=SigTools.samples2msec( range( r.shape[1] ), d['fs'] ), aspect='auto', balance=0.0, colorbar=True )
+	pylab.title( ', '.join( [ '%d: %d' % ( yi, ( d['y'] == yi ).sum() ) for yi in numpy.unique( d['y'] ) ] ) )
+	pylab.draw()

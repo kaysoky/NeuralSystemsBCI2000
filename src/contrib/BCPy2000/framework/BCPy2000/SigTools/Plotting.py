@@ -153,10 +153,14 @@ def imagesc(img, x=None, y=None, hold=False, drawnow=True, aspect='image', balan
 		ax.set(xlim=(-0.5,img.shape[1]-0.5),ylim=(-0.5,img.shape[0]-0.5))
 	else:
 		import matplotlib
+		xlab,ylab = None,None
+		if isinstance(x, (tuple,list,numpy.ndarray)) and isinstance(x[0], basestring): xlab,x = x,None
+		if isinstance(y, (tuple,list,numpy.ndarray)) and isinstance(y[0], basestring): ylab,y = y,None
 		if x == None: x = numpy.arange(img.shape[1], dtype=numpy.float64)
 		if y == None: y = numpy.arange(img.shape[0], dtype=numpy.float64)
 		x = numpy.asarray(x).flatten()
 		y = numpy.asarray(y).flatten()
+			
 		xl = [x[0] - 0.5 * (x[1]-x[0]),   x[-1] + 0.5 * (x[-1]-x[-2])]
 		yl = [y[0] - 0.5 * (y[1]-y[0]),   y[-1] + 0.5 * (y[-1]-y[-2])]
 		#h = pylab.pcolor(x, y, img, edgecolors='None')
@@ -165,6 +169,8 @@ def imagesc(img, x=None, y=None, hold=False, drawnow=True, aspect='image', balan
 		h.set_data(x, y, img)
 		ax.images.append(h)
 		ax.set(xlim=xl, ylim=yl)
+		if xlab != None: ax.set_xticklabels(['']+list(xlab)+[''])
+		if ylab != None: ax.set_yticklabels(['']+list(ylab)+[''])
 	if auto_aspect: ax.set_aspect('auto')
 	else: ax.set_aspect('equal')
 	if balance != None:
