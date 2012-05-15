@@ -49,8 +49,11 @@ StringUtils::ToWide( const char* inString )
 #else // _WIN32
   locale loc;
   size_t length = ::strlen( inString );
-  wstring result( length );
-  use_facet< ctype<wchar_t> >( loc ).widen( inString, inString + length, result );
+  wchar_t* pBuffer = new wchar_t[length + 1];
+  pBuffer[length] = 0;
+  use_facet< ctype<wchar_t> >( loc ).widen( inString, inString + length, pBuffer );
+  wstring result( pBuffer );
+  delete[] pBuffer;
 #endif // _WIN32
   return result;
 }
@@ -67,8 +70,11 @@ StringUtils::ToNarrow( const wchar_t* inString )
 #else // _WIN32
   locale loc;
   size_t length = ::wcslen( inString );
-  string result( length );
-  use_facet< ctype<wchar_t> >( loc ).narrow( inString, inString + length, result );
+  char* pBuffer = new char[length + 1];
+  pBuffer[length] = 0;
+  use_facet< ctype<wchar_t> >( loc ).narrow( inString, inString + length, '?', pBuffer );
+  string result( pBuffer );
+  delete[] pBuffer;
 #endif // _WIN32
   return result;
 }

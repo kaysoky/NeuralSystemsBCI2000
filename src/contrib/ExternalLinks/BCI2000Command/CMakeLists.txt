@@ -57,11 +57,13 @@ SOURCE_GROUP( Headers\\Project FILES ${HDR_PROJECT} )
 
 # Setup Extlib Dependencies
 BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS FAILED )
-SET( LIBS
-  ${LIBS}
-  ws2_32
-  shlwapi
-)
+IF( WIN32 )
+  SET( LIBS
+    ${LIBS}
+    ws2_32
+    shlwapi
+  )
+ENDIF( WIN32 )
 
 IF( NOT FAILED )
   # Add the executable to the project

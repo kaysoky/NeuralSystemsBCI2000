@@ -78,7 +78,7 @@ EnvVariable::Clear( const string& inName )
 #if _WIN32
   success = ::SetEnvironmentVariableA( inName.c_str(), NULL );
 #else // _WIN32
-  success = ( 0 == ::unsetenv( inName.c_str() );
+  success = ( 0 == ::unsetenv( inName.c_str() ) );
 #endif // _WIN32
   return success;
 }

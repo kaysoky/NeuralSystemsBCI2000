@@ -97,11 +97,11 @@ ProcessUtils::ExecuteSynchronously( const string& inExecutable, const string& in
 
 #else // _WIN32
 
-  FILE* pipe = ::popen( inCommand.c_str(), "rt" );
+  FILE* pipe = ::popen( command.c_str(), "rt" );
   if( pipe != NULL )
   {
     while( ::fgets( buffer, bufferSize, pipe ) )
-      inInterpreter.Out() << buffer;
+      outStream << buffer;
     outExitCode = ::pclose( pipe );
     success = true;
   }
@@ -148,7 +148,7 @@ ProcessUtils::ExecuteAsynchronously( const string& inExecutable, const string& i
 #else // _WIN32
 
   outExitCode = ::system( ( executable + " " + inArguments + " &" ).c_str() );
-  success = ( 0 == exitCode );
+  success = ( 0 == outExitCode );
 
 #endif // _WIN32
 

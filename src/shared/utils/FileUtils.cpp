@@ -31,16 +31,18 @@
 #include "StringUtils.h"
 
 #ifdef _WIN32
-# include "windows.h"
+# include "Windows.h"
 # ifdef _MSC_VER
 #  include <direct.h>
+#  define S_ISREG S_IFREG
+#  define S_ISDIR S_IFDIR
 //#  include "dirent_win.h"
 # else // _MSC_VER
 #  include <dir.h>
 //#  include <dirent.h>
 # endif // _MSC_VER
-#else // _WIN32
-//# include <dirent.h>
+#elif __APPLE__
+# include <mach-o/dyld.h>
 #endif // _WIN32
 #include <sys/stat.h>
 #include <cstdlib>
@@ -63,28 +65,34 @@ FileUtils::InstallationDirectory()
 string
 FileUtils::ExecutablePath()
 {
+  string path;
 #if _WIN32
-  static char* pFileName = NULL;
-  if( pFileName == NULL )
-  {
-    DWORD size = 1024; // Must be large enough to hold path in WinXP.
-    DWORD result = 0;
-    do {
-      delete[] pFileName;
-      pFileName = new char[size];
-      result = ::GetModuleFileNameA( NULL, pFileName, size );
-      size *= 2;
-    } while( result != 0 && ::GetLastError() == ERROR_INSUFFICIENT_BUFFER );
-    if( result == 0 )
-    {
-      delete[] pFileName;
-      pFileName = NULL;
-    }
-  }
-  return pFileName;
-#else // _WIN32
-  return CanonicalPath( sOriginalWD + DirSeparator + program_invocation_name );
-#endif // _WIN32
+  char* pFileName = NULL;
+  DWORD size = 1024; // Must be large enough to hold path in WinXP.
+  DWORD result = 0;
+  do {
+    delete[] pFileName;
+    pFileName = new char[size];
+    result = ::GetModuleFileNameA( NULL, pFileName, size );
+    size *= 2;
+  } while( result != 0 && ::GetLastError() == ERROR_INSUFFICIENT_BUFFER );
+  if( result != 0 )
+    path = pFileName;
+  delete[] pFileName;
+#elif _GNU_SOURCE
+  path = CanonicalPath( sOriginalWD + DirSeparator + program_invocation_name );
+#elif __APPLE__
+  uint32_t size = 0;
+  ::_NSGetExecutablePath( NULL, &size );
+  char* pPath = new char[size];
+  pPath[0] = '\0';
+  ::_NSGetExecutablePath( pPath, &size );
+  path = CanonicalPath( pPath );
+  delete[] pPath;
+#else
+# error Don't know how to obtain the executable's path on this platform.
+#endif
+  return path;
 }
 
 string
@@ -145,14 +153,23 @@ FileUtils::CanonicalPath( const std::string& inPath )
       result = StringUtils::ToNarrow( pBuf );
     delete[] pBuf;
   }
-#else // _WIN32
+#elif _GNU_SOURCE
   char* pPath = ::canonicalize_file_name( path.c_str() );
   if( pPath )
   {
     result = pPath;
     ::free( pPath );
   }
-#endif // _WIN32
+#elif __APPLE__
+  char* pPath = ::realpath( path.c_str(), NULL );
+  if( pPath )
+  {
+    result = pPath;
+    ::free( pPath );
+  }
+#else
+# error Don't know how to canonicalize a path on the current target OS.
+#endif
   if( isDir && !result.empty() && sSeparators.find( *result.rbegin() ) == string::npos )
     result += DirSeparator;
   return result;
@@ -204,24 +221,18 @@ FileUtils::ExtractExtension( const std::string& inPath )
   return file.substr( pos );
 }
 
-namespace {
-bool ExistsAs( const std::string& inPath, int inFlag )
-{
-  struct stat s;
-  return !::stat( inPath.c_str(), &s ) && ( s.st_mode & inFlag );
-}
-} // namespace
-
 bool
 FileUtils::IsFile( const std::string& inPath )
 {
-  return ExistsAs( inPath, _S_IFREG );
+  struct stat s;
+  return !::stat( inPath.c_str(), &s ) && ( S_ISREG( s.st_mode ) );
 }
 
 bool
 FileUtils::IsDirectory( const std::string& inPath )
 {
-  return ExistsAs( inPath, _S_IFDIR );
+  struct stat s;
+  return !::stat( inPath.c_str(), &s ) && ( S_ISDIR( s.st_mode ) );
 }
 
 bool
