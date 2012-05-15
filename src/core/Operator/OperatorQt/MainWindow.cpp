@@ -39,8 +39,8 @@
 #include "VisDisplay.h"
 #include "BitmapImage.h"
 #include "OSThread.h"
-#include "HybridString.h"
 #include "BCIException.h"
+#include "ParserToken.h"
 
 #include <QMessageBox>
 #include <sstream>
@@ -568,9 +568,7 @@ MainWindow::OnUnknownCommand( void* inData, const char* inCommand )
   int result = BCI_NotHandled;
   MainWindow* this_ = static_cast<MainWindow*>( inData );
   istringstream iss( inCommand );
-  HybridString verb,
-               type,
-               name;
+  ParserToken verb, type, name;
   iss >> verb >> type >> name;
   enum { unknown, show, hide, set } action = unknown;
   if( !::stricmp( verb.c_str(), "Show" ) )

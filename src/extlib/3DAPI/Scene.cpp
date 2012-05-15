@@ -30,18 +30,10 @@
 
 #include "GraphDisplay.h"
 #include "DisplayWindow.h"
-#include "BCIDirectory.h"
 #include "BCIError.h"
 #include "OSError.h"
 #include "BCIException.h"
-
-#if _MSC_VER
-# include <direct.h>
-#elif _WIN32
-# include <dir.h>
-#else
-# include <dirent.h>
-#endif
+#include "FileUtils.h"
 
 #ifndef __BORLANDC__
 # include <QPainter>
@@ -306,12 +298,12 @@ Scene::DoneCurrent()
 void
 Scene::OnInitializeGL()
 {
-  string cwd = BCIDirectory::GetCWD();
+  string cwd = FileUtils::GetCWD();
   if( !mImagePath.empty() )
-    ::chdir( BCIDirectory::AbsolutePath( mImagePath ).c_str() );
+    FileUtils::ChDir( FileUtils::AbsolutePath( mImagePath ) );
   for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
     ( *i )->initialize();
-  ::chdir( cwd.c_str() );
+  FileUtils::ChDir( cwd.c_str() );
   mInitialized = true;
 }
 

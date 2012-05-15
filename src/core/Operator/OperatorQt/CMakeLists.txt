@@ -13,6 +13,7 @@ MESSAGE( "-- Adding Project: ${EXECUTABLE_NAME}" )
 SET( SRC_PROJECT
   main.cpp 
   MainWindow.cpp
+  ../OperatorLib/ScriptParser/ParserToken.cpp
   ConnectionInfo.cpp
   SysLog.cpp
   ShowStates.cpp
@@ -26,6 +27,7 @@ SET( SRC_PROJECT
 )
 SET( HDR_PROJECT
   MainWindow.h
+  ../OperatorLib/ScriptParser/ParserToken.cpp
   ConnectionInfo.h
   SysLog.h
   ShowStates.h
@@ -125,7 +127,10 @@ SET( HDR_PROJECT
      ${HDR_PROJECT}
      ${BCI2000_SRC_DIR}/core/Operator/OperatorLib/BCI_OperatorLib.h
 )
-INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/core/Operator/OperatorLib )
+INCLUDE_DIRECTORIES(
+  ${BCI2000_SRC_DIR}/core/Operator/OperatorLib
+  ${BCI2000_SRC_DIR}/core/Operator/OperatorLib/ScriptParser
+)
 
 # Set the Project Source Groups
 SOURCE_GROUP( Source\\Project FILES ${SRC_PROJECT} )

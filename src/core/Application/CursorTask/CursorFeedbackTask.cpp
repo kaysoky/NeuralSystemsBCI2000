@@ -28,7 +28,7 @@
 
 #include "CursorFeedbackTask.h"
 #include "Localization.h"
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include "FeedbackScene2D.h"
 #include "FeedbackScene3D.h"
 #include "buffers.h"
@@ -179,7 +179,7 @@ CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
     string filename = Parameter( texParams[ i ] );
     if( showTextures && !filename.empty() )
     {
-      filename = BCIDirectory::AbsolutePath( filename );
+      filename = FileUtils::AbsolutePath( filename );
       bool err = !ifstream( filename.c_str() ).is_open();
       if( !err )
       {

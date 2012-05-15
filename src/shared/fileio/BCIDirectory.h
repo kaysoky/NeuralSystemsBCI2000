@@ -34,9 +34,12 @@ class BCIDirectory
   enum { none = -1 };
 
  public:
-#if 0
-  static const std::string& InstallationDirectory()
-                            { return FileUtils::InstallationDirectory(); }
+#if 1 // These functions are now in FileUtils, and provided here for backward
+      // compatibility only.
+  static const std::string InstallationDirectory()
+                     { return FileUtils::InstallationDirectory(); }
+  static const std::string AbsolutePath( const std::string& inPath )
+                     { return FileUtils::AbsolutePath( inPath ); }
 #endif
 
   // Class interface: Creating output directory, and file names for recorded files.

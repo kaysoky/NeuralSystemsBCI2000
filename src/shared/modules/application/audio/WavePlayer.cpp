@@ -28,7 +28,7 @@
 #pragma hdrstop
 
 #include "WavePlayer.h"
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include "BCIError.h"
 
 using namespace std;
@@ -172,7 +172,7 @@ WavePlayer::SetFile( const string& inFileName )
 
   Error err = noError;
 
-  string fileName = BCIDirectory::AbsolutePath( inFileName );
+  string fileName = FileUtils::AbsolutePath( inFileName );
   HMMIO fileHandle = mmioOpen( const_cast<char*>( fileName.c_str() ), NULL, MMIO_READ | MMIO_ALLOCBUF );
   if( fileHandle == NULL )
     err = fileOpeningError;

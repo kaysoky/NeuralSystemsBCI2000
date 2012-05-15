@@ -28,7 +28,7 @@
 
 #include "ImageStimulus.h"
 
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include "BCIError.h"
 
 #ifdef __BORLANDC__
@@ -88,7 +88,7 @@ ImageStimulus::SetFile( const string& inName )
 
   delete mpImage;
   mpImage = new QImage();
-  errorOccurred = !mpImage->load( QString( BCIDirectory::AbsolutePath( inName ).c_str() ) );
+  errorOccurred = !mpImage->load( QString( FileUtils::AbsolutePath( inName ).c_str() ) );
 
 #endif // __BORLANDC__
 

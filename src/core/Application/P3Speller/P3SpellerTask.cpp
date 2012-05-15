@@ -38,7 +38,7 @@
 #include "AudioSpellerTarget.h"
 
 #include "Localization.h"
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include <algorithm>
 #include <iomanip>
 
@@ -817,7 +817,7 @@ P3SpellerTask::OnSave()
     string path = Parameter( "TextWindowFilePath" );
     if( !path.empty() )
     {
-      path = BCIDirectory::AbsolutePath( path );
+      path = FileUtils::AbsolutePath( path );
       path += string( "/Text" ) + TimeStamp() + ".txt";
       ofstream textFile( path.c_str() );
       if( !textFile.is_open() )
@@ -1246,7 +1246,7 @@ P3SpellerTask::DirectoryFileName() const
 {
   string result = Parameter( "TextWindowFilePath" );
   if( !result.empty() )
-    result = BCIDirectory::AbsolutePath( result ) + "/LastFile.txt";
+    result = FileUtils::AbsolutePath( result ) + "/LastFile.txt";
   return result;
 }
 

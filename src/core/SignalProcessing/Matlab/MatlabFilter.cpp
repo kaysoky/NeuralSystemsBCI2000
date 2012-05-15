@@ -31,7 +31,7 @@
 
 #include "MatlabFilter.h"
 #include "defines.h"
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 
 using namespace std;
 
@@ -78,7 +78,7 @@ MatlabFilter::MatlabFilter()
     mMatlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
     // Change matlab's working directory to the directory specified by --MatlabWD.
     string wd = OptionalParameter( "MatlabWD", "." );
-    wd = BCIDirectory::AbsolutePath( wd );
+    wd = FileUtils::AbsolutePath( wd );
     MatlabEngine::PutString( "bci_WD", wd );
     CallMatlab( MatlabFunction( "cd" ).InputArgument( "bci_WD" ) );
     MatlabEngine::ClearVariable( "bci_WD" );

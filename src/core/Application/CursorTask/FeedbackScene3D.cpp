@@ -27,7 +27,7 @@
 #pragma hdrstop
 
 #include "FeedbackScene3D.h"
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include <string>
 
 using namespace std;
@@ -120,7 +120,7 @@ FeedbackScene3D::Initialize()
   if( showTextures )
     boundaryTexture = ( string )Parameter( "WorkspaceBoundaryTexture" );
   if( !boundaryTexture.empty() )
-    boundaryTexture = BCIDirectory::AbsolutePath( boundaryTexture );
+    boundaryTexture = FileUtils::AbsolutePath( boundaryTexture );
   mpBoundary->setTexture( boundaryTexture );
   mpScene->CameraAndLight().setBoundingBox( *mpBoundary );
 
@@ -133,7 +133,7 @@ FeedbackScene3D::Initialize()
   if( showTextures )
     cursorTexture = ( string )Parameter( "CursorTexture" );
   if( !cursorTexture.empty() )
-    cursorTexture = BCIDirectory::AbsolutePath( cursorTexture );
+    cursorTexture = FileUtils::AbsolutePath( cursorTexture );
   mpCursor->setTexture( cursorTexture );
   mpCursor->setVisible( false );
 
@@ -141,7 +141,7 @@ FeedbackScene3D::Initialize()
   if( showTextures )
     targetTexture = ( string )Parameter( "TargetTexture" );
   if( !targetTexture.empty() )
-    targetTexture = BCIDirectory::AbsolutePath( targetTexture );
+    targetTexture = FileUtils::AbsolutePath( targetTexture );
   ParamRef Targets = Parameter( "Targets" );
   for( int i = 0; i < Parameter( "NumberTargets" ); ++i )
   {
