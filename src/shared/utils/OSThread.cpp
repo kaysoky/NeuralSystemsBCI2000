@@ -67,7 +67,7 @@ OSThread::Start()
   OSMutex::Lock lock( mMutex );
   mTerminating = false;
   uintptr_t handle = ::_beginthreadex( NULL, 0, OSThread::StartThread, this, 0, &mThreadID );
-  if( handle != NULL )
+  if( handle )
   {
     ::CloseHandle( HANDLE( handle ) );
     mTerminated = false;

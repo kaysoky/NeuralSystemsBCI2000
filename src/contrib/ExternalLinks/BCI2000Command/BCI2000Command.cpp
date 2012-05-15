@@ -356,7 +356,8 @@ SetStateVariable( int, char** inArgs, BCI2000Remote& ioBCI )
 int
 GetSystemState( int, char**, BCI2000Remote& ioBCI )
 {
-  return ioBCI.GetSystemState( string() ) ? ok : error;
+  string s;
+  return ioBCI.GetSystemState( s ) ? ok : error;
 }
 
 int

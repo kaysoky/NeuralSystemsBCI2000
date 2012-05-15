@@ -102,7 +102,7 @@ ImpliedType::Get( CommandInterpreter& inInterpreter )
     return StateType::Get( inInterpreter );
   if( inInterpreter.StateMachine().Parameters().Exists( object ) )
     return ParameterType::Get( inInterpreter );
-  if( inInterpreter.LocalVariables().Exists( object ) || EnvVariable::Get( object, string() ) )
+  if( inInterpreter.LocalVariables().Exists( object ) || EnvVariable::Get( object, object ) )
     return VariableType::Get( inInterpreter );
   try
   {

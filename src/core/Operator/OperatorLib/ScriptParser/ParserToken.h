@@ -28,6 +28,7 @@
 
 #include <string>
 #include <iostream>
+#include <cstdio>
 
 class ParserToken : public std::string
 {

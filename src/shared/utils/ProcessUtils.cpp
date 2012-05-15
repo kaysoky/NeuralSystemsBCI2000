@@ -128,7 +128,7 @@ ProcessUtils::ExecuteAsynchronously( const string& inExecutable, const string& i
   // ShellExecute() seems not to have this problem.
   SHELLEXECUTEINFOA info = { 0 };
   info.cbSize = sizeof( info );
-  info.fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
+  info.fMask = SEE_MASK_FLAG_DDEWAIT | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
   info.hwnd = NULL;
   info.lpVerb = "open";
   info.lpFile = executable.c_str();

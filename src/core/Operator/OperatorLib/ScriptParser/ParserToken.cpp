@@ -40,16 +40,19 @@ ParserToken::WriteToStream( ostream& os ) const
   return EncodedString( *this ).WriteToStream( os, ";#" );
 }
 
+namespace {
+  bool TerminateIf( int c )
+  {
+    return ::isspace( c ) || c == ';';
+  }
+} // namespace
+
 istream&
 ParserToken::ReadFromStream( istream& is )
 {
-  struct
-  { bool operator()( int c )
-    { return ::isspace( c ) || c == ';'; }
-  } terminateIf;
   if( ( is >> ws ).eof() )
     is.setstate( ios::failbit );
-  else if( ReadUntil( is, terminateIf ) )
+  else if( ReadUntil( is, TerminateIf ) )
     Decode();
   return is;
 };

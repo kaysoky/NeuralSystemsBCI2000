@@ -216,8 +216,10 @@ BCI2000Connection::StartExecutable( const string& inExecutable, const string& in
 
   STARTUPINFOA si = { 0 };
   si.cb = sizeof( si );
+#if 0
   si.dwFlags = STARTF_USESHOWWINDOW;
   si.wShowWindow = SW_SHOWNOACTIVATE;
+#endif
   PROCESS_INFORMATION pi = { 0 };
   bool success =( TRUE == ::CreateProcessA( NULL, const_cast<char*>( commandLine.c_str() ), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, pWorkingDir, &si, &pi ) );
   if( !success )
