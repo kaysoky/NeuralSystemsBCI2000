@@ -36,10 +36,12 @@ class BCIDirectory
  public:
 #if 1 // These functions are now in FileUtils, and provided here for backward
       // compatibility only.
-  static const std::string InstallationDirectory()
+  static std::string InstallationDirectory()
                      { return FileUtils::InstallationDirectory(); }
-  static const std::string AbsolutePath( const std::string& inPath )
+  static std::string AbsolutePath( const std::string& inPath )
                      { return FileUtils::AbsolutePath( inPath ); }
+  static std::string GetCWD()
+                     { return FileUtils::GetCWD(); }
 #endif
 
   // Class interface: Creating output directory, and file names for recorded files.

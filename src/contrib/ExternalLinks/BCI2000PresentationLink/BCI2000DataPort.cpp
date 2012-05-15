@@ -146,7 +146,7 @@ ChooseProgDir( HWND inDialog )
   wchar_t* pBuffer = new wchar_t[bufSize];
   ::wcscpy( pBuffer, curOperator.c_str() );
   ofName.lpstrFile = pBuffer;
-  ofName.nMaxFile = bufSize;
+  ofName.nMaxFile = static_cast<DWORD>( bufSize );
   ofName.lpstrTitle = L"Select a BCI2000 Operator module, or BCI2000 batch file";
   ofName.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
   ofName.lpstrDefExt = L"exe";
