@@ -163,7 +163,7 @@ FileUtils::CanonicalPath( const std::string& inPath )
   if( ::realpath( path.c_str(), buffer ) )
     result = buffer;
 #else
-# error Don't know how to canonicalize a path on the current target OS.
+# error Don´t know how to canonicalize a path on the current target OS.
 #endif
   if( isDir && !result.empty() && sSeparators.find( *result.rbegin() ) == string::npos )
     result += DirSeparator;
