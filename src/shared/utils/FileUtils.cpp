@@ -34,12 +34,10 @@
 # include "Windows.h"
 # ifdef _MSC_VER
 #  include <direct.h>
-#  define S_ISREG S_IFREG
-#  define S_ISDIR S_IFDIR
-//#  include "dirent_win.h"
+#  define S_ISREG(x) ( (x) & S_IFREG )
+#  define S_ISDIR(x) ( (x) & S_IFDIR )
 # else // _MSC_VER
 #  include <dir.h>
-//#  include <dirent.h>
 # endif // _MSC_VER
 #elif __APPLE__
 # include <mach-o/dyld.h>
