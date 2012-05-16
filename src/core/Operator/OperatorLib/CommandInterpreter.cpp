@@ -115,7 +115,10 @@ CommandInterpreter::Execute( const string& inCommand )
     {
       success = ( CallbackBase::OK == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) );
       if( success )
+      {
+        mInputStream.clear();
         mInputStream.ignore( INT_MAX );
+      }
     }
     if( !success && !pType )
     {

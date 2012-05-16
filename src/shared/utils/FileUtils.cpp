@@ -91,7 +91,7 @@ FileUtils::ExecutablePath()
   path = CanonicalPath( pPath );
   delete[] pPath;
 #else
-# error Don't know how to obtain the executable's path on this platform.
+# error Don´t know how to obtain the executable's path on this platform.
 #endif
   return path;
 }
