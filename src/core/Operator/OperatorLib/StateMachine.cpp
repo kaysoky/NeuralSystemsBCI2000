@@ -46,7 +46,7 @@
 #include "SignalProperties.h"
 #include "GenericVisualization.h"
 #include "Label.h"
-#include "CommandInterpreter.h"
+#include "ScriptInterpreter.h"
 #include "EnvVariable.h"
 #include "BCIDirectory.h"
 
@@ -646,7 +646,7 @@ StateMachine::TriggerEvent( int inCallbackID )
   if( !script.empty() )
   {
     LogMessage( BCI_OnLogMessage, "Executing " + string( pName ) + " script ..." );
-    CommandInterpreter( *this ).Execute( script );
+    ScriptInterpreter( *this ).Execute( script );
   }
 }
 
