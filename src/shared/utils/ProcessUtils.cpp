@@ -31,9 +31,17 @@
 #include <iostream>
 
 #if _WIN32
-# include <windows.h>
+# include <Windows.h>
 #else // _WIN32
 # include <cstdio>
+# include <spawn.h>
+# include <vector>
+# if __APPLE__
+#  include <crt_externs.h>
+#  define environ (*_NSGetEnviron())
+# else // __APPLE__
+extern char** environ;
+# endif // __APPLE__
 #endif // _WIN32
 
 using namespace std;
@@ -96,8 +104,7 @@ ProcessUtils::ExecuteSynchronously( const string& inExecutable, const string& in
   success = ( result == TRUE );
 
 #else // _WIN32
-
-  FILE* pipe = ::popen( command.c_str(), "rt" );
+  FILE* pipe = ::popen( command.c_str(), "r" );
   if( pipe != NULL )
   {
     while( ::fgets( buffer, bufferSize, pipe ) )
@@ -147,8 +154,39 @@ ProcessUtils::ExecuteAsynchronously( const string& inExecutable, const string& i
 
 #else // _WIN32
 
-  outExitCode = ::system( ( executable + " " + inArguments + " &" ).c_str() );
-  success = ( 0 == outExitCode );
+  char* pArgs = new char[inArguments.length() + 1];
+  ::strcpy( pArgs, inArguments.c_str() );
+  vector<char*> vArgs;
+  char* p = pArgs;
+  bool inQuotes = false,
+       inArg = false;
+  while( *p != '\0' )
+  {
+    if( *p == '\"' )
+      inQuotes = !inQuotes;
+    if( ::isspace( *p ) && !inQuotes )
+    {
+        *p = 0;
+        inArg = false;
+    }
+    else if( !inArg )
+    {
+      vArgs.push_back( p );
+      inArg = true;
+    }
+    ++p;
+  } 
+  char** pArgv = new char*[vArgs.size() + 2];
+  pArgv[0] = const_cast<char*>( executable.c_str() );
+  pArgv[vArgs.size() + 1] = NULL;
+  for( size_t i = 0; i < vArgs.size(); ++i )
+    pArgv[i+1] = vArgs[i];
+
+  outExitCode = ::posix_spawnp( NULL, executable.c_str(), NULL, NULL, pArgv, environ );
+  success = ( outExitCode == 0 );
+  
+  delete[] pArgv;
+  delete[] pArgs;
 
 #endif // _WIN32
 

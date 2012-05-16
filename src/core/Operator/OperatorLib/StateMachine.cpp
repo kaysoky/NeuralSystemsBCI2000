@@ -64,9 +64,10 @@ StateMachine::StateMachine()
 {
   string path;
   EnvVariable::Get( "PATH", path );
-  path = FileUtils::InstallationDirectory() + ";" + path;
+  string dir = FileUtils::InstallationDirectory();
+  path = dir.substr( 0, dir.length() - 1 ) + FileUtils::PathSeparator + path;
   EnvVariable::Set( "PATH", path );
-  EnvVariable::Set( "BCI2000LAUNCHDIR", FileUtils::InstallationDirectory() );
+  EnvVariable::Set( "BCI2000LAUNCHDIR", dir );
   EnvVariable::Set( "BCI2000BINARY", FileUtils::ExecutablePath() );
 }
 

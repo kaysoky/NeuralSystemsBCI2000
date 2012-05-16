@@ -221,14 +221,18 @@ ImpliedType::Error( CommandInterpreter& inInterpreter )
 bool
 ImpliedType::System( CommandInterpreter& inInterpreter )
 {
-  string command = inInterpreter.GetRemainder();
+  string command = inInterpreter.GetRemainder(),
+         shell,
+         args;
 #if _WIN32
-  string shell = "cmd /c";
+  shell = "cmd";
+  args = "/c " + command;
 #else
-  string shell = "/bin/sh -c";
+  shell = "/bin/sh";
+  args = "-c '" + command + "'";
 #endif
   int exitCode = 0;
-  if( !ProcessUtils::ExecuteSynchronously( shell, command, inInterpreter.Out(), exitCode ) )
+  if( !ProcessUtils::ExecuteSynchronously( shell, args, inInterpreter.Out(), exitCode ) )
     throw bciexception_( "Could not run \"" << command.c_str() << "\"" );
   if( exitCode != 0 )
     inInterpreter.Out() << inInterpreter.ExitCodeTag() << exitCode;

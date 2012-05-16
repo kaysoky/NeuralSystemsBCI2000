@@ -159,12 +159,9 @@ FileUtils::CanonicalPath( const std::string& inPath )
     ::free( pPath );
   }
 #elif __APPLE__
-  char* pPath = ::realpath( path.c_str(), NULL );
-  if( pPath )
-  {
-    result = pPath;
-    ::free( pPath );
-  }
+  char buffer[PATH_MAX + 1] = "";
+  if( ::realpath( path.c_str(), buffer ) )
+    result = buffer;
 #else
 # error Don't know how to canonicalize a path on the current target OS.
 #endif

@@ -75,9 +75,9 @@ int main( int argc, char** argv )
   bci.TelnetAddress( telnetAddress );
   if( !bci.Connect() )
   {
-    if( !bci.Run( FileUtils::InstallationDirectory() + "Operator.exe", additionalArgs ) || !bci.Connect() )
+    if( !bci.Run( FileUtils::InstallationDirectory() + "Operator", additionalArgs ) || !bci.Connect() )
     {
-      cerr << bci.Result();
+      cerr << bci.Result() << endl;
       return -1;
     }
   }
@@ -115,6 +115,6 @@ int main( int argc, char** argv )
     else if( !::stricmp( bci.Result().c_str(), "false" ) )
       exitCode = 1;
     if( !bci.Result().empty() )
-      cout << bci.Result();
+      cout << bci.Result() << endl;
   }
 }

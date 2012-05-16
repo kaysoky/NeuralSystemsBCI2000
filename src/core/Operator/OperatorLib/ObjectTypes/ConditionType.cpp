@@ -57,7 +57,8 @@ static bool geq( const char* a, const char* b )
 static struct { const char* name; OpFun func; }
 sOperators[] =
 {
-  { "==", &eq }, { "!=", &neq }, { "~=", &neq },
+  { "==", &eq }, { "=", &eq },
+  { "!=", &neq }, { "~=", &neq },
   { "<", &lt }, { "<=", &leq },
   { ">", &gt }, { ">=", &geq },
 };

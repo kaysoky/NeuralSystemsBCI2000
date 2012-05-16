@@ -447,6 +447,12 @@ server_tcpsocket::do_open()
   m_handle = ::socket( PF_INET, SOCK_STREAM, 0 );
   bool success = ( m_handle != INVALID_SOCKET );
   if( success )
+  {
+    int val = 1;
+    success = SOCKET_ERROR != ::setsockopt( m_handle, SOL_SOCKET, SO_REUSEADDR,
+                                                          reinterpret_cast<const char*>( &val ), sizeof( val ) );
+  }
+  if( success )
     success = SOCKET_ERROR != ::bind( m_handle, reinterpret_cast<sockaddr*>( &m_address ), sizeof( m_address ) );
   if( success )
     success = SOCKET_ERROR != ::listen( m_handle, 1 );

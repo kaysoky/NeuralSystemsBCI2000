@@ -118,12 +118,11 @@ DirectoryType::ListDirectory( const string& inArgs )
   string shell, command;
 #if _WIN32
   shell = "cmd";
-  command = "/c dir ";
+  command = "/c dir " + inArgs;
 #else
   shell = "/bin/sh";
-  command = "-c ls ";
+  command = "-c 'ls " + inArgs + "'";
 #endif
-  command += inArgs;
   int exitCode = 0;
   stringstream oss;
   if( !ProcessUtils::ExecuteSynchronously( shell, command, oss, exitCode ) )

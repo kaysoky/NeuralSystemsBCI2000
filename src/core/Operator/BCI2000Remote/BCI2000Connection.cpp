@@ -265,7 +265,7 @@ BCI2000Connection::StartExecutable( const string& inExecutable, const string& in
   size_t pos = inExecutable.find_last_of( "/" );
   if( pos != string::npos )
   {
-    string workingDir = workingDir.substr( 0, pos + 1 );
+    string workingDir = inExecutable.substr( 0, pos + 1 );
     commandLine = "cd \"" + workingDir + "\" && " + commandLine;
   }
   bool success = ( 0 == ::system( commandLine.c_str() ) );

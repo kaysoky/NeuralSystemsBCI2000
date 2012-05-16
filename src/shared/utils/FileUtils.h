@@ -33,10 +33,12 @@ namespace FileUtils
 #ifdef _WIN32
   static const char  DirSeparator = '\\';
   static const char  DriveSeparator = ':';
+  static const char  PathSeparator = ';';
   inline const char* SeparatorSet() { return "\\/"; }
 #else
   static const char  DirSeparator = '/';
   static const char  DriveSeparator = '/';
+  static const char  PathSeparator = ':';
   inline const char* SeparatorSet() { return "/"; }
 #endif
 
