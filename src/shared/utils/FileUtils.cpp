@@ -78,7 +78,10 @@ FileUtils::ExecutablePath()
     path = pFileName;
   delete[] pFileName;
 #elif _GNU_SOURCE
-  path = CanonicalPath( sOriginalWD + DirSeparator + program_invocation_name );
+  path = program_invocation_name;
+  if( !IsAbsolutePath( path ) )
+    path = sOriginalWD + path;
+  path = CanonicalPath( path );
 #elif __APPLE__
   uint32_t size = 0;
   ::_NSGetExecutablePath( NULL, &size );

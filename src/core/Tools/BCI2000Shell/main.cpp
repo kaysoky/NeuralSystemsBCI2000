@@ -29,6 +29,7 @@
 #include "BCI2000Connection.h"
 #include "FileUtils.h"
 #include "EnvVariable.h"
+#include <cstring>
 
 using namespace std;
 

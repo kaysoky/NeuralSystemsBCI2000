@@ -58,6 +58,8 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <cstring>
 
 #ifndef EXECUTABLE_NAME
 # define EXECUTABLE_NAME "BCI2000Command"

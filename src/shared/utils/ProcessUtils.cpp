@@ -34,6 +34,7 @@
 # include <Windows.h>
 #else // _WIN32
 # include <cstdio>
+# include <cstring>
 # include <spawn.h>
 # include <vector>
 # if __APPLE__

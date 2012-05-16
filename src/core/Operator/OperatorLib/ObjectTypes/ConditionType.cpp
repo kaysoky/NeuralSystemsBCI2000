@@ -30,6 +30,7 @@
 #include "CommandInterpreter.h"
 #include "EnvVariable.h"
 #include "BCIException.h"
+#include <cstdlib>
 
 using namespace std;
 using namespace Interpreter;

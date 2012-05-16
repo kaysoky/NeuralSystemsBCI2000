@@ -33,6 +33,7 @@
 #else // _WIN32
 # include <locale>
 #endif // _WIN32
+#include <cstring>
 
 using namespace std;
 using namespace StringUtils;
