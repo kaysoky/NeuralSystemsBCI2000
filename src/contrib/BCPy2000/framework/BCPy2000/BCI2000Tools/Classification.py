@@ -187,3 +187,16 @@ def PlotSCD( files='*.pk' ):
 	SigTools.imagesc( r*numpy.abs(r), y=d['channels'], x=SigTools.samples2msec( range( r.shape[1] ), d['fs'] ), aspect='auto', balance=0.0, colorbar=True )
 	pylab.title( ', '.join( [ '%d: %d' % ( yi, ( d['y'] == yi ).sum() ) for yi in numpy.unique( d['y'] ) ] ) )
 	pylab.draw()
+
+def PlotTrials( files='*.pk', channel='Cz' ):
+	import pylab
+	if isinstance( files, basestring ):
+		if os.path.isdir( files ): files = os.path.join( files, '*.pk' )
+		files = glob.glob( files )
+	d = DataFiles.load( files )
+	chind = d[ 'channels' ].index( channel )
+	v = [ ( d[ 'y' ][ i ], i, vi ) for i, vi in enumerate( d[ 'x' ][ :, chind, : ] ) ]
+	v = numpy.array( [ vi for yi, i, vi in sorted( v ) ] )
+	SigTools.imagesc( v, x=SigTools.samples2msec( range( v.shape[1] ), d['fs'] ), aspect='auto', balance=0.0, colorbar=True )
+	pylab.title( ', '.join( [ '%d: %d' % ( yi, ( d['y'] == yi ).sum() ) for yi in numpy.unique( d['y'] ) ] ) + ( ' (channel %s)' % channel ) )
+	pylab.draw()

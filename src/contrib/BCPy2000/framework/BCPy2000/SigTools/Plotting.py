@@ -179,9 +179,9 @@ def imagesc(img, x=None, y=None, hold=False, drawnow=True, aspect='image', balan
 		h.set_clim(c)
 	cb = getattr(ax, 'colorbar', None)
 	if colorbar:
-		if cb == None: cbax = None
-		else: cbax = cb.ax; cbax.cla()
-		ax.colorbar = pylab.colorbar(cax=cbax, ax=ax)
+		if cb == None: cbkwargs = {'ax':ax}
+		else: cbkwargs = {'cax':cb.ax} ; cb.ax.cla()
+		ax.colorbar = pylab.colorbar(h, **cbkwargs)
 	elif cb != None:
 		pass # TODO: delete the colorbar---but how?
 	if drawnow: pylab.draw()
