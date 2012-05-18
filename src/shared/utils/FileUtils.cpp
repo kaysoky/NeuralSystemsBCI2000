@@ -77,22 +77,24 @@ FileUtils::ExecutablePath()
   if( result != 0 )
     path = pFileName;
   delete[] pFileName;
-#elif _GNU_SOURCE
+#else // _WIN32
+# if _GNU_SOURCE
   path = program_invocation_name;
-  if( !IsAbsolutePath( path ) )
-    path = sOriginalWD + path;
-  path = CanonicalPath( path );
-#elif __APPLE__
+# elif __APPLE__
   uint32_t size = 0;
   ::_NSGetExecutablePath( NULL, &size );
   char* pPath = new char[size];
   pPath[0] = '\0';
   ::_NSGetExecutablePath( pPath, &size );
-  path = CanonicalPath( pPath );
+  path = pPath;
   delete[] pPath;
-#else
-# error Don´t know how to obtain the executable's path on this platform.
-#endif
+# else
+#  error Don´t know how to obtain the executable´s path on this platform.
+# endif
+  if( !IsAbsolutePath( path ) )
+    path = sOriginalWD + path;
+  path = CanonicalPath( path );
+#endif // _WIN32
   return path;
 }
 
