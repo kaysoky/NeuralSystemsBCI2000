@@ -35,5 +35,5 @@ Startup system
 Start executable SignalGenerator
 Start executable MatlabSignalProcessing --MatlabWD=./matlab
 Start executable FeedbackDemo
-Wait for Initialization
+Wait for Connected
 Load parameterfile "..\parms\examples\MatlabDemo_SignalGenerator.prm"

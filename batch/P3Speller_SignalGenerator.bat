@@ -35,5 +35,5 @@ Startup system
 Start executable SignalGenerator
 Start executable P3SignalProcessing
 Start executable P3Speller
-Wait for Initialization
+Wait for Connected
 Load parameterfile "..\parms\examples\P3Speller_CopySpelling.prm"

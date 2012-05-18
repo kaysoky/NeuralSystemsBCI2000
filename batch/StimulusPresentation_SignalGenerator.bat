@@ -35,5 +35,5 @@ Startup system
 Start executable SignalGenerator
 Start executable P3SignalProcessing
 Start executable StimulusPresentation
-Wait for Initialization
+Wait for Connected
 Load parameterfile "..\parms\examples\StimulusPresentation_SignalGenerator.prm"

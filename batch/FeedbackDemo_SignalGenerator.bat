@@ -35,5 +35,5 @@ Startup system
 Start executable SignalGenerator
 Start executable SpectralSignalProcessing
 Start executable FeedbackDemo
-Wait for Initialization
+Wait for Connected
 Load parameterfile "..\parms\examples\FeedbackDemo_SignalGenerator.prm"

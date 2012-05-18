@@ -35,5 +35,5 @@ Startup system
 Start executable SignalGenerator
 Start executable SpectralSignalProcessing
 Start executable CursorTask
-Wait for Initialization
+Wait for Connected
 Load parameterfile "..\parms\examples\CursorTask_SignalGenerator.prm"

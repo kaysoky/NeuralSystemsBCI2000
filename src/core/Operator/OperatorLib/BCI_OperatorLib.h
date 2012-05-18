@@ -205,7 +205,7 @@ enum BCI_State
 {
   BCI_StateUnavailable,
   BCI_StateStartup,
-  BCI_StateInitialization,
+  BCI_StateConnected, BCI_StateInitialization = BCI_StateConnected,
   BCI_StateResting,
   BCI_StateSuspended,
   BCI_StateParamsModified,

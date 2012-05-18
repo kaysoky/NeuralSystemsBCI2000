@@ -35,6 +35,6 @@ Startup system
 Start executable gMOBIlab
 Start executable P3SignalProcessing
 Start executable StimulusPresentation
-Wait for Initialization
+Wait for Connected
 Load parameterfile "..\parms\examples\StimulusPresentation_SignalGenerator.prm"
 Load parameterfile "..\parms\fragments\amplifiers\gMOBIlab.prm"

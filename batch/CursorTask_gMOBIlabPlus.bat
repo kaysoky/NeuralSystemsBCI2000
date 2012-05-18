@@ -35,6 +35,6 @@ Startup system
 Start executable gMOBIlabPlus
 Start executable SpectralSignalProcessing
 Start executable CursorTask
-Wait for Initialization
+Wait for Connected
 Load Parameterfile "..\parms\examples\CursorTask_SignalGenerator.prm"
 Load parameterfile "..\parms\fragments\amplifiers\gMOBIlab.prm"

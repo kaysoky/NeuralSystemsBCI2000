@@ -61,7 +61,7 @@ sSystemStates[] =
   ENTRY( Unavailable ),
   ENTRY( Idle ),
   ENTRY( Startup ),
-  ENTRY( Initialization ),
+  ENTRY( Initialization ), ENTRY( Connected ),
   ENTRY( Resting ),
   ENTRY( Suspended ),
   ENTRY( ParamsModified ),
