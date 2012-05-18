@@ -33,11 +33,11 @@
 
 using namespace std;
 
-static const string shebang = "#!";
+static const string sShebang = "#!";
 #if _WIN32
-static const char* operatorName = "Operator.exe";
+static const char* sOperatorName = "Operator.exe";
 #else
-static const char* operatorName = "Operator";
+static const char* sOperatorName = "Operator";
 #endif
 
 int main( int argc, char** argv )
@@ -64,7 +64,7 @@ int main( int argc, char** argv )
   string additionalArgs = " --Hide",
          telnetAddress;
   EnvVariable::Get( "BCI2000TelnetAddress", telnetAddress );
-  while( idx < argc && argv[idx] != shebang )
+  while( idx < argc && argv[idx] != sShebang )
   {
     if( !::stricmp( argv[idx], "--Telnet" ) && idx++ < argc )
     {
@@ -81,7 +81,7 @@ int main( int argc, char** argv )
   bci.TelnetAddress( telnetAddress );
   if( !bci.Connect() )
   {
-    if( !bci.Run( FileUtils::InstallationDirectory() + operatorName, additionalArgs ) || !bci.Connect() )
+    if( !bci.Run( FileUtils::InstallationDirectory() + sOperatorName, additionalArgs ) || !bci.Connect() )
     {
       cerr << bci.Result() << endl;
       return -1;

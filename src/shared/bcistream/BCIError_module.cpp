@@ -32,6 +32,7 @@
 #include "MessageHandler.h"
 #include "OSMutex.h"
 #include "Status.h"
+#include "SockStream.h"
 
 using namespace std;
 
@@ -53,7 +54,8 @@ StatusMessage( const string& inText, int inCode )
     MessageHandler::PutMessage( *spOutputStream, Status( text, inCode ) );
     spOutputStream->flush();
   }
-  if( !spOutputStream || !*spOutputStream )
+  sockstream* pSockStream = dynamic_cast<sockstream*>( spOutputStream );
+  if( !spOutputStream || !*spOutputStream || ( pSockStream && !pSockStream->is_open() ) )
   {
     if( inCode >= 400 )
     {
