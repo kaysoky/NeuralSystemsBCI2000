@@ -34,6 +34,11 @@
 using namespace std;
 
 static const string shebang = "#!";
+#if _WIN32
+static const char* operatorName = "Operator.exe";
+#else
+static const char* operatorName = "Operator";
+#endif
 
 int main( int argc, char** argv )
 {
@@ -56,7 +61,7 @@ int main( int argc, char** argv )
   string script = "";
   if( !command && !interactive && !help )
     script = FileUtils::AbsolutePath( argv[idx++] );
-  string additionalArgs,
+  string additionalArgs = " --Hide",
          telnetAddress;
   EnvVariable::Get( "BCI2000TelnetAddress", telnetAddress );
   while( idx < argc && argv[idx] != shebang )
@@ -76,7 +81,7 @@ int main( int argc, char** argv )
   bci.TelnetAddress( telnetAddress );
   if( !bci.Connect() )
   {
-    if( !bci.Run( FileUtils::InstallationDirectory() + "Operator", additionalArgs ) || !bci.Connect() )
+    if( !bci.Run( FileUtils::InstallationDirectory() + operatorName, additionalArgs ) || !bci.Connect() )
     {
       cerr << bci.Result() << endl;
       return -1;
@@ -109,7 +114,7 @@ int main( int argc, char** argv )
       script = additionalArgs;
     else
       script = "execute script \"" + script + "\"" + additionalArgs;
-      
+
     int exitCode = bci.Execute( script );
     if( bci.Result().empty() || !::stricmp( bci.Result().c_str(), "true" ) )
       exitCode = 0;

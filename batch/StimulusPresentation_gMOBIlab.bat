@@ -30,7 +30,7 @@ If [ ${Get system state} != Idle ]
   Shutdown system
   Wait for Idle
 End
-Set title ${Extract file base ${Arg0}}
+Show window; Set title ${Extract file base ${Arg0}}
 Startup system
 Start executable gMOBIlab
 Start executable P3SignalProcessing
