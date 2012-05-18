@@ -1,5 +1,5 @@
 System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 2.x ,%20 Dec%2014%202007 // operator module version information
-Storage:Data%20Location string DataDirectory= ..\data\mu ..\data % % // path to top level data directory (directory)
+Storage:Data%20Location string DataDirectory= ../data/mu ../data % % // path to top level data directory (directory)
 Storage:Session string SubjectSession= 001 001 % % // three-digit session number
 Storage:Session string SubjectRun= 01 00 % % // two-digit run number
 Visualize:Timing int VisualizeTiming= 1 1 0 1 // visualize system timing (0=no, 1=yes) (boolean)
@@ -54,7 +54,7 @@ Application:Sequencing:StimulusPresentationTask int SequenceType= 1 0 0 1 // Seq
 Application:Sequencing:StimulusPresentationTask int NumberOfSequences= 5 1 0 % // number of sequence repetitions in a run
 Application:Sequencing intlist ToBeCopied= 4 1 2 3 4 1 1 % // Sequence in which stimuli need to be copied (only used in copy mode)
 Application:Sequencing string UserComment= Mu%20Rhythm%20Screening%20Tutorial // User comments for a specific run
-Application:Stimuli matrix Stimuli= { caption icon audio } { stimulus1 stimulus2 stimulus3 stimulus4 } Left Right Up Down images\left.bmp images\right.bmp images\up.bmp images\down.bmp % % % % // captions and icons to be displayed, sounds to be played for different stimuli
+Application:Stimuli matrix Stimuli= { caption icon audio } { stimulus1 stimulus2 stimulus3 stimulus4 } Left Right Up Down images/left.bmp images/right.bmp images/up.bmp images/down.bmp % % % % // captions and icons to be displayed, sounds to be played for different stimuli
 Application:Stimuli matrix FocusOn= { caption icon audio } { focuson } % % % // initial announcement what to focus on
 Application:Stimuli matrix Result= { caption icon audio } { result } % % % // final result announcement 
 Application:Stimuli int StimulusWidth= 0 0 0 100 // StimulusWidth in percent of screen width (zero for original pixel size)
