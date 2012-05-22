@@ -5,23 +5,23 @@
 // Description: The Win32 implementation of the WavePlayer interface.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 //////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -275,14 +275,12 @@ WavePlayer::SetFile( const string& inFileName )
     err = genError;
     if( DS_OK == sPDS->CreateSoundBuffer( &bufdesc, &mSecondaryBuffer, NULL ) )
     {
-      char* pWrite = NULL;
-      void* write = reinterpret_cast<void*>( pWrite );
+      void* pWrite = NULL;
       unsigned long length = 0;
       if( DS_OK == mSecondaryBuffer->Lock( 0, childChunkInfo.cksize,
-                     &write, &length, NULL, NULL, DSBLOCK_ENTIREBUFFER ) )
+                     &pWrite, &length, NULL, NULL, DSBLOCK_ENTIREBUFFER ) )
       {
-        pWrite = ( char* )write;
-        ::mmioRead( fileHandle, pWrite, length );
+        ::mmioRead( fileHandle, reinterpret_cast<char*>( pWrite ), length );
         if( DS_OK == mSecondaryBuffer->Unlock( pWrite, length, NULL, 0 ) )
           err = noError;
       }
@@ -433,7 +431,7 @@ WavePlayer::Clear()
 {
   if( IsPlaying() )
     Stop();
-  
+
   delete mpSound;
   mpSound = NULL;
   mFile = "";

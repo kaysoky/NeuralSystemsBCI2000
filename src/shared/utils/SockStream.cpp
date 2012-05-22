@@ -160,12 +160,12 @@ streamsock::set_address( const char* inIP, unsigned short inPort )
       ip = buf;
   }
   ::memset( &m_address, 0, sizeof( m_address ) );
-  m_address.sin_family = AF_INET;
-  m_address.sin_port = htons( inPort );
+  m_address.sa_in.sin_family = AF_INET;
+  m_address.sa_in.sin_port = htons( inPort );
   if( *ip == '*' ) // A "*" as IP address means "any local address" (for bind() ).
-    m_address.sin_addr.s_addr = INADDR_ANY;
-  else if( INADDR_NONE == ( m_address.sin_addr.s_addr = ::inet_addr( ip ) ) )
-    m_address.sin_addr.s_addr = ::inet_addr( "127.0.0.1" );
+    m_address.sa_in.sin_addr.s_addr = INADDR_ANY;
+  else if( INADDR_NONE == ( m_address.sa_in.sin_addr.s_addr = ::inet_addr( ip ) ) )
+    m_address.sa_in.sin_addr.s_addr = ::inet_addr( "127.0.0.1" );
   delete[] buf;
 }
 
@@ -212,20 +212,20 @@ void
 streamsock::update_address()
 {
   socklen_t addr_size = sizeof( m_address );
-  if( SOCKET_ERROR == ::getsockname( m_handle, reinterpret_cast<sockaddr*>( &m_address ), &addr_size ) )
+  if( SOCKET_ERROR == ::getsockname( m_handle, &m_address.sa, &addr_size ) )
     close();
 }
 
 string
 streamsock::ip() const
 {
-  return ::inet_ntoa( m_address.sin_addr );
+  return ::inet_ntoa( m_address.sa_in.sin_addr );
 }
 
 unsigned short
 streamsock::port() const
 {
-  return ntohs( m_address.sin_port );
+  return ntohs( m_address.sa_in.sin_port );
 }
 
 bool
@@ -453,7 +453,7 @@ server_tcpsocket::do_open()
                                                           reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
   if( success )
-    success = SOCKET_ERROR != ::bind( m_handle, reinterpret_cast<sockaddr*>( &m_address ), sizeof( m_address ) );
+    success = SOCKET_ERROR != ::bind( m_handle, &m_address.sa, sizeof( m_address ) );
   if( success )
     success = SOCKET_ERROR != ::listen( m_handle, 1 );
   if( success )
@@ -475,9 +475,7 @@ client_tcpsocket::do_open()
   if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_STREAM, 0 ) ) )
     return;
 
-  if( SOCKET_ERROR == ::connect( m_handle,
-                                 reinterpret_cast<sockaddr*>( &m_address ),
-                                 sizeof( m_address ) ) )
+  if( SOCKET_ERROR == ::connect( m_handle, &m_address.sa, sizeof( m_address ) ) )
   {
     close();
     return;
@@ -492,9 +490,7 @@ receiving_udpsocket::do_open()
   if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, 0 ) ) )
     return;
 
-  if( SOCKET_ERROR == ::bind( m_handle,
-                              reinterpret_cast<sockaddr*>( &m_address ),
-                              sizeof( m_address ) ) )
+  if( SOCKET_ERROR == ::bind( m_handle, &m_address.sa, sizeof( m_address ) ) )
   {
     close();
     return;
@@ -508,7 +504,7 @@ sending_udpsocket::set_socket_options()
   streamsock::set_socket_options();
   if( m_handle != INVALID_SOCKET )
   {
-    int val = !::strcmp( ::inet_ntoa( m_address.sin_addr ), "255.255.255.255" ); // Broadcast address
+    int val = !::strcmp( ::inet_ntoa( m_address.sa_in.sin_addr ), "255.255.255.255" ); // Broadcast address
     ::setsockopt( m_handle, SOL_SOCKET, SO_BROADCAST,
                         reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
@@ -521,16 +517,12 @@ sending_udpsocket::do_open()
   if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, 0 ) ) )
       return;
 
-  sockaddr_in bind_addr = m_address;
-  bind_addr.sin_addr.s_addr = INADDR_ANY;
-  bind_addr.sin_port = 0;
-  if( ( SOCKET_ERROR == ::bind( m_handle,
-                                reinterpret_cast<sockaddr*>( &bind_addr ),
-                                sizeof( bind_addr ) ) )
+  address bind_addr = m_address;
+  bind_addr.sa_in.sin_addr.s_addr = INADDR_ANY;
+  bind_addr.sa_in.sin_port = 0;
+  if( ( SOCKET_ERROR == ::bind( m_handle, &bind_addr.sa, sizeof( bind_addr ) ) )
       ||
-      ( SOCKET_ERROR == ::connect( m_handle,
-                                   reinterpret_cast<sockaddr*>( &m_address ),
-                                   sizeof( m_address ) ) ) )
+      ( SOCKET_ERROR == ::connect( m_handle, &m_address.sa, sizeof( m_address ) ) ) )
   {
     close();
     return;

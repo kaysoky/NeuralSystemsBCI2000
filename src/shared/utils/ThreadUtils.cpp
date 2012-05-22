@@ -125,7 +125,8 @@ ThreadUtils::NumberOfProcessors()
 void
 ThreadUtils::PrecisionSleepFor( double inMs )
 {
-  ::usleep( inMs * 1000 );
+  if( inMs >= 0 )
+    ::usleep( inMs * 1000 );
 }
 
 void

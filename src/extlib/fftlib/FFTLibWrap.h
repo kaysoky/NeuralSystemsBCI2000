@@ -48,7 +48,7 @@ class FFTLibWrapper
     };
 
     int Size() const { return mFFTSize; }
-    void Compute()   { LibExecute( mLibPrivateData ); }
+    void Compute()   { LibExecute.Fn( mLibPrivateData ); }
 
     static const char* LibName() { return sLibName; }
     static bool LibAvailable()   { return sLibRef != 0; }
@@ -63,21 +63,29 @@ class FFTLibWrapper
         *   mpOutputData;
     void*   mLibPrivateData;
 
-    typedef void* ( *LibInitRealFn )( int, void*, void*, int, unsigned );
-    typedef void* ( *LibInitComplexFn )( int, void*, void*, int, unsigned );
-    typedef void  ( *LibExecuteFn )( void* );
-    typedef void  ( *LibDestroyFn )( void* );
-    typedef void  ( *LibCleanupFn )();
-    typedef void* ( *LibMallocFn )( unsigned long );
-    typedef void  ( *LibFreeFn )( void* );
+    typedef void* ( *LibInitReal_ )( int, void*, void*, int, unsigned );
+    typedef void* ( *LibInitComplex_ )( int, void*, void*, int, unsigned );
+    typedef void  ( *LibExecute_ )( void* );
+    typedef void  ( *LibDestroy_ )( void* );
+    typedef void  ( *LibCleanup_ )();
+    typedef void* ( *LibMalloc_ )( unsigned long );
+    typedef void  ( *LibFree_ )( void* );
 
-    static LibInitRealFn    LibInitReal;
+    typedef union { LibInitReal_ Fn; void* Ptr; } LibInitRealFn;
+    typedef union { LibInitComplex_ Fn; void* Ptr; } LibInitComplexFn;
+    typedef union { LibExecute_ Fn; void* Ptr; } LibExecuteFn;
+    typedef union { LibDestroy_ Fn; void* Ptr; } LibDestroyFn;
+    typedef union { LibCleanup_ Fn; void* Ptr; } LibCleanupFn;
+    typedef union { LibMalloc_ Fn; void* Ptr; } LibMallocFn;
+    typedef union { LibFree_ Fn; void* Ptr; } LibFreeFn;
+
+    static LibInitRealFn LibInitReal;
     static LibInitComplexFn LibInitComplex;
-    static LibExecuteFn     LibExecute;
-    static LibDestroyFn     LibDestroy;
-    static LibCleanupFn     LibCleanup;
-    static LibMallocFn      LibMalloc;
-    static LibFreeFn        LibFree;
+    static LibExecuteFn LibExecute;
+    static LibDestroyFn LibDestroy;
+    static LibCleanupFn LibCleanup;
+    static LibMallocFn LibMalloc;
+    static LibFreeFn LibFree;
 
   private:
     static int sNumInstances;

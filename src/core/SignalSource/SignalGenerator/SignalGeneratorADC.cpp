@@ -32,8 +32,12 @@
 #include "OSThread.h"
 
 #include <cmath>
-#ifdef _WIN32
-# include <windows.h>
+#if _WIN32
+# include <Windows.h>
+#elif USE_QT
+# include <QCursor>
+# include <QApplication>
+# include <QDesktopWidget>
 #endif
 
 using namespace std;
@@ -63,10 +67,10 @@ SignalGeneratorADC::SignalGeneratorADC()
        "32 1 % // number of samples transmitted at a time",
     "Source:Signal%20Properties int SamplingRate= 256Hz "
        "256Hz 1 % // sample rate",
-#ifdef _WIN32
+#if _WIN32 || USE_QT
     "Source int ModulateAmplitude= 0 0 0 1 "
       "// Modulate the amplitude with the mouse (0=no, 1=yes) (boolean)",
-#endif // _WIN32
+#endif // _WIN32 || USE_QT
     "Source int SineChannelX= 0 0 0 % "
       "// Channel number of sinewave controlled by mouse x position",
     "Source int SineChannelY= 0 0 0 % "
@@ -165,9 +169,9 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
   mAmplitudeY = 1.0;
   mAmplitudeZ = 1.0;
 
-#ifdef _WIN32
+#if _WIN32 || USE_QT
   mModulateAmplitude = ( Parameter( "ModulateAmplitude" ) != 0 );
-#endif // _WIN32
+#endif // _WIN32 || USE_QT
 
   mLasttime = PrecisionTime::Now();
 }
@@ -184,7 +188,7 @@ SignalGeneratorADC::StartRun()
 void
 SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
 {
-#ifdef _WIN32
+#if _WIN32
   if( mModulateAmplitude )
   {
     POINT p = { 0, 0 };
@@ -200,7 +204,15 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
          rightButton = ::GetAsyncKeyState( VK_RBUTTON ) & isPressed;
     mAmplitudeZ = 0.5 + ( leftButton ? -0.5 : 0 ) + ( rightButton ? 0.5 : 0 );
   }
-#endif // _WIN32
+#elif USE_QT
+  if( mModulateAmplitude )
+  {
+    QPoint p = QCursor::pos();
+    QRect r = QApplication::desktop()->geometry();
+    mAmplitudeX = float( p.x() ) / r.width();
+    mAmplitudeY = 1.0 - float( p.y() ) / r.height();
+  }
+#endif // !_WIN32, !USE_QT
 
   double maxVal = Output.Type().Max(),
          minVal = Output.Type().Min();

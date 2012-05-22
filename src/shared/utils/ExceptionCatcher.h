@@ -45,9 +45,8 @@ class ExceptionCatcher
 
  private:
   bool Run2( Runnable& );
-#if _MSC_VER
   void ReportWin32Exception( int code );
-#endif // _MSC_VER
+  void ReportSignal( int code );
   std::string UserMessage() const;
 
  private:

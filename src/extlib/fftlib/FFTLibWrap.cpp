@@ -45,23 +45,23 @@ const char* FFTLibWrapper::sLibName = "fftw3" LIB_EXTENSION;
 int FFTLibWrapper::sNumInstances = 0;
 
 void* FFTLibWrapper::sLibRef = ::dlopen( sLibName, RTLD_LAZY );
-FFTLibWrapper::LibInitRealFn FFTLibWrapper::LibInitReal = NULL;
-FFTLibWrapper::LibInitComplexFn FFTLibWrapper::LibInitComplex = NULL;
-FFTLibWrapper::LibExecuteFn FFTLibWrapper::LibExecute = NULL;
-FFTLibWrapper::LibDestroyFn FFTLibWrapper::LibDestroy = NULL;
-FFTLibWrapper::LibCleanupFn FFTLibWrapper::LibCleanup = NULL;
-FFTLibWrapper::LibMallocFn FFTLibWrapper::LibMalloc = NULL;
-FFTLibWrapper::LibFreeFn FFTLibWrapper::LibFree = NULL;
+FFTLibWrapper::LibInitRealFn FFTLibWrapper::LibInitReal = { NULL };
+FFTLibWrapper::LibInitComplexFn FFTLibWrapper::LibInitComplex = { NULL };
+FFTLibWrapper::LibExecuteFn FFTLibWrapper::LibExecute = { NULL };
+FFTLibWrapper::LibDestroyFn FFTLibWrapper::LibDestroy = { NULL };
+FFTLibWrapper::LibCleanupFn FFTLibWrapper::LibCleanup = { NULL };
+FFTLibWrapper::LibMallocFn FFTLibWrapper::LibMalloc = { NULL };
+FFTLibWrapper::LibFreeFn FFTLibWrapper::LibFree = { NULL };
 
 FFTLibWrapper::ProcNameEntry FFTLibWrapper::sProcNames[] =
 {
-  { ( void** )&LibInitReal,   "fftw_plan_r2r_1d" },
-  { ( void** )&LibInitComplex,"fftw_plan_dft_1d" },
-  { ( void** )&LibExecute,    "fftw_execute" },
-  { ( void** )&LibDestroy,    "fftw_destroy_plan" },
-  { ( void** )&LibCleanup,    "fftw_cleanup" },
-  { ( void** )&LibMalloc,     "fftw_malloc" },
-  { ( void** )&LibFree,       "fftw_free" },
+  { &LibInitReal.Ptr,   "fftw_plan_r2r_1d" },
+  { &LibInitComplex.Ptr,"fftw_plan_dft_1d" },
+  { &LibExecute.Ptr,    "fftw_execute" },
+  { &LibDestroy.Ptr,    "fftw_destroy_plan" },
+  { &LibCleanup.Ptr,    "fftw_cleanup" },
+  { &LibMalloc.Ptr,     "fftw_malloc" },
+  { &LibFree.Ptr,       "fftw_free" },
 };
 
 
@@ -72,7 +72,7 @@ FFTLibWrapper::FFTLibWrapper()
   mLibPrivateData( NULL )
 {
   ++sNumInstances;
-  if( sLibRef && !LibInitReal )
+  if( sLibRef && !LibInitReal.Fn )
   {
     bool foundAllProcs = true;
     for( size_t i = 0; foundAllProcs && i < sizeof( sProcNames ) / sizeof( *sProcNames ); ++i )
@@ -89,11 +89,14 @@ FFTLibWrapper::FFTLibWrapper()
 
 FFTLibWrapper::~FFTLibWrapper()
 {
+  --sNumInstances;
   if( LibAvailable() )
+  {
     Cleanup();
-  if( --sNumInstances < 1 )
-    LibCleanup();
+    if( sNumInstances < 1 )
+      LibCleanup.Fn();
 
+  }
 }
 
 void
@@ -101,17 +104,17 @@ FFTLibWrapper::Cleanup()
 {
   if( mLibPrivateData )
   {
-    LibDestroy( mLibPrivateData );
+    LibDestroy.Fn( mLibPrivateData );
     mLibPrivateData = NULL;
   }
   if( mpInputData )
   {
-    LibFree( mpInputData );
+    LibFree.Fn( mpInputData );
     mpInputData = NULL;
   }
   if( mpOutputData )
   {
-    LibFree( mpOutputData );
+    LibFree.Fn( mpOutputData );
     mpOutputData = NULL;
   }
   mFFTSize = 0;
@@ -122,9 +125,9 @@ RealFFT::Initialize( int inFFTSize, FFTDirection inDirection, FFTOptimization in
 {
   Cleanup();
   mFFTSize = inFFTSize;
-  mpInputData = LibMalloc( mFFTSize * sizeof( Real ) );
-  mpOutputData = LibMalloc( mFFTSize * sizeof( Real ) );
-  mLibPrivateData = LibInitReal( mFFTSize, mpInputData, mpOutputData, inDirection, inOptimization );
+  mpInputData = LibMalloc.Fn( mFFTSize * sizeof( Real ) );
+  mpOutputData = LibMalloc.Fn( mFFTSize * sizeof( Real ) );
+  mLibPrivateData = LibInitReal.Fn( mFFTSize, mpInputData, mpOutputData, inDirection, inOptimization );
   return mpInputData && mpOutputData && mLibPrivateData;
 }
 
@@ -133,8 +136,8 @@ ComplexFFT::Initialize( int inFFTSize, FFTDirection inDirection, FFTOptimization
 {
   Cleanup();
   mFFTSize = inFFTSize;
-  mpInputData = LibMalloc( mFFTSize * sizeof( Complex ) );
-  mpOutputData = LibMalloc( mFFTSize * sizeof( Complex ) );
-  mLibPrivateData = LibInitComplex( mFFTSize, mpInputData, mpOutputData, inDirection, inOptimization );
+  mpInputData = LibMalloc.Fn( mFFTSize * sizeof( Complex ) );
+  mpOutputData = LibMalloc.Fn( mFFTSize * sizeof( Complex ) );
+  mLibPrivateData = LibInitComplex.Fn( mFFTSize, mpInputData, mpOutputData, inDirection, inOptimization );
   return mpInputData && mpOutputData && mLibPrivateData;
 }

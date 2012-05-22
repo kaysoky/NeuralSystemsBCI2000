@@ -35,8 +35,46 @@
 #include "OSError.h"
 #include "ClassName.h"
 
+#define HANDLE_SIGNALS ( !defined( _MSC_VER ) && !defined( __BORLANDC__ ) )
+#if HANDLE_SIGNALS
+# include <signal.h>
+# include <setjmp.h>
+#endif // HANDLE_SIGNALS
+
 using namespace std;
 
+#if HANDLE_SIGNALS
+namespace {
+  static struct { const char* name; const int code; struct sigaction action; }
+  sSignals[] =
+  {
+    #define SIGNAL(x) { #x, x, {} }
+    SIGNAL( SIGFPE ), SIGNAL( SIGILL ),
+    SIGNAL( SIGSEGV ), SIGNAL( SIGBUS ),
+  };
+  static jmp_buf sCatchSignals;
+  void SignalHandler( int inSignal )
+  {
+    ::longjmp( sCatchSignals, inSignal );
+  }
+  void InstallSignalHandlers()
+  {
+    struct sigaction action = { 0 };
+    for( size_t i = 0; i < sizeof( sSignals ) / sizeof( *sSignals ); ++i )
+    {
+      action.sa_handler = &SignalHandler;
+      ::sigaction( sSignals[i].code, &action, &sSignals[i].action );
+    }
+  }
+  void UninstallSignalHandlers()
+  {
+    for( size_t i = 0; i < sizeof( sSignals ) / sizeof( *sSignals ); ++i )
+      ::sigaction( sSignals[i].code, &sSignals[i].action, NULL );
+  }
+}
+#endif // !_WIN32
+
+#if _MSC_VER
 bool
 ExceptionCatcher::Run( Runnable& inRunnable )
 {
@@ -44,21 +82,56 @@ ExceptionCatcher::Run( Runnable& inRunnable )
   // Handling of those cannot coexist with C++ exception handling in the same function,
   // so we need another function Run2() that handles C++ exceptions.
   bool result = false;
-#if _MSC_VER
   __try
-#endif // _MSC_VER
   {
     result = Run2( inRunnable );
   }
-#if _MSC_VER
   // For breakpoint exceptions, we want to execute the default handler (which opens the debugger).
   __except( ::GetExceptionCode() == EXCEPTION_BREAKPOINT ? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER )
   {
     ReportWin32Exception( ::GetExceptionCode() );
   }
-#endif // _MSC_VER
   return result;
 }
+#elif HANDLE_SIGNALS
+bool
+ExceptionCatcher::Run( Runnable& inRunnable )
+{
+  bool result = false;
+  static bool signalHandlingInstalled = false;
+  if( signalHandlingInstalled )
+  {
+    result = Run2( inRunnable );
+  }
+  else
+  {
+    static OSMutex mutex;
+    {
+      OSMutex::Lock lock( mutex );
+      signalHandlingInstalled = true;
+      InstallSignalHandlers();
+    }
+    int signal = ::setjmp( sCatchSignals );
+    if( signal == 0 )
+      result = Run2( inRunnable );
+    else
+      ReportSignal( signal );
+    {
+      OSMutex::Lock lock( mutex );
+      UninstallSignalHandlers();
+      signalHandlingInstalled = false;
+    }
+  }
+  return result;
+}
+#else // !_MSC_VER, !HANDLE_SIGNALS
+bool
+ExceptionCatcher::Run( Runnable& inRunnable )
+{
+  return Run2( inRunnable );
+}
+#endif
+
 
 bool
 ExceptionCatcher::Run2( Runnable& inRunnable )
@@ -94,14 +167,22 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
              << endl;
   }
 #endif // SystemHPP  && !_NO_VCL
+#ifndef _MSC_VER
+  catch( ... )
+  {
+    bcierr__ << "Unknown unhandled exception, "
+             << UserMessage()
+             << endl;
+  }
+#endif // _MSC_VER
   return result;
 }
 
-#if _MSC_VER
-# define EXCEPTION( x ) { EXCEPTION_##x, #x },
 void
 ExceptionCatcher::ReportWin32Exception( int inCode )
 {
+#if _MSC_VER
+# define EXCEPTION( x ) { EXCEPTION_##x, #x },
   static const struct
   {
     int code;
@@ -143,8 +224,24 @@ ExceptionCatcher::ReportWin32Exception( int inCode )
            << pDescription
            << UserMessage()
            << endl;
-}
 #endif // _MSC_VER
+}
+
+void
+ExceptionCatcher::ReportSignal( int inSignal )
+{
+#if HANDLE_SIGNALS
+  size_t numSignals = sizeof( sSignals ) / sizeof( *sSignals ),
+         i = 0;
+  while( sSignals[i].code != inSignal )
+    ++i;
+  const char* pDescription = i < numSignals ? sSignals[i].name : "Unknown Signal";
+  bcierr__ << "Signal caught: "
+           << pDescription
+           << UserMessage()
+           << endl;
+#endif // !HANDLE_SIGNALS
+}
 
 string
 ExceptionCatcher::UserMessage() const

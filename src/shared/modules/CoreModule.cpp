@@ -251,7 +251,6 @@ CoreModule::OnExecute()
     }
     if( !inputSockets.empty() )
       streamsock::wait_for_read( inputSockets, cSocketTimeout );
-
     {
       OSMutex::Lock lock( mConnectionLock );
       while( mOperator && mOperator.is_open() && mOperator.rdbuf()->in_avail() )
@@ -259,7 +258,6 @@ CoreModule::OnExecute()
       while( mPreviousModule && mPreviousModule.is_open() && mPreviousModule.rdbuf()->in_avail() )
         mMessageQueue.QueueMessage( mPreviousModule );
     }
-
     mMessageEvent.Set();
   }
   return 0;
@@ -267,7 +265,7 @@ CoreModule::OnExecute()
 
 // This function contains the main event handling loop.
 // It will be entered once when the program starts,
-// and only be left when the program quits.
+// and only be left when the program exits.
 void
 CoreModule::MainMessageLoop()
 {
@@ -351,7 +349,6 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   EnvironmentBase::EnterNonaccessPhase();
   if( bcierr__.Flushes() > 0 )
     return;
-
   // add parameters for socket connection
   // my receiving socket port number
   mParamlist.Add(

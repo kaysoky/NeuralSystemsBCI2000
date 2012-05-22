@@ -31,7 +31,6 @@
 
 #include "ChoiceCombination.h"
 #include "BCIError.h"
-#include <iostream>
 
 ChoiceCombination::ChoiceCombination( const std::string& inParamName )
 : mChoice( 0 ),

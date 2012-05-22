@@ -77,7 +77,7 @@ ReadValue_SwapBytes( const char* p )
   uint8* b = buf + sizeof( T );
   for( size_t i = 0; i < sizeof( T ); ++i )
     *--b = *p++;
-  return *reinterpret_cast<const T*>( b );
+  return *reinterpret_cast<const T*>( reinterpret_cast<char*>( b ) );
 }
 
 

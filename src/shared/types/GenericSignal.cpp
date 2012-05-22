@@ -5,23 +5,23 @@
 //              output data.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -363,22 +363,22 @@ template<>
 void
 GenericSignal::PutValueBinary<SignalType::float32>( std::ostream& os, size_t inChannel, size_t inElement ) const
 {
-  bciassert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
-  float floatvalue = static_cast<float>( Value( inChannel, inElement ) );
-  unsigned int value = *reinterpret_cast<const uint32*>( &floatvalue );
-  PutLittleEndian( os, value );
+  bciassert( numeric_limits<float>::is_iec559 && sizeof( uint32 ) == sizeof( float ) );
+  union { float f; uint32 i; } value;
+  value.f = static_cast<float>( Value( inChannel, inElement ) );
+  PutLittleEndian( os, value.i );
 }
 
 template<>
 void
 GenericSignal::GetValueBinary<SignalType::float32>( std::istream& is, size_t inChannel, size_t inElement )
 {
-  bciassert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
-  uint32 value = 0;
-  GetLittleEndian( is, value );
+  bciassert( numeric_limits<float>::is_iec559 && sizeof( uint32 ) == sizeof( float ) );
+  union { float f; uint32 i; } value;
+  GetLittleEndian( is, value.i );
   try
   {
-    SetValue( inChannel, inElement, *reinterpret_cast<float*>( &value ) );
+    SetValue( inChannel, inElement, value.f );
   }
   catch( ... )
   {
