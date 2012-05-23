@@ -29,6 +29,9 @@ set PYWD=%WD%\..\python
 @set SRC=gUSBampSource
 @if not [%4]==[] set SRC=%4
 
+@set MONTAGE=D
+@if not [%5]==[] set MONTAGE=%5
+
 @set LOGGERS=
 @set OnConnect=-
 @set OnSetConfig=-
@@ -40,6 +43,10 @@ set PYWD=%WD%\..\python
 @set OnConnect=%OnConnect% ; SET PARAMETER Storage:Session string SubjectName=    %SUBJECT%%MODE%
 @set OnConnect=%OnConnect% ; SET PARAMETER Storage:Session string SubjectSession= %CONDITION%
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition%CONDITION%.prm
+
+@if /i not %MONTAGE% == 16 goto Skip16
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBamp-Cap16.prm
+:Skip16
 
 @if /i not %MODE% == FREE goto SkipFreeParams
 @set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\realfree.prm
