@@ -17,7 +17,7 @@ public:
     CBCI2000Remote()
     {
       wchar_t* pOperator = NULL;
-      if( ::LoadStringW( com::Module::GetHInstance(), IDS_OperatorName, reinterpret_cast<LPWSTR>( &pOperator ), 0 ) )
+      if( ::LoadStringW( com::Module::GetHInstance(), IDS_OperatorName, reinterpret_cast<wchar_t*>( &pOperator ), 0 ) )
       {
         com::DualString path = com::Module::GetLocation();
         path += pOperator;
@@ -173,10 +173,11 @@ public:
           if( FAILED( result ) )
             return result;
           std::vector<std::string> modules2;
-          BSTR* pStrings = NULL;
-          result = ::SafeArrayAccessData( *modules, reinterpret_cast<void**>( &pStrings ) );
+          void* pData = NULL;
+          result = ::SafeArrayAccessData( *modules, &pData );
           if( FAILED( result ) )
             return result;
+          BSTR* pStrings = reinterpret_cast<BSTR*>( pData );
           for( LONG i = 0; i < uBound - lBound + 1; ++i )
             modules2.push_back( com::DualString( pStrings[i] ) );
           ::SafeArrayUnaccessData( *modules );

@@ -116,7 +116,7 @@ static void
 ChooseProgDir( HWND inDialog )
 {
   const wchar_t* pOperatorName = NULL;
-  if( !::LoadStringW( com::Module::GetHInstance(), IDS_OperatorName, reinterpret_cast<LPWSTR>( &pOperatorName ), 0 ) )
+  if( !::LoadStringW( com::Module::GetHInstance(), IDS_OperatorName, reinterpret_cast<wchar_t*>( &pOperatorName ), 0 ) )
     pOperatorName = L"Operator.exe";
 
   wstring curOperator;

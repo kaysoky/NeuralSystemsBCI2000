@@ -45,12 +45,31 @@ using namespace std;
 
 #if HANDLE_SIGNALS
 namespace {
-  static struct { const char* name; const int code; struct sigaction action; }
+#if __MINGW__ || __MINGW32__
+  struct sigaction { void(*sa_handler)( int ); };
+  void sigaction( int code, struct sigaction* pNew, struct sigaction* pOld )
+  {
+    if( pOld )
+      pOld->sa_handler = ::signal( code, pNew->sa_handler );
+    else
+      ::signal( code, pNew->sa_handler );
+  }
+#endif // MINGW
+  static struct
+  {
+    const char* name;
+    const int code;
+    struct sigaction action;
+  }
   sSignals[] =
   {
     #define SIGNAL(x) { #x, x, {} }
-    SIGNAL( SIGFPE ), SIGNAL( SIGILL ),
-    SIGNAL( SIGSEGV ), SIGNAL( SIGBUS ),
+    SIGNAL( SIGFPE ),
+    SIGNAL( SIGILL ),
+    SIGNAL( SIGSEGV ),
+#if !defined( __MINGW__ ) && !defined( __MINGW32__ )
+    SIGNAL( SIGBUS ),
+#endif
   };
   static jmp_buf sCatchSignals;
   void SignalHandler( int inSignal )
@@ -63,13 +82,13 @@ namespace {
     for( size_t i = 0; i < sizeof( sSignals ) / sizeof( *sSignals ); ++i )
     {
       action.sa_handler = &SignalHandler;
-      ::sigaction( sSignals[i].code, &action, &sSignals[i].action );
+      sigaction( sSignals[i].code, &action, &sSignals[i].action );
     }
   }
   void UninstallSignalHandlers()
   {
     for( size_t i = 0; i < sizeof( sSignals ) / sizeof( *sSignals ); ++i )
-      ::sigaction( sSignals[i].code, &sSignals[i].action, NULL );
+      sigaction( sSignals[i].code, &sSignals[i].action, NULL );
   }
 }
 #endif // !_WIN32

@@ -56,7 +56,7 @@ OSError::Message() const
     NULL,
     mCode,
     MAKELANGID( LANG_ENGLISH, SUBLANG_DEFAULT ),
-    &pMessage,
+    reinterpret_cast<char*>( *pMessage ),
     0,
     NULL
   );

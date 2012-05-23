@@ -158,7 +158,7 @@ CBCI2000ActiveDataPort::Initialize( const DataPortSettings& inSettings )
       throw bciexception_( "Could not determine path to BCI2000PresentationLink" );
     com::DualString path = com::Module::GetLocation();
     wchar_t* pOperator = NULL;
-    if( ::LoadStringW( com::Module::GetHInstance(), IDS_OperatorName, reinterpret_cast<LPWSTR>( &pOperator ), 0 ) )
+    if( ::LoadStringW( com::Module::GetHInstance(), IDS_OperatorName, reinterpret_cast<wchar_t*>( &pOperator ), 0 ) )
       path += pOperator;
     else
       path += L"Operator.exe";
