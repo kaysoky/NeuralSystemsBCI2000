@@ -26,33 +26,49 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "FileUtils.h"
-#include "OSMutex.h"
-#include "StringUtils.h"
-
-#ifdef _WIN32
+#if _WIN32
 # include "Windows.h"
-# ifdef _MSC_VER
+# if _MSC_VER
 #  include <direct.h>
 #  define S_ISREG(x) ( (x) & S_IFREG )
 #  define S_ISDIR(x) ( (x) & S_IFDIR )
+#  define S_ISLNK(x) ( false )
 # else // _MSC_VER
 #  include <dir.h>
 # endif // _MSC_VER
 #elif __APPLE__
 # include <mach-o/dyld.h>
 #endif // _WIN32
+
+#if _MSC_VER
+# include "dirent_win.h"
+#else // _MSC_VER
+# include <dirent.h>
+#endif // _MSC_VER
+
 #include <sys/stat.h>
 #include <cstdlib>
 #include <cerrno>
+
+#include "StringUtils.h"
+#include "OSMutex.h"
+#include "FileUtils.h"
 
 using namespace std;
 using namespace FileUtils;
 
 static string sSeparators = SeparatorSet();
-static string sOriginalWD = GetCWD();
+static string sOriginalWD = WorkingDirectory();
 static string sInstallationDirectory = ParentDirectory( ExecutablePath() );
 static OSMutex sWorkingDirMutex;
+
+namespace {
+  void NormalizeDir( string& ioPath )
+  {
+    if( !ioPath.empty() && sSeparators.find( *ioPath.rbegin() ) == string::npos )
+      ioPath += DirSeparator;
+  }
+} // namespace
 
 const string&
 FileUtils::InstallationDirectory()
@@ -99,7 +115,7 @@ FileUtils::ExecutablePath()
 }
 
 string
-FileUtils::GetCWD()
+FileUtils::WorkingDirectory()
 {
   OSMutex::Lock lock( sWorkingDirMutex );
   string result;
@@ -116,13 +132,12 @@ FileUtils::GetCWD()
   if( cwd != NULL )
     result = cwd;
   delete[] buf;
-  if( !result.empty() && sSeparators.find( *result.rbegin() ) == string::npos )
-    result += DirSeparator;
+  NormalizeDir( result );
   return result;
 }
 
 bool
-FileUtils::ChDir( const string& inDir )
+FileUtils::ChangeDirectory( const string& inDir )
 {
   OSMutex::Lock lock( sWorkingDirMutex );
   return !::chdir( inDir.c_str() );
@@ -133,7 +148,7 @@ FileUtils::AbsolutePath( const string& inPath )
 {
   if( IsAbsolutePath( inPath ) )
     return inPath;
-  return GetCWD() + inPath;
+  return WorkingDirectory() + inPath;
 }
 
 string
@@ -170,8 +185,8 @@ FileUtils::CanonicalPath( const std::string& inPath )
 #else
 # error Don´t know how to canonicalize a path on the current target OS.
 #endif
-  if( isDir && !result.empty() && sSeparators.find( *result.rbegin() ) == string::npos )
-    result += DirSeparator;
+  if( isDir )
+    NormalizeDir( result );
   return result;
 }
 
@@ -236,6 +251,13 @@ FileUtils::IsDirectory( const std::string& inPath )
 }
 
 bool
+FileUtils::IsSymbolicLink( const std::string& inPath )
+{
+  struct stat s;
+  return !::stat( inPath.c_str(), &s ) && ( S_ISLNK( s.st_mode ) );
+}
+
+bool
 FileUtils::IsAbsolutePath( const string& inPath )
 {
 #ifdef _WIN32
@@ -246,7 +268,7 @@ FileUtils::IsAbsolutePath( const string& inPath )
 }
 
 bool
-FileUtils::MkDir( const string& inName )
+FileUtils::MakeDirectory( const string& inName )
 {
 #ifdef _WIN32
   return !::mkdir( inName.c_str() );
@@ -256,3 +278,57 @@ FileUtils::MkDir( const string& inName )
 #endif
 }
 
+bool
+FileUtils::RemoveDirectory( const string& inName, bool inForce )
+{
+  bool success = true;
+  if( inForce )
+  {
+    List entries;
+    success = ListDirectory( inName, entries );
+    for( size_t i = 0; success && i < entries.size(); ++i )
+    {
+      string path = CanonicalPath( inName ) + entries[i];
+      if( IsFile( path ) || IsSymbolicLink( path ) )
+        success = RemoveFile( path );
+      else if( IsDirectory( path ) )
+        success = RemoveDirectory( path, true );
+    }
+  }
+  if( success )
+    success = !::rmdir( inName.c_str() );
+  return success;
+}
+
+bool
+FileUtils::Rename( const string& inName, const string& inNewName )
+{
+  return !::rename( inName.c_str(), inNewName.c_str() );
+}
+
+bool
+FileUtils::RemoveFile( const string& inName )
+{
+  return !::unlink( inName.c_str() );
+}
+
+bool
+FileUtils::ListDirectory( const string& inPath, List& outList )
+{
+  bool success = true;
+  outList.clear();
+  DIR* dir = ::opendir( inPath.c_str() );
+  success = ( dir != NULL );
+  if( success )
+  {
+    struct dirent* entry;
+    while( NULL != ( entry = ::readdir( dir ) ) )
+    {
+      string name = entry->d_name;
+      if( name != "." && name != ".." )
+        outList.push_back( name );
+    }
+    ::closedir( dir );
+  }
+  return success;
+}

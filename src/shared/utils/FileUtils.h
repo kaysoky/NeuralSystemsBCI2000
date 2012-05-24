@@ -27,6 +27,11 @@
 #define FILE_UTILS_H
 
 #include <string>
+#include <vector>
+
+#ifdef RemoveDirectory
+# undef RemoveDirectory
+#endif // RemoveDirectory
 
 namespace FileUtils
 {
@@ -46,9 +51,9 @@ namespace FileUtils
   const std::string& InstallationDirectory();
 
   // This returns the current working directory.
-  std::string GetCWD();
+  std::string WorkingDirectory();
   // This sets the current working directory.
-  bool ChDir( const std::string& );
+  bool ChangeDirectory( const std::string& );
 
   // This transforms relative paths into absolute paths, using the
   // current directory as a reference.
@@ -60,6 +65,10 @@ namespace FileUtils
   // This returns the parent of the specified object (file or directory).
   std::string ParentDirectory( const std::string& );
 
+  // A list of entries in the specified directory.
+  typedef std::vector<std::string> List;
+  bool ListDirectory( const std::string&, List& );
+
   // These return the directory portion, file name, base name portion, and extension of a path.
   std::string ExtractDirectory( const std::string& );
   std::string ExtractFile( const std::string& );
@@ -68,9 +77,13 @@ namespace FileUtils
 
   bool IsFile( const std::string& );
   bool IsDirectory( const std::string& );
+  bool IsSymbolicLink( const std::string& );
   bool IsAbsolutePath( const std::string& );
-
-  bool MkDir( const std::string& );
+  
+  bool Rename( const std::string&, const std::string& );
+  bool MakeDirectory( const std::string& );
+  bool RemoveDirectory( const std::string&, bool force = false );  
+  bool RemoveFile( const std::string& );
 
 } // namespace FileUtils
 

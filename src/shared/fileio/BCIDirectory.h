@@ -41,7 +41,7 @@ class BCIDirectory
   static std::string AbsolutePath( const std::string& inPath )
                      { return FileUtils::AbsolutePath( inPath ); }
   static std::string GetCWD()
-                     { return FileUtils::GetCWD(); }
+                     { return FileUtils::WorkingDirectory(); }
 #endif
 
   // Class interface: Creating output directory, and file names for recorded files.

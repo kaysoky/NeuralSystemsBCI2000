@@ -108,7 +108,7 @@ BCIDirectory::CreatePath() const
 {
   string wd = GetCWD();
   ChangeForceDir( DirectoryPath() );
-  ChDir( wd );
+  ChangeDirectory( wd );
   return *this;
 }
 
@@ -122,7 +122,7 @@ BCIDirectory::ChangeForceDir( const string& inPath )
   if( fullPath.length() < 1 || fullPath[ fullPath.length() - 1 ] != DirSeparator )
     fullPath += DirSeparator;
   // Changing directory is necessary to verify that the directory exists and is accessible.
-  bool success = ChDir( fullPath.c_str() );
+  bool success = ChangeDirectory( fullPath.c_str() );
   if( !success )
   {
     if( errno == EACCES )
@@ -135,10 +135,10 @@ BCIDirectory::ChangeForceDir( const string& inPath )
       success = ChangeForceDir( fullPath.substr( 0, p ) );
       if( !success )
         return false;
-      success = MkDir( fullPath );
+      success = MakeDirectory( fullPath );
       if( !success )
         return false;
-      success = ChDir( fullPath.c_str() );
+      success = ChangeDirectory( fullPath.c_str() );
     }
   }
   return success;
