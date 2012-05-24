@@ -76,9 +76,9 @@ ParserToken::Decode()
   EncodedString s;
   while( iss )
   {
-    if( iss >> s )
-      *this += s;
     while( ::isspace( iss.peek() ) )
       *this += iss.get();
+    if( iss >> s )
+      *this += s;
   }
 }
