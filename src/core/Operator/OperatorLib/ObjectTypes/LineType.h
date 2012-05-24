@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: Environment variable object type for the script interpreter.
+// Description: I/O Line object type for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,29 +23,28 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef VARIABLE_TYPE_H
-#define VARIABLE_TYPE_H
+#ifndef LINE_TYPE_H
+#define LINE_TYPE_H
 
 #include "ObjectType.h"
 
 namespace Interpreter {
 
-class VariableType : public ObjectType
+class LineType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Variable"; }
+  virtual const char* Name() const { return "Line"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Set( CommandInterpreter& );
-  static bool Get( CommandInterpreter& );
-  static bool Clear( CommandInterpreter& );
+  static bool Read( CommandInterpreter& );
+  static bool Write( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
-  static VariableType sInstance;
+  static LineType sInstance;
 };
 
 } // namespace
 
-#endif // VARIABLE_TYPE_H
+#endif // LINE_TYPE_H

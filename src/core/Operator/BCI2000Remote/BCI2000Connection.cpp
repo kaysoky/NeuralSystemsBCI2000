@@ -35,6 +35,12 @@
 
 using namespace std;
 
+const string ReadlineTag = "\\AwaitingInput:";
+const string AckTag = "\\AcknowledgedInput";
+const string ExitCodeTag = "\\ExitCode";
+const string TerminationTag = "\\Terminating";
+const string Prompt = ">";
+
 BCI2000Connection&
 BCI2000Connection::WindowVisible( bool inVisible )
 {
@@ -136,24 +142,71 @@ BCI2000Connection::Execute( const string& inCommand )
     mResult = oss.str();
     return -1;
   }
-  while( mConnection.rdbuf()->in_avail() )
+  int exitCode = 0;
+  string line;
+  while( line != Prompt || mConnection.rdbuf()->in_avail() )
   {
     char c = mConnection.get();
-    if( c != '\r' )
-      mResult += c;
+    if( c == '\n' )
+    {
+      if( line == ReadlineTag )
+      {
+        string input;
+        if( OnInput( input ) )
+        {
+          mConnection << input << "\r\n" << flush;
+          if( !mSocket.wait_for_read( static_cast<int>( 1e3 * mTimeout ) ) 
+              || !getline( mConnection, line )
+              || line.find( AckTag ) != 0 )
+          {
+            mResult = "Did not receive input acknowledgement";
+            return -1;
+          }
+        }
+        else
+        {
+          mResult = "Could not handle request for input (override BCI2000Connection::OnInput())";
+          return -1;
+        }
+      }
+      else if( line.find( ExitCodeTag ) == 0 )
+      {
+        istringstream( line.substr( ExitCodeTag.length() ) ) >> exitCode;
+      }
+      else if( line == TerminationTag )
+      {
+        mSocket.close();
+        mConnection.close();
+        mConnection.clear();
+        mTerminateOperator = false;
+        return exitCode;
+      }
+      else
+      {
+        if( !OnOutput( line ) )
+        {
+          mResult += line;
+          mResult += c;
+        }
+        double value;
+        if( ( istringstream( line ) >> value ).eof() )
+          exitCode = ( value != 0 ) ? 0 : 1;
+        else if( !::stricmp( line.c_str(), "true" ) )
+          exitCode = 0;
+        else if( !::stricmp( line.c_str(), "false" ) )
+          exitCode = 1;
+        else if( line.empty() )
+          exitCode = 0;
+        else
+          exitCode = 1;
+      }
+      line.clear();
+    }
+    else if( c != '\r' )
+    {
+      line += c;
+    }
   }
-  int exitCode = 0;
-  const string marker = "\\ExitCode";
-  size_t pos = mResult.find( marker );
-  if( pos != string::npos )
-    istringstream( mResult.substr( pos + marker.length() ) ) >> exitCode;
-  else
-  { // Remove prompt which always forms the last line.
-    pos = mResult.find_last_of( "\n" );
-    if( pos == string::npos )
-      pos = 0;
-  }
-  mResult = mResult.substr( 0, pos );
   return exitCode;
 }
 

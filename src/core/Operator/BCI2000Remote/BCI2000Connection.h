@@ -90,6 +90,12 @@ class BCI2000Connection
   // Quit BCI2000. Normally, BCI2000 is terminated automatically when it was started
   // by the Connect() method, so you will not need to call this function.
   bool Quit();
+  
+  // ==Interface to descendants==
+  // OnInput() should provide a line of input, OnOutput() should handle a line of output.
+  // Output will also be available in the Result() property.
+  virtual bool OnInput( std::string& ) { return false; }
+  virtual bool OnOutput( const std::string& ) { return false; }
 
  private:
   BCI2000Connection( const BCI2000Connection& );

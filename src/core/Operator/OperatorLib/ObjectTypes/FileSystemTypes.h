@@ -44,12 +44,30 @@ class DirectoryType : public ObjectType
   static bool Change( CommandInterpreter& );
   static bool List( CommandInterpreter& );
   static bool Make( CommandInterpreter& );
+  static bool Rename( CommandInterpreter& );
+  static bool Remove( CommandInterpreter& );
+  static bool ForceRemove( CommandInterpreter& );
 
+  static bool ListSelection( CommandInterpreter&, const std::string& dir, const std::string& wildcard, bool (*)( const std::string& ) );
   static std::string ListDirectory( const std::string& );
   
  private:
   static const MethodEntry sMethodTable[];
   static DirectoryType sInstance;
+};
+
+class DirectoriesType : public ObjectType
+{
+ protected:
+  virtual const char* Name() const { return "Directories"; }
+  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+
+ public:
+  static bool List( CommandInterpreter& );
+  
+ private:
+  static const MethodEntry sMethodTable[];
+  static DirectoriesType sInstance;
 };
 
 class FileType : public ObjectType
@@ -62,6 +80,8 @@ class FileType : public ObjectType
   static bool Extract( CommandInterpreter& );
   static bool Exists( CommandInterpreter& );
   static bool List( CommandInterpreter& );
+  static bool Rename( CommandInterpreter& );
+  static bool Remove( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
@@ -100,4 +120,4 @@ class PathType : public ObjectType
 
 } // namespace
 
-#endif // CONDITION_TYPE_H
+#endif // FILE_SYSTEM_TYPES_H

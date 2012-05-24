@@ -61,7 +61,8 @@ int main( int argc, char** argv )
   string script = "";
   if( !command && !interactive && !help )
     script = FileUtils::AbsolutePath( argv[idx++] );
-  string additionalArgs = " --Hide",
+    
+  string additionalArgs,
          telnetAddress;
   EnvVariable::Get( "BCI2000TelnetAddress", telnetAddress );
   while( idx < argc && argv[idx] != sShebang )
@@ -72,21 +73,35 @@ int main( int argc, char** argv )
     }
     else
     {
+      string arg = argv[idx++];
+      if( arg.find( '\"' ) == string::npos )
+        arg = "\"" + arg + "\""; 
       additionalArgs += " ";
-      additionalArgs += argv[idx++];
+      additionalArgs += arg;
     }
   }
-  BCI2000Connection bci;
+  struct : BCI2000Connection
+  {
+    bool OnInput( string& s )
+    { return getline( cin, s ); }
+    bool OnOutput( const string& s )
+    { return cout << s << endl; }
+  } bci;
   bci.OperatorPath( "" );
   bci.TelnetAddress( telnetAddress );
+  bci.WindowVisible( false );
   if( !bci.Connect() )
   {
-    if( !bci.Run( FileUtils::InstallationDirectory() + sOperatorName, additionalArgs ) || !bci.Connect() )
+    if( !bci.Run( FileUtils::InstallationDirectory() + sOperatorName, additionalArgs )
+        || !bci.Connect() )
     {
       cerr << bci.Result() << endl;
       return -1;
     }
   }
+  bci.Execute( "cd " + FileUtils::WorkingDirectory() );
+  bci.Timeout( 3600 );
+  int exitCode = 0;
   if( interactive )
   {
     const string prompt = FileUtils::ExtractBase( FileUtils::ExecutablePath() ) + ">";
@@ -96,15 +111,17 @@ int main( int argc, char** argv )
     {
       if( bci.Connected() )
       {
-        bci.Execute( line );
+        exitCode = bci.Execute( line );
         if( !bci.Result().empty() )
-          cout << bci.Result() << '\n';
-        cout << prompt << flush;
+          cerr << bci.Result() << '\n';
       }
       else
-        cout << "[Connection closed]" << endl;
+      {
+        cout << "[Lost connection to Operator module]" << endl;
+      }
+      if( bci.Connected() )
+        cout << prompt << flush;
     }
-    return 0;
   }
   else
   {
@@ -114,13 +131,9 @@ int main( int argc, char** argv )
       script = additionalArgs;
     else
       script = "execute script \"" + script + "\"" + additionalArgs;
-
-    int exitCode = bci.Execute( script );
-    if( bci.Result().empty() || !::stricmp( bci.Result().c_str(), "true" ) )
-      exitCode = 0;
-    else if( !::stricmp( bci.Result().c_str(), "false" ) )
-      exitCode = 1;
+    exitCode = bci.Execute( script );
     if( !bci.Result().empty() )
-      cout << bci.Result() << endl;
+      cerr << bci.Result() << '\n';
   }
+  return exitCode;
 }

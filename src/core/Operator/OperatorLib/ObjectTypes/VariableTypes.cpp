@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: Environment variable object type for the script interpreter.
+// Description: Local and environment variable object types for the script
+//   interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -26,7 +27,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "VariableType.h"
+#include "VariableTypes.h"
 #include "EnvVariable.h"
 #include "CommandInterpreter.h"
 #include "BCIException.h"
@@ -34,6 +35,7 @@
 using namespace std;
 using namespace Interpreter;
 
+// VariableType
 VariableType VariableType::sInstance;
 const ObjectType::MethodEntry VariableType::sMethodTable[] =
 {
@@ -47,22 +49,18 @@ VariableType::Set( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken(),
          value = inInterpreter.GetToken();
-  if( inInterpreter.LocalVariables().Exists( name ) )
-    inInterpreter.LocalVariables()[name] = value;
-  else if( !EnvVariable::Set( name, value ) )
-    throw bciexception_( "Could not set variable \"" << name << "\"" );
+  inInterpreter.LocalVariables()[name] = value;
+  if( name == inInterpreter.ResultName() )
+    inInterpreter.Out() << value;
   return true;
 }
 
 bool
 VariableType::Get( CommandInterpreter& inInterpreter )
 {
-  string name = inInterpreter.GetToken(),
-         value;
+  string name = inInterpreter.GetToken();
   if( inInterpreter.LocalVariables().Exists( name ) )
     inInterpreter.Out() << inInterpreter.LocalVariables()[name];
-  else if( EnvVariable::Get( name, value ) )
-    inInterpreter.Out() << value;
   return true;
 }
 
@@ -72,7 +70,43 @@ VariableType::Clear( CommandInterpreter& inInterpreter )
   string name = inInterpreter.GetToken();
   if( inInterpreter.LocalVariables().Exists( name ) )
     inInterpreter.LocalVariables().erase( name );
-  else if( !EnvVariable::Clear( name ) )
-    throw bciexception_( "Could not clear variable \"" << name << "\"" );
+  return true;
+}
+
+// EnvironmentType
+EnvironmentType EnvironmentType::sInstance;
+const ObjectType::MethodEntry EnvironmentType::sMethodTable[] =
+{
+  METHOD( Set ), METHOD( Get ),
+  METHOD( Clear ),
+  END
+};
+
+bool
+EnvironmentType::Set( CommandInterpreter& inInterpreter )
+{
+  string name = inInterpreter.GetToken(),
+         value = inInterpreter.GetToken();
+  if( !EnvVariable::Set( name, value ) )
+    throw bciexception_( "Could not set environment variable \"" << name << "\"" );
+  return true;
+}
+
+bool
+EnvironmentType::Get( CommandInterpreter& inInterpreter )
+{
+  string name = inInterpreter.GetToken(),
+         value;
+  if( EnvVariable::Get( name, value ) )
+    inInterpreter.Out() << value;
+  return true;
+}
+
+bool
+EnvironmentType::Clear( CommandInterpreter& inInterpreter )
+{
+  string name = inInterpreter.GetToken();
+  if( !EnvVariable::Clear( name ) )
+    throw bciexception_( "Could not clear environment variable \"" << name << "\"" );
   return true;
 }

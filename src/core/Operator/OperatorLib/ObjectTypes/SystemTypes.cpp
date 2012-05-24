@@ -113,6 +113,8 @@ SystemType::WaitFor( CommandInterpreter& inInterpreter )
 {
   string states = inInterpreter.GetToken();
   set<int> desiredStates;
+  desiredStates.insert( BCI_StateTermination );
+  desiredStates.insert( BCI_StateUnavailable );
   istringstream iss( states );
   string stateName;
   while( std::getline( iss, stateName, '|' ) )
@@ -225,12 +227,19 @@ SystemType::Reset( CommandInterpreter& inInterpreter )
 bool
 SystemType::Quit( CommandInterpreter& inInterpreter )
 {
+  string result = inInterpreter.GetOptionalToken();
   if( !inInterpreter.StateMachine().CallbackFunction( BCI_OnQuitRequest ) )
     throw bciexception_( "Quit request not handled by application" );
   const char* pMessage = NULL;
   inInterpreter.StateMachine().ExecuteCallback( BCI_OnQuitRequest, &pMessage );
   if( pMessage && *pMessage )
     inInterpreter.Out() << pMessage;
+  else
+  {
+    if( !result.empty() )
+      inInterpreter.Out() << result << '\n';
+    inInterpreter.Out() << inInterpreter.TerminationTag();
+  }
   return true;
 }
 

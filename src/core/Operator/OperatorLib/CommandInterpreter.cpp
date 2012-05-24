@@ -44,7 +44,7 @@
 #include "BCIException.h"
 #include "ObjectType.h"
 #include "ImpliedType.h"
-#include "VariableType.h"
+#include "VariableTypes.h"
 #include <climits>
 #include <ctime>
 
@@ -53,7 +53,11 @@ using namespace Interpreter;
 
 CommandInterpreter::CommandInterpreter( class StateMachine& inStateMachine )
 : mrStateMachine( inStateMachine ),
-  mAbort( false )
+  mAbort( false ),
+  mWriteLineFunc( &OnWriteLineDefault ),
+  mpWriteLineData( this ),
+  mReadLineFunc( NULL ),
+  mpReadLineData( NULL )
 {
   Init();
 }
@@ -61,7 +65,12 @@ CommandInterpreter::CommandInterpreter( class StateMachine& inStateMachine )
 CommandInterpreter::CommandInterpreter( const CommandInterpreter& inOther )
 : mrStateMachine( inOther.mrStateMachine ),
   mExpressionVariables( inOther.mExpressionVariables ),
-  mAbort( false )
+  mLocalVariables( inOther.mLocalVariables ),
+  mAbort( false ),
+  mWriteLineFunc( inOther.mWriteLineFunc ),
+  mpWriteLineData( inOther.mpWriteLineData ),
+  mReadLineFunc( inOther.mReadLineFunc ),
+  mpReadLineData( inOther.mpReadLineData )
 {
   Init();
 }
@@ -71,6 +80,8 @@ CommandInterpreter::Init()
 {
   ObjectType::Initialize( mrStateMachine );
   mrStateMachine.AddListener( *this );
+
+  mLocalVariables[ResultName()] = "";
 
   static const struct { const char* name, *format; }
   timevars[] =
@@ -120,7 +131,7 @@ CommandInterpreter::Execute( const string& inCommand )
         mInputStream.ignore( INT_MAX );
       }
     }
-    if( !success && !pType )
+    if( !success )
     {
       Unget();
       pType = ObjectType::ByName( "" );
@@ -150,6 +161,7 @@ CommandInterpreter::Execute( const string& inCommand )
       throw bciexception_( "Extra argument" );
   }
   Background();
+  mLocalVariables[ResultName()] = mResultStream.str();
   return EvaluateResult( inCommand );
 }
 
@@ -320,6 +332,48 @@ CommandInterpreter::Unget()
   mInputStream.seekg( mPosStack.top() );
   mInputStream.peek();
   mPosStack.pop();
+}
+
+bool
+CommandInterpreter::WriteLine( const std::string& inLine )
+{
+  bool result = false;
+  if( mWriteLineFunc )
+    result = mWriteLineFunc( mpWriteLineData, inLine );
+  return result;
+}
+
+bool
+CommandInterpreter::ReadLine( std::string& outLine )
+{
+  bool result = false;
+  if( mReadLineFunc )
+    result = mReadLineFunc( mpReadLineData, outLine );
+  return result;
+}
+
+CommandInterpreter&
+CommandInterpreter::WriteLineHandler( WriteLineFunc inFunc, void* inData )
+{
+  mWriteLineFunc = inFunc;
+  mpWriteLineData = inData;
+  return *this;
+}
+
+CommandInterpreter&
+CommandInterpreter::ReadLineHandler( ReadLineFunc inFunc, void* inData )
+{
+  mReadLineFunc = inFunc;
+  mpReadLineData = inData;
+  return *this;
+}
+
+bool
+CommandInterpreter::OnWriteLineDefault( void* inData, const std::string& inLine )
+{
+  CommandInterpreter* pInterpreter = reinterpret_cast<CommandInterpreter*>( inData );
+  pInterpreter->Log() << inLine;
+  return true;
 }
 
 void

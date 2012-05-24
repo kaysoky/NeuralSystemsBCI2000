@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: A script interpreter type that handles global commands.
+// Description: Local and environment variable object types for the script
+//   interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,71 +24,45 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef IMPLIED_TYPE_H
-#define IMPLIED_TYPE_H
+#ifndef VARIABLE_TYPES_H
+#define VARIABLE_TYPES_H
 
 #include "ObjectType.h"
 
 namespace Interpreter {
 
-class ImpliedType : public ObjectType
+class VariableType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return ""; }
+  virtual const char* Name() const { return "Variable"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
-  virtual void OnHelp( CommandInterpreter& ) const;
 
  public:
-  static bool Get( CommandInterpreter& );
   static bool Set( CommandInterpreter& );
-
-  static bool SetConfig( CommandInterpreter& );
-  static bool Start( CommandInterpreter& );
-  static bool Stop( CommandInterpreter& );
-  static bool Startup( CommandInterpreter& );
-  static bool Shutdown( CommandInterpreter& );
-  static bool Reset( CommandInterpreter& );
-  static bool Quit( CommandInterpreter& );
-
-  static bool System( CommandInterpreter& );
-  static bool Echo( CommandInterpreter& );
-  static bool Ls( CommandInterpreter& );
-  static bool Cd( CommandInterpreter& );
-  static bool Pwd( CommandInterpreter& );
-  static bool MkDir( CommandInterpreter& );
-
-  static bool Wait( CommandInterpreter& );
-  static bool Sleep( CommandInterpreter& );
-
-  static bool Version( CommandInterpreter& );
-
-  static bool Abort( CommandInterpreter& );
-  static bool Log( CommandInterpreter& );
-  static bool Warn( CommandInterpreter& );
-  static bool Error( CommandInterpreter& );
-
-  static bool Square( CommandInterpreter& );
-  
+  static bool Get( CommandInterpreter& );
+  static bool Clear( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
-  static ImpliedType sInstance;
+  static VariableType sInstance;
 };
 
-class ExecutableType : public ObjectType
+class EnvironmentType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Executable"; }
+  virtual const char* Name() const { return "Environment"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Start( CommandInterpreter& );
+  static bool Set( CommandInterpreter& );
+  static bool Get( CommandInterpreter& );
+  static bool Clear( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];
-  static ExecutableType sInstance;
+  static EnvironmentType sInstance;
 };
 
 } // namespace
 
-#endif // IMPLIED_TYPE_H
+#endif // VARIABLE_TYPES_H

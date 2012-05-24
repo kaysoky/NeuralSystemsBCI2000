@@ -53,6 +53,9 @@ class CommandInterpreter
   CommandInterpreter( const CommandInterpreter& );
   virtual ~CommandInterpreter();
   // Properties
+  //  The name of the local variable holding the result of the last scripting command.
+  static const char* ResultName()
+     { return "Result"; }
   //  The result of the last executed scripting command.
   std::string Result() const
     { return mResultStream.str(); }
@@ -61,6 +64,10 @@ class CommandInterpreter
   //  assumed to be zero.
   static const char* ExitCodeTag()
     { return "\\ExitCode: "; }
+  //  A tag that is inserted in the output to report that the system is
+  //  going to quit.
+  static const char* TerminationTag()
+    { return "\\Terminating"; }
   // Methods
   // Interpret the argument as a single scripting command.
   int Execute( const std::string& );
@@ -78,6 +85,18 @@ class CommandInterpreter
   std::string GetOptionalRemainder();
   //  Unget() undoes a read operation. Without a previous read operation, it does nothing.
   void Unget();
+  //  WriteLine() writes a line to the output stream associated with a command
+  //  interpreter, ReadLine() reads a line from the input stream associated with
+  //  a command interpreter.
+  bool WriteLine( const std::string& );
+  bool ReadLine( std::string& );
+  //  Set handler functions to be called by the two above functions.
+  //  Handlers are pointers rather than virtual functions -- this way,
+  //  they may be copied from one CommandInterpreter instance to the next.
+  typedef bool (*WriteLineFunc)( void*, const std::string& );
+  CommandInterpreter& WriteLineHandler( WriteLineFunc, void* );
+  typedef bool (*ReadLineFunc)( void*, std::string& );
+  CommandInterpreter& ReadLineHandler( ReadLineFunc, void* );
 
   typedef std::vector< std::vector<std::string> > ArgumentList;
   static void ParseArguments( std::string&, ArgumentList& );
@@ -144,6 +163,7 @@ class CommandInterpreter
   CommandInterpreter& operator=( const CommandInterpreter& );
   void Init();
   int EvaluateResult( const std::string& inCommand );
+  static bool OnWriteLineDefault( void*, const std::string& );
 
  private:
   std::ostringstream mResultStream;
@@ -159,6 +179,11 @@ class CommandInterpreter
 
   std::set<int> mLogCapture;
   std::string mLogBuffer;
+  
+  WriteLineFunc mWriteLineFunc;
+  void* mpWriteLineData;
+  ReadLineFunc mReadLineFunc;
+  void* mpReadLineData;
 };
 
 #endif // SCRIPT_INTERPRETER_H

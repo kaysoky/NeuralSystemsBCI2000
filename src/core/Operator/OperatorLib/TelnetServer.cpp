@@ -59,6 +59,8 @@ TelnetServer::TelnetServer( TelnetServer* pParent )
 void
 TelnetServer::Initialize()
 {
+  ScriptInterpreter::WriteLineHandler( &OnWriteLine, this );
+  ScriptInterpreter::ReadLineHandler( &OnReadLine, this );
   mSocket.open( mAddress.c_str() );
   if( !mSocket.is_open() )
     throw bciexception_( "TelnetServer: Cannot listen at " << mAddress );
@@ -125,6 +127,27 @@ void
 TelnetServer::OnScriptError( const string& inMessage )
 {
   Write( inMessage ).WriteNewline();
+}
+
+bool
+TelnetServer::OnWriteLine( void* inInstance, const string& inLine )
+{
+  TelnetServer* this_ = reinterpret_cast<TelnetServer*>( inInstance );
+  this_->Write( inLine ).WriteNewline();
+  return this_->mStream << flush;
+}
+
+bool
+TelnetServer::OnReadLine( void* inInstance, string& outLine )
+{
+  TelnetServer* this_ = reinterpret_cast<TelnetServer*>( inInstance );
+  this_->Write( "\\AwaitingInput:" ).WriteNewline();
+  bool result = getline( this_->mStream, outLine );
+  if( result )
+    this_->Write( "\\AcknowledgedInput" ).WriteNewline();
+  if( !outLine.empty() && *outLine.rbegin() == '\r' )
+    outLine = outLine.substr( 0, outLine.length() - 1 );
+  return result;
 }
 
 TelnetServer&

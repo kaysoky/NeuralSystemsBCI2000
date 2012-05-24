@@ -33,15 +33,18 @@
 #include "ParameterTypes.h"
 #include "EventTypes.h"
 #include "SignalTypes.h"
-#include "VariableType.h"
+#include "VariableTypes.h"
 #include "MessageTypes.h"
 #include "ExpressionType.h"
 #include "ConditionType.h"
 #include "FileSystemTypes.h"
+#include "LineType.h"
+
 #include "CommandInterpreter.h"
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include "BCIException.h"
+
 #include "ParserToken.h"
 #include "ProcessUtils.h"
 #include "EnvVariable.h"
@@ -59,8 +62,10 @@ const ObjectType::MethodEntry ImpliedType::sMethodTable[] =
   METHOD( Startup ), METHOD( Shutdown ), METHOD( Reset ),
   METHOD( Quit ), { "Exit", &Quit },
   METHOD( Version ),
+  METHOD( Abort ),
   METHOD( Log ), METHOD( Warn ), METHOD( Error ),
-  METHOD( System ), METHOD( Echo ), METHOD( Ls ), { "Dir", &Ls }, METHOD( Cd ), METHOD( Pwd ),
+  METHOD( System ), METHOD( Echo ), METHOD( Ls ), { "Dir", &Ls },
+  METHOD( Cd ), METHOD( Pwd ), METHOD( MkDir ),
   { "[", &Square },
   END
 };
@@ -98,12 +103,10 @@ ImpliedType::Get( CommandInterpreter& inInterpreter )
   inInterpreter.ParseArguments( object, args );
   if( !::stricmp( object.c_str(), "Signal" ) )
     return SignalType::Get( inInterpreter );
-  if( inInterpreter.StateMachine().States().Exists( object ) )
-    return StateType::Get( inInterpreter );
-  if( inInterpreter.StateMachine().Parameters().Exists( object ) )
-    return ParameterType::Get( inInterpreter );
-  if( inInterpreter.LocalVariables().Exists( object ) || EnvVariable::Get( object, object ) )
+  if( inInterpreter.LocalVariables().Exists( object ) )
     return VariableType::Get( inInterpreter );
+  if( EnvVariable::Get( object, object ) )
+    return EnvironmentType::Get( inInterpreter );
   try
   {
     ExpressionType::Evaluate( inInterpreter );
@@ -127,12 +130,10 @@ ImpliedType::Set( CommandInterpreter& inInterpreter )
   inInterpreter.Unget();
   CommandInterpreter::ArgumentList args;
   inInterpreter.ParseArguments( object, args );
-  if( inInterpreter.StateMachine().Events().Exists( object ) )
-    return EventType::Set( inInterpreter );
-  if( inInterpreter.StateMachine().States().Exists( object ) )
-    return StateType::Set( inInterpreter );
-  if( inInterpreter.StateMachine().Parameters().Exists( object ) )
-    return ParameterType::Set( inInterpreter );
+  if( inInterpreter.LocalVariables().Exists( object ) )
+    return VariableType::Set( inInterpreter );
+  if( EnvVariable::Get( object, object ) )
+    return EnvironmentType::Set( inInterpreter );
   return VariableType::Set( inInterpreter );
 }
 
@@ -201,6 +202,20 @@ ImpliedType::Version( CommandInterpreter& inInterpreter )
 }
 
 bool
+ImpliedType::Abort( CommandInterpreter& inInterpreter )
+{
+  string message = "Execution aborted",
+         args = inInterpreter.GetOptionalRemainder();
+  if( !args.empty() )
+  {
+    message += ": ";
+    message += args;
+  }
+  throw bciexception_( message );
+  return true;
+}
+
+bool
 ImpliedType::Log( CommandInterpreter& inInterpreter )
 {
   return MessageType::Log( inInterpreter );
@@ -243,17 +258,7 @@ ImpliedType::System( CommandInterpreter& inInterpreter )
 bool
 ImpliedType::Echo( CommandInterpreter& inInterpreter )
 {
-  string token = inInterpreter.GetToken();
-  if( !token.empty() )
-    inInterpreter.Out() << token;
-  token = inInterpreter.GetToken();
-  while( !token.empty() )
-  {
-    inInterpreter.Out() << " " << token;
-    token = inInterpreter.GetToken();
-  }
-  inInterpreter.Unget();
-  return true;
+  return LineType::Write( inInterpreter );
 }
 
 bool
@@ -276,6 +281,12 @@ bool
 ImpliedType::Pwd( CommandInterpreter& inInterpreter )
 {
   return DirectoryType::Current( inInterpreter );
+}
+
+bool
+ImpliedType::MkDir( CommandInterpreter& inInterpreter )
+{
+  return DirectoryType::Make( inInterpreter );
 }
 
 bool

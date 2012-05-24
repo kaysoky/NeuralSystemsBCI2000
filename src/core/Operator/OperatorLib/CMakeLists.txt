@@ -25,7 +25,7 @@ SET( SRC_OBJECT_TYPES
   ObjectTypes/ParameterTypes.cpp
   ObjectTypes/StateTypes.cpp
   ObjectTypes/EventTypes.cpp
-  ObjectTypes/VariableType.cpp
+  ObjectTypes/VariableTypes.cpp
   ObjectTypes/SignalTypes.cpp
   ObjectTypes/VisPropertyTypes.cpp
   ObjectTypes/MessageTypes.cpp
@@ -33,6 +33,7 @@ SET( SRC_OBJECT_TYPES
   ObjectTypes/ScriptEvents.cpp
   ObjectTypes/ExpressionType.cpp
   ObjectTypes/FileSystemTypes.cpp
+  ObjectTypes/LineType.cpp
 )
 SET( SRC_SCRIPT_PARSER
   ScriptParser/Script.cpp
@@ -58,7 +59,7 @@ SET( HDR_OBJECT_TYPES
   ObjectTypes/ParameterTypes.h
   ObjectTypes/StateTypes.h
   ObjectTypes/EventTypes.h
-  ObjectTypes/VariableType.h
+  ObjectTypes/VariableTypes.h
   ObjectTypes/SignalTypes.h
   ObjectTypes/VisPropertyTypes.h
   ObjectTypes/MessageTypes.h
@@ -66,6 +67,7 @@ SET( HDR_OBJECT_TYPES
   ObjectTypes/ScriptEvents.h
   ObjectTypes/ExpressionType.h
   ObjectTypes/FileSystemTypes.h
+  ObjectTypes/LineType.h
 )
 SET( HDR_SCRIPT_PARSER
   ScriptParser/Script.h

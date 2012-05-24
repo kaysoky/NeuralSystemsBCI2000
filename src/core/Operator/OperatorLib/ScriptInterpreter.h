@@ -37,6 +37,11 @@ class ScriptInterpreter : private CommandInterpreter
   // Properties
   //  The result of the last executed scripting command.
   std::string Result() const;
+  //  Forwarding access to WriteLine and ReadLine handler functions.
+  using CommandInterpreter::WriteLineFunc;
+  using CommandInterpreter::ReadLineFunc;
+  using CommandInterpreter::WriteLineHandler;
+  using CommandInterpreter::ReadLineHandler;
   // Methods
   //  Compile and execute a sequence of scripting commands.
   bool Execute( const std::string& script, const std::string& name = "" );

@@ -89,6 +89,14 @@ ScriptType::Execute( CommandInterpreter& inInterpreter )
   {
     inInterpreter.Unget();
     name = inInterpreter.GetToken();
+    if( !FileUtils::IsFile( name ) )
+    {
+      const char* ext[] = { ".bciscript", ".cmd", ".bat" };
+      bool match = false;
+      for( size_t i = 0; !match && i < sizeof( ext ) / sizeof( *ext ); ++i )
+        if( FileUtils::IsFile( name + ext[i] ) )
+          name += ext[i], match = true;
+    }
     ifstream file( name.c_str() );
     if( !file.is_open() )
       throw bciexception_( "Could not open script file \"" << name << "\"" );
@@ -104,6 +112,7 @@ ScriptType::Execute( CommandInterpreter& inInterpreter )
     subInterpreter.LocalVariables()[oss.str()] = inInterpreter.GetOptionalToken();
   }
   Script( script, name ).Compile().Execute( subInterpreter );
+  inInterpreter.Out() << subInterpreter.Result();
   return true;
 }
 

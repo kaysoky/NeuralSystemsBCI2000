@@ -69,19 +69,31 @@ ConditionType::Evaluate( CommandInterpreter& inInterpreter )
 {
   bool result = false;
   vector<string> args;
-  do
+  args.push_back( inInterpreter.GetToken() );
+  if( args.back() != "]" )
+    do
+    {
+      args.push_back( inInterpreter.GetToken() );
+    } while( args.size() < 4 && args.back() != "]" );
+  bool gotSquare = false;
+  if( args.back() == "]" )
   {
-    args.push_back( inInterpreter.GetOptionalToken() );
-  } while( !args.back().empty() && args.back() != "]" );
-  if( args.size() > 4 )
-    throw bciexception_( "Evaluate Condition: Expected up to 3 arguments, got " << args.size() - 1 );
-  args.pop_back();
+    args.pop_back();
+    gotSquare = true;
+  }
+  else
+    inInterpreter.Unget();
   args.resize( 3 );
   string& a = args[0],
         & op = args[1],
         & b = args[2];
   if( op.empty() )
   {
+    if( !gotSquare )
+    {
+      inInterpreter.Unget();
+      inInterpreter.Unget();
+    }
     result = true;
     if( a.empty() )
       result = false;
@@ -104,7 +116,9 @@ ConditionType::Evaluate( CommandInterpreter& inInterpreter )
       throw bciexception_( "Unknown operator: " << op );
     result = func( a.c_str(), b.c_str() );
   }
-  if( result == false )
+  if( result )
+    inInterpreter.Out() << "true";
+  else
     inInterpreter.Out() << "false";
   return true;
 }

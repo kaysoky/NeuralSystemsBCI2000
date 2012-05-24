@@ -28,13 +28,13 @@
 
 #include "FileSystemTypes.h"
 #include "CommandInterpreter.h"
+#include "WildcardMatch.h"
 #include "FileUtils.h"
 #include "ProcessUtils.h"
 #include "BCIException.h"
 
 using namespace std;
 using namespace Interpreter;
-using namespace FileUtils;
 
 // DirectoryType
 DirectoryType DirectoryType::sInstance;
@@ -47,27 +47,30 @@ const ObjectType::MethodEntry DirectoryType::sMethodTable[] =
   METHOD( Change ),
   METHOD( Make ), { "Create", &Make },
   METHOD( List ),
+  METHOD( Rename ),
+  METHOD( Remove ),
+  METHOD( ForceRemove ),
   END
 };
 
 bool
 DirectoryType::Extract( CommandInterpreter& inInterpreter )
 {
-  inInterpreter.Out() << ExtractDirectory( inInterpreter.GetToken() );
+  inInterpreter.Out() << FileUtils::ExtractDirectory( inInterpreter.GetToken() );
   return true;
 }
 
 bool
 DirectoryType::Parent( CommandInterpreter& inInterpreter )
 {
-  inInterpreter.Out() << ParentDirectory( inInterpreter.GetToken() );
+  inInterpreter.Out() << FileUtils::ParentDirectory( inInterpreter.GetToken() );
   return true;
 }
 
 bool
 DirectoryType::Exists( CommandInterpreter& inInterpreter )
 {
-  bool result = IsDirectory( inInterpreter.GetToken() );
+  bool result = FileUtils::IsDirectory( inInterpreter.GetToken() );
   inInterpreter.Out() << ( result ? "true" : "false" );
   return true;
 }
@@ -75,7 +78,7 @@ DirectoryType::Exists( CommandInterpreter& inInterpreter )
 bool
 DirectoryType::Current( CommandInterpreter& inInterpreter )
 {
-  inInterpreter.Out() << GetCWD();
+  inInterpreter.Out() << FileUtils::WorkingDirectory();
   return true;
 }
 
@@ -83,7 +86,7 @@ bool
 DirectoryType::Change( CommandInterpreter& inInterpreter )
 {
   string dir = inInterpreter.GetToken();
-  if( !ChDir( dir ) )
+  if( !FileUtils::ChangeDirectory( dir ) )
     inInterpreter.Out() << "Could not change to directory \"" << dir << "\"";
   return true;
 }
@@ -92,8 +95,42 @@ bool
 DirectoryType::Make( CommandInterpreter& inInterpreter )
 {
   string dir = inInterpreter.GetToken();
-  if( !MkDir( dir ) )
+  if( !FileUtils::MakeDirectory( dir ) )
     inInterpreter.Out() << "Could not make directory \"" << dir << "\"";
+  return true;
+}
+
+bool
+DirectoryType::Rename( CommandInterpreter& inInterpreter )
+{
+  string dir = inInterpreter.GetToken(),
+         newName = inInterpreter.GetToken();
+  if( !FileUtils::IsDirectory( dir ) )
+    throw bciexception_( "There is no directory named \"" << dir << "\"" );
+  if( !FileUtils::Rename( dir, newName ) )
+    throw bciexception_( "Could not rename \"" << dir << "\" to \"" << newName << "\"" );
+  return true;
+}
+
+bool
+DirectoryType::Remove( CommandInterpreter& inInterpreter )
+{
+  string dir = inInterpreter.GetToken();
+  if( !FileUtils::IsDirectory( dir ) )
+    throw bciexception_( "There is no directory named \"" << dir << "\"" );
+  if( !FileUtils::RemoveDirectory( dir, false ) )
+    throw bciexception_( "Could not remove directory \"" << dir << "\"" );
+  return true;
+}
+
+bool
+DirectoryType::ForceRemove( CommandInterpreter& inInterpreter )
+{
+  string dir = inInterpreter.GetToken();
+  if( !FileUtils::IsDirectory( dir ) )
+    throw bciexception_( "There is no directory named \"" << dir << "\"" );
+  if( !FileUtils::RemoveDirectory( dir, true ) )
+    throw bciexception_( "Could not remove directory \"" << dir << "\"" );
   return true;
 }
 
@@ -139,6 +176,37 @@ DirectoryType::ListDirectory( const string& inArgs )
 #endif // _WIN32
 }
 
+bool
+DirectoryType::ListSelection( CommandInterpreter& inInterpreter, const string& inDir, const string& inWildcard, bool (*inSelector)( const string& ) )
+{
+  string dir = inDir.empty() ? "." : inDir,
+         wildcard = inWildcard.empty() ? "*" : inWildcard;
+  dir = FileUtils::CanonicalPath( dir );
+  FileUtils::List list;
+  if( !FileUtils::ListDirectory( dir, list ) )
+    throw bciexception_( "Could not list directory \"" << dir << "\"" );
+  for( size_t i = 0; i < list.size(); ++i )
+    if( bci::WildcardMatch( wildcard, list[i], false ) && inSelector( dir + list[i] ) )
+      inInterpreter.Out() << list[i] << '\n';
+  return true;
+}
+
+// DirectoriesType
+DirectoriesType DirectoriesType::sInstance;
+const ObjectType::MethodEntry DirectoriesType::sMethodTable[] =
+{
+  METHOD( List ),
+  END
+};
+
+bool
+DirectoriesType::List( CommandInterpreter& inInterpreter )
+{
+  string dir = inInterpreter.GetOptionalToken(),
+         wildcard = inInterpreter.GetOptionalToken();
+  return DirectoryType::ListSelection( inInterpreter, dir, wildcard, &FileUtils::IsDirectory );
+}
+
 // FileType
 FileType FileType::sInstance;
 const ObjectType::MethodEntry FileType::sMethodTable[] =
@@ -146,6 +214,8 @@ const ObjectType::MethodEntry FileType::sMethodTable[] =
   METHOD( Extract ), { "Get", &Extract },
   METHOD( Exists ), { "Is", &Exists },
   METHOD( List ),
+  METHOD( Rename ), { "Move", &Rename },
+  METHOD( Remove ), { "Delete", &Remove },
   END
 };
 
@@ -154,16 +224,16 @@ FileType::Extract( CommandInterpreter& inInterpreter )
 {
   string file = inInterpreter.GetToken();
   if( !::stricmp( file.c_str(), "Base" ) )
-    inInterpreter.Out() << ExtractBase( inInterpreter.GetToken() );
+    inInterpreter.Out() << FileUtils::ExtractBase( inInterpreter.GetToken() );
   else
-    inInterpreter.Out() << ExtractFile( file );
+    inInterpreter.Out() << FileUtils::ExtractFile( file );
   return true;
 }
 
 bool
 FileType::Exists( CommandInterpreter& inInterpreter )
 {
-  bool result = IsFile( inInterpreter.GetToken() );
+  bool result = FileUtils::IsFile( inInterpreter.GetToken() );
   inInterpreter.Out() << ( result ? "true" : "false" );
   return true;
 }
@@ -171,7 +241,30 @@ FileType::Exists( CommandInterpreter& inInterpreter )
 bool
 FileType::List( CommandInterpreter& inInterpreter )
 {
-  return FilesType::ListFiles( inInterpreter, inInterpreter.GetRemainder() );
+  return DirectoryType::ListSelection( inInterpreter, ".", inInterpreter.GetToken(), &FileUtils::IsFile );
+}
+
+bool
+FileType::Remove( CommandInterpreter& inInterpreter )
+{
+  string file = inInterpreter.GetToken();
+  if( !FileUtils::IsFile( file ) )
+    throw bciexception_( "There is no file named \"" << file << "\"" );
+  if( !FileUtils::RemoveFile( file ) )
+    throw bciexception_( "Could not remove file \"" << file << "\"" );
+  return true;
+}
+
+bool
+FileType::Rename( CommandInterpreter& inInterpreter )
+{
+  string file = inInterpreter.GetToken(),
+         newName = inInterpreter.GetToken();
+  if( !FileUtils::IsFile( file ) )
+    throw bciexception_( "There is no file named \"" << file << "\"" );
+  if( !FileUtils::Rename( file, newName ) )
+    throw bciexception_( "Could not rename file \"" << file << "\" to \"" << newName << "\"" );
+  return true;
 }
 
 // FilesType
@@ -185,25 +278,9 @@ const ObjectType::MethodEntry FilesType::sMethodTable[] =
 bool
 FilesType::List( CommandInterpreter& inInterpreter )
 {
-  string args = inInterpreter.GetOptionalRemainder();
-  return ListFiles( inInterpreter, args );
-}
-
-bool
-FilesType::ListFiles( CommandInterpreter& inInterpreter, const string& inArgs )
-{
-  string args;
-#if _WIN32
-  args = "/b ";
-#endif
-  args += inArgs;
-  string listing = DirectoryType::ListDirectory( args );
-  istringstream iss( listing );
-  string line;
-  while( getline( iss, line ) )
-    if( IsFile( line ) )
-      inInterpreter.Out() << line << '\n';
-  return true;
+  string dir = inInterpreter.GetOptionalToken(),
+         wildcard = inInterpreter.GetOptionalToken();
+  return DirectoryType::ListSelection( inInterpreter, dir, wildcard, &FileUtils::IsFile );
 }
 
 // PathType
@@ -218,7 +295,7 @@ const ObjectType::MethodEntry PathType::sMethodTable[] =
 bool
 PathType::Canonicalize( CommandInterpreter& inInterpreter )
 {
-  inInterpreter.Out() << CanonicalPath( inInterpreter.GetToken() );
+  inInterpreter.Out() << FileUtils::CanonicalPath( inInterpreter.GetToken() );
   return true;
 }
 
@@ -226,7 +303,7 @@ bool
 PathType::Exists( CommandInterpreter& inInterpreter )
 {
   string path = inInterpreter.GetToken();
-  bool result = IsFile( path ) || IsDirectory( path );
+  bool result = FileUtils::IsFile( path ) || FileUtils::IsDirectory( path );
   inInterpreter.Out() << ( result ? "true" : "false" );
   return true;
 }
