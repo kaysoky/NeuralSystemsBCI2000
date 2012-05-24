@@ -50,7 +50,7 @@ OSError::Message() const
 {
   mMessage = cDefaultMessage;
 #ifdef _WIN32
-  char* pMessage;
+  char* pMessage = NULL;
   bool success = ::FormatMessageA(
     FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
     NULL,
