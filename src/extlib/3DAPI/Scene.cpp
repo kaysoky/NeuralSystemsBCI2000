@@ -298,12 +298,12 @@ Scene::DoneCurrent()
 void
 Scene::OnInitializeGL()
 {
-  string cwd = FileUtils::GetCWD();
+  string cwd = FileUtils::WorkingDirectory();
   if( !mImagePath.empty() )
-    FileUtils::ChDir( FileUtils::AbsolutePath( mImagePath ) );
+    FileUtils::ChangeDirectory( FileUtils::AbsolutePath( mImagePath ) );
   for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
     ( *i )->initialize();
-  FileUtils::ChDir( cwd.c_str() );
+  FileUtils::ChangeDirectory( cwd.c_str() );
   mInitialized = true;
 }
 
