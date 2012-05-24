@@ -1,5 +1,5 @@
 #! ../prog/BCI2000Shell
-@echo Please ignore the above error message. & ..\prog\BCI2000Shell %0 %* #! & goto:eof
+@cls & ..\prog\BCI2000Shell %0 %* #! && exit /b 0 || pause & exit /b 1
 #######################################################################################
 ## $Id$
 ## Description: BCI2000 startup Operator module script. For an Operator scripting
@@ -26,6 +26,7 @@
 ##
 ## $END_BCI2000_LICENSE$
 #######################################################################################
+Change directory ${BCI2000LAUNCHDIR}
 If [ ${Get system state} != Idle ]
   Shutdown system
   Wait for Idle
