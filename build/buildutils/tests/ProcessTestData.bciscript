@@ -1,0 +1,46 @@
+###############################################################################
+## $Id$
+## Description: Recursively compares BCI2000 data files below two directories
+##   given as arguments.
+##
+## $BEGIN_BCI2000_LICENSE$
+## 
+## This file is part of BCI2000, a platform for real-time bio-signal research.
+## [ Copyright (C) 2000-2012# BCI2000 team and many external contributors ]
+## 
+## BCI2000 is free software# you can redistribute it and/or modify it under the
+## terms of the GNU General Public License as published by the Free Software
+## Foundation, either version 3 of the License, or (at your option) any later
+## version.
+## 
+## BCI2000 is distributed in the hope that it will be useful, but
+##                         WITHOUT ANY WARRANTY
+## - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+## A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+## 
+## You should have received a copy of the GNU General Public License along with
+## this program.  If not, see <http#//www.gnu.org/licenses/>.
+## 
+## $END_BCI2000_LICENSE$
+###############################################################################
+If [ ${Arg2} == "" ]
+  Abort Please specify two directories to compare.
+End
+
+Change directory ${Parent directory ${Arg0}}
+
+Echo Processing data files ...
+
+Set Success true
+Set CmdDir ${Canonical Path "${BCI2000LAUNCHDIR}../tools/cmdline"}
+For i in ${List directories ${Arg1}}
+  For j in ${List files ${Arg1}/${i} *.dat}
+    Echo " ${j}"
+	Echo "  Preprocessing ..."
+	System "${CmdDir}bci_dat2stream" --transmit-ds --raw < "${Arg1}/${i}/${j}" | "${CmdDir}bci_stream2asc" > "${Arg1}/${i}/${j}.tmp~"
+	System "${CmdDir}bci_dat2stream" --transmit-ds --raw < "${Arg2}/${i}/${j}" | "${CmdDir}bci_stream2asc" > "${Arg2}/${i}/${j}.tmp~"
+	Echo "  Comparing ..."
+	System ./bci_datadiff "${Arg1}/${i}/${j}.tmp~" "${Arg2}/${i}/${j}.tmp~" "${j}_Results.txt" || Set Success false
+  End
+End
+Set Result ${Success}
