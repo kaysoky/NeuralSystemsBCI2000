@@ -127,6 +127,7 @@ void
 TelnetServer::OnScriptError( const string& inMessage )
 {
   Write( inMessage ).WriteNewline();
+  ScriptInterpreter::OnScriptError( inMessage );
 }
 
 bool

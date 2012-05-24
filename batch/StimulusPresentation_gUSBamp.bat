@@ -1,5 +1,5 @@
 #! ../prog/BCI2000Shell
-@cls & ..\prog\BCI2000Shell %0 %* #! && exit /b 0 || pause & exit /b 1
+@cls & ..\prog\BCI2000Shell %0 %* #! && exit /b 0 || exit /b 1
 #######################################################################################
 ## $Id$
 ## Description: BCI2000 startup Operator module script. For an Operator scripting

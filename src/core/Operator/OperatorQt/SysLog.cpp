@@ -97,9 +97,13 @@ SysLog::AddEntry( const QString& inText, int inMode )
   mpLog->insertPlainText( line );
   switch( inMode )
   {
-    case logEntryWarning:
     case logEntryError:
+      this->parentWidget()->show();
       this->show();
+      break;
+    case logEntryWarning:
+      if( this->parentWidget()->isVisible() )
+        this->show();
       break;
     default:
       break;

@@ -313,6 +313,6 @@ ExecutableType::Start( CommandInterpreter& inInterpreter )
     throw bciexception_( "Could not run \"" << executable.c_str() << "\"" );
   if( exitCode != 0 )
     inInterpreter.Out() << inInterpreter.ExitCodeTag() << exitCode;
-  inInterpreter.Log() << "Executed \"" << executable.c_str() << "\"";
+  inInterpreter.Log() << "Started \"" << executable.c_str() << "\"";
   return true;
 }
