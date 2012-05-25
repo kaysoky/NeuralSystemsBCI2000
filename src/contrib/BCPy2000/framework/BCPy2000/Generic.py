@@ -1187,12 +1187,12 @@ SUCH DAMAGES.
 	##########################################################
 		
 	def Halt(self):
- 		"""
- 		This is the usual BCI2000 Halt hook, called before
- 		self.Preflight() and before self.Destruct(). You can
- 		implement it in your subclass in order to clean up from
- 		any previous Initialize()ation.
- 		"""###
+		"""
+		This is the usual BCI2000 Halt hook, called before
+		self.Preflight() and before self.Destruct(). You can
+		implement it in your subclass in order to clean up from
+		any previous Initialize()ation.
+		"""###
 		pass
 
 	##########################################################

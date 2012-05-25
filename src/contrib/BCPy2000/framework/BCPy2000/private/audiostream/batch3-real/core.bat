@@ -1,5 +1,5 @@
 @set WD=%CD%
-set PYWD=%WD%\..\python
+@set PYWD=%WD%\..\python
 @set PARMS=%WD%\..\parms
 @set PYPROG=%WD%\..\prog
 
@@ -10,7 +10,7 @@ set PYWD=%WD%\..\python
 
 :: last fallback = E1001 setup: one 3.x prog directory only
 @set PROG=%WD%\..\..\..\..\..\..\..\..\prog
-@set PYPROG=%PROG%
+@if not exist %PYPROG% set PYPROG=%PROG%
 ::call %WD%\portable.bat C:\FullMonty254-20110710\App
 @if exist %PROG% cd %PROG%
 @if exist %PROG% goto gotprog
