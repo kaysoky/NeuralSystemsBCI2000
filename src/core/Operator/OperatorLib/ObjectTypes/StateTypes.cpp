@@ -45,8 +45,9 @@ StateType StateType::sInstance;
 const ObjectType::MethodEntry StateType::sMethodTable[] =
 {
   METHOD( Set ), METHOD( Get ),
-  METHOD( Insert ), METHOD( List ),
-  { "Add", &Insert },
+  METHOD( Insert ), { "Add", &Insert },
+  METHOD( List ),
+  METHOD( Exists ), { "Is", &Exists },
   END
 };
 
@@ -117,6 +118,16 @@ StateType::List( CommandInterpreter& inInterpreter )
   inInterpreter.Out() << GetState( inInterpreter );
   return true;
 }
+
+bool
+StateType::Exists( CommandInterpreter& inInterpreter )
+{
+  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  bool exists = inInterpreter.StateMachine().States().Exists( inInterpreter.GetToken() );
+  inInterpreter.Out() << exists ? "true" : "false";
+  return true;
+}
+
 
 State&
 StateType::GetState( CommandInterpreter& inInterpreter )

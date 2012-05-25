@@ -43,6 +43,7 @@ class StateType : public ObjectType
   static bool Get( CommandInterpreter& );
   static bool Insert( CommandInterpreter& );
   static bool List( CommandInterpreter& );
+  static bool Exists( CommandInterpreter& );
 
  private:
   static State& GetState( CommandInterpreter& );

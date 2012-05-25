@@ -47,8 +47,9 @@ ParameterType ParameterType::sInstance;
 const ObjectType::MethodEntry ParameterType::sMethodTable[] =
 {
   METHOD( Set ), METHOD( Get ),
-  METHOD( Insert ), METHOD( List ),
-  { "Add", &Insert },
+  METHOD( Insert ), { "Add", &Insert },
+  METHOD( List ),
+  METHOD( Exists ), { "Is", &Exists },
   END
 };
 
@@ -131,6 +132,15 @@ ParameterType::List( CommandInterpreter& inInterpreter )
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   ParamRef param = GetParamRef( inInterpreter );
   inInterpreter.Out() << *param.operator->();
+  return true;
+}
+
+bool
+ParameterType::Exists( CommandInterpreter& inInterpreter )
+{
+  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  bool exists = inInterpreter.StateMachine().Parameters().Exists( inInterpreter.GetToken() );
+  inInterpreter.Out() << exists ? "true" : "false";
   return true;
 }
 

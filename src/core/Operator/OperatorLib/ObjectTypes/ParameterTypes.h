@@ -42,6 +42,7 @@ class ParameterType : public ObjectType
   static bool Get( CommandInterpreter& );
   static bool Insert( CommandInterpreter& );
   static bool List( CommandInterpreter& );
+  static bool Exists( CommandInterpreter& );
 
  private:
   static ParamRef GetParamRef( CommandInterpreter& );
