@@ -54,15 +54,20 @@ bool
 EnvVariable::Get( const string& inName, string& outValue )
 {
 #if _WIN32
+  bool success = true;
   int length = ::GetEnvironmentVariableA( inName.c_str(), NULL, 0 );
-  if( length > 0 )
+  if( length == 0 && ::GetLastError() != ERROR_ENVVAR_NOT_FOUND )
+  {
+    outValue = "";
+  }
+  else if( length > 0 )
   {
     char* pBuffer = new char[length];
     ::GetEnvironmentVariable( inName.c_str(), pBuffer, length );
     outValue = pBuffer;
     delete[] pBuffer;
   }
-  return ( length > 0 );
+  return success;
 #else // _WIN32
   const char* pValue = ::getenv( inName.c_str() );
   if( pValue )
