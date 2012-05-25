@@ -62,6 +62,21 @@ MainWindow::MainWindow( QWidget* parent )
   mTerminated( false ),
   mUpdateTimerID( 0 )
 {
+  ui->setupUi(this);
+  this->setWindowFlags(
+          Qt::Window
+          | Qt::CustomizeWindowHint
+          | Qt::WindowTitleHint
+          | Qt::WindowSystemMenuHint
+          | Qt::MSWindowsFixedSizeDialogHint
+  );
+  for( size_t i = 0; i < Preferences::numButtons; ++i )
+  {
+    QString idx;
+    idx.setNum( i + 1 );
+    mButtons[i] = findChild<QPushButton*>( "pushButton_Btn" + idx );
+  }
+    
   ReadCommandLine();
 
   if( gpPreferences == NULL )
@@ -72,15 +87,6 @@ MainWindow::MainWindow( QWidget* parent )
     gpConnectionInfo = new ConnectionInfo( this );
     gpConnectionInfo->setVisible( false );
   }
-
-  ui->setupUi(this);
-  this->setWindowFlags(
-          Qt::Window
-          | Qt::CustomizeWindowHint
-          | Qt::WindowTitleHint
-          | Qt::WindowSystemMenuHint
-          | Qt::MSWindowsFixedSizeDialogHint
-  );
 
   int nStatusLabels = sizeof( mpStatusLabels ) / sizeof( *mpStatusLabels );
   for( int i = 0; i < nStatusLabels; ++i )
@@ -360,22 +366,30 @@ MainWindow::UpdateDisplay()
 void
 MainWindow::SetFunctionButtons()
 {
-  #define SET_BUTTON( number ) \
-  if( gpPreferences->mButtons[ number - 1 ].Name != ""                                 \
-      && gpPreferences->mButtons[ number - 1 ].Cmd != "" )                             \
-  {                                                                                    \
-    ui->pushButton_Btn##number->setEnabled( true );                                    \
-    ui->pushButton_Btn##number->setText( gpPreferences->mButtons[ number - 1 ].Name ); \
-  }                                                                                    \
-  else                                                                                 \
-  {                                                                                    \
-    ui->pushButton_Btn##number->setEnabled( false );                                   \
-    ui->pushButton_Btn##number->setText( "Function " #number );                        \
+  for( size_t i = 0; i < Preferences::numButtons; ++i )
+  {
+    QString name = gpPreferences->mButtons[i].Name,
+            script = gpPreferences->mButtons[i].Cmd;
+    SetFunctionButton( i, name, script );
   }
-  SET_BUTTON( 1 );
-  SET_BUTTON( 2 );
-  SET_BUTTON( 3 );
-  SET_BUTTON( 4 );
+}
+
+void
+MainWindow::SetFunctionButton( int inIdx, const QString& inTitle, const QString& inScript )
+{
+  QPushButton* pButton = mButtons[inIdx];
+  pButton->setEnabled( inTitle != "" && inScript != "" );
+  if( inTitle != "" )
+  {
+    pButton->setText( inTitle );
+  }
+  else
+  {
+    QString num;
+    num.setNum( inIdx + 1 );
+    pButton->setText( "Function " + num );
+  }
+  mButtonScripts[inIdx] = inScript.toLocal8Bit().constData();
 }
 
 void
@@ -636,6 +650,25 @@ MainWindow::OnUnknownCommand( void* inData, const char* inCommand )
     result = BCI_Handled;
     this_->mTitle = QString::fromLocal8Bit( name.c_str() );
   }
+  else if( action == set && !::stricmp( type.c_str(), "Button" ) )
+  {
+    int idx = ::atoi( name.c_str() ) - 1;
+    if( idx >= 0 && idx < Preferences::numButtons )
+    {
+      result = BCI_Handled;
+      ParserToken caption, script;
+      iss >> caption >> script;
+      QMetaObject::invokeMethod(
+        this_,
+        "SetFunctionButton",
+        Qt::QueuedConnection,
+        Q_ARG(int, idx),
+        Q_ARG(QString, QString::fromLocal8Bit( caption.c_str() )),
+        Q_ARG(QString, QString::fromLocal8Bit( script.c_str() ))
+      );
+      this_->mButtonScripts[idx] = script;
+    }
+  }
   return result;
 }
 
@@ -792,23 +825,23 @@ MainWindow::on_actionStates_triggered()
 void
 MainWindow::on_pushButton_Btn1_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[0].Cmd.toLocal8Bit().constData() );
+  BCI_ExecuteScript( mButtonScripts[0].c_str() );
 }
 
 void
 MainWindow::on_pushButton_Btn2_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[1].Cmd.toLocal8Bit().constData() );
+  BCI_ExecuteScript( mButtonScripts[1].c_str() );
 }
 
 void
 MainWindow::on_pushButton_Btn3_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[2].Cmd.toLocal8Bit().constData() );
+  BCI_ExecuteScript( mButtonScripts[2].c_str() );
 }
 
 void
 MainWindow::on_pushButton_Btn4_clicked()
 {
-  BCI_ExecuteScript( gpPreferences->mButtons[3].Cmd.toLocal8Bit().constData() );
+  BCI_ExecuteScript( mButtonScripts[3].c_str() );
 }

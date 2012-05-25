@@ -33,6 +33,7 @@
 #include "SysLog.h"
 #include "ParamList.h"
 #include "OSMutex.h"
+#include "Preferences.h"
 #include "../OperatorLib/BCI_OperatorLib.h"
 
 #define TXT_WINDOW_CAPTION      "BCI2000/Operator"
@@ -91,6 +92,7 @@ class MainWindow : public QMainWindow
   void GetParameters();
 
  public slots:
+  void SetFunctionButton( int idx, const QString& title, const QString& script );
   void PutParameters();
 
  private:
@@ -126,6 +128,8 @@ class MainWindow : public QMainWindow
                  mTerminated;
   OSMutex        mTerminationMutex;
   std::string    mExitScript;
+  std::string    mButtonScripts[Preferences::numButtons];
+  QPushButton*   mButtons[Preferences::numButtons];
 };
 
 #endif // MAINWINDOW_H
