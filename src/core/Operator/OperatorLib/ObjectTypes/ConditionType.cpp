@@ -122,3 +122,42 @@ ConditionType::Evaluate( CommandInterpreter& inInterpreter )
     inInterpreter.Out() << "false";
   return true;
 }
+
+bool
+ConditionType::EvaluateExpression( CommandInterpreter& inInterpreter )
+{
+  string token = inInterpreter.GetRemainder();
+  size_t pos = string::npos,
+         len = 0;
+  OpFun func = NULL;
+  for( size_t i = 0; i < sizeof( sOperators ) / sizeof( *sOperators ); ++i )
+  {
+    size_t opPos = token.find( sOperators[i].name );
+    if( opPos < pos )
+    {
+      pos = opPos;
+      len = ::strlen( sOperators[i].name );
+      func = sOperators[i].func;
+    }
+  }
+  if( func == NULL )
+    return false;
+  string args[] = { token.substr( 0, pos ), token.substr( pos + len ) };
+  for( size_t i = 0; i < sizeof( args ) / sizeof( *args ); ++i )
+  { 
+    string& object = args[i];
+    if( object.length() > 2 && *object.begin() == '\"' )
+    {
+      if( *object.rbegin() != '\"' )
+        return false;
+      object = object.substr( 1, object.length() - 2 );
+    }
+    else if( !EnvVariable::Get( object, object ) )
+      return false;
+  }
+  if( func( args[0].c_str(), args[1].c_str() ) )
+    inInterpreter.Out() << "true";
+  else
+    inInterpreter.Out() << "false";
+  return true;
+}

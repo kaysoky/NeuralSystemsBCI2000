@@ -38,6 +38,7 @@ class ConditionType : public ObjectType
 
  public:
   static bool Evaluate( CommandInterpreter& );
+  static bool EvaluateExpression( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];

@@ -116,6 +116,10 @@ ImpliedType::Get( CommandInterpreter& inInterpreter )
   {
     inInterpreter.Unget();
   }
+  if( ConditionType::EvaluateExpression( inInterpreter ) )
+    return true;
+  inInterpreter.Unget();
+
   return false;
 }
 
