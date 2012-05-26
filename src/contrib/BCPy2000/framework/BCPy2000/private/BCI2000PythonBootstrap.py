@@ -1,5 +1,6 @@
 """
 	InstallationDir
+	OriginalWorkingDir
 	Log
 	MODTYPE
 	UseConsole
@@ -118,7 +119,7 @@ def go(BCI2000):
 	# add working directory verbosely to path
 	BCPy2000PythonCore.register_working_dir()
 	
-	# TODO:  could consolidate register_framework_dir, register_working_dir, and setting of installation_dir, into one call?
+	# TODO:  could consolidate register_framework_dir, register_working_dir, and setting of installation_dir and original_working_dir, into one call?
 	# TODO:  alternatively, could bring all of register_framework_dir, register_working_dir and search_for_file code here
 	
 	if len(BCI2000['ClassFile']):
@@ -133,6 +134,7 @@ def go(BCI2000):
 		instance._enable_shell()
 	
 	instance.installation_dir = BCI2000['InstallationDir']
+	instance.original_working_dir = BCI2000['OriginalWorkingDir']
 	instance._start()
 	return instance
 	

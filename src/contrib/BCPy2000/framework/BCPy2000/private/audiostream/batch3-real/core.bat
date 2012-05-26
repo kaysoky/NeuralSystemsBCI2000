@@ -1,21 +1,21 @@
 @set WD=%CD%
 @set PYWD=%WD%\..\python
 @set PARMS=%WD%\..\parms
-@set PYPROG=%WD%\..\prog
+@set LOCALPROG=%WD%\..\prog
 
-:: parasitizing the VA setup:  v3.x binaries for operator/SIG/APP will be packed in the local %PYPROG% subdir, but SRC will be in ../prog
-@set PROG=%WD%\..\..\prog
-@if exist %PROG% cd %PROG%
-@if exist %PROG% goto gotprog
+:: parasitizing the VA setup:  v3.x binaries for operator/SIG/APP will be packed in the local %LOCALPROG% subdir, but SRC could be in the main ../../prog
+@set PARENTPROG=%WD%\..\..\prog
+@if exist %PARENTPROG% goto gotprog
 
-:: last fallback = E1001 setup: one 3.x prog directory only
-@set PROG=%WD%\..\..\..\..\..\..\..\..\prog
-@if not exist %PYPROG% set PYPROG=%PROG%
+:: full 3.x hierarchy (like E1001 setup)
+@set PARENTPROG=%WD%\..\..\..\..\..\..\..\..\prog
 ::call %WD%\portable.bat C:\FullMonty254-20110710\App
-@if exist %PROG% cd %PROG%
-@if exist %PROG% goto gotprog
+@if exist %PARENTPROG% goto gotprog
 
 :gotprog
+@if not exist %PARENTPROG% set PARENTPROG=%LOCALPROG%
+@if not exist %LOCALPROG%  set LOCALPROG=%PARENTPROG%
+@cd %PARENTPROG%
 
 @set SUBJECT=TestSubject
 @if not [%1]==[] set SUBJECT=%1
@@ -60,14 +60,18 @@
 @set SRC=SignalGenerator && set LOGGERS=--EvaluateTiming=0
 :SkipSignalGeneratorParams
 
+@set WEIGHTS=%PARENTPROG%\..\data\%SUBJECT%%MODE%%CONDITION%\ChosenWeights.prm
+@if not exist %WEIGHTS% goto SkipWeights
+@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WEIGHTS%
+:SkipWeights
 
 @set OnConnect=%OnConnect% ; SETCONFIG
 ::@set OnSetConfig=%OnSetConfig% ; SET STATE Running 1
 
-start              %PYPROG%\Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
-start              %PYPROG%\PythonApplication        AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=%PYWD% --PythonAppShell=0 --PythonAppClassFile=TrialStructure.py --PythonAppLog=%PYWD%\..\log\###-app.txt
-start              %PYPROG%\PythonSignalProcessing   AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=%PYWD% --PythonSigShell=1 --PythonSigClassFile=Streaming.py      --PythonSigLog=%PYWD%\..\log\###-sig.txt
-start              %PYPROG%\%SRC%                    AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     %LOGGERS%
+start              %LOCALPROG%\Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
+start              %LOCALPROG%\PythonApplication        AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=%PYWD% --PythonAppClassFile=TrialStructure.py --PythonAppLog=%PYWD%\..\log\###-app.txt --PythonAppShell=1
+start              %LOCALPROG%\PythonSignalProcessing   AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=%PYWD% --PythonSigClassFile=Streaming.py      --PythonSigLog=%PYWD%\..\log\###-sig.txt --PythonSigShell=1
+start              %LOCALPROG%\%SRC%                    AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     %LOGGERS%
 ::start              %SRC%                             AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     %LOGGERS%
 
 :: datestamped logs

@@ -25,17 +25,20 @@ if [ ${Arg5} ]; set environment MONTAGE ${Arg5}; end
 
 ########################################################################################
 
-set environment TIMINGFLAG --EvaluateTiming=1 # TODO: really this shouldn't be necessary
-if [ ${SRC} == SignalGenerator ]; set environment TIMINGFLAG --EvaluateTiming=0 ; end
+set environment TIMINGFLAG "--EvaluateTiming=1" # otherwise an --EvaluateTiming might hang over from a previous launch
+if [ ${SRC} == SignalGenerator ]; set environment TIMINGFLAG --EvaluateTiming=0; end
 
 change directory ${BCI2000LAUNCHDIR}
 if [ ${get system state} != Idle ]; shutdown system; wait for Idle; end
 show window; set title ${Extract file base ${Arg0}}
 startup system
 
-#start executable ${SRC}                 AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     ${TIMINGFLAG} # TODO: logger flags...
+start executable ${SRC}                 AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     ${get environment TIMINGFLAG} # TODO: $TIMINGFLAG would be nicer
 #start executable PythonSignalProcessing AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=${PYWD} --PythonSigClassFile=Streaming.py       --PythonSigLog=${PYLOGDIR}/###-sig.txt --PythonSigShell=1
 #start executable PythonApplication      AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=${PYWD} --PythonAppClassFile=TrialStructure.py  --PythonAppLog=${PYLOGDIR}/###-app.txt --PythonAppShell=1
+
+start executable SpectralSignalProcessing # TODO: remove
+start executable CursorTask # TODO: remove
 
 wait for connected
 
@@ -52,7 +55,7 @@ end
 load parameterfile ${PARMSDIR}/realbase.prm 
 load parameterfile ${PARMSDIR}/condition${CONDITION}.prm
 
-if [ ${MODE} == FREE ]
+if [ ${MODE}==FREE ]
 	load parameterfile ${PARMSDIR}/realfree.prm 
 elseif [ ${MODE} != CALIB ]
 	error unrecognized mode ${MODE}
@@ -64,12 +67,21 @@ end
 
 ########################################################################################
 
-#TODO: find the right data directory
-#TODO: use the data directory, subject name, mode and session to find the data directory that will be used; then load weights from there 
 set parameter SubjectName    ${SUBJECT}${MODE}
 set parameter SubjectSession ${CONDITION}
 
 ########################################################################################
 
-warn ${BATCHDIR}
-warn ${get parameter DataDirectory}
+# TODO:  find upstairs data directories if necessary
+set environment DATADIR ${canonical path ${get parameter DataDirectory}/${get parameter SubjectName}${get parameter SubjectSession}}
+set environment WEIGHTS ${canonical path ${DATADIR}/ChosenWeights.prm}
+
+if [ ${exists file ${WEIGHTS}} ]
+	load parameterfile ${WEIGHTS}
+	if [ ${exists parameter SignalProcessingDescription} ]
+		log classifier loaded: ${get parameter SignalProcessingDescription}
+	end
+else
+	warn ${WEIGHTS} does not exist
+end
+

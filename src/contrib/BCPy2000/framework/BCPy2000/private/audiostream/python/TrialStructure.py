@@ -184,6 +184,9 @@ class BciApplication(BciGenericApplication):
 		
 		self.logging = int(self.params.get('PythonAppShell', 1)) == 0 or self.params.get('PythonAppLog','') not in ['','-']
 		
+		if self.freechoice and len(self.params.get('ERPClassifierWeights', [])) == 0:
+			raise EndUserError("cannot enter FreeChoice mode without weights loaded")
+		
 	#############################################################
 
 	def ReportNumberOfTargets(self, istream):

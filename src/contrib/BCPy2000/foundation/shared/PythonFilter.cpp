@@ -110,7 +110,7 @@ FILTER_NAME::FILTER_NAME()
     END_STATE_DEFINITIONS
 #endif
 
-    std::string oldwd = BCIDirectory::GetCWD();
+    std::string originalDir = BCIDirectory::GetCWD();
 
     std::string dllname       = OptionalParameter(FILTER_ABBREV "DLL",       "");
     std::string logFile       = OptionalParameter(FILTER_ABBREV "Log",       "");
@@ -143,7 +143,7 @@ FILTER_NAME::FILTER_NAME()
     Py_Initialize();
     PyEval_InitThreads();
 
-    ChangeDir(oldwd);             // ...so undo it...
+    ChangeDir(originalDir);             // ...so undo it...
     if(logFile.length() && logFile != "-") {
       std::string cmd;
       cmd = EscapePythonString(logFile);
@@ -182,7 +182,7 @@ FILTER_NAME::FILTER_NAME()
     EvalPythonString("from " + coremod + " import *");
     EvalPythonString("from " + genmod + " import *");
     CallModuleMember(coremod, "register_framework_dir"); //TODO: need to decref the result?
-    ChangeDir(oldwd); // change in two stages to cope with both absolute and relative paths
+    ChangeDir(originalDir); // change in two stages to cope with both absolute and relative paths
     if(workingDir.length()) ChangeDir(workingDir);
     CallModuleMember(coremod, "register_working_dir"); //TODO: need to decref the result?
     if(developerFile.length()) {
@@ -201,8 +201,14 @@ FILTER_NAME::FILTER_NAME()
     if(ipshell) CallMethod("_enable_shell");
 
     PyObject*key,*val;
+
     key = PyString_FromString("installation_dir");
     val = PyString_FromString(BCIDirectory::InstallationDirectory().c_str());
+    CallMethod("__setattr__", key, val);
+    Py_DECREF(key); // Py_DECREF(val);
+
+	key = PyString_FromString("original_working_dir");
+    val = PyString_FromString(originalDir.c_str());
     CallMethod("__setattr__", key, val);
     Py_DECREF(key); // Py_DECREF(val);
 

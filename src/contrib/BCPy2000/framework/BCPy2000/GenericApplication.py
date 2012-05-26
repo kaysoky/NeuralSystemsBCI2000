@@ -147,6 +147,7 @@ class BciGenericApplication(Core.BciCore):
 		for x in module.__all__: setattr(VisualStimuli, x, getattr(module, x))
 		VisualStimuli.screen = self.screen
 		VisualStimuli.__all__ += module.__all__ + ['screen']
+		self.VisualStimuli = VisualStimuli
 
 		# Memorize internal variables, to delete all additional ones during restart
 		if self._creation_parameters == None: self._creation_parameters = dir(self)

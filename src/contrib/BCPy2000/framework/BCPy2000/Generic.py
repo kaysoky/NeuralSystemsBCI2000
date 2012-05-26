@@ -260,6 +260,7 @@ SUCH DAMAGES.
 		self.in_signal = numpy.matrix([])
 		self.out_signal = numpy.matrix([])
 		self.installation_dir = ''
+		self.original_working_dir = ''
 		self.data_dir = ''
 		self.data_file = None
 		self.verbose = False
@@ -485,7 +486,7 @@ SUCH DAMAGES.
 	def _Preflight(self, in_signal_props):
 		if self.verbose: print "calling Preflight hook"
 		dd = self.params['DataDirectory'].replace('\\', os.path.sep).replace('/', os.path.sep)
-		if not os.path.isabs(dd): dd = os.path.join(self.installation_dir, dd)
+		if not os.path.isabs(dd): dd = os.path.join(self.original_working_dir, dd)
 		dd = os.path.join(dd, self.params['SubjectName']+ self.params['SubjectSession'])
 		self.data_dir = os.path.realpath(dd)
 		self.in_signal_props = BciDict(in_signal_props, lazy=True).recurse()

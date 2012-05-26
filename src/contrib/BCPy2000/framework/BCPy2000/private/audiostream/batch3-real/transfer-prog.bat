@@ -22,7 +22,8 @@ copy OperatorLib.dll %DEST%\
 copy gUSBampSource.exe %DEST%\
 copy Emotiv.exe %DEST%\
 copy SignalGenerator.exe %DEST%\
-copy tet.dll ttime.dll %DEST%\
+copy tet.dll %DEST%\
+copy ttime.dll %DEST%\
 
 ::copy SpectralSignalProcessing.exe %DEST%\
 ::copy CursorTask.exe %DEST%\
