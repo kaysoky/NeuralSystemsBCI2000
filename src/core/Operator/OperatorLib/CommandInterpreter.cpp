@@ -205,11 +205,13 @@ CommandInterpreter::SubstituteCommands( const string& input )
         if( braceLevel == 1 )
         {
           Execute( SubstituteCommands( command ) );
-          string result = Result();
+          ParserToken result = Result();
           command.clear();
           while( result.length() > 0 && !::isprint( *result.rbegin() ) )
             result = result.substr( 0, result.length() - 1 );
-          output += result;
+          ostringstream oss;
+          oss << result;
+          output += oss.str();
         }
         else if( braceLevel > 1 )
           command += *i;
