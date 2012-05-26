@@ -63,7 +63,7 @@ BCI2000Remote::DataDirectory( const std::string& inDataDirectory )
 bool
 BCI2000Remote::StartupModules( const std::vector<string>& inModules )
 {
-  Execute( "shutdown system" );
+  Execute( "if [ ${get system state} != Idle ]; shutdown system; end" );
   bool success = WaitForSystemState( "Idle" );
   if( success )
   {
@@ -102,12 +102,17 @@ BCI2000Remote::SetConfig()
   SessionID( mSessionID );
   DataDirectory( mDataDirectory );
   Execute( "capture messages none warnings errors" );
+  string tempResult;
   if( SimpleCommand( "set config" ) )
     WaitForSystemState( "Resting|Initialization" );
+  else
+    tempResult = Result();
   Execute( "capture messages none" );
   Execute( "get system state" );
   bool success = !::stricmp( "Resting", Result().c_str() );
   Execute( "flush messages" );
+  if( !tempResult.empty() )
+    mResult = tempResult + '\n' + mResult;
   return success;
 }
 

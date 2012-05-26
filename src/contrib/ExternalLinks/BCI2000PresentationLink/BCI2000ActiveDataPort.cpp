@@ -178,7 +178,7 @@ CBCI2000ActiveDataPort::Initialize( const DataPortSettings& inSettings )
       throw bciexception_( mBCI2000.Result() );
   }
   mBCI2000.WindowTitle( "Connected to Presentation" );
-  mBCI2000.Execute( "shutdown system; wait for idle" );
+  mBCI2000.Execute( "if not [ ${get system state} == Idle ]; shutdown system; end; wait for idle" );
   mUseResumePause = !inSettings[DataPortSettings::UseResumePause].empty();
   mEventTypes.clear();
   istringstream iss( inSettings[DataPortSettings::EventTypes] );
