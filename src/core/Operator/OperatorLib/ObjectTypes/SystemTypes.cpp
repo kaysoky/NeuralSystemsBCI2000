@@ -108,13 +108,12 @@ SystemType::GetVersion( CommandInterpreter& inInterpreter )
   return true;
 }
 
+
 bool
 SystemType::WaitFor( CommandInterpreter& inInterpreter )
 {
   string states = inInterpreter.GetToken();
   set<int> desiredStates;
-  desiredStates.insert( BCI_StateTermination );
-  desiredStates.insert( BCI_StateUnavailable );
   istringstream iss( states );
   string stateName;
   while( std::getline( iss, stateName, '|' ) )
@@ -134,23 +133,32 @@ SystemType::WaitFor( CommandInterpreter& inInterpreter )
       throw bciexception_( "Unknown system state: " << stateName );
     desiredStates.insert( stateCode );
   }
-
   double timeout = 0;
   if( !( istringstream( inInterpreter.GetOptionalToken() ) >> timeout ) )
     timeout = 5;
   if( timeout < 0 )
     throw bciexception_( "Timeout must be >= 0" );
 
+  return DoWaitFor( desiredStates, timeout, inInterpreter );
+}
+
+bool
+SystemType::DoWaitFor( const set<int>& inStates, double inTimeout, CommandInterpreter& inInterpreter )
+{
+  set<int> desiredStates = inStates;
+  desiredStates.insert( BCI_StateTermination );
+  desiredStates.insert( BCI_StateUnavailable );
+
   int timeElapsed = 0;
   int state = BCI_GetStateOfOperation();
-  while( desiredStates.find( state ) == desiredStates.end() && timeElapsed < 1e3 * timeout )
+  while( desiredStates.find( state ) == desiredStates.end() && timeElapsed < 1e3 * inTimeout )
   {
     ThreadUtils::SleepFor( cTimeResolution );
     timeElapsed += cTimeResolution + inInterpreter.Background();
     state = BCI_GetStateOfOperation();
   }
   if( desiredStates.find( state ) == desiredStates.end() )
-    inInterpreter.Out() << "Timeout occurred after " << timeout << " seconds";
+    inInterpreter.Out() << "Timeout occurred after " << inTimeout << " seconds";
   return true;
 }
 
@@ -215,8 +223,20 @@ SystemType::Shutdown( CommandInterpreter& inInterpreter )
 bool
 SystemType::Reset( CommandInterpreter& inInterpreter )
 {
-  inInterpreter.StateMachine().StopRun();
-  inInterpreter.StateMachine().Shutdown();
+  if( BCI_GetStateOfOperation() == BCI_StateRunning )
+  {
+    inInterpreter.StateMachine().StopRun();
+    set<int> states;
+    states.insert( BCI_StateSuspended );
+    DoWaitFor( states, 5, inInterpreter );
+  }
+  if( BCI_GetStateOfOperation() != BCI_StateIdle )
+  {
+    inInterpreter.StateMachine().Shutdown();
+    set<int> states;
+    states.insert( BCI_StateIdle );
+    DoWaitFor( states, 5, inInterpreter );
+  }
   ParametersType::Clear( inInterpreter );
   StatesType::Clear( inInterpreter );
   EventsType::Clear( inInterpreter );

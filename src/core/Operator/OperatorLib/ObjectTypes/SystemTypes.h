@@ -27,6 +27,7 @@
 #define SYSTEM_TYPES_H
 
 #include "ObjectType.h"
+#include <set>
 
 namespace Interpreter {
 
@@ -49,6 +50,9 @@ class SystemType : public ObjectType
   static bool Shutdown( CommandInterpreter& );
   static bool Reset( CommandInterpreter& );
   static bool Quit( CommandInterpreter& );
+  
+ private:
+  static bool DoWaitFor( const std::set<int>&, double, CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];

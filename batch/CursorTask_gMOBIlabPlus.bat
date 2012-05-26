@@ -27,11 +27,8 @@
 ## $END_BCI2000_LICENSE$
 #######################################################################################
 Change directory ${BCI2000LAUNCHDIR}
-If [ ${Get system state} != Idle ]
-  Shutdown system
-  Wait for Idle
-End
 Show window; Set title ${Extract file base ${Arg0}}
+Reset system
 Startup system
 Start executable gMOBIlabPlus
 Start executable SpectralSignalProcessing
