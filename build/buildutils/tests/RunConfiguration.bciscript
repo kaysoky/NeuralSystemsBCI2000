@@ -48,7 +48,8 @@ While idx<=${Arg3}
     Load parameterfile ${TestingDir}parms/${Arg2}_${idx}.prm
   End
   Set config; Wait for Resting
-  Start;Wait for Suspended 3600
+  Start; Wait for Suspended 3600
   Shutdown system; Wait for Idle
+  Sleep 1
   idx:=idx+1
 End

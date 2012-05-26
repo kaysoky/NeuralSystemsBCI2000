@@ -154,11 +154,12 @@ BCI2000Remote::SetParameter( const std::string& inName, const std::string& inVal
 bool
 BCI2000Remote::GetParameter( const std::string& inName, std::string& outValue )
 {
-  Execute( "get parameter \"" + inName + "\"" );
-  bool success = ( Result().find( inName ) == string::npos
-                  && Result().find( "not exist" ) == string::npos );
+  bool success = ( 0 == Execute( "is parameter \"" + inName + "\"" ) );
   if( success )
+  {
+    Execute( "get parameter \"" + inName + "\"" );
     outValue = Result();
+  }
   return success;
 }
 
@@ -181,7 +182,7 @@ BCI2000Remote::LoadParametersLocal( const string& inFileName )
 bool
 BCI2000Remote::LoadParametersRemote( const string& inFileName )
 {
-  return SimpleCommand( "load parameters " + inFileName );
+  return SimpleCommand( "load parameters \"" + inFileName + "\"" );
 }
 
 bool
@@ -197,14 +198,14 @@ BCI2000Remote::SetStateVariable( const string& inStateName, double inValue )
 {
   ostringstream value;
   value << inValue;
-  Execute( "set state " + inStateName + " " + value.str() );
+  Execute( "set state \"" + inStateName + "\" " + value.str() );
   return Result().empty();
 }
 
 bool
 BCI2000Remote::GetStateVariable( const string& inStateName, double& outValue )
 {
-  Execute( "get state " + inStateName );
+  Execute( "get state \"" + inStateName + "\"" );
   return istringstream( Result() ) >> outValue;
 }
 

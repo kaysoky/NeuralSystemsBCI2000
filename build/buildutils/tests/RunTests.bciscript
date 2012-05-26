@@ -28,13 +28,12 @@ Set TestingDir ${Parent directory ${Arg0}}
 Set DataDir ${TestingDir}data/
 
 If [ ${Arg1} == "" ]
-  MaxIdx:=0
-Else
-  MaxIdx:=${Arg1}
+  Set ${Arg1} 0
 End
 
 Show Window; Set title ${Extract file base ${Arg0}}
 
+MaxIdx:=${Arg1}
 Echo Testing BCI2000 executables, ${MaxIdx+1} parameter files each.
 
 If Exists directory ${DataDir}test

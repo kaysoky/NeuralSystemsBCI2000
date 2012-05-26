@@ -99,7 +99,7 @@ int main( int argc, char** argv )
       return -1;
     }
   }
-  bci.Execute( "cd " + FileUtils::WorkingDirectory() );
+  bci.Execute( "cd \"" + FileUtils::WorkingDirectory() + "\"" );
   bci.Timeout( 3600 );
   int exitCode = 0;
   if( interactive )

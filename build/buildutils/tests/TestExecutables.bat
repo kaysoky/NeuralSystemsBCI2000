@@ -1,7 +1,7 @@
 #! ../../../prog/BCI2000Shell
 @cls & ..\..\..\prog\BCI2000Shell %0 %* #! & pause & exit /b
 #################################################################################
-## $Id: RunTests.bat -1   $
+## $Id$
 ## Description: A wrapper that executes BCI2000 tests in a new terminal/console
 ##              window.
 ##
@@ -25,4 +25,7 @@
 ## 
 ## $END_BCI2000_LICENSE$
 #################################################################################
-Execute script ${Parent directory ${Arg0}}RunTests 0
+If [ ${Arg1} == "" ]
+  Set Arg1 0
+End
+Execute script ${Parent directory ${Arg0}}RunTests ${Arg1}
