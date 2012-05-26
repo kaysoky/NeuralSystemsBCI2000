@@ -146,10 +146,14 @@ ProcessUtils::ExecuteAsynchronously( const string& inExecutable, const string& i
   if( success )
   {
     DWORD dwExitCode = 0;
-    ::WaitForInputIdle( info.hProcess, INFINITE );
-    ::GetExitCodeProcess( info.hProcess, &dwExitCode );
-    if( STILL_ACTIVE != dwExitCode )
-      outExitCode = dwExitCode;
+    if( WAIT_TIMEOUT == ::WaitForInputIdle( info.hProcess, 60000 ) )
+      dwExitCode = -1;
+    else
+    {
+      ::GetExitCodeProcess( info.hProcess, &dwExitCode );
+      if( STILL_ACTIVE != dwExitCode )
+        outExitCode = dwExitCode;
+    }
     ::CloseHandle( info.hProcess );
   }
 
