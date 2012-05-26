@@ -1,14 +1,6 @@
-import PygameRenderer2
 
-import os
-import sys
-import random
-import numpy
-import time
-import WavTools
-import AppTools.Displays
-import AppTools.StateMonitors
-import pygame.locals
+#import os; os.environ["SDL_VIDEODRIVER"] = "directx"
+import PygameRenderer
 
 		
 #################################################################

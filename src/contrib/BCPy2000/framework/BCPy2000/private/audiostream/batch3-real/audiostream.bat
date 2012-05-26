@@ -1,6 +1,12 @@
 #! ../prog/BCI2000Shell
 @cls & ..\prog\BCI2000Shell %0 %* #! && exit /b 0 || exit /b 1
 
+#TODO: if [${VAR}==val ]  always returns true:  very easy to miss this
+# first time after restarting Windows, parameter file claims to be loaded but the parameter values do not reflect what was in the file
+# quit operator and re-launch from same script without changing anything: all is fine.
+
+reset system
+
 ########################################################################################
 
 set environment BATCHDIR ${CD}
@@ -18,6 +24,7 @@ set environment MODE CALIB
 if [ ${Arg3} ]; set environment MODE ${Arg3}; end
 
 set environment SRC gUSBampSource
+set environment SRC SignalGenerator ; warn SignalGenerator is the default #TODO: remove
 if [ ${Arg4} ]; set environment SRC ${Arg4}; end
 
 set environment MONTAGE D
@@ -34,11 +41,8 @@ show window; set title ${Extract file base ${Arg0}}
 startup system
 
 start executable ${SRC}                 AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     ${get environment TIMINGFLAG} # TODO: $TIMINGFLAG would be nicer
-#start executable PythonSignalProcessing AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=${PYWD} --PythonSigClassFile=Streaming.py       --PythonSigLog=${PYLOGDIR}/###-sig.txt --PythonSigShell=1
-#start executable PythonApplication      AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=${PYWD} --PythonAppClassFile=TrialStructure.py  --PythonAppLog=${PYLOGDIR}/###-app.txt --PythonAppShell=1
-
-start executable SpectralSignalProcessing # TODO: remove
-start executable CursorTask # TODO: remove
+start executable PythonSignalProcessing AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=${PYWD} --PythonSigClassFile=Streaming.py       --PythonSigLog=${PYLOGDIR}/###-sig.txt --PythonSigShell=1
+start executable PythonApplication      AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=${PYWD} --PythonAppClassFile=TrialStructure.py  --PythonAppLog=${PYLOGDIR}/###-app.txt --PythonAppShell=1
 
 wait for connected
 
@@ -55,7 +59,7 @@ end
 load parameterfile ${PARMSDIR}/realbase.prm 
 load parameterfile ${PARMSDIR}/condition${CONDITION}.prm
 
-if [ ${MODE}==FREE ]
+if [ ${MODE} == FREE ]
 	load parameterfile ${PARMSDIR}/realfree.prm 
 elseif [ ${MODE} != CALIB ]
 	error unrecognized mode ${MODE}
@@ -82,6 +86,7 @@ if [ ${exists file ${WEIGHTS}} ]
 		log classifier loaded: ${get parameter SignalProcessingDescription}
 	end
 else
-	warn ${WEIGHTS} does not exist
+	warn No classifier loaded - could not find ${WEIGHTS}
 end
 
+#setconfig

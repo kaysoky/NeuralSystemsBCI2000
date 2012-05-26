@@ -1572,7 +1572,10 @@ class BciStimulus(object):
 	def _getAttributeNames(self):
 		v = self.__dict__.get('obj')
 		if v == None: return ()
-		else: return v.__dict__.keys()
+		attrs = v.__dict__.keys()
+		if hasattr(v, '_getAttributeNames'): attrs += v._getAttributeNames()
+		#attrs = [x for x in attrs if not x.startswith('_')]
+		return attrs
 		
 	#############################################################
 
