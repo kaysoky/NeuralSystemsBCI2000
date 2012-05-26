@@ -185,8 +185,9 @@ BCI2000Connection::Execute( const string& inCommand )
       {
         if( !OnOutput( line ) )
         {
+          if( !mResult.empty() )
+            mResult += '\n';
           mResult += line;
-          mResult += c;
         }
         double value;
         if( ( istringstream( line ) >> value ).eof() )
@@ -274,7 +275,7 @@ BCI2000Connection::StartExecutable( const string& inExecutable, const string& in
   si.wShowWindow = SW_SHOWNOACTIVATE;
 #endif
   PROCESS_INFORMATION pi = { 0 };
-  bool success =( TRUE == ::CreateProcessA( NULL, const_cast<char*>( commandLine.c_str() ), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, pWorkingDir, &si, &pi ) );
+  bool success =( TRUE == ::CreateProcessA( NULL, const_cast<char*>( commandLine.c_str() ), NULL, NULL, FALSE, 0, NULL, pWorkingDir, &si, &pi ) );
   if( !success )
   {
     ostringstream oss;
