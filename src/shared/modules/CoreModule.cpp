@@ -77,6 +77,13 @@ CoreModule::CoreModule()
   mOperatorSocket.set_tcpnodelay( true );
   mNextModuleSocket.set_tcpnodelay( true );
   mPreviousModuleSocket.set_tcpnodelay( true );
+#if _WIN32 // Satisfy parent processes using WaitForInputIdle().
+  MSG msg;
+  HWND window = ::CreateWindowA( "STATIC", NULL, 0, 0, 0, 0, 0, NULL, NULL, ::GetModuleHandle( NULL ), NULL );
+  while( ::PeekMessage( &msg, window, 0, 0, PM_REMOVE ) )
+    ;
+  ::DestroyWindow( window );
+#endif // _WIN32
 }
 
 CoreModule::~CoreModule()
