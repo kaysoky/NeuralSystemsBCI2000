@@ -20,6 +20,7 @@ class BciApplication(BciGenericApplication):
 		self.bar()
 		self.baz()
 		self.bork()
+		self.mork()
 		pass
 				
 	#############################################################
@@ -33,6 +34,11 @@ class BciApplication(BciGenericApplication):
 			except: pass
 
 	#############################################################
+	def mork(self, name='mork', filename='delta.mpg'):
+		s = self.stimulus(name, VisualStimuli.Movie, filename=filename, position=(0,0))
+		return s
+	
+	#############################################################
 	
 	def bork(self, name='bork'):
 		s = self.stimulus(name, VisualStimuli.Text, position=(50,250))
@@ -42,7 +48,7 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 	
 	def baz(self, name='baz'):
-		s = self.stimulus(name, VisualStimuli.Disc, position=(100,300), size=(50,50))
+		s = self.stimulus(name, VisualStimuli.Disc, position=(-100,300), size=(50,50))
 		c = s.content; c[0,0,:] = 1.0; s.content = c
 		return s
 		
@@ -57,7 +63,7 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 	
 	def foo(self, name='foo', filename='../RocketSMR/python/rocket.png'):	
-		s = self.stimulus(name, VisualStimuli.ImageStimulus, texture=filename)
+		s = self.stimulus(name, VisualStimuli.ImageStimulus, texture=filename, position=(-200,-200))
 		c = s.content; c[0,0,:] = 1.0; s.content = c
 		return s
 		

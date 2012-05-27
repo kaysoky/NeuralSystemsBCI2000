@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-__all__ = ['Text', 'Block', 'Disc', 'ImageStimulus']
+__all__ = ['Text', 'Block', 'Disc', 'ImageStimulus', 'Movie']
 
 import os
 import sys
@@ -13,8 +13,8 @@ import pygame
 import pygame.gfxdraw
 pygame.font.init()
 
-import AppTools.Coords as Coords
 import AppTools.CurrentRenderer as CurrentRenderer # TODO: remove dependency on this
+import AppTools.Coords as Coords
 
 try:    from BCI2000PythonApplication    import BciGenericRenderer, BciStimulus   # development copy
 except: from BCPy2000.GenericApplication import BciGenericRenderer, BciStimulus   # installed copy
@@ -32,7 +32,7 @@ class PygameRenderer(BciGenericRenderer):
 		self.frameless_window = False
 		self.always_on_top = False
 		self.title = 'stimuli'
-		self.coordinate_mapping = 'pixels from lower left' # VisionEgg-like
+		self.coordinate_mapping = 'pixels from center' # VisionEgg-like
 		self.screen = None
 		self._bci = None
 
@@ -47,7 +47,7 @@ class PygameRenderer(BciGenericRenderer):
 		these parameters in order to initialize the stimulus window, before
 		BciApplication.Initialize() is called.
 		"""###
-		# `**kwds` is used for compatibility with the `VisionEggRenderer`:
+		# `**kwds` is used for compatibility with the `VisionEggRenderer`:   # TODO: change this to explicitly take and ignore the bitdepth parameter, but investigate why this is necessary
 		# the `bitdepth` parameter is ignored.
 		if left != None: self.coords.left = left
 		if top != None: self.coords.top = top
@@ -81,16 +81,15 @@ class PygameRenderer(BciGenericRenderer):
 		cm = self.coordinate_mapping.lower().replace('bottom', 'lower').replace('top', 'upper').replace(' ', '')
 				
 		if cm == 'pixelsfromlowerleft':
-			#self.coords.internal = Coords.Box(left=0, bottom=0, width=size[0], height=size[1])
-			pass # TODO: right now, setting internal seems to screw up the Box itself - clearly a bad bug in Coords
+			self.coords.internal = Coords.Box(left=0, bottom=0, width=size[0], height=size[1])
 		elif cm == 'pixelsfromupperleft':
-			#self.coords.internal = Coords.Box(left=0, top=0, width=size[0], height=-size[1])
-			pass # TODO: right now, setting internal seems to screw up the Box itself - clearly a bad bug in Coords
+			self.coords.internal = Coords.Box(left=0, top=0, width=size[0], height=-size[1])
+		elif cm == 'pixelsfromcenter':
+			self.coords.internal = Coords.Box(left=-size[0]/2.0, bottom=-size[1]/2.0, width=size[0], height=size[1])
+		elif cm == 'normalizedfromcenter':
+			self.coords.internal = Coords.Box(left=-0.5, bottom=-0.5, width=1.0, height=1.0) # TODO: this doesn't work
 		else:
 			raise ValueError('coordinate_mapping "%s" is unsupported' % self.coordinate_mapping)
-			
-		print "done"
-		print self.coords
 			
 		# windows-specific code
 		try: import wm_ext  # TODO: third-party dependency
@@ -162,7 +161,7 @@ BciGenericRenderer.subclass = PygameRenderer
 
 class ImageStimulus(Coords.Box):
 	def __init__(self, content=None, size=None, position=None, anchor='center',
-		angle=0.0, smooth=True, color=(1,1,1,1), texture=None):
+		angle=0.0, color=(1,1,1,1), on=True, texture=None, use_alpha=True, smooth=True):
 		
 		Coords.Box.__init__(self)
 		self._props = {}
@@ -173,6 +172,9 @@ class ImageStimulus(Coords.Box):
 		self.__transformed_surface = None
 		self.__last_coloring = None
 		self.__colored_surface = None
+		self.__last_ptr = None
+		self.__last_transformed_pos = None
+		self.__use_alpha = use_alpha
 		
 		if content == None: content = texture
 		if content == None:
@@ -195,12 +197,13 @@ class ImageStimulus(Coords.Box):
 		self.smooth = smooth
 		self.flipx = False
 		self.flipy = False
+		self.on = True
 		
 	def default_content(self, size):
 		return pygame.Surface(size, flags=pygame.SRCALPHA)
 
 		
-	def transform(self, force=False):
+	def transform(self, screencoords=None, force=False):
 		p = self._props
 		srcsize  = tuple([int(round(x)) for x in self.original_size])
 		dstsize  = tuple([int(round(x)) for x in self.size])
@@ -212,10 +215,41 @@ class ImageStimulus(Coords.Box):
 		color = tuple(p['color'])
 		if len(color) == 3: color = color + (1.0,)
 		athresh = 0.2 # degrees
-		tr = (srcsize,dstsize,angle,flipx,flipy,smooth)
-		pos = Coords.Point((self.left, self.bottom))
-		# TODO: transform pos as necessary below: rotations should occur around anchor
-		#       store transformed_pos with transformed
+		pos = Coords.Point((self.left, self.top))
+		origin = pos
+
+		origin = Coords.Point(self.anchor.through(self))
+		if screencoords != None:
+			pos     = screencoords.int2ext(pos, 'position')
+			origin  = screencoords.int2ext(origin, 'position')
+			#dstsize = tuple([abs(x) for x in screencoords.int2ext(dstsize, 'size')])   # for now, let's express size as an absolute size in pixels even if position coords are on some other scale
+			# TODO: the previous couple of lines seem to use up a lot of CPU...
+			
+		# now we're working in pixels from top left
+		ptr = (tuple(pos),tuple(origin),tuple(dstsize),angle)
+		if ptr == self.__last_ptr:
+			pos = self.__last_transformed_pos
+		else:
+			r = numpy.exp(-1.0j * angle * numpy.pi/180.0)
+			def rotate(p, r, origin):
+				p = p - origin
+				c = (float(p[0]) + p[1]*1.0j) * r
+				p[:] = c.real,c.imag
+				p = p + origin 
+				return p
+			w,h = dstsize
+			corners = [rotate(pos+x, r, origin) for x in [(0,0),(0,h),(w,h),(w,0)]]
+			#print "pos =",pos
+			#print "origin =",origin
+			#print "corners =",corners
+			x,y = zip(*corners)
+			pos[:] = min(x),min(y)
+			#print "transformed_pos =",pos
+			#print
+			self.__last_ptr = ptr
+			self.__last_transformed_pos = pos
+		
+		tr = (tuple(srcsize),tuple(dstsize),angle,flipx,flipy,smooth)
 		if force or changed or tr != self.__last_transformation:
 			t = self.__original_surface
 			if flipx or flipy: t = pygame.transform.flip(t, flipx, flipy)
@@ -243,10 +277,9 @@ class ImageStimulus(Coords.Box):
 		self.__content_changed = False
 		return self.__colored_surface, pos
 
-	def draw(self, screen, coords):
-		t, pos = self.transform()  # TODO: anchor still doesn't work quite right
-		#pos = pos.through(box=coords)
-		pos.y = screen.get_height() - pos.y
+	def draw(self, screen, screencoords):
+		if not self._props['on']: return
+		t, pos = self.transform(screencoords=screencoords)
 		screen.blit(t, pos)
 
 	@apply
@@ -267,7 +300,8 @@ class ImageStimulus(Coords.Box):
 				self.__filename = val
 			else:
 				val = to_surface(val)
-			val = val.convert_alpha()
+			if self.__use_alpha: val = val.convert_alpha()
+			elif val.get_flags() & pygame.SRCALPHA: val = val.convert()
 			self.__original_surface = val
 			self.__content_changed = True
 		return property(fget, fset, doc='the content of the image stimulus as a numpy array')
@@ -304,6 +338,16 @@ class ImageStimulus(Coords.Box):
 		return property(fget, fset, doc='whether or not pygame transformations are smooth')
 
 	@apply
+	def on():
+		def fget(self):  p = self._props; return p['on']
+		def fset(self, val):
+			try: val = bool(val)
+			except: raise TypeError('on should be a boolean')
+			p = self._props;
+			p['on'] = val
+		return property(fget, fset, doc='whether or not the stimulus is displayed')
+
+	@apply
 	def flipx():
 		def fget(self):  p = self._props; return p['flipx']
 		def fset(self, val):
@@ -324,11 +368,11 @@ class ImageStimulus(Coords.Box):
 		return property(fget, fset, doc='whether to display image flipped top-to-bottom')
 
 class Disc(ImageStimulus):
-	def __init__(self, position=(10,10), radius=10, size=None, color=(0,0,1), anchor='center', angle=0.0, smooth=True):
+	def __init__(self, position=(10,10), radius=10, size=None, color=(0,0,1), anchor='center', angle=0.0, on=True, smooth=True):
 		if isinstance(radius, (float,int)): radius = (radius,radius)
 		if size == None: size = [x * 2 for x in radius]
 		if isinstance(size, (float,int)): size = (size,size)
-		ImageStimulus.__init__(self, content=None, size=size, position=position, anchor=anchor, angle=angle, color=color, smooth=smooth)
+		ImageStimulus.__init__(self, content=None, size=size, position=position, anchor=anchor, angle=angle, color=color, on=on, smooth=smooth, use_alpha=True)
 		
 	def default_content(self, size):
 		size = [max(x,100) for x in size]
@@ -352,17 +396,46 @@ class Disc(ImageStimulus):
 		return property(fget, fset, doc="radius of the circle")
 
 class Block(ImageStimulus):
-	def __init__(self, position=(10, 10), size=(10, 10), color=(0, 0, 1), anchor='center', angle=0.0, smooth=True):
-		ImageStimulus.__init__(self, content=None, size=size, position=position, anchor=anchor, angle=angle, color=color, smooth=smooth)
+	def __init__(self, position=(10, 10), size=(10, 10), color=(0, 0, 1), anchor='center', angle=0.0, on=True, smooth=True):
+		ImageStimulus.__init__(self, content=None, size=size, position=position, anchor=anchor, angle=angle, color=color, on=on, smooth=smooth, use_alpha=True)
 		
 	def default_content(self, size):
 		surface = pygame.Surface(size, flags=pygame.SRCALPHA)
 		surface.fill((255,255,255,255))
 		return surface
 
+class Movie(ImageStimulus):
+	def __init__(self, filename, position=(100,100), size=None, anchor='center', color=(1,1,1,1), angle=0.0, on=True, smooth=True):
+		self.__movie = m = pygame.movie.Movie(filename)
+		if size == None: size = m.get_size()
+		ImageStimulus.__init__(self, size=size, position=position, anchor=anchor, color=color, angle=angle, on=on, smooth=smooth, use_alpha=False)
+		m.set_display(self._ImageStimulus__original_surface)
+		m.render_frame(0)
+	
+	def default_content(self, size):
+		return pygame.Surface(size, flags=0) # No alpha
+		
+	def transform(self, screencoords, force=False):
+		self._ImageStimulus__content_changed = True
+		return ImageStimulus.transform(self, screencoords=screencoords, force=force)
+	
+	def play(self, *pargs, **kwargs): return self.__movie.play(*pargs, **kwargs)
+	def stop(self, *pargs, **kwargs): return self.__movie.stop(*pargs, **kwargs)
+	def pause(self, *pargs, **kwargs): return self.__movie.pause(*pargs, **kwargs)
+	def skip(self, *pargs, **kwargs): return self.__movie.skip(*pargs, **kwargs)
+	def rewind(self, *pargs, **kwargs): return self.__movie.rewind(*pargs, **kwargs)
+	def render_frame(self, *pargs, **kwargs): return self.__movie.render_frame(*pargs, **kwargs)
+	def get_frame(self, *pargs, **kwargs): return self.__movie.get_frame(*pargs, **kwargs)
+	def get_time(self, *pargs, **kwargs): return self.__movie.get_time(*pargs, **kwargs)
+	def get_busy(self, *pargs, **kwargs): return self.__movie.get_busy(*pargs, **kwargs)
+	def get_length(self, *pargs, **kwargs): return self.__movie.get_length(*pargs, **kwargs)
+	def has_video(self, *pargs, **kwargs): return self.__movie.has_video(*pargs, **kwargs)
+	def has_audio(self, *pargs, **kwargs): return self.__movie.has_audio(*pargs, **kwargs)
+	def set_volume(self, *pargs, **kwargs): return self.__movie.set_volume(*pargs, **kwargs)
+		
 class Text(ImageStimulus):
-	def __init__(self, text='Hello world', font_name=None, font_size=None, position=(10,10), color=(1, 0, 0), anchor='center', angle=0.0, smooth=True):
-		ImageStimulus.__init__(self, content=None, position=position, color=color, anchor=anchor, angle=angle, smooth=smooth)
+	def __init__(self, text='Hello world', font_name=None, font_size=None, position=(10,10), color=(1, 0, 0), anchor='center', angle=0.0, on=True, smooth=True):
+		ImageStimulus.__init__(self, content=None, position=position, color=color, anchor=anchor, angle=angle, on=on, smooth=smooth, use_alpha=True)
 		dfn,dfs = GetDefaultFont()
 		font_name = dfn if font_name == None else font_name
 		font_size = dfs if font_size == None else font_size
@@ -374,7 +447,7 @@ class Text(ImageStimulus):
 		self.__font_changed = True
 		self.__text_changed = True
 	
-	def transform(self, force=False):
+	def transform(self, screencoords, force=False):
 		p = self._props
 		if self.__font_changed:
 			fn = FindFont(p['font_name'])
@@ -391,8 +464,8 @@ class Text(ImageStimulus):
 			self._ImageStimulus__original_surface = orig = self.__font_object.render(t, True, (255,255,255)) # TODO: multiline text....
 			self.size = Coords.Size((orig.get_width(), orig.get_height()))
 			self.__text_changed = False
-			self.__content_changed = True
-		return ImageStimulus.transform(self, force=force)
+			self._ImageStimulus__content_changed = True
+		return ImageStimulus.transform(self, screencoords=screencoords, force=force)
 	
 	@apply
 	def value():
@@ -528,3 +601,4 @@ def to_numpy(src):
 	else:
 		raise NotImplementedError("Don't know how to convert texel data %s to numpy array"%(src,))
 
+	

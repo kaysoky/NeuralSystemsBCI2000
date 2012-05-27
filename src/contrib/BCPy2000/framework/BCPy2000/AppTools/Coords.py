@@ -204,6 +204,7 @@ class Box(object):
 		self.__size = Size(default_val=2.0)
 		self.__position = Point(default_val=0.0)
 		self.__anchor = Point(default_val=0.0)
+		self.__anchorstr = 'center'
 		self.__sticky = False
 		self.__internal = None
 		keys = [
@@ -288,13 +289,13 @@ class Box(object):
 		else:  lo, hi = self.__internal.__getlim(dim); return lo + float(val) * (hi - lo)
 
 	def __getlim(self, dim):
-		size, position, anchor = self.__size[dim], self.__position[dim], self.__anchor[dim]
+		size, position, anchor = self.__size[dim], self.__position[dim], self.__get_anchor_coords()[dim]
 		anchor = self.__i2n(anchor, dim)
 		lo = position - anchor * size
 		return lo, lo + size
 		
 	def __setlim(self, dim, vals):
-		anchor = self.__anchor[dim]
+		anchor = self.__get_anchor_coords()[dim]
 		anchor = self.__i2n(anchor, dim)
 		lo, hi = vals
 		if lo == None or hi == None:
@@ -407,7 +408,42 @@ class Box(object):
 		def fget(self): return self.__position.z
 		def fset(self, val): self.__position.z = val
 		return property(fget, fset, doc="the z coordinate of the Box's anchor point in external coordinates")
+	
+	def __get_anchor_coords(self):
+		a = self.__anchorstr2internal()
+		if a != None:		
+			for i,x in enumerate(a): self.__anchor[i] = x
+		return self.__anchor
 		
+	def __anchorstr2internal(self, val=None):
+		if val == None: val = self.__anchorstr
+		if val == None: return None
+		out = Point(self.__anchor)
+		ccccc = dict([(i, 0.5) for i in range(len(self))])
+		words = (
+			('center', ccccc),
+			('centre', {}),
+			('middle', {}),
+			('left',   {0:0}),
+			('right',  {0:1}),
+			('bottom', {1:0}),
+			('top',    {1:1}),
+			('lower',  {1:0}),
+			('upper',  {1:1}),
+			('near',   {2:0}),
+			('far',    {2:1}),
+		)
+		s = val.lower()
+		for k,v in words:
+			oldlen = len(s)
+			s = s.replace(k, '')
+			if len(s) < oldlen or k == 'center':
+				for dim,prop in v.items():
+					out[dim] = self.__n2i(prop, dim)
+		s = s.replace(' ', '').replace('-', '')
+		if len(s): raise ValueError, "could not interpret anchor specification '%s'" % val
+		return out
+	
 	@apply
 	def anchor():
 		doc = """
@@ -424,55 +460,22 @@ set using words such as 'upper left' or 'top right' or 'center'.
 			if n < nmax: list.__iadd__(a, [a._default] * (nmax-n))
 			return a
 		def fset(self, val):
-			oldorigin = self.__position - self.__size * self.__i2n(self.__anchor)
-			if isinstance(val, str):
-				ccccc = dict([(i, 0.5) for i in range(len(self))])
-				words = (
-					('center', ccccc),
-					('centre', {}),
-					('middle', {}),
-					('left',   {0:0}),
-					('right',  {0:1}),
-					('bottom', {1:0}),
-					('top',    {1:1}),
-					('lower',  {1:0}),
-					('upper',  {1:1}),
-					('near',   {2:0}),
-					('far',    {2:1}),
-				)
-				s = val.lower()
-				for k,v in words:
-					oldlen = len(s)
-					s = s.replace(k, '')
-					if len(s) < oldlen or k == 'center':
-						for dim,prop in v.items():
-							self.__anchor[dim] = self.__n2i(prop, dim)
-				s = s.replace(' ', '').replace('-', '')
-				if len(s):
-					raise ValueError, "could not interpret anchor specification '%s'" % val
+			oldorigin = self.__position - self.__size * self.__i2n(self.__get_anchor_coords())
+			if isinstance(val, basestring):
+				self.__anchor = self.__anchorstr2internal(val)
+				self.__anchorstr = val
 			else:
 				if not isinstance(val, Point): val = Point(val)
 				self.__anchor = val
+				self.__anchorstr = None
 			if self.__sticky:
-				neworigin = self.__position - self.__size * self.__i2n(self.__anchor)
+				neworigin = self.__position - self.__size * self.__i2n(self.__get_anchor_coords())
 				self.__position += oldorigin - neworigin
 		return property(fget, fset, doc=doc)
 
 	@apply
 	def anchorstr():
-		def fget(self):
-			nd = len(self)
-			if not 1 <= nd <= 3: return None
-			words = (('left','right'),('lower','upper'),('near','far'))
-			p = self.__i2n(self.anchor)
-			a = []; tol = 1e-8
-			for i in range(nd-1,-1,-1):
-				if   abs(p[i] - 0.0) <= tol: a.append(words[i][0])
-				elif abs(p[i] - 1.0) <= tol: a.append(words[i][1])
-				elif abs(p[i] - 0.5) <= tol: pass
-				else: return None
-			if len(a) == 0: a.append('center')
-			return ' '.join(a)
+		def fget(self): return self.__anchorstr
 		def fset(self, val): self.anchor = val
 		return property(fget, fset, doc="the box's anchor expressed as a string (or None if there is no particular name for the anchor point)")
 
