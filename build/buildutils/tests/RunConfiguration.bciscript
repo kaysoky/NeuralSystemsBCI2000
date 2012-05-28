@@ -31,9 +31,7 @@ Change directory ${BCI2000LAUNCHDIR}
 
 Echo Testing ${Arg1}/${Arg2} ...
 
-If [ ${Get system state} != Idle ]
-  Shutdown system; Wait for Idle
-End
+Shutdown system
 
 idx:=0
 While idx<=${Arg3}
@@ -47,9 +45,10 @@ While idx<=${Arg3}
     Echo " ${idx}"
     Load parameterfile ${TestingDir}parms/${Arg2}_${idx}.prm
   End
-  Set config; Wait for Resting
-  Start; Wait for Suspended 3600
-  Shutdown system; Wait for Idle
+  Set config
+  Start
+  Wait for Suspended 3600
+  Shutdown system
   Sleep 1
   idx:=idx+1
 End

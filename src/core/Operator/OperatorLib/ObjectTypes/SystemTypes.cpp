@@ -42,6 +42,7 @@ using namespace std;
 using namespace Interpreter;
 
 static const int cTimeResolution = 50; // for Sleep and Wait commands, in ms
+static const double cDefaultTimeout = 5.0; // for Wait commands, in s
 
 //// SystemType
 SystemType SystemType::sInstance;
@@ -135,7 +136,7 @@ SystemType::WaitFor( CommandInterpreter& inInterpreter )
   }
   double timeout = 0;
   if( !( istringstream( inInterpreter.GetOptionalToken() ) >> timeout ) )
-    timeout = 5;
+    timeout = cDefaultTimeout;
   if( timeout < 0 )
     throw bciexception_( "Timeout must be >= 0" );
 
@@ -183,23 +184,50 @@ bool
 SystemType::SetConfig( CommandInterpreter& inInterpreter )
 {
   if( !inInterpreter.StateMachine().SetConfig() )
-    throw bciexception_( "Could not set configuration" );
+    throw bciexception_( "Must be in Connected state to set configuration" );
+  set<int> states;
+  states.insert( BCI_StateConnected );
+  states.insert( BCI_StateResting );
+  DoWaitFor( states, cDefaultTimeout, inInterpreter );
+  if( BCI_GetStateOfOperation() != BCI_StateResting )
+	  throw bciexception_( "Could not set configuration" );
   return true;
 }
 
 bool
 SystemType::Start( CommandInterpreter& inInterpreter )
 {
+  if( BCI_GetStateOfOperation() == BCI_StateRunning )
+  {
+    inInterpreter.Out() << "System already in Running state";
+    return true;
+  }
   if( !inInterpreter.StateMachine().StartRun() )
-    throw bciexception_( "Could not start operation" );
+    throw bciexception_( "Must be in Resting or Suspended state to start operation" );
+  set<int> states;
+  states.insert( BCI_StateRunning );
+  DoWaitFor( states, cDefaultTimeout, inInterpreter );
+  if( BCI_GetStateOfOperation() != BCI_StateRunning )
+	  throw bciexception_( "Could not start operation" );
   return true;
 }
 
 bool
 SystemType::Stop( CommandInterpreter& inInterpreter )
 {
+  if( BCI_GetStateOfOperation() == BCI_StateResting 
+      || BCI_GetStateOfOperation() == BCI_StateSuspended )
+  {
+    inInterpreter.Out() << "System not in Running state";
+    return true;
+  }
   if( !inInterpreter.StateMachine().StopRun() )
     throw bciexception_( "Could not stop operation" );
+  set<int> states;
+  states.insert( BCI_StateSuspended );
+  DoWaitFor( states, cDefaultTimeout, inInterpreter );
+  if( BCI_GetStateOfOperation() != BCI_StateSuspended )
+	  throw bciexception_( "Could not stop operation" );
   return true;
 }
 
@@ -207,7 +235,22 @@ bool
 SystemType::Startup( CommandInterpreter& inInterpreter )
 {
   string args = inInterpreter.GetOptionalRemainder();
-  if( !inInterpreter.StateMachine().Startup( args.c_str() ) )
+  if( BCI_GetStateOfOperation() != BCI_StateIdle )
+  {
+    inInterpreter.Out() << "System already started up";
+    return true;
+  }
+  bool success = inInterpreter.StateMachine().Startup( args.c_str() );
+  if( success )
+  {
+    set<int> states;
+    states.insert( BCI_StateStartup );
+    states.insert( BCI_StateConnected );
+    DoWaitFor( states, cDefaultTimeout, inInterpreter );
+    success = ( BCI_GetStateOfOperation() == BCI_StateStartup 
+                || BCI_GetStateOfOperation() == BCI_StateConnected );
+  }
+  if( !success )
     throw bciexception_( "Could not start up system" );
   return true;
 }
@@ -215,7 +258,22 @@ SystemType::Startup( CommandInterpreter& inInterpreter )
 bool
 SystemType::Shutdown( CommandInterpreter& inInterpreter )
 {
-  if( !inInterpreter.StateMachine().Shutdown() )
+  if( BCI_GetStateOfOperation() == BCI_StateIdle )
+  {
+    inInterpreter.Out() << "System already in Idle state";
+    return true;
+  }
+  if( BCI_GetStateOfOperation() == BCI_StateRunning )
+    Stop( inInterpreter );
+  bool success = inInterpreter.StateMachine().Shutdown();
+  if( success )
+  {
+    set<int> states;
+    states.insert( BCI_StateIdle );
+    DoWaitFor( states, cDefaultTimeout, inInterpreter );
+    success = ( BCI_GetStateOfOperation() == BCI_StateIdle );
+  }
+  if( !success )
     throw bciexception_( "Could not shut down system" );
   return true;
 }
@@ -223,20 +281,8 @@ SystemType::Shutdown( CommandInterpreter& inInterpreter )
 bool
 SystemType::Reset( CommandInterpreter& inInterpreter )
 {
-  if( BCI_GetStateOfOperation() == BCI_StateRunning )
-  {
-    inInterpreter.StateMachine().StopRun();
-    set<int> states;
-    states.insert( BCI_StateSuspended );
-    DoWaitFor( states, 5, inInterpreter );
-  }
   if( BCI_GetStateOfOperation() != BCI_StateIdle )
-  {
-    inInterpreter.StateMachine().Shutdown();
-    set<int> states;
-    states.insert( BCI_StateIdle );
-    DoWaitFor( states, 5, inInterpreter );
-  }
+    Shutdown( inInterpreter );
   ParametersType::Clear( inInterpreter );
   StatesType::Clear( inInterpreter );
   EventsType::Clear( inInterpreter );
