@@ -25,7 +25,7 @@ class PygameRenderer(BciGenericRenderer):
 		self.monofont = FindFont(
 			('lucida console', 'monaco', 'monospace', 'courier new', 'courier')
 		)
-		self.coords = Coords.Box(left=100, top=100, width=300, height=300, sticky=True, anchor='top left')
+		self._coords = Coords.Box(left=100, top=100, width=300, height=300, sticky=True, anchor='top left')
 		self.bgcolor = (0.5, 0.5, 0.5)
 		self.framerate = 60.
 		self.changemode = False
@@ -49,10 +49,10 @@ class PygameRenderer(BciGenericRenderer):
 		"""###
 		# `**kwds` is used for compatibility with the `VisionEggRenderer`:   # TODO: change this to explicitly take and ignore the bitdepth parameter, but investigate why this is necessary
 		# the `bitdepth` parameter is ignored.
-		if left != None: self.coords.left = left
-		if top != None: self.coords.top = top
-		if width != None: self.coords.width = width
-		if height != None: self.coords.height = height
+		if left != None: self._coords.left = left
+		if top != None: self._coords.top = top
+		if width != None: self._coords.width = width
+		if height != None: self._coords.height = height
 		if bgcolor != None: self.bgcolor = bgcolor
 		if framerate != None: self.framerate = framerate # TODO: unused
 		if changemode != None: self.changemode = changemode
@@ -64,30 +64,30 @@ class PygameRenderer(BciGenericRenderer):
 	def Initialize(self, bci=None):
 		self._bci = bci
 		pygame.display.quit()
-		os.environ["SDL_VIDEO_WINDOW_POS"] = "%i,%i" % (int(self.coords.left), int(self.coords.top))
+		os.environ["SDL_VIDEO_WINDOW_POS"] = "%i,%i" % (int(self._coords.left), int(self._coords.top))
 		pygame.display.init()
 		pygame.display.set_caption(self.title)
-		pygame.display.set_icon(pygame.image.load(os.path.join(Coords.__file__, '..', '..', '..', 'icon.bmp'))) # TODO - better way to locate
+		#pygame.display.set_icon(pygame.image.load(os.path.join(Coords.__file__, '..', '..', '..', 'icon.bmp'))) # TODO - better way to locate
 		flags = \
 			(self.changemode and (pygame.FULLSCREEN | pygame.DOUBLEBUF)) | \
 			(self.frameless_window and pygame.NOFRAME) | 0
-		size = (int(self.coords.width), int(self.coords.height))
+		size = (int(self._coords.width), int(self._coords.height))
 		self.screen = pygame.display.set_mode(size, flags)
 
-		self.coords.sticky = True
-		self.coords.anchor = 'top left'
-		self.coords.position = [0,0]
-		self.coords.size = [size[0], -size[1]]
+		self._coords.sticky = True
+		self._coords.anchor = 'top left'
+		self._coords.position = [0,0]
+		self._coords.size = [size[0], -size[1]]
 		cm = self.coordinate_mapping.lower().replace('bottom', 'lower').replace('top', 'upper').replace(' ', '')
 				
 		if cm == 'pixelsfromlowerleft':
-			self.coords.internal = Coords.Box(left=0, bottom=0, width=size[0], height=size[1])
+			self._coords.internal = Coords.Box(left=0, bottom=0, width=size[0], height=size[1])
 		elif cm == 'pixelsfromupperleft':
-			self.coords.internal = Coords.Box(left=0, top=0, width=size[0], height=-size[1])
+			self._coords.internal = Coords.Box(left=0, top=0, width=size[0], height=-size[1])
 		elif cm == 'pixelsfromcenter':
-			self.coords.internal = Coords.Box(left=-size[0]/2.0, bottom=-size[1]/2.0, width=size[0], height=size[1])
+			self._coords.internal = Coords.Box(left=-size[0]/2.0, bottom=-size[1]/2.0, width=size[0], height=size[1])
 		elif cm == 'normalizedfromcenter':
-			self.coords.internal = Coords.Box(left=-0.5, bottom=-0.5, width=1.0, height=1.0) # TODO: this doesn't work
+			self._coords.internal = Coords.Box(left=-0.5, bottom=-0.5, width=1.0, height=1.0) # TODO: this doesn't work
 		else:
 			raise ValueError('coordinate_mapping "%s" is unsupported' % self.coordinate_mapping)
 			
@@ -118,7 +118,7 @@ class PygameRenderer(BciGenericRenderer):
 		if bci: bci.ftdb(label='screen.clear')  #--------------------
 		self.screen.fill(tuple([int(round(255 * x)) for x in self.bgcolor]))
 		if bci: bci.ftdb(label='viewport.draw') #--------------------
-		for obj in objlist: obj.draw(self.screen, self.coords)
+		for obj in objlist: obj.draw(self.screen, self._coords)
 
 	def FinishFrame(self):
 		bci = self._bci		
@@ -141,9 +141,9 @@ class PygameRenderer(BciGenericRenderer):
 	
 	@property
 	def width(self): return self.size[0]
-
 	@property
 	def height(self): return self.size[1]
+	def get_size(self): return self.size
 
 	@apply
 	def color():
