@@ -16,11 +16,11 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 
 	def Initialize(self, indim, outdim):
+		#self.mork()
 		self.foo()
-		self.bar()
-		self.baz()
-		self.bork()
-		self.mork()
+		#self.bar()
+		#self.baz()
+		#self.bork()
 		pass
 				
 	#############################################################
@@ -62,11 +62,12 @@ class BciApplication(BciGenericApplication):
 		
 	#############################################################
 	
-	def foo(self, name='foo', filename='../RocketSMR/python/rocket.png'):	
-		s = self.stimulus(name, VisualStimuli.ImageStimulus, texture=filename, position=(-200,-200))
-		c = s.content; c[0,0,:] = 1.0; s.content = c
+	def foo(self, name='foo', filename='../RocketSMR/python/rocket.png', **kwargs):	
+		kwargs['position'] = kwargs.get('position', (-200,-200))
+		s = self.stimulus(name, VisualStimuli.ImageStimulus, texture=filename, **kwargs)	
 		return s
-		
+	
+	
 #################################################################
 #################################################################
 

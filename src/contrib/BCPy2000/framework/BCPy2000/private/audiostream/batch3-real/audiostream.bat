@@ -36,8 +36,8 @@ set environment TIMINGFLAG "--EvaluateTiming=1" # otherwise an --EvaluateTiming 
 if [ ${SRC} == SignalGenerator ]; set environment TIMINGFLAG --EvaluateTiming=0; end
 
 change directory ${BCI2000LAUNCHDIR}
-if [ ${get system state} != Idle ]; shutdown system; wait for Idle; end
 show window; set title ${Extract file base ${Arg0}}
+reset system
 startup system
 
 start executable ${SRC}                 AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     ${get environment TIMINGFLAG} # TODO: $TIMINGFLAG would be nicer
