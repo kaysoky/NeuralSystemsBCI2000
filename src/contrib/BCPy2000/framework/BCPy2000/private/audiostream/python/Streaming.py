@@ -572,15 +572,15 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 
 	#################################################################
 	
-	def classify(self, runs=None, xtn='.pk', C=(1e+4,1e+2,1e-0,1e-2,1e-4,1e-6), gamma=0.0, rebias=False, save=True, plotopt=False, **kwargs):
+	def classify(self, runs=None, xtn='.pk', C=(1e+4,1e+2,1e-0,1e-2,1e-4,1e-6), gamma=0.0, rebias=False, save=True, select=True, plotopt=False, return_structs=False, **kwargs):
 		from BCI2000Tools.Classification import ClassifyERPs
 		files = self.find_data_files(xtn=xtn, runs=runs)
-		u,c = ClassifyERPs(files, C=C, gamma=gamma, rebias=rebias, save=save, **kwargs)
+		u,c = ClassifyERPs(files, C=C, gamma=gamma, rebias=rebias, save=save, select=select, **kwargs)
 		import SigTools
 		u.channels = SigTools.ChannelSet(u.channels)
 		
 		print u.description
-		return u,c
+		if return_structs: return u,c
 		
 	#############################################################
 

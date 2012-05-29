@@ -1,8 +1,6 @@
-
 sound to both user and visitor
 make visual yes/no answers peristent
 make grey screen smaller if operator-only
-
 
 hardware:
 	various pairs of head- and ear-phones
@@ -17,8 +15,6 @@ introducing the stimuli to the subject
 
 	on initial one-sided self.play('left'): pre-cue how many targets to expect
 
-introducing the task to the subject
-
 double-click for alternative wizard
 	* impedance view for our different montage
 	* photos of correct cap and headphone placement
@@ -26,9 +22,7 @@ double-click for alternative wizard
 
 double-click to start calibration session
 				
-creation of weights must happen automatically
 loading of weights must happen automatically
-judge somehow which runs are "good" (to be included in the training) and which not
 	
 after first weights are loaded: inform subject about the bell feedback
 
@@ -43,14 +37,5 @@ double-click to run test blocks
 :: visualizations off
 :: auto-quit?
 :: go button on operator?  or go with trialsperblock 1 for test?
-:: DirectSound dependency, etc (? what about it ?)
-
-
-probably solved:
-	why sometimes count=4?? - 
-	supply visible feedback that run has ended
-	prevent operator from dragging grey window
-	sort out the 'respond' phase
-	voice feedback on # targets
-	datestamped logs
+:: DirectSound dependency (is only in private at the moment).  Check for others
 

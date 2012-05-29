@@ -1,4 +1,5 @@
 #import ConsoleRenderer
+#import PygameRenderer
 
 import os
 import sys
@@ -120,6 +121,7 @@ class BciApplication(BciGenericApplication):
 		AppTools.Displays.fullscreen(id=monitor, scale=windowsize)
 		self.screen.setup(frameless_window=(windowsize==1.0), hide_mouse=(windowsize==1.0))
 		self.screen.setup(frameless_window=True, hide_mouse=(windowsize==1.0))
+		#self.screen.setup(coordinate_mapping='pixels from lower left') # for PygameRenderer
 		
 		self.hurry = float(self.params['Hurry'])
 

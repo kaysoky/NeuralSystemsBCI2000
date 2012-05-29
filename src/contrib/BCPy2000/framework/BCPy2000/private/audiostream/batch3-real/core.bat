@@ -1,79 +1,93 @@
-@set WD=%CD%
-@set PYWD=%WD%\..\python
-@set PARMS=%WD%\..\parms
-@set LOCALPROG=%WD%\..\prog
+#! ../prog/BCI2000Shell
+@cls & ..\prog\BCI2000Shell %0 %* #! && exit /b 0 || exit /b 1
 
-:: parasitizing the VA setup:  v3.x binaries for operator/SIG/APP will be packed in the local %LOCALPROG% subdir, but SRC could be in the main ../../prog
-@set PARENTPROG=%WD%\..\..\prog
-@if exist %PARENTPROG% goto gotprog
+#TODO: if [${VAR}==val ]  always returns true:  very easy to miss this
+# first time after restarting Windows, parameter file claims to be loaded but the parameter values do not reflect what was in the file
+# quit operator and re-launch from same script without changing anything: all is fine.
 
-:: full 3.x hierarchy (like E1001 setup)
-@set PARENTPROG=%WD%\..\..\..\..\..\..\..\..\prog
-::call %WD%\portable.bat C:\FullMonty254-20110710\App
-@if exist %PARENTPROG% goto gotprog
+reset system
 
-:gotprog
-@if not exist %PARENTPROG% set PARENTPROG=%LOCALPROG%
-@if not exist %LOCALPROG%  set LOCALPROG=%PARENTPROG%
-@cd %PARENTPROG%
+########################################################################################
 
-@set SUBJECT=TestSubject
-@if not [%1]==[] set SUBJECT=%1
+set environment BATCHDIR  ${CD}
+set environment PARMSDIR  ${canonical path ${BATCHDIR}/../parms}
+set environment PYWD      ${canonical path ${BATCHDIR}/../python}
+set environment PYLOGDIR  ${canonical path ${BATCHDIR}/../log}
+set environment LOCALPROG ${canonical path ${BATCHDIR}/../prog}
 
-@set CONDITION=002
-@if not [%2]==[] set CONDITION=%2
+set environment SUBJECT TestSubject
+if [ ${Arg1} ]; set environment SUBJECT ${Arg1}; end
 
-@set MODE=CALIB
-@if not [%3]==[] set MODE=%3
+set environment CONDITION 002
+if [ ${Arg2} ]; set environment CONDITION ${Arg2}; end
 
-@set SRC=gUSBampSource
-@if not [%4]==[] set SRC=%4
+set environment MODE CALIB
+if [ ${Arg3} ]; set environment MODE ${Arg3}; end
 
-@set MONTAGE=D
-@if not [%5]==[] set MONTAGE=%5
+set environment SRC gUSBampSource
+#set environment SRC SignalGenerator ; warn SignalGenerator is the default #TODO: remove
+if [ ${Arg4} ]; set environment SRC ${Arg4}; end
 
-@set LOGGERS=
-@set OnConnect=-
-@set OnSetConfig=-
+set environment MONTAGE D
+if [ ${Arg5} ]; set environment MONTAGE ${Arg5}; end
 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBamp-Cap8-SMR-REVERSED-WIRING.prm
+########################################################################################
 
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\realbase.prm 
+set environment TIMINGFLAG "--EvaluateTiming=1" # otherwise an --EvaluateTiming might hang over from a previous launch
+if [ ${SRC} == SignalGenerator ]; set environment TIMINGFLAG --EvaluateTiming=0; end
 
-@set OnConnect=%OnConnect% ; SET PARAMETER Storage:Session string SubjectName=    %SUBJECT%%MODE%
-@set OnConnect=%OnConnect% ; SET PARAMETER Storage:Session string SubjectSession= %CONDITION%
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\condition%CONDITION%.prm
+change directory ${BCI2000LAUNCHDIR}
+show window; set title ${Extract file base ${Arg0}}
+reset system
+startup system
 
-@if /i not %MONTAGE% == 16 goto Skip16
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\gUSBamp-Cap16.prm
-:Skip16
+start executable ${SRC}                 AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     ${get environment TIMINGFLAG} # TODO: $TIMINGFLAG would be nicer
+start executable PythonSignalProcessing AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=${PYWD} --PythonSigClassFile=Streaming.py       --PythonSigLog=${PYLOGDIR}/###-sig.txt --PythonSigShell=1
+start executable PythonApplication      AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=${PYWD} --PythonAppClassFile=TrialStructure.py  --PythonAppLog=${PYLOGDIR}/###-app.txt --PythonAppShell=0
 
-@if /i not %MODE% == FREE goto SkipFreeParams
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\realfree.prm
-:SkipFreeParams
+wait for connected
 
-@if /i not %SRC% == Emotiv goto SkipEmotivParams
-@set SRC=Emotiv          && set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %PARMS%\epoc.prm && set LOGGERS=
-:SkipEmotivParams
+########################################################################################
 
-@if /i not %SRC% == SignalGenerator goto SkipSignalGeneratorParams
-@set SRC=SignalGenerator && set LOGGERS=--EvaluateTiming=0
-:SkipSignalGeneratorParams
+if [ ${MONTAGE} == D ]
+	load parameterfile ${PARMSDIR}/gUSBamp-Cap8-SMR-REVERSED-WIRING.prm
+elseif [ ${MONTAGE} == 16 ]
+	load parameterfile ${PARMSDIR}/gUSBamp-Cap16.prm
+else
+	error unrecognized montage ${MONTAGE}
+end
 
-@set WEIGHTS=%PARENTPROG%\..\data\%SUBJECT%%MODE%%CONDITION%\ChosenWeights.prm
-@if not exist %WEIGHTS% goto SkipWeights
-@set OnConnect=%OnConnect% ; LOAD PARAMETERFILE %WEIGHTS%
-:SkipWeights
+load parameterfile ${PARMSDIR}/realbase.prm 
+load parameterfile ${PARMSDIR}/condition${CONDITION}.prm
 
-@set OnConnect=%OnConnect% ; SETCONFIG
-::@set OnSetConfig=%OnSetConfig% ; SET STATE Running 1
+if [ ${MODE} == FREE ]
+	load parameterfile ${PARMSDIR}/realfree.prm 
+elseif [ ${MODE} != CALIB ]
+	error unrecognized mode ${MODE}
+end
 
-start              %LOCALPROG%\Operator                 --OnConnect "%OnConnect%" --OnSetConfig "%OnSetConfig%"
-start              %LOCALPROG%\PythonApplication        AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=%PYWD% --PythonAppClassFile=TrialStructure.py --PythonAppLog=%PYWD%\..\log\###-app.txt --PythonAppShell=1
-start              %LOCALPROG%\PythonSignalProcessing   AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=%PYWD% --PythonSigClassFile=Streaming.py      --PythonSigLog=%PYWD%\..\log\###-sig.txt --PythonSigShell=1
-start              %LOCALPROG%\%SRC%                    AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     %LOGGERS%
-::start              %SRC%                             AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     %LOGGERS%
+if [ ${SRC} == Emotiv ]
+	load parameterfile ${PARMSDIR}/epoc.prm
+end
 
-:: datestamped logs
-::     --PythonAppLog=%PYWD%\..\log\###-app.txt
-::     --PythonSigLog=%PYWD%\..\log\###-sig.txt
+########################################################################################
+
+set parameter SubjectName    ${SUBJECT}${MODE}
+set parameter SubjectSession ${CONDITION}
+
+########################################################################################
+
+# TODO:  find upstairs data directories if necessary
+set environment DATADIR ${canonical path ${get parameter DataDirectory}/${get parameter SubjectName}${get parameter SubjectSession}}
+set environment WEIGHTS ${canonical path ${DATADIR}/ChosenWeights.prm}
+
+if [ ${exists file ${WEIGHTS}} ]
+	load parameterfile ${WEIGHTS}
+	if [ ${exists parameter SignalProcessingDescription} ]
+		log classifier loaded: ${get parameter SignalProcessingDescription}
+	end
+else
+	warn No classifier loaded - could not find ${WEIGHTS}
+end
+
+setconfig

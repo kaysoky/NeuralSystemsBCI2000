@@ -2,98 +2,109 @@ There will be one set of sounds directed to your right ear and a different set o
 
 Let's start with just the left ear. The sounds in your left ear will sound like this:
 
-self.standards[0].play()
+>>> self.standards[0].play()
+
 and
-self.targets[0].play()
+>>> self.targets[0].play()
 
 Notice that one sound is rough while the other sound is smoother.
 
-self.standards[0].play()
-self.targets[0].play()
-self.standards[0].play()
-self.targets[0].play()
-self.standards[0].play()
-self.targets[0].play()
+>>> self.standards[0].play()
+>>> self.targets[0].play()
+>>> self.standards[0].play()
+>>> self.targets[0].play()
+>>> self.standards[0].play()
+>>> self.targets[0].play()
 
 During the listening task, the beeps will be repeated many times one after the other.  Most of these will be rough beeps, but there will be just a few smooth beeps along the way.
 
 This is an example of the chain of beeps you will hear in your left ear:
 
-self.play('left')
+>>> self.play('left')
 
 Listen to the chain of beeps again. Try to notice the difference between the two types of sounds, rough and smooth.
 
-There will be two smooth sounds
-self.play('left')
+There will be {two} smooth sounds
+>>> self.play('left')
 
 Once again,
-self.play('left')
-That time there were three smooth sounds.
+>>> self.play('left')
+That time there was {one} smooth sound.
 
 
 Something similar will also be happening in the right ear:
 
 The sounds in your right ear will sound like this:
-self.standards[1].play()
+>>> self.standards[1].play()
 and 
-self.targets[1].play()
+>>> self.targets[1].play()
 
 
 Notice that one sound is rough while the other sound is smoother.
 
-self.standards[1].play()
-self.targets[1].play()
-self.standards[1].play()
-self.targets[1].play()
-self.standards[1].play()
-self.targets[1].play()
+>>> self.standards[1].play()
+>>> self.targets[1].play()
+>>> self.standards[1].play()
+>>> self.targets[1].play()
+>>> self.standards[1].play()
+>>> self.targets[1].play()
 
 During the listening task, the beeps will be repeated many times one after the other.  Most of these will be rough beeps, but there will be just a few smooth beeps along the way.
 
 This is an example of the chain of beeps you will hear in your right ear:
 
-self.play('right')
+>>> self.play('right')
 
 Listen to the chain of beeps again. Try to notice the difference between the two types of sounds, rough and smooth.
 
-There will be two smooth sounds
-self.play('right')
+There will be {two} smooth sounds
+>>> self.play('right')
 
 Once again,
-self.play('right')
-That time there were three smooth sounds.
+>>> self.play('right')
+That time there were {three} smooth sounds.
 
 ----introduce both Left and Right ----
 
 We have listened to the sounds in each ear, let's hear them played in both ears. Your job will be to focus on one side, and ignore the other.
 
-self.play('both')
+>>> self.play('both')
 
 Listen only to the left side, and see if you can recognize the smooth beeps on just that side.
-There will be two smooth beeps in your left ear.
+There will be {two} smooth beeps in your left ear.
 
-"Focus on" + self.standards[0].play()
-self.play('both')
+>>>  #  play "Focus on" followed by self.standards[0]  but omit the "to say no" part for now
+>>> self.play('both')
 
 Once again, count how many smooth beeps there are in just the left ear. Afterwards, the voice will tell you how many smooth beeps there were on the left:  check that you got the correct number.
-self.play('both')
-"The correct answer was: 3"
+
+>>>  #  play "Focus on" followed by self.standards[0]  but omit the "to say no" part
+>>> self.play('both')
+>>> # play "The correct answer was: {3}"
 
 Now let us try to recognize the smooth sounds playing in your right ear.
-There will be three smooth beeps.
-self.play('both')
+There will be {two} smooth beeps on that side.
+
+>>>  #  play "Focus on" followed by self.standards[1]  but omit the "to say yes" part
+>>> self.play('both')
 
 Once again, count on the right.  Just like last time, the voice will tell you how many smooth beeps there were on the right:  again, check that you got the correct number.
 
-"Focus on" + self.standards[1].play()
-self.play('both')
-"The correct answer was: 2"
+>>>  #  play "Focus on" followed by self.standards[1]  but omit the "to say yes" part
+>>> self.play('both')
+>>> # play "The correct answer was: {2}"
 
-In the end, focusing on the left sound stream will mean no and focusing on the right sound stream will mean yes. We are about to do a calibration run, which means you will have to [focus on whichever side the computer tells you to]. But to remind you of which side will mean no and which side will mean yes, the instructions will actually sound like this:
+In the end, focusing on the left sound stream will mean no and focusing on the right sound stream will mean yes.
+We are about to do a calibration run, which means you will have to [focus on whichever side the computer tells you to].
+But to remind you of which side will mean no and which side will mean yes, the instructions will actually sound like this:
 
-"Focus on" + self.standards[1].play() + " to say yes"
-self.play('both')
-"The correct answer was: 2"
+>>>  #  play "Focus on" followed by self.standards[1]  followed by "to say yes"
+>>> self.play('both')
+>>> # play "The correct answer was: {1}"
+
+>>>  #  play "Focus on" followed by self.standards[0]  followed by "to say no"
+>>> self.play('both')
+>>> # play "The correct answer was: {3}"
 
 "Focus on" + self.standards[0].play()+ " to say no"
 self.play('both')
@@ -104,7 +115,6 @@ For now, always focus on the side that you are instructed. This will allow the c
 
 ---training trials---
 
-
 ---load parameters---
 
 The computer has some information from the training session to help interpret your choices.
@@ -113,8 +123,10 @@ When you focus on the left sounds, the computer interprets this as 'No'. When yo
 
 Let's try the listening exercise again.  Focus on the smooth beeps in your right ear.  If the computer has correctly interpretted your choice, you will hear a confirmation Bell.
 
-Everything is the same as before: you still count on the side that the computer instructs.  The bell may help you in learning to shift attention. For now, don't worry if the bell does not sound very often. The computer still needs a few more calibration runs in order to learn how brain signals change when you're listening.  
+Everything is the same as before: you still count on the side that the computer instructs.  The bell may help you in learning to shift attention.
+For now, don't worry if the bell does not sound very often. The computer still needs a few more calibration runs in order to learn how brain signals change when you're listening.  
 
-It is very important that you focus on the instructed task. Do not purposely defy the instructions because doing so will limit the computer's ability to learn how to interpret your choices. There will be opportunity to make free choices after the calibration sessions.
+It is very important that you focus on the instructed task. Do not purposely defy the instructions because doing so will limit the computer's ability to learn how to interpret your choices.
+There will be opportunity to make free choices after the calibration sessions.
 
 Focus on ___ to say Yes.
