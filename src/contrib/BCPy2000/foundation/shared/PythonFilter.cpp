@@ -207,7 +207,7 @@ FILTER_NAME::FILTER_NAME()
     CallMethod("__setattr__", key, val);
     Py_DECREF(key); // Py_DECREF(val);
 
-	key = PyString_FromString("original_working_dir");
+    key = PyString_FromString("original_working_dir");
     val = PyString_FromString(originalDir.c_str());
     CallMethod("__setattr__", key, val);
     Py_DECREF(key); // Py_DECREF(val);
