@@ -46,6 +46,11 @@
 # include <dirent.h>
 #endif // _MSC_VER
 
+#ifndef _WIN32
+# include <cstdio>
+# include <unistd.h>
+#endif // _WIN32
+
 #include <sys/stat.h>
 #include <cstdlib>
 #include <cerrno>
