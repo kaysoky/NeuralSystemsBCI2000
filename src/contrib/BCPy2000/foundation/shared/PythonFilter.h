@@ -38,51 +38,43 @@
 #include "numpy/arrayobject.h"
 #endif
 
-#ifndef PYTHON_CONSOLE
 #define PYTHON_CONSOLE              "EmbeddedPythonConsole"
 #define PYTHON_CONSOLE_INSTALLED    "BCPy2000.EmbeddedPythonConsole"
-#endif
 
-#ifndef PYTHON_COREMODULE
 #define PYTHON_COREMODULE           "BCI2000PythonCore"
 #define PYTHON_COREMODULE_INSTALLED "BCPy2000.Generic"
-#endif
 
-#ifndef FILTER_SUPERCLASS
 #if   MODTYPE == 1
-#include                             "GenericADC.h"
+#include                            "GenericADC.h"
 #define    FILTER_SUPERCLASS         GenericADC
 #define    FILTER_NAME               PythonSrcADC
 #define    FILTER_ABBREV            "PythonSrc"
-#define    PYTHON_MODULE            "BCI2000PythonSource"
-#define    PYTHON_MODULE_INSTALLED  "BCPy2000.GenericSource"
+#define	   PYTHON_MODULE            "BCI2000PythonSource"
+#define	   PYTHON_MODULE_INSTALLED  "BCPy2000.GenericSource"
 #define    PYTHON_SUPERCLASS        "BciGenericSource"
 #define    PYTHON_SUBCLASS          "BciSource"
 #define    DEFAULT_CLASS_FILE       "BciSource.py"
 #elif MODTYPE == 2
-#include                             "GenericFilter.h"
+#include                            "GenericFilter.h"
 #define    FILTER_SUPERCLASS         GenericFilter
 #define    FILTER_NAME               PythonSigFilter
 #define    FILTER_ABBREV            "PythonSig"
-#define    PYTHON_MODULE            "BCI2000PythonSignalProcessing"
-#define    PYTHON_MODULE_INSTALLED  "BCPy2000.GenericSignalProcessing"
+#define	   PYTHON_MODULE            "BCI2000PythonSignalProcessing"
+#define	   PYTHON_MODULE_INSTALLED  "BCPy2000.GenericSignalProcessing"
 #define    PYTHON_SUPERCLASS        "BciGenericSignalProcessing"
 #define    PYTHON_SUBCLASS          "BciSignalProcessing"
 #define    DEFAULT_CLASS_FILE       "BciSignalProcessing.py"
 #elif MODTYPE == 3
-#include                             "GenericFilter.h"
+#include                            "GenericFilter.h"
 #define    FILTER_SUPERCLASS         GenericFilter
 #define    FILTER_NAME               PythonAppFilter
 #define    FILTER_ABBREV            "PythonApp"
-#define    PYTHON_MODULE            "BCI2000PythonApplication"
-#define    PYTHON_MODULE_INSTALLED  "BCPy2000.GenericApplication"
+#define	   PYTHON_MODULE            "BCI2000PythonApplication"
+#define	   PYTHON_MODULE_INSTALLED  "BCPy2000.GenericApplication"
 #define    PYTHON_SUPERCLASS        "BciGenericApplication"
 #define    PYTHON_SUBCLASS          "BciApplication"
 #define    DEFAULT_CLASS_FILE       "BciApplication.py"
-#endif // MODTYPE
-#else // FILTER_SUBCLASS
-#include "GenericFilter.h"
-#endif // FILTER_SUPERCLASS
+#endif
 
 #ifndef __BORLANDC__
 class Exception { // quack! quack!
