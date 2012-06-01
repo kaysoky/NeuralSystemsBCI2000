@@ -95,6 +95,10 @@ EndUserError::EndUserError(const char* s) : Exception(s) {}
 
 FILTER_NAME::FILTER_NAME()
 :
+  shared_insignal( NULL ),
+  shared_outsignal( NULL ),
+  shared_statevals( NULL ),
+  shared_flag( NULL ),
   cur_time( new PrecisionTime )
 {
   try {
@@ -301,7 +305,8 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
         Parameter(name); // allows write access to this parameter
       }
     }
-    Py_DECREF(py_list);
+    if( py_list )
+      Py_DECREF(py_list);
 
     PreflightCondition(SignalType::ConversionIsSafe(inSignalProperties.Type(), outSignalProperties.Type()));
 
@@ -364,7 +369,7 @@ FILTER_NAME::Process( const GenericSignal& input, GenericSignal& output )
       StateMap before;
       // unlike StartRun and Initialize, here we do not call before = ReceiveStatesFromPython();
       // Python may have other threads that update states asynchronously. They are passed on here.
-	  PyArrayObject* py_output = (PyArrayObject*)CallHook("_Process", (PyObject*)py_input);
+      PyArrayObject* py_output = (PyArrayObject*)CallHook("_Process", (PyObject*)py_input);
       Py_DECREF(py_input);
       StateMap after = ReceiveStatesFromPython();
       UpdateStateChangesFromPython(before, after);
