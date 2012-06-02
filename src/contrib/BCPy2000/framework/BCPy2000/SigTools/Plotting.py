@@ -26,7 +26,8 @@
 #
 __all__ = [
 	'plot', 'plotsig',
-	'imagesc', 'scatcmp',
+	'imagesc', 'scatcmp', 'stem',
+	'colorbar', 'rmcolorbar',
 	'make_cmap', 'complement_cmap', 'reverse_cmap', 'show_cmaps',
 	'subplots',
 	'curve',
@@ -35,6 +36,11 @@ __all__ = [
 import numpy
 from Basic import getfs,fft2ap,fft
 from NumTools import isnumpyarray, project
+
+def filterdict(d, exact=(), startswith=None, endswith=None):
+	f = dict([(k,v) for k,v in d.items() if k in exact or (startswith != None and k.startswith(startswith)) or (endswith != None and k.endswith(endswith))])
+	for k in f: d.pop(k)
+	return f
 
 def plot(*pargs,**kwargs):
 	"""
@@ -48,12 +54,22 @@ def plot(*pargs,**kwargs):
 	Additional options and their defaults:
 		axis = 0         Along which dimension can one step while staying on
 		                 the same graphical line?
-		hold = False     If false, clear the axes before plotting.
-		drawnow = True   If true, execute pylab.draw() after plotting.
+		stem = False     If True, do a stem plot instead of an ordinary line
+		grid = True      Whether to turn on the grid.
+		balance = None   If None, do nothing. If a numeric value, balance the
+		                 y axis limits around this value.
+		aspect = None    If 'auto', 'image' or 'equal', apply that aspect mode
+		hold = False     If False, clear the axes before plotting.
+		drawnow = True   If True, execute pylab.draw() after plotting.
 	"""###
 	hold = kwargs.pop('hold', False)
 	axis = kwargs.pop('axis', 0)
 	drawnow = kwargs.pop('drawnow', True)
+	grid = kwargs.pop('grid', True)
+	balance = kwargs.pop('balance', None)
+	stem = kwargs.pop('stem', False)
+	aspect = kwargs.pop('aspect', None)
+	axlabelkwargs = filterdict(kwargs, ['title', 'xlabel', 'ylabel'])
 
 	pargs = list(pargs) # makes a copy, at least of the list container
 	allvec = True
@@ -75,8 +91,31 @@ def plot(*pargs,**kwargs):
 	pargs = tuple(pargs)
 
 	pylab = load_pylab()
-	if not hold: pylab.cla()
-	p = pylab.plot(*pargs,**kwargs)
+	if not hold: # undo a few known hangovers before clearing
+		ax = pylab.gca()
+		ax.set_aspect('auto') # image aspect ratio
+		ax.set_ylim(sorted(ax.get_ylim())) # ydir reversed
+		rmcolorbar(drawnow=False) # colorbar
+		pylab.cla()
+	
+	if stem:
+		if len(pargs) == 1: pargs = (range(pargs[0].shape[axis]),) + pargs
+		p = pylab.stem(*pargs, **kwargs)
+		x = pargs[0]
+		xl = numpy.r_[float(x[0]), float(x[-1])]
+		if len(x) == 1: xl += [-0.5, 0.5]
+		else: xl += numpy.r_[float(x[0]-x[1]), float(x[-1]-x[-2])] / 2.0
+		pylab.gca().set_xlim(xl)
+	else:
+		p = pylab.plot(*pargs,**kwargs)
+	pylab.grid(grid)
+	ax = pylab.gca()
+	if balance != None:
+		yl = numpy.array(ax.get_ylim())
+		yl = balance + numpy.array([-1,+1]) * max(abs(yl - balance))
+		ax.set_ylim(yl)
+	if aspect != None: ax.set_aspect({'image':'equal'}.get(aspect, aspect))
+	ax.set(**axlabelkwargs)
 	if drawnow: pylab.draw()
 	return p
 	
@@ -139,51 +178,50 @@ try:
 except:
 	pass
 
-def imagesc(img, x=None, y=None, hold=False, drawnow=True, aspect='image', balance=None, colorbar=False, **kwargs):
+def imagesc(img, x=None, y=None, hold=False, drawnow=True, aspect='image', balance=None, colorbar=False, grid=False, ydir='reverse', **kwargs):
 	kwargs['interpolation'] = kwargs.get('interpolation', 'nearest')
-	auto_aspect = {'image':False, 'auto':True}.get(aspect)
+	kwargs['cmap'] = kwargs.get('cmap', 'kelvin_i')
+	cbkwargs = filterdict(kwargs, startswith='colorbar')
+	cbkwargs = dict([(k[len('colorbar'):],v) for k,v in cbkwargs.items()])
+	axlabelkwargs = filterdict(kwargs, ['title', 'xlabel', 'ylabel'])
+	auto_aspect = {'equal':False, 'image':False, 'auto':True}.get(aspect)
 	if auto_aspect == None: raise ValueError('aspect should be "image" or "auto"')
 	pylab = load_pylab()
 	ax = pylab.gca()
 	if not hold: ax.cla()
 	
 	img = numpy.asarray(img)
-	if x == None and y == None:
-		h = pylab.imshow(img, **kwargs)
-		ax.set(xlim=(-0.5,img.shape[1]-0.5),ylim=(-0.5,img.shape[0]-0.5))
-	else:
-		import matplotlib
-		xlab,ylab = None,None
-		if isinstance(x, (tuple,list,numpy.ndarray)) and isinstance(x[0], basestring): xlab,x = x,None
-		if isinstance(y, (tuple,list,numpy.ndarray)) and isinstance(y[0], basestring): ylab,y = y,None
-		if x == None: x = numpy.arange(img.shape[1], dtype=numpy.float64)
-		if y == None: y = numpy.arange(img.shape[0], dtype=numpy.float64)
-		x = numpy.asarray(x).flatten()
-		y = numpy.asarray(y).flatten()
-			
-		xl = [x[0] - 0.5 * (x[1]-x[0]),   x[-1] + 0.5 * (x[-1]-x[-2])]
-		yl = [y[0] - 0.5 * (y[1]-y[0]),   y[-1] + 0.5 * (y[-1]-y[-2])]
-		#h = pylab.pcolor(x, y, img, edgecolors='None')
-		h = matplotlib.image.NonUniformImage(ax, extent=sorted(xl)+sorted(yl))
-		h.set(**kwargs)
-		h.set_data(x, y, img)
-		ax.images.append(h)
-		ax.set(xlim=xl, ylim=yl)
-		if xlab != None: ax.set_xticklabels(['']+list(xlab)+[''])
-		if ylab != None: ax.set_yticklabels(['']+list(ylab)+[''])
+
+	xlab,ylab = None,None
+	if isinstance(x, (tuple,list,numpy.ndarray)) and isinstance(x[0], basestring): xlab,x = x,None
+	if isinstance(y, (tuple,list,numpy.ndarray)) and isinstance(y[0], basestring): ylab,y = y,None
+	if x == None: x = numpy.arange(img.shape[1], dtype=numpy.float64)
+	if y == None: y = numpy.arange(img.shape[0], dtype=numpy.float64)
+	x = numpy.asarray(x).flatten()
+	y = numpy.asarray(y).flatten()
+		
+	xl = [x[0] - 0.5 * (x[1]-x[0]),   x[-1] + 0.5 * (x[-1]-x[-2])]
+	yl = [y[0] - 0.5 * (y[1]-y[0]),   y[-1] + 0.5 * (y[-1]-y[-2])]
+	tol = 1e-10
+	regular = (numpy.diff(x).ptp() < tol) and (numpy.diff(y).ptp() < tol)
+	if ydir == 'reverse': yl = yl[::-1]; origin='upper'
+	else: origin='lower'
+	if not regular: raise ValueError('x and y data must be regularly spaced') # NonUniformImage just doesn't play nice, with ydir or with clim scaling
+	h = pylab.imshow(img, extent=xl+yl, origin=origin, **kwargs)		
+	if xlab != None: ax.set_xticks(x); ax.set_xticklabels(list(xlab))
+	if ylab != None: ax.set_yticks(y); ax.set_yticklabels(list(ylab))
 	if auto_aspect: ax.set_aspect('auto')
 	else: ax.set_aspect('equal')
+	pylab.grid(grid)
+	ax.set_xlim(xl)
+	ax.set_ylim(yl)
+	ax.set(**axlabelkwargs)
 	if balance != None:
 		c = numpy.array(h.get_clim())
 		c = balance + numpy.array([-1,+1]) * max(abs(c - balance))
 		h.set_clim(c)
-	cb = getattr(ax, 'colorbar', None)
-	if colorbar:
-		if cb == None: cbkwargs = {'ax':ax}
-		else: cbkwargs = {'cax':cb.ax} ; cb.ax.cla()
-		ax.colorbar = pylab.colorbar(h, **cbkwargs)
-	elif cb != None:
-		pass # TODO: delete the colorbar---but how?
+	if colorbar: _colorbar(parent_axes=ax, **cbkwargs)
+	else: rmcolorbar(parent_axes=ax)
 	if drawnow: pylab.draw()
 	return h
 
@@ -207,6 +245,52 @@ def scatcmp(a, b, hold=False, drawnow=True, **kwargs):
 	pylab.plot(lim, lim, linestyle='-', color=(0.6,0.6,0.6), scalex=False, scaley=False)
 	if drawnow: pylab.draw()
 	return h
+
+def stem(*pargs, **kwargs):
+	kwargs['stem'] = True
+	return plot(*pargs, **kwargs)
+
+
+def colorbar(mappable=None, parent_axes=None, **kwargs):
+	"""
+	Create a colorbar in such a way that it can be found again and reused, or removed.
+	Or, if one already exists associated with the specified parent_axes, use and
+	update the existing one.  Use rmcolorbar() to remove.  pylab, y u no do this?
+	"""###
+	pylab = load_pylab()
+	if mappable == None:
+		if parent_axes == None: mappable = pylab.gci()
+		else: mappable = parent_axes.get_images()[-1]  # NB: doesn't find patch, surf, etc - only images. So to use this with non-images, supply the handle explicitly instead of relying on gca()
+	ax = parent_axes
+	if ax == None: ax = mappable.get_axes()
+	cb = getattr(ax, 'colorbar', None)
+	if cb == None:
+		kwargs['ax'] = ax
+		ax.oldposition = ax.get_position()
+	else:
+		kwargs['cax'] = cb.ax
+		cb.ax.cla()
+	title = kwargs.pop('title', None)
+	ax.colorbar = pylab.colorbar(mappable, **kwargs)
+	if title != None: ax.colorbar.ax.set_title(title)
+	pylab.draw()
+	return ax.colorbar
+_colorbar = colorbar
+
+def rmcolorbar(parent_axes=None, drawnow=True):
+	"""
+	Remove a colorbar created with colorbar() from this module
+	"""###
+	pylab = load_pylab()
+	ax = parent_axes
+	if ax == None: ax = pylab.gca()
+	cb = getattr(ax, 'colorbar', None)
+	if cb == None: return
+	cb.ax.get_figure().delaxes(cb.ax)
+	ax.colorbar = None
+	if getattr(ax, 'oldposition', None) != None:
+		ax.set_position(ax.oldposition)
+	if drawnow: pylab.draw()
 
 def load_pylab():
 	try:

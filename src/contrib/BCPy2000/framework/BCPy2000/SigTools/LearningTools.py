@@ -1398,12 +1398,13 @@ class predictor(sstruct):
 			for k,v in arg: self.hyper._setfield(k,v)
 		for k,v in kwargs.items(): self.hyper._setfield(k, v)
 		return self
-	
+			
 	def train(self, x=None, K=None, y=None, istrain=None, istest=None, **kwargs):
-
 		if isinstance(self.hyper, experiment): return self.cvtrain(x=x, K=K, y=y, istrain=istrain, istest=istest, **kwargs)
+		printtime = kwargs.pop('printtime', False)
+		if printtime: import time; tstart = time.time()
 		if len(kwargs): raise TypeError("unexpected keyword arguments---use these only when self.hyper is an experiment object, so train() and cvtrain() are synonymous")
-		
+			
 		import sys; write = sys.stdout.write
 
 		if 'kernel' in self.hyper._fields: self.input.K = None
@@ -1463,6 +1464,7 @@ class predictor(sstruct):
 		self.update_loss(training=True, testing=True)
 		if self.verbosity >= 2: write(self.summarystr()[0] + '\n')
 		elif self.verbosity >= 1: write(self.summarystr()[1])
+		if printtime: print "%.2f seconds" % (time.time() - tstart)
 		return self
 			
 	def test(self, x=None, K=None, true=None):
@@ -1716,7 +1718,7 @@ class predictor(sstruct):
 	def rebias(self):
 		if self.verbosity:
 			c,classes = confuse(self.input.y, self.output.y); err = 1.0 - c.diagonal() / c.sum(axis=1)
-			print "before rebias: bias = %g;  CV err on %+d = %.3f;   CV err on %+d = %.3f,  CV %s = %.3f" % (self.model.bias, classes[0], err[0], classes[1], err[1], self.loss.func.__name__, self.loss.train)
+			print "before rebias: bias = %g;  train/CV err on %+d = %.3f;   train/CV err on %+d = %.3f,  train/CV %s = %.3f" % (self.model.bias, classes[0], err[0], classes[1], err[1], self.loss.func.__name__, self.loss.train)
 		self.output.f -= self.model.bias
 		self.model.bias = -eeop(numpy.asarray(self.output.f).flatten(), numpy.asarray(self.input.y).flatten())
 		self.output.f += self.model.bias
@@ -1725,7 +1727,7 @@ class predictor(sstruct):
 		self.update_loss()
 		if self.verbosity:
 			c,classes = confuse(self.input.y, self.output.y); err = 1.0 - c.diagonal() / c.sum(axis=1)
-			print "after rebias:  bias = %g;  CV err on %+d = %.3f;   CV err on %+d = %.3f,  CV %s = %.3f" % (self.model.bias, classes[0], err[0], classes[1], err[1], self.loss.func.__name__, self.loss.train)
+			print "after rebias:  bias = %g;  train/CV err on %+d = %.3f;   train/CV err on %+d = %.3f,  train/CV %s = %.3f" % (self.model.bias, classes[0], err[0], classes[1], err[1], self.loss.func.__name__, self.loss.train)
 		return self
 		
 		
@@ -1749,10 +1751,13 @@ class predictor(sstruct):
 		if field in self.output._fields: f = self.output._getfield(field)
 		else: f = self._getfield(field)
 		import Plotting
-		Plotting.plot(f[neg],hold=0,marker='*',color=(0,0,1))
-		Plotting.plot(f[pos],hold=1,marker='+',color=(1,0,0))
+		Plotting.plot(f[neg], hold=False, marker='*', color=(0,0,1), drawnow=False)
+		Plotting.plot(f[pos], hold=True,  marker='+', color=(1,0,0), grid=True)
 	
 	def plotd(self, hold=False, drawnow=True):
+		"""
+		Plot two-dimensional data, along with decision surface of trained classifier.
+		"""###
 		xtr = self.input.x[self.input.istrain]
 		xts = self.input.x[self.input.istest]
 		ytr = self.input.y[self.input.istrain]
@@ -1794,6 +1799,35 @@ class predictor(sstruct):
 		ax.set(xlim=[dmin[0],dmax[0]], ylim=[dmin[1],dmax[1]])
 		if drawnow: pylab.draw()
 		return h
+		
+	def plotw(self, xtrain=None, normaxis=None, norm=2, x=None, y=None, **kwargs):
+		"""
+		Plot weights of a linear predictor (supply the training data in <xtrain> if
+		this was a kernel implementation of a linear predictor).  Weights may be
+		formatted in a 1- or 2-dimensional array (depending on how the data exemplars
+		were formatted): a stem plot is used for 1-D and an image for 2-D.
+		Dimensionality may be reduced by 1 by taking the L-<norm> norm along axis
+		<normaxis>. Optional arguments <x> and <y> supply the x- and (for image plots)
+		y-axis data for plotting.
+		"""###
+		w = self.featureweight(x=xtrain)
+		if normaxis != None: w = (w ** norm).sum(axis=normaxis) ** 1.0/norm
+		kwargs['aspect'] = kwargs.get('aspect', 'auto')
+		kwargs['balance'] = kwargs.get('balance', {None:0.0}.get(normaxis, None))
+		kwargs['grid'] = kwargs.get('grid', True)
+		if len(w.shape) == 2:
+			kwargs['colorbartitle'] = kwargs.get('colorbartitle', 'weight')
+			kwargs['colorbarformat'] = kwargs.get('colorbarformat', '%+g')
+			import Plotting; pylab = Plotting.load_pylab()
+			out = Plotting.imagesc(w, x=x, y=y, **kwargs)
+		elif len(w.shape) == 1:
+			if x == None: x = range(len(w))
+			import Plotting; pylab = Plotting.load_pylab()
+			out = Plotting.stem(x, w, **kwargs)
+		else:
+			raise ValueError('do not know how to plot %d-dimensional weight array' % len(w.shape))			
+		return out
+		
 
 def plotopt(cc, hold=False, drawnow=True, **kwargs):
 	if not isinstance(cc, (list, tuple)): cc = [cc]
