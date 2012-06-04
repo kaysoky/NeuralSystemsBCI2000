@@ -10,35 +10,32 @@ SET( EXECUTABLE_NAME PyffApplication )
 SET( BCPY2000SHARED
   ../../BCPy2000/foundation/shared
 )
+SET( BCI2000REMOTE
+  ../../../core/Operator/BCI2000Remote
+)
 SET( SRC_PROJECT
   PyffApplication.cpp
-  ${BCPY2000SHARED}/PythonFilter.cpp
+  PyffFilter.cpp
   ${BCPY2000SHARED}/PythonLink24.cpp
   ${BCPY2000SHARED}/PythonLink25.cpp
   ${BCPY2000SHARED}/PythonLink26.cpp
+  ${BCPY2000SHARED}/PythonLink27.cpp
   ${BCPY2000SHARED}/PythonWrapper.cpp
+  ${BCI2000REMOTE}/BCI2000Connection.cpp
 )
 SET( HDR_PROJECT
-  ${BCPY2000SHARED}/PythonFilter.h
+  PyffFilter.h
   ${BCPY2000SHARED}/PythonWrapper.h
+  ${BCI2000REMOTE}/BCI2000Connection.h
 )
 
 ADD_DEFINITIONS(
-  -DDYNAMIC_PYTHON=1
-  -DFILTER_SUPERCLASS=GenericFilter
-  -DFILTER_NAME=PyffFilter
-  -DFILTER_ABBREV=\"PyffApp\"
-  -DPYTHON_CONSOLE=\"BCI2000Pyff\"
-  -DPYTHON_CONSOLE_INSTALLED\"\"
-  -DPYTHON_COREMODULE=\"BCI2000Pyff\"
-  -DPYTHON_COREMODULE_INSTALLED=\"\"
-  -DPYTHON_MODULE=\"BCI2000Pyff\"
-  -DPYTHON_MODULE_INSTALLED=\"\"
-  -DPYTHON_SUPERCLASS=\"BCI2000PyffAdapter\"
-  -DPYTHON_SUBCLASS=\"\"
-  -DDEFAULT_CLASS_FILE=\"\"
 )
 
+INCLUDE_DIRECTORIES(
+  ${BCPY2000SHARED}
+  ${BCI2000REMOTE}
+)
 
 # Create the signal processing module
 BCI2000_ADD_APPLICATION_MODULE( 
