@@ -67,7 +67,7 @@ EnvironmentBase::statelistAccessor   EnvironmentBase::States;
 EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
 
 int EnvironmentBase::sMaxInstanceID = 0;
-const EnvironmentBase* EnvironmentBase::sObjectContext = NULL;
+OSThreadLocal<const EnvironmentBase*> EnvironmentBase::sObjectContext;
 
 #ifdef __BORLANDC__
 # pragma warn -8104 // No warning about local statics.

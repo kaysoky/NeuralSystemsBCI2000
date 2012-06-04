@@ -44,6 +44,7 @@
 #include "StateRef.h"
 #include "BCIError.h"
 #include "ClassName.h"
+#include "OSThreadLocal.h"
 #include "BCIRegistry.h"
 #include <set>
 #include <iostream>
@@ -248,7 +249,7 @@ class EnvironmentBase
   const EnvironmentBase* Base() const { return this; }
 
  private:
-  static const EnvironmentBase* sObjectContext;
+  static OSThreadLocal<const EnvironmentBase*> sObjectContext;
 
  // Convenient accessor functions. These are not static, so we can identify
  // the caller as an object.

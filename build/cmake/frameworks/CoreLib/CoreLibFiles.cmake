@@ -67,6 +67,7 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/EscapedString.h
   ${BCI2000_SRC_DIR}/shared/utils/EnvVariable.h
   ${BCI2000_SRC_DIR}/shared/utils/SharedPointer.h
+  ${BCI2000_SRC_DIR}/shared/utils/OSThreadLocal.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
   ${BCI2000_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp
