@@ -413,7 +413,7 @@ STDCALL BCI_GetStateOfOperation()
 
     case StateMachine::Information:
     case StateMachine::Initialization:
-      return BCI_StateInitialization;
+      return BCI_StateConnected;
 
     case StateMachine::Resting:
       return BCI_StateResting;

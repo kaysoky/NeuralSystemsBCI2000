@@ -40,7 +40,7 @@ class BCI2000Connection
  public:
   BCI2000Connection()
   : mTerminateOperator( false ),
-    mWindowVisible( true ),
+    mWindowVisible( dontChange ),
     mTimeout( DefaultTimeout() ),
     mTelnetAddress( DefaultTelnetAddress() )
   { mSocket.set_tcpnodelay( true ); }
@@ -57,8 +57,9 @@ class BCI2000Connection
   const std::string& OperatorPath() const { return mOperatorPath; }
   BCI2000Connection& OperatorPath( const std::string s ) { mOperatorPath = s; return *this; }
   // Properties of the main BCI2000 window.
-  bool WindowVisible() const { return mWindowVisible; }
-  BCI2000Connection& WindowVisible( bool visible );
+  enum { invisible = 0, visible = 1, dontChange = 2 };
+  int WindowVisible() const { return mWindowVisible; }
+  BCI2000Connection& WindowVisible( int visible );
   const std::string& WindowTitle() const { return mWindowTitle; }
   BCI2000Connection& WindowTitle( const std::string& );
   // Network address to connect to, in form of <ip>:<port>. When OperatorPath is
@@ -105,8 +106,8 @@ class BCI2000Connection
   bool StartExecutable( const std::string& path, const std::string& options );
 
  private:
-  bool mTerminateOperator,
-       mWindowVisible;
+  bool mTerminateOperator;
+  int  mWindowVisible;
   double mTimeout;
   client_tcpsocket mSocket;
   sockstream mConnection;

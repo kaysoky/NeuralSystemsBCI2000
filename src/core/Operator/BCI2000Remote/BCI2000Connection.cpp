@@ -30,7 +30,7 @@
 #include <cstdlib>
 
 #if _WIN32
-#include <Shlwapi.h>
+#include <Windows.h>
 #endif // _WIN32
 
 using namespace std;
@@ -42,14 +42,14 @@ const string TerminationTag = "\\Terminating";
 const string Prompt = ">";
 
 BCI2000Connection&
-BCI2000Connection::WindowVisible( bool inVisible )
+BCI2000Connection::WindowVisible( int inVisible )
 {
   mWindowVisible = inVisible;
   if( mSocket.connected() )
   {
-    if( mWindowVisible )
+    if( mWindowVisible == visible )
       Execute( "show window" );
-    else
+    else if( mWindowVisible == invisible )
       Execute( "hide window" );
   }
   return *this;
@@ -251,19 +251,30 @@ BCI2000Connection::Quit()
 bool
 BCI2000Connection::StartExecutable( const string& inExecutable, const string& inOptions )
 {
+  HINSTANCE lib = ::LoadLibraryA( "shlwapi" );
+  typedef BOOL (WINAPI *PathRemoveFileSpecA_)( char* );
+  PathRemoveFileSpecA_ PathRemoveFileSpecA = reinterpret_cast<PathRemoveFileSpecA_>( ::GetProcAddress( lib, "PathRemoveFileSpecA" ) );
+  typedef char* (WINAPI *PathFindExtensionA_)( const char* );
+  PathFindExtensionA_ PathFindExtensionA = reinterpret_cast<PathFindExtensionA_>( ::GetProcAddress( lib, "PathFindExtensionA" ) );
+  if( !lib || !PathRemoveFileSpecA || !PathFindExtensionA )
+  {
+    mResult = "Could not load shlwapi functions";
+    return false;
+  }
+
   mResult.clear();
   string commandLine = "\"" + inExecutable + "\" " + inOptions;
 
   char* pWorkingDir = new char[inExecutable.length() + 1];
   ::strcpy( pWorkingDir, inExecutable.c_str() );
-  ::PathRemoveFileSpecA( pWorkingDir );
+  PathRemoveFileSpecA( pWorkingDir );
   if( *pWorkingDir == '\0' )
   {
     delete[] pWorkingDir;
     pWorkingDir = NULL;
   }
 
-  const char* pExt = ::PathFindExtensionA( inExecutable.c_str() );
+  const char* pExt = PathFindExtensionA( inExecutable.c_str() );
   bool isScript = ( 0 != ::stricmp( pExt, ".exe" ) );
   if( isScript )
     commandLine = "cmd /c call " + commandLine;

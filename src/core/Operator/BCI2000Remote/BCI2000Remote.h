@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Authors juergen.mellinger@uni-tuebingen.de
+// Author: juergen.mellinger@uni-tuebingen.de
 // Description: A class that allows remote control of BCI2000.
 //   Does not depend on the BCI2000 framework except for
 //   src/shared/utils/SockStream.
