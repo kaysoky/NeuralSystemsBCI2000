@@ -32,15 +32,19 @@ Change directory ${Parent directory ${Arg0}}
 Echo Processing data files ...
 
 Set Success true
-Set CmdDir ${Canonical Path "${BCI2000LAUNCHDIR}../tools/cmdline"}
+Set CmdDir ${Canonical Path ${BCI2000LAUNCHDIR}../tools/cmdline}
 For i in ${List directories ${Arg1}}
   For j in ${List files ${Arg1}/${i} *.dat}
     Echo " ${j}"
-	Echo "  Preprocessing ..."
-	System "${CmdDir}bci_dat2stream" --transmit-ds --raw < "${Arg1}/${i}/${j}" | "${CmdDir}bci_stream2asc" > "${Arg1}/${i}/${j}.tmp~"
-	System "${CmdDir}bci_dat2stream" --transmit-ds --raw < "${Arg2}/${i}/${j}" | "${CmdDir}bci_stream2asc" > "${Arg2}/${i}/${j}.tmp~"
-	Echo "  Comparing ..."
-	System ./bci_datadiff "${Arg1}/${i}/${j}.tmp~" "${Arg2}/${i}/${j}.tmp~" "${j}_Results.txt" || Set Success false
+    Echo "  Preprocessing ..."
+    Set File1 ${Canonical path "${Arg1}/${i}/${j}"}
+    Set File2 ${Canonical path "${Arg2}/${i}/${j}"}
+    System "${CmdDir}bci_dat2stream" --transmit-ds --raw < "${File1}" | "${CmdDir}bci_stream2asc" > "${File1}.tmp~"
+    System "${CmdDir}bci_dat2stream" --transmit-ds --raw < "${File2}" | "${CmdDir}bci_stream2asc" > "${File2}.tmp~"
+    Echo "  Comparing ..."
+    If not System bci_datadiff "${File1}.tmp~" "${File2}.tmp~" "${j}_Results.txt"
+      Set Success false
+    End
   End
 End
 Set Result ${Success}

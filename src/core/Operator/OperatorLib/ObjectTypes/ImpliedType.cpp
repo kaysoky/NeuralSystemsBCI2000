@@ -52,6 +52,23 @@
 using namespace std;
 using namespace Interpreter;
 
+namespace {
+string ToShellArguments( const string& inTokens )
+{
+  string result;
+  istringstream iss( inTokens );
+  EncodedString s;
+  while( iss )
+  {
+    if( iss >> s )
+      result += s;
+    while( ::isspace( iss.peek() ) )
+      result += iss.get();
+  }
+  return result;
+}
+} // namespace
+
 ImpliedType ImpliedType::sInstance;
 const ObjectType::MethodEntry ImpliedType::sMethodTable[] =
 {
@@ -236,12 +253,12 @@ ImpliedType::Error( CommandInterpreter& inInterpreter )
 bool
 ImpliedType::System( CommandInterpreter& inInterpreter )
 {
-  string command = inInterpreter.GetRemainder(),
+  string command = ToShellArguments( inInterpreter.GetRemainder() ),
          shell,
          args;
 #if _WIN32
   shell = "cmd";
-  args = "/c " + command;
+  args = "/c \"" + command + "\"";
 #else
   shell = "/bin/sh";
   args = "-c '" + command + "'";
@@ -307,7 +324,7 @@ bool
 ExecutableType::Start( CommandInterpreter& inInterpreter )
 {
   string executable = inInterpreter.GetToken(),
-         arguments = inInterpreter.GetOptionalRemainder();
+         arguments = ToShellArguments( inInterpreter.GetOptionalRemainder() );
   int exitCode = 0;
   if( !ProcessUtils::ExecuteAsynchronously( executable, arguments, exitCode ) )
     throw bciexception_( "Could not run \"" << executable.c_str() << "\"" );

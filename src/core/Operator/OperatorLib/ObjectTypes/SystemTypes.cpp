@@ -190,7 +190,7 @@ SystemType::SetConfig( CommandInterpreter& inInterpreter )
   states.insert( BCI_StateResting );
   DoWaitFor( states, cDefaultTimeout, inInterpreter );
   if( BCI_GetStateOfOperation() != BCI_StateResting )
-	  throw bciexception_( "Could not set configuration" );
+    throw bciexception_( "Could not set configuration" );
   return true;
 }
 
@@ -208,7 +208,7 @@ SystemType::Start( CommandInterpreter& inInterpreter )
   states.insert( BCI_StateRunning );
   DoWaitFor( states, cDefaultTimeout, inInterpreter );
   if( BCI_GetStateOfOperation() != BCI_StateRunning )
-	  throw bciexception_( "Could not start operation" );
+    throw bciexception_( "Could not start operation" );
   return true;
 }
 
@@ -221,13 +221,16 @@ SystemType::Stop( CommandInterpreter& inInterpreter )
     inInterpreter.Out() << "System not in Running state";
     return true;
   }
-  if( !inInterpreter.StateMachine().StopRun() )
+  bool success = inInterpreter.StateMachine().StopRun();
+  if( success )
+  {
+    set<int> states;
+    states.insert( BCI_StateSuspended );
+    DoWaitFor( states, cDefaultTimeout, inInterpreter );
+    success = ( BCI_GetStateOfOperation() == BCI_StateSuspended );
+  }
+  if( !success )
     throw bciexception_( "Could not stop operation" );
-  set<int> states;
-  states.insert( BCI_StateSuspended );
-  DoWaitFor( states, cDefaultTimeout, inInterpreter );
-  if( BCI_GetStateOfOperation() != BCI_StateSuspended )
-	  throw bciexception_( "Could not stop operation" );
   return true;
 }
 
