@@ -43,6 +43,7 @@
 namespace PyAPI24 {void Macros2Functions(void);};
 namespace PyAPI25 {void Macros2Functions(void);};
 namespace PyAPI26 {void Macros2Functions(void);};
+namespace PyAPI27 {void Macros2Functions(void);};
 
 #ifdef _WIN32
 #include "BCIError.h"
@@ -78,7 +79,7 @@ int LoadPythonLinks(const char *dllname)
 			while(*dllname) dllname++;
 			dllname++;
 		}
-		if(!dll) bcierr << "Failed to find a dynamic library for python24 or python25. Is python installed?" << std::endl;
+		if(!dll) bcierr << "Failed to find a dynamic library between python24 and python26. Is python installed?" << std::endl;
 	}
 	bool all_loaded = (dll != 0);
 
@@ -111,6 +112,14 @@ int LoadPythonLinks(const char *dllname)
 	else if (lowername.find("python26") !=std::string::npos) PyAPI26::Macros2Functions();
 	else if (lowername.find("python2.6")!=std::string::npos) PyAPI26::Macros2Functions();
 	else if (lowername.find("/2.6/")!=std::string::npos)     PyAPI26::Macros2Functions();
+#endif
+#ifndef SUPPORT_PY27
+#define SUPPORT_PY27 1
+#endif
+#if SUPPORT_PY27
+	else if (lowername.find("python27") !=std::string::npos) PyAPI27::Macros2Functions();
+	else if (lowername.find("python2.7")!=std::string::npos) PyAPI27::Macros2Functions();
+	else if (lowername.find("/2.7/")!=std::string::npos)     PyAPI27::Macros2Functions();
 #endif
 	else {
 		all_loaded = false;
