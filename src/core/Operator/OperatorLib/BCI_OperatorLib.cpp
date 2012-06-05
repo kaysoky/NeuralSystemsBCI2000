@@ -290,7 +290,7 @@ DLLEXPORT int
 STDCALL BCI_SetEvent( const char* inEventName, long inValue )
 {
   if( gpStateMachine == NULL )
-    return NULL;
+    return 0;
   return gpStateMachine->SetEvent( inEventName, inValue );
 }
 
@@ -756,7 +756,7 @@ DLLEXPORT int
 STDCALL BCI_GetCallbackIsExternal( long inEventID )
 {
   if( gpStateMachine == NULL )
-    return NULL;
+    return 0;
 
   return gpStateMachine->CallbackContext( inEventID ) != CallbackBase::CallingThread;
 }

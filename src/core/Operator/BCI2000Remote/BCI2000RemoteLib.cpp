@@ -34,6 +34,8 @@
 #include <Windows.h>
 #endif // _WIN32
 
+#include <cstring>
+
 #define INSTANCE_CAST  BCI2000Remote* pInstance = reinterpret_cast<BCI2000Remote*>( inObject );
 
 using namespace std;
