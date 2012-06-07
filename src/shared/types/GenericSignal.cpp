@@ -293,6 +293,22 @@ GenericSignal::ReadValueBinary( istream& is, size_t inChannel, size_t inElement 
   return is;
 }
 
+GenericChannel& 
+GenericChannel::operator=( const GenericChannel& inChannel )
+{
+  for( size_t i = 0; i < size(); i++ )
+    ( *this )[i] = inChannel[i];
+  return ( *this );
+}
+
+GenericElement&
+GenericElement::operator=( const GenericElement& inElement )
+{
+  for( size_t i = 0; i < size(); i++ )
+    ( *this )[i] = inElement[i];
+  return ( *this );
+}
+
 template<>
 void
 GenericSignal::PutValueBinary<SignalType::int16>( std::ostream& os, size_t inChannel, size_t inElement ) const
@@ -406,4 +422,3 @@ GenericSignal::GetLittleEndian( std::istream& is, T& outValue )
   for( size_t i = 0; i < sizeof( T ); ++i )
     outValue |= is.get() << ( i * 8 );
 }
-

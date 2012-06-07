@@ -38,6 +38,9 @@
 # define NOINLINE
 #endif // __GNUC__
 
+class GenericChannel;
+class GenericElement;
+
 class GenericSignal
 {
   public:
@@ -100,6 +103,40 @@ class GenericSignal
   private:
     SignalProperties mProperties;
     ValueType* mpValues;
+};
+
+class GenericChannel
+{
+  public:
+    GenericChannel( GenericSignal& s, int ch ) : mrSignal( s ), mCh( ch ) {}
+    GenericChannel& operator=( const GenericChannel& );
+    int Channels() const { return 1; }
+    int Elements() const { return mrSignal.Elements(); }
+    size_t size() const { return Elements(); }
+    GenericSignal::ValueType& operator[]( int el ) { return mrSignal( mCh, el ); }
+    GenericSignal::ValueType& operator()( int ch, int el ) { return ( *this )[el]; }
+    const GenericSignal::ValueType& operator[]( int el ) const { return mrSignal( mCh, el ); }
+    const GenericSignal::ValueType& operator()( int ch, int el ) const { return ( *this )[el]; }
+  private:
+    GenericSignal& mrSignal;
+    int mCh;
+};
+
+class GenericElement
+{
+  public:
+    GenericElement( GenericSignal& s, int el ) : mrSignal( s ), mEl( el ) {}
+    GenericElement& operator=( const GenericElement& );
+    int Channels() const { return mrSignal.Channels(); }
+    int Elements() const { return 1; }
+    size_t size() const { return Channels(); }
+    GenericSignal::ValueType& operator[]( int ch ) { return mrSignal( ch, mEl ); }
+    GenericSignal::ValueType& operator()( int ch, int el ) { return ( *this )[ch]; }
+    const GenericSignal::ValueType& operator[]( int ch ) const { return mrSignal( ch, mEl ); }
+    const GenericSignal::ValueType& operator()( int ch, int el ) const { return ( *this )[ch]; }
+  private:
+    GenericSignal& mrSignal;
+    int mEl;
 };
 
 template<> void
