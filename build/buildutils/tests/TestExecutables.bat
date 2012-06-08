@@ -25,7 +25,7 @@
 ## 
 ## $END_BCI2000_LICENSE$
 #################################################################################
-If [ ${Arg1} == "" ]
-  Set Arg1 0
+If [ $1 == "" ]
+  Set 1 0
 End
-Execute script ${Parent directory ${Arg0}}RunTests ${Arg1}
+Execute script ${Parent directory $0}/RunTests $1

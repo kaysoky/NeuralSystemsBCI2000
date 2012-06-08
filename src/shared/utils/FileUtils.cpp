@@ -305,7 +305,7 @@ FileUtils::RemoveDirectory( const string& inName, bool inForce )
     success = ListDirectory( inName, entries );
     for( size_t i = 0; success && i < entries.size(); ++i )
     {
-      string path = CanonicalPath( inName ) + entries[i];
+      string path = CanonicalPath( inName ) + DirSeparator + entries[i];
       if( IsFile( path ) || IsSymbolicLink( path ) )
         success = RemoveFile( path );
       else if( IsDirectory( path ) )
