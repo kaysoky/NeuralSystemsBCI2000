@@ -21,7 +21,7 @@ template<typename T>
 double
 RootMeanSquare( const std::valarray<T>& inData )
 {
-  std::valarray<T> square = pow( inData, 2.0 );
+  std::valarray<T> square = inData * inData;
   double RMS = square.sum() / ( double )square.size();
   return sqrt( RMS );
 }
@@ -32,7 +32,7 @@ RootMeanSquare( const T& inData )
 {
   double squareSum = 0;
   for( size_t i = 0; i < inData.size(); i++ )
-    squareSum += pow( inData[i], 2.0 );
+    squareSum += inData[i] * inData[i];
   return sqrt( squareSum / ( double )inData.size() );
 }
 

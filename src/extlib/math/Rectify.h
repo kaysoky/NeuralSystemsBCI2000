@@ -47,8 +47,6 @@ template<typename T>
 void
 Rectify::HalfWaveRectify( const T& inData, T& outResult )
 {
-  if( inData.Channels() != outResult.Channels() ) return;
-  if( inData.Elements() != outResult.Elements() ) return;
   for( int chan = 0; chan < inData.Channels(); chan++ )
     for( int elem = 0; elem < inData.Elements(); elem++ )
       outResult( chan, elem ) = HalfWaveRectify( inData( chan, elem ) );
@@ -71,8 +69,6 @@ template<typename T>
 void
 Rectify::FullWaveRectify( const T& inData, T& outResult )
 {
-  if( inData.Channels() != outResult.Channels() ) return;
-  if( inData.Elements() != outResult.Elements() ) return;
   for( int chan = 0; chan < inData.Channels(); chan++ )
     for( int elem = 0; elem < inData.Elements(); elem++ )
       outResult( chan, elem ) = FullWaveRectify( inData( chan, elem ) );
