@@ -95,18 +95,23 @@ GenericSignal::GenericSignal( const SignalProperties& inProperties, ValueType in
 GenericSignal&
 GenericSignal::AssignValues( const GenericSignal& s )
 {
-  mProperties.SetChannels( s.Channels() );
-  mProperties.SetElements( s.Elements() );
   size_t numValues = s.Channels() * s.Elements();
-  delete mpValues;
-  if( numValues == 0 )
-  {
-    mpValues = NULL;
-  }
+  if( mpValues && numValues != 0 && mProperties.Channels() == s.Channels() && mProperties.Elements() == s.Elements() )
+      ::memcpy( mpValues, s.mpValues, numValues * sizeof( ValueType ) );
   else
   {
-    mpValues = new ValueType[numValues];
-    ::memcpy( mpValues, s.mpValues, numValues * sizeof( ValueType ) );
+    mProperties.SetChannels( s.Channels() );
+    mProperties.SetElements( s.Elements() );
+    delete mpValues;
+    if( numValues == 0 )
+    {
+      mpValues = NULL;
+    }
+    else
+    {
+      mpValues = new ValueType[numValues];
+      ::memcpy( mpValues, s.mpValues, numValues * sizeof( ValueType ) );
+    }
   }
   return *this;
 }
