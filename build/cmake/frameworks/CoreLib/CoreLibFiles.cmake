@@ -3,16 +3,21 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: List of files in a basic BCI2000 framework
 
+SET( SRC_BCI2000_SHARED_FILTERS 
+  ${BCI2000_SRC_DIR}/shared/filters/GenericFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/filters/ChoiceCombination.cpp
+)
+SET( HDR_BCI2000_SHARED_FILTERS 
+  ${BCI2000_SRC_DIR}/shared/filters/GenericFilter.h
+  ${BCI2000_SRC_DIR}/shared/filters/FilterCombination.h
+  ${BCI2000_SRC_DIR}/shared/filters/ChoiceCombination.h
+)
+
 SET( SRC_BCI2000_SHARED_MODULES 
-  ${BCI2000_SRC_DIR}/shared/modules/GenericFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/ChoiceCombination.cpp
   ${BCI2000_SRC_DIR}/shared/modules/MessageHandler.cpp
   ${BCI2000_SRC_DIR}/shared/modules/MessageQueue.cpp
 )
 SET( HDR_BCI2000_SHARED_MODULES 
-  ${BCI2000_SRC_DIR}/shared/modules/GenericFilter.h
-  ${BCI2000_SRC_DIR}/shared/modules/FilterCombination.h
-  ${BCI2000_SRC_DIR}/shared/modules/ChoiceCombination.h
   ${BCI2000_SRC_DIR}/shared/modules/MessageHandler.h
   ${BCI2000_SRC_DIR}/shared/modules/MessageQueue.h
 )
@@ -167,6 +172,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_SHARED_UTILS}
   ${SRC_BCI2000_SHARED_UTILS_EXPRESSION}
   ${SRC_BCI2000_SHARED_MODULES}
+  ${SRC_BCI2000_SHARED_FILTERS}
   ${SRC_BCI2000_SHARED_TYPES}
   ${SRC_BCI2000_SHARED_ACCESSORS}
   ${SRC_BCI2000_SHARED_BCISTREAM}
@@ -178,6 +184,7 @@ SET( HDR_BCI2000_FRAMEWORK
   ${HDR_BCI2000_SHARED_UTILS}
   ${HDR_BCI2000_SHARED_UTILS_EXPRESSION}
   ${HDR_BCI2000_SHARED_MODULES}
+  ${HDR_BCI2000_SHARED_FILTERS}
   ${HDR_BCI2000_SHARED_TYPES}
   ${HDR_BCI2000_SHARED_ACCESSORS}
   ${HDR_BCI2000_SHARED_BCISTREAM}
@@ -189,6 +196,7 @@ SET( HDR_BCI2000_FRAMEWORK
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES ${SRC_BCI2000_SHARED_UTILS} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils\\expression FILES ${SRC_BCI2000_SHARED_UTILS_EXPRESSION} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules FILES ${SRC_BCI2000_SHARED_MODULES} )
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\filters FILES ${SRC_BCI2000_SHARED_FILTERS} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\types FILES ${SRC_BCI2000_SHARED_TYPES} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\accessors FILES ${SRC_BCI2000_SHARED_ACCESSORS} )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_BCI2000_SHARED_BCISTREAM} )
@@ -197,6 +205,7 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\fileio\\dat FILES ${SRC_BCI2000
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES ${HDR_BCI2000_SHARED_UTILS} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils\\expression FILES ${HDR_BCI2000_SHARED_UTILS_EXPRESSION} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules FILES ${HDR_BCI2000_SHARED_MODULES} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\filters FILES ${HDR_BCI2000_SHARED_FILTERS} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\types FILES ${HDR_BCI2000_SHARED_TYPES} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\accessors FILES ${HDR_BCI2000_SHARED_ACCESSORS} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\bcistream FILES ${HDR_BCI2000_SHARED_BCISTREAM} )
