@@ -26,8 +26,8 @@
 ##
 ## $END_BCI2000_LICENSE$
 #######################################################################################
-Change directory ${BCI2000LAUNCHDIR}
-Show window; Set title ${Extract file base ${Arg0}}
+Change directory $BCI2000LAUNCHDIR
+Show window; Set title ${Extract file base $0}
 Reset system
 Startup system
 Start executable gMOBIlab

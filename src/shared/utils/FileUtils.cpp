@@ -62,23 +62,32 @@
 using namespace std;
 using namespace FileUtils;
 
-static string sSeparators = SeparatorSet();
-static string sOriginalWD = WorkingDirectory();
-static string sInstallationDirectory = ParentDirectory( ExecutablePath() );
-static OSMutex sWorkingDirMutex;
+static const string& Separators()
+{
+  static string separators = SeparatorSet();
+  return separators;
+}
+static const string& sSeparators_ = Separators(); // Force initialization at load time
 
-namespace {
-  void NormalizeDir( string& ioPath )
-  {
-    if( !ioPath.empty() && sSeparators.find( *ioPath.rbegin() ) == string::npos )
-      ioPath += DirSeparator;
-  }
-} // namespace
+static OSMutex& WorkingDirMutex()
+{
+  static OSMutex instance;
+  return instance;
+}
+static const OSMutex& sWorkingDirMutex_ = WorkingDirMutex();
+
+static const string& OriginalWD()
+{
+  static string originalWD = WorkingDirectory();
+  return originalWD;
+}
+static const string& sOriginalWD_ = OriginalWD();
 
 const string&
-FileUtils::InstallationDirectory()
+FileUtils::InstallationDirectoryS()
 {
-  return sInstallationDirectory;
+  static string installationDirectory = ParentDirectoryS( ExecutablePath() );
+  return installationDirectory;
 }
 
 string
@@ -104,25 +113,24 @@ FileUtils::ExecutablePath()
 # elif __APPLE__
   uint32_t size = 0;
   ::_NSGetExecutablePath( NULL, &size );
-  char* pPath = new char[size];
-  pPath[0] = '\0';
-  ::_NSGetExecutablePath( pPath, &size );
-  path = pPath;
-  delete[] pPath;
+  char buf[size];
+  buf[0] = '\0';
+  ::_NSGetExecutablePath( buf, &size );
+  path = buf;
 # else
 #  error Don´t know how to obtain the executable´s path on this platform.
 # endif
   if( !IsAbsolutePath( path ) )
-    path = sOriginalWD + path;
+    path = OriginalWD() + path;
   path = CanonicalPath( path );
 #endif // _WIN32
   return path;
 }
 
 string
-FileUtils::WorkingDirectory()
+FileUtils::WorkingDirectoryS()
 {
-  OSMutex::Lock lock( sWorkingDirMutex );
+  OSMutex::Lock lock( WorkingDirMutex() );
   string result;
   int bufSize = 512;
   char* buf = NULL;
@@ -137,14 +145,15 @@ FileUtils::WorkingDirectory()
   if( cwd != NULL )
     result = cwd;
   delete[] buf;
-  NormalizeDir( result );
+  if( !result.empty() && Separators().find( *result.rbegin() ) != string::npos )
+    result = result.substr( result.length() - 1 );
   return result;
 }
 
 bool
 FileUtils::ChangeDirectory( const string& inDir )
 {
-  OSMutex::Lock lock( sWorkingDirMutex );
+  OSMutex::Lock lock( WorkingDirMutex() );
   return !::chdir( inDir.c_str() );
 }
 
@@ -159,11 +168,14 @@ FileUtils::AbsolutePath( const string& inPath )
 string
 FileUtils::CanonicalPath( const std::string& inPath )
 {
-  OSMutex::Lock lock( sWorkingDirMutex );
-  string path = inPath;
-  if( !path.empty() && sSeparators.find( *path.rbegin() ) != string::npos )
+  OSMutex::Lock lock( WorkingDirMutex() );
+  string path = inPath,
+         sep;
+  if( !path.empty() && Separators().find( *path.rbegin() ) != string::npos )
+  {
+    sep = *path.rbegin();
     path = path.substr( 0, path.length() - 1 );
-  bool isDir = IsDirectory( inPath );
+  }
   string result;
 #if _WIN32
   wchar_t* pFilePart;
@@ -190,32 +202,32 @@ FileUtils::CanonicalPath( const std::string& inPath )
 #else
 # error Don´t know how to canonicalize a path on the current target OS.
 #endif
-  if( isDir )
-    NormalizeDir( result );
+  if( IsDirectory( inPath ) )
+    result += sep;
   return result;
 }
 
 string
-FileUtils::ParentDirectory( const std::string& inPath )
+FileUtils::ParentDirectoryS( const std::string& inPath )
 {
   if( IsFile( inPath ) )
-    return FileUtils::ExtractDirectory( inPath );
-  return inPath + DirSeparator + ".." + DirSeparator;
+    return FileUtils::ExtractDirectoryS( inPath );
+  return inPath + DirSeparator + "..";
 }
 
 string
-FileUtils::ExtractDirectory( const std::string& inPath )
+FileUtils::ExtractDirectoryS( const std::string& inPath )
 {
-  size_t pos = inPath.find_last_of( SeparatorSet() );
+  size_t pos = inPath.find_last_of( Separators() );
   if( pos == string::npos )
     return "";
-  return inPath.substr( 0, pos + 1 );
+  return inPath.substr( 0, pos );
 }
 
 string
 FileUtils::ExtractFile( const std::string& inPath )
 {
-  size_t pos = inPath.find_last_of( SeparatorSet() );
+  size_t pos = inPath.find_last_of( Separators() );
   if( pos == string::npos )
     return inPath;
   return inPath.substr( pos + 1 );

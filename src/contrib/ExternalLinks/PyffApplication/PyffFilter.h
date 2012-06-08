@@ -41,8 +41,7 @@
 #if DYNAMIC_PYTHON
 # include "PythonWrapper.h"
 #else
-# include "Python.h"
-# include "numpy/arrayobject.h"
+# include "python2.7/Python.h"
 #endif
 
 #ifndef FILTER_PREFIX

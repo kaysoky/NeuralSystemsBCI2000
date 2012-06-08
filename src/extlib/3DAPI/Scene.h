@@ -42,6 +42,14 @@ class Scene : public GUI::GraphObject, private Uncopyable
   // Properties
   bool NeedsGL() const
     { return true; }
+  bool HasGL() const
+    {
+#ifdef __BORLANDC__
+      return mGLRC != NULL;
+#else // __BORLANDC__
+      return mpGLContext != NULL;
+#endif // __BORLANDC__
+    }
 
   Scene& SetColor( RGBColor c )
     { mColor = c; return *this; }

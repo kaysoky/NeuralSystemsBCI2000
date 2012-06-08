@@ -162,8 +162,10 @@ class CommandInterpreter
  private:
   CommandInterpreter& operator=( const CommandInterpreter& );
   void Init();
+  std::string GetVariable( const std::string& inName );
   int EvaluateResult( const std::string& inCommand );
   static bool OnWriteLineDefault( void*, const std::string& );
+  bool InputFailed();
 
  private:
   std::ostringstream mResultStream;
@@ -179,7 +181,7 @@ class CommandInterpreter
 
   std::set<int> mLogCapture;
   std::string mLogBuffer;
-  
+
   WriteLineFunc mWriteLineFunc;
   void* mpWriteLineData;
   ReadLineFunc mReadLineFunc;

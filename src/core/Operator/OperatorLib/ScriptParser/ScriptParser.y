@@ -168,9 +168,9 @@ exttoken:
     streampos start = is.tellg();
     ParserToken ignored;
     is >> ignored;
+    is.clear();
     streamsize length = is.tellg() - start;
     pLval->token = new Token( *p, static_cast<int>( length ) );
-    is.clear();
     is.seekg( start );
     is.read( pLval->token->Data(), length );
 

@@ -5,23 +5,23 @@
 // Description: The task filter for a stimulus presentation task.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -103,9 +103,9 @@ StimulusPresentationTask::StimulusPresentationTask()
        "StimulusWidth in percent of screen width (zero for original pixel size)",
     "Application:Stimuli int CaptionHeight= 10 0 0 100 // "
        "Height of stimulus caption text in percent of screen height",
-    "Application:Stimuli string CaptionColor= 0x00FFFFFF 0x00FFFFFF 0x00000000 0x00000000 // "
+    "Application:Stimuli string CaptionColor= 0x00FFFFFF 0x00FFFFFF 0x00000000 0xFFFFFFFF // "
        "Color of stimulus caption text (color)",
-    "Application:Stimuli string BackgroundColor= 0x00FFFF00 0x00FFFF00 0x00000000 0x00000000 // "
+    "Application:Stimuli string BackgroundColor= 0x00FFFF00 0x00FFFF00 0x00000000 0xFFFFFFFF // "
        "Color of stimulus background (color)",
     "Application:Stimuli int CaptionSwitch= 1 1 0 1 // "
        "Present captions (boolean)",

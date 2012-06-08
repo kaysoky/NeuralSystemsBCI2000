@@ -39,6 +39,7 @@ static const char* sOperatorName = "Operator.exe";
 #else
 static const char* sOperatorName = "Operator";
 #endif
+static const string sPrompt = FileUtils::ExtractBase( FileUtils::ExecutablePath() ) + "> ";
 
 int main( int argc, char** argv )
 {
@@ -61,7 +62,7 @@ int main( int argc, char** argv )
   string script = "";
   if( !command && !interactive && !help )
     script = FileUtils::AbsolutePath( argv[idx++] );
-    
+
   string additionalArgs,
          telnetAddress;
   EnvVariable::Get( "BCI2000TelnetAddress", telnetAddress );
@@ -75,7 +76,7 @@ int main( int argc, char** argv )
     {
       string arg = argv[idx++];
       if( arg.find( '\"' ) == string::npos )
-        arg = "\"" + arg + "\""; 
+        arg = "\"" + arg + "\"";
       additionalArgs += " ";
       additionalArgs += arg;
     }
@@ -104,8 +105,7 @@ int main( int argc, char** argv )
   int exitCode = 0;
   if( interactive )
   {
-    const string prompt = FileUtils::ExtractBase( FileUtils::ExecutablePath() ) + ">";
-    cout << prompt << flush;
+    cout << sPrompt << flush;
     string line;
     while( bci.Connected() && getline( cin, line ) )
     {
@@ -120,7 +120,7 @@ int main( int argc, char** argv )
         cout << "[Lost connection to Operator module]" << endl;
       }
       if( bci.Connected() )
-        cout << prompt << flush;
+        cout << sPrompt << flush;
     }
   }
   else

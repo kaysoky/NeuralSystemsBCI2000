@@ -41,6 +41,7 @@
 #include "BCIError.h"
 #include "VersionInfo.h"
 #include "Version.h"
+#include "FileUtils.h"
 #include "ExceptionCatcher.h"
 
 #include <string>
@@ -100,17 +101,17 @@ CoreModule::~CoreModule()
 }
 
 void
-CoreModule::DoRun( int inArgc, char** inArgv )
+CoreModule::DoRun( int& ioArgc, char** ioArgv )
 {
-  if( Initialize( inArgc, inArgv ) )
+  if( Initialize( ioArgc, ioArgv ) )
     MainMessageLoop();
 }
 
 bool
-CoreModule::Run( int inArgc, char** inArgv )
+CoreModule::Run( int& ioArgc, char** ioArgv )
 {
-  MemberCall< void( CoreModule*, int, char** ) >
-    call( &CoreModule::DoRun, this, inArgc, inArgv );
+  MemberCall< void( CoreModule*, int&, char** ) >
+    call( &CoreModule::DoRun, this, ioArgc, ioArgv );
   ExceptionCatcher()
     .SetMessage( "Terminating " THISMODULE " module" )
     .Run( call );
@@ -129,9 +130,9 @@ CoreModule::Terminate()
 
 // Internal functions.
 bool
-CoreModule::Initialize( int inArgc, char** inArgv )
+CoreModule::Initialize( int& ioArgc, char** ioArgv )
 {
-  OnInitialize( inArgc, inArgv );
+  OnInitialize( ioArgc, ioArgv );
   // Make sure there is only one instance of each module running at a time.
   // We create a mutex from the module name to encode that we are running.
 #ifdef _WIN32
@@ -153,9 +154,9 @@ CoreModule::Initialize( int inArgc, char** inArgv )
   bool   printVersion = false,
          printHelp = false;
   int i = 1;
-  while( i < inArgc )
+  while( i < ioArgc )
   {
-    string curArg( inArgv[ i ] );
+    string curArg( ioArgv[ i ] );
     if( curArg == "--version" || curArg == "-v" )
     {
       printVersion = true;
@@ -211,11 +212,7 @@ CoreModule::Initialize( int inArgc, char** inArgv )
   }
   if( printHelp )
   {
-    string executableName = inArgv[ 0 ];
-    size_t pos = executableName.find_last_of( "/\\" );
-    if( pos != string::npos )
-      executableName = executableName.substr( pos + 1 );
-
+    string executableName = FileUtils::ExtractBase( FileUtils::ExecutablePath() );
     bciout__ << "Usage:\n"
              << executableName << " <address>:<port> --<option>=<value>\n"
              << " address:\tIP address of operator module (default 127.0.0.1)\n"

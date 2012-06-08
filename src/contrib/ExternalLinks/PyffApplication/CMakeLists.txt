@@ -16,21 +16,39 @@ SET( BCI2000REMOTE
 SET( SRC_PROJECT
   PyffApplication.cpp
   PyffFilter.cpp
-  ${BCPY2000SHARED}/PythonLink24.cpp
-  ${BCPY2000SHARED}/PythonLink25.cpp
-  ${BCPY2000SHARED}/PythonLink26.cpp
-  ${BCPY2000SHARED}/PythonLink27.cpp
-  ${BCPY2000SHARED}/PythonWrapper.cpp
   ${BCI2000REMOTE}/BCI2000Connection.cpp
 )
 SET( HDR_PROJECT
   PyffFilter.h
-  ${BCPY2000SHARED}/PythonWrapper.h
   ${BCI2000REMOTE}/BCI2000Connection.h
 )
 
-ADD_DEFINITIONS(
-)
+IF( WIN32 )
+  ADD_DEFINITIONS(
+    -DDYNAMIC_PYTHON=1
+  )
+  SET( SRC_PROJECT
+    ${SRC_PROJECT}
+    ${BCPY2000SHARED}/PythonLink24.cpp
+    ${BCPY2000SHARED}/PythonLink25.cpp
+    ${BCPY2000SHARED}/PythonLink26.cpp
+    ${BCPY2000SHARED}/PythonLink27.cpp
+    ${BCPY2000SHARED}/PythonWrapper.cpp
+  )
+  SET( HDR_PROJECT
+    ${HDR_PROJECT}
+    ${BCPY2000SHARED}/PythonWrapper.h
+  )
+ELSE( WIN32 )
+  ADD_DEFINITIONS(
+    -DDYNAMIC_PYTHON=0
+  )
+  SET( LIBS
+    ${LIBS}
+    python2.7
+  )
+ENDIF( WIN32 )
+
 
 INCLUDE_DIRECTORIES(
   ${BCPY2000SHARED}
@@ -38,7 +56,10 @@ INCLUDE_DIRECTORIES(
 )
 
 # Create the signal processing module
-BCI2000_ADD_APPLICATION_MODULE( 
-  "${EXECUTABLE_NAME}" 
-  "${SRC_PROJECT}" "${HDR_PROJECT}" 
+BCI2000_ADD_APPLICATION_MODULE(
+  "${EXECUTABLE_NAME}"
+  "${SRC_PROJECT}" "${HDR_PROJECT}"
+)
+TARGET_LINK_LIBRARIES(
+  ${EXECUTABLE_NAME} ${LIBS}
 )

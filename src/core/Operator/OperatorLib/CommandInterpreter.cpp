@@ -112,9 +112,9 @@ CommandInterpreter::Execute( const string& inCommand )
   mResultStream.str( "" );
   mInputStream.clear();
   mInputStream.str( inCommand );
+  mInputStream >> ws;
   while( !mPosStack.empty() )
     mPosStack.pop();
-  mPosStack.push( 0 );
 
   string verb = GetToken();
   if( !verb.empty() )
@@ -126,10 +126,7 @@ CommandInterpreter::Execute( const string& inCommand )
     {
       success = ( CallbackBase::OK == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) );
       if( success )
-      {
-        mInputStream.clear();
-        mInputStream.ignore( INT_MAX );
-      }
+        GetOptionalRemainder();
     }
     if( !success )
     {
@@ -140,10 +137,10 @@ CommandInterpreter::Execute( const string& inCommand )
       success = pType->Execute( verb, *this );
     }
     if( !success )
-    {     
+    {
       mInputStream.clear();
       mInputStream.seekg( 0 );
-      mPosStack.push( 0 );
+      mInputStream >> ws;
       success = ImpliedType::Get( *this );
     }
     if( !success )
@@ -155,9 +152,10 @@ CommandInterpreter::Execute( const string& inCommand )
       else
         throw bciexception_( "Don't know how to " << verb << " " << type );
     }
-    if( mInputStream.fail() )
+    if( InputFailed() )
       throw bciexception_( "Missing argument" );
-    if( !mInputStream.eof() )
+    mInputStream.clear();
+    if( mInputStream.tellg() != inCommand.length() )
       throw bciexception_( "Extra argument" );
   }
   Background();
@@ -173,6 +171,7 @@ CommandInterpreter::SubstituteCommands( const string& input )
   int braceLevel = 0;
   while( i != input.end() )
   {
+    string& appendTo = ( braceLevel > 0 ) ? command : output;
     switch( *i )
     {
       case '$':
@@ -183,22 +182,33 @@ CommandInterpreter::SubstituteCommands( const string& input )
         {
           if( braceLevel > 0 )
           {
-            command += '$';
-            command += *i;
+            appendTo += '$';
+            appendTo += *i;
           }
           ++braceLevel;
         }
         else
         {
-          output += '$';
-          output += *i;
+          string name;
+          while( i != input.end() && ::isalnum( *i ) )
+            name += *i++;
+          --i;
+          if( name.empty() )
+            appendTo += '$';
+          else
+          {
+            ParserToken value = GetVariable( name );
+            ostringstream oss;
+            oss << value;
+            appendTo += oss.str();
+          }
         }
         break;
 
       case '{':
         if( braceLevel > 0 )
           ++braceLevel;
-        output += *i;
+        appendTo += *i;
         break;
 
       case '}':
@@ -213,19 +223,14 @@ CommandInterpreter::SubstituteCommands( const string& input )
           oss << result;
           output += oss.str();
         }
-        else if( braceLevel > 1 )
-          command += *i;
         else
-          output += *i;
+          appendTo += *i;
         if( braceLevel > 0 )
           --braceLevel;
         break;
 
       default:
-        if( braceLevel > 0 )
-          command += *i;
-        else
-          output += *i;
+        appendTo += *i;
      }
      if( i != input.end() )
        ++i;
@@ -238,11 +243,28 @@ CommandInterpreter::SubstituteCommands( const string& input )
   return output;
 }
 
+string
+CommandInterpreter::GetVariable( const string& inName )
+{
+  string result;
+  if( mExpressionVariables.find( inName ) != mExpressionVariables.end() )
+  {
+    ostringstream oss;
+    oss << mExpressionVariables[inName];
+    result = oss.str();
+  }
+  else if( mLocalVariables.Exists( inName ) )
+    result = mLocalVariables[inName];
+  else
+    EnvVariable::Get( inName, result );
+  return result;
+}
+
 int
 CommandInterpreter::EvaluateResult( const string& inCommand )
 {
   string result = Result();
-  
+
   if( result.empty() )
     return 0;
 
@@ -290,9 +312,10 @@ CommandInterpreter::Background()
 string
 CommandInterpreter::GetToken()
 {
+  mInputStream.clear();
   mPosStack.push( mInputStream.tellg() );
   ParserToken token;
-  mInputStream >> ws >> token >> ws;
+  mInputStream >> token >> ws;
   return token;
 }
 
@@ -300,7 +323,7 @@ string
 CommandInterpreter::GetOptionalToken()
 {
   string result = GetToken();
-  if( result.empty() )
+  if( InputFailed() )
     Unget();
   return result;
 }
@@ -308,6 +331,7 @@ CommandInterpreter::GetOptionalToken()
 string
 CommandInterpreter::GetRemainder()
 {
+  mInputStream.clear();
   mPosStack.push( mInputStream.tellg() );
   string result;
   std::getline( mInputStream >> ws, result, '\0' );
@@ -318,7 +342,7 @@ string
 CommandInterpreter::GetOptionalRemainder()
 {
   string result = GetRemainder();
-  if( result.empty() )
+  if( InputFailed() )
     Unget();
   return result;
 }
@@ -330,8 +354,14 @@ CommandInterpreter::Unget()
     throw bciexception_( "Cannot unget" );
   mInputStream.clear();
   mInputStream.seekg( mPosStack.top() );
-  mInputStream.peek();
   mPosStack.pop();
+}
+
+bool
+CommandInterpreter::InputFailed()
+{
+  mInputStream.clear();
+  return !mPosStack.empty() && mPosStack.top() == mInputStream.tellg();
 }
 
 bool

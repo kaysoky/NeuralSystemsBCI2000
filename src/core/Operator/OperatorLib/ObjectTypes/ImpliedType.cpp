@@ -120,10 +120,6 @@ ImpliedType::Get( CommandInterpreter& inInterpreter )
   inInterpreter.ParseArguments( object, args );
   if( !::stricmp( object.c_str(), "Signal" ) )
     return SignalType::Get( inInterpreter );
-  if( inInterpreter.LocalVariables().Exists( object ) )
-    return VariableType::Get( inInterpreter );
-  if( EnvVariable::Get( object, object ) )
-    return EnvironmentType::Get( inInterpreter );
   try
   {
     ExpressionType::Evaluate( inInterpreter );
@@ -133,6 +129,10 @@ ImpliedType::Get( CommandInterpreter& inInterpreter )
   {
     inInterpreter.Unget();
   }
+  if( inInterpreter.LocalVariables().Exists( object ) )
+    return VariableType::Get( inInterpreter );
+  if( EnvVariable::Get( object, object ) )
+    return EnvironmentType::Get( inInterpreter );
   if( ConditionType::EvaluateExpression( inInterpreter ) )
     return true;
   inInterpreter.Unget();

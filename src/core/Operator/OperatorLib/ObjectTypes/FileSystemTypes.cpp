@@ -56,14 +56,14 @@ const ObjectType::MethodEntry DirectoryType::sMethodTable[] =
 bool
 DirectoryType::Extract( CommandInterpreter& inInterpreter )
 {
-  inInterpreter.Out() << FileUtils::ExtractDirectory( inInterpreter.GetToken() );
+  inInterpreter.Out() << FileUtils::ExtractDirectoryS( inInterpreter.GetToken() );
   return true;
 }
 
 bool
 DirectoryType::Parent( CommandInterpreter& inInterpreter )
 {
-  inInterpreter.Out() << FileUtils::ParentDirectory( inInterpreter.GetToken() );
+  inInterpreter.Out() << FileUtils::ParentDirectoryS( inInterpreter.GetToken() );
   return true;
 }
 
@@ -78,7 +78,7 @@ DirectoryType::Exists( CommandInterpreter& inInterpreter )
 bool
 DirectoryType::Current( CommandInterpreter& inInterpreter )
 {
-  inInterpreter.Out() << FileUtils::WorkingDirectory();
+  inInterpreter.Out() << FileUtils::WorkingDirectoryS();
   return true;
 }
 

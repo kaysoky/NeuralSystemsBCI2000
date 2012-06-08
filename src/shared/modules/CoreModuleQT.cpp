@@ -27,35 +27,35 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "ThreadUtils.h"
 #include "CoreModuleQT.h"
+#include "ThreadUtils.h"
+#include "BCIAssert.h"
 #include <QApplication>
 
 CoreModuleQT::CoreModuleQT()
-: mpApplication( NULL )
 {
+  bciassert( qApp == NULL );
 }
 
 CoreModuleQT::~CoreModuleQT()
 {
-  delete mpApplication;
+  delete qApp;
 }
 
 void
-CoreModuleQT::OnInitialize( int inArgc, char** inArgv )
+CoreModuleQT::OnInitialize( int& ioArgc, char** ioArgv )
 {
-  // Maintain a QApplication object.
-  mpApplication = new QApplication( inArgc, inArgv );
-  mpApplication->processEvents();
+  new QApplication( ioArgc, ioArgv );
+  qApp->processEvents();
 }
 
 void
 CoreModuleQT::OnProcessGUIMessages()
 {
-  if( mpApplication )
+  if( qApp )
   {
-    mpApplication->sendPostedEvents();
-    mpApplication->processEvents();
+    qApp->sendPostedEvents();
+    qApp->processEvents();
   }
 #ifdef __APPLE__
   ThreadUtils::SleepFor(2);  // prevents core modules from taking 100% CPU on OSX under Qt 4.7
@@ -65,6 +65,6 @@ CoreModuleQT::OnProcessGUIMessages()
 bool
 CoreModuleQT::OnGUIMessagesPending()
 {
-  return mpApplication && mpApplication->hasPendingEvents();
+  return qApp && qApp->hasPendingEvents();
 }
 

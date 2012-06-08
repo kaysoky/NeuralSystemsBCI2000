@@ -104,11 +104,11 @@ ScriptType::Execute( CommandInterpreter& inInterpreter )
     path = FileUtils::AbsolutePath( name );
   }
   CommandInterpreter subInterpreter( inInterpreter );
-  subInterpreter.LocalVariables()["Arg0"] = path;
+  subInterpreter.LocalVariables()["0"] = path;
   for( int idx = 1; idx < 10; ++idx )
   {
     ostringstream oss;
-    oss << "Arg" << idx;
+    oss << idx;
     subInterpreter.LocalVariables()[oss.str()] = inInterpreter.GetOptionalToken();
   }
   Script( script, name ).Compile().Execute( subInterpreter );

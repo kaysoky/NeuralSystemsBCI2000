@@ -373,18 +373,22 @@ WavePlayer::PlayingPos() const
 
 WavePlayer::WavePlayer()
 : mVolume( 1.0 ),
-mPan( 0.0 ),
-mErrorState( noError ),
-mpSound( NULL )
+  mPan( 0.0 ),
+  mErrorState( noError ),
+  mpSound( NULL ),
+  mVolumeWarningIssued( false ),
+  mPanWarningIssued( false )
 {
   Construct();
 }
 
 WavePlayer::WavePlayer( const WavePlayer& inOriginal )
 : mVolume( 1.0 ),
-mPan( 0.0 ),
-mErrorState( noError ),
-mpSound( NULL )
+  mPan( 0.0 ),
+  mErrorState( noError ),
+  mpSound( NULL ),
+  mVolumeWarningIssued( false ),
+  mPanWarningIssued( false )
 {
   Construct();
   Assign( inOriginal );
@@ -460,8 +464,11 @@ WavePlayer::Play()
 WavePlayer&
 WavePlayer::SetVolume( float inVolume )
 {
-  if( inVolume != 1.0 )
+  if( inVolume != 1.0 && !mVolumeWarningIssued )
+  {
     bciout << "Cannot adjust volume in non-windows builds" << endl;
+    mVolumeWarningIssued = true;
+  }
   mVolume = 1.0;
   return *this;
 }
@@ -469,8 +476,11 @@ WavePlayer::SetVolume( float inVolume )
 WavePlayer&
 WavePlayer::SetPan( float inPan )
 {
-  if( inPan != 0.0 )
+  if( inPan != 0.0 && !mPanWarningIssued )
+  {
     bciout << "Cannot adjust pan in non-windows builds" << endl;
+    mPanWarningIssued = true;
+  }
   mPan = 0.0;
   return *this;
 }

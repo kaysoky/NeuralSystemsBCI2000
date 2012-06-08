@@ -24,32 +24,32 @@
 ## 
 ## $END_BCI2000_LICENSE$
 #################################################################################
-Set TestingDir ${Parent directory ${Arg0}}
-Set DataDir ${TestingDir}data/
+Set TestingDir ${Parent directory $0}
+Set DataDir $TestingDir/data
 
-If [ ${Arg1} == "" ]
-  Set ${Arg1} 0
+If [ $1 == "" ]
+  Set $1 0
 End
 
-Show Window; Set title ${Extract file base ${Arg0}}
+Show Window; Set title ${Extract file base $0}
 
-MaxIdx:=${Arg1}
+MaxIdx:=$1
 Echo Testing BCI2000 executables, ${MaxIdx+1} parameter files each.
 
-If Exists directory ${DataDir}test
+If Exists directory $DataDir/test
   Echo Removing existing test data ...
-  ForceRemove directory ${DataDir}test
+  ForceRemove directory $DataDir/test
 End
 
-Execute script ${TestingDir}RunConfiguration SpectralSignalProcessing CursorTask ${MaxIdx}
-Execute script ${TestingDir}RunConfiguration DummySignalProcessing StimulusPresentation ${MaxIdx}
-Execute script ${TestingDir}RunConfiguration P3SignalProcessing P3Speller ${MaxIdx}
+Execute script ${TestingDir}/RunConfiguration SpectralSignalProcessing CursorTask $MaxIdx
+Execute script ${TestingDir}/RunConfiguration DummySignalProcessing StimulusPresentation $MaxIdx
+Execute script ${TestingDir}/RunConfiguration P3SignalProcessing P3Speller $MaxIdx
 
-If Execute script ${TestingDir}ProcessTestData ${DataDir}test ${DataDir}ref
+If Execute script $TestingDir/ProcessTestData $DataDir/test $DataDir/ref
   Echo Success.
   Set Success true
 Else
   Echo Executable test failed.
   Set Success false
 End
-Exit ${Success}
+Exit $Success

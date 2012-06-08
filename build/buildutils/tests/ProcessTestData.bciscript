@@ -23,26 +23,26 @@
 ## 
 ## $END_BCI2000_LICENSE$
 ###############################################################################
-If [ ${Arg2} == "" ]
+If [ $2 == "" ]
   Abort Please specify two directories to compare.
 End
 
-Change directory ${Parent directory ${Arg0}}
+Change directory ${Parent directory $0}
 
 Echo Processing data files ...
 
 Set Success true
-Set CmdDir ${Canonical Path ${BCI2000LAUNCHDIR}../tools/cmdline}
-For i in ${List directories ${Arg1}}
-  For j in ${List files ${Arg1}/${i} *.dat}
-    Echo " ${j}"
+Set CmdDir ${Canonical Path $BCI2000LAUNCHDIR/../tools/cmdline}
+For i in ${List directories $1}
+  For j in ${List files $1/$i *.dat}
+    Echo " $j"
     Echo "  Preprocessing ..."
-    Set File1 ${Canonical path "${Arg1}/${i}/${j}"}
-    Set File2 ${Canonical path "${Arg2}/${i}/${j}"}
-    System "${CmdDir}bci_dat2stream" --transmit-ds --raw < "${File1}" | "${CmdDir}bci_stream2asc" > "${File1}.tmp~"
-    System "${CmdDir}bci_dat2stream" --transmit-ds --raw < "${File2}" | "${CmdDir}bci_stream2asc" > "${File2}.tmp~"
+    Set File1 ${Canonical path "$1/$i/$j"}
+    Set File2 ${Canonical path "$2/$i/$j"}
+    System "$CmdDir/bci_dat2stream" --transmit-ds --raw < "$File1" | "$CmdDir/bci_stream2asc" > "$File1.tmp~"
+    System "$CmdDir/bci_dat2stream" --transmit-ds --raw < "$File2" | "$CmdDir/bci_stream2asc" > "$File2.tmp~"
     Echo "  Comparing ..."
-    If not System bci_datadiff "${File1}.tmp~" "${File2}.tmp~" "${j}_Results.txt"
+    If not System bci_datadiff "$File1.tmp~" "$File2.tmp~" "$j_Results.txt"
       Set Success false
     End
   End

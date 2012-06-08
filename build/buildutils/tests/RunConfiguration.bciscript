@@ -22,28 +22,28 @@
 ## 
 ## $END_BCI2000_LICENSE$
 ###############################################################################
-If [ ${Arg3} == "" ]
+If [ $3 == "" ]
   Abort Arguments are: SigProc module, App module, max index of parameter file
 End
 
-Set TestingDir ${Parent directory ${Arg0}}
-Change directory ${BCI2000LAUNCHDIR}
+Set TestingDir ${Parent directory $0}
+Change directory $BCI2000LAUNCHDIR
 
-Echo Testing ${Arg1}/${Arg2} ...
+Echo Testing $1/$2 ...
 
 Reset system
 
 idx:=0
-While idx<=${Arg3}
+While idx<=$3
   Startup system
   Start executable SignalGenerator --TestLoggerFrequency=100Hz --TestLoggerEmitDebug=0 --EvaluateTiming=0
-  Start executable ${Arg1}
-  Start executable ${Arg2}
+  Start executable $1
+  Start executable $2
   Wait for Connected
-  Load parameterfile ${TestingDir}${Arg2}_test.prm
+  Load parameterfile $TestingDir/$2_test.prm
   If idx>0
-    Echo " ${idx}"
-    Load parameterfile ${TestingDir}parms/${Arg2}_${idx}.prm
+    Echo " $idx"
+    Load parameterfile $TestingDir/parms/$2_$idx.prm
   End
   Set config
   Start

@@ -48,10 +48,12 @@ namespace FileUtils
 #endif
 
   std::string ExecutablePath();
-  const std::string& InstallationDirectory();
+  const std::string& InstallationDirectoryS();
+  inline std::string InstallationDirectory() { return InstallationDirectoryS() + DirSeparator; }
 
   // This returns the current working directory.
-  std::string WorkingDirectory();
+  std::string WorkingDirectoryS();
+  inline std::string WorkingDirectory() { return WorkingDirectoryS() + DirSeparator; }
   // This sets the current working directory.
   bool ChangeDirectory( const std::string& );
 
@@ -63,14 +65,16 @@ namespace FileUtils
   std::string CanonicalPath( const std::string& );
 
   // This returns the parent of the specified object (file or directory).
-  std::string ParentDirectory( const std::string& );
+  std::string ParentDirectoryS( const std::string& );
+  inline std::string ParentDirectory( const std::string& s ) { return ParentDirectoryS( s ) + DirSeparator; }
 
   // A list of entries in the specified directory.
   typedef std::vector<std::string> List;
   bool ListDirectory( const std::string&, List& );
 
   // These return the directory portion, file name, base name portion, and extension of a path.
-  std::string ExtractDirectory( const std::string& );
+  std::string ExtractDirectoryS( const std::string& );
+  inline std::string ExtractDirectory( const std::string& s ) { return ExtractDirectoryS( s ) + DirSeparator; }
   std::string ExtractFile( const std::string& );
   std::string ExtractBase( const std::string& );
   std::string ExtractExtension( const std::string& );
@@ -79,10 +83,10 @@ namespace FileUtils
   bool IsDirectory( const std::string& );
   bool IsSymbolicLink( const std::string& );
   bool IsAbsolutePath( const std::string& );
-  
+
   bool Rename( const std::string&, const std::string& );
   bool MakeDirectory( const std::string& );
-  bool RemoveDirectory( const std::string&, bool force = false );  
+  bool RemoveDirectory( const std::string&, bool force = false );
   bool RemoveFile( const std::string& );
 
 } // namespace FileUtils

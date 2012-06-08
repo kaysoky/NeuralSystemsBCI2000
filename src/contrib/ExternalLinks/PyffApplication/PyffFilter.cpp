@@ -31,6 +31,7 @@
 #include "BCIException.h"
 #include "FileUtils.h"
 #include "ProcessUtils.h"
+#include "ThreadUtils.h"
 
 #include <cstdio>
 
@@ -63,8 +64,8 @@ FILTER_NAME::FILTER_NAME()
     string logFile       = OptionalParameter(FILTER_PREFIX "Log",       "");
     string frameworkDir  = OptionalParameter(FILTER_PREFIX "Dir",       FileUtils::InstallationDirectory() + FILTER_PREFIX);
     string workingDir    = OptionalParameter(FILTER_PREFIX "WD",        ".");
-    mUseConsole               = ( OptionalParameter(FILTER_PREFIX "Console", 1) != 0 );
-    mStayOpen                 = ( OptionalParameter(FILTER_PREFIX "StayOpen", 0) != 0 );
+    mUseConsole          = ( OptionalParameter(FILTER_PREFIX "Console", 1) != 0 );
+    mStayOpen            = ( OptionalParameter(FILTER_PREFIX "StayOpen", 0) != 0 );
 
     workingDir = FileUtils::AbsolutePath( workingDir );
 
@@ -160,7 +161,7 @@ FILTER_NAME::~FILTER_NAME()
 #ifdef _WIN32
       while(GetConsoleWindow()) ::Sleep(1);
 #else // _WIN32
-      while(1) ::Sleep(1);
+      while(1) ThreadUtils::SleepFor(1);
 #endif // _WIN32
     }
   }
@@ -261,7 +262,7 @@ FILTER_NAME::Process( const GenericSignal& input, GenericSignal& output )
       StateMap before;
       // unlike StartRun and Initialize, here we do not call before = ReceiveStatesFromPython();
       // Python may have other threads that update states asynchronously. They are passed on here.
-      PyArrayObject* py_output = (PyArrayObject*)CallHook("_Process", py_input);
+      PyObject* py_output = CallHook("_Process", py_input);
       Py_DECREF(py_input);
       StateMap after = ReceiveStatesFromPython();
       UpdateStateChangesFromPython(before, after);

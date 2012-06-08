@@ -26,9 +26,8 @@
 ##
 ## $END_BCI2000_LICENSE$
 #######################################################################################
-Change directory ${BCI2000LAUNCHDIR}
-Show window; Set title ${Extract file base ${Arg0}}
-Reset system
+Change directory $BCI2000LAUNCHDIR
+Show window; Set title ${Extract file base $0}
 Startup system
 Start executable SignalGenerator
 Start executable MatlabSignalProcessing --MatlabWD=./matlab

@@ -186,7 +186,11 @@ GraphDisplay::Change()
       format.setDepthBufferSize( 16 );
       format.setOverlay( true );
       format.setSwapInterval( 0 ); // disable VSync
-      mpWidget = new GLWidget( *this, format, pParent );
+      GLWidget* pWidget = new GLWidget( *this, format, pParent );
+      if( pWidget->isValid() )
+        mpWidget = pWidget;
+      else
+        delete pWidget;
     }
     else
     {
