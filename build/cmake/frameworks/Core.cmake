@@ -14,6 +14,7 @@ INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared/bcistream
   ${BCI2000_SRC_DIR}/shared/config
   ${BCI2000_SRC_DIR}/shared/modules
+  ${BCI2000_SRC_DIR}/shared/filters
   ${BCI2000_SRC_DIR}/shared/types
   ${BCI2000_SRC_DIR}/shared/utils
   ${BCI2000_SRC_DIR}/shared/utils/Expression

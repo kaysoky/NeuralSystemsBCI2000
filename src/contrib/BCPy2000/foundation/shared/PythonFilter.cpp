@@ -192,9 +192,9 @@ FILTER_NAME::FILTER_NAME()
     if(developerFile.length()) {
       PyObject *py_devfile = PyString_FromString(developerFile.c_str());
       PyObject *py_resolved = CallModuleMember(coremod, "search_for_file", py_devfile);
-      Py_DECREF(py_devfile);
+      Py_DecRef(py_devfile);
       string cpp_resolved = PyString_AsString(py_resolved);
-      Py_DECREF(py_resolved);
+      Py_DecRef(py_resolved);
       EvalPythonString("execfile('" + EscapePythonString(cpp_resolved) + "')");
       bci2000_instance = CallModuleMember("__main__", PYTHON_SUBCLASS);
     }
@@ -209,12 +209,12 @@ FILTER_NAME::FILTER_NAME()
     key = PyString_FromString("installation_dir");
     val = PyString_FromString(BCIDirectory::InstallationDirectory().c_str());
     CallMethod("__setattr__", key, val);
-    Py_DECREF(key); // Py_DECREF(val);
+    Py_DecRef(key); // Py_DecRef(val);
 
     key = PyString_FromString("original_working_dir");
     val = PyString_FromString(originalDir.c_str());
     CallMethod("__setattr__", key, val);
-    Py_DECREF(key); // Py_DECREF(val);
+    Py_DecRef(key); // Py_DecRef(val);
 
     CallMethod("_start");
 
@@ -292,9 +292,9 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
 
     PyObject* pyInSignalProperties = ConvertPropertiesToPyObject(inSignalProperties);
     PyObject* pyOutSignalProperties = CallHook( "_Preflight", pyInSignalProperties);
-    Py_DECREF(pyInSignalProperties);
+    Py_DecRef(pyInSignalProperties);
     ConvertPyObjectToProperties(pyOutSignalProperties, outSignalProperties);
-    Py_DECREF(pyOutSignalProperties);
+    Py_DecRef(pyOutSignalProperties);
 
     PyObject* py_list;
     py_list = PyObject_GetAttrString(bci2000_instance, (char*)"_writeable_params");
@@ -306,7 +306,7 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
       }
     }
     if( py_list )
-      Py_DECREF(py_list);
+      Py_DecRef(py_list);
 
     PreflightCondition(SignalType::ConversionIsSafe(inSignalProperties.Type(), outSignalProperties.Type()));
 
@@ -370,11 +370,11 @@ FILTER_NAME::Process( const GenericSignal& input, GenericSignal& output )
       // unlike StartRun and Initialize, here we do not call before = ReceiveStatesFromPython();
       // Python may have other threads that update states asynchronously. They are passed on here.
       PyArrayObject* py_output = (PyArrayObject*)CallHook("_Process", (PyObject*)py_input);
-      Py_DECREF(py_input);
+      Py_DecRef(py_input);
       StateMap after = ReceiveStatesFromPython();
       UpdateStateChangesFromPython(before, after);
       ConvertPyArrayObjectToSignal(py_output, output);
-      Py_DECREF(py_output);
+      Py_DecRef(py_output);
       UnblockThreads();
     }
   }
@@ -481,7 +481,7 @@ FILTER_NAME::SendParametersToPython() const
     if(p.NumRows() == 0 || p.NumColumns() == 0) {
       value = PyString_FromString("");
       PyDict_SetItemString(params, p.Name().c_str(), value);
-      Py_DECREF(value);
+      Py_DecRef(value);
       continue;
     }
     if(p.Type().size() >= 6 && strcmp(p.Type().c_str() + p.Type().size() - 6, "matrix") == 0) {
@@ -499,7 +499,7 @@ FILTER_NAME::SendParametersToPython() const
         PyList_SetItem(list, i, tempRow);
       }
       PyDict_SetItemString(params, p.Name().c_str(), list);
-      Py_DECREF( list );
+      Py_DecRef( list );
     }
     else if(p.Type().size() >= 4 && strcmp(p.Type().c_str() + p.Type().size() - 4, "list") == 0) {
       int entries = max(p.NumRows(),p.NumColumns());
@@ -511,17 +511,17 @@ FILTER_NAME::SendParametersToPython() const
         PyList_SetItem(list, i, val);
       }
       PyDict_SetItemString(params, p.Name().c_str(), list);
-      Py_DECREF( list );
+      Py_DecRef( list );
     }
     else {
       std::string tmp = p.Value();
       value = PyString_FromString(tmp.c_str());
       PyDict_SetItemString(params, p.Name().c_str(), value);
-      Py_DECREF(value);
+      Py_DecRef(value);
     }
   }
   CallMethod("_set_parameters", params);
-  Py_DECREF(params);
+  Py_DecRef(params);
 
   for( int i = 0; i < Parameters->Size(); ++i ) {
     const Param& p = ( *Parameters )[ i ];
@@ -529,10 +529,10 @@ FILTER_NAME::SendParametersToPython() const
     PyObject* py_rowlab = ConvertLabelIndexToPyList(p.RowLabels());
     PyObject* py_collab = ConvertLabelIndexToPyList(p.ColumnLabels());
     PyObject* py_result = CallMethod("_param_labels", py_name, py_rowlab, py_collab);
-    Py_DECREF(py_result);
-    Py_DECREF(py_collab);
-    Py_DECREF(py_rowlab);
-    Py_DECREF(py_name);
+    Py_DecRef(py_result);
+    Py_DecRef(py_collab);
+    Py_DecRef(py_rowlab);
+    Py_DecRef(py_name);
   }
 }
 
@@ -630,7 +630,7 @@ FILTER_NAME::ReceiveParametersFromPython()
       }
     }
   }
-  Py_DECREF(py_params);
+  Py_DecRef(py_params);
 }
 
 void
@@ -642,10 +642,10 @@ FILTER_NAME::SendStatesToPython() const
     const char* name = ( *States )[ i ].Name().c_str();
     pyvalue = PyInt_FromLong(State(name));
     PyDict_SetItemString(states, name, pyvalue);
-    Py_DECREF(pyvalue);
+    Py_DecRef(pyvalue);
   }
   CallMethod("_set_states", states);
-  Py_DECREF(states);
+  Py_DecRef(states);
 }
 
 StateMap
@@ -663,7 +663,7 @@ FILTER_NAME::ReceiveStatesFromPython() const
     if (value == -1 && PyErr_Occurred()) PyErr_Clear(); // in case of an exception, we set the state to -1 and ignore the exception.
     m[name] = value;
   }
-  Py_DECREF(obj);
+  Py_DecRef(obj);
   return m;
 }
 
@@ -692,7 +692,7 @@ FILTER_NAME::SendStatePrecisionsToPython() const
     const char* name = ( *States )[ i ].Name().c_str();
     pyvalue = PyInt_FromLong( (*States )[ i ].Length() );
     PyDict_SetItemString(bits, name, pyvalue);
-    Py_DECREF(pyvalue);
+    Py_DecRef(pyvalue);
   }
   CallMethod("_set_state_precisions", bits);
 }
@@ -728,10 +728,10 @@ FILTER_NAME::SharingSetup(const SignalProperties &inProp, const SignalProperties
     shared_statevals = (double*)PyArray_DATA((PyArrayObject*)PyTuple_GetItem(py_result, 2));
     shared_flag      = (double*)PyArray_DATA((PyArrayObject*)PyTuple_GetItem(py_result, 3));
   }
-  Py_DECREF(py_result);
-  Py_DECREF(py_statelist);
-  Py_DECREF(py_outdims);
-  Py_DECREF(py_indims);
+  Py_DecRef(py_result);
+  Py_DecRef(py_statelist);
+  Py_DecRef(py_outdims);
+  Py_DecRef(py_indims);
 }
 
 int
@@ -1048,7 +1048,7 @@ FILTER_NAME::CallMethod(const char* name, PyObject* arg1, PyObject* arg2, PyObje
   PyObject* py_name = PyString_FromString((char*)name);
   PyObject* out = PyObject_CallMethodObjArgs(bci2000_instance, py_name, arg1, arg2, arg3, NULL);
   HandlePythonError(name);
-  Py_DECREF (py_name);
+  Py_DecRef (py_name);
   return out;
 }
 
@@ -1060,8 +1060,8 @@ FILTER_NAME::CallHook(const char* name, PyObject* arg1, PyObject* arg2) const
   PyObject* py_wrappername = PyString_FromString("_call_hook");
   PyObject* out = PyObject_CallMethodObjArgs(bci2000_instance, py_wrappername, py_method, arg1, arg2, NULL);
   HandlePythonError(name);
-  Py_DECREF (py_wrappername);
-  Py_DECREF (py_method);
+  Py_DecRef (py_wrappername);
+  Py_DecRef (py_method);
   return out;
 }
 
@@ -1076,13 +1076,13 @@ FILTER_NAME::HandlePythonError(std::string msg, bool errorCodeReturned) const
     PyObject* py_error_occurred = PyObject_GetAttrString(bci2000_instance, (char*)"_error_reported");
     if(py_error_occurred != NULL) {
       error = PyInt_AsLong(py_error_occurred);
-      Py_DECREF(py_error_occurred);
+      Py_DecRef(py_error_occurred);
     }
     if(error) {
       PyObject* py_error_info = PyObject_CallMethod(bci2000_instance, (char*)"_flush_error_info", NULL);
       report = PyString_AsString(PyTuple_GetItem(py_error_info, 0));
       isForEndUser = PyInt_AsLong(PyTuple_GetItem(py_error_info, 1));
-      Py_DECREF(py_error_info);
+      Py_DecRef(py_error_info);
     }
   }
   if(error == 0 && (errorCodeReturned || PyErr_Occurred())) {

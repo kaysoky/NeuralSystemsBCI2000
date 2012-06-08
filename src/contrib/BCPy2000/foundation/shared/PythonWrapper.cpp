@@ -142,8 +142,8 @@ int PyList_Check(PyObject* a)
 	// doc is impossible to navigate unless you already know the name of
 	// what you're looking for...
 	int result = PyObject_IsInstance(a, py_class);
-	Py_DECREF(py_class);
-	Py_DECREF(py_template);
+	Py_DecRef(py_class);
+	Py_DecRef(py_template);
 	return result;
 }
 int PyString_Check(PyObject* a)
@@ -151,8 +151,8 @@ int PyString_Check(PyObject* a)
 	PyObject* py_template = PyString_FromString("");
 	PyObject* py_class = PyObject_GetAttrString(py_template, "__class__");
 	int result = PyObject_IsInstance(a, py_class);
-	Py_DECREF(py_class);
-	Py_DECREF(py_template);
+	Py_DecRef(py_class);
+	Py_DecRef(py_template);
 	return result;
 }
 
@@ -170,7 +170,6 @@ int PyString_Check(PyObject* a)
 namespace PYTHON_API_NAMESPACE { ///////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-void    PyWrapMacro_Py_DECREF(PyObject* a) {Py_DECREF(a);}
 void    PyWrapMacro_PyList_SET_ITEM(PyObject* op, int i, PyObject* v) {PyList_SET_ITEM(op, i, v);}
 double* PyWrapMacro_PyArray_DATA(PyArrayObject* a)          {return (double*)PyArray_DATA(a);}
 size_t  PyWrapMacro_PyArray_DIM(PyArrayObject* a, int n)    {return  (size_t)PyArray_DIM(a,n);}
@@ -179,7 +178,6 @@ size_t  PyWrapMacro_PyArray_STRIDE(PyArrayObject* a, int n) {return  (size_t)PyA
  ////////////////////////////////////////////////////////////////
 void Macros2Functions(void)
 {
-  ::Py_DECREF = (void(*)(void*))PyWrapMacro_Py_DECREF;
   ::PyList_SET_ITEM = (void(*)(void*,int,void*))PyWrapMacro_PyList_SET_ITEM;
   ::PyArray_DATA = (double*(*)(void*))PyWrapMacro_PyArray_DATA;
   ::PyArray_DIM = (size_t(*)(void*,int))PyWrapMacro_PyArray_DIM;
