@@ -155,7 +155,7 @@ CommandInterpreter::Execute( const string& inCommand )
     if( InputFailed() )
       throw bciexception_( "Missing argument" );
     mInputStream.clear();
-    if( mInputStream.tellg() != inCommand.length() )
+    if( mInputStream.tellg() != static_cast<streampos>( inCommand.length() ) )
       throw bciexception_( "Extra argument" );
   }
   Background();
