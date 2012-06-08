@@ -29,9 +29,27 @@
 #include "ScriptInterpreter.h"
 #include "BCI_OperatorLib.h"
 #include "BCIException.h"
+#include "OSThread.h"
 #include "Script.h"
 
 using namespace std;
+
+namespace {
+  // A self-deleting thread that executes a script asynchronously.
+  class ScriptThread : private ScriptInterpreter, OSThread
+  {
+   public:
+    ScriptThread( class StateMachine& );
+    void Execute( const std::string&, const std::string& );
+
+   private:
+    int OnExecute();
+    void OnFinished();
+
+    string mScript,
+           mName;
+  };
+} // namespace
 
 ScriptInterpreter::ScriptInterpreter( class StateMachine& inStateMachine )
 : CommandInterpreter( inStateMachine )
@@ -58,6 +76,12 @@ ScriptInterpreter::Execute( const string& inScript, const string& inName )
   return success;
 }
 
+void
+ScriptInterpreter::ExecuteAsynchronously( const string& inScript, const string& inName )
+{
+  ( new ScriptThread( this->StateMachine() ) )->Execute( inScript, inName );
+}
+
 string
 ScriptInterpreter::Result() const
 {
@@ -74,4 +98,30 @@ void
 ScriptInterpreter::OnScriptError( const string& inMessage )
 {
   StateMachine().ExecuteCallback( BCI_OnScriptError, inMessage.c_str() );
+}
+
+ScriptThread::ScriptThread( class StateMachine& s )
+: ScriptInterpreter( s )
+{
+}
+
+void
+ScriptThread::Execute( const std::string& inScript, const std::string& inName )
+{
+  mScript = inScript;
+  mName = inName;
+  OSThread::Start();
+}
+
+int
+ScriptThread::OnExecute()
+{
+  ScriptInterpreter::Execute( mScript, mName );
+  return 0;
+}
+
+void
+ScriptThread::OnFinished()
+{
+  delete this;
 }

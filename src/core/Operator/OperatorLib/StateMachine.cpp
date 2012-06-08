@@ -646,7 +646,7 @@ StateMachine::TriggerEvent( int inCallbackID )
   if( !script.empty() )
   {
     LogMessage( BCI_OnLogMessage, "Executing " + string( pName ) + " script ..." );
-    ScriptInterpreter( *this ).Execute( script );
+    ScriptInterpreter( *this ).ExecuteAsynchronously( script );
   }
 }
 

@@ -45,6 +45,7 @@ class ScriptInterpreter : private CommandInterpreter
   // Methods
   //  Compile and execute a sequence of scripting commands.
   bool Execute( const std::string& script, const std::string& name = "" );
+  void ExecuteAsynchronously( const std::string& script, const std::string& name = "" );
   //  Force termination of a script.
   void Abort();
 
