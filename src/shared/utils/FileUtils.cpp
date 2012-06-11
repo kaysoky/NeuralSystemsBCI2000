@@ -83,6 +83,14 @@ static const string& OriginalWD()
 }
 static const string& sOriginalWD_ = OriginalWD();
 
+string
+FileUtils::EnsureSeparator( const string& inDir )
+{
+  if( inDir.empty() || Separators().find( *inDir.rbegin() ) != string::npos )
+    return inDir;
+  return inDir + DirSeparator;
+}
+
 const string&
 FileUtils::InstallationDirectoryS()
 {

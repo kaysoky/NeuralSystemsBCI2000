@@ -186,7 +186,7 @@ DirectoryType::ListSelection( CommandInterpreter& inInterpreter, const string& i
   if( !FileUtils::ListDirectory( dir, list ) )
     throw bciexception_( "Could not list directory \"" << dir << "\"" );
   for( size_t i = 0; i < list.size(); ++i )
-    if( bci::WildcardMatch( wildcard, list[i], false ) && inSelector( dir + list[i] ) )
+    if( bci::WildcardMatch( wildcard, list[i], false ) && inSelector( FileUtils::EnsureSeparator( dir ) + list[i] ) )
       inInterpreter.Out() << list[i] << '\n';
   return true;
 }
