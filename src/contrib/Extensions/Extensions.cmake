@@ -8,3 +8,4 @@ INCLUDE_EXTENSION( WebcamLogger      "${BCI2000_SRC_DIR}/contrib/Extensions/Webc
 INCLUDE_EXTENSION( EyetrackerLogger  "${BCI2000_SRC_DIR}/contrib/Extensions/EyetrackerLogger" )
 INCLUDE_EXTENSION( WiimoteLogger     "${BCI2000_SRC_DIR}/contrib/Extensions/WiimoteLogger" )
 INCLUDE_EXTENSION( GazeMonitorFilter "${BCI2000_SRC_DIR}/contrib/Extensions/GazeMonitorFilter" )
+INCLUDE_EXTENSION( AudioExtension    "${BCI2000_SRC_DIR}/contrib/Extensions/AudioExtension" ) 

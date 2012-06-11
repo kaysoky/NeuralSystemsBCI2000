@@ -17,3 +17,7 @@
 @set OPT=BUILD_GAZEMONITORFILTER
 @set /p ANS=	Include GazeMonitorFilter in Application framework (y/n)?
 @if /i %ANS%==y ( set CMAKEOPTS=%CMAKEOPTS% -D%OPT%:BOOL=TRUE )
+
+@set OPT=BUILD_AUDIOEXTENSION
+@set /p ANS=	Include AudioExtension in SignalSource framework (y/n)?
+@if /i %ANS%==y ( set CMAKEOPTS=%CMAKEOPTS% -D%OPT%:BOOL=TRUE )
