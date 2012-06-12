@@ -28,11 +28,11 @@
 
 #if _WIN32
 # include "Windows.h"
+# define S_ISLNK(x) ( false )
 # if _MSC_VER
 #  include <direct.h>
 #  define S_ISREG(x) ( (x) & S_IFREG )
 #  define S_ISDIR(x) ( (x) & S_IFDIR )
-#  define S_ISLNK(x) ( false )
 # else // _MSC_VER
 #  include <dir.h>
 # endif // _MSC_VER

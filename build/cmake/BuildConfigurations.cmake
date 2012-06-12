@@ -50,8 +50,14 @@ IF( CMAKE_COMPILER_IS_GNUCXX )
     )
   ENDIF()
 
+  IF( NOT WIN32 )
+    SET( CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} -fPIC"
+    )
+  ENDIF()
+
   SET( CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -fPIC -Wstrict-aliasing"
+    "${CMAKE_CXX_FLAGS} -Wstrict-aliasing"
   )
 
   SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
