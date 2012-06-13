@@ -35,6 +35,7 @@
 class ExceptionCatcher
 {
  public:
+  virtual ~ExceptionCatcher() {}
   // Run() returns true when execution finished normally, false when an exception was caught.
   bool Run( Runnable& );
   // The Message property is a string that is appended when reporting an error.
@@ -42,6 +43,9 @@ class ExceptionCatcher
                      { mMessage = inMessage; return *this; }
   const std::string& Message() const
                      { return mMessage; }
+                     
+ protected:
+  virtual void OnReportException( const std::string& );
 
  private:
   bool Run2( Runnable& );

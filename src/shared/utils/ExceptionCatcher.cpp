@@ -156,45 +156,42 @@ bool
 ExceptionCatcher::Run2( Runnable& inRunnable )
 {
   // This function handles C++ exceptions.
-  bool result = false;
+  string message;
   try
   {
     inRunnable.Run();
-    result = true;
   }
   catch( const BCIException& e )
   {
-    bcierr__ << e.what()
-             << UserMessage()
-             << endl;
+    message = e.what() + UserMessage();
   }
   catch( const exception& e )
   {
-    bcierr__ << "Unhandled exception of type "
-             << bci::ClassName( typeid( e ) )
-             << ": " << e.what()
-             << UserMessage()
-             << endl;
+    message = "Unhandled exception of type "
+              + bci::ClassName( typeid( e ) )
+              + ": " 
+              + e.what()
+              + UserMessage();
   }
 #if defined( SystemHPP ) && !defined( _NO_VCL ) // VCL is available both at compile and link time
   catch( Exception& e )
   {
-    bcierr__ << "Unhandled exception of type "
-             << bci::ClassName( typeid( e ) )
-             << ": " << AnsiString( e.Message ).c_str()
-             << UserMessage()
-             << endl;
+    message = "Unhandled exception of type "
+              + bci::ClassName( typeid( e ) )
+              + ": " 
+              + AnsiString( e.Message ).c_str()
+              + UserMessage();
   }
 #endif // SystemHPP  && !_NO_VCL
 #ifndef _MSC_VER
   catch( ... )
   {
-    bcierr__ << "Unknown unhandled exception, "
-             << UserMessage()
-             << endl;
+    message = "Unknown unhandled exception " + UserMessage();
   }
 #endif // _MSC_VER
-  return result;
+  if( !message.empty() )
+    OnReportException( message );
+  return message.empty();
 }
 
 void
@@ -237,12 +234,12 @@ ExceptionCatcher::ReportWin32Exception( int inCode )
   while( i < numExceptions && exceptions[i].code != inCode )
     ++i;
   const char* pDescription = i < numExceptions ? exceptions[i].description : "<n/a>";
-
-  bcierr__ << "Unhandled Win32 exception 0x"
-           << hex << inCode << ": "
-           << pDescription
-           << UserMessage()
-           << endl;
+  ostringstream oss;
+  oss << "Unhandled Win32 exception 0x"
+      << hex << inCode << ": "
+      << pDescription
+      << UserMessage();
+  OnReportException( oss.str() );
 #endif // _MSC_VER
 }
 
@@ -255,10 +252,11 @@ ExceptionCatcher::ReportSignal( int inSignal )
   while( sSignals[i].code != inSignal )
     ++i;
   const char* pDescription = i < numSignals ? sSignals[i].name : "Unknown Signal";
-  bcierr__ << "Signal caught: "
-           << pDescription
-           << UserMessage()
-           << endl;
+  ostringstream oss;
+  oss << "Signal caught: "
+      << pDescription
+      << UserMessage();
+  OnReportException( oss.str() );
 #endif // !HANDLE_SIGNALS
 }
 
@@ -269,4 +267,10 @@ ExceptionCatcher::UserMessage() const
   if( !mMessage.empty() )
     result += "\n" + mMessage;
   return result;
+}
+
+void
+ExceptionCatcher::OnReportException( const string& inMessage )
+{
+  bcierr__ << inMessage << endl;
 }
