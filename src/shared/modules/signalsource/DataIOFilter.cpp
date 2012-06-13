@@ -71,6 +71,49 @@ DataIOFilter::DataIOFilter()
 {
   BCIEvent::SetEventQueue( &mBCIEvents );
 
+  // Find available GenericFileWriter descendants and determine which one to use.
+  typedef set<GenericFileWriter*> writerSet;
+  set<GenericFileWriter*> availableFileWriters;
+  for( GenericFileWriter* p = GenericFilter::PassFilter<GenericFileWriter>();
+       p != NULL;
+       p = GenericFilter::PassFilter<GenericFileWriter>() )
+    availableFileWriters.insert( p );
+
+  if( !availableFileWriters.empty() )
+  {
+    string fileFormat = "BCI2000";
+    if( Parameters->Exists( "FileFormat" ) ) {
+      fileFormat = string( Parameter( "FileFormat" ) );
+    }
+
+    string writerName = fileFormat + "FileWriter";
+    for( writerSet::const_iterator i = availableFileWriters.begin();
+         mpFileWriter == NULL && i != availableFileWriters.end();
+         ++i )
+      if( writerName == ClassName( typeid( **i ) ) )
+        mpFileWriter = *i;
+
+    if( !mpFileWriter )
+      bcierr << "Could not identify writer component for file format "
+             << "\"" << fileFormat << "\""
+             << endl;
+
+    availableFileWriters.erase( mpFileWriter );
+    for( writerSet::const_iterator i = availableFileWriters.begin();
+         i != availableFileWriters.end();
+         ++i )
+      delete *i;
+  }
+  // Check whether the next filter in the chain is of type SourceFilter.
+  // If this is the case, use it for preprocessing _before_ writing into the file.
+  GenericFilter* filter = GenericFilter::GetFilter<GenericFilter>();
+  if( filter && string( "SourceFilter" ) == ClassName( typeid( *filter ) ) )
+    mpSourceFilter = GenericFilter::PassFilter<GenericFilter>();
+}
+
+void
+DataIOFilter::Publish()
+{
   BEGIN_PARAMETER_DEFINITIONS
     // Parameters required to interpret a data file are listed here
     // to enforce their presence:
@@ -138,47 +181,11 @@ DataIOFilter::DataIOFilter()
     "StimulusTime 16 0 0 0",
   END_STATE_DEFINITIONS
 
-  // Find available GenericFileWriter descendants and determine which one to use.
-  typedef set<GenericFileWriter*> writerSet;
-  set<GenericFileWriter*> availableFileWriters;
-  for( GenericFileWriter* p = GenericFilter::PassFilter<GenericFileWriter>();
-       p != NULL;
-       p = GenericFilter::PassFilter<GenericFileWriter>() )
-    availableFileWriters.insert( p );
-
-  if( !availableFileWriters.empty() )
-  {
-    string fileFormat = "BCI2000";
-    if( Parameters->Exists( "FileFormat" ) ) {
-      fileFormat = string( Parameter( "FileFormat" ) );
-    }
-
-    string writerName = fileFormat + "FileWriter";
-    for( writerSet::const_iterator i = availableFileWriters.begin();
-         mpFileWriter == NULL && i != availableFileWriters.end();
-         ++i )
-      if( writerName == ClassName( typeid( **i ) ) )
-        mpFileWriter = *i;
-
-    if( mpFileWriter == NULL )
-      bcierr << "Could not identify writer component for file format "
-             << "\"" << fileFormat << "\""
-             << endl;
-
-    availableFileWriters.erase( mpFileWriter );
-    for( writerSet::const_iterator i = availableFileWriters.begin();
-         i != availableFileWriters.end();
-         ++i )
-      delete *i;
-  }
-  if( mpFileWriter != NULL )
+  if( mpFileWriter )
     mpFileWriter->CallPublish();
-
-  // Check whether the next filter in the chain is of type SourceFilter.
-  // If this is the case, use it for preprocessing _before_ writing into the file.
-  GenericFilter* filter = GenericFilter::GetFilter<GenericFilter>();
-  if( filter != NULL && string( "SourceFilter" ) == ClassName( typeid( *filter ) ) )
-    mpSourceFilter = GenericFilter::PassFilter<GenericFilter>();
+    
+  if( mpSourceFilter )
+    mpSourceFilter->CallPublish();
 }
 
 

@@ -27,9 +27,6 @@
 #pragma hdrstop
 
 #include "GenericFilter.h"
-#include "BCIError.h"
-#include "ClassName.h"
-#include <limits>
 
 using namespace std;
 using namespace bci;
@@ -40,12 +37,12 @@ static const string sEmptyPos = "";
 
 GenericFilter::GenericFilter()
 {
-  if( Environment::Phase() != construction )
-    bcierr_ << "GenericFilter descendant of type \""
-            << ClassName( typeid( *this ) )
-            << "\" instantiated outside construction phase."
-            << endl;
   AllFilters().push_back( this );
+}
+
+GenericFilter::~GenericFilter()
+{
+  AllFilters().remove( this );
 }
 
 #ifdef __BORLANDC__
@@ -192,6 +189,14 @@ GenericFilter::ChainInfo::WriteToStream( ostream& os )
 
 // Wrapper functions for "handler" calls.
 void
+GenericFilter::CallPublish()
+{
+  ErrorContext( "Publish", this );
+  this->Publish();
+  ErrorContext( "" );
+}
+
+void
 GenericFilter::CallPreflight( const SignalProperties& Input,
                                     SignalProperties& Output ) const
 {
@@ -294,6 +299,8 @@ GenericFilter::InstantiateFilters()
     }
     ErrorContext( "" );
   }
+  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+    ( *i )->CallPublish();
 }
 
 void
@@ -428,4 +435,3 @@ GenericFilter::NewInstance( const GenericFilter* existingInstance )
     newInstance = registrarFound->NewInstance();
   return newInstance;
 }
-

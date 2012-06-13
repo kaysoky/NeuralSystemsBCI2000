@@ -44,6 +44,7 @@
 #include "PhysicalUnit.h"
 #include "MeasurementUnits.h"
 #include "BCIEvent.h"
+#include "BCIAssert.h"
 
 #include <cstdlib>
 
@@ -53,21 +54,15 @@ using namespace bci;
 ////////////////////////////////////////////////////////////////////////////////
 // EnvironmentBase definitions
 ////////////////////////////////////////////////////////////////////////////////
-#undef paramlist_
-#undef statelist_
-#undef statevector_
+ParamList* EnvironmentBase::Accessor_<ParamList>::spGlobal = NULL;
+StateList* EnvironmentBase::Accessor_<StateList>::spGlobal = NULL;
+StateVector* EnvironmentBase::Accessor_<StateVector>::spGlobal = NULL;
+
 #undef phase_
-ParamList*   EnvironmentBase::paramlist_ = NULL;
-StateList*   EnvironmentBase::statelist_ = NULL;
-StateVector* EnvironmentBase::statevector_ = NULL;
 EnvironmentBase::ExecutionPhase EnvironmentBase::phase_ = EnvironmentBase::nonaccess;
-
-EnvironmentBase::paramlistAccessor   EnvironmentBase::Parameters;
-EnvironmentBase::statelistAccessor   EnvironmentBase::States;
-EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
-
 int EnvironmentBase::sMaxInstanceID = 0;
-OSThreadLocal<const EnvironmentBase*> EnvironmentBase::sObjectContext;
+OSThreadLocal<const EnvironmentBase*> EnvironmentBase::stObjectContext;
+OSThreadLocal<const EnvironmentBase*> EnvironmentBase::stWrapperContext;
 
 #ifdef __BORLANDC__
 # pragma warn -8104 // No warning about local statics.
@@ -122,17 +117,30 @@ EnvironmentBase::StatesAccessedDuringPreflight()
   return instance;
 }
 
+// Constructors
+EnvironmentBase::EnvironmentBase()
+: mInstance( ++sMaxInstanceID )
+{
+}
+
+EnvironmentBase::EnvironmentBase( ParamList& rParameters, StateList& rStates, StateVector& rStatevector )
+: mInstance( ++sMaxInstanceID ),
+  Parameters( &rParameters ),
+  States( &rStates ),
+  Statevector( &rStatevector )
+{
+}
+
 // Destructor
 EnvironmentBase::~EnvironmentBase()
 {
 }
 
-
 // Helper function to construct and set a context string for displaying errors.
 void
 EnvironmentBase::ErrorContext( const std::string& inQualifier, const EnvironmentBase* inpObject )
 {
-  sObjectContext = inpObject;
+  stObjectContext = inpObject;
   string context;
   if( inpObject != NULL )
   {
@@ -147,7 +155,17 @@ EnvironmentBase::ErrorContext( const std::string& inQualifier, const Environment
 const EnvironmentBase*
 EnvironmentBase::ObjectContext() const
 {
-  return sObjectContext ? sObjectContext : this;
+  return stObjectContext ? stObjectContext : this;
+}
+
+bool
+EnvironmentBase::IsGlobalEnvironment() const
+{
+  bool result =
+   Parameters == Accessor_<ParamList>::spGlobal
+   && States == Accessor_<StateList>::spGlobal
+   && Statevector == Accessor_<StateVector>::spGlobal;
+  return result;
 }
 
 // Convenient accessor functions.
@@ -221,10 +239,13 @@ EnvironmentBase::DescribeValue( const Param& inParam, size_t inIdx1, size_t inId
 void
 EnvironmentBase::ParamAccess( const string& inName ) const
 {
-  NameSet& accessedParams = ParamsAccessedDuringPreflight()[ObjectContext()];
-  if( Phase() == preflight )
-    accessedParams.insert( inName );
-  OnParamAccess( inName );
+  if( IsGlobalEnvironment() )
+  {
+    NameSet& accessedParams = ParamsAccessedDuringPreflight()[ObjectContext()];
+    if( Phase() == preflight )
+      accessedParams.insert( inName );
+    OnParamAccess( inName );
+  }
 }
 
 bool
@@ -288,10 +309,17 @@ const StateList*
 EnvironmentBase::StateListAccess() const
 {
   const StateList* pStatelist = NULL;
-  if( phase_ != processing )
-    pStatelist = States;
+  if( IsGlobalEnvironment() )
+  {
+    if( phase_ != processing )
+      pStatelist = States;
+    else if( Statevector != NULL )
+      pStatelist = &Statevector->StateList();
+  }
   else if( Statevector != NULL )
     pStatelist = &Statevector->StateList();
+  else
+    pStatelist = States;
 
   if( pStatelist == NULL )
     bcierr_ << "States are inaccessible at this time."
@@ -303,10 +331,13 @@ EnvironmentBase::StateListAccess() const
 void
 EnvironmentBase::StateAccess( const string& inName ) const
 {
-  NameSet& accessedStates = StatesAccessedDuringPreflight()[ObjectContext()];
-  if( Phase() == preflight )
-    accessedStates.insert( inName );
-  OnStateAccess( inName );
+  if( IsGlobalEnvironment() )
+  {
+    NameSet& accessedStates = StatesAccessedDuringPreflight()[ObjectContext()];
+    if( Phase() == preflight )
+      accessedStates.insert( inName );
+    OnStateAccess( inName );
+  }
 }
 
 // Called to prevent access.
@@ -354,9 +385,9 @@ void EnvironmentBase::EnterNonaccessPhase()
       bcierr << "Unknown execution phase" << endl;
   }
   phase_ = nonaccess;
-  paramlist_ = NULL;
-  statelist_ = NULL;
-  statevector_ = NULL;
+  Accessor_<ParamList>::spGlobal = NULL;
+  Accessor_<StateList>::spGlobal = NULL;
+  Accessor_<StateVector>::spGlobal = NULL;
 }
 // Called from the framework before any Environment descendant class
 // is instantiated.
@@ -368,12 +399,12 @@ void EnvironmentBase::EnterConstructionPhase( ParamList*   inParamList,
   bciout__.SetFlushHandler( BCIError::Warning );
   bcidbg__.SetFlushHandler( BCIError::DebugMessage );
   phase_ = construction;
-  paramlist_ = inParamList;
-  statelist_ = inStateList;
-  statevector_ = inStateVector;
-  if( paramlist_->Exists( "DebugLevel" ) )
+  Accessor_<ParamList>::spGlobal = inParamList;
+  Accessor_<StateList>::spGlobal = inStateList;
+  Accessor_<StateVector>::spGlobal = inStateVector;
+  if( inParamList->Exists( "DebugLevel" ) )
     BCIError::OutStream::SetDebugLevel(
-      ::atoi( ( *paramlist_ )[ "DebugLevel" ].Value().c_str() )
+      ::atoi( ( *inParamList )[ "DebugLevel" ].Value().c_str() )
     );
   OwnedParams().clear();
   OwnedStates().clear();
@@ -394,21 +425,21 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
   bcierr__.SetFlushHandler( BCIError::ConfigurationError );
   bciout__.SetFlushHandler( BCIError::Warning );
   phase_ = preflight;
-  paramlist_ = inParamList;
-  statelist_ = inStateList;
-  statevector_ = NULL;
-  if( paramlist_->Exists( "DebugLevel" ) )
+  Accessor_<ParamList>::spGlobal = inParamList;
+  Accessor_<StateList>::spGlobal = inStateList;
+  Accessor_<StateVector>::spGlobal = NULL;
+  if( inParamList->Exists( "DebugLevel" ) )
     BCIError::OutStream::SetDebugLevel(
-      ::atoi( ( *paramlist_ )[ "DebugLevel" ].Value().c_str() )
+      ::atoi( ( *inParamList )[ "DebugLevel" ].Value().c_str() )
     );
 
   ParamsRangeChecked().clear();
-  if( Parameters != NULL )
+  if( inParamList != NULL )
   {
     for( NameSetMap::const_iterator i = OwnedParams().begin(); i != OwnedParams().end(); ++i )
       for( NameSet::const_iterator j = i->second.begin(); j != i->second.end(); ++j )
       {
-        const Param& p = ( *Parameters )[ *j ];
+        const Param& p = ( *inParamList )[ *j ];
         const string& lowRangeStr = p.LowRange(),
                     & highRangeStr = p.HighRange();
         bool checkLowRange = ( !lowRangeStr.empty() ),
@@ -448,8 +479,8 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
   ParamsAccessedDuringPreflight().clear();
   StatesAccessedDuringPreflight().clear();
 
-  if( Parameters != NULL )
-    MeasurementUnits::Initialize( *Parameters );
+  if( inParamList != NULL )
+    MeasurementUnits::Initialize( *inParamList );
 
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallPreflight();
@@ -463,9 +494,9 @@ void EnvironmentBase::EnterInitializationPhase( ParamList*   inParamList,
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
   phase_ = initialization;
-  paramlist_ = inParamList;
-  statelist_ = inStateList;
-  statevector_ = inStateVector;
+  Accessor_<ParamList>::spGlobal = inParamList;
+  Accessor_<StateList>::spGlobal = inStateList;
+  Accessor_<StateVector>::spGlobal = inStateVector;
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallInitialize();
 }
@@ -479,9 +510,9 @@ void EnvironmentBase::EnterStartRunPhase( ParamList*   inParamList,
   bciout__.SetFlushHandler( BCIError::Warning );
   BCIEvent::AllowEvents();
   phase_ = startRun;
-  paramlist_ = inParamList;
-  statelist_ = inStateList;
-  statevector_ = inStateVector;
+  Accessor_<ParamList>::spGlobal = inParamList;
+  Accessor_<StateList>::spGlobal = inStateList;
+  Accessor_<StateVector>::spGlobal = inStateVector;
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallStartRun();
 }
@@ -494,9 +525,9 @@ void EnvironmentBase::EnterProcessingPhase( ParamList*   inParamList,
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
   phase_ = processing;
-  paramlist_ = inParamList;
-  statelist_ = inStateList;
-  statevector_ = inStateVector;
+  Accessor_<ParamList>::spGlobal = inParamList;
+  Accessor_<StateList>::spGlobal = inStateList;
+  Accessor_<StateVector>::spGlobal = inStateVector;
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallProcess();
 }
@@ -509,11 +540,11 @@ void EnvironmentBase::EnterStopRunPhase( ParamList*   inParamList,
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
   phase_ = stopRun;
-  paramlist_ = inParamList;
-  statelist_ = inStateList;
-  statevector_ = inStateVector;
-  for( int i = 0; i < paramlist_->Size(); ++i )
-    ( *paramlist_ )[ i ].Unchanged();
+  Accessor_<ParamList>::spGlobal = inParamList;
+  Accessor_<StateList>::spGlobal = inStateList;
+  Accessor_<StateVector>::spGlobal = inStateVector;
+  for( int i = 0; i < inParamList->Size(); ++i )
+    ( *inParamList )[ i ].Unchanged();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallStopRun();
 }
@@ -526,11 +557,11 @@ void EnvironmentBase::EnterRestingPhase( ParamList*   inParamList,
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
   phase_ = resting;
-  paramlist_ = inParamList;
-  statelist_ = inStateList;
-  statevector_ = inStateVector;
-  for( int i = 0; i < paramlist_->Size(); ++i )
-    ( *paramlist_ )[ i ].Unchanged();
+  Accessor_<ParamList>::spGlobal = inParamList;
+  Accessor_<StateList>::spGlobal = inStateList;
+  Accessor_<StateVector>::spGlobal = inStateVector;
+  for( int i = 0; i < inParamList->Size(); ++i )
+    ( *inParamList )[ i ].Unchanged();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallResting();
 }

@@ -42,6 +42,7 @@ class DataIOFilter: public GenericFilter
  public:
           DataIOFilter();
   virtual ~DataIOFilter();
+  virtual void Publish();
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const;
   virtual void Initialize( const SignalProperties& Input,

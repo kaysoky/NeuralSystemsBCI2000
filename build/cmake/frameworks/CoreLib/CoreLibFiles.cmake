@@ -6,11 +6,14 @@
 SET( SRC_BCI2000_SHARED_FILTERS 
   ${BCI2000_SRC_DIR}/shared/filters/GenericFilter.cpp
   ${BCI2000_SRC_DIR}/shared/filters/ChoiceCombination.cpp
+  ${BCI2000_SRC_DIR}/shared/filters/StandaloneFilters.cpp
 )
 SET( HDR_BCI2000_SHARED_FILTERS 
   ${BCI2000_SRC_DIR}/shared/filters/GenericFilter.h
+  ${BCI2000_SRC_DIR}/shared/filters/IdentityFilter.h
   ${BCI2000_SRC_DIR}/shared/filters/FilterCombination.h
   ${BCI2000_SRC_DIR}/shared/filters/ChoiceCombination.h
+  ${BCI2000_SRC_DIR}/shared/filters/StandaloneFilters.h
 )
 
 SET( SRC_BCI2000_SHARED_MODULES 

@@ -44,9 +44,13 @@ class GenericFilter : protected Environment, private Uncopyable
  protected:
           GenericFilter();
  public:
-  virtual ~GenericFilter() { AllFilters().remove( this ); }
+  virtual ~GenericFilter();
 
  protected:
+  // Traditionally, Parameters and States are announced from the Filter's
+  // constructor. For greater flexibility, we are migrating towards a separate
+  // Publish() method, but will maintain compatibility with existing code.
+  virtual void Publish() {}
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const = 0;
   // Initialize() performs initialization required when parameter settings
@@ -71,6 +75,7 @@ class GenericFilter : protected Environment, private Uncopyable
   virtual bool AllowsVisualization() const { return true; }
 
  public: // Calling interface to virtual functions -- allows for setting up context.
+  void CallPublish();
   void CallPreflight( const SignalProperties& Input,
                             SignalProperties& Output ) const;
   void CallInitialize( const SignalProperties& Input,

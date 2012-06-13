@@ -43,6 +43,7 @@
 #include "StateList.h"
 #include "StateRef.h"
 #include "BCIError.h"
+#include "BCIException.h"
 #include "ClassName.h"
 #include "OSThreadLocal.h"
 #include "BCIRegistry.h"
@@ -193,49 +194,81 @@ class EnvironmentBase
  // Protecting the constructor prevents instantiation of this class
  // outside its descendants.
  protected:
-  EnvironmentBase()
-    : mInstance( ++sMaxInstanceID )
-    {}
+  EnvironmentBase();
+  EnvironmentBase( ParamList&, StateList&, StateVector& );        
   virtual ~EnvironmentBase();
   int Instance() const
     { return mInstance; }
 
+ private:
  // Opaque references to environment objects.
  // These symbols have the syntax of pointers but allow for intercepting
  // access to the underlying objects.
+  template<class T> class Accessor_
+  {
+   friend class EnvironmentBase;
+   private:
+    Accessor_* operator&();
+    explicit Accessor_( T* inLocal = NULL )
+    : mpLocal( NULL )
+    { // The environment of an EnvironmentBase object is
+      // determined
+      // 1) by a constructor argument,
+      // 2) by the object context currently active in the thread,
+      // 3) by a "wrapper context" currently active in the thread.
+      // This mechanism ensures that EnvironmentBase objects that
+      // are part of, or created by, GenericFilter or 
+      // EnvironmentExtension objects "inherit" their environment
+      // from their "parent" objects.
+      // "Wrapper contexts" may be set during instantiation of 
+      // EnvironmentBase objects to attach created objects to
+      // a non-global environment.
+      if( inLocal )
+        mpLocal = inLocal;
+      else if( stObjectContext )
+        mpLocal = stObjectContext->Get_<T>();
+      else if( stWrapperContext )
+        mpLocal = stWrapperContext->Get_<T>();
+    }
+   public:
+    operator T*() const
+    { return mpLocal ? mpLocal : spGlobal; }
+    T* operator->() const
+    { return operator T*(); }
+   private:
+    T* mpLocal;
+    static T* spGlobal;
+  };
+  
  protected:
-  class paramlistAccessor;
-  friend class paramlistAccessor;
-  static class paramlistAccessor
+  Accessor_<ParamList> Parameters;
+  Accessor_<StateList> States;
+  Accessor_<StateVector> Statevector;
+ 
+ private:
+  template<class T> const Accessor_<T>& Get_() const;
+  template<> const Accessor_<ParamList>& Get_<ParamList>() const { return Parameters; }
+  template<> const Accessor_<StateList>& Get_<StateList>() const { return States; }
+  template<> const Accessor_<StateVector>& Get_<StateVector>() const { return Statevector; }
+  
+ protected:
+  // Instantiate a RAII WrapperContext object to temporarily set a wrapper context.
+  // WrapperContexts are necessary because EnvironmentBase descendants may access
+  // Parameters and States from their constructors where no ObjectContext is available.
+  class WrapperContext
   {
-   private:
-    paramlistAccessor* operator&();
    public:
-    operator ParamList*()   { return paramlist_; }
-    ParamList* operator->() { return paramlist_; }
-  } Parameters;
-
-  class statelistAccessor;
-  friend class statelistAccessor;
-  static class statelistAccessor
-  {
+    WrapperContext( const EnvironmentBase* p )
+    : mPrevious( stWrapperContext )
+    { stWrapperContext = p; }
+    ~WrapperContext()
+    { stWrapperContext = mPrevious; }
    private:
-    statelistAccessor* operator&();
-   public:
-    operator StateList*()   { return statelist_; }
-    StateList* operator->() { return statelist_; }
-  } States;
-
-  class statevectorAccessor;
-  friend class statevectorAccessor;
-  static class statevectorAccessor
-  {
-   private:
-    statevectorAccessor* operator&();
-   public:
-    operator StateVector*()   { return statevector_; }
-    StateVector* operator->() { return statevector_; }
-  } Statevector;
+    const EnvironmentBase* mPrevious;
+  };
+  
+ private:
+  bool IsGlobalEnvironment() const;
 
  protected:
   // Helper functions to construct and set an error context string.
@@ -249,7 +282,8 @@ class EnvironmentBase
   const EnvironmentBase* Base() const { return this; }
 
  private:
-  static OSThreadLocal<const EnvironmentBase*> sObjectContext;
+  static OSThreadLocal<const EnvironmentBase*> stObjectContext,
+                                               stWrapperContext;
 
  // Convenient accessor functions. These are not static, so we can identify
  // the caller as an object.
@@ -345,7 +379,7 @@ class EnvironmentBase
                                         StateVector* );
 
  protected:
-  void RegisterExtension__( EnvironmentExtension* p )   { Extensions().insert( p ); }
+  void RegisterExtension__( EnvironmentExtension* p ) { Extensions().insert( p ); }
   void UnregisterExtension( EnvironmentExtension* p ) { Extensions().erase( p ); }
 
  private:
@@ -364,18 +398,12 @@ class EnvironmentBase
   static NameSetMap& StatesAccessedDuringPreflight();
 
  private:
-  static ParamList*     paramlist_;
-  static StateList*     statelist_;
-  static StateVector*   statevector_;
   static ExecutionPhase phase_;
-  // No direct use of those members, please.
-  #define paramlist_    (void)
-  #define statelist_    (void)
-  #define statevector_  (void)
+  // No direct use of the phase_ member, please.
   #define phase_        (void)
 
  private:
-         int mInstance;
+  int mInstance;
   static int sMaxInstanceID;
 };
 

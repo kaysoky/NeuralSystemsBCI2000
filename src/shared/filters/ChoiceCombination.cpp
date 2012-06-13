@@ -45,6 +45,14 @@ ChoiceCombination::~ChoiceCombination()
 }
 
 void
+ChoiceCombination::Publish()
+{
+  GenericFilter::Publish();
+  for( size_t i = 0; i < mFilters.size(); ++i )
+    mFilters[i]->CallPublish();
+}
+
+void
 ChoiceCombination::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
 {
   bool configOK = true;

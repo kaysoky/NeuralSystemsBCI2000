@@ -44,6 +44,7 @@ template<class F1, class F2>
 class FilterCombination : public GenericFilter
 {
  private:
+   virtual void Publish();
    virtual void Preflight( const SignalProperties&, SignalProperties& ) const = 0;
    virtual void Initialize( const SignalProperties&, const SignalProperties& ) = 0;
    virtual void Process( const GenericSignal&, GenericSignal& ) = 0;
@@ -53,8 +54,8 @@ class FilterCombination : public GenericFilter
    virtual void Halt();
 
  protected:
-   F2 mFilter2; // reverse order of instantiation matters
    F1 mFilter1;
+   F2 mFilter2;
    mutable SignalProperties mProperties1,
                             mProperties2;
    GenericSignal mOutput1,
@@ -94,6 +95,15 @@ class LinearCombination : public FilterCombination<F1, F2>
 };
 
 // FilterCombination implementation
+
+template<class F1, class F2>
+void
+FilterCombination<F1, F2>::Publish()
+{
+  // reverse order of publication matters
+  mFilter2.CallPublish();
+  mFilter1.CallPublish();
+}
 
 template<class F1, class F2>
 void

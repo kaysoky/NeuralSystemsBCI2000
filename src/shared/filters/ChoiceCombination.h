@@ -46,6 +46,7 @@ class ChoiceCombination : public GenericFilter
      mFilters[inChoiceIdx] = new T;
    }
 
+   void Publish();
    void Preflight( const SignalProperties& Input, SignalProperties& Output ) const;
    void Initialize( const SignalProperties& Input, const SignalProperties& Output );
    void Process( const GenericSignal& Input, GenericSignal& Output );
