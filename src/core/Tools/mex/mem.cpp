@@ -32,6 +32,7 @@
 
 #include "mexutils.h"
 #include "ARFilter.h"
+#include "StandaloneFilters.h"
 #include "BCIError.h"
 #include "BCIException.h"
 #include <limits>
@@ -56,64 +57,6 @@
 using namespace std;
 
 const double eps = numeric_limits<double>::epsilon();
-
-class FilterWrapper // FilterWrappers are friends to the Environment class.
-{
- private:
-  FilterWrapper( const FilterWrapper& );
-  FilterWrapper& operator=( const FilterWrapper& );
-
- protected:
-  FilterWrapper( GenericFilter& inFilter )
-  : mrFilter( inFilter )
-  {
-    EnvironmentBase::EnterConstructionPhase( &mParameters, &mStates, NULL );
-  }
-
- public:
-  ParamRef Parameter( const std::string& s )
-  {
-    return ParamRef( &mParameters[s] );
-  }
-  void Initialize( const SignalProperties& Input, SignalProperties& Output )
-  {
-    EnvironmentBase::EnterNonaccessPhase();
-    mStates.AssignPositions();
-    mStatevector = StateVector( mStates );
-    EnvironmentBase::EnterPreflightPhase( &mParameters, &mStates, &mStatevector );
-    mrFilter.CallPreflight( Input, Output );
-    EnvironmentBase::EnterNonaccessPhase();
-    if( bcierr__.Flushes() == 0 )
-    {
-      EnvironmentBase::EnterInitializationPhase( &mParameters, &mStates, &mStatevector );
-      mrFilter.CallInitialize( Input, Output );
-      EnvironmentBase::EnterNonaccessPhase();
-      EnvironmentBase::EnterStartRunPhase( &mParameters, &mStates, &mStatevector );
-      mrFilter.CallStartRun();
-      EnvironmentBase::EnterNonaccessPhase();
-      EnvironmentBase::EnterProcessingPhase( &mParameters, &mStates, &mStatevector );
-    }
-  }
-  void Process( const GenericSignal& Input, GenericSignal& Output )
-  {
-    mrFilter.CallProcess( Input, Output );
-  }
-  void Halt()
-  {
-    EnvironmentBase::EnterNonaccessPhase();
-    EnvironmentBase::EnterStopRunPhase( &mParameters, &mStates, &mStatevector );
-    mrFilter.CallStopRun();
-    EnvironmentBase::EnterNonaccessPhase();
-    mrFilter.CallHalt();
-  }
-
- private:
-  GenericFilter& mrFilter;
-  ParamList mParameters;
-  StateList mStates;
-  StateVector mStatevector;
-};
-
 
 void
 BCIMexFunction( int nlhs, mxArray* plhs[],
@@ -182,13 +125,7 @@ BCIMexFunction( int nlhs, mxArray* plhs[],
     default:
       throw bciexception_( "Unknown detrend option." );
   }
-
-  struct ARWrapper : public FilterWrapper
-  {
-    ARWrapper() : FilterWrapper( mFilter ) {}
-    ARFilter mFilter;
-  } filter;
-
+  StandaloneFilter<ARFilter> filter;
   filter.Parameter( "WindowLength" ) = windowLength;
   filter.Parameter( "Detrend" ) = detrendOption;
   filter.Parameter( "ModelOrder" ) = modelOrder;
@@ -201,11 +138,10 @@ BCIMexFunction( int nlhs, mxArray* plhs[],
   int iSampleBlockSize = static_cast<int>( sampleBlockSize );
   SignalProperties inputProperties( numChannels, iSampleBlockSize );
   inputProperties.ElementUnit().SetGain( 1.0 / frequency ).SetSymbol( "s" );
-  SignalProperties outputProperties( inputProperties );
+  filter.SetConfig( inputProperties );
 
-  filter.Initialize( inputProperties, outputProperties );
-
-  int numBins = outputProperties.Elements(),
+  filter.Start();
+  int numBins = filter.Output().Elements(),
       samplesInWindow = static_cast<int>( windowLength * sampleBlockSize ),
       numBlocks = static_cast<int>( ( numSamples - samplesInWindow + sampleBlockSize ) / sampleBlockSize );
   const mwSize dims[] = { numBins, numChannels, numBlocks };
@@ -219,30 +155,31 @@ BCIMexFunction( int nlhs, mxArray* plhs[],
       outBinFreqs[bin] = ( firstBinCenter + bin * binWidth );
   }
 
-  GenericSignal input( inputProperties ),
-                output( outputProperties );
-  
+  GenericSignal input( inputProperties );
+
   int start = 0;
   while( start < ( samplesInWindow - iSampleBlockSize ) && start <= numSamples - iSampleBlockSize )
   { // Ignore filter output until its internal buffer has been filled with data.
     for( int ch = 0; ch < numChannels; ++ch )
       for( int s = 0; s < iSampleBlockSize; ++s )
         input( ch, s ) = inSignal[ch*numSamples + s + start];
-    filter.Process( input, output );
+    filter.Process( input );
     start += iSampleBlockSize;
   }
+
   int blockNum = 0;
   while( start <= numSamples - iSampleBlockSize )
-  { 
+  {
     for( int ch = 0; ch < numChannels; ++ch )
       for( int s = 0; s < iSampleBlockSize; ++s )
         input( ch, s ) = inSignal[ch*numSamples + s + start];
-    filter.Process( input, output );
+    filter.Process( input );
     for( int ch = 0; ch < numChannels; ++ch )
       for( int bin = 0; bin < numBins; ++bin )
-        outSpectrum[bin + ch*numBins + blockNum*numBins*numChannels] = output( ch, bin );
+        outSpectrum[bin + ch*numBins + blockNum*numBins*numChannels] = filter.Output()( ch, bin );
     start += iSampleBlockSize;
     ++blockNum;
   }
-  filter.Halt();
+  filter.Stop();
+
 }

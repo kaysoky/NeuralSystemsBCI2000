@@ -57,11 +57,11 @@ BCIError::ConfigurationError( const string& message )
 void
 BCIError::RuntimeError( const string& message )
 {
-  throw bciexception_( message );
+  ::mexWarnMsgTxt( ( "Runtime error: " + message + "\n" ).c_str () );
 }
 
 void
 BCIError::LogicError( const string& message )
 {
-  throw bciexception_( message );
+  ::mexWarnMsgTxt( ( "Logic error: " + message + "\n" ).c_str () );
 }
