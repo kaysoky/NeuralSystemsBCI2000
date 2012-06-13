@@ -5,23 +5,23 @@
  *                                       added receiving thread.
  *                                                                         *
  * $BEGIN_BCI2000_LICENSE$
- * 
+ *
  * This file is part of BCI2000, a platform for real-time bio-signal research.
  * [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
- * 
+ *
  * BCI2000 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * BCI2000 is distributed in the hope that it will be useful, but
  *                         WITHOUT ANY WARRANTY
  * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * $END_BCI2000_LICENSE$
  ***************************************************************************/
 
@@ -68,7 +68,7 @@ void mainUI::connectButCallback()
   //the ConnectorFilter.cpp file in the BCI2000/src/shared/modules/application folder
   bool sendconnected = true, recconnected = true;
   stringstream str;
-  
+
   {
     QMutexLocker locker( &mMutex ); // Protect access to recSocket.
     recConnection.close();
@@ -220,7 +220,7 @@ void mainUI::setupUI()
 void mainUI::setupConnectionGroup()
 {
   //create the connection group box and setup the signals/slots
-  connectGroup = new QGroupBox("Connection");
+  connectGroup = new QGroupBox("Communication Ports");
   //connectGroup->setGeometry(QRect(10, 180, 150, 150));
 
   connectLayout = new QVBoxLayout;
@@ -231,7 +231,7 @@ void mainUI::setupConnectionGroup()
   sendLabel = new QLabel("Output IP:Port");
   sendBox = new QLineEdit();
   sendBox->setText("localhost:20320");
-  connectBut = new QPushButton("Connect");
+  connectBut = new QPushButton("Open Ports");
   statusBox = new QLineEdit;
   connect(connectBut, SIGNAL(clicked()), this, SLOT(connectButCallback()));
 
