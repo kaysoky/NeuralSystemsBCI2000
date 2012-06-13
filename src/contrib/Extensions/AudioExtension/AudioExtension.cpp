@@ -63,7 +63,6 @@ string HOST_APIS[] =
 
 // Audio Defaults
 #define SAMPLE_RATE 44100
-#define FRAMES_PER_BUFFER 1024
 
 // Channel Types
 #define CHANNELTYPE_INPUT "INPUT" // Input Channel: INPUT[1] is Live (Mic) Channel 1
@@ -71,12 +70,6 @@ string HOST_APIS[] =
 #define CHANNELTYPE_TONE  "TONE" // Tone Generator: Sine wave at TONE[X] Hz where X is a positive integer.
 #define CHANNELTYPE_NOISE "NOISE" // White noise at SAMPLE_RATE.  NOISE[X] generates noise at X Hz
 // #define CHANNELTYPE_SQUARE "SQUARE" // Feel free to add your own!
-
-// Audio Envelopes -- Change these values to suit your needs
-// Parametrization of these values is a bad idea because the parameters can change
-// Between runs, but the number of "Event" states can only change at startup.
-#define NUM_INPUT_ENVELOPES 4
-#define NUM_OUTPUT_ENVELOPES 4
 
 enum RecordingFormat
 {
@@ -136,7 +129,6 @@ void AudioExtension::Publish()
   if( hostApi == 6 ) hostApi = 0;
   if( !hostApi ) return;
   
-  // TODO: Filter out unsupported APIs
   // Let the user know what hostapis are supported
   PaHostApiIndex numApis = Pa_GetHostApiCount();
   bcidbg( 0 ) << "PortAudio sees the following HostAPIs" << endl;
@@ -147,6 +139,10 @@ void AudioExtension::Publish()
                 << " devices." << endl;
     mSupportedAPIs.insert( Pa_GetHostApiInfo( i )->type );
   }
+  
+  mMaxInputEnvelopes = OptionalParameter( "MaxInputEnvelopes", 4 );
+  mMaxOutputEnvelopes = OptionalParameter( "MaxOutputEnvelopes", 4 );
+  mFramesPerBuffer = OptionalParameter( "AudioBufferSize", 1024 );
   
   stringstream hapis;
   hapis << "Source:AudioExtension int EnableAudioExtension= 0 0 0 " << SIZE_HOST_APIS - 1
@@ -166,9 +162,6 @@ void AudioExtension::Publish()
   
   // Define remaining parameters
   BEGIN_PARAMETER_DEFINITIONS
-    "Source:AudioExtension matrix AudioMixer= 0 2 % % %"
-    " // Expressions mix column output from row input",
-    
     "Source:AudioExtension int AudioInputDevice= -1 -1 -1 %"
     " // Device to use as input device (-1 = Default) ",
     
@@ -184,11 +177,25 @@ void AudioExtension::Publish()
     "Source:AudioExtension string AudioRecordOutput= %"
     " // Record mixer outputs to a file (boolean)",
     
+    "Source:AudioExtension matrix AudioMixer= 0 2 % % %"
+    " // Expressions mix column output from row input",
+    
     "Source:AudioExtension int AudioRecordingFormat= 0 0 0 2"
     " // Change compression settings on audio output files:"
     "    0: Raw, 1: Lossless, 2: Lossy, (enumeration)",
     
-    "Source:AudioExtension matrix AudioInputFilterbank= 0 {Type Order Cutoff1 Cutoff2} % % %"
+    /*
+    "Source:AudioExtension matrix AudioEnvelopes= "
+    "{Source Filterbank State} "
+    "0 "
+    " % % %"
+    " // Define audio envelope states and associated filters",
+    */
+    
+    "Source:AudioExtension matrix AudioInputFilterbank= "
+    "0 "
+    "{Type Order Cutoff1 Cutoff2} "
+    "% % %"
     " // Filterbank for audio input",
     
     "Source:AudioExtension matrix AudioOutputFilterbank= 0 {Type Order Cutoff1 Cutoff2} % % %"
@@ -199,10 +206,10 @@ void AudioExtension::Publish()
   END_PARAMETER_DEFINITIONS
   
   // Define Input Envelopes
-  for( int i = 0; i < NUM_INPUT_ENVELOPES; i++ )
+  for( size_t i = 0; i < mMaxInputEnvelopes; i++ )
   {
     stringstream eventDef;
-    eventDef << "AudioInEnvelope" << i << " 16 0 0 0";
+    eventDef << "AudioInEnvelope" << i + 1 << " 16 0 0 0";
     string eventString = eventDef.str();
     BEGIN_EVENT_DEFINITIONS
       eventString.c_str(),
@@ -210,10 +217,10 @@ void AudioExtension::Publish()
   }
   
   // Define Output Envelopes
-  for( int i = 0; i < NUM_OUTPUT_ENVELOPES; i++ )
+  for( size_t i = 0; i < mMaxOutputEnvelopes; i++ )
   {
     stringstream eventDef;
-    eventDef << "AudioOutEnvelope" << i << " 16 0 0 0";
+    eventDef << "AudioOutEnvelope" << i + 1 << " 16 0 0 0";
     string eventString = eventDef.str();
     BEGIN_EVENT_DEFINITIONS
       eventString.c_str(),
@@ -247,17 +254,17 @@ void AudioExtension::Preflight() const
   // Query existence of required states
   State( "Running" );
   
-  for( size_t i = 0; i < NUM_INPUT_ENVELOPES; i++ )
+  for( size_t i = 0; i < mMaxInputEnvelopes; i++ )
   {
     stringstream ss;
-    ss << "AudioInEnvelope" << i;
+    ss << "AudioInEnvelope" << i + 1;
     State( ss.str().c_str() ) = 0;
   }
   
-  for( size_t i = 0; i < NUM_OUTPUT_ENVELOPES; i++ )
+  for( size_t i = 0; i < mMaxOutputEnvelopes; i++ )
   {
     stringstream ss;
-    ss << "AudioOutEnvelope" << i;
+    ss << "AudioOutEnvelope" << i + 1;
     State( ss.str().c_str() ) = 0;
   }
   
@@ -381,8 +388,8 @@ void AudioExtension::Initialize()
   SignalProperties audioInputProperties;
   audioInputProperties.SetName( "InputAudioStream" );
   audioInputProperties.SetChannels( Parameter( "AudioMixer" )->NumRows() );
-  audioInputProperties.SetElements( FRAMES_PER_BUFFER );
-  audioInputProperties.SetUpdateRate( SAMPLE_RATE / FRAMES_PER_BUFFER );
+  audioInputProperties.SetElements( mFramesPerBuffer );
+  audioInputProperties.SetUpdateRate( SAMPLE_RATE / mFramesPerBuffer );
   audioInputProperties.SetType( SignalType::float32 );
   audioInputProperties.SetIsStream( true );
   mAudioInputBlock.SetProperties( audioInputProperties );
@@ -391,8 +398,8 @@ void AudioExtension::Initialize()
   SignalProperties audioOutputProperties;
   audioOutputProperties.SetName( "OutputAudioStream" );
   audioOutputProperties.SetChannels( Parameter( "AudioMixer" )->NumColumns() );
-  audioOutputProperties.SetElements( FRAMES_PER_BUFFER );
-  audioOutputProperties.SetUpdateRate( SAMPLE_RATE / FRAMES_PER_BUFFER );
+  audioOutputProperties.SetElements( mFramesPerBuffer );
+  audioOutputProperties.SetUpdateRate( SAMPLE_RATE / mFramesPerBuffer );
   audioOutputProperties.SetType( SignalType::float32 );
   audioOutputProperties.SetIsStream( true );
   mAudioOutputBlock.SetProperties( audioOutputProperties );
@@ -407,7 +414,7 @@ void AudioExtension::Initialize()
   FilterDesign::Real tfGain = 1.0f / abs( tf.Evaluate( 1.0 ) );
   
   mInputEnvelopeFilter.clear();
-  int numInputEnvelopes = min( mAudioInputBlock.Channels(), NUM_INPUT_ENVELOPES );
+  int numInputEnvelopes = min( mAudioInputBlock.Channels(), ( int )mMaxInputEnvelopes );
   for( int i = 0; i < numInputEnvelopes; i++ )
     mInputEnvelopeFilter.push_back( IIRFilter< FilterDesign::Real >()
       .SetGain( tfGain )
@@ -416,7 +423,7 @@ void AudioExtension::Initialize()
       .Initialize( 1 ) );
     
   mOutputEnvelopeFilter.clear();
-  int numOutputEnvelopes = min( mAudioOutputBlock.Channels(), NUM_OUTPUT_ENVELOPES );
+  int numOutputEnvelopes = min( mAudioOutputBlock.Channels(), ( int )mMaxOutputEnvelopes );
   for( int i = 0; i < numOutputEnvelopes; i++ )
     mOutputEnvelopeFilter.push_back( IIRFilter< FilterDesign::Real >()
       .SetGain( tfGain )
@@ -449,7 +456,7 @@ void AudioExtension::Initialize()
   
   // Open an output stream and delete temporary variables
   bool streamOpen = !pa_errcheck( Pa_OpenStream( &mpAudioStream, inputParameters, outputParameters,
-    SAMPLE_RATE, FRAMES_PER_BUFFER, NULL, AudioExtension::AudioCallback, this ) );
+    SAMPLE_RATE, mFramesPerBuffer, NULL, AudioExtension::AudioCallback, this ) );
   delete inputParameters;
   delete outputParameters;
   
@@ -473,9 +480,9 @@ void AudioExtension::Initialize()
 int AudioExtension::Execute()
 {
   // Create buffers for sound file input and output
-  float* fileInputBuf = mpAudioInputFile ? new float[ FRAMES_PER_BUFFER * mFileChannels ] : NULL;
-  float* fileRecInBuf = mpAudioRecInputFile ? new float[ FRAMES_PER_BUFFER * mChannelDef.size() ] : NULL;
-  float* fileRecOutBuf = mpAudioRecOutputFile ? new float[ FRAMES_PER_BUFFER * mOutputChannels ] : NULL;
+  float* fileInputBuf = mpAudioInputFile ? new float[ mFramesPerBuffer * mFileChannels ] : NULL;
+  float* fileRecInBuf = mpAudioRecInputFile ? new float[ mFramesPerBuffer * mChannelDef.size() ] : NULL;
+  float* fileRecOutBuf = mpAudioRecOutputFile ? new float[ mFramesPerBuffer * mOutputChannels ] : NULL;
   
   while( !IsTerminating() )
   {
@@ -485,10 +492,10 @@ int AudioExtension::Execute()
       // Gather file input and add to the input block
       if( mpAudioInputFile )
       {
-        sf_count_t readSize = sf_readf_float( mpAudioInputFile, fileInputBuf, FRAMES_PER_BUFFER );
+        sf_count_t readSize = sf_readf_float( mpAudioInputFile, fileInputBuf, mFramesPerBuffer );
         for( size_t row = 0; row < mChannelDef.size(); row++ )
           if( mChannelDef[ row ].first == CHANNELTYPE_FILE )
-            for( int idx = mChannelDef[ row ].second; idx < FRAMES_PER_BUFFER * mFileChannels; idx += mFileChannels )
+            for( size_t idx = mChannelDef[ row ].second; idx < mFramesPerBuffer * mFileChannels; idx += mFileChannels )
               mAudioInputBlock.SetValue( row, idx / mFileChannels, readSize ? fileInputBuf[ idx ] : 0.0f );
       }
       
@@ -497,7 +504,7 @@ int AudioExtension::Execute()
       {
         int frequency = mChannelDef[i].second;
         if( mChannelDef[i].first == CHANNELTYPE_TONE )
-          for( int frame = 0; frame < FRAMES_PER_BUFFER; frame++ )
+          for( size_t frame = 0; frame < mFramesPerBuffer; frame++ )
             mAudioInputBlock.SetValue( i, frame, sin( 2 * M_PI * frequency * ( ( mFrameCount + frame ) / ( float )SAMPLE_RATE ) ) );
 
         if( mChannelDef[i].first == CHANNELTYPE_NOISE )
@@ -506,7 +513,7 @@ int AudioExtension::Execute()
           int period = frequency = SAMPLE_RATE / frequency;
           if( period < 1 ) period = 1;
           float val = ( float )mAudioInputBlock.Value( i, mAudioInputBlock.Elements() - 1 );
-          for( int frame = 0; frame < FRAMES_PER_BUFFER; frame++ )
+          for( size_t frame = 0; frame < mFramesPerBuffer; frame++ )
           {
             if( ( mFrameCount + frame ) % period == 0 )
               val = ( float )mRand.Random() / ( float )mRand.RandMax();
@@ -519,10 +526,10 @@ int AudioExtension::Execute()
       if( mpAudioRecInputFile )
       {
         int idx = 0;
-        for( int frame = 0; frame < FRAMES_PER_BUFFER; frame++ )
+        for( size_t frame = 0; frame < mFramesPerBuffer; frame++ )
           for( size_t chan = 0; chan < mChannelDef.size(); chan++ )
             fileRecInBuf[ idx++ ] = ( float )mAudioInputBlock( chan, frame );
-        sf_writef_float( mpAudioRecInputFile, fileRecInBuf, FRAMES_PER_BUFFER );
+        sf_writef_float( mpAudioRecInputFile, fileRecInBuf, mFramesPerBuffer );
       }
       
       // Extract input envelopes and push to events
@@ -534,18 +541,18 @@ int AudioExtension::Execute()
         Rectify::FullWaveRectify( channelData, channelData );
         mInputEnvelopeFilter[chan].Process( channelData, channelData );
         unsigned short value = unsigned short( RootMeanSquare( channelData ) * 65535.0f );
-        bcievent << "AudioInEnvelope" << chan << " " << value;
+        bcievent << "AudioInEnvelope" << chan + 1 << " " << value;
       }
 
       // Mix input to output block
       for( int outChan = 0; outChan < mAudioOutputBlock.Channels(); outChan++ )
       {
-        for( int frame = 0; frame < FRAMES_PER_BUFFER; frame++ )
+        for( size_t frame = 0; frame < mFramesPerBuffer; frame++ )
           mAudioOutputBlock.SetValue( outChan, frame, 0.0f );
         for( size_t inChan = 0; inChan < mMixer.size(); inChan++ )
         {
           float gain = mGainMatrix[ inChan ][ outChan ];
-          for( int frame = 0; frame < FRAMES_PER_BUFFER; frame++ )
+          for( size_t frame = 0; frame < mFramesPerBuffer; frame++ )
           {
             float newValue = ( float )mAudioOutputBlock( outChan, frame );
             newValue = newValue + ( gain * ( float )mAudioInputBlock( inChan, frame ) );
@@ -563,21 +570,21 @@ int AudioExtension::Execute()
         Rectify::FullWaveRectify( channelData, channelData );
         mOutputEnvelopeFilter[chan].Process( channelData, channelData );
         unsigned short value = unsigned short( RootMeanSquare( channelData ) * 65535.0f );
-        bcievent << "AudioOutEnvelope" << chan << " " << value;
+        bcievent << "AudioOutEnvelope" << chan + 1 << " " << value;
       }
       
       // Record output block to sound file if necessary
       if( mpAudioRecOutputFile )
       {
         int idx = 0;
-        for( int frame = 0; frame < FRAMES_PER_BUFFER; frame++ )
+        for( size_t frame = 0; frame < mFramesPerBuffer; frame++ )
           for( int chan = 0; chan < mOutputChannels; chan++ )
             fileRecOutBuf[ idx++ ] = ( float )mAudioOutputBlock( chan, frame );
-        sf_writef_float( mpAudioRecOutputFile, fileRecOutBuf, FRAMES_PER_BUFFER );
+        sf_writef_float( mpAudioRecOutputFile, fileRecOutBuf, mFramesPerBuffer );
       }
       
       // Push the new sample count to an event
-      mFrameCount += FRAMES_PER_BUFFER;
+      mFrameCount += mFramesPerBuffer;
       bcievent << "AudioFrame " << mFrameCount ;
       
       // Mark this buffer as processed
@@ -709,8 +716,8 @@ int AudioExtension::AudioCallback( const void *inputBuffer, void *outputBuffer,
   int inputChannels = audioExtension->mInputChannels;
   for( size_t row = 0; row < audioExtension->mChannelDef.size(); row++ )
     if( audioExtension->mChannelDef[ row ].first == CHANNELTYPE_INPUT )
-      for( int idx = audioExtension->mChannelDef[ row ].second; 
-           idx < FRAMES_PER_BUFFER * inputChannels;
+      for( size_t idx = audioExtension->mChannelDef[ row ].second; 
+           idx < audioExtension->mFramesPerBuffer * inputChannels;
            idx += inputChannels )
         audioExtension->mAudioInputBlock.SetValue( row, idx / inputChannels, in[ idx ] );
   

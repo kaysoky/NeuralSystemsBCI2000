@@ -78,8 +78,10 @@ class AudioExtension : public EnvironmentExtension, public OSThread
                                      mAudioInputEnvelope,
                                      mAudioOutputEnvelope;
   
-  unsigned int                       mFrameCount,
-                                     mFramesPerBuffer;
+  unsigned int                       mFrameCount;
+  size_t                             mFramesPerBuffer,
+                                     mMaxInputEnvelopes,
+                                     mMaxOutputEnvelopes;
   
   int                                mInputChannels,
                                      mOutputChannels,
