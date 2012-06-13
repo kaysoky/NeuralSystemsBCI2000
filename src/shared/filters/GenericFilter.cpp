@@ -27,6 +27,8 @@
 #pragma hdrstop
 
 #include "GenericFilter.h"
+#include "ClassName.h"
+#include <limits>
 
 using namespace std;
 using namespace bci;
