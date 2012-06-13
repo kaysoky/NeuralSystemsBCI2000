@@ -7,14 +7,25 @@
 //   This allows BCI2000 filters to be used independently of the main processing
 //   chain, e.g. for processing visualization data.
 //
-//   After instantiating a StandaloneChain, use AddFilter<>() to populate its
-//   list of filters. Once the chain is populated, set its parameters using the
-//   Parameter() function. Then, call SetConfig() to apply the current set of
-//   parameters. Call Start() to begin processing, and Process() for each block
-//   of data. When finished with processing, call Stop().
+//   To use a filter in standalone mode, do
 //
-//   For convenience in situations where only a single filter is to be used,
-//   there exists a Standalone class template.
+//     StandaloneFilter<MyFilter> filter;
+//     filter.Parameter( "MyParameter" ) = "something";
+//     filter.Parameter( "MyOtherParameter" ) = 10.4;
+//     filter.SetConfig( myInputSignalProperties );
+//     filter.Start();
+//     while( ... )
+//     {
+//       ...
+//       filter.Process( myInputSignal );
+//       const GenericSignal& output = filter.Output();
+//       ...
+//     }
+//     filter.Stop();
+//
+//   When instantiating a StandaloneChain, use AddFilter<>() to populate it
+//   with filters in the desired order. Once the chain is populated, proceed
+//   with parameterizing the chain as exemplified above.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
