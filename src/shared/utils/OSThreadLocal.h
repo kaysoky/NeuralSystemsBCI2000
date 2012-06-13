@@ -40,12 +40,13 @@ class OSThreadLocal : public Uncopyable
  public:
   OSThreadLocal();
   ~OSThreadLocal();
-  T& operator=( const T& t ) { return *Data() = t; }
-  operator T&() { return *Data(); }
-  operator const T&() const { return *Data(); }
+  T operator=( T t ) { Set( t ); return t; }
+  operator T() const { return Get(); }
+  T operator->() const { return Get(); }
 
  private:
-  T* Data() const;
+  void Set( T );
+  T Get() const;
 #if _WIN32
   DWORD mIndex;
 #else
@@ -59,21 +60,26 @@ template<typename T>
 OSThreadLocal<T>::OSThreadLocal()
 : mIndex( ::TlsAlloc() )
 {
-  ::TlsSetValue( mIndex, new T );
 }
 
 template<typename T>
 OSThreadLocal<T>::~OSThreadLocal()
 {
-  delete Data();
   ::TlsFree( mIndex );
 }
 
 template<typename T>
-T*
-OSThreadLocal<T>::Data() const
+void
+OSThreadLocal<T>::Set( T t )
 {
-  return reinterpret_cast<T*>( ::TlsGetValue( mIndex ) );
+  ::TlsSetValue( mIndex, const_cast<void*>( reinterpret_cast<const void*>( t ) ) );
+}
+
+template<typename T>
+T
+OSThreadLocal<T>::Get() const
+{
+  return reinterpret_cast<T>( ::TlsGetValue( mIndex ) );
 }
 
 #else // _WIN32
@@ -82,21 +88,26 @@ template<typename T>
 OSThreadLocal<T>::OSThreadLocal()
 {
   pthread_key_create( &mKey, NULL );
-  pthread_setspecific( mKey, new T );
 }
 
 template<typename T>
 OSThreadLocal<T>::~OSThreadLocal()
 {
-  delete Data();
   pthread_key_delete( mKey );
 }
 
 template<typename T>
-T*
-OSThreadLocal<T>::Data() const
+void
+OSThreadLocal<T>::Set( T t )
 {
-  return reinterpret_cast<T*>( pthread_getspecific( mKey ) );
+  pthread_setspecific( mKey, const_cast<void*>( reinterpret_cast<const void*>( t ) ) );
+}
+
+template<typename T>
+T
+OSThreadLocal<T>::Get() const
+{
+  return reinterpret_cast<T>( pthread_getspecific( mKey ) );
 }
 
 

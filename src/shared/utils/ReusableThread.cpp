@@ -33,9 +33,11 @@
 #pragma hdrstop
 
 #include "ReusableThread.h"
+#include "BCIException.h"
 
 ReusableThread::ReusableThread()
-: mpRunnable( NULL )
+: mAlive( true ),
+  mpRunnable( NULL )
 {
   mFinishedEvent.Set();
   OSThread::Start();
@@ -52,6 +54,9 @@ ReusableThread::~ReusableThread()
 bool
 ReusableThread::Run( Runnable& inRunnable )
 {
+  if( !mAlive )
+    throw bciexception( "Thread is no longer available for execution" );
+    
   if( mpRunnable )
     return false;
 
@@ -86,4 +91,15 @@ ReusableThread::OnExecute()
     mFinishedEvent.Set();
   }
   return 0;
+}
+
+void
+ReusableThread::OnFinished()
+{
+  if( mpRunnable )
+  {
+    mFinishedEvent.Set();
+    mpRunnable = NULL;
+  }
+  mAlive = false;
 }

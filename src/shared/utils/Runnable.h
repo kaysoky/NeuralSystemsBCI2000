@@ -115,6 +115,18 @@ template<typename T1, typename T2, typename T3> class FunctionCall< void(T1,T2,T
   T2 t2;
   T3 t3;
 };
+template<typename T1, typename T2, typename T3, typename T4> class FunctionCall< void(T1,T2,T3,T4) > : public Runnable
+{
+ public:
+  FunctionCall( void (*f)(T1,T2,T3,T4), T1 t1, T2 t2, T3 t3, T4 t4 ) : f(f), t1(t1), t2(t2), t3(t3), t4(t4) {}
+ private:
+  void OnRun() { f(t1,t2,t3,t4); }
+  void (*f)(T1,T2,T3,T4);
+  T1 t1;
+  T2 t2;
+  T3 t3;
+  T4 t4;
+};
 // Static function, non-void return type
 template<typename R> class FunctionCall< R() > : public Runnable, public FunctionResult_<R>
 {

@@ -44,14 +44,17 @@ class ReusableThread : private OSThread
 
   bool Run( Runnable& );
   bool Busy() const;
+  bool Alive() const;
   bool Wait( int timeout = OSEvent::cInfiniteTimeout );
 
  private:
-  int OnExecute(); // overridden from OSThread
+  int OnExecute();
+  void OnFinished();
 
   OSEvent mStartEvent,
           mFinishedEvent;
+  volatile bool mAlive;
   Runnable* volatile mpRunnable;
 };
 
-#endif // RUNNER_THREAD_H
+#endif // REUSABLE_THREAD_H

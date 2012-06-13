@@ -288,9 +288,9 @@ ParameterfileType::Load( CommandInterpreter& inInterpreter )
     throw bciexception_( "Must specify a file name" );
   fileName = FileUtils::AbsolutePath( fileName );
   if( !inInterpreter.StateMachine().Parameters().Load( fileName.c_str(), false ) )
-    throw bciexception_( "Could not load " << fileName << " as a parameter file" );
+    throw bciexception_( "Could not load \"" << fileName << "\" as a parameter file" );
   inInterpreter.StateMachine().ParameterChange();
-  inInterpreter.Log() << "Loaded parameter file " << fileName;
+  inInterpreter.Log() << "Loaded parameter file \"" << fileName << "\"";
   return true;
 }
 
