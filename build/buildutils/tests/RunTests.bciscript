@@ -50,6 +50,7 @@ If Execute script $TestingDir/ProcessTestData $DataDir/test $DataDir/ref
   Set Success true
 Else
   Echo Executable test failed.
+  Echo See the *_Results.txt files for details.
   Set Success false
 End
 Exit $Success

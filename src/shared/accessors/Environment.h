@@ -195,7 +195,7 @@ class EnvironmentBase
  // outside its descendants.
  protected:
   EnvironmentBase();
-  EnvironmentBase( ParamList&, StateList&, StateVector& );        
+  EnvironmentBase( ParamList&, StateList&, StateVector& );
   virtual ~EnvironmentBase();
   int Instance() const
     { return mInstance; }
@@ -217,10 +217,10 @@ class EnvironmentBase
       // 2) by the object context currently active in the thread,
       // 3) by a "wrapper context" currently active in the thread.
       // This mechanism ensures that EnvironmentBase objects that
-      // are part of, or created by, GenericFilter or 
+      // are part of, or created by, GenericFilter or
       // EnvironmentExtension objects "inherit" their environment
       // from their "parent" objects.
-      // "Wrapper contexts" may be set during instantiation of 
+      // "Wrapper contexts" may be set during instantiation of
       // EnvironmentBase objects to attach created objects to
       // a non-global environment.
       if( inLocal )
@@ -239,18 +239,15 @@ class EnvironmentBase
     T* mpLocal;
     static T* spGlobal;
   };
-  
+
  protected:
   Accessor_<ParamList> Parameters;
   Accessor_<StateList> States;
   Accessor_<StateVector> Statevector;
- 
+
  private:
   template<class T> const Accessor_<T>& Get_() const;
-  template<> const Accessor_<ParamList>& Get_<ParamList>() const { return Parameters; }
-  template<> const Accessor_<StateList>& Get_<StateList>() const { return States; }
-  template<> const Accessor_<StateVector>& Get_<StateVector>() const { return Statevector; }
-  
+
  protected:
   // Instantiate a RAII WrapperContext object to temporarily set a wrapper context.
   // WrapperContexts are necessary because EnvironmentBase descendants may access
@@ -266,7 +263,7 @@ class EnvironmentBase
    private:
     const EnvironmentBase* mPrevious;
   };
-  
+
  private:
   bool IsGlobalEnvironment() const;
 
@@ -487,6 +484,30 @@ class EnvironmentExtension : protected Environment
   static AutoDeleteSet& AutoDeleteInstance();
   friend struct AutoDeleteSet;
 };
+
+template<>
+inline
+const EnvironmentBase::Accessor_<ParamList>&
+EnvironmentBase::Get_<ParamList>() const
+{
+  return Parameters;
+}
+
+template<>
+inline
+const EnvironmentBase::Accessor_<StateList>&
+EnvironmentBase::Get_<StateList>() const
+{
+  return States;
+}
+
+template<>
+inline
+const EnvironmentBase::Accessor_<StateVector>&
+EnvironmentBase::Get_<StateVector>() const
+{
+  return Statevector;
+}
 
 #endif // ENVIRONMENT_H
 

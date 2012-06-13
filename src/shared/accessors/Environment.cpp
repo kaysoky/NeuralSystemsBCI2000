@@ -54,9 +54,9 @@ using namespace bci;
 ////////////////////////////////////////////////////////////////////////////////
 // EnvironmentBase definitions
 ////////////////////////////////////////////////////////////////////////////////
-ParamList* EnvironmentBase::Accessor_<ParamList>::spGlobal = NULL;
-StateList* EnvironmentBase::Accessor_<StateList>::spGlobal = NULL;
-StateVector* EnvironmentBase::Accessor_<StateVector>::spGlobal = NULL;
+template<> ParamList* EnvironmentBase::Accessor_<ParamList>::spGlobal = NULL;
+template<> StateList* EnvironmentBase::Accessor_<StateList>::spGlobal = NULL;
+template<> StateVector* EnvironmentBase::Accessor_<StateVector>::spGlobal = NULL;
 
 #undef phase_
 EnvironmentBase::ExecutionPhase EnvironmentBase::phase_ = EnvironmentBase::nonaccess;
