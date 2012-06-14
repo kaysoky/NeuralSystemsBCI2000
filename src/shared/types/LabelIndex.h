@@ -36,7 +36,12 @@ class PhysicalUnit;
 
 class LabelIndex
 {
-  typedef std::map<EncodedString, int>     IndexBase;
+  struct Comp
+  { bool operator()( const std::string& a, const std::string& b )
+    { return ::stricmp( a.c_str(), b.c_str() ) < 0; }
+  };
+
+  typedef std::map<EncodedString, int, Comp> IndexBase;
   typedef std::vector<IndexBase::key_type> IndexReverse;
 
  public:
