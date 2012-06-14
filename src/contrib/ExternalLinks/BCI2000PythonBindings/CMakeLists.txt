@@ -10,6 +10,8 @@ SET( NAME BCI2000PythonBindings )
 MESSAGE( "-- Adding Project: ${NAME}" )
 
 ADD_CUSTOM_TARGET( ${NAME} )
+# Set the project build folder
+SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER "${DIR_NAME}" )
 ADD_CUSTOM_COMMAND(
   TARGET "${NAME}"
   POST_BUILD
