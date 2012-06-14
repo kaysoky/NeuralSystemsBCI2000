@@ -58,6 +58,7 @@ class IIRFilter
   typedef FilterDesign::ComplexVector ComplexVector;
 
   IIRFilter()
+    : mGain( 1 )
     {}
   ~IIRFilter()
     {}
