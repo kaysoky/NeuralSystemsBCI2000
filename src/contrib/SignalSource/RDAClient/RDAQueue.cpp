@@ -210,8 +210,13 @@ RDAQueue::ReceiveData()
         connectionInfo.numChannels = startMsg->nChannels;
         connectionInfo.samplingInterval = startMsg->dSamplingInterval;
         connectionInfo.channelResolutions.clear();
+        const char* pName = reinterpret_cast<const char*>( startMsg->dResolutions + startMsg->nChannels );
         for( size_t i = 0; i < startMsg->nChannels; ++i )
+        {
           connectionInfo.channelResolutions.push_back( startMsg->dResolutions[ i ] );
+          connectionInfo.channelNames.push_back( pName );
+          pName += connectionInfo.channelNames.back().length() + 1;
+        }
         clear();
       }
       break;

@@ -85,11 +85,13 @@ int main( int argc, char** argv )
   ParamList paramlist;
   const char* params[] =
   {
-    "RDA string HostName= ",
-    "RDA int SourceCh= ",
+    "RDA string HostName= % ",
+    "RDA int SourceCh= 0 ",
+    "RDA stringlist ChannelNames= 0 ",
     "RDA floatlist SourceChOffset= 0 ",
     "RDA floatlist SourceChGain= 0 ",
     "RDA float SamplingRate= 1 ",
+    "RDA int SampleBlockSize= 1 ",
     "RDA intlist TransmitChList= 0 ",
     "RDA matrix SpatialFilter= 0 1 ",
     "RDA int SourceMax= 300muV ",
@@ -101,6 +103,7 @@ int main( int argc, char** argv )
   paramlist[ "HostName" ].Value() = hostname;
   size_t numInputChannels = q.info().numChannels + 1;
   paramlist[ "SourceCh" ].Value() = str( numInputChannels );
+  paramlist[ "ChannelNames" ].SetNumValues( numInputChannels );
   paramlist[ "SourceChOffset" ].SetNumValues( numInputChannels );
   paramlist[ "SourceChGain" ].SetNumValues( numInputChannels );
   paramlist[ "TransmitChList" ].SetNumValues( numInputChannels - 1 );
@@ -108,14 +111,17 @@ int main( int argc, char** argv )
 
   for( size_t i = 0; i < numInputChannels - 1; ++i )
   {
+    paramlist[ "ChannelNames" ].Value( i ) = q.info().channelNames[i];
     paramlist[ "SourceChOffset" ].Value( i ) = "0";
     paramlist[ "SourceChGain" ].Value( i ) = str( q.info().channelResolutions[ i ] );
     paramlist[ "TransmitChList" ].Value( i ) = str( i + 1 );
     paramlist[ "SpatialFilter" ].Value( i, i ) = "1";
   }
+  paramlist[ "ChannelNames" ].Value( numInputChannels - 1 ) = "T";
   paramlist[ "SourceChOffset" ].Value( numInputChannels - 1 ) = "0";
   paramlist[ "SourceChGain" ].Value( numInputChannels - 1 ) = "1";
   paramlist[ "SamplingRate" ].Value() = str( 1e6 / q.info().samplingInterval );
+  paramlist[ "SampleBlockSize" ].Value() = str( q.info().blockDuration / q.info().samplingInterval );
 
   cout << paramlist;
 

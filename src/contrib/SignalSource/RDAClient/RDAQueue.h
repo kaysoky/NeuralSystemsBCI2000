@@ -30,6 +30,8 @@
 #define RDAQUEUEH
 
 #include <queue>
+#include <vector>
+#include <string>
 #include <winsock.h>
 
 #ifndef RDA_FLOAT
@@ -55,6 +57,7 @@ class RDAQueue : public std::queue<queue_type>
       ULONG               blockNumber;
       double              blockDuration;
       std::vector<double> channelResolutions;
+      std::vector<std::string> channelNames;
     };
     enum
     {
