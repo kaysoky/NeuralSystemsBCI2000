@@ -5,6 +5,7 @@ Let's start with just the left ear. The sounds in your left ear will sound like 
 >>> self.standards[0].play()
 
 and
+
 >>> self.targets[0].play()
 
 Notice that one sound is rough while the other sound is smoother.
@@ -27,7 +28,7 @@ Listen to the chain of beeps again. Try to notice the difference between the two
 There will be {two} smooth sounds
 >>> self.play('left')
 
-Once again,
+We'll play another example.  This time there will be a different number of smooth beeps.
 >>> self.play('left')
 That time there was {one} smooth sound.
 
@@ -60,17 +61,17 @@ Listen to the chain of beeps again. Try to notice the difference between the two
 There will be {two} smooth sounds
 >>> self.play('right')
 
-Once again,
+We'll play another example.  This time there will be a different number of smooth beeps.
 >>> self.play('right')
 That time there were {three} smooth sounds.
 
 ----introduce both Left and Right ----
 
-We have listened to the sounds in each ear, let's hear them played in both ears. Your job will be to focus on one side, and ignore the other.
+We have listened to the sounds in each ear, let's hear them played in both ears.
 
 >>> self.play('both')
 
-Listen only to the left side, and see if you can recognize the smooth beeps on just that side.
+Your job will be to count the smooth beeps on just one side, and ignore the other side.  This time, try to listen only to the left side, and see if you can recognize the smooth beeps on just that side.
 There will be {two} smooth beeps in your left ear.
 
 >>>  #  play "Focus on" followed by self.standards[0]  but omit the "to say no" part for now
@@ -94,9 +95,11 @@ Once again, count on the right.  Just like last time, the voice will tell you ho
 >>> self.play('both')
 >>> # play "The correct answer was: {2}"
 
-In the end, focusing on the left sound stream will mean no and focusing on the right sound stream will mean yes.
-We are about to do a calibration run, which means you will have to [focus on whichever side the computer tells you to].
-But to remind you of which side will mean no and which side will mean yes, the instructions will actually sound like this:
+In the end, when you use this system to communicate freely, you will focus your attention on the left sound stream in order to say "no",
+and you will focus on the right sound stream when you want to say "yes".
+
+We are about to do a calibration run, which means you will have to focus on whichever side the computer instructs.
+To remind you of which side will mean no and which side will mean yes, the instructions will actually sound like this:
 
 >>>  #  play "Focus on" followed by self.standards[1]  followed by "to say yes"
 >>> self.play('both')
@@ -121,7 +124,7 @@ The computer has some information from the training session to help interpret yo
 
 When you focus on the left sounds, the computer interprets this as 'No'. When you focus on the right sounds, the computer interprets this as 'Yes'.
 
-Let's try the listening exercise again.  Focus on the smooth beeps in your right ear.  If the computer has correctly interpretted your choice, you will hear a confirmation Bell.
+Let's try the listening exercise again.  Focus on the smooth beeps in the ear that you are instructed.  If the computer has correctly interpretted your choice, you will hear a confirmation Bell.
 
 Everything is the same as before: you still count on the side that the computer instructs.  The bell may help you in learning to shift attention.
 For now, don't worry if the bell does not sound very often. The computer still needs a few more calibration runs in order to learn how brain signals change when you're listening.  

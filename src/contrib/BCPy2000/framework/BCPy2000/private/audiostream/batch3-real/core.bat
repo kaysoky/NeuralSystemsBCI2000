@@ -53,6 +53,7 @@ if [ ${MONTAGE} == D ]
 	load parameterfile ${PARMSDIR}/gUSBamp-Cap8-SMR-REVERSED-WIRING.prm
 elseif [ ${MONTAGE} == 16 ]
 	load parameterfile ${PARMSDIR}/gUSBamp-Cap16.prm
+	load parameterfile ${PARMSDIR}/TransmitOnly8Channels.prm
 else
 	error unrecognized montage ${MONTAGE}
 end

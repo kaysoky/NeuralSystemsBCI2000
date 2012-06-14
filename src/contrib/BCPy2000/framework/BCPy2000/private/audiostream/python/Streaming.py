@@ -647,7 +647,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			
 	#############################################################
 	
-	def play(self, channels='left', reps=None, pause=3.0):
+	def play(self, channels='left', reps=None, pause=3.0, return_wav=False):
 		if self.states['Running']: print "not now, a run is in progress"; return
 		if isinstance(channels, basestring):
 			if channels == 'both': channels = 'left+right'
@@ -681,6 +681,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			ww = ww + w
 		self.ResetVariants()
 		WavTools.player(ww).play(bg=False)
+		if return_wav: return ww
 						
 #################################################################
 #################################################################
