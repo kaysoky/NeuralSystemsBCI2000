@@ -43,6 +43,7 @@ def ClassifyERPs (
 		rmchan_usualsuspects = ('AUDL','AUDR','LAUD','RAUD','SYNC','VSYNC', 'VMRK', 'OLDREF'),
 		rebias = True,
 		save = False,
+		select = False,
 		description='ERPs to attended vs unattended events',
 		maxcount=None,
 		classes=None,
@@ -148,7 +149,7 @@ def ClassifyERPs (
 	description = 'binary classification of %s: %s' % (description, csummary)
 	u.description = description
 	
-	if save:
+	if save or select:
 		if not isinstance(save, basestring):
 			save = featurefiles
 			if isinstance(save, (tuple,list)): save = save[-1]
@@ -159,6 +160,11 @@ def ClassifyERPs (
 		Parameters.Param(u.G.A, name='ERPClassifierWeights', tab='PythonSig', section='Epoch', comment=csummary).writeto(save)
 		Parameters.Param(c.model.bias, name='ERPClassifierBias', tab='PythonSig', section='Epoch', comment=csummary).appendto(save)
 		Parameters.Param(description, name='SignalProcessingDescription', tab='PythonSig').appendto(save)
+		if select:
+			if not isinstance(select, basestring): select = 'ChosenWeights.prm'
+			if not os.path.isabs(select): select = os.path.join(os.path.split(save)[0], select)
+			print "saving %s\n" % select
+			import shutil; shutil.copyfile(save, select)
 	return u,c
 	
 	
