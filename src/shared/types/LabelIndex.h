@@ -37,7 +37,7 @@ class PhysicalUnit;
 class LabelIndex
 {
   struct Comp
-  { bool operator()( const std::string& a, const std::string& b )
+  { bool operator()( const std::string& a, const std::string& b ) const
     { return ::stricmp( a.c_str(), b.c_str() ) < 0; }
   };
 
