@@ -118,7 +118,7 @@ IIRFilter<Real>::Process( const T& Input, T& Output )
 {
   bciassert( mZeros.size() == mPoles.size() );
   size_t numStages = mZeros.size();
-  if( numStages == 0 )
+  if( numStages == 0 && mGain == 1 )
   {
     Output = Input;
   }

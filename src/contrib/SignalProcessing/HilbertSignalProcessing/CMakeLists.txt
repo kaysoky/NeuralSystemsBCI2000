@@ -17,7 +17,6 @@ SET( SRC_PROJECT
   PipeDefinition.cpp         # but you should certainly edit this one
   CustomFIRFilter.cpp
   CustomIIRFilter.cpp
-  CustomIIR.cpp
   HilbertFilter.cpp
   DiffFilter.cpp
 )
@@ -25,7 +24,6 @@ SET( SRC_PROJECT
 SET( HDR_PROJECT
   CustomFIRFilter.h
   CustomIIRFilter.h
-  CustomIIR.h
   HilbertFilter.h
   DiffFilter.h
 )

@@ -13,12 +13,14 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleLib.cmake )
 SET( SIGPROCSOURCES 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.cpp
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.cpp 
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRBandpass.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ThreadedFilter.cpp  
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/WindowingFilter.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpectrumThread.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARSpectrum.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTSpectrum.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpectralEstimator.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpectralEstimator.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ARFilter.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/P3TemporalFilter.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/LinearClassifier.cpp
@@ -29,13 +31,14 @@ SET( SIGPROCSOURCES
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/AverageDisplay.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ConditionalIntegrator.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/RandomFilter.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/StateTransform.cpp 
 )
 SET( SIGPROCHEADERS 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilterGroup.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRBandpass.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ThreadedFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/WindowingFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpectrumThread.h
@@ -52,7 +55,6 @@ SET( SIGPROCHEADERS
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/AverageDisplay.h 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.h 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ConditionalIntegrator.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/RandomFilter.h
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/StateTransform.h
 )
