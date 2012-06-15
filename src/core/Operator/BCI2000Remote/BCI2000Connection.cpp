@@ -313,8 +313,9 @@ BCI2000Connection::StartExecutable( const string& inExecutable, const string& in
     }
     else if( exitCode != STILL_ACTIVE )
     {
-      success = false;
-      mResult = "Application initialization failed";
+      success = ( exitCode == 0 );
+      if( !success )
+        mResult = "Application initialization failed";
     }
     ::CloseHandle( pi.hProcess );
     ::CloseHandle( pi.hThread );
