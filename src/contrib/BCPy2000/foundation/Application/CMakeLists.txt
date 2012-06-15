@@ -8,21 +8,8 @@ SET( EXECUTABLE_NAME PythonApplication )
 
 # Set the project specific sources
 SET( SRC_PROJECT
+  ${SRC_PROJECT}
   PythonApplication.cpp
-  ../shared/PythonFilter.cpp
-  ../shared/PythonLink24.cpp
-  ../shared/PythonLink25.cpp
-  ../shared/PythonLink26.cpp
-  ../shared/PythonLink27.cpp
-  ../shared/PythonWrapper.cpp
-)
-SET( HDR_PROJECT
-  ../shared/PythonFilter.h
-  ../shared/PythonWrapper.h
-)
-
-ADD_DEFINITIONS(
-  -DDYNAMIC_PYTHON=1
 )
 
 # Create the signal processing module
@@ -30,6 +17,7 @@ BCI2000_ADD_APPLICATION_MODULE(
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
 )
+TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${LIBS} )
 
 ADD_CUSTOM_COMMAND(
   TARGET "${EXECUTABLE_NAME}"

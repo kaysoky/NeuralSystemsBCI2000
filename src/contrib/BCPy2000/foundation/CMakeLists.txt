@@ -3,6 +3,42 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for BCI2000 and CMake
 
+SET( HDR_PROJECT
+  ../shared/PythonFilter.h
+)
+SET( SRC_PROJECT
+  ../shared/PythonFilter.cpp
+)
+
+IF( WIN32 )
+  ADD_DEFINITIONS(
+    -DDYNAMIC_PYTHON=1
+  )
+  SET( SRC_PROJECT
+    ${SRC_PROJECT}
+    ../shared/PythonLink24.cpp
+    ../shared/PythonLink25.cpp
+    ../shared/PythonLink26.cpp
+    ../shared/PythonLink27.cpp
+    ../shared/PythonWrapper.cpp
+  )
+  SET( HDR_PROJECT
+    ${HDR_PROJECT}
+    ../shared/PythonWrapper.h
+  )
+ELSE()
+  ADD_DEFINITIONS(
+    -DDYNAMIC_PYTHON=0
+  )
+  FIND_PACKAGE( PythonLibs REQUIRED )
+  INCLUDE_DIRECTORIES( PYTHON_INCLUDE_DIRS )
+  SET( LIBS
+    ${LIBS}
+    OPTIMIZED ${PYTHON_LIBRARIES}
+    DEBUG ${PYTHON_LIBARARIES_DEBUG}
+  )
+ENDIF()
+
 # Recurse down into all project subdirectories
 ADD_SUBDIRECTORY( Application )
 ADD_SUBDIRECTORY( SignalProcessing )
