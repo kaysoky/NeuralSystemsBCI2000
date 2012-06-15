@@ -42,7 +42,7 @@ For i in ${List directories $1}
     System "$CmdDir/bci_dat2stream" --transmit-ds --raw < "$File1" | "$CmdDir/bci_stream2asc" > "$File1.tmp~"
     System "$CmdDir/bci_dat2stream" --transmit-ds --raw < "$File2" | "$CmdDir/bci_stream2asc" > "$File2.tmp~"
     Echo "  Comparing ..."
-    If not System ./bci_datadiff "$File1.tmp~" "$File2.tmp~" "$j_Results.txt"
+    If not System "./bci_datadiff" "$File1.tmp~" "$File2.tmp~" "$j_Results.txt"
       Set Success false
     End
   End
