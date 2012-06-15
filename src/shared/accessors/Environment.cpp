@@ -119,7 +119,10 @@ EnvironmentBase::StatesAccessedDuringPreflight()
 
 // Constructors
 EnvironmentBase::EnvironmentBase()
-: mInstance( ++sMaxInstanceID )
+: mInstance( ++sMaxInstanceID ),
+  Parameters( NULL ),
+  States( NULL ),
+  Statevector( NULL )
 {
 }
 

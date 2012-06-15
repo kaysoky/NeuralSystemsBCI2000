@@ -209,7 +209,7 @@ class EnvironmentBase
    friend class EnvironmentBase;
    private:
     Accessor_* operator&();
-    explicit Accessor_( T* inLocal = NULL )
+    explicit Accessor_( T* inLocal )
     : mpLocal( NULL )
     { // The environment of an EnvironmentBase object is
       // determined
