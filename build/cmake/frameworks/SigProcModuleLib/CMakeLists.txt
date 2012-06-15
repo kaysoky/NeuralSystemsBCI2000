@@ -29,10 +29,10 @@ SET( SIGPROCSOURCES
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/Normalizer.cpp
 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/AverageDisplay.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ConditionalIntegrator.cpp 
+#  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.cpp 
+#  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ConditionalIntegrator.cpp 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/RandomFilter.cpp 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/StateTransform.cpp 
+#  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/StateTransform.cpp 
 )
 SET( SIGPROCHEADERS 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.h
@@ -53,10 +53,10 @@ SET( SIGPROCHEADERS
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/Normalizer.h
 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/AverageDisplay.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.h 
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ConditionalIntegrator.h 
+#  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.h 
+#  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/ConditionalIntegrator.h 
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/RandomFilter.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/StateTransform.h
+#  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/StateTransform.h
 )
 
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\signalprocessing FILES ${SIGPROCSOURCES} )
