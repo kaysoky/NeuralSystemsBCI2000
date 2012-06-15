@@ -466,6 +466,9 @@ SUCH DAMAGES.
 		]
 		states = [
 		]
+		try: self.operator_script()
+		except Exception,e: print "failed to instantiate BCI2000Remote class because of %s: %s" % (e.__class__.__name__, str(e))
+			
 		return (params,states)
 
 	#############################################################
@@ -1124,6 +1127,22 @@ SUCH DAMAGES.
 				except: pass
 		return [(k,d[k]) for k,v in l]
 
+	#############################################################
+	
+	def operator_script(self, s=None):
+		if getattr(self, 'operator', None) == None:
+			modname = 'BCI2000Remote'
+			location = self.installation_dir
+			module = sys.modules.get(modname, None)
+			if module == None:
+				import imp
+				try: file,filename,etc = imp.find_module(modname, [location])
+				except ImportError: raise Exception("could not find %s module in %s"  % (modname, location))
+				module = imp.load_module(modname, file, filename, etc)
+			self.operator = module.BCI2000Remote()
+		if s == None: return
+		return self.operator.Execute(s)
+			
 	#############################################################
 	
 	def find_data_files(self, xtn='.dat', runs=None, sessions=None):
