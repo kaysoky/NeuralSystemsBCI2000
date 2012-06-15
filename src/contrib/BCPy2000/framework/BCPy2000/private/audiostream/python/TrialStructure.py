@@ -452,6 +452,8 @@ class BciApplication(BciGenericApplication):
 		m = m.replace('], [', '],\n\t[').replace('[[', '[\n\t[').replace(']]', '],\n]\n')
 		f = open(fn, 'w'); f.write(m); f.close()	
 		
+		for p in self.FocusOnAudio.values(): p.stop()
+		for p in self.AnswerAudio.values(): p.stop()
 		self.background_noise.stop()
 		self.chimes.play()
 		self.stimuli['cue'].text = 'system paused'

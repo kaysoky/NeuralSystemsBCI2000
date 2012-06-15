@@ -8,6 +8,12 @@
 @if exist %PROG% cd %PROG%
 @if exist %PROG% goto gotprog
 
+:: absolute path ahoy
+@set PROG=C:\bci2000-svn\3.x\prog
+@if exist %PROG% cd %PROG%
+@if exist %PROG% goto gotprog
+
+
 @echo could not find prog
 @pause
 @exit
@@ -34,5 +40,8 @@ copy ttime.dll %DEST%\
 copy PythonSource.exe %DEST%\
 copy PythonSignalProcessing.exe %DEST%\
 copy PythonApplication.exe %DEST%\
+
+copy BCI2000RemoteLib.dll %DEST%\
+copy BCI2000Remote.py %DEST%\
 
 pause

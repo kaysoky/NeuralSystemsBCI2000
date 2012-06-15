@@ -1,7 +1,8 @@
 #! ../prog/BCI2000Shell
 @cls & ..\prog\BCI2000Shell %0 %* #! && exit /b 0 || exit /b 1
 
-#TODO: if [${VAR}==val ]  always returns true:  very easy to miss this
+#TODO:
+# if [${VAR}==val ]  always returns true:  very easy to miss this
 # first time after restarting Windows, parameter file claims to be loaded but the parameter values do not reflect what was in the file
 # quit operator and re-launch from same script without changing anything: all is fine.
 
@@ -16,32 +17,32 @@ set environment PYLOGDIR  ${canonical path ${BATCHDIR}/../log}
 set environment LOCALPROG ${canonical path ${BATCHDIR}/../prog}
 
 set environment SUBJECT TestSubject
-if [ ${Arg1} ]; set environment SUBJECT ${Arg1}; end
+if [ $1 ]; set environment SUBJECT $1; end
 
 set environment CONDITION 002
-if [ ${Arg2} ]; set environment CONDITION ${Arg2}; end
+if [ $2 ]; set environment CONDITION $2; end
 
 set environment MODE CALIB
-if [ ${Arg3} ]; set environment MODE ${Arg3}; end
+if [ $3 ]; set environment MODE $3; end
 
 set environment SRC gUSBampSource
-#set environment SRC SignalGenerator ; warn SignalGenerator is the default #TODO: remove
-if [ ${Arg4} ]; set environment SRC ${Arg4}; end
+#set environment SRC SignalGenerator ; warn SignalGenerator is the default
+if [ $4 ]; set environment SRC $4; end
 
 set environment MONTAGE D
-if [ ${Arg5} ]; set environment MONTAGE ${Arg5}; end
+if [ $5 ]; set environment MONTAGE $5; end
 
 ########################################################################################
 
 set environment TIMINGFLAG "--EvaluateTiming=1" # otherwise an --EvaluateTiming might hang over from a previous launch
 if [ ${SRC} == SignalGenerator ]; set environment TIMINGFLAG --EvaluateTiming=0; end
 
-change directory ${BCI2000LAUNCHDIR}
-show window; set title ${Extract file base ${Arg0}}
+change directory $BCI2000LAUNCHDIR
+show window; set title ${Extract file base $0}
 reset system
 startup system
 
-start executable ${SRC}                 AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     ${get environment TIMINGFLAG} # TODO: $TIMINGFLAG would be nicer
+start executable ${SRC}                 AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     $TIMINGFLAG
 start executable PythonSignalProcessing AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=${PYWD} --PythonSigClassFile=Streaming.py       --PythonSigLog=${PYLOGDIR}/###-sig.txt --PythonSigShell=1
 start executable PythonApplication      AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=${PYWD} --PythonAppClassFile=TrialStructure.py  --PythonAppLog=${PYLOGDIR}/###-app.txt --PythonAppShell=0
 

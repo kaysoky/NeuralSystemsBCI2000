@@ -243,10 +243,16 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			self.precooked_wavs = None
 			if stim.shape[1] != 2: raise EndUserError("StreamStimuli parameter must have 2 columns (Standard and Target)")
 			if stim.shape[0] != self.nstreams: raise EndUserError("StreamStimuli parameter must have one row per streams (NumberOfStreams = %d)" % self.nstreams)
-			self.standards = [self.prepwav(prmval, istream                      ) for istream,prmval in enumerate(stim[:,0])]
-			self.targets   = [self.prepwav(prmval, istream, base=stim[istream,0]) for istream,prmval in enumerate(stim[:,1])]
-			time.sleep(0.1)
-			for p in self.standards + self.targets: p.stop(); p.vol = 1.0
+			while 1:
+				self.standards = [self.prepwav(prmval, istream                      ) for istream,prmval in enumerate(stim[:,0])]
+				self.targets   = [self.prepwav(prmval, istream, base=stim[istream,0]) for istream,prmval in enumerate(stim[:,1])]
+				time.sleep(0.1)
+				for p in self.standards + self.targets: p.stop(); p.vol = 1.0
+				nstacked = self.pushstacks(rotate=False)
+				maxduration_sec = max([p.wav.duration() for p in self.standards + self.targets])
+				minperiod_sec = min(self.periods) / self.nominal['PacketsPerSecond']
+				ncopies_required = int(numpy.ceil( (maxduration_sec+0.2) / minperiod_sec))
+				if nstacked >= ncopies_required: break
 		
 		e = self.params['StreamingExpression']
 		if e == '': self.expr = None
@@ -409,6 +415,18 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		return s.pop(0)
 		
 	#############################################################
+	
+	def pushstacks(self, rotate=True):
+		ss = self.standards_stacked = getattr(self, 'standards_stacked', [])
+		ts = self.targets_stacked   = getattr(self, 'targets_stacked',   [])
+		if rotate:
+			self.standards = ss.pop(0)
+			self.targets   = ts.pop(0)
+		ss.append(self.standards)
+		ts.append(self.targets)
+		return len(ss)
+			
+	#############################################################
 
 	def Process(self, sig):
 		
@@ -467,7 +485,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 					if stim != None and stim.going:
 						self.debug('stimuli skipped', counts=counts, packetsSinceStartOfStreaming=np, nbeats=list(self.nbeats))
 					else:
-						if stim != None: stim.play()
+						if stim != None: stim.play(); self.pushstacks(rotate=True)
 						self.nbeats[istream] += 1
 						self.states['StimulusCode'] = istream + 1
 						self.states['StimulusVariant'] = variant
