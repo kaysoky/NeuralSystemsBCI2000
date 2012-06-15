@@ -166,17 +166,20 @@ FILTER_NAME::~FILTER_NAME()
     }
   }
   else {
-    Halt();
-    try {
-      BlockThreads();
-      CallHook("_Destruct");
-      UnblockThreads();
-    }
-    catch(EndUserError& e) {
-      HandleEndUserError(e, "Destruct");
-    }
-    catch(BCIException& e) {
-      HandleException(e, "Destruct");
+    if( mpInstance )
+    {
+      Halt();
+      try {
+        BlockThreads();
+        CallHook("_Destruct");
+        UnblockThreads();
+      }
+      catch(EndUserError& e) {
+        HandleEndUserError(e, "Destruct");
+      }
+      catch(BCIException& e) {
+        HandleException(e, "Destruct");
+      }
     }
 #ifdef _WIN32
     if(mUseConsole) FreeConsole();
