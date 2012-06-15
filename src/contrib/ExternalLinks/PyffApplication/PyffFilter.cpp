@@ -689,7 +689,7 @@ FILTER_NAME::ConvertLabelIndexToPyList(LabelIndex from) const
 {
   PyObject* channelNames = PyList_New(from.Size());
   for(int i = 0; i < from.Size(); i++){
-    PyList_SET_ITEM(channelNames , i, PyString_FromString(from[i].c_str()));
+    PyList_SetItem(channelNames , i, PyString_FromString(from[i].c_str()));
   }
   return channelNames;
 }
