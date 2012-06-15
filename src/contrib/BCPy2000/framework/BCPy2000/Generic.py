@@ -355,6 +355,8 @@ SUCH DAMAGES.
 				tr = EmbeddedPythonConsole.Tracer()
 				self.dbstop = tr
 				self.keyboard = tr
+				self._ipshell.IP.magic_bci2000 = self.bci2000shell
+
 
 	#############################################################
 	
@@ -466,9 +468,10 @@ SUCH DAMAGES.
 		]
 		states = [
 		]
-		try: self.operator_script()
+		try: result = self.operator()
 		except Exception,e: print "failed to instantiate BCI2000Remote class because of %s: %s" % (e.__class__.__name__, str(e))
-			
+		if result != None: print "BCI2000Remote failed to connect: %s" % result
+		
 		return (params,states)
 
 	#############################################################
@@ -1129,8 +1132,46 @@ SUCH DAMAGES.
 
 	#############################################################
 	
-	def operator_script(self, s=None):
-		if getattr(self, 'operator', None) == None:
+	def bci2000shell(self, cmd, showWindow=True):
+		"""
+		Pass <cmd> as a script command to the Operator, via BCI2000Shell.
+		Requires BCI2000Shell.exe to be in the prog directory, and only
+		works if the Operator was started in Telnet mode (for example,
+		using a BCI2000Shell, which is the standard way to launch
+		BCI2000 as of May 2012).
+		
+		This method may also be available from the IPython command-line as
+		the "magic" function %bci2000 . For example:
+		
+			In[1]: bci2000 warn hello world
+		
+		However, if the BCI2000Remote Python bindings are available, and
+		have been successfully initialized, the operator() method is used
+		as the back end of %bci2000 instead.
+		"""###
+		exe = os.path.join(self.installation_dir, 'BCI2000Shell.exe')
+		result = os.system(exe + ' -c ' + cmd)
+		if result == 0 and showWindow and s.lower().strip() not in ['exit', 'quit']: os.system(exe + ' -c show window')  # TODO: this is ugly. Should remove the necessity for it in BCI2000Shell.
+		if result != 0: return result
+		
+	#############################################################
+	
+	def operator(self, cmd=None):
+		"""
+		Attempt to initialize a BCI2000Remote connection (requires BCI2000Remote.py and the
+		BCI2000RemoteLib shared library to be in the prog directory, and also requires that
+		the operator was started using BCI2000Shell or some other Telnet-based method).
+		
+		If a string <cmd> is supplied, pass this as a script to the Operator.
+		See http://www.bci2000.org/wiki/index.php/User_Reference:Operator_Module_Scripting
+		
+		Once successfully initialized and connected, this method replaces bci2000shell()
+		as the default implementation for the "magic" IPYTHON function  %bci2000
+		
+			In[1]: bci2000 warn hello world
+		
+		"""###
+		if getattr(self, '_operator', None) == None:
 			modname = 'BCI2000Remote'
 			location = self.installation_dir
 			module = sys.modules.get(modname, None)
@@ -1139,9 +1180,12 @@ SUCH DAMAGES.
 				try: file,filename,etc = imp.find_module(modname, [location])
 				except ImportError: raise Exception("could not find %s module in %s"  % (modname, location))
 				module = imp.load_module(modname, file, filename, etc)
-			self.operator = module.BCI2000Remote()
-		if s == None: return
-		return self.operator.Execute(s)
+			self._operator = module.BCI2000Remote()
+		if not self._operator.Connected:
+			if not self._operator.Connect(): return self._operator.Result
+			if self._ipshell != None: self._ipshell.IP.magic_bci2000 = self.operator # override the use of bci2000shell(), which is more limited
+		if cmd != None and self._operator.Execute(cmd) != 0: return self._operator.Result
+		return None
 			
 	#############################################################
 	
@@ -1154,7 +1198,7 @@ SUCH DAMAGES.
 		If <sessions> and/or <runs> are supplied, filter the results according to session
 		and run numbers, which are expected to be encoded in the filename in the BCI2000
 		style immediately before the <xtn> ending---so, assuming xtn=.dat, a filename
-		ending in ...S001R99.dat has where 001 recognized as its session number and 99
+		ending in ...S001R99.dat has 001 recognized as its session number and 99
 		recognized as its run number.
 		"""###
 		d = getattr(self, 'data_dir', self)
