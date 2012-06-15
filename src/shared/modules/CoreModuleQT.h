@@ -39,6 +39,8 @@ class CoreModuleQT : public CoreModule
   virtual void OnInitialize( int& argc, char** argv );
   virtual void OnProcessGUIMessages();
   virtual bool OnGUIMessagesPending();
+  
+  int mCount;
 };
 
 #endif // CORE_MODULE_QT_H

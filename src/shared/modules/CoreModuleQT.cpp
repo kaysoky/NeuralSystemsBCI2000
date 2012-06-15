@@ -32,7 +32,11 @@
 #include "BCIAssert.h"
 #include <QApplication>
 
+// In some versions of Qt4, QApplication::hasPendingEvents() always returns true.
+static const int cMaxPending = 100;
+
 CoreModuleQT::CoreModuleQT()
+: mCount( 0 )
 {
   bciassert( qApp == NULL );
 }
@@ -65,6 +69,6 @@ CoreModuleQT::OnProcessGUIMessages()
 bool
 CoreModuleQT::OnGUIMessagesPending()
 {
-  return qApp && qApp->hasPendingEvents();
+  return qApp && qApp->hasPendingEvents() && ( ++mCount % cMaxPending );
 }
 

@@ -249,7 +249,7 @@ streamsock::connected()
     // Check for a connection reset by the peer.
     char c;
     int result = ::recv( m_handle, &c, sizeof( c ), MSG_PEEK );
-    connected = ( result != 0 && result != SOCKET_ERROR );
+    connected = ( result > 0 && result != SOCKET_ERROR );
   }
   return connected && is_open();
 }

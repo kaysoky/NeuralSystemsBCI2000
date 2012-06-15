@@ -31,12 +31,19 @@ ELSE()
     -DDYNAMIC_PYTHON=0
   )
   FIND_PACKAGE( PythonLibs REQUIRED )
-  INCLUDE_DIRECTORIES( PYTHON_INCLUDE_DIRS )
-  SET( LIBS
-    ${LIBS}
-    OPTIMIZED ${PYTHON_LIBRARIES}
-    DEBUG ${PYTHON_LIBARARIES_DEBUG}
+  INCLUDE_DIRECTORIES( ${PYTHON_INCLUDE_DIR} )
+  IF( ${PYTHON_DEBUG_LIBRARIES} )
+    SET( LIBS
+      ${LIBS}
+      optimized ${PYTHON_LIBRARIES}
+      debug ${PYTHON_DEBUG_LIBRARIES}
   )
+  ELSE()
+     SET( LIBS
+       ${LIBS}
+       ${PYTHON_LIBRARIES}
+     )
+  ENDIF()
 ENDIF()
 
 # Recurse down into all project subdirectories
