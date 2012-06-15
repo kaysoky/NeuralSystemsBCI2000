@@ -29,10 +29,10 @@
 Change directory $BCI2000LAUNCHDIR
 Show window; Set title ${Extract file base $0}
 Reset system
-Startup system
-Start executable gUSBampSource
-Start executable P3SignalProcessing
-Start executable StimulusPresentation
+Startup system localhost
+Start executable gUSBampSource --local
+Start executable P3SignalProcessing --local
+Start executable StimulusPresentation --local
 Wait for Connected
 Load parameterfile "../parms/examples/StimulusPresentation_SignalGenerator.prm"
 Load parameterfile "../parms/fragments/amplifiers/gUSBamp.prm"

@@ -29,9 +29,9 @@
 Change directory $BCI2000LAUNCHDIR
 Show window; Set title ${Extract file base $0}
 Reset system
-Startup system
-Start executable SignalGenerator
-Start executable SpectralSignalProcessing
-Start executable CursorTask
+Startup system localhost
+Start executable SignalGenerator --local
+Start executable SpectralSignalProcessing --local
+Start executable CursorTask --local
 Wait for Connected
 Load parameterfile "../parms/examples/CursorTask_SignalGenerator.prm"

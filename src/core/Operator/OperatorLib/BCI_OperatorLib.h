@@ -251,10 +251,14 @@ STDCALL BCI_GetCoreModuleStatus( int index );
 function:  BCI_Startup
 purpose:   Listens on core module connection ports.
 arguments: A string defining core module names and listening ports in the form
-             <name1>:<port1> <name2:port2> ... <nameN:portN>
+             <ip address> <name1>:<port1> <name2:port2> ... <nameN:portN>
            If NULL, a value of
              "Source:4000 SignalProcessing:4001 Application:4002"
            representing a standard BCI2000 configuration is used.
+           The first argument specifies an IP address on which to listen,
+           "localhost", or "134.2.131.251".
+           In standard configuration, the Operator module listens on all available
+           addresses.
 returns:   1 if successful, 0 otherwise.
 */
 DLLEXPORT int

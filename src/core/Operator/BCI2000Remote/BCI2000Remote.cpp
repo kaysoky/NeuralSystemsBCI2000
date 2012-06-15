@@ -63,13 +63,13 @@ BCI2000Remote::DataDirectory( const std::string& inDataDirectory )
 bool
 BCI2000Remote::StartupModules( const std::vector<string>& inModules )
 {
-  Execute( "if [ ${get system state} != Idle ]; shutdown system; end" );
+  Execute( "shutdown system" );
   bool success = WaitForSystemState( "Idle" );
   if( success )
   {
     ostringstream startupCommand;
     int port = 4000;
-    startupCommand << "startup system ";
+    startupCommand << "startup system localhost ";
     for( size_t i = 0; i < inModules.size(); ++i )
       startupCommand << "module" << i + 1 << ":" << port++ << " ";
     Execute( startupCommand.str() );
@@ -80,7 +80,7 @@ BCI2000Remote::StartupModules( const std::vector<string>& inModules )
     ostringstream errors;
     for( size_t i = 0; i < inModules.size(); ++i )
     {
-      int code = Execute( "start executable " + inModules[i] );
+      int code = Execute( "start executable " + inModules[i] + " --local" );
       if( code )
         errors << "\n" << inModules[i] << " returned " << code;
       else if( !Result().empty() )
@@ -133,8 +133,6 @@ BCI2000Remote::Start()
   }
   if( success )
     success = SimpleCommand( "start system" );
-  if( success )
-    success = WaitForSystemState( "Running" );
   return success;
 }
 

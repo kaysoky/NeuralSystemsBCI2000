@@ -40,7 +40,6 @@
 #include "SockStream.h"
 #include "BCIError.h"
 #include "VersionInfo.h"
-#include "Version.h"
 #include "FileUtils.h"
 #include "ExceptionCatcher.h"
 
@@ -164,6 +163,11 @@ CoreModule::Initialize( int& ioArgc, char** ioArgv )
     else if( curArg == "--help" || curArg == "-?" || curArg == "?" )
     {
       printHelp = true;
+    }
+    else if( curArg == "--local" )
+    {
+      if( !mParamlist.Exists( THISMODULE "IP" ) )
+        mParamlist.Add( "% string " THISMODULE "IP= 127.0.0.1 // " );
     }
     else if( curArg.find( "--" ) == 0 )
     {
@@ -368,23 +372,21 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   mParamlist[ THISMODULE "IP" ].Value() = mPreviousModuleSocket.ip();
 
   // Version control
-  VersionInfo versionInfo;
-  istringstream iss( BCI2000_VERSION );
-  iss >> versionInfo;
+  const VersionInfo& info = VersionInfo::Current;
   mParamlist.Add(
     "System:Configuration matrix " THISMODULE "Version= "
       "{ Framework Revision Build } 1 "
       " % % % // " THISMODULE " version information" );
   mParamlist[ THISMODULE "Version" ].Value( "Framework" )
-    = versionInfo[ VersionInfo::VersionID ];
-  if( versionInfo[ VersionInfo::Revision ].empty() )
+    = info[ VersionInfo::VersionID ];
+  if( info[ VersionInfo::Revision ].empty() )
     mParamlist[ THISMODULE "Version" ].Value( "Revision" )
-      = versionInfo[ VersionInfo::SourceDate ];
+      = info[ VersionInfo::SourceDate ];
   else
     mParamlist[ THISMODULE "Version" ].Value( "Revision" )
-      = versionInfo[ VersionInfo::Revision ] + ", " +  versionInfo[ VersionInfo::SourceDate ];
+      = info[ VersionInfo::Revision ] + ", " +  info[ VersionInfo::SourceDate ];
   mParamlist[ THISMODULE "Version" ].Value( "Build" )
-    = versionInfo[ VersionInfo::BuildDate ];
+    = info[ VersionInfo::BuildDate ];
   // Filter chain documentation
   mParamlist.Add(
     "System:Configuration matrix " THISMODULE "FilterChain= "

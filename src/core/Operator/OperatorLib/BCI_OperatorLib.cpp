@@ -4,23 +4,23 @@
 // Description: C-style interface to the BCI2000 operator library.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -334,7 +334,7 @@ STDCALL BCI_GetSignal( int inChannel, int inElement )
   if( !gpStateMachine )
     return 0;
   const GenericSignal& signal = gpStateMachine->ControlSignal();
-  if( inChannel > 0 && inChannel < signal.Channels() 
+  if( inChannel > 0 && inChannel < signal.Channels()
       && inElement > 0 && inElement < signal.Elements() )
     return static_cast<float>( signal( inChannel, inElement ) );
   return 0;
@@ -491,20 +491,24 @@ STDCALL BCI_GetCoreModuleStatus( int inIndex )
 /*
 function:  BCI_Startup
 purpose:   Startup of the operator controller object.
-arguments: A string defining core module names and listening ports in the form 
-             <name1>:<port1> <name2:port2> ... <nameN:portN>
+arguments: A string defining core module names and listening ports in the form
+             <ip address> <name1>:<port1> <name2:port2> ... <nameN:portN>
            If NULL, a value of
              "Source:4000 SignalProcessing:4001 Application:4002"
            representing a standard BCI2000 configuration is used.
+           The first argument specifies an IP address on which to listen,
+           "localhost", or "134.2.131.251".
+           In standard configuration, the Operator module listens on all available
+           addresses.
 returns:   1 if successful, 0 otherwise.
 */
 DLLEXPORT int
-STDCALL BCI_Startup( const char* inModuleList )
+STDCALL BCI_Startup( const char* inArguments )
 {
   if( gpStateMachine == NULL )
     return 0;
 
-  return gpStateMachine->Startup( inModuleList );
+  return gpStateMachine->Startup( inArguments );
 }
 
 /*
@@ -649,10 +653,10 @@ purpose:   Interprets and executes the specified script.
 arguments: Null-terminated string specifying script commands.
 returns:   Pointer to a null-terminated string containing the result.
            In case of successful execution, the result of the last executed
-           script command is returned. In case of a script error, the 
+           script command is returned. In case of a script error, the
            result string starts with a backslash (as an escape character),
            followed with "Error: ", and the actual error message.
-           The result string is allocated by the library, and should be 
+           The result string is allocated by the library, and should be
            released by the caller using BCI_ReleaseObject().
 */
 DLLEXPORT const char*

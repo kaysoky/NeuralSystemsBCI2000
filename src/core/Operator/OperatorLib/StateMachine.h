@@ -237,7 +237,7 @@ class StateMachine : public CallbackBase, private OSThread
     friend class StateMachine;
 
    public:
-    CoreConnection( StateMachine&, const std::string& inName, short inPort, int inTag );
+    CoreConnection( StateMachine&, const std::string& inName, const std::string& inAddress, int inTag );
     ~CoreConnection();
 
     enum Confirmation
@@ -295,7 +295,7 @@ class StateMachine : public CallbackBase, private OSThread
     void OnDisconnect();
 
     StateMachine&    mrParent;
-    short            mPort;
+    std::string      mAddress;
     int              mTag;
     server_tcpsocket mSocket;
     sockstream       mStream;

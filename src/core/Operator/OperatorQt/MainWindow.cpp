@@ -136,7 +136,7 @@ MainWindow::MainWindow( QWidget* parent )
     if( mStartup.length() )
       BCI_Startup( mStartup.toLocal8Bit().constData() );
     else
-      BCI_Startup( "SignalSource:4000 SignalProcessing:4001 Application:4002" );
+      BCI_Startup( "* SignalSource:4000 SignalProcessing:4001 Application:4002" );
   }
 
   if( mHide )

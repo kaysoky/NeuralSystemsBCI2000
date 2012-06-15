@@ -35,10 +35,10 @@ Reset system
 
 idx:=0
 While idx<=$3
-  Startup system
-  Start executable SignalGenerator --TestLoggerFrequency=100Hz --TestLoggerEmitDebug=0 --EvaluateTiming=0
-  Start executable $1
-  Start executable $2
+  Startup system localhost
+  Start executable SignalGenerator --local --TestLoggerFrequency=100Hz --TestLoggerEmitDebug=0 --EvaluateTiming=0
+  Start executable $1 --local
+  Start executable $2 --local
   Wait for Connected 20
   Load parameterfile $TestingDir/$2_test.prm
   If idx>0

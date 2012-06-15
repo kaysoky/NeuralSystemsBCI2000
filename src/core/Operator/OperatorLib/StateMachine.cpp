@@ -71,28 +71,38 @@ StateMachine::StateMachine()
 }
 
 bool
-StateMachine::Startup( const char* inModuleList )
+StateMachine::Startup( const char* inArguments )
 {
   bool result = ( mSystemState == Idle );
   {
     OSMutex::Lock lock( mDataMutex );
     if( result )
     {
-      string moduleList = inModuleList ? inModuleList : "";
-      if( moduleList.empty() )
-        moduleList = "Source:4000 SignalProcessing:4001 Application:4002";
-      istringstream iss( moduleList );
+      string arguments = inArguments ? inArguments : "";
+      if( arguments.empty() )
+        arguments = "*";
+      istringstream argstream( arguments );
+      string ip;
+      argstream >> ip;
+      string modules;
+      getline( argstream, modules, '\0' );
+      if( modules.empty() )
+        modules = "Source:4000 SignalProcessing:4001 Application:4002";
+      istringstream iss( modules );
       bool sourcePort = true;
       while( !iss.eof() )
       {
         string name;
         std::getline( iss >> ws, name, ':' );
-        int port;
+        string port;
         iss >> port >> ws;
-        mConnections.push_back( new CoreConnection( *this, name, port, static_cast<int>( mConnections.size() + 1 ) ) );
+        string address = ip + ":" + port;
+        mConnections.push_back( new CoreConnection( *this, name, address, static_cast<int>( mConnections.size() + 1 ) ) );
         if( sourcePort )
         {
-          mEventLink.Open( port );
+          int iPort;
+          istringstream( port ) >> iPort;
+          mEventLink.Open( iPort );
           sourcePort = false;
         }
       }
@@ -652,9 +662,12 @@ StateMachine::TriggerEvent( int inCallbackID )
 
 // ------------------------ CoreConnection definitions -------------------------
 
-StateMachine::CoreConnection::CoreConnection( StateMachine& inParent, const std::string& inName, short inPort, int inTag )
+StateMachine::CoreConnection::CoreConnection( StateMachine& inParent, 
+                                              const std::string& inName,
+                                              const std::string& inAddress,
+                                              int inTag )
 : mrParent( inParent ),
-  mPort( inPort ),
+  mAddress( inAddress ),
   mTag( inTag ),
   mConnected( false )
 {
@@ -672,7 +685,7 @@ StateMachine::CoreConnection::CoreConnection( StateMachine& inParent, const std:
   int timeElapsed = 0;
   while( timeElapsed < timeout && !mSocket.is_open() )
   {
-    mSocket.open( "*", mPort );
+    mSocket.open( mAddress.c_str() );
     if( !mSocket.is_open() )
     {
       timeElapsed += resolution;
@@ -680,8 +693,8 @@ StateMachine::CoreConnection::CoreConnection( StateMachine& inParent, const std:
     }
   }
   if( !mSocket.is_open() )
-    bcierr__ << "Operator: Could not open socket for listening on port "
-             << mPort
+    bcierr__ << "Operator: Could not open socket for listening on "
+             << mAddress
              << endl;
 }
 
@@ -743,7 +756,7 @@ void
 StateMachine::CoreConnection::OnDisconnect()
 {
   mStream.close();
-  mSocket.open( "*", mPort );
+  mSocket.open( mAddress.c_str() );
   OSMutex::Lock lock( mInfoMutex );
   mInfo.Address = "";
 }

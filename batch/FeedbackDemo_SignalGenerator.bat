@@ -29,9 +29,9 @@
 Change directory $BCI2000LAUNCHDIR
 Show window; Set title ${Extract file base $0}
 Reset system
-Startup system
-Start executable SignalGenerator
-Start executable SpectralSignalProcessing
-Start executable FeedbackDemo
+Startup system localhost
+Start executable SignalGenerator --local
+Start executable SpectralSignalProcessing --local
+Start executable FeedbackDemo --local
 Wait for Connected
 Load parameterfile "../parms/examples/FeedbackDemo_SignalGenerator.prm"

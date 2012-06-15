@@ -28,9 +28,9 @@
 #######################################################################################
 Change directory $BCI2000LAUNCHDIR
 Show window; Set title ${Extract file base $0}
-Startup system
-Start executable SignalGenerator
-Start executable MatlabSignalProcessing --MatlabWD=./matlab
-Start executable FeedbackDemo
+Startup system localhost
+Start executable SignalGenerator --local
+Start executable MatlabSignalProcessing  --local --MatlabWD=./matlab
+Start executable FeedbackDemo --local
 Wait for Connected
 Load parameterfile "../parms/examples/MatlabDemo_SignalGenerator.prm"

@@ -29,9 +29,9 @@
 Change directory $BCI2000LAUNCHDIR
 Show window; Set title ${Extract file base $0}
 Reset system
-Startup system
-Start executable SignalGenerator
-Start executable P3SignalProcessing
-Start executable P3Speller
+Startup system localhost
+Start executable SignalGenerator --local
+Start executable P3SignalProcessing --local
+Start executable P3Speller --local
 Wait for Connected
 Load parameterfile "../parms/examples/P3Speller_CopySpelling.prm"
