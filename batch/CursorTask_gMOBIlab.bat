@@ -29,10 +29,10 @@
 Change directory $BCI2000LAUNCHDIR
 Show window; Set title ${Extract file base $0}
 Reset system
-Startup system
-Start executable gMOBIlab
-Start executable SpectralSignalProcessing
-Start executable CursorTask
+Startup system localhost
+Start executable gMOBIlab --local
+Start executable SpectralSignalProcessing --local
+Start executable CursorTask --local
 Wait for Connected
 Load Parameterfile "../parms/examples/CursorTask_SignalGenerator.prm"
 Load parameterfile "../parms/fragments/amplifiers/gMOBIlab.prm"
