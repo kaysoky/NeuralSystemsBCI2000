@@ -25,7 +25,7 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 
 	def Construct(self):
-		self.require_version(39850)
+		self.require_version(41340)
 		
 		self.maxstreams = 2
 		params = [
@@ -186,8 +186,11 @@ class BciApplication(BciGenericApplication):
 		
 		self.logging = int(self.params.get('PythonAppShell', 1)) == 0 or self.params.get('PythonAppLog','') not in ['','-']
 		
-		if self.freechoice and len(self.params.get('ERPClassifierWeights', [])) == 0:
-			raise EndUserError("cannot enter FreeChoice mode without weights loaded")
+		if self.freechoice:
+			if len(self.params.get('ERPClassifierWeights', [])) == 0:
+				raise EndUserError("cannot enter FreeChoice mode without weights loaded")
+			if int(self.params.get('PerceptualOnly', 0)):
+				raise EndUserError("cannot enter FreeChoice mode if PerceptualOnly is true")
 		
 	#############################################################
 
@@ -265,6 +268,9 @@ class BciApplication(BciGenericApplication):
 		self.target = 0
 		self.targetorder = []
 		self.background_noise.play(-1)
+		if self.freechoice:
+			self.operator('set button 1 Go "set state StreamingRequired 1"')
+			self.operator('set button 2 Stop "set state StreamingRequired 0"')
 
 	#############################################################
 	

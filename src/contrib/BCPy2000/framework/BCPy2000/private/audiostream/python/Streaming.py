@@ -53,7 +53,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 	#############################################################
 
 	def Construct(self):
-		self.require_version(39850)
+		self.require_version(41340)
 		parameters = [
 			"PythonSig:Streams int       NumberOfStreams=                          2                      2     2 % // ",
 			"PythonSig:Streams matrix    StreamStimuli=                    2 { Standard Target } % % % %  %     % % // ",
@@ -68,6 +68,7 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 			"PythonSig:Streams int       DirectSound=                              1                      0     0 1 // use DirectSound interface or not? (boolean)",
 			"PythonSig:Streams floatlist StreamVolumes=                      2     1.0 1.0              1.0     0 1 // ",
 			"PythonSig:Streams int       UseWiimotes=                              0                      0     0 1 // use Wiimote vibration instead of sound? (boolean)",
+			"PythonSig:Streams int       PerceptualOnly=                           0                      0     0 1 // mute the unattended channel? (boolean)",
 			
 			"PythonSig:Epoch   float     EpochDurationMsec=                      600                    600   100 % // ",
 			"PythonSig:Epoch   floatlist EpochLowerBoundMsec=                2   100     100            100     0 % // after springing, each ERP trap will not spring again for this many milliseconds",
@@ -110,6 +111,8 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		self.takediff = self.params['DiffFeatureSets'].val
 		self.discard = self.params['DiscardEpochs'].val
 		if self.takediff and self.nstreams != 2: raise EndUserError, "DiffFeatureSets parameter cannot be set unless NumberOfStreams is 2"
+		self.perceptual = self.params['PerceptualOnly'].val
+		if self.perceptual and 'TargetStream' not in self.states: raise EndUserError('Cannot use PerceptualOnly unless the Application module supplies a TargetStream state')
 		
 		band  = self.params['ERPFilterFreqHz'].val
 		order = self.params['ERPFilterOrder'].val
@@ -485,7 +488,12 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 					if stim != None and stim.going:
 						self.debug('stimuli skipped', counts=counts, packetsSinceStartOfStreaming=np, nbeats=list(self.nbeats))
 					else:
-						if stim != None: stim.play(); self.pushstacks(rotate=True)
+						if stim != None:
+							if self.perceptual and istream+1 != self.states['TargetStream']: stim.vol = 0.0
+							else: stim.vol = 1.0
+							
+							stim.play()
+							self.pushstacks(rotate=True)
 						self.nbeats[istream] += 1
 						self.states['StimulusCode'] = istream + 1
 						self.states['StimulusVariant'] = variant

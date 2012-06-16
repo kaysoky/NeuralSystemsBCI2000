@@ -1,7 +1,3 @@
-sound to both user and visitor
-make visual yes/no answers peristent
-make grey screen smaller if operator-only
-
 hardware:
 	various pairs of head- and ear-phones
 		be aware of murphy-proof headphone construction:  accidentally swapping L&R could be a disaster
@@ -10,32 +6,22 @@ hardware:
 
 configuring the subject number and condition number
 
-introducing the stimuli to the subject
-	pre-recorded? otherwise standardized? otherwise automated?
+manage the weights
+	chosenweights for calibration-with-feedback
+	chosenweights copied to free
 
-	on initial one-sided self.play('left'): pre-cue how many targets to expect
+use AudioExtension to record free-choice sessions
 
 double-click for alternative wizard
 	* impedance view for our different montage
 	* photos of correct cap and headphone placement
 	* murphy-proof headphone construction:  accidentally swapping L&R could be a disaster
 
-double-click to start calibration session
-				
-loading of weights must happen automatically
 	
-after first weights are loaded: inform subject about the bell feedback
-
-double-click to run calibration-with-feedback blocks
-double-click to run test blocks
-	
-:: update pyprog source and operator
-:: 		remove driver version warning  (by going with updated source module?)
 :: check normalizer performance (playback? epoc?)
 :: online visual feedback (for onlookers)
 :: shells off (app shell off at the very least)
 :: visualizations off
 :: auto-quit?
-:: go button on operator?  or go with trialsperblock 1 for test?
-:: DirectSound dependency (is only in private at the moment).  Check for others
+:: DirectSound dependency (is only in private at the moment).  Check for others...
 

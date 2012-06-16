@@ -48,8 +48,9 @@ if __name__.startswith('BCPy2000.'):
 	from BCPy2000 import __version__,__author__,__copyright__,__email__
 else:
 	__copyright__ = None
-	__version__ = '$Revision unknown, so let us use 41340 $'.split(' ')[-2] # development version (NB: this is not so definitive: 
-	                                                  #  it only tracks changes to this particular file - see
+	__version__ = '$Revision unknown, so let us use 41340 $'.split(' ')[-2]  # update __version__ in BCPy2000/__init__.py first
+	                                                  # development version (NB: the use of the Revision keyword in this way is not 
+	                                                  #  so definitive: it only tracks changes to this particular file - see
 	                                                  #  http://subversion.tigris.org/faq.html#version-value-in-source
 
 #################################################################

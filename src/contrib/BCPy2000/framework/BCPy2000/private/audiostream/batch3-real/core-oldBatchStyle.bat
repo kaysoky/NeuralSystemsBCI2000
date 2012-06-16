@@ -26,7 +26,7 @@
 @set MODE=CALIB
 @if not [%3]==[] set MODE=%3
 
-@set SRC=gUSBampSource
+@set SRC=SignalGenerator
 @if not [%4]==[] set SRC=%4
 
 @set MONTAGE=D
