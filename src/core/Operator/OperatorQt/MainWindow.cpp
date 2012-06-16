@@ -76,7 +76,7 @@ MainWindow::MainWindow( QWidget* parent )
     idx.setNum( i + 1 );
     mButtons[i] = findChild<QPushButton*>( "pushButton_Btn" + idx );
   }
-    
+
   ReadCommandLine();
 
   if( gpPreferences == NULL )
@@ -95,8 +95,10 @@ MainWindow::MainWindow( QWidget* parent )
     mpStatusLabels[i]->setText( "N/A" );
     ui->statusBar->addWidget( mpStatusLabels[i], 1 );
   }
+#if 0
   ui->statusBar->addWidget( new QLabel, 0 );
   ui->statusBar->setMaximumHeight( ui->statusBar->height() );
+#endif
 
   OperatorUtils::RestoreWidget( this );
   BCI_Initialize();

@@ -64,6 +64,10 @@ class CommandInterpreter
   //  assumed to be zero.
   static const char* ExitCodeTag()
     { return "\\ExitCode: "; }
+  //  A tag that is inserted in the output to report that the system is
+  //  going to quit.
+  static const char* TerminationTag()
+    { return "\\Terminating"; }
   // Methods
   // Interpret the argument as a single scripting command.
   int Execute( const std::string& );

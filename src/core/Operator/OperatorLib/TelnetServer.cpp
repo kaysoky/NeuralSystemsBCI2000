@@ -41,8 +41,12 @@ TelnetServer::TelnetServer( class StateMachine& inStateMachine, const string& in
   mpChild( NULL ),
   mpParent( NULL ),
   mAddress( inAddress ),
+  mpListeningSocket( new server_tcpsocket ),
   mStream( mSocket )
 {
+  mpListeningSocket->open( inAddress.c_str() );
+  if( !mpListeningSocket->is_open() )
+    throw bciexception_( "TelnetServer: Cannot listen at " << mAddress );
   Initialize();
 }
 
@@ -51,6 +55,7 @@ TelnetServer::TelnetServer( TelnetServer* pParent )
   mpChild( NULL ),
   mpParent( pParent ),
   mAddress( pParent->mAddress ),
+  mpListeningSocket( pParent->mpListeningSocket ),
   mStream( mSocket )
 {
   Initialize();
@@ -61,15 +66,13 @@ TelnetServer::Initialize()
 {
   ScriptInterpreter::WriteLineHandler( &OnWriteLine, this );
   ScriptInterpreter::ReadLineHandler( &OnReadLine, this );
-  mSocket.open( mAddress.c_str() );
-  if( !mSocket.is_open() )
-    throw bciexception_( "TelnetServer: Cannot listen at " << mAddress );
   OSThread::Start();
 }
 
 TelnetServer::~TelnetServer()
 {
   ScriptInterpreter::Abort();
+  OSThread::Terminate();
   if( !OSThread::InOwnThread() )
     OSThread::TerminateWait();
   OSMutex::Lock lock( mMutex );
@@ -80,7 +83,7 @@ int
 TelnetServer::OnExecute()
 {
   const int cReactionTimeMs = 100;
-  while( !OSThread::IsTerminating() && !mSocket.wait_for_read( cReactionTimeMs, true ) )
+  while( !OSThread::IsTerminating() && !mpListeningSocket->wait_for_accept( mSocket, cReactionTimeMs ) )
     ;
   if( !OSThread::IsTerminating() )
   {
@@ -94,7 +97,7 @@ TelnetServer::OnExecute()
       ReadCharacter();
     mSocket.wait_for_read( cReactionTimeMs );
   }
-  mStream << "\\Terminating" << endl;
+  mStream << ScriptInterpreter::TerminationTag() << endl;
   return 0;
 }
 

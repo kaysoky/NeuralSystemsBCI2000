@@ -42,6 +42,7 @@ class ScriptInterpreter : private CommandInterpreter
   using CommandInterpreter::ReadLineFunc;
   using CommandInterpreter::WriteLineHandler;
   using CommandInterpreter::ReadLineHandler;
+  using CommandInterpreter::TerminationTag;
   // Methods
   //  Compile and execute a sequence of scripting commands.
   bool Execute( const std::string& script, const std::string& name = "" );

@@ -125,7 +125,7 @@ class streamsock
 
   private:
     virtual void do_open() = 0;
-    void         accept();
+    virtual void do_accept() {}
     void         set_address( const char* address );
     void         set_address( const char* ip, unsigned short port );
 
@@ -145,17 +145,18 @@ class streamsock
 
 class tcpsocket : public streamsock
 {
-  protected:
+  public:
     tcpsocket() : m_tcpnodelay( false )
       {}
-  public:
     void set_tcpnodelay( bool in_val )
       { m_tcpnodelay = in_val; set_socket_options(); }
     bool tcpnodelay() const
       { return m_tcpnodelay; }
+    void set_handle( SOCKET );
   protected:
     virtual void set_socket_options();
   private:
+    virtual void do_open() {}
     bool m_tcpnodelay;
 };
 
@@ -171,8 +172,10 @@ class server_tcpsocket : public tcpsocket
       { open( address ); }
     virtual ~server_tcpsocket()
       {}
+    bool wait_for_accept( tcpsocket&, int timeout = defaultTimeout );
   private:
     virtual void do_open();
+    virtual void do_accept();
 };
 
 class client_tcpsocket : public tcpsocket

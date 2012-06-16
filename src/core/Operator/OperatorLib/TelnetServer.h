@@ -66,7 +66,8 @@ class TelnetServer : private ScriptInterpreter, private OSThread
               * mpChild;
   std::string mAddress,
               mLineBuffer;
-  server_tcpsocket mSocket;
+  SharedPointer<server_tcpsocket> mpListeningSocket;
+  tcpsocket mSocket;
   sockstream mStream;
 };
 

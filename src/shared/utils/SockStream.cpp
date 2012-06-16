@@ -81,6 +81,25 @@ struct char_traits
 };
 #endif // EMULATE_TRAITS_TYPE
 
+namespace {
+
+class Timeout
+{
+ public:
+  Timeout( int inTimeout )
+  : mpTimeout( inTimeout < 0 ? NULL : &mTimeout )
+  {
+    mTimeout.tv_sec = inTimeout / 1000;
+    mTimeout.tv_usec = 1000 * ( inTimeout % 1000 );
+  }
+  operator ::timeval*()
+  { return mpTimeout; }
+ private:
+  ::timeval mTimeout, *mpTimeout;
+};
+
+} // namespace
+
 using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 // streamsock definitions
@@ -283,12 +302,7 @@ streamsock::wait_for_read( const streamsock::set_of_instances& inSockets,
                            int   inTimeout,
                            bool  return_on_accept )
 {
-  const int msecs_per_sec = 1000;
-  ::timeval  timeout = { inTimeout / msecs_per_sec, 1000 * ( inTimeout % msecs_per_sec ) },
-           * timeoutPtr = &timeout;
-  if( inTimeout < 0 )
-    timeoutPtr = NULL;
-
+  Timeout timeout( inTimeout );
   int max_fd = -1;
   ::fd_set readfds;
   FD_ZERO( &readfds );
@@ -310,13 +324,13 @@ streamsock::wait_for_read( const streamsock::set_of_instances& inSockets,
     }
     return false;
   }
-  int result = ::select( max_fd + 1, &readfds, NULL, NULL, timeoutPtr );
+  int result = ::select( max_fd + 1, &readfds, NULL, NULL, timeout );
   if( result > 0 )
   {
     for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
       if( ( *i )->m_listening && FD_ISSET( ( *i )->m_handle, &readfds ) )
       {
-        ( *i )->accept();
+        ( *i )->do_accept();
         if( !return_on_accept )
           --result;
       }
@@ -331,12 +345,7 @@ streamsock::wait_for_write( const streamsock::set_of_instances& inSockets,
                             int inTimeout,
                             bool return_on_accept )
 {
-  const int msecs_per_sec = 1000;
-  ::timeval  timeout = { inTimeout / msecs_per_sec, 1000 * ( inTimeout % msecs_per_sec ) },
-           * timeoutPtr = &timeout;
-  if( inTimeout < 0 )
-    timeoutPtr = NULL;
-
+  Timeout timeout( inTimeout );
   int max_fd = -1;
   ::fd_set writefds,
            readfds;
@@ -362,13 +371,13 @@ streamsock::wait_for_write( const streamsock::set_of_instances& inSockets,
     }
     return false;
   }
-  int result = ::select( max_fd + 1, &readfds, &writefds, NULL, timeoutPtr );
+  int result = ::select( max_fd + 1, &readfds, &writefds, NULL, timeout );
   if( result > 0 )
   {
     for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
       if( ( *i )->m_listening && FD_ISSET( ( *i )->m_handle, &readfds ) )
       {
-        ( *i )->accept();
+        ( *i )->do_accept();
         if( !return_on_accept )
           --result;
       }
@@ -403,22 +412,6 @@ streamsock::write( const char* buffer, size_t count )
 }
 
 void
-streamsock::accept()
-{
-  if( m_listening )
-  {
-    SOCKET new_handle = ::accept( m_handle, NULL, NULL );
-    if( new_handle == INVALID_SOCKET )
-      return;
-    ::closesocket( m_handle );
-    m_listening = false;
-    m_handle = new_handle;
-    set_socket_options();
-    update_address();
-  }
-}
-
-void
 streamsock::set_socket_options()
 {
   if( m_handle != INVALID_SOCKET )
@@ -441,17 +434,28 @@ tcpsocket::set_socket_options()
 }
 
 void
+tcpsocket::set_handle( SOCKET inHandle )
+{
+  close();
+  m_handle = inHandle;
+  set_socket_options();
+  update_address();
+}
+
+void
 server_tcpsocket::do_open()
 {
   close();
   m_handle = ::socket( PF_INET, SOCK_STREAM, 0 );
   bool success = ( m_handle != INVALID_SOCKET );
+#if 0
   if( success )
   {
     int val = 1;
     success = SOCKET_ERROR != ::setsockopt( m_handle, SOL_SOCKET, SO_REUSEADDR,
                                                           reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
+#endif
   if( success )
     success = SOCKET_ERROR != ::bind( m_handle, &m_address.sa, sizeof( m_address ) );
   if( success )
@@ -466,6 +470,43 @@ server_tcpsocket::do_open()
   {
     close();
   }
+}
+
+void
+server_tcpsocket::do_accept()
+{
+  if( m_listening )
+  {
+    SOCKET new_handle = ::accept( m_handle, NULL, NULL );
+    if( new_handle == INVALID_SOCKET )
+      return;
+    set_handle( new_handle );
+  }
+}
+
+bool
+server_tcpsocket::wait_for_accept( tcpsocket& outNew, int inTimeout )
+{
+  bool success = ( m_handle != INVALID_SOCKET && m_listening );
+  if( success )
+  {
+    Timeout timeout( inTimeout );
+    int max_fd = m_handle;
+    ::fd_set readfds;
+    FD_ZERO( &readfds );
+    FD_SET( m_handle, &readfds );
+    int result = ::select( max_fd + 1, &readfds, NULL, NULL, timeout );
+    success = ( result > 0 && FD_ISSET( m_handle, &readfds ) );
+  }
+  SOCKET new_handle = INVALID_SOCKET;
+  if( success )
+  {
+    new_handle = ::accept( m_handle, NULL, NULL );
+    success = ( new_handle != INVALID_SOCKET );
+  }
+  if( success )
+    outNew.set_handle( new_handle );
+  return success;
 }
 
 void

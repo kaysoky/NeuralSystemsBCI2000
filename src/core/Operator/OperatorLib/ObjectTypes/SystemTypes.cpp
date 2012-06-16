@@ -305,7 +305,11 @@ SystemType::Quit( CommandInterpreter& inInterpreter )
   if( pMessage && *pMessage )
     inInterpreter.Out() << pMessage;
   else
-    inInterpreter.Out() << result;
+  {
+    if( !result.empty() )
+      inInterpreter.Out() << result << '\n';
+    inInterpreter.Out() << inInterpreter.TerminationTag();
+  }
   return true;
 }
 
