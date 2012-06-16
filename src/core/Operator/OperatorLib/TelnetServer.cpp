@@ -94,6 +94,7 @@ TelnetServer::OnExecute()
       ReadCharacter();
     mSocket.wait_for_read( cReactionTimeMs );
   }
+  mStream << "\\Terminating" << endl;
   return 0;
 }
 

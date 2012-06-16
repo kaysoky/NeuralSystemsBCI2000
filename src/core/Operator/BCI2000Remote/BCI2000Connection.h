@@ -42,7 +42,8 @@ class BCI2000Connection
   : mTerminateOperator( false ),
     mWindowVisible( dontChange ),
     mTimeout( DefaultTimeout() ),
-    mTelnetAddress( DefaultTelnetAddress() )
+    mTelnetAddress( DefaultTelnetAddress() ),
+    mWaitingForResult( false )
   { mSocket.set_tcpnodelay( true ); }
   virtual ~BCI2000Connection() { Disconnect(); }
 
@@ -67,7 +68,7 @@ class BCI2000Connection
   const std::string& TelnetAddress() const { return mTelnetAddress; }
   BCI2000Connection& TelnetAddress( const std::string s ) { mTelnetAddress = s; return *this; }
   // Connection status.
-  bool Connected() { return mSocket.connected(); }
+  bool Connected();
   // Result or error message resulting from a method call.
   const std::string& Result() const { return mResult; }
 
@@ -116,6 +117,7 @@ class BCI2000Connection
               mWindowTitle;
  protected:
   std::string mResult;
+  volatile bool mWaitingForResult;
 };
 
 #endif // BCI2000_CONNECTION_H

@@ -127,6 +127,19 @@ BCI2000Connection::Disconnect()
   return true;
 }
 
+bool
+BCI2000Connection::Connected()
+{
+  if( !mWaitingForResult && mConnection.rdbuf()->in_avail() )
+  {
+    string line;
+    getline( mConnection, line );
+    if( line == "\\TerminationTag" )
+      Disconnect();
+  }
+  return mSocket.connected();
+}
+
 int
 BCI2000Connection::Execute( const string& inCommand )
 {
@@ -136,6 +149,13 @@ BCI2000Connection::Execute( const string& inCommand )
     mResult = "Not connected (call BCI2000Connection::Connect() to establish a connection)";
     return -1;
   }
+  struct Waiting
+  {
+   Waiting( BCI2000Connection* p ) : p( p ) { p->mWaitingForResult = true; }
+   ~Waiting() { p->mWaitingForResult = false; }
+   BCI2000Connection* p;
+  } waiting( this );
+  
   mConnection << inCommand << "\r\n" << flush;
   static const int cReactionTimeMs = 100;
   while( !mSocket.wait_for_read( static_cast<int>( cReactionTimeMs ) ) )
