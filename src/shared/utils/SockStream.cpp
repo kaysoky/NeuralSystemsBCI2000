@@ -319,7 +319,7 @@ streamsock::wait_for_read( const streamsock::set_of_instances& inSockets,
 #ifdef  _WIN32  // Achieve similar behavior for empty sets/invalid sockets across platforms.
       ::Sleep( inTimeout );
 #else
-      ::select( 0, NULL, NULL, NULL, timeoutPtr );
+      ::select( 0, NULL, NULL, NULL, timeout );
 #endif
     }
     return false;
@@ -366,7 +366,7 @@ streamsock::wait_for_write( const streamsock::set_of_instances& inSockets,
 #ifdef  _WIN32  // Achieve similar behavior for empty sets/invalid sockets across platforms.
       ::Sleep( inTimeout );
 #else
-      ::select( 0, NULL, NULL, NULL, timeoutPtr );
+      ::select( 0, NULL, NULL, NULL, timeout );
 #endif
     }
     return false;
