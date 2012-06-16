@@ -3,9 +3,9 @@ import BCI2000Tools.FileReader as FileReader
 import BCI2000Tools.DataFiles as DataFiles
 import BCI2000Tools.Classification as Classification
 import Hashing
+import cPickle as pickle
 
 # TODO
-#     save and load run assessment info and weights from training on one run
 #     run method: applyweights
 
 # -+- ORDINARY CLASSIFIER TRAINING
@@ -17,9 +17,96 @@ import Hashing
 #  |   |
 #  |   +- LEAVE-ONE-RUN-OUT 
 
+class Cacheable( object ):
+	def __init__( self, cachedir, fields, prefix ):
+		self.__cachedir = cachedir
+		self.__cachefields = fields
+		self.__cacheprefix = prefix
 
+	def GetCacheDir( self ):
+		return self.__cachedir
+		
+	def GetCacheFilePath( self, attrname ):
+		return os.path.join( self.__cachedir, attrname + '.pk' )
+		
+	def SaveInfoToCache( self, keys=None ):
+		if keys == None: keys = self.__cachefields
+		if isinstance( keys, basestring ): keys = [ keys ]
+		for k in keys:
+			pickle.dump( getattr( self, self.__cacheprefix + k ), open( self.GetCacheFilePath( k ), 'wb' ), 2 )
+	
+	def LoadInfoFromCache( self, keys=None ):
+		if keys == None: keys = self.__cachefields
+		if isinstance( keys, basestring ): keys = [ keys ]
+		for k in keys:
+			fn = self.GetCacheFilePath( k )
+			if os.path.exists( fn ):
+				v = pickle.load( open( fn, 'rb' ) )
+				setattr( self, self.__cacheprefix + k, v ) # hmmm
 
-class CalibrationRun( object ):
+class CalibrationWeights( Cacheable ):
+	
+	def __init__( self, directory, stems, opts, cachedir ):
+		self.__directory = directory
+		self.__datestamp = None
+		self.__cachedir = cachedir
+		if opts == None: self.__opts = {}
+		else: self.__opts = dict(opts)
+	
+		self.__stems = sorted( stems )
+		self.__result = None
+		self.__ntrials = None
+		self.__cv = None
+		self.__errmsg = None
+		
+		Cacheable.__init__( self, cachedir, [ 'result', 'cv', 'errmsg', 'ntrials' ], '_CalibrationWeights__' )
+	
+	def GetCacheFilePath( self, attrname ):
+		h = Hashing.hash( self.stems )[ :10 ]
+		return os.path.join( self.GetCacheDir(), h + '_' + attrname + '.pk' )
+		
+	@apply
+	def stems():
+		def fget( self ): return self.__stems
+		return property( fget, doc="file stems of runs used to make these weights" )
+
+	@apply
+	def errmsg():
+		def fget( self ): return self.__errmsg
+		def fset( self, val ): self.__errmsg = val; self.SaveInfoToCache( 'errmsg' )
+		return property( fget, fset, doc="error message from last attempt to CrossValidate or train on these runs" )
+
+	@apply
+	def cv():
+		def fget( self ): return self.__cv
+		def fset( self, val ): self.__cv = val; self.SaveInfoToCache( 'cv' )
+		return property( fget, fset, doc="trained classifier object from last attempt to train on these runs" )
+
+	@apply
+	def result():
+		def fget( self ): return self.__result
+		def fset( self, val ): self.__result = val; self.SaveInfoToCache( 'result' )
+		return property( fget, fset, doc="result from last attempt to train on these runs" )
+
+	@apply
+	def ntrials():
+		def fget( self ): return self.__ntrials
+		def fset( self, val ): self.__ntrials = val; self.SaveInfoToCache( 'ntrials' )
+		return property( fget, fset, doc="total number of trials in each class" )
+	
+	def CrossValidate( self ):
+		under_construction # TODO
+		try:
+			self.result,self.cv = Classification.ClassifyERPs( pkfile, **self.__opts )
+		except Exception,e:
+			self.result,self.cv = None,None
+			self.errmsg = '%s: %s' % ( e.__class__.__name__, e.message )
+			print self.errmsg
+		else:
+			self.errmsg = None
+		self.ntrials = self.GetNumberOfTrials()
+			
+class CalibrationRun( Cacheable ):
 	
 	def __init__( self, directory, datfile, pkfile, opts, cachedir ):
 		self.__directory = directory
@@ -30,10 +117,48 @@ class CalibrationRun( object ):
 		self.__bcistream = None
 		if opts == None: self.__opts = {}
 		else: self.__opts = dict(opts)
-		self.result = None
-		self.cv = None
-		self.selected = self.GetPkFile() != None
+			
+		self.__result = None
+		self.__ntrials = None
+		self.__cv = None
+		self.__errmsg = None
+		self.__selected = self.GetPkFile() != None
+		
+		Cacheable.__init__( self, cachedir, [ 'result', 'cv', 'errmsg', 'selected', 'ntrials' ], '_CalibrationRun__' )
+		
+		self.LoadInfoFromCache()
 	
+	@apply
+	def selected():
+		def fget( self ): return self.__selected
+		def fset( self, val ): self.__selected = bool( val ); self.SaveInfoToCache( 'selected' )
+		return property( fget, fset, doc="whether or not to include this run when generating weights" )
+
+	@apply
+	def errmsg():
+		def fget( self ): return self.__errmsg
+		def fset( self, val ): self.__errmsg = val; self.SaveInfoToCache( 'errmsg' )
+		return property( fget, fset, doc="error message from last attempt to CrossValidate or train on this run on its own" )
+
+	@apply
+	def cv():
+		def fget( self ): return self.__cv
+		def fset( self, val ): self.__cv = val; self.SaveInfoToCache( 'cv' )
+		return property( fget, fset, doc="trained classifier object from last attempt to train on this run on its own" )
+
+	@apply
+	def result():
+		def fget( self ): return self.__result
+		def fset( self, val ): self.__result = val; self.SaveInfoToCache( 'result' )
+		return property( fget, fset, doc="result from last attempt to train on this run on its own" )
+
+	@apply
+	def ntrials():
+		def fget( self ): return self.__ntrials
+		def fset( self, val ): self.__ntrials = val; self.SaveInfoToCache( 'ntrials' )
+		return property( fget, fset, doc="number of trials in each class" )
+
+
 	def GetStem( self ):
 		f = self.GetPkFile()
 		if f != None: return os.path.splitext( os.path.basename( f ) )[0]
@@ -72,12 +197,23 @@ class CalibrationRun( object ):
 		return b.params.get( paramName, None )
 
 	def CrossValidate( self ):
-		pkfile = self.GetPkFile()
-		if pkfile == None: raise ValueError('cannot cross-validate without a .pk file')
-		self.result,self.cv = Classification.ClassifyERPs( pkfile, **self.__opts )
+		self.ntrials = self.GetNumberOfTrials()
+		try:
+			pkfile = self.GetPkFile()
+			if pkfile == None: raise ValueError('cannot cross-validate without a .pk file')
+			self.result,self.cv = Classification.ClassifyERPs( pkfile, **self.__opts )
+		except Exception,e:
+			self.result,self.cv = None,None
+			self.errmsg = '%s: %s' % ( e.__class__.__name__, e.message )
+			print self.errmsg
+		else:
+			self.errmsg = None
 
 	def Describe( self, attr ):
 		if attr == 'selected': return {True:'[x]', False:'[ ]'}.get( self.selected, '???' )
+		if attr == 'ntrials':
+			if self.ntrials == None: return ''
+			return ' / '.join( [ '%s:%s' % ( k, v ) for k,v in sorted( self.ntrials.items() ) ] )
 		if attr == 'datfile': f = self.GetDatFile(); return ( f == None ) and '(no .dat file)' or os.path.basename( f )
 		if attr == 'pkfile':  f = self.GetPkFile();  return ( f == None ) and '(no .pk file)'  or os.path.basename( f )
 		if attr == 'datestamp': d = self.GetDate();  return { None:'(unknown date)' }.get( d, d )
@@ -93,14 +229,26 @@ class CalibrationRun( object ):
 			if   seconds < 50.0: return '%d seconds ago' % round( seconds )
 			elif seconds < 90.0: return 'about a minute ago'
 			elif seconds < 50*60.0: return '%d minutes ago' % round( seconds / 60.0 )
+			elif seconds < 90*60.0: return 'about an hour ago'
 			elif days == 0: return '%d hours ago' % round( seconds / 3600.0 )
 			elif days == 1: return 'yesterday'
 			else: return '%d days ago' % days
 		if attr == 'cv':
-			if self.cv == None: return ''
+			if self.cv == None: return None
 			return '%g%%' % round(100.0 - 100.0 * self.cv.loss.train) # TODO
 		return '???'
-		
+	
+	def GetNumberOfTrials( self, reread=False ):
+		pkfile = self.GetPkFile()
+		if pkfile == None: return None
+		y = DataFiles.load( pkfile )[ 'y' ]
+		count = {}
+		for yi in y.flat: count[ int( yi ) ] = count.get( yi, 0 ) + 1
+		return count
+	
+	def GetCacheFilePath( self, attrname ):
+		return os.path.join( self.GetCacheDir(), self.GetStem() + '_' + attrname + '.pk' )
+			
 	def report( self ):
 		s = []
 		s.append( self.Describe( 'selected'  ) )
@@ -285,6 +433,11 @@ class Table( tk.Frame ):
 			tk.Label(  self.GetCell( row, 0 ), text=str(row), width=3, borderwidth="1", relief="solid" ).pack()
 			tk.Button( self.GetCell( row, 1 ), text="this is the 2nd column for row %s"%row ).pack()
 
+def ToolTip( parentWidget, msg ):
+	w = Tix.Balloon( parentWidget )
+	w.bind_widget( parentWidget, balloonmsg=msg )
+	return w
+
 class CalibrationTableRow( object ):
 	def __init__( self, table, rowNumber, run ):
 		"""
@@ -295,13 +448,15 @@ class CalibrationTableRow( object ):
 		self.widget( 'selectedCheckbutton',   tk.Checkbutton( table.GetCell( rowNumber, 0 ), command=self.CheckbuttonCallback     ) ).pack()
 		self.widget( 'informaldateLabel',     tk.Label(       table.GetCell( rowNumber, 1 ), text=run.Describe( 'informal_date' ) ) ).pack()
 		self.widget( 'datestampLabel',        tk.Label(       table.GetCell( rowNumber, 2 ), text=run.Describe( 'datestamp' )     ) ).pack()
-		self.widget( 'cvLabel',               tk.Label(       table.GetCell( rowNumber, 3 ), text=run.Describe( 'cv' )            ) ).pack( side='left' )
-		self.widget( 'cvButton',              tk.Button(      table.GetCell( rowNumber, 3 ), text='Assess', command=self.Assess   ) ).pack( side='right', fill='x' )
-		self.widget( 'pkfileLabel',           tk.Label(       table.GetCell( rowNumber, 4 ), text=run.Describe( 'pkfile' )        ) ).pack()
-		self.widget( 'datfileLabel',          tk.Label(       table.GetCell( rowNumber, 5 ), text=run.Describe( 'datfile' )       ) ).pack()
+		self.widget( 'ntrialsLabel',          tk.Label(       table.GetCell( rowNumber, 3 ), text=run.Describe( 'ntrials' )       ) ).pack()
+		self.widget( 'cvLabel',               tk.Label(       table.GetCell( rowNumber, 4 ), text=run.Describe( 'cv' )            ) ).pack( side='left' )
+		self.widget( 'cvButton',              tk.Button(      table.GetCell( rowNumber, 4 ), text='Assess', command=self.Assess   ) ).pack( side='right', fill='x' )
+		self.widget( 'pkfileLabel',           tk.Label(       table.GetCell( rowNumber, 5 ), text=run.Describe( 'pkfile' )        ) ).pack()
+		self.widget( 'datfileLabel',          tk.Label(       table.GetCell( rowNumber, 6 ), text=run.Describe( 'datfile' )       ) ).pack()
+		
 		
 		w = self.widget( 'selectedCheckbutton' )
-		self.widget( 'tooltip', Tix.Balloon( w ) ).bind_widget( w, balloonmsg='hello!' )
+		self.widget( 'tooltip', ToolTip( w, 'check to include this run when generating weights' ) )
 		
 		self.UpdateAssessmentDisplay()
 		
@@ -312,7 +467,12 @@ class CalibrationTableRow( object ):
 			self.widget( 'cvButton' ).config( state='disabled' )
 	
 	def UpdateAssessmentDisplay( self ):
-		if self.run.cv != None:
+		self.widget( 'ntrialsLabel' ).config( text=self.run.Describe( 'ntrials' ) )
+		if self.run.cv == None:
+			if self.run.errmsg != None:
+				self.widget( 'explanation', ToolTip( self.widget( 'cvLabel' ), self.run.errmsg ) )
+				self.widget( 'cvLabel' ).config( text='error', bg='#FF0000' )
+		else:
 			q = self.run.cv.loss.train
 			goodness = 1 - 2 * min( 0.5, q )
 			badness = 2 * max( q - 0.5, 0.0 )
