@@ -37,12 +37,13 @@
 #include "ParameterTypes.h"
 #include "StateTypes.h"
 #include "EventTypes.h"
+#include <limits>
 
 using namespace std;
 using namespace Interpreter;
 
 static const int cTimeResolution = 50; // for Sleep and Wait commands, in ms
-static const double cDefaultTimeout = 5.0; // for Wait commands, in s
+static const double cDefaultTimeout = numeric_limits<double>::infinity(); // for Wait commands, in s
 
 //// SystemType
 SystemType SystemType::sInstance;
@@ -188,7 +189,7 @@ SystemType::SetConfig( CommandInterpreter& inInterpreter )
   set<int> states;
   states.insert( BCI_StateConnected );
   states.insert( BCI_StateResting );
-  DoWaitFor( states, 2 * cDefaultTimeout, inInterpreter );
+  DoWaitFor( states, cDefaultTimeout, inInterpreter );
   if( BCI_GetStateOfOperation() != BCI_StateResting )
     throw bciexception_( "Could not set configuration" );
   return true;
@@ -206,7 +207,7 @@ SystemType::Start( CommandInterpreter& inInterpreter )
     throw bciexception_( "Must be in Resting or Suspended state to start operation" );
   set<int> states;
   states.insert( BCI_StateRunning );
-  DoWaitFor( states, 2 * cDefaultTimeout, inInterpreter );
+  DoWaitFor( states, cDefaultTimeout, inInterpreter );
   if( BCI_GetStateOfOperation() != BCI_StateRunning )
     throw bciexception_( "Could not start operation" );
   return true;
@@ -226,7 +227,7 @@ SystemType::Stop( CommandInterpreter& inInterpreter )
   {
     set<int> states;
     states.insert( BCI_StateSuspended );
-    DoWaitFor( states, 2 * cDefaultTimeout, inInterpreter );
+    DoWaitFor( states, cDefaultTimeout, inInterpreter );
     success = ( BCI_GetStateOfOperation() == BCI_StateSuspended );
   }
   if( !success )
@@ -249,7 +250,7 @@ SystemType::Startup( CommandInterpreter& inInterpreter )
     set<int> states;
     states.insert( BCI_StateStartup );
     states.insert( BCI_StateConnected );
-    DoWaitFor( states, 2 * cDefaultTimeout, inInterpreter );
+    DoWaitFor( states, cDefaultTimeout, inInterpreter );
     success = ( BCI_GetStateOfOperation() == BCI_StateStartup
                 || BCI_GetStateOfOperation() == BCI_StateConnected );
   }
@@ -273,7 +274,7 @@ SystemType::Shutdown( CommandInterpreter& inInterpreter )
   {
     set<int> states;
     states.insert( BCI_StateIdle );
-    DoWaitFor( states, 2 * cDefaultTimeout, inInterpreter );
+    DoWaitFor( states, cDefaultTimeout, inInterpreter );
     success = ( BCI_GetStateOfOperation() == BCI_StateIdle );
   }
   if( !success )

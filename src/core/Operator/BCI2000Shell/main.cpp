@@ -75,7 +75,7 @@ int main( int argc, char** argv )
     else
     {
       string arg = argv[idx++];
-      if( arg.find( '\"' ) == string::npos )
+      if( !command && arg.find( '\"' ) == string::npos )
         arg = "\"" + arg + "\"";
       additionalArgs += " ";
       additionalArgs += arg;
@@ -90,7 +90,6 @@ int main( int argc, char** argv )
   } bci;
   bci.OperatorPath( "" );
   bci.TelnetAddress( telnetAddress );
-  bci.WindowVisible( false );
   if( !bci.Connect() )
   {
     if( !bci.Run( FileUtils::InstallationDirectory() + sOperatorName, additionalArgs )
@@ -101,7 +100,6 @@ int main( int argc, char** argv )
     }
   }
   bci.Execute( "cd \"" + FileUtils::WorkingDirectory() + "\"" );
-  bci.Timeout( 3600 );
   int exitCode = 0;
   if( interactive )
   {

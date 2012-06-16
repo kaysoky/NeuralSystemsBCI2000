@@ -47,7 +47,7 @@ class BCI2000Connection
   virtual ~BCI2000Connection() { Disconnect(); }
 
   // ==Properties==
-  // The timeout to use for the connection to be established, and for a command to finish.
+  // The timeout to use for the connection to be established.
   // Given in seconds.
   double Timeout() const { return mTimeout; }
   BCI2000Connection& Timeout( double inTimeout ) { mTimeout = inTimeout; return *this; }

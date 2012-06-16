@@ -69,28 +69,30 @@ BCI2000Connection::Connect()
 {
   Disconnect();
   mResult.clear();
-  bool success = true;
   if( mTelnetAddress.empty() )
     mTelnetAddress = DefaultTelnetAddress();
-  if( !mOperatorPath.empty() )
+  mSocket.open( mTelnetAddress.c_str() );
+  mConnection.open( mSocket );
+  bool success = mConnection.is_open();
+  if( !success && !mOperatorPath.empty() )
   {
     success = Run( mOperatorPath );
     mTerminateOperator = success;
-  }
-  if( success )
-  {
-    mSocket.open( mTelnetAddress.c_str() );
-    mConnection.open( mSocket );
-    success = mConnection.is_open();
     if( success )
-      success = mSocket.wait_for_read( static_cast<int>( 1e3 * mTimeout ) );
-    if( !success )
-      mResult = "Could not connect to Operator module at " + mTelnetAddress;
-    else while( mConnection.rdbuf()->in_avail() )
-      mConnection.ignore();
+    {
+      mSocket.open( mTelnetAddress.c_str() );
+      mConnection.open( mSocket );
+      success = mConnection.is_open();
+    }
   }
   if( success )
+    success = mSocket.wait_for_read( static_cast<int>( 1e3 * mTimeout ) );
+  if( !success )
+    mResult = "Could not connect to Operator module at " + mTelnetAddress;
+  else
   {
+    while( mConnection.rdbuf()->in_avail() )
+      mConnection.ignore();
     WindowVisible( mWindowVisible );
     WindowTitle( mWindowTitle );
   }
@@ -135,12 +137,14 @@ BCI2000Connection::Execute( const string& inCommand )
     return -1;
   }
   mConnection << inCommand << "\r\n" << flush;
-  if( !mSocket.wait_for_read( static_cast<int>( 1e3 * mTimeout ) ) )
+  static const int cReactionTimeMs = 100;
+  while( !mSocket.wait_for_read( static_cast<int>( cReactionTimeMs ) ) )
   {
-    ostringstream oss;
-    oss << "Command did not finish after timeout of " << mTimeout << " seconds";
-    mResult = oss.str();
-    return -1;
+    if( !mSocket.connected() )
+    {
+      mResult = "Lost connection to Operator module";
+      return -1;
+    }
   }
   int exitCode = 0;
   string line;
@@ -219,7 +223,7 @@ BCI2000Connection::Run( const string& inOperatorPath, const string& inOptions )
   options += " --StartupIdle";
   if( !mWindowTitle.empty() )
     options += " --Title \"" + mWindowTitle + "\"";
-  if( !mWindowVisible )
+  if( mWindowVisible != visible )
     options += " --Hide";
   bool success = StartExecutable( inOperatorPath, options );
   if( success )
