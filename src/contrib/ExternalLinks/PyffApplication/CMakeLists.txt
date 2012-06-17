@@ -29,10 +29,6 @@ IF( WIN32 )
   )
   SET( SRC_PROJECT
     ${SRC_PROJECT}
-    ${BCPY2000SHARED}/PythonLink24.cpp
-    ${BCPY2000SHARED}/PythonLink25.cpp
-    ${BCPY2000SHARED}/PythonLink26.cpp
-    ${BCPY2000SHARED}/PythonLink27.cpp
     ${BCPY2000SHARED}/PythonWrapper.cpp
   )
   SET( HDR_PROJECT
