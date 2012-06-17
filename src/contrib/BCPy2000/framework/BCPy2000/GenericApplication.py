@@ -268,6 +268,7 @@ class BciGenericApplication(Core.BciCore):
 		if packet > 2:
 			self._estimate_rate('SamplesPerSecond', t) # instantaneous (but smoothed) estimate
 		self.remember('packet', t)
+		self._foundation_uses_string_encoding = isinstance(in_signal, basestring)
 		fallback_signal = super(BciGenericApplication, self)._Process(in_signal)  # superclass
 		# fallback_signal is set by superclass to be a copy of the input if same dims, or zeros if not
 		out_signal = self.Process(self.in_signal)                                 # subclass
@@ -290,7 +291,7 @@ class BciGenericApplication(Core.BciCore):
 			self._slave_memory = {'pp':pp, 'eo':eo}
 
 		self._lock.release('Process')
-		return self.out_signal
+		return self._encode_signal(self.out_signal)
 		
 	#############################################################
 
@@ -822,8 +823,8 @@ class BciGenericApplication(Core.BciCore):
 				stim1 = self.stimulus('_signalclock1', stim1, z=100)
 				stim2 = self.stimulus('_signalclock2', stim2, z=100)
 				self._signalclock = {
-					'stim1'  : stim1.parameters,
-					'stim2'  : stim2.parameters,
+					'stim1'  : stim1,
+					'stim2'  : stim2,
 					'offset': 1000.0 * (t[0] + 60.0 * t[1] + 3600.0 * t[2]),
 					'mspp'  : 1000.0 * float(self.params['SampleBlockSize']) / self.samplingrate()
 				}

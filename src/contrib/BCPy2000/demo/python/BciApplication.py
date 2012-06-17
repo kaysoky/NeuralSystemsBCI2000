@@ -21,7 +21,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy
-import VisionEgg
+#import PygameRenderer
 	
 #################################################################
 #################################################################
@@ -51,9 +51,8 @@ class BciApplication(BciGenericApplication):
 	
 	def Preflight(self, sigprops):
 		# Here is where you would set VisionEgg.config parameters,
-		# either using self.screen.setup(), or (for more advanced
-		# options) directly like, e.g. this to make the window draggable:
-		VisionEgg.config.VISIONEGG_FRAMELESS_WINDOW = 0  # gives the window a title bar
+		# either using self.screen.setup(), or directly.
+		self.screen.setup(frameless_window=0)  # if using VisionEggRenderer, this sets, VISIONEGG_FRAMELESS_WINDOW
 		
 	#############################################################
 	
@@ -64,11 +63,14 @@ class BciApplication(BciGenericApplication):
 		# attributes, however:  using names that start with a capital
 		# letter is a good insurance against this.
 		
+		Text = self.VisualStimuli.Text   # the convention is that the self.VisualStimuli "virtual module"
+		                                 # contains at least Text, Disc, Block and ImageStimulus classes for all renderers
+		
 		w,h = self.screen.size
 		self.screen.SetDefaultFont('comic sans ms', 30)
-		self.stimulus('SomeText', VisionEgg.Text.Text, text='BCPy2000: Python bindings for your brain',
-		                                               position=(w/2,h/2),
-		                                               anchor='top'         )
+		self.stimulus('SomeText', Text, text='BCPy2000: Python bindings for your brain',
+		                                position=(w/2,h/2),
+		                                anchor='top'         )
 		self.color = numpy.array([1.0, 0.0, 0.0])
 		
 	#############################################################

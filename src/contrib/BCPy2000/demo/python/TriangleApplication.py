@@ -20,9 +20,11 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
 import numpy
 from random import randint
 
+#import PygameRenderer
 from AppTools.Boxes import box
 from AppTools.Displays import fullscreen
 from AppTools.Shapes import PolygonTexture, Disc

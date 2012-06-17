@@ -102,11 +102,12 @@ class BciGenericSignalProcessing(Core.BciCore):
 
 	def _Process(self, in_signal):
 		self.remember('packet', self.prectime())
+		self._foundation_uses_string_encoding = isinstance(in_signal, basestring)
 		fallback_signal = super(BciGenericSignalProcessing, self)._Process(in_signal) # superclass
 		# fallback_signal is set by superclass to be a copy of the input if same dims, or zeros if not
 		out_signal = self.Process(self.in_signal)                                     # subclass
 		self._store_out_signal(out_signal, fallback_signal)
-		return self.out_signal
+		return self._encode_signal(self.out_signal)
 
 	def _StopRun(self):
 		super(BciGenericSignalProcessing, self)._StopRun()    # superclass

@@ -1,15 +1,15 @@
+#! ../../../../../../../prog/BCI2000Shell
+@cls & ..\..\..\..\..\..\..\prog\BCI2000Shell %0 %* #! && exit /b 0 || exit /b 1
 
-@set WD=%CD%
-
-@cd ..\..\..\..\..\..\..\prog
-
-@set OnConnect=-
-
-@set OnConnect=%OnConnect% ; SET PARAMETER VisualizeSource 0
-@set OnConnect=%OnConnect% ; SET PARAMETER VisualizeTiming 1
-@set OnConnect=%OnConnect% ; SETCONFIG
-
-@start Operator --OnConnect "%OnConnect%"
-@start SignalGenerator --EvaluateTiming=1 --FileFormat=Null
-@start DummySignalProcessing
-@start PythonApplication --PythonAppWD=%WD%
+Set environment WD ${canonical path ${parent directory $0}}
+Change directory $BCI2000LAUNCHDIR
+Show window; Set title ${Extract file base $0}
+Reset system
+Startup system localhost
+Start executable SignalGenerator       --local --EvaluateTiming=0 --FileFormat=Null
+Start executable DummySignalProcessing --local
+Start executable PythonApplication     --local --PythonAppWD=$WD
+Wait for Connected
+Set parameter VisualizeSource 0
+Set parameter VisualizeTiming 1
+Setconfig

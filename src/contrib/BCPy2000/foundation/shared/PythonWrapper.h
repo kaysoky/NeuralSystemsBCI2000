@@ -24,11 +24,8 @@
 //   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // Description: Allows Python functions to be loaded dynamically from a DLL at
-// run-time (no linking against import libraries). Each of the *macros* that
-// we need from the Python and NumPy APIs is wrapped into multiple functions,
-// according to the different supported Python versions,  and only the versions
-// corresponding to the loaded DLL are made available. For the subset of the
-// Python and NumPy APIs that we need, only very minimal changes were needed to
+// run-time (no linking against import libraries). For the subset of the
+// Python API that we need, only very minimal changes were needed to
 // the client code, and the client code can still be compiled without the wrapper.
 #ifndef DYNAMIC_PYTHON
 #define DYNAMIC_PYTHON 1
@@ -43,18 +40,15 @@
 #ifdef PYTHON_LINK
 #undef PYTHON_LINK
 #endif
-#ifdef PYTHON_MACRO
-#undef PYTHON_MACRO
-#endif
 
 #ifndef PyObject
 #define PyObject void
 #endif
+#ifndef Py_ssize_t
+#define Py_ssize_t size_t // TODO: really this should be a signed int with the same size as size_t
+#endif
 #ifndef PyThreadState
 #define PyThreadState void
-#endif
-#ifndef PyArrayObject
-#define PyArrayObject void
 #endif
 
 ////////////////////////////////////////////////////////////
@@ -62,21 +56,18 @@
 ////////////////////////////////////////////////////////////
 
 #define PYTHON_LINK(type,name,args) // do nothing
-#define PYTHON_MACRO(type,name,args)  extern type (*name) args;
 
 ////////////////////////////////////////////////////////////
 #elif   PYTHON_LINK_HEADER_MODE == 1 /// function prototypes
 ////////////////////////////////////////////////////////////
 
 #define PYTHON_LINK(type,name,args)  extern type (*name) args;
-#define PYTHON_MACRO PYTHON_LINK
 
 ////////////////////////////////////////////////////////////
 #elif   PYTHON_LINK_HEADER_MODE == 2   ////// initialization
 ////////////////////////////////////////////////////////////
 
 #define PYTHON_LINK(type,name,args)  type (*name) args;
-#define PYTHON_MACRO PYTHON_LINK
 
 ////////////////////////////////////////////////////////////
 #elif   PYTHON_LINK_HEADER_MODE == 3   // load the functions
@@ -89,7 +80,6 @@
 		all_loaded = false; \
 		bcierr << "failed to import " << #name << " from " << dllname << " shared library" << std::endl; \
 	}
-#define PYTHON_MACRO(type,name,args) // do nothing
 
 ////////////////////////////////////////////////////////////
 #endif /////////////////////////////////////////////////////
@@ -113,10 +103,10 @@ PYTHON_LINK(    PyObject*       ,   PyImport_AddModule           , (char* name) 
 PYTHON_LINK(    PyObject*       ,   PyImport_ImportModule        , (char* name)                      )
 PYTHON_LINK(    long            ,   PyInt_AsLong                 , (PyObject *)                      )
 PYTHON_LINK(    PyObject*       ,   PyInt_FromLong               , (long)                            )
-PYTHON_LINK(    PyObject*       ,   PyList_GetItem               , (PyObject*,int)                   )
-PYTHON_LINK(    PyObject*       ,   PyList_New                   , (int size)                        )
-PYTHON_LINK(    int             ,   PyList_SetItem               , (PyObject*,int,PyObject*)         )
-PYTHON_LINK(    int             ,   PyList_Size                  , (PyObject*)                       )
+PYTHON_LINK(    PyObject*       ,   PyList_GetItem               , (PyObject*,Py_ssize_t)            )
+PYTHON_LINK(    PyObject*       ,   PyList_New                   , (Py_ssize_t size)                 )
+PYTHON_LINK(    int             ,   PyList_SetItem               , (PyObject*,Py_ssize_t,PyObject*)  )
+PYTHON_LINK(    Py_ssize_t      ,   PyList_Size                  , (PyObject*)                       )
 PYTHON_LINK(    PyObject*       ,   PyModule_GetDict             , (PyObject*)                       )
 PYTHON_LINK(    PyObject*       ,   PyObject_CallFunctionObjArgs , (PyObject*,...)                   )
 PYTHON_LINK(    PyObject*       ,   PyObject_CallMethodObjArgs   , (PyObject*,PyObject*,...)         )
@@ -127,18 +117,11 @@ PYTHON_LINK(    int             ,   PyRun_SimpleFile             , (void *fp, co
 PYTHON_LINK(    int             ,   PyRun_SimpleString           , (const char*)                     )
 PYTHON_LINK(    char*           ,   PyString_AsString            , (PyObject*)                       )
 PYTHON_LINK(    PyObject*       ,   PyString_FromString          , (const char*)                     )
-PYTHON_LINK(    int             ,   PyString_Size                , (PyObject*)                       )
-PYTHON_LINK(    PyObject*       ,   PyTuple_New                  , (int)                             )
-PYTHON_LINK(    PyObject*       ,   PyTuple_GetItem              , (PyObject*,int)                   )
-PYTHON_LINK(    int             ,   PyTuple_SetItem              , (PyObject*,int,PyObject*)         )
-PYTHON_LINK(    int             ,   PyTuple_Size                 , (PyObject*)                       )
+PYTHON_LINK(    PyObject*       ,   PyString_FromStringAndSize   , (const char*,Py_ssize_t)          )
+PYTHON_LINK(    Py_ssize_t      ,   PyString_Size                , (PyObject*)                       )
+PYTHON_LINK(    PyObject*       ,   PyTuple_GetItem              , (PyObject*,Py_ssize_t)            )
 PYTHON_LINK(    void            ,   Py_Initialize                , (void)                            )
-PYTHON_LINK(    void            ,   Py_DecRef                    , (void*)                           )
-
-PYTHON_MACRO(   void            ,   PyList_SET_ITEM              , (void*,int,void*)                 )
-PYTHON_MACRO(   double*         ,   PyArray_DATA                 , (void*)                           )
-PYTHON_MACRO(   size_t          ,   PyArray_DIM                  , (void*,int)                       )
-PYTHON_MACRO(   size_t          ,   PyArray_STRIDE               , (void*,int)                       )
+PYTHON_LINK(    void            ,   Py_DecRef                    , (PyObject*)                       )
 
 #if   PYTHON_LINK_HEADER_MODE == 1
 ////////////////////////////////////////////////////////////
@@ -158,8 +141,13 @@ int PyString_Check(PyObject* x);
 #endif // PYTHON_LINK_HEADER_MODE
 
 
-#undef PYTHON_MACRO
 #undef PYTHON_LINK
 #undef PYTHON_LINK_HEADER_MODE
+
+#else // static linking
+
+#if   PYTHON_LINK_HEADER_MODE == 2
+#include "Python.h"
+#endif
 
 #endif // DYNAMIC_PYTHON

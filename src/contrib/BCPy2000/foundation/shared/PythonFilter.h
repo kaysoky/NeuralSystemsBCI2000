@@ -26,6 +26,7 @@
 #ifndef PythonFilterH
 #define PythonFilterH
 
+#include "BCIException.h"
 #include "PrecisionTime.h"
 
 #ifndef DYNAMIC_PYTHON
@@ -35,7 +36,6 @@
 #include "PythonWrapper.h"
 #else
 #include "Python.h"
-#include "numpy/arrayobject.h"
 #endif
 
 #define PYTHON_CONSOLE              "EmbeddedPythonConsole"
@@ -76,15 +76,7 @@
 #define    DEFAULT_CLASS_FILE       "BciApplication.py"
 #endif
 
-#ifndef __BORLANDC__
-class Exception { // quack! quack!
-    public:
-        Exception(const char*s){Message=s;}
-        std::string Message;
-};
-#endif // __BORLANDC__
-
-class EndUserError : public Exception {
+class EndUserError : public BCIException {
 	public:
 		EndUserError(const char* s);
 };
@@ -116,15 +108,7 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		mutable bool           stay_open;
 		mutable PyThreadState* _save;
 
-		PyArrayObject* shared_insignal;
-		PyArrayObject* shared_outsignal;
-		double*        shared_statevals;
-		double*        shared_flag;
-
 	protected:
-		void        SharingSetup(const SignalProperties &inProp, const SignalProperties &outProp);
-        int         Share(const GenericSignal &inSignal, GenericSignal &outSignal);
-
 		void        SendParametersToPython() const;
 		void        ReceiveParametersFromPython();
 		void        SendStatesToPython() const;
@@ -132,8 +116,8 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		void        UpdateStateChangesFromPython(StateMap& before, StateMap& after) const;
 		void        SendStatePrecisionsToPython() const;
 
-		PyArrayObject* ConvertSignalToPyArrayObject(const GenericSignal& inSignal, PyArrayObject* array=NULL) const;
-		void           ConvertPyArrayObjectToSignal(PyArrayObject* pyOutSignal, GenericSignal& outSignal) const;
+		PyObject*   ConvertSignalToPyObject(const GenericSignal& inSignal, PyObject* pyInSignal=NULL) const;
+		void        ConvertPyObjectToSignal(PyObject* pyOutSignal, GenericSignal& outSignal) const;
 
 		PyObject*   ConvertPropertiesToPyObject(const SignalProperties& inSignalProperties) const;
 		void        ConvertPyObjectToProperties(PyObject* pyOutSignalProperties, SignalProperties& outSignalProperties) const;
@@ -146,7 +130,7 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 
 		void        DoubleErr(const char *msg, const char *qualifier=NULL, bool notify_restart=false) const;
 		void        HandleEndUserError(EndUserError& e, std::string qualifier) const;
-		void        HandleException(Exception& e, std::string qualifier) const;
+		void        HandleException(BCIException& e, std::string qualifier) const;
 		void        ChangeDir(std::string& d);
 		void        OpenConsole(const char *title);
 

@@ -35,7 +35,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include "PythonFilter.h"
 
 #include <cstdio>
@@ -84,10 +84,13 @@ Filter( FILTER_NAME, 2.C );
 RegisterFilter( FILTER_NAME, 3 );
 #endif
 
-std::string FAILURE;
-#define FAIL(a) throw Exception(((FAILURE="") + a).c_str())
+#define FAIL(a) throw bciexception_(a)
 
-EndUserError::EndUserError(const char* s) : Exception(s) {}
+EndUserError::EndUserError(const char* s) : BCIException(s) {}
+
+stringstream DBSTRING;
+void _DB() {DBSTRING << " && pause"; string s = DBSTRING.str(), t = "echo ", u = t + s; system(u.c_str()); DBSTRING.str("");}
+#define DB(a) (DBSTRING << a);_DB()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implementations of the usual GenericFilter virtual methods
@@ -95,10 +98,6 @@ EndUserError::EndUserError(const char* s) : Exception(s) {}
 
 FILTER_NAME::FILTER_NAME()
 :
-  shared_insignal( NULL ),
-  shared_outsignal( NULL ),
-  shared_statevals( NULL ),
-  shared_flag( NULL ),
   cur_time( new PrecisionTime )
 {
   try {
@@ -114,7 +113,7 @@ FILTER_NAME::FILTER_NAME()
     END_STATE_DEFINITIONS
 #endif
 
-    std::string originalDir = BCIDirectory::GetCWD();
+    std::string originalDir = FileUtils::WorkingDirectory();
 
     std::string dllname       = OptionalParameter(FILTER_ABBREV "DLL",       "");
     std::string logFile       = OptionalParameter(FILTER_ABBREV "Log",       "");
@@ -179,9 +178,6 @@ FILTER_NAME::FILTER_NAME()
 #if defined __BORLANDC__
     _control87(MCW_EM, MCW_EM); // required to avoid Borland-specific crashes with numpy
 #endif
-#if DYNAMIC_PYTHON == 0
-    import_array(); // numpy
-#endif
 
     EvalPythonString("from " + coremod + " import *");
     EvalPythonString("from " + genmod + " import *");
@@ -207,7 +203,7 @@ FILTER_NAME::FILTER_NAME()
     PyObject*key,*val;
 
     key = PyString_FromString("installation_dir");
-    val = PyString_FromString(BCIDirectory::InstallationDirectory().c_str());
+    val = PyString_FromString(FileUtils::InstallationDirectory().c_str());
     CallMethod("__setattr__", key, val);
     Py_DecRef(key); // Py_DecRef(val);
 
@@ -244,7 +240,7 @@ FILTER_NAME::FILTER_NAME()
   catch(EndUserError& e) {
     HandleEndUserError(e, "Construct");
   }
-  catch(Exception& e) {
+  catch(BCIException& e) {
     HandleException(e, "Construct");
   }
 }
@@ -270,7 +266,7 @@ FILTER_NAME::~FILTER_NAME()
     catch(EndUserError& e) {
       HandleEndUserError(e, "Destruct");
     }
-    catch(Exception& e) {
+    catch(BCIException& e) {
       HandleException(e, "Destruct");
     }
 #ifdef _WIN32
@@ -315,7 +311,7 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
   catch(EndUserError& e) {
     HandleEndUserError(e, "Preflight");
   }
-  catch(Exception& e) {
+  catch(BCIException& e) {
     HandleException(e, "Preflight");
   }
 }
@@ -335,13 +331,12 @@ FILTER_NAME::Initialize( const SignalProperties& inSignalProperties,
     CallHook( "_Initialize", pyInSignalProperties, pyOutSignalProperties);
     StateMap after = ReceiveStatesFromPython();
     UpdateStateChangesFromPython(before, after);
-    SharingSetup(inSignalProperties, outSignalProperties);
     UnblockThreads();
   }
   catch(EndUserError& e) {
     HandleEndUserError(e, "Initialize");
   }
-  catch(Exception& e) {
+  catch(BCIException& e) {
     HandleException(e, "Initialize");
   }
 }
@@ -352,37 +347,28 @@ FILTER_NAME::Process( const GenericSignal& input, GenericSignal& output )
 #if MODTYPE == 3
   State( "AppStartTime" ) = cur_time->Now();
 #endif
-  try {
-    if(shared_insignal) {
-      if(Share(input, output) != 0) {
-        BlockThreads();
-        HandlePythonError("_Process");
-        UnblockThreads();
-      }
-    }
-    else {
-      BlockThreads();
-      SendStatesToPython();
-      // Watch out for the memory leaks. They come when you least expect them.
-      // http://www-cgi.uni-regensburg.de/WWW_Server/Dokumentation/Python/ext.pdf
-      PyArrayObject* py_input = ConvertSignalToPyArrayObject(input);
-      StateMap before;
-      // unlike StartRun and Initialize, here we do not call before = ReceiveStatesFromPython();
-      // Python may have other threads that update states asynchronously. They are passed on here.
-      PyArrayObject* py_output = (PyArrayObject*)CallHook("_Process", (PyObject*)py_input);
-      Py_DecRef(py_input);
-      StateMap after = ReceiveStatesFromPython();
-      UpdateStateChangesFromPython(before, after);
-      ConvertPyArrayObjectToSignal(py_output, output);
-      Py_DecRef(py_output);
-      UnblockThreads();
-    }
+try {
+    BlockThreads();
+    SendStatesToPython();
+    // Watch out for the memory leaks. They come when you least expect them.
+    // http://www-cgi.uni-regensburg.de/WWW_Server/Dokumentation/Python/ext.pdf
+    PyObject* py_input = ConvertSignalToPyObject(input);
+    StateMap before;
+    // unlike StartRun and Initialize, here we do not call before = ReceiveStatesFromPython();
+    // Python may have other threads that update states asynchronously. They are passed on here.
+    PyObject* py_output = CallHook("_Process", py_input);
+    Py_DecRef(py_input);
+    StateMap after = ReceiveStatesFromPython();
+    UpdateStateChangesFromPython(before, after);
+    ConvertPyObjectToSignal(py_output, output);
+    Py_DecRef(py_output);
+    UnblockThreads();
   }
   catch(EndUserError& e) {
     State("Running") = 0;
     HandleEndUserError(e, "Process");
   }
-  catch(Exception& e) {
+  catch(BCIException& e) {
     State("Running") = 0;
     HandleException(e, "Process");
   }
@@ -403,12 +389,11 @@ FILTER_NAME::StartRun()
     StateMap after = ReceiveStatesFromPython();
     UpdateStateChangesFromPython(before, after);
     UnblockThreads();
-    if(shared_flag) *shared_flag = 0.0;
   }
   catch(EndUserError& e) {
     HandleEndUserError(e, "StartRun");
   }
-  catch(Exception& e) {
+  catch(BCIException& e) {
     HandleException(e, "StartRun");
   }
 }
@@ -426,7 +411,7 @@ FILTER_NAME::StopRun()
   catch(EndUserError& e) {
     HandleEndUserError(e, "StopRun");
   }
-  catch(Exception& e) {
+  catch(BCIException& e) {
     HandleException(e, "StopRun");
   }
 }
@@ -445,7 +430,7 @@ FILTER_NAME::Resting()
   catch(EndUserError& e) {
     HandleEndUserError(e, "Resting");
   }
-  catch(Exception& e) {
+  catch(BCIException& e) {
     HandleException(e, "Resting");
   }
 }
@@ -461,7 +446,7 @@ FILTER_NAME::Halt()
   catch(EndUserError& e) {
     HandleEndUserError(e, "Halt");
   }
-  catch(Exception& e) {
+  catch(BCIException& e) {
     HandleException(e, "Halt");
   }
 }
@@ -697,123 +682,40 @@ FILTER_NAME::SendStatePrecisionsToPython() const
   CallMethod("_set_state_precisions", bits);
 }
 
-void
-FILTER_NAME::SharingSetup(const SignalProperties &inProp, const SignalProperties &outProp)
-{
-  PyObject* py_indims = PyList_New(2);
-  PyList_SetItem(py_indims, 0, PyInt_FromLong(inProp.Channels()));
-  PyList_SetItem(py_indims, 1, PyInt_FromLong(inProp.Elements()));
-
-  PyObject* py_outdims = PyList_New(2);
-  PyList_SetItem(py_outdims, 0, PyInt_FromLong(outProp.Channels()));
-  PyList_SetItem(py_outdims, 1, PyInt_FromLong(outProp.Elements()));
-
-  int i, nstates = States->Size();
-  PyObject* py_statelist = PyList_New(nstates);
-  for(i = 0; i < nstates; i++ ) {
-    const char* name = ( *States )[ i ].Name().c_str();
-    PyList_SetItem(py_statelist, i, PyString_FromString(name)); // steals reference: don't decref element pointers
-  }
-
-  PyObject* py_result = CallMethod("_sharing_setup", py_indims, py_outdims, py_statelist);
-  if(PyTuple_Size(py_result) == 0) {
-    shared_insignal  = NULL;
-    shared_outsignal = NULL;
-    shared_statevals = NULL;
-    shared_flag      = NULL;
-  }
-  else {
-    shared_insignal  =                       (PyArrayObject*)PyTuple_GetItem(py_result, 0) ;
-    shared_outsignal =                       (PyArrayObject*)PyTuple_GetItem(py_result, 1) ;
-    shared_statevals = (double*)PyArray_DATA((PyArrayObject*)PyTuple_GetItem(py_result, 2));
-    shared_flag      = (double*)PyArray_DATA((PyArrayObject*)PyTuple_GetItem(py_result, 3));
-  }
-  Py_DecRef(py_result);
-  Py_DecRef(py_statelist);
-  Py_DecRef(py_outdims);
-  Py_DecRef(py_indims);
-}
-
-int
-FILTER_NAME::Share(const GenericSignal &inSignal, GenericSignal &outSignal)
-{
-  int i;
-  int nstates = States->Size();
-
-  while(*shared_flag != 0.0) {
-    if(*shared_flag < 0.0) return -1;
-    ::Sleep(1);
-  }
-
-  ConvertSignalToPyArrayObject(inSignal, shared_insignal);
-
-  for(i = 0; i < nstates; i++ )
-    shared_statevals[i] = (double)State(  (*States)[i].Name().c_str()  );
-
-  *shared_flag = 1.0;
-  while(*shared_flag == 1.0) ::Sleep(1);
-  if(*shared_flag < 0.0) return -1;
-
-  ConvertPyArrayObjectToSignal(shared_outsignal, outSignal);
-
-  for(i = 0; i < nstates; i++ )
-    State(  (*States)[i].Name().c_str()  ) = (StateType)shared_statevals[i];
-
-  *shared_flag = 0.0;
-  return 0;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Converters between BCI2000 classes and Python objects
 ////////////////////////////////////////////////////////////////////////////////
 
-PyArrayObject*
-FILTER_NAME::ConvertSignalToPyArrayObject(const GenericSignal& sig, PyArrayObject* array) const
+PyObject*
+FILTER_NAME::ConvertSignalToPyObject(const GenericSignal& sig, PyObject* pyobj) const
 {
-  // see http://projects.scipy.org/scipy/numpy/wiki/NumPyCAPI
-  if(array == NULL) array = (PyArrayObject *)PyObject_CallMethod(bci2000_instance, (char*)"_zeros", (char*)"ii", sig.Channels(), sig.Elements());
-
-  int nrows = static_cast<int>( PyArray_DIM(array, 0) );
-  int ncols = static_cast<int>( PyArray_DIM(array, 1) );
-  int rrstride = static_cast<int>( PyArray_STRIDE(array, 0) );
-  int ccstride = static_cast<int>( PyArray_STRIDE(array, 1) );
-  char *data = (char*)PyArray_DATA(array);
-  if(nrows != sig.Channels() || ncols != sig.Elements())
-  {
-    std::ostringstream s;
-    s << "PyArrayObject (" << nrows << " by " << ncols << ") is the wrong shape for the expected incoming BCI2000 signal (" << sig.Channels() << " by " << sig.Elements() << ")";
-    throw Exception(s.str().c_str());
-  }
-  for(int i = 0; i < nrows; ++i)
-    for(int j = 0; j < ncols; ++j)
-      *((double*)(data + i*rrstride + j*ccstride)) = sig(i, j);
-
-  return array;
+  size_t nCh = (size_t)sig.Channels();
+  size_t nEl = (size_t)sig.Elements();
+  size_t elSize = sizeof(double);
+  if(elSize != 8) FAIL("internal error: unsupported architecture - sizeof(double) is not 8");
+  if(!pyobj) pyobj = PyString_FromStringAndSize(NULL, nCh*nEl*elSize);
+  if(!pyobj) FAIL("failed to allocate memory for signal buffer");
+  double* vals = (double*)PyString_AsString(pyobj);
+  for(size_t ch = 0; ch < nCh; ch++)
+    for(size_t el = 0; el < nEl; el++)
+	  *vals++ = sig(ch, el);
+  return pyobj;
 }
 
 void
-FILTER_NAME::ConvertPyArrayObjectToSignal(PyArrayObject* array, GenericSignal& sig) const
+FILTER_NAME::ConvertPyObjectToSignal(PyObject* pyobj, GenericSignal& sig) const
 {
-  if(!array) throw Exception("No python signal data available (null pointer)");
-  // TODO: do a type-check before casting
-  //    Check that it is a numpy array
-  //    Check that it has float64 precision
-  //    Check that it is 2-dimensional
-
-  int nrows = static_cast<int>( PyArray_DIM(array, 0) );
-  int ncols = static_cast<int>( PyArray_DIM(array, 1) );
-  int rrstride = static_cast<int>( PyArray_STRIDE(array, 0) );
-  int ccstride = static_cast<int>( PyArray_STRIDE(array, 1) );
-  char* data = (char*)PyArray_DATA(array);
-  if(nrows != sig.Channels() || ncols != sig.Elements())
-  {
-    std::ostringstream s;
-    s << "PyArrayObject (" << nrows << " by " << ncols << ") is the wrong shape for the expected outgoing BCI2000 signal (" << sig.Channels() << " by " << sig.Elements() << ")";
-    throw Exception(s.str().c_str());
-  }
-  for(int i = 0; i < nrows; ++i)
-    for(int j = 0; j < ncols; ++j)
-      sig(i,j) = *((double*)(data + i*rrstride + j*ccstride));
+  size_t nCh = (size_t)sig.Channels();
+  size_t nEl = (size_t)sig.Elements();
+  size_t elSize = sizeof(double);
+  if(elSize != 8) FAIL("internal error: unsupported architecture - sizeof(double) is not 8");
+  if(!pyobj) FAIL("No python signal data available (null pointer)");
+  if(!PyString_Check(pyobj)) FAIL("python signal is supposed to be a string");
+  if(PyString_Size(pyobj) != nCh * nEl * elSize) FAIL("python signal contains unexpected number of bytes");
+  double* vals = (double*)PyString_AsString(pyobj);
+  for(size_t ch = 0; ch < nCh; ch++)
+    for(size_t el = 0; el < nEl; el++)
+	  sig(ch, el) = *vals++;
 }
 
 PyObject*
@@ -861,9 +763,7 @@ FILTER_NAME::ConvertPyObjectToProperties(PyObject* pyOutSignalProperties, Signal
     outSignalProperties.SetType(SignalType::int32);
   }
   else {
-    std::string s;
-    s = s + "'" + name + "' is not one of the supported data types";
-    throw Exception(s.c_str());
+    FAIL("'" << name << "' is not one of the supported data types");
   }
   ConvertPyListToLabelIndex(PyDict_GetItemString(pyOutSignalProperties, "ChannelLabels"), outSignalProperties.ChannelLabels());
   ConvertPyListToLabelIndex(PyDict_GetItemString(pyOutSignalProperties, "ElementLabels"), outSignalProperties.ElementLabels());
@@ -878,7 +778,7 @@ FILTER_NAME::ConvertLabelIndexToPyList(LabelIndex from) const
 {
   PyObject* channelNames = PyList_New(from.Size());
   for(int i = 0; i < from.Size(); i++){
-    PyList_SET_ITEM(channelNames , i, PyString_FromString(from[i].c_str()));
+    PyList_SetItem(channelNames , i, PyString_FromString(from[i].c_str()));
   }
   return channelNames;
 }
@@ -946,21 +846,21 @@ void
 FILTER_NAME::HandleEndUserError(EndUserError& e, std::string qualifier) const
 {
   UnblockThreads();
-  bcierr << e.Message.c_str() << endl;
+  bcierr << e.what() << endl;
 }
 
 void
-FILTER_NAME::HandleException(Exception& e, std::string qualifier) const
+FILTER_NAME::HandleException(BCIException& e, std::string qualifier) const
 {
   UnblockThreads();
-  DoubleErr(TO_CSTRING(e.Message), qualifier.c_str(), true);
+  DoubleErr(e.what(), qualifier.c_str(), true);
 }
 
 void
 FILTER_NAME::ChangeDir(std::string& d)
 {
-  int err = ::chdir(d.c_str());
-  if(err) FAIL("failed to change working directory from " + BCIDirectory::GetCWD() + " to " + d);
+  if( !FileUtils::ChangeDirectory( d ) )
+    FAIL( "failed to change working directory from " << FileUtils::WorkingDirectory() << " to " << d );
 }
 
 void
@@ -1023,19 +923,19 @@ FILTER_NAME::CallModuleMember(std::string module, std::string member, PyObject* 
 {
   PyObject* mod = PyImport_AddModule((char*)module.c_str());
   HandlePythonError("PyImport_AddModule on " + module);
-  if(!mod){FAIL("module object for " + module + " is NULL"); return NULL;}
+  if(!mod){FAIL("module object for " << module << " is NULL"); return NULL;}
 
   PyObject* dict = PyModule_GetDict(mod);
   HandlePythonError("PyModule_GetDict on " + module);
-  if(!dict){FAIL("dict object for module " + module + " is NULL"); return NULL;}
+  if(!dict){FAIL("dict object for module " << module << " is NULL"); return NULL;}
 
   PyObject* func = PyDict_GetItemString(dict, member.c_str());
   HandlePythonError("PyDict_GetItemString on " + member + " from " + module);
-  if(!func){FAIL("item " + member + " from module " + module + " is NULL"); return NULL;}
+  if(!func){FAIL("item " << member << " from module " << module << " is NULL"); return NULL;}
 
   PyObject* result = PyObject_CallFunctionObjArgs(func, arg, NULL);
   HandlePythonError("PyObject_CallFunctionObjArgs on " + member + " from " + module);
-  if(!result){FAIL("result of calling " + member + "() from module " + module + " is NULL"); return NULL;}
+  if(!result){FAIL("result of calling " << member << "() from module " << module << " is NULL"); return NULL;}
 
   // apparently should not decref mod, dict and func here
   return result;
@@ -1098,7 +998,7 @@ FILTER_NAME::HandlePythonError(std::string msg, bool errorCodeReturned) const
   if(msg.length()) msg = "Python error during " + msg;
   else msg = "Python error";
   if(report.length()) msg = msg + ": " + report;
-  throw Exception(msg.c_str());
+  FAIL(msg);
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

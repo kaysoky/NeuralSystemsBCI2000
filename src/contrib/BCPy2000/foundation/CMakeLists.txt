@@ -16,10 +16,6 @@ IF( WIN32 )
   )
   SET( SRC_PROJECT
     ${SRC_PROJECT}
-    ../shared/PythonLink24.cpp
-    ../shared/PythonLink25.cpp
-    ../shared/PythonLink26.cpp
-    ../shared/PythonLink27.cpp
     ../shared/PythonWrapper.cpp
   )
   SET( HDR_PROJECT

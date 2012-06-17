@@ -40,17 +40,12 @@
 #ifndef PYTHON_API_NAMESPACE  //////// Define and load functions
 ////////////////////////////////////////////////////////////////
 
-namespace PyAPI24 {void Macros2Functions(void);};
-namespace PyAPI25 {void Macros2Functions(void);};
-namespace PyAPI26 {void Macros2Functions(void);};
-namespace PyAPI27 {void Macros2Functions(void);};
 
-#ifdef _WIN32
 #include "BCIError.h"
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <iostream>
-#define bcierr               std::cerr
 #include <dlfcn.h>
 #define HINSTANCE            void*
 #define LoadLibrary(a)       dlopen(a, RTLD_NOW | RTLD_GLOBAL)
@@ -61,131 +56,89 @@ namespace PyAPI27 {void Macros2Functions(void);};
 #include "PythonWrapper.h"           // instantiation of function pointers
 
 
+#include <vector>
 #include <string>
 
 int LoadPythonLinks(const char *dllname)
 {
-	static char trynames[32] = "python25\0python24\0python26\0\0";
+	std::vector<std::string> trynames;
+	trynames.push_back("python25");
+	trynames.push_back("python24");
+	trynames.push_back("python27");
+	trynames.push_back("python26");
+
 	HINSTANCE dll = NULL;
 	if(dllname && *dllname) {
 		dll = ::LoadLibrary(dllname);
 		if(!dll) bcierr << "failed to load dynamic library \"" << dllname << "\"" << std::endl;
 	}
 	else {
-		dllname = trynames;
-		while(*dllname) {
+		for(std::vector<std::string>::iterator i = trynames.begin(); i != trynames.end(); i++) {
+			dllname = (*i).c_str();
 			dll = ::LoadLibrary(dllname);
 			if(dll) break;
-			while(*dllname) dllname++;
-			dllname++;
 		}
-		if(!dll) bcierr << "Failed to find a dynamic library between python24 and python26. Is python installed?" << std::endl;
+		if(!dll) bcierr << "Failed to find a dynamic library named python24, python25, python26 or python27. Is python installed?" << std::endl;
 	}
 	bool all_loaded = (dll != 0);
-
-#define  PYTHON_LINK_HEADER_MODE   3
+#define PYTHON_LINK_HEADER_MODE 3 
 #include "PythonWrapper.h"
-
-	std::string lowername = "";
-	for(const char *s = dllname; s && *s; s++) lowername += tolower(*s);
-	if(dll == NULL) all_loaded = false;
-#ifndef SUPPORT_PY24
-#define SUPPORT_PY24 1
-#endif
-#if SUPPORT_PY24
-	else if (lowername.find("python24") !=std::string::npos) PyAPI24::Macros2Functions();
-	else if (lowername.find("python2.4")!=std::string::npos) PyAPI24::Macros2Functions();
-	else if (lowername.find("/2.4/")!=std::string::npos)     PyAPI24::Macros2Functions();
-#endif
-#ifndef SUPPORT_PY25
-#define SUPPORT_PY25 1
-#endif
-#if SUPPORT_PY25
-	else if (lowername.find("python25") !=std::string::npos) PyAPI25::Macros2Functions();
-	else if (lowername.find("python2.5")!=std::string::npos) PyAPI25::Macros2Functions();
-	else if (lowername.find("/2.5/")!=std::string::npos)     PyAPI25::Macros2Functions();
-#endif
-#ifndef SUPPORT_PY26
-#define SUPPORT_PY26 1
-#endif
-#if SUPPORT_PY26
-	else if (lowername.find("python26") !=std::string::npos) PyAPI26::Macros2Functions();
-	else if (lowername.find("python2.6")!=std::string::npos) PyAPI26::Macros2Functions();
-	else if (lowername.find("/2.6/")!=std::string::npos)     PyAPI26::Macros2Functions();
-#endif
-#ifndef SUPPORT_PY27
-#define SUPPORT_PY27 1
-#endif
-#if SUPPORT_PY27
-	else if (lowername.find("python27") !=std::string::npos) PyAPI27::Macros2Functions();
-	else if (lowername.find("python2.7")!=std::string::npos) PyAPI27::Macros2Functions();
-	else if (lowername.find("/2.7/")!=std::string::npos)     PyAPI27::Macros2Functions();
-#endif
-	else {
-		all_loaded = false;
-		bcierr << "failed to recognize version from dll name \"" << dllname << "\"" << std::endl;
-	}
+#undef PYTHON_LINK_HEADER_MODE
 	return !all_loaded;
 }
 
 
 
 // PyList_Check() and friends are not, as they appear, functions, but macros.
-// We've worked painfully around *that* in principle, but *these* particular
-// macros depend on static data objects, so we can't use the dynamic loading
-// strategy at all. We'll have to settle for these much slower alternatives.
+// Some macros like Py_DECREF have dynamically-loadable twins (Py_DecRef),
+// but *these* particular macros do not appear to have alternatives, and depend
+// on static data objects, so we can't use them, even wrapped, with a dynamic
+// loading strategy at all. We'll have to settle for these clumsy alternatives:
 int PyList_Check(PyObject* a)
 {
-	PyObject* py_template = PyList_New(0);
-	PyObject* py_class = PyObject_GetAttrString(py_template, "__class__");
-	// probably there's single API call for getting class too, but the API
-	// doc is impossible to navigate unless you already know the name of
-	// what you're looking for...
-	int result = PyObject_IsInstance(a, py_class);
-	Py_DecRef(py_class);
-	Py_DecRef(py_template);
-	return result;
+	static PyObject* py_class = NULL;
+	if(py_class == NULL)
+	{
+		PyObject* py_template = PyList_New(0);
+		py_class = PyObject_GetAttrString(py_template, "__class__");
+		Py_DecRef(py_template);
+		// probably there's single API call for getting class too, but the API
+		// doc is impossible to navigate unless you already know the name of
+		// what you're looking for...
+	}
+	return PyObject_IsInstance(a, py_class);
 }
 int PyString_Check(PyObject* a)
 {
-	PyObject* py_template = PyString_FromString("");
-	PyObject* py_class = PyObject_GetAttrString(py_template, "__class__");
-	int result = PyObject_IsInstance(a, py_class);
-	Py_DecRef(py_class);
-	Py_DecRef(py_template);
-	return result;
+	static PyObject* py_class = NULL;
+	if(py_class == NULL)
+	{
+		PyObject* py_template = PyString_FromString("");
+		py_class = PyObject_GetAttrString(py_template, "__class__");
+		Py_DecRef(py_template);
+	}
+	return PyObject_IsInstance(a, py_class);
 }
 
 ////////////////////////////////////////////////////////////////
-#else //////////////// wrap (possibly-version-dependent) macros
+#else // (i.e. if PYTHON_API_NAMESPACE is #defined) ////////////
+//////////////// wrap (possibly-version-dependent) macros //////
 
-// This second half of the file is the only place where version-
-// dependent Python headers have been included.
+// This second half of the file is the only place where we
+// assume that version-dependent Python headers have been included.
 
 #define PyObject PyObject
 #define PyThreadState PyThreadState
-#define PyArrayObject PyArrayObject
 #define PYTHON_LINK_HEADER_MODE 0 //
 #include "PythonWrapper.h"
 namespace PYTHON_API_NAMESPACE { ///////////////////////////////
-////////////////////////////////////////////////////////////////
 
-void    PyWrapMacro_PyList_SET_ITEM(PyObject* op, int i, PyObject* v) {PyList_SET_ITEM(op, i, v);}
-double* PyWrapMacro_PyArray_DATA(PyArrayObject* a)          {return (double*)PyArray_DATA(a);}
-size_t  PyWrapMacro_PyArray_DIM(PyArrayObject* a, int n)    {return  (size_t)PyArray_DIM(a,n);}
-size_t  PyWrapMacro_PyArray_STRIDE(PyArrayObject* a, int n) {return  (size_t)PyArray_STRIDE(a,n);}
+// Maybe we don't need this mechanism at all any more, now that
+// the numpy dependency has been removed and macro-wrapping avoided...
 
- ////////////////////////////////////////////////////////////////
-void Macros2Functions(void)
-{
-  ::PyList_SET_ITEM = (void(*)(void*,int,void*))PyWrapMacro_PyList_SET_ITEM;
-  ::PyArray_DATA = (double*(*)(void*))PyWrapMacro_PyArray_DATA;
-  ::PyArray_DIM = (size_t(*)(void*,int))PyWrapMacro_PyArray_DIM;
-  ::PyArray_STRIDE = (size_t(*)(void*,int))PyWrapMacro_PyArray_STRIDE;
-}
 ////////////////////////////////////////////////////////////////
 } // end of namespace PYTHON_API_NAMESPACE /////////////////////
-#endif /////////////////////////////////////////////////////////
+#endif // (whether PYTHON_API_NAMESPACE defined) ///////////////
 ////////////////////////////////////////////////////////////////
 
 #endif // DYNAMIC_PYTHON

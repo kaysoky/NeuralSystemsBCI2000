@@ -123,6 +123,7 @@ class BciGenericSource(Core.BciCore):
 	def _Process(self, in_signal):
 		t = self.prectime()
 		self.remember('packet', t)
+		self._foundation_uses_string_encoding = isinstance(in_signal, basestring)
 		if self.warp == 0.0:
 			self._paused = True
 			print "paused at packet %d because self.warp is 0: call self.step() or self.cont()" % self.packet_count
@@ -148,7 +149,7 @@ class BciGenericSource(Core.BciCore):
 		fallback_signal = self.out_signal # set by superclass to be a copy of the input if same dims, or zeros if not
 		out_signal = self.Process(self.in_signal)         # subclass
 		self._store_out_signal(out_signal, fallback_signal)
-		return self.out_signal
+		return self._encode_signal(self.out_signal)
 
 	def _StopRun(self):
 		super(BciGenericSource, self)._StopRun()    # superclass

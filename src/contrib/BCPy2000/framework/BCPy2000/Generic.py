@@ -48,7 +48,7 @@ if __name__.startswith('BCPy2000.'):
 	from BCPy2000 import __version__,__author__,__copyright__,__email__
 else:
 	__copyright__ = None
-	__version__ = '$Revision unknown, so let us use 41340 $'.split(' ')[-2]  # update __version__ in BCPy2000/__init__.py first
+	__version__ = '$Revision unknown, so let us use 41390 $'.split(' ')[-2]  # update __version__ in BCPy2000/__init__.py first
 	                                                  # development version (NB: the use of the Revision keyword in this way is not 
 	                                                  #  so definitive: it only tracks changes to this particular file - see
 	                                                  #  http://subversion.tigris.org/faq.html#version-value-in-source
@@ -388,8 +388,26 @@ SUCH DAMAGES.
 
 	##########################################################
 	
+	def _decode_signal(self, m):
+		if not isinstance(m, basestring): return m
+		m = numpy.fromstring(m, dtype='d8')
+		m.shape = tuple(self.in_signal_dim)
+		return m
+	
+	##########################################################
+	
+	def _encode_signal(self, m):
+		if not self._foundation_uses_string_encoding: return m # older PythonFilter implementation, compiled using the numpy API, delivers and expects numpy array objects
+		return m.tostring(order='C')
+		
+	##########################################################
+	
 	def _copy_signal(self, m):
-		return numpy.asmatrix(numpy.array(m, dtype=numpy.float64, order='C'))
+		if isinstance(m, (list,tuple,numpy.ndarray)):
+			m = numpy.array(m, dtype=numpy.float64, order='C')
+		elif isinstance(m, basestring):
+			m = self._decode_signal(m)
+		return numpy.asmatrix(m)
 
 	#############################################################
 
@@ -469,9 +487,11 @@ SUCH DAMAGES.
 		]
 		states = [
 		]
-		try: result = self.operator()
-		except Exception,e: print "failed to instantiate BCI2000Remote class because of %s: %s" % (e.__class__.__name__, str(e))
-		if result != None: print "BCI2000Remote failed to connect: %s" % result
+		try:
+			result = self.operator()
+			if result != None: print "BCI2000Remote failed to connect: %s" % result
+		except Exception,e:
+			print "failed to instantiate BCI2000Remote class because of %s: %s" % (e.__class__.__name__, str(e))
 		
 		return (params,states)
 
@@ -545,7 +565,7 @@ SUCH DAMAGES.
 		else:
 			self.out_signal = self._zeros(*self.out_signal_dim)
 		self._check_threads()
-		return self.out_signal
+		return self.out_signal # the subclass _Process (e.g. BciGenericApplication._Process) will be responsible for calling _encode_signal()
 
 	#############################################################
 			
@@ -598,6 +618,7 @@ SUCH DAMAGES.
 	#############################################################
 
 	def _share(self, mythread):
+		# as of June 2012 the foundation no longer supports this, but the implementation can stay
 		try:
 			mythread.read('stop', remove=True)
 			mythread.post('ready')
@@ -1183,6 +1204,7 @@ SUCH DAMAGES.
 				module = imp.load_module(modname, file, filename, etc)
 			self._operator = module.BCI2000Remote()
 		if not self._operator.Connected:
+			self._operator.Timeout = 5.0/60.0  # TODO: fix this
 			if not self._operator.Connect(): return self._operator.Result
 			if self._ipshell != None: self._ipshell.IP.magic_bci2000 = self.operator # override the use of bci2000shell(), which is more limited
 		if cmd != None and self._operator.Execute(cmd) != 0: return self._operator.Result

@@ -5,7 +5,6 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\demo\prog\PythonSignalProcessing.exe"/>
     <OBJFILES value="obj\PythonSignalProcessing.obj obj\PythonFilter.obj obj\PythonWrapper.obj 
-      obj\PythonLink24.obj obj\PythonLink25.obj obj\PythonLink26.obj 
       obj\MessageHandler.obj obj\CoreModule.obj obj\CoreModuleVCL.obj 
       obj\GenericFilter.obj obj\Brackets.obj obj\PhysicalUnit.obj 
       obj\VersionInfo.obj obj\MeasurementUnits.obj obj\PrecisionTime.obj 
@@ -65,9 +64,6 @@
       <FILE FILENAME="PythonSignalProcessing.cpp" FORMNAME="" UNITNAME="PythonSignalProcessing" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\PythonFilter.cpp" FORMNAME="" UNITNAME="PythonFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\PythonWrapper.cpp" FORMNAME="" UNITNAME="PythonWrapper" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\PythonLink24.cpp" FORMNAME="" UNITNAME="PythonLink24" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\PythonLink25.cpp" FORMNAME="" UNITNAME="PythonLink25" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\PythonLink26.cpp" FORMNAME="" UNITNAME="PythonLink26" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\modules\MessageHandler.cpp" FORMNAME="" UNITNAME="MessageHandler" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\modules\CoreModule.cpp" FORMNAME="" UNITNAME="CoreModule" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\modules\CoreModuleVCL.cpp" FORMNAME="" UNITNAME="CoreModuleVCL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

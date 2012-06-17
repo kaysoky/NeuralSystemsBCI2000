@@ -11,18 +11,24 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 
 	def Preflight(self, inprops):
-		self.screen.setup(left=0,top=0,width=1280,height=750,frameless_window=1)
+		self.screen.setup(left=0,top=0,width=800,height=600,frameless_window=1, coordinate_mapping='pixels from center', always_on_top=1)
 		
 	#############################################################
 
 	def Initialize(self, indim, outdim):
-		#self.mork()
+		self.mork()
 		self.foo()
-		#self.bar()
-		#self.baz()
-		#self.bork()
+		self.bar()
+		self.baz()
+		self.bork()
 		pass
 				
+	#############################################################
+	
+	def StartRun(self):
+		for stim in self.stimuli.values():
+			if isinstance(stim.obj, VisualStimuli.Movie): stim.rewind(); stim.play()
+
 	#############################################################
 
 	def Frame(self, phase):
