@@ -1,7 +1,6 @@
 
 #import os; os.environ["SDL_VIDEODRIVER"] = "directx"
 import PygameRenderer
-
 		
 #################################################################
 #################################################################
@@ -11,7 +10,7 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 
 	def Preflight(self, inprops):
-		self.screen.setup(left=0,top=0,width=800,height=600,frameless_window=1, coordinate_mapping='pixels from center', always_on_top=1)
+		self.screen.setup(left=50,top=50,width=800,height=600,frameless_window=1, coordinate_mapping='pixels from center', always_on_top=1)
 		
 	#############################################################
 
@@ -41,8 +40,9 @@ class BciApplication(BciGenericApplication):
 
 	#############################################################
 	def mork(self, name='mork', filename='delta.mpg'):
-		s = self.stimulus(name, VisualStimuli.Movie, filename=filename, position=(0,0))
-		return s
+		try: import pygame.movie
+		except: print 'cannot create a movie on this platform'
+		else: return self.stimulus(name, VisualStimuli.Movie, filename=filename, position=(0,0))
 	
 	#############################################################
 	

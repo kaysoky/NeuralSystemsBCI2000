@@ -73,7 +73,8 @@ class BCI2000Remote(object):
         self.OperatorPath = bcioperator
 
     def __del__(self):
-        self._lib.BCI2000Remote_Delete( self._instance )
+        try: self._lib.BCI2000Remote_Delete( self._instance )
+        except: pass
 
     # Properties
     class _Timeout(object):
