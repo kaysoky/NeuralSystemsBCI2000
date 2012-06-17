@@ -29,15 +29,6 @@
 #include "BCIException.h"
 #include "PrecisionTime.h"
 
-#ifndef DYNAMIC_PYTHON
-#define DYNAMIC_PYTHON 1
-#endif
-#if DYNAMIC_PYTHON
-#include "PythonWrapper.h"
-#else
-#include "Python.h"
-#endif
-
 #define PYTHON_CONSOLE              "EmbeddedPythonConsole"
 #define PYTHON_CONSOLE_INSTALLED    "BCPy2000.EmbeddedPythonConsole"
 
@@ -75,6 +66,17 @@
 #define    PYTHON_SUBCLASS          "BciApplication"
 #define    DEFAULT_CLASS_FILE       "BciApplication.py"
 #endif
+
+
+#ifndef DYNAMIC_PYTHON
+#define DYNAMIC_PYTHON 1
+#endif
+#if DYNAMIC_PYTHON
+#include "PythonWrapper.h"
+#else
+#include "Python.h"
+#endif
+
 
 class EndUserError : public BCIException {
 	public:

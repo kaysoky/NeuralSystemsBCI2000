@@ -144,10 +144,4 @@ int PyString_Check(PyObject* x);
 #undef PYTHON_LINK
 #undef PYTHON_LINK_HEADER_MODE
 
-#else // static linking
-
-#if   PYTHON_LINK_HEADER_MODE == 2
-#include "Python.h"
-#endif
-
 #endif // DYNAMIC_PYTHON

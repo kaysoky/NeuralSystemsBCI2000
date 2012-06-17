@@ -41,10 +41,6 @@ addpath(mexdir)
 
 verNum = sscanf(version, '%d.%s');
 verNum = verNum(1);
-if ~strncmp(computer, 'PCWIN', 5) || verNum < 7
-  error('BCI2000 Offline Analysis currently works only on windows-based systems with version 7.x or greater of MATLAB or the MATLAB Component Runtime.');
-  return;
-end
 
 
 % Begin initialization code - DO NOT EDIT

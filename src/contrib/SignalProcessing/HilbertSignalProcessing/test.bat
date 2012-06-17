@@ -26,7 +26,7 @@
 ##
 ## $END_BCI2000_LICENSE$
 #######################################################################################
-set environment STARTDIR ${current directory}
+set environment STARTDIR ${canonical path ${parent directory $0}}
 Change directory $BCI2000LAUNCHDIR
 Show window; Set title ${Extract file base $0}
 Reset system
