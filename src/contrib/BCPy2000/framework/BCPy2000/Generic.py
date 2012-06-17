@@ -1154,10 +1154,10 @@ SUCH DAMAGES.
 
 	#############################################################
 	
-	def bci2000shell(self, cmd, showWindow=True):
+	def bci2000shell(self, cmd):
 		"""
 		Pass <cmd> as a script command to the Operator, via BCI2000Shell.
-		Requires BCI2000Shell.exe to be in the prog directory, and only
+		Requires the BCI2000Shell executable to be in the prog directory, and only
 		works if the Operator was started in Telnet mode (for example,
 		using a BCI2000Shell, which is the standard way to launch
 		BCI2000 as of May 2012).
@@ -1171,9 +1171,8 @@ SUCH DAMAGES.
 		have been successfully initialized, the operator() method is used
 		as the back end of %bci2000 instead.
 		"""###
-		exe = os.path.join(self.installation_dir, 'BCI2000Shell.exe')
+		exe = os.path.join(self.installation_dir, 'BCI2000Shell')
 		result = os.system(exe + ' -c ' + cmd)
-		if result == 0 and showWindow and s.lower().strip() not in ['exit', 'quit']: os.system(exe + ' -c show window')  # TODO: this is ugly. Should remove the necessity for it in BCI2000Shell.
 		if result != 0: return result
 		
 	#############################################################
