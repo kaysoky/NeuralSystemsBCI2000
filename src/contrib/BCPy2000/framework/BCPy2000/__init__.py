@@ -24,7 +24,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__version__   = '41390'
+__version__   = '41450'
 __author__    = 'Jeremy Hill, Thomas Schreiner, Christian Puzicha, Jason Farquhar'
 __copyright__ = 'Copyright (c) 2007-11'
 __email__     = 'bcpy2000@bci2000.org'
