@@ -1,5 +1,6 @@
 #import ConsoleRenderer
 #import PygameRenderer
+#import DummyRenderer
 
 import os
 import sys

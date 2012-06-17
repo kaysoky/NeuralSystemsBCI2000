@@ -26,7 +26,8 @@ class BciApplication(BciGenericApplication):
 	
 	def StartRun(self):
 		for stim in self.stimuli.values():
-			if isinstance(stim.obj, VisualStimuli.Movie): stim.rewind(); stim.play()
+			if hasattr(stim, 'rewind'): stim.rewind()
+			if hasattr(stim, 'play'): stim.play()
 
 	#############################################################
 
@@ -68,7 +69,7 @@ class BciApplication(BciGenericApplication):
 		
 	#############################################################
 	
-	def foo(self, name='foo', filename='../RocketSMR/python/rocket.png', **kwargs):	
+	def foo(self, name='foo', filename='rocket.png', **kwargs):	
 		kwargs['position'] = kwargs.get('position', (-200,-200))
 		s = self.stimulus(name, VisualStimuli.ImageStimulus, texture=filename, **kwargs)	
 		return s
