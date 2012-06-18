@@ -68,7 +68,6 @@ MainWindow::MainWindow( QWidget* parent )
           | Qt::CustomizeWindowHint
           | Qt::WindowTitleHint
           | Qt::WindowSystemMenuHint
-          | Qt::MSWindowsFixedSizeDialogHint
   );
   for( size_t i = 0; i < Preferences::numButtons; ++i )
   {
