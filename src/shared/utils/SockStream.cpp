@@ -448,14 +448,12 @@ server_tcpsocket::do_open()
   close();
   m_handle = ::socket( PF_INET, SOCK_STREAM, 0 );
   bool success = ( m_handle != INVALID_SOCKET );
-#if 0
   if( success )
   {
     int val = 1;
     success = SOCKET_ERROR != ::setsockopt( m_handle, SOL_SOCKET, SO_REUSEADDR,
                                                           reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
-#endif
   if( success )
     success = SOCKET_ERROR != ::bind( m_handle, &m_address.sa, sizeof( m_address ) );
   if( success )

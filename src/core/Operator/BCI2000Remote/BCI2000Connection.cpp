@@ -245,7 +245,25 @@ BCI2000Connection::Run( const string& inOperatorPath, const string& inOptions )
     options += " --Title \"" + mWindowTitle + "\"";
   if( mWindowVisible != visible )
     options += " --Hide";
-  return StartExecutable( inOperatorPath, options );
+  bool success = StartExecutable( inOperatorPath, options ); 
+#if !_WIN32
+  if( success ) 
+  { 
+    const int cReactionTime = 50; // ms 
+    double timeElapsed = 0; // s 
+    client_tcpsocket testSocket; 
+    while( timeElapsed < mTimeout && !testSocket.is_open() ) 
+    { 
+      testSocket.open( mTelnetAddress.c_str() ); 
+      testSocket.wait_for_read( cReactionTime ); 
+      timeElapsed += 1e-3 * cReactionTime; 
+    } 
+    success = testSocket.is_open(); 
+    if( !success ) 
+      mResult = "Operator module does not listen on " + mTelnetAddress; 
+  }
+#endif // _WIN32
+  return success;
 }
 
 bool
