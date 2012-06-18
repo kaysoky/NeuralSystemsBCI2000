@@ -63,7 +63,6 @@ int LoadPythonLinks(const char *dllname)
 {
 	std::vector<std::string> trynames;
 	trynames.push_back("python25");
-	trynames.push_back("python24");
 	trynames.push_back("python27");
 	trynames.push_back("python26");
 
@@ -78,7 +77,7 @@ int LoadPythonLinks(const char *dllname)
 			dll = ::LoadLibrary(dllname);
 			if(dll) break;
 		}
-		if(!dll) bcierr << "Failed to find a dynamic library named python24, python25, python26 or python27. Is python installed?" << std::endl;
+		if(!dll) bcierr << "Failed to find a dynamic library named python25, python26 or python27. Is python installed?" << std::endl;
 	}
 	bool all_loaded = (dll != 0);
 #define PYTHON_LINK_HEADER_MODE 3 
