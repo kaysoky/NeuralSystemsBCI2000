@@ -156,6 +156,8 @@ ParameterType::GetParamRef( CommandInterpreter& inInterpreter )
     throw bciexception_( "Parameter " << name << " does not exist" );
 
   Param* pParam = &inInterpreter.StateMachine().Parameters()[name];
+  if( pParam->NumValues() < 1 )
+    throw bciexception_( "Parameter " << name << " is empty" );
   try
   {
     size_t maxIdx = 0,
