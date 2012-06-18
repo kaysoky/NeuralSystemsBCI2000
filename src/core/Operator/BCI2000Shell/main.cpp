@@ -29,6 +29,7 @@
 #include "BCI2000Connection.h"
 #include "FileUtils.h"
 #include "EnvVariable.h"
+#include "VersionInfo.h"
 #include <cstring>
 
 using namespace std;
@@ -39,28 +40,29 @@ static const char* sOperatorName = "Operator.exe";
 #else
 static const char* sOperatorName = "Operator";
 #endif
-static const string sPrompt = FileUtils::ExtractBase( FileUtils::ExecutablePath() ) + "> ";
+static const string sShellName = FileUtils::ExtractBase( FileUtils::ExecutablePath() );
+static const string sPrompt = sShellName + "> ";
 
 int main( int argc, char** argv )
 {
-  bool command = false,
-       interactive = false,
-       help = false;
+  enum { execute, command, interactive, help, version } mode = execute;
   int idx = 1;
   while( idx < argc && *argv[idx] == '-' )
   {
     if( !::strcmp( argv[idx], "-c" ) )
-      command = true;
-    if( !::strcmp( argv[idx], "-i" ) )
-      interactive = true;
-    if( !::strcmp( argv[idx], "-h" ) || !::strcmp( argv[idx], "--help" ) )
-      help = true;
+      mode = command;
+    else if( !::strcmp( argv[idx], "-i" ) )
+      mode = interactive;
+    else if( !::strcmp( argv[idx], "-h" ) || !::stricmp( argv[idx], "--help" ) )
+      mode = help;
+    else if( !::strcmp( argv[idx], "-v" ) || !::stricmp( argv[idx], "--version" ) )
+      mode = version;
     ++idx;
   }
-  if( idx >= argc )
-    interactive = true;
+  if( mode == execute && idx >= argc )
+    mode = interactive;
   string script = "";
-  if( !command && !interactive && !help )
+  if( mode == execute )
     script = FileUtils::AbsolutePath( argv[idx++] );
 
   string additionalArgs,
@@ -75,7 +77,7 @@ int main( int argc, char** argv )
     else
     {
       string arg = argv[idx++];
-      if( !command && arg.find( '\"' ) == string::npos )
+      if( mode != command && arg.find( '\"' ) == string::npos )
         arg = "\"" + arg + "\"";
       additionalArgs += " ";
       additionalArgs += arg;
@@ -101,7 +103,7 @@ int main( int argc, char** argv )
   }
   bci.Execute( "cd \"" + FileUtils::WorkingDirectory() + "\"" );
   int exitCode = 0;
-  if( interactive )
+  if( mode == interactive )
   {
     cout << sPrompt << flush;
     string line;
@@ -123,12 +125,24 @@ int main( int argc, char** argv )
   }
   else
   {
-    if( help )
-      script = "help";
-    else if( command )
-      script = additionalArgs;
-    else
-      script = "execute script \"" + script + "\"" + additionalArgs;
+    switch( mode )
+    {
+      case help:
+        script = "help";
+        break;
+      case version:
+        cout << sShellName << " version:\n";
+        VersionInfo::Current.WriteToStream( cout, true );
+        cout << "Connected to:\n";
+        script = "get system version";
+        break;
+      case command:
+        script = additionalArgs;
+        break;
+      case execute:
+        script = "execute script \"" + script + "\"" + additionalArgs;
+        break;
+    }
     exitCode = bci.Execute( script );
     if( !bci.Result().empty() )
       cerr << bci.Result() << '\n';
