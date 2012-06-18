@@ -38,6 +38,7 @@
 #include "BCI_OperatorLib.h"
 #include "BCIError.h"
 #include "BCIException.h"
+#include "BCIAssert.h"
 #include "ProtocolVersion.h"
 #include "Status.h"
 #include "SysCommand.h"
@@ -976,7 +977,9 @@ StateMachine::CoreConnection::HandleVisSignal( istream& is )
       const string kind = "Graph";
       mrParent.CheckInitializeVis( v.SourceID(), kind );
       int channels = v.Signal().Channels(),
-          elements = v.Signal().Elements();
+          elements = v.Signal().Elements(),
+          size = channels * elements;
+      bciassert( size >= 0 );
       float* pData = new float[ channels * elements ];
       for( int ch = 0; ch < channels; ++ch )
         for( int el = 0; el < elements; ++el )

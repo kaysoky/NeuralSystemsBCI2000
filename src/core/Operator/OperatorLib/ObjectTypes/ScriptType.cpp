@@ -111,8 +111,10 @@ ScriptType::Execute( CommandInterpreter& inInterpreter )
     oss << idx;
     subInterpreter.LocalVariables()[oss.str()] = inInterpreter.GetOptionalToken();
   }
+  inInterpreter.Child( &subInterpreter );
   Script( script, name ).Compile().Execute( subInterpreter );
   inInterpreter.Out() << subInterpreter.Result();
+  inInterpreter.Child( NULL );
   return true;
 }
 

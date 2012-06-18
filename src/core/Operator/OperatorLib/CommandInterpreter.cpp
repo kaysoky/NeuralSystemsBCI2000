@@ -45,6 +45,7 @@
 #include "ObjectType.h"
 #include "ImpliedType.h"
 #include "VariableTypes.h"
+#include "BCIAssert.h"
 #include <climits>
 #include <ctime>
 
@@ -53,6 +54,7 @@ using namespace Interpreter;
 
 CommandInterpreter::CommandInterpreter( class StateMachine& inStateMachine )
 : mrStateMachine( inStateMachine ),
+  mpChild( NULL ),
   mAbort( false ),
   mWriteLineFunc( &OnWriteLineDefault ),
   mpWriteLineData( this ),
@@ -64,6 +66,7 @@ CommandInterpreter::CommandInterpreter( class StateMachine& inStateMachine )
 
 CommandInterpreter::CommandInterpreter( const CommandInterpreter& inOther )
 : mrStateMachine( inOther.mrStateMachine ),
+  mpChild( NULL ),
   mExpressionVariables( inOther.mExpressionVariables ),
   mLocalVariables( inOther.mLocalVariables ),
   mAbort( false ),
@@ -294,6 +297,14 @@ CommandInterpreter::EvaluateResult( const string& inCommand )
       return 0;
 
   return 1;
+}
+
+void
+CommandInterpreter::Abort()
+{
+  mAbort = true;
+  if( mpChild )
+    mpChild->Abort();
 }
 
 int

@@ -68,7 +68,6 @@ sSystemStates[] =
   ENTRY( Suspended ),
   ENTRY( ParamsModified ),
   ENTRY( Running ),
-  ENTRY( Termination ),
   ENTRY( Busy ),
   #undef ENTRY
 };
@@ -147,19 +146,19 @@ SystemType::WaitFor( CommandInterpreter& inInterpreter )
 bool
 SystemType::DoWaitFor( const set<int>& inStates, double inTimeout, CommandInterpreter& inInterpreter )
 {
-  set<int> desiredStates = inStates;
-  desiredStates.insert( BCI_StateTermination );
-  desiredStates.insert( BCI_StateUnavailable );
-
-  int timeElapsed = 0;
-  int state = BCI_GetStateOfOperation();
-  while( desiredStates.find( state ) == desiredStates.end() && timeElapsed < 1e3 * inTimeout )
+  int timeElapsed = 0,
+      state = BCI_GetStateOfOperation();
+  while( inStates.find( state ) == inStates.end()
+        && state != BCI_StateUnavailable
+        && timeElapsed < 1e3 * inTimeout )
   {
     ThreadUtils::SleepFor( cTimeResolution );
     timeElapsed += cTimeResolution + inInterpreter.Background();
     state = BCI_GetStateOfOperation();
   }
-  if( desiredStates.find( state ) == desiredStates.end() )
+  if( inStates.find( state ) == inStates.end() )
+    throw bciexception_( "Wait aborted" );
+  else if( timeElapsed >= 1e3 * inTimeout )
     inInterpreter.Out() << "Timeout occurred after " << inTimeout << " seconds";
   return true;
 }

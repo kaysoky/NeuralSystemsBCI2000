@@ -32,9 +32,9 @@
 
 struct MessageQueueEntry
 {
-  int   descSupp,
-        length;
-  char* message;
+  int    descSupp;
+  size_t length;
+  char*  message;
 };
 
 class MessageQueue : public Lockable, private std::queue<MessageQueueEntry>

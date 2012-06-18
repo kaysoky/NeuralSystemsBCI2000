@@ -29,10 +29,12 @@
 
 #include "SignalDisplay.h"
 #include "BCIAssert.h"
+#include "BCIException.h"
 
 #include <cmath>
 #include <sstream>
 #include <iomanip>
+#include <stdexcept>
 
 #include <QWidget>
 #include <QPainter>
@@ -581,7 +583,14 @@ SignalDisplay::DrawSignalPolyline( const PaintInfo& p )
     sampleEnd = min( sampleEnd + 1, mNumSamples );
   }
   delete[] mpSignalPoints;
-  mpSignalPoints = new QPoint[ mNumSamples ];
+  try
+  {
+    mpSignalPoints = new QPoint[ mNumSamples ];
+  }
+  catch( const bad_alloc& )
+  {
+    throw bciexception( "Could not allocate memory for " << mNumSamples << " points" );
+  }
   int numPens = static_cast<int>( p.signalPens.size() );
 
   for( int j = sampleBegin; j < sampleEnd; ++j )

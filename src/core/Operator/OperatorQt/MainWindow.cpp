@@ -95,10 +95,6 @@ MainWindow::MainWindow( QWidget* parent )
     mpStatusLabels[i]->setText( "N/A" );
     ui->statusBar->addWidget( mpStatusLabels[i], 1 );
   }
-#if 0
-  ui->statusBar->addWidget( new QLabel, 0 );
-  ui->statusBar->setMaximumHeight( ui->statusBar->height() );
-#endif
 
   OperatorUtils::RestoreWidget( this );
   BCI_Initialize();
@@ -172,6 +168,7 @@ MainWindow::Terminate()
   }
   if( doExecute )
   {
+    BCI_Shutdown();
     // Execute the on-exit script ...
     if( !mExitScript.empty() )
     {
@@ -179,7 +176,6 @@ MainWindow::Terminate()
       BCI_ExecuteScript( mExitScript.c_str() );
     }
     mSyslog.Close( true );
-    BCI_Shutdown();
     mTerminated = true;
   }
 }

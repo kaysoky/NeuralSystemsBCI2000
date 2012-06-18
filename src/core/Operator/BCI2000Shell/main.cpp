@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A QtScript shell that may be used to start up and
+// Description: A script shell that may be used to start up and
 //   control BCI2000.
 //
 // $BEGIN_BCI2000_LICENSE$

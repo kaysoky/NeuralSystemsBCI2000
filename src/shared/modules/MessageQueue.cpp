@@ -29,6 +29,8 @@
 #include "MessageQueue.h"
 #include "LengthField.h"
 #include "Lockable.h"
+#include "BCIException.h"
+#include <stdexcept>
 
 using namespace std;
 
@@ -40,20 +42,36 @@ MessageQueue::QueueMessage( std::istream& is )
   entry.descSupp |= is.get();
   LengthField<2> length;
   length.ReadBinary( is );
-  entry.length = static_cast<int>( length );
   if( is )
   {
-    entry.message = new char[ length ];
-    if( length > 0 )
+    entry.length = length;
+    try
     {
-      is.read( entry.message, length - 1 );
-      entry.message[ length - 1 ] = is.get();
+      entry.message = new char[length];
+      if( length > 0 )
+      {
+        is.read( entry.message, length - 1 );
+        entry.message[length - 1] = is.get();
+      }
     }
-  }
-  if( is )
-  {
-    ::Lock<MessageQueue> lock( *this );
-    this->push( entry );
+    catch( bad_alloc& )
+    {
+      is.setstate( ios::failbit );
+    }
+    if( is )
+    {
+      ::Lock<MessageQueue> lock( *this );
+      this->push( entry );
+    }
+    else
+    {
+      delete[] entry.message;
+      throw bciexception(
+        "Malformed message received, "
+        << "DescSupp: 0x" << hex << entry.descSupp << ", "
+        << "length: " << dec << length
+      );
+    }
   }
 }
 

@@ -210,7 +210,6 @@ enum BCI_State
   BCI_StateSuspended,
   BCI_StateParamsModified,
   BCI_StateRunning,
-  BCI_StateTermination,
   BCI_StateBusy,
   BCI_StateIdle,
 };

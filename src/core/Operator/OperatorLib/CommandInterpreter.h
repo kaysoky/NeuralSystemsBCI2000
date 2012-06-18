@@ -156,8 +156,9 @@ class CommandInterpreter
   //  HandleLogMessage() is called by StateMachine to report a message.
   void HandleLogMessage( int messageCallbackID, const std::string& );
   //  Set the abort flag (e.g., to interrupt long-running loops in scripts)
-  void Abort()
-    { mAbort = true; }
+  void Abort();
+  void Child( CommandInterpreter* inpChild )
+    { mpChild = inpChild; }
   // End: StateMachine listener interface.
  private:
   CommandInterpreter& operator=( const CommandInterpreter& );
@@ -177,6 +178,7 @@ class CommandInterpreter
   VariableContainer mLocalVariables;
 
   OSMutex mMutex;
+  CommandInterpreter*mpChild;
   volatile bool mAbort;
 
   std::set<int> mLogCapture;

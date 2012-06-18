@@ -72,7 +72,6 @@ TelnetServer::Initialize()
 TelnetServer::~TelnetServer()
 {
   ScriptInterpreter::Abort();
-  OSThread::Terminate();
   if( !OSThread::InOwnThread() )
     OSThread::TerminateWait();
   OSMutex::Lock lock( mMutex );
@@ -97,7 +96,6 @@ TelnetServer::OnExecute()
       ReadCharacter();
     mSocket.wait_for_read( cReactionTimeMs );
   }
-  mStream << ScriptInterpreter::TerminationTag() << endl;
   return 0;
 }
 

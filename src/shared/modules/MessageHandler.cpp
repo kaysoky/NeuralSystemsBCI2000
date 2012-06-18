@@ -111,9 +111,10 @@ MessageHandler::PutMessage( ostream& os, const content_type& content )
   os.put( char( Header<content_type>::descSupp & 0xff ) );
   ostringstream buffer;
   content.WriteBinary( buffer );
-  LengthField<2> length = buffer.str().length();
+  string str = buffer.str();
+  LengthField<2> length = str.length();
   length.WriteBinary( os );
-  os.write( buffer.str().data(), length );
+  os.write( str.data(), length );
   return os;
 }
 
