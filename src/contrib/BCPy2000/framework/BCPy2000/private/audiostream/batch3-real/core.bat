@@ -29,7 +29,7 @@ set environment SRC gUSBampSource
 #set environment SRC SignalGenerator ; warn SignalGenerator is the default
 if [ $4 ]; set environment SRC $4; end
 
-set environment MONTAGE D
+set environment MONTAGE B
 if [ $5 ]; set environment MONTAGE $5; end
 
 ########################################################################################
@@ -50,7 +50,9 @@ wait for connected 600
 
 ########################################################################################
 
-if [ ${MONTAGE} == D ]
+if [ ${MONTAGE} == B ]
+	load parameterfile ${PARMSDIR}/gUSBamp-Cap8-SMR.prm
+elseif [ ${MONTAGE} == D ]
 	load parameterfile ${PARMSDIR}/gUSBamp-Cap8-SMR-REVERSED-WIRING.prm
 elseif [ ${MONTAGE} == 16 ]
 	load parameterfile ${PARMSDIR}/gUSBamp-Cap16.prm
