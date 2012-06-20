@@ -38,7 +38,6 @@ import pygame
 import pygame.gfxdraw
 pygame.font.init()
 
-import AppTools.CurrentRenderer as CurrentRenderer # TODO: remove dependency on this
 import AppTools.Coords as Coords
 
 try:    from BCI2000PythonApplication    import BciGenericRenderer, BciStimulus   # development copy
@@ -215,8 +214,7 @@ class ImageStimulus(Coords.Box):
 		
 		if size == None: size = self.original_size
 		
-		if position == None:
-			position = CurrentRenderer.get_screen().center()
+		if position == None: position = (100,100)
 		
 		self.anchor = anchor
 		self.sticky = False
@@ -415,7 +413,7 @@ class Disc(ImageStimulus):
 		surface = pygame.Surface(size, flags=pygame.SRCALPHA)
 		x = int(size[0]/2)
 		y = int(size[1]/2)
-		pygame.gfxdraw.filled_ellipse(surface, x, y, x-1, y-1, (255,255,255,255))
+		pygame.gfxdraw.filled_ellipse(surface, x-1, y-1, x-2, y-2, (255,255,255,255))
 		return surface
 	
 	@apply
@@ -497,10 +495,10 @@ class Text(ImageStimulus):
 				if isinstance(val, list): val = tuple(val)
 				try: t = t % val
 				except: pass
-			self._ImageStimulus__original_surface = orig = self.__font_object.render(t, True, (255,255,255)) # TODO: multiline text....
-			self.size = Coords.Size((orig.get_width(), orig.get_height()))
+			orig = self.__font_object.render(t, True, (255,255,255)) # TODO: multiline text....
 			self.__text_changed = False
-			self._ImageStimulus__content_changed = True
+			self.size = Coords.Size((orig.get_width(), orig.get_height()))
+			self.content = orig
 		return ImageStimulus.transform(self, screencoords=screencoords, force=force)
 	
 	@apply

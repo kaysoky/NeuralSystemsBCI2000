@@ -33,7 +33,8 @@ __all__ = [
 ]
 import numpy
 import scipy.signal
-from scipy.signal import fft,ifft,hanning
+try: from scipy import fft,ifft,hanning # yeah, just keep moving the goalposts why don't ya
+except ImportError: from scipy.signal import fft,ifft,hanning
 from NumTools import isnumpyarray,project,trimtrailingdims,unwrapdiff
 
 class ArgConflictError(Exception): pass

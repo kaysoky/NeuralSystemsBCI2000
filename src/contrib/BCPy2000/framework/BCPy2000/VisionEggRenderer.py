@@ -197,7 +197,7 @@ class VisionEggRenderer(BciGenericRenderer):
 	
 	#############################################################
 
-	def Initialize(self, bci):
+	def Initialize(self, bci=None):
 		self.__dict__['_bci'] = bci # this is a mutual reference loop, but what the hell: self and bci only die when the process dies		
 		logging.raiseExceptions = 0 # suppresses the "No handlers could be found" chatter
 		pygame.quit(); pygame.init()
@@ -225,7 +225,7 @@ class VisionEggRenderer(BciGenericRenderer):
 		try:
 			import ctypes  # !! Windows-specific code.
 			stimwin = ctypes.windll.user32.FindWindowA(0, "Vision Egg")
-			self._bci._raise_window(stimwin)
+			if self._bci: self._bci._raise_window(stimwin)
 		except:
 			pass
 		
