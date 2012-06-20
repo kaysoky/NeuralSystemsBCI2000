@@ -707,12 +707,14 @@ DataIOFilter::ProcessBCIEvents()
                           "as event states."
                         );
 
+#if BCIDEBUG
     bcidbg( 10 ) << "Setting State \"" << name
                  << "\" to " << value
                  << " at offset " << offset
                  << " with duration " << duration
                  << " from event:\n" << mBCIEvents.FrontDescriptor()
                  << endl;
+#endif // BCIDEBUG
 
     offset = max( offset, 0 );
     if( duration < 0 )
