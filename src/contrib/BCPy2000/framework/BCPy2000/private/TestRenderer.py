@@ -73,3 +73,12 @@ class Toy(threading.Thread):
 	def stop(self):
 		self.__keepgoing = False
 
+if __name__ == '__main__':
+	import BCPy2000.Paths
+	self = Toy()
+	d = self.Block(size=(20,60), position=(100,100))
+	def spin(obj): obj.angle += 2
+	self.callbacks.append(pfunc(spin, obj=d))
+	try: __IPYTHON__
+	except: import time; time.sleep(5); self.stop()
+

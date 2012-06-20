@@ -50,7 +50,7 @@ class PygameRenderer(BciGenericRenderer):
 			('lucida console', 'monaco', 'monospace', 'courier new', 'courier')
 		)
 		self._coords = Coords.Box(left=100, top=100, width=800, height=600, sticky=True, anchor='top left')
-		self.bgcolor = (0.5, 0.5, 0.5)
+		self._bgcolor = (0.5, 0.5, 0.5)
 		self.framerate = 60.
 		self.changemode = False
 		self.frameless_window = False
@@ -77,7 +77,7 @@ class PygameRenderer(BciGenericRenderer):
 		if top != None: self._coords.top = top
 		if width != None: self._coords.width = width
 		if height != None: self._coords.height = height
-		if bgcolor != None: self.bgcolor = bgcolor
+		if bgcolor != None: self._bgcolor = bgcolor
 		if framerate != None: self.framerate = framerate # TODO: unused
 		if changemode != None: self.changemode = changemode
 		if frameless_window != None: self.frameless_window = frameless_window
@@ -93,11 +93,13 @@ class PygameRenderer(BciGenericRenderer):
 		pygame.display.set_caption(self.title)
 		iconfile = os.path.join(os.path.split(__file__)[0], 'icon.bmp')
 		if os.path.exists(iconfile): pygame.display.set_icon(pygame.image.load(iconfile))
-		flags = \
-			(self.changemode and (pygame.FULLSCREEN | pygame.DOUBLEBUF)) | \
-			(self.frameless_window and pygame.NOFRAME) | 0
+		if self.changemode: flags = pygame.FULLSCREEN | pygame.DOUBLEBUF
+		elif self.frameless_window: flags = pygame.NOFRAME
+		else: flags = 0
 		size = (int(self._coords.width), int(self._coords.height))
 		self.screen = pygame.display.set_mode(size, flags)
+		self._blank = self.screen.copy()
+		self.bgcolor = self.bgcolor
 
 		self._coords.sticky = True
 		self._coords.anchor = 'top left'
@@ -145,7 +147,8 @@ class PygameRenderer(BciGenericRenderer):
 	def StartFrame(self, objlist):
 		bci = self._bci
 		if bci: bci.ftdb(label='screen.clear')  #--------------------
-		self.screen.fill(tuple([int(round(255 * x)) for x in self.bgcolor]))
+		#self.screen.fill(tuple([int(round(255 * x)) for x in self._bgcolor]))
+		self.screen.blit(self._blank, (0,0))
 		if bci: bci.ftdb(label='viewport.draw') #--------------------
 		for obj in objlist: obj.draw(self.screen, self._coords)
 
@@ -175,12 +178,14 @@ class PygameRenderer(BciGenericRenderer):
 	def get_size(self): return self.size
 
 	@apply
-	def color():
+	def bgcolor():
 		def fget(self):
-			return self.bgcolor
+			return self._bgcolor
 		def fset(self, value):
-			self.bgcolor = value
+			self._bgcolor = value
+			self._blank.fill(tuple([int(round(255 * x)) for x in self._bgcolor]))
 		return property(fget, fset)
+	color=bgcolor
 
 	def Cleanup(self):
 		self.screen = None
@@ -406,7 +411,7 @@ class Disc(ImageStimulus):
 		if isinstance(radius, (float,int)): radius = (radius,radius)
 		if size == None: size = [x * 2 for x in radius]
 		if isinstance(size, (float,int)): size = (size,size)
-		ImageStimulus.__init__(self, content=None, size=size, position=position, color=color, use_alpha=True, **kwargs)
+		ImageStimulus.__init__(self, content=None, size=size, position=position, color=color, **kwargs)
 		
 	def default_content(self, size):
 		size = [max(x,100) for x in size]
@@ -431,7 +436,8 @@ class Disc(ImageStimulus):
 
 class Block(ImageStimulus):
 	def __init__(self, position=(10, 10), size=(10, 10), color=(0, 0, 1), **kwargs):
-		ImageStimulus.__init__(self, content=None, size=size, position=position, color=color, use_alpha=True, **kwargs)
+		kwargs.update({'position':position, 'size':size, 'color':color})
+		ImageStimulus.__init__(self, content=None, **kwargs)
 		
 	def default_content(self, size):
 		surface = pygame.Surface(size, flags=pygame.SRCALPHA)
@@ -442,7 +448,8 @@ class Movie(ImageStimulus):
 	def __init__(self, filename, position=(100,100), size=None, **kwargs):
 		self.__movie = m = pygame.movie.Movie(filename)
 		if size == None: size = m.get_size()
-		ImageStimulus.__init__(self, size=size, position=position, use_alpha=False, **kwargs)
+		if 'use_alpha' not in kwargs: kwargs['use_alpha'] = False
+		ImageStimulus.__init__(self, size=size, position=position, **kwargs)
 		m.set_display(self._ImageStimulus__original_surface)
 		m.render_frame(0)
 	
