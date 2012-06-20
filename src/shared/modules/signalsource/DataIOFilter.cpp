@@ -180,6 +180,9 @@ DataIOFilter::Publish()
     "SourceTime 16 0 0 0",
     "StimulusTime 16 0 0 0",
   END_STATE_DEFINITIONS
+  
+  if( mpADC )
+    mpADC->CallPublish();
 
   if( mpFileWriter )
     mpFileWriter->CallPublish();

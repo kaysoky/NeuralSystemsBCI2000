@@ -60,6 +60,15 @@ SignalGeneratorADC::SignalGeneratorADC()
   mSinePhase( 0 ),
   mLasttime( 0 )
 {
+}
+
+SignalGeneratorADC::~SignalGeneratorADC()
+{
+}
+
+void
+SignalGeneratorADC::Publish()
+{
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Signal%20Properties int SourceCh= 16 "
        "16 1 % // number of digitized and stored channels",
@@ -96,11 +105,6 @@ SignalGeneratorADC::SignalGeneratorADC()
         " 2: int32 "
         "(enumeration)",
   END_PARAMETER_DEFINITIONS
-}
-
-
-SignalGeneratorADC::~SignalGeneratorADC()
-{
 }
 
 

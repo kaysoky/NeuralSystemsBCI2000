@@ -38,6 +38,7 @@ class SignalGeneratorADC : public GenericADC
                SignalGeneratorADC();
   virtual      ~SignalGeneratorADC();
 
+  virtual void Publish();
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize( const SignalProperties&, const SignalProperties& );
   virtual void StartRun();
