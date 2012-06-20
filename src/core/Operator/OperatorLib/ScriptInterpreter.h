@@ -33,6 +33,7 @@ class ScriptInterpreter : private CommandInterpreter
 {
  public:
   ScriptInterpreter( class StateMachine& );
+  ScriptInterpreter( const ScriptInterpreter& );
   virtual ~ScriptInterpreter();
   // Properties
   //  The result of the last executed scripting command.

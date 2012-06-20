@@ -54,7 +54,7 @@ using namespace Interpreter;
 
 CommandInterpreter::CommandInterpreter( class StateMachine& inStateMachine )
 : mrStateMachine( inStateMachine ),
-  mpChild( NULL ),
+  mpParent( NULL ),
   mAbort( false ),
   mWriteLineFunc( &OnWriteLineDefault ),
   mpWriteLineData( this ),
@@ -64,9 +64,9 @@ CommandInterpreter::CommandInterpreter( class StateMachine& inStateMachine )
   Init();
 }
 
-CommandInterpreter::CommandInterpreter( const CommandInterpreter& inOther )
+CommandInterpreter::CommandInterpreter( CommandInterpreter& inOther )
 : mrStateMachine( inOther.mrStateMachine ),
-  mpChild( NULL ),
+  mpParent( &inOther ),
   mExpressionVariables( inOther.mExpressionVariables ),
   mLocalVariables( inOther.mLocalVariables ),
   mAbort( false ),
@@ -81,9 +81,15 @@ CommandInterpreter::CommandInterpreter( const CommandInterpreter& inOther )
 void
 CommandInterpreter::Init()
 {
-  ObjectType::Initialize( mrStateMachine );
-  mrStateMachine.AddListener( *this );
-
+  if( mpParent )
+  {
+    mpParent->AddListener( *this );
+  }
+  else
+  {
+    ObjectType::Initialize( mrStateMachine );
+    mrStateMachine.AddListener( *this );
+  }
   mLocalVariables[ResultName()] = "";
 
   static const struct { const char* name, *format; }
@@ -105,7 +111,22 @@ CommandInterpreter::Init()
 
 CommandInterpreter::~CommandInterpreter()
 {
-  mrStateMachine.RemoveListener( *this );
+  if( mpParent )
+    mpParent->RemoveListener( *this );
+  else
+    mrStateMachine.RemoveListener( *this );
+}
+
+void
+CommandInterpreter::AddListener( CommandInterpreter& inListener )
+{
+  mListeners.insert( &inListener );
+}
+
+void
+CommandInterpreter::RemoveListener( CommandInterpreter& inListener )
+{
+  mListeners.erase( &inListener );
 }
 
 int
@@ -299,14 +320,6 @@ CommandInterpreter::EvaluateResult( const string& inCommand )
   return 1;
 }
 
-void
-CommandInterpreter::Abort()
-{
-  mAbort = true;
-  if( mpChild )
-    mpChild->Abort();
-}
-
 int
 CommandInterpreter::Background()
 {
@@ -440,22 +453,34 @@ CommandInterpreter::ParseArguments( string& ioFunction, ArgumentList& outArgs )
 }
 
 void
+CommandInterpreter::Abort()
+{
+  mAbort = true;
+  for( set<CommandInterpreter*>::const_iterator i = mListeners.begin(); i != mListeners.end(); ++i )
+    ( *i )->Abort();
+}
+
+void
 CommandInterpreter::HandleLogMessage( int inMessageCallbackID, const std::string& inMessage )
 {
-  OSMutex::Lock lock( mMutex );
-  if( mLogCapture.find( inMessageCallbackID ) != mLogCapture.end() )
   {
-    switch( inMessageCallbackID )
+    OSMutex::Lock lock( mMutex );
+    if( mLogCapture.find( inMessageCallbackID ) != mLogCapture.end() )
     {
-      case BCI_OnErrorMessage:
-        mLogBuffer.append( "Error: " );
-        break;
-      case BCI_OnWarningMessage:
-        mLogBuffer.append( "Warning: " );
-        break;
+      switch( inMessageCallbackID )
+      {
+        case BCI_OnErrorMessage:
+          mLogBuffer.append( "Error: " );
+          break;
+        case BCI_OnWarningMessage:
+          mLogBuffer.append( "Warning: " );
+          break;
+      }
+      mLogBuffer.append( inMessage ).append( "\n" );
     }
-    mLogBuffer.append( inMessage ).append( "\n" );
   }
+  for( set<CommandInterpreter*>::const_iterator i = mListeners.begin(); i != mListeners.end(); ++i )
+    ( *i )->HandleLogMessage( inMessageCallbackID, inMessage );
 }
 
 // LogStream::LogBuffer definitions

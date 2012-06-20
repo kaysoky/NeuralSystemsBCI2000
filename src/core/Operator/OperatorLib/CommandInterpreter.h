@@ -50,7 +50,7 @@ class CommandInterpreter
  public:
   // Begin: Interface to users
   CommandInterpreter( class StateMachine& );
-  CommandInterpreter( const CommandInterpreter& );
+  CommandInterpreter( CommandInterpreter& );
   virtual ~CommandInterpreter();
   // Properties
   //  The name of the local variable holding the result of the last scripting command.
@@ -157,12 +157,12 @@ class CommandInterpreter
   void HandleLogMessage( int messageCallbackID, const std::string& );
   //  Set the abort flag (e.g., to interrupt long-running loops in scripts)
   void Abort();
-  void Child( CommandInterpreter* inpChild )
-    { mpChild = inpChild; }
   // End: StateMachine listener interface.
  private:
   CommandInterpreter& operator=( const CommandInterpreter& );
   void Init();
+  void AddListener( CommandInterpreter& );
+  void RemoveListener( CommandInterpreter& );
   std::string GetVariable( const std::string& inName );
   int EvaluateResult( const std::string& inCommand );
   static bool OnWriteLineDefault( void*, const std::string& );
@@ -178,8 +178,9 @@ class CommandInterpreter
   VariableContainer mLocalVariables;
 
   OSMutex mMutex;
-  CommandInterpreter*mpChild;
   volatile bool mAbort;
+  std::set<CommandInterpreter*> mListeners;
+  CommandInterpreter* mpParent;
 
   std::set<int> mLogCapture;
   std::string mLogBuffer;

@@ -51,6 +51,11 @@ namespace {
   };
 } // namespace
 
+ScriptInterpreter::ScriptInterpreter( const ScriptInterpreter& inInterpreter )
+: CommandInterpreter( inInterpreter.StateMachine() )
+{
+}
+
 ScriptInterpreter::ScriptInterpreter( class StateMachine& inStateMachine )
 : CommandInterpreter( inStateMachine )
 {
