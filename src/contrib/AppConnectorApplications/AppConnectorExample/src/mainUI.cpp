@@ -127,7 +127,7 @@ void mainUI::timerUpdate()
   QMutexLocker locker( &mMutex );
   if( states.size() != stateTable->rowCount() )
   {
-    stateTable->setRowCount( states.size() );
+    stateTable->setRowCount( static_cast<int>( states.size( )) );
     for( int row = 0; row < stateTable->rowCount(); ++row )
     {
       stateTable->setItem( row, 0, new QTableWidgetItem );

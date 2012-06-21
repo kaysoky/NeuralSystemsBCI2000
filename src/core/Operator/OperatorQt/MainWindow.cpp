@@ -372,7 +372,7 @@ MainWindow::SetFunctionButtons()
 }
 
 void
-MainWindow::SetFunctionButton( int inIdx, const QString& inTitle, const QString& inScript )
+MainWindow::SetFunctionButton( size_t inIdx, const QString& inTitle, const QString& inScript )
 {
   QPushButton* pButton = mButtons[inIdx];
   pButton->setEnabled( inTitle != "" && inScript != "" );

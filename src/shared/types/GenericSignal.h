@@ -113,9 +113,9 @@ class GenericChannel
     int Channels() const { return 1; }
     int Elements() const { return mrSignal.Elements(); }
     size_t size() const { return Elements(); }
-    GenericSignal::ValueType& operator[]( int el ) { return mrSignal( mCh, el ); }
+    GenericSignal::ValueType& operator[]( size_t el ) { return mrSignal( mCh, el ); }
     GenericSignal::ValueType& operator()( int ch, int el ) { return ( *this )[el]; }
-    const GenericSignal::ValueType& operator[]( int el ) const { return mrSignal( mCh, el ); }
+    const GenericSignal::ValueType& operator[]( size_t el ) const { return mrSignal( mCh, el ); }
     const GenericSignal::ValueType& operator()( int ch, int el ) const { return ( *this )[el]; }
   private:
     GenericSignal& mrSignal;
@@ -130,9 +130,9 @@ class GenericElement
     int Channels() const { return mrSignal.Channels(); }
     int Elements() const { return 1; }
     size_t size() const { return Channels(); }
-    GenericSignal::ValueType& operator[]( int ch ) { return mrSignal( ch, mEl ); }
+    GenericSignal::ValueType& operator[]( size_t ch ) { return mrSignal( ch, mEl ); }
     GenericSignal::ValueType& operator()( int ch, int el ) { return ( *this )[ch]; }
-    const GenericSignal::ValueType& operator[]( int ch ) const { return mrSignal( ch, mEl ); }
+    const GenericSignal::ValueType& operator[]( size_t ch ) const { return mrSignal( ch, mEl ); }
     const GenericSignal::ValueType& operator()( int ch, int el ) const { return ( *this )[ch]; }
   private:
     GenericSignal& mrSignal;

@@ -489,7 +489,7 @@ server_tcpsocket::wait_for_accept( tcpsocket& outNew, int inTimeout )
   if( success )
   {
     Timeout timeout( inTimeout );
-    int max_fd = m_handle;
+    int max_fd = static_cast<int>( m_handle );
     ::fd_set readfds;
     FD_ZERO( &readfds );
     FD_SET( m_handle, &readfds );

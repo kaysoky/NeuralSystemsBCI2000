@@ -128,15 +128,15 @@ FILTER_NAME::FILTER_NAME()
     PyObject *py_states = PyTuple_GetItem(py_ret, 1);
 
     // Add the parameters and states requested by the Python _Construct function.
-    int numParamDefs = PyList_Size(py_params);
-    for( int i = 0; i < numParamDefs; ++i ) {
+    size_t numParamDefs = PyList_Size(py_params);
+    for( size_t i = 0; i < numParamDefs; ++i ) {
       string paramDef = PyString_AsString(PyList_GetItem(py_params, i));
       // cerr << "registering parameter: " << paramDef << endl;
       if(!Parameters->Add( paramDef ) ) DoubleErr(("Error in parameter definition: " + paramDef).c_str(), "Construct");
     }
 
-    int numStateDefs = PyList_Size(py_states);
-    for( int i = 0; i < numStateDefs; ++i ) {
+    size_t numStateDefs = PyList_Size(py_states);
+    for( size_t i = 0; i < numStateDefs; ++i ) {
       string stateDef = PyString_AsString(PyList_GetItem(py_states, i));
       // cerr << "registering state: " << stateDef << endl;
       if(!States->Add( stateDef )) DoubleErr(("Error in state definition: " + stateDef).c_str(), "Construct");
@@ -208,8 +208,8 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
     py_list = PyObject_GetAttrString(mpInstance, (char*)"_writeable_params");
     if( py_list ) {
       if(PyList_Check(py_list)) {
-        int n = PyList_Size(py_list);
-        for(int i = 0; i < n; i++) {
+        size_t n = PyList_Size(py_list);
+        for(size_t i = 0; i < n; i++) {
           const char *name = PyString_AsString(PyList_GetItem(py_list, i));
           Parameter(name); // allows write access to this parameter
         }
@@ -614,13 +614,13 @@ FILTER_NAME::ConvertSignalToPyObject(const GenericSignal& sig) const
 void
 FILTER_NAME::ConvertPyObjectToSignal(PyObject* pObject, GenericSignal& sig) const
 {
-  int channels = PyTuple_Size( pObject );
+  int channels = static_cast<int>( PyTuple_Size( pObject ) );
   for( int ch = 0; ch < channels && ch < sig.Channels(); ++ch )
   {
     PyObject* pEntry = PyTuple_GetItem( pObject, ch );
     if( PyList_Check( pEntry ) )
     {
-      int elements = PyList_Size( pEntry );
+      int elements = static_cast<int>( PyList_Size( pEntry ) );
       for( int el = 0; el < elements && el < sig.Elements(); ++el )
       {
         PyObject* pElement = PyList_GetItem( pEntry, el );
