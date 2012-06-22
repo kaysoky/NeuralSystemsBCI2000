@@ -267,7 +267,6 @@
      <string>File</string>
     </property>
     <addaction name="actionPreferences"/>
-    <addaction name="actionClose"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -297,14 +296,6 @@
   <action name="actionPreferences">
    <property name="text">
     <string>Preferences...</string>
-   </property>
-  </action>
-  <action name="actionClose">
-   <property name="text">
-    <string>Close Window</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+W</string>
    </property>
   </action>
   <action name="actionQuit">
