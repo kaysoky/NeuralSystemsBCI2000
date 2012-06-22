@@ -35,6 +35,10 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils\\DisplayFilter FILES
   ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/DisplayFilter.cpp
 )
 
+INCLUDE_DIRECTORIES(
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering
+)
+
 # Tell the macro to link against the math libraries in extlib
 BCI2000_INCLUDE( "MATH" )
 
