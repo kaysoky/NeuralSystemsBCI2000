@@ -149,7 +149,7 @@ class CommandInterpreter
     { return LogStream( mrStateMachine ); }
   //  Allow for background processing (e.g., from long-running commands).
   //  Returns an estimate for the time spent inside the Background() call, in ms.
-  int Background();
+  int Background( int sleepTimeMs = 1 );
   // End: Interface to ObjectType instances.
 
   // Begin: StateMachine listener interface.

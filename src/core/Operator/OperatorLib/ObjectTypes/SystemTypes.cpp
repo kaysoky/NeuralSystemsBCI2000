@@ -152,8 +152,7 @@ SystemType::DoWaitFor( const set<int>& inStates, double inTimeout, CommandInterp
         && state != BCI_StateUnavailable
         && timeElapsed < 1e3 * inTimeout )
   {
-    ThreadUtils::SleepFor( cTimeResolution );
-    timeElapsed += cTimeResolution + inInterpreter.Background();
+    timeElapsed += inInterpreter.Background( cTimeResolution );
     state = BCI_GetStateOfOperation();
   }
   if( inStates.find( state ) == inStates.end() )
@@ -173,10 +172,7 @@ SystemType::Sleep( CommandInterpreter& inInterpreter )
     throw bciexception_( "Sleep duration must be >= 0" );
   int timeElapsed = 0;
   while( timeElapsed < 1e3 * duration )
-  {
-    ThreadUtils::SleepFor( cTimeResolution );
-    timeElapsed += cTimeResolution + inInterpreter.Background();
-  }
+    timeElapsed += inInterpreter.Background( cTimeResolution );
   return true;
 }
 

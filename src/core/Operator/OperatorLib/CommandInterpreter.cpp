@@ -132,6 +132,8 @@ CommandInterpreter::RemoveListener( CommandInterpreter& inListener )
 int
 CommandInterpreter::Execute( const string& inCommand )
 {
+  Background();
+
   mResultStream.clear();
   mResultStream.str( "" );
   mInputStream.clear();
@@ -182,7 +184,6 @@ CommandInterpreter::Execute( const string& inCommand )
     if( mInputStream.tellg() != static_cast<streampos>( inCommand.length() ) )
       throw bciexception_( "Extra argument" );
   }
-  Background();
   mLocalVariables[ResultName()] = mResultStream.str();
   return EvaluateResult( inCommand );
 }
@@ -321,16 +322,15 @@ CommandInterpreter::EvaluateResult( const string& inCommand )
 }
 
 int
-CommandInterpreter::Background()
+CommandInterpreter::Background( int inSleepTime )
 {
   if( mAbort )
   {
     mAbort = false;
     throw bciexception_( "Script execution aborted" );
   }
-  const int sleepDuration = 1;
-  ThreadUtils::SleepFor( sleepDuration );
-  return sleepDuration;
+  ThreadUtils::SleepFor( inSleepTime );
+  return inSleepTime;
 }
 
 string
