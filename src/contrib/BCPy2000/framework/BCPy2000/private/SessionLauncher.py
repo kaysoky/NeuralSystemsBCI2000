@@ -12,9 +12,10 @@ class SessionGUI( tk.Tk ):
 		self.__settings = {
 			'Subject':   'TestSubject',
 			'Condition': '031',
-			'Mode':      'CALIB',            '_Mode':    [ 'CALIB', 'FREE' ],
-			'Source':    'gUSBampSource',    '_Source':  [ 'gUSBampSource' ], #, 'SignalGenerator' ],
-			'Montage':   'B',                '_Montage': [ 'B', '16' ],
+			'Mode':      'CALIB',            '_PossibleValuesForMode':    [ 'CALIB', 'FREE' ],
+			'Source':    'gUSBampSource',    '_PossibleValuesForSource':  [ 'gUSBampSource' ], #, 'SignalGenerator' ],
+			'Montage':   'B',                '_PossibleValuesForMontage': [ 'B', '16' ],
+			'_Arguments': 'Subject Condition Mode Source Montage',
 		}
 
 		self.__directory = ''
@@ -31,13 +32,14 @@ class SessionGUI( tk.Tk ):
 		row  = 0
 		fr = tk.Frame( self ); fr.pack( fill='x' )
 		
-		for row, varName in enumerate( 'Subject Condition Mode Source Montage'.split( ) ):
+		for row, varName in enumerate( self.__settings[ '_Arguments' ].split( ) ):
 			
 			w = self.__widgets[ varName + 'Label' ] = tk.Label( fr, text=varName + ': ' )
 			w.grid( row=row, column=0, sticky='e' )
-			if '_' + varName in self.__settings:
+			optionsKey = '_PossibleValuesFor' + varName
+			if optionsKey in self.__settings:
 				v = self.__inputs[ varName ] = tk.StringVar( value=self.__settings[ varName ] )
-				w = self.__widgets[ varName + 'Input' ] = tk.OptionMenu( fr, v, *self.__settings[ '_' + varName ], command=self.UpdateVars )
+				w = self.__widgets[ varName + 'Input' ] = tk.OptionMenu( fr, v, *self.__settings[ optionsKey ], command=self.UpdateVars )
 			else:
 				w = self.__widgets[ varName + 'Input' ] = self.__inputs[ varName ] = tk.Entry( fr, validatecommand=self.UpdateVars )
 				w.delete( 0, tk.END )
@@ -70,6 +72,16 @@ class SessionGUI( tk.Tk ):
 	def ReloadChosenWeights( self ):
 		self.UpdateVars() # because of the lag
 		
+	def ReportSettings( self, file=None ):
+		if file == None: file = sys.stdout
+		s = dict( self.__settings )
+		args = s[ '_Arguments' ].split( )
+		keys = args + sorted( set( s.keys( ) ) - set( args ) )
+		maxlen = max( [ len(k) for k in keys ] )
+		file.write( '{\n' )
+		for k in keys:
+			file.write( ' ' * ( maxlen - len( k ) + 4 ) + repr(k) + ':   ' + repr( s[ k ] ) + ',\n' )
+		file.write( '}\n' )
 			
 	def UpdateVars( self, *pargs ):
 		for k in self.__settings:
