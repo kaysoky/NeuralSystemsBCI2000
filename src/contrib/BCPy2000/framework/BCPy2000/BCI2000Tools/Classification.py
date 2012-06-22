@@ -34,6 +34,8 @@ import Parameters
 try: import SigTools
 except ImportError: import BCPy2000.SigTools as SigTools
 
+numpy.seterr(invalid='ignore')
+
 def ClassifyERPs (
 		featurefiles,
 		C = (10.0, 1.0, 0.1, 0.01),

@@ -361,7 +361,11 @@ class CalibrationManager( object ):
 		return self.GetRuns()[index]
 
 import Tkinter as tk
-import Tix; import Tix as tk
+
+if sys.platform.startswith('win'):
+	import Tix; import Tix as tk
+else:
+	Tix = None
 
 class Table( tk.Frame ):
 	'''
@@ -433,7 +437,11 @@ class Table( tk.Frame ):
 			tk.Label(  self.GetCell( row, 0 ), text=str(row), width=3, borderwidth="1", relief="solid" ).pack()
 			tk.Button( self.GetCell( row, 1 ), text="this is the 2nd column for row %s"%row ).pack()
 
+class FakeWidget( ):
+	def destroy( self ): pass
+	
 def ToolTip( parentWidget, msg ):
+	if Tix == None: return FakeWidget()
 	w = Tix.Balloon( parentWidget )
 	w.bind_widget( parentWidget, balloonmsg=msg )
 	return w
@@ -532,7 +540,7 @@ class CalibrationGUI( tk.Tk ):
 	def Render( self ):
 	
 		fr = tk.Frame( self ); fr.pack( fill='x' )
-		self.directoryEntry = tk.Entry( fr, validatecommand=self.UpdateTable )
+		self.directoryEntry = tk.Entry( fr, validatecommand=self.UpdateTable, validate='focusout' )
 		self.directoryEntry.delete( 0, tk.END )
 		self.directoryEntry.insert(0, self.__manager.GetDirectory() )
 		tk.Button( fr, text='Refresh / update', command=self.UpdateTable ).pack( side='right' )
