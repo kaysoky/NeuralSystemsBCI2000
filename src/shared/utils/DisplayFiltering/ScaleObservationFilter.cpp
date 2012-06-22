@@ -29,6 +29,7 @@
 #include "ScaleObservationFilter.h"
 #include <limits>
 #include <cmath>
+#include <cstring>
 
 using namespace std;
 
