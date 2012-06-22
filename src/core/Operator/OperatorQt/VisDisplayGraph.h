@@ -29,6 +29,7 @@
 #include "VisDisplayLayer.h"
 #include "DisplayFilter.h"
 #include "DecimationFilter.h"
+#include "ScaleObservationFilter.h"
 #include "SignalDisplay.h"
 
 class QMenu;
@@ -73,6 +74,7 @@ class VisDisplayGraph : public VisDisplayLayer
        *   mpNotchMenu;
   QAction* mpActEnlargeSignal,
          * mpActReduceSignal,
+         * mpActToggleAutoScale,
          * mpActFewerSamples,
          * mpActMoreSamples,
          * mpActMoreChannels,
@@ -94,6 +96,7 @@ class VisDisplayGraph : public VisDisplayLayer
   // Menu action slots
   void EnlargeSignal();
   void ReduceSignal();
+  void ToggleAutoScale();
   void FewerSamples();
   void MoreSamples();
   void MoreChannels();
@@ -121,6 +124,8 @@ class VisDisplayGraph : public VisDisplayLayer
  private:
   bool EnlargeSignal_Enabled() const;
   bool ReduceSignal_Enabled() const;
+  bool ToggleAutoScale_Enabled() const;
+  bool ToggleAutoScale_Checked() const;
   bool FewerSamples_Enabled() const;
   bool MoreSamples_Enabled() const;
   bool MoreChannels_Enabled() const;
@@ -166,7 +171,10 @@ class VisDisplayGraph : public VisDisplayLayer
          * mpCurrentNotchItem;
   DisplayFilter    mDisplayFilter;
   DecimationFilter mDecimationFilter;
-  SignalDisplay    mDisplay;
+  SignalDisplay mDisplay;
+  bool mAutoScale;
+  float mMinValue, mMaxValue, mElementGain;
+  ScaleObservationFilter mScaleObserver;
 
  private:
   void SyncDisplay();

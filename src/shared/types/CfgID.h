@@ -90,6 +90,7 @@ class CfgID
       NotchFilter,
 
       ShowNumericValues,
+      AutoScale,
       // When adding new values, don't forget to add them to the string list in CfgID.cpp as well.
   };
 

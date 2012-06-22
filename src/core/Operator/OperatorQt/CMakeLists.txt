@@ -78,11 +78,27 @@ BCI2000_IMPORT_GUI( "OperatorUtilsQt" )
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 # Add missing framework files
+SET( SRC_BCI2000_DISPLAYFILTERING
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/DisplayFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/DecimationFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/ScaleObservationFilter.cpp
+)
+SET( HDR_BCI2000_DISPLAYFILTERING
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/DisplayFilter.h
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/DecimationFilter.h
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/ScaleObservationFilter.h
+)
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils\\DisplayFiltering FILES
+  ${SRC_BCI2000_DISPLAYFILTERING}
+)
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils\\DisplayFiltering FILES
+  ${HDR_BCI2000_DISPLAYFILTERING}
+)
+
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
+  ${SRC_BCI2000_DISPLAYFILTERING}
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.cpp
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp 
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.cpp
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
@@ -90,8 +106,7 @@ SET( SRC_BCI2000_FRAMEWORK
 )
 SET( HDR_BCI2000_FRAMEWORK
   ${HDR_BCI2000_FRAMEWORK}
-  ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.h
-  ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.h
+  ${HDR_BCI2000_DISPLAYFILTERING}
   ${BCI2000_SRC_DIR}/shared/utils/Settings.h 
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.h
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.h
@@ -102,8 +117,6 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp 
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES
-  ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.cpp
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp 
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES
@@ -130,6 +143,7 @@ SET( HDR_PROJECT
 INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/core/Operator/OperatorLib
   ${BCI2000_SRC_DIR}/core/Operator/OperatorLib/ScriptParser
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering
 )
 
 # Set the Project Source Groups

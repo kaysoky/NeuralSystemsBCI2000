@@ -86,6 +86,7 @@ static struct { const char* name; int id; } sCfgIDs[] =
     CFGID( NotchFilter ),
 
     CFGID( ShowNumericValues ),
+    CFGID( AutoScale ),
 
 };
 

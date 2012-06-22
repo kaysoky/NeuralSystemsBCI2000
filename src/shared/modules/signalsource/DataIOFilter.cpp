@@ -483,7 +483,8 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
 
     RGBColor colors[] = { RGBColor::White, RGBColor::LtGray, RGBColor::DkGray, ColorList::End };
     mTimingVis.Send( CfgID::ChannelColors, ColorList( colors ) )
-              .Send( CfgID::ShowBaselines, true );
+              .Send( CfgID::ShowBaselines, true )
+              .Send( CfgID::AutoScale, "off" );
   }
   mTimingVis.Send( CfgID::Visible, mVisualizeTiming );
 }

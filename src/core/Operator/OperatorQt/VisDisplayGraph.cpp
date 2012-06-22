@@ -57,6 +57,7 @@ VisDisplayGraph::VisDisplayGraph( const std::string& inSourceID )
   mpNotchMenu( NULL ),
   mpActEnlargeSignal( NULL ),
   mpActReduceSignal( NULL ),
+  mpActToggleAutoScale( NULL ),
   mpActFewerSamples( NULL ),
   mpActMoreSamples( NULL ),
   mpActMoreChannels( NULL ),
@@ -77,7 +78,11 @@ VisDisplayGraph::VisDisplayGraph( const std::string& inSourceID )
   mpCurrentLPItem( NULL ),
   mpCurrentNotchItem( NULL ),
   mpStatusBar( NULL ),
-  mpStatusLabel( NULL )
+  mpStatusLabel( NULL ),
+  mAutoScale( false ),
+  mMinValue( -1 ),
+  mMaxValue( 1 ),
+  mElementGain( 0 )
 {
   BuildStatusBar();
   UpdateStatusBar();
@@ -96,12 +101,10 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
 {
   VisDisplayBase::SetConfig( inConfig );
 
-  float minValue = 0,
-        maxValue = 0;
-  if( inConfig.Get( CfgID::MinValue, minValue ) )
-    mDisplay.SetMinValue( minValue );
-  if( inConfig.Get( CfgID::MaxValue, maxValue ) )
-    mDisplay.SetMaxValue( maxValue );
+  if( inConfig.Get( CfgID::MinValue, mMinValue ) )
+    mDisplay.SetMinValue( mMinValue );
+  if( inConfig.Get( CfgID::MaxValue, mMaxValue ) )
+    mDisplay.SetMaxValue( mMaxValue );
 
   int userScaling = mUserScaling;
   mUserScaling = 0;
@@ -173,10 +176,19 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
       mDisplayFilter.LPCorner( 0 );
       mDisplayFilter.NotchCenter( 0 );
     }
+    if( sampleUnit.find( 's' ) == string::npos )
+      mElementGain = 0;
+    else
+      mElementGain = unitsPerSample * FilterUnitToValue( sampleUnit );
   }
   float sampleOffset;
   if( inConfig.Get( CfgID::SampleOffset, sampleOffset ) )
     mDisplay.SetSampleOffset( -sampleOffset );
+    
+  float timeConstant;
+  mAutoScale = inConfig.Get( CfgID::AutoScale, timeConstant );
+  if( mAutoScale )
+    mScaleObserver.TimeConstant( timeConstant );
 
   if( inConfig.Get( CfgID::ChannelUnit, unit ) )
   {
@@ -263,6 +275,31 @@ VisDisplayGraph::HandleSignal( const GenericSignal& s )
   // Apply the visualization filter.
   GenericSignal filteredSignal( s.Properties() );
   mDisplayFilter.Process( s, filteredSignal );
+  if( mElementGain > 0 )
+  {
+    SignalProperties s = filteredSignal.Properties();
+    s.ElementUnit().SetSymbol( "s" ).SetGain( mElementGain );
+    filteredSignal.SetProperties( s );
+  }
+  
+  if( mAutoScale )
+  {
+    mScaleObserver.Process( filteredSignal );
+    float sigMax = mScaleObserver.Max(),
+          sigMin = mScaleObserver.Min();
+    if( sigMin > 0 )
+      sigMin = 0;
+    else if( sigMax < 0 )
+      sigMax = 0;
+    else
+    {
+      float absMax = max( abs( sigMax ), abs( sigMin ) );
+      sigMax = absMax;
+      sigMin = -absMax;
+    }
+    mDisplay.SetMaxValue( sigMax );
+    mDisplay.SetMinValue( sigMin );
+  }
 
   mNumChannels = filteredSignal.Channels();
 
@@ -298,6 +335,8 @@ VisDisplayGraph::BuildContextMenu()
   mpContextMenu = new QMenu;
   mpActEnlargeSignal = mpContextMenu->addAction( tr("Enlarge Signal"), this, SLOT(EnlargeSignal()) );
   mpActReduceSignal = mpContextMenu->addAction( tr("Reduce Signal"), this, SLOT(ReduceSignal()) );
+  mpActToggleAutoScale = mpContextMenu->addAction( tr("Auto Scale"), this, SLOT(ToggleAutoScale()) );
+  mpActToggleAutoScale->setCheckable( true );
   mpContextMenu->addSeparator();
 
   mpActFewerSamples = mpContextMenu->addAction( tr("Fewer Samples"), this, SLOT(FewerSamples()) );
@@ -386,6 +425,8 @@ VisDisplayGraph::ContextMenu( const QPoint& inP )
 {
   mpActEnlargeSignal->setEnabled( EnlargeSignal_Enabled() );
   mpActReduceSignal->setEnabled( ReduceSignal_Enabled() );
+  mpActToggleAutoScale->setEnabled( ToggleAutoScale_Enabled() );
+  mpActToggleAutoScale->setChecked( ToggleAutoScale_Checked() );
 
   mpActFewerSamples->setEnabled( FewerSamples_Enabled() );
   mpActMoreSamples->setEnabled( MoreSamples_Enabled() );
@@ -417,6 +458,37 @@ VisDisplayGraph::ContextMenu( const QPoint& inP )
   mpNotchMenu->setEnabled( Filter_Enabled() );
 
   mpContextMenu->exec( this->mapToGlobal( inP ) );
+}
+
+void
+VisDisplayGraph::ToggleAutoScale()
+{
+  mAutoScale = !mAutoScale;
+  if( mAutoScale )
+  {
+    mScaleObserver.Reset();
+    if( mScaleObserver.TimeConstant() == 0 )
+      mScaleObserver.TimeConstant( 10 );
+    Visconfigs()[ mVisID ].Put( CfgID::AutoScale, mScaleObserver.TimeConstant(), UserDefined );
+  }
+  else
+  {
+    mDisplay.SetMaxValue( mMaxValue );
+    mDisplay.SetMinValue( mMinValue );
+    Visconfigs()[ mVisID ].Put( CfgID::AutoScale, OFF, UserDefined );
+  }    
+}
+
+bool
+VisDisplayGraph::ToggleAutoScale_Enabled() const
+{
+  return true;
+}
+
+bool
+VisDisplayGraph::ToggleAutoScale_Checked() const
+{
+  return mAutoScale;
 }
 
 void

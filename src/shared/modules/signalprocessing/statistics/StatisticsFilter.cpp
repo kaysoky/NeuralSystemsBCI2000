@@ -431,6 +431,7 @@ StatisticsFilter::InitializeVisualizations( const Context& ioContext ) const
         signal( ch, el ) = numeric_limits<GenericSignal::ValueType>::quiet_NaN();
     ioContext.visualizations->back().Send( CfgID::Visible, true )
                                     .Send( CfgID::GraphType, properties.IsStream() ? CfgID::Polyline : CfgID::Field2d )
+                                    .Send( CfgID::AutoScale, properties.IsStream() ? "off" : "10" )
                                     .Send( properties )
                                     .Send( signal );
   }
