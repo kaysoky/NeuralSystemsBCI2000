@@ -75,7 +75,7 @@ MainWindow::MainWindow( QWidget* parent )
     QString idx;
     idx.setNum( i + 1 );
     mButtons[i] = findChild<QPushButton*>( "pushButton_Btn" + idx );
-    mButtons[i]->setShortcut( "F" + idx );
+    new QShortcut( QKeySequence( "F" + idx ), mButtons[i], SLOT(click()), SLOT(click()), Qt::ApplicationShortcut );
   }
 
   ReadCommandLine();
