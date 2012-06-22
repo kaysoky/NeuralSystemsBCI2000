@@ -3,14 +3,12 @@
 
 #TODO:
 # if [${VAR}==val ]  always returns true:  very easy to miss this
-# first time after restarting Windows, parameter file claims to be loaded but the parameter values do not reflect what was in the file
-# quit operator and re-launch from same script without changing anything: all is fine.
 
 reset system
 
 ########################################################################################
 
-set environment BATCHDIR  ${CD}
+set environment BATCHDIR  ${canonical path ${parent directory $0}}
 set environment PARMSDIR  ${canonical path ${BATCHDIR}/../parms}
 set environment PYWD      ${canonical path ${BATCHDIR}/../python}
 set environment PYLOGDIR  ${canonical path ${BATCHDIR}/../log}
