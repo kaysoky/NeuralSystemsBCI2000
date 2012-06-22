@@ -77,7 +77,7 @@ MainWindow::MainWindow( QWidget* parent )
     mButtons[i] = findChild<QPushButton*>( "pushButton_Btn" + idx );
     new QShortcut( QKeySequence( "F" + idx ), mButtons[i], SLOT(click()), SLOT(click()), Qt::ApplicationShortcut );
   }
-  new QShortcut( QKeySequence( tr("Ctrl+W") ), this, SLOT(on_actionClose_triggered()), NULL, Qt::ApplicationShortcut );
+  new QShortcut( QKeySequence( tr("Ctrl+W") ), this, SLOT(CloseTopmostWindow()), NULL, Qt::ApplicationShortcut );
 
   ReadCommandLine();
 
@@ -475,6 +475,15 @@ MainWindow::PutParameters()
   }
 }
 
+void
+MainWindow::CloseTopmostWindow()
+{
+  QWidget* pActiveWindow = qApp->activeWindow();
+  if( pActiveWindow == this )
+    QuitOperator();
+  else
+    pActiveWindow->close();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------    Callback functions called by the OperatorLib    --------------
@@ -737,16 +746,6 @@ MainWindow::on_pushButton_Quit_clicked()
 }
 
 void
-MainWindow::on_actionClose_triggered()
-{
-  QWidget* pActiveWindow = qApp->activeWindow();
-  if( pActiveWindow == this )
-    on_pushButton_Quit_clicked();
-  else
-    pActiveWindow->close();
-}
-
-void
 MainWindow::on_actionQuit_triggered()
 {
   QuitOperator();
@@ -855,3 +854,4 @@ MainWindow::on_pushButton_Btn4_clicked()
 {
   BCI_ExecuteScript( mButtonScripts[3].c_str() );
 }
+

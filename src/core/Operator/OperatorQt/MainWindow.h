@@ -72,13 +72,13 @@ class MainWindow : public QMainWindow
   void on_pushButton_Config_clicked();
   void on_pushButton_SetConfig_clicked();
   void on_pushButton_RunSystem_clicked();
-  void on_actionClose_triggered();
   void on_actionQuit_triggered();
   void on_pushButton_Quit_clicked();
   void on_pushButton_Btn1_clicked();
   void on_pushButton_Btn2_clicked();
   void on_pushButton_Btn3_clicked();
   void on_pushButton_Btn4_clicked();
+  void CloseTopmostWindow();
 
  private:
   void QuitOperator();
