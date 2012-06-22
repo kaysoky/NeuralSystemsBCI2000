@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>525</width>
-    <height>145</height>
+    <height>150</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -37,14 +37,6 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
-        <property name="font">
-         <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>8</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
         <property name="text">
          <string>Button 1</string>
         </property>
@@ -54,14 +46,6 @@
        <widget class="QPushButton" name="pushButton_Btn2">
         <property name="enabled">
          <bool>false</bool>
-        </property>
-        <property name="font">
-         <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>8</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
         </property>
         <property name="text">
          <string>Button 2</string>
@@ -73,14 +57,6 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
-        <property name="font">
-         <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>8</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
         <property name="text">
          <string>Button 3</string>
         </property>
@@ -90,14 +66,6 @@
        <widget class="QPushButton" name="pushButton_Btn4">
         <property name="enabled">
          <bool>false</bool>
-        </property>
-        <property name="font">
-         <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>8</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
         </property>
         <property name="text">
          <string>Button 4</string>
@@ -137,10 +105,7 @@
         </property>
         <property name="font">
          <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>12</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
+          <pointsize>16</pointsize>
          </font>
         </property>
         <property name="text">
@@ -161,10 +126,7 @@
         </property>
         <property name="font">
          <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>24</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
+          <pointsize>16</pointsize>
          </font>
         </property>
         <property name="text">
@@ -194,10 +156,7 @@
         </property>
         <property name="font">
          <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>12</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
+          <pointsize>16</pointsize>
          </font>
         </property>
         <property name="text">
@@ -215,10 +174,7 @@
         </property>
         <property name="font">
          <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>24</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
+          <pointsize>16</pointsize>
          </font>
         </property>
         <property name="text">
@@ -248,10 +204,7 @@
         </property>
         <property name="font">
          <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>12</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
+          <pointsize>16</pointsize>
          </font>
         </property>
         <property name="text">
@@ -288,10 +241,7 @@
         </property>
         <property name="font">
          <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>12</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
+          <pointsize>16</pointsize>
          </font>
         </property>
         <property name="text">
@@ -309,7 +259,7 @@
      <x>0</x>
      <y>0</y>
      <width>525</width>
-     <height>18</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

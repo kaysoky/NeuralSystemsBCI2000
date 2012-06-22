@@ -34,7 +34,7 @@ using namespace std;
 
 namespace {
   template<typename T>
-  bool isnan( T t )
+  bool IsNan( T t )
   {
     static const T nan = numeric_limits<T>::quiet_NaN();
     return ::memcmp( &t, &nan, sizeof( T ) ) == 0;
@@ -73,7 +73,7 @@ ScaleObservationFilter::Process( const GenericSignal& Input )
     duration = Input.Elements() / rate;
   double decayFactor = ::pow( mDecayFactor, duration ),
          oldMean = Mean();
-  if( isnan( oldMean ) )
+  if( IsNan( oldMean ) )
   {
     Reset();
     oldMean = 0;

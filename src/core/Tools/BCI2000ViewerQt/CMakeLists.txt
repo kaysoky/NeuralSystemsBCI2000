@@ -12,13 +12,13 @@ SET( SRC_PROJECT
   BCI2000Viewer.cpp
   SignalWidget.cpp
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/DisplayFilter.cpp
 )
 SET( HDR_PROJECT
   BCI2000Viewer.h
   SignalWidget.h
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.h
-  ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.h
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/DisplayFilter.h
 )
 
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\gui FILES
@@ -28,11 +28,11 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.cpp
 )
 
-SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES
-  ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.h
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils\\DisplayFilter FILES
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/DisplayFilter.h
 )
-SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES
-  ${BCI2000_SRC_DIR}/shared/utils/DisplayFilter.cpp
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils\\DisplayFilter FILES
+  ${BCI2000_SRC_DIR}/shared/utils/DisplayFiltering/DisplayFilter.cpp
 )
 
 # Tell the macro to link against the math libraries in extlib
