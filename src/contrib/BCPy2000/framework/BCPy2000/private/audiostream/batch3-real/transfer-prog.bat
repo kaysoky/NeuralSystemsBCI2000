@@ -3,6 +3,10 @@
 @set DEST=%WD%\..\prog
 @mkdir %DEST%
 
+@set PYDEST=%WD%\..\python
+@set PYBINLIBDIRNAME=lib.win32-2.5
+@set PYBINLIBDEST=%PYDEST%\%PYBINLIBDIRNAME%
+
 :: full svn checkout:  we're in src/contrib/BCPy2000/framework/BCPy2000/private/audiostream/batch
 @set PROG=%WD%\..\..\..\..\..\..\..\..\prog
 @if exist %PROG% cd %PROG%
@@ -43,5 +47,17 @@ copy PythonApplication.exe %DEST%\
 
 copy BCI2000RemoteLib.dll %DEST%\
 copy BCI2000Remote.py %DEST%\
+
+:private Python stuff
+@cd ..\src\contrib\BCPy2000\framework\BCPy2000\private
+copy SessionLauncher.py %DEST%\
+
+copy DirectSoundInterface.py %PYDEST%\
+@mkdir %PYBINLIBDEST%
+copy %PYBINLIBDIRNAME%\_pydsound.pyd %PYBINLIBDEST%\
+
+:private audiostream stuff (copy template from here to prog)
+cd %WD%
+copy SessionGUISettings_template.txt %DEST%\SessionGUISettings.txt
 
 pause

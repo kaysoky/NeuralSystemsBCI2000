@@ -139,15 +139,21 @@ class BciApplication(BciGenericApplication):
 
 		self.screen.color = (0.2,0.2,0.2)
 
-		if int(self.params['HeadPhones']): starttext = 'HEADPHONES'
-		else: starttext = 'SPEAKERS'
+		txt = os.path.split(self.data_dir)[1]
 		
-		if len(self.params['ERPClassifierWeights'].val) == 0:
-			starttext += '   no classifier loaded'
-
 		w,h = self.screen.size
-		t = VisualStimuli.Text(text=starttext, position=(w/2,h/2), anchor='center', on=True)
-		self.stimulus('cue', t)
+		self.stimulus('cue', VisualStimuli.Text, text=txt, position=(w/2,h/2), anchor='center', on=True)
+		
+		txt = 'no classifier loaded'
+		if len(self.params['ERPClassifierWeights'].val):
+			try:
+				d = ' '.join(self.params.SignalProcessingDescription.split(' ')[-2:])
+				txt = 'weights created ' + d
+				txt += ' (%s)' % self.InformalTime(d)
+			except:
+				txt = 'weights loaded (date unknown)'
+			
+		self.stimulus('weights', VisualStimuli.Text, text=txt, position=(w/2,h/2-50), anchor='center', on=True, font_size=24)
 		
 		self.ding = self.PrepareFeedback(self.params['SoundEffects']['Success']['1'], lettercode='F')
 		self.chimes = self.PrepareFeedback(self.params['SoundEffects']['EndOfRun']['1'], lettercode='F')
@@ -269,6 +275,7 @@ class BciApplication(BciGenericApplication):
 		self.target = 0
 		self.targetorder = []
 		self.background_noise.play(-1)
+		self.stimuli['weights'].on = False
 		if self.freechoice:
 			self.operator('set button 1 Go "set state StreamingRequired 1"')
 			self.operator('set button 2 Stop "set state StreamingRequired 0"')
@@ -465,6 +472,10 @@ class BciApplication(BciGenericApplication):
 		self.chimes.play()
 		self.stimuli['cue'].text = 'system paused'
 		self.stimuli['cue'].on = True
+		
+		if self.freechoice:
+			self.operator('set button 1 "" ""')
+			self.operator('set button 2 "" ""')
 								
 	#############################################################
 	
@@ -566,7 +577,33 @@ class BciApplication(BciGenericApplication):
 	
 	def log(self, string):
 		if self.logging: print string
+			
+	#############################################################
 		
+	def InformalTime(self, d):
+		try: then = time.strptime( d, '%Y-%m-%d %H:%M:%S' )
+		except: return '-'
+		now = time.localtime()
+		seconds = float( time.mktime( now ) ) - float( time.mktime( then ) )
+		day  = int( time.mktime( then ) / ( 60.0 * 60.0 * 24.0 ) ) 
+		today = int( time.mktime( now ) / ( 60.0 * 60.0 * 24.0 ) )
+		days = today - day
+		weeks = days / 7.0
+		years = days / 365.25
+		months = years * 12.0
+		
+		if   seconds < 50.0: return '%d seconds ago' % round( seconds )
+		elif seconds < 90.0: return 'about a minute ago'
+		elif seconds < 50*60.0: return '%d minutes ago' % round( seconds / 60.0 )
+		elif seconds < 90*60.0: return 'about an hour ago'
+		elif days == 0: return '%d hours ago' % round( seconds / 3600.0 )
+		elif days == 1: return 'yesterday'
+		elif days < 31: return '%d days ago' % days
+		elif round(months) == 1: return 'about a month ago'
+		elif months < 21: return  'about %d months ago' % round( months )
+		elif round(years) == 1: return 'about a year ago'
+		else: return  'about %d years ago' % round( years )
+
 #################################################################
 #################################################################
 
