@@ -106,13 +106,19 @@ class SessionGUI( tk.Tk ):
 		fr = right
 
 		self.dirLabels = {}
-		self.dirLabels[ 'CALIB' ] = w = tk.Label( fr, text='(calibration directory info)'); w.pack( fill='x', anchor='w' )
-		self.dirLabels[ 'FREE' ]  = w = tk.Label( fr, text='(free-choice directory info)'); w.pack( fill='x', anchor='w' )
-
+		modes = self.GetPossibleModes()
+		for row,mode in enumerate(modes): 
+			self.dirLabels[ mode ] = w = tk.Label( fr, text='(%s directory info)' % mode, anchor='w' )
+			w.pack( anchor='w' )
+			#w.grid( row=row, column=0, sticky='w' )
+		if 'CALIB' in modes and 'FREE' in modes:
+			self.transferWeightsButton = w = tk.Button( fr, text='Transfer weights CALIB->FREE', command=self.TransferChosenWeights ); w.pack( side='left' )
+		else:
+			self.transferWeightsButton = None
+			
 		#footer = tk.Frame( mf, background=self.__bg ); footer.pack( fill='x' )
 		#fr = footer
 
-		self.transferWeightsButton = w = tk.Button( fr, text='Transfer weights CALIB->FREE', command=self.TransferChosenWeights ); w.pack( side='left' )
 		self.launchBCI2000Button = w = tk.Button( self, text='Launch BCI2000', command=self.LaunchBCI2000 ); w.pack( side='left', padx=20 )
 		self.quitBCI2000Button = w = tk.Button( self, text='Quit BCI2000', command=self.QuitBCI2000 ); w.pack( side='left', padx=20 )
 		self.reloadWeightsButton = w = tk.Button( self, text='Reload weights', command=self.ReloadChosenWeights ); w.pack( side='left', padx=20 )
@@ -123,6 +129,8 @@ class SessionGUI( tk.Tk ):
 		for w in self.__widgets.values():
 			if isinstance( w, tk.Entry ): w.configure( validate='focusout' ) # 'all' would be nice but it always seems to lag one keystroke behind :-<
 		
+	def GetPossibleModes( self ):
+		return self.__settings.get( self.__optionprefix + 'Mode', [ 'CALIB', 'FREE' ]  )
 		
 		
 	def UpdateSettings( self ):
@@ -131,7 +139,7 @@ class SessionGUI( tk.Tk ):
 		sc = self.ReportSettings()
 		if sc != self.__saved_settings_content: self.SaveSettings( sc )
 			
-		for mode in [ 'CALIB', 'FREE' ]:
+		for mode in self.GetPossibleModes():
 			d = self.GetDataDirectory( mode=mode )
 			s = 'directory ' + self.GetSubjectDirName( mode=mode )
 			if os.path.isdir( d ):
@@ -153,8 +161,9 @@ class SessionGUI( tk.Tk ):
 		if os.path.isfile( self.GetChosenWeightsPath() ): self.reloadWeightsButton.configure( state='normal' )
 		else: self.reloadWeightsButton.configure( state='disabled' )
 
-		if os.path.isfile( self.GetChosenWeightsPath( mode='CALIB' ) ): self.transferWeightsButton.configure( state='normal' )
-		else: self.transferWeightsButton.configure( state='disabled' )
+		if self.transferWeightsButton != None:
+			if os.path.isfile( self.GetChosenWeightsPath( mode='CALIB' ) ): self.transferWeightsButton.configure( state='normal' )
+			else: self.transferWeightsButton.configure( state='disabled' )
 		
 		try: self.after_cancel( self.__afterid )
 		except: pass

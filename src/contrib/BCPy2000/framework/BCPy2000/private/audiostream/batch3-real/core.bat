@@ -64,6 +64,8 @@ load parameterfile ${PARMSDIR}/condition${CONDITION}.prm
 
 if [ ${MODE} == FREE ]
 	load parameterfile ${PARMSDIR}/realfree.prm 
+elseif [ ${MODE} == ONE ]
+	set parameter PerceptualOnly 1
 elseif [ ${MODE} != CALIB ]
 	error unrecognized mode ${MODE}
 end
