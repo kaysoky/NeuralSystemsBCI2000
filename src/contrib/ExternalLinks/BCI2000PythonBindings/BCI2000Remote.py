@@ -54,7 +54,8 @@ class BCI2000Remote(object):
     """
     # Constructor/destructor
     def __init__(self):
-        bcidir = os.path.dirname(inspect.getfile(inspect.currentframe()))
+	pyfile = inspect.getfile(inspect.currentframe())
+        bcidir = os.path.dirname(os.path.realpath(pyfile))
         bcilib = bcidir + "/BCI2000RemoteLib"
         bcioperator = bcidir + "/Operator"
         if sys.platform.startswith( 'win' ):
@@ -240,7 +241,8 @@ class BCI2000Remote(object):
 if __name__ == '__main__':
     # Example code
     bci = BCI2000Remote()
-    print bci.OperatorPath
+    print "Operator path:", bci.OperatorPath
+    bci.WindowVisible = True
     bci.WindowTitle = "Python controlled"
     bci.SubjectID = "pysub"
     bci.Connect()
@@ -248,10 +250,12 @@ if __name__ == '__main__':
     bci.StartupModules( ( "SignalGenerator", "ARSignalProcessing", "CursorTask" ) )
     bci.LoadParametersRemote( "../parms/examples/CursorTask_SignalGenerator.prm" )
     bci.SetConfig()
-    print bci.GetParameter( "SubjectName" )
+    print "SubjectName parameter:", bci.GetParameter( "SubjectName" )
     bci.Start()
     bci.Timeout = 25 # must always be greater than expected duration of a command
-    bci.Execute( "Wait for Suspended 20" )
+    bci.Execute( "Wait for Suspended 5" )
+    if bci.Result != "": 
+        print "Result:", bci.Result
     bci.Stop()
     del bci
     
