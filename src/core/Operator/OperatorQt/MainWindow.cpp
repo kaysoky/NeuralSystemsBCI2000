@@ -90,12 +90,17 @@ MainWindow::MainWindow( QWidget* parent )
     gpConnectionInfo->setVisible( false );
   }
 
+  QFont font = this->font();
+  font.setPixelSize( 2 * QFontInfo( this->font() ).pixelSize() - QFontInfo( ui->pushButton_Quit->font() ).pixelSize() );
   int nStatusLabels = sizeof( mpStatusLabels ) / sizeof( *mpStatusLabels );
   for( int i = 0; i < nStatusLabels; ++i )
   {
-    mpStatusLabels[i] = new QLabel;
-    mpStatusLabels[i]->setText( "N/A" );
-    ui->statusBar->addWidget( mpStatusLabels[i], 1 );
+    QLabel* pLabel = new QLabel( ui->statusBar );
+    pLabel->setFrameStyle( QFrame::Panel | QFrame::Sunken );
+    pLabel->setText( "N/A" );
+    pLabel->setFont( font );
+    ui->statusBar->addWidget( pLabel, 1 );
+    mpStatusLabels[i] = pLabel;
   }
 
   OperatorUtils::RestoreWidget( this );
