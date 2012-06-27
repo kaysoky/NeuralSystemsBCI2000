@@ -49,6 +49,7 @@ namespace FileUtils
 
   std::string EnsureSeparator( const std::string& );
   std::string ExecutablePath();
+  std::string ApplicationTitle();
   const std::string& InstallationDirectoryS();
   inline std::string InstallationDirectory() { return InstallationDirectoryS() + DirSeparator; }
 

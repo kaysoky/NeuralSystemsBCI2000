@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME P3Speller )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  P3Speller.cpp
   P3SpellerTask.cpp
 )
 SET( HDR_PROJECT

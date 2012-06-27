@@ -10,7 +10,6 @@ SET( EXECUTABLE_NAME Neuralynx)
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  Neuralynx.cpp
   NeuralynxADC.cpp
   NeuralynxThread.cpp
 )

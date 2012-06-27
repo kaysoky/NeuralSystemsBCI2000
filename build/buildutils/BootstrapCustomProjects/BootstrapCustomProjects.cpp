@@ -112,7 +112,7 @@ FileParts( string fullpath, string& parent, string& stem, string& extension )
 	size_t dotPos=fullpath.size();
 	for( size_t i = parentLength; i < fullpath.size(); i++ )
 		if( fullpath[i] == '.' ) dotPos = i;
-	
+
 	parent = StandardizePath( fullpath.substr( 0, parentLength ) );
 	if( parentLength < fullpath.size() ) stem = fullpath.substr( parentLength, dotPos - parentLength );
 	if( dotPos < fullpath.size() ) extension = fullpath.substr( dotPos );
@@ -258,7 +258,7 @@ BackTickRep( string dst, string src, string name )
 
 bool
 ContainsLine( string fileName, string targetLine,  string2string proc=NULL, bool partialMatch=false )
-{ // test whether or not the named text file contains the target line (before matching, optionally apply string transformation proc to both strings, to cope with syntax invariances) 
+{ // test whether or not the named text file contains the target line (before matching, optionally apply string transformation proc to both strings, to cope with syntax invariances)
 	bool linefound = false;
 	ifstream s( fileName.c_str() );
 	if( proc ) targetLine = proc( targetLine );
@@ -289,7 +289,7 @@ AppendToFile( string fileName, string line )
 
 int
 AddSubdirectory( string parentDir, string subDirName)
-{ // try to append the appropriate ADD_SUBDIRECTORY line to the CMakeLists.txt file in parentDir, if it is not already there 
+{ // try to append the appropriate ADD_SUBDIRECTORY line to the CMakeLists.txt file in parentDir, if it is not already there
 	string pcmLine = "ADD_SUBDIRECTORY( " + subDirName + " )";
 	string pcmFile = RealPath( Fullfile( parentDir, "CMakeLists.txt" ) );
 	bool cmOK = false;
@@ -365,7 +365,7 @@ PrependToFile( string fileName, string lineToInsert, string2string proc=NULL )
 		sIn.close();
 	}
 	if( !inserted ) return AppendToFile( fileName, lineToInsert );
-	
+
 	ofstream sOut( fileName.c_str() );
 	if( !sOut ) { cerr << "internal error: failed to open file " << fileName << " for writing\n"; return 1; }
 	sOut << content.str();
@@ -417,10 +417,10 @@ int NewFilter( string modtype, string name, string proj, string extra )
 		"\n"
 		"PROJECT:   The directory for the project to which the filter should be added.\n"
 	;
-	
+
 	if( extra.size() ) { cerr << "Too many inputs. Usage is as follows:\n\n" << usage << endl; return 1; }
 	if( modtype == "--help" ) { cout << endl << usage << endl; return 0; }
-	
+
 	for( int i = 0; ; i++)
 	{
 		modtype = StripString( modtype );
@@ -429,7 +429,7 @@ int NewFilter( string modtype, string name, string proj, string extra )
 		if( modtype == "2" ) modtype = "GenericFilter";
 		if( modtype == "3" ) modtype = "ApplicationBase";
 		if( modtype == "GenericADC" || modtype == "GenericFilter" || modtype == "ApplicationBase" || modtype == "BufferedADC" ) break;
-		
+
 		if( modtype.size() && i == 0 ) { cerr << "unrecognized filter type \"" << modtype << "\" - should be 0, 1, 2 or 3\n"; return 1; }
 		if( modtype.size() ) cout << "ERROR: please enter one of the strings exactly, or one of the numbers\n\n";
 
@@ -441,8 +441,8 @@ int NewFilter( string modtype, string name, string proj, string extra )
 		getline( cin, modtype );
 		if( modtype.size() == 0 ) modtype = "2";
 		cout << endl;
-	} 
-	
+	}
+
 	while( name.size() == 0 )
 	{
 		string p;
@@ -468,14 +468,14 @@ int NewFilter( string modtype, string name, string proj, string extra )
 	if( !DirectoryExists( proj ) ) { cerr << "directory does not exist: " << proj << endl; return 1; }
 	ParseName( name );
 	cout << "\nAdding filter " << name << " to module " << proj << endl;
-	
+
 	for( unsigned int i = 0; i < name.size(); i++ )
 	{
 		char c = name[i];
 		if( !::isalpha( c ) && !::isdigit( c ) && c != '_' ) { cerr << "\"" << name << "\" is an illegal filter name (name may only contain alphanumeric characters and underscore)\n"; return 1; }
 		if( i == 0 && ::isdigit( c ) ) { cerr << "\"" << name << "\" is an illegal filter name (name may not start with a numeral)\n"; return 1; }
 	}
-	
+
 	string srcname = name + ".cpp";
 	string hdrname = name + ".h";
 	string templateStem;
@@ -483,7 +483,7 @@ int NewFilter( string modtype, string name, string proj, string extra )
     if( modtype == "BufferedADC" ) templateStem = "TemplateBufferedADC";
 	if( modtype == "GenericFilter" ) templateStem = "TemplateFilter";
 	if( modtype == "ApplicationBase" ) templateStem = "TemplateApplication";
-	
+
 	if( BackTickRep( Fullfile( proj, srcname ), Fullfile( gTemplatesDir, templateStem+".cpp" ), name ) != 0 ) return 1;
 	if( BackTickRep( Fullfile( proj, hdrname ), Fullfile( gTemplatesDir, templateStem+".h" ),   name ) != 0 ) return 1;
 
@@ -516,14 +516,14 @@ int NewFilter( string modtype, string name, string proj, string extra )
 			ofstream sOut( cmFile.c_str() );
 			if( !sOut ) { cerr << "internal error: could not open file for output: " << cmFile << endl; return 1; }
 			sOut << content.str();
-			cout << msg.str(); 
+			cout << msg.str();
 			content.str("");
 			msg.str("");
 			sOut.close();
 		}
 	}
 	else cout << "*** WARNING: could not find file " << cmFile << endl ;
-	
+
 	string pdFile = RealPath( Fullfile( proj, "PipeDefinition.cpp" ) );
 	if( FileExists( pdFile ) )
 	{
@@ -546,7 +546,7 @@ int NewFilter( string modtype, string name, string proj, string extra )
 		if( RemoveLine( pdFile, gPipeDefError, StripString ) != 0 ) return 1;
 	}
 	// else cout << "    file does not exist: " << pdFile << endl;
-	
+
 	return 0;
 }
 
@@ -568,18 +568,18 @@ int NewModule( string modtype, string name, string parent, string extra )
 		"           ../src/custom (relative to the \"build\" directory) is a good choice, since\n"
 		"           since the svn version-control system ignores it, but cmake will include it.\n"
 	;
-	
+
 	if( extra.size() ) { cerr << "Too many inputs. Usage is as follows:\n\n" << usage << endl; return 1; }
 	if( modtype == "--help" ) { cout << endl << usage << endl; return 0; }
-	
+
 	for( int i = 0; ; i++)
 	{
 		modtype = StripString( modtype );
 		if( modtype == "1" ) modtype = "SignalSource";
 		if( modtype == "2" ) modtype = "SignalProcessing";
-		if( modtype == "3" ) modtype = "Application";	
+		if( modtype == "3" ) modtype = "Application";
 		if( modtype == "SignalSource" || modtype == "SignalProcessing" || modtype == "Application" ) break;
-		
+
 		if( modtype.size() && i == 0 ) { cerr << "unrecognized module type \"" << modtype << "\" - should be 1, 2, or 3\n"; return 1; }
 		if( modtype.size() ) cout << "ERROR: please enter one of the strings exactly, or one of the numbers\n\n";
 
@@ -587,7 +587,7 @@ int NewModule( string modtype, string name, string parent, string extra )
 		getline( cin, modtype );
 		if( modtype.size() == 0 ) modtype = "2";
 		cout << endl;
-	} 
+	}
 	while( name.size() == 0 )
 	{
 		cout << "Enter module name: ";
@@ -613,19 +613,17 @@ int NewModule( string modtype, string name, string parent, string extra )
 		if( MakeDirectory( proj.c_str() ) != 0 ) return 1;
 		cout << "A new " << modtype << " project has been created at " << RealPath( proj ) << endl;
 	}
-		
-	if( BackTickRep( Fullfile( proj, name+".cpp" ), Fullfile( gTemplatesDir, "main.cpp" ), name ) != 0 ) return 1;
-	
+
 	if( modtype == "SignalProcessing" )
 	{
 		string pdFile = Fullfile( proj, "PipeDefinition.cpp" );
 		bool adderr = !FileExists( pdFile );
 		if( BackTickRep( pdFile, Fullfile( gTemplatesDir, "PipeDefinition.cpp" ), name ) != 0 ) return 1;
 		if( adderr && AppendToFile( pdFile, gPipeDefError ) != 0 ) return 1;
-	}	
+	}
 	if( BackTickRep( Fullfile( proj, "CMakeLists.txt" ), Fullfile( gTemplatesDir, "CMakeLists-"+modtype+".txt" ), name ) != 0 ) return 1;
-	
-	
+
+
 	string adcname;
 	if( modtype == "SignalSource" )
 	{
@@ -643,8 +641,8 @@ int NewModule( string modtype, string name, string parent, string extra )
 		else if( appname.size() < 4 || appname.substr( appname.size()-4 ) != "Task" ) appname += "Task";
 		if( NewFilter( "3", appname, proj, "" ) != 0 ) appname = "";
 	}
-	
-	
+
+
 	bool cmOK = true;
 	cout << endl;
 	if( PathMatch( proj, gSrcTree, true ) )
@@ -656,7 +654,7 @@ int NewModule( string modtype, string name, string parent, string extra )
 			FileParts(p, pp, stem, xtn);
 			if( pp == gSrcTree ) break;
 			cmOK &= ( AddSubdirectory( pp, stem+xtn ) == 0 );
-			if(p == pp ) break;			
+			if(p == pp ) break;
 			p = pp;
 		}
 	}
@@ -679,7 +677,7 @@ int NewModule( string modtype, string name, string parent, string extra )
 	if( adcname.size() )
 		cout << "                       and " << RealPath( Fullfile( proj, adcname+".cpp" ) ) << endl;
 	cout << endl;
-	
+
 	return 0;
 }
 
@@ -693,10 +691,10 @@ int SetupFilterTool( string arg1, string arg2, string arg3, string arg4 )
 		"CPPFILE:   TODO\n"
 		"           TODO\n"
 	;
-	
+
 	if( arg2.size() || arg3.size() || arg4.size() ) { cerr << "Too many inputs. Usage is as follows:\n\n" << usage << endl; return 1; }
 	if( arg1 == "--help" ) { cout << endl << usage << endl; return 0; }
-	
+
 	string cppfile = arg1;
 	while( cppfile.size() == 0 )
 	{
@@ -712,7 +710,7 @@ int SetupFilterTool( string arg1, string arg2, string arg3, string arg4 )
 	FileParts( cppfile, parentPath, stem, extension );
 	parentPath = RealPath( parentPath );
 	cppfile = Fullfile( parentPath, stem + extension );
-	
+
 	string childDirName = "cmdline";
 	string childDirPath = Fullfile( parentPath, childDirName );
 	string parentCMakeLists = Fullfile( parentPath, "CMakeLists.txt" );
@@ -725,7 +723,7 @@ int SetupFilterTool( string arg1, string arg2, string arg3, string arg4 )
 
 	cout << endl;
 	cout << "Setting up " << stem << " as a command-line filter-tool target:" << endl;
-	
+
 	if( DirectoryExists( childDirPath ) )
 	{
 		cout << "    Directory " << childDirPath << " already exists." << endl;

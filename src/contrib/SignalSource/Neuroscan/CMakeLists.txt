@@ -10,7 +10,6 @@ SET( EXECUTABLE_NAME NeuroscanClient )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  NeuroscanClient.cpp
   NeuroscanADC.cpp 
 )
 SET( HDR_PROJECT

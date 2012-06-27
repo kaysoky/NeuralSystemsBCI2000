@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME TMSi )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  TMSi.cpp
   TMSiADC.cpp
   TMSiSDK/Feature.cpp
   TMSiSDK/RTDevice.cpp

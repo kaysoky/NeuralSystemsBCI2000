@@ -8,14 +8,11 @@ SET( EXECUTABLE_NAME NeuroscanAccess )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  Neuroscan.cpp
   NeuroscanADC.cpp 
-#  NeuroscanThread.cpp
 )
 SET( HDR_PROJECT
   NeuroscanADC.h
   lib/NSDevice.h
-#  NeuroscanThread.h
 )
 
 # Define the library

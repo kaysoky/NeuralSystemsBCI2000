@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME Grapevine )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  GrapeVine.cpp
   GrapeVineADC.cpp 
 )
 SET( HDR_PROJECT

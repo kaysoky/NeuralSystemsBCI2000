@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME AmpServerPro )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  AmpServerPro.cpp
   AmpServerProADC.cpp
 )
 SET( HDR_PROJECT

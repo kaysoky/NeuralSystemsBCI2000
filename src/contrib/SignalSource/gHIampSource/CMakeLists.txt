@@ -15,7 +15,6 @@ ELSE()
 
   # Set the project specific sources
   SET( SRC_PROJECT
-    gHIampSource.cpp 
     gHIampADC.cpp
     gHIampDevice.cpp
   )

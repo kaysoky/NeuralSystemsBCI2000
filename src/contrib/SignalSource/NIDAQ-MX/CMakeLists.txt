@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME NIDAQ_mx_Source )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  NIDAQ_mx_Source.cpp
   NIADC.cpp
   NIDAQ-Logging/NIDAQFilter.cpp
   NIDAQ-Logging/NIDAQLogger.cpp

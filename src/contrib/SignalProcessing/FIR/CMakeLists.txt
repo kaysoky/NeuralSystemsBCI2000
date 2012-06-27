@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME FIRProcessing )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  FIRProcessing.cpp
   FIRFilter.cpp
   PipeDefinition.cpp
 )

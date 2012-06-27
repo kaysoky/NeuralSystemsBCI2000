@@ -14,7 +14,6 @@ SET( BCI2000REMOTE
   ../../../core/Operator/BCI2000Remote
 )
 SET( SRC_PROJECT
-  PyffApplication.cpp
   PyffFilter.cpp
   ${BCI2000REMOTE}/BCI2000Connection.cpp
 )

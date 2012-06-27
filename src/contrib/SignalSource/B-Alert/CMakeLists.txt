@@ -9,7 +9,6 @@ SET( EXECUTABLE_NAME BAlertSource )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  BAlert.cpp           
   BAlertADC.cpp
 )
 

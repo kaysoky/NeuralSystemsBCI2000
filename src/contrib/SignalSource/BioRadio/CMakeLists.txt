@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME BioRadio )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  BioRadio.cpp
   BioRadioADC.cpp
   bioutils.cpp 
   BR150.cpp

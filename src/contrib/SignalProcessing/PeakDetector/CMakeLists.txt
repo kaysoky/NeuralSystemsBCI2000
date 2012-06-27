@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME PeakDetectSignalProcessing )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  PeakDetectSignalProcessing.cpp
   UPeakDetector.cpp
   PipeDefinition.cpp
 )

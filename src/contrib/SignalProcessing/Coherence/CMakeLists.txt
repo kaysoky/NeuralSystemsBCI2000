@@ -11,7 +11,6 @@ SET( EXECUTABLE_NAME CoherenceSignalProcessing )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  CoherenceSignalProcessing.cpp            # You probably will not need to edit this file
   PipeDefinition.cpp         # but you should certainly edit this one
   # MyNewCustomFilter.cpp    # and presumably you will be writing custom filters. This is where they go.
   CoherenceFilter.cpp

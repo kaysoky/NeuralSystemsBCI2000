@@ -11,7 +11,6 @@ SET( EXECUTABLE_NAME TuckerDavis )
 IF( WIN32 AND NOT MINGW )
   # Set the project specific sources
   SET( SRC_PROJECT
-    TDTclient.cpp
     TDTADC.cpp 
   )
   SET( HDR_PROJECT

@@ -8,13 +8,10 @@ SET( EXECUTABLE_NAME NeuroSky )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  NeuroSky.cpp
   NeuroSkyADC.cpp 
-#  NeuroSkyThread.cpp
 )
 SET( HDR_PROJECT
   NeuroSkyADC.h
-#  NeuroSkyThread.h
   lib/thinkgear.h
 )
 

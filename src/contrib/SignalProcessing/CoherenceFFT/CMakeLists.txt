@@ -13,7 +13,6 @@ BCI2000_INCLUDE( "FFT" )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  CoherenceFFTSignalProcessing.cpp            # You probably will not need to edit this file
   PipeDefinition.cpp         # but you should certainly edit this one
   # MyNewCustomFilter.cpp    # and presumably you will be writing custom filters. This is where they go.
   CoherenceFFTFilter.cpp

@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME MatlabSignalProcessing )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  MatlabSignalProcessing.cpp
   PipeDefinition.cpp 
   MatlabFilter.cpp
   MatlabWrapper.cpp

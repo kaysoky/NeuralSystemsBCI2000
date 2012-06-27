@@ -14,3 +14,5 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/IncludeExtensionMacro.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/SetOutputDirectoryMacro.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/AddRegistryMacro.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/ModuleInventory.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/AddCoreMain.cmake )
+

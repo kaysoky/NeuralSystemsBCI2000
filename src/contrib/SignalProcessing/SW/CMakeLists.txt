@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME SWSignalProcessing )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  SWSignalProcessing.cpp
   FBArteCorrection.cpp
   SetBaseline.cpp
   SWFilter.cpp

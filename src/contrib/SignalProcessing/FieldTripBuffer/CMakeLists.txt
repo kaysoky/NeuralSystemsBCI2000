@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME FieldTripBuffer )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  FieldTripBuffer.cpp
   FieldTripBufferFilter.cpp
   PipeDefinition.cpp
 )

@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME Micromed )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  Micromed.cpp
   MicromedADC.cpp
 )
 SET( HDR_PROJECT

@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME Biosemi2 )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  Biosemi2.cpp
   Biosemi2ADC.cpp
   Biosemi2Client.cpp
 )

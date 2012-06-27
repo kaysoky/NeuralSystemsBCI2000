@@ -136,6 +136,35 @@ FileUtils::ExecutablePath()
 }
 
 string
+FileUtils::ApplicationTitle()
+{
+  string baseName = ExtractBase( ExecutablePath() ),
+         title;
+  bool wasSpace = true,
+       wasUpper = false;
+  for( string::const_iterator i = baseName.begin(); i != baseName.end(); ++i )
+  {
+    if( ::isspace( *i ) )
+    {
+      wasSpace = true;
+      wasUpper = false;
+    }
+    else
+    {
+      if( ::isupper( *i ) && !wasSpace && !wasUpper )
+        title += " ";
+      if( ::isupper( *i ) )
+        wasUpper = true;
+      else
+        wasUpper = false;
+      wasSpace = false;
+    }
+    title += *i;
+  }
+  return title;
+}
+
+string
 FileUtils::WorkingDirectoryS()
 {
   OSMutex::Lock lock( WorkingDirMutex() );

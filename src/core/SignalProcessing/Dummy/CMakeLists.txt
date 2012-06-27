@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME DummySignalProcessing )
 
 # Set the project specific sources 
 SET( SRC_PROJECT
-  DummySignalProcessing.cpp
   PipeDefinition.cpp 
 )
 SET( HDR_PROJECT

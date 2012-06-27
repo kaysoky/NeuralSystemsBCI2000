@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME FFTSignalProcessing )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  FFTSignalProcessing.cpp
   PipeDefinition.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/FFTFilter.cpp
 )

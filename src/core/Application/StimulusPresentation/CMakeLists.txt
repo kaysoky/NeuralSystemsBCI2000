@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME StimulusPresentation )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  StimulusPresentation.cpp
   StimulusPresentationTask.cpp
 )
 SET( HDR_PROJECT

@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME ARSignalProcessing )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  ARSignalProcessing.cpp
   PipeDefinition.cpp 
 )
 SET( HDR_PROJECT

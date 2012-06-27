@@ -7,7 +7,6 @@ SET( EXECUTABLE_NAME FieldTripBufferSource )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  FieldTripBufferSource.cpp
   FieldTripBufferADC.cpp 
 )
 SET( HDR_PROJECT

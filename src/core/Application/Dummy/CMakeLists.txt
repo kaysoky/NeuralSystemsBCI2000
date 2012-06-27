@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME DummyApplication )
 
 # Set the project specific sources 
 SET( SRC_PROJECT
-  DummyApplication.cpp
 )
 SET( HDR_PROJECT
 )

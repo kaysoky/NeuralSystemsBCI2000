@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME SignalGenerator )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  SignalGenerator.cpp
   SignalGeneratorADC.cpp
   ${BCI2000_SRC_DIR}/shared/modules/signalsource/logging/TestLogger.cpp
 )

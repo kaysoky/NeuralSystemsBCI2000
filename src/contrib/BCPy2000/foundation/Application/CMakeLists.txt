@@ -6,12 +6,6 @@
 # Set the executable name
 SET( EXECUTABLE_NAME PythonApplication )
 
-# Set the project specific sources
-SET( SRC_PROJECT
-  ${SRC_PROJECT}
-  PythonApplication.cpp
-)
-
 # Create the signal processing module
 BCI2000_ADD_APPLICATION_MODULE( 
   "${EXECUTABLE_NAME}" 

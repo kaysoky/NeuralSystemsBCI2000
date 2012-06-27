@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME SpectralSignalProcessing )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  SpectralSignalProcessing.cpp
   PipeDefinition.cpp 
 )
 SET( HDR_PROJECT

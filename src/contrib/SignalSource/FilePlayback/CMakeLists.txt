@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME FilePlayback)
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  FilePlayback.cpp
   FilePlaybackADC.cpp
 )
 SET( HDR_PROJECT

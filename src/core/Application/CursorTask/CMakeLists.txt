@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME CursorTask )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  CursorTask.cpp
   CursorFeedbackTask.cpp
   FeedbackScene2D.cpp
   FeedbackScene3D.cpp

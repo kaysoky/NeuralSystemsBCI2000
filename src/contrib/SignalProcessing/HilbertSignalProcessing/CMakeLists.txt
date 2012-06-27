@@ -13,7 +13,6 @@ SET( EXECUTABLE_NAME HilbertSignalProcessing )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  HilbertSignalProcessing.cpp            # You probably will not need to edit this file
   PipeDefinition.cpp         # but you should certainly edit this one
   CustomFIRFilter.cpp
   CustomIIRFilter.cpp

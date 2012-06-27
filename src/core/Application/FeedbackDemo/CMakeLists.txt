@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME FeedbackDemo )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  FeedbackDemo.cpp
   FeedbackDemoTask.cpp
 )
 SET( HDR_PROJECT

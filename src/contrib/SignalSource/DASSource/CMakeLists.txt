@@ -10,7 +10,6 @@ SET( EXECUTABLE_NAME DASSource )
 SET( SRC_PROJECT
   DAS_lib/DASUtils.cpp
   DAS_lib/cbw32_imports.cpp
-  DASSource.cpp
   DAS_ADC.cpp 
   DASQueue.cpp
 )

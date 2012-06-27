@@ -11,7 +11,6 @@ SET( EXECUTABLE_NAME gUSBampSource )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  gUSBampSource.cpp
   gUSBampADC.cpp 
 )
 SET( HDR_PROJECT

@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME ENOBIO )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  ENOBIO.cpp
   ENOBIOADC.cpp 
 )
 SET( HDR_PROJECT

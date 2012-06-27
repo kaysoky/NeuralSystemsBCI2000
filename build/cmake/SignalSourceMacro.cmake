@@ -16,6 +16,7 @@ SOURCE_GROUP( Headers\\Project FILES ${HEADERS} )
 
 # Setup Extlib Dependencies
 BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS FAILED )
+BCI2000_ADD_CORE_MAIN( ${NAME} ${SOURCES} )
 
 # If we're building a Qt project, we need to automoc the sources
 IF( NOT BORLAND )

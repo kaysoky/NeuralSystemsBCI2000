@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME ModularEEG )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  ModularEEG.cpp
   ModularEEGADC.cpp 
   modular_eeg_parser.cpp
 )

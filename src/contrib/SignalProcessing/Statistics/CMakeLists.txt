@@ -42,7 +42,6 @@ ADD_SUBDIRECTORY( Cmdline )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  StatisticsSignalProcessing.cpp 
   PipeDefinition.cpp
   ${SRC_STAT}
 )

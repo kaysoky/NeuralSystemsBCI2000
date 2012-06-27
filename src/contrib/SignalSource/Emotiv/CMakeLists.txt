@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME Emotiv )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  Emotiv.cpp
   EmotivADC.cpp 
 )
 SET( HDR_PROJECT

@@ -8,7 +8,6 @@ SET( EXECUTABLE_NAME vAmpSource )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  vAmpSource.cpp
   vAmpADC.cpp 
   vAmpChannelInfo.cpp
   vAmpThread.cpp
