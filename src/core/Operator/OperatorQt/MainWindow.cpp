@@ -89,16 +89,19 @@ MainWindow::MainWindow( QWidget* parent )
     gpConnectionInfo = new ConnectionInfo( this );
     gpConnectionInfo->setVisible( false );
   }
-#ifndef _WIN32
+
   QFont font = mButtons[0]->font();
-  int standardFontSize = QFontInfo( font ).pixelSize();
-  font.setPixelSize( ( standardFontSize * 141 ) / 100 );
+  int standardFontSize = QFontInfo( font ).pixelSize(),
+      standardWeight = QFontInfo( font ).weight();
+  font.setPixelSize( ( standardFontSize * 150 ) / 100 );
+  font.setWeight( QFont::DemiBold );
   ui->pushButton_Config->setFont( font );
   ui->pushButton_SetConfig->setFont( font );
   ui->pushButton_RunSystem->setFont( font );
   ui->pushButton_Quit->setFont( font );
   font.setPixelSize( ( standardFontSize * 84 ) / 100 );
-#endif
+  font.setWeight( standardWeight );
+
   int nStatusLabels = sizeof( mpStatusLabels ) / sizeof( *mpStatusLabels );
   for( int i = 0; i < nStatusLabels; ++i )
   {
