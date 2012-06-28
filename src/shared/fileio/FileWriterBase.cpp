@@ -51,7 +51,7 @@ FileWriterBase::~FileWriterBase()
 }
 
 void
-FileWriterBase::Publish() const
+FileWriterBase::Publish()
 {
   if( ( OptionalParameter( "SavePrmFile" ) != 0 ) )
   {

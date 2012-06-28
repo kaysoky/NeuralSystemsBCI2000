@@ -41,10 +41,10 @@
 # define fseeko64 _fseeki64
 #endif // _MSC_VER
 
-#if __APPLE__
+#if defined( __APPLE__ ) || defined( __BORLANDC__ )
 # define ftello64 ftello
 # define fseeko64 fseeko
-#endif // __APPLE__
+#endif // __APPLE__ || __BORLANDC__
 
 using namespace std;
 

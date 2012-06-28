@@ -33,7 +33,7 @@
 
 class CoreModuleVCL : public CoreModule
 {
-  virtual void OnInitialize( int, char** )
+  virtual void OnInitialize( int&, char** )
   {
 #if __BORLANDC__ >= 0x590 // C++ Builder 2007
     Application->MainFormOnTaskBar = true;

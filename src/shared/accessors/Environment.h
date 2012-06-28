@@ -239,6 +239,9 @@ class EnvironmentBase
     T* mpLocal;
     static T* spGlobal;
   };
+  friend class Accessor_<ParamList>;
+  friend class Accessor_<StateList>;
+  friend class Accessor_<StateVector>;
 
  protected:
   Accessor_<ParamList> Parameters;
@@ -263,6 +266,7 @@ class EnvironmentBase
    private:
     const EnvironmentBase* mPrevious;
   };
+  friend class WrapperContext;
 
  private:
   bool IsGlobalEnvironment() const;

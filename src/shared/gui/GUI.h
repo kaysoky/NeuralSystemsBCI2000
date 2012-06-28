@@ -114,7 +114,7 @@ bool EmptyRect( const Rect& r );
 struct DrawContext
 {
 #ifdef __BORLANDC__
-  void* handle;
+  HDC handle;
 #else // __BORLANDC__
   struct
   {

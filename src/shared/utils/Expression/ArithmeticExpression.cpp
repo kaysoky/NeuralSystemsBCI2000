@@ -271,7 +271,7 @@ ArithmeticExpression::Function( const std::string& inName, const NodeList& inArg
 }
 
 Node*
-ArithmeticExpression::MemberFunction( const string& inObject, const string& inFunction, const NodeList& )
+ArithmeticExpression::MemberFunction( const string& inObject, const string&, const NodeList& )
 {
   Errors() << inObject << ": Unknown object"
            << endl;

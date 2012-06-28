@@ -35,7 +35,7 @@ class BCI2000FileWriter : public FileWriterBase
   BCI2000FileWriter()
   : FileWriterBase( mOutputFormat )
   {}
-  virtual void Publish() const;
+  virtual void Publish();
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const;
   virtual void StartRun();

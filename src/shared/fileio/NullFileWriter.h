@@ -34,7 +34,7 @@ class NullFileWriter: public GenericFileWriter
  public:
           NullFileWriter();
   virtual ~NullFileWriter();
-  virtual void Publish() const;
+  virtual void Publish();
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const;
   virtual void Initialize( const SignalProperties& Input,

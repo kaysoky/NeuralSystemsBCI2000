@@ -36,9 +36,8 @@ class GenericFileWriter : public GenericFilter
   virtual ~GenericFileWriter() {}
 
  protected:
-  // A separate function for publishing parameters and states.
-  virtual void Publish() const = 0;
   // GenericFilter inherited functions.
+  virtual void Publish() = 0;
   virtual void Preflight( const SignalProperties&,
                                 SignalProperties& ) const = 0;
   virtual void Initialize( const SignalProperties&,
@@ -53,7 +52,6 @@ class GenericFileWriter : public GenericFilter
   virtual bool AllowsVisualization() const { return false; }
 
  public:
-  void CallPublish();
   void CallWrite( const GenericSignal&, const StateVector& );
 
  private:

@@ -62,7 +62,7 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData, Ratpoly<T>& outResu
 {
   typedef double D;
   static const T eps = std::numeric_limits<T>::epsilon();
-  int n = static_cast<int>( inData.size() );
+  size_t n = inData.size();
 
   DataVector coeff, wkm;
   coeff.resize( LinearPredictor<T>::mModelOrder + 1 );
@@ -76,19 +76,18 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData, Ratpoly<T>& outResu
   mWk2 = inData;
 
   D meanPower = 0;
-  D den = 0;
-  for (int t = 0; t < n; t++)
+  for (size_t t = 0; t < n; t++)
     meanPower += (mWk1[t]*mWk1[t]);
 
-  den = meanPower*2;
+  D den = meanPower*2;
   meanPower /= n;
   D num=0.0;
   D q = 1.0;
   coeff[0] = 1.0;
-  for( int k = 1; k <= LinearPredictor<T>::mModelOrder; ++k )
+  for( size_t k = 1; k <= LinearPredictor<T>::mModelOrder; ++k )
   {
     num = 0;
-    for (int t = 0; t < n-k; t++)
+    for (size_t t = 0; t < n-k; t++)
         num += mWk1[t+1]*mWk2[t];
 
     den = den*q - mWk1[0]*mWk1[0] - mWk2[n-k]*mWk2[n-k];
@@ -100,7 +99,7 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData, Ratpoly<T>& outResu
     else{
       if (coeff[k] >= 1 || coeff[k] <= -1){
         den = 0;
-        for (int t = 0; t < n-k; t++)
+        for (size_t t = 0; t < n-k; t++)
           den += mWk1[t+1]*mWk1[t+1] + mWk2[t]*mWk2[t];
       }
     }
@@ -108,15 +107,15 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData, Ratpoly<T>& outResu
 
     q = 1.0 - coeff[k] * coeff[k];
     meanPower *= q;
-    for( int i = 1; i < k; ++i )
+    for( size_t i = 1; i < k; ++i )
       coeff[i] = wkm[i] - coeff[k] * wkm[k-i];
 
     if( k < LinearPredictor<T>::mModelOrder )
     {
-      for( int i = 1; i <= k; ++i )
+      for( size_t i = 1; i <= k; ++i )
         wkm[i] = coeff[i];
 
-      for( int j = 0; j < n-k; ++j )
+      for( size_t j = 0; j < n-k; ++j )
       {
         mWk1[j] = mWk1[j+1] - wkm[k] * mWk2[j];
         mWk2[j] = mWk2[j] - wkm[k] * mWk1[j+1];
@@ -126,7 +125,7 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData, Ratpoly<T>& outResu
   if( meanPower < 0.0 )
     meanPower = 0.0;
 
-  for (int k = 1; k <= LinearPredictor<T>::mModelOrder; k++)
+  for (size_t k = 1; k <= LinearPredictor<T>::mModelOrder; k++)
       coeff[k] *= -1;
 
   outResult = Ratpoly<T>(

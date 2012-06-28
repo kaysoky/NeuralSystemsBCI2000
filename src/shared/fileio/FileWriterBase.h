@@ -43,7 +43,7 @@ class FileWriterBase: public GenericFileWriter, OSThread
           FileWriterBase( GenericOutputFormat& );
  public:
   virtual ~FileWriterBase();
-  virtual void Publish() const;
+  virtual void Publish();
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const;
   virtual void Initialize( const SignalProperties& Input,

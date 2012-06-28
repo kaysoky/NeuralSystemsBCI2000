@@ -45,12 +45,12 @@ class LinearPredictor
   LinearPredictor& SetModelOrder( int inOrder )
     { mModelOrder = inOrder; return *this; }
   int ModelOrder() const
-    { return mModelOrder; }
+    { return static_cast<int>( mModelOrder ); }
 
   virtual void TransferFunction( const std::valarray<T>&, Ratpoly<T>& ) const = 0;
 
  protected:
-  int mModelOrder;
+  size_t mModelOrder;
 };
 
 #endif // LINEAR_PREDICTOR_H

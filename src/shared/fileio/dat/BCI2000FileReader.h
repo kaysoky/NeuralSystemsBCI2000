@@ -122,7 +122,7 @@ class BCI2000FileReader
   class StateVector* mpStatevector;
   bool               mInitialized;
 
-  FILE*              mpFile;
+  std::FILE*         mpFile;
   std::string        mFilename,
                      mFileFormatVersion;
 

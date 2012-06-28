@@ -69,7 +69,7 @@ ImageStimulus::SetFile( const string& inName )
   mpImage = new TPicture;
   try
   {
-    mpImage->LoadFromFile( BCIDirectory::AbsolutePath( inName ).c_str() );
+    mpImage->LoadFromFile( FileUtils::AbsolutePath( inName ).c_str() );
   }
   catch( EInOutError& )
   {

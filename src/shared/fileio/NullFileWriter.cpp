@@ -46,7 +46,7 @@ NullFileWriter::~NullFileWriter()
 }
 
 void
-NullFileWriter::Publish() const
+NullFileWriter::Publish()
 {
 }
 

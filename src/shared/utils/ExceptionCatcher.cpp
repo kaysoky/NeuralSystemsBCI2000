@@ -194,10 +194,10 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
   return message.empty();
 }
 
+#if _MSC_VER
 void
 ExceptionCatcher::ReportWin32Exception( int inCode )
 {
-#if _MSC_VER
 # define EXCEPTION( x ) { EXCEPTION_##x, #x },
   static const struct
   {
@@ -240,13 +240,13 @@ ExceptionCatcher::ReportWin32Exception( int inCode )
       << pDescription
       << UserMessage();
   OnReportException( oss.str() );
-#endif // _MSC_VER
 }
+#endif // _MSC_VER
 
+#if HANDLE_SIGNALS
 void
 ExceptionCatcher::ReportSignal( int inSignal )
 {
-#if HANDLE_SIGNALS
   size_t numSignals = sizeof( sSignals ) / sizeof( *sSignals ),
          i = 0;
   while( sSignals[i].code != inSignal )
@@ -257,8 +257,8 @@ ExceptionCatcher::ReportSignal( int inSignal )
       << pDescription
       << UserMessage();
   OnReportException( oss.str() );
-#endif // !HANDLE_SIGNALS
 }
+#endif // !HANDLE_SIGNALS
 
 string
 ExceptionCatcher::UserMessage() const

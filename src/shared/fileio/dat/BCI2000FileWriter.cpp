@@ -37,7 +37,7 @@ using namespace std;
 RegisterFilter( BCI2000FileWriter, 1 );
 
 void
-BCI2000FileWriter::Publish() const
+BCI2000FileWriter::Publish()
 {
   FileWriterBase::Publish();
 

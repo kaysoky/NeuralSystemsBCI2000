@@ -158,7 +158,7 @@ EnvironmentBase::ErrorContext( const std::string& inQualifier, const Environment
 const EnvironmentBase*
 EnvironmentBase::ObjectContext() const
 {
-  return stObjectContext ? stObjectContext : this;
+  return stObjectContext ? static_cast<const EnvironmentBase*>( stObjectContext ) : this;
 }
 
 bool
