@@ -1012,8 +1012,11 @@ inline bool AmpServerProADC::ReadDataHeader()
   ReorderToHostOrder(sData, 2);
 
   // Save the header values into m_oLastHeader.
-  m_oLastHeader.ampID = *(reinterpret_cast<__int64*>(sData));
-  m_oLastHeader.length = *(reinterpret_cast<unsigned __int64*>(sData + 8));
+  union { char* asCharPtr; __int64* asInt64Ptr; } pointer;
+  pointer.asCharPtr = sData;
+  m_oLastHeader.ampID = *pointer.asInt64Ptr;
+  pointer.asCharPtr += 8;
+  m_oLastHeader.length = *pointer.asInt64Ptr;
 
   // Ensure data is valid.
   if(m_nAmpId != m_oLastHeader.ampID || m_oLastHeader.length == 0 )
