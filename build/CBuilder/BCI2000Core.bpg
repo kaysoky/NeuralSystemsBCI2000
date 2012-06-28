@@ -1,0 +1,108 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS =  \
+bci_datadiff.exe \
+CursorTask.exe \
+DummyApplication.exe \
+FeedbackDemo.exe \
+P3Speller.exe \
+StimulusPresentation.exe \
+ARSignalProcessing.exe \
+SpectralSignalProcessing.exe \
+DummySignalProcessing.exe \
+FFTSignalProcessing.exe \
+MatlabSignalProcessing.exe \
+P3SignalProcessing.exe \
+SignalGenerator.exe \
+gUSBampSource.exe \
+gUSBampgetinfo.exe \
+gMOBIlab.exe \
+gMOBIlabPlus.exe \
+Demo3DAPI.exe
+
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+bci_datadiff.exe: projects\bci_datadiff.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+CursorTask.exe: projects\CursorTask.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DummyApplication.exe: projects\DummyApplication.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+FeedbackDemo.exe: projects\FeedbackDemo.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+P3Speller.exe: projects\P3Speller.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+StimulusPresentation.exe: projects\StimulusPresentation.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+ARSignalProcessing.exe: projects\ARSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SpectralSignalProcessing.exe: projects\SpectralSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DummySignalProcessing.exe: projects\DummySignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+FFTSignalProcessing.exe: projects\FFTSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+MatlabSignalProcessing.exe: projects\MatlabSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+P3SignalProcessing.exe: projects\P3SignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SignalGenerator.exe: projects\SignalGenerator.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gUSBampSource.exe: projects\gUSBampSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gUSBampgetinfo.exe: projects\gUSBampgetinfo.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gMOBIlab.exe: projects\gMOBIlab.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gMOBIlabPlus.exe: projects\gMOBIlabPlus.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+Demo3DAPI.exe: projects\Demo3DAPI.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+

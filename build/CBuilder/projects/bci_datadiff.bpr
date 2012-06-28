@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="../build/buildutils/testsbci_datadiff.exe"/>
+    <OBJFILES value="bci_datadiff.obj\bci_datadiff.obj
+"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
+    <PATHCPP value="../../../src\../build/buildutils;../../../src\shared;../../../src\shared\config"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value=""/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
+    <MAINSOURCE value="bci_datadiff.bpf"/>
+    <INCLUDEPATH value="../../../src\../build/buildutils;../../../src\shared;../../../src\shared\config;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="../../../src\../build/buildutils;../../../src\shared;../../../src\shared\config;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <WARNINGS value="-w-par"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -H=bci_datadiff.obj\PCH -Hc -He- -Vx -Ve -X- -a8 -b- -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-Ibci_datadiff.obj -D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="../../../src\../build/buildutils/bci_datadiff.cpp" FORMNAME="" UNITNAME="bci_datadiff" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+        <FILE FILENAME="bci_datadiff.bpf" FORMNAME="" UNITNAME="bci_datadiff" CONTAINERID="bpf" DESIGNCLASS="" LOCALCOMMAND=""/>
+
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+  </IDEOPTIONS>
+</PROJECT>

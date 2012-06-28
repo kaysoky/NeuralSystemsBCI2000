@@ -1,0 +1,14 @@
+extlib\3DAPI\buffers.cpp
+extlib\3DAPI\cameraNlight.cpp
+extlib\3DAPI\cuboids.cpp
+extlib\3DAPI\geomObj.cpp
+extlib\3DAPI\halfSpace.cpp
+extlib\3DAPI\Load3DS.cpp
+extlib\3DAPI\model3D.cpp
+extlib\3DAPI\primObj.cpp
+extlib\3DAPI\Scene.cpp
+extlib\3DAPI\sphere.cpp
+extlib\3DAPI\threeDText.cpp
+extlib\3DAPI\twoDCursor.cpp
+extlib\3DAPI\twoDOverlay.cpp
+extlib\3DAPI\twoDText.cpp

@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="../../../src\..\prog\gUSBampgetinfo.exe"/>
+    <OBJFILES value="gUSBampgetinfo.obj\gUSBampgetinfo.obj
+"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value="../../../src\extlib/gtec/gUSBamp/omf/gUSBamp.lib
+"/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
+    <PATHCPP value="../../../src\core/SignalSource/g.USBamp/getinfo;../../../src\extlib/gtec/gUSBamp;../../../src\extlib/gtec/gUSBamp/omf;../../../src\shared;../../../src\shared\config"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value=""/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
+    <MAINSOURCE value="gUSBampgetinfo.bpf"/>
+    <INCLUDEPATH value="../../../src\core/SignalSource/g.USBamp/getinfo;../../../src\extlib/gtec/gUSBamp;../../../src\extlib/gtec/gUSBamp/omf;../../../src\shared;../../../src\shared\config;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="../../../src\core/SignalSource/g.USBamp/getinfo;../../../src\extlib/gtec/gUSBamp;../../../src\extlib/gtec/gUSBamp/omf;../../../src\shared;../../../src\shared\config;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <WARNINGS value="-w-par"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -H=gUSBampgetinfo.obj\PCH -Hc -He- -Vx -Ve -X- -a8 -b- -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-IgUSBampgetinfo.obj -D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="../../../src\core/SignalSource/g.USBamp/getinfo/gUSBampgetinfo.cpp" FORMNAME="" UNITNAME="gUSBampgetinfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+        <FILE FILENAME="../../../src\extlib/gtec/gUSBamp/omf/gUSBamp.lib" FORMNAME="" UNITNAME="gUSBamp.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+        <FILE FILENAME="gUSBampgetinfo.bpf" FORMNAME="" UNITNAME="gUSBampgetinfo" CONTAINERID="bpf" DESIGNCLASS="" LOCALCOMMAND=""/>
+
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+  </IDEOPTIONS>
+</PROJECT>

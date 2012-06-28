@@ -1,0 +1,3 @@
+shared/modules/signalsource/SourceFilter.cpp
+shared/modules/signalprocessing/IIRFilterBase.cpp
+extlib/math/FilterDesign.cpp

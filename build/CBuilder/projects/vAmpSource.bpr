@@ -1,0 +1,219 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="../../../src\..\prog\vAmpSource.exe"/>
+    <OBJFILES value="vAmpSource.obj\vAmpADC.obj
+vAmpSource.obj\vAmpChannelInfo.obj
+vAmpSource.obj\vAmpDisplay.obj
+vAmpSource.obj\vAmpSource.obj
+vAmpSource.obj\vAmpThread.obj
+vAmpSource.obj\FilterDesign.obj
+vAmpSource.obj\GUI.obj
+vAmpSource.obj\EventLink.obj
+vAmpSource.obj\BCIEvent.obj
+vAmpSource.obj\Environment.obj
+vAmpSource.obj\ParamRef.obj
+vAmpSource.obj\BCIError.obj
+vAmpSource.obj\BCIError_module.obj
+vAmpSource.obj\BCIException.obj
+vAmpSource.obj\BCIDirectory.obj
+vAmpSource.obj\FileWriterBase.obj
+vAmpSource.obj\GenericFileWriter.obj
+vAmpSource.obj\NullFileWriter.obj
+vAmpSource.obj\BCI2000FileWriter.obj
+vAmpSource.obj\BCI2000OutputFormat.obj
+vAmpSource.obj\EDFFileWriter.obj
+vAmpSource.obj\EDFOutputBase.obj
+vAmpSource.obj\EDFOutputFormat.obj
+vAmpSource.obj\GDF.obj
+vAmpSource.obj\GDFFileWriter.obj
+vAmpSource.obj\GDFOutputFormat.obj
+vAmpSource.obj\ChoiceCombination.obj
+vAmpSource.obj\GenericFilter.obj
+vAmpSource.obj\CoreModule.obj
+vAmpSource.obj\CoreModuleVCL.obj
+vAmpSource.obj\MessageHandler.obj
+vAmpSource.obj\MessageQueue.obj
+vAmpSource.obj\AlignmentFilter.obj
+vAmpSource.obj\BufferedADC.obj
+vAmpSource.obj\DataIOFilter.obj
+vAmpSource.obj\TransmissionFilter.obj
+vAmpSource.obj\JoystickLogger.obj
+vAmpSource.obj\KeyLogger.obj
+vAmpSource.obj\BitmapImage.obj
+vAmpSource.obj\Brackets.obj
+vAmpSource.obj\CfgID.obj
+vAmpSource.obj\Color.obj
+vAmpSource.obj\EncodedString.obj
+vAmpSource.obj\GenericSignal.obj
+vAmpSource.obj\GenericVisualization.obj
+vAmpSource.obj\HierarchicalLabel.obj
+vAmpSource.obj\Label.obj
+vAmpSource.obj\LabelIndex.obj
+vAmpSource.obj\Param.obj
+vAmpSource.obj\ParamList.obj
+vAmpSource.obj\PhysicalUnit.obj
+vAmpSource.obj\SignalProperties.obj
+vAmpSource.obj\SignalType.obj
+vAmpSource.obj\State.obj
+vAmpSource.obj\StateList.obj
+vAmpSource.obj\StateVector.obj
+vAmpSource.obj\StateVectorSample.obj
+vAmpSource.obj\Status.obj
+vAmpSource.obj\SysCommand.obj
+vAmpSource.obj\VisID.obj
+vAmpSource.obj\ClassName.obj
+vAmpSource.obj\EventQueue.obj
+vAmpSource.obj\ExceptionCatcher.obj
+vAmpSource.obj\ArithmeticExpression.obj
+vAmpSource.obj\Expression.obj
+vAmpSource.obj\ExpressionNodes.obj
+vAmpSource.obj\ExpressionParser.obj
+vAmpSource.obj\FileUtils.obj
+vAmpSource.obj\LogFile.obj
+vAmpSource.obj\MeasurementUnits.obj
+vAmpSource.obj\OSError.obj
+vAmpSource.obj\OSEvent.obj
+vAmpSource.obj\OSMutex.obj
+vAmpSource.obj\OSThread.obj
+vAmpSource.obj\PrecisionTime.obj
+vAmpSource.obj\RandomGenerator.obj
+vAmpSource.obj\ReusableThread.obj
+vAmpSource.obj\SockStream.obj
+vAmpSource.obj\ThreadUtils.obj
+vAmpSource.obj\VersionInfo.obj
+vAmpSource.obj\WildcardMatch.obj
+"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) "/>
+    <LIBFILES value="../../../src\extlib/brainproducts/vAmp/FirstAmp.lib
+"/>
+    <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
+    <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
+    <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
+    <PATHCPP value="../../../src\contrib/SignalSource/vAmp;../../../src\extlib/brainproducts/vAmp;../../../src\extlib/math;../../../src\shared;../../../src\shared/gui;../../../src\shared/modules/signalsource/logging;../../../src\shared\accessors;../../../src\shared\bcistream;../../../src\shared\config;../../../src\shared\fileio;../../../src\shared\fileio\dat;../../../src\shared\fileio\edf_gdf;../../../src\shared\filters;../../../src\shared\modules;../../../src\shared\modules\signalsource;../../../src\shared\modules\signalsource\logging;../../../src\shared\types;../../../src\shared\utils;../../../src\shared\utils\Expression"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="MODTYPE=1"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="../../../src\shared\modules\CoreModuleVCL.cpp"/>
+    <INCLUDEPATH value="../../../src\contrib/SignalSource/vAmp;../../../src\extlib/brainproducts/vAmp;../../../src\extlib/math;../../../src\shared;../../../src\shared/gui;../../../src\shared/modules/signalsource/logging;../../../src\shared\accessors;../../../src\shared\bcistream;../../../src\shared\config;../../../src\shared\fileio;../../../src\shared\fileio\dat;../../../src\shared\fileio\edf_gdf;../../../src\shared\filters;../../../src\shared\modules;../../../src\shared\modules\signalsource;../../../src\shared\modules\signalsource\logging;../../../src\shared\types;../../../src\shared\utils;../../../src\shared\utils\Expression;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="../../../src\contrib/SignalSource/vAmp;../../../src\extlib/brainproducts/vAmp;../../../src\extlib/math;../../../src\shared;../../../src\shared/gui;../../../src\shared/modules/signalsource/logging;../../../src\shared\accessors;../../../src\shared\bcistream;../../../src\shared\config;../../../src\shared\fileio;../../../src\shared\fileio\dat;../../../src\shared\fileio\edf_gdf;../../../src\shared\filters;../../../src\shared\modules;../../../src\shared\modules\signalsource;../../../src\shared\modules\signalsource\logging;../../../src\shared\types;../../../src\shared\utils;../../../src\shared\utils\Expression;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <WARNINGS value="-w-par -w-8027 -w-8026"/>
+    <WARNOPTSTR value=""/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -H=vAmpSource.obj\PCH -Hc -He- -Vx -Ve -X- -a8 -5 -b- -k- -vi 
+      -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-IvAmpSource.obj -D&quot;&quot; -aa -Tpe -x -Gn"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpADC.cpp" FORMNAME="" UNITNAME="vAmpADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpChannelInfo.cpp" FORMNAME="" UNITNAME="vAmpChannelInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpDisplay.cpp" FORMNAME="" UNITNAME="vAmpDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpSource.cpp" FORMNAME="" UNITNAME="vAmpSource" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpThread.cpp" FORMNAME="" UNITNAME="vAmpThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\extlib/math/FilterDesign.cpp" FORMNAME="" UNITNAME="FilterDesign" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared/gui/GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared/modules/signalsource/logging/EventLink.cpp" FORMNAME="" UNITNAME="EventLink" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\accessors\Environment.cpp" FORMNAME="" UNITNAME="Environment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\accessors\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIError.cpp" FORMNAME="" UNITNAME="BCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIError_module.cpp" FORMNAME="" UNITNAME="BCIError_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\FileWriterBase.cpp" FORMNAME="" UNITNAME="FileWriterBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\GenericFileWriter.cpp" FORMNAME="" UNITNAME="GenericFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\NullFileWriter.cpp" FORMNAME="" UNITNAME="NullFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\dat\BCI2000FileWriter.cpp" FORMNAME="" UNITNAME="BCI2000FileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\dat\BCI2000OutputFormat.cpp" FORMNAME="" UNITNAME="BCI2000OutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\edf_gdf\EDFFileWriter.cpp" FORMNAME="" UNITNAME="EDFFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\edf_gdf\EDFOutputBase.cpp" FORMNAME="" UNITNAME="EDFOutputBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\edf_gdf\EDFOutputFormat.cpp" FORMNAME="" UNITNAME="EDFOutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\edf_gdf\GDF.cpp" FORMNAME="" UNITNAME="GDF" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\edf_gdf\GDFFileWriter.cpp" FORMNAME="" UNITNAME="GDFFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\edf_gdf\GDFOutputFormat.cpp" FORMNAME="" UNITNAME="GDFOutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\filters\ChoiceCombination.cpp" FORMNAME="" UNITNAME="ChoiceCombination" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\filters\GenericFilter.cpp" FORMNAME="" UNITNAME="GenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\CoreModule.cpp" FORMNAME="" UNITNAME="CoreModule" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\CoreModuleVCL.cpp" FORMNAME="" UNITNAME="CoreModuleVCL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\MessageHandler.cpp" FORMNAME="" UNITNAME="MessageHandler" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\signalsource\AlignmentFilter.cpp" FORMNAME="" UNITNAME="AlignmentFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\signalsource\BufferedADC.cpp" FORMNAME="" UNITNAME="BufferedADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\signalsource\DataIOFilter.cpp" FORMNAME="" UNITNAME="DataIOFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\signalsource\TransmissionFilter.cpp" FORMNAME="" UNITNAME="TransmissionFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\signalsource\logging\JoystickLogger.cpp" FORMNAME="" UNITNAME="JoystickLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\signalsource\logging\KeyLogger.cpp" FORMNAME="" UNITNAME="KeyLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Brackets.cpp" FORMNAME="" UNITNAME="Brackets" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Color.cpp" FORMNAME="" UNITNAME="Color" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\GenericSignal.cpp" FORMNAME="" UNITNAME="GenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\GenericVisualization.cpp" FORMNAME="" UNITNAME="GenericVisualization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\HierarchicalLabel.cpp" FORMNAME="" UNITNAME="HierarchicalLabel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Label.cpp" FORMNAME="" UNITNAME="Label" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\LabelIndex.cpp" FORMNAME="" UNITNAME="LabelIndex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Param.cpp" FORMNAME="" UNITNAME="Param" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\ParamList.cpp" FORMNAME="" UNITNAME="ParamList" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\PhysicalUnit.cpp" FORMNAME="" UNITNAME="PhysicalUnit" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\SignalProperties.cpp" FORMNAME="" UNITNAME="SignalProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\SignalType.cpp" FORMNAME="" UNITNAME="SignalType" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\State.cpp" FORMNAME="" UNITNAME="State" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\StateList.cpp" FORMNAME="" UNITNAME="StateList" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\StateVector.cpp" FORMNAME="" UNITNAME="StateVector" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Status.cpp" FORMNAME="" UNITNAME="Status" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\SysCommand.cpp" FORMNAME="" UNITNAME="SysCommand" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\VisID.cpp" FORMNAME="" UNITNAME="VisID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ClassName.cpp" FORMNAME="" UNITNAME="ClassName" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\FileUtils.cpp" FORMNAME="" UNITNAME="FileUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\LogFile.cpp" FORMNAME="" UNITNAME="LogFile" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\MeasurementUnits.cpp" FORMNAME="" UNITNAME="MeasurementUnits" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ThreadUtils.cpp" FORMNAME="" UNITNAME="ThreadUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\VersionInfo.cpp" FORMNAME="" UNITNAME="VersionInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\WildcardMatch.cpp" FORMNAME="" UNITNAME="WildcardMatch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+        <FILE FILENAME="../../../src\extlib/brainproducts/vAmp/FirstAmp.lib" FORMNAME="" UNITNAME="FirstAmp.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+  </IDEOPTIONS>
+</PROJECT>

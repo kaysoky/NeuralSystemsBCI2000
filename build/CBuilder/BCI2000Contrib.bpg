@@ -1,0 +1,168 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS =  \
+Speller.exe \
+SlowWaveFeedback.exe \
+SlowWaveSpeller.exe \
+CoherenceSignalProcessing.exe \
+CoherenceFFTSignalProcessing.exe \
+FieldTripBuffer.exe \
+FIRSignalProcessing.exe \
+HilbertSignalProcessing.exe \
+PeakDetectSignalProcessing.exe \
+SWSignalProcessing.exe \
+AmpServerPro.exe \
+BioRadio.exe \
+BAlertSource.exe \
+Biosemi2.exe \
+DASSource.exe \
+DT2000.exe \
+FilePlayback.exe \
+MicroMed.exe \
+ModularEEG.exe \
+NeuroscanADC.exe \
+NeuroSky.exe \
+NISource.exe \
+NIDAQ_mx_Source.exe \
+RDAClient.exe \
+RDAgetparams.exe \
+TMSi.exe \
+vAmpSource.exe \
+PythonApplication.exe \
+PythonSignalProcessing.exe \
+PythonSource.exe
+
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+Speller.exe: projects\Speller.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SlowWaveFeedback.exe: projects\SlowWaveFeedback.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SlowWaveSpeller.exe: projects\SlowWaveSpeller.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+CoherenceSignalProcessing.exe: projects\CoherenceSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+CoherenceFFTSignalProcessing.exe: projects\CoherenceFFTSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+FieldTripBuffer.exe: projects\FieldTripBuffer.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+FIRSignalProcessing.exe: projects\FIRSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+HilbertSignalProcessing.exe: projects\HilbertSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+PeakDetectSignalProcessing.exe: projects\PeakDetectSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SWSignalProcessing.exe: projects\SWSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+AmpServerPro.exe: projects\AmpServerPro.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BioRadio.exe: projects\BioRadio.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BAlertSource.exe: projects\BAlertSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+Biosemi2.exe: projects\Biosemi2.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DASSource.exe: projects\DASSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DT2000.exe: projects\DT2000.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+FilePlayback.exe: projects\FilePlayback.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+MicroMed.exe: projects\MicroMed.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+ModularEEG.exe: projects\ModularEEG.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+NeuroscanADC.exe: projects\NeuroscanADC.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+NeuroSky.exe: projects\NeuroSky.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+NISource.exe: projects\NISource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+NIDAQ_mx_Source.exe: projects\NIDAQ_mx_Source.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+RDAClient.exe: projects\RDAClient.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+RDAgetparams.exe: projects\RDAgetparams.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+TMSi.exe: projects\TMSi.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+vAmpSource.exe: projects\vAmpSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+PythonApplication.exe: projects\PythonApplication.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+PythonSignalProcessing.exe: projects\PythonSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+PythonSource.exe: projects\PythonSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+

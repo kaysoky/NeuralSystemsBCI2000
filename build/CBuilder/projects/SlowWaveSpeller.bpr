@@ -1,0 +1,271 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="../../../src\..\prog\SlowWaveSpeller.exe"/>
+    <OBJFILES value="SlowWaveSpeller.obj\PresModel.obj
+SlowWaveSpeller.obj\PresSpellerModel.obj
+SlowWaveSpeller.obj\ParamDecl.obj
+SlowWaveSpeller.obj\PresErrors.obj
+SlowWaveSpeller.obj\PresParams.obj
+SlowWaveSpeller.obj\SpellerDict.obj
+SlowWaveSpeller.obj\SpellerTree.obj
+SlowWaveSpeller.obj\StateAccessor.obj
+SlowWaveSpeller.obj\TargetSeq.obj
+SlowWaveSpeller.obj\GUITextDialog.obj
+SlowWaveSpeller.obj\Util.obj
+SlowWaveSpeller.obj\ArtifactView.obj
+SlowWaveSpeller.obj\BackgroundView.obj
+SlowWaveSpeller.obj\FeedbackView.obj
+SlowWaveSpeller.obj\MarkerView.obj
+SlowWaveSpeller.obj\ReinforcementView.obj
+SlowWaveSpeller.obj\SWGUI.obj
+SlowWaveSpeller.obj\ScoreView.obj
+SlowWaveSpeller.obj\StimulusView.obj
+SlowWaveSpeller.obj\TargetView.obj
+SlowWaveSpeller.obj\TextFrame.obj
+SlowWaveSpeller.obj\TextProperties.obj
+SlowWaveSpeller.obj\GUIArtifactView.obj
+SlowWaveSpeller.obj\GUIBackgroundView.obj
+SlowWaveSpeller.obj\GUIFeedbackView.obj
+SlowWaveSpeller.obj\GUIMarkerView.obj
+SlowWaveSpeller.obj\GUIReinforcementView.obj
+SlowWaveSpeller.obj\GUIScoreView.obj
+SlowWaveSpeller.obj\GUIStimulusView.obj
+SlowWaveSpeller.obj\GUITargetView.obj
+SlowWaveSpeller.obj\GUITextFrame.obj
+SlowWaveSpeller.obj\GUITextProperties.obj
+SlowWaveSpeller.obj\GUIView.obj
+SlowWaveSpeller.obj\Task.obj
+SlowWaveSpeller.obj\BCIEvent.obj
+SlowWaveSpeller.obj\Environment.obj
+SlowWaveSpeller.obj\ParamRef.obj
+SlowWaveSpeller.obj\BCIError.obj
+SlowWaveSpeller.obj\BCIError_module.obj
+SlowWaveSpeller.obj\BCIException.obj
+SlowWaveSpeller.obj\BCIDirectory.obj
+SlowWaveSpeller.obj\ChoiceCombination.obj
+SlowWaveSpeller.obj\GenericFilter.obj
+SlowWaveSpeller.obj\DisplayWindow.obj
+SlowWaveSpeller.obj\GUI.obj
+SlowWaveSpeller.obj\GraphDisplay.obj
+SlowWaveSpeller.obj\GraphObject.obj
+SlowWaveSpeller.obj\Shapes.obj
+SlowWaveSpeller.obj\TextField.obj
+SlowWaveSpeller.obj\CoreModule.obj
+SlowWaveSpeller.obj\CoreModuleVCL.obj
+SlowWaveSpeller.obj\MessageHandler.obj
+SlowWaveSpeller.obj\MessageQueue.obj
+SlowWaveSpeller.obj\ApplicationBase.obj
+SlowWaveSpeller.obj\ConnectorFilters.obj
+SlowWaveSpeller.obj\FeedbackTask.obj
+SlowWaveSpeller.obj\MidiPlayer.obj
+SlowWaveSpeller.obj\TextToSpeech.obj
+SlowWaveSpeller.obj\WavePlayer.obj
+SlowWaveSpeller.obj\ApplicationWindow.obj
+SlowWaveSpeller.obj\BlockRandSeq.obj
+SlowWaveSpeller.obj\Localization.obj
+SlowWaveSpeller.obj\TrialStatistics.obj
+SlowWaveSpeller.obj\BitmapImage.obj
+SlowWaveSpeller.obj\Brackets.obj
+SlowWaveSpeller.obj\CfgID.obj
+SlowWaveSpeller.obj\Color.obj
+SlowWaveSpeller.obj\EncodedString.obj
+SlowWaveSpeller.obj\GenericSignal.obj
+SlowWaveSpeller.obj\GenericVisualization.obj
+SlowWaveSpeller.obj\HierarchicalLabel.obj
+SlowWaveSpeller.obj\Label.obj
+SlowWaveSpeller.obj\LabelIndex.obj
+SlowWaveSpeller.obj\Param.obj
+SlowWaveSpeller.obj\ParamList.obj
+SlowWaveSpeller.obj\PhysicalUnit.obj
+SlowWaveSpeller.obj\SignalProperties.obj
+SlowWaveSpeller.obj\SignalType.obj
+SlowWaveSpeller.obj\State.obj
+SlowWaveSpeller.obj\StateList.obj
+SlowWaveSpeller.obj\StateVector.obj
+SlowWaveSpeller.obj\StateVectorSample.obj
+SlowWaveSpeller.obj\Status.obj
+SlowWaveSpeller.obj\SysCommand.obj
+SlowWaveSpeller.obj\VisID.obj
+SlowWaveSpeller.obj\ClassName.obj
+SlowWaveSpeller.obj\EventQueue.obj
+SlowWaveSpeller.obj\ExceptionCatcher.obj
+SlowWaveSpeller.obj\ArithmeticExpression.obj
+SlowWaveSpeller.obj\Expression.obj
+SlowWaveSpeller.obj\ExpressionNodes.obj
+SlowWaveSpeller.obj\ExpressionParser.obj
+SlowWaveSpeller.obj\FileUtils.obj
+SlowWaveSpeller.obj\LogFile.obj
+SlowWaveSpeller.obj\MeasurementUnits.obj
+SlowWaveSpeller.obj\OSError.obj
+SlowWaveSpeller.obj\OSEvent.obj
+SlowWaveSpeller.obj\OSMutex.obj
+SlowWaveSpeller.obj\OSThread.obj
+SlowWaveSpeller.obj\PrecisionTime.obj
+SlowWaveSpeller.obj\RandomGenerator.obj
+SlowWaveSpeller.obj\ReusableThread.obj
+SlowWaveSpeller.obj\SockStream.obj
+SlowWaveSpeller.obj\ThreadUtils.obj
+SlowWaveSpeller.obj\VersionInfo.obj
+SlowWaveSpeller.obj\WildcardMatch.obj
+"/>
+    <RESFILES value="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\Views.res
+../../../src/contrib/Application/SlowWaveApp\SWApp.res
+"/>
+    <IDLFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) "/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
+    <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
+    <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
+    <PATHCPP value="../../../src/contrib/Application/SlowWaveApp;../../../src/contrib/Application/SlowWaveApp\Presentation;../../../src/contrib/Application/SlowWaveApp\Presentation\Models;../../../src/contrib/Application/SlowWaveApp\Presentation\Utils;../../../src/contrib/Application/SlowWaveApp\Presentation\Utils\BCI2000;../../../src/contrib/Application/SlowWaveApp\Presentation\Views;../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32;../../../src\shared;../../../src\shared\accessors;../../../src\shared\bcistream;../../../src\shared\config;../../../src\shared\fileio;../../../src\shared\filters;../../../src\shared\gui;../../../src\shared\modules;../../../src\shared\modules\application;../../../src\shared\modules\application\audio;../../../src\shared\modules\application\gui;../../../src\shared\modules\application\utils;../../../src\shared\types;../../../src\shared\utils;../../../src\shared\utils\Expression"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="BCI2000=1;BCI2000_SPELLER=1;MODTYPE=3;NO_APP_WINDOW=1;PERUVIAN_BRIGHTNESS_HACK=1"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="../../../src\shared\modules\CoreModuleVCL.cpp"/>
+    <INCLUDEPATH value="../../../src/contrib/Application/SlowWaveApp;../../../src/contrib/Application/SlowWaveApp\Presentation;../../../src/contrib/Application/SlowWaveApp\Presentation\Models;../../../src/contrib/Application/SlowWaveApp\Presentation\Utils;../../../src/contrib/Application/SlowWaveApp\Presentation\Utils\BCI2000;../../../src/contrib/Application/SlowWaveApp\Presentation\Views;../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32;../../../src\shared;../../../src\shared\accessors;../../../src\shared\bcistream;../../../src\shared\config;../../../src\shared\fileio;../../../src\shared\filters;../../../src\shared\gui;../../../src\shared\modules;../../../src\shared\modules\application;../../../src\shared\modules\application\audio;../../../src\shared\modules\application\gui;../../../src\shared\modules\application\utils;../../../src\shared\types;../../../src\shared\utils;../../../src\shared\utils\Expression;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="../../../src/contrib/Application/SlowWaveApp;../../../src/contrib/Application/SlowWaveApp\Presentation;../../../src/contrib/Application/SlowWaveApp\Presentation\Models;../../../src/contrib/Application/SlowWaveApp\Presentation\Utils;../../../src/contrib/Application/SlowWaveApp\Presentation\Utils\BCI2000;../../../src/contrib/Application/SlowWaveApp\Presentation\Views;../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32;../../../src\shared;../../../src\shared\accessors;../../../src\shared\bcistream;../../../src\shared\config;../../../src\shared\fileio;../../../src\shared\filters;../../../src\shared\gui;../../../src\shared\modules;../../../src\shared\modules\application;../../../src\shared\modules\application\audio;../../../src\shared\modules\application\gui;../../../src\shared\modules\application\utils;../../../src\shared\types;../../../src\shared\utils;../../../src\shared\utils\Expression;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <WARNINGS value="-w-par -w-8027 -w-8026"/>
+    <WARNOPTSTR value=""/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -H=SlowWaveSpeller.obj\PCH -Hc -He- -Vx -Ve -X- -a8 -5 -b- -k- -vi 
+      -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-ISlowWaveSpeller.obj -D&quot;&quot; -aa -Tpe -x -Gn"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Models\PresModel.cpp" FORMNAME="" UNITNAME="PresModel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Models\PresSpellerModel.cpp" FORMNAME="" UNITNAME="PresSpellerModel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\ParamDecl.cpp" FORMNAME="" UNITNAME="ParamDecl" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\PresErrors.cpp" FORMNAME="" UNITNAME="PresErrors" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\PresParams.cpp" FORMNAME="" UNITNAME="PresParams" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\SpellerDict.cpp" FORMNAME="" UNITNAME="SpellerDict" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\SpellerTree.cpp" FORMNAME="" UNITNAME="SpellerTree" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\StateAccessor.cpp" FORMNAME="" UNITNAME="StateAccessor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\TargetSeq.cpp" FORMNAME="" UNITNAME="TargetSeq" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Utils\BCI2000\GUITextDialog.cpp" FORMNAME="" UNITNAME="GUITextDialog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Utils\Util.cpp" FORMNAME="" UNITNAME="Util" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\ArtifactView.cpp" FORMNAME="" UNITNAME="ArtifactView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\BackgroundView.cpp" FORMNAME="" UNITNAME="BackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\FeedbackView.cpp" FORMNAME="" UNITNAME="FeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\MarkerView.cpp" FORMNAME="" UNITNAME="MarkerView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\ReinforcementView.cpp" FORMNAME="" UNITNAME="ReinforcementView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\SWGUI.cpp" FORMNAME="" UNITNAME="SWGUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\ScoreView.cpp" FORMNAME="" UNITNAME="ScoreView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\StimulusView.cpp" FORMNAME="" UNITNAME="StimulusView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\TargetView.cpp" FORMNAME="" UNITNAME="TargetView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\TextFrame.cpp" FORMNAME="" UNITNAME="TextFrame" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\TextProperties.cpp" FORMNAME="" UNITNAME="TextProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUIArtifactView.cpp" FORMNAME="" UNITNAME="GUIArtifactView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUIBackgroundView.cpp" FORMNAME="" UNITNAME="GUIBackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUIFeedbackView.cpp" FORMNAME="" UNITNAME="GUIFeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUIMarkerView.cpp" FORMNAME="" UNITNAME="GUIMarkerView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUIReinforcementView.cpp" FORMNAME="" UNITNAME="GUIReinforcementView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUIScoreView.cpp" FORMNAME="" UNITNAME="GUIScoreView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUIStimulusView.cpp" FORMNAME="" UNITNAME="GUIStimulusView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUITargetView.cpp" FORMNAME="" UNITNAME="GUITargetView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUITextFrame.cpp" FORMNAME="" UNITNAME="GUITextFrame" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUITextProperties.cpp" FORMNAME="" UNITNAME="GUITextProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\GUIView.cpp" FORMNAME="" UNITNAME="GUIView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Task.cpp" FORMNAME="" UNITNAME="Task" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\accessors\Environment.cpp" FORMNAME="" UNITNAME="Environment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\accessors\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIError.cpp" FORMNAME="" UNITNAME="BCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIError_module.cpp" FORMNAME="" UNITNAME="BCIError_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\filters\ChoiceCombination.cpp" FORMNAME="" UNITNAME="ChoiceCombination" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\filters\GenericFilter.cpp" FORMNAME="" UNITNAME="GenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\gui\DisplayWindow.cpp" FORMNAME="" UNITNAME="DisplayWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\gui\GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\gui\GraphDisplay.cpp" FORMNAME="" UNITNAME="GraphDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\gui\GraphObject.cpp" FORMNAME="" UNITNAME="GraphObject" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\gui\Shapes.cpp" FORMNAME="" UNITNAME="Shapes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\gui\TextField.cpp" FORMNAME="" UNITNAME="TextField" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\CoreModule.cpp" FORMNAME="" UNITNAME="CoreModule" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\CoreModuleVCL.cpp" FORMNAME="" UNITNAME="CoreModuleVCL" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\MessageHandler.cpp" FORMNAME="" UNITNAME="MessageHandler" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\MessageQueue.cpp" FORMNAME="" UNITNAME="MessageQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\ApplicationBase.cpp" FORMNAME="" UNITNAME="ApplicationBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\ConnectorFilters.cpp" FORMNAME="" UNITNAME="ConnectorFilters" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\FeedbackTask.cpp" FORMNAME="" UNITNAME="FeedbackTask" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\audio\MidiPlayer.cpp" FORMNAME="" UNITNAME="MidiPlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\audio\TextToSpeech.cpp" FORMNAME="" UNITNAME="TextToSpeech" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\audio\WavePlayer.cpp" FORMNAME="" UNITNAME="WavePlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\gui\ApplicationWindow.cpp" FORMNAME="" UNITNAME="ApplicationWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\utils\BlockRandSeq.cpp" FORMNAME="" UNITNAME="BlockRandSeq" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\utils\Localization.cpp" FORMNAME="" UNITNAME="Localization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\modules\application\utils\TrialStatistics.cpp" FORMNAME="" UNITNAME="TrialStatistics" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Brackets.cpp" FORMNAME="" UNITNAME="Brackets" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\CfgID.cpp" FORMNAME="" UNITNAME="CfgID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Color.cpp" FORMNAME="" UNITNAME="Color" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\GenericSignal.cpp" FORMNAME="" UNITNAME="GenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\GenericVisualization.cpp" FORMNAME="" UNITNAME="GenericVisualization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\HierarchicalLabel.cpp" FORMNAME="" UNITNAME="HierarchicalLabel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Label.cpp" FORMNAME="" UNITNAME="Label" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\LabelIndex.cpp" FORMNAME="" UNITNAME="LabelIndex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Param.cpp" FORMNAME="" UNITNAME="Param" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\ParamList.cpp" FORMNAME="" UNITNAME="ParamList" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\PhysicalUnit.cpp" FORMNAME="" UNITNAME="PhysicalUnit" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\SignalProperties.cpp" FORMNAME="" UNITNAME="SignalProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\SignalType.cpp" FORMNAME="" UNITNAME="SignalType" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\State.cpp" FORMNAME="" UNITNAME="State" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\StateList.cpp" FORMNAME="" UNITNAME="StateList" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\StateVector.cpp" FORMNAME="" UNITNAME="StateVector" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\Status.cpp" FORMNAME="" UNITNAME="Status" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\SysCommand.cpp" FORMNAME="" UNITNAME="SysCommand" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\types\VisID.cpp" FORMNAME="" UNITNAME="VisID" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ClassName.cpp" FORMNAME="" UNITNAME="ClassName" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ExceptionCatcher.cpp" FORMNAME="" UNITNAME="ExceptionCatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\Expression\ExpressionNodes.cpp" FORMNAME="" UNITNAME="ExpressionNodes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\FileUtils.cpp" FORMNAME="" UNITNAME="FileUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\LogFile.cpp" FORMNAME="" UNITNAME="LogFile" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\MeasurementUnits.cpp" FORMNAME="" UNITNAME="MeasurementUnits" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\OSEvent.cpp" FORMNAME="" UNITNAME="OSEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ThreadUtils.cpp" FORMNAME="" UNITNAME="ThreadUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\VersionInfo.cpp" FORMNAME="" UNITNAME="VersionInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\WildcardMatch.cpp" FORMNAME="" UNITNAME="WildcardMatch" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+        <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\Presentation\Views\Win32\Views.res" FORMNAME="" UNITNAME="Views.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+        <FILE FILENAME="../../../src/contrib/Application/SlowWaveApp\SWApp.res" FORMNAME="" UNITNAME="SWApp.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+  </IDEOPTIONS>
+</PROJECT>

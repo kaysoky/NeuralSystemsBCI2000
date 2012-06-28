@@ -1,0 +1,16 @@
+shared\modules\application\stimuli\Association.cpp
+shared\modules\application\speller\SpellerCommand.cpp
+shared\modules\application\speller\Speller.cpp
+shared\modules\application\gui\TextWindow.cpp
+shared\modules\application\gui\StatusBar.cpp
+shared\modules\application\audio\WavePlayer.cpp
+shared\modules\application\StimulusTask.cpp
+shared\modules\application\stimuli\AudioStimulus.cpp
+shared\modules\application\stimuli\ImageStimulus.cpp
+shared\modules\application\stimuli\TextStimulus.cpp
+shared\modules\application\stimuli\VisualStimulus.cpp
+shared\modules\application\audio\TextToSpeech.cpp
+extlib\SAPILib\sapi.lib
+extlib\SAPILib\sapi.cpp
+shared\modules\application\stimuli\SoundStimulus.cpp
+shared\modules\application\stimuli\SpeechStimulus.cpp
