@@ -89,16 +89,19 @@ MainWindow::MainWindow( QWidget* parent )
     gpConnectionInfo = new ConnectionInfo( this );
     gpConnectionInfo->setVisible( false );
   }
-
+#ifndef _WIN32
   QFont font = this->font();
   font.setPixelSize( 2 * QFontInfo( this->font() ).pixelSize() - QFontInfo( ui->pushButton_Quit->font() ).pixelSize() );
+#endif
   int nStatusLabels = sizeof( mpStatusLabels ) / sizeof( *mpStatusLabels );
   for( int i = 0; i < nStatusLabels; ++i )
   {
     QLabel* pLabel = new QLabel( ui->statusBar );
+#ifndef _WIN32
     pLabel->setFrameStyle( QFrame::Panel | QFrame::Sunken );
-    pLabel->setText( "N/A" );
     pLabel->setFont( font );
+#endif
+    pLabel->setText( "N/A" );
     ui->statusBar->addWidget( pLabel, 1 );
     mpStatusLabels[i] = pLabel;
   }
