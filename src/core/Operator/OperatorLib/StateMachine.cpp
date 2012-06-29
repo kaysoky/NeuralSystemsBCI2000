@@ -677,12 +677,13 @@ StateMachine::Randomize()
   }
   if( mIntroducedRandomSeed )
   {
-    ParamRef RandomSeed( &mParameters["RandomSeed"] );
     ::srand( static_cast<unsigned int>( ::time( NULL ) ) );
     int number = 0;
     while( number == 0 )
       number = ::rand();
-    RandomSeed = number;
+    ostringstream oss;
+    oss << number;
+    mParameters["RandomSeed"].Value() = oss.str();
   }
 }
 

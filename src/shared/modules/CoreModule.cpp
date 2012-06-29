@@ -128,7 +128,7 @@ CoreModule::Initialize( int& ioArgc, char** ioArgv )
   }
   if( !mGlobalID )
   {
-    BCIERR << "Another " THISMODULE " Module is currently running.\n\n"
+    BCIERR << "Another " THISMODULE " Module is currently running.\n"
            << "Only one instance of each module may run at a time."
            << endl;
     return false;

@@ -246,12 +246,12 @@ BCI2000Connection::Run( const string& inOperatorPath, const string& inOptions )
     options += " --Title \"" + mWindowTitle + "\"";
   if( mWindowVisible != visible )
     options += " --Hide";
-  time_t start = ::time( NULL );
   bool success = StartExecutable( inOperatorPath, options );
   if( success ) 
   { 
     const int cReactionTime = 50; // ms 
     client_tcpsocket testSocket;
+    time_t start = ::time( NULL );
     while( ::difftime( ::time( NULL ), start ) < mTimeout && !testSocket.is_open() )
     {
       testSocket.open( mTelnetAddress.c_str() ); 
