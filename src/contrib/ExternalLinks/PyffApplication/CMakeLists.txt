@@ -45,7 +45,7 @@ ELSE( WIN32 )
       ${LIBS}
       optimized ${PYTHON_LIBRARIES}
       debug ${PYTHON_DEBUG_LIBRARIES}
-  )
+    )
   ELSE()
      SET( LIBS
        ${LIBS}

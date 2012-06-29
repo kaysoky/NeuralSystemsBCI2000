@@ -235,14 +235,12 @@ ProcessUtils::CreateGlobalID( const std::string& inName )
 
 #else // _WIN32
 
-  string* pName = new string( "/" + inName );
-  sem_t* pSemaphore = ::sem_open( pName->c_str(), O_CREAT | O_EXCL, 0666, 0 );
-  if( pSemaphore == SEM_FAILED )
-    delete pInfo;
-  else
+  string name = "/" + inName;
+  sem_t* pSemaphore = ::sem_open( name.c_str(), O_CREAT | O_EXCL, 0666, 0 );
+  if( pSemaphore != SEM_FAILED )
   {
     ::sem_close( pSemaphore );
-    result = pName;
+    result = new string( name );
   }
 
 #endif // _WIN32
