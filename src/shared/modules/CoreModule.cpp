@@ -41,6 +41,7 @@
 #include "BCIError.h"
 #include "VersionInfo.h"
 #include "FileUtils.h"
+#include "ProcessUtils.h"
 #include "ExceptionCatcher.h"
 
 #include <string>
@@ -67,7 +68,7 @@ CoreModule::CoreModule()
   mStopRunPending( false ),
   mStopSent( false ),
   mNeedStopRun( false ),
-  mMutex( NULL ),
+  mGlobalID( NULL ),
   mSampleBlockSize( 0 ),
   mOperatorBackLink( false )
 #if _WIN32
@@ -77,26 +78,11 @@ CoreModule::CoreModule()
   mOperatorSocket.set_tcpnodelay( true );
   mNextModuleSocket.set_tcpnodelay( true );
   mPreviousModuleSocket.set_tcpnodelay( true );
-#if _WIN32 // Satisfy parent processes using WaitForInputIdle().
-  MSG msg;
-  HWND window = ::CreateWindowA( "STATIC", NULL, 0, 0, 0, 0, 0, NULL, NULL, ::GetModuleHandle( NULL ), NULL );
-  while( ::PeekMessage( &msg, window, 0, 0, PM_REMOVE ) )
-    ;
-  ::DestroyWindow( window );
-#endif // _WIN32
 }
 
 CoreModule::~CoreModule()
 {
-  if( mMutex != NULL )
-  {
-#ifdef _WIN32
-    ::ReleaseMutex( mMutex );
-    ::CloseHandle( mMutex );
-#elif 0
-    ::semctl( reinterpret_cast<int>( mMutex ), 0, IPC_RMID, 0 );
-#endif // _WIN32
-  }
+  ProcessUtils::DestroyGlobalID( mGlobalID );
 }
 
 void
@@ -131,23 +117,25 @@ CoreModule::Terminate()
 bool
 CoreModule::Initialize( int& ioArgc, char** ioArgv )
 {
-  OnInitialize( ioArgc, ioArgv );
   // Make sure there is only one instance of each module running at a time.
-  // We create a mutex from the module name to encode that we are running.
-#ifdef _WIN32
-  mMutex = ::CreateMutex( NULL, true, THISMODULE " Module" );
-  if( ::GetLastError() == ERROR_ALREADY_EXISTS )
-    return false;
-#elif 0
-  key_t key = 'BCI0' | MODTYPE;
-  int semaphore = ::semget( key, 1, IPC_CREAT | IPC_EXCL | 0666 );
-  if( semaphore == -1 )
+  const int terminationWaitInterval = 5000; // ms
+  const int timeResolution = 100; // ms
+  int timeElapsed = 0;
+  while( !( mGlobalID = ProcessUtils::CreateGlobalID( THISMODULE "Module" ) ) && timeElapsed < terminationWaitInterval )
   {
-    mMutex = NULL;
+    ThreadUtils::SleepFor( timeResolution );
+    timeElapsed += timeResolution;
+  }
+  if( !mGlobalID )
+  {
+    BCIERR << "Another " THISMODULE " Module is currently running.\n\n"
+           << "Only one instance of each module may run at a time."
+           << endl;
     return false;
   }
-  mMutex = reinterpret_cast<void*>( semaphore );
-#endif // _WIN32
+  ProcessUtils::GoIdle();
+
+  OnInitialize( ioArgc, ioArgv );
 
   string operatorAddress;
   bool   printVersion = false,

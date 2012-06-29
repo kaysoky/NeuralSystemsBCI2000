@@ -37,6 +37,9 @@
 # include <cstring>
 # include <spawn.h>
 # include <vector>
+# include <fcntl.h>
+# include <sys/stat.h>
+# include <semaphore.h>
 # if __APPLE__
 #  include <crt_externs.h>
 #  define environ (*_NSGetEnviron())
@@ -123,6 +126,7 @@ bool
 ProcessUtils::ExecuteAsynchronously( const string& inExecutable, const string& inArguments, int& outExitCode )
 {
   bool success = false;
+  outExitCode = 0;
   string executable = inExecutable;
 
 #if _WIN32
@@ -145,14 +149,20 @@ ProcessUtils::ExecuteAsynchronously( const string& inExecutable, const string& i
   success = ::ShellExecuteExA( &info );
   if( success )
   {
-    DWORD dwExitCode = 0;
     if( WAIT_TIMEOUT == ::WaitForInputIdle( info.hProcess, 60000 ) )
-      dwExitCode = -1;
+    {
+      success = false;
+      outExitCode = 0;
+    }
     else
     {
+      DWORD dwExitCode = 0;
       ::GetExitCodeProcess( info.hProcess, &dwExitCode );
       if( STILL_ACTIVE != dwExitCode )
+      {
         outExitCode = dwExitCode;
+        success = ( dwExitCode == 0 );
+      }
     }
     ::CloseHandle( info.hProcess );
   }
@@ -180,7 +190,7 @@ ProcessUtils::ExecuteAsynchronously( const string& inExecutable, const string& i
       inArg = true;
     }
     ++p;
-  } 
+  }
   char** pArgv = new char*[vArgs.size() + 2];
   pArgv[0] = const_cast<char*>( executable.c_str() );
   pArgv[vArgs.size() + 1] = NULL;
@@ -189,7 +199,7 @@ ProcessUtils::ExecuteAsynchronously( const string& inExecutable, const string& i
 
   outExitCode = ::posix_spawnp( NULL, executable.c_str(), NULL, NULL, pArgv, environ );
   success = ( outExitCode == 0 );
-  
+
   delete[] pArgv;
   delete[] pArgs;
 
@@ -197,3 +207,71 @@ ProcessUtils::ExecuteAsynchronously( const string& inExecutable, const string& i
 
   return success;
 }
+
+void
+ProcessUtils::GoIdle()
+{
+#if _WIN32
+  MSG msg;
+  HWND window = ::CreateWindowA( "STATIC", NULL, 0, 0, 0, 0, 0, NULL, NULL, ::GetModuleHandle( NULL ), NULL );
+  while( ::PeekMessage( &msg, window, 0, 0, PM_REMOVE ) )
+    ;
+  ::DestroyWindow( window );
+#endif // _WIN32
+}
+
+void*
+ProcessUtils::CreateGlobalID( const std::string& inName )
+{
+  void* result = NULL;
+
+#if _WIN32
+
+  HANDLE mutex = ::CreateMutexA( NULL, true, inName.c_str() );
+  if( ::GetLastError() == ERROR_ALREADY_EXISTS )
+    ::CloseHandle( mutex );
+  else
+    result = reinterpret_cast<void*>( mutex );
+
+#else // _WIN32
+
+  string* pName = new string( "/" + inName );
+  sem_t* pSemaphore = ::sem_open( pName->c_str(), O_CREAT | O_EXCL, 0666, 0 );
+  if( pSemaphore == SEM_FAILED )
+    delete pInfo;
+  else
+  {
+    ::sem_close( pSemaphore );
+    result = pName;
+  }
+
+#endif // _WIN32
+
+  return result;
+}
+
+bool
+ProcessUtils::DestroyGlobalID( void* inHandle )
+{
+  if( !inHandle )
+    return false;
+
+  bool result = false;
+
+#if _WIN32
+
+  HANDLE mutex = reinterpret_cast<HANDLE>( inHandle );
+  result = ::ReleaseMutex( mutex );
+  ::CloseHandle( mutex );
+
+#else // _WIN32
+
+  string* pName = reinterpret_cast<string*>( inHandle );
+  result = ( ::sem_unlink( pName->c_str() ) != -1 );
+  delete pName;
+
+#endif // _WIN32
+  
+  return result;
+}
+

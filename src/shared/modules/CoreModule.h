@@ -173,7 +173,7 @@ class CoreModule : private MessageHandler, private OSThread
                    mStopRunPending,
                    mStopSent,
                    mNeedStopRun;
-  void*            mMutex;
+  void*            mGlobalID;
   int              mSampleBlockSize;
   bool             mOperatorBackLink;
 #if _WIN32

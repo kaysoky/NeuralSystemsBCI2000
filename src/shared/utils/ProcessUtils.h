@@ -34,6 +34,11 @@ namespace ProcessUtils {
 bool ExecuteSynchronously( const std::string& executable, const std::string& arguments, std::ostream&, int& );
 bool ExecuteAsynchronously( const std::string& executable, const std::string& arguments, int& );
 
+void GoIdle(); // Satisfy parent processes using WaitForInputIdle().
+
+void* CreateGlobalID( const std::string& name );
+bool  DestroyGlobalID( void* );
+
 } // namespace
 
 #endif // PROCESS_UTILS_H

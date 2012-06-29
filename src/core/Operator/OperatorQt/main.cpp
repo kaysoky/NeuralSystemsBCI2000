@@ -32,6 +32,7 @@
 #include "VisDisplay.h"
 #include "OSThread.h"
 #include "ExceptionCatcher.h"
+#include "ProcessUtils.h"
 #if _WIN32
 # include "FPExceptMask.h"
 #endif // _WIN32
@@ -56,16 +57,9 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 int
 main(int argc, char *argv[])
 {
-#ifdef _WIN32
-  const char appName[] = "Operator";
-  HANDLE appMutex = ::CreateMutexA( NULL, TRUE, appName );
-  if( ::GetLastError() == ERROR_ALREADY_EXISTS )
-  {
-    if( appMutex != NULL )
-      ::CloseHandle( appMutex );
+  void* globalID = ProcessUtils::CreateGlobalID( "Operator" );
+  if( !globalID )
     return 0;
-  }
-#endif // _WIN32
 
 #if _WIN32
   FPExceptMask mask;
@@ -84,10 +78,7 @@ main(int argc, char *argv[])
   bool finished = ExceptionCatcher()
     .SetMessage( "Terminating Operator module" )
     .Run( call );
-#ifdef _WIN32
-  ::ReleaseMutex( appMutex );
-  ::CloseHandle( appMutex );
-#endif // _WIN32
+  ProcessUtils::DestroyGlobalID( globalID );
   return finished ? 0 : -1;
 }
 
