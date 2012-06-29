@@ -7,7 +7,6 @@
     <OBJFILES value="vAmpSource.obj\vAmpADC.obj
 vAmpSource.obj\vAmpChannelInfo.obj
 vAmpSource.obj\vAmpDisplay.obj
-vAmpSource.obj\vAmpSource.obj
 vAmpSource.obj\vAmpThread.obj
 vAmpSource.obj\FilterDesign.obj
 vAmpSource.obj\GUI.obj
@@ -79,6 +78,7 @@ vAmpSource.obj\OSEvent.obj
 vAmpSource.obj\OSMutex.obj
 vAmpSource.obj\OSThread.obj
 vAmpSource.obj\PrecisionTime.obj
+vAmpSource.obj\ProcessUtils.obj
 vAmpSource.obj\RandomGenerator.obj
 vAmpSource.obj\ReusableThread.obj
 vAmpSource.obj\SockStream.obj
@@ -130,7 +130,6 @@ vAmpSource.obj\WildcardMatch.obj
       <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpADC.cpp" FORMNAME="" UNITNAME="vAmpADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpChannelInfo.cpp" FORMNAME="" UNITNAME="vAmpChannelInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpDisplay.cpp" FORMNAME="" UNITNAME="vAmpDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpSource.cpp" FORMNAME="" UNITNAME="vAmpSource" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\contrib/SignalSource/vAmp/vAmpThread.cpp" FORMNAME="" UNITNAME="vAmpThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\extlib/math/FilterDesign.cpp" FORMNAME="" UNITNAME="FilterDesign" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared/gui/GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -202,6 +201,7 @@ vAmpSource.obj\WildcardMatch.obj
       <FILE FILENAME="../../../src\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ProcessUtils.cpp" FORMNAME="" UNITNAME="ProcessUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

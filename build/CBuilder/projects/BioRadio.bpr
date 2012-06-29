@@ -75,6 +75,7 @@ BioRadio.obj\OSEvent.obj
 BioRadio.obj\OSMutex.obj
 BioRadio.obj\OSThread.obj
 BioRadio.obj\PrecisionTime.obj
+BioRadio.obj\ProcessUtils.obj
 BioRadio.obj\RandomGenerator.obj
 BioRadio.obj\ReusableThread.obj
 BioRadio.obj\SockStream.obj
@@ -194,6 +195,7 @@ BioRadio.obj\WildcardMatch.obj
       <FILE FILENAME="../../../src\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ProcessUtils.cpp" FORMNAME="" UNITNAME="ProcessUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

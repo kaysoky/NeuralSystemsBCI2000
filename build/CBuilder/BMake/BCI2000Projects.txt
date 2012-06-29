@@ -5,6 +5,15 @@ Tool bci_datadiff
 #OUTDIR#../build/buildutils/tests
 ../build/buildutils/bci_datadiff.cpp
 
+Root MessageBox
+#PROJECTTEMPLATE#GUIApp.bpr
+#MAINSOURCE##ROOT#\core\Operator\MessageBox\MessageBox.cpp
+#OUTDIR##ROOT#\..\prog\
+core/Operator/MessageBox/MessageBox.cpp
+core/Operator/OperatorLib/ScriptParser/ParserToken.cpp
+shared/types/EncodedString.cpp
+shared/config
+
 App CursorTask
 3DAPI
 core/Application/CursorTask/CursorFeedbackTask.cpp
@@ -183,14 +192,12 @@ contrib/SignalSource/Biosemi/Biosemi2ADC.cpp
 contrib/SignalSource/Biosemi/Biosemi2Client.cpp
 
 Source DASSource
-contrib/SignalSource/DASSource/DASSource.cpp
 contrib/SignalSource/DASSource/DAS_ADC.cpp
 contrib/SignalSource/DASSource/DASQueue.cpp
 contrib/SignalSource/DASSource/DAS_lib\DASUtils.cpp
 contrib/SignalSource/DASSource/DAS_lib\cbw32_imports.cpp
 
 Source DT2000
-contrib/SignalSource/DTADC/DT2000.cpp
 contrib/SignalSource/DTADC/dtfun.cpp
 contrib/SignalSource/DTADC/DTADC.cpp
 contrib/SignalSource/DTADC/da_sdk\OLMEM32.lib
@@ -211,7 +218,6 @@ Source MicroMed
 contrib/SignalSource/Micromed/MicromedADC.cpp
 
 Source ModularEEG
-contrib/SignalSource/ModularEEG/ModularEEG.cpp
 contrib/SignalSource/ModularEEG/ModularEEGADC.cpp
 contrib/SignalSource/ModularEEG/modular_eeg_parser.cpp
 contrib/SignalSource/ModularEEG/modular_eeg_parser.h
@@ -259,7 +265,6 @@ contrib/SignalSource/TMSi/TMSiSDK\RTDevice.cpp
 contrib/SignalSource/TMSi/TMSiSDK\Feature.cpp
 
 Source vAmpSource
-contrib/SignalSource/vAmp/vAmpSource.cpp
 contrib/SignalSource/vAmp/vAmpADC.cpp
 contrib/SignalSource/vAmp/vAmpThread.cpp
 contrib/SignalSource/vAmp/vAmpChannelInfo.cpp

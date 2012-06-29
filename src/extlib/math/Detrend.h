@@ -53,15 +53,15 @@ template<typename T>
 void
 Detrend::LinearDetrend( const std::valarray<T>& inData, std::valarray<T>& outResult )
 {
-  int n = static_cast<int>( inData.size() );
+  size_t n = inData.size();
   if( outResult.size() != n )
     outResult.resize( n );
   outResult = inData;
   if( n > 0 )  
   {
     std::valarray<T> linbuf( n );
-    for( int i = 0; i < n; ++i )
-      linbuf[ i ] = i;
+    for( size_t i = 0; i < n; ++i )
+      linbuf[i] = i;
 
     T x2 = ( ( 2 * n - 1 ) * ( n - 1 ) * n ) / 6,
       xy = std::inner_product( &linbuf[0], &linbuf[n], &outResult[0], 0.0 ),

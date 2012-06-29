@@ -305,10 +305,10 @@ TDemoWindow::Randf()
 void
 TDemoWindow::OnCollide( sceneObj& p1, sceneObj& p2 )
 {
-  CVector3 n;
+#pragma option push
 #pragma warn -8004
+  CVector3 n;
   bool doReflect = false; // Only reflect if movement is towards the other object.
-#pragma warn .8004
 
   // For the boundary, reflect wrt the face that has been hit.
   sceneObj* obj = NULL;
@@ -359,6 +359,7 @@ TDemoWindow::OnCollide( sceneObj& p1, sceneObj& p2 )
              p_v2 = { v2 * proj_x, v2 * proj_y, v2 * proj_z };
     p2.setVelocity( v2 - 2 * p_v2 );
   }
+#pragma option pop
 }
 //---------------------------------------------------------------------------
 

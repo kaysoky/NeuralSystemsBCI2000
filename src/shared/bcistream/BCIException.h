@@ -40,27 +40,27 @@
 #define STR_(x) STR__(x)
 #define STR__(x) #x
 
-#ifndef __FUNC__
-# ifdef __FUNCTION__
-#  define __FUNC__   __FUNCTION__
+#ifndef __BORLANDC__
+# if defined( __FUNCTION__ )
+#  define FUNCTION_ __FUNCTION__
 # elif defined( __PRETTY_FUNCTION__ )
-#  define __FUNC__   __PRETTY_FUNCTION__
+#  define FUNCTION_   __PRETTY_FUNCTION__
 # elif defined( __func__ )
-#  define __FUNC__   __func__
+#  define FUNCTION_   __func__
 # endif
-#endif // __FUNC__
+#endif // __BORLANDC__
 
 #define FILE_CONTEXT_ \
      "\nFile: " << __FILE__ \
   << "\nLine: " << STR_( __LINE__ )
 
-#ifdef __FUNC__
+#ifdef FUNCTION_
 # define EXCEPTION_CONTEXT_ \
-     "\nFunction: " << __FUNC__ << "()" \
+     "\nFunction: " << FUNCTION_ << "()" \
   << FILE_CONTEXT_
-#else // __FUNC__
+#else
 # define EXCEPTION_CONTEXT_  FILE_CONTEXT_
-#endif // __FUNC__
+#endif
 
 // Due to the use of a temporary, we need to use an inserter that's implemented as an ostream member first.
 // Especially, std::operator<<( ostream&, const char* ) cannot be used as an initial inserter because its

@@ -75,6 +75,7 @@ CoherenceFFTSignalProcessing.obj\OSEvent.obj
 CoherenceFFTSignalProcessing.obj\OSMutex.obj
 CoherenceFFTSignalProcessing.obj\OSThread.obj
 CoherenceFFTSignalProcessing.obj\PrecisionTime.obj
+CoherenceFFTSignalProcessing.obj\ProcessUtils.obj
 CoherenceFFTSignalProcessing.obj\RandomGenerator.obj
 CoherenceFFTSignalProcessing.obj\ReusableThread.obj
 CoherenceFFTSignalProcessing.obj\SockStream.obj
@@ -193,6 +194,7 @@ CoherenceFFTSignalProcessing.obj\WildcardMatch.obj
       <FILE FILENAME="../../../src\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ProcessUtils.cpp" FORMNAME="" UNITNAME="ProcessUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

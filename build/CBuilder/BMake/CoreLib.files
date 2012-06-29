@@ -15,6 +15,7 @@ shared\utils\OSEvent.cpp
 shared\utils\OSMutex.cpp
 shared\utils\ExceptionCatcher.cpp
 shared\utils\FileUtils.cpp
+shared\utils\ProcessUtils.cpp
 shared\utils\ThreadUtils.cpp
 shared\utils\WildcardMatch.cpp
 shared\utils\ReusableThread.cpp

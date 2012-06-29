@@ -32,6 +32,10 @@
 #include <cstdlib>
 #include "ParserToken.h"
 
+#if MSC_VER
+# define strtoull _strtoui64
+#endif
+
 using namespace std;
 
 int WINAPI
@@ -60,7 +64,7 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR inCmdLine, int )
       flags = ::strtol( args[2].c_str(), NULL, 0 );
       break;
     case 4:
-      hwnd = reinterpret_cast<HWND>( ::_strtoui64( args[0].c_str(), NULL, 0 ) );
+      hwnd = reinterpret_cast<HWND>( ::strtoull( args[0].c_str(), NULL, 0 ) );
       message = args[1];
       title = args[2];
       flags = ::strtol( args[3].c_str(), NULL, 0 );

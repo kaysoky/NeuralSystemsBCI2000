@@ -5,7 +5,6 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="../../../src\..\prog\DASSource.exe"/>
     <OBJFILES value="DASSource.obj\DASQueue.obj
-DASSource.obj\DASSource.obj
 DASSource.obj\DAS_ADC.obj
 DASSource.obj\DASUtils.obj
 DASSource.obj\cbw32_imports.obj
@@ -77,6 +76,7 @@ DASSource.obj\OSEvent.obj
 DASSource.obj\OSMutex.obj
 DASSource.obj\OSThread.obj
 DASSource.obj\PrecisionTime.obj
+DASSource.obj\ProcessUtils.obj
 DASSource.obj\RandomGenerator.obj
 DASSource.obj\ReusableThread.obj
 DASSource.obj\SockStream.obj
@@ -125,7 +125,6 @@ DASSource.obj\WildcardMatch.obj
   </LINKER>
   <FILELIST>
       <FILE FILENAME="../../../src\contrib/SignalSource/DASSource/DASQueue.cpp" FORMNAME="" UNITNAME="DASQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="../../../src\contrib/SignalSource/DASSource/DASSource.cpp" FORMNAME="" UNITNAME="DASSource" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\contrib/SignalSource/DASSource/DAS_ADC.cpp" FORMNAME="" UNITNAME="DAS_ADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\contrib/SignalSource/DASSource/DAS_lib\DASUtils.cpp" FORMNAME="" UNITNAME="DASUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\contrib/SignalSource/DASSource/DAS_lib\cbw32_imports.cpp" FORMNAME="" UNITNAME="cbw32_imports" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -197,6 +196,7 @@ DASSource.obj\WildcardMatch.obj
       <FILE FILENAME="../../../src\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ProcessUtils.cpp" FORMNAME="" UNITNAME="ProcessUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

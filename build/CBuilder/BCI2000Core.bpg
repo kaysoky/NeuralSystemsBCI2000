@@ -11,6 +11,7 @@ BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS =  \
 bci_datadiff.exe \
+MessageBox.exe \
 CursorTask.exe \
 DummyApplication.exe \
 FeedbackDemo.exe \
@@ -34,6 +35,10 @@ default: $(PROJECTS)
 #------------------------------------------------------------------------------
 
 bci_datadiff.exe: projects\bci_datadiff.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+MessageBox.exe: projects\MessageBox.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 

@@ -4,8 +4,7 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="../../../src\..\prog\DT2000.exe"/>
-    <OBJFILES value="DT2000.obj\DT2000.obj
-DT2000.obj\DTADC.obj
+    <OBJFILES value="DT2000.obj\DTADC.obj
 DT2000.obj\dtfun.obj
 DT2000.obj\EventLink.obj
 DT2000.obj\BCIEvent.obj
@@ -75,6 +74,7 @@ DT2000.obj\OSEvent.obj
 DT2000.obj\OSMutex.obj
 DT2000.obj\OSThread.obj
 DT2000.obj\PrecisionTime.obj
+DT2000.obj\ProcessUtils.obj
 DT2000.obj\RandomGenerator.obj
 DT2000.obj\ReusableThread.obj
 DT2000.obj\SockStream.obj
@@ -124,7 +124,6 @@ DT2000.obj\WildcardMatch.obj
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
-      <FILE FILENAME="../../../src\contrib/SignalSource/DTADC/DT2000.cpp" FORMNAME="" UNITNAME="DT2000" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\contrib/SignalSource/DTADC/DTADC.cpp" FORMNAME="" UNITNAME="DTADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\contrib/SignalSource/DTADC/dtfun.cpp" FORMNAME="" UNITNAME="dtfun" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared/modules/signalsource/logging/EventLink.cpp" FORMNAME="" UNITNAME="EventLink" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -195,6 +194,7 @@ DT2000.obj\WildcardMatch.obj
       <FILE FILENAME="../../../src\shared\utils\OSMutex.cpp" FORMNAME="" UNITNAME="OSMutex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\PrecisionTime.cpp" FORMNAME="" UNITNAME="PrecisionTime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\utils\ProcessUtils.cpp" FORMNAME="" UNITNAME="ProcessUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\ReusableThread.cpp" FORMNAME="" UNITNAME="ReusableThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
