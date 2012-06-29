@@ -50,6 +50,7 @@
 #include "ScriptInterpreter.h"
 #include "EnvVariable.h"
 #include "BCIDirectory.h"
+#include "ParamRef.h"
 
 #include <sstream>
 #include <iomanip>
@@ -61,7 +62,8 @@ using namespace std;
 
 StateMachine::StateMachine()
 : mSystemState( Idle ),
-  mEventLink( *this )
+  mEventLink( *this ),
+  mIntroducedRandomSeed( false )
 {
   string path;
   EnvVariable::Get( "PATH", path );
@@ -79,6 +81,7 @@ StateMachine::Startup( const char* inArguments )
     OSMutex::Lock lock( mDataMutex );
     if( result )
     {
+      mIntroducedRandomSeed = false;
       string arguments = inArguments ? inArguments : "";
       if( arguments.empty() )
         arguments = "*";
@@ -424,10 +427,8 @@ StateMachine::PerformTransition( int inTransition )
       break;
 
     case TRANSITION( Publishing, Information ):
+      Randomize();
       mEventLink.ConfirmConnection();
-      break;
-
-    case TRANSITION( Information, Information ):
       break;
 
     case TRANSITION( Information, SetConfigIssued ):
@@ -478,6 +479,7 @@ StateMachine::PerformTransition( int inTransition )
 
     case TRANSITION( SuspendInitiated, Suspended ):
       BroadcastParameters(); // no EndOfParameter
+      Randomize();
       break;
 
     case TRANSITION( Suspended, SuspendedParamsModified ):
@@ -590,7 +592,7 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
 }
 
 int
-StateMachine::Execute()
+StateMachine::OnExecute()
 { // The state machine's main message loop.
   while( !OSThread::IsTerminating() )
   {
@@ -658,6 +660,29 @@ StateMachine::TriggerEvent( int inCallbackID )
   {
     LogMessage( BCI_OnLogMessage, "Executing " + string( pName ) + " script ..." );
     ScriptInterpreter( *this ).ExecuteAsynchronously( script );
+  }
+}
+
+void
+StateMachine::Randomize()
+{
+  // Add a RandomSeed parameter if it's not present already.
+  if( !mParameters.Exists( "RandomSeed" ) )
+  {
+    mIntroducedRandomSeed = true;
+    mParameters.Add(
+      "System:Randomization"
+      " int RandomSeed= 0 0 % % "
+      " // Seed for the BCI2000 pseudo random number generator" );
+  }
+  if( mIntroducedRandomSeed )
+  {
+    ParamRef RandomSeed( &mParameters["RandomSeed"] );
+    ::srand( static_cast<unsigned int>( ::time( NULL ) ) );
+    int number = 0;
+    while( number == 0 )
+      number = ::rand();
+    RandomSeed = number;
   }
 }
 

@@ -36,7 +36,7 @@ Reset system
 idx:=0
 While idx<=$3
   Startup system localhost
-  Start executable SignalGenerator --local --TestLoggerFrequency=100Hz --TestLoggerEmitDebug=0 --EvaluateTiming=0
+  Start executable SignalGenerator --local --RandomSeed=1 --TestLoggerFrequency=100Hz --TestLoggerEmitDebug=0 --EvaluateTiming=0
   Start executable $1 --local
   Start executable $2 --local
   Wait for Connected 20

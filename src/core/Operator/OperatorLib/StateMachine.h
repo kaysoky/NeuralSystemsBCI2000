@@ -168,7 +168,7 @@ class StateMachine : public CallbackBase, private OSThread
     { ::Lock<Listeners> lock( mListeners ); mListeners.erase( &listener ); }
 
  private:
-  virtual int Execute();
+  virtual int OnExecute();
 
   void Terminate();
 
@@ -182,6 +182,7 @@ class StateMachine : public CallbackBase, private OSThread
   void BroadcastEndOfState();
   void InitializeModules();
   void MaintainDebugLog();
+  void Randomize();
 
   void TriggerEvent( int eventCallbackID );
 
@@ -195,6 +196,7 @@ class StateMachine : public CallbackBase, private OSThread
   // A mutex to serialize incoming BCI messages:
   OSMutex           mBCIMessageMutex;
 
+  bool              mIntroducedRandomSeed;
   ParamList         mParameters;
   StateList         mStates,
                     mEvents;
