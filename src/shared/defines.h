@@ -54,19 +54,36 @@ namespace SourceID
   };
 };
 
-typedef unsigned char uint8;
-typedef signed char sint8;
-typedef unsigned short uint16;
-typedef signed short sint16;
-typedef unsigned int uint32;
-typedef signed int sint32;
+#ifdef TODO
+# error Replace these by including <cstdint> when switching to C++11.
+#endif // TODO
+
+typedef unsigned char uint8_t;
+typedef signed char int8_t;
+typedef unsigned short uint16_t;
+typedef signed short int16_t;
+typedef unsigned int uint32_t;
+typedef signed int int32_t;
 #if( defined( __BORLANDC__ ) && ( __BORLANDC__ <= 0x0560 ) ) // bcc32 <= 5.5.1
-typedef unsigned __int64 uint64;
-typedef signed __int64 sint64;
+typedef unsigned __int64 uint64_t;
+typedef signed __int64 int64_t;
 #else // __BORLANDC__
-typedef unsigned long long uint64;
-typedef signed long long sint64;
+typedef unsigned long long uint64_t;
+typedef signed long long int64_t;
 #endif // __BORLANDC__
-typedef float float32;
+
+typedef float float32_t;
+
+#if 1
+typedef uint8_t uint8;
+typedef int8_t sint8;
+typedef uint16_t uint16;
+typedef int16_t sint16;
+typedef uint32_t uint32;
+typedef int32_t sint32;
+typedef uint64_t uint64;
+typedef int64_t sint64;
+typedef float32_t float32;
+#endif
 
 #endif // DEFINES_H
