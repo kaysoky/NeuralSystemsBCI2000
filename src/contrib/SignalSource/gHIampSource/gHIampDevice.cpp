@@ -45,7 +45,9 @@ gHIampDevice::Init( int inPort )
   mQueueIndex = 0;
   mSampleBlockSize = 0;
   mRefIdx = -1;
+  mChannelPoints = 0;
   mBufferSizeBytes = 0;
+  mExpectedBytes = 0;
   ::memset( &mConfig, 0, sizeof( mConfig ) );
 
   mDevice = GT_OpenDevice( inPort );
@@ -62,19 +64,22 @@ gHIampDevice::Init( int inPort )
       bcierr << "Could not get configuration from gHIamp: serial " << mSerial
              << GetDeviceErrorMessage() << endl;
 
-    UCHAR channels[ cNumAnalogChannels ];
-    if( !GT_GetAvailableChannels( mDevice, channels, cNumAnalogChannels ) )
+    UCHAR channels[ cMaxAnalogChannels ];
+    if( !GT_GetAvailableChannels( mDevice, channels, cMaxAnalogChannels ) )
       bcierr << "Could not get list of available channels from gHIamp: serial " << mSerial
              << GetDeviceErrorMessage() << endl;    
 
     mHWVersion = GT_GetHWVersion( mDevice );
 
     // Initial configuration
-    for( size_t i = 0; i < cNumAnalogChannels; i++ )
+    mChannelPoints = 1; // one for digital channels
+    for( size_t i = 0; i < cMaxAnalogChannels; i++ )
     {
+      if( channels[i] )
+        ++mChannelPoints;
       mConfig.Channels[i].ChannelNumber = i + 1;
-      mConfig.Channels[i].Available = channels[i];
-      mConfig.Channels[i].Acquire = true;
+      mConfig.Channels[i].Available = channels[i]; // ??
+      mConfig.Channels[i].Acquire = channels[i];
       mConfig.Channels[i].BandpassFilterIndex = -1;
       mConfig.Channels[i].NotchFilterIndex = -1;
     }
@@ -106,7 +111,7 @@ gHIampDevice::BeginAcquisition()
   Cleanup();
 
   // Determine the number of channels we should acquire
-  int nPoints = mSampleBlockSize * cNumChannelPoints;
+  int nPoints = mSampleBlockSize * mChannelPoints;
   mExpectedBytes = nPoints * sizeof( float );
   mBufferSizeBytes = ( DWORD ) ceil( mExpectedBytes / ( double )MAX_USB_PACKET_SIZE ) * MAX_USB_PACKET_SIZE;
   mpBuffers = new BYTE*[ QUEUE_SIZE ];
@@ -156,25 +161,25 @@ gHIampDevice::GetData( GenericSignal &Output )
            << " -- Samples have been lost." << endl;
 
   // Fill the output as necessary
-  float* data = reinterpret_cast< float* >( mpBuffers[mQueueIndex] );
+  
+  union { BYTE* b; float* f; } data = { mpBuffers[mQueueIndex] };
   for( int sample = 0; sample < mSampleBlockSize; sample++ )
   {
+    float* sampleData = data.f + mChannelPoints * sample;
     map< int, int >::iterator itr = mAnalogChannelMap.begin();
     if( mRefIdx == -1 ) // Unreferenced Mode
       for( ; itr != mAnalogChannelMap.end(); itr++ )
-        Output( itr->second, sample ) = data[ ( cNumChannelPoints * sample ) + itr->first ];
+        Output( itr->second, sample ) = sampleData[itr->first];
     else // Referenced Mode
       for( ; itr != mAnalogChannelMap.end(); itr++ )
-        Output( itr->second, sample ) = data[ ( cNumChannelPoints * sample ) + itr->first ]
-                                      - data[ ( cNumChannelPoints * sample ) + mRefIdx];
-
-    // This might break in the future.  This should really be a uint16_t
-    uint16 digital = *reinterpret_cast<uint16*>( mpBuffers[mQueueIndex] + cNumAnalogChannels * ( sample + 1 ) );
+        Output( itr->second, sample ) = sampleData[itr->first]
+                                      - sampleData[mRefIdx];
+    union { float* f; uint16_t* i; } digital = { sampleData + mChannelPoints - 1 };
     itr = mDigitalChannelMap.begin();
     for( ; itr != mDigitalChannelMap.end(); itr++ )
     {
       uint16 mask = 1 << itr->first;
-      Output( itr->second, sample ) = ( digital & mask ) ? 100.0f : 0.0f;
+      Output( itr->second, sample ) = ( *digital.i & mask ) ? 100.0f : 0.0f;
     }
   }
 
@@ -220,10 +225,10 @@ gHIampDevice::MapAllAnalogChannels( int startch, int numch )
 bool
 gHIampDevice::MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bool err )
 {
-  if( devicech >= cNumAnalogChannels )
+  if( devicech >= cMaxAnalogChannels )
   {
     if( err ) bcierr << "Requested channel " << devicech + 1
-                     << " from g.HIamp which only has " << cNumAnalogChannels << " channels" << endl;
+                     << " from g.HIamp which only has " << cMaxAnalogChannels << " channels" << endl;
     return false;
   }
   if( mAnalogChannelMap.find( devicech ) != mAnalogChannelMap.end() )
@@ -237,14 +242,18 @@ gHIampDevice::MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bo
                      << Serial() << " is not available." << endl;
     return false;
   }
-  mAnalogChannelMap[ devicech ] = sourcech;
+  unsigned int idx = 0;
+  for( unsigned int i = 0; i < devicech; ++i )
+    if( mConfig.Channels[devicech].Acquire )
+      ++idx;
+  mAnalogChannelMap[idx] = sourcech;
   return true;
 }
 
 bool
 gHIampDevice::MapDigitalChannel( unsigned int devicech, unsigned int sourcech )
 {
-  if( devicech >= cNumDigitalChannels )
+  if( devicech >= cMaxDigitalChannels )
   {
     bcierr << "Requested digital channel " << devicech + 1
            << " from g.HIamp which only has 16 digital channels" << endl;
@@ -261,25 +270,28 @@ gHIampDevice::MapDigitalChannel( unsigned int devicech, unsigned int sourcech )
 
 bool gHIampDevice::SetRefChan( int devicech )
 {
-  if( devicech >= cNumAnalogChannels )
+  if( devicech >= cMaxAnalogChannels )
     return false;
   if( !mConfig.Channels[ devicech ].Available )
     return false;
-  mRefIdx = devicech;
+  mRefIdx = 0;
+  for( int i = 0; i < devicech; ++i )
+    if( mConfig.Channels[devicech].Acquire )
+      ++mRefIdx;
   return true;
 }
 
 void
 gHIampDevice::SetNotch( int iNotchNo )
 {
-  for( size_t i = 0; i < cNumAnalogChannels; i++ )
+  for( size_t i = 0; i < cMaxAnalogChannels; i++ )
     mConfig.Channels[i].NotchFilterIndex = iNotchNo;
 }
 
 void
 gHIampDevice::SetFilter( int iFilterNo )
 {
-  for( size_t i = 0; i < cNumAnalogChannels; i++ )
+  for( size_t i = 0; i < cMaxAnalogChannels; i++ )
     mConfig.Channels[i].BandpassFilterIndex = iFilterNo;
 }
 
@@ -300,7 +312,7 @@ gHIampDevice::SetConfiguration( int iSampleRate, int iSampleBlockSize )
   mConfig.InternalSignalGenerator.Offset = 0; // muV
 
   // Configure device channels
-  for( int j = 0; j < cNumAnalogChannels; j++ )
+  for( int j = 0; j < cMaxAnalogChannels; j++ )
     if( mConfig.Channels[j].Available )
       mConfig.Channels[j].BipolarChannel = 0;
 

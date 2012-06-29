@@ -67,9 +67,8 @@ class gHIampDevice
 
  private:
   static const size_t cErrorMessageSize = 1024; // from g.USBamp API doc
-  static const size_t cNumAnalogChannels = 256;
-  static const size_t cNumDigitalChannels = 16;
-  static const size_t cNumChannelPoints = cNumAnalogChannels + 1;
+  static const size_t cMaxAnalogChannels = 256;
+  static const size_t cMaxDigitalChannels = 16;
 
   HANDLE                 mDevice;
   GT_HIAMP_CONFIGURATION mConfig;
@@ -82,6 +81,7 @@ class gHIampDevice
               mRefIdx;
   BYTE**      mpBuffers;
   OVERLAPPED* mpOverlapped;
+  size_t      mChannelPoints;
   size_t      mBufferSizeBytes;
   size_t      mExpectedBytes;
   std::map< int, int > mAnalogChannelMap;
