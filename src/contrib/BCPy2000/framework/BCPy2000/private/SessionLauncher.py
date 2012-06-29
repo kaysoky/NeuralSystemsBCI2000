@@ -13,6 +13,8 @@ class SessionGUI( tk.Tk ):
 		self.__settingsfile = settingsfile
 		self.__optionprefix = '_PossibleValuesFor'
 		self.__bg = '#DDDDDD'
+		self.__host = 'localhost'
+		self.__port = 3999
 		self.__valid = False
 		
 		self.__settings = {
@@ -210,8 +212,9 @@ class SessionGUI( tk.Tk ):
 		self.UpdateSettings() # because of the lag
 		self.ExecuteInShell( 'quit' )
 		self.UpdateSettings()
-		
+	
 	def ReloadChosenWeights( self ):
+		if not self.BCI2000Running(): return self.LaunchBCI2000()
 		self.UpdateSettings() # because of the lag
 		self.ExecuteInShell( 'load parameterfile "' + self.GetChosenWeightsPath() + '"' )
 		self.ExecuteInShell( 'setconfig' )
@@ -231,6 +234,12 @@ class SessionGUI( tk.Tk ):
 		# other cleanup
 		tk.Tk.destroy( self )
 
+	def BCI2000Running( self ):
+		import telnetlib
+		try: t = telnetlib.Telnet( host=self.__host, port=self.__port )
+		except: return False
+		else: t.close()
+		return True
 
 if __name__ == '__main__':
 	argv = getattr( sys, 'argv', [] )

@@ -19,7 +19,7 @@ r.callbacks.append(pfunc(spin, obj=d))
 
 """
 
-import sys, threading
+import sys, threading, time
 class pfunc:
 	def __init__(self, func, *pargs, **kwargs):
 		self.__func = func
@@ -57,16 +57,31 @@ class Toy(threading.Thread):
 	def run(self):
 		self.screen.Initialize()
 		self.__started = True
+		self.__lasttime = 0.0
+		self.frametimes = []
+		frame_duration_sec = 1.0 / self.screen.GetFrameRate()
 		while self.__keepgoing:
 			good = []
-			while len(self.callbacks):
-				c = self.callbacks.pop(0)
-				try: c()
-				except Exception,e: print e.__class__.__name__ + ": " + str(e)
-				else: good.append(c)
-			self.callbacks += good
+			for i,c in enumerate(self.callbacks):
+				try:
+					c()
+				except Exception,e:
+					print e.__class__.__name__ + ": " + str(e)
+					good.append(False)
+				else:
+					good.append(True)
+			while False in good:
+				self.callbacks.pop(good.index(False))
+				good.pop(good.index(False))
 			self.screen.StartFrame(self.objects)
+			deadline = self.__lasttime + frame_duration_sec
+			while time.time() < deadline - 0.002: time.sleep(0.001)
 			self.screen.FinishFrame()
+			#while time.time() < deadline - 0.001: time.sleep(0.001) # this halves the speed for reasons I cannot understand
+			self.__lasttime = time.time()
+			self.frametimes.append(self.__lasttime)
+			if len(self.frametimes) > 100: self.frametimes.pop(0)
+				
 			for event in self.screen.GetEvents(): self.screen.DefaultEventHandler(event)
 		self.screen.Cleanup()
 		
