@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="../../../src\..\prog\MessageBox.exe"/>
+    <OBJFILES value="MessageBox.obj\MessageBox.obj
+MessageBox.obj\ParserToken.obj
+MessageBox.obj\EncodedString.obj
+"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) "/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
+    <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
+    <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
+    <PATHCPP value="../../../src\core/Operator/MessageBox;../../../src\core/Operator/OperatorLib/ScriptParser;../../../src\shared/config;../../../src\shared/types"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value=""/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="../../../src\core\Operator\MessageBox\MessageBox.cpp"/>
+    <INCLUDEPATH value="../../../src\core/Operator/MessageBox;../../../src\core/Operator/OperatorLib/ScriptParser;../../../src\shared/config;../../../src\shared/types;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="../../../src\core/Operator/MessageBox;../../../src\core/Operator/OperatorLib/ScriptParser;../../../src\shared/config;../../../src\shared/types;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <WARNINGS value="-w-par -w-8027 -w-8026"/>
+    <WARNOPTSTR value=""/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -H=MessageBox.obj\PCH -Hc -He- -Vx -Ve -X- -a8 -5 -b- -k- -vi 
+      -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-IMessageBox.obj -D&quot;&quot; -aa -Tpe -x -Gn"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="../../../src\core/Operator/MessageBox/MessageBox.cpp" FORMNAME="" UNITNAME="MessageBox" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\core/Operator/OperatorLib/ScriptParser/ParserToken.cpp" FORMNAME="" UNITNAME="ParserToken" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared/types/EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+        <FILE FILENAME="../../../src\core\Operator\MessageBox\MessageBox.cpp" FORMNAME="" UNITNAME="MessageBox" CONTAINERID="cpp" DESIGNCLASS="" LOCALCOMMAND=""/>
+
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+  </IDEOPTIONS>
+</PROJECT>
