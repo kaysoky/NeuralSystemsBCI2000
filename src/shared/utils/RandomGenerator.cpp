@@ -34,6 +34,27 @@
 
 using namespace std;
 
+// For backward compatibility, allow for the instance count to serve as an ID
+int
+RandomGenerator::NextUnnamedInstance()
+{
+  static int count = 0;
+  return ++count;
+}
+
+RandomGenerator::RandomGenerator()
+: mSeed( 0 )
+{
+  int count = NextUnnamedInstance();
+  mID.resize( 1 );
+  if( count >= 1 << ( 8 * sizeof( mID[0] ) ) )
+    throw bciexception(
+      "Number of unnamed RandomGenerator instances exceeds limit, "
+      "use constructor arguments to name RandomGenerators"
+    );
+  mID[0] = static_cast<string::value_type>( count );
+}
+
 RandomGenerator::NumberType
 RandomGenerator::RandMax() const
 {
@@ -74,6 +95,18 @@ RandomGenerator::Initialize()
     mSeed = static_cast<SeedType>( ::time( NULL ) );
   else
     mSeed = seed;
+  // Use the ID string to modify the seed in a way that is both unique 
+  // and robust against configuration changes such as addition of filters,
+  // or change of endianness.
+  while( mID.length() % sizeof( SeedType ) )
+    mID += "x";
+  for( size_t i = 0; i < mID.length() / sizeof( SeedType ); ++i )
+  {
+    SeedType value = 0;
+    for( size_t j = 0; j < sizeof( SeedType ); ++j )
+      value |= mID[i] << j;
+    mSeed ^= value;
+  }
 }
 
 void

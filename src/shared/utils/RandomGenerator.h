@@ -38,9 +38,24 @@ class RandomGenerator : private EnvironmentExtension
   typedef uint32_t SeedType;
   typedef uint32_t NumberType;
 
-  explicit RandomGenerator()
-    : mSeed( 0 )
+#ifdef TODO
+# error Modify ID determination to use a filter's unique ID once multiple filter instances are possible.
+#endif
+  template<typename T>
+  explicit RandomGenerator( const T& t )
+    : mSeed( 0 ),
+      mID( bci::ClassName( typeid( t ) ) )
     {}
+  template<typename T>
+  explicit RandomGenerator( const T* t )
+    : mSeed( 0 ),
+      mID( bci::ClassName( typeid( *t ) ) )
+    {}
+  explicit RandomGenerator( const std::string& s )
+    : mSeed( 0 ),
+      mID( s )
+    {}
+  RandomGenerator();
   virtual ~RandomGenerator()
     {}
   // Properties
@@ -71,6 +86,8 @@ class RandomGenerator : private EnvironmentExtension
   static NumberType NumberFromSeed( SeedType );
 
   SeedType mSeed;
+  std::string mID;
+  static int NextUnnamedInstance();
 };
 
 #endif // RANDOM_GENERATOR_H

@@ -38,6 +38,7 @@
 using namespace std;
 
 ApplicationBase::ApplicationBase()
+: RandomNumberGenerator( this )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Visualize:Application%20Log int ShowAppLog= 1 0 0 1 // Show application log window (boolean)",

@@ -46,7 +46,8 @@ using namespace std;
 RegisterFilter( SignalGeneratorADC, 1 );
 
 SignalGeneratorADC::SignalGeneratorADC()
-: mSineFrequency( 0 ),
+: mRandomGenerator( this ),
+  mSineFrequency( 0 ),
   mSineAmplitude( 0 ),
   mNoiseAmplitude( 0 ),
   mDCOffset( 0 ),

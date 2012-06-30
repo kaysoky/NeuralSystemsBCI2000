@@ -478,8 +478,8 @@ StateMachine::PerformTransition( int inTransition )
       break;
 
     case TRANSITION( SuspendInitiated, Suspended ):
-      BroadcastParameters(); // no EndOfParameter
       Randomize();
+      BroadcastParameters(); // no EndOfParameter
       break;
 
     case TRANSITION( Suspended, SuspendedParamsModified ):

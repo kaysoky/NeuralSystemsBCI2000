@@ -37,7 +37,8 @@ using namespace std;
 RegisterFilter( RandomFilter, 2.C1 );
 
 RandomFilter::RandomFilter()
-: mpGetRandom( NULL )
+: mRandomGenerator( this ),
+  mpGetRandom( NULL )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Filtering int RandomNoise= 0 0 0 1 // 0: none, 1: uniform (enumeration)",
