@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id:  $
+// $Id$
 // Author: sk@sklanke.de
 // Description: A source class that interfaces to the FieldTrip buffer.
 // State/event handling is largely copy-pasted from the FieldTripBuffer filter,

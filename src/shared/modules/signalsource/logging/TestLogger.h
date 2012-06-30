@@ -53,7 +53,7 @@ class TestLogger : public EnvironmentExtension, private OSThread
 
  private:
   double mTestLoggerFrequency;
-  uint32 mTestLoggerCounter;
+  uint32_t mTestLoggerCounter;
   bool   mTestLoggerEmitDebug;
 };
 

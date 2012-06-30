@@ -32,7 +32,7 @@
 #include <cstdlib>
 #include "ParserToken.h"
 
-#if MSC_VER
+#if _MSC_VER
 # define strtoull _strtoui64
 #endif
 

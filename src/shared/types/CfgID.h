@@ -33,7 +33,7 @@ class CfgID
 {
  public:
 
-   typedef uint8 IDType;
+   typedef uint8_t IDType;
 
   enum CfgID_ // Must have a name to be used as a template argument.
   {

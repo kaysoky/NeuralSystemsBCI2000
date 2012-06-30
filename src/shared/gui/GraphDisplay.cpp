@@ -554,7 +554,7 @@ GraphDisplay::BitmapImageFromHDC( BitmapImage& ioImage, HDC inDC, const RECT& in
     info.bmiHeader.biPlanes = 1;
     info.bmiHeader.biBitCount = 32;
     info.bmiHeader.biCompression = 0;
-    uint32* pBitmapData = new uint32[ width * height ];
+    uint32_t* pBitmapData = new uint32_t[ width * height ];
     int result = ::GetDIBits(
                      miniDC, miniBmp,
                      0, height,

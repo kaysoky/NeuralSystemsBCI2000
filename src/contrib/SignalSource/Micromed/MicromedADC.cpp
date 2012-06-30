@@ -522,9 +522,6 @@ unsigned int nbyte;
             << endl;
 
 
-          signed short int sint16;
-          signed long int sint32;
-
           for( int sample = 0; sample < MMblocksize; ++sample )
           {
             sampleNumber++;
@@ -540,14 +537,14 @@ unsigned int nbyte;
                 if (bytespersample==2)
                 {
                   value=value-32768; //Micromed sends unsigned short integers
-                  sint16=static_cast<signed short>( value );
-                  ( *signal )( channel, MMblocksize*packetnr+sample ) = sint16;
+                  int16_t s =static_cast<int16_t>( value );
+                  ( *signal )( channel, MMblocksize*packetnr+sample ) = s;
                 }
                 else
                 {
                  value=value-2097152; //Micromed sends unsigned long integers with 22bit data
-                  sint32=static_cast<signed long>( value );
-                  ( *signal )( channel, MMblocksize*packetnr+sample ) = sint32;
+                  int32_t s =static_cast<int32_t>( value );
+                  ( *signal )( channel, MMblocksize*packetnr+sample ) = s;
                 }
             }
           }

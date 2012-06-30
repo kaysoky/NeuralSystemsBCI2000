@@ -26,10 +26,6 @@
 #include "analysisClass.h"
 //---------------------------------------------------------------------------
 
-typedef signed short int16;
-typedef signed int   int32;
-typedef float        float32;
-
 #define signal(ch,s) (dFile->CalibratedValue(ch, s))
 
 using namespace std;

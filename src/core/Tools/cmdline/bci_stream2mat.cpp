@@ -100,19 +100,19 @@ class StreamToMat : public MessageHandler
                       mDataColsPos,
                       mDataSizePos;
 
-  streamoff BeginVar(uint32 flags) const;
+  streamoff BeginVar(uint32_t flags) const;
   void FinishVar(streamoff sizePos) const;
-  void WriteDims(uint32 nRows, uint32 nCols) const;
+  void WriteDims(uint32_t nRows, uint32_t nCols) const;
   void WriteName(string name) const;
   void WriteString(string name, string str) const;
 
   void WriteHeader();
   void WriteData( const GenericSignal& );
-  void Write16( uint16 value ) const
+  void Write16( uint16_t value ) const
   { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
-  void Write32( uint32 value ) const
+  void Write32( uint32_t value ) const
   { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
-  void WriteFloat32( float32 value ) const
+  void WriteFloat32( float32_t value ) const
   { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
   void Pad() const;
 
@@ -152,7 +152,7 @@ StreamToMat::Pad() const
 
 
 streamoff
-StreamToMat::BeginVar(uint32 flags) const
+StreamToMat::BeginVar(uint32_t flags) const
 {
   Write32( miMATRIX );
   streamoff sizePos = mrOut.tellp();
@@ -167,12 +167,12 @@ StreamToMat::FinishVar(streamoff sizePos) const
 { // bounce back to sizePos, write the number of bytes between here and where you just came from - 4, bounce back to where you came from
   streamoff endPos = mrOut.tellp();
   mrOut.seekp( sizePos );
-  Write32( static_cast<uint32>( endPos - sizePos - 4 ) );
+  Write32( static_cast<uint32_t>( endPos - sizePos - 4 ) );
   mrOut.seekp( endPos );
 }
 
 void
-StreamToMat::WriteDims(uint32 nRows, uint32 nCols) const
+StreamToMat::WriteDims(uint32_t nRows, uint32_t nCols) const
 {
   Write32( miINT32 ); Write32( 8 );
   Write32( nRows ); Write32( nCols );
@@ -181,7 +181,7 @@ StreamToMat::WriteDims(uint32 nRows, uint32 nCols) const
 void
 StreamToMat::WriteName(string name) const
 {
-  Write32( static_cast<uint32>( miINT8 ) ); Write32( static_cast<uint32>( name.size() ) );
+  Write32( static_cast<uint32_t>( miINT8 ) ); Write32( static_cast<uint32_t>( name.size() ) );
   if( name.size() )
   {
     mrOut << name;
@@ -196,7 +196,7 @@ StreamToMat::WriteString(string name, string str) const
   WriteDims( 1, static_cast<int>( str.size() ) );
   WriteName( name );
   Write32( miUTF16 );
-  Write32( static_cast<uint32>( 2 * str.size() ) );
+  Write32( static_cast<uint32_t>( 2 * str.size() ) );
   for( size_t j = 0; j < str.size(); j++ ) Write16( str[j] );
   Pad();
   FinishVar( sizePos );
@@ -230,11 +230,11 @@ StreamToMat::WriteHeader()
     if( i->length() > fieldNameLength )
       fieldNameLength = i->length();
   fieldNameLength = ( fieldNameLength / matPadding + 1 ) * matPadding;
-  Write32( static_cast<uint32>( 4 << 16 | miINT32 ) );
-  Write32( static_cast<uint32>( fieldNameLength ) );
+  Write32( static_cast<uint32_t>( 4 << 16 | miINT32 ) );
+  Write32( static_cast<uint32_t>( fieldNameLength ) );
   // Field names
-  Write32( static_cast<uint32>( miINT8 ) );
-  Write32( static_cast<uint32>( fieldNameLength * ( mStateNames.size() + 1 ) ) );
+  Write32( static_cast<uint32_t>( miINT8 ) );
+  Write32( static_cast<uint32_t>( fieldNameLength * ( mStateNames.size() + 1 ) ) );
   for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
   {
     mrOut << *i;
@@ -252,8 +252,8 @@ StreamToMat::WriteHeader()
     WriteDims( 1, 1 );
     WriteName( "" );
     // Array data
-    Write32( static_cast<uint32>( 4 << 16 | miUINT32 ) );
-    Write32( static_cast<uint32>( i ) );
+    Write32( static_cast<uint32_t>( 4 << 16 | miUINT32 ) );
+    Write32( static_cast<uint32_t>( i ) );
 
     FinishVar( sizePos );
   }
@@ -311,7 +311,7 @@ StreamToMat::WriteHeader()
 
   // A single-precision numeric array that holds the signal.
   mDataElementSizePos = BeginVar( mxSINGLE_CLASS );
-  WriteDims( static_cast<uint32>( mStateNames.size() + numSignalEntries ), 0 );
+  WriteDims( static_cast<uint32_t>( mStateNames.size() + numSignalEntries ), 0 );
   mDataColsPos = mrOut.tellp(); mDataColsPos -= 4;
   WriteName( "Data" );
   Write32( miSINGLE );
@@ -327,11 +327,11 @@ StreamToMat::WriteData( const GenericSignal& s )
       WriteFloat32( 0 );
   else
     for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
-      WriteFloat32( static_cast<float32>( mpStatevector->StateValue( i->c_str() ) ) );
+      WriteFloat32( static_cast<float32_t>( mpStatevector->StateValue( i->c_str() ) ) );
 
   for( int i = 0; i < s.Channels(); ++i )
     for( int j = 0; j < s.Elements(); ++j )
-      WriteFloat32( static_cast<float32>( s( i, j ) ) );
+      WriteFloat32( static_cast<float32_t>( s( i, j ) ) );
   ++mDataCols;
 }
 

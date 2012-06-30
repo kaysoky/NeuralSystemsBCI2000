@@ -51,7 +51,7 @@ class gMOBIlabADC : public BufferedADC
  private:
   static std::string BuildComPortString( const std::string& );
 
-  uint8* mpBuffer;
+  uint8_t* mpBuffer;
   int    mBufferSize,
          mTimeoutMs;
   bool   mEnableDigOut;

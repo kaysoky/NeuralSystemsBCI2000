@@ -35,8 +35,8 @@
 class RandomGenerator : private EnvironmentExtension
 {
  public:
-  typedef uint32 SeedType;
-  typedef uint32 NumberType;
+  typedef uint32_t SeedType;
+  typedef uint32_t NumberType;
 
   explicit RandomGenerator()
     : mSeed( 0 )

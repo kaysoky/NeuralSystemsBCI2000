@@ -36,7 +36,7 @@
 #include "SignalProperties.h"
 #include "defines.h"
 
-typedef uint8 IDType;
+typedef uint8_t IDType;
 
 class VisProperties : public std::map<IDType, std::string>
 {

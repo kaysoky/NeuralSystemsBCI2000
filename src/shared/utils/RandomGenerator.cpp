@@ -46,9 +46,9 @@ RandomGenerator::Random()
   // The a parameter is chosen to be optimal for m = 2^32 according to:
   // P. L'Ecuyer. A table of linear congruential generators of different sizes
   // and good lattice structure. Mathematics of Computation, 68(225), 1999.
-  // Using uint32 for x, mod m is computed implicitly.
-  const uint32 a = 2891336453UL,
-               c = 1;
+  // Using uint32_t for x, mod m is computed implicitly.
+  const uint32_t a = 2891336453UL,
+                 c = 1;
   mSeed *= a;
   mSeed += c;
   return NumberFromSeed( mSeed );

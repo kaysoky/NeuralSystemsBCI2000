@@ -63,7 +63,7 @@ class BitmapImage
     PixelRef& operator=( const RGBColor& c )
       {
         if( c == RGBColor( RGBColor::NullColor ) )
-          *mpData = uint16( -1 );
+          *mpData = uint16_t( -1 );
         else
         {
           int r = c >> 20 & 0xf,
@@ -75,13 +75,13 @@ class BitmapImage
       }
 
    private:
-    uint16* mpData;
+    uint16_t* mpData;
   };
 
  public:
   BitmapImage( int inWidth = 0, int inHeight = 0 );
   BitmapImage( const BitmapImage& );
-  BitmapImage( int inWidth, int inHeight, uint16* inpData );
+  BitmapImage( int inWidth, int inHeight, uint16_t* inpData );
   ~BitmapImage()
     { delete[] mpData; }
   BitmapImage& operator=( const BitmapImage& );
@@ -101,7 +101,7 @@ class BitmapImage
       return mHeight;
     }
 
-  const uint16* RawData() const
+  const uint16_t* RawData() const
     {
       return mpData;
     }
@@ -114,7 +114,7 @@ class BitmapImage
 
   BitmapImage& SetTransparent()
     {
-      std::memset( mpData, uint16( -1 ), mWidth * mHeight * sizeof( *mpData ) );
+      std::memset( mpData, uint16_t( -1 ), mWidth * mHeight * sizeof( *mpData ) );
       return *this;
     }
 
@@ -152,7 +152,7 @@ class BitmapImage
 
   int     mWidth,
           mHeight;
-  uint16* mpData;
+  uint16_t* mpData;
 };
 
 #endif // BITMAP_IMAGE_H

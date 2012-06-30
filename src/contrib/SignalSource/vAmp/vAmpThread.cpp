@@ -330,8 +330,8 @@ vAmpThread::ExtractData(int ch, int sample)
 /*
   while( mReadCursor == mWriteCursor && mEvent != NULL )
     ::WaitForSingleObject( mEvent, mTimeout );
-  sint16 value = *reinterpret_cast<sint16*>( mpBuffer + mReadCursor );
-  mReadCursor += sizeof( sint16 );
+  int16_t value = *reinterpret_cast<int16_t*>( mpBuffer + mReadCursor );
+  mReadCursor += sizeof( int16_t );
   mReadCursor %= mBufSize;
   return value;    */
 }

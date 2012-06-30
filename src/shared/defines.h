@@ -25,6 +25,28 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#if _MSC_VER // temporary solution until switch to C++11
+# include "../extlib/fieldtrip/buffer/src/win32/stdint.h"
+#else
+# include <cstdint>
+#endif
+
+typedef float float32_t;
+
+// Backward compatibility (for new code, use stdint types):
+#if 1
+typedef uint8_t uint8;
+typedef int8_t sint8;
+typedef uint16_t uint16;
+typedef int16_t sint16;
+typedef uint32_t uint32;
+typedef int32_t sint32;
+typedef uint64_t uint64;
+typedef int64_t sint64;
+typedef float32_t float32;
+#endif
+
+
 #define KEY_BCI2000             "SOFTWARE\\BCI2000"
 #define KEY_OPERATOR            "OPERATOR"
 #define KEY_VISUALIZATION       "VISUALIZATION"
@@ -32,10 +54,6 @@
 #define KEY_CONFIG              "CONFIG"
 #define KEY_VIEWER              "VIEWER"
 #define KEY_EXPORT              "EXPORT"
-
-#ifdef TODO
-# error Move remaining SourceID constants into VisID class.
-#endif // TODO
 
 namespace SourceID
 {
@@ -53,37 +71,5 @@ namespace SourceID
     ExtendedFormat = 255
   };
 };
-
-#ifdef TODO
-# error Replace these by including <cstdint> when switching to C++11.
-#endif // TODO
-
-typedef unsigned char uint8_t;
-typedef signed char int8_t;
-typedef unsigned short uint16_t;
-typedef signed short int16_t;
-typedef unsigned int uint32_t;
-typedef signed int int32_t;
-#if( defined( __BORLANDC__ ) && ( __BORLANDC__ <= 0x0560 ) ) // bcc32 <= 5.5.1
-typedef unsigned __int64 uint64_t;
-typedef signed __int64 int64_t;
-#else // __BORLANDC__
-typedef unsigned long long uint64_t;
-typedef signed long long int64_t;
-#endif // __BORLANDC__
-
-typedef float float32_t;
-
-#if 1
-typedef uint8_t uint8;
-typedef int8_t sint8;
-typedef uint16_t uint16;
-typedef int16_t sint16;
-typedef uint32_t uint32;
-typedef int32_t sint32;
-typedef uint64_t uint64;
-typedef int64_t sint64;
-typedef float32_t float32;
-#endif
 
 #endif // DEFINES_H

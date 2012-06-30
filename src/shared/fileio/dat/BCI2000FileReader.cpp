@@ -73,8 +73,8 @@ static
 GenericSignal::ValueType
 ReadValue_SwapBytes( const char* p )
 {
-  static uint8 buf[ sizeof( T ) ];
-  uint8* b = buf + sizeof( T );
+  static uint8_t buf[ sizeof( T ) ];
+  uint8_t* b = buf + sizeof( T );
   for( size_t i = 0; i < sizeof( T ); ++i )
     *--b = *p++;
   return *reinterpret_cast<const T*>( reinterpret_cast<char*>( b ) );
@@ -236,19 +236,19 @@ BCI2000FileReader::RawValue( int inChannel, long long inSample )
   const char* address = BufferSample( inSample ) + mDataSize * inChannel;
 
   // When running on a big endian machine, we need to swap bytes.
-  static const bool isBigEndian = ( *reinterpret_cast<const uint16*>( "\0\1" ) == 0x0001 );
+  static const bool isBigEndian = ( *reinterpret_cast<const uint16_t*>( "\0\1" ) == 0x0001 );
   if( isBigEndian )
   {
     switch( mSignalType )
     {
       case SignalType::int16:
-        value = ReadValue_SwapBytes<sint16>( address );
+        value = ReadValue_SwapBytes<int16_t>( address );
         break;
       case SignalType::int32:
-        value = ReadValue_SwapBytes<sint32>( address );
+        value = ReadValue_SwapBytes<int32_t>( address );
         break;
       case SignalType::float32:
-        value = ReadValue_SwapBytes<float32>( address );
+        value = ReadValue_SwapBytes<float32_t>( address );
         break;
       default:
         break;
@@ -259,13 +259,13 @@ BCI2000FileReader::RawValue( int inChannel, long long inSample )
     switch( mSignalType )
     {
       case SignalType::int16:
-        value = ReadValue<sint16>( address );
+        value = ReadValue<int16_t>( address );
         break;
       case SignalType::int32:
-        value = ReadValue<sint32>( address );
+        value = ReadValue<int32_t>( address );
         break;
       case SignalType::float32:
-        value = ReadValue<float32>( address );
+        value = ReadValue<float32_t>( address );
         break;
       default:
         break;

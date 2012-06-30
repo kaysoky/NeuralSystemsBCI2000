@@ -193,8 +193,8 @@ gMOBIlabADC::OnInitialize( const SignalProperties& Output )
   OnHalt();
 
   mTimeoutMs = static_cast<int>( 1000 * MeasurementUnits::SampleBlockDuration() );
-  mBufferSize = Output.Channels() * Output.Elements() * sizeof( sint16 );
-  mpBuffer = new uint8[mBufferSize];
+  mBufferSize = Output.Channels() * Output.Elements() * sizeof( int16_t );
+  mpBuffer = new uint8_t[mBufferSize];
 
   string COMport = BuildComPortString( Parameter("COMport") );
   mDevice = ::GT_OpenDevice( const_cast<char*>( COMport.c_str() ) );
@@ -357,7 +357,7 @@ gMOBIlabADC::DoAcquire( GenericSignal& Output )
   while( totalBytesReceived < mBufferSize && result == ok )
   {
     _BUFFER_ST buf;
-    buf.pBuffer = reinterpret_cast<sint16*>( mpBuffer + totalBytesReceived );
+    buf.pBuffer = reinterpret_cast<int16_t*>( mpBuffer + totalBytesReceived );
     buf.size = mBufferSize - totalBytesReceived;
     buf.size = min( buf.size, cMaxReadBufSize );
     buf.validPoints = 0;
@@ -377,12 +377,12 @@ gMOBIlabADC::DoAcquire( GenericSignal& Output )
     bcierr << "Could not read data from amplifier" << endl;
 
   const int cFirstDigChannel = 8;
-  sint16* pData = reinterpret_cast<sint16*>( mpBuffer );
+  int16_t* pData = reinterpret_cast<int16_t*>( mpBuffer );
   for( int sample = 0; sample < Output.Elements(); ++sample )
   {
     for( int channel = 0; channel < min( cFirstDigChannel, Output.Channels() ); ++channel )
       Output( channel, sample ) = *pData++;
-    sint16 digitalLines = *pData;
+    int16_t digitalLines = *pData;
 
     for( int channel = cFirstDigChannel; channel < Output.Channels(); ++channel )
     {
@@ -395,7 +395,7 @@ gMOBIlabADC::DoAcquire( GenericSignal& Output )
 #else // GMOBILABPLUS // For the gMOBIlabPlus, we provide digital lines in individual channels.
       // the digital lines are stored in a single sample, with the values in each bit
       // the order is (MSB) 8 7 6 5 2 4 3 1 (LSB)
-      const uint16 mask[] =
+      const uint16_t mask[] =
       {
         0x0001,
         0x0008, // intentionally out of sequence

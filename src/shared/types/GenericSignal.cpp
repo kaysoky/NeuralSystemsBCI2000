@@ -384,8 +384,8 @@ template<>
 void
 GenericSignal::PutValueBinary<SignalType::float32>( std::ostream& os, size_t inChannel, size_t inElement ) const
 {
-  bciassert( numeric_limits<float>::is_iec559 && sizeof( uint32 ) == sizeof( float ) );
-  union { float f; uint32 i; } value;
+  bciassert( numeric_limits<float>::is_iec559 && sizeof( uint32_t ) == sizeof( float ) );
+  union { float f; uint32_t i; } value;
   value.f = static_cast<float>( Value( inChannel, inElement ) );
   PutLittleEndian( os, value.i );
 }
@@ -394,8 +394,8 @@ template<>
 void
 GenericSignal::GetValueBinary<SignalType::float32>( std::istream& is, size_t inChannel, size_t inElement )
 {
-  bciassert( numeric_limits<float>::is_iec559 && sizeof( uint32 ) == sizeof( float ) );
-  union { float f; uint32 i; } value;
+  bciassert( numeric_limits<float>::is_iec559 && sizeof( uint32_t ) == sizeof( float ) );
+  union { float f; uint32_t i; } value;
   GetLittleEndian( is, value.i );
   try
   {

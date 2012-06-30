@@ -331,13 +331,13 @@ vAmpDisplay::QImageToHBITMAP( const QImage& inImage )
   bmi.bmiHeader.biBitCount    = 32;
   bmi.bmiHeader.biCompression = BI_RGB;
   bmi.bmiHeader.biSizeImage   = w * h * 4;
-  uint32* pPixels = NULL;
+  uint32_t* pPixels = NULL;
   HBITMAP bitmap = ::CreateDIBSection( displayDC, &bmi, DIB_RGB_COLORS, reinterpret_cast<void**>( &pPixels ), NULL, 0 );
   ::ReleaseDC( 0, displayDC );
   for( int y = 0; y < h; ++y )
   {
-    const uint32* pSrc = reinterpret_cast<const uint32*>( inImage.scanLine( y ) );
-    uint32* pDest = pPixels + y * w;
+    const uint32_t* pSrc = reinterpret_cast<const uint32_t*>( inImage.scanLine( y ) );
+    uint32_t* pDest = pPixels + y * w;
     for( int x = 0; x < w; ++x )
       pDest[x] = pSrc[x] & 0xffffff00;
   }

@@ -38,7 +38,7 @@ using namespace std;
 BitmapImage::BitmapImage( int inWidth, int inHeight )
 : mWidth( inWidth ),
   mHeight( inHeight ),
-  mpData( new uint16[ inWidth * inHeight ] )
+  mpData( new uint16_t[ inWidth * inHeight ] )
 {
   SetTransparent();
 }
@@ -46,15 +46,15 @@ BitmapImage::BitmapImage( int inWidth, int inHeight )
 BitmapImage::BitmapImage( const BitmapImage& b )
 : mWidth( b.mWidth ),
   mHeight( b.mHeight ),
-  mpData( new uint16[ mWidth * mHeight ] )
+  mpData( new uint16_t[ mWidth * mHeight ] )
 {
   std::memcpy( mpData, b.mpData, mWidth * mHeight * sizeof( *mpData ) );
 }
 
-BitmapImage::BitmapImage( int inWidth, int inHeight, uint16* inpData )
+BitmapImage::BitmapImage( int inWidth, int inHeight, uint16_t* inpData )
 : mWidth( inWidth ),
   mHeight( inHeight ),
-  mpData( new uint16[ inWidth * inHeight ] )
+  mpData( new uint16_t[ inWidth * inHeight ] )
 {
   std::memcpy( mpData, inpData, mWidth * mHeight * sizeof( *mpData ) );
 }
@@ -68,7 +68,7 @@ BitmapImage::operator=( const BitmapImage& b )
     mpData = NULL; // in case operator new throws
     mWidth = b.mWidth;
     mHeight = b.mHeight;
-    mpData = new uint16[ mWidth * mHeight ];
+    mpData = new uint16_t[ mWidth * mHeight ];
     std::memcpy( mpData, b.mpData, mWidth * mHeight * sizeof( *mpData ) );
   }
   return *this;
@@ -118,7 +118,7 @@ BitmapImage::WriteBinary( ostream& os ) const
   os.put( mWidth & 0xff ).put( mWidth >> 8 )
     .put( mHeight & 0xff ).put( mHeight >> 8 );
 
-  uint16* pData = mpData,
+  uint16_t* pData = mpData,
         * pEnd = mpData + mWidth * mHeight;
   while( pData < pEnd )
   {
@@ -134,21 +134,21 @@ BitmapImage::WriteBinary( ostream& os ) const
 istream&
 BitmapImage::ReadBinary( istream& is )
 {
-  mWidth = uint8( is.get() );
-  mWidth |= uint8( is.get() ) << 8;
-  mHeight = uint8( is.get() );
-  mHeight |= uint8( is.get() ) << 8;
+  mWidth = uint8_t( is.get() );
+  mWidth |= uint8_t( is.get() ) << 8;
+  mHeight = uint8_t( is.get() );
+  mHeight |= uint8_t( is.get() ) << 8;
 
   delete[] mpData;
-  mpData = new uint16[ mWidth * mHeight ];
+  mpData = new uint16_t[ mWidth * mHeight ];
 
-  uint16* pData = mpData,
+  uint16_t* pData = mpData,
         * pEnd = mpData + mWidth * mHeight;
   while( pData < pEnd )
   {
-    int length_1 = uint8( is.get() );
-    int value = uint8( is.get() );
-    value |= uint8( is.get() ) << 8;
+    int length_1 = uint8_t( is.get() );
+    int value = uint8_t( is.get() );
+    value |= uint8_t( is.get() ) << 8;
     for( int i = 0; i <= length_1 && pData < pEnd; ++i )
       *pData++ = value;
   }

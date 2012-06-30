@@ -162,10 +162,10 @@ gHIampDevice::GetData( GenericSignal &Output )
 
   // Fill the output as necessary
   
-  union { BYTE* b; float* f; } data = { mpBuffers[mQueueIndex] };
+  float* data = reinterpret_cast<float*>( mpBuffers[mQueueIndex] );
   for( int sample = 0; sample < mSampleBlockSize; sample++ )
   {
-    float* sampleData = data.f + mChannelPoints * sample;
+    float* sampleData = &data[mChannelPoints * sample];
     map< int, int >::iterator itr = mAnalogChannelMap.begin();
     if( mRefIdx == -1 ) // Unreferenced Mode
       for( ; itr != mAnalogChannelMap.end(); itr++ )
@@ -174,12 +174,12 @@ gHIampDevice::GetData( GenericSignal &Output )
       for( ; itr != mAnalogChannelMap.end(); itr++ )
         Output( itr->second, sample ) = sampleData[itr->first]
                                       - sampleData[mRefIdx];
-    union { float* f; uint16_t* i; } digital = { sampleData + mChannelPoints - 1 };
+    uint16_t* digital = reinterpret_cast<uint16_t*>( &sampleData[mChannelPoints - 1] );
     itr = mDigitalChannelMap.begin();
     for( ; itr != mDigitalChannelMap.end(); itr++ )
     {
-      uint16 mask = 1 << itr->first;
-      Output( itr->second, sample ) = ( *digital.i & mask ) ? 100.0f : 0.0f;
+      uint16_t mask = 1 << itr->first;
+      Output( itr->second, sample ) = ( *digital & mask ) ? 100.0f : 0.0f;
     }
   }
 

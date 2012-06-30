@@ -34,6 +34,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include "defines.h"
 
 namespace GDF
 {
@@ -49,18 +50,18 @@ namespace GDF
     ( *reinterpret_cast<const unsigned short*>( "\0\1" ) == 0x01 );
 
   // Schloegl et al, 1998, Table 1.
-  //               Type             Size  Code
-  typedef GDFType< signed char,        1, 1  > int8;
-  typedef GDFType< unsigned char,      1, 2  > uint8;
-  typedef GDFType< signed short,       2, 3  > int16;
-  typedef GDFType< unsigned short,     2, 4  > uint16;
-  typedef GDFType< signed int,         4, 5  > int32;
-  typedef GDFType< unsigned int,       4, 6  > uint32;
-  typedef GDFType< signed long long,   8, 7  > int64;
-  typedef GDFType< unsigned long long, 8, 8  > uint64;
+  //               Type  Size  Code
+  typedef GDFType< int8_t,   1, 1  > int8;
+  typedef GDFType< uint8_t,  1, 2  > uint8;
+  typedef GDFType< int16_t,  2, 3  > int16;
+  typedef GDFType< uint16_t, 2, 4  > uint16;
+  typedef GDFType< int32_t,  4, 5  > int32;
+  typedef GDFType< uint32_t, 4, 6  > uint32;
+  typedef GDFType< int64_t,  8, 7  > int64;
+  typedef GDFType< uint64_t, 8, 8  > uint64;
 
-  typedef GDFType< float,              4, 16 > float32;
-  typedef GDFType< double,             8, 17 > float64;
+  typedef GDFType< float,    4, 16 > float32;
+  typedef GDFType< double,   8, 17 > float64;
 
   const long long cInvalidDate = - ( 1LL << 62 );
   const long long cSecondsPerDay = ( 60 * 60 * 24 );
