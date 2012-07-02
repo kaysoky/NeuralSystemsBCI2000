@@ -49,8 +49,8 @@ How do I proceed?
 <p>Q: How do I debug a BCI2000 module?
 </p><p>A:
 </p>
-<ol><li>Add the "rem" comment indicator in front of the module's startup command in the batch file you are using to start up BCI2000.
-</li><li>In the Borland IDE, go to "Project->Options->Compiler", click "Full Debug" and "OK", and recompile the module.
+<ol><li>Add the # comment indicator in front of the module's startup command in the batch file you are using to start up BCI2000. If you are using BCI2000Launcher, adapt one of the batch files in BCI2000/batch to start up your desired configuration, and use that batch file during debugging.
+</li><li>Use your compiler to compile the module in debug mode.
 </li><li>Execute the batch file. 
 </li><li>Change to the IDE, and run the module in the debugger. 
 </li></ol>

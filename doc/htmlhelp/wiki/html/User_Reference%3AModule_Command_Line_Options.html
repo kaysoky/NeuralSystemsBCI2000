@@ -80,13 +80,15 @@ Parameter values must not contain white spaces on the command line; however, whi
 </li><li>The <i>SavePrmFile</i> option will save a <a href="Technical_Reference%253AParameter_File.html" title="Technical Reference:Parameter File">parameter file</a> for each run.
 </li><li>Normally, BCI2000 automatically chooses a suitable IP address for communication between SignalSource, SignalProcessing, and Application module. Sometimes however, you want a specific address to be used. This is possible using the <i>SignalSourceIP/SignalProcessingIP/ApplicationIP</i> options. Note that these options must be specified on the command line of the respective module, e.g. the following lines will specify the localhost address for both the connection to the Operator module (first option), and the connection between core modules:
 </li></ul>
-<pre>start SignalSource 127.0.0.1 --SignalSourceIP=127.0.0.1
-start SignalProcessing 127.0.0.1 --SignalProcessingIP=127.0.0.1
-start Application 127.0.0.1 --ApplicationIP=127.0.0.1
+<pre>start executable SignalSource 127.0.0.1 --SignalSourceIP=127.0.0.1
+start executable SignalProcessing 127.0.0.1 --SignalProcessingIP=127.0.0.1
+start executable Application 127.0.0.1 --ApplicationIP=127.0.0.1
 </pre>
+<ul><li>The <i>--local</i> option provides an alternative way to set a module's listening IP to 127.0.0.1.
+</li></ul>
 <a name="Operator_Module"></a><h2>Operator Module</h2>
 <p>The Operator Module allows to specify scripts from the command line.
-Most command line options correspond to script entries in the operator's preferences dialog, except the "--Title" option which takes a string that is displayed in the Operator Module's title bar.
+Most command line options correspond to script entries in the operator's preferences dialog.
 The following options exist:
 </p>
 <pre>--OnConnect
@@ -96,15 +98,25 @@ The following options exist:
 --OnResume
 --OnStart
 --Title
+--Hide
+--StartupIdle
+--Telnet
 </pre>
 <p>After the option, white space is expected, followed with a double-quote enclosed string.
 Examples:
 </p>
 <pre>--OnConnect "C:\scripts\onconnect.bciscript"
 --OnConnect "-LOAD PARAMETERFILE ..\parms\myparms.prm"
+--Telnet *:3999
 --Title %~n0
 </pre>
-<p>The last example shows how to display the name of the batch file from which the Operator Module was started under MS Windows.
+<p>The last example shows how to display the name of the batch file from which the Operator Module was started under MS Windows. The "--Title" option takes a string that is displayed in the Operator Module's title bar. The "--Hide" option has no arguments. It hides the Operator module's main window (but not visualization windows). Typically, this option is used in conjunction with fully automated execution via OnConnect/OnSetConfig/OnSuspend scripts, or together with the "--Telnet" option.
+</p><p>The "--Telnet" option expects an IP:Port combination on which to listen for incoming connections, defaulting to "localhost:3999". Logging into the Operator Module's telnet server allows you to execute script commands interactively, or to remote-control BCI2000 from an external application using script commands. When you intend to connect to the Operator Module from a different machine, you will need to specify either an asterisk (*) in place of the IP address: "*:3999" to indicate that it should listen on all available addresses, or the listening machine's external IP address, e.g. "134.2.131.152:3999".
+</p><p>When the "--StartupIdle" option is specified, the Operator module does not wait for incoming connections. This allows for basic configuration to be performed via a telnet connection. To prepare for core module startup, execute
+</p>
+<pre>Startup System
+</pre>
+<p>from the telnet prompt.
 </p><p>For further details and examples, see <a href="User_Reference%253AOperator_Module_Scripting.html" title="User Reference:Operator Module Scripting">User Reference:Operator Module Scripting</a>.
 </p>
 <a name="See_also"></a><h2>See also</h2>

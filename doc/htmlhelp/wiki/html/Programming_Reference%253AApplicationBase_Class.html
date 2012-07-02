@@ -105,7 +105,8 @@ AppLog.Screen &lt;&lt; "This message goes into an operator window." &lt;&lt; end
 <pre>// Write a message to both screen and file:
 AppLog &lt;&lt; "This message is displayed by the operator module, and written into the log file." &lt;&lt; endl;
 </pre>
-<p>The application log file is located in the current session directory, and named after the current session; it carries an <b>.applog</b> extension.
+<p>Make sure to include the "endl" as nothing is written until the AppLog receives a newline command.
+</p><p>The application log file is located in the current session directory, and named after the current session; it carries an <b>.applog</b> extension.
 </p><p>Operator log window messages have <i>APLG</i> as their <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">visualization source ID</a>.
 </p>
 <a name="Remarks"></a><h2>Remarks</h2>

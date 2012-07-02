@@ -36,7 +36,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <pre>&gt;&gt; help bci2000chain
 </pre>
-<p>Note that most of the Matlab functions here require the <a href="User_Reference%253AMatlab_MEX_Files.html" title="User Reference:Matlab MEX Files">BCI2000 mex files</a> as a dependency.
+<p>Note that most of the Matlab functions here require the <a href="User_Reference%253AMatlab_MEX_Files.html" title="User Reference:Matlab MEX Files">BCI2000 mex files</a> as a dependency. In addition, <tt>bci2000chain</tt> requires binaries of the <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">BCI2000 command-line tools</a>.
 </p><p><br />
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
@@ -48,10 +48,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_Reference%253AMatlab_Tools.html#Example"><span class="tocnumber">2.2</span> <span class="toctext">Example</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#read_bciprm"><span class="tocnumber">3</span> <span class="toctext">read_bciprm</span></a></li>
-<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#make_bciprm"><span class="tocnumber">4</span> <span class="toctext">make_bciprm</span></a></li>
-<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#read_bcidate"><span class="tocnumber">5</span> <span class="toctext">read_bcidate</span></a></li>
-<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#rename_bcidat"><span class="tocnumber">6</span> <span class="toctext">rename_bcidat</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#create_bcidat"><span class="tocnumber">3</span> <span class="toctext">create_bcidat</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#read_bciprm"><span class="tocnumber">4</span> <span class="toctext">read_bciprm</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#make_bciprm"><span class="tocnumber">5</span> <span class="toctext">make_bciprm</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#decode_bcitime"><span class="tocnumber">6</span> <span class="toctext">decode_bcitime</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#read_bcidate"><span class="tocnumber">7</span> <span class="toctext">read_bcidate</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_Tools.html#rename_bcidat"><span class="tocnumber">8</span> <span class="toctext">rename_bcidat</span></a></li>
 </ul>
 </td></tr></table>
 <a name="bci2000path"></a><h2>bci2000path</h2>
@@ -63,7 +65,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li> add subdirectories of the BCI2000 distribution to the system shell's path, for the duration of the current Matlab session;
 </li><li> remove directories from the path again,  or even remove everything BCI2000-related from the Matlab and system paths in one go.
 </li></ul>
-<p>Of course, before you can call <tt>bci2000path</tt>, Matlab needs to know where <tt>bci2000path</tt> itself is. This chicken-and-egg problem is typical of Matlab path-juggling.  You could use the graphical <tt>pathtool</tt> to add an absolute reference to the <tt>tools/matlab</tt> directory "permanently" to the Matlab path,  but anyone who has made heavy use of  Matlab for some time, and is in the habit of using more than one third-party toolbox, will know that this leads to problems sooner or later. One way is to adapt the following lines and put them either in your <tt>startup.m</tt> file, or in some other handy function in the <tt>My Documents\MATLAB</tt> (or <tt>$HOME/matlab</tt>) directory so that you can call it when needed:
+<p>Of course, before you can call <tt>bci2000path</tt>, Matlab needs to know where <tt>bci2000path</tt> itself is. This chicken-and-egg problem is typical of Matlab path-juggling.  You could use the graphical <tt>pathtool</tt> to add an absolute reference to the <tt>tools/matlab</tt> directory "permanently" to the Matlab path,  but anyone who has made heavy use of  Matlab for some time, and is in the habit of using more than one third-party toolbox, will know that this leads to problems sooner or later. So we do not recommend the path GUI. One solution is to adapt the following lines and put them either in your <tt>startup.m</tt> file, or in some other handy function in the <tt>My Documents\MATLAB</tt> (or <tt>$HOME/matlab</tt>) directory so that you can call it when needed:
 </p>
 <pre>olddir = pwd;
 cd('C:\BCI2000')   % The absolute path has to be hardcoded somewhere, and here it is.  Watch out, in case this is (or becomes) incorrect 
@@ -91,11 +93,17 @@ s = bci2000chain(fn, 'TransmissionFilter|SpatialFilter|ARFilter',  'ExampleParam
 </pre>
 <p>See the help documentation in the Matlab file for more details.
 </p>
+<a name="create_bcidat"></a><h2>create_bcidat</h2>
+<p>This utility allows you to create "toy" BCI2000 <tt>.dat</tt> files easily, perhaps using only a numeric signal array and a scalar sampling rate.  Read the help for this function in order to see how to run a <tt>bci2000chain</tt> on a signal that is stored in a Matlab variable rather than a pre-existing file.
+</p>
 <a name="read_bciprm"></a><h2>read_bciprm</h2>
 <p>This utility allows you to read BCI2000 parameters from a data file, a parameter file, or from a structure, string, or cell array of strings in Matlab. It requires the <a href="User_Reference%253AMatlab_MEX_Files.html" title="User Reference:Matlab MEX Files">mex-files</a> <tt>load_bcidat</tt> and <tt>convert_bciprm</tt>.
 </p>
 <a name="make_bciprm"></a><h2>make_bciprm</h2>
 <p>This utility allows you to read, combine, and write BCI2000 parameters from multiple sources, making use of <tt>read_bciprm</tt>.
+</p>
+<a name="decode_bcitime"></a><h2>decode_bcitime</h2>
+<p>This function takes a BCI2000 parameter value that is supposed to indicate time, and figures out whether it is expressed in seconds/milliseconds/microseconds with an explicit PhysicalUnit, or in sexagesimal notation (e.g. MM:SS),  or whether it is a bare number indicating a number of SampleBlocks. In all cases the value is returned, unambiguously, in seconds.
 </p>
 <a name="read_bcidate"></a><h2>read_bcidate</h2>
 <p>This function uses <tt>read_bciprm</tt> to read one particular parameter, <b>StorageTime</b>, from a data file, from a parameter file, or from some representation of a BCI2000 parameter set in memory.  This datestamp is returned either as a scalar value (i.e. a Matlab <tt>datenum</tt>) or as a string formatted according to your specification.

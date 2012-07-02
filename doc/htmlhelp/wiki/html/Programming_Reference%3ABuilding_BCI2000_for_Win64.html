@@ -42,8 +42,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 </td></tr></table>
 <a name="Install_Qt_for_x64"></a><h2>Install Qt for x64</h2>
 <p>Rather than building BCI2000 against the Qt distribution coming with its source code, you will need to install a separate version of Qt on your machine.
-The following steps have been tested with Qt 4.6.3.
-</p><p>1. Download and install a recent version of Qt.
+The following steps have been tested with Qt 4.6.3, and should generally work with Qt 4.7.x as well.
+</p><p>1. Download and install a recent SDK version of Qt.
 </p><p>2. Add your Qt installation's qt/bin directory to the system search path.
 </p><p>3. In the file <tt>qt/mkspecs/win32-msvc2008/qmake.conf</tt>, or the corresponding file for MSVC2010, apply these changes: In QMAKE_CFLAGS_RELEASE and QMAKE_CFLAGS_DEBUG, replace the -MD and -MDd switches with -MT and -MTd, respectively.
 </p><p>4. From the Start menu, open the Visual Studio x64 Command Prompt.
@@ -79,8 +79,7 @@ The following steps have been tested with Qt 4.6.3.
 After successful execution, you will have a Visual Studio solution file ready to compile BCI2000.
 </p>
 <a name="Limitations"></a><h2>Limitations</h2>
-<ul><li>You will get a number of warnings about unsafe type conversions. These warnings do not indicate serious problems, and may be safely ignored.
-</li><li>You cannot build BCI2000 modules that depend on 32-bit libraries, as do most source modules. Consider building 32-bit executables instead--these will run fine on Win64.
+<ul><li>You cannot build BCI2000 modules that depend on 32-bit libraries, as do most source modules. Consider building 32-bit executables instead--these will run fine on Win64.
 </li><li>Note that the g.USBamp source module comes with a 64-bit library, so it is supported natively on Win64.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>

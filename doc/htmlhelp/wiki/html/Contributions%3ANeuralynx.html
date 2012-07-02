@@ -46,22 +46,23 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </li>
 <li class='toclevel-1'><a href="Contributions%253ANeuralynx.html#Functional_Description"><span class="tocnumber">4</span> <span class="toctext">Functional Description</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253ANeuralynx.html#Parameters"><span class="tocnumber">5</span> <span class="toctext">Parameters</span></a>
-<ul>
-<li class='toclevel-2'><a href="Contributions%253ANeuralynx.html#EventCh"><span class="tocnumber">5.1</span> <span class="toctext">EventCh</span></a></li>
-</ul>
-</li>
+<li class='toclevel-1'><a href="Contributions%253ANeuralynx.html#Parameters"><span class="tocnumber">5</span> <span class="toctext">Parameters</span></a></li>
 <li class='toclevel-1'><a href="Contributions%253ANeuralynx.html#States"><span class="tocnumber">6</span> <span class="toctext">States</span></a></li>
 <li class='toclevel-1'><a href="Contributions%253ANeuralynx.html#See_also"><span class="tocnumber">7</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Synopsis"></a><h2>Synopsis</h2>
 <a name="Known_Issues"></a><h3>Known Issues</h3>
+<ul><li>There is a 2MB memory leak every time there is a new configuration of the system (press of the SetConfig button on the operator module). That means that the module will allow a number of reconfigurations before it runs out of memory.
+</li><li>The module checks for the right timing of the Neuralynx provided timestamps in every package it acquires. If there is a discrepancy in these timings the module will stop (thus ending any running experiment) notifying the user of the problem. This is by design but will probably be removed in newer versions because Neuralynx seems to be providing such discrepancies more often than was originally expected.
+</li></ul>
 <a name="Location"></a><h2>Location</h2>
 <p><a href="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/Neuralynx" class='external free' title="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/Neuralynx" rel="nofollow">http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/Neuralynx</a>
 </p>
 <a name="Versioning"></a><h2>Versioning</h2>
 <a name="Authors"></a><h3>Authors</h3>
+<p>George Dimitriadis (Radboud University Nijmegen)
+</p>
 <a name="Version_History"></a><h3>Version History</h3>
 <a name="Source_Code_Revisions"></a><h3>Source Code Revisions</h3>
 <ul><li>Initial development: 3682
@@ -70,8 +71,16 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>Broken since: --
 </li></ul>
 <a name="Functional_Description"></a><h2>Functional Description</h2>
+<p>Acquires data from a Neuralynx Cheetah data Acquisition software connected to a Cheetah amplifier. That means that for this module to operate the Neuralynx software must be on and acquiring.
+</p>
 <a name="Parameters"></a><h2>Parameters</h2>
-<a name="EventCh"></a><h3>EventCh</h3>
+<ul><li> <b>SourceCh:</b> The number of channels that the Neuralynx software reads (including the events channel if EventCh is on).
+</li><li> <b>SamplingRate:</b> This is the sampling rate of the Neuralynx software after subsampling. Use the value (with the decimals) as it appears in the Acquisition Entities panel of Neuralynx under the Sample Frequency entry when only one channel is selected.
+</li><li> <b>SourceChOffset:</b> This is not used in the module.  Set it to 0 to be safe.
+</li><li> <b>SourceChGain:</b> This is also not used. Set it to 1.
+</li><li> <b>SampleBlockSize:</b> Neuralynx has a set packet of data acquisition of 512 points. Although the module will work with other values it is good to keep this parameter as a multiple of 512. This will provide a much more constant block time. 
+</li><li> <b>EventCh:</b> A boolean parameter allowing the capture of the events channel of the Neuralynx software as an extra channel into the BCI2000 data stream. If this is set to yes then another channel must be added to the SourceCh, the ChannelNames, SourceChOffset and SourceChGain Parameters.
+</li></ul>
 <a name="States"></a><h2>States</h2>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AFilters.html" title="User Reference:Filters">User Reference:Filters</a>, <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>

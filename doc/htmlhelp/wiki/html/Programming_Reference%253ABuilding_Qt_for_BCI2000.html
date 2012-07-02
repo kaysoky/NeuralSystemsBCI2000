@@ -75,7 +75,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul><li><tt>qt/src/corelib</tt>,
 </li><li><tt>qt/src/gui</tt>,
 </li><li><tt>qt/src/winmain</tt>,
-</li><li><tt>qt/src/opengl</tt>.
+</li><li><tt>qt/src/opengl</tt>,
+</li><li><tt>qt/src/script</tt>.
 </li></ul>
 </li><li>Copy the following files from <tt>qt/bin</tt> to <tt>BCI2000/src/extlib/qt/msvc/bin</tt>:
 </li></ul>
@@ -105,6 +106,9 @@ qtmaind.pdb
 QtOpenGL.lib
 QtOpenGLd.lib
 QtOpenGLd.pdb
+QtScript.lib
+QtScriptd.lib
+QtScriptd.pdb
 </pre>
 <ul><li>From <tt>qt/mkspecs</tt>, copy the file <tt>qconfig.pri</tt>, and recursively copy the contents of the <tt>features</tt> and the <tt>win32-msvc2008</tt> directories to <tt>BCI2000/src/extlib/qt/msvc/mkspecs</tt>.
 </li><li>In <tt>BCI2000/src/extlib/qt/msvc/mkspecs/win32-msvc2008/qmake.conf</tt>, remove the <tt>-Fd$(DESTDIR)$(QMAKE_TARGET).pdb</tt> compiler option from <tt>QMAKE_CFLAGS_DEBUG</tt>.
@@ -149,7 +153,8 @@ QtOpenGLd.pdb
 <ul><li><tt>qt/src/corelib</tt>,
 </li><li><tt>qt/src/gui</tt>,
 </li><li><tt>qt/src/winmain</tt>,
-</li><li><tt>qt/src/opengl</tt>.
+</li><li><tt>qt/src/opengl</tt>,
+</li><li><tt>qt/src/script</tt>.
 </li></ul>
 </li><li>When the build is finished, copy the following files from <tt>qt/bin</tt> to <tt>BCI2000/src/extlib/qt/mingw/bin</tt>:
 </li></ul>
@@ -171,6 +176,7 @@ mingwm10.dll
 libQtGui.a
 libqtmain.a
 libQtOpenGL.a
+libQtScript.a
 </pre>
 <ul><li>From <tt>qt/mkspecs</tt>, copy the file <tt>qconfig.pri</tt>, and recursively copy the contents of directories <tt>features</tt>, <tt>common</tt>, and <tt>win32-g++</tt> to <tt>BCI2000/src/extlib/qt/mingw/mkspecs</tt>.
 </li></ul>
@@ -183,10 +189,10 @@ libQtOpenGL.a
 </p>
 <pre>for i in `find *.h`; do /full/path/to/fixheader $i; done
 </pre>
-<p>Repeat this step for the <tt>QtCore</tt>, <tt>QtGui</tt>, and <tt>QtOpenGL</tt> include directories.
+<p>Repeat this step for the <tt>QtCore</tt>, <tt>QtGui</tt>, <tt>QtOpenGL</tt>, and <tt>QtScript</tt> include directories.
 </p>
 <ul><li>Copy the contents of the directory <tt>qt/include/Qt</tt> into <tt>BCI2000/src/extlib/qt/include/Qt</tt>, omitting the <tt>private</tt> directory.
-</li><li>Likewise, copy the <tt>QtCore</tt>, <tt>QtGui</tt>, and <tt>QtOpenGL</tt> include directories to <tt>BCI2000/src/extlib/qt/include</tt>, omitting the respective <tt>private</tt> directories.
+</li><li>Likewise, copy the <tt>QtCore</tt>, <tt>QtGui</tt>, <tt>QtOpenGL</tt>, <tt>QtScript</tt> include directories to <tt>BCI2000/src/extlib/qt/include</tt>, omitting the respective <tt>private</tt> directories.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Programming_Reference%253ABuild_System.html" title="Programming Reference:Build System">Programming Reference:Build System</a>

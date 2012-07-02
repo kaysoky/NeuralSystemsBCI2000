@@ -50,7 +50,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#There_is_no_Matlab_engine_started_up"><span class="tocnumber">7.3</span> <span class="toctext">There is no Matlab engine started up</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#Changes_to_M-files_appear_to_have_no_effect"><span class="tocnumber">7.4</span> <span class="toctext">Changes to M-files appear to have no effect</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#You_get_linker_errors_when_rebuilding_MatlabSignalProcessing"><span class="tocnumber">7.5</span> <span class="toctext">You get linker errors when rebuilding MatlabSignalProcessing</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#You_get_a_message_window_with_an_.22Entry_Point_Not_Found.22_message"><span class="tocnumber">7.6</span> <span class="toctext">You get a message window with an "Entry Point Not Found" message</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#You_get_a_message_window_with_a_.22Library_not_found.22_message"><span class="tocnumber">7.6</span> <span class="toctext">You get a message window with a "Library not found" message</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#You_get_a_message_window_with_an_.22Entry_Point_Not_Found.22_message"><span class="tocnumber">7.7</span> <span class="toctext">You get a message window with an "Entry Point Not Found" message</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Programming_Reference%253AMatlabFilter.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
@@ -190,6 +191,9 @@ This behavior is controlled by another command-line parameter, <tt>MatlabStayOpe
 </p>
 <a name="You_get_linker_errors_when_rebuilding_MatlabSignalProcessing"></a><h3>You get linker errors when rebuilding <i>MatlabSignalProcessing</i></h3>
 <p>If you get linker errors after editing <tt>PipeDefinition.cpp</tt>, make sure that all filters' cpp files are part of the <i>MatlabSignalProcessing</i> project.
+</p>
+<a name="You_get_a_message_window_with_a_.22Library_not_found.22_message"></a><h3>You get a message window with a "Library not found" message</h3>
+<p>Make sure that your Windows "%PATH%" variable contains the bin/win32 directory of your Matlab installation.
 </p>
 <a name="You_get_a_message_window_with_an_.22Entry_Point_Not_Found.22_message"></a><h3>You get a message window with an "Entry Point Not Found" message</h3>
 <p>This error is likely to indicate confusion of multiple installations of Matlab on your machine.

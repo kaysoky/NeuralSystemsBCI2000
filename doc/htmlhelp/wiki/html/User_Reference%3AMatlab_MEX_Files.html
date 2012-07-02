@@ -39,17 +39,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Other_platforms"><span class="tocnumber">2.2</span> <span class="toctext">Other platforms</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#Building_BCI2000_MEX_files"><span class="tocnumber">3</span> <span class="toctext">Building BCI2000 MEX files</span></a>
-<ul>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Microsoft_Windows"><span class="tocnumber">3.1</span> <span class="toctext">Microsoft Windows</span></a>
-<ul>
-<li class='toclevel-3'><a href="User_Reference%253AMatlab_MEX_Files.html#Using_the_Borland_C.2B.2B_compiler"><span class="tocnumber">3.1.1</span> <span class="toctext">Using the Borland C++ compiler</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253AMatlab_MEX_Files.html#Using_the_Microsoft_Visual_C.2B.2B_compiler"><span class="tocnumber">3.1.2</span> <span class="toctext">Using the Microsoft Visual C++ compiler</span></a></li>
-</ul>
-</li>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Other_Platforms"><span class="tocnumber">3.2</span> <span class="toctext">Other Platforms</span></a></li>
-</ul>
-</li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#Building_BCI2000_MEX_files"><span class="tocnumber">3</span> <span class="toctext">Building BCI2000 MEX files</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#BCI2000_MEX_functions"><span class="tocnumber">4</span> <span class="toctext">BCI2000 MEX functions</span></a>
 <ul>
 <li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#load_bcidat"><span class="tocnumber">4.1</span> <span class="toctext">load_bcidat</span></a></li>
@@ -72,35 +62,18 @@ a.new, #quickbar a.new { color: #CC2200; }
 Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use these files.
 </p>
 <a name="Other_platforms"></a><h3>Other platforms</h3>
-<p>BCI2000 comes with pre-built MEX files for a number of platforms, including 64-bit Windows, Mac OS X, and Linux 32-bit as well as 64-bit. Support for these MEX files is <i>experimental</i> at present, and they may or may not work on your particular configuration.
+<p>BCI2000 comes with pre-built MEX files for a number of platforms, including 64-bit Windows, Mac OS X, and Linux for the i386 as well as the amd64 architecture. Support for these MEX files is <i>experimental</i> at present, and they may or may not work on your particular configuration.
 On 64-bit Windows, the MEX files require the Visual Studio runtime libraries. If you want to use them on a machine that doesn't have Visual Studio installed, you will need to install the <a href="http://www.bci2000.org/downloads/bin/vcredist_x64.exe" class='external text' title="http://www.bci2000.org/downloads/bin/vcredist_x64.exe" rel="nofollow">Visual Studio runtime libraries</a> first.
 </p>
 <a name="Building_BCI2000_MEX_files"></a><h2>Building BCI2000 MEX files</h2>
 <p>Typically, you will use pre-built binary versions of BCI2000 MEX files as described above. If you need to build BCI2000 MEX files yourself, the following information applies.
+BCI2000 provides a Matlab script that can be used to build MEX files.
 </p>
-<a name="Microsoft_Windows"></a><h3>Microsoft Windows</h3>
-<a name="Using_the_Borland_C.2B.2B_compiler"></a><h4>Using the Borland C++ compiler</h4>
-<p>Compiling MEX files under Windows is possible using the Borland C++ compiler (a free command line version is available at <a href="http://www.borland.com/downloads/download_cbuilder.html" class='external free' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">http://www.borland.com/downloads/download_cbuilder.html</a>). To build MEX files, 
-</p>
-<ul><li>open a console window, 
-</li><li>change to the <tt>BCI2000/src/Tools/mex</tt> directory,
-</li><li>execute <tt>make</tt> from there.
-</li></ul>
-<p>For Matlab versions up to 7.5 (Release 2007b), alternatively the <tt>buildmex</tt> script may be used after configuring the <tt>mex</tt> command to use the Borland compiler. For newer versions of Matlab, the <tt>mex</tt> command does not support the Borland compiler any more; still, using the <tt>make</tt> command as described above should work with newer versions of Matlab as well. 
-</p>
-<a name="Using_the_Microsoft_Visual_C.2B.2B_compiler"></a><h4>Using the Microsoft Visual C++ compiler</h4>
-<ul><li>Run <tt>mex -setup</tt> and choose the Visual C++ compiler from the list of detected compilers,
-</li><li>in Matlab, change directory to <tt>BCI2000/src/Tools/mex</tt>,
-</li><li>run <tt>buildmex</tt> to compile, link and install BCI2000 mex files into the <tt>BCI2000/Tools/mex</tt> directory.
-</li></ul>
-<a name="Other_Platforms"></a><h3>Other Platforms</h3>
-<p>For platforms other than 32-bit Windows, BCI2000 provides a Matlab script that can be used to build MEX files.
-</p>
-<ul><li>Independently of system libraries, Matlab creates its own execution environment for MEX files. For MEX files, this means that they usually won't work unless compiled with a version of the <a href="http://gcc.gnu.org" class='external text' title="http://gcc.gnu.org" rel="nofollow">gcc compiler</a> that matches the one used to build Matlab itself, and linked against libraries that match the ones used by Matlab. To check, see the <a href="http://www.mathworks.com/support/compilers/current_release/" class='external text' title="http://www.mathworks.com/support/compilers/current_release/" rel="nofollow">list of compatible compiler versions</a>.
-</li><li>After downloading the <a href="Programming_Reference%253ABCI2000_Source_Code.html" title="Programming Reference:BCI2000 Source Code">BCI2000 source code</a>, start Matlab and make sure that the mex command is configured to use the <a href="http://gcc.gnu.org" class='external text' title="http://gcc.gnu.org" rel="nofollow">gcc compiler</a>. Typing <tt>help mex</tt> from the Matlab command line will guide you in configuring the mex command.
+<ul><li>After downloading the <a href="Programming_Reference%253ABCI2000_Source_Code.html" title="Programming Reference:BCI2000 Source Code">BCI2000 source code</a>, start Matlab and make sure that the mex command is configured to use a compiler that is able to compile C++ code. On Windows platforms, you may use the compiler included with the freely available Windows SDK. On Unix platforms, you will typically use the gcc compiler. Typing <tt>help mex</tt> from the Matlab command line will guide you in configuring the mex command.
 </li><li>Change Matlab's working directory to <tt>BCI2000/src/core/Tools/mex/</tt>.
 </li><li>Execute <tt>buildmex</tt> from the Matlab command line.
 </li><li>Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use the newly built MEX files.
+</li><li>On Unix-based platforms, Matlab creates its own execution environment for MEX files, independently of system libraries. For MEX files, this means that they usually won't work unless compiled with a version of the <a href="http://gcc.gnu.org" class='external text' title="http://gcc.gnu.org" rel="nofollow">gcc compiler</a> that matches the one used to build Matlab itself, and linked against libraries that match the ones used by Matlab. To check, see the <a href="http://www.mathworks.com/support/compilers/current_release/" class='external text' title="http://www.mathworks.com/support/compilers/current_release/" rel="nofollow">list of compatible compiler versions</a>.
 </li></ul>
 <a name="BCI2000_MEX_functions"></a><h2>BCI2000 MEX functions</h2>
 <a name="load_bcidat"></a><h3><tt>load_bcidat</tt></h3>

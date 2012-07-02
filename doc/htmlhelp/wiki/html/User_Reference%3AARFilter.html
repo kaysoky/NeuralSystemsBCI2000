@@ -2,9 +2,9 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
 <head>
-<title>User Reference:ARFilter - BCI2000 Help</title>
+<title>User Reference:SpectralEstimator - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:ARFilter,User Reference:FFTFilter,User Reference:Matlab MEX Files" />
+<meta name="keywords" content="User Reference:SpectralEstimator,User Reference:FFTFilter,User Reference:Matlab MEX Files" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,11 +30,13 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">ARFilter</h1><p class="subtitle">User Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<h1 class="pagetitle">SpectralEstimator</h1><p class="subtitle">User Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
 <li class='toclevel-1'><a href="User_Reference%253AARFilter.html#Function"><span class="tocnumber">1</span> <span class="toctext">Function</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Reference%253AARFilter.html#Obtaining_a_discrete_spectrum_from_an_AR_model"><span class="tocnumber">1.1</span> <span class="toctext">Obtaining a discrete spectrum from an AR model</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AARFilter.html#AR_Algorithm"><span class="tocnumber">1.1</span> <span class="toctext">AR Algorithm</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AARFilter.html#FFT_Algorithm"><span class="tocnumber">1.2</span> <span class="toctext">FFT Algorithm</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AARFilter.html#Physical_unit_of_the_estimated_spectrum"><span class="tocnumber">1.3</span> <span class="toctext">Physical unit of the estimated spectrum</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AARFilter.html#Parameters"><span class="tocnumber">2</span> <span class="toctext">Parameters</span></a>
@@ -55,16 +57,27 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </td></tr></table>
 <a name="Function"></a><h2>Function</h2>
-<p>The ARFilter computes an autoregressive model of its input data using the <a href="http://en.wikipedia.org/wiki/Maximum_entropy_spectral_estimation" class='external text' title="http://en.wikipedia.org/wiki/Maximum_entropy_spectral_estimation" rel="nofollow">Maximum Entropy Method</a> (Burg algorithm).
+<p>The SpectralEstimator computes a continually updated estimate of the spectrum of its input data, i.e. the distribution of amplitude or energy over frequencies.
 Spectral estimation is done separately for each of the filter's input channels.
-Its output may be raw AR coefficients, or an estimated power spectrum collected into bins. Thus, it can be used in place of the <a href="User_Reference%253AFFTFilter.html" title="User Reference:FFTFilter">FFTFilter</a>.
+</p><p>For each block of data, it uses a past window of data. Optionally, detrending is applied to the data in this window. Also, multiplication with a side lobe suppression window function may be performed, which is routinely done when estimating a spectrum from windowed data.
+</p><p>You may choose from two independent, and very different, spectral estimation algorithms, one based on <b>Autoregression</b> (AR), and one based on the <b>Fast Fourier Transform</b> (FFT).
 </p>
-<a name="Obtaining_a_discrete_spectrum_from_an_AR_model"></a><h3>Obtaining a discrete spectrum from an AR model</h3>
-<p>AR coefficients are actually the coefficients of an all-pole <a href="http://en.wikipedia.org/wiki/Linear_filter" class='external text' title="http://en.wikipedia.org/wiki/Linear_filter" rel="nofollow">linear filter</a> that is fitted to reproduce the data's spectrum when applied to white noise.
+<a name="AR_Algorithm"></a><h3>AR Algorithm</h3>
+<p>The AR algorithm computes an autoregressive model of its input data using the <a href="http://en.wikipedia.org/wiki/Maximum_entropy_spectral_estimation" class='external text' title="http://en.wikipedia.org/wiki/Maximum_entropy_spectral_estimation" rel="nofollow">Maximum Entropy Method</a> (Burg method).
+Its output may be raw AR coefficients, or an estimated power spectrum collected into bins.
+</p><p>AR coefficients are actually the coefficients of an all-pole <a href="http://en.wikipedia.org/wiki/Linear_filter" class='external text' title="http://en.wikipedia.org/wiki/Linear_filter" rel="nofollow">linear filter</a> that is fitted to reproduce the data's spectrum when applied to white noise.
 </p><p>Thus, the estimated <i>power spectrum</i> directly corresponds to that filter's transfer function, divided by the signal's total power.
 To obtain spectral power for finite-sized <i>frequency bins</i>, that <i>power spectrum</i> needs to be multiplied by total signal power, and integrated over the frequency ranges corresponding to individual bins.
 </p><p>This is done by numerical integration, evaluating the spectrum at equally spaced evaluation points, summing, and multiplying by bin width to obtain the power corresponding to a certain bin.
 For <i>amplitude</i> rather than <i>power spectrum</i> output, bin integrals are replaced with their square roots.
+</p>
+<a name="FFT_Algorithm"></a><h3>FFT Algorithm</h3>
+<p>The FFT algorithm computes the <a href="http://en.wikipedia.org/wiki/Discrete_Fourier_Transform" class='external text' title="http://en.wikipedia.org/wiki/Discrete_Fourier_Transform" rel="nofollow">Discrete Fourier Transform</a> of its input data, i.e. it transforms its input into a representation in the frequency domain rather than the time domain. This is a linear transform, which may be viewed as expanding the input data in a new set of basis vectors, which correspond to equally spaced negative and positive frequency bins. The expansion coefficient (or Fourier coefficient) corresponding to a frequency component is a complex number, whose magnitude may be interpreted to represent signal amplitude in the associated frequency bin, and whose phase corresponds to the phase of the signal in that frequency bin.
+</p><p>In contrast to a naive DFT implementation, which requires time proportional to <span class="texhtml"><i>O</i>(<i>N</i><sup>2</sup>)</span>, the FFT algorithm performs the computation in time proportional to <span class="texhtml"><i>O</i>(<i>N</i><i>l</i><i>o</i><i>g</i><i>N</i>)</span> (with <span class="texhtml"><i>N</i></span> being the number of input samples, which must be powers of two in the original FFT algorithm). The SpectralEstimation filter uses a generalization of the FFT algorithm, called <a href="http://www.fftw.org" class='external text' title="http://www.fftw.org" rel="nofollow">FFTW</a>, that can efficiently handle any number of input samples.
+</p>
+<a name="Physical_unit_of_the_estimated_spectrum"></a><h3>Physical unit of the estimated spectrum</h3>
+<p>A power spectrum is an energy density distribution over frequencies. Thus, its physical dimension is "energy per frequency". The ARFilter actually computes a time series of such spectra, representing a flow of energy through each single point in the frequency domain. The proper physical dimension of such a flow is "energy per frequency per time".
+</p><p>In BCI2000, signal amplitude is measured in <span class="texhtml">&mu;<i>V</i></span>, so signal energy is measured in <span class="texhtml">&mu;<i>V</i><sup>2</sup></span>. Measuring frequency in Hz, and time in seconds, these will cancel out in the physical unit's denominator. Thus, the physical unit of a power spectrum is <span class="texhtml">&mu;<i>V</i><sup>2</sup></span>, and <span class="texhtml">&mu;<i>V</i></span> for an amplitude spectrum.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>For all frequency-valued parameters, raw float values are interpreted in terms of the sampling rate; absolute frequencies may be given when followed with <i>Hz</i>, as in the following examples:
@@ -89,7 +102,7 @@ For <i>amplitude</i> rather than <i>power spectrum</i> output, bin integrals are
 </li><li>2: linear trend removal.
 </li></ul>
 <a name="ModelOrder"></a><h3>ModelOrder</h3>
-<p>The order of the autoregressive model. Roughly, this corresponds to the maximum number of peaks in the resulting spectrum.
+<p>The order of the autoregressive model. Roughly, this corresponds to the maximum number of peaks in the resulting spectrum. When using the FFT-based algorithm, this parameter is not used.
 </p>
 <a name="OutputType"></a><h3>OutputType</h3>
 <p>Possible values are

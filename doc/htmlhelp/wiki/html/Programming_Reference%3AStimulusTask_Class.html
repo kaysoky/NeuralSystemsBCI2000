@@ -112,6 +112,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Programming_Reference%253AStimulusTask_Class.html#StimulusType"><span class="tocnumber">7.2</span> <span class="toctext">StimulusType</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AStimulusTask_Class.html#StimulusBegin"><span class="tocnumber">7.3</span> <span class="toctext">StimulusBegin</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AStimulusTask_Class.html#PhaseInSequence"><span class="tocnumber">7.4</span> <span class="toctext">PhaseInSequence</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AStimulusTask_Class.html#PauseApplication"><span class="tocnumber">7.5</span> <span class="toctext">PauseApplication</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Programming_Reference%253AStimulusTask_Class.html#Timeline"><span class="tocnumber">8</span> <span class="toctext">Timeline</span></a></li>
@@ -369,6 +370,9 @@ The notion of an "attended" stimulus requires data recording in <a href="Program
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:StimulusTaskStates&amp;action=edit&amp;section=4" title="Template:StimulusTaskStates">edit</a>]</div><a name="PhaseInSequence"></a><h3>PhaseInSequence</h3>
 <p>This state is 1 during pre-sequence, 2 during sequence and 3 during post-sequence (see <a href="Programming_Reference%253AStimulusTask_Class.html#Timeline" title="">Timeline</a>).
+</p>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:StimulusTaskStates&amp;action=edit&amp;section=5" title="Template:StimulusTaskStates">edit</a>]</div><a name="PauseApplication"></a><h3>PauseApplication</h3>
+<p>While this state is set to 1, no task processing occurs, i.e. the task is paused, and may be resumed by setting PauseApplication to 0.
 </p>
 <a name="Timeline"></a><h2>Timeline</h2>
 <p><a href="../images/thumb/2/22/StimulusTask_Timeline.png/676px-StimulusTask_Timeline.png" class="image" title=""><img src="../images/thumb/2/22/StimulusTask_Timeline.png/676px-StimulusTask_Timeline.png" alt="" width="676" height="206" longdesc="/wiki/index.php/Image:StimulusTask_Timeline.png" /></a>

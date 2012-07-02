@@ -35,7 +35,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Reference%253AGenericFilter_Class.html#The_GenericFilter_class"><span class="tocnumber">1</span> <span class="toctext">The GenericFilter class</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AGenericFilter_Class.html#Required_Members"><span class="tocnumber">2</span> <span class="toctext">Required Members</span></a>
 <ul>
-<li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Constructor"><span class="tocnumber">2.1</span> <span class="toctext">Constructor</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Publish"><span class="tocnumber">2.1</span> <span class="toctext">Publish</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Preflight"><span class="tocnumber">2.2</span> <span class="toctext">Preflight</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Initialize"><span class="tocnumber">2.3</span> <span class="toctext">Initialize</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Process"><span class="tocnumber">2.4</span> <span class="toctext">Process</span></a></li>
@@ -69,14 +69,12 @@ Your own filter code <i>must</i>  implement its own
 versions of some of these member functions:
 </p>
 <a name="Required_Members"></a><h2>Required Members</h2>
-<a name="Constructor"></a><h3>Constructor</h3>
-<p>The <i>Constructor</i>, besides its general purpose of initializing member data, declares the parameters and states your filter wants to introduce into the system (the <tt>BEGIN_...</tt> and <tt>END_...</tt> macros handle the actual function calls): 
+<a name="Publish"></a><h3>Publish</h3>
+<p>The <i>Publish</i> function publishes the parameters and states your filter wants to introduce into the system (the <tt>BEGIN_...</tt> and <tt>END_...</tt> macros handle the actual function calls): 
 </p>
 <pre>
- MyFilter::MyFilter()
- : mMyParam( 1 ),
-   mMyOtherParam( 0.1 ),
-   mCount( 0 )
+void
+ MyFilter::Publish()
  {
    BEGIN_PARAMETER_DEFINITIONS
      &quot;MySection int MyParam= 1 &quot;
@@ -94,6 +92,7 @@ versions of some of these member functions:
 <pre>const char* array[] = { "entry 1", "entry 2", "entry 3", };
 </pre>
 <p>For successful filter instantiation at runtime, the strings must also be valid <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">parameter</a> and <a href="Technical_Reference%253AState_Definition.html" title="Technical Reference:State Definition">state definitions</a>.
+</p><p><b>NOTE:</b> Traditionally, parameters and states have been published from inside a filter's constructor. For more flexibility, a separate <code>Publish()</code> function has been introduced. For backward compatibility, parameters and states may still be published from the constructor, but this is deprecated for newer code.
 </p>
 <a name="Preflight"></a><h3>Preflight</h3>
 <p>The <tt>Preflight</tt> function checks whether the preconditions for successful operation are met. This function is called whenever parameter values are re-applied, i.e., whenever the user presses "Set Config" in the operator window. If <tt>Preflight</tt> does not report an error, this counts as a statement that <tt>Initialize</tt> and <tt>Process</tt> will work properly with the current parameters. The first argument to <tt>Preflight</tt> will inform you about what kind of input signal your filter is going to receive, and your filter is expected to report the properties of its output signal via the second parameter:
@@ -176,7 +175,7 @@ The filter itself may still maintain its own visualization parameters and <a hre
 <ul><li>Parameters and states accessed during initialization or processing <i>must</i> be accessed during the preflight phase. Otherwise, an error message will be displayed when the first access occurs.
 </li><li>To avoid pointless cludging of the <code>Preflight()</code> function, there are some exceptions to this rule:
 <ul><li>States defined in a filter's constructor are known to be present, and thus need not be accessed from that filter's <code>Preflight()</code> function.
-</li><li>Parameters defined in a filter's constructor will be range-checked automatically if any of their <code>LowRange</code> or <code>HighRange</code> <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">properties</a> is set, and need not be accessed explicitly from <code>Preflight()</code>.
+</li><li>Parameters defined in a filter's <code>Publish()</code> function will be range-checked automatically if any of their <code>LowRange</code> or <code>HighRange</code> <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">properties</a> is set, and need not be accessed explicitly from <code>Preflight()</code>.
 </li><li>To disable automatic range checking, set both these properties to the empty string in your <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">parameter definition line</a>:<br /><code>MySection int MyParam= 1 0 % % // a parameter that is not automatically range-checked</code><br />This implies that you need to implement your own range-check in <code>Preflight()</code>. If there are no actual constraints on the parameter's value, just add a line <code>Parameter( "MyParam" );</code> to the filter's <code>Preflight()</code> function.
 </li></ul>
 </li><li><a href="User_Reference%253AExpression_Syntax.html" title="User Reference:Expression Syntax">Expressions</a> may involve state names, and thus need to be evaluated in order to check whether referred-to states are present. Just add a line <br /><code>Expression( Parameter( "MyExpressionParam" ) ).Evaluate();</code><br /> to the filter's <code>Preflight()</code> function.

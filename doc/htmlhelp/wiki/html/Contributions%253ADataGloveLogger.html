@@ -43,7 +43,13 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Contributions%253ADataGloveLogger.html#Functional_Description"><span class="tocnumber">4</span> <span class="toctext">Functional Description</span></a></li>
 <li class='toclevel-1'><a href="Contributions%253ADataGloveLogger.html#Vendor"><span class="tocnumber">5</span> <span class="toctext">Vendor</span></a></li>
 <li class='toclevel-1'><a href="Contributions%253ADataGloveLogger.html#Integration_into_BCI2000"><span class="tocnumber">6</span> <span class="toctext">Integration into BCI2000</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253ADataGloveLogger.html#Parameters"><span class="tocnumber">7</span> <span class="toctext">Parameters</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253ADataGloveLogger.html#Parameters"><span class="tocnumber">7</span> <span class="toctext">Parameters</span></a>
+<ul>
+<li class='toclevel-2'><a href="Contributions%253ADataGloveLogger.html#LogDataGlove"><span class="tocnumber">7.1</span> <span class="toctext">LogDataGlove</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253ADataGloveLogger.html#DataGloveDerivative"><span class="tocnumber">7.2</span> <span class="toctext">DataGloveDerivative</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253ADataGloveLogger.html#DataGloveHandedness"><span class="tocnumber">7.3</span> <span class="toctext">DataGloveHandedness</span></a></li>
+</ul>
+</li>
 <li class='toclevel-1'><a href="Contributions%253ADataGloveLogger.html#State_Variables"><span class="tocnumber">8</span> <span class="toctext">State Variables</span></a></li>
 <li class='toclevel-1'><a href="Contributions%253ADataGloveLogger.html#See_also"><span class="tocnumber">9</span> <span class="toctext">See also</span></a></li>
 </ul>
@@ -81,9 +87,15 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>The 5DT Data Glove 5/14 Ultra is configured in the "Source" panel under the "Log Input" section. 
-</p><p><code>LogDataGlove</code> - The command-line parameter is repeated here
-<code>DataGloveDerivative</code> - Whether to read positions or changes in position.
-<code>DataGloveHandedness</code> - A list of "left" and "right" strings.  If you set this to "left right" then the first left-handed glove found will become glove 1 and the first right-handed glove found will become glove 2.  Swap the order, remove one of the hands, or add further "left"s and "right"s as required.
+</p>
+<a name="LogDataGlove"></a><h3>LogDataGlove</h3>
+<p>The command-line parameter to enable the DataGloveLogger is repeated here.
+</p>
+<a name="DataGloveDerivative"></a><h3>DataGloveDerivative</h3>
+<p>Whether to read positions or changes in position.
+</p>
+<a name="DataGloveHandedness"></a><h3>DataGloveHandedness</h3>
+<p>A list of "left" and "right" strings.  If you set this to "left right" then the first left-handed glove found will become glove 1 and the first right-handed glove found will become glove 2.  Swap the order, remove one of the hands, or add further "left"s and "right"s as required.
 </p>
 <a name="State_Variables"></a><h2>State Variables</h2>
 <p>For each of the 5/14 sensors of the 5DT Data Glove 5/14 Ultra, one state variable is stored with the data.

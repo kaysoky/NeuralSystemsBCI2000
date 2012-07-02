@@ -36,12 +36,13 @@ BCI2000Certification.html
 BCI2000_Binaries.html
 2 Access Access
 2 Latest_Released_Build Latest Released Build
-2 Win64_Support Win64 Support
-2 Dependencies Dependencies
 2 Contributed_Code Contributed Code
 2 BCPy2000_Contribution BCPy2000 Contribution
+2 Win64_Support Win64 Support
 2 Version_History Version History
 3 Version_3_Builds Version 3 Builds
+4 July_2012_Version_3.0.5 July 2012 Version 3.0.5
+4 February_2012_Version_3.0.4 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_120201.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_120201.exe" rel="nofollow">February 2012 Version 3.0.4</a>
 4 October_2011_Version_3.0.3 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_111014.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_111014.exe" rel="nofollow">October 2011 Version 3.0.3</a>
 4 June_2011_Version_3.0.2 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110627.exe" rel="nofollow">June 2011 Version 3.0.2</a>
 4 May_2011_Version_3.0.1 <a href="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_110506.exe" rel="nofollow">May 2011 Version 3.0.1</a>
@@ -103,7 +104,6 @@ Contributions%253AAmpServerProADC.html
 3 Source_Code_Revisions Source Code Revisions
 2 Using_the_Amp_Server_Pro_Source_Module Using the Amp Server Pro Source Module
 3 Starting_Amp_Server_Pro Starting Amp Server Pro
-3 Compiling_the_Amp_Server_Pro_Source_Module Compiling the Amp Server Pro Source Module
 3 Creating_a_BCI2000_Batch_File Creating a BCI2000 Batch File
 3 Using_Amp_Server_Pro_with_BCI2000 Using Amp Server Pro with BCI2000
 2 Parameters Parameters
@@ -116,6 +116,36 @@ Contributions%253AAmpServerProADC.html
 2 See_also See also
 
 Contributions%253AApplications.html
+2 Application_Modules Application Modules
+2 Interoperability Interoperability
+2 See_also See also
+
+Contributions%253AAudioExtension.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+3 Todo Todo
+3 Known_Issues Known Issues
+2 Functional_Description Functional Description
+2 Integration_into_BCI2000 Integration into BCI2000
+2 Block_Diagram Block Diagram
+2 Parameters Parameters
+3 EnableAudioExtension EnableAudioExtension
+3 AudioMixer AudioMixer
+3 AudioInputDevice AudioInputDevice
+3 AudioOutputDevice AudioOutputDevice
+3 AudioInputFile AudioInputFile
+3 AudioRecordInput AudioRecordInput
+3 AudioRecordOutput AudioRecordOutput
+3 AudioRecordingFormat AudioRecordingFormat
+3 AudioInputFilterbank.2C_AudioOutputFilterbank AudioInputFilterbank, AudioOutputFilterbank
+3 AudioEnvelopeSmoothing AudioEnvelopeSmoothing
+2 State_Variables State Variables
+3 Audio.5BIn.2FOut.5DEnvelope.5B0-3.5D Audio[In/Out]Envelope[0-3]
+3 AudioFrame AudioFrame
 2 See_also See also
 
 Contributions%253AB-Alert.html
@@ -135,6 +165,152 @@ Contributions%253AB-Alert.html
 3 SourceChGain SourceChGain
 3 AlignChannels AlignChannels
 2 States States
+2 See_also See also
+
+Contributions%253ABCI2000Automation.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+3 BCI2000Remote_Members BCI2000Remote Members
+4 Properties Properties
+5 double_Timeout.3D5_.28rw.29 double Timeout=5 (rw)
+5 string_OperatorPath.3D.3CBCI2000Automation_directory.3E.2FOperator.exe_.28rw.29 string OperatorPath=&lt;BCI2000Automation directory&gt;/Operator.exe (rw)
+5 string_TelnetAddress.3Dlocalhost:3999_.28rw.29 string TelnetAddress=localhost:3999 (rw)
+5 bool_WindowVisible.3Dtrue_.28rw.29 bool WindowVisible=true (rw)
+5 string_WindowTitle_.28rw.29 string WindowTitle (rw)
+5 string_Result_.28r.29 string Result (r)
+5 Recording_information Recording information
+6 string_SubjectID_.28rw.29 string SubjectID (rw)
+6 string_SessionID_.28rw.29 string SessionID (rw)
+6 string_DataDirectory_.28rw.29 string DataDirectory (rw)
+4 Connection_methods Connection methods
+5 bool_Connect.28.29 bool Connect()
+5 bool_Disconnect.28.29 bool Disconnect()
+4 Control_of_operation Control of operation
+5 bool_StartupModules.28_array.28string.29_modules_.29 bool StartupModules( array(string) modules )
+5 bool_SetConfig.28.29 bool SetConfig()
+5 bool_Start.28.29 bool Start()
+5 bool_Stop.28.29 bool Stop()
+4 Parameters_and_system_state Parameters and system state
+5 bool_GetParameter.28_string_name.2C_string_byRef_value_.29 bool GetParameter( string name, string byRef value )
+5 bool_SetParameter.28_string_name.2C_string_value_.29 bool SetParameter( string name, string value )
+5 bool_LoadParametersLocal.28_string_file_.29 bool LoadParametersLocal( string file )
+5 bool_LoadParametersRemote.28_string_file_.29 bool LoadParametersRemote( string file )
+5 bool_AddStateVariable.28_string_name.2C_int_bitWidth.2C_double_initialValue_.29 bool AddStateVariable( string name, int bitWidth, double initialValue )
+5 bool_SetStateVariable.28_string_name.2C_double_value_.29 bool SetStateVariable( string name, double value )
+5 bool_GetControlSignal.28_int_channel.2C_int_element.2C_double_byRef_value_.29 bool GetControlSignal( int channel, int element, double byRef value )
+5 bool_GetSystemState.28_string_byRef_state_.29 bool GetSystemState( string byRef state )
+5 bool_GetStateVariable.28_string_name.2C_double_byRef_value_.29 bool GetStateVariable( string name, double byRef value )
+4 Scripting_methods Scripting methods
+5 int_Execute.28_string_command_.29 int Execute( string command )
+5 bool_SetScript.28_string_event.2C_string_commands_.29 bool SetScript( string event, string commands )
+5 bool_GetScript.28_string_event.2C_string_byRef_script_.29 bool GetScript( string event, string byRef script )
+2 Installation Installation
+3 Standard_installation Standard installation
+3 Deinstallation Deinstallation
+3 Installation_options Installation options
+3 Troubleshooting Troubleshooting
+2 Examples Examples
+3 MATLAB MATLAB
+3 Visual_Basic Visual Basic
+2 See_also See also
+
+Contributions%253ABCI2000Command.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 BCI2000Command_vs._BCI2000Shell BCI2000Command vs. BCI2000Shell
+2 Reference Reference
+3 Properties Properties
+3 Commands Commands
+4 Run_.5B.3Cscript_file_1.3E_.3Cscript_file_2.3E_....5D Run [&lt;script file 1&gt; &lt;script file 2&gt; ...]
+4 Quit Quit
+4 StartupModules_.3Cmodule1.3E_.3Cmodule2.3E_... StartupModules &lt;module1&gt; &lt;module2&gt; ...
+4 SetConfig SetConfig
+4 Start Start
+4 Stop Stop
+4 GetParameter_.3Cname.3E GetParameter &lt;name&gt;
+4 SetParameter_.3Cname.3E_.3Cvalue.3E SetParameter &lt;name&gt; &lt;value&gt;
+4 LoadParametersLocal_.3Cparameter_file.3E LoadParametersLocal &lt;parameter file&gt;
+4 LoadParametersRemote_.3Cparameter_file.3E LoadParametersRemote &lt;parameter file&gt;
+4 AddStateVariable_.3Cvariable_name.3E_.3Cbit_width.3E_.3Cinitial_value.3E AddStateVariable &lt;variable name&gt; &lt;bit width&gt; &lt;initial value&gt;
+4 GetStateVariable_.3Cvariable_name.3E GetStateVariable &lt;variable name&gt;
+4 SetStateVariable_.3Cvariable_name.3E_.3Cvariable_value.3E SetStateVariable &lt;variable name&gt; &lt;variable value&gt;
+4 GetSystemState GetSystemState
+4 GetControlSignal_.3Cchannel_index.3E_.3Celement_index.3E GetControlSignal &lt;channel index&gt; &lt;element index&gt;
+4 Execute_.3Cscripting_command.3E Execute &lt;scripting command&gt;
+4 SetScript_.3Cevent.3E_.3Cscripting_commands.3E SetScript &lt;event&gt; &lt;scripting commands&gt;
+4 GetScript_.3Cevent.3E GetScript &lt;event&gt;
+2 Examples Examples
+3 Windows_cmd_interpreter Windows cmd interpreter
+3 Linux.2FUnix_bash_shell Linux/Unix bash shell
+2 See_also See also
+
+Contributions%253ABCI2000PresentationLink.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Sponsors Sponsors
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+3 Data_Port_Extension Data Port Extension
+4 Recording_Events Recording Events
+4 Timing_Precision Timing Precision
+4 Controlling_BCI2000 Controlling BCI2000
+3 PCL_Extension PCL Extension
+2 Installation Installation
+3 Installation_Steps Installation Steps
+3 Troubleshooting Troubleshooting
+3 Deinstallation Deinstallation
+3 Windows_installation_options Windows installation options
+2 BCI2000PCLLibrary_Reference BCI2000PCLLibrary Reference
+3 Constructors Constructors
+4 controller.28.29 controller()
+4 controller.28_string_location_.29 controller( string location )
+3 Properties Properties
+4 hide_window.28.29 hide_window()
+4 show_window.28.29 show_window()
+4 set_window_title.28_string_window_title_.29 set_window_title( string window_title )
+4 set_subject.28_string_subject_id_.29 set_subject( string subject_id )
+4 set_session.28_string_session_id_.29 set_session( string session_id )
+4 set_data_directory.28_string_data_directory_.29 set_data_directory( string data_directory )
+3 Control_of_operation Control of operation
+4 startup_modules.28_array.28_string_.29_list_of_modules_.29 startup_modules( array( string ) list_of_modules )
+4 set_config.28.29 set_config()
+4 start.28.29 start()
+4 stop.28.29 stop()
+3 Parameter_access Parameter access
+4 string_get_parameter.28_string_name_.29 string get_parameter( string name )
+4 set_parameter.28_string_name.2C_string_value_.29 set_parameter( string name, string value )
+4 load_parameters_local.28_string_parameter_file_.29 load_parameters_local( string parameter_file )
+4 load_parameters_remote.28_string_parameter_file_.29 load_parameters_remote( string parameter_file )
+3 State_variable_access State variable access
+4 add_state_variable.28_string_name.2C_int_bit_width.2C_int_initial_value_.29 add_state_variable( string name, int bit_width, int initial_value )
+4 double_get_state_variable.28_string_name_.29 double get_state_variable( string name )
+4 set_state_variable.28_string_name.2C_double_value_.29 set_state_variable( string name, double value )
+4 double_get_control_signal.28_int_channel.2C_int_element_.29 double get_control_signal( int channel, int element )
+3 Operator_scripting Operator scripting
+4 int_execute.28_string_command.2C_string_byRef_output_.29 int execute( string command, string byRef output )
+4 set_script.28_string_handler.2C_string_script_.29 set_script( string handler, string script )
+4 string_get_script.28_string_event_.29 string get_script( string event )
+2 Examples Examples
+2 See_also See also
+
+Contributions%253ABCI2000PythonBindings.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Example Example
 2 See_also See also
 
 Contributions%253ABCITimeFrequency.html
@@ -237,6 +413,7 @@ Contributions%253ACoherence.html
 3 CohWindowLength CohWindowLength
 3 CohWindowOverlap CohWindowOverlap
 3 CohFrequencies CohFrequencies
+2 See_also See also
 
 Contributions%253AContents.html
 2 Code_available_in_the_Contribution_section Code available in the Contribution section
@@ -245,6 +422,29 @@ Contributions%253AContents.html
 2 Licensing_Issues Licensing Issues
 
 Contributions%253AContribution_Wiki_Template.html
+
+Contributions%253ACustomFIRFilter.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+2 Parameters Parameters
+3 FIRCoefficients FIRCoefficients
+2 States States
+2 See_also See also
+
+Contributions%253ACustomIIRFilter.html
+2 Synopsis Synopsis
+2 Authors Authors
+2 Parameters Parameters
+3 HighPassCorner HighPassCorner
+3 HighPassOrder HighPassOrder
+3 LowPassCorner LowPassCorner
+3 LowPassOrder LowPassOrder
+3 NotchCenter NotchCenter
+3 NotchOrder NotchOrder
+2 States States
+2 See_also See also
 
 Contributions%253ADAS_ADC.html
 2 Synopsis Synopsis
@@ -287,7 +487,22 @@ Contributions%253ADataGloveLogger.html
 2 Vendor Vendor
 2 Integration_into_BCI2000 Integration into BCI2000
 2 Parameters Parameters
+3 LogDataGlove LogDataGlove
+3 DataGloveDerivative DataGloveDerivative
+3 DataGloveHandedness DataGloveHandedness
 2 State_Variables State Variables
+2 See_also See also
+
+Contributions%253ADiffFilter.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+2 Parameters Parameters
+3 DiffOrder DiffOrder
+3 UnwrapDiff UnwrapDiff
+3 DivideByDeltaTime DivideByDeltaTime
+2 States States
 2 See_also See also
 
 Contributions%253AEmotiv.html
@@ -389,6 +604,7 @@ Contributions%253AFilePlayback.html
 2 Location Location
 2 Authors Authors
 2 Function Function
+2 IMPORTANT_CAVEAT IMPORTANT CAVEAT
 2 Parameters Parameters
 3 SourceCh SourceCh
 3 SampleBlockSize SampleBlockSize
@@ -449,6 +665,26 @@ Contributions%253AGenerateCalibration.html
 3 Author Author
 3 Source_Code_Revisions Source Code Revisions
 2 Functional_Description Functional Description
+2 See_also See also
+
+Contributions%253AHilbertFilter.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+2 Parameters Parameters
+3 OutputSignal OutputSignal
+3 Delay Delay
+2 States States
+2 See_also See also
+
+Contributions%253AHilbertSignalProcessing.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Source_Code_Revisions Source Code Revisions
+2 Description Description
 2 See_also See also
 
 Contributions%253AHow_to_use_a_Contributed_Source_Module.html
@@ -609,7 +845,6 @@ Contributions%253ANeuralynx.html
 3 Source_Code_Revisions Source Code Revisions
 2 Functional_Description Functional Description
 2 Parameters Parameters
-3 EventCh EventCh
 2 States States
 2 See_also See also
 
@@ -806,6 +1041,41 @@ Contributions%253AStatistics.html
 2 Parameters_and_states Parameters and states
 2 See_also See also
 
+Contributions%253AStatisticsFilter.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+3 User-defined_Objects User-defined Objects
+4 Observers_and_ChannelSets Observers and ChannelSets
+4 Views Views
+4 Output_format Output format
+4 Computation_of_weighted_statistics Computation of weighted statistics
+4 Expressions Expressions
+5 RSquared.28_obs1.2C_obs2.2C_idx1.2C_idx2_.29 RSquared( obs1, obs2, idx1, idx2 )
+5 ZScore.28_obs1.2C_obs2.2C_idx1.2C_idx2_.29 ZScore( obs1, obs2, idx1, idx2 )
+5 obs.Count.28.29 obs.Count()
+5 obs.Mean.28.29 obs.Mean()
+5 obs.Variance.28.29 obs.Variance()
+5 obs.Covariance.28idx1.2Cidx2.29 obs.Covariance(idx1,idx2)
+5 obs.Correlation.28idx1.2Cidx2.29 obs.Correlation(idx1,idx2)
+5 obs.Skewness.28.29.2C_obs.Kurtosis.28.29 obs.Skewness(), obs.Kurtosis()
+5 obs.CentralMoment.28n.29 obs.CentralMoment(n)
+5 obs.Quantile.280.3E.3Dp.3E.3D1.29 obs.Quantile(0>=p>=1)
+5 obs.QQuantiles.28n.29 obs.QQuantiles(n)
+5 obs.Histogram.28center.2C_resolution.2C_numBins.29 obs.Histogram(center, resolution, numBins)
+2 Parameters Parameters
+3 ChannelSets ChannelSets
+3 Observers Observers
+3 Views_2 Views
+3 OutputView OutputView
+3 VisualizeViews VisualizeViews
+3 EventScripts EventScripts
+2 States States
+2 See_also See also
+
 Contributions%253ATDTADC.html
 2 Synopsis Synopsis
 2 Location Location
@@ -904,6 +1174,19 @@ Contributions%253Actfneurod.html
 3 --freqCorrection_.3Cfactor.3E <tt>--freqCorrection &lt;factor&gt;</tt>
 3 --outputFormat_.3Cnbits.3E <tt>--outputFormat &lt;nbits&gt;</tt>
 3 --disableHP <tt>--disableHP</tt>
+2 See_also See also
+
+Contributions%253AgHIamp.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Installation Installation
+2 Parameters Parameters
+3 Valid_Operating_Modes Valid Operating Modes
 2 See_also See also
 
 Contributions%253Asplit_bcidat.html
@@ -1045,19 +1328,23 @@ Programming_Howto%253ABuilding_BCI2000.html
 2 Conclusions  Conclusions 
 2 Windows_platforms_tested_successfully_so_far  Windows platforms tested successfully so far 
 2 Status_on_other_OSes Status on other OSes
+3 Linux Linux
 3 OS_X OS X
 2 See_also See also
 
 Programming_Howto%253AQuickstart_Guide.html
 2 Prerequisites Prerequisites
+3 Prerequisites_.28Mac_OSX.29 Prerequisites (Mac OSX)
 2 Setup Setup
 2 Creating_a_project_for_a_new_BCI2000_module.2C_from_a_template Creating a project for a new BCI2000 module, from a template
 2 Adding_a_new_filter_to_a_BCI2000_module.2C_from_a_template Adding a new filter to a BCI2000 module, from a template
 2 Running_and_testing_the_result Running and testing the result
+2 Configuring_your_new_filter_for_offline_use Configuring your new filter for offline use
 2 Exercises Exercises
 3 Exercise_1:__RMSFilter Exercise 1:  RMSFilter
 3 Exercise_2:__Debugging Exercise 2:  Debugging
 3 Exercise_3:__Assembling_a_filter_chain Exercise 3:  Assembling a filter chain
+3 Exercise_4:__Offline_filter-chain_reconstruction_in_Matlab Exercise 4:  Offline filter-chain reconstruction in Matlab
 2 Further_reading Further reading
 
 Programming_Howto%253ASVN_Client_Setup.html
@@ -1267,6 +1554,49 @@ Programming_Reference%253ABCI2000FileReader_Class.html
 2 Performance_Considerations Performance Considerations
 2 See_also See also
 
+Programming_Reference%253ABCI2000Remote_Class.html
+2 Synopsis Synopsis
+2 Location Location
+2 Functional_Description Functional Description
+2 BCI2000Remote_Members BCI2000Remote Members
+3 Properties Properties
+4 double_Timeout.3D5_.28rw.29 double Timeout=5 (rw)
+4 string_OperatorPath.3D.22.22_.28rw.29 string OperatorPath="" (rw)
+4 string_TelnetAddress.3D.22localhost:3999.22_.28rw.29 string TelnetAddress="localhost:3999" (rw)
+4 bool_WindowVisible.3Dtrue_.28rw.29 bool WindowVisible=true (rw)
+4 string_WindowTitle_.28rw.29 string WindowTitle (rw)
+4 string_Result_.28r.29 string Result (r)
+4 Recording_information Recording information
+5 string_SubjectID_.28rw.29 string SubjectID (rw)
+5 string_SessionID_.28rw.29 string SessionID (rw)
+5 string_DataDirectory_.28rw.29 string DataDirectory (rw)
+3 Connection_methods Connection methods
+4 bool_Connect.28.29 bool Connect()
+4 bool_Connect.28_BCI2000Remote_.29 bool Connect( BCI2000Remote )
+4 bool_Disconnect.28.29 bool Disconnect()
+3 Control_of_operation Control of operation
+4 bool_StartupModules.28_vector.28string.29_modules_.29 bool StartupModules( vector(string) modules )
+4 bool_SetConfig.28.29 bool SetConfig()
+4 bool_Start.28.29 bool Start()
+4 bool_Stop.28.29 bool Stop()
+3 Parameters_and_system_state Parameters and system state
+4 bool_GetParameter.28_string_name.2C_string.26_value_.29 bool GetParameter( string name, string&amp; value )
+4 bool_SetParameter.28_string_name.2C_string_value_.29 bool SetParameter( string name, string value )
+4 bool_LoadParametersLocal.28_string_file_.29 bool LoadParametersLocal( string file )
+4 bool_LoadParametersRemote.28_string_file_.29 bool LoadParametersRemote( string file )
+4 bool_AddStateVariable.28_string_name.2C_int_bitWidth.2C_double_initialValue_.29 bool AddStateVariable( string name, int bitWidth, double initialValue )
+4 bool_GetStateVariable.28_string_name.2C_double.26_value_.29 bool GetStateVariable( string name, double&amp; value )
+4 bool_SetStateVariable.28_string_name.2C_double_value_.29 bool SetStateVariable( string name, double value )
+4 bool_GetSystemState.28_string.26_state_.29 bool GetSystemState( string&amp; state )
+4 bool_GetControlSignal.28_int_channel.2C_int_element.2C_double.26_value_.29 bool GetControlSignal( int channel, int element, double&amp; value )
+3 Scripting_methods Scripting methods
+4 int_Execute.28_string_command_.29 int Execute( string command )
+4 bool_SetScript.28_string_handlers.2C_string_script_.29 bool SetScript( string handlers, string script )
+4 bool_GetScript.28_string_handler.2C_string.26_script_.29 bool GetScript( string handler, string&amp; script )
+2 Dependencies Dependencies
+2 Example Example
+2 See_also See also
+
 Programming_Reference%253ABCI2000_Source_Code.html
 2 Version_Management Version Management
 2 Stable_Versions_and_Branches Stable Versions and Branches
@@ -1338,6 +1668,7 @@ Programming_Reference%253ABuild_System.html
 2 Conclusions  Conclusions 
 2 Windows_platforms_tested_successfully_so_far  Windows platforms tested successfully so far 
 2 Status_on_other_OSes Status on other OSes
+3 Linux Linux
 3 OS_X OS X
 2 See_also See also
 
@@ -1378,6 +1709,7 @@ Programming_Reference%253AContents.html
 2 Getting_Started Getting Started
 2 Conceptual_Overview Conceptual Overview
 2 Programming_Interface_Documentation Programming Interface Documentation
+3 External_Interfaces External Interfaces
 3 Generic_Filter_Interface Generic Filter Interface
 3 Text_Messages Text Messages
 3 Data_I.2FO Data I/O
@@ -1487,7 +1819,6 @@ Programming_Reference%253AEnvironmentExtension_Class.html
 Programming_Reference%253AEnvironment_Class.html
 2 Your_code.27s_Environment Your code's <tt>Environment</tt>
 2 Access_to_Parameters_and_States Access to Parameters and States
-2 Working_around_Borland_VCL_Inheritance_Restrictions Working around Borland VCL Inheritance Restrictions
 2 See_also See also
 
 Programming_Reference%253AError_Handling.html
@@ -1586,6 +1917,7 @@ Programming_Reference%253AFeedbackTask_Class.html
 3 TargetCode TargetCode
 3 ResultCode ResultCode
 3 Feedback Feedback
+3 PauseApplication PauseApplication
 2 Timeline Timeline
 2 See_also See also
 
@@ -1608,7 +1940,7 @@ Programming_Reference%253AGenericFileWriter_Class.html
 Programming_Reference%253AGenericFilter_Class.html
 2 The_GenericFilter_class The <tt>GenericFilter</tt> class
 2 Required_Members Required Members
-3 Constructor Constructor
+3 Publish Publish
 3 Preflight Preflight
 3 Initialize Initialize
 3 Process Process
@@ -1680,14 +2012,17 @@ Programming_Reference%253AGraphObject_Class.html
 
 Programming_Reference%253AHello_World.html
 2 Prerequisites Prerequisites
+3 Prerequisites_.28Mac_OSX.29 Prerequisites (Mac OSX)
 2 Setup Setup
 2 Creating_a_project_for_a_new_BCI2000_module.2C_from_a_template Creating a project for a new BCI2000 module, from a template
 2 Adding_a_new_filter_to_a_BCI2000_module.2C_from_a_template Adding a new filter to a BCI2000 module, from a template
 2 Running_and_testing_the_result Running and testing the result
+2 Configuring_your_new_filter_for_offline_use Configuring your new filter for offline use
 2 Exercises Exercises
 3 Exercise_1:__RMSFilter Exercise 1:  RMSFilter
 3 Exercise_2:__Debugging Exercise 2:  Debugging
 3 Exercise_3:__Assembling_a_filter_chain Exercise 3:  Assembling a filter chain
+3 Exercise_4:__Offline_filter-chain_reconstruction_in_Matlab Exercise 4:  Offline filter-chain reconstruction in Matlab
 2 Further_reading Further reading
 
 Programming_Reference%253AIIRFilterBase_Class.html
@@ -1805,6 +2140,7 @@ Programming_Reference%253AMatlabFilter.html
 3 There_is_no_Matlab_engine_started_up There is no Matlab engine started up
 3 Changes_to_M-files_appear_to_have_no_effect Changes to M-files appear to have no effect
 3 You_get_linker_errors_when_rebuilding_MatlabSignalProcessing You get linker errors when rebuilding <i>MatlabSignalProcessing</i>
+3 You_get_a_message_window_with_a_.22Library_not_found.22_message You get a message window with a "Library not found" message
 3 You_get_a_message_window_with_an_.22Entry_Point_Not_Found.22_message You get a message window with an "Entry Point Not Found" message
 2 See_also See also
 
@@ -2243,6 +2579,7 @@ Programming_Reference%253AStimulusTask_Class.html
 3 StimulusType StimulusType
 3 StimulusBegin StimulusBegin
 3 PhaseInSequence PhaseInSequence
+3 PauseApplication PauseApplication
 2 Timeline Timeline
 2 See_also See also
 
@@ -2564,6 +2901,7 @@ Technical_Reference%253ACore_Modules.html
 Technical_Reference%253AOperator_Library.html
 2 System_State_.28State_of_Operation.29 System State (State of Operation)
 3 BCI_StateUnavailable BCI_StateUnavailable
+3 BCI_StateIdle BCI_StateIdle
 3 BCI_StateStartup BCI_StateStartup
 3 BCI_StateInitialization BCI_StateInitialization
 3 BCI_StateResting BCI_StateResting
@@ -2581,10 +2919,19 @@ Technical_Reference%253AOperator_Library.html
 3 const_char.2A_BCI_GetParameter.28_long_index_.29 const char* BCI_GetParameter( long index )
 3 int_BCI_PutState.28_const_char.2A_stateLine_.29 int BCI_PutState( const char* stateLine )
 3 const_char.2A_BCI_GetState.28_long_index_.29 const char* BCI_GetState( long index )
-3 int_BCI_SetStateValue.28_const_char.2A_stateName.2C_long_value_.29 int BCI_SetStateValue( const char* stateName, long value )
+3 int_BCI_PutEvent.28_const_char.2A_eventLine_.29 int BCI_PutEvent( const char* eventLine )
+3 const_char.2A_BCI_GetEvent.28_long_index_.29 const char* BCI_GetEvent( long index )
 3 int_BCI_PutVisProperty.28_const_char.2A_visID.2C_int_cfgID.2C_const_char.2A_value_.29 int BCI_PutVisProperty( const char* visID, int cfgID, const char* value )
 3 const_char.2A_BCI_GetVisProperty.28_const_char.2A_visID.2C_int_cfgID_.29 const char* BCI_GetVisProperty( const char* visID, int cfgID )
+2 Online_Information Online Information
+3 int_BCI_SetStateValue.28_const_char.2A_stateName.2C_long_value_.29 int BCI_SetStateValue( const char* stateName, long value )
+3 long_BCI_GetStateValue.28_const_char.2A_stateName_.29 long BCI_GetStateValue( const char* stateName )
+3 int_BCI_SetEvent.28_const_char.2A_eventName.2C_long_value_.29 int BCI_SetEvent( const char* eventName, long value )
+3 int_BCI_GetSignalChannels.28.29 int BCI_GetSignalChannels()
+3 int_BCI_GetSignalElements.28.29 int BCI_GetSignalElements()
+3 float_BCI_GetSignal.28_int_channel.2C_int_element_.29 float BCI_GetSignal( int channel, int element )
 2 Callbacks Callbacks
+3 Callback_Constants Callback Constants
 3 BCI_OnSystemStateChange.28_void.2A_refdata_.29  BCI_OnSystemStateChange( void* refdata )
 3 BCI_OnCoreInput.28_void.2A_refdata_.29 BCI_OnCoreInput( void* refdata )
 3 BCI_OnConnect.28_void.2A_refdata_.29 BCI_OnConnect( void* refdata )
@@ -2593,6 +2940,7 @@ Technical_Reference%253AOperator_Library.html
 3 BCI_OnSuspend.28_void.2A_refdata_.29 BCI_OnSuspend( void* refdata )
 3 BCI_OnResume.28_void.2A_refdata_.29 BCI_OnResume( void* refdata )
 3 BCI_OnShutdown.28_void.2A_refdata_.29 BCI_OnShutdown( void* refdata )
+3 BCI_OnQuitRequest.28_void.2A_refdata.2C_const_char.2A.2A_pMsg_.29 BCI_OnQuitRequest( void* refdata, const char** pMsg )
 3 BCI_OnLogMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnLogMessage( void* refdata, const char* msg )
 3 BCI_OnWarningMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnWarningMessage( void* refdata, const char* msg )
 3 BCI_OnErrorMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnErrorMessage( void* refdata, const char* msg )
@@ -2605,22 +2953,28 @@ Technical_Reference%253AOperator_Library.html
 3 BCI_OnVisMemo.28_void.2A_refdata.2C_const_char.2A_visID.2C_const_char.2A_msg_.29 BCI_OnVisMemo( void* refdata, const char* visID, const char* msg )
 3 BCI_OnVisSignal.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_channels.2C_int_elements.2C_float.2A_data_.29 BCI_OnVisSignal( void* refdata, const char* visID, int channels, int elements, float* data )
 3 BCI_OnVisBitmap.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_width.2C_int_height.2C_unsigned_short.2A_data_.29 BCI_OnVisBitmap( void* refdata, const char* visID, int width, int height, unsigned short* data )
-3 BCI_OnUnknownCommand.28_void.2A_refdata.2C_const_char.2A_command_.29 BCI_OnUnknownCommand( void* refdata, const char* command )
+3 int_BCI_OnUnknownCommand.28_void.2A_refdata.2C_const_char.2A_command_.29 int BCI_OnUnknownCommand( void* refdata, const char* command )
+3 BCI_OnScriptHelp.28_void.2A_refdata.2C_const_char.2A.2A_pMsg_.29 BCI_OnScriptHelp( void* refdata, const char** pMsg )
 3 BCI_OnScriptError.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnScriptError( void* refdata, const char* msg )
+2 Functions_that_manage_callbacks Functions that manage callbacks
 3 int_BCI_SetCallback.28_long.2C_BCI_Function.2C_void.2A_.29 int BCI_SetCallback( long, BCI_Function, void* )
 3 int_BCI_SetExternalCallback.28_long.2C_BCI_Function.2C_void.2A_.29 int BCI_SetExternalCallback( long, BCI_Function, void* )
 3 int_BCI_CheckPendingCallback.28.29 int BCI_CheckPendingCallback()
 3 BCI_Function_BCI_GetCallbackFunction.28_long_.29 BCI_Function BCI_GetCallbackFunction( long )
 3 void.2A_BCI_GetCallbackData.28_long_.29 void* BCI_GetCallbackData( long )
+3 int_BCI_GetCallbackIsExternal.28_long_.29 int BCI_GetCallbackIsExternal( long )
 2 Miscellaneous_Functions Miscellaneous Functions
 3 const_char.2A_BCI_GetInfo.28_void_.29 const char* BCI_GetInfo( void )
 3 const_char.2A_BCI_GetConnectionInfo.28_int_index_.29 const char* BCI_GetConnectionInfo( int index )
 3 const_char.2A_BCI_GetCoreModuleStatus.28_int_index_.29 const char* BCI_GetCoreModuleStatus( int index )
-3 int_BCI_Startup.28_const_char.2A_moduleList_.29 int BCI_Startup( const char* moduleList )
+3 int_BCI_Startup.28_const_char.2A_arguments_.29 int BCI_Startup( const char* arguments )
 3 int_BCI_Shutdown.28_void_.29 int BCI_Shutdown( void )
 3 int_BCI_Initialize.28_void_.29  int BCI_Initialize( void )
 3 int_BCI_Dispose.28_void_.29  int BCI_Dispose( void )
+3 int_BCI_TelnetListen.28_const_char.2A_address_.29  int BCI_TelnetListen( const char* address )
+3 int_BCI_TelnetClose.28_void_.29  int BCI_TelnetClose( void )
 3 int_BCI_ExecuteScript.28_const_char.2A_script_.29 int BCI_ExecuteScript( const char* script )
+3 const_char.2A_BCI_ExecuteScriptWithResult.28_const_char.2A_script_.29 const char* BCI_ExecuteScriptWithResult( const char* script )
 3 int_BCI_ReleaseObject.28_const_char.2A_.29 int BCI_ReleaseObject( const char* )
 2 See_also See also
 
@@ -2735,7 +3089,9 @@ User_FAQ.html
 
 User_Reference%253AARFilter.html
 2 Function Function
-3 Obtaining_a_discrete_spectrum_from_an_AR_model Obtaining a discrete spectrum from an AR model
+3 AR_Algorithm AR Algorithm
+3 FFT_Algorithm FFT Algorithm
+3 Physical_unit_of_the_estimated_spectrum Physical unit of the estimated spectrum
 2 Parameters Parameters
 3 WindowLength WindowLength
 3 Detrend Detrend
@@ -2809,6 +3165,12 @@ User_Reference%253ABCI2000Launcher.html
 3 Selecting_Parameter_Files Selecting Parameter Files
 3 Entering_Recording_Parameters Entering Recording Parameters
 3 Starting_a_BCI2000_Session Starting a BCI2000 Session
+
+User_Reference%253ABCI2000Shell.html
+2 Command_line_arguments Command line arguments
+2 Operator_connection Operator connection
+2 Termination_status Termination status
+2 See_also See also
 
 User_Reference%253ABCI2000Viewer.html
 2 Opening_Files Opening Files
@@ -2946,6 +3308,7 @@ User_Reference%253ACursorTask.html
 3 TargetCode TargetCode
 3 ResultCode ResultCode
 3 Feedback Feedback
+3 PauseApplication PauseApplication
 3 CursorPosX.2C_CursorPosY.2C_CursorPosZ CursorPosX, CursorPosY, CursorPosZ
 2 See_also See also
 
@@ -3103,6 +3466,19 @@ User_Reference%253AGDFFileWriter.html
 2 States States
 2 See_also See also
 
+User_Reference%253AIIRBandpass.html
+2 Synopsis Synopsis
+2 Authors Authors
+2 Parameters Parameters
+3 HighPassCorner HighPassCorner
+3 HighPassOrder HighPassOrder
+3 LowPassCorner LowPassCorner
+3 LowPassOrder LowPassOrder
+3 NotchCenter NotchCenter
+3 NotchOrder NotchOrder
+2 States States
+2 See_also See also
+
 User_Reference%253AJoystickFilter.html
 2 Function Function
 2 Parameters Parameters
@@ -3184,10 +3560,6 @@ User_Reference%253AMatlab_MEX_Files.html
 3 Microsoft_Windows_32 Microsoft Windows 32
 3 Other_platforms Other platforms
 2 Building_BCI2000_MEX_files Building BCI2000 MEX files
-3 Microsoft_Windows Microsoft Windows
-4 Using_the_Borland_C.2B.2B_compiler Using the Borland C++ compiler
-4 Using_the_Microsoft_Visual_C.2B.2B_compiler Using the Microsoft Visual C++ compiler
-3 Other_Platforms Other Platforms
 2 BCI2000_MEX_functions BCI2000 MEX functions
 3 load_bcidat <tt>load_bcidat</tt>
 3 save_bcidat <tt>save_bcidat</tt>
@@ -3200,8 +3572,10 @@ User_Reference%253AMatlab_Tools.html
 2 bci2000chain bci2000chain
 3 Dependencies Dependencies
 3 Example Example
+2 create_bcidat create_bcidat
 2 read_bciprm read_bciprm
 2 make_bciprm make_bciprm
+2 decode_bcitime decode_bcitime
 2 read_bcidate read_bcidate
 2 rename_bcidat rename_bcidat
 
@@ -3278,30 +3652,123 @@ User_Reference%253AOperator_Module.html
 2 See_also See also
 
 User_Reference%253AOperator_Module_Scripting.html
-3 Events Events
+3 Syntax Syntax
+3 Commands Commands
+4 Control_commands Control commands
+5 IF_.3Ccondition.3E.3B_.3Cif_commands.3E.3B_.5B_ELSEIF_.3Ccondition.3E.3B_.3Celseif_commands.3E.3B.5D_..._.5B_ELSE.3B_.3Celse_commands.3E.3B.5D_END IF &lt;condition&gt;; &lt;if commands&gt;; [ ELSEIF &lt;condition&gt;; &lt;elseif commands&gt;;] ... [ ELSE; &lt;else commands&gt;;] END
+5 WHILE_.3Ccondition.3E.3B_.3Cloop_commands.3E.3B_END WHILE &lt;condition&gt;; &lt;loop commands&gt;; END
+5 DO.3B_.3Cloop_commands.3E.3B_UNTIL_.3Ccondition.3E DO; &lt;loop commands&gt;; UNTIL &lt;condition&gt;
+5 FOR_.3Cname.3E_IN_.3Citem1.3E_.3Citem2.3E_..._.3B_.3Cloop_commands.3E.3B_END FOR &lt;name&gt; IN &lt;item1&gt; &lt;item2&gt; ...&nbsp;; &lt;loop commands&gt;; END
+4 Commands_operating_on_Conditions Commands operating on Conditions
+5 EVALUATE_CONDITION_.3Cleft.3E_.5B.3Cop.3E_.5B.3Cright.3E.5D.5D EVALUATE CONDITION &lt;left&gt; [&lt;op&gt; [&lt;right&gt;]]
+4 Commands_operating_on_Local_Variables Commands operating on Local Variables
+5 SET_VARIABLE_.3Cname.3E_.3Cvalue.3E SET VARIABLE &lt;name&gt; &lt;value&gt;
+5 CLEAR_VARIABLE_.3Cname.3E CLEAR VARIABLE &lt;name&gt;
+5 GET_VARIABLE_.3Cname.3E GET VARIABLE &lt;name&gt;
+4 Commands_operating_on_Environment_Variables Commands operating on Environment Variables
+5 SET_ENVIRONMENT_.3Cname.3E_.3Cvalue.3E SET ENVIRONMENT &lt;name&gt; &lt;value&gt;
+5 CLEAR_ENVIRONMENT_.3Cname.3E CLEAR ENVIRONMENT &lt;name&gt;
+5 GET_ENVIRONMENT_.3Cname.3E GET ENVIRONMENT &lt;name&gt;
+4 Commands_operating_on_Scripts Commands operating on Scripts
+5 SET_SCRIPT_.3Chandler_names.3E_.3Cscripting_commands.3E SET SCRIPT &lt;handler names&gt; &lt;scripting commands&gt;
+5 GET_SCRIPT_.3Chandler_name.3E GET SCRIPT &lt;handler name&gt;
+5 CLEAR_SCRIPT_.3Chandler_names.3E CLEAR SCRIPT &lt;handler names&gt;
+5 EXECUTE_SCRIPT_.3Cfile_or_handler_name.3E_.5B.3CArg1.3E_.3CArg2.3E_..._.3CArg9.3E.5D EXECUTE SCRIPT &lt;file or handler name&gt; [&lt;Arg1&gt; &lt;Arg2&gt; ... &lt;Arg9&gt;]
+4 Commands_operating_on_Parameters Commands operating on Parameters
+5 LOAD_PARAMETERFILE_.3Cfile.3E.2C_LOAD_PARAMETERS_.3Cfile.3E LOAD PARAMETERFILE &lt;file&gt;, LOAD PARAMETERS &lt;file&gt;
+5 ADD_PARAMETER_.3Cparameter_definition.3E ADD PARAMETER &lt;parameter definition&gt;
+5 EXISTS_PARAMETER_.3Cname.3E EXISTS PARAMETER &lt;name&gt;
+5 SET_PARAMETER_.3Cname.3E.5B.28_idx1.2C_idx2_.29.5D_.3Cvalue.3E SET PARAMETER &lt;name&gt;[( idx1, idx2 )] &lt;value&gt;
+5 SET_PARAMETER_.3Cparameter_line.3E SET PARAMETER &lt;parameter line&gt;
+5 GET_PARAMETER_.3Cname.3E.5B.28_idx1.2C_idx2_.29.5D GET PARAMETER &lt;name&gt;[( idx1, idx2 )]
+5 LIST_PARAMETER_.3Cwildcard_expression.3E.2C_LIST_PARAMETERS LIST PARAMETER &lt;wildcard expression&gt;, LIST PARAMETERS
+5 CLEAR_PARAMETERS CLEAR PARAMETERS
+4 Commands_operating_on_States Commands operating on States
+5 ADD_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E ADD STATE &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;
+5 EXISTS_STATE_.3Cname.3E EXISTS STATE &lt;name&gt;
+5 SET_STATE_.3Cname.3E_.3Cvalue.3E SET STATE &lt;name&gt; &lt;value&gt;
+5 GET_STATE_.3Cname.3E GET STATE &lt;name&gt;
+5 LIST_STATE_.3Cwildcard_expression.3E.2C_LIST_STATES LIST STATE &lt;wildcard expression&gt;, LIST STATES
+5 CLEAR_STATES CLEAR STATES
+4 Commands_operating_on_Events Commands operating on Events
+5 ADD_EVENT_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E ADD EVENT &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;
+5 EXISTS_EVENT_.3Cname.3E EXISTS EVENT &lt;name&gt;
+5 SET_EVENT_.3Cname.3E_.3Cvalue.3E SET EVENT &lt;name&gt; &lt;value&gt;
+5 GET_EVENT_.3Cname.3E GET EVENT &lt;name&gt;
+5 LIST_EVENT_.3Cwildcard_expression.3E.2C_LIST_EVENTS LIST EVENT &lt;wildcard expression&gt;, LIST EVENTS
+5 CLEAR_EVENTS CLEAR EVENTS
+4 Commands_operating_on_VisProperties Commands operating on VisProperties
+5 SET_VISPROPERTY_.3CvisID.3E..3Cname.3E_.3Cvalue.3E SET VISPROPERTY &lt;visID&gt;.&lt;name&gt; &lt;value&gt;
+5 GET_VISPROPERTY_.3CvisID.3E..3Cname.3E GET VISPROPERTY &lt;visID&gt;.&lt;name&gt;
+5 SET_VISPROPERTIES_.3Cproperty_set_ID.3E SET VISPROPERTIES &lt;property set ID&gt;
+4 Commands_operating_on_the_Control_Signal Commands operating on the Control Signal
+5 GET_SIGNAL.28_.3Cchannel_index.3E.2C_.3Celement_index.3E_.29 GET SIGNAL( &lt;channel index&gt;, &lt;element index&gt; )
+4 Commands_operating_on_Expressions Commands operating on Expressions
+5 EVALUATE_EXPRESSION_.3Cexpression.3E EVALUATE EXPRESSION &lt;expression&gt;
+5 CLEAR_EXPRESSION_VARIABLE_.3Cname.3E CLEAR EXPRESSION VARIABLE &lt;name&gt;
+4 Commands_operating_on_Files.2C_Directories.2C_and_Paths Commands operating on Files, Directories, and Paths
+5 EXTRACT_DIRECTORY_.3Cpath.3E.2C_EXTRACT_FILE_.3Cpath.3E.2C_EXTRACT_FILE_BASE_.3Cpath.3E EXTRACT DIRECTORY &lt;path&gt;, EXTRACT FILE &lt;path&gt;, EXTRACT FILE BASE &lt;path&gt;
+5 IS_DIRECTORY_.3Cpath.3E.2C_IS_FILE_.3Cpath.3E.2C_IS_PATH_.3Cpath.3E IS DIRECTORY &lt;path&gt;, IS FILE &lt;path&gt;, IS PATH &lt;path&gt;
+5 PARENT_DIRECTORY_.3Cpath.3E PARENT DIRECTORY &lt;path&gt;
+5 CURRENT_DIRECTORY CURRENT DIRECTORY
+5 CHANGE_DIRECTORY_.3Cpath.3E CHANGE DIRECTORY &lt;path&gt;
+5 MAKE_DIRECTORY_.3Cpath.3E MAKE DIRECTORY &lt;path&gt;
+5 LIST_DIRECTORY_.5B.3Cpath.3E_or_.3Cwildcard_expression.3E.5D LIST DIRECTORY [&lt;path&gt; or &lt;wildcard expression&gt;]
+5 LIST_FILE_.3Cwildcard_expression.3E LIST FILE &lt;wildcard expression&gt;
+5 LIST_FILES_.5B.3Cdirectory.3E_.5B.3Cwildcard_expression.3E.5D.5D LIST FILES [&lt;directory&gt; [&lt;wildcard expression&gt;]]
+5 LIST_DIRECTORIES_.5B.3Cdirectory.3E_.5B.3Cwildcard_expression.3E.5D.5D LIST DIRECTORIES [&lt;directory&gt; [&lt;wildcard expression&gt;]]
+5 RENAME_FILE_.3Ccurrent_path.3E_.3Cnew_path.3E.2C_RENAME_DIRECTORY_.3Ccurrent_path.3E_.3Cnew_name.3E RENAME FILE &lt;current path&gt; &lt;new path&gt;, RENAME DIRECTORY &lt;current path&gt; &lt;new name&gt;
+5 REMOVE_FILE_.3Cpath.3E.2C_REMOVE_DIRECTORY_.3Cpath.3E REMOVE FILE &lt;path&gt;, REMOVE DIRECTORY &lt;path&gt;
+5 FORCEREMOVE_DIRECTORY_.3Cpath.3E FORCEREMOVE DIRECTORY &lt;path&gt;
+5 CANONICAL_PATH_.3Cpath.3E CANONICAL PATH &lt;path&gt;
+4 Commands_operating_on_Lines_of_input.2Foutput Commands operating on Lines of input/output
+5 WRITE_LINE_.3Cline.3E WRITE LINE &lt;line&gt;
+5 READ_LINE READ LINE
+4 Global_commands Global commands
+5 HELP_.5B.3Ctype.3E.5D HELP [&lt;type&gt;]
+5 SET_.3Cname.3E_.3Cvalue.3E.2C_GET_.3Cname.3E.2C_.3Cname.3E SET &lt;name&gt; &lt;value&gt;, GET &lt;name&gt;, &lt;name&gt;
+5 GET_SYSTEM_STATE GET SYSTEM STATE
+5 WAIT_FOR_.3Csystem_state.3E_.5B.3Ctimeout_seconds.3E.5D WAIT FOR &lt;system state&gt; [&lt;timeout seconds&gt;]
+5 SLEEP_.3Ctime_in_seconds.3E SLEEP &lt;time in seconds&gt;
+5 GET_SYSTEM_VERSION GET SYSTEM VERSION
+5 SETCONFIG.2C_SET_CONFIG SETCONFIG, SET CONFIG
+5 START START
+5 STOP STOP
+5 STARTUP_SYSTEM STARTUP SYSTEM
+5 SHUTDOWN_SYSTEM SHUTDOWN SYSTEM
+5 RESET_SYSTEM RESET SYSTEM
+5 QUIT.2C_EXIT_.5B.3Cresult.3E.5D QUIT, EXIT [&lt;result&gt;]
+5 SYSTEM_.3Ccommand_line.3E SYSTEM &lt;command line&gt;
+5 START_EXECUTABLE_.3Ccommand_line.3E START EXECUTABLE &lt;command line&gt;
+5 LOG_.3Cmessage.3E LOG &lt;message&gt;
+5 WARN_.3Cmessage.3E WARN &lt;message&gt;
+5 ERROR_.3Cmessage.3E ERROR &lt;message&gt;
+5 CAPTURE_MESSAGES_.3Cmessage_types.3E CAPTURE MESSAGES &lt;message types&gt;
+5 FLUSH_MESSAGES FLUSH MESSAGES
+4 Operator-module_defined_Commands Operator-module defined Commands
+5 HIDE_WINDOW_.5B.3Cname.3E.5D.2C_SHOW_WINDOW_.5B.3Cname.3E.5D HIDE WINDOW [&lt;name&gt;], SHOW WINDOW [&lt;name&gt;]
+5 SET_TITLE_.3Ctitle.3E SET TITLE &lt;title&gt;
+5 SET_BUTTON_.3Cidx.3E_.3Clabel.3E_.3Ccommands.3E SET BUTTON &lt;idx&gt; &lt;label&gt; &lt;commands&gt;
+3 Predefined_Variables Predefined Variables
+4 BCI2000LAUNCHDIR BCI2000LAUNCHDIR
+4 BCI2000BINARY BCI2000BINARY
+4 Result_.28local.29 Result (local)
+4 0.2C_1.2C_..._9_.28local.29 0, 1, ... 9 (local)
+4 YYYYMMDD_.28local.29 YYYYMMDD (local)
+4 HHMMSS_.28local.29 HHMMSS (local)
+3 Abbreviated_commands_and_synonyms Abbreviated commands and synonyms
+3 Handlers Handlers
 4 OnConnect OnConnect
 4 OnSetConfig OnSetConfig
 4 OnStart.2C_OnResume OnStart, OnResume
 4 OnSuspend OnSuspend
+4 OnShutdown OnShutdown
 4 OnExit OnExit
-3 Commands Commands
-4 LOAD_PARAMETERFILE_.3Cfile.3E LOAD PARAMETERFILE &lt;file&gt;
-4 INSERT_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E INSERT STATE &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;
-4 INSERT_PARAMETER_.3Cparameter_definition.3E INSERT PARAMETER &lt;parameter definition&gt;
-4 SET_STATE_.3Cname.3E_.3Cvalue.3E SET STATE &lt;name&gt; &lt;value&gt;
-4 SET_PARAMETER_.3Cname.3E_.3Cvalue.3E SET PARAMETER &lt;name&gt; &lt;value&gt;
-4 SET_VISPROPERTY_.3CvisID.3E..3Cname.3E_.3Cvalue.3E SET VISPROPERTY &lt;visID&gt;.&lt;name&gt; &lt;value&gt;
-4 SET_VISPROPERTIES_.3Cproperty_set_ID.3E SET VISPROPERTIES &lt;property set ID&gt;
-4 SETCONFIG SETCONFIG
-4 START START
-4 STOP STOP
-4 QUIT QUIT
-4 SYSTEM_.3Ccommand_line.3E SYSTEM &lt;command line&gt;
-3 Syntax Syntax
-3 Specifying_Scripts Specifying Scripts
+4 Associating_Scripts_with_Operator_Events Associating Scripts with Operator Events
 3 Examples Examples
-4 1 1
-4 2 2
+4 Making_use_of_the_Operator_module.27s_Function_Buttons Making use of the Operator module's Function Buttons
+4 A_fully_automated_BCI2000_session A fully automated BCI2000 session
+4 Automating_BCI2000_by_Operator_command_line_arguments Automating BCI2000 by Operator command line arguments
 2 See_also See also
 
 User_Reference%253AP300Classifier.html
@@ -3372,6 +3839,8 @@ User_Reference%253AP3SpellerTask.html
 3 Pause_and_Sleep Pause and Sleep
 3 Text_Window Text Window
 2 Parameters Parameters
+4 WindowWidth.2C_WindowHeight WindowWidth, WindowHeight
+4 WindowLeft.2C_WindowTop WindowLeft, WindowTop
 4 WindowBackgroundColor WindowBackgroundColor
 4 PreRunDuration PreRunDuration
 4 PostRunDuration PostRunDuration
@@ -3410,7 +3879,9 @@ User_Reference%253AP3SpellerTask.html
 3 StimulusType StimulusType
 3 StimulusBegin StimulusBegin
 3 PhaseInSequence PhaseInSequence
+3 PauseApplication PauseApplication
 3 SelectedTarget.2C_SelectedRow.2C_SelectedColumn SelectedTarget, SelectedRow, SelectedColumn
+3 SpellerMenu SpellerMenu
 2 Timeline Timeline
 2 See_also See also
 
@@ -3495,6 +3966,24 @@ User_Reference%253ASpatialFilter.html
 3 Full_Matrix Full Matrix
 2 See_also See also
 
+User_Reference%253ASpectralEstimator.html
+2 Function Function
+3 AR_Algorithm AR Algorithm
+3 FFT_Algorithm FFT Algorithm
+3 Physical_unit_of_the_estimated_spectrum Physical unit of the estimated spectrum
+2 Parameters Parameters
+3 WindowLength WindowLength
+3 Detrend Detrend
+3 ModelOrder ModelOrder
+3 OutputType OutputType
+3 FirstBinCenter FirstBinCenter
+3 LastBinCenter LastBinCenter
+3 BinWidth BinWidth
+3 EvaluationsPerBin EvaluationsPerBin
+2 States States
+2 Examples Examples
+2 See_also See also
+
 User_Reference%253AStateTransform.html
 2 Function Function
 2 Parameters Parameters
@@ -3553,6 +4042,7 @@ User_Reference%253AStimulusPresentationTask.html
 3 StimulusType StimulusType
 3 StimulusBegin StimulusBegin
 3 PhaseInSequence PhaseInSequence
+3 PauseApplication PauseApplication
 3 SelectedStimulus SelectedStimulus
 2 Timeline Timeline
 2 See_also See also
@@ -3632,6 +4122,7 @@ User_Reference%253AgUSBampADC.html
 3 CommonReference CommonReference
 2 States States
 2 Additional_Information Additional Information
+3 Using_32bit_Executables_on_64bit_Installations Using 32bit Executables on 64bit Installations
 3 Data_Storage Data Storage
 3 The_USBampgetinfo_Command_Line_Tool The <i>USBampgetinfo</i> Command Line Tool
 2 See_also See also

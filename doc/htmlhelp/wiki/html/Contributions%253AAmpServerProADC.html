@@ -44,9 +44,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Contributions%253AAmpServerProADC.html#Using_the_Amp_Server_Pro_Source_Module"><span class="tocnumber">4</span> <span class="toctext">Using the Amp Server Pro Source Module</span></a>
 <ul>
 <li class='toclevel-2'><a href="Contributions%253AAmpServerProADC.html#Starting_Amp_Server_Pro"><span class="tocnumber">4.1</span> <span class="toctext">Starting Amp Server Pro</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AAmpServerProADC.html#Compiling_the_Amp_Server_Pro_Source_Module"><span class="tocnumber">4.2</span> <span class="toctext">Compiling the Amp Server Pro Source Module</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AAmpServerProADC.html#Creating_a_BCI2000_Batch_File"><span class="tocnumber">4.3</span> <span class="toctext">Creating a BCI2000 Batch File</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AAmpServerProADC.html#Using_Amp_Server_Pro_with_BCI2000"><span class="tocnumber">4.4</span> <span class="toctext">Using Amp Server Pro with BCI2000</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AAmpServerProADC.html#Creating_a_BCI2000_Batch_File"><span class="tocnumber">4.2</span> <span class="toctext">Creating a BCI2000 Batch File</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AAmpServerProADC.html#Using_Amp_Server_Pro_with_BCI2000"><span class="tocnumber">4.3</span> <span class="toctext">Using Amp Server Pro with BCI2000</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Contributions%253AAmpServerProADC.html#Parameters"><span class="tocnumber">5</span> <span class="toctext">Parameters</span></a>
@@ -85,13 +84,6 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Starting_Amp_Server_Pro"></a><h3>Starting Amp Server Pro</h3>
 <p>Amp Server Pro is capable of working with many amplifiers concurrently.  To begin using Amp Server Pro with BCI2000, ensure that at least one amplifier is connected to the server.  If no amplifier is connected, the Amp Server software emulates an amplifier.  If you choose to use the emulated amplifier, you should expect to see a smooth sine wave signal for all channels.  To start the amp server simply navigate to the Amp Server Pro directory and double click the file named "<tt>Amp Server</tt>".
 </p>
-<a name="Compiling_the_Amp_Server_Pro_Source_Module"></a><h3>Compiling the Amp Server Pro Source Module</h3>
-<p>The Amp Server Pro Source Module is not considered to be part of the BCI2000 core and must be compiled from the source code before it can be used.  To compile the Amp Server Pro module you will need Borland C++ Builder v6.0 or later.  To proceed, please follow the instructions below:
-</p>
-<ol><li> Navigate to <tt>BCI2000/src/contrib/SignalSource/AmpServerPro</tt>.
-</li><li> Double click <tt>AmpServerPro.bpr</tt> to open the Amp Server Pro project file in the Borland C++ Builder.
-</li><li> From the file menu click Project &gt; Make AmpServerPro.
-</li></ol>
 <a name="Creating_a_BCI2000_Batch_File"></a><h3>Creating a BCI2000 Batch File</h3>
 <p>Although it is not necessary, it is convenient to create a batch file to run BCI2000 with the Amp Server Pro module.  To create the batch file, open up a text editor and then copy the text below into a blank text file:
 </p>

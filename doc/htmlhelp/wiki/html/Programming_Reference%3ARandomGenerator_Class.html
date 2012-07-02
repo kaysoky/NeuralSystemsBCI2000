@@ -93,6 +93,7 @@ When a nonzero <i>RandomSeed</i> parameter is present, it is used as a random se
 <a name="Parameters"></a><h2>Parameters</h2>
 <a name="RandomSeed_.28optional.29"></a><h3>RandomSeed (optional)</h3>
 <p>When a nonzero RandomSeed parameter is present at initialization time, the RandomGenerator class uses it as its random seed. Otherwise, it initializes itself from the current system time.
+</p><p>In recent versions of BCI2000, the Operator module provides a global RandomSeed parameter for all modules, unless the RandomSeed parameter is specified on the command line, or otherwise by a core module at startup.
 </p>
 <a name="Remarks"></a><h2>Remarks</h2>
 <p>The number sequence is generated using a standard linear congruential algorithm, with its parameters chosen as suggested in <a href="http://www.ams.org/mcom/1999-68-225/S0025-5718-99-00996-5/S0025-5718-99-00996-5.pdf" class='external text' title="http://www.ams.org/mcom/1999-68-225/S0025-5718-99-00996-5/S0025-5718-99-00996-5.pdf" rel="nofollow">P. L'Ecuyer: A table of linear congruential generators of different sizes and good lattice structure. Mathematics of Computation, 68(225), 1999</a>.

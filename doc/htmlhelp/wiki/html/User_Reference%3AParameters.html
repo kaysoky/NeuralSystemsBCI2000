@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Parameters - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Parameters,BCI2000 Glossary,Contributions:AmpServerProADC,Contributions:B-Alert,Contributions:BCPy2000,Contributions:BioRadioADC,Contributions:Biosemi2ADC,Contributions:Coherence,Contributions:DAS ADC,Contributions:DTADC,Contributions:EnobioADC" />
+<meta name="keywords" content="User Reference:Parameters,BCI2000 Glossary,Contributions:AmpServerProADC,Contributions:AudioExtension,Contributions:B-Alert,Contributions:BCPy2000,Contributions:BioRadioADC,Contributions:Biosemi2ADC,Contributions:Coherence,Contributions:CustomFIRFilter,Contributions:CustomIIRFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -77,6 +77,33 @@ help for.
 <dl><dt>AppWindowTemporalDecimation
 </dt><dd><a href="Programming_Reference%253AApplicationWindow_Class.html#AppWindowTemporalDecimation" title="Programming Reference:ApplicationWindow Class">Programming Reference:ApplicationWindow Class</a>
 </dd></dl>
+<dl><dt>AudioEnvelopeSmoothing
+</dt><dd><a href="Contributions%253AAudioExtension.html#AudioEnvelopeSmoothing" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
+</dd></dl>
+<dl><dt>AudioInputDevice
+</dt><dd><a href="Contributions%253AAudioExtension.html#AudioInputDevice" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
+</dd></dl>
+<dl><dt>AudioInputFile
+</dt><dd><a href="Contributions%253AAudioExtension.html#AudioInputFile" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
+</dd></dl>
+<dl><dt>AudioInputFilterbank, AudioOutputFilterbank
+</dt><dd><a href="Contributions%253AAudioExtension.html#AudioInputFilterbank.2C_AudioOutputFilterbank" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
+</dd></dl>
+<dl><dt>AudioMixer
+</dt><dd><a href="Contributions%253AAudioExtension.html#AudioMixer" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
+</dd></dl>
+<dl><dt>AudioOutputDevice
+</dt><dd><a href="Contributions%253AAudioExtension.html#AudioOutputDevice" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
+</dd></dl>
+<dl><dt>AudioRecordingFormat
+</dt><dd><a href="Contributions%253AAudioExtension.html#AudioRecordingFormat" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
+</dd></dl>
+<dl><dt>AudioRecordInput
+</dt><dd><a href="Contributions%253AAudioExtension.html#AudioRecordInput" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
+</dd></dl>
+<dl><dt>AudioRecordOutput
+</dt><dd><a href="Contributions%253AAudioExtension.html#AudioRecordOutput" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
+</dd></dl>
 <dl><dt>AudioStimuliOn
 </dt><dd><a href="User_Reference%253AP3SpellerTask.html#AudioStimuliOn" title="User Reference:P3SpellerTask">User Reference:P3SpellerTask</a>
 </dd></dl>
@@ -97,7 +124,8 @@ help for.
 </dd><dd><a href="User_Reference%253AP3SpellerTask.html#BackgroundColor" title="User Reference:P3SpellerTask">User Reference:P3SpellerTask</a>
 </dd></dl>
 <dl><dt>BinWidth
-</dt><dd><a href="User_Reference%253AARFilter.html#BinWidth" title="User Reference:ARFilter">User Reference:ARFilter</a>
+</dt><dd><a href="User_Reference%253ASpectralEstimator.html#BinWidth" title="User Reference:SpectralEstimator">User Reference:SpectralEstimator</a>
+</dd><dd><a href="User_Reference%253AARFilter.html#BinWidth" title="User Reference:ARFilter">User Reference:ARFilter</a>
 </dd></dl>
 <dl><dt>BipolarChList
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#BipolarChList" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
@@ -142,6 +170,9 @@ help for.
 </dd></dl>
 <dl><dt>ChannelNames
 </dt><dd><a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>
+</dd></dl>
+<dl><dt>ChannelSets
+</dt><dd><a href="Contributions%253AStatisticsFilter.html#ChannelSets" title="Contributions:StatisticsFilter">Contributions:StatisticsFilter</a>
 </dd></dl>
 <dl><dt>CircleRadius
 </dt><dd><a href="Contributions%253ASigfriedSigProc.html#CircleRadius" title="Contributions:SigfriedSigProc">Contributions:SigfriedSigProc</a>
@@ -217,20 +248,33 @@ help for.
 </dd><dd><a href="User_Reference%253ADataIOFilter.html#DataDirectory" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>
 </dd><dd><a href="User_Reference%253ABCI2000FileWriter.html#DataDirectory" title="User Reference:BCI2000FileWriter">User Reference:BCI2000FileWriter</a>
 </dd></dl>
+<dl><dt>DataGloveDerivative
+</dt><dd><a href="Contributions%253ADataGloveLogger.html#DataGloveDerivative" title="Contributions:DataGloveLogger">Contributions:DataGloveLogger</a>
+</dd></dl>
+<dl><dt>DataGloveHandedness
+</dt><dd><a href="Contributions%253ADataGloveLogger.html#DataGloveHandedness" title="Contributions:DataGloveLogger">Contributions:DataGloveLogger</a>
+</dd></dl>
 <dl><dt>DCOffset
 </dt><dd><a href="User_Reference%253ASignalGeneratorADC.html#DCOffset" title="User Reference:SignalGeneratorADC">User Reference:SignalGeneratorADC</a>
+</dd></dl>
+<dl><dt>Delay
+</dt><dd><a href="Contributions%253AHilbertFilter.html#Delay" title="Contributions:HilbertFilter">Contributions:HilbertFilter</a>
 </dd></dl>
 <dl><dt>DestinationAddress
 </dt><dd><a href="User_Reference%253AP3SpellerTask.html#DestinationAddress" title="User Reference:P3SpellerTask">User Reference:P3SpellerTask</a>
 </dd></dl>
 <dl><dt>Detrend
-</dt><dd><a href="User_Reference%253AARFilter.html#Detrend" title="User Reference:ARFilter">User Reference:ARFilter</a>
+</dt><dd><a href="User_Reference%253ASpectralEstimator.html#Detrend" title="User Reference:SpectralEstimator">User Reference:SpectralEstimator</a>
+</dd><dd><a href="User_Reference%253AARFilter.html#Detrend" title="User Reference:ARFilter">User Reference:ARFilter</a>
 </dd></dl>
 <dl><dt>DeviceIDMaster
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#DeviceIDMaster" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
 </dd></dl>
 <dl><dt>DeviceIDs
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#DeviceIDs" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
+</dd></dl>
+<dl><dt>DiffOrder
+</dt><dd><a href="Contributions%253ADiffFilter.html#DiffOrder" title="Contributions:DiffFilter">Contributions:DiffFilter</a>
 </dd></dl>
 <dl><dt>DigitalEnable
 </dt><dd><a href="User_Reference%253AgMOBIlabPlusADC.html#DigitalEnable" title="User Reference:gMOBIlabPlusADC">User Reference:gMOBIlabPlusADC</a>
@@ -256,6 +300,9 @@ help for.
 </dd><dd><a href="User_Reference%253AP3SpellerTask.html#DisplayResults" title="User Reference:P3SpellerTask">User Reference:P3SpellerTask</a>
 </dd><dd><a href="Programming_Reference%253AStimulusTask_Class.html#DisplayResults" title="Programming Reference:StimulusTask Class">Programming Reference:StimulusTask Class</a>
 </dd></dl>
+<dl><dt>DivideByDeltaTime
+</dt><dd><a href="Contributions%253ADiffFilter.html#DivideByDeltaTime" title="Contributions:DiffFilter">Contributions:DiffFilter</a>
+</dd></dl>
 <dl><dt>EEGChlist
 </dt><dd><a href="Contributions%253ABiosemi2ADC.html#EEGChlist" title="Contributions:Biosemi2ADC">Contributions:Biosemi2ADC</a>
 </dd></dl>
@@ -264,6 +311,9 @@ help for.
 </dd></dl>
 <dl><dt>ElectrodeLocation
 </dt><dd><a href="Contributions%253ASigfriedSigProc.html#ElectrodeLocation" title="Contributions:SigfriedSigProc">Contributions:SigfriedSigProc</a>
+</dd></dl>
+<dl><dt>EnableAudioExtension
+</dt><dd><a href="Contributions%253AAudioExtension.html#EnableAudioExtension" title="Contributions:AudioExtension">Contributions:AudioExtension</a>
 </dd></dl>
 <dl><dt>EnslavePython
 </dt><dd><a href="Contributions%253ABCPy2000.html#EnslavePython" title="Contributions:BCPy2000">Contributions:BCPy2000</a>
@@ -279,13 +329,14 @@ help for.
 </dd><dd><a href="User_Reference%253AEDFFileWriter.html#EquipmentID" title="User Reference:EDFFileWriter">User Reference:EDFFileWriter</a>
 </dd></dl>
 <dl><dt>EvaluationsPerBin
-</dt><dd><a href="User_Reference%253AARFilter.html#EvaluationsPerBin" title="User Reference:ARFilter">User Reference:ARFilter</a>
-</dd></dl>
-<dl><dt>EventCh
-</dt><dd><a href="Contributions%253ANeuralynx.html#EventCh" title="Contributions:Neuralynx">Contributions:Neuralynx</a>
+</dt><dd><a href="User_Reference%253ASpectralEstimator.html#EvaluationsPerBin" title="User Reference:SpectralEstimator">User Reference:SpectralEstimator</a>
+</dd><dd><a href="User_Reference%253AARFilter.html#EvaluationsPerBin" title="User Reference:ARFilter">User Reference:ARFilter</a>
 </dd></dl>
 <dl><dt>EventCodes
 </dt><dd><a href="User_Reference%253AGDFFileWriter.html#EventCodes" title="User Reference:GDFFileWriter">User Reference:GDFFileWriter</a>
+</dd></dl>
+<dl><dt>EventScripts
+</dt><dd><a href="Contributions%253AStatisticsFilter.html#EventScripts" title="Contributions:StatisticsFilter">Contributions:StatisticsFilter</a>
 </dd></dl>
 <dl><dt>EventStates
 </dt><dd><a href="Contributions%253AFieldTripBufferSource.html#EventStates" title="Contributions:FieldTripBufferSource">Contributions:FieldTripBufferSource</a>
@@ -332,6 +383,7 @@ help for.
 </dd></dl>
 <dl><dt>FIRCoefficients
 </dt><dd><a href="Contributions%253AFIRFilter.html#FIRCoefficients" title="Contributions:FIRFilter">Contributions:FIRFilter</a>
+</dd><dd><a href="Contributions%253ACustomFIRFilter.html#FIRCoefficients" title="Contributions:CustomFIRFilter">Contributions:CustomFIRFilter</a>
 </dd></dl>
 <dl><dt>FIRIntegration
 </dt><dd><a href="Contributions%253AFIRFilter.html#FIRIntegration" title="Contributions:FIRFilter">Contributions:FIRFilter</a>
@@ -340,7 +392,8 @@ help for.
 </dt><dd><a href="User_Reference%253AP3SpellerTask.html#FirstActiveMenu" title="User Reference:P3SpellerTask">User Reference:P3SpellerTask</a>
 </dd></dl>
 <dl><dt>FirstBinCenter
-</dt><dd><a href="User_Reference%253AARFilter.html#FirstBinCenter" title="User Reference:ARFilter">User Reference:ARFilter</a>
+</dt><dd><a href="User_Reference%253ASpectralEstimator.html#FirstBinCenter" title="User Reference:SpectralEstimator">User Reference:SpectralEstimator</a>
+</dd><dd><a href="User_Reference%253AARFilter.html#FirstBinCenter" title="User Reference:ARFilter">User Reference:ARFilter</a>
 </dd></dl>
 <dl><dt>FocusOn
 </dt><dd><a href="User_Reference%253AStimulusPresentationTask.html#FocusOn" title="User Reference:StimulusPresentationTask">User Reference:StimulusPresentationTask</a>
@@ -366,8 +419,16 @@ help for.
 <dl><dt>FTStatesToBuffer
 </dt><dd><a href="Contributions%253AFieldTripBuffer.html#FTStatesToBuffer" title="Contributions:FieldTripBuffer">Contributions:FieldTripBuffer</a>
 </dd></dl>
+<dl><dt>HighPassCorner
+</dt><dd><a href="User_Reference%253AIIRBandpass.html#HighPassCorner" title="User Reference:IIRBandpass">User Reference:IIRBandpass</a>
+</dd><dd><a href="Contributions%253ACustomIIRFilter.html#HighPassCorner" title="Contributions:CustomIIRFilter">Contributions:CustomIIRFilter</a>
+</dd></dl>
 <dl><dt>HighPassFilter
 </dt><dd><a href="User_Reference%253ASourceFilter.html#HighPassFilter" title="User Reference:SourceFilter">User Reference:SourceFilter</a>
+</dd></dl>
+<dl><dt>HighPassOrder
+</dt><dd><a href="User_Reference%253AIIRBandpass.html#HighPassOrder" title="User Reference:IIRBandpass">User Reference:IIRBandpass</a>
+</dd><dd><a href="Contributions%253ACustomIIRFilter.html#HighPassOrder" title="Contributions:CustomIIRFilter">Contributions:CustomIIRFilter</a>
 </dd></dl>
 <dl><dt>HistoryLength
 </dt><dd><a href="Contributions%253APeakDetector.html#HistoryLength" title="Contributions:PeakDetector">Contributions:PeakDetector</a>
@@ -431,7 +492,8 @@ help for.
 </dt><dd><a href="User_Reference%253ALocalization.html#Language" title="User Reference:Localization">User Reference:Localization</a>
 </dd></dl>
 <dl><dt>LastBinCenter
-</dt><dd><a href="User_Reference%253AARFilter.html#LastBinCenter" title="User Reference:ARFilter">User Reference:ARFilter</a>
+</dt><dd><a href="User_Reference%253ASpectralEstimator.html#LastBinCenter" title="User Reference:SpectralEstimator">User Reference:SpectralEstimator</a>
+</dd><dd><a href="User_Reference%253AARFilter.html#LastBinCenter" title="User Reference:ARFilter">User Reference:ARFilter</a>
 </dd></dl>
 <dl><dt>LearningRateAutoScale
 </dt><dd><a href="Contributions%253ASigfriedSigProc.html#LearningRateAutoScale" title="Contributions:SigfriedSigProc">Contributions:SigfriedSigProc</a>
@@ -451,6 +513,9 @@ help for.
 <dl><dt>LocalizedStrings
 </dt><dd><a href="User_Reference%253ALocalization.html#LocalizedStrings" title="User Reference:Localization">User Reference:Localization</a>
 </dd></dl>
+<dl><dt>LogDataGlove
+</dt><dd><a href="Contributions%253ADataGloveLogger.html#LogDataGlove" title="Contributions:DataGloveLogger">Contributions:DataGloveLogger</a>
+</dd></dl>
 <dl><dt>LogJoystick
 </dt><dd><a href="User_Reference%253ALogging_Input.html#LogJoystick" title="User Reference:Logging Input">User Reference:Logging Input</a>
 </dd></dl>
@@ -463,8 +528,16 @@ help for.
 <dl><dt>LogMouse
 </dt><dd><a href="User_Reference%253ALogging_Input.html#LogMouse" title="User Reference:Logging Input">User Reference:Logging Input</a>
 </dd></dl>
+<dl><dt>LowPassCorner
+</dt><dd><a href="User_Reference%253AIIRBandpass.html#LowPassCorner" title="User Reference:IIRBandpass">User Reference:IIRBandpass</a>
+</dd><dd><a href="Contributions%253ACustomIIRFilter.html#LowPassCorner" title="Contributions:CustomIIRFilter">Contributions:CustomIIRFilter</a>
+</dd></dl>
 <dl><dt>LowPassFilter
 </dt><dd><a href="User_Reference%253ASourceFilter.html#LowPassFilter" title="User Reference:SourceFilter">User Reference:SourceFilter</a>
+</dd></dl>
+<dl><dt>LowPassOrder
+</dt><dd><a href="User_Reference%253AIIRBandpass.html#LowPassOrder" title="User Reference:IIRBandpass">User Reference:IIRBandpass</a>
+</dd><dd><a href="Contributions%253ACustomIIRFilter.html#LowPassOrder" title="Contributions:CustomIIRFilter">Contributions:CustomIIRFilter</a>
 </dd></dl>
 <dl><dt>LPFfreq
 </dt><dd><a href="Contributions%253ATDTADC.html#LPFfreq" title="Contributions:TDTADC">Contributions:TDTADC</a>
@@ -501,7 +574,8 @@ help for.
 </dt><dd><a href="Contributions%253ASigfriedSigProc.html#ModelFiles" title="Contributions:SigfriedSigProc">Contributions:SigfriedSigProc</a>
 </dd></dl>
 <dl><dt>ModelOrder
-</dt><dd><a href="User_Reference%253AARFilter.html#ModelOrder" title="User Reference:ARFilter">User Reference:ARFilter</a>
+</dt><dd><a href="User_Reference%253ASpectralEstimator.html#ModelOrder" title="User Reference:SpectralEstimator">User Reference:SpectralEstimator</a>
+</dd><dd><a href="User_Reference%253AARFilter.html#ModelOrder" title="User Reference:ARFilter">User Reference:ARFilter</a>
 </dd></dl>
 <dl><dt>ModulateAmplitude
 </dt><dd><a href="User_Reference%253ASignalGeneratorADC.html#ModulateAmplitude" title="User Reference:SignalGeneratorADC">User Reference:SignalGeneratorADC</a>
@@ -518,6 +592,10 @@ help for.
 <dl><dt>notchBW
 </dt><dd><a href="Contributions%253ATDTADC.html#notchBW" title="Contributions:TDTADC">Contributions:TDTADC</a>
 </dd></dl>
+<dl><dt>NotchCenter
+</dt><dd><a href="User_Reference%253AIIRBandpass.html#NotchCenter" title="User Reference:IIRBandpass">User Reference:IIRBandpass</a>
+</dd><dd><a href="Contributions%253ACustomIIRFilter.html#NotchCenter" title="Contributions:CustomIIRFilter">Contributions:CustomIIRFilter</a>
+</dd></dl>
 <dl><dt>NotchEnabled
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#NotchEnabled" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
 </dd></dl>
@@ -533,6 +611,10 @@ help for.
 </dd></dl>
 <dl><dt>NotchModelOrder
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#NotchModelOrder" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
+</dd></dl>
+<dl><dt>NotchOrder
+</dt><dd><a href="User_Reference%253AIIRBandpass.html#NotchOrder" title="User Reference:IIRBandpass">User Reference:IIRBandpass</a>
+</dd><dd><a href="Contributions%253ACustomIIRFilter.html#NotchOrder" title="Contributions:CustomIIRFilter">Contributions:CustomIIRFilter</a>
 </dd></dl>
 <dl><dt>NotchType
 </dt><dd><a href="User_Reference%253AgUSBampADC.html#NotchType" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>
@@ -564,11 +646,21 @@ help for.
 <dl><dt>NumMatrixColumns, NumMatrixRows
 </dt><dd><a href="User_Reference%253AP3SpellerTask.html#NumMatrixColumns.2C_NumMatrixRows" title="User Reference:P3SpellerTask">User Reference:P3SpellerTask</a>
 </dd></dl>
+<dl><dt>Observers
+</dt><dd><a href="Contributions%253AStatisticsFilter.html#Observers" title="Contributions:StatisticsFilter">Contributions:StatisticsFilter</a>
+</dd></dl>
 <dl><dt>OffsetMultiplier
 </dt><dd><a href="User_Reference%253ASignalGeneratorADC.html#OffsetMultiplier" title="User Reference:SignalGeneratorADC">User Reference:SignalGeneratorADC</a>
 </dd></dl>
+<dl><dt>OutputSignal
+</dt><dd><a href="Contributions%253AHilbertFilter.html#OutputSignal" title="Contributions:HilbertFilter">Contributions:HilbertFilter</a>
+</dd></dl>
 <dl><dt>OutputType
-</dt><dd><a href="User_Reference%253AARFilter.html#OutputType" title="User Reference:ARFilter">User Reference:ARFilter</a>
+</dt><dd><a href="User_Reference%253ASpectralEstimator.html#OutputType" title="User Reference:SpectralEstimator">User Reference:SpectralEstimator</a>
+</dd><dd><a href="User_Reference%253AARFilter.html#OutputType" title="User Reference:ARFilter">User Reference:ARFilter</a>
+</dd></dl>
+<dl><dt>OutputView
+</dt><dd><a href="Contributions%253AStatisticsFilter.html#OutputView" title="Contributions:StatisticsFilter">Contributions:StatisticsFilter</a>
 </dd></dl>
 <dl><dt>PhysicalChannels
 </dt><dd><a href="Contributions%253ATMSiADC.html#PhysicalChannels" title="Contributions:TMSiADC">Contributions:TMSiADC</a>
@@ -943,11 +1035,17 @@ help for.
 <dl><dt>TriggerChList
 </dt><dd><a href="Contributions%253ABiosemi2ADC.html#TriggerChList" title="Contributions:Biosemi2ADC">Contributions:Biosemi2ADC</a>
 </dd></dl>
+<dl><dt>UnwrapDiff
+</dt><dd><a href="Contributions%253ADiffFilter.html#UnwrapDiff" title="Contributions:DiffFilter">Contributions:DiffFilter</a>
+</dd></dl>
 <dl><dt>UpdateTrigger
 </dt><dd><a href="User_Reference%253ANormalizer.html#UpdateTrigger" title="User Reference:Normalizer">User Reference:Normalizer</a>
 </dd></dl>
 <dl><dt>UserComment
 </dt><dd><a href="User_Reference%253AStimulusPresentationTask.html#UserComment" title="User Reference:StimulusPresentationTask">User Reference:StimulusPresentationTask</a>
+</dd></dl>
+<dl><dt>Views
+</dt><dd><a href="Contributions%253AStatisticsFilter.html#Views_2" title="Contributions:StatisticsFilter">Contributions:StatisticsFilter</a>
 </dd></dl>
 <dl><dt>Visualization
 </dt><dd><a href="User_Reference%253ADataIOFilter.html#Visualization" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>
@@ -982,6 +1080,9 @@ help for.
 <dl><dt>VisualizeTiming
 </dt><dd><a href="User_Reference%253ADataIOFilter.html#VisualizeTiming" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>
 </dd></dl>
+<dl><dt>VisualizeViews
+</dt><dd><a href="Contributions%253AStatisticsFilter.html#VisualizeViews" title="Contributions:StatisticsFilter">Contributions:StatisticsFilter</a>
+</dd></dl>
 <dl><dt>VoltageRange
 </dt><dd><a href="Contributions%253ABioRadioADC.html#VoltageRange" title="Contributions:BioRadioADC">Contributions:BioRadioADC</a>
 </dd></dl>
@@ -995,14 +1096,17 @@ help for.
 </dd></dl>
 <dl><dt>WindowLeft, WindowTop
 </dt><dd><a href="User_Reference%253AStimulusPresentationTask.html#WindowLeft.2C_WindowTop" title="User Reference:StimulusPresentationTask">User Reference:StimulusPresentationTask</a>
+</dd><dd><a href="User_Reference%253AP3SpellerTask.html#WindowLeft.2C_WindowTop" title="User Reference:P3SpellerTask">User Reference:P3SpellerTask</a>
 </dd><dd><a href="User_Reference%253ACursorTask.html#WindowLeft.2C_WindowTop" title="User Reference:CursorTask">User Reference:CursorTask</a>
 </dd><dd><a href="Programming_Reference%253AApplicationWindow_Class.html#WindowLeft.2C_WindowTop" title="Programming Reference:ApplicationWindow Class">Programming Reference:ApplicationWindow Class</a>
 </dd></dl>
 <dl><dt>WindowLength
-</dt><dd><a href="User_Reference%253AARFilter.html#WindowLength" title="User Reference:ARFilter">User Reference:ARFilter</a>
+</dt><dd><a href="User_Reference%253ASpectralEstimator.html#WindowLength" title="User Reference:SpectralEstimator">User Reference:SpectralEstimator</a>
+</dd><dd><a href="User_Reference%253AARFilter.html#WindowLength" title="User Reference:ARFilter">User Reference:ARFilter</a>
 </dd></dl>
 <dl><dt>WindowWidth, WindowHeight
 </dt><dd><a href="User_Reference%253AStimulusPresentationTask.html#WindowWidth.2C_WindowHeight" title="User Reference:StimulusPresentationTask">User Reference:StimulusPresentationTask</a>
+</dd><dd><a href="User_Reference%253AP3SpellerTask.html#WindowWidth.2C_WindowHeight" title="User Reference:P3SpellerTask">User Reference:P3SpellerTask</a>
 </dd><dd><a href="User_Reference%253ACursorTask.html#WindowWidth.2C_WindowHeight" title="User Reference:CursorTask">User Reference:CursorTask</a>
 </dd><dd><a href="Programming_Reference%253AApplicationWindow_Class.html#WindowWidth.2C_WindowHeight" title="Programming Reference:ApplicationWindow Class">Programming Reference:ApplicationWindow Class</a>
 </dd></dl>
@@ -1012,7 +1116,6 @@ help for.
 <dl><dt>WorkspaceBoundaryTexture
 </dt><dd><a href="User_Reference%253ACursorTask.html#WorkspaceBoundaryTexture" title="User Reference:CursorTask">User Reference:CursorTask</a>
 </dd></dl>
-<hr />
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AStates.html" title="User Reference:States">User Reference:States</a>
 </p>

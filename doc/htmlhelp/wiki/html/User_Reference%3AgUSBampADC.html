@@ -73,8 +73,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="User_Reference%253AgUSBampADC.html#States"><span class="tocnumber">3</span> <span class="toctext">States</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253AgUSBampADC.html#Additional_Information"><span class="tocnumber">4</span> <span class="toctext">Additional Information</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#Data_Storage"><span class="tocnumber">4.1</span> <span class="toctext">Data Storage</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#The_USBampgetinfo_Command_Line_Tool"><span class="tocnumber">4.2</span> <span class="toctext">The USBampgetinfo Command Line Tool</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#Using_32bit_Executables_on_64bit_Installations"><span class="tocnumber">4.1</span> <span class="toctext">Using 32bit Executables on 64bit Installations</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#Data_Storage"><span class="tocnumber">4.2</span> <span class="toctext">Data Storage</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#The_USBampgetinfo_Command_Line_Tool"><span class="tocnumber">4.3</span> <span class="toctext">The USBampgetinfo Command Line Tool</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AgUSBampADC.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
@@ -260,6 +261,13 @@ Otherwise, all GND inputs need to be externally connected.
 <p>None.
 </p>
 <a name="Additional_Information"></a><h2>Additional Information</h2>
+<a name="Using_32bit_Executables_on_64bit_Installations"></a><h3>Using 32bit Executables on 64bit Installations</h3>
+<p>BCI2000 supports compilation of the gUSBamp source module for 64bit targets. The resulting executable will run on 64bit systems, and work with the 64bit version of the gUSBamp drivers. However, the binary distribution of BCI2000 contains 32bit executables. These run fine under 64bit systems, but you will need to perform these additional driver installation steps to install 32bit gUSBamp API DLLs on 64bit systems:
+</p>
+<ul><li>Execute gtec's 32bit driver installer on your 64bit system.
+</li><li>After successful installation, execute gtec's 64bit driver installer on your 64bit system.
+</li><li>You will now have both the 32bit API DLL and the 64bit API DLL installed, such that both 32bit and 64bit executables will be able to connect to a gUSBamp attached to the system's USB ports.
+</li></ul>
 <a name="Data_Storage"></a><h3>Data Storage</h3>
 <p>Unlike other systems, the USBamp is a DC amplifier system that digitizes at 24 bit. 
 Bandpass and notch filtering is performed on the digitized samples, resulting in floating point signal samples in units of <span class="texhtml">&mu;<i>V</i></span>.

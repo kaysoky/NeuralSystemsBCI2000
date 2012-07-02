@@ -196,7 +196,7 @@ Omitting a <tt>--transmit</tt> option corresponds to<tt>--transmit-spd</tt>. Thi
 <pre>MyFilter --help
 </pre>
 <p>You should get a message stating that the program applies the "MyFilter" filter to its input.
-</p><p>One potential complication is that the <tt>BCI2000_ADD_CMDLINE_FILTER</tt> macro cannot come in the same <tt>CMakeLists.txt</tt> file as the declaration of a BCI2000 module.   Let us suppose you have followed the <a href="Programming_Howto%253AQuickstart_Guide.html" title="Programming Howto:Quickstart Guide">programmers' quickstart guide</a> to create a custom signal-processing module in <tt>src/custom/MyModule</tt> and add a custom filter <tt>MyFilter</tt> to it.  A safe procedure is:
+</p><p>One potential complication is that the <tt>BCI2000_ADD_CMDLINE_FILTER</tt> macro cannot come in the same <tt>CMakeLists.txt</tt> file as the declaration of a BCI2000 module.   Let us suppose you have followed the <a href="Programming_Howto%253AQuickstart_Guide.html" title="Programming Howto:Quickstart Guide">programmers' quickstart guide</a> to create a custom signal-processing module in <tt>src/custom/MyModule</tt> and add a custom filter <tt>MyFilter</tt> to it.  A safe procedure (which can be automated used the <a href="Programming_Howto%253AQuickstart_Guide.html#Configuring_your_new_filter_for_offline_use" title="Programming Howto:Quickstart Guide">NewBCI2000FilterTool</a> utility) is as follows:
 </p>
 <ol><li> Create a subdirectory <tt>src/custom/MyModule/cmdline</tt>
 </li><li> Insert the line <tt>ADD_SUBDIRECTORY( cmdline )</tt> at the <i>beginning</i> of <tt>src/custom/MyModule/CMakeLists.txt</tt> (it must come <i>before</i> the module declaration).
@@ -260,9 +260,7 @@ Although the BCI2000 command line tools cannot be <b>compiled</b> from within <i
 <a name="Further_information"></a><h2>Further information</h2>
 <ul><li>A comprehensive and up-to-date description of a number of command line shells, and their scripting, is provided at <tt><a href="http://www.ss64.com/" class='external free' title="http://www.ss64.com/" rel="nofollow">http://www.ss64.com/</a></tt>. 
 </li></ul>
-<ul><li>The <i>cygwin</i>  Win32 port of GNU tools can be downloaded at <tt><a href="http://www.cygwin.com/" class='external free' title="http://www.cygwin.com/" rel="nofollow">http://www.cygwin.com/</a></tt>. 
-</li></ul>
-<ul><li>The free command line version of the Borland C++ compiler is available at <tt><a href="http://www.borland.com/downloads/download_cbuilder.html" class='external free' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">http://www.borland.com/downloads/download_cbuilder.html</a></tt>.
+<ul><li>The <i>cygwin</i>  Win32 port of GNU tools can be downloaded at <tt><a href="http://www.cygwin.com/" class='external free' title="http://www.cygwin.com/" rel="nofollow">http://www.cygwin.com/</a></tt>.
 </li></ul>
 
 <div class="printfooter">

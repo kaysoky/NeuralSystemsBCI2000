@@ -32,14 +32,6 @@ a.new, #quickbar a.new { color: #CC2200; }
 <div id='article'>
 <h1 class="pagetitle">Environment Class</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p><tt>Environment</tt> is a mix-in class that provides access to system-wide parameters and states. Though client classes may directly inherit from it, most do so via interface classes that themselves do inherit from the <tt>Environment</tt> class, most importantly the <a href="Programming_Reference%253AGenericFilter_Class.html" title="Programming Reference:GenericFilter Class">GenericFilter</a> and <a href="Programming_Reference%253AEnvironmentExtension_Class.html" title="Programming Reference:EnvironmentExtension Class">EnvironmentExtension</a> classes.
 </p>
-<table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
-<ul>
-<li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#Your_code.27s_Environment"><span class="tocnumber">1</span> <span class="toctext">Your code's Environment</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#Access_to_Parameters_and_States"><span class="tocnumber">2</span> <span class="toctext">Access to Parameters and States</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#Working_around_Borland_VCL_Inheritance_Restrictions"><span class="tocnumber">3</span> <span class="toctext">Working around Borland VCL Inheritance Restrictions</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
-</ul>
-</td></tr></table>
 <a name="Your_code.27s_Environment"></a><h2>Your code's <tt>Environment</tt></h2>
 <p>In each <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">BCI2000 core module</a>, there exist system wide
 <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">parameters</a> and <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">states</a>.
@@ -114,73 +106,6 @@ short itiState = OptionalState( &quot;IntertrialInterval&quot;, 0 );
 <p>Omitting the default value from the <tt>OptionalState</tt> or <tt>OptionalParameter</tt> call implies
 a default value of 0, or the empty string, whichever is appropriate.
 </p><p>The Environment class imposes <a href="Programming_Reference%253AGenericFilter_Class.html#Rules_for_Parameter_and_State_access" title="Programming Reference:GenericFilter Class">rules for parameter and state access</a> intended to help avoid parameterization inconsistencies.
-</p>
-<a name="Working_around_Borland_VCL_Inheritance_Restrictions"></a><h2>Working around Borland VCL Inheritance Restrictions</h2>
-<p>Due to some non-standard conventions in Borland's VCL library, you
-cannot create a VCL class such as a <tt>TForm</tt> descendant that
-also
-inherits from <tt>Environment</tt> -- the compiler will report an
-error
-if you try.
-As a work-around, you might declare an <tt>Environment</tt> subclass
-<i>inside</i>  your VCL <tt>TForm</tt> child declaration,
-and create a single instance <tt>mEnv</tt> of this subclass as a
-member
-of your class, using it to access the <tt>Environment</tt> functions
-as in
-</p>
-<pre>
-MyForm&nbsp;: public TForm
-{
-  class MyFormEnvironment;
-  friend class MyFormEnvironment;
-  ...
-  private:
-    class MyFormEnvironment&nbsp;: private Environment
-    {
-      public:
-        MyFormEnvironment( MyForm&amp; parent );
-        void Preflight() const;
-        void Initialize();
-      private:
-        MyForm&amp; mParent;
-    } mEnv;
-};
-
-...
-
-MyForm::MyFormEnvironment( MyForm&amp; parent )
-: mParent( parent )
-{
-  BEGIN_PARAMETER_DEFINITIONS
-    &quot;UsrTask int MyParam= 1 1 0 5 // my parameter&quot;,
-  END_PARAMETER_DEFINITIONS
-}
-
-...
-
-void
-MyForm::Initialize()
-{
-  mEnv.Initialize();
-}
-
-void
-MyForm::MyFormEnvironment::Initialize()
-{
-  mParent.mMyParam = Parameter( &quot;MyParam&quot; );
-}
-</pre>
-<p>This should work in situations where your code's class model is
-centered around
-VCL form classes.
-When writing new code, you might consider basing your class model on
-functionality, and use VCL forms merely for input and output --
-instantiating,
-populating, and deleting them as you need them, such that the BCI2000
-<tt>Environment</tt> interfacing is done from your own classes,
-independently
-of the VCL's special requirements.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Programming_Reference%253AErrors_and_Warnings.html" title="Programming Reference:Errors and Warnings">Programming Reference:Errors and Warnings</a>, <a href="Programming_Reference%253AApplicationWindowClient_Class.html" title="Programming Reference:ApplicationWindowClient Class">Programming Reference:ApplicationWindowClient Class</a>

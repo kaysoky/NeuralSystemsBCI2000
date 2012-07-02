@@ -45,7 +45,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Windows_platforms_tested_successfully_so_far"><span class="tocnumber">9</span> <span class="toctext">Windows platforms tested successfully so far</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Status_on_other_OSes"><span class="tocnumber">10</span> <span class="toctext">Status on other OSes</span></a>
 <ul>
-<li class='toclevel-2'><a href="Programming_Reference%253ABuild_System.html#OS_X"><span class="tocnumber">10.1</span> <span class="toctext">OS X</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABuild_System.html#Linux"><span class="tocnumber">10.1</span> <span class="toctext">Linux</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABuild_System.html#OS_X"><span class="tocnumber">10.2</span> <span class="toctext">OS X</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#See_also"><span class="tocnumber">11</span> <span class="toctext">See also</span></a></li>
@@ -61,19 +62,19 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul><li><b>Supported Operating Systems</b>
 <ul><li>Windows XP, Windows 2000 (Vista and Windows 7 have poor Audio Video latencies - not recommended for BCI2000)
 </li><li>64-bit Windows systems--<a href="Programming_Reference%253ABuilding_BCI2000_for_Win64.html" title="Programming Reference:Building BCI2000 for Win64">please read this information</a>
-</li><li>Macintosh OSX: compiles most of the time, not officially supported
-</li><li>Linux: compiles, but networking is currently broken
+</li><li>Macintosh OSX: Compiles and passes standard tests on 10.5 and newer systems
+</li><li>Linux: Compiles and passes standard tests on both Debian Squeeze (stable) and Wheezy (currently unstable)
 </li></ul>
 </li><li><b>Supported Compilers</b>
-<ul><li>Borland/CodeGear/Embarcadero C++ Builder 2010 (core modules only, no GUI applications); C++ Builder XE2 is <b>not supported</b>
-</li><li>Visual Studio 9 (2008) and 10, download free Express version from <a href="http://www.microsoft.com/express/downloads/" class='external text' title="http://www.microsoft.com/express/downloads/" rel="nofollow">here</a> (although some BCI2000 modules require MFC, most modules may be built using the Express version)
+<ul><li>Visual Studio 9 (2008) and 10, download free Express version from <a href="http://www.microsoft.com/express/downloads/" class='external text' title="http://www.microsoft.com/express/downloads/" rel="nofollow">here</a> (although some BCI2000 modules require MFC, most modules may be built using the Express version)
 </li><li>MinGW with gcc 4.x
+</li><li>Borland/CodeGear/Embarcadero C++ Builder 2010 (core modules only, no GUI applications); C++ Builder XE2 is <b>not supported</b>
 </li></ul>
 </li><li><b>Supported IDEs</b>
-<ul><li>Borland/CodeGear/Embarcadero 6, 2007, 2009, 2010 (Note: Use the project files in the src directory for Borland IDE support. GUI application projects cannot be opened in the IDE. This support is being phased out)
-</li><li>Visual Studio 9 (2008), Visual Studio 10 (via CMake)
+<ul><li>Visual Studio 9 (2008), Visual Studio 10 (via CMake)
 </li><li>Code::Blocks - MinGW Makefiles (via CMake)
 </li><li>Other IDEs supported by CMake generators (Eclipse CDT, ...), as long as these use the compilers listed above
+</li><li>Borland/CodeGear/Embarcadero C++ Builder 2007, 2009, 2010 (Note: Use the project goups in the build/CBuilder directory for Borland IDE support.)
 </li></ul>
 </li></ul>
 <a name="Setting_up_MinGW_to_build_BCI2000"></a><h2> Setting up MinGW to build BCI2000 </h2>
@@ -111,10 +112,10 @@ There, in line 10, replace
 </p><p><b>To run testing:</b>
 </p>
 <ol><li>Ensure that the entire BCI2000 project has built successfully and that executables exist in the <tt>BCI2000/prog</tt> directory, the <tt>BCI2000/tools/cmdline</tt> directory, and the <tt>BCI2000/build/buildutils/test</tt> directory.
-</li><li>Run <tt>test_executables.bat</tt> in the <tt>BCI2000/build/buildutils/test</tt> directory.
+</li><li>Run <tt>TestExecutables.bat</tt> in the <tt>BCI2000/build/buildutils/test</tt> directory. (This is a cross-platform script, and may be run on non-Windows platforms as well, provided that it is run from the directory in which it resides.)
 </li></ol>
 <p>The tests will run and report a message after they've finished whether they've failed or not.  You may see a message in the beginning of the test stating that a directory does not exist.  This is normal behavior and does not reflect whether or not your executables have failed testing or not.
-</p><p><b>A Note on found differences:</b> differences may not indicate that you have a broken build.  Sometimes different compilers handle the precision of floating point numbers differently than others.  These can account for small differences in calculated signal or state values. The default reference files were generated using Borland 2007.  If your compiler is different, this may not be a problem.
+</p><p><b>A Note on found differences:</b> differences may not indicate that you have a broken build.  Sometimes different compilers handle the precision of floating point numbers differently than others.  These can account for small differences in calculated signal or state values. The default reference files were generated using an MSVC build on 32 bit Windows.  If your compiler is different, this may not be a problem.
 </p>
 <a name="Known_Issues"></a><h2> Known Issues </h2>
 <ul><li><b>MinGW, Borland</b> and other single configuration generators within CMake only generate one configuration at CMake Run-time.  By default, this is set to the release configuration.  It can be set - along with specific compiler options - in <tt>BCI2000/build/cmake/BuildConfigurations.cmake</tt>.  The Visual Studio generator will ignore settings in this file.  To turn on a debug build in a single configuration generator, run <tt>cmake -i</tt> in the build directory and set CMAKE_BUILD_TYPE to "Debug" when prompted.
@@ -154,15 +155,20 @@ be sure to run tools/BCI2000Certification in order to confirm your setup.  CMake
 <tr>
 <td>C++ Builder 2010*</td><td>Win XP SP3</td><td>2</td><td>n/a
 </td></tr></table>
-<p>*In version 3, the Operator module cannot be built with Borland C++ Builder (BCB). For the test, an MSVC-compiled Operator module was used in conjunction with BCB-compiled core modules.
+<p>*In version 3, the Operator module cannot be built with Borland C++ Builder (BCB). For the test, an MSVC-compiled Operator module was used in combination with BCB-compiled core modules.
 </p>
 <a name="Status_on_other_OSes"></a><h2>Status on other OSes</h2>
+<p>Note that the Qt libraries provided in the BCI2000 source tree are for Windows only, so you need to separately install Qt on your system before compiling BCI2000.
+</p>
+<a name="Linux"></a><h3>Linux</h3>
+<p><a href="Programming_Reference%253ABuild_System.html#How_To_Test" title="">Executable tests</a> are passed on x86 and amd64 architectures running Debian Squeeze (currently "Stable") and Wheezy (currently "Testing").
+</p>
 <a name="OS_X"></a><h3>OS X</h3>
-<p>BCI2000 builds successfully in OS X Leopard and Snow Leopard using the CMake generating script at <tt>build/Make Xcode Project.sh</tt>. Note that the Qt libraries provided in the BCI2000 source tree are for Windows only, so you need to separately install Qt on your OS X system.
-</p><p>Using the BCI2000Launcher, the online system can be started up and runs. This works fine when Qt 4.5 is installed on the machine. With Qt 4.7.3, core modules run but have a high CPU usage, and don't quit when the Operator module is shut down. It appears that QCoreApplication::hasPendingEvents() always returns true, such that core modules always try to process messages. It is not clear whether this is a bug in Qt, or a problem on the BCI2000 side.
+<p>BCI2000 builds successfully in OS X Leopard and Snow Leopard using the CMake generating script at <tt>build/Make Unix Makefiles.sh</tt>. 
+<a href="Programming_Reference%253ABuild_System.html#How_To_Test" title="">Executable tests</a> run successfully on OSX, both in 32 and 64 bit mode.
 </p>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="Programming_Reference%253ABuilding_Qt_for_BCI2000.html" title="Programming Reference:Building Qt for BCI2000">Programming Reference:Building Qt for BCI2000</a>
+<p><a href="Programming_Reference%253ABuilding_Qt_for_BCI2000.html" title="Programming Reference:Building Qt for BCI2000">Programming Reference:Building Qt for BCI2000</a>, <a href="Programming_Reference%253ABuilding_BCI2000_for_Win64.html" title="Programming Reference:Building BCI2000 for Win64">Programming Reference:Building BCI2000 for Win64</a>
 </p>
 <div class="printfooter">
 </div>
