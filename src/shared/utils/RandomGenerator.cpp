@@ -30,6 +30,7 @@
 #pragma hdrstop
 
 #include "RandomGenerator.h"
+#include "FileUtils.h"
 #include <cstdlib>
 
 using namespace std;
@@ -53,6 +54,7 @@ RandomGenerator::RandomGenerator()
       "use constructor arguments to name RandomGenerators"
     );
   mID[0] = static_cast<string::value_type>( count );
+  mID += FileUtils::ApplicationTitle();
 }
 
 RandomGenerator::NumberType

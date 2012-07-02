@@ -82,6 +82,7 @@ class StateMachine : public CallbackBase, private OSThread
   bool StartRun();
   bool StopRun();
   bool Shutdown();
+  bool Reset();
 
   // Properties
 
@@ -180,9 +181,11 @@ class StateMachine : public CallbackBase, private OSThread
   void BroadcastEndOfParameter();
   void BroadcastStates();
   void BroadcastEndOfState();
+  void InitializeStateVector();
   void InitializeModules();
   void MaintainDebugLog();
   void Randomize();
+  void RandomizationWarning();
 
   void TriggerEvent( int eventCallbackID );
 
@@ -197,6 +200,7 @@ class StateMachine : public CallbackBase, private OSThread
   OSMutex           mBCIMessageMutex;
 
   bool              mIntroducedRandomSeed;
+  std::string       mPreviousRandomSeed;
   ParamList         mParameters;
   StateList         mStates,
                     mEvents;

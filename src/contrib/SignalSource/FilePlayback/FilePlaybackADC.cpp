@@ -173,6 +173,9 @@ mReverse( false )
 
     "Source:Playback int PlaybackReverseData= 0 "
     " 0 0 1 // play the biosignal data backwards - does not affect state playback (boolean)",
+    
+    "System:Randomization int RandomizationWarning= 0 "
+    " 0 % % // don't display a warning when runs have identical RandomSeed",
 
   END_PARAMETER_DEFINITIONS
   mChList.clear();

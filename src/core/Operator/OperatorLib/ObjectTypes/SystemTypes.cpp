@@ -282,9 +282,7 @@ SystemType::Reset( CommandInterpreter& inInterpreter )
 {
   if( BCI_GetStateOfOperation() != BCI_StateIdle )
     Shutdown( inInterpreter );
-  ParametersType::Clear( inInterpreter );
-  StatesType::Clear( inInterpreter );
-  EventsType::Clear( inInterpreter );
+  inInterpreter.StateMachine().Reset();
   ObjectType::Initialize( inInterpreter.StateMachine() );
   return true;
 }

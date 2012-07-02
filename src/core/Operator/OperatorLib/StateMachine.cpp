@@ -62,9 +62,11 @@ using namespace std;
 
 StateMachine::StateMachine()
 : mSystemState( Idle ),
-  mEventLink( *this ),
-  mIntroducedRandomSeed( false )
+  mIntroducedRandomSeed( false ),
+  mEventLink( *this )
 {
+  Reset();
+  
   string path;
   EnvVariable::Get( "PATH", path );
   path = FileUtils::InstallationDirectoryS() + FileUtils::PathSeparator + path;
@@ -151,19 +153,6 @@ StateMachine::Startup( const char* inArguments )
   return result;
 }
 
-
-// Terminate the state machine thread, which will shut down connections.
-bool
-StateMachine::Shutdown()
-{
-  bool result = ( mSystemState != Idle );
-  if( result )
-  {
-    StopRun();
-    OSThread::Terminate();
-  }
-  return result;
-}
 
 StateMachine::~StateMachine()
 {
@@ -330,6 +319,37 @@ StateMachine::StopRun()
   return result;
 }
 
+// Terminate the state machine thread, which will shut down connections.
+bool
+StateMachine::Shutdown()
+{
+  bool result = ( mSystemState != Idle );
+  if( result )
+  {
+    StopRun();
+    OSThread::Terminate();
+  }
+  return result;
+}
+
+bool
+StateMachine::Reset()
+{
+  bool result = ( mSystemState == Idle );
+  if( result )
+  {
+    mParameters.Clear();
+    mStates.Clear();
+    mEvents.Clear();
+    mIntroducedRandomSeed = false;
+    mPreviousRandomSeed.clear();
+    mStateVector = StateVector();
+    mControlSignal = GenericSignal();
+    mVisualizations.clear();
+  }
+  return result;
+};
+
 void
 StateMachine::ParameterChange()
 {
@@ -389,6 +409,20 @@ StateMachine::BroadcastEndOfState()
 }
 
 void
+StateMachine::InitializeStateVector()
+{
+  mParameters.Add(
+    "System:State%20Vector"
+    " int StateVectorLength= 0 16 % % "
+    "// length of the state vector in bytes" );
+  mStates.AssignPositions();
+  mStateVector = StateVector( mStates );
+  ostringstream length;
+  length << mStateVector.Length();
+  mParameters["StateVectorLength"].Value() = length.str().c_str();
+}
+
+void
 StateMachine::InitializeModules()
 {
   mpSourceModule->PutMessage( SignalProperties( 0, 0 ) );
@@ -432,25 +466,14 @@ StateMachine::PerformTransition( int inTransition )
       break;
 
     case TRANSITION( Information, SetConfigIssued ):
-    {
-      // Add the state vector's length to the system parameters.
-      mParameters.Add(
-        "System:State%20Vector"
-        " int StateVectorLength= 0 16 1 30 "
-        "// length of the state vector in bytes" );
-      mStates.AssignPositions();
-      mStateVector = StateVector( mStates );
-      ostringstream length;
-      length << mStateVector.Length();
-      mParameters["StateVectorLength"].Value() = length.str().c_str();
-
       MaintainDebugLog();
+      InitializeStateVector();
       BroadcastParameters();
       BroadcastEndOfParameter();
       BroadcastStates();
       BroadcastEndOfState();
       InitializeModules();
-    } break;
+      break;
 
     case TRANSITION( Initialization, SetConfigIssued ):
     case TRANSITION( Resting, SetConfigIssued ):
@@ -469,6 +492,7 @@ StateMachine::PerformTransition( int inTransition )
 
     case TRANSITION( Resting, RunningInitiated ):
     case TRANSITION( Suspended, RunningInitiated ):
+      RandomizationWarning();
       MaintainDebugLog();
       break;
 
@@ -667,25 +691,54 @@ void
 StateMachine::Randomize()
 {
   // Add a RandomSeed parameter if it's not present already.
-  if( !mParameters.Exists( "RandomSeed" ) )
-  {
+  Param p1(
+    "System:Randomization"
+    " int RandomSeed= 0 0 % % "
+    " // seed for the BCI2000 pseudo random number generator" );
+  if( mParameters.Exists( "RandomSeed" ) )
+    p1.Value() = mParameters["RandomSeed"].Value();
+  else
     mIntroducedRandomSeed = true;
-    mParameters.Add(
-      "System:Randomization"
-      " int RandomSeed= 0 0 % % "
-      " // Seed for the BCI2000 pseudo random number generator" );
-  }
+  mParameters.Add( p1 );
+  Param p2(
+    "System:Randomization"
+    " int RandomizationWarning= 1 1 0 1 "
+    " // warn if subsequent Runs have identical RandomSeed value (boolean)" );
+  if( mParameters.Exists( "RandomizationWarning" ) )
+    p2.Value() = mParameters["RandomizationWarning"].Value();
+  mParameters.Add( p2 );
+  
   if( mIntroducedRandomSeed )
   {
     ::srand( static_cast<unsigned int>( ::time( NULL ) ) );
+    for( int n = 0; n < ::rand() % 10; ++n )
+      ::rand(); // MSVC 2008 initial random number tends to be proportional to seed (!)
     int number = 0;
-    while( number == 0 )
+    while( number == 0 || number == ::atoi( mPreviousRandomSeed.c_str() ) )
       number = ::rand();
     ostringstream oss;
     oss << number;
     mParameters["RandomSeed"].Value() = oss.str();
   }
 }
+
+void
+StateMachine::RandomizationWarning()
+{
+  if( !mIntroducedRandomSeed
+      && ::atoi( mParameters["RandomizationWarning"].Value().c_str() )
+      && mParameters["RandomSeed"].Value().c_str() == mPreviousRandomSeed
+      && ::atoi( mPreviousRandomSeed.c_str() ) )
+    bciout__ << "In the present configuration, the RandomSeed value does not "
+             << "automatically change between runs. "
+             << "Any 'random' behavior, such as randomization of the order of trials, "
+             << "or the generation of noise signals, will be exactly the same "
+             << "on this run as on the previous run."
+             << endl;
+   
+  mPreviousRandomSeed = mParameters["RandomSeed"].Value().c_str();
+}
+
 
 // ------------------------ CoreConnection definitions -------------------------
 
