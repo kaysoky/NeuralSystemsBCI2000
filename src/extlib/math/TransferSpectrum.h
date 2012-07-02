@@ -58,12 +58,12 @@ class TransferSpectrum
   TransferSpectrum& SetNumBins( int n )
                     { mNumBins = n; return Init(); }
   int               NumBins() const
-                    { return static_cast<int>( mNumBins ); }
+                    { return mNumBins; }
   //  Number of uniformly spaced function evaluations per bin
   TransferSpectrum& SetEvaluationsPerBin( int n )
                     { mEvaluationsPerBin = n; return Init(); }
   int               EvaluationsPerBin() const
-                    { return static_cast<int>( mEvaluationsPerBin ); }
+                    { return mEvaluationsPerBin; }
 
   // Processing
   template<typename U, typename V>
@@ -74,8 +74,8 @@ class TransferSpectrum
 
   T mFirstBinCenter,
     mBinWidth;
-  size_t mNumBins,
-         mEvaluationsPerBin;
+  int mNumBins,
+      mEvaluationsPerBin;
   std::valarray< std::complex<T> > mLookupTable;
 };
 
@@ -86,10 +86,10 @@ TransferSpectrum<T>&
 TransferSpectrum<T>::Init()
 {
   mLookupTable.resize( mNumBins * mEvaluationsPerBin );
-  for( size_t bin = 0; bin < mNumBins; ++bin )
+  for( int bin = 0; bin < mNumBins; ++bin )
   {
     T binBegin = mFirstBinCenter + mBinWidth * ( ( 1.0 / mEvaluationsPerBin - 1.0 ) / 2.0 + bin );
-    for( size_t sample = 0; sample < mEvaluationsPerBin; ++sample )
+    for( int sample = 0; sample < mEvaluationsPerBin; ++sample )
     {
       double theta = 2.0 * M_PI * ( binBegin + ( mBinWidth * sample ) / mEvaluationsPerBin );
       mLookupTable[ mEvaluationsPerBin * bin + sample ] = std::polar<T>( 1.0, theta );
@@ -103,12 +103,12 @@ template<typename T> template<typename U, typename V>
 const TransferSpectrum<T>&
 TransferSpectrum<T>::Evaluate( const Ratpoly<U>& inFunction, std::valarray<V>& outResult ) const
 {
-  if( outResult.size() != mNumBins )
+  if( outResult.size() != static_cast<size_t>( mNumBins ) )
     outResult.resize( mNumBins );
-  for( size_t bin = 0; bin < mNumBins; ++bin )
+  for( int bin = 0; bin < mNumBins; ++bin )
   {
     outResult[bin] = 0.0;
-    for( size_t sample = 0; sample < mEvaluationsPerBin; ++sample )
+    for( int sample = 0; sample < mEvaluationsPerBin; ++sample )
     {
       std::complex<T> value
         = inFunction.Evaluate( mLookupTable[ mEvaluationsPerBin * bin + sample ] );
