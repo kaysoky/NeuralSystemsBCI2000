@@ -28,7 +28,7 @@
 #if _MSC_VER // temporary solution until switch to C++11
 # include "../extlib/fieldtrip/buffer/src/win32/stdint.h"
 #else
-# include <cstdint>
+# include <stdint.h>
 #endif
 
 typedef float float32_t;
