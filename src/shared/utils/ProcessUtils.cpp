@@ -27,6 +27,8 @@
 #pragma hdrstop
 
 #include "ProcessUtils.h"
+#include "ThreadUtils.h"
+#include "FileUtils.h"
 #include <string>
 #include <iostream>
 
@@ -220,10 +222,45 @@ ProcessUtils::GoIdle()
 #endif // _WIN32
 }
 
-void*
-ProcessUtils::CreateGlobalID( const std::string& inName )
+namespace {
+
+class GlobalID
 {
-  void* result = NULL;
+ public:
+   GlobalID( const string& name, int timeout );
+   ~GlobalID();
+   bool Owned() const { return mHandle != NULL; }
+   static void Cleanup( const string& name );
+   
+ private:
+   bool TryCreate( const string& inName );
+   void Destroy();
+   void* mHandle;
+};
+
+GlobalID::GlobalID( const string& inName, int inTimeout )
+: mHandle( NULL )
+{
+  const int cTimeResolution = 100; // ms
+  int timeElapsed = 0;
+  while( !TryCreate( inName ) && timeElapsed < inTimeout )
+  {
+    ThreadUtils::SleepFor( cTimeResolution );
+    timeElapsed += cTimeResolution;
+  }
+}
+
+GlobalID::~GlobalID()
+{
+  Destroy();
+}
+
+
+bool
+GlobalID::TryCreate( const std::string& inName )
+{
+  if( mHandle )
+    return true;
 
 #if _WIN32
 
@@ -231,7 +268,7 @@ ProcessUtils::CreateGlobalID( const std::string& inName )
   if( ::GetLastError() == ERROR_ALREADY_EXISTS )
     ::CloseHandle( mutex );
   else
-    result = reinterpret_cast<void*>( mutex );
+    mHandle = reinterpret_cast<void*>( mutex );
 
 #else // _WIN32
 
@@ -240,36 +277,58 @@ ProcessUtils::CreateGlobalID( const std::string& inName )
   if( pSemaphore != SEM_FAILED )
   {
     ::sem_close( pSemaphore );
-    result = new string( name );
+    mHandle = new string( name );
   }
 
 #endif // _WIN32
 
-  return result;
+  return mHandle != NULL;
 }
 
-bool
-ProcessUtils::DestroyGlobalID( void* inHandle )
+void
+GlobalID::Destroy()
 {
-  if( !inHandle )
-    return false;
-
-  bool result = false;
+  if( !mHandle )
+    return;
 
 #if _WIN32
 
-  HANDLE mutex = reinterpret_cast<HANDLE>( inHandle );
-  result = ::ReleaseMutex( mutex );
+  HANDLE mutex = reinterpret_cast<HANDLE>( mHandle );
+  ::ReleaseMutex( mutex );
   ::CloseHandle( mutex );
 
 #else // _WIN32
 
-  string* pName = reinterpret_cast<string*>( inHandle );
-  result = ( ::sem_unlink( pName->c_str() ) != -1 );
+  string* pName = reinterpret_cast<string*>( mHandle );
+  ::sem_unlink( pName->c_str() );
   delete pName;
 
 #endif // _WIN32
   
-  return result;
+  mHandle = NULL;
+}
+
+void
+GlobalID::Cleanup( const string& inName )
+{
+#if !_WIN32
+  ::sem_unlink( inName.c_str() );
+#endif // _WIN32
+}
+
+} // namespace
+
+bool
+ProcessUtils::AssertSingleInstance( int inArgc, char** inArgv, const std::string& inID, int inTimeout )
+{
+  string name = inID.empty() ? FileUtils::ApplicationTitle() : inID;
+  for( int i = 1; i < inArgc; ++i )
+    if( !::stricmp( inArgv[i], "--AllowMultipleInstances" ) )
+    {
+      GlobalID::Cleanup( name );
+      return true;
+    }
+  static const GlobalID sInstance( name, inTimeout );
+  return sInstance.Owned();
 }
 

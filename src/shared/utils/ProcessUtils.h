@@ -36,8 +36,7 @@ bool ExecuteAsynchronously( const std::string& executable, const std::string& ar
 
 void GoIdle(); // Satisfy parent processes using WaitForInputIdle().
 
-void* CreateGlobalID( const std::string& name );
-bool  DestroyGlobalID( void* );
+bool AssertSingleInstance( int argc, char** argv, const std::string& id = "", int timeout = 0 );
 
 } // namespace
 

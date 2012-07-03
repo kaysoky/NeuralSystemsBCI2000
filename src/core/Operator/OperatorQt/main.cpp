@@ -33,6 +33,7 @@
 #include "OSThread.h"
 #include "ExceptionCatcher.h"
 #include "ProcessUtils.h"
+#include "FileUtils.h"
 #if _WIN32
 # include "FPExceptMask.h"
 #endif // _WIN32
@@ -55,19 +56,17 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 #endif // _WIN32
 
 int
-main(int argc, char *argv[])
+main( int argc, char *argv[] )
 {
-  void* globalID = ProcessUtils::CreateGlobalID( "Operator" );
-  if( !globalID )
+  if( !ProcessUtils::AssertSingleInstance( argc, argv ) )
     return 0;
-
 #if _WIN32
   FPExceptMask mask;
 #endif // _WIN32
   QApplication a( argc, argv );
   a.setOrganizationName( "BCI2000" );
   a.setOrganizationDomain( "bci2000.org" );
-  a.setApplicationName( "Operator" );
+  a.setApplicationName( FileUtils::ApplicationTitle().c_str() );
   qRegisterMetaType< GenericSignal >();
   qRegisterMetaType< BitmapImage >();
   Settings::SetFile();
@@ -78,7 +77,6 @@ main(int argc, char *argv[])
   bool finished = ExceptionCatcher()
     .SetMessage( "Terminating Operator module" )
     .Run( call );
-  ProcessUtils::DestroyGlobalID( globalID );
   return finished ? 0 : -1;
 }
 

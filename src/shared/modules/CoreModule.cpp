@@ -82,7 +82,6 @@ CoreModule::CoreModule()
 
 CoreModule::~CoreModule()
 {
-  ProcessUtils::DestroyGlobalID( mGlobalID );
 }
 
 void
@@ -118,15 +117,7 @@ bool
 CoreModule::Initialize( int& ioArgc, char** ioArgv )
 {
   // Make sure there is only one instance of each module running at a time.
-  const int terminationWaitInterval = 5000; // ms
-  const int timeResolution = 100; // ms
-  int timeElapsed = 0;
-  while( !( mGlobalID = ProcessUtils::CreateGlobalID( THISMODULE "Module" ) ) && timeElapsed < terminationWaitInterval )
-  {
-    ThreadUtils::SleepFor( timeResolution );
-    timeElapsed += timeResolution;
-  }
-  if( !mGlobalID )
+  if( !ProcessUtils::AssertSingleInstance( ioArgc, ioArgv, THISMODULE "Module", 5000 ) )
   {
     BCIERR << "Another " THISMODULE " Module is currently running.\n"
            << "Only one instance of each module may run at a time."
