@@ -31,6 +31,7 @@
 
 #include "RandomGenerator.h"
 #include "FileUtils.h"
+#include "BCIError.h"
 #include "BCIAssert.h"
 #include <cstdlib>
 
@@ -113,6 +114,7 @@ RandomGenerator::Initialize()
     }
     mSeed ^= value;
   }
+  bcidbg( 1 ) << "RandomGenerator ID: " << mID << ", Seed: " << hex << mSeed << endl;
 }
 
 void
