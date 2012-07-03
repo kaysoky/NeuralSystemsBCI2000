@@ -103,7 +103,7 @@ RandomGenerator::Initialize()
   // and robust against configuration changes such as addition of filters,
   // or change of endianness.
   while( mID.length() % sizeof( SeedType ) )
-    mID += "*";
+    mID += " ";
   for( size_t i = 0; i < mID.length() / sizeof( SeedType ); ++i )
   {
     SeedType value = 0;

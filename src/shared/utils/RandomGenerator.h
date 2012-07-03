@@ -42,14 +42,9 @@ class RandomGenerator : private EnvironmentExtension
 # error Modify ID determination to use a filter's unique ID once multiple filter instances are possible.
 #endif
   template<typename T>
-  explicit RandomGenerator( const T& t )
-    : mSeed( 0 ),
-      mID( bci::ClassName( typeid( t ) ) )
-    {}
-  template<typename T>
   explicit RandomGenerator( const T* t )
     : mSeed( 0 ),
-      mID( bci::ClassName( typeid( *t ) ) )
+      mID( bci::ClassName( typeid( T ) ) )
     {}
   explicit RandomGenerator( const std::string& s )
     : mSeed( 0 ),
