@@ -76,10 +76,10 @@ class ParamRef
     { return static_cast<long>( double( *this ) ); }
   operator unsigned long() const
     { return static_cast<unsigned long>( double( *this ) ); }
-  operator int64_t() const
-    { return static_cast<int64_t>( double( *this ) ); }
-  operator uint64_t() const
-    { return static_cast<uint64_t>( double( *this ) ); }
+  operator long long() const
+    { return static_cast<long long>( double( *this ) ); }
+  operator unsigned long long() const
+    { return static_cast<unsigned long long>( double( *this ) ); }
 
   // We also need to override operators to avoid ambiguities
   // when the compiler resolves expressions.
