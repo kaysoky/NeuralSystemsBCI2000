@@ -31,6 +31,7 @@
 
 #include "RandomGenerator.h"
 #include "FileUtils.h"
+#include "BCIAssert.h"
 #include <cstdlib>
 
 using namespace std;
