@@ -29,7 +29,7 @@
 #include <QDateTime>
 
 SysLog::SysLog( QWidget* inParent )
-: QDialog( inParent ),
+: QDialog( inParent, Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint ),
   mpLog( new QTextEdit ),
   mEmpty( true ),
   mDontClose( false )
