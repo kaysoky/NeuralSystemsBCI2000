@@ -100,13 +100,14 @@ RandomGenerator::Initialize()
   // Use the ID string to modify the seed in a way that is both unique 
   // and robust against configuration changes such as addition of filters,
   // or change of endianness.
+  bciassert( sizeof( mID[0] ) == 1 );
   while( mID.length() % sizeof( SeedType ) )
-    mID += "x";
+    mID += "*";
   for( size_t i = 0; i < mID.length() / sizeof( SeedType ); ++i )
   {
     SeedType value = 0;
     for( size_t j = 0; j < sizeof( SeedType ); ++j )
-      value |= mID[i] << j;
+      value |= mID[i * sizeof( SeedType) + j] << ( 8 * j );
     mSeed ^= value;
   }
 }
