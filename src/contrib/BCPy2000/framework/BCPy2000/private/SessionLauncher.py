@@ -137,7 +137,18 @@ class SessionGUI( tk.Tk ):
 		
 	def UpdateSettings( self ):
 		if not self.__valid: return False
-		for k in self.__inputs: self.__settings[ k ] = self.__inputs[ k ].get()
+		for k in self.__inputs:
+			val = self.__inputs[ k ].get()
+			# correct value to head off most cases in which it will be impossible to create the directory
+			newval = ''.join([c for c in val[:20] if c.lower() in 'abcdefghijklmnopqrstuvwxyz_0123456789+-=()'])
+			self.__settings[ k ] = newval
+			# set the new value back into the widget
+			if val != newval:
+				w = self.__widgets[ k + 'Input' ]
+				if isinstance( w, tk.Entry ):
+					w.delete( 0, tk.END )
+					w.insert( 0, newval )
+		
 		sc = self.ReportSettings()
 		if sc != self.__saved_settings_content: self.SaveSettings( sc )
 			

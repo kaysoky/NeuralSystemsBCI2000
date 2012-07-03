@@ -55,6 +55,9 @@ elseif [ ${MONTAGE} == D ]
 elseif [ ${MONTAGE} == 16 ]
 	load parameterfile ${PARMSDIR}/gUSBamp-Cap16.prm
 	load parameterfile ${PARMSDIR}/TransmitOnly8Channels.prm
+elseif [ ${MONTAGE} == 16+2 ]
+	load parameterfile ${PARMSDIR}/gUSBampsBB-Cap16+Audio2.prm
+	load parameterfile ${PARMSDIR}/TransmitOnly8Channels.prm
 else
 	error unrecognized montage ${MONTAGE}
 end
