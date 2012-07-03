@@ -49,7 +49,7 @@ RandomGenerator::RandomGenerator()
 {
   int count = NextUnnamedInstance();
   mID.resize( 1 );
-  if( count >= 1 << ( 8 * sizeof( mID[0] ) ) )
+  if( count >= 256 )
     throw bciexception(
       "Number of unnamed RandomGenerator instances exceeds limit, "
       "use constructor arguments to name RandomGenerators"
@@ -101,14 +101,16 @@ RandomGenerator::Initialize()
   // Use the ID string to modify the seed in a way that is both unique 
   // and robust against configuration changes such as addition of filters,
   // or change of endianness.
-  bciassert( sizeof( mID[0] ) == 1 );
   while( mID.length() % sizeof( SeedType ) )
     mID += "*";
   for( size_t i = 0; i < mID.length() / sizeof( SeedType ); ++i )
   {
     SeedType value = 0;
     for( size_t j = 0; j < sizeof( SeedType ); ++j )
-      value |= mID[i * sizeof( SeedType) + j] << ( 8 * j );
+    {
+      SeedType c = static_cast<uint8>( mID[i * sizeof( SeedType ) + j] );
+      value |= c << ( 8 * j );
+    }
     mSeed ^= value;
   }
 }
