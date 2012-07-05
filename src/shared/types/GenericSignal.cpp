@@ -95,23 +95,18 @@ GenericSignal::GenericSignal( const SignalProperties& inProperties, ValueType in
 GenericSignal&
 GenericSignal::AssignValues( const GenericSignal& s )
 {
+  mProperties.SetChannels( s.Channels() );
+  mProperties.SetElements( s.Elements() );
   size_t numValues = s.Channels() * s.Elements();
-  if( mpValues && numValues != 0 && mProperties.Channels() == s.Channels() && mProperties.Elements() == s.Elements() )
-      ::memcpy( mpValues, s.mpValues, numValues * sizeof( ValueType ) );
+  delete mpValues;
+  if( numValues == 0 )
+  {
+    mpValues = NULL;
+  }
   else
   {
-    mProperties.SetChannels( s.Channels() );
-    mProperties.SetElements( s.Elements() );
-    delete mpValues;
-    if( numValues == 0 )
-    {
-      mpValues = NULL;
-    }
-    else
-    {
-      mpValues = new ValueType[numValues];
-      ::memcpy( mpValues, s.mpValues, numValues * sizeof( ValueType ) );
-    }
+    mpValues = new ValueType[numValues];
+    ::memcpy( mpValues, s.mpValues, numValues * sizeof( ValueType ) );
   }
   return *this;
 }
@@ -427,3 +422,4 @@ GenericSignal::GetLittleEndian( std::istream& is, T& outValue )
   for( size_t i = 0; i < sizeof( T ); ++i )
     outValue |= is.get() << ( i * 8 );
 }
+
