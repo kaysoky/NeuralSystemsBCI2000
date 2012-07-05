@@ -68,14 +68,14 @@ public:
         }
 
     virtual /* [helpstring][propget][id] */ HRESULT __stdcall get_WindowVisible(
-        /* [retval][out] */ VARIANT_BOOL *visible)
+        /* [retval][out] */ int *visible)
         {
-          *visible = WindowVisible() ? VARIANT_TRUE : VARIANT_FALSE;
+          *visible = WindowVisible();
           return S_OK;
         }
 
     virtual /* [helpstring][propput] */ HRESULT __stdcall put_WindowVisible(
-        /* [in] */ VARIANT_BOOL visible)
+        /* [in] */ int visible)
         {
           WindowVisible( visible );
           return S_OK;

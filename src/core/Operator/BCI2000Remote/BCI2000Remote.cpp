@@ -215,7 +215,7 @@ BCI2000Remote::GetStateVariable( const string& inStateName, double& outValue )
 bool
 BCI2000Remote::GetSystemState( string& outResult )
 {
-  bool success = ( 0 == Execute( "get system state" ) );
+  bool success = ( 1 == Execute( "get system state" ) );
   if( success )
     outResult = Result();
   else

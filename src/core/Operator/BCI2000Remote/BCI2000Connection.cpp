@@ -46,12 +46,12 @@ BCI2000Connection&
 BCI2000Connection::WindowVisible( int inVisible )
 {
   mWindowVisible = inVisible;
-  if( mSocket.connected() )
+  if( mSocket.connected() && mWindowVisible != dontChange )
   {
-    if( mWindowVisible == visible )
-      Execute( "show window" );
-    else if( mWindowVisible == invisible )
+    if( mWindowVisible == 0 )
       Execute( "hide window" );
+    else
+      Execute( "show window" );
   }
   return *this;
 }

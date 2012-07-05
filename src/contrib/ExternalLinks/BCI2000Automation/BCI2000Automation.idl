@@ -40,11 +40,11 @@ interface IBCI2000Remote: IDispatch
 	[
 	propget, helpstring( "Sets and gets visibility of the BCI2000 main window." )
 	]
-	HRESULT _stdcall WindowVisible( [out,retval] VARIANT_BOOL* visible );
+	HRESULT _stdcall WindowVisible( [out,retval] int* visible );
 	[
 	propput, helpstring( "Sets and gets visibility of the BCI2000 main window." )
 	]
-	HRESULT _stdcall WindowVisible( [in] VARIANT_BOOL visible );
+	HRESULT _stdcall WindowVisible( [in] int visible );
 	[
 	propget, helpstring( "Sets and gets the title of the BCI2000 main window." )
 	]

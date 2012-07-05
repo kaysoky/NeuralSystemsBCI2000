@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Fri Apr 27 13:12:52 2012
+/* at Thu Jul 05 19:32:15 2012
  */
 /* Compiler settings for BCI2000Automation.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -106,10 +106,10 @@ EXTERN_C const IID IID_IBCI2000Remote;
             /* [in] */ BSTR address) = 0;
         
         virtual /* [helpstring][propget] */ HRESULT __stdcall get_WindowVisible( 
-            /* [retval][out] */ VARIANT_BOOL *visible) = 0;
+            /* [retval][out] */ int *visible) = 0;
         
         virtual /* [helpstring][propput] */ HRESULT __stdcall put_WindowVisible( 
-            /* [in] */ VARIANT_BOOL visible) = 0;
+            /* [in] */ int visible) = 0;
         
         virtual /* [helpstring][propget] */ HRESULT __stdcall get_WindowTitle( 
             /* [retval][out] */ BSTR *title) = 0;
@@ -290,11 +290,11 @@ EXTERN_C const IID IID_IBCI2000Remote;
         
         /* [helpstring][propget] */ HRESULT ( __stdcall *get_WindowVisible )( 
             IBCI2000Remote * This,
-            /* [retval][out] */ VARIANT_BOOL *visible);
+            /* [retval][out] */ int *visible);
         
         /* [helpstring][propput] */ HRESULT ( __stdcall *put_WindowVisible )( 
             IBCI2000Remote * This,
-            /* [in] */ VARIANT_BOOL visible);
+            /* [in] */ int visible);
         
         /* [helpstring][propget] */ HRESULT ( __stdcall *get_WindowTitle )( 
             IBCI2000Remote * This,
