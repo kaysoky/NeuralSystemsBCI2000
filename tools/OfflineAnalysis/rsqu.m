@@ -46,5 +46,10 @@ sumsqu1=sum(q.*q);
 sumsqu2=sum(r.*r);
 
 G=((sum1+sum2)^2)/(n1+n2);
+den = sumsqu1+sumsqu2-G;
+if( abs(den) < eps )
+  erg = 0;
+else
+  erg=(sum1^2/n1+sum2^2/n2-G)/(sumsqu1+sumsqu2-G);
+end
 
-erg=(sum1^2/n1+sum2^2/n2-G)/(sumsqu1+sumsqu2-G);

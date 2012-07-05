@@ -202,8 +202,13 @@ if isa(loc_file, 'struct')
   y = x;
   labels = repmat(' ', length(loc_file), 4);
   for idxElec = 1:length(loc_file)
-    x(idxElec) = loc_file(idxElec).coords(2);
-    y(idxElec) = loc_file(idxElec).coords(1);
+    if( isempty( loc_file(idxElec).coords ) )
+      x(idxElec) = 100;
+      y(idxElec) = 100;
+    else
+      x(idxElec) = loc_file(idxElec).coords(2);
+      y(idxElec) = loc_file(idxElec).coords(1);
+    end
     labels(idxElec, 1:length(loc_file(idxElec).label)) = loc_file(idxElec).label;
   end
 else

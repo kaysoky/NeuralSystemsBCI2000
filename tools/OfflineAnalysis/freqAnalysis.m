@@ -59,6 +59,7 @@ end
 avgdata1=[];
 avgdata2=[];
 trials=unique(trialnr);
+trials = trials( trials > 0  );
 start=parms(2);
 stop=parms(3);
 binwidth=parms(4);

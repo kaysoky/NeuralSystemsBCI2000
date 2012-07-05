@@ -66,6 +66,7 @@ if verbose
 end
 
 trials=unique(trialnr);
+trials = trials( trials > 0 );
 
 cond1Cnt = 0;
 cond2Cnt = 0;

@@ -122,13 +122,11 @@ if bThourough
     end
   end
 end
-if isempty(params.topoParams)
-  params.montageFile = '';
-elseif isempty(params.montageFile) 
+if isempty(params.montageFile) 
   %check to see if channel names are available
   allFilesInfo = get(handles.lblDataFiles, 'userdata');
   if ~isempty(allFilesInfo) && ~isempty(allFilesInfo.elecs) && ...
-      allFilesInfo.is1020
+      allFilesInfo.some1020
     %channel names are available and conform to 10-20 spec
     params.montageFile = allFilesInfo.elecs;
   else
@@ -153,11 +151,24 @@ if length(params.targetConditions) == 2
     return;
   end
 end
-if ~isValidStateCondition(params.trialChangeCondition, 'states')
+if ~strcmpi( params.trialChangeCondition, 'auto' ) && ~isValidStateCondition(params.trialChangeCondition, 'states')
   errordlg('The specified trial change condition is invalid', 'Invalid trial change condition');
   return;
 end
 if ~isempty(params.channels)
+  if( isstruct( params.montageFile ) )
+    chNames = { params.montageFile.label };
+    chSpec = textscan( params.channels, '%s' );
+    chSpec = chSpec{1};
+    for( i = 1:length(chSpec) )
+      idx = find( strcmpi( chNames, chSpec{i} ) );
+      if( ~isempty( idx ) )
+        chSpec{i} = num2str( idx(1) );
+      end
+    end
+    params.channels = sprintf( '%s ', chSpec{:} );
+  end
+  
   bValid = 1;
   try
     params.channels = eval(['[' params.channels ']']);
@@ -176,7 +187,7 @@ if ~isempty(params.channels)
     if get(handles.radDomainTime, 'value')
       errordlg('The specified waveform channel values are invalid', 'Invalid waveform channels');
     else
-      errordlg('The specified specturm channel values are invalid', 'Invalid spectrum channels');
+      errordlg('The specified spectrum channel values are invalid', 'Invalid spectrum channels');
     end
     return;
   end
@@ -184,49 +195,48 @@ end
 
 if ~isempty(params.montageFile) && ~isempty(params.topoParams)
   %user has requested generation of topographies
-  if isempty(params.topoParams)
-    if get(handles.radDomainTime, 'value')
-      errordlg('At least one topo time is required in order to generate topographies.  If you prefer not to generate the topograhies, please uncheck the appropriate box.  Otherwise, please specify at least one time for analysis.', 'Times required')
+  if( isstruct( params.montageFile ) && allFilesInfo.some1020 && ~allFilesInfo.is1020 )
+    uiwait(msgbox2( [ ...
+      'Some channels labels do not correspond to names from the 10-20 standard. ' ...
+      'These channels will be omitted from topographies.' ], ...
+      'Warning', ...
+      'warnOmittedChannels', ...
+      'modal' ));
+  end
+  bValid = 1;
+  try
+    params.topoParams = eval(['[' params.topoParams ']']);
+  catch
+    bValid = 0;
+  end
+  if bValid
+    if get(handles.radDomainTime, 'value') 
+      bValid = isnumeric(params.topoParams) && ...
+        all(params.topoParams >= 0) && ...
+        all(params.topoParams <= settings.dataSegLength);       
     else
-      errordlg('At least one topo frequency is required in order to generate topographies.  If you prefer not to generate the topograhies, please uncheck the appropriate box.  Otherwise, please specify at least one frequency for analysis.', 'Frequencies required')
+      bValid = isnumeric(params.topoParams) && ...
+        all(params.topoParams >= -1) && ...
+        all(params.topoParams <= maxFreq);        
     end
-    return;
-  else
-    bValid = 1;
-    try
-      params.topoParams = eval(['[' params.topoParams ']']);
-    catch
-      bValid = 0;
-    end
-    if bValid
-      if get(handles.radDomainTime, 'value') 
-        bValid = isnumeric(params.topoParams) && ...
-          all(params.topoParams >= 0) && ...
-          all(params.topoParams <= settings.dataSegLength);       
-      else
-        bValid = isnumeric(params.topoParams) && ...
-          all(params.topoParams >= -1) && ...
-          all(params.topoParams <= maxFreq);        
-      end
-    end
+  end
 
-    if bValid
-      if length(params.topoParams) > 9
-        if get(handles.radDomainTime, 'value')
-          errordlg(sprintf('Maximum number of topo times exceeded.  Please choose up to 9 times from 0 to %d ms.', settings.dataSegLength), 'Number of plots exceeded');
-        else
-          errordlg(sprintf('Maximum number of topo frequencies exceeded.  Please choose up to 9 frequencies from -1 to %d Hz.', maxFreq), 'Number of plots exceeded');
-        end
-        return;
-      end
-    else
+  if bValid
+    if length(params.topoParams) > 9
       if get(handles.radDomainTime, 'value')
-        errordlg(sprintf('The specified topo time values are invalid.  Please choose up to 9 times from 0 to %d ms.', settings.dataSegLength), 'Invalid Topo Frequencies');
+        errordlg(sprintf('Maximum number of topo times exceeded.  Please choose up to 9 times from 0 to %d ms.', settings.dataSegLength), 'Number of plots exceeded');
       else
-        errordlg(sprintf('The specified topo frequency values are invalid.  Please choose up to 9 frequencies from -1 to %d Hz.', maxFreq), 'Invalid Topo Frequencies');
+        errordlg(sprintf('Maximum number of topo frequencies exceeded.  Please choose up to 9 frequencies from -1 to %d Hz.', maxFreq), 'Number of plots exceeded');
       end
       return;
     end
+  else
+    if get(handles.radDomainTime, 'value')
+      errordlg(sprintf('The specified topo time values are invalid.  Please choose up to 9 times from 0 to %d ms.', settings.dataSegLength), 'Invalid Topo Frequencies');
+    else
+      errordlg(sprintf('The specified topo frequency values are invalid.  Please choose up to 9 frequencies from -1 to %d Hz.', maxFreq), 'Invalid Topo Frequencies');
+    end
+    return;
   end
 end
 
@@ -598,6 +608,7 @@ function txtTargetLabel1_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txtTargetLabel1 as text
 %        str2double(get(hObject,'String')) returns contents of txtTargetLabel1 as a double
+blubb;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -825,7 +836,7 @@ if ~isnumeric(fn)
       end
 
 			if chkRes <= 2 
-        if allFilesInfo.is1020
+        if allFilesInfo.some1020
           switch chkRes
           case 1
             if (~isfield(settings, 'warnEmpty1020CnFollowing') || ...
@@ -836,7 +847,7 @@ if ~isnumeric(fn)
                 'Offline Analysis will assume that the channel names corresponding to the data in this file ' ...
                 'are the same as the 10-20 compliant channel names specified in the other files. ' ...
                 'To indicate that there is a discrepancy, this file, and any others without channel ' ...
-                'name data that may be added later, will be marked with an asterix.'], ...
+                'name data that may be added later, will be marked with an asterisk.'], ...
                 'Channel Names', 'warnEmpty1020CnFollowing', 'modal'));
               settings = reloadSettings(handles);
             end
@@ -853,7 +864,7 @@ if ~isnumeric(fn)
                 'Offline Analysis will assume that the channel names for these data are the ' ...
                 'same as those specified in "' fn{idxFile} '".  To indicate that there is a ' ...
                 'discrepancy, any file, including files that may be added later, ' ...
-                'will be marked with an asterix.'], ...
+                'will be marked with an asterisk.'], ...
                 'Channel Names', 'warnEmpty1020CnPreceeding', 'modal'));
               settings = reloadSettings(handles);
             end
@@ -901,7 +912,7 @@ if ~isnumeric(fn)
                 'contain any channel name data.' ...
                 'Please confirm that this file is intended to be grouped with the others listed. ' ...
                 'To indicate that there is a discrepancy, this file, and any others without channel ' ...
-                'name data that may be added later, will be marked with an asterix.'], ...
+                'name data that may be added later, will be marked with an asterisk.'], ...
                 'Channel Names', 'warnEmptyCnFollowing', 'modal'));
               settings = reloadSettings(handles);
             end
@@ -917,7 +928,7 @@ if ~isnumeric(fn)
                 'not contain channel name data.  The file "' fn{idxFile} '", however, does. ' ...
                 'Please confirm that this file is intended to be grouped with the others listed. ' ...
                 'To indicate that there is a discrepancy, files without channel name data, including ' ...
-                'those that may be added later, will be marked with an asterix.'], ...
+                'those that may be added later, will be marked with an asterisk.'], ...
                 'Channel Names', 'warnEmptyCnPreceeding', 'modal'));
               settings = reloadSettings(handles);
             end
@@ -962,6 +973,29 @@ if ~isnumeric(fn)
   set(handles.lstDataFiles, 'userdata', curFileInfo);  
   
   set(handles.btnRemove, 'enable', 'on');
+  
+  adaptConditions( handles );
+end
+
+function adaptConditions( handles )
+% Toggle between references to TargetCode and StimulusCode, depending on
+% which is present in data files.
+fileInfo = get(handles.lstDataFiles, 'userdata');
+if ~isempty(fileInfo)
+  states = fileInfo.states;
+  cond = { ...
+    get(handles.txtTargetCond1, 'string'), ...
+    get(handles.txtTargetCond2, 'string'), ...
+    get(handles.txtTrialChangeCond, 'string'), ...
+  };
+  if ~isfield( states, 'StimulusCode' ) && isfield( states, 'TargetCode' )
+    cond = regexprep( cond, 'states\.StimulusCode', 'states.\TargetCode' );
+  elseif ~isfield( states, 'TargetCode' ) && isfield( states, 'StimulusCode' )
+    cond = regexprep( cond, 'states\.TargetCode', 'states.\StimulusCode' );
+  end
+  set(handles.txtTargetCond1, 'string', cond{1});
+  set(handles.txtTargetCond2, 'string', cond{2});
+  set(handles.txtTrialChangeCond, 'string', cond{3});
 end
 
 function [res, allFilesInfo, fileTypesChange] = checkFile(allFilesInfo, signal, states, params, settings)
@@ -990,6 +1024,7 @@ end
 
 chanNamesSet = ~isempty(allFilesInfo) && ~isempty(allFilesInfo.elecs);
 all1020 = 0;
+some1020 = false;
 elecsInFile = [];
 
 if chanNamesSet
@@ -1005,7 +1040,7 @@ if chanNamesSet
 			%check to make sure all the channels are labeled the same
 			for idxCn = 1:length(chanNames)
 
-				if ~strcmp(chanNames{idxCn}, allFilesInfo.elecs(idxCn).label)
+				if ~strcmpi(chanNames{idxCn}, allFilesInfo.elecs(idxCn).label)
 					res = 3;
 					break;
 				end
@@ -1037,17 +1072,16 @@ else
 			bFoundElec = 0;
 			elecsInFile(idxCn).label = strtrim(chanNames{idxCn});
 
-			if all1020
-				%determine if there's a 10-20 label that matches this label
-				for idxElec = 1:length(settings.elecs1020)
-					if strcmp(settings.elecs1020(idxElec).label, elecsInFile(idxCn).label)
-						elecsInFile(idxCn) = settings.elecs1020(idxElec);
-						settings.elecs1020(idxElec) = [];
-						bFoundElec = 1;
-						break;
-					end
-				end
-			end
+      %determine if there's a 10-20 label that matches this label
+      for idxElec = 1:length(settings.elecs1020)
+        if strcmpi(settings.elecs1020(idxElec).label, elecsInFile(idxCn).label)
+          elecsInFile(idxCn) = settings.elecs1020(idxElec);
+          settings.elecs1020(idxElec) = [];
+          bFoundElec = 1;
+          some1020 = true;
+          break;
+        end
+      end
 			
 			if all1020 && ~bFoundElec
 				%we still need to create the label name template for the files
@@ -1066,6 +1100,7 @@ else
 	
 	%for later reference, we'll save the label list here:
 	allFilesInfo.is1020 = all1020;
+  allFilesInfo.some1020 = some1020;
 	allFilesInfo.elecs = elecsInFile;
 	allFilesInfo.numElecs = numElecs;
 
@@ -1115,6 +1150,7 @@ else
 		if ~chanNamesSet
 			allFilesInfo.elecs = [];
 			allFilesInfo.is1020 = 0;
+      allFilesInfo.some1020 = false;
       allFilesInfo.warningsIssued = [];
 			set(handles.lblDataFiles, 'userdata', allFilesInfo);
 
@@ -1222,7 +1258,7 @@ else
   set(handles.radSpatialFiltCAR, 'value', 0);
   set(handles.radSpatialFiltNone, 'value', 1);  
 end
-
+adaptConditions( handles );
 
 % --------------------------------------------------------------------
 function mnuSaveSettings_Callback(hObject, eventdata, handles)
@@ -1426,7 +1462,7 @@ uicontrol(hObject);
 if length(strtrim(get(hObject, 'string'))) == 0
 	allFilesInfo = get(handles.lblDataFiles, 'userdata');
 
-	if ~isempty(allFilesInfo) && allFilesInfo.is1020
+	if ~isempty(allFilesInfo) && allFilesInfo.some1020
     set(handles.lblUsingChanNames, 'visible', 'on');
 	end
 else

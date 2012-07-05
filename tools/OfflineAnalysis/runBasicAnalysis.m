@@ -104,7 +104,7 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
       if exist(params.montageFile, 'file')
         eloc_file = params.montageFile;
       else
-        error([funcName ':invalidMontageFile'], 'params.monageFile can''t be found');
+        error([funcName ':invalidMontageFile'], 'params.montageFile can''t be found');
       end
 
       %Check that montage file is valid
@@ -206,41 +206,11 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
     end
   end
 
-  % determine trial numbers
-  if verbose
-    fprintf(1, 'Determining trial numbers ...\n');
-  end
-  old_iti=-1;
-  cur_trial=0;
-  try
-    trialdef=eval(params.trialChangeCondition);
-  catch
-    error([funcName ':invalidTrialChangeCond'], ...
-      'Invalid trial change condition specified');
-  end
-  trialnr=zeros(size(trialdef));
-  for cur_samp=1:length(trialdef)
-   if ((trialdef(cur_samp) == 1) & (trialdef(cur_samp) ~= old_iti))
-      cur_trial=cur_trial+1;
-   end
-   trialnr(cur_samp)=cur_trial;
-   old_iti=trialdef(cur_samp);
-  end
-  if cur_trial < settings.minTrialsPerCondErr
-    error([funcName ':minTrialsCond1NotMet'], sprintf('Evaluation of the trial change condition resulted in fewer than %d trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
-  end
-
   % Check for valid target conditions
   try
     targetIdxs1 = eval(sprintf('find(%s)', params.targetConditions{1}));
   catch
     error([funcName ':invalidTargetCondition1'], 'Syntax error in target condition 1');
-  end
-
-  if length(unique(trialnr(targetIdxs1))) < settings.minTrialsPerCondErr
-    error([funcName ':minTrialsCond1NotMet'], sprintf('Evaluation of target condition 1 in conjunction with the trial change condition resulted in fewer than %d useable trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
-  elseif ~errorOverride && length(unique(trialnr(targetIdxs1))) < settings.minTrialsPerCondWarn
-    error([funcName ':sugTrialsCond1NotMet'], sprintf('Evaluation of target condition 1 in conjunction with the trial change condition resulted in fewer than %d useable trials.  You may want to relax your conditions.', settings.minTrialsPerCondWarn));
   end
   condition1txt = params.conditionLabels{1};
 
@@ -250,17 +220,65 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
     catch
       error([funcName ':invalidTargetCondition2'], 'Syntax error in target condition 2');
     end
+    condition2txt = params.conditionLabels{2};
+  end
 
+  % determine trial numbers
+  if verbose
+    fprintf(1, 'Determining trial numbers ...\n');
+  end
+  if( strcmpi( params.trialChangeCondition, 'auto' ) )
+    targetIdx = [targetIdxs1; targetIdxs2];
+    trialEnds = [0; find( diff( targetIdx ) ~= 1 ); length( targetIdx )];
+    trialLengths = diff( trialEnds );
+    goodTrials = find( trialLengths ./ mean( trialLengths ) >= 0.7 );
+    badTrials = length( trialLengths ) - length( goodTrials );
+    if( badTrials > 0 )
+      uiwait(msgbox2( ...
+        [num2str( badTrials ) ' trials were removed because they were too short.'], ...
+        'Warning', ...
+        'warnRemovedTrials', ...
+        'modal' ));
+    end
+    trialnr = zeros(size(signal,1),1);
+    for( i = 1:length(goodTrials) )
+      trialnr( targetIdx(trialEnds(goodTrials(i))+1):targetIdx(trialEnds(goodTrials(i)+1)) ) = i;
+    end
+  else
+    old_iti=-1;
+    cur_trial=0;
+    try
+      trialdef=eval(params.trialChangeCondition);
+    catch
+      error([funcName ':invalidTrialChangeCond'], ...
+        'Invalid trial change condition specified');
+    end
+    trialnr=zeros(size(trialdef));
+    for cur_samp=1:length(trialdef)
+     if ((trialdef(cur_samp) == 1) & (trialdef(cur_samp) ~= old_iti))
+        cur_trial=cur_trial+1;
+     end
+     trialnr(cur_samp)=cur_trial;
+     old_iti=trialdef(cur_samp);
+    end
+    if cur_trial < settings.minTrialsPerCondErr
+      error([funcName ':minTrialsCond1NotMet'], sprintf('Evaluation of the trial change condition resulted in fewer than %d trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
+    end
+  end
+
+  if length(unique(trialnr(targetIdxs1))) < settings.minTrialsPerCondErr
+    error([funcName ':minTrialsCond1NotMet'], sprintf('Evaluation of target condition 1 in conjunction with the trial change condition resulted in fewer than %d useable trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
+  elseif ~errorOverride && length(unique(trialnr(targetIdxs1))) < settings.minTrialsPerCondWarn
+    error([funcName ':sugTrialsCond1NotMet'], sprintf('Evaluation of target condition 1 in conjunction with the trial change condition resulted in fewer than %d useable trials.  You may want to relax your conditions.', settings.minTrialsPerCondWarn));
+  end
+
+  if length(params.targetConditions) == 2
     if length(unique(trialnr(targetIdxs2))) < settings.minTrialsPerCondErr
       error([funcName ':minTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
     elseif ~errorOverride && length(unique(trialnr(targetIdxs2))) < settings.minTrialsPerCondWarn
       error([funcName ':sugTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  You may want to relax your conditions.', settings.minTrialsPerCondWarn));
     end
-
-    condition2txt = params.conditionLabels{2};
   end
-
-
 
   %remove signal DC
   for ch=1:size(signal, 2)
@@ -339,8 +357,8 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
         fprintf(1, 'Plotting results ...\n');
       end       
       if bitand(plots, settings.pltSelSpectra)
-        plotChans(freq_bins, 'Spectra Channel %d', ...
-          'r^2 Channel %d', 'Spectra');
+        plotChans(freq_bins, 'Spectra %s', ...
+          'r^2 %s', 'Spectra');
       end
       if bitand(plots, settings.pltSelFeatures)
         if length(params.targetConditions) == 1
@@ -371,8 +389,8 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
       fprintf(1, 'Plotting results ...\n');
     end       
     if bitand(plots, settings.pltSelTimeSeq)
-      plotChans(timems, 'Waveform (Channel %d)', ...
-        'Waveform r^2 (Channel %d)', 'Waveforms');
+      plotChans(timems, 'Waveform (%s)', ...
+        'Waveform r^2 (%s)', 'Waveforms');
     end
     if bitand(plots, settings.pltSelFeatures)
       if length(params.targetConditions) == 1
@@ -405,6 +423,19 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
   
   function plotChans(xData, title1, title2, figTitle)
     channels = params.channels;
+    channelNames = {};
+    channelLabels = {};
+    if( isstruct( params.montageFile ) )
+      channelLabels = { params.montageFile.label };
+    end
+    for( i=1:length(channels) )
+      if( channels(i) <= length( channelLabels ) )
+        channelNames{i} = channelLabels{channels(i)};
+      else
+        channelNames{i} = [ 'Channel ' num2str( channels(i) ) ];
+      end
+    end
+      
     if isempty(handles.chans)
       handles.chans = figure;
     else
@@ -420,14 +451,14 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
         plot(xData, res1(:, channels(cur_plotchannel)), 'r');
         hold on;
         plot(xData, res2(:, channels(cur_plotchannel)), 'b');
-        titletxt=sprintf(title1, channels(cur_plotchannel));
+        titletxt=sprintf(title1, channelNames{cur_plotchannel});
         title(titletxt); 
         axis tight;
         legend(condition1txt, condition2txt);
 
         subplot(num_plotchannels, 2, cur_plotchannel*2);
         plot(xData, ressq(:, channels(cur_plotchannel)), 'b');
-        titletxt=sprintf(title2, channels(cur_plotchannel));
+        titletxt=sprintf(title2, channelNames{cur_plotchannel});
         title(titletxt); 
         minY = min(ressq(:, channels(cur_plotchannel)));
         maxY = max(ressq(:, channels(cur_plotchannel)));
@@ -439,7 +470,7 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
       else
         subplot(num_plotchannels, 1, cur_plotchannel);
         plot(xData, res1(:, channels(cur_plotchannel)), 'r');
-        titletxt=sprintf(title1, channels(cur_plotchannel));
+        titletxt=sprintf(title1, channelNames{cur_plotchannel});
         title(titletxt); 
         axis tight;
       end
@@ -484,10 +515,18 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
       ylabel(yLabel);
       title(pltTitle);    
 
-      ticks = get(gca, 'ytick');
-      ticklabels = num2str(ticks');
-      set(gca, 'ytick', ticks+.5);
-      set(gca, 'yticklabel', ticklabels);
+      if isstruct(params.montageFile)
+        labels = { params.montageFile.label };
+        for( i = length( labels ) + 1 : num_channels )
+          labels{i} = num2str( i );
+        end
+        set( gca, 'ytick', [1:num_channels] + .5 );
+        set( gca, 'yticklabel', labels );
+      else
+        tick = get( gca, 'ytick' );
+        set( gca, 'ytick', tick + .5 );
+        set( gca, 'yticklabel', num2str( tick' ) );
+      end
     end
 
     function plotTopos(acqType, topoBins, pltTitle, titleData)
@@ -511,7 +550,11 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
           data2plot = res1(topoBins(cur_topo), :);
         end
         
-        topoplot(data2plot, eloc_file, acqType, 'maplimits', [min(min(data2plot)), max(max(data2plot))], 'gridscale', 200);
+        options = { 'gridscale', 200 };
+        if strcmpi( acqType, 'eeg' )
+          options = { options{:}, 'electrodes', 'labels' };
+        end
+        topoplot(data2plot, eloc_file, acqType, 'maplimits', [min(min(data2plot)), max(max(data2plot))], options{:} );
         titletxt=sprintf(pltTitle, titleData{cur_topo, :});
         title(titletxt); 
         colormap jet;
