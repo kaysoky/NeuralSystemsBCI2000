@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: IIR filter design classes that compute coefficents for
+// Description: IIR filter design classes that design
 //       Butterworth, Chebyshev, or Resonator type digital filters.
 //       Based on mkfilter.C written by
 //         A.J. Fisher, University of York   <fisher@minster.york.ac.uk>
