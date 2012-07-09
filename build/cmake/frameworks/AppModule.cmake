@@ -24,6 +24,7 @@ INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared/modules/application/human_interface_devices
   ${BCI2000_SRC_DIR}/shared/modules/application/speller
   ${BCI2000_SRC_DIR}/shared/modules/application/stimuli
+  ${BCI2000_APPINCLUDEDIRS_EXT} 
 )
 
 BCI2000_USE( "SAPI" )
