@@ -330,6 +330,7 @@ gHIampDevice::Close()
   if( mDevice && !GT_CloseDevice( &mDevice ) )
     bcierr << "Could not close gHIamp device: serial " << Serial() << endl
            << GetDeviceErrorMessage() << endl;
+  ::CloseHandle( mDevice );
 }
 
 // **************************************************************************

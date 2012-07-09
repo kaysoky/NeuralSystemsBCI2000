@@ -347,6 +347,7 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
                   << endl;
          }
          GT_CloseDevice(&hdev);
+         ::CloseHandle( hdev );
          // thus, let's do the check that the driver is supposed to do again here
          if ((samplerate != 32) &&
              (samplerate != 64) &&
@@ -547,6 +548,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
                 bcierr << "Could not open Amplifier device" << endl;
             GT_GetSerial(hdevt, (LPSTR)serialnr, 16);     // 16 according to documentation
             GT_CloseDevice(&hdevt);
+            ::CloseHandle( hdevt );
             m_DeviceIDs.at(dev)=string(serialnr);
             mMasterDeviceID=m_DeviceIDs.at(dev);
         }
@@ -894,6 +896,7 @@ gUSBampADC::AcquireThread::Execute()
 			GT_Stop(amp->m_hdev.at(dev));
 			GT_ResetTransfer(amp->m_hdev.at(dev));
 			GT_CloseDevice(&(amp->m_hdev.at(dev)));
+			::CloseHandle( amp->m_hdev.at(dev) );
 
 			for (int buf = 0; buf < amp->NUM_BUFS; buf++)   {
 				CloseHandle(m_hEvent[dev][buf]);
@@ -908,6 +911,7 @@ gUSBampADC::AcquireThread::Execute()
 			GT_Stop(amp->m_hdev.at(dev));
 			GT_ResetTransfer(amp->m_hdev.at(dev));
 			GT_CloseDevice(&(amp->m_hdev.at(dev)));
+			::CloseHandle( amp->m_hdev.at(dev) );
 
 			for (int buf = 0; buf < amp->NUM_BUFS; buf++){
 				CloseHandle(m_hEvent[dev][buf]);
@@ -980,6 +984,7 @@ int gUSBampADC::DetectAutoMode() const
        USBport=cur_USBport;
      }
      GT_CloseDevice(&hdev);
+     ::CloseHandle( hdev );
   }
 }
 
