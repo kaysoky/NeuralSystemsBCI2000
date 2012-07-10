@@ -4,9 +4,9 @@
 ## Description: Build information for the gHIampSource source module
 ###########################################################################
 
-IF( NOT WIN32 )
+IF( NOT WIN32 OR NOT MSVC )
 
-  MESSAGE( "-- gHIamp doesn't support this OS.  Will not build." )
+  MESSAGE( "-- gHIamp doesn't support this Compiler/OS.  Will not build." )
 
 ELSE()
 
@@ -32,7 +32,7 @@ ELSE()
     LINK_DIRECTORIES(
       ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/omf
     )
-  ELSIF( CMAKE_CL_64 )
+  ELSEIF( CMAKE_CL_64 )
     LINK_DIRECTORIES(
       ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/coff64
     )
