@@ -4,7 +4,7 @@
 ## Description: Build information for the gHIampSource source module
 ###########################################################################
 
-IF( NOT WIN32 OR CMAKE_CL_64 )
+IF( NOT WIN32 )
 
   MESSAGE( "-- gHIamp doesn't support this OS.  Will not build." )
 
@@ -32,11 +32,15 @@ ELSE()
     LINK_DIRECTORIES(
       ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/omf
     )
-  ELSE( BORLAND )
+  ELSIF( CMAKE_CL_64 )
+    LINK_DIRECTORIES(
+      ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/coff64
+    )
+  ELSE()
     LINK_DIRECTORIES(
       ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/coff
     )
-  ENDIF( BORLAND )
+  ENDIF()
 
   # Add the source module to the Makefile or compiler project file:
   BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
