@@ -41,18 +41,20 @@
 using namespace std;
 
 GenericSignal::GenericSignal()
-: mpValues( NULL )
+: mpValues( NULL ),
+  mNumValues( 0 )
 {
   SetProperties( mProperties );
 }
 
 GenericSignal::~GenericSignal()
 {
-  delete mpValues;
+  delete[] mpValues;
 }
 
 GenericSignal::GenericSignal( const GenericSignal& inSignal )
 : mpValues( NULL ),
+  mNumValues( 0 ),
   mProperties( inSignal.mProperties )
 {
   AssignValues( inSignal );
@@ -66,25 +68,29 @@ GenericSignal::operator=( const GenericSignal& inSignal )
 }
 
 GenericSignal::GenericSignal( size_t inChannels, size_t inElements, SignalType::Type inType )
-: mpValues( NULL )
+: mpValues( NULL ),
+  mNumValues( 0 )
 {
   SetProperties( SignalProperties( inChannels, inElements, inType ) );
 }
 
 GenericSignal::GenericSignal( size_t inChannels, size_t inElements, SignalType inType )
-: mpValues( NULL )
+: mpValues( NULL ),
+  mNumValues( 0 )
 {
   SetProperties( SignalProperties( inChannels, inElements, inType ) );
 }
 
 GenericSignal::GenericSignal( const SignalProperties& inProperties )
-: mpValues( NULL )
+: mpValues( NULL ),
+  mNumValues( 0 )
 {
   SetProperties( inProperties );
 }
 
 GenericSignal::GenericSignal( const SignalProperties& inProperties, ValueType inValue )
-: mpValues( NULL )
+: mpValues( NULL ),
+  mNumValues( 0 )
 {
   SetProperties( inProperties );
   for( int ch = 0; ch < Channels(); ++ch )
@@ -95,19 +101,22 @@ GenericSignal::GenericSignal( const SignalProperties& inProperties, ValueType in
 GenericSignal&
 GenericSignal::AssignValues( const GenericSignal& s )
 {
-  mProperties.SetChannels( s.Channels() );
-  mProperties.SetElements( s.Elements() );
-  size_t numValues = s.Channels() * s.Elements();
-  delete mpValues;
-  if( numValues == 0 )
+  if( s.Channels() != mProperties.Channels() )
+    mProperties.SetChannels( s.Channels() );
+  if( s.Elements() != mProperties.Elements() )
+    mProperties.SetElements( s.Elements() );
+  size_t newSize = mProperties.Channels() * mProperties.Elements();
+  if( mNumValues != newSize )
   {
-    mpValues = NULL;
+    mNumValues = newSize;
+    delete[] mpValues;
+    if( mNumValues == 0 )
+      mpValues = NULL;
+    else
+      mpValues = new ValueType[mNumValues];
   }
-  else
-  {
-    mpValues = new ValueType[numValues];
-    ::memcpy( mpValues, s.mpValues, numValues * sizeof( ValueType ) );
-  }
+  if( mpValues )
+    ::memcpy( mpValues, s.mpValues, mNumValues * sizeof( ValueType ) );
   return *this;
 }
 
@@ -115,21 +124,24 @@ GenericSignal&
 GenericSignal::SetProperties( const SignalProperties& inSp )
 {
   ValueType* pPrevious = mpValues;
-  size_t numValues = inSp.Channels() * inSp.Elements();
-  if( numValues == 0 )
+  size_t newSize = inSp.Channels() * inSp.Elements();
+  if( newSize != mNumValues )
   {
-    mpValues = NULL;
-  }
-  else
-  {
-    mpValues = new ValueType[numValues];
-    ::memset( mpValues, 0, numValues * sizeof( ValueType ) );
+    mNumValues = newSize;
+    delete[] mpValues;
+    if( mNumValues == 0 )
+      mpValues = NULL;
+    else
+    {
+      mpValues = new ValueType[mNumValues];
+      ::memset( mpValues, 0, mNumValues * sizeof( ValueType ) );
+    }
   }
   if( pPrevious != NULL ) // Preserve values when resizing.
     for( int ch = 0; ch < min( mProperties.Channels(), inSp.Channels() ); ++ch )
       for( int el = 0; el < min( mProperties.Elements(), inSp.Elements() ); ++el )
         mpValues[ch * inSp.Elements() + el] = pPrevious[ch * mProperties.Elements() + el];
-  delete pPrevious;
+  delete[] pPrevious;
   mProperties = inSp;
   return *this;
 }
@@ -422,4 +434,3 @@ GenericSignal::GetLittleEndian( std::istream& is, T& outValue )
   for( size_t i = 0; i < sizeof( T ); ++i )
     outValue |= is.get() << ( i * 8 );
 }
-

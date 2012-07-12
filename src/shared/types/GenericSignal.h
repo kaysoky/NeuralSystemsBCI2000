@@ -103,6 +103,7 @@ class GenericSignal
   private:
     SignalProperties mProperties;
     ValueType* mpValues;
+    size_t     mNumValues;
 };
 
 class GenericChannel
