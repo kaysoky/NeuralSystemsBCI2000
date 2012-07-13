@@ -123,12 +123,10 @@ GenericSignal::AssignValues( const GenericSignal& s )
 GenericSignal&
 GenericSignal::SetProperties( const SignalProperties& inSp )
 {
-  ValueType* pPrevious = mpValues;
-  size_t newSize = inSp.Channels() * inSp.Elements();
-  if( newSize != mNumValues )
+  if( inSp.Channels() != mProperties.Channels() || inSp.Elements() != mProperties.Elements() )
   {
-    mNumValues = newSize;
-    delete[] mpValues;
+    ValueType* pPrevious = mpValues;
+    mNumValues = inSp.Channels() * inSp.Elements();
     if( mNumValues == 0 )
       mpValues = NULL;
     else
@@ -136,12 +134,11 @@ GenericSignal::SetProperties( const SignalProperties& inSp )
       mpValues = new ValueType[mNumValues];
       ::memset( mpValues, 0, mNumValues * sizeof( ValueType ) );
     }
-  }
-  if( pPrevious != NULL ) // Preserve values when resizing.
     for( int ch = 0; ch < min( mProperties.Channels(), inSp.Channels() ); ++ch )
       for( int el = 0; el < min( mProperties.Elements(), inSp.Elements() ); ++el )
         mpValues[ch * inSp.Elements() + el] = pPrevious[ch * mProperties.Elements() + el];
-  delete[] pPrevious;
+    delete[] pPrevious;
+  }
   mProperties = inSp;
   return *this;
 }
