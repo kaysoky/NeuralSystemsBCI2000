@@ -67,7 +67,7 @@ gHIampDevice::Init( int inPort )
     UCHAR channels[ cMaxAnalogChannels ];
     if( !GT_GetAvailableChannels( mDevice, channels, cMaxAnalogChannels ) )
       bcierr << "Could not get list of available channels from gHIamp: serial " << mSerial
-             << GetDeviceErrorMessage() << endl;    
+             << GetDeviceErrorMessage() << endl;
 
     mHWVersion = GT_GetHWVersion( mDevice );
 
@@ -153,7 +153,7 @@ gHIampDevice::GetData( GenericSignal &Output )
   DWORD numBytesReceived = 0;
   if( !GT_GetOverlappedResult( mDevice, &mpOverlapped[mQueueIndex], &numBytesReceived, false ) )
     bcierr << "Could not determine number of transferred bytes from gHIamp: serial " << Serial()
-           << ", Windows error code: " << GetLastError << endl;
+           << ", Windows error code: " << GetLastError() << endl;
 
   // Check if any data has been lost
   if( numBytesReceived != mExpectedBytes )
@@ -161,7 +161,7 @@ gHIampDevice::GetData( GenericSignal &Output )
            << " -- Samples have been lost." << endl;
 
   // Fill the output as necessary
-  
+
   float* data = reinterpret_cast<float*>( mpBuffers[mQueueIndex] );
   for( int sample = 0; sample < mSampleBlockSize; sample++ )
   {
@@ -195,6 +195,14 @@ gHIampDevice::GetData( GenericSignal &Output )
 void
 gHIampDevice::EndAcquisition()
 {
+  // Wait for outstanding GT_GetData() calls to finish.
+  for( size_t i = 0; i < QUEUE_SIZE; i++ )
+  {
+    DWORD numBytesReceived = 0;
+    if( !GT_GetOverlappedResult( mDevice, &mpOverlapped[i], &numBytesReceived, true ) )
+      bcierr << "Outstanding calls to GT_GetData() did not finish for " << Serial()
+             << ", Windows error code: " << GetLastError() << endl;
+  }
   // Attempt to stop the device
   if( !GT_Stop( mDevice ) )
     bcierr << "Error trying to stop acquisition from gHIamp: serial " << Serial() << endl

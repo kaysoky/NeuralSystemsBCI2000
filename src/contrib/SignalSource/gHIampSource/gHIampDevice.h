@@ -39,8 +39,7 @@ class gHIampDevice
 
   gHIampDevice( int port ) { Init( port ); }
   ~gHIampDevice() { Cleanup(); }
-  void Init( int port );
-  void Cleanup();
+  
   bool IsOpen() const { return mDevice != NULL; }
   void Close();
 
@@ -66,7 +65,10 @@ class gHIampDevice
   const float HWVersion() const { return mHWVersion; }
 
  private:
-  static const size_t cErrorMessageSize = 1024; // from g.USBamp API doc
+  void Init( int port );
+  void Cleanup();
+  
+  static const size_t cErrorMessageSize = 1024; // from g.USBamp(!) API doc
   static const size_t cMaxAnalogChannels = 256;
   static const size_t cMaxDigitalChannels = 16;
 
