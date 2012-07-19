@@ -36,7 +36,7 @@ using namespace std;
 #define QUEUE_SIZE 4
 
 void
-gHIampDevice::Init( int inPort )
+gHIampDevice::Init( int inDeviceIndex )
 {
   mpBuffers = NULL;
   mpOverlapped = NULL;
@@ -50,7 +50,7 @@ gHIampDevice::Init( int inPort )
   mExpectedBytes = 0;
   ::memset( &mConfig, 0, sizeof( mConfig ) );
 
-  mDevice = GT_OpenDevice( inPort );
+  mDevice = GT_OpenDevice( inDeviceIndex );
   if( mDevice )
   {
     char buf[256];
@@ -77,11 +77,12 @@ gHIampDevice::Init( int inPort )
     {
       if( channels[i] )
         ++mChannelPoints;
-      mConfig.Channels[i].ChannelNumber = i + 1;
+      mConfig.Channels[i].ChannelNumber = static_cast<WORD>( i + 1 );
       mConfig.Channels[i].Available = channels[i]; // ??
       mConfig.Channels[i].Acquire = channels[i];
       mConfig.Channels[i].BandpassFilterIndex = -1;
       mConfig.Channels[i].NotchFilterIndex = -1;
+      mConfig.Channels[i].BipolarChannel = 0;
     }
     mConfig.TriggerLineEnabled = true;
     mConfig.IsSlave = true;
@@ -111,7 +112,7 @@ gHIampDevice::BeginAcquisition()
   Cleanup();
 
   // Determine the number of channels we should acquire
-  int nPoints = mSampleBlockSize * mChannelPoints;
+  size_t nPoints = mSampleBlockSize * mChannelPoints;
   mExpectedBytes = nPoints * sizeof( float );
   mBufferSizeBytes = ( DWORD ) ceil( mExpectedBytes / ( double )MAX_USB_PACKET_SIZE ) * MAX_USB_PACKET_SIZE;
   mpBuffers = new BYTE*[ QUEUE_SIZE ];
@@ -146,9 +147,10 @@ gHIampDevice::GetData( GenericSignal &Output )
 {
   // Block until new data is accessible
   if( WaitForSingleObject( mpOverlapped[mQueueIndex].hEvent, cTimeoutMs ) == WAIT_TIMEOUT )
-    bcierr << "Timeout occurred while waiting for data from gHIamp: serial " << Serial() << endl
-           << GetDeviceErrorMessage() << endl;
-
+  {
+    GT_ResetTransfer( mDevice );
+    bcierr << "Timeout occurred while waiting for data from gHIamp: serial " << Serial() << endl;
+  }
   // Figure out how many bytes have been received
   DWORD numBytesReceived = 0;
   if( !GT_GetOverlappedResult( mDevice, &mpOverlapped[mQueueIndex], &numBytesReceived, false ) )
@@ -174,12 +176,12 @@ gHIampDevice::GetData( GenericSignal &Output )
       for( ; itr != mAnalogChannelMap.end(); itr++ )
         Output( itr->second, sample ) = sampleData[itr->first]
                                       - sampleData[mRefIdx];
-    uint16_t* digital = reinterpret_cast<uint16_t*>( &sampleData[mChannelPoints - 1] );
+    uint32_t digital = static_cast<uint32_t>( sampleData[mChannelPoints - 1] );
     itr = mDigitalChannelMap.begin();
     for( ; itr != mDigitalChannelMap.end(); itr++ )
     {
       uint16_t mask = 1 << itr->first;
-      Output( itr->second, sample ) = ( *digital & mask ) ? 100.0f : 0.0f;
+      Output( itr->second, sample ) = ( digital & mask ) ? 100.0f : 0.0f;
     }
   }
 
@@ -207,10 +209,13 @@ gHIampDevice::EndAcquisition()
   if( !GT_Stop( mDevice ) )
     bcierr << "Error trying to stop acquisition from gHIamp: serial " << Serial() << endl
            << GetDeviceErrorMessage() << endl;
-  // Reset data in the driver's transfer pipe
-  if( !GT_ResetTransfer( mDevice ) )
-    bcierr << "Error trying to reset transfer from gHIamp: serial " << Serial() << endl
-           << GetDeviceErrorMessage() << endl;
+  // Wait for pending read operations to complete
+  for( size_t i = 0; i < QUEUE_SIZE; i++ )
+    if( WaitForSingleObject( mpOverlapped[i].hEvent, cTimeoutMs ) == WAIT_TIMEOUT )
+    {
+      GT_ResetTransfer( mDevice );
+      bcierr << "Timeout occurred while waiting for data from gHIamp: serial " << Serial() << endl;
+    }
   // Clean up allocated resources
   Cleanup();
 }
@@ -369,9 +374,9 @@ bool
 gHIampDeviceContainer::Detect()
 {
   Close();
-  for( int port = 0; port < gHIampDevice::cNumberOfUSBPorts; port++ )
+  for( int idx = 0; idx <= gHIampDevice::cMaxDeviceIndex; idx++ )
   {
-    gHIampDevice device( port );
+    gHIampDevice device( idx );
     if( device.IsOpen() )
       this->push_back( device );
   }

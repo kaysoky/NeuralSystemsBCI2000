@@ -52,7 +52,7 @@ class gHIampADC : public BufferedADC
   typedef std::map< int, std::set< int > > ModeMap;
   ModeMap ParseModes( std::string modes ) const;
 
-  int mMasterIdx;
+  size_t mMasterIdx;
   gHIampDeviceContainer mDevices;
 
   // A little class for parsing SourceChList

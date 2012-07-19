@@ -54,6 +54,42 @@ gHIampADC::gHIampADC()
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Signal%20Properties int SourceCh= 256 "
       "256 1 % // number of digitized and stored channels",
+    "Source:Signal%20Properties floatlist SourceChOffset= 256 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+      "% % % // channels offsets",
+    "Source:Signal%20Properties floatlist SourceChGain= 256 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+      "% % % // channels gains",
     "Source:Signal%20Properties int SampleBlockSize= 16 "
       "16 1 % // number of samples transmitted at a time",
     "Source:Signal%20Properties float SamplingRate= 256Hz "
@@ -154,7 +190,7 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
     return;
   }
 
-  int masterIdx = 0;
+  size_t masterIdx = 0;
   if( devices.size() > 1 )
   {
     if( ( string )Parameter( "DeviceIDs" )(0) == "auto" )

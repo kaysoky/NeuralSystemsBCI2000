@@ -34,10 +34,10 @@
 class gHIampDevice
 {
  public:
-  static const int cNumberOfUSBPorts = 16;
+  static const int cMaxDeviceIndex = 255;
   static const int cTimeoutMs = 1000;
 
-  gHIampDevice( int port ) { Init( port ); }
+  gHIampDevice( int deviceIndex ) { Init( deviceIndex ); }
   ~gHIampDevice() { Cleanup(); }
   
   bool IsOpen() const { return mDevice != NULL; }
@@ -84,7 +84,7 @@ class gHIampDevice
   BYTE**      mpBuffers;
   OVERLAPPED* mpOverlapped;
   size_t      mChannelPoints;
-  size_t      mBufferSizeBytes;
+  DWORD       mBufferSizeBytes;
   size_t      mExpectedBytes;
   std::map< int, int > mAnalogChannelMap;
   std::map< int, int > mDigitalChannelMap;
