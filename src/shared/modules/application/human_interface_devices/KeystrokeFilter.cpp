@@ -43,7 +43,11 @@ KeystrokeFilter::KeystrokeFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Application:Human%20Interface%20Devices string KeystrokeStateName= % "
-      "// State to be translated into keystrokes, empty for off",
+      "// State to be translated into keystrokes (0-F), empty for off",
+    "Application:Human%20Interface%20Devices string KeystrokeExpression= % "
+      "// Expression that evaluates to a virtual keycode, empty for off",
+    "Application:Human%20Interface%20Devices string KeystrokeExpressionOnStartRun= % "
+      "// Expression that initializes expression variables on StartRun",
   END_PARAMETER_DEFINITIONS
 }
 
@@ -56,8 +60,16 @@ KeystrokeFilter::Preflight( const SignalProperties& Input,
                                   SignalProperties& Output ) const
 {
   string keystrokeStateName = Parameter( "KeystrokeStateName" );
-  if( keystrokeStateName != "" )
-    State( keystrokeStateName.c_str() );
+  if( !keystrokeStateName.empty() )
+    State( keystrokeStateName );
+
+  Expression::VariableContainer variables;
+  Expression( Parameter( "KeystrokeExpressionOnStartRun" ) ).Compile( variables );
+  GenericSignal signal( Input );
+  Expression keystrokeExpression( Parameter( "KeystrokeExpression" ) );
+  keystrokeExpression.Compile( variables );
+  keystrokeExpression.Evaluate( &signal );
+  
   Output = Input;
 }
 
@@ -65,27 +77,41 @@ void
 KeystrokeFilter::Initialize( const SignalProperties&, const SignalProperties& )
 {
   mKeystrokeStateName = string( Parameter( "KeystrokeStateName" ) );
-  if( mKeystrokeStateName != "" )
+  mKeystrokeExpressionOnStartRun = Expression( Parameter( "KeystrokeExpressionOnStartRun" ) );
+  mKeystrokeExpressionOnStartRun.Compile( mVariables );
+  mKeystrokeExpression = Expression( Parameter( "KeystrokeExpression" ) );
+  mKeystrokeExpression.Compile( mVariables );
+}
+
+void
+KeystrokeFilter::StartRun()
+{
+  if( !mKeystrokeStateName.empty() )
   {
-    mPreviousStateValue = State( mKeystrokeStateName.c_str() );
-    SendKeystroke( mPreviousStateValue );
+    mPreviousStateValue = State( mKeystrokeStateName );
+    SendStateKeystroke( mPreviousStateValue );
   }
+  mKeystrokeExpressionOnStartRun.Execute();
 }
 
 void
 KeystrokeFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
-  if( mKeystrokeStateName != "" )
+  if( !mKeystrokeStateName.empty() )
   {
-    State::ValueType currentStateValue = State( mKeystrokeStateName.c_str() );
+    State::ValueType currentStateValue = State( mKeystrokeStateName );
     if( currentStateValue != mPreviousStateValue )
-      SendKeystroke( currentStateValue );
+      SendStateKeystroke( currentStateValue );
     mPreviousStateValue = currentStateValue;
   }
+  
+  SendKeystroke( mKeystrokeExpression.Evaluate( &Input ) );
+
   Output = Input;
 }
 
-void KeystrokeFilter::SendKeystroke( State::ValueType s )
+void
+KeystrokeFilter::SendStateKeystroke( State::ValueType s )
 {
   const short unicodeChars[] =
   {
@@ -117,4 +143,28 @@ void KeystrokeFilter::SendKeystroke( State::ValueType s )
   if( ::SendInput( numInputs, inputs, sizeof( *inputs ) ) != numInputs )
     bciout << "Could not send keystroke for state value '"
            << s << "'" << endl;
+}
+
+void
+KeystrokeFilter::SendKeystroke( double inKeyCode )
+{
+  WORD keyCode = static_cast<WORD>( inKeyCode );
+  if( keyCode > 0 && keyCode < 255 )
+  {
+    KEYBDINPUT keyEvents[] =
+    {
+      { keyCode, 0, 0, 0, 0 },
+      { keyCode, 0, KEYEVENTF_KEYUP, 0, 0 },
+    };
+    const int numInputs = sizeof( keyEvents ) / sizeof( *keyEvents );
+    INPUT inputs[numInputs];
+    for( int i = 0; i < numInputs; ++i )
+    {
+      inputs[i].type = INPUT_KEYBOARD;
+      inputs[i].ki = keyEvents[i];
+    }
+    if( ::SendInput( numInputs, inputs, sizeof( *inputs ) ) != numInputs )
+      bciout << "Could not send keystroke for virtual key code 0x" << hex
+             << keyCode << endl;
+  }
 }

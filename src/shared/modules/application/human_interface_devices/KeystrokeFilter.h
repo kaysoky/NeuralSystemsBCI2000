@@ -28,7 +28,7 @@
 #define KEYSTROKE_FILTER_H
 
 #include "GenericFilter.h"
-#include <string>
+#include "Expression.h"
 
 class KeystrokeFilter : public GenericFilter
 {
@@ -37,14 +37,19 @@ class KeystrokeFilter : public GenericFilter
   virtual ~KeystrokeFilter();
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize( const SignalProperties&, const SignalProperties& );
+  virtual void StartRun();
   virtual void Process( const GenericSignal&, GenericSignal& );
   virtual bool AllowsVisualization() const { return false; }
 
  private:
-  void SendKeystroke( State::ValueType );
+  void SendStateKeystroke( State::ValueType );
+  void SendKeystroke( double );
 
   std::string mKeystrokeStateName;
   State::ValueType mPreviousStateValue;
+  Expression::VariableContainer mVariables;
+  Expression mKeystrokeExpression,
+             mKeystrokeExpressionOnStartRun;
 };
 
 #endif // KEYSTROKE_FILTER_H
