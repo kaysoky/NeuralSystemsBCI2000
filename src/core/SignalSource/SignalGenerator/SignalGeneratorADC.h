@@ -55,7 +55,8 @@ class SignalGeneratorADC : public GenericADC
          mDCOffset;
   std::vector<double> mSourceChGain,
                       mSourceChOffset;
-  Expression mOffsetMultiplier;
+  Expression mOffsetMultiplier,
+             mAmplitudeMultiplier;
   int    mSineChannelX,
          mSineChannelY,
          mSineChannelZ;

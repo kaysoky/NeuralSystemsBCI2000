@@ -95,6 +95,8 @@ SignalGeneratorADC::Publish()
       "// Amplitude of white noise (common to all channels)",
     "Source int DCOffset= 0muV 0muV % % "
       "// DC offset (common to all channels)",
+    "Source string AmplitudeMultiplier= % 1.0 % % "
+      "// Expression to multiply amplitude by",
     "Source string OffsetMultiplier= % StimulusType % % "
       "// Expression to multiply offset by",
     "Source int SignalType= 0 0 0 2 "
@@ -118,6 +120,7 @@ SignalGeneratorADC::Preflight( const SignalProperties&,
   Parameter( "NoiseAmplitude" ).InMicrovolts();
   if( Parameter( "DCOffset" ).InMicrovolts() != 0 )
     Expression( Parameter( "OffsetMultiplier" ) ).Evaluate();
+  Expression( Parameter( "AmplitudeMultiplier" ) ).Evaluate();
   Parameter( "RandomSeed" );
 
   // Resource availability checks.
@@ -165,6 +168,7 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
     mOffsetMultiplier = Expression( "" );
   else
     mOffsetMultiplier = Expression( Parameter( "OffsetMultiplier" ) );
+  mAmplitudeMultiplier = Expression( Parameter( "AmplitudeMultiplier" ) );
   mSineChannelX = Parameter( "SineChannelX" );
   mSineChannelY = Parameter( "SineChannelY" );
   mSineChannelZ = Parameter( "SineChannelZ" );
@@ -224,7 +228,7 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
   {
     mSinePhase += 2 * M_PI * mSineFrequency;
     mSinePhase = ::fmod( mSinePhase, 2 * M_PI );
-    double sineValue = ::sin( mSinePhase ) * mSineAmplitude;
+    double sineValue = ::sin( mSinePhase ) * mSineAmplitude * mAmplitudeMultiplier.Evaluate();
 
     double offset = mDCOffset;
     if( offset != 0 )
