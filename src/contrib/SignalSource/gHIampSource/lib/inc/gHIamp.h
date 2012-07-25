@@ -1,7 +1,7 @@
 //_____________________________________________________________________________________
 //
 //    g.HIamp Windows - Function Prototypes
-//    Copyright (c) 2011 Guger Technologies.
+//    Copyright (c) 2010-2012 Guger Technologies.
 //_____________________________________________________________________________________
 
 #ifndef GHIAMP_H
@@ -132,14 +132,14 @@ GHIAMP_API		BOOL	__stdcall	GT_GetLastError(WORD *wErrorCode, char *pLastError);
 GHIAMP_API		BOOL	__stdcall	GT_ResetTransfer(HANDLE hDevice);
 GHIAMP_API		BOOL	__stdcall	GT_GetSerial(HANDLE hDevice, LPSTR lpstrSerial, UINT uiSize);
 GHIAMP_API		BOOL	__stdcall	GT_VR(int nargin, void *varargin[], int nargout, void *varargout[]);
-GHIAMP_API		BOOL	__stdcall	GT_Calibrate(HANDLE hDevice, PSCALE Scaling);
+GHIAMP_API		BOOL	__stdcall	GT_Calibrate(HANDLE hDevice, PSCALE scaling);
 GHIAMP_API		BOOL	__stdcall	GT_SetScale(HANDLE hDevice, PSCALE scaling);
 GHIAMP_API		BOOL	__stdcall	GT_GetScale(HANDLE hDevice, PSCALE scaling);
 GHIAMP_API		BOOL	__stdcall	GT_GetFactoryScaleSettings(HANDLE hDevice, PSCALE factoryScaling);
 GHIAMP_API		BOOL	__stdcall	GT_GetImpedance(HANDLE hDevice, GT_HIAMP_CHANNEL_IMPEDANCES *channelImpedances);
 GHIAMP_API		BOOL	__stdcall	GT_GetAvailableChannels(HANDLE hDevice, UCHAR *availableChannels, WORD availableChannelsLength); 
-GHIAMP_API		BOOL	__stdcall	GT_GetNumberOfSupportedSampleRates(int *numberOfSupportedSampleRates);
-GHIAMP_API		BOOL	__stdcall	GT_GetSupportedSampleRates(float* supportedSampleRates);
+GHIAMP_API		BOOL	__stdcall	GT_GetNumberOfSupportedSampleRates(HANDLE hDevice, int *numberOfSupportedSampleRates);
+GHIAMP_API		BOOL	__stdcall	GT_GetSupportedSampleRates(HANDLE hDevice, float* supportedSampleRates);
 GHIAMP_API		BOOL	__stdcall	GT_SetConfiguration(HANDLE hDevice, GT_HIAMP_CONFIGURATION configuration);
 GHIAMP_API		BOOL	__stdcall	GT_GetConfiguration(HANDLE hDevice, GT_HIAMP_CONFIGURATION *configuration);
 
@@ -149,10 +149,10 @@ GHIAMP_API		BOOL	__stdcall	GT_GetConfiguration(HANDLE hDevice, GT_HIAMP_CONFIGUR
 //									FILTER
 //_____________________________________________________________________________________							
 
-GHIAMP_API		BOOL	__stdcall	GT_GetFilterSpec(FILT *FilterSpec);
+GHIAMP_API		BOOL	__stdcall	GT_GetFilterSpec(FILT *filterSpec);
 GHIAMP_API		BOOL	__stdcall	GT_GetNumberOfFilter(int* nof);
 
-GHIAMP_API		BOOL	__stdcall	GT_GetNotchSpec(FILT *FilterSpec);
+GHIAMP_API		BOOL	__stdcall	GT_GetNotchSpec(FILT *filterSpec);
 GHIAMP_API		BOOL	__stdcall	GT_GetNumberOfNotch(int* nof);
 
 #ifdef __cplusplus

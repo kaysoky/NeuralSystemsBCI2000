@@ -95,8 +95,7 @@ gHIampDevice::Cleanup()
 {
   for( size_t i = 0; i < QUEUE_SIZE; i++ )
   {
-    if( mpOverlapped ) WaitForSingleObject( mpOverlapped[i].hEvent, 1000 );
-    if( mpOverlapped ) CloseHandle( mpOverlapped[i].hEvent );
+    if( mpOverlapped ) ::CloseHandle( mpOverlapped[i].hEvent );
     if( mpBuffers ) delete [] mpBuffers[i];
   }
   delete [] mpBuffers; mpBuffers = NULL;
@@ -163,7 +162,6 @@ gHIampDevice::GetData( GenericSignal &Output )
            << " -- Samples have been lost." << endl;
 
   // Fill the output as necessary
-
   float* data = reinterpret_cast<float*>( mpBuffers[mQueueIndex] );
   for( int sample = 0; sample < mSampleBlockSize; sample++ )
   {
@@ -197,25 +195,16 @@ gHIampDevice::GetData( GenericSignal &Output )
 void
 gHIampDevice::EndAcquisition()
 {
-  // Wait for outstanding GT_GetData() calls to finish.
-  for( size_t i = 0; i < QUEUE_SIZE; i++ )
-  {
-    DWORD numBytesReceived = 0;
-    if( !GT_GetOverlappedResult( mDevice, &mpOverlapped[i], &numBytesReceived, true ) )
-      bcierr << "Outstanding calls to GT_GetData() did not finish for " << Serial()
-             << ", Windows error code: " << GetLastError() << endl;
-  }
   // Attempt to stop the device
   if( !GT_Stop( mDevice ) )
     bcierr << "Error trying to stop acquisition from gHIamp: serial " << Serial() << endl
            << GetDeviceErrorMessage() << endl;
+  
   // Wait for pending read operations to complete
   for( size_t i = 0; i < QUEUE_SIZE; i++ )
     if( WaitForSingleObject( mpOverlapped[i].hEvent, cTimeoutMs ) == WAIT_TIMEOUT )
-    {
       GT_ResetTransfer( mDevice );
-      bcierr << "Timeout occurred while waiting for data from gHIamp: serial " << Serial() << endl;
-    }
+      
   // Clean up allocated resources
   Cleanup();
 }

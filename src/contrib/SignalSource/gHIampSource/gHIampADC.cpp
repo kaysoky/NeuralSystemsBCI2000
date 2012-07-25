@@ -33,11 +33,11 @@
 
 using namespace std;
 
-// Valid Sampling Rates and Sample Block Sizes
-#define NUM_MODES 4
-static int ValidRates[NUM_MODES]      = { 256, 256, 512, 512 };
-static int ValidBlockSizes[NUM_MODES] = {  16,  32,  16,  32 };
-
+// TODO:
+// Replace this with code from the new gHIamp C API which returns valid sampling rates
+// HOWEVER: Once valid sampling rates have been acquired, there is no indication from the API
+// as to what block sizes are valid.  Some sort of structure like this will likely
+// still be necessary.
 static string ValidModes = 
   "256 Hz: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 64 128 256 \n"
   "512 Hz: 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32 64 128 256 \n"
@@ -45,6 +45,14 @@ static string ValidModes =
   "1200 Hz: 8 9 10 11 12 13 14 15 16 32 64 128 256 \n"
   "2400 Hz: 16 32 64 128 256 \n"
   "4800 Hz: 32 64 128 256 \n";
+// Filtering not supported in any extended modes of operation... yet.
+//"9600 Hz: 128 256 \n"; // ONLY works with new firmware and up to 144 channels incl. Trigger line
+//"19200 Hz: 256 \n"; // ONLY works with new firmware and up to 80 channels incl. Trigger line
+//"38400 Hz: 256 \n"; // ONLY Works with new firmware and THE FIRST 40 consecutive channels incl. Trigger line
+// NOTE: These extended sampling rates have very specific requirements which will make
+// preflight checking a living hell.  They still don't support our required sample rates
+// which leads me to believe the API for sampling rates/block sizes will change before
+// too long.
 
 RegisterFilter( gHIampADC, 1 );
 
@@ -54,6 +62,10 @@ gHIampADC::gHIampADC()
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Signal%20Properties int SourceCh= 256 "
       "256 1 % // number of digitized and stored channels",
+      
+    // TODO: Enforce SourceChOffset is ALL ZEROS and SourceChGain is ALL ONES.
+    // Use the GetScale() calls to determine (from the factory calibration)
+    // how to scale data to microvolts before posting it to the data stream.
     "Source:Signal%20Properties floatlist SourceChOffset= 256 "
       "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
       "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
@@ -130,7 +142,7 @@ gHIampADC::gHIampADC()
         "2 Butterworth, "
         "3 Bessel "
         "(enumeration)",
-    // No other modes supported yet
+    // TODO: Impedence Mode is supported now.  As is calibration mode.
     //"Source:Signal%20Properties int AcquisitionMode= 0 "
     //  "0 0 2 // data acquisition mode: "
     //    "0 Signal Acquisition, "
