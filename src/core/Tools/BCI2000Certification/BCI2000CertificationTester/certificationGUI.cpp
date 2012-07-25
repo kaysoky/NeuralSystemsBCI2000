@@ -37,7 +37,7 @@ certificationGUI::certificationGUI()
 	initUI();
 	mCurTask = -1;
 	mEdited = false;
-	mBCI2000Dir = "../../../prog";
+	mBCI2000Dir = "../../prog";
 	initVals();
 	mRunThread = NULL;
 }
@@ -396,6 +396,7 @@ bool certificationGUI::initIni()
 	}
 
 	mGlobalSignalBox->setFile(mCT.tasks.getGlobalSource());
+	updateBCI2000Dir();
 
 	return true;
 }

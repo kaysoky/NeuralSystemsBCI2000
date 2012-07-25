@@ -317,7 +317,7 @@ bool Tasks::writeIni(QString fname)
 		}
 
 		if (tmpTask.getAudFlag()){
-			out << "vid " << tmpTask.getAudCh() << " " << tmpTask.getAudState();
+			out << "aud " << tmpTask.getAudCh() << " " << tmpTask.getAudState();
 			for (size_t k = 0; k < tmpTask.getAudVals().size(); k++)
 				out << " " << tmpTask.getAudVals()[k];
 			out << "\n";
