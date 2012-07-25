@@ -1,9 +1,19 @@
 @echo off
+set AUDIOSWITCH=
+set VIDEOSWITCH=
 set ITERATIONS=
 set WINWIDTH=
 set WINHEIGHT=
 set WINX=
 set WINY=
+
+echo Perform Audio Timings?
+set /p AUDIOSWITCH=Default (1):
+if (%AUDIOSWITCH%)==() set AUDIOSWITCH=1
+
+echo Perform Video Timings?
+set /p VIDEOSWITCH=Default (1):
+if (%VIDEOSWITCH%)==() set VIDEOSWITCH=1
 
 echo How many iterations would you like to perform?
 set /p ITERATIONS=Default (10):

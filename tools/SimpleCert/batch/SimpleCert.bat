@@ -28,8 +28,14 @@
 set SIMPLECERT=%CD%
 call batch/DetectWinVer.bat
 call batch/Setup.bat
+set MODIFIERS=
+set PARAMETERS= LOAD PARAMETERFILE ..\tools\SimpleCert\parms\SimpleCert.prm;
+if (%AUDIOSWITCH%)==(1) set MODIFIERS=%MODIFIERS%A
+if (%AUDIOSWITCH%)==(1) set PARAMETERS=%PARAMETERS% LOAD PARAMETERFILE ..\tools\SimpleCert\parms\SimpleCertAudio.prm;
+if (%VIDEOSWITCH%)==(1) set MODIFIERS=%MODIFIERS%V
+if (%VIDEOSWITCH%)==(1) set PARAMETERS=%PARAMETERS% LOAD PARAMETERFILE ..\tools\SimpleCert\parms\SimpleCertVideo.prm;
 set I=0
-set DATADIR=%SIMPLECERT%\data\%~n1\%OSNAME%\
+set DATADIR=%SIMPLECERT%\data\%~n1%MODIFIERS%\%OSNAME%\
 cls
 echo Certifying %1 on %OSNAME% with %ITERATIONS% iteration(s).
 echo Saving data to %DATADIR%
@@ -43,7 +49,7 @@ start P3SignalProcessing.exe 127.0.0.1
 start StimulusPresentation.exe 127.0.0.1
 start /wait operator.exe ^
    --Title %~n0 ^
-   --OnConnect "-LOAD PARAMETERFILE %2; LOAD PARAMETERFILE ..\tools\SimpleCert\parms\SimpleCert.prm; SET PARAMETER DataDirectory %DATADIR%; SET PARAMETER WindowWidth %WINWIDTH%; SET PARAMETER WindowHeight %WINHEIGHT%; SET PARAMETER WindowLeft %WINX%; SET PARAMETER WindowTop %WINY%; SETCONFIG" ^
+   --OnConnect "-LOAD PARAMETERFILE %2; %PARAMETERS% SET PARAMETER DataDirectory %DATADIR%; SET PARAMETER WindowWidth %WINWIDTH%; SET PARAMETER WindowHeight %WINHEIGHT%; SET PARAMETER WindowLeft %WINX%; SET PARAMETER WindowTop %WINY%; SETCONFIG" ^
    --OnSetConfig "-START" ^
    --OnSuspend "-QUIT"
 echo Waiting 5 Seconds...

@@ -23,7 +23,7 @@
 :: $END_BCI2000_LICENSE$
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 @echo off
-call batch/SimpleCert.bat gMOBIlab_BufferedADC.exe ..\parms\fragments\amplifiers\gMOBIlab.prm
+call batch/SimpleCert.bat gUSBampSource.exe ..\parms\fragments\amplifiers\gUSBamp.prm
 
 
 
