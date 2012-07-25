@@ -540,7 +540,7 @@ int AudioExtension::Execute()
         GenericChannel channelData( mAudioInputEnvelope, chan );
         Rectify::FullWaveRectify( channelData, channelData );
         mInputEnvelopeFilter[chan].Process( channelData, channelData );
-        unsigned short value = unsigned short( RootMeanSquare( channelData ) * 65535.0f );
+        unsigned short value = static_cast< unsigned short >( RootMeanSquare( channelData ) * 65535.0f );
         bcievent << "AudioInEnvelope" << chan + 1 << " " << value;
       }
 
@@ -569,7 +569,7 @@ int AudioExtension::Execute()
         GenericChannel channelData( mAudioOutputEnvelope, chan );
         Rectify::FullWaveRectify( channelData, channelData );
         mOutputEnvelopeFilter[chan].Process( channelData, channelData );
-        unsigned short value = unsigned short( RootMeanSquare( channelData ) * 65535.0f );
+        unsigned short value = static_cast< unsigned short >( RootMeanSquare( channelData ) * 65535.0f );
         bcievent << "AudioOutEnvelope" << chan + 1 << " " << value;
       }
       

@@ -31,7 +31,7 @@ namespace Rectify
 
 // Implementation
 template<typename T> 
-T Rectify::HalfWaveRectify( const T &val ) { return ( val < 0.0 ) 0.0 : val; }
+T Rectify::HalfWaveRectify( const T &val ) { return ( val < 0.0 ) ? 0.0 : val; }
 
 template<typename T>
 void
