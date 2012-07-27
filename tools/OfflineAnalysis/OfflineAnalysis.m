@@ -608,7 +608,6 @@ function txtTargetLabel1_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txtTargetLabel1 as text
 %        str2double(get(hObject,'String')) returns contents of txtTargetLabel1 as a double
-blubb;
 
 
 % --- Executes during object creation, after setting all properties.
