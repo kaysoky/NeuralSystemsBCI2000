@@ -27,10 +27,18 @@
 
 import os, sys
 
-try: __IPYTHON__
-except NameError: __IPYTHON__ = get_ipython()
+__IPYTHON_COMPAT__ = None;
 
-exec 'import os,sys' in __IPYTHON__.shell.user_ns # in case this is being run via import rather than execute
+if(type(__IPYTHON__) != bool):
+        __IPYTHON_COMPAT__ = True
+        
+        
+if(__IPYTHON_COMPAT__):
+        exec 'import os,sys' in __IPYTHON__.shell.user_ns # in case this is being run via import rather than execute
+else:
+        __IPYTHON__ = get_ipython()
+        exec 'import os,sys' in __IPYTHON__.user_ns # in case this is being run via import rather than execute
+
 
 ################################################################################
 ################################################################################
@@ -46,7 +54,13 @@ class mymagic:
 	def makemagic(f):
 		name = f.__name__
 		if not name.startswith('magic_'): name = 'magic_' + name
-		setattr(__IPYTHON__, name, f)
+		if(__IPYTHON_COMPAT__):
+                        setattr(__IPYTHON__, name, f)
+                else:
+                        if name.startswith('magic_'):
+                                __IPYTHON__.define_magic(name[6:], f)
+                        else:
+                                __IPYTHON__.define_magic(name, f)
 		return f
 		
 	############################################################################
@@ -268,7 +282,10 @@ is a shortcut for the following:
     import foo; foo = reload(foo)
     import bar; bar = reload(bar); from bar import *
 """###
-		ipython = __IPYTHON__.shell.user_ns
+		if(__IPYTHON_COMPAT__):
+                        ipython = __IPYTHON__.shell.user_ns
+                else:
+                        ipython = __IPYTHON__.user_ns
 		for d in dd.replace(',', ' ').split(' '):
 			if len(d):
 				bare = d.endswith('.*')
@@ -276,29 +293,7 @@ is a shortcut for the following:
 				exec 'import xx; xx = reload(xx)'.replace('xx', d) in ipython
 				if bare: exec 'from xx import *'.replace('xx', d) in ipython
 		
-	############################################################################
-	@makemagic
-	def magic_njh(*pargs):
-		"""\
-Imports a number of packages, including the BCPy2000 sub-packages WavTools and
-SigTools, but also copy, struct, ctypes, numpy, scipy and matplotlib and pylab
-(the latter in interactive mode). Also define %pp as an ipython command-line
-shortcut to SigTools.summarize, to give a quick look at object attributes---
-especially useful for numpy arrays.
-"""###
-		ipython = __IPYTHON__.shell.user_ns
-		exec 'import copy,struct,ctypes,time,numpy,scipy' in ipython
-		try:
-			exec 'import WavTools,SigTools' in ipython
-		except ImportError:	
-			exec 'import BCPy2000.Paths'    in ipython
-			exec 'import WavTools,SigTools' in ipython
-			
-		def magic_pp(name=''):
-			if name == None: return
-			exec 'print SigTools.summarize(' + name + ')' in ipython
-		__IPYTHON__.magic_pp = magic_pp
-		__IPYTHON__.magic_loadpylab()
+	
 		
 	############################################################################
 	@makemagic
@@ -318,14 +313,49 @@ the workspace.
 
 """###
 		import sys
-		ipython = __IPYTHON__.shell.user_ns
+		if(__IPYTHON_COMPAT__):
+                        ipython = __IPYTHON__.shell.user_ns
+                else:
+                        ipython = __IPYTHON__.user_ns
+		
 		try: import matplotlib
 		except ImportError: print "WARNING: failed to import matplotlib"
 		else:
 			if not 'matplotlib.backends' in sys.modules: matplotlib.interactive(True)
 			try: exec 'import matplotlib, pylab' in ipython
 			except ImportError: print "WARNING: failed to import pylab"
-			if len(d): exec ('from pylab import '+d) in ipython
+			if(__IPYTHON_COMPAT__):
+                                if len(d): exec ('from pylab import '+d) in ipython
+	############################################################################
+	@makemagic
+	def magic_njh(*pargs):
+		"""\
+Imports a number of packages, including the BCPy2000 sub-packages WavTools and
+SigTools, but also copy, struct, ctypes, numpy, scipy and matplotlib and pylab
+(the latter in interactive mode). Also define %pp as an ipython command-line
+shortcut to SigTools.summarize, to give a quick look at object attributes---
+especially useful for numpy arrays.
+"""###
+		if(__IPYTHON_COMPAT__):
+                        ipython = __IPYTHON__.shell.user_ns
+                else:
+                        ipython = __IPYTHON__.user_ns
+		
+		exec 'import copy,struct,ctypes,time,numpy,scipy' in ipython
+		try:
+			exec 'import WavTools,SigTools' in ipython
+		except ImportError:	
+			exec 'import BCPy2000.Paths'    in ipython
+			exec 'import WavTools,SigTools' in ipython
+			
+		def magic_pp(name=''):
+			if name == None: return
+			exec 'print SigTools.summarize(' + name + ')' in ipython
+		__IPYTHON__.magic_pp = magic_pp
+		if(__IPYTHON_COMPAT__):
+                        __IPYTHON__.magic_loadpylab()
+                else:
+                        __IPYTHON__.magics_manager.user_magics.loadpylab()
 
 ################################################################################
 ################################################################################
