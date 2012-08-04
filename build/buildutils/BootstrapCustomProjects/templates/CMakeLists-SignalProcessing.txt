@@ -11,7 +11,7 @@ SET( EXECUTABLE_NAME ` )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  PipeDefinition.cpp         # but you should certainly edit this one
+  PipeDefinition.cpp         # Edit this file to specify which filters are used in what order.
   # MyNewCustomFilter.cpp    # and presumably you will be writing custom filters. This is where they go.
 )
 

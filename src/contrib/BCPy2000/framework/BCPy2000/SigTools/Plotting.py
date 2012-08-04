@@ -26,7 +26,7 @@
 #
 __all__ = [
 	'plot', 'plotsig',
-	'imagesc', 'scatcmp', 'stem',
+	'imagesc', 'scatterplot', 'scatcmp', 'stem',
 	'colorbar', 'rmcolorbar',
 	'make_cmap', 'complement_cmap', 'reverse_cmap', 'show_cmaps',
 	'subplots',
@@ -225,6 +225,37 @@ def imagesc(img, x=None, y=None, hold=False, drawnow=True, aspect='image', balan
 	if drawnow: pylab.draw()
 	return h
 
+def scatterplot(*pargs, **kwargs):
+	"""
+	scatterplot(xy)         # scatterplots xy[:,1].flat against xy[:,0].flat
+	scatterplot(xy1, 'r*')
+	scatterplot(xy1, 'r*', xy2, 'bs')
+	scatterplot(xy1, 'r*', xy2, 'bs', markersize=10, hold=False, drawnow=True)
+	
+	scatterplot(x, y)      # scatterplots y.flat against x.flat
+	scatterplot(x1, y1, 'r*')
+	scatterplot(x1, y1, 'r*', x2, y2, 'bs')
+	scatterplot(x1, y1, 'r*', x2, y2, 'bs', markersize=10, hold=False, drawnow=True)
+	"""
+	x = None
+	y = None
+	plotargs = []
+	connected = []
+	if not isinstance(pargs[-1], basestring):
+		pargs = list(pargs) + ['*']
+	for i,arg in enumerate(pargs):
+		if isinstance(arg, basestring):
+			if y == None: x,y = x[:, 0], x[:, 1]
+			plotargs += [x.flatten(), y.flatten(), arg]			
+			connected.append('-' in arg)
+			x = y = None
+		elif x == None: x = arg
+		elif y == None: y = arg
+	h = plot(*plotargs, **kwargs)
+	for hi in zip(h, connected):
+		if not connected: hi.set_linestyle('None')
+	return h
+	
 def scatcmp(a, b, hold=False, drawnow=True, **kwargs):
 	kwargs['linestyle'] = kwargs.get('linestyle', 'None')
 	grid = kwargs.pop('grid', True)

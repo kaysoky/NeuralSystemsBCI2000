@@ -11,7 +11,7 @@ SET( EXECUTABLE_NAME ` )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  # MyNewCustomFilter.cpp    # but you should add new filters to specify the module's behaviour 
+  # MyNewCustomFilter.cpp    # Add new filters here to specify the module's behaviour 
 )
 
 SET( HDR_PROJECT
