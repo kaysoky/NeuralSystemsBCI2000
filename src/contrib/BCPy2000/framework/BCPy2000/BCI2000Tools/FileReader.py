@@ -76,11 +76,11 @@ class bcistream(object):
 
 		self.gains = self.params.get('SourceChGain')
 		if self.gains != None:
-			self.gains = numpy.array([float(x) for x in self.gains], dtype=numpy.float32)
+			self.gains = numpy.array([float(x) for x in self.gains[:self.nchan]], dtype=numpy.float32)
 			self.gains.shape = (self.nchan,1)
 		self.offsets = self.params.get('SourceChOffset')
 		if self.offsets != None:
-			self.offsets = numpy.array([float(x) for x in self.offsets], dtype=numpy.float32)
+			self.offsets = numpy.array([float(x) for x in self.offsets[:self.nchan]], dtype=numpy.float32)
 			self.offsets.shape = (self.nchan,1)
 		
 		for k,v in self.statedefs.items():

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding7: utf-8 -*-
 # 
 #   $Id$
 #   
@@ -34,10 +34,10 @@ if(type(__IPYTHON__) != bool):
         
         
 if(__IPYTHON_COMPAT__):
-        exec 'import os,sys' in __IPYTHON__.shell.user_ns # in case this is being run via import rather than execute
+	exec 'import os,sys' in __IPYTHON__.shell.user_ns # in case this is being run via import rather than execute
 else:
-        __IPYTHON__ = get_ipython()
-        exec 'import os,sys' in __IPYTHON__.user_ns # in case this is being run via import rather than execute
+	__IPYTHON__ = get_ipython()
+	exec 'import os,sys' in __IPYTHON__.user_ns # in case this is being run via import rather than execute
 
 
 ################################################################################
@@ -55,12 +55,14 @@ class mymagic:
 		name = f.__name__
 		if not name.startswith('magic_'): name = 'magic_' + name
 		if(__IPYTHON_COMPAT__):
-                        setattr(__IPYTHON__, name, f)
-                else:
-                        if name.startswith('magic_'):
-                                __IPYTHON__.define_magic(name[6:], f)
-                        else:
-                                __IPYTHON__.define_magic(name, f)
+			setattr(__IPYTHON__, name, f)
+		else:
+			def wrapped(throwaway, *pargs, **kwargs): return f(*pargs,**kwargs)
+			if hasattr(f, '__doc__'): wrapped.__doc__ = f.__doc__
+			if name.startswith('magic_'):
+				__IPYTHON__.define_magic(name[6:], wrapped)
+			else:
+				__IPYTHON__.define_magic(name, wrapped)
 		return f
 		
 	############################################################################
@@ -283,9 +285,9 @@ is a shortcut for the following:
     import bar; bar = reload(bar); from bar import *
 """###
 		if(__IPYTHON_COMPAT__):
-                        ipython = __IPYTHON__.shell.user_ns
-                else:
-                        ipython = __IPYTHON__.user_ns
+			ipython = __IPYTHON__.shell.user_ns
+		else:
+			ipython = __IPYTHON__.user_ns
 		for d in dd.replace(',', ' ').split(' '):
 			if len(d):
 				bare = d.endswith('.*')
@@ -314,9 +316,9 @@ the workspace.
 """###
 		import sys
 		if(__IPYTHON_COMPAT__):
-                        ipython = __IPYTHON__.shell.user_ns
-                else:
-                        ipython = __IPYTHON__.user_ns
+			ipython = __IPYTHON__.shell.user_ns
+		else:
+			ipython = __IPYTHON__.user_ns
 		
 		try: import matplotlib
 		except ImportError: print "WARNING: failed to import matplotlib"
@@ -325,8 +327,8 @@ the workspace.
 			try: exec 'import matplotlib, pylab' in ipython
 			except ImportError: print "WARNING: failed to import pylab"
 			if(__IPYTHON_COMPAT__):
-                                if len(d): exec ('from pylab import '+d) in ipython
-	############################################################################
+				if len(d): exec ('from pylab import '+d) in ipython
+############################################################################
 	@makemagic
 	def magic_njh(*pargs):
 		"""\
@@ -337,10 +339,9 @@ shortcut to SigTools.summarize, to give a quick look at object attributes---
 especially useful for numpy arrays.
 """###
 		if(__IPYTHON_COMPAT__):
-                        ipython = __IPYTHON__.shell.user_ns
-                else:
-                        ipython = __IPYTHON__.user_ns
-		
+			ipython = __IPYTHON__.shell.user_ns
+		else:
+			ipython = __IPYTHON__.user_ns
 		exec 'import copy,struct,ctypes,time,numpy,scipy' in ipython
 		try:
 			exec 'import WavTools,SigTools' in ipython
@@ -353,9 +354,9 @@ especially useful for numpy arrays.
 			exec 'print SigTools.summarize(' + name + ')' in ipython
 		__IPYTHON__.magic_pp = magic_pp
 		if(__IPYTHON_COMPAT__):
-                        __IPYTHON__.magic_loadpylab()
-                else:
-                        __IPYTHON__.magics_manager.user_magics.loadpylab()
+			__IPYTHON__.magic_loadpylab()
+		else:
+			__IPYTHON__.magics_manager.user_magics.loadpylab()
 
 ################################################################################
 ################################################################################
