@@ -55,6 +55,9 @@ StimulusTask::StimulusTask()
   mPostRunDuration( 0 ),
   mPreSequenceDuration( 0 ),
   mPostSequenceDuration( 0 ),
+  mEarlyOffsetPreviousValue( 0.0 ),
+  mEarlyOffsetExpression( ),
+  mHasEarlyOffsetExpression( false ),
   mStimulusDuration( 0 ),
   mISIMinDuration( 0 ),
   mISIMaxDuration( 0 ),
@@ -74,6 +77,8 @@ StimulusTask::StimulusTask()
      "// pause following sequences/sets of intensifications",
    "Application:Sequencing float StimulusDuration= 40ms 40ms 0 % "
      "// stimulus duration",
+   "Application:Sequencing string EarlyOffsetExpression= % % % % "
+     "// abort stimulus if this expression becomes true",
    "Application:Sequencing float ISIMinDuration= 80ms 80ms 0 % "
      "// minimum duration of inter-stimulus interval",
    "Application:Sequencing float ISIMaxDuration= 80ms 80ms 0 % "
@@ -165,6 +170,13 @@ StimulusTask::Preflight( const SignalProperties& Input, SignalProperties& Output
   OptionalState( "StimulusCodeRes" );
   State( "Running" );
 
+  string exprstr = Parameter( "EarlyOffsetExpression" );
+  if( exprstr.size() && !Expression( exprstr ).IsValid() )
+  {
+    bcierr << "error in EarlyOffsetExpression parameter: ";
+    Expression( exprstr ).Evaluate();
+  }
+
   bcidbg( 2 ) << "Event: Preflight" << endl;
   OnPreflight( Input );
   Output = Input;
@@ -189,6 +201,10 @@ StimulusTask::Initialize( const SignalProperties& Input,
   mInterpretMode = Parameter( "InterpretMode" );
 
   bcidbg( 2 ) << "Event: Initialize" << endl;
+
+  string exprstr = Parameter( "EarlyOffsetExpression" );
+  mHasEarlyOffsetExpression = ( exprstr.size() > 0 && exprstr != "0" );
+  mEarlyOffsetExpression = Expression( exprstr );
   OnInitialize( Input );
 }
 
@@ -288,6 +304,30 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
           stimulusDuration = mStimulusDuration;
         doProgress = ( mBlocksInPhase >= stimulusDuration );
         State( "StimulusBegin" ) = ( mBlocksInPhase == 0 && !doProgress );
+        bool checkForEarlyOffset = Associations()[ mStimulusCode ].HasEarlyOffsetExpression();
+        Expression *expr;
+        if( checkForEarlyOffset )
+          expr = &Associations()[ mStimulusCode ].EarlyOffsetExpression();
+        else
+        {
+          expr = &mEarlyOffsetExpression;
+          checkForEarlyOffset = mHasEarlyOffsetExpression;
+        }
+        if( checkForEarlyOffset )
+        {
+          if( mBlocksInPhase == 0 )
+            mEarlyOffsetPreviousValue = 0.0;
+          else
+          {
+            for( int el = 0; el < Input.Elements(); el++ )
+            {
+              double value = expr->Evaluate( &Input, el );
+              doProgress |= ( value != 0.0 && mEarlyOffsetPreviousValue == 0.0 );
+              mEarlyOffsetPreviousValue = value;
+              if( doProgress ) break;
+            }
+          }
+        }
         DoStimulus( Input, doProgress );
       } break;
 

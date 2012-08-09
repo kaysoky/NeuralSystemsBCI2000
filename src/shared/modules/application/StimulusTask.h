@@ -210,6 +210,10 @@ class StimulusTask : public ApplicationBase
       mISIMaxDuration,
       mStimToClassDuration;
 
+  Expression mEarlyOffsetExpression;
+  bool       mHasEarlyOffsetExpression;
+  double     mEarlyOffsetPreviousValue;
+
   // Display elements.
   ApplicationWindow& mrDisplay;
   TextField*         mpMessageField;

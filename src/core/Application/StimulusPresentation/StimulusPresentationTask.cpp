@@ -33,6 +33,7 @@
 #include "ImageStimulus.h"
 #include "AudioStimulus.h"
 #include "Localization.h"
+#include "Expression/Expression.h"
 
 #include <algorithm>
 
@@ -137,7 +138,7 @@ StimulusPresentationTask::~StimulusPresentationTask()
 }
 
 void
-StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
+StimulusPresentationTask::OnPreflight( const SignalProperties& Input ) const
 {
   ParamRef Sequence = Parameter( "Sequence" );
   switch( int( Parameter( "SequenceType" ) ) )
@@ -240,6 +241,12 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
     {
       int stimDuration = static_cast<int>( StimulusProperty( Parameter( stimParams[ i ] ), j, "StimulusDuration" ).InSampleBlocks() ),
           isiDuration = static_cast<int>( StimulusProperty( Parameter( stimParams[ i ] ), j, "ISIMinDuration" ).InSampleBlocks() );
+      string exprstr = StimulusProperty( Parameter( stimParams[ i ] ), j, "EarlyOffsetExpression" );
+      if( exprstr.size() && !Expression( exprstr ).IsValid() )
+      {
+        bcierr << "error in EarlyOffsetExpression field for stimulus #" << j+1 << ": ";
+        Expression( exprstr ).Evaluate();
+      }
       if( minStimDuration > stimDuration )
         minStimDuration = stimDuration;
       if( minISIDuration > isiDuration )
@@ -344,6 +351,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
     Associations()[ i + 1 ].SetStimulusDuration( static_cast<int>( StimulusProperty( Stimuli, i, "StimulusDuration" ).InSampleBlocks() ) );
     Associations()[ i + 1 ].SetISIMinDuration( static_cast<int>( StimulusProperty( Stimuli, i, "ISIMinDuration" ).InSampleBlocks() ) );
     Associations()[ i + 1 ].SetISIMaxDuration( static_cast<int>( StimulusProperty( Stimuli, i, "ISIMaxDuration" ).InSampleBlocks() ) );
+    Associations()[ i + 1 ].SetEarlyOffsetExpression( string( StimulusProperty( Stimuli, i, "EarlyOffsetExpression" ) ) );
 
     double stimulusWidth = StimulusProperty( Stimuli, i, "StimulusWidth" ) / 100.0,
            captionHeight = StimulusProperty( Stimuli, i, "CaptionHeight" ) / 100.0,

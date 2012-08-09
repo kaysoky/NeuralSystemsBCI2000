@@ -38,11 +38,16 @@
 #include "Target.h"
 #include "Stimulus.h"
 #include "GenericSignal.h"
+#include "Expression/Expression.h"
 
 class Association
 {
  public:
   Association();
+
+  Association& SetEarlyOffsetExpression( std::string & expr );
+  Expression& EarlyOffsetExpression( );
+  bool HasEarlyOffsetExpression( ) { return mHasEarlyOffsetExpression; }
 
   Association& SetStimulusDuration( int );
   int StimulusDuration() const;
@@ -80,6 +85,9 @@ class Association
   int          mStimulusDuration,
                mISIMinDuration,
                mISIMaxDuration;
+  bool         mHasEarlyOffsetExpression;
+  Expression   mEarlyOffsetExpression;
+
 };
 
 // Classifier output indices are ClassResult[stimulus code][epoch number]
