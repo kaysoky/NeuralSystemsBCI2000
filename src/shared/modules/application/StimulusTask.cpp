@@ -262,6 +262,46 @@ StimulusTask::Halt()
   OnHalt();
 }
 
+bool
+StimulusTask::EarlyOffset(  const GenericSignal& Input, Association& stim )
+{
+  Expression *expr = NULL;
+  if( stim.HasEarlyOffsetExpression() )
+    expr = &stim.EarlyOffsetExpression();
+  else if( mHasEarlyOffsetExpression )
+    expr = &mEarlyOffsetExpression;
+  if( expr == NULL )
+    return false;
+
+  bool triggered = false;
+  int nElements = Input.Elements();
+  int originalSBS = MeasurementUnits::SampleBlockSize();
+  // must check elements as far as originalSBS, even if
+  // that's beyond the current block size, if you want to check for
+  // changes in an event state (like KeyDown)
+  for( int el = 0; el < nElements || el < originalSBS; el++ )
+  {
+    bool reset = ( el == 0 && mBlocksInPhase == 0 );
+    if( ( el >= nElements   && !expr->IsValid( 0, el ) ) ||
+        ( el >= originalSBS && !expr->IsValid( &Input, el ) ) )
+    {
+      if( reset ) mEarlyOffsetPreviousValue = 0;
+      break;
+    }
+    double value;
+    if( el < nElements )
+      value = expr->Evaluate( &Input, el );
+    else
+      value = expr->Evaluate( 0, el );
+    if( reset )
+      mEarlyOffsetPreviousValue = value;
+    triggered = ( value != 0.0 && mEarlyOffsetPreviousValue == 0.0 );
+    mEarlyOffsetPreviousValue = value;
+    if( triggered ) break;
+  }
+  return triggered;
+}
+
 void
 StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
 {
@@ -304,27 +344,7 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
           stimulusDuration = mStimulusDuration;
         doProgress = ( mBlocksInPhase >= stimulusDuration );
         State( "StimulusBegin" ) = ( mBlocksInPhase == 0 && !doProgress );
-        bool checkForEarlyOffset = Associations()[ mStimulusCode ].HasEarlyOffsetExpression();
-        Expression *expr;
-        if( checkForEarlyOffset )
-          expr = &Associations()[ mStimulusCode ].EarlyOffsetExpression();
-        else
-        {
-          expr = &mEarlyOffsetExpression;
-          checkForEarlyOffset = mHasEarlyOffsetExpression;
-        }
-        if( checkForEarlyOffset )
-        {
-          for( int el = 0; el < Input.Elements(); el++ )
-          {
-            double value = expr->Evaluate( &Input, el );
-            if( el == 0 && mBlocksInPhase == 0 )
-              mEarlyOffsetPreviousValue = value;
-            doProgress |= ( value != 0.0 && mEarlyOffsetPreviousValue == 0.0 );
-            mEarlyOffsetPreviousValue = value;
-            if( doProgress ) break;
-          }
-        }
+        doProgress |= EarlyOffset( Input, Associations()[ mStimulusCode ] );
         DoStimulus( Input, doProgress );
       } break;
 

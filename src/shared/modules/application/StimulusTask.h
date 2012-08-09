@@ -176,6 +176,9 @@ class StimulusTask : public ApplicationBase
 
   // User message display.
   void DisplayMessage( const std::string& );
+  
+  // Special method for determining whether to finish presenting a stimulus early
+  bool EarlyOffset(  const GenericSignal& Input, Association& stim );
 
  protected:
   StimulusTask();
