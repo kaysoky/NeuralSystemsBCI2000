@@ -315,17 +315,14 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
         }
         if( checkForEarlyOffset )
         {
-          if( mBlocksInPhase == 0 )
-            mEarlyOffsetPreviousValue = 0.0;
-          else
+          for( int el = 0; el < Input.Elements(); el++ )
           {
-            for( int el = 0; el < Input.Elements(); el++ )
-            {
-              double value = expr->Evaluate( &Input, el );
-              doProgress |= ( value != 0.0 && mEarlyOffsetPreviousValue == 0.0 );
+            double value = expr->Evaluate( &Input, el );
+            if( el == 0 && mBlocksInPhase == 0 )
               mEarlyOffsetPreviousValue = value;
-              if( doProgress ) break;
-            }
+            doProgress |= ( value != 0.0 && mEarlyOffsetPreviousValue == 0.0 );
+            mEarlyOffsetPreviousValue = value;
+            if( doProgress ) break;
           }
         }
         DoStimulus( Input, doProgress );
