@@ -102,7 +102,7 @@ def test(codebook, model=None, alphabet=None, txt=None, balanced_acc=0.75, defau
 			nepochs_running += d.L
 			correct_running += (result == correct_symbol)
 			if w:
-				sys.stdout.write(result)
+				sys.stdout.write(result); sys.stdout.flush()
 				if (i+1) % w == 0: sys.stdout.write('   %3d\n' % round(100.0 * float(i+1)/nchars))
 				elif (i+1) == nchars: sys.stdout.write('\n')
 	except KeyboardInterrupt:
