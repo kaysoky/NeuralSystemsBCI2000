@@ -91,7 +91,13 @@ if isempty(parms)
 		signal = s.Signal;
 		s = rmfield(s, 'Signal');
 		if isfield(s, 'States');
-			states = s.States;  % TODO: currently unused---too fiddly: statedefs are probably lost, so we don't know at what depth to code each one and how to match the result to any given StateVectorLength parameter
+			states = s.States; % TODO: currently unused---will be overwritten later
+			% TODO: states are currently unused---note that this section is written to handle BCI2000CHAIN
+			% output structs, and these usually have a reduced amount of state information in them (one
+			% value per block, not one value per sample as SAVE_BCIDAT would require).  We could repmat up
+			% each state time-series, but users might too-easily overlook the fact that some information
+			% (any changes in Event states at sub-block precision) has ended up different in the new file
+			% from how it was in the original file. Better to leave the state info out.
 			s = rmfield(s, 'States');
 		end
 		if isfield(s, 'Parms'), s = s.Parms; end
