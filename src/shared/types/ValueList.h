@@ -54,7 +54,7 @@ ValueList<T>::ReadFromStream( std::istream& is )
 
   T t;
   while( is.peek() != closingBracket && is >> t >> std::ws )
-    push_back( t );
+    this->push_back( t );
 
   if( is.peek() == closingBracket )
     is.get();
