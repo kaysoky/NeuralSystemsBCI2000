@@ -58,7 +58,7 @@ class Script
 
   friend class ScriptParser::ParserNode;
   friend int ScriptParser::yyparse( Script* );
-  friend int ScriptParser::yylex( YYSTYPE*, Script* );
+  friend int ScriptParser::yylex( ScriptParser::YYSTYPE*, Script* );
   friend void ScriptParser::yyerror( Script*, const char* );
 };
 
