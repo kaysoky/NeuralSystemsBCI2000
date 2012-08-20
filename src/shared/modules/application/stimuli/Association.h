@@ -45,7 +45,7 @@ class Association
  public:
   Association();
 
-  Association& SetEarlyOffsetExpression( std::string & expr );
+  Association& SetEarlyOffsetExpression( const std::string expr );
   Expression& EarlyOffsetExpression( );
   bool HasEarlyOffsetExpression( ) { return mHasEarlyOffsetExpression; }
 

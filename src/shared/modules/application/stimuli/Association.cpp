@@ -44,7 +44,7 @@ Association::Association()
 }
 
 Association&
-Association::SetEarlyOffsetExpression( std::string & expr )
+Association::SetEarlyOffsetExpression( const std::string expr )
 {
   mHasEarlyOffsetExpression = expr.size() > 0;
   mEarlyOffsetExpression = Expression( expr );
