@@ -39,22 +39,8 @@ Association::Association()
   mISIMinDuration( -1 ),
   mISIMaxDuration( -1 ),
   mHasEarlyOffsetExpression( false ),
-  mEarlyOffsetExpression( )
+  mEarlyOffsetExpression()
 {
-}
-
-Association&
-Association::SetEarlyOffsetExpression( const std::string expr )
-{
-  mHasEarlyOffsetExpression = expr.size() > 0;
-  mEarlyOffsetExpression = Expression( expr );
-  return *this;
-}
-
-Expression&
-Association::EarlyOffsetExpression( )
-{
-  return mEarlyOffsetExpression;
 }
 
 Association&
@@ -94,6 +80,26 @@ int
 Association::ISIMaxDuration() const
 {
   return mISIMaxDuration;
+}
+
+Association&
+Association::SetEarlyOffsetExpression( const std::string& inExpr )
+{
+  mHasEarlyOffsetExpression = !inExpr.empty();
+  mEarlyOffsetExpression = Expression( inExpr );
+  return *this;
+}
+
+const Expression&
+Association::EarlyOffsetExpression() const
+{
+  return mEarlyOffsetExpression;
+}
+
+bool
+Association::HasEarlyOffsetExpression() const
+{
+  return mHasEarlyOffsetExpression;
 }
 
 Association&

@@ -61,13 +61,21 @@ Expression::IsValid( const GenericSignal* inpSignal, int inSample, const Context
   return ArithmeticExpression::IsValid( inContext );
 }
 
+bool
+Expression::IsValid( const SignalProperties& inProperties, int inSample, const Context& inContext )
+{
+  GenericSignal signal( inProperties );
+  return IsValid( &signal, inSample, inContext );
+}
+
 double
-Expression::Evaluate( const GenericSignal* inpSignal, int inSample )
+Expression::Evaluate( const GenericSignal* inpSignal, int inSample ) const
 {
   mAllowStateAssignment = ( Environment::Phase() != Environment::preflight );
   mpSignal = inpSignal;
   mSample = inSample;
-  return ArithmeticExpression::Evaluate();
+  Expression* pThis = const_cast<Expression*>( this );
+  return pThis->ArithmeticExpression::Evaluate();
 }
 
 Node*

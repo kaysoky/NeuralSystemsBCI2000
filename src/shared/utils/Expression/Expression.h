@@ -73,8 +73,9 @@ class Expression : public ArithmeticExpression, private Environment
   Expression& ClearOptionalAccess();
 
   bool IsValid( const GenericSignal* = NULL, int sample = 0, const Context& = Context() );
-  double Evaluate( const GenericSignal* = NULL, int sample = 0 );
-  double Execute( const GenericSignal* signal = NULL, int sample = 0 )
+  bool IsValid( const SignalProperties&, int sample = 0, const Context& = Context() );
+  double Evaluate( const GenericSignal* = NULL, int sample = 0 ) const;
+  double Execute( const GenericSignal* signal = NULL, int sample = 0 ) const
     { return Evaluate( signal, sample ); }
 
  protected:
@@ -89,10 +90,10 @@ class Expression : public ArithmeticExpression, private Environment
  private:
   bool                 mOptionalAccess;
   State::ValueType     mDefaultValue;
-  bool                 mAllowStateAssignment;
+  mutable bool         mAllowStateAssignment;
 
-  const GenericSignal* mpSignal;
-  int                  mSample;
+  mutable const GenericSignal* mpSignal;
+  mutable int                  mSample;
 
  // Additional node classes
  private:

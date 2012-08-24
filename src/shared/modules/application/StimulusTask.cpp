@@ -57,7 +57,6 @@ StimulusTask::StimulusTask()
   mPostSequenceDuration( 0 ),
   mEarlyOffsetPreviousValue( 0.0 ),
   mEarlyOffsetExpression( ),
-  mHasEarlyOffsetExpression( false ),
   mStimulusDuration( 0 ),
   mISIMinDuration( 0 ),
   mISIMaxDuration( 0 ),
@@ -195,16 +194,13 @@ StimulusTask::Initialize( const SignalProperties& Input,
   mStimulusDuration = static_cast<int>( Parameter( "StimulusDuration" ).InSampleBlocks() );
   mISIMinDuration = static_cast<int>( Parameter( "ISIMinDuration" ).InSampleBlocks() );
   mISIMaxDuration = static_cast<int>( Parameter( "ISIMaxDuration" ).InSampleBlocks() );
+  mEarlyOffsetExpression = Expression( Parameter( "EarlyOffsetExpression" ) );
   mStimToClassDuration = 2 * ( mStimulusDuration + mISIMinDuration );
   mStimToClassDuration = static_cast<int>( ::ceil( OptionalParameter( "EpochLength", mStimToClassDuration ).InSampleBlocks() ) );
 
   mInterpretMode = Parameter( "InterpretMode" );
-
+  
   bcidbg( 2 ) << "Event: Initialize" << endl;
-
-  string exprstr = Parameter( "EarlyOffsetExpression" );
-  mHasEarlyOffsetExpression = ( exprstr.size() > 0 && exprstr != "0" );
-  mEarlyOffsetExpression = Expression( exprstr );
   OnInitialize( Input );
 }
 
@@ -263,41 +259,17 @@ StimulusTask::Halt()
 }
 
 bool
-StimulusTask::EarlyOffset(  const GenericSignal& Input, Association& stim )
+StimulusTask::EarlyOffset(  const GenericSignal& Input, const Association& inAssoc )
 {
-  Expression *expr = NULL;
-  if( stim.HasEarlyOffsetExpression() )
-    expr = &stim.EarlyOffsetExpression();
-  else if( mHasEarlyOffsetExpression )
-    expr = &mEarlyOffsetExpression;
-  if( expr == NULL )
-    return false;
-
+  const Expression& expr = inAssoc.HasEarlyOffsetExpression() ? inAssoc.EarlyOffsetExpression() : mEarlyOffsetExpression;
   bool triggered = false;
-  int nElements = Input.Elements();
-  int originalSBS = MeasurementUnits::SampleBlockSize();
-  // must check elements as far as originalSBS, even if
-  // that's beyond the current block size, if you want to check for
-  // changes in an event state (like KeyDown)
-  for( int el = 0; el < nElements || el < originalSBS; el++ )
+  if( mBlocksInPhase == 0 )
+    mEarlyOffsetPreviousValue = expr.Evaluate( &Input, 0 );
+  for( int sample = 0; sample < Statevector->Samples() && !triggered; ++sample )
   {
-    bool reset = ( el == 0 && mBlocksInPhase == 0 );
-    if( ( el >= nElements   && !expr->IsValid( 0, el ) ) ||
-        ( el >= originalSBS && !expr->IsValid( &Input, el ) ) )
-    {
-      if( reset ) mEarlyOffsetPreviousValue = 0;
-      break;
-    }
-    double value;
-    if( el < nElements )
-      value = expr->Evaluate( &Input, el );
-    else
-      value = expr->Evaluate( 0, el );
-    if( reset )
-      mEarlyOffsetPreviousValue = value;
-    triggered = ( value != 0.0 && mEarlyOffsetPreviousValue == 0.0 );
+    double value = expr.Evaluate( &Input, sample );
+    triggered = value && !mEarlyOffsetPreviousValue;
     mEarlyOffsetPreviousValue = value;
-    if( triggered ) break;
   }
   return triggered;
 }

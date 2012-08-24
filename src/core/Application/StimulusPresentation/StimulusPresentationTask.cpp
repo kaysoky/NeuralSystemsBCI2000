@@ -241,13 +241,7 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& Input ) const
     {
       int stimDuration = static_cast<int>( StimulusProperty( Parameter( stimParams[ i ] ), j, "StimulusDuration" ).InSampleBlocks() ),
           isiDuration = static_cast<int>( StimulusProperty( Parameter( stimParams[ i ] ), j, "ISIMinDuration" ).InSampleBlocks() );
-      string exprstr = StimulusProperty( Parameter( stimParams[ i ] ), j, "EarlyOffsetExpression" );
-      if( exprstr.size() && !Expression( exprstr ).IsValid() )
-      {
-        bcierr << "error in EarlyOffsetExpression field for stimulus #" << j+1 << ": ";
-        Expression( exprstr ).Evaluate();
-      }
-      if( minStimDuration > stimDuration )
+                if( minStimDuration > stimDuration )
         minStimDuration = stimDuration;
       if( minISIDuration > isiDuration )
         minISIDuration = isiDuration;
@@ -264,6 +258,15 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& Input ) const
                  << value / oneMillisecond << "ms"
                  << endl;
       }
+      // Check whether EarlyOffsetExpression is valid.
+      string exprstr = StimulusProperty( Parameter( stimParams[ i ] ), j, "EarlyOffsetExpression" );
+      GenericSignal preflightSignal( Input );
+      if( !Expression( exprstr ).IsValid( &preflightSignal ) )
+      {
+        bcierr << "error in EarlyOffsetExpression field for stimulus #" << j+1 << ": ";
+        Expression( exprstr ).Evaluate( &preflightSignal );
+      }
+
       // Test availability of icon and audio files.
       if( pImageStimulus != NULL )
       {

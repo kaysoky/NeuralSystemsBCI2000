@@ -45,16 +45,16 @@ class Association
  public:
   Association();
 
-  Association& SetEarlyOffsetExpression( const std::string expr );
-  Expression& EarlyOffsetExpression( );
-  bool HasEarlyOffsetExpression( ) { return mHasEarlyOffsetExpression; }
-
   Association& SetStimulusDuration( int );
   int StimulusDuration() const;
   Association& SetISIMinDuration( int );
   int ISIMinDuration() const;
   Association& SetISIMaxDuration( int );
   int ISIMaxDuration() const;
+
+  Association& SetEarlyOffsetExpression( const std::string& );
+  const Expression& EarlyOffsetExpression() const;
+  bool HasEarlyOffsetExpression() const;
 
   Association& Clear();
   Association& DeleteObjects();

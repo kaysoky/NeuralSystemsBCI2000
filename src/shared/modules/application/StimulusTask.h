@@ -177,9 +177,6 @@ class StimulusTask : public ApplicationBase
   // User message display.
   void DisplayMessage( const std::string& );
   
-  // Special method for determining whether to finish presenting a stimulus early
-  bool EarlyOffset(  const GenericSignal& Input, Association& stim );
-
  protected:
   StimulusTask();
 
@@ -195,6 +192,10 @@ class StimulusTask : public ApplicationBase
   virtual void StartRun();
   virtual void StopRun();
   virtual void Halt();
+
+ private:
+  // Special method for determining whether to finish presenting a stimulus early
+  bool EarlyOffset(  const GenericSignal&, const Association& );
 
  private:
   int mPhase,
@@ -214,7 +215,6 @@ class StimulusTask : public ApplicationBase
       mStimToClassDuration;
 
   Expression mEarlyOffsetExpression;
-  bool       mHasEarlyOffsetExpression;
   double     mEarlyOffsetPreviousValue;
 
   // Display elements.
