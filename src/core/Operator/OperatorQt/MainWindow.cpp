@@ -78,6 +78,10 @@ MainWindow::MainWindow( QWidget* parent )
     new QShortcut( QKeySequence( "F" + idx ), mButtons[i], SLOT(click()), SLOT(click()), Qt::ApplicationShortcut );
   }
   new QShortcut( QKeySequence( tr("Ctrl+W") ), this, SLOT(CloseTopmostWindow()), NULL, Qt::ApplicationShortcut );
+  // Avoid undesired side effects of key presses.
+  QList<QPushButton*> pushButtons = findChildren<QPushButton*>();
+  for( int i = 0; i < pushButtons.size(); ++i )
+    pushButtons[i]->setFocusPolicy( Qt::NoFocus );
 
   ReadCommandLine();
 

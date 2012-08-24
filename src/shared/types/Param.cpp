@@ -36,7 +36,7 @@
 
 using namespace std;
 
-static const char* sDefaultValue = "0";
+static const char* sDefaultValue = "";
 static const string sCommentSeparator = "//";
 static const string cEmptyString = "";
 
