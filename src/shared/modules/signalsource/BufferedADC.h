@@ -82,6 +82,8 @@ class BufferedADC : public GenericADC, private OSThread
   virtual void Process( const GenericSignal&,
                               GenericSignal& );
   virtual void Halt();
+  
+  virtual bool SetsSourceTime() const { return true; }
 
  protected:
   // Virtual data acquisition interface.

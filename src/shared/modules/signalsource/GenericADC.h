@@ -51,6 +51,9 @@ class GenericADC : public GenericFilter
   // Should return false when data is replayed from a file, or otherwise
   // released faster/slower than prescribed by the SamplingRate parameter.
   virtual bool IsRealTimeSource() const { return true; }
+  // A function to specify whether the SourceTime time stamp is set
+  // by the filter.
+  virtual bool SetsSourceTime() const { return false; }
 };
 
 #endif // GENERIC_ADC_H

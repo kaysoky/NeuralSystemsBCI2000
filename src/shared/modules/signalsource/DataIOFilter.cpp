@@ -544,7 +544,7 @@ DataIOFilter::Process( const GenericSignal& /*Input*/,
   PrecisionTime prevSourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) );
 
   mpADC->CallProcess( mADCInput, mInputBuffer );
-  if( State( "SourceTime" ) == prevSourceTime ) // GenericADC::Process() did not set the time stamp
+  if( !mpADC->SetsSourceTime() )
     State( "SourceTime" ) = PrecisionTime::Now();
 
   PrecisionTime sourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) ),
