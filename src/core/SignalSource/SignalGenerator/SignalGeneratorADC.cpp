@@ -95,7 +95,7 @@ SignalGeneratorADC::Publish()
       "// Amplitude of white noise (common to all channels)",
     "Source int DCOffset= 0muV 0muV % % "
       "// DC offset (common to all channels)",
-    "Source string AmplitudeMultiplier= % 1.0 % % "
+    "Source string AmplitudeMultiplier= 1 1 % % "
       "// Expression to multiply amplitude by",
     "Source string OffsetMultiplier= % StimulusType % % "
       "// Expression to multiply offset by",
