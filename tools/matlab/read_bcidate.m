@@ -82,7 +82,7 @@ if isstruct(d), if isfield(d, 'Value'), d = d.Value; end, end
 
 % if it's a cell array, recursively call this function on each cell and stack the results together in a numeric array
 if iscell(d)
-	for i = 1:numel(d), d{i} = read_bcidate(d{i}); end
+	for i = 1:numel(d), d{i} = wrangle(d{i}); end
 	d = cell2mat(d);
 	return
 end

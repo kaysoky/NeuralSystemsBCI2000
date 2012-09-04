@@ -90,7 +90,7 @@ if ischar(p)
 			[ans ans p] = load_bcidat(p, [0 0]);
 			return
 		end
-		
+		if ~strncmp(lower(fliplr(p)), fliplr('.prm'), 4), error('can only deal with .dat and .prm files'), end
 		fid = fopen(p, 'r');
 		if fid == -1, error(sprintf('failed to open ''%s''', p)), end
 		p = fread(fid, inf); p = char(p(:)');
