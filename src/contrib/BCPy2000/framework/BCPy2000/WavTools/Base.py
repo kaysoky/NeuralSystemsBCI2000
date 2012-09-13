@@ -115,6 +115,7 @@ def cat(args, *xargs):
 	if isinstance(args,tuple): args = list(args)
 	if not isinstance(args,list): args = [args]
 	args += list(xargs)
+	args = list(args) # make a copy of the container
 	nchan = 1
 	fs = None
 	w = None

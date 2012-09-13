@@ -154,7 +154,21 @@ class channel:
 		return copy.deepcopy(self)
 
 class ChannelSet(numpy.matrix):
+	"""
+	ChannelSet('FCz A1 A2')
+		# returns a ChannelSet of length 1 (FCz, referenced to A1 and grounded at A2)
+		
+	ChannelSet(['FCz A1 A2', 'Cz A1 A2'])
+		# returns a ChannelSet of length 2 (two channels, referenced to A1 and grounded at A2)
+		
+	ChannelSet('FCz Cz Pz'.split())
+		# is the laziest way of creating the ChannelSet that you probably want (three channels,
+		# referenced and grounded who-knows-where)
 	
+	A ChannelSet is a numpy.matrix subclass, with the channels arranged in a column.
+	Pre-multiplication by a spatial filtering matrix (each row is a filter) works as it should.
+	
+	"""###
 	def __new__(cls, s=None):
 		if s == None: self = []
 		self = cls.cparse(s)
@@ -220,10 +234,10 @@ class ChannelSet(numpy.matrix):
 		return x,y
 		
 	def sqdist(self, type='schematic2D'):
-		x,y = self.flatten().get_positions()
+		x,y = self.flatten().get_positions(type=type)
 		p = x + 1j * y
 		q = numpy.abs(p - p.T)
-		return q
+		return q ** 2
 	
 	@staticmethod
 	def cparse(s):
@@ -289,7 +303,56 @@ class ChannelSet(numpy.matrix):
 		out = [[ch] for ind,ch in sorted(out)]
 		nch = len(out)
 		return out
+	
+	def __grok_filtering_opts(self, exclude, keep, filters_as):
+		labels = [x.lower() for x in self.get_labels()]
+		if exclude == 'auto':
+			x,y = self.flatten().get_positions(type='schematic2D')
+			exclude = numpy.logical_not(x.flatten()**2 + y.flatten()**2 <= 1.0)
+			# "not <= 1.0"  is better than "> 1.0"  because it catches NaNs
+		else:
+			if exclude == None: exclude = []
+			if isinstance(exclude, basestring): exclude = exclude.split()
+			exclude = [x.lower() for x in exclude]
+			exclude = numpy_array([x in exclude for x in labels])
+			
+		if keep == 'all':
+			keep = [True] * len(self)
+		elif keep == 'all included':
+			keep = numpy.logical_not(keep)
+		else:
+			if keep == None: keep = []
+			if isinstance(keep, basestring): keep = keep.split()
+			keep = [x.lower() for x in keep]
+			keep = numpy_array([x in keep for x in labels])
+
+		if filters_as == 'columns':
+			filters_as_rows = False
+		elif filters_as == 'rows':
+			filters_as_rows = True
+		else:
+			raise ValueError('filters_as should be "rows" or "columns"')
 		
+		exclude = numpy.where(exclude)[0]
+		keep = numpy.where(keep)[0]
+		# Alert: numpy.where() may be clunky, but trying to emulate matlab
+		# "masking" (subscripting with logical arrays) can lead to *really*
+		# unpredictable/unintuitive results in numpy....
+		return exclude,keep,filters_as_rows
+		
+	def CAR(self, exclude='auto', keep='all', filters_as='columns'):
+		if self.shape[0] != self.size: raise TypeError('CAR() method can only be called on single-column ChannelSet objects')
+		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude, keep, filters_as)
+		n = len(self)
+		pos = numpy.eye(n, dtype=float)
+		neg = numpy.ones((n,n))
+		neg[exclude, :] = 0.0
+		neg[:, exclude] = 0.0
+		neg /= n - len(exclude)
+		W = numpy.asmatrix(pos - neg)
+		W = W[:, keep]
+		if filters_as_rows: W = W.T
+		return W
 
 def trodeplot(channels=(), act='connected',
 		ref=None, gnd=None, troderadius='auto',
