@@ -109,9 +109,6 @@ BCIMexFunction( int nargout, mxArray* varargout[],
   if( PrintVersion( __FILE__, nargin, varargin ) )
     return;
 
-  if( nargin < 1 )
-    throw bciexception_( "No file name given." );
-
   // Parse arguments and open files.
   bool rawData = true;
   FileContainer files;
@@ -186,6 +183,8 @@ BCIMexFunction( int nargout, mxArray* varargout[],
     ++i;
   }
 
+  if( files.empty() )
+    throw bciexception_( "No file name given." );
   sint64 totalSamples = files[ 0 ].end - files[ 0 ].begin;
   int numChannels = files[ 0 ].data->SignalProperties().Channels();
   SignalType dataType = files[ 0 ].data->SignalProperties().Type();
