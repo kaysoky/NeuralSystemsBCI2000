@@ -120,19 +120,19 @@ while ~isempty(varargin)
 		end
 		if all(ismember(arg, ['a':'z' 'A':'Z' '0':'9']))
 			if isempty(varargin), error(sprintf('parameter keyword ''%s'' was supplied without any subsequent value', arg)), end
-			key = arg; val = varargin{1}; varargin(1) = [];
+			paramName = arg; val = varargin{1}; varargin(1) = [];
 			
 			if isstruct(val)
 				s = val;
 			else
-				if ~isfield(p, key), error(sprintf('the value for parameter ''%s'' was specified on the command line without meta-info: either a full structure is required, or an entry in the preceding prm or dat content', key)), end
-				s = p.(key);
+				if ~isfield(p, paramName), error(sprintf('the value for parameter ''%s'' was specified on the command line without meta-info: either a full structure is required, or an entry in the preceding prm or dat content', paramName)), end
+				s = p.(paramName);
 				if isfield(s, 'NumericValue'), s = rmfield(s, 'NumericValue'); end
 				s.Value = val2cellstr(val);
 				if strncmp(fliplr(s.Type), fliplr('list'), 4), s.Value = s.Value(:); end
 				% TODO: perhaps give a warning if the old value had a unit but the new unit did not (for simplicity, only do this if scalar....)
 			end
-			p.(key) = s;
+			p.(paramName) = s;
 			continue
 		end
 		% for all other kinds of strings, fall through and assume read_bciprm can deal with it
@@ -142,14 +142,18 @@ while ~isempty(varargin)
 	
 	fn = fieldnames(arg);
 	for i = 1:numel(fn)
-		if isfield(p, fn{i}) % if it already exists, preserve the meta-info from previous occurrences, and update the Value
-			s = p.(fn{i});
+		paramName = fn{i};
+		paramDetails = arg.(paramName);
+		if isfield(p, paramName) % if it already exists, preserve the meta-info from previous occurrences, and update the Value
+			s = p.(paramName);
 			if isfield(s, 'NumericValue'), s = rmfield(s, 'NumericValue'); end
-			s.Value = arg.(fn{i}).Value;
+			s.Value = paramDetails.Value;
+			if isfield(paramDetails, 'RowLabels'), s.RowLabels = paramDetails.RowLabels; end
+			if isfield(paramDetails, 'ColumnLabels'), s.ColumnLabels = paramDetails.ColumnLabels; end
 		else  % otherwise use the whole new substructure
-			s = arg.(fn{i});
+			s = paramDetails;
 		end
-		p.(fn{i}) = s;
+		p.(paramName) = s;
 	end
 	
 end
