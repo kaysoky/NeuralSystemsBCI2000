@@ -1,5 +1,5 @@
+#import PygameRenderer
 import sys, numpy, time, random, copy, warnings, math
-import VisionEgg
 import pygame
 import AppTools.Displays
 import WavTools

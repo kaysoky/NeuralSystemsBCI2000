@@ -29,7 +29,8 @@ __all__ = [
 	'channel',
 	'trodeplot',
 ]
-import copy, numpy
+import copy, re, inspect
+import numpy
 import ElectrodePositions
 
 class channel:
@@ -110,6 +111,8 @@ class channel:
 		elif avg:
 			s = '(' + ' + '.join(k) + ')/%d' % len(d)
 		else:
+			w,k = zip(*sorted(zip(w,k))[::-1])
+			k = list(k)
 			for i in range(len(w)):
 				if abs(w[i] - 1.0) < tol: pass
 				elif abs(1.0/w[i] - round(1.0/w[i])) < tol: k[i] = '%s/%d' % (k[i],round(1.0/w[i]))
@@ -143,7 +146,8 @@ class channel:
 
 	def get_label(self, lower=False):
 		x = self.label
-		if x == None: x = sorted(self.pos.keys())[0]
+		if x == None:
+			x = sorted([(v,k) for k,v in self.pos.items()])[-1][-1]
 		if lower: x = x.lower()
 		return x
 		
@@ -169,6 +173,7 @@ class ChannelSet(numpy.matrix):
 	Pre-multiplication by a spatial filtering matrix (each row is a filter) works as it should.
 	
 	"""###
+	__array_priority__ = numpy.matrix.__array_priority__ + 1.0
 	def __new__(cls, s=None):
 		if s == None: self = []
 		self = cls.cparse(s)
@@ -217,14 +222,40 @@ class ChannelSet(numpy.matrix):
 		if drawnow: pylab.draw()
 		return h
 	
-	def get_labels(self, lower=False, flatten=True):
-		out = []
+	def get_labels(self, lower=False, flatten=True, assert_unique=False):
+		flat = []
+		nonflat = []
 		for row in self.A:
 			row = [element.get_label(lower=lower) for element in row]
-			if flatten: out += row
-			else: out.append(row)
+			flat += row
+			nonflat.append(row)
+		if assert_unique and len(set([x.lower() for x in flat])) < len(flat): raise ValueError('duplicate channel labels in ChannelSet')	
+		if flatten: return flat
+		else: return nonflat
+	
+	def find_labels(self, labels, dict_output=False, error_if_not=False):
+		candidates = self.get_labels(lower=True, flatten=True)
+		if isinstance(labels, basestring): labels = labels.replace(',', ' ').split()
+		out = list()
+		for label in labels:
+			if isinstance(label, int):
+				if label < 0: label += len(self)
+				if label >= len(self): label = None
+			else:
+				if label.lower() in candidates: label = candidates.index(label.lower())
+				else: label = None
+			out.append(label)
+			
+		if error_if_not not in (None,False):
+			if isinstance(error_if_not, basestring): suffixstr = error_if_not
+			else: suffixstr = ''
+			notfound = [str(label) for label,ind in zip(labels,out) if ind is None]
+			if len(notfound) == 1: raise ValueError('channel %s was not found%s' % (notfound[0],suffixstr)) 
+			elif len(notfound):    raise ValueError('the following channels were not found%s: %s' % (suffixstr, ' '.join(notfound))) 
+			
+		if dict_output: out = dict([(str(k),v) for k,v in zip(labels,out)])
 		return out
-		
+			
 	def get_positions(self, type='schematic2D'):
 		x = numpy.zeros(self.shape, dtype=numpy.float64)
 		y = numpy.zeros(self.shape, dtype=numpy.float64)
@@ -266,7 +297,6 @@ class ChannelSet(numpy.matrix):
 				if not isinstance(si, basestring): raise ValueError("inputs are expected to be strings")
 				if len(si.strip()) == 0: continue
 				
-				import re
 				b = [
 					re.compile(r'^\s*\{(.*)\}\s*'),
 					re.compile(r'^\s*\[(.*)\]\s*'),
@@ -291,9 +321,9 @@ class ChannelSet(numpy.matrix):
 				except: raise RuntimeError('failed to interpret string "%s" as an index' % ind)		
 
 			if len(row) == 1: row.append('REF?')
-			if row[1] == None: row[1] = 'REF?'
+			if row[1] == None:  row[1] = 'REF?'
 			if len(row) == 2: row.append('GND?')
-			if row[2] == None: row[2] = 'GND?'
+			if row[2] == None:  row[2] = 'GND?'
 			if len(row) != 3: raise RuntimeError('channel definition string "%s" should have 3 or 4 fields' % si)
 			
 			ch = channel(pos=row[0], neg=row[1], gnd=row[2])
@@ -305,26 +335,55 @@ class ChannelSet(numpy.matrix):
 		return out
 	
 	def __grok_filtering_opts(self, exclude, keep, filters_as):
-		labels = [x.lower() for x in self.get_labels()]
+		"""
+		exclude      a specification of which input channels should be
+		             excluded from computation of the filters, and also
+		             left untouched by the re-referencing. Channels may
+		             be specified as a list of 0-based indices, a list
+		             of channel label strings, a space-delimited string
+		             containing the labels, or the string 'auto' which
+		             is the default. In 'auto' mode, channels whose
+		             schematic2D position is unknown, or outside the
+		             unit circle, are excluded.
+		             
+		keep         a specification of which output channels should be
+		             retained.  Channels may be specified as a list of
+		             0-based indices, a list of channel label strings,
+		             a space-delimited string containing the labels,
+		             the string 'all included' which keeps only those
+		             channels that were actually re-referenced, or the
+		             string 'all' which is the default.
+		             
+		filters_as   either the string 'columns' or the string 'rows' to
+		             denote whether each single spatial filter should be
+		             a column or a row of the output matrix
+		             (default: 'columns')
+		"""###
+		labels = self.get_labels(lower=True, flatten=True)
 		if exclude == 'auto':
 			x,y = self.flatten().get_positions(type='schematic2D')
-			exclude = numpy.logical_not(x.flatten()**2 + y.flatten()**2 <= 1.0)
-			# "not <= 1.0"  is better than "> 1.0"  because it catches NaNs
+			exclude = numpy.logical_not((x.flatten()**2 + y.flatten()**2)**0.5 <= 1.02)
+			# "not <= 1.02"  is better than "> 1.02"  because it classifies NaNs as outside
 		else:
 			if exclude == None: exclude = []
 			if isinstance(exclude, basestring): exclude = exclude.split()
 			exclude = [x.lower() for x in exclude]
-			exclude = numpy_array([x in exclude for x in labels])
-			
+			exclude = numpy.array([x in exclude for x in labels])
+		exclude = numpy.flatnonzero(exclude)
+		# Note that unlike numpy.nonzero, numpy.flatnonzero will fail for things that have not yet been turned into numpy arrays
+		# Alert: numpy.flatnonzero() may be clunky, but trying to emulate matlab "masking" (subscripting with logical arrays)
+		# can lead to *really* unpredictable/unintuitive results in numpy....
+		
 		if keep == 'all':
-			keep = [True] * len(self)
+			keep = numpy.array([True] * len(self))
 		elif keep == 'all included':
-			keep = numpy.logical_not(keep)
+			keep = numpy.logical_not(exclude)
 		else:
 			if keep == None: keep = []
 			if isinstance(keep, basestring): keep = keep.split()
 			keep = [x.lower() for x in keep]
-			keep = numpy_array([x in keep for x in labels])
+			keep = numpy.array([x in keep for x in labels])
+		keep = numpy.flatnonzero(keep)
 
 		if filters_as == 'columns':
 			filters_as_rows = False
@@ -333,14 +392,14 @@ class ChannelSet(numpy.matrix):
 		else:
 			raise ValueError('filters_as should be "rows" or "columns"')
 		
-		exclude = numpy.where(exclude)[0]
-		keep = numpy.where(keep)[0]
-		# Alert: numpy.where() may be clunky, but trying to emulate matlab
-		# "masking" (subscripting with logical arrays) can lead to *really*
-		# unpredictable/unintuitive results in numpy....
 		return exclude,keep,filters_as_rows
 		
 	def CAR(self, exclude='auto', keep='all', filters_as='columns'):
+		"""
+		Common-Average Reference: return a matrix of spatial filters for
+		applying a (possibly selective) common-average reference.
+		
+		"""###
 		if self.shape[0] != self.size: raise TypeError('CAR() method can only be called on single-column ChannelSet objects')
 		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude, keep, filters_as)
 		n = len(self)
@@ -349,16 +408,128 @@ class ChannelSet(numpy.matrix):
 		neg[exclude, :] = 0.0
 		neg[:, exclude] = 0.0
 		neg /= n - len(exclude)
-		W = numpy.asmatrix(pos - neg)
+		W = pos - neg
 		W = W[:, keep]
 		if filters_as_rows: W = W.T
+		return numpy.asmatrix(W)
+	CAR.__doc__ +=  __grok_filtering_opts.__doc__
+	
+	def SLAP(self, sigma1=0.04, sigma2=None, type='schematic2D', exclude='auto', keep='all', filters_as='columns'):
+		"""
+		Surface-Laplacian: return a matrix of spatial filters for applying a zero-sum
+		difference-of-Gaussians center-surround spatial filter to each channel.
+		
+		"""###
+		if self.shape[0] != self.size: raise TypeError('SLAP() method can only be called on single-column ChannelSet objects')
+		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude, keep, filters_as)
+		if sigma2 == None: sigma2 = 3.0 * sigma1
+		n = len(self)
+		q = self.sqdist(type=type)
+		nanrow = numpy.flatnonzero(numpy.isnan(q).all(axis=0))
+		bad = [self.flat[x].get_label() for x in nanrow if x not in exclude]
+		if len(bad) == 1: raise ValueError('channel %s must be excluded, since its %s position is unknown' % (','.join(bad), type))
+		elif len(bad): raise ValueError('the following must be excluded, since their %s positions are unknown: %s' % (type, ','.join(bad)))
+		q[:, exclude] = numpy.inf
+		q[exclude, :] = numpy.inf
+		q.flat[::n+1] = 0.0
+		if sigma1 == 0.0: pos = numpy.eye(n)
+		else: pos = numpy.exp(q * (-0.5/sigma1**2))
+		pos.flat[::n+1] = 1.0
+		neg = numpy.exp(q * (-0.5/sigma2**2))
+		neg.flat[::n+1] = 0.0
+		possum = pos.sum(axis=0)
+		possum[possum == 0.0] = 1.0
+		negsum = neg.sum(axis=0)
+		negsum[negsum == 0.0] = 1.0
+		neg = neg * numpy.expand_dims(possum / negsum, 0)
+		
+		W = pos - neg
+		W = W[:, keep]
+		if filters_as_rows: W = W.T
+		return numpy.asmatrix(W)
+	SLAP.__doc__ +=  __grok_filtering_opts.__doc__
+	
+	def McFarlandLaplacian(self, type='large', filters_as='columns'):
+		if   type == 'large': filt = {'C3':'F3  P3  Cz T7', 'C4':'F4  P4  Cz T8'}
+		elif type == 'small': filt = {'C3':'FC3 CP3 C1 C5', 'C4':'FC4 CP4 C2 C6'}
+		else: raise ValueError('type must be "large" or "small"')
+		
+		allnames = ' '.join(filt.keys() + filt.values()).split()
+		ind = self.find_labels(allnames, dict_output=True, error_if_not=' (required for %s Laplacian on [%s])' % (type,','.join(filt.keys())))
+		
+		W = numpy.zeros((len(self),len(filt)), dtype=float)
+		for col,(center,surround) in enumerate(sorted(filt.items())):
+			W[ind[center], col] = 1.0
+			surround = surround.split()
+			for x in surround: W[ind[x], col] = -1.0 / len(surround)
+		
+		if filters_as == 'rows': W = W.T
 		return W
+				
+		
+	
+	def spfilt(self, W, inputs=None, exclude='auto', filters_as='columns'):
+		"""
+		Pre-computed spatial filters are packed as the columns (or rows, if
+		filters_as='rows') of matrix W. Let us assume a filter is a column
+		(if not, swap the words 'rows' and 'columns' in everything that
+		follows).
+		
+		<inputs> if supplied, specifies the order and identity of the input
+		         channels that correspond to the rows of W.  The input
+		         channels must all be present in the ChannelSet.
+		
+		<exclude> if <inputs> is not supplied, then the input channels are
+		          assumed to be the ChannelSet members, in order, with the
+		          exclusions specified here. It works the same as the
+		          <exclude> option in CAR.
+		          
+		The output is a set of spatial filters, in the same order they came
+		in, but with the rows reordered and padded with 0s (matching up to
+		the excluded channels) so that the filters are appropriate for
+		application to a signal that can be described by this ChannelSet. 
+		
+		"""###
+		if self.shape[0] != self.size: raise TypeError('spfilt() method can only be called on single-column ChannelSet objects')
+		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude=exclude, keep='all', filters_as=filters_as)
+		n = len(self)
+		inputDimName = {'rows':'columns', 'columns':'rows'}.get(filters_as)
+		if filters_as_rows: Win = W.T
+		else: Win = W
+		if inputs == None:
+			include = sorted(set(range(n)) - set(exclude))
+		else:
+			if isinstance(inputs, basestring): inputs = inputs.split()
+			include = self.find_labels(inputs, error_if_not=True)
+			exclude = sorted(set(range(n)) - set(include))
+		nInputs = len(include)
+		nOutputs = Win.shape[1]
+		if Win.shape[0] != nInputs: raise ValueError('W should have %d %s' % (nInputs, inputDimName))
+		W = numpy.zeros((n, nOutputs), dtype=float)
+		W[include, :] = Win
+		# the following lines implement a different approach in which the spatial filter
+		# matrix which preserves the excluded channels in the same way that CAR and SLAP do
+		# with keep='all'.  This way was not chosen because, unlike CAR and SLAP, we do not
+		# know that the input spatial filters preserve the identities (labels) of the channels
+		#W = numpy.eye(n)
+		#for inputRow,outputRow in enumerate(include):
+		#	for inputCol,outputCol in enumerate(include):
+		#		W[outputRow, outputCol] = Win[inputRow, inputCol]
+		if filters_as_rows: W = W.T
+		return numpy.asmatrix(W)
+		
+	
+	def round(self, precision=1e-5):
+		for c in self.flat:
+			for k,v in c.pos.items(): c.pos[k] = precision * round( v / precision)
+			for k,v in c.neg.items(): c.neg[k] = precision * round( v / precision)
+			c._update()
 
 def trodeplot(channels=(), act='connected',
 		ref=None, gnd=None, troderadius='auto',
 		surf=70, contour='auto', scheme='auto',
 		head=True, eegbg='auto', ears='auto', nose='auto',
-		color='k', facecolor='auto', cmap='jet', clim='auto', balance=0.0,
+		color='k', facecolor='auto', cmap='kelvin_i', clim='auto', balance=0.0,
 		labels='auto', indices='auto', one_based=False, fontsize='auto',
 		ax=None, layout=None, title=None, hold=False, drawnow=True, use_pcolor=False,
 	):
@@ -440,8 +611,12 @@ def trodeplot(channels=(), act='connected',
 	if not hasattr(channels, '__len__'): channels = [channels]
 	if isinstance(channels, numpy.ndarray): channels = list(numpy.asarray(channels).flat)
 	if len(channels) and isinstance(channels[0], channel):
-		if ref == None: ref = reduce(list.__add__, [ch.neg.keys() for ch in channels if len(ch.neg) < 3])
-		if gnd == None: gnd = reduce(list.__add__, [list(ch.gnd) for ch in channels if len(ch.gnd) < 2])
+		if ref == None:
+			ref = [ch.neg.keys() for ch in channels if len(ch.neg) < 3]
+			if len(ref): ref = reduce(list.__add__, ref)
+		if gnd == None:
+			gnd = [list(ch.gnd) for ch in channels if len(ch.gnd) < 2]
+			if len(gnd): gnd = reduce(list.__add__, gnd)
 		channels = [ch.get_label() for ch in channels]
 	channels = list(channels)
 	chk = [ch.lower() for ch in channels]
@@ -464,7 +639,6 @@ def trodeplot(channels=(), act='connected',
 	act = numpy.asarray(act, dtype=numpy.float64)
 	if act.shape[0] not in (0,len(channels)): raise ValueError('wrong number of activation values')
 	if len(act.shape) > 1 and act.shape[1] > 1:
-		import inspect
 		args,argnames = {},inspect.getargspec(trodeplot)[0]
 		locals = inspect.currentframe().f_locals
 		for a in argnames:
@@ -526,7 +700,7 @@ def trodeplot(channels=(), act='connected',
 	res = 70
 	if isinstance(surf, (int, float)) and surf > 1: res = surf
 	if isinstance(cmap, basestring): cmap = pylab.cm.get_cmap(cmap)
-	if cmap == None: cmap = pylab.cm.jet
+	if cmap == None: cmap = getattr(pylab.cm, 'kelvin_i', pylab.cm.jet)
 	
 	if contour == 'auto': contour = surf
 	if surf or contour:
@@ -551,7 +725,7 @@ def trodeplot(channels=(), act='connected',
 				h['surf'].set_data(chxi, chyi, chzi)
 				ax.images.append(h['surf'])
 			clim = h['surf'].get_clim()
-		if contour:
+		if contour and chzi.ravel().ptp():
 			h['contour'] = pylab.contour(chxi,chyi,chzi, zorder=1.5, hold='on', colors=[color], linestyles=['--'])
 	
 	if highlight_connected:
