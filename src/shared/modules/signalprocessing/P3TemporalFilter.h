@@ -54,6 +54,7 @@ class P3TemporalFilter : public GenericFilter
 
   int mEpochsToAverage,
       mNumberOfSequences;
+  bool mSingleEpochMode;
 
   std::map<State::ValueType, State::ValueType> mStimulusTypes;
   State::ValueType mPreviousStimulusCode;

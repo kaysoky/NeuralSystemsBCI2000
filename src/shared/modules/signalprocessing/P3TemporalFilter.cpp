@@ -41,6 +41,7 @@ P3TemporalFilter::P3TemporalFilter()
   mTargetERPChannel( 0 ),
   mEpochsToAverage( 0 ),
   mNumberOfSequences( 0 ),
+  mSingleEpochMode( false ),
   mPreviousStimulusCode( 0 )
 {
  BEGIN_PARAMETER_DEFINITIONS
@@ -48,6 +49,8 @@ P3TemporalFilter::P3TemporalFilter()
     "// Length of data epoch from stimulus onset",
   "Filtering int EpochsToAverage= 1 1 0 % "
     "// Number of epochs to average",
+  "Filtering int SingleEpochMode= 0 0 0 1 "
+    "// Report result after each epoch (boolean)",
 
   "Visualize int VisualizeP3TemporalFiltering= 1 0 0 1 "
     "// Visualize averaged epochs (0=no 1=yes) (boolean)",
@@ -115,6 +118,7 @@ P3TemporalFilter::Initialize( const SignalProperties& /*Input*/,
   mOutputProperties = Output;
   mEpochsToAverage = Parameter( "EpochsToAverage" );
   mNumberOfSequences = OptionalParameter( "NumberOfSequences", mEpochsToAverage );
+  mSingleEpochMode = ( Parameter( "SingleEpochMode" ) == 1 );
 
   mVisualize = int( Parameter( "VisualizeP3TemporalFiltering" ) );
   if( mVisualize )
@@ -147,7 +151,7 @@ P3TemporalFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   Output = GenericSignal( mOutputProperties );
 
-  if( mEpochsToAverage > 0 )
+  if( mEpochsToAverage > 0 || mSingleEpochMode )
   {
     int curStimulusCode = State( "StimulusCode" );
     mStimulusTypes[ curStimulusCode ] = State( "StimulusType" );
@@ -182,8 +186,18 @@ P3TemporalFilter::Process( const GenericSignal& Input, GenericSignal& Output )
           }
           mEpochSums[ stimulusCode ]->Add( ( *j )->Data() );
           obsoleteEpochs.insert( *j );
-
-          if( mEpochSums[ stimulusCode ]->Count() == mEpochsToAverage )
+          
+          if( mSingleEpochMode )
+          {
+            bcidbg( 2 ) << "Reporting epoch for stimulus code #" << i->first
+                        << endl;
+            for( int channel = 0; channel < Output.Channels(); ++channel )
+              for( int sample = 0; sample < Output.Elements(); ++sample )
+                Output( channel, sample ) = ( *j )->Data()( channel, sample ) / mEpochsToAverage;
+            State( "StimulusCodeRes" ) = stimulusCode;
+            State( "StimulusTypeRes" ) = mStimulusTypes[ stimulusCode ];
+          }
+          else if( mEpochSums[ stimulusCode ]->Count() == mEpochsToAverage )
           { // When the number of required epochs is reached, copy the buffer average
             // into the output signal, and set states appropriately.
             bcidbg( 2 ) << "Reporting average for stimulus code #" << i->first
@@ -193,7 +207,10 @@ P3TemporalFilter::Process( const GenericSignal& Input, GenericSignal& Output )
                 Output( channel, sample ) = ( *mEpochSums[ stimulusCode ] )( channel, sample ) / mEpochsToAverage;
             State( "StimulusCodeRes" ) = stimulusCode;
             State( "StimulusTypeRes" ) = mStimulusTypes[ stimulusCode ];
-
+          }
+          
+          if( mEpochSums[ stimulusCode ]->Count() == mEpochsToAverage )
+          {
             if( mVisualize && i->first - 1 < mVisSignal.Channels() )
             {
               for( int sample = 0; sample < Output.Elements(); ++sample )

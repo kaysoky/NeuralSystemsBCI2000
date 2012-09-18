@@ -64,6 +64,8 @@ OutStream&
 OutStream::operator()()
 {
   mBuf.SetContext( sContext );
+  static ostringstream defaultFormat;
+  this->copyfmt( defaultFormat );
   return *this;
 }
 
