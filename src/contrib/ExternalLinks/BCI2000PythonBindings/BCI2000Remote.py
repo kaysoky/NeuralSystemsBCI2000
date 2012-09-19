@@ -70,7 +70,7 @@ class BCI2000Remote(object):
             self._lib = ctypes.cdll.LoadLibrary( bcilib )
             
         self._lib.BCI2000Remote_New.restype = ctypes.c_void_p
-        self._instance = self._lib.BCI2000Remote_New()
+        self._instance = ctypes.c_void_p( self._lib.BCI2000Remote_New() )
         self.OperatorPath = bcioperator
 
     def __del__(self):
