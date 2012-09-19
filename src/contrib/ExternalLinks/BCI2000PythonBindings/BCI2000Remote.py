@@ -54,7 +54,7 @@ class BCI2000Remote(object):
     """
     # Constructor/destructor
     def __init__(self):
-	pyfile = inspect.getfile(inspect.currentframe())
+        pyfile = inspect.getfile(inspect.currentframe())
         bcidir = os.path.dirname(os.path.realpath(pyfile))
         bcilib = bcidir + "/BCI2000RemoteLib"
         bcioperator = bcidir + "/Operator"
@@ -252,7 +252,6 @@ if __name__ == '__main__':
     bci.SetConfig()
     print "SubjectName parameter:", bci.GetParameter( "SubjectName" )
     bci.Start()
-    bci.Timeout = 25 # must always be greater than expected duration of a command
     bci.Execute( "Wait for Suspended 5" )
     if bci.Result != "": 
         print "Result:", bci.Result
