@@ -1049,8 +1049,9 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
   {
     int targetCol = i % numMatrixCols,
         targetRow = i / numMatrixCols;
-    Association& rowSet = ioAssociations[ targetRow + 1 ],
-               & colSet = ioAssociations[ numMatrixRows + targetCol + 1 ];
+    Association dummy;
+    Association& rowSet = numMatrixRows > 1 ? ioAssociations[ targetRow + 1 ] : dummy,
+               & colSet = numMatrixCols > 1 ? ioAssociations[ numMatrixRows + targetCol + 1 ] : dummy;
 
     string entryText = TargetDefinitions( i, Enter );
     { // Check for legal entry text
