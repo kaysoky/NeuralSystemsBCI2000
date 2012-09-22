@@ -15,6 +15,8 @@
 
 #include "NeuroscanProtocol.h"
 #include <iostream>
+#include <vector>
+#include <string>
 
 class NeuroSrv
 {
@@ -28,7 +30,7 @@ class NeuroSrv
     // A descendant may hook in by overriding certain functions.
     virtual void SendVersion( std::ostream& )      { /* not yet */ }
     virtual void CloseConnection( std::ostream& );
-    virtual void SendEDFHeader( std::ostream& )    { /* not yet */ }
+    virtual void SendEDFHeader( std::ostream& );
     virtual void SendASTSetupFile( std::ostream& ) { /* not yet */ }
     virtual void SendBasicInfo( std::ostream& );
     virtual void StartAcquisition( std::ostream& ) {}
@@ -48,6 +50,13 @@ class NeuroSrv
 
   protected:
     NscBasicInfo mBasicInfo;
+    struct ChannelInfo
+    {
+      std::string name,
+                  type,
+                  unit;
+    };
+    std::vector<ChannelInfo> mChannelInfo;
 
   private:
     // Program state:

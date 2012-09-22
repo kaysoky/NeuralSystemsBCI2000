@@ -13,11 +13,12 @@
 #include "NeuroSrv.h"
 
 #include <iostream>
-#include <string>
+#include <iomanip>
 #include <sstream>
 #include <map>
+#include <stdexcept>
 
-#include "TCPStream.h"
+#include "SockStream.h"
 
 using namespace std;
 
@@ -37,6 +38,49 @@ NeuroSrv::SendBasicInfo( ostream& os )
   os.write( oss.str().data(), oss.str().size() ).flush();
 }
 
+void
+NeuroSrv::SendEDFHeader( std::ostream& os )
+{
+  ostringstream oss;
+  oss.put( '0' );
+  for( int i = 1; i < 256 - 4; ++i )
+    oss.put( ' ' );
+  ostringstream oss2;
+  oss2 << setw( 4 ) << mBasicInfo.EEGChannels();
+  oss << oss2.str().substr( 0, 4 );
+
+  const struct { (string ChannelInfo::*) s; size_t l; } fields[] =
+  { // EDF fields in a channel entry, and their lengths
+    { &ChannelInfo::name, 16 },
+    { &ChannelInfo::type, 80 },
+    { &ChannelInfo::unit, 8 },
+    { NULL, 8 }, { NULL, 8 }, { NULL, 8 }, { NULL, 8 },
+    { NULL, 80 }, { NULL, 8 }, { NULL, 32 }
+  };
+  for( size_t j = 0; j < sizeof( fields ) / sizeof( *fields ); ++j )
+  {
+    for( int i = 0; i < min<int>( mBasicInfo.EEGChannels(), mChannelInfo.size() ); ++i )
+    {
+      static const string empty;
+      const string& s = fields[j].s ? mChannelInfo[i].*(fields[j].s) : empty;
+      for( size_t k = 0; k < min( s.length(), fields[j].l ); ++k )
+        oss.put( s[k] );
+      for( size_t k = s.length(); k < fields[j].l; ++k )
+        oss.put( ' ' );
+    }
+    for( size_t i = mChannelInfo.size(); i < static_cast<size_t>( mBasicInfo.EEGChannels() ); ++i )
+      for( int k = 0; k < 256; ++k )
+        oss.put( ' ' );
+  }
+
+  string header = oss.str();
+  if( header.length() != 256 * ( 1 + mBasicInfo.EEGChannels() ) )
+    throw std::logic_error( "Invalid EDF header" );
+  
+  NscPacketHeader( 'DATA', DataType_InfoBlock, InfoType_EdfHeader, header.length() ).WriteBinary( os );
+  os.write( header.data(), header.length() ).flush();
+}
+
 int
 NeuroSrv::Run( int argc, const char* argv[] )
 {
@@ -52,8 +96,8 @@ NeuroSrv::Run( int argc, const char* argv[] )
     = &NeuroSrv::SendVersion;*/
   messageActions[ NscPacketHeader( 'CTRL', ::GeneralControlCode,::ClosingUp, 0 ) ]
     = &NeuroSrv::CloseConnection;
-/*messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestEDFHeader, 0 ) ]
-    = &NeuroSrv::SendEDFHeader;*/
+  messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestEDFHeader, 0 ) ]
+    = &NeuroSrv::SendEDFHeader;
 /*messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestAstFile, 0 ) ]
     = &NeuroSrv::SendASTSetupFile;*/
   messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestBasicInfo, 0 ) ]
@@ -73,7 +117,7 @@ NeuroSrv::Run( int argc, const char* argv[] )
 
   while( result == noError )
   {
-    tcpstream client;
+    sockstream client;
     server_tcpsocket serverSocket( address );
     serverSocket.wait_for_read( tcpsocket::infiniteTimeout );
     client.open( serverSocket );
@@ -114,6 +158,10 @@ NeuroSrv::Run( int argc, const char* argv[] )
 void
 NeuroSrv::Sleep( int inMilliseconds )
 {
+#if WIN32
+  ::Sleep( inMilliseconds );
+#else
   ::timeval sleepDuration = { 0, 1000 * inMilliseconds /* convert to microseconds */ };
   ::select( 0, NULL, NULL, NULL, &sleepDuration );
+#endif
 }

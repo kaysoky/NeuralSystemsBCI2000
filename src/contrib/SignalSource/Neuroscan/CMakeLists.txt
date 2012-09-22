@@ -4,6 +4,7 @@
 ## Description: Build information for Neuroscan source
 
 ADD_SUBDIRECTORY( getparams )
+ADD_SUBDIRECTORY( ctfneurod )
 
 # Set the executable name
 SET( EXECUTABLE_NAME NeuroscanClient )
@@ -13,7 +14,7 @@ SET( SRC_PROJECT
   NeuroscanADC.cpp 
 )
 SET( HDR_PROJECT
-  NeuroscanNetRead.h
+  NeuroscanProtocol.h
   NeuroscanADC.h
 )
 

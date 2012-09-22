@@ -35,7 +35,8 @@
 using namespace std;
 
 AcqBasicInfo  m_BasicInfo;
-
+vector<string> gChannelNames;
+bool gSilent = false;
 bool ProcessDataMsg(CAcqMessage *pMsg);
 
 template<typename T> string str( T t )
@@ -49,48 +50,59 @@ int
 main( int argc, char** argv )
 {
 char *address=NULL, *paramfile=NULL;
-bool showusage=false;
-
-  printf("BCI2000 Parameter Tool for Neuroscan Acquire V4.3\r\n");
-  printf("******************************************************************************\r\n");
-  printf("(C)2004 Gerwin Schalk and Juergen Mellinger\r\n");
-  printf("        Wadsworth Center, New York State Department of Health, Albany, NY, USA\r\n");
-  printf("        Eberhard-Karls University of Tuebingen, Germany\r\n");
-  printf("******************************************************************************\r\n");
+bool extendedInfo = false,
+     toStdout = false;
+bool showusage=(argc < 2);
 
   //
   // parameter checks
   //
-  // No command line parameter? Then show how to use it
-  if (argc == 1) showusage=true;
-  // If we have a command line parameter, we need to have an even number
-  if ((argc%2 == 0) && (argc > 1))
-     {
-     printf("\r\nParameter argument missing\r\n\r\n");
-     showusage=true;
-     }
-  // cross-check the parameters against known parameters
-  if (argc > 1)
-     {
-     for (int i=1; i<argc; i+=2)
-      {
-      if ((strcmp("-address", argv[i]) != 0) && (strcmp("-paramfile", argv[i]) != 0))
-         {
-         printf("\r\nIllegal parameter %s\r\n\r\n", argv[i]);
-         showusage=true;
-         }
-      if ((strcmp("-address", argv[i]) == 0) && (argc > i+1))
-         address=argv[i+1];
-      if ((strcmp("-paramfile", argv[i]) == 0) && (argc > i+1))
-         paramfile=argv[i+1];
-      }
-     }
-
+  int i = 1;
+  while( i < argc )
+  {
+    if( !strcmp( "-address", argv[i] ) )
+    {
+      if( ++i < argc )
+        address = argv[i];
+      else
+        showusage = true;
+    }
+    else if( !strcmp( "-paramfile", argv[i] ) )
+    {
+      if( ++i < argc )
+        paramfile = argv[i];
+      else
+        showusage = true;
+    }
+    else if( !strcmp( "-e", argv[i] ) )
+      extendedInfo = true;
+    else if( !address && *argv[i] != '-' )
+    {
+      address = argv[i];
+      extendedInfo = true;
+      toStdout = true;
+      gSilent = true;
+    }
+    else
+      showusage = true;
+    ++i;
+  }
+    
+  if( !gSilent )
+  {
+    printf("BCI2000 Parameter Tool for Neuroscan Acquire V4.3\r\n");
+    printf("******************************************************************************\r\n");
+    printf("(C)2004 Gerwin Schalk and Juergen Mellinger\r\n");
+    printf("        Wadsworth Center, New York State Department of Health, Albany, NY, USA\r\n");
+    printf("        Eberhard-Karls University of Tuebingen, Germany\r\n");
+    printf("******************************************************************************\r\n");
+  }
   // show usage if necessary
   if (showusage)
      {
-     printf("Usage: neuroscangetparams [-address IP/port] [-paramfile filename]\r\n");
+     printf("Usage: neuroscangetparams [-address IP/port] [-paramfile filename] [-e]\r\n");
      printf("       e.g., neuroscangetparams -address localhost:3999 -paramfile test.prm\r\n");
+     printf("       use -e to obtain extended information such as channel names\r\n");
      return(0);
      }
 
@@ -103,11 +115,22 @@ bool showusage=false;
     return -1;
   }
 
+  int messagesExpected = 0;
+
   // query the server for some basic information
   const char versionRequest[] = { 'C', 'T', 'R', 'L', 0, (char)ClientControlCode, 0, (char)RequestBasicInfo, 0, 0, 0, 0 };
   server.write( versionRequest, sizeof( versionRequest ) );
   server.flush();
+  ++messagesExpected;
 
+  if( extendedInfo )
+  {
+    const char edfRequest[] = { 'C', 'T', 'R', 'L', 0, (char)ClientControlCode, 0, (char)RequestEdfHeader, 0, 0, 0, 0 };
+    server.write( edfRequest, sizeof( edfRequest ) );
+    server.flush();
+    ++messagesExpected;
+  }
+  
   // sanity check
   if( !server )
   {
@@ -116,8 +139,7 @@ bool showusage=false;
   }
 
   // eat server messages until we received the info we were looking for
-  bool finished=false;
-  while (!finished)
+  while (messagesExpected)
    {
    CAcqMessage *pMsg=new CAcqMessage();
    char *char_ptr=(char *)pMsg;
@@ -163,25 +185,20 @@ bool showusage=false;
       if (pMsg->IsDataPacket())    // looks like we get one packet every 40 ms (25/sec)
          {
          // printf("Receiving Data Message\n");
-         finished=ProcessDataMsg(pMsg);  // if we received a data packet with the correct info, terminate the loop
+         ProcessDataMsg(pMsg);  // if we received a data packet with the correct info, terminate the loop
          }
 
    delete pMsg;
+   --messagesExpected;
    }
 
   // prepare the server for closing the connection
   const char reqCloseConn[] = { 'C', 'T', 'R', 'L', 0, (char)GeneralControlCode, 0, (char)ClosingUp, 0, 0, 0, 0 };
   server.write( reqCloseConn, sizeof( reqCloseConn ) );
   server.flush();
-
-  // important! we need to give the server a little time to close
-  Sleep(50);
-
+ 
   // actually close the connection
-  server.close();
-
-  // now, transfer these values into parameters to be used by BCI2000 (if desired)
-  if (!paramfile) return(0);
+  s.close();
 
   // create BCI2000 parameter objects
   ParamList paramlist;
@@ -198,7 +215,7 @@ bool showusage=false;
 
   // create a parameter list from these individual parameters
   for( size_t i = 0; i < sizeof( params ) / sizeof( *params ); ++i )
-    paramlist.Add( ( string( params[ i ] ) + " // neurogetparams " + string(address)).c_str() );
+    paramlist.Add( ( string( params[ i ] ) + " % // neurogetparams " + string(address)).c_str() );
 
   // set the values to the ones received from the server
   paramlist[ "SampleBlockSize" ].Value() = str(m_BasicInfo.nBlockPnts);
@@ -215,16 +232,26 @@ bool showusage=false;
     paramlist[ "SourceChOffset" ].Value( i ) = "0";
     paramlist[ "SourceChGain" ].Value( i ) = str(m_BasicInfo.fResolution);
   }
+  
+  if( !gChannelNames.empty() )
+  {
+    paramlist.Add( "Source stringlist ChannelNames= 0 // neurogetparams " + string(address) );
+    paramlist["ChannelNames"].SetNumValues( gChannelNames.size() );
+    for( size_t i = 0; i < gChannelNames.size(); ++i )
+      paramlist["ChannelNames"].Value( i ) = gChannelNames[i];
+  }
 
   // open a file stream to output the parameter file
-  ofstream fs(paramfile);
-  if (!fs.is_open())
-     printf("Error opening output parameter file %s\n", paramfile);
-  else
-     {
-     fs << paramlist;  // and write the parameter list to the output file
-     printf("Parameter file %s successfully written\n", paramfile);
-     }
+  if( paramfile )
+  {
+    ofstream fs(paramfile);
+    if (!fs.is_open())
+       fprintf(stderr,"Error opening output parameter file %s\n", paramfile);
+    else if( fs << paramlist && !gSilent )  // and write the parameter list to the output file
+       printf("Parameter file %s successfully written\n", paramfile);
+  }
+  if( toStdout )
+    cout << paramlist;
 
  return 0;
 }
@@ -245,16 +272,57 @@ bool ProcessDataMsg(CAcqMessage *pMsg)
        bciassert(pInfo->dwSize == sizeof(m_BasicInfo));
        // if it is, copy it into the data structure
        memcpy((void*)&m_BasicInfo, pMsg->m_pBody, sizeof(m_BasicInfo));
-       printf("Signal Channels: %d\n"
-              "Event Channels:  %d\n"
-              "Block Size:      %d\n"
-              "Sampling Rate:   %d\n"
-              "Bits/Sample:     %d\n"
-              "Resolution:      %.3fuV/LSB\n",
-              m_BasicInfo.nEegChan,m_BasicInfo.nEvtChan,m_BasicInfo.nBlockPnts,
-              m_BasicInfo.nRate,m_BasicInfo.nDataSize*8,m_BasicInfo.fResolution);
+       if( !gSilent )
+       {
+         printf("Signal Channels: %d\n"
+                "Event Channels:  %d\n"
+                "Block Size:      %d\n"
+                "Sampling Rate:   %d\n"
+                "Bits/Sample:     %d\n"
+                "Resolution:      %.3fuV/LSB\n",
+                m_BasicInfo.nEegChan,m_BasicInfo.nEvtChan,m_BasicInfo.nBlockPnts,
+                m_BasicInfo.nRate,m_BasicInfo.nDataSize*8,m_BasicInfo.fResolution);
+       }
        return true;
        }
+     else if( pMsg->m_wRequest == InfoType_EdfHeader )
+     {
+       gChannelNames.clear();
+       string edfHeader( pMsg->m_pBody, pMsg->m_dwSize );
+       if( edfHeader.find( "0       " ) == 0 )
+       {
+         int channels;
+         const int channelBegin = 256;
+         if( istringstream( edfHeader.substr( channelBegin - 4, 4 ) ) >> channels )
+         {
+           for( int i = 0; i < channels; ++i )
+           {
+             string channelName = edfHeader.substr( channelBegin + 16 * i, 16 );
+             string suppress[] = { "EEG", "MEG", };
+             for( size_t i = 0; i < sizeof( suppress ) / sizeof( *suppress ); ++i )
+             {
+               size_t pos = channelName.find( suppress[i] );
+               if( pos != string::npos )
+                 channelName = channelName.substr( 0, pos ) + channelName.substr( pos + suppress[i].length() );
+             }
+             size_t end = channelName.length();
+             while( end > 0 && ::isspace( channelName[end-1] ) )
+               --end;
+             size_t begin = 0;
+             while( begin < end && ::isspace( channelName[begin] ) )
+               ++begin;
+             gChannelNames.push_back( channelName.substr( begin, end - begin ) );
+           }
+           if( !gSilent )
+           {
+             cout << "Channel names:";
+             for( size_t i = 0; i < gChannelNames.size(); ++i )
+               cout << " " << gChannelNames[i];
+             cout << endl;
+           }
+         }
+       }
+     }
     }
  else if (pMsg->m_wCode == DataType_EegData)
     {

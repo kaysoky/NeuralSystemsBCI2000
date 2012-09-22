@@ -92,8 +92,7 @@ namespace BigEndian
     t = 0;
     for( size_t i = 0; i < sizeof( T ); ++i )
     {
-      char c;
-      is.get( c );
+      unsigned char c = is.get();
       t <<= 8;
       t |= c;
     }
@@ -128,8 +127,7 @@ namespace LittleEndian
     t = 0;
     for( size_t i = 0; i < sizeof( T ); ++i )
     {
-      char c;
-      is.get( c );
+      unsigned char c = is.get();
       t |= T( c ) << ( i * 8 );
     }
   }
@@ -240,7 +238,7 @@ class NscPacketHeader
 	    break;
 	  }
 	  break;
- 
+
       case 'FILE':
 	switch( mCode )
         {
@@ -279,7 +277,7 @@ class NscPacketHeader
       return os << mDataSize << " data bytes";
     }
 #undef CONSIDER
-    
+
   private:
     int    mId;
     short  mCode,

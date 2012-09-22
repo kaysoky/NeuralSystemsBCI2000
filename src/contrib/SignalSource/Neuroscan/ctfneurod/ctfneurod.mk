@@ -23,7 +23,7 @@ MAIN = ctfneurod.cc
 CXXSRC  =       ACQ_MessagePacketQueue.cc \
 		CtfNeuroSrv.cc \
 		NeuroSrv.cc \
-		TCPStream.cc \
+		SockStream.cc \
 			$(MAIN)
 
 
