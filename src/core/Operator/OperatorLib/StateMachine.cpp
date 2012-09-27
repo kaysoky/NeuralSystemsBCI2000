@@ -66,7 +66,7 @@ StateMachine::StateMachine()
   mEventLink( *this )
 {
   Reset();
-  
+
   string path;
   EnvVariable::Get( "PATH", path );
   path = FileUtils::InstallationDirectoryS() + FileUtils::PathSeparator + path;
@@ -707,7 +707,7 @@ StateMachine::Randomize()
   if( mParameters.Exists( "RandomizationWarning" ) )
     p2.Value() = mParameters["RandomizationWarning"].Value();
   mParameters.Add( p2 );
-  
+
   if( mIntroducedRandomSeed )
   {
     ::srand( static_cast<unsigned int>( ::time( NULL ) ) );
@@ -735,14 +735,14 @@ StateMachine::RandomizationWarning()
              << "or the generation of noise signals, will be exactly the same "
              << "on this run as on the previous run."
              << endl;
-   
+
   mPreviousRandomSeed = mParameters["RandomSeed"].Value().c_str();
 }
 
 
 // ------------------------ CoreConnection definitions -------------------------
 
-StateMachine::CoreConnection::CoreConnection( StateMachine& inParent, 
+StateMachine::CoreConnection::CoreConnection( StateMachine& inParent,
                                               const std::string& inName,
                                               const std::string& inAddress,
                                               int inTag )
@@ -1293,7 +1293,16 @@ StateMachine::EventLink::OnExecute()
 {
   const int cReactionTimeMs = 100;
   receiving_udpsocket serverSocket;
-  serverSocket.open( "localhost", mPort );
+  int timeout = 2000;
+  while( !serverSocket.is_open() && timeout > 0 )
+  {
+    serverSocket.open( "localhost", mPort );
+    if( !serverSocket.is_open() )
+    {
+      ThreadUtils::SleepFor( cReactionTimeMs );
+      timeout -= cReactionTimeMs;
+    }
+  }
   if( !serverSocket.is_open() )
   {
     bcierr << "EventLink: Could not open UDP port " << mPort << " for listening" << endl;

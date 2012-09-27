@@ -357,7 +357,7 @@ class StateMachine : public CallbackBase, private OSThread
     EventLink( StateMachine& s ) : mrParent( s ), mConnected( false ), mPort( 0 ) {}
     ~EventLink() { OSThread::TerminateWait(); }
     void Open( int port ) { mPort = port; OSThread::Start(); }
-    void Close() { OSThread::TerminateWait(); mSocket.close(); }
+    void Close() { OSThread::TerminateWait(); mSocket.close(); mConnected = false; }
     void ConfirmConnection();
     bool Connected() const { return mConnected; }
    private:
