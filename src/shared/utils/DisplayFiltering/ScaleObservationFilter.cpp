@@ -27,21 +27,12 @@
 #pragma hdrstop
 
 #include "ScaleObservationFilter.h"
+#include "IIRFilter.h"
 #include <limits>
 #include <cmath>
 #include <cstring>
 
 using namespace std;
-
-namespace {
-  template<typename T>
-  bool IsNan( T t )
-  {
-    static const T nan = numeric_limits<T>::quiet_NaN();
-    return ::memcmp( &t, &nan, sizeof( T ) ) == 0;
-  }
-} // namespace
-
 
 ScaleObservationFilter::ScaleObservationFilter()
 : mTimeConstant( 0 ),
@@ -74,7 +65,7 @@ ScaleObservationFilter::Process( const GenericSignal& Input )
     duration = Input.Elements() / rate;
   double decayFactor = ::pow( mDecayFactor, duration ),
          oldMean = Mean();
-  if( IsNan( oldMean ) )
+  if( bci::IsNan( oldMean ) )
   {
     Reset();
     oldMean = 0;

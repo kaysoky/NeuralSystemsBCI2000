@@ -159,6 +159,8 @@ DisplayFilter::Process( const GenericSignal& Input, GenericSignal& Output )
   if( Input.Channels() != mFilter.Channels() )
     mFilter.Initialize( Input.Channels() );
   mFilter.Process( Input, Output );
+  if( mFilter.NanStalled() )
+    mFilter.Initialize();
 }
 
 
