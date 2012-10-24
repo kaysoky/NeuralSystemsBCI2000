@@ -277,7 +277,7 @@ if ~strcmp(STYLE,'blank')
   xi = linspace(xmin,xmax,GRID_SCALE);   % x-axis description (row vector)
   yi = linspace(ymin,ymax,GRID_SCALE);   % y-axis description (row vector)
   
-  [Xi,Yi,Zi] = griddata(y,x,Vl,yi',xi,'invdist'); % Interpolate data
+  [Xi,Yi,Zi] = griddata(y,x,Vl,yi',xi,'v4'); % Interpolate data
   
   % Exclude data outside the grid bounds
   if strcmpi(acq_type, 'eeg')
