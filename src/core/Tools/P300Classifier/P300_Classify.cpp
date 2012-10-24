@@ -1,4 +1,6 @@
 #include "P300_Classify.h"
+#include <cassert>
+#include <set>
 
 ///////////////////////////////////////////////////////////////////
 /// Predict the intended letters according to the pscore matrix.
@@ -28,13 +30,14 @@ void P300_Classify(ap::real_2d_array pscore,
 				   vector<double>& result,
 				   vector<string>& predicted)
 {
-
+// jm, Oct 24, 2012
+if( NumMatrixRows < 2 ) NumMatrixRows = 0;
+if( NumMatrixColumns < 2 ) NumMatrixColumns = 0;
 ////////////////////////////////////////////////////////////////////////
 // Section: Define variables
 int choice, epoch;
 double val, max_value_row= -1e15, max_value_col= -1e15, numletters, correct;
 ap::real_2d_array cflash;
-ap::real_2d_array score;
 ap::template_2d_array<int, true> predictedcol;
 ap::template_2d_array<int, true> predictedrow;
 vector<int> range;
@@ -47,7 +50,6 @@ numletters = (pscore.gethighbound(0)+1)/NumberOfSequences;
 choice = NumMatrixRows + NumMatrixColumns;
 epoch = NumberOfSequences * choice;
 cflash.setbounds(0, choice-1, 0, pscore.gethighbound(0));
-score.setbounds(0, static_cast<int>(numletters-1), 0, choice-1);
 predictedrow.setbounds(0, static_cast<int>(numletters-1), 0, NumberOfSequences-1);
 predictedcol.setbounds(0, static_cast<int>(numletters-1), 0, NumberOfSequences-1);
 
@@ -62,6 +64,7 @@ for (int i=0; i<numletters; i++)
 	}
 	if (range.size() != 0)
 	{
+#if 0
 		for (size_t j=0; j<range.size(); j++)
 			codes.push_back(StimulusCode(range[j])*StimulusType(range[j]));
 
@@ -75,6 +78,26 @@ for (int i=0; i<numletters; i++)
 			coderow.push_back(codes[2]);
 		
 		codes.clear();
+#else // jm Oct 24, 2012 NOTE: This functions seems to invert the meaning of Rows and Columns
+    {
+      set<int> codes;
+	    if( NumMatrixRows < 2 )
+	      codes.insert( NumMatrixColumns + 1 );
+	    if( NumMatrixColumns < 2 )
+	      codes.insert( 1 );
+		  for (size_t j=0; j<range.size(); j++)
+			  codes.insert(StimulusCode(range[j])*StimulusType(range[j]));
+
+      assert( codes.size() == 3 );
+	    set<int>::const_iterator i = codes.begin();
+	    if( i != codes.end() )
+	      ++i;
+	    if( i != codes.end() )
+	      codecol.push_back( *i++ );
+	    if( i != codes.end() )
+	      coderow.push_back( *i++ );
+	  }
+#endif
 		range.clear();
 
 		for (int j=0; j<choice; j++)
@@ -85,24 +108,27 @@ for (int i=0; i<numletters; i++)
 				val += pscore(j,k);
 				cflash(j,k) = val;
 			}
-			score(i,j) = val;
 		}		
 	}
 }
 for (int i=0; i<numletters; i++)
 {
 	int l = 0;
-	for (int k=i*NumberOfSequences; k<(i+1)*NumberOfSequences; k++)
+  max_value_col= -1e15, max_value_row= -1e15;
+  for (int k=i*NumberOfSequences; k<(i+1)*NumberOfSequences; k++)
 	{
 		for (int j=0; j<choice; j++)
 		{
+		  int code = j + 1;
+		  if( NumMatrixColumns < 1 )
+		    code += 1;
 			if ((j<NumMatrixColumns))
 			{
 				/* compare with max */
 				if (cflash(j,k) > max_value_col)
 				{
 					max_value_col = cflash(j,k);
-					predictedcol(i,l) = j + 1;
+					predictedcol(i,l) = code;
 				}
 			}
 			if ((j>=NumMatrixColumns))
@@ -111,13 +137,23 @@ for (int i=0; i<numletters; i++)
 				if (cflash(j,k) > max_value_row)
 				{
 					max_value_row = cflash(j,k);
-					predictedrow(i,l) = j + 1;
+					predictedrow(i,l) = code;
 				}
 			}
 		}
-		l++, max_value_col= -1e15, max_value_row= -1e15;
+		// jm Oct 24, 2012
+		if( NumMatrixColumns < 1 )
+		  predictedcol( i, l ) = 1;
+		if( NumMatrixRows < 1 )
+		  predictedrow( i, l ) = NumMatrixColumns + 1;
+		  
+		l++;
 	}
 }
+
+// jm
+if( NumMatrixColumns < 1 )
+  NumMatrixColumns = 1;
 
 for (int j=0; j<NumberOfSequences; j++)
 {
@@ -125,12 +161,8 @@ for (int j=0; j<NumberOfSequences; j++)
 	for (int i=0; i<numletters; i++)
 	{
 		if ((coderow[i] == predictedrow(i,j)) && codecol[i] == predictedcol(i,j))
-		{
-			predicted.push_back(TargetDefinitions[(NumMatrixColumns*(predictedrow(i,j)-1-NumMatrixColumns))+predictedcol(i,j)-1]);
 			correct++;
-		}
-		else
-			predicted.push_back(TargetDefinitions[(NumMatrixColumns*(predictedrow(i,j)-1-NumMatrixColumns))+predictedcol(i,j)-1]);
+	  predicted.push_back(TargetDefinitions[NumMatrixColumns*(predictedrow(i,j)-1-NumMatrixColumns)+predictedcol(i,j)-1]);
 	}
 	result.push_back((correct/numletters)*100);
 }

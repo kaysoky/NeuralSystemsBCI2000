@@ -206,6 +206,7 @@ class DetailsPage : public QWidget
 
 public:
     DetailsPage(QWidget *parent = 0);
+    void Clear();
 
 	QGroupBox		*ProgressGroup;
 	QGroupBox		*FileInfoGroup;

@@ -2,12 +2,37 @@
 #include <QtCore/QTextStream>
 #include "configdialog.h"
 #include "pages.h"
+#include <set>
 
 GenerateFeatureWeightsThread *g_pGenerateFeatureWeightsThread = NULL;
 DataPage *g_pDataPage = NULL;
 ParametersPage *g_pParametersPage = NULL;
 DetailsPage *g_pDetailsPage = NULL;
 QErrorMessage *errorMessageDialog = NULL;
+
+// jm, Oct 24, 2012
+static int FixupStimulusCodes( ap::template_1d_array<unsigned short int, true>& ioCodes )
+{
+  set<int> codes;
+  for( int i = 0; i <= ioCodes.gethighbound(0); ++i ) 
+    codes.insert( ioCodes( i ) );
+  codes.erase( 0 );
+  if( !codes.empty() )
+  {
+    int minCode = *codes.begin();
+    if( minCode > 1 )
+      for( int i = 0; i <= ioCodes.gethighbound(0); ++i ) 
+        ioCodes( i ) -= ( minCode - 1 );
+  }
+  return static_cast<int>( codes.size() );
+}
+
+static void Reset()
+{
+  g_pDetailsPage->Clear();
+  g_pDataPage->findChild<QProgressBar*>()->setValue( 0 );
+}
+// end jm
 
 void callback_status(string message)
 {
@@ -288,6 +313,19 @@ DetailsPage::DetailsPage(QWidget *parent)
   g_pDetailsPage = this;
 }
 
+void
+DetailsPage::Clear()
+{
+  QList<QLineEdit*> fields = findChildren<QLineEdit*>();
+  for( int i = 0; i < fields.size(); ++i )
+    fields[i]->setText( "" );
+  QList<QTextEdit*> fields2 = findChildren<QTextEdit*>();
+  for( int i = 0; i < fields2.size(); ++i )
+    fields2[i]->setText( "" );
+  findChild<QProgressBar*>()->setValue( 0 );
+}
+
+
 void ParametersPage::setDataPage(DataPage *dataPage)
 {
   pDataPage = dataPage;
@@ -362,6 +400,8 @@ void ParametersPage::ChSetTextHasChanged()
 
 void DataPage::LoadSettings()
 {
+  Reset();
+  
   QString inicfgFile = this->inicfgFileLineEdit->text();
   string szFile = this->inicfgFileLineEdit->text().toLocal8Bit().constData();
   char format = 'f';
@@ -424,6 +464,7 @@ void DataPage::LoadTrainingButton()
 
   if (files.count()>0)
   {
+    Reset();
     this->TrainingDataFilesList->clear();
     fPathArr_TrainingData.clear();
 
@@ -1844,13 +1885,11 @@ void GenerateFeatureWeightsThread::run()
   }
   emit signalProgressBar(1, 5, 3);
 
-  if (g_pDataPage->mode_TrainingData == 1 || g_pDataPage->mode_TrainingData == 2)
-    // Get score for input signal
-    NumberOfChoices = parms.NumMatrixRows + parms.NumMatrixColumns;
-  if (g_pDataPage->mode_TrainingData == 3 || g_pDataPage->mode_TrainingData == 4)
-    NumberOfChoices = static_cast<int>(state.TargetDefinitions.size());
-
-  if (!GetScore(signal_all_files, state.StimulusCode, g_pDataPage->tMUD, state.trialnr, windowlen, row_chset,
+  // jm Oct 24, 2012
+  ap::template_1d_array<unsigned short int, true> stimCode_GetScore = state.StimulusCode;
+  NumberOfChoices = FixupStimulusCodes( stimCode_GetScore );
+  
+  if (!GetScore(signal_all_files, stimCode_GetScore, g_pDataPage->tMUD, state.trialnr, windowlen, row_chset,
       parms.NumberOfSequences, NumberOfChoices, g_pDataPage->mode_TrainingData, pscore))
   {
   // Cristhian modification April 17, 2010
@@ -2129,13 +2168,11 @@ void ApplyFeatureWeightsThread::run()
   emit signalProgressText(oss.str().c_str());
   oss.str("");
 
-  if (g_pDataPage->mode_TrainingData == 1 || g_pDataPage->mode_TrainingData == 2)
-    // Get score for input signal
-    NumberOfChoices = parms.NumMatrixRows + parms.NumMatrixColumns;
-  if (g_pDataPage->mode_TrainingData == 3 || g_pDataPage->mode_TrainingData == 4)
-    NumberOfChoices = static_cast<int>(state.TargetDefinitions.size());
+  // jm Oct 24, 2012
+  ap::template_1d_array<unsigned short int, true> stimCode_GetScore = state.StimulusCode;
+  NumberOfChoices = FixupStimulusCodes( stimCode_GetScore );
 
-  GetScore(signal_all_files, state.StimulusCode, g_pDataPage->tMUD, state.trialnr, windowlen, row_chset,
+  GetScore(signal_all_files, stimCode_GetScore, g_pDataPage->tMUD, state.trialnr, windowlen, row_chset,
       parms.NumberOfSequences, NumberOfChoices, g_pDataPage->mode_TrainingData, pscore);
 
   emit signalProgressBar(2, 5, 4);
