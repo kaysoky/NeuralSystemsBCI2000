@@ -1,4 +1,5 @@
 import os,sys,time,glob
+import BCPy2000.Paths
 import BCI2000Tools.FileReader as FileReader
 import BCI2000Tools.DataFiles as DataFiles
 import BCI2000Tools.Classification as Classification
@@ -204,7 +205,7 @@ class CalibrationRun( Cacheable ):
 			self.result,self.cv = Classification.ClassifyERPs( pkfile, **self.__opts )
 		except Exception,e:
 			self.result,self.cv = None,None
-			self.errmsg = '%s: %s' % ( e.__class__.__name__, e.message )
+			self.errmsg = '%s: %s' % ( e.__class__.__name__, str(e) )
 			print self.errmsg
 		else:
 			self.errmsg = None
@@ -568,10 +569,26 @@ class CalibrationGUI( tk.Tk ):
 	def destroy( self ):
 		while len( self.__rows ): self.__rows.pop( 0 ).destroy()
 		tk.Tk.destroy( self )
+
+def test(directory, go=None):
 	
-def test():
-	m = CalibrationManager( directory='20111006_8525_A_002' )
-	j = CalibrationGUI( manager=m, go=False )
+	if go == None:
+		try: from IPython.core.interactiveshell import InteractiveShell
+		except ImportError:
+			try: __IPYTHON__
+			except NameError: in_ipython = False
+			else: in_ipython = True
+		else: in_ipython = InteractiveShell.initialized()
+		go = not in_ipython
+		go = True # seems to be needed on the mac
+			
+	m = CalibrationManager( directory=directory )
+	j = CalibrationGUI( manager=m, go=go )
+	
 	return m,j
 	
-if __name__ == "__main__": m,j = test()
+if __name__ == "__main__":
+	argv = getattr(sys, 'argv', [])
+	if len(argv) >= 2: directory = argv[1]
+	else: directory = '20111006_8525_A_002'
+	m,j = test(directory)

@@ -42,6 +42,7 @@ startup system
 
 start executable ${SRC}                 AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     $TIMINGFLAG
 start executable PythonSignalProcessing AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=${PYWD} --PythonSigClassFile=Streaming.py       --PythonSigLog=${PYLOGDIR}/###-sig.txt --PythonSigShell=1
+# TODO: insert xterm -e above for OSX
 start executable PythonApplication      AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=${PYWD} --PythonAppClassFile=TrialStructure.py  --PythonAppLog=${PYLOGDIR}/###-app.txt --PythonAppShell=0
 
 wait for connected 600
@@ -55,6 +56,8 @@ elseif [ ${MONTAGE} == D ]
 elseif [ ${MONTAGE} == 16 ]
 	load parameterfile ${PARMSDIR}/gUSBamp-Cap16.prm
 	load parameterfile ${PARMSDIR}/TransmitOnly8Channels.prm
+elseif [ ${MONTAGE} == Really16 ]
+	load parameterfile ${PARMSDIR}/gUSBamp-Cap16.prm
 elseif [ ${MONTAGE} == 16+2 ]
 	load parameterfile ${PARMSDIR}/gUSBampsBB-Cap16+Audio2.prm
 	load parameterfile ${PARMSDIR}/TransmitOnly8Channels.prm

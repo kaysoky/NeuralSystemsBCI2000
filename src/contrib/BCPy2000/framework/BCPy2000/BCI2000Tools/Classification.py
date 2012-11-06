@@ -53,6 +53,8 @@ def ClassifyERPs (
 	):
 
 	d = DataFiles.load(featurefiles, catdim=0, maxcount=maxcount)
+ 	if 'x' not in d: raise ValueError("found no trial data - no 'x' variable - in the specified files")
+ 	if 'y' not in d: raise ValueError("found no trial labels - no 'y' variable - in the specified files")
 
 	x = d['x']
 	y = numpy.array(d['y'].flat)
@@ -130,11 +132,13 @@ def ClassifyERPs (
 		Gp = c.featureweight(x=xp)
 	
 	u = SigTools.stfac(Gp, Ps)
-	u.channels = d['channels']
+	u.channels = d['channels']		
 	u.channels_used = wanted
 	u.fs = d['fs']
 	u.trchvar = trchvar
-	
+	try: u.channels = SigTools.ChannelSet(u.channels)
+	except: print 'WARNING: failed to convert channels to ChannelSet'
+
 	elapsed = time.time() - starttime
 	minutes = int(elapsed/60.0)
 	seconds = int(round(elapsed - minutes * 60.0))
@@ -167,6 +171,8 @@ def ClassifyERPs (
 			if not os.path.isabs(select): select = os.path.join(os.path.split(save)[0], select)
 			print "saving %s\n" % select
 			import shutil; shutil.copyfile(save, select)
+	
+	print description
 	return u,c
 	
 	

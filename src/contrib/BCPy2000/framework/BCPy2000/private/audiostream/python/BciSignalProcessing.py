@@ -405,10 +405,6 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		from BCI2000Tools.Classification import ClassifyERPs
 		files = self.find_data_files(xtn=xtn, runs=runs)
 		u,c = ClassifyERPs(files, C=C, gamma=gamma, rebias=rebias, save=save, **kwargs)
-		import SigTools
-		u.channels = SigTools.ChannelSet(u.channels)
-		
-		print u.description
 		return u,c
 		
 	#################################################################

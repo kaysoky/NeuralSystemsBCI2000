@@ -266,11 +266,6 @@ class BciSignalProcessing(BciGenericSignalProcessing):
 		files = self.find_data_files(xtn=xtn, runs=runs)
 		if runs == None: files = files[-1]
 		u,c = ClassifyERPs(files, C=C, rebias=rebias, save=save, **kwargs)
-
-		import SigTools
-		u.channels = SigTools.ChannelSet(u.channels)
-		
-		print u.description
 		return u,c
 		
 #################################################################
