@@ -159,9 +159,9 @@ def ClassifyERPs (
 			if save.lower().endswith('.pk'): save = save[:-3]
 			save = save + '_weights.prm'
 		print "\nsaving %s\n" % save
-		Parameters.Param(u.G.A, name='ERPClassifierWeights', tab='PythonSig', section='Epoch', comment=csummary).writeto(save)
-		Parameters.Param(c.model.bias, name='ERPClassifierBias', tab='PythonSig', section='Epoch', comment=csummary).appendto(save)
-		Parameters.Param(description, name='SignalProcessingDescription', tab='PythonSig').appendto(save)
+		Parameters.Param(u.G.A, Name='ERPClassifierWeights', Section='PythonSig', Subsection='Epoch', Comment=csummary).write_to(save)
+		Parameters.Param(c.model.bias, Name='ERPClassifierBias', Section='PythonSig', Subsection='Epoch', Comment=csummary).append_to(save)
+		Parameters.Param(description, Name='SignalProcessingDescription', Section='PythonSig').append_to(save)
 		if select:
 			if not isinstance(select, basestring): select = 'ChosenWeights.prm'
 			if not os.path.isabs(select): select = os.path.join(os.path.split(save)[0], select)

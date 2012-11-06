@@ -53,8 +53,8 @@ headers = grid.pop(0)
 for i,row in enumerate(grid): grid[i] = [x.replace('%20', ' ').replace('%','') for x in row.strip().split()]
 if 0:
 	from BCI2000Tools.Parameters import Param
-	gp = Param(grid, clabels=headers.split(), tab='PythonApp', section='Stimulus', name='Grid')
-	gp.appendto(os.path.join('..', 'parms','hex.prm'))
+	gp = Param(grid, ColumnLabels=headers.split(), Section='PythonApp', Subsection='Stimulus', Name='Grid')
+	gp.append_to(os.path.join('..', 'parms','hex.prm'))
 
 
 if 1:

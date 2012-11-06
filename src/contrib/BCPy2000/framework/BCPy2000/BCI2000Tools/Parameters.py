@@ -25,14 +25,16 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 __all__ = [
-	'makeparam',
-	'Param', 'ParamList',
+	'read_parameter_lines', 'make_param',
+	'Param', 'ParamList', 'make_bciprm',
 ]
 
-import numpy
+import numpy, os
+import re
+import copy
 
 def escape(s):
-	if isinstance(s, Param): return '{ ' + s.make_string(verbosity=-1) + ' }'
+	if isinstance(s, Param): return s.report(verbosity=-1)
 	if isinstance(s, bool): s = int(s)
 	if s == None: s = ''
 	elif not isinstance(s, basestring): s = str(s)
@@ -40,7 +42,7 @@ def escape(s):
 	out = ''
 	for c in s:
 		v = ord(c)
-		if c == '%' or not 32 < v < 127: out += '%%%02x' % v
+		if not 32 < v < 127 or c in '%{}[]': out += '%%%02x' % v
 		else: out += str(c)
 	return out
 
@@ -119,53 +121,111 @@ def chomp(x, key, d=None, insist=True, lower=False, name=None):
 	if lower: val = val.lower()
 	return val
 
-def convert(val, type, name='', check_nesting=False):
-	if name in (None,''): name = ''
-	else: name = ' "%s"' % name
+knownUnits = [
+	('Hz', 1, 'Hz'),   ('kHz', 1000, 'Hz'), ('MHz', 1000000, 'Hz'),
+	('mus',   1e-3, 'ms'), ('us',   1e-3, 'ms'), ('ms',   1, 'ms'), ('s',   1000, 'ms'), ('min',   60000, 'ms'),
+	('musec', 1e-3, 'ms'), ('usec', 1e-3, 'ms'), ('msec', 1, 'ms'), ('sec', 1000, 'ms'),
+	('muV', 1, 'muV'), ('uV', 1, 'muV'), ('mV', 1000, 'muV'), ( 'V', 1000000, 'muV'),
+]
+knownUnits.sort(cmp=lambda x,y:-cmp(len(x[0]),len(y[0])))
+
+def wrangle_units(val):
+	valstr = str(val).lower().strip()
+	if valstr.endswith('sec'): valstr = valstr[:-2]
+	for units,scaling,base_units in knownUnits:
+		if valstr.lower().endswith(units.lower()):
+			try: float(valstr[:-len(units)])
+			except: pass
+			else: valstr = valstr[:-len(units)]; break
+	else:
+		units = ''
+		base_units = ''
+		scaling = 1
+	return valstr, units, base_units, scaling
+	
+def convert(val, type, name='', check_nesting=False, mode='Value'):
 	if check_nesting and isinstance(val, list):
-		return makeparam(val, parent=name)
+		p = make_param(val, parent=name)
+		p.verbosity = -1
+		return p
+	if name in (None,''): namestr = ''
+	else: namestr = ' "%s"' % name
 	type = type.lower()
 	if type.endswith('list'):
-		val = [convert(x, type[:-len('list')], name, check_nesting=True) for x in val]
+		val = [convert(x, type[:-len('list')], name, check_nesting=True, mode=mode) for x in val]
 	elif type.endswith('matrix'):
-		val = numpy.array([[convert(x, type[:-len('matrix')], name, check_nesting=True) for x in row] for row in val])
-	elif type == 'float':
-		try: val = float(val)
-		except: print ('WARNING: invalid float value "%s" in parameter%s' % (str(val),name))
-	elif type == 'int':
-		try: val = int(val)
-		except: print ('WARNING: invalid int value "%s" in parameter%s' % (str(val),name))
+		val = numpy.array([[convert(x, type[:-len('matrix')], name, check_nesting=True, mode=mode) for x in row] for row in val])
+	else: # basic Param type: int, float or string.  So we must wrangle PhysicalUnits
+		valstr, units, base_units, scaling = wrangle_units(val)
+		numval = numpy.nan
+		floatval = intval = None
 		
+		try: numval = floatval = float(valstr)
+		except: pass
+		try: numval = intval = int(valstr)
+		except:
+			if floatval != None and float(int(floatval)) == floatval: intval = int(floatval)
+			
+		if type == 'float':
+			if floatval != None: numval = floatval
+			elif mode=='NumericValue': print ('WARNING: invalid float value "%s" in parameter%s' % (str(val),namestr))
+		if type == 'int':
+			if intval != None: numval = intval
+			elif mode=='NumericValue': print ('WARNING: invalid int value "%s" in parameter%s' % (str(val),namestr))		
+		if type == 'string':
+			val = str(val)
+		
+		if   mode == 'Value':        pass
+		elif mode == 'NumericValue': val = numval
+		elif mode == 'Units':        val = units
+		elif mode == 'BaseUnits':    val = base_units
+		elif mode == 'ScaledValue':  val = numval * scaling
+		elif mode == 'StringValue':  val = str(val)
+			
 	return val
 
-def makeparam(x, parent=None):
+
+enummatch = re.compile('^\s*(?P<val>.*?)[\s:]+(?P<key>[0-9]+)[\s,]+')   # match backwards from the end of a comment
+
+def make_param(x, parent=None):
+	"""Construct a Param object from a single BCI2000 parameter definition string.
+	"""###
 	d = {}
 	nExpected = 1
+	if isinstance(x, Param): x = x.report(verbosity=2)
 	if isinstance(x, basestring):
 		x,sep,comment = x.partition(' //')
-		comment = comment.strip()
-		if comment.endswith('(enumeration)'):
-			c = comment[:-len('(enumeration)')].rstrip()
-			c,colon,enum = c.partition(':')
-			yektsrif,ecaps,tnemmoc = c.rstrip()[::-1].partition(' ')
-			enum = yektsrif[::-1] + colon + enum
-			comment = tnemmoc[::-1]
-			d['enum'] = dict([(int(ekey.strip()),evalue.strip()) for ekey,colon,evalue in [ei.strip().partition(':') for ei in enum.split(',')]])
-			
-		d['comment'] = comment
 		x = split_elements(x)
+		comment = comment.strip()
+	else:
+		x = list(x)
+		comment = ''
 	if parent==None:
 		location = chomp(x, 'location').split(':')
-		chomp(location, 'tab', d)
-		chomp(location, 'section', d, insist=False)
-		chomp(location, 'filter',  d, insist=False)
-	type = chomp(x, 'type', d, lower=True)
+		chomp(location, 'Section', d)
+		chomp(location, 'Subsection', d, insist=False)
+		if len(location): d['Filter'] = ':'.join(location)
+	type = chomp(x, 'Type', d, lower=True)
 	if parent == None:
-		name = chomp(x, 'name', d)
+		name = chomp(x, 'Name', d)
 		if not name.endswith('='): raise ValueError('parameter name %s must end with =' % name)
-		d['name'] = name = name.rstrip('=')
+		d['Name'] = name = name.rstrip('=')
 	else:
 		name = parent + ' sub-parameter'
+	
+	if comment.endswith('(enumeration)'):
+		c = comment[:-len('(enumeration)')].rstrip()
+		c = c[::-1] + ' '
+		d['Enumeration'] = edict = {}
+		while len(c):
+			m = enummatch.match(c)
+			if not m: break
+			c = c[len(m.group()):]
+			edict[int(m.groupdict()['key'][::-1])] = m.groupdict()['val'][::-1]
+		comment = c[::-1].strip()
+		
+	d['Comment'] = comment
+	
 	islist = type.endswith('list')
 	ismatrix = type.endswith('matrix')
 
@@ -176,13 +236,14 @@ def makeparam(x, parent=None):
 	elif ismatrix:
 		rows = chomp(x, 'rows', name=name)
 		cols = chomp(x, 'cols', name=name)
-		if isinstance(rows, list): d['rlabels'],rows = rows,len(rows)
-		if isinstance(cols, list): d['clabels'],cols = cols,len(cols)
+		if isinstance(rows, list): d['RowLabels'],rows = rows,len(rows)
+		if isinstance(cols, list): d['ColumnLabels'],cols = cols,len(cols)
 		try: rows = int(rows)
 		except: raise ValueError('invalid number of rows "%s" in parameter %s' % (rows, name))
 		try: cols = int(cols)
 		except: raise ValueError('invalid number of columns "%s" in parameter %s' % (cols, name))
 		nExpected = rows * cols
+		if rows == 0 and cols > 0 and 'ColumnLabels' not in d: d['ColumnLabels'] = cols
 		
 	if len(x) < nExpected:
 		raise ValueError('expected %d elements in parameter %s - found only %d' % (nExpected,name,len(x)))
@@ -194,43 +255,84 @@ def makeparam(x, parent=None):
 		val = [[val.pop(0) for j in range(cols)] for i in range(rows)]
 	else:
 		val = x.pop(0)
-	d['value'] = convert(val, type, name)
+	d['Value'] = convert(val, type, name, mode='Value')
+	d['NumericValue'] = convert(val, type, name, mode='NumericValue')
+	d['Units'] = convert(val, type, name, mode='Units')
+	d['BaseUnits'] = convert(val, type, name, mode='BaseUnits')
+	d['ScaledValue'] = convert(val, type, name, mode='ScaledValue')
 	
 	x = x[-3:]
-	minVal = chomp(x, 'min', insist=False, name=name)
-	maxVal = chomp(x, 'max', insist=False, name=name)
-	d['default'] = chomp(x, 'default', insist=False, name=name)
-	d['range'] = ({'':None}.get(minVal,minVal), {'':None}.get(maxVal,maxVal))
-	if parent: d['name'] = 'Unnamed'
-	return Param(d)
+	d['DefaultValue'] = chomp(x, 'DefaultValue', insist=False, name=name)
+	d['LowRange'] = chomp(x, 'LowRange', insist=False, name=name)
+	d['HighRange'] = chomp(x, 'HighRange', insist=False, name=name)
+	p = Param(d)
+	return p
 	
+def write_to(self, file, append=False):
+	"""Write str(self) to the text file whose name or handle is given in <file>.
+	If the file already exists, overwrite it from the beginning unless append=True."""###
+	if isinstance(file, basestring):
+		mode = {True:'a', False:'w'}[append]
+		file = open(file, mode + 't')
+	if not append: file.seek(0)
+	file.write(str(self)+'\n')
+def append_to(self, file):
+	"""Append str(self) to the text file whose name or handle is given in <file>.
+	Create the file if it doesn't already exist."""###
+	return self.write_to(file, append=True)		
 
 class Param(object):
+	"""
+	A representation of a single BCI2000 parameter. Can be created from a definition string
+	using make_param(), or created directly from a value, e.g.  Param(5, Name='ModelOrder')
+	When print(), .report()ed, .write_to(file)ed or otherwise converted to str(),  the object
+	will try to make the best sense it can out of whatever information it has, and create a
+	BCI2000 definition string.  Note that the Param object passively stores whatever
+	.NumericValue, .Units, .BaseUnits and .ScaledValue are given to it, and does not attempt
+	to generate or update these when the .Value changes.  The .Value determines the string
+	representation.
 	
-	def __init__(self, value, tab='Tab', section='', filter='', name='ParamName', type='auto', comment='', fmt=None, range=(None,None), default=None, rlabels=None, clabels=None, enum=None):
-		self.tab = tab
-		self.section = section
-		self.filter = filter
-		self.type = type
-		self.name = name
-		self.rlabels = rlabels
-		self.clabels = clabels
-		self.range = range
-		self.default = default
-		self.comment = comment
-		self.enum = enum
-		self.verbosity = 1
-		self.value = value
-		if isinstance(value, dict):
-			x = value.pop('value')
-			self.__init__(x, **value)
-			
+	See also ParamList()
+	"""###
+	def __init__(self, Value, NumericValue=None, Units=None, BaseUnits=None, ScaledValue=None,
+	                   Section='Nowhere', Subsection=None, Filter=None, Type='auto', Name='Unnamed',
+	                   RowLabels=None, ColumnLabels=None,
+	                   DefaultValue=None, LowRange=None, HighRange=None, Comment='', Enumeration=None):
+		"""
+		Store any of the named arguments as attributes of the Param object.  Value is the only
+		mandatory argument.
+		"""###
+		self.Value = Value
+		self.NumericValue = NumericValue
+		self.Units = Units
+		self.BaseUnits = BaseUnits
+		self.ScaledValue = ScaledValue
+		self.Section = Section
+		self.Subsection = Subsection
+		self.Filter = Filter
+		self.Type = Type
+		self.Name = Name
+		self.RowLabels = RowLabels
+		self.ColumnLabels = ColumnLabels
+		self.DefaultValue = DefaultValue
+		self.LowRange = LowRange
+		self.HighRange = HighRange
+		self.Comment = Comment
+		self.Enumeration = Enumeration
+		self.verbosity = None
+		if isinstance(Value, dict):
+			x = Value.pop('Value')
+			self.__init__(x, **Value)
+	
+	def copy(self):
+		return copy.deepcopy(self)
+	
 	def determine_type(self):
-		x = self.value
+		x = self.Value
 		if isinstance(x, numpy.ndarray):
 			if len(x.shape) == 0: x = x.flat[0]
 			elif len(x.shape) in (1,2): x = x.tolist()
-			else: raise ValueError("don't know how to deal with >2-D arrays")		
+			else: raise ValueError("don't know how to deal with >2-D arrays")
 		if isinstance(x, bool): return 'bool'
 		if isinstance(x, int): return 'int'
 		if isinstance(x, float): return 'float'
@@ -241,106 +343,303 @@ class Param(object):
 			if False not in [isinstance(xi, (int,float,basestring)) for xi in x]: return 'list'
 			if False not in [isinstance(xi, (tuple,list)) for xi in x]: return 'matrix'
 		raise ValueError("don't know how to deal with this data type")
-	
-	def make_string(self, verbosity=1):
-		type = self.type
-		comment = self.comment
+		
+	def report(self, verbosity=1):
+		"""
+		Return a string defining the parameter in BCI2000 format.  Use verbosity >= 2
+		to include the DefaultValue, LowRange and HighRange fields.
+		"""###
+		type = self.Type
+		comment = self.Comment
 		if verbosity < 1: comment = ''
-		if verbosity >= 0: comment = ' // ' + comment
 		if type in (None, 'auto'): type = self.determine_type()
 		if type == 'bool':
 			type = 'int'
 			if verbosity >= 0: comment = comment + ' (boolean)'
-		elif type == 'int' and isinstance(self.enum, dict) and len(self.enum) and not comment.endswith('(enumeration)'):
-			if verbosity > 0: comment += ' ' + (', '.join([str(k)+': '+str(v) for k,v in sorted(self.enum.items())]))
+		elif type in ('int','intlist') and isinstance(self.Enumeration, dict) and len(self.Enumeration) and not comment.endswith('(enumeration)'):
+			if verbosity > 0: comment += ' ' + (', '.join([str(k)+': '+str(v) for k,v in sorted(self.Enumeration.items())]))
 			if verbosity >= 0: comment = comment + ' (enumeration)'
 		if verbosity < 0:
 			location = ''
 			name = ''
 		else:
-			name = self.name + '= '
-			location = self.tab
-			if self.section != None and len(self.section): location += ':' + self.section
-			if self.filter  != None and len(self.filter):  location += ':' + self.filter
+			name = self.Name + '= '
+			section    = {None:''}.get(self.Section, self.Section)
+			subsection = {None:''}.get(self.Subsection, self.Subsection)
+			filter     = {None:''}.get(self.Filter, self.Filter)
+			location = escape(section)
+			if len(subsection) or len(filter): location += ':' + escape(subsection)
+			if len(filter): location += ':' + escape(filter)
+			location = location.replace('::', ':%:')
 			location += ' '
 		s = location + type + ' ' + name
 		if type.endswith('list'):
-			x = self.value
-			# x = numpy.asarray(x).flat
+			x = self.Value
+			if numpy.asarray(x).ndim > 1: x = numpy.asarray(x).flatten()
 			s += str(len(x))
 			xstr = '    ' + ' '.join([escape(xi) for xi in x])
 		elif type.endswith('matrix'):
-			x = self.value
-			# x = numpy.asarray(x)
-			if self.rlabels == None: s += ' %d' % len(x)
-			elif len(self.rlabels) != len(x):    raise ValueError("wrong number of row labels (got %d, expected %d)" % (len(self.rlabels), len(x)))
-			else: s += ' { ' + ' '.join([escape(xi) for xi in self.rlabels]) + ' }' 
-			if self.clabels == None: s += ' %d' % len(x[0])
-			elif len(self.clabels) != len(x[0]): raise ValueError("wrong number of column labels (got %d, expected %d)" % (len(self.clabels), len(x[0])))
-			else: s += ' { ' + ' '.join([escape(xi) for xi in self.clabels]) + ' }'
+			x = self.Value
+			x = numpy.asarray(x)
+			while len(x.shape) < 2: x = numpy.expand_dims(x, -1)
+			nrows = self.Rows()
+			ncols = self.Columns()
+			
+			if self.RowLabels == None or isinstance(self.RowLabels, int): s += ' %d' % nrows
+			elif len(self.RowLabels) != nrows:    raise ValueError("wrong number of row labels (got %d, expected %d)" % (len(self.RowLabels), nrows))
+			else: s += ' { ' + ' '.join([escape(xi) for xi in self.RowLabels]) + ' }' 
+			
+			if self.ColumnLabels == None or isinstance(self.ColumnLabels, int): s += ' %d' % ncols
+			elif len(self.ColumnLabels) != ncols: raise ValueError("wrong number of column labels (got %d, expected %d)" % (len(self.ColumnLabels), ncols))
+			else: s += ' { ' + ' '.join([escape(xi) for xi in self.ColumnLabels]) + ' }'
+			
 			xstr = '    ' + '    '.join([' '.join([escape(xi) for xi in row]) for row in x])
 		else:
-			xstr = escape(self.value)
+			xstr = escape(self.Value)
 		if verbosity == 0 and len(xstr) > 10: xstr = '...'
 		s += ' ' + xstr
 		if verbosity >= 2:
-			range = self.range
-			if range == None: range = (None,None)
-			elif not isinstance(range, (tuple,list)): range = (0, range)
-			s += '   ' + escape(self.default) + ' ' + escape(range[0]) + ' ' + escape(range[1])
-		s += comment
+			s += '   ' + escape(self.DefaultValue) + ' ' + escape(self.LowRange) + ' ' + escape(self.HighRange)
+		if verbosity >= 0 and len(comment): comment = ' // ' + comment   # get rid of 'and len(comment)'  to close every parameter line with a //
+		if len(comment): s += comment
+		if verbosity < 0: s = '{ ' + s + ' }'
 		return s
-	
-	def writeto(self, file, append=False):
-		if isinstance(file, basestring):
-			mode = {True:'a', False:'w'}[append]
-			file = open(file, mode + 't')
-		if not append: file.seek(0)
-		file.write(str(self)+'\n')
 		
-	def appendto(self, file):
-		return self.writeto(file, append=True)		
+	write_to = write_to
+	append_to = append_to
 	
 	def __getslice__(self, s, e):
 		return self.__getitem__(slice(s,e,None))
 
 	def __getitem__(self, sub):
-		def conv(self, i, x):
+		def conv(self, i, x): # helper function for converting subscripts
 			if isinstance(x, (tuple, list)):
 				if i == None: return x.__class__([conv(self,i,xi) for i,xi in enumerate(x)])
 				else: return x.__class__([conv(self, i, xi) for xi in x])
 			if i == None: i = 0
 			if isinstance(x, slice): return slice(conv(self,i,x.start), conv(self,i,x.stop), conv(self,i,x.step))
-			if i == 0: lab = self.rlabels; labname = 'row'
-			elif i == 1: lab = self.clabels; labname = 'column'
+			if i == 0: lab = self.RowLabels; labname = 'row'
+			elif i == 1: lab = self.ColumnLabels; labname = 'column'
 			else: raise TypeError("too many subscripts")
+			if isinstance(lab, int): lab = None
 			if isinstance(x, int):
-				if x < 0:  x += numpy.asarray(self.value).shape[i]
+				if x < 0:  x += numpy.asarray(self.Value).shape[i]
 				return x
 			if not isinstance(x, basestring): return x
 			if lab == None or x not in lab: raise ValueError("%s label '%s' not found" % (labname, x))
 			return lab.index(x)
 		sub = conv(self, None, sub)
-		if not hasattr(sub, '__len__') or len(sub) == 1: result = numpy.asarray(self.value).__getitem__(sub)
-		elif len(sub) == 2: result = numpy.asarray(numpy.asmatrix(self.value).__getitem__(sub))
-		else: result = numpy.asarray(self.value).__getitem__(sub)
+		if not hasattr(sub, '__len__') or len(sub) == 1: result = numpy.asarray(self.Value).__getitem__(sub)
+		elif len(sub) == 2: result = numpy.asarray(numpy.asmatrix(self.Value).__getitem__(sub))
+		else: result = numpy.asarray(self.Value).__getitem__(sub)
 		if isinstance(result, numpy.ndarray):
 			if len(result.shape) < 1: result = result.tolist()
 			elif len(result.shape) == 1 and result.dtype.kind not in 'fib': result = result.tolist()
 		return result
 
 	def __repr__(self):
-		return '<%s object at 0x%08X>: %s' % (self.__class__.__name__, id(self), self.make_string(verbosity=0))
+		return '<%s object at 0x%08X>: %s' % (self.__class__.__name__, id(self), self.report(verbosity=0))
 		
 	def __str__(self):
-		return self.make_string(verbosity=max(1, self.verbosity))
+		return self.report(verbosity={None:1}.get(self.verbosity, self.verbosity))
+
+	def __cmp__(self, other):
+		if not isinstance(other, Param): return 1
+		def s(x): return {None:''}.get(x,x)
+		def f(x): return '%s:%s: %s' % (s(x.Section), s(x.Subsection), s(x.Name))
+		return cmp(f(self), f(other))
+	
+	def dbreport(self):
+		print '%s (%s) :' % (self.Name, self.Type)
+		for f in ['Value', 'NumericValue', 'Units', 'ScaledValue', 'BaseUnits']:
+			v = getattr(self, f)
+			s = repr(v)
+			head = (' ' * (20-len(f))) + f + ' = '
+			tail = ('\n' + ' ' * len(head)).join(s.split('\n'))
+			if '\n' in tail: tail += '\n'
+			print head + tail
+		print
+	
+	def Elements(self):
+		return self.Rows() * self.Columns()
+		
+	def Rows(self):
+		type = self.Type.lower()
+		if type == 'auto': type = self.determine_type()
+		if type.endswith('matrix'): return numpy.asarray(self.Value).shape[0]
+		else: return 1
+	
+	def Columns(self):
+		type = self.Type.lower()
+		if type == 'auto': type = self.determine_type()
+		if type.endswith('list'): return len(self.Value)
+		elif type.endswith('matrix'):
+			if self.Rows() == 0:
+				if isinstance(self.ColumnLabels, int): return self.ColumnLabels
+				elif self.ColumnLabels != None: return len(self.ColumnLabels)
+				else: return 0
+			else:
+				shape = numpy.asarray(self.Value).shape
+				if len(shape) < 2: return 1
+				else: return shape[1]
+		else: return 1
+	
+	def merge(self, newer):
+		"""
+		Return a copy of the Param, with the Value imported from the <newer> Param.
+		Keep as much of the older meta-info as is compatible with the new Value.
+		"""###
+		out = self.copy()
+		out.Value = newer.Value
+		out.NumericValue = None
+		out.ScaledValue = None
+		out.Units = None
+		out.BaseUnits = None
+		if out.RowLabels != None:
+			if isinstance(out.RowLabels, int): oldRows = out.RowLabels
+			else: oldRows = len(out.RowLabels)
+			if oldRows != newer.Rows(): out.RowLabels = None
+		if out.ColumnLabels != None:
+			if isinstance(out.ColumnLabels, int): oldColumns = out.ColumnLabels
+			else: oldColumns = len(out.ColumnLabels)
+			if oldColumns != newer.Columns(): out.ColumnLabels = None
+			
+		if out.RowLabels == None or newer.RowLabels != None: out.RowLabels = newer.RowLabels
+		if out.ColumnLabels == None or newer.ColumnLabels != None: out.ColumnLabels = newer.ColumnLabels
+		return make_param(out)
+		
+
+def read_parameter_lines(f):
+	if isinstance(f, basestring): f = open(f, 'rt')
+	start = f.tell()
+	line = f.readline()
+	if len(line) < 1000 and 'HeaderLen=' in line:
+		hl = line.split(); hd = {}
+		while len(hl) >= 2: k = hl.pop(0).strip().rstrip('='); v = hl.pop(0).strip(); hd[k] = v
+		lines = []
+		headerlen = int(hd['HeaderLen'])
+		stop = start + headerlen
+		while f.tell() < stop and len(line) and not line.startswith('[ Parameter Definition ]'): line = f.readline()
+		while f.tell() < stop and len(line): lines.append(f.readline().strip())
+	else:
+		f.seek(start, 0)
+		lines = [x.strip() for x in f.readlines() if len(x.strip())]
+	return lines
+
 
 class ParamList(list):
 	def __init__(self, x=()):
-		if isinstance(x, file): x = x.readlines()
+		"""
+		Uses make_param() to convert a file, or a string, or a list of strings, into a list of
+		Param objects. Manage the result like a regular list, .collate() it, .report() it,
+		print(it) or .write_to(file) as desired.
+		"""###
+		if isinstance(x, basestring) and len(x) < 1024 and not '\n' in x and os.path.isfile(x): x = open(x, 'rt')
+		if isinstance(x, file): x = read_parameter_lines(x)
 		if isinstance(x, basestring): x = x.replace('\r\n', '\n').replace('\r', '\n').split('\n')
-		list.__init__(self, [makeparam(str(xi)) for xi in x if len(str(xi).strip())])
+		if not isinstance(x, (tuple,list)): x = [x]
+		for xi in x:
+			if xi == None: continue
+			if isinstance(xi, basestring) and len(xi.strip()) == 0: continue
+			if not isinstance(xi, Param): xi = make_param(str(xi))
+			self.append(xi)
+
+	def dbreport(self): [p.dbreport() for p in self if hasattr(p, 'dbreport')]
+	
+	write_to = write_to
+	append_to = append_to
+
+	def collate(self, merge_meta=False):
+		"""
+		Prune the list in place:  later elements are moved so that they overwrite earlier
+		elements with the same .Name; elements without a .Name attribute are removed.
+		"""###
+		i,d = 0,{}
+		while i < len(self):
+			name = getattr(self[i], 'Name', None)
+			if name == None: self.pop(i)
+			elif name in d:
+				if merge_meta: self[d[name]] = self[d[name]].merge(self.pop(i))
+				else: self[d[name]] = self.pop(i)
+			else: d[name] = i; i += 1
+
+	def report(self, verbosity=1, delim='\n'):
+		"""Return a string representation of the parameter definintions. Use verbosity >= 2
+		to include the DefaultValue, LowRange and HighRange fields.
+		"""###
+		return delim.join([xi.report(verbosity=verbosity) for xi in self])
+		
 	def __str__(self):
 		return '\n'.join([str(xi) for xi in self])
 	def __repr__(self):
 		return '<%s object at 0x%08X>: [%s\n]\n' % (self.__class__.__name__, id(self), '\n  '.join(['']+[repr(xi) for xi in self]))
+	def _getAttributeNames(self): # for IPython, but also a handy helper for __getitem__ and __getattr__
+		return [p.Name for p in self if getattr(p, 'Name', None) != None]
+	def __getitem__(self, sub): # de-reference Param elements dict-like, by their .Name
+		if isinstance(sub, basestring):
+			names = self._getAttributeNames()
+			if sub in names: sub = len(self) - 1 - names[::-1].index(sub)
+			else: raise KeyError(sub)
+		result = list.__getitem__(self, sub)
+		if isinstance(result, list) and not isinstance(result, self.__class__):
+			result = self.__class__(result)
+		return result
+	def __getslice__(self, *pargs, **kwargs):
+		result = list.__getslice__(self, *pargs, **kwargs)
+		if isinstance(result, list) and not isinstance(result, self.__class__):
+			result = self.__class__(result)
+		return result
+	def __getattr__(self, name): # de-reference Param elements lazily as virtual attributes of the list
+		try: return self[name]
+		except KeyError: raise AttributeError("'%s' object has no attribute '%s'" % (self.__class__.__name__, name))
+	def __iadd__(self, other):
+		if not isinstance(other, self.__class__): other = self.__class__(other)
+		list.__iadd__(self, other); return self
+	def __imul__(self, fac): list.__imul__(self, fac); return self
+	def __add__(self, other): result = self.__class__(self); result += other; return result
+	def __mul__(self, other): result = self.__class__(self); result *= other; return result
+	def __rmul__(self, other): return self.__mul__(other)
+	
+def make_bciprm(*pargs, **kwargs):
+	"""
+	Merge parameters from multiple sources.
+	# TODO
+	"""###
+	out = ParamList()
+	pl = list(pargs)
+	pl.append(kwargs)
+	def isfilename(x): return isinstance(x, basestring) and 0 < len(x) < 1024 and '\n' not in x and os.path.isfile(x)
+	def islegalkey(x): return isinstance(x, basestring) and 0 < len(x) < 256 and False not in [c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' for c in x] and x[0] not in '0123456789'
+	key = None
+	while len(pl):
+		p = pl.pop(0)
+		if key in ['>', '>>']:
+			if not isinstance(p, basestring) or not len(p.strip()):
+				raise ValueError("a filename is expected after '>' or '>>'")
+			p = key + p
+			key = None		
+		if isinstance(p, basestring) and p.startswith('>>') and len(p.lstrip(' >')):
+			a = ParamList(out); a.collate(merge_meta=True); a.append_to(p.lstrip(' >'))
+		elif isinstance(p, basestring) and p.startswith('>') and len(p.lstrip(' >')):
+			a = ParamList(out); a.collate(merge_meta=True); a.write_to(p.lstrip(' >'))
+		elif (islegalkey(p) or p in ['>', '>>']) and key == None: key = p; continue
+		elif isfilename(p) and key == None: out += ParamList(p)
+		elif isinstance(p, dict):
+			if key != None: raise ValueError('did not expect dict object to follow parameter name "%s"' % str(key) )
+			for k,v in sorted(p.items()): pl = [k,v] + pl
+		elif isinstance(p, Param):
+			if key != None: raise ValueError('did not expect Param object to follow parameter name "%s"' % str(key) )
+			out.append(p)
+		elif isinstance(p, (tuple,list)) and key == None:
+			pl = list(p) + pl
+		elif isinstance(p, basestring) and key == None:
+			out.append(make_param(p))
+		elif key == None:
+			raise ValueError('%s argument received without a preceding parameter name' % p.__class__.__name__)
+		else:
+			out.append(make_param(Param(p, Name=key)))
+			key = None
+	if key != None:
+		raise ValueError('extraneous key "%s" was passed without accompanying value' % key)
+	out.collate(merge_meta=True)
+	return out

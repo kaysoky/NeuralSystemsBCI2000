@@ -69,7 +69,7 @@ def plot(*pargs,**kwargs):
 	balance = kwargs.pop('balance', None)
 	stem = kwargs.pop('stem', False)
 	aspect = kwargs.pop('aspect', None)
-	axlabelkwargs = filterdict(kwargs, ['title', 'xlabel', 'ylabel'])
+	axkwargs = filterdict(kwargs, ['title', 'xlabel', 'ylabel', 'ylim', 'xlim'])
 
 	pargs = list(pargs) # makes a copy, at least of the list container
 	allvec = True
@@ -115,7 +115,7 @@ def plot(*pargs,**kwargs):
 		yl = balance + numpy.array([-1,+1]) * max(abs(yl - balance))
 		ax.set_ylim(yl)
 	if aspect != None: ax.set_aspect({'image':'equal'}.get(aspect, aspect))
-	ax.set(**axlabelkwargs)
+	ax.set(**axkwargs)
 	if drawnow: pylab.draw()
 	return p
 	
