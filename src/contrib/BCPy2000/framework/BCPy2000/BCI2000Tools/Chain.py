@@ -1,3 +1,29 @@
+# -*- coding: utf-8 -*-
+# 
+#   $Id$
+#   
+#   This file is part of the BCPy2000 framework, a Python framework for
+#   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
+#   platform, for the purpose of realtime biosignal processing.
+# 
+#   Copyright (C) 2007-12  Jeremy Hill, Thomas Schreiner,
+#                          Christian Puzicha, Jason Farquhar
+#   
+#   bcpy2000@bci2000.org
+#   
+#   The BCPy2000 framework is free software: you can redistribute it
+#   and/or modify it under the terms of the GNU General Public License
+#   as published by the Free Software Foundation, either version 3 of
+#   the License, or (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 __all__ = [
 	'bci2000chain',
 ]
@@ -15,6 +41,14 @@ def bci2000chain(datfile, chain='SpectralSignalProcessing', parms=(), dims='auto
 	
 	This is a provisional Python equivalent for tools/matlab/bci2000chain.m
 	
+	Excuse the relative paths - this example works if you're currently working in the root
+	directory of the BCI2000 distro:
+	
+	    bci2000chain(datfile='data/samplefiles/eeg3_2.dat',
+	                 chain='TransmissionFilter|SpatialFilter|ARFilter',
+	                 binpath='tools/cmdline',
+	                 parms=['tools/matlab/ExampleParameters.prm'], SpatialFilterType=3)
+	
 	TODO: documentation
 	
 	For clues, see http://www.bci2000.org/wiki/index.php/User_Reference:Matlab_Tools
@@ -25,7 +59,7 @@ def bci2000chain(datfile, chain='SpectralSignalProcessing', parms=(), dims='auto
 	tools/cmdline directory to your $PATH variable before starting Python, or supply its location
 	every time while calling, in the <binpath> argument.
 
-	TODO: test on Windoze	
+	TODO: test on Windoze
 	
 	"""###
 	
