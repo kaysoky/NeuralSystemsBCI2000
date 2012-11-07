@@ -26,12 +26,14 @@
 #
 __all__ = [
 	'read_parameter_lines', 'make_param',
-	'Param', 'ParamList', 'make_bciprm',
+	'Param', 'ParamList',
+	'make_bciprm', 'read_bcidate',
 ]
 
 import numpy, os
 import re
 import copy
+import time
 
 def escape(s):
 	if isinstance(s, Param): return s.report(verbosity=-1)
@@ -327,128 +329,6 @@ class Param(object):
 	def copy(self):
 		return copy.deepcopy(self)
 	
-	def determine_type(self):
-		x = self.Value
-		if isinstance(x, numpy.ndarray):
-			if len(x.shape) == 0: x = x.flat[0]
-			elif len(x.shape) in (1,2): x = x.tolist()
-			else: raise ValueError("don't know how to deal with >2-D arrays")
-		if isinstance(x, bool): return 'bool'
-		if isinstance(x, int): return 'int'
-		if isinstance(x, float): return 'float'
-		if isinstance(x, basestring): return 'string'
-		if isinstance(x, (tuple,list)):
-			if False not in [isinstance(xi, int) for xi in x]: return 'intlist'
-			if False not in [isinstance(xi, (int,float)) for xi in x]: return 'floatlist'
-			if False not in [isinstance(xi, (int,float,basestring)) for xi in x]: return 'list'
-			if False not in [isinstance(xi, (tuple,list)) for xi in x]: return 'matrix'
-		raise ValueError("don't know how to deal with this data type")
-		
-	def report(self, verbosity=1):
-		"""
-		Return a string defining the parameter in BCI2000 format.  Use verbosity >= 2
-		to include the DefaultValue, LowRange and HighRange fields.
-		"""###
-		type = self.Type
-		comment = self.Comment
-		if verbosity < 1: comment = ''
-		if type in (None, 'auto'): type = self.determine_type()
-		if type == 'bool':
-			type = 'int'
-			if verbosity >= 0: comment = comment + ' (boolean)'
-		elif type in ('int','intlist') and isinstance(self.Enumeration, dict) and len(self.Enumeration) and not comment.endswith('(enumeration)'):
-			if verbosity > 0: comment += ' ' + (', '.join([str(k)+': '+str(v) for k,v in sorted(self.Enumeration.items())]))
-			if verbosity >= 0: comment = comment + ' (enumeration)'
-		if verbosity < 0:
-			location = ''
-			name = ''
-		else:
-			name = self.Name + '= '
-			section    = {None:''}.get(self.Section, self.Section)
-			subsection = {None:''}.get(self.Subsection, self.Subsection)
-			filter     = {None:''}.get(self.Filter, self.Filter)
-			location = escape(section)
-			if len(subsection) or len(filter): location += ':' + escape(subsection)
-			if len(filter): location += ':' + escape(filter)
-			location = location.replace('::', ':%:')
-			location += ' '
-		s = location + type + ' ' + name
-		if type.endswith('list'):
-			x = self.Value
-			if numpy.asarray(x).ndim > 1: x = numpy.asarray(x).flatten()
-			s += str(len(x))
-			xstr = '    ' + ' '.join([escape(xi) for xi in x])
-		elif type.endswith('matrix'):
-			x = self.Value
-			x = numpy.asarray(x)
-			while len(x.shape) < 2: x = numpy.expand_dims(x, -1)
-			nrows = self.Rows()
-			ncols = self.Columns()
-			
-			if self.RowLabels == None or isinstance(self.RowLabels, int): s += ' %d' % nrows
-			elif len(self.RowLabels) != nrows:    raise ValueError("wrong number of row labels (got %d, expected %d)" % (len(self.RowLabels), nrows))
-			else: s += ' { ' + ' '.join([escape(xi) for xi in self.RowLabels]) + ' }' 
-			
-			if self.ColumnLabels == None or isinstance(self.ColumnLabels, int): s += ' %d' % ncols
-			elif len(self.ColumnLabels) != ncols: raise ValueError("wrong number of column labels (got %d, expected %d)" % (len(self.ColumnLabels), ncols))
-			else: s += ' { ' + ' '.join([escape(xi) for xi in self.ColumnLabels]) + ' }'
-			
-			xstr = '    ' + '    '.join([' '.join([escape(xi) for xi in row]) for row in x])
-		else:
-			xstr = escape(self.Value)
-		if verbosity == 0 and len(xstr) > 10: xstr = '...'
-		s += ' ' + xstr
-		if verbosity >= 2:
-			s += '   ' + escape(self.DefaultValue) + ' ' + escape(self.LowRange) + ' ' + escape(self.HighRange)
-		if verbosity >= 0 and len(comment): comment = ' // ' + comment   # get rid of 'and len(comment)'  to close every parameter line with a //
-		if len(comment): s += comment
-		if verbosity < 0: s = '{ ' + s + ' }'
-		return s
-		
-	write_to = write_to
-	append_to = append_to
-	
-	def __getslice__(self, s, e):
-		return self.__getitem__(slice(s,e,None))
-
-	def __getitem__(self, sub):
-		def conv(self, i, x): # helper function for converting subscripts
-			if isinstance(x, (tuple, list)):
-				if i == None: return x.__class__([conv(self,i,xi) for i,xi in enumerate(x)])
-				else: return x.__class__([conv(self, i, xi) for xi in x])
-			if i == None: i = 0
-			if isinstance(x, slice): return slice(conv(self,i,x.start), conv(self,i,x.stop), conv(self,i,x.step))
-			if i == 0: lab = self.RowLabels; labname = 'row'
-			elif i == 1: lab = self.ColumnLabels; labname = 'column'
-			else: raise TypeError("too many subscripts")
-			if isinstance(lab, int): lab = None
-			if isinstance(x, int):
-				if x < 0:  x += numpy.asarray(self.Value).shape[i]
-				return x
-			if not isinstance(x, basestring): return x
-			if lab == None or x not in lab: raise ValueError("%s label '%s' not found" % (labname, x))
-			return lab.index(x)
-		sub = conv(self, None, sub)
-		if not hasattr(sub, '__len__') or len(sub) == 1: result = numpy.asarray(self.Value).__getitem__(sub)
-		elif len(sub) == 2: result = numpy.asarray(numpy.asmatrix(self.Value).__getitem__(sub))
-		else: result = numpy.asarray(self.Value).__getitem__(sub)
-		if isinstance(result, numpy.ndarray):
-			if len(result.shape) < 1: result = result.tolist()
-			elif len(result.shape) == 1 and result.dtype.kind not in 'fib': result = result.tolist()
-		return result
-
-	def __repr__(self):
-		return '<%s object at 0x%08X>: %s' % (self.__class__.__name__, id(self), self.report(verbosity=0))
-		
-	def __str__(self):
-		return self.report(verbosity={None:1}.get(self.verbosity, self.verbosity))
-
-	def __cmp__(self, other):
-		if not isinstance(other, Param): return 1
-		def s(x): return {None:''}.get(x,x)
-		def f(x): return '%s:%s: %s' % (s(x.Section), s(x.Subsection), s(x.Name))
-		return cmp(f(self), f(other))
-	
 	def dbreport(self):
 		print '%s (%s) :' % (self.Name, self.Type)
 		for f in ['Value', 'NumericValue', 'Units', 'ScaledValue', 'BaseUnits']:
@@ -507,8 +387,216 @@ class Param(object):
 		if out.RowLabels == None or newer.RowLabels != None: out.RowLabels = newer.RowLabels
 		if out.ColumnLabels == None or newer.ColumnLabels != None: out.ColumnLabels = newer.ColumnLabels
 		return make_param(out)
-		
 
+	def determine_type(self, type=None):
+		if type == None: type = self.Type
+		if type not in (None, 'auto'): return type.lower()
+		
+		x = self.Value
+		if isinstance(x, numpy.ndarray):
+			if len(x.shape) == 0: x = x.flat[0]
+			elif len(x.shape) in (1,2): x = x.tolist()
+			else: raise ValueError("don't know how to deal with >2-D arrays")
+		if isinstance(x, bool): return 'bool'
+		if isinstance(x, int): return 'int'
+		if isinstance(x, float): return 'float'
+		if isinstance(x, basestring): return 'string'
+		if isinstance(x, (tuple,list)):
+			if False not in [isinstance(xi, int) for xi in x]: return 'intlist'
+			if False not in [isinstance(xi, (int,float)) for xi in x]: return 'floatlist'
+			if False not in [isinstance(xi, (int,float,basestring)) for xi in x]: return 'list'
+			if False not in [isinstance(xi, (tuple,list)) for xi in x]: return 'matrix'
+		raise ValueError("don't know how to deal with this data type")
+	
+	def format(self, field, type=None, verbosity=1, width=0, widths_out=None):
+				
+		def getval(self, type):
+			val = self.Value
+			if type.endswith('list'):
+				if numpy.asarray(val).ndim != 1: val = numpy.asarray(val).flatten()
+			elif type.endswith('matrix'):
+				val = numpy.asarray(val)
+				while len(val.shape) < 2: val = numpy.expand_dims(val, -1)
+			return val
+
+		def justify(txt, mode, width, field, widths_out, trailingspace):
+			if mode == 'already done': return txt
+			if mode == 'numeric':
+				# TODO: make more sophisticated
+				txt = (' '  * (width-len(txt)-trailingspace)) + txt
+			if len(txt): txt += ' ' * trailingspace
+			if widths_out != None:
+				widths_out[field] = widths_out.get(field, [])
+				widths_out[field].append(len(txt))
+			txt += ' ' * (width-len(txt))
+			return txt
+		
+		just = 'left'
+		trailingspace = 1
+	
+		if field == 'Location':
+			if verbosity < 0:
+				txt = ''
+			else:
+				section    = {None:''}.get(self.Section, self.Section)
+				subsection = {None:''}.get(self.Subsection, self.Subsection)
+				filter     = {None:''}.get(self.Filter, self.Filter)
+				txt = escape(section)
+				extra = ''
+				if len(subsection) or len(filter): extra += ':' + escape(subsection)
+				if len(filter): extra += ':' + escape(filter)
+				#if verbosity == 0 and len(extra) > 10: extra = ':...'
+				if verbosity == 0: extra = ''
+				txt += extra
+				txt = txt.replace('::', ':%:')
+				
+		elif field == 'Type':
+			txt = self.determine_type(type)
+			if txt in ('bool', 'enum'): txt = 'int'
+			
+		elif field == 'Name':
+			txt = self.Name
+			if verbosity < 0: txt = ''
+			elif len(txt) == 0: txt = 'Unnamed'
+			if len(txt) and not txt.endswith('='): txt += '='
+		
+		elif field == 'RowLabels':
+			type = self.determine_type(type)
+			if type.endswith('list'):
+				val = getval(self, type)
+				txt = str(len(val))
+				just = 'numeric'
+				trailingspace = 4
+			elif type.endswith('matrix'):
+				nrows = self.Rows()
+				if self.RowLabels == None or isinstance(self.RowLabels, int): txt = str(nrows); just = 'numeric'
+				elif len(self.RowLabels) != nrows:    raise ValueError("wrong number of row labels (got %d, expected %d)" % (len(self.RowLabels), nrows))
+				else:
+					txt = ' '.join([escape(lab) for lab in self.RowLabels])
+					if verbosity == 0 and len(txt) > 10: txt = '...'
+					txt = '{ ' + txt + ' }'
+			else:
+				txt = ''
+				
+		elif field == 'ColumnLabels':
+			type = self.determine_type(type)
+			if type.endswith('matrix'):
+				ncols = self.Columns()
+				if self.ColumnLabels == None or isinstance(self.ColumnLabels, int): txt = str(ncols); just = 'numeric'
+				elif len(self.ColumnLabels) != ncols: raise ValueError("wrong number of column labels (got %d, expected %d)" % (len(self.ColumnLabels), ncols))
+				else:
+					txt = ' '.join([escape(lab) for lab in self.ColumnLabels])
+					if verbosity == 0 and len(txt) > 10: txt = '...'
+					txt = '{ ' + txt + ' }'
+				trailingspace = 4
+			else:
+				txt = ''
+		
+		elif field == 'Value':
+			type = self.determine_type(type)
+			val = getval(self, type)
+			just = 'numeric' # TODO: type-sensitive??
+			if type.endswith('list'):
+				txt = ' '.join([justify(escape(element), just, width, field, widths_out, trailingspace=1) for element in val])
+				just = 'already done'
+			elif type.endswith('matrix'):
+				txt = '    '.join([' '.join([justify(escape(element), just, width, field, widths_out, trailingspace=1) for element in row]) for row in val])
+				just = 'already done'
+			else:
+				txt = escape(self.Value)
+			if verbosity == 0 and len(txt) > 10: txt = '...'
+		
+		elif field == 'DefaultValue':
+			if verbosity < 2: txt = ''
+			else: txt = '    ' + escape(self.DefaultValue); just = 'numeric'
+		
+		elif field == 'LowRange':
+			if verbosity < 2: txt = ''
+			else: txt = escape(self.LowRange); just = 'numeric'
+		
+		elif field == 'HighRange':
+			if verbosity < 2: txt = ''
+			else: txt = escape(self.HighRange); just = 'numeric'
+		
+		elif field == 'Comment':
+			mark_empty_comments = 0
+			if verbosity == 0: txt = ''
+			else: txt = self.Comment.strip()
+			type = self.determine_type(type)
+			if type == 'bool' and not txt.endswith('(boolean)'): txt += ' (boolean)'
+			elif type in ('int', 'intlist', 'enum') and isinstance(self.Enumeration, dict) and len(self.Enumeration) and not txt.endswith('(enumeration)'):
+				if verbosity > 0: txt += ' ' + (', '.join([str(k)+': '+str(v) for k,v in sorted(self.Enumeration.items())]))
+				if verbosity >= 0: txt += ' (enumeration)'
+			if verbosity >= 0 and (mark_empty_comments or len(txt)): txt = '// ' + txt
+		
+		else:
+			raise ValueError("unknown field '%s'" % field)
+			
+		return justify(txt, just, width, field, widths_out, trailingspace=trailingspace)
+
+	def report(self, verbosity=1, widths_out=None, widths_in=None, reprtxt=False):
+		"""
+		Return a string defining the parameter in BCI2000 format.  Use verbosity >= 2
+		to include the DefaultValue, LowRange and HighRange fields.
+		"""###
+		type = self.determine_type()
+		txt = ''; width = 0
+		fields = 'Location Type Name RowLabels ColumnLabels Value DefaultValue LowRange HighRange Comment'
+		for field in fields.split():
+			if widths_in != None: width = widths_in.get(field, 0)
+			txt += self.format(field=field, type=type, verbosity=verbosity, width=width, widths_out=widths_out)
+		if verbosity < 0: txt = '{ ' + txt.strip() + ' }'
+		if reprtxt: txt = '<%s object at 0x%08X>: %s' % (self.__class__.__name__, id(self), txt)
+		return txt
+	
+	def write_to(self, file, append=False, **kwargs): return write_to(self.report(**kwargs), file=file, append=append)
+	def append_to(self, file, **kwargs): return write_to(self.report(**kwargs), file=file, append=True)
+			
+	def __getslice__(self, s, e):
+		return self.__getitem__(slice(s,e,None))
+
+	def __getitem__(self, sub):
+		def conv(self, i, x): # helper function for converting subscripts
+			if isinstance(x, (tuple, list)):
+				if i == None: return x.__class__([conv(self,i,xi) for i,xi in enumerate(x)])
+				else: return x.__class__([conv(self, i, xi) for xi in x])
+			if i == None: i = 0
+			if isinstance(x, slice): return slice(conv(self,i,x.start), conv(self,i,x.stop), conv(self,i,x.step))
+			if i == 0: lab = self.RowLabels; labname = 'row'
+			elif i == 1: lab = self.ColumnLabels; labname = 'column'
+			else: raise TypeError("too many subscripts")
+			if isinstance(lab, int): lab = None
+			if isinstance(x, int):
+				if x < 0:  x += numpy.asarray(self.Value).shape[i]
+				return x
+			if not isinstance(x, basestring): return x
+			if lab == None or x not in lab: raise ValueError("%s label '%s' not found" % (labname, x))
+			return lab.index(x)
+		sub = conv(self, None, sub)
+		if not hasattr(sub, '__len__') or len(sub) == 1: result = numpy.asarray(self.Value).__getitem__(sub)
+		elif len(sub) == 2: result = numpy.asarray(numpy.asmatrix(self.Value).__getitem__(sub))
+		else: result = numpy.asarray(self.Value).__getitem__(sub)
+		if isinstance(result, numpy.ndarray):
+			if len(result.shape) < 1: result = result.tolist()
+			elif len(result.shape) == 1 and result.dtype.kind not in 'fib': result = result.tolist()
+		return result
+
+	def __repr__(self):
+		return self.report(verbosity=0, reprtxt=True)
+		
+	def __str__(self):
+		return self.report(verbosity={None:1}.get(self.verbosity, self.verbosity))
+
+	def __cmp_name__(self, other):
+		if not isinstance(other, Param): return 1
+		return cmp(self.Name, other.Name)
+	def __cmp_location__(self, other):
+		if not isinstance(other, Param): return 1
+		def s(x): return {None:''}.get(x,x)
+		def f(x): return '%s:%s: %s' % (s(x.Section), s(x.Subsection), s(x.Name))
+		return cmp(f(self), f(other))
+	__cmp__ = __cmp_name__
+			
 def read_parameter_lines(f):
 	if isinstance(f, basestring): f = open(f, 'rt')
 	start = f.tell()
@@ -546,8 +634,8 @@ class ParamList(list):
 
 	def dbreport(self): [p.dbreport() for p in self if hasattr(p, 'dbreport')]
 	
-	write_to = write_to
-	append_to = append_to
+	def write_to(self, file, append=False, **kwargs): return write_to(self.report(**kwargs), file=file, append=append)
+	def append_to(self, file, **kwargs): return write_to(self.report(**kwargs), file=file, append=True)
 
 	def collate(self, merge_meta=False):
 		"""
@@ -563,21 +651,42 @@ class ParamList(list):
 				else: self[d[name]] = self.pop(i)
 			else: d[name] = i; i += 1
 
-	def report(self, verbosity=1, delim='\n'):
+	def report(self, verbosity=1, delim='\n', widths_out=None, widths_in=None, maxalign=None, pretty=False, reprtxt=False):
 		"""Return a string representation of the parameter definintions. Use verbosity >= 2
 		to include the DefaultValue, LowRange and HighRange fields.
 		"""###
-		return delim.join([xi.report(verbosity=verbosity) for xi in self])
+		if pretty:
+			if widths_in == None:
+				if widths_out == None: widths_out = {}
+				self.report(verbosity=verbosity, delim=delim, widths_out=widths_out, widths_in=None, maxalign=maxalign, pretty=False, reprtxt=reprtxt)
+				widths_in = widths_out
+				
+		if widths_in != None:
+			ma = {'Location':100, 'Type':100, 'Name':100, 'RowLabels': 7, 'ColumnLabels': 7, 'Value':7, 'DefaultValue':7, 'LowRange':7, 'HighRange':7, 'Comment':0}
+			if maxalign != None: ma.update(maxalign)
+			widths_in = dict(widths_in)
+			for k,v in widths_in.items():
+				if not isinstance(v, (tuple,list)): v = [v]
+				v = list(v)
+				if len(v) == 0: v.append(0)
+				widths_in[k] = min(ma[k], max(v))
+		
+		txt = [xi.report(verbosity=verbosity, widths_out=widths_out, widths_in=widths_in, reprtxt=reprtxt) for xi in self]
+		if reprtxt: txt = '<%s object at 0x%08X>: [%s\n]\n' % (self.__class__.__name__, id(self), '\n  '.join(['']+txt))
+		else: txt = delim.join(txt)
+		return txt
 		
 	def __str__(self):
 		return '\n'.join([str(xi) for xi in self])
 	def __repr__(self):
-		return '<%s object at 0x%08X>: [%s\n]\n' % (self.__class__.__name__, id(self), '\n  '.join(['']+[repr(xi) for xi in self]))
-	def _getAttributeNames(self): # for IPython, but also a handy helper for __getitem__ and __getattr__
-		return [p.Name for p in self if getattr(p, 'Name', None) != None]
+		return self.report(verbosity=0, reprtxt=True, pretty=True)
+	
+	def __names(self): return [p.Name for p in self if getattr(p, 'Name', None) != None]
+	def _getAttributeNames(self): return self.__names()  # for IPython, but also a handy helper for __getitem__, __getattr__ and __contains__
+		
 	def __getitem__(self, sub): # de-reference Param elements dict-like, by their .Name
 		if isinstance(sub, basestring):
-			names = self._getAttributeNames()
+			names = self.__names()
 			if sub in names: sub = len(self) - 1 - names[::-1].index(sub)
 			else: raise KeyError(sub)
 		result = list.__getitem__(self, sub)
@@ -599,11 +708,26 @@ class ParamList(list):
 	def __add__(self, other): result = self.__class__(self); result += other; return result
 	def __mul__(self, other): result = self.__class__(self); result *= other; return result
 	def __rmul__(self, other): return self.__mul__(other)
+	def __contains__(self, x): return x in self.__names()
 	
 def make_bciprm(*pargs, **kwargs):
 	"""
 	Merge parameters from multiple sources.
-	# TODO
+	
+	    make_bciprm('Example.dat', 'Example.prm', 'WindowLength', '20s', SpatialFilterType=3)
+	
+	Arguments may be .dat filenames, .prm filenames, handles to open files, dicts,  Param objects,
+	ParamList objects, pairs of   ... parametername, parametervalue, ... arguments,  and tuples or
+	lists of any of the above. Parameters are read from left to right, with later parameters
+	overwriting previous ones of the same name (Note, as always, that considered individually each
+	dict input, including the **kwargs, delivers its fields in an arbitrary order).
+	
+	Arguments may also be interspersed with output directives, to write or append the state of the
+	collated parameters so far to a file---e.g.:
+	
+	    make_bciprm('Example.dat', 'Example.prm', '>output.prm', SpatialFilterType=3)
+	    make_bciprm('Example.dat', 'Example.prm', '>>output.prm', SpatialFilterType=3)
+	    
 	"""###
 	out = ParamList()
 	pl = list(pargs)
@@ -633,7 +757,7 @@ def make_bciprm(*pargs, **kwargs):
 		elif isinstance(p, (tuple,list)) and key == None:
 			pl = list(p) + pl
 		elif isinstance(p, basestring) and key == None:
-			out.append(make_param(p))
+			out += ParamList(p)
 		elif key == None:
 			raise ValueError('%s argument received without a preceding parameter name' % p.__class__.__name__)
 		else:
@@ -643,3 +767,47 @@ def make_bciprm(*pargs, **kwargs):
 		raise ValueError('extraneous key "%s" was passed without accompanying value' % key)
 	out.collate(merge_meta=True)
 	return out
+
+def read_bcidate(x, fmt=None):
+	"""
+	Decode the timestamp from a BCI2000 StorageTime parameter and return it as seconds since the
+	epoch, or as a strftime-formatted string if <fmt> is specified (hint: a good shorthand is
+	fmt='ISO'). x may be a .dat or .prm filename, a handle to an open file, a ParamList,
+	a Param, a parameter definition string or the string value itself. Or it may be a list of
+	such things, in which case a list of datestamps is returned.
+	"""###
+	def tryparse(x):
+		if not isinstance(x, basestring): return None
+		try: return time.strptime(' '.join(x.split()[1:]), '%b %d %H:%M:%S %Y')
+		except: pass
+		try: return time.strptime(x.lower().replace('t', ' '), '%Y-%m-%d %H:%M:%S')
+		except: pass
+
+	d = tryparse(x)
+	if d == None:
+		if isinstance(x, basestring): x = ParamList(x)
+		if isinstance(x, ParamList): x = getattr(x, 'StorageTime', None)
+ 		if isinstance(x, Param): x = x.Value
+ 		if isinstance(x, (tuple,list)):
+ 			return [read_bcidate(xi, fmt=fmt) for xi in x]
+ 		if isinstance(x, (float, time.struct_time)): d = x
+ 		else: d = tryparse(x)
+ 	if fmt != None:
+	 	if fmt.lower() == 'iso': fmt = '%Y-%m-%d %H:%M:%S'
+ 		if d == None: d = 'invalid date'
+ 		else: d = time.strftime(fmt, d)
+	elif d != None:
+		if not isinstance(d, float): d = time.mktime(d)		
+	return d
+	
+def test(filename, zarg=False, width=2000):
+	"""
+	"zarg" means ignore lines with " % % %" in them on the assumption that the original may have
+	omitted a set of empty DefaultValue, LowRange, HighRange
+	"""###
+	ParamList(filename).write_to('reported.prm', verbosity=2)
+	write_to('\n'.join(read_parameter_lines(filename)), 'original.prm')
+	if zarg: zarg = " | grep -v ' % % %'"
+	else: zarg = ''
+	os.system("diff -wyW%d original.prm reported.prm | grep '|'%s | less -S" % (width, zarg))
+

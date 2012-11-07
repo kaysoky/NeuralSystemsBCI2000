@@ -105,11 +105,12 @@ stream2mat_saves_parms = 1; % new-style bci_stream2mat saves a string representa
 
 
 if nargin < 2, chain = []; end
-if isnumeric(chain) & isempty(chain), chain = 'ARSignalProcessing'; end
-if isequal(chain, 'ARSignalProcessing')
+if isnumeric(chain) & isempty(chain), chain = 'SpectralSignalProcessing'; end
+if isequal(chain, 'SpectralSignalProcessing')
+	chain = 'TransmissionFilter|SpatialFilter|SpectralEstimator|LinearClassifier|LPFilter|ExpressionFilter|Normalizer';
+elseif isequal(chain, 'ARSignalProcessing')
 	chain = 'TransmissionFilter|SpatialFilter|ARFilter|LinearClassifier|LPFilter|ExpressionFilter|Normalizer';
-end
-if isequal(chain, 'P3SignalProcessing')
+elseif isequal(chain, 'P3SignalProcessing')
 	chain = 'TransmissionFilter|SpatialFilter|P3TemporalFilter|LinearClassifier';
 end
 if ischar(chain)
@@ -327,7 +328,7 @@ if isempty(err)
 	out.FullTime = out.Time;
 	if isfield(out, 'ElementValues'), out.FullElementValues = out.ElementValues; end
 	out.Signal = mat.Data(sigind(:), :);  % nChannels*nElements - by - nBlocks
-	
+
 	if dimensionality == 0 % dimensionality has not been specified explicitly: so guess, based on ElementUnit and/or filter name
 		% 3-dimensional output makes more sense than continuous 2-D whenever "elements" can't just be concatenated into an unbroken time-stream
 		if isempty(chain), lastfilter = ''; else lastfilter = lower(chain{end}); end
