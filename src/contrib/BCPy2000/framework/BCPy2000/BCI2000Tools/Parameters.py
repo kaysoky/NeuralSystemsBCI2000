@@ -681,9 +681,9 @@ class ParamList(list):
 	def __repr__(self):
 		return self.report(verbosity=0, reprtxt=True, pretty=True)
 	
-	def __names(self): return [p.Name for p in self if getattr(p, 'Name', None) != None]
-	def _getAttributeNames(self): return self.__names()  # for IPython, but also a handy helper for __getitem__, __getattr__ and __contains__
-		
+	def __names(self): return [p.Name for p in self if getattr(p, 'Name', None) != None] # a handy helper for __getitem__, __getattr__ and __contains__
+	def _getAttributeNames(self): return self.__names()  # for IPython
+	def __contains__(self, x): return x in self.__names()
 	def __getitem__(self, sub): # de-reference Param elements dict-like, by their .Name
 		if isinstance(sub, basestring):
 			names = self.__names()
@@ -693,14 +693,15 @@ class ParamList(list):
 		if isinstance(result, list) and not isinstance(result, self.__class__):
 			result = self.__class__(result)
 		return result
-	def __getslice__(self, *pargs, **kwargs):
-		result = list.__getslice__(self, *pargs, **kwargs)
-		if isinstance(result, list) and not isinstance(result, self.__class__):
-			result = self.__class__(result)
-		return result
 	def __getattr__(self, name): # de-reference Param elements lazily as virtual attributes of the list
 		try: return self[name]
 		except KeyError: raise AttributeError("'%s' object has no attribute '%s'" % (self.__class__.__name__, name))
+
+	# boilerplate stuff required just to make a list subclass keep its identity following common operations
+	def __getslice__(self, *pargs, **kwargs):
+		result = list.__getslice__(self, *pargs, **kwargs)
+		if isinstance(result, list) and not isinstance(result, self.__class__): result = self.__class__(result)
+		return result
 	def __iadd__(self, other):
 		if not isinstance(other, self.__class__): other = self.__class__(other)
 		list.__iadd__(self, other); return self
@@ -708,7 +709,6 @@ class ParamList(list):
 	def __add__(self, other): result = self.__class__(self); result += other; return result
 	def __mul__(self, other): result = self.__class__(self); result *= other; return result
 	def __rmul__(self, other): return self.__mul__(other)
-	def __contains__(self, x): return x in self.__names()
 	
 def make_bciprm(*pargs, **kwargs):
 	"""
