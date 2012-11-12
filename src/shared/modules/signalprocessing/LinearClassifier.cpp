@@ -103,7 +103,7 @@ LinearClassifier::Preflight( const SignalProperties& Input,
       if( ::min( ::fmod( ch, 1.0 ), 1 - ::fmod( ch, 1.0 ) ) > 1e-2 )
         bciout << "Channel specification in physical units:\n\t"
                << DescribeEntry( row, 0 )
-               << "\ndoes not exactly meet a single channel"
+               << "\nis not an exact match"
                << endl;
 
       double el = Input.ElementIndex( Classifier( row, 1 ) );
@@ -120,7 +120,7 @@ LinearClassifier::Preflight( const SignalProperties& Input,
       if( ::min( ::fmod( el, 1.0 ), 1 - ::fmod( el, 1.0 ) ) > 1e-2 )
         bciout << "Specification in physical units:\n\t"
                << DescribeEntry( row, 1 )
-               << "\ndoes not exactly meet a single element"
+               << "\nis not an exact match"
                << endl;
 
       int outputChannel = Classifier( row, 2 );
