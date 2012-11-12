@@ -1,6 +1,7 @@
 #include "P300_Classify.h"
 #include <cassert>
 #include <set>
+#include <limits>
 
 ///////////////////////////////////////////////////////////////////
 /// Predict the intended letters according to the pscore matrix.
@@ -36,7 +37,8 @@ if( NumMatrixColumns < 2 ) NumMatrixColumns = 0;
 ////////////////////////////////////////////////////////////////////////
 // Section: Define variables
 int choice, epoch;
-double val, max_value_row= -1e15, max_value_col= -1e15, numletters, correct;
+static const double inf = std::numeric_limits<double>::infinity();
+double val, max_value_row= -inf, max_value_col= -inf, numletters, correct;
 ap::real_2d_array cflash;
 ap::template_2d_array<int, true> predictedcol;
 ap::template_2d_array<int, true> predictedrow;
@@ -113,10 +115,10 @@ for (int i=0; i<numletters; i++)
 }
 for (int i=0; i<numletters; i++)
 {
-	int l = 0;
-  max_value_col= -1e15, max_value_row= -1e15;
+	int s = 0;
   for (int k=i*NumberOfSequences; k<(i+1)*NumberOfSequences; k++)
 	{
+    max_value_col= -inf, max_value_row= -inf;
 		for (int j=0; j<choice; j++)
 		{
 		  int code = j + 1;
@@ -128,7 +130,7 @@ for (int i=0; i<numletters; i++)
 				if (cflash(j,k) > max_value_col)
 				{
 					max_value_col = cflash(j,k);
-					predictedcol(i,l) = code;
+					predictedcol(i,s) = code;
 				}
 			}
 			if ((j>=NumMatrixColumns))
@@ -137,17 +139,17 @@ for (int i=0; i<numletters; i++)
 				if (cflash(j,k) > max_value_row)
 				{
 					max_value_row = cflash(j,k);
-					predictedrow(i,l) = code;
+					predictedrow(i,s) = code;
 				}
 			}
 		}
 		// jm Oct 24, 2012
 		if( NumMatrixColumns < 1 )
-		  predictedcol( i, l ) = 1;
+		  predictedcol( i, s ) = 1;
 		if( NumMatrixRows < 1 )
-		  predictedrow( i, l ) = NumMatrixColumns + 1;
+		  predictedrow( i, s ) = NumMatrixColumns + 1;
 		  
-		l++;
+		s++;
 	}
 }
 
