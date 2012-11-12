@@ -64,6 +64,8 @@
 
 #include <tchar.h>
 
+static const int cImpedanceRate = 8; // impedance sampling rate in Hz
+
 using namespace std;
 
 RegisterFilter( TMSiADC, 1 );
@@ -261,12 +263,12 @@ TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties 
         //Sampling Rate has to be 8Hz (Check for other Amps?), warn if data is updated less than once a second
         if ( mMeasureImpedance )
         {
-            int trueSamplingRate = 8;
+            int trueSamplingRate = cImpedanceRate;
             if (int(Parameter("SamplingRate").InHertz()) != trueSamplingRate){
-              bcierr << "For impedance checking sampling rate must be " << trueSamplingRate << "Hz, yours is " << int(Parameter("SamplingRate").InHertz()) << "Hz." << std::endl;
+              bciout << "For impedance measurement, using a Sampling rate of " << trueSamplingRate << "Hz, rather than " << int(Parameter("SamplingRate").InHertz()) << "Hz." << std::endl;
             }
             if (int(Parameter("SampleBlockSize")) > 8){
-              bciout << "SampleBlockSize=" << int(Parameter("SampleBlockSize")) << " is very big for a SamplingRate of " << int(Parameter("SamplingRate").InHertz()) << "\n";
+              bciout << "SampleBlockSize=" << int(Parameter("SampleBlockSize")) << " is very big for a SamplingRate of " << trueSamplingRate << "\n";
             }
         }
         else {
@@ -311,6 +313,7 @@ TMSiADC::Initialize( const SignalProperties&, const SignalProperties& )
         if ( mMeasureImpedance )
         {
             mpMaster->MeasuringMode( MEASURE_MODE_IMPEDANCE, 0);
+            mSampleRate = cImpedanceRate;
         }
 
         if (!mpMaster->Start())
