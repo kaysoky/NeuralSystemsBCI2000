@@ -103,7 +103,9 @@ LinearClassifier::Preflight( const SignalProperties& Input,
       if( ::min( ::fmod( ch, 1.0 ), 1 - ::fmod( ch, 1.0 ) ) > 1e-2 )
         bciout << "Channel specification in physical units:\n\t"
                << DescribeEntry( row, 0 )
-               << "\nis not an exact match"
+               << "\nis not an exact match, using input channel "
+               << Input.ChannelLabels()[Round( ch )]
+               << " (" << Input.ChannelUnit().RawToPhysical( Round( ch ) ) << ")"
                << endl;
 
       double el = Input.ElementIndex( Classifier( row, 1 ) );
@@ -120,7 +122,9 @@ LinearClassifier::Preflight( const SignalProperties& Input,
       if( ::min( ::fmod( el, 1.0 ), 1 - ::fmod( el, 1.0 ) ) > 1e-2 )
         bciout << "Specification in physical units:\n\t"
                << DescribeEntry( row, 1 )
-               << "\nis not an exact match"
+               << "\nis not an exact match, using input element "
+               << Input.ElementLabels()[Round( el )]
+               << " (" << Input.ElementUnit().RawToPhysical( Round( el ) ) << ")"
                << endl;
 
       int outputChannel = Classifier( row, 2 );
