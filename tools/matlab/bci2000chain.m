@@ -323,6 +323,7 @@ if isempty(err)
 	if isfield(mat, 'ElementLabels'), out.ElementLabels = mat.ElementLabels(:)'; end
 	if isfield(mat, 'ElementValues'), out.ElementValues = mat.ElementValues(:)'; end
 	if isfield(mat, 'ElementUnit'), out.ElementUnit = mat.ElementUnit; end
+	out.ElementRate = out.BlocksPerSecond * out.Elements;
 	
 	out.Time = out.SecondsPerBlock * single(0:nBlocks-1)';
 	out.FullTime = out.Time;
