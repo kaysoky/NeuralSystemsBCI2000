@@ -227,9 +227,9 @@ gHIampDevice::MapAllAnalogChannels( int startch, int numch )
 bool
 gHIampDevice::MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bool err )
 {
-  if( devicech >= cMaxAnalogChannels )
+  if( devicech > cMaxAnalogChannels )
   {
-    if( err ) bcierr << "Requested channel " << devicech + 1
+    if( err ) bcierr << "Requested channel " << devicech 
                      << " from g.HIamp which only has " << cMaxAnalogChannels << " channels" << endl;
     return false;
   }
@@ -240,7 +240,7 @@ gHIampDevice::MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bo
   }
   if( !mConfig.Channels[devicech].Available )
   {
-    if( err ) bciout << "Channel " << devicech + 1 << " on amp: "
+    if( err ) bciout << "Channel " << devicech << " on amp: "
                      << Serial() << " is not available." << endl;
     return false;
   }
