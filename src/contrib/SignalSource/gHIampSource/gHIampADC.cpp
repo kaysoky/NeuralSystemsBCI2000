@@ -418,9 +418,9 @@ gHIampADC::OnInitialize( const SignalProperties& Output )
       for( size_t dev = 0; dev < mDevices.size(); dev++ )
         if( mDevices[dev].Serial() == Parameter( "DeviceIDs" )( s.Amp() - 1 ) )
           if( s.IsDigital() )
-            mDevices[dev].MapDigitalChannel( s.Channel() - 1, i );
+            mDevices[dev].MapDigitalChannel( s.Channel(), i );
           else
-            mDevices[dev].MapAnalogChannel( s.Channel() - 1, i );
+            mDevices[dev].MapAnalogChannel( s.Channel(), i );
     }
   }
 
