@@ -224,12 +224,20 @@ gHIampDevice::MapAllAnalogChannels( int startch, int numch )
   return numMapped;
 }
 
+// **************************************************************************
+// Function:   MapAnalogChannel
+// Purpose:    Maps a device channel to an index in resulting source channel
+// Parameters: devicech - zero indexed channel on this device
+//             sourcech - zero indexed channel for source module output
+//             err - false supresses error output and fails silently
+// Returns:    true if channel is successfully mapped
+// **************************************************************************
 bool
 gHIampDevice::MapAnalogChannel( unsigned int devicech, unsigned int sourcech, bool err )
 {
-  if( devicech > cMaxAnalogChannels )
+  if( devicech >= cMaxAnalogChannels )
   {
-    if( err ) bcierr << "Requested channel " << devicech 
+    if( err ) bcierr << "Requested channel " << devicech + 1
                      << " from g.HIamp which only has " << cMaxAnalogChannels << " channels" << endl;
     return false;
   }

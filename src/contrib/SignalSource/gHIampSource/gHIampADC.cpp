@@ -303,11 +303,11 @@ gHIampADC::OnPreflight( SignalProperties& Output ) const
         {
           if( s.IsDigital() )
           {
-            if( !devices[dev].MapDigitalChannel( s.Channel(), i ) )
+            if( !devices[dev].MapDigitalChannel( s.Channel() - 1, i ) )
               bcierr << "Error mapping digital channel " << s.Channel()
                      << " on device " << devices[dev].Serial() << endl;
           } else {
-            if( !devices[dev].MapAnalogChannel( s.Channel(), i ) )
+            if( !devices[dev].MapAnalogChannel( s.Channel() - 1, i ) )
               bcierr << "Error mapping channel " << s.Channel()
                      << " on device " << devices[dev].Serial() << endl;
           }
@@ -418,9 +418,9 @@ gHIampADC::OnInitialize( const SignalProperties& Output )
       for( size_t dev = 0; dev < mDevices.size(); dev++ )
         if( mDevices[dev].Serial() == Parameter( "DeviceIDs" )( s.Amp() - 1 ) )
           if( s.IsDigital() )
-            mDevices[dev].MapDigitalChannel( s.Channel(), i );
+            mDevices[dev].MapDigitalChannel( s.Channel() - 1, i );
           else
-            mDevices[dev].MapAnalogChannel( s.Channel(), i );
+            mDevices[dev].MapAnalogChannel( s.Channel() - 1, i );
     }
   }
 
@@ -610,7 +610,7 @@ gHIampADC::ModeMap gHIampADC::ParseModes( string modes ) const
 // **************************************************************************
 gHIampADC::SrcCh::SrcCh( string s )
 : mAmp( 0 ),
-  mChannel( 0 ),
+  mChannel( 0 ), // 1 Indexed
   mDigital( false )
 {
   size_t dotpos = s.find( "." );
