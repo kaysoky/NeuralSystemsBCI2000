@@ -26,56 +26,113 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""
+__doc__ = """
 Try this:
 
-  from ElectrodeGrids import GridSet, ExampleGrids
+  from $0 import GridSet, ExampleGrids
   g = Grids(ExampleGrids)
   print g
   print g.ChannelNames()
   print g.BipolarSpatialFilter()
-
+  
   g.ChannelNames('>foo.prm')
   g.BipolarSpatialFilter('>>foo.prm')
 """###
 
-__all__ = [
-	'GridSet', 'ExampleGrids',
-]
+standalone_doc = """
+  $0 --help            print this help
+  $0 --example         print an annotated example of the input format
+  $0 --clean-example   print the example without the annotations
+
+  $0 [--order=XX] [--sep=YY] [--prefix=ZZ] [--alphabetize] [--visualize=VV] FILENAME
+  
+  Process the file specified by FILENAME (if given) or stdin (if not) and produce a parameter
+  fragment containing the BCI2000 parameters ChannelNames, SpatialFilter, SpatialFilterType and
+  (optionally) VisualizeSpatialFilter.  Options are as follows:
+"""###
 
 ExampleGrids = """
 FG:    # Strings followed by a colons denote the (abbreviated) names of electrode grids.
 
-	.  .  .  .  .  .  .  1     #  Each electrode is marked by a number or by a '.' or 'o' character.
-	.  .  .  .  .  .  .  2     #  The numbering of the unlabelled electrodes is inferred from
-	.  .  .  .  .  .  .  .     #  consecutive numbered pairs (must supply at least one such pair).
-	.  .  .  .  .  .  .  .
-	.  .  .  .  .  .  .  .     #  The number of spaces between columns is unimportant provided it
-	.  .  .  .  .  .  .  .     #  remains consistent. Ditto the number of blank lines between rows.
-	.  .  .  .  .  .  .  X
-	.  .  .  .  .  .  .  X     #  An X marks an electrode that was originally numbered but is now
-							   #  absent, having been cut off by the surgeon.
+    .  .  .  .  .  .  .  1     #  Each electrode is marked by a number or by a '.' or 'o' character.
+    .  .  .  .  .  .  .  2     #  The numbering of the unlabelled electrodes is inferred from
+    .  .  .  .  .  .  .  .     #  consecutive numbered pairs (must supply at least one such pair).
+    .  .  .  .  .  .  .  .
+    .  .  .  .  .  .  .  .     #  The number of spaces between columns is unimportant provided it
+    .  .  .  .  .  .  .  .     #  remains consistent. Ditto the number of blank lines between rows.
+    .  .  .  .  .  .  .  X
+    .  .  .  .  .  .  .  X     #  An X marks a "lost number" - perhaps an electrode that was
+                               #  originally numbered but is now absent, having been cut off.
 
 TG:
-							   #  As you have probably figured out by now, a '#' denotes a comment.
-	1  2  .  .  .  .  .  .
-	.  .  .  .  .  .  .  .
-	.  .  .  .  .  .  .  .
-	.  .  .  .                 #  In contrast to an X,  a blank space corresponds to an area that
-	.  .  .  .                 #  is free of electrodes by design - so there are no lost numbers.
-	.  .  .  .
+                               #  As you have probably figured out by now, a '#' denotes a comment.
+    1  2  .  .  .  .  .  .
+    .  .  .  .  .  .  .  .
+    .  .  .  .  .  .  .  .
+    .  .  .  .                 #  In contrast to an X,  a blank space corresponds to an area that
+    .  .  .  .                 #  is free of electrodes by design - so there are no lost numbers.
+    .  .  .  .
 
 # If there are discontinuities in numbering that cannot be handled by X's, the best bet is to
 # create separate grids.
 
 """###    
 
+universaldoc = """
 
+  order        is a list of strings, or a comma-delimited string, specifying grid names - for
+               example, 'TG,FG'. By default, when order=None, grids come out in the order in
+               which they were specified in the original text input.
+
+  prefix       can be used to override the grid name
+
+  sep          is the string used to glue the grid name to the electrode number
+
+  precision    is the number of digits to use to render each electrode number.  If left at None,
+               a precision is automatically chosen for all grids to accommodate the grid with
+               the largest number of electrodes.
+
+  prm          may be:
+                 - True, in which case return a BCI2000-formatted string
+                 - False, in which case return objects
+                 - a filename, optionally beginning with '>', in which case write the BCI2000
+                   parameters to that file, overwriting it completely, and return nothing
+                 - a filename beginning with '>>', in which case append rather than overwriting
+
+  numsort      specifies whether to sort the electrodes of each grid in increasing numerical
+               order, (False would mean they are reported in spatial order top-down, left to right)
+
+  alphabetize  Older versions of SpatialFilter can only order their output channels alphabetically,
+               thereby destroying the spatial order of the bipolar montage. Set the alphabetize
+               option if you want to work around this: an alphabetic prefix will be added to each
+               output channel label to ensure that the spatial order is preserved.
+
+  visualize    if given, outputs a VisualizeSpatialFilter parameter with the given value.
+"""###
+
+__all__ = [
+	'GridSet', 'ExampleGrids',
+]
 
 import os,sys
 import math
 import itertools
 import inspect
+import getopt
+
+execname = os.path.split(__file__)[1]
+if execname.endswith('.pyc'): execname = execname[:-1]
+universaldoc = dict([(x.split()[0], '\n\n'+x.rstrip()+'\n') for x in universaldoc.strip('\n').split('\n\n')])
+standalone_doc = standalone_doc.replace('$0', execname)
+for arg in 'order sep prefix alphabetize visualize'.split(): standalone_doc = standalone_doc.rstrip() + universaldoc[arg]
+__doc__ = __doc__.replace('$0', os.path.splitext(execname)[0]).rstrip()
+
+def adddoc(func):
+	for arg in inspect.getargs(func.func_code).args:
+		if arg not in universaldoc: continue
+		if func.__doc__ == None: func.__doc__ = ''
+		func.__doc__ = func.__doc__.rstrip() + universaldoc[arg]
+	return func
 
 class ElectrodeCoordinate(object):
 	def __init__(self, gridName=None, localRowIndex=None, localColumnIndex=None, localNumber=None, globalNumber=None, globalX=None, globalY=None):
@@ -200,7 +257,7 @@ def ParseOneGrid(lines, gridname):
 		if verticalDirection == 0: verticalDirection = 1
 		grid = sorted(grid, cmp=lambda x,y: cmp([verticalDirection*x[1],horizontalDirection*x[2]],  [verticalDirection*y[1],horizontalDirection*y[2]]) )
 	else:
-		raise ValueError("numbers %d and %d in %s do not share the same row or the same column" % (gridname, startval, lastval))
+		raise ValueError("numbers %d and %d in %s do not share the same row or the same column" % (startval, lastval, gridname))
 	
 	prevval = None
 	for entry in grid:
@@ -231,41 +288,9 @@ def EachGrid(gs, order=None, numsort=True):
 	return [(name, GetGrid(gs, name, numsort=numsort)) for name in order]
 
 def NumericalPrecision(gs):
-	return max([int(math.ceil(math.log10(1 + max([x.localNumber for x in grid])))) for name,grid in EachGrid(gs)])
+	return max([int(math.ceil(math.log10(1.0 + max([x.localNumber for x in grid])))) for name,grid in EachGrid(gs)])
 
 
-universaldoc = """
-
-	order        is a list of strings, or a space-delimited string, specifying grid names - for
-	             example, 'TG FG'. By default, when order=None, grids come out in the order in
-	             which they were specified in the original text input.
-
-	prefix       can be used to override the grid name
-
-	sep          is the string used to glue the grid name to the electrode number
-
-	precision    is the number of digits to use to render each electrode number.  If left at None,
-	             a precision is automatically chosen for all grids to accommodate the grid with
-	             the largest number of electrodes.
-
-	prm          may be:
-	               - True, in which case return a BCI2000-formatted string
-	               - False, in which case return objects
-	               - a filename, optionally beginning with '>', in which case write the BCI2000
-	                 parameters to that file, overwriting it completely, and return nothing
-	               - a filename beginning with '>>', in which case append rather than overwriting
-
-	numsort      specifies whether to sort the electrodes of each grid in increasing numerical
-	             order, (False would mean they are reported in spatial order top-down, left to right)
-"""###
-
-def adddoc(func):
-	d = dict([(x.split()[0], x.rstrip()) for x in universaldoc.strip('\n').split('\n\n')])
-	for arg in inspect.getargs(func.func_code).args:
-		if arg not in d: continue
-		if func.__doc__ == None: func.__doc__ = ''
-		func.__doc__ = func.__doc__.rstrip() + '\n\n' + d[arg] + '\n'
-	return func
 
 @adddoc
 def ReportGrids(gs, order=None, sep='', precision=None):
@@ -333,7 +358,7 @@ def WriteFile(content, f):
 @adddoc
 def ChannelNames(gs, prm=True, order=None, precision=None, prefix=None, sep='', numsort=True):
 	"""
-	TODO
+	Return (or save to file) a BCI2000 ChannelNames parameter based on the grid(s) gs.
 	"""###
 	if precision==None: precision = NumericalPrecision(gs)	
 	out = []
@@ -346,9 +371,9 @@ def ChannelNames(gs, prm=True, order=None, precision=None, prefix=None, sep='', 
 	return out
 
 @adddoc
-def BipolarSpatialFilter(gs, prm=True, order=None, precision=None, prefix=None, sep=''):
+def BipolarSpatialFilter(gs, prm=True, order=None, precision=None, prefix=None, sep='', alphabetize=False):
 	"""
-	TODO
+	Return (or save to file) BCI2000 SpatialFilter and SpatialFilterType parameters that
 	"""###
 	if precision == None: precision = NumericalPrecision(gs)
 	out = []
@@ -363,14 +388,22 @@ def BipolarSpatialFilter(gs, prm=True, order=None, precision=None, prefix=None, 
 					thisgrid.append((loc,neg,pos))
 				if pc == nc + 1 and pr == nr:
 					thisgrid.append((loc,neg,pos))
+				# TODO:  This only works for square grids.  Could use a distance-is-as-small-as-they-get-except-0-when-rounded criterion instead: that would capture hex grids too.
 		out += [(neg,pos) for loc,neg,pos in sorted(thisgrid)]
-		
+	globalPrecision = int(math.ceil(math.log10(1.0 + len(out))))
+	globalFmt = '%0' + str(globalPrecision) + 'd'
+	globalIndex = 0
 	if prm:
 		mat = []
 		for neg,pos in out:
 			neg = neg.name(prefix=prefix, sep=sep, precision=precision, escape=True)
 			pos = pos.name(prefix=prefix, sep=sep, precision=precision, escape=True)
 			diff = pos + '-' + neg
+			if alphabetize:
+				globalIndex += 1
+				op = (globalFmt % globalIndex)
+				op = ''.join([chr(ord(c)+ord('a')-ord('0')) for c in op])
+				diff = op + '=' + diff
 			mat.append(neg + ' ' + diff + ' -1')
 			mat.append(pos + ' ' + diff + '  1')
 		out = [
@@ -393,7 +426,7 @@ def test(*pargs, **kwargs):
 class smartlist(list):
 	# nice repr showing class and id
 	def __repr__(self): return '<%s.%s object at 0x%08X>: [%s\n]\n' % (self.__module__,self.__class__.__name__,id(self),'\n  '.join(['']+[('\n'+repr(x)).replace('\n', '\n  ').lstrip('\n').rstrip()+',' for x in self]))
-	# boilerplate stuff required just to make a list subclass keep its identity following common operations
+	# boilerplate stuff required just to make a list subclass keep its class identity following common operations
 	def __getslice__(self, *pargs, **kwargs):
 		result = list.__getslice__(self, *pargs, **kwargs)
 		if isinstance(result, list) and not isinstance(result, self.__class__): result = self.__class__(result)
@@ -411,7 +444,7 @@ class GridSet(smartlist):
 	__doc__ = __doc__
 	def __init__(self, arg=None):
 		if not isinstance(arg, list): arg = ParseGrids(arg)
-		arg = [Grid(x) for x in arg] # if each grid is a separate sublist within gs $$$
+		arg = [isinstance(x, Grid) and x or Grid(x) for x in arg] # if each grid is a separate sublist within gs $$$
 		list.__init__(self, arg)
 	def __str__(self): return self.report()	
 	ChannelNames = ChannelNames
@@ -421,11 +454,34 @@ class GridSet(smartlist):
 		from Electrodes import ChannelSet
 		return ChannelSet(self.ChannelNames(prm=False, **kwargs))
 
+__doc__ += '\n\nThis module can also be used as a standalone program:\n\n' + standalone_doc.lstrip('\n')
 	
 if __name__ == '__main__':
-	if hasattr(sys, 'argv') and len(sys.argv) > 1: input = sys.argv[1]
-	else: input = sys.stdin
-	d = GridSet(input)
-	print d.ChannelNames()
-	print d.BipolarSpatialFilter()
+	args = getattr(sys, 'argv', [])[1:]
+	try:
+		opts,args = getopt.getopt(args, '', ['help', 'example', 'clean-example', 'order=', 'sep=', 'prefix=', 'alphabetize', 'visualize='])
+	except Exception,e:
+		sys.stderr.write(str(e)+'\n')
+		exit(1)
 
+	opts = dict([(k.lstrip('-'),v) for k,v in opts])
+	alphabetize = opts.pop('alphabetize', None) != None
+	visualize = opts.pop('visualize', '')
+	if len(args): input = args.pop(0)
+	else: input = sys.stdin
+	
+	if len(args):
+		sys.stderr.write('too many input arguments\n')
+		exit(1)
+		
+	if 'help' in opts:
+		print standalone_doc
+	elif 'example' in opts:
+		print ExampleGrids
+	elif 'clean-example' in opts:
+		print CleanInput(ExampleGrids)
+	else:
+		d = GridSet(input)
+		print d.ChannelNames(**opts)
+		print d.BipolarSpatialFilter(alphabetize=alphabetize, **opts)
+		if len(visualize.strip()): print 'Visualization int VisualizeSpatialFilter= ' + str(visualize)
