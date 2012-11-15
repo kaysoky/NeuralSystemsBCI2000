@@ -4,7 +4,7 @@ import Tkinter as tk
 
 class SessionGUI( tk.Tk ):
 
-	def __init__( self, settingsfile=None, go=True ):
+	def __init__( self, settingsfile=None, go=True, debug=False ):
 		tk.Tk.__init__( self )
 		self.minsize( width=800, height=200 )
 		self.option_add("*Font", "40")
@@ -16,6 +16,9 @@ class SessionGUI( tk.Tk ):
 		self.__host = 'localhost'
 		self.__port = 3999
 		self.__valid = False
+		self.__alive = None
+		self.__remotelib = None
+		self.__debug = debug
 		
 		self.__settings = {
 			'Subject':    'TestSubject',
@@ -37,6 +40,13 @@ class SessionGUI( tk.Tk ):
 		self.__masterframe = None
 		self.LoadSettings()
 		self.Render()
+		
+		#self.Remote()
+		
+		# TODO:  it would be nice to base the enabled/disabled state of the controls on a continuously-updated, sensitive
+		#        measure of whether BCI2000 is running.  The BCI2000Remote class (instead of a shell escape to BCI2000Shell -c)
+		#        may offer this: uncomment the call to self.Remote() which initializes the BCI2000Remote instance and puts all
+		#        operations into library mode instead of shell-escape mode.  Still seems very difficult to get right, though.
 		
 		if go: self.mainloop()
 		else: self.update()
@@ -124,8 +134,13 @@ class SessionGUI( tk.Tk ):
 		self.launchBCI2000Button = w = tk.Button( self, text='Launch BCI2000', command=self.LaunchBCI2000 ); w.pack( side='left', padx=20 )
 		self.quitBCI2000Button = w = tk.Button( self, text='Quit BCI2000', command=self.QuitBCI2000 ); w.pack( side='left', padx=20 )
 		self.reloadWeightsButton = w = tk.Button( self, text='Reload weights', command=self.ReloadChosenWeights ); w.pack( side='left', padx=20 )
-		self.exitButton = w = tk.Button( self, text='Exit', command=self.destroy ); w.pack( side='left', padx=20 )
-
+		self.exitButton = w = tk.Button( self, text='Exit this launcher', command=self.destroy ); w.pack( side='left', padx=20 )
+		
+		if self.__debug:
+			self.pingButton = w = tk.Button(  self, text='Ping', command=self.PingBCI2000 ); w.pack( side='left', padx=20 )
+			self.pingResult = w = tk.Label(   self, text='not yet queried', anchor='w' ); w.pack( side='left', padx=20 )
+			self.renewButton = w = tk.Button( self, text='Renew RemoteLib', command = self.RenewBCI2000Remote); w.pack( side='left', padx=20 )
+			
 		self.__valid = True
 		self.UpdateSettings()
 		for w in self.__widgets.values():
@@ -137,14 +152,31 @@ class SessionGUI( tk.Tk ):
 		
 	def UpdateSettings( self ):
 		if not self.__valid: return False
+		
+		rem = self.__remotelib
+		if rem:
+			if self.__alive != None: self.__alive = rem.Connected
+			# self.__alive == None is the initial state, and it means "assume not alive, but don't query it"
+		else:
+			pass # just fall back on the existing setting, which reflects whether the "Launch BCI2000" or the "Quit BCI2000" button was pressed last - the telnet querying method is too flaky
+		
+		if self.__alive:
+			self.launchBCI2000Button.configure( state='disabled' )
+			self.quitBCI2000Button.configure( state='normal' )
+		else:
+			self.launchBCI2000Button.configure( state='normal' )
+			self.quitBCI2000Button.configure( state='disabled' )
+			
 		for k in self.__inputs:
+			w = self.__widgets[ k + 'Input' ]
+			if self.__alive: w.configure( state='disabled' )
+			else: w.configure( state='normal' )
 			val = self.__inputs[ k ].get()
 			# correct value to head off most cases in which it will be impossible to create the directory
 			newval = ''.join([c for c in val[:20] if c.lower() in 'abcdefghijklmnopqrstuvwxyz_0123456789+-=()'])
 			self.__settings[ k ] = newval
 			# set the new value back into the widget
 			if val != newval:
-				w = self.__widgets[ k + 'Input' ]
 				if isinstance( w, tk.Entry ):
 					w.delete( 0, tk.END )
 					w.insert( 0, newval )
@@ -171,19 +203,22 @@ class SessionGUI( tk.Tk ):
 			else: bg = self.__bg
 			self.dirLabels[ mode ].configure( text=s, justify='left', background=bg )
 
-		if os.path.isfile( self.GetChosenWeightsPath() ): self.reloadWeightsButton.configure( state='normal' )
+		if os.path.isfile( self.GetChosenWeightsPath() ) and self.__alive: self.reloadWeightsButton.configure( state='normal' )
 		else: self.reloadWeightsButton.configure( state='disabled' )
 
 		if self.transferWeightsButton != None:
 			if os.path.isfile( self.GetChosenWeightsPath( mode='CALIB' ) ): self.transferWeightsButton.configure( state='normal' )
 			else: self.transferWeightsButton.configure( state='disabled' )
-		
+				
 		try: self.after_cancel( self.__afterid )
 		except: pass
 		self.__afterid = self.after( 500, self.UpdateSettings )
 		#import time; print time.time()
 		return True
 
+	def GetShellExecutable( self ):
+		return os.path.realpath( os.path.join( self.__settings[ '_ProgDir' ], 'BCI2000Shell' ) )
+	
 	def GetShellExecutable( self ):
 		return os.path.realpath( os.path.join( self.__settings[ '_ProgDir' ], 'BCI2000Shell' ) )
 	
@@ -205,23 +240,33 @@ class SessionGUI( tk.Tk ):
 	def GetScriptDir( self ):
 		return os.path.split( self.GetScriptFile() )[ 0 ]
 	
-	def GetLaunchCommand( self ):
-		args = [ self.GetShellExecutable(), self.GetScriptFile() ]
+	def GetLaunchCommand( self, system=True ):
+		args = []
+		if system: args.append( self.GetShellExecutable() )
+		else: args.append( 'execute script' )
+		args.append( self.GetScriptFile() )
 		args += [ self.__settings[ k ] for k in self.__settings[ '_Arguments' ].split() ]
-		args.append( '#!' )
+		if system: args.append( '#!' )
 		return ' '.join( args )
 	
-	def ExecuteInShell( self, cmd ):
-		return os.system( self.GetShellExecutable() + ' -c ' + cmd )
-			
 	def LaunchBCI2000( self ):
 		self.UpdateSettings() # because of the lag
-		os.system( self.GetLaunchCommand() )
+		rem = self.__remotelib
+		if rem and not rem.Connected: self.RenewBCI2000Remote()
+		if rem: rem.Execute( self.GetLaunchCommand( False ) )
+		else:     os.system( self.GetLaunchCommand( True  ) )
+		self.__alive = True
 		self.UpdateSettings()
 		
+	def ExecuteInShell( self, cmd ):
+		rem = self.__remotelib
+		if rem: return rem.Execute( cmd )
+		else: return os.system( self.GetShellExecutable() + ' -c ' + cmd )
+			
 	def QuitBCI2000( self ):
 		self.UpdateSettings() # because of the lag
 		self.ExecuteInShell( 'quit' )
+		self.__alive = False
 		self.UpdateSettings()
 	
 	def ReloadChosenWeights( self ):
@@ -246,16 +291,52 @@ class SessionGUI( tk.Tk ):
 		tk.Tk.destroy( self )
 
 	def BCI2000Running( self ):
-		import telnetlib
-		try: t = telnetlib.Telnet( host=self.__host, port=self.__port )
-		except: return False
-		else: t.close()
-		return True
+		rem = self.__remotelib
+		if rem: return rem.Connected
+		else: # non-RemoteLib fallback (flaky):
+			import telnetlib
+			try: t = telnetlib.Telnet( host=self.__host, port=self.__port, timeout=2 )
+			except: return False
+			else: t.close()
+			return True
+		
+	def PingBCI2000( self ):
+		rem = self.__remotelib
+		msg = {True:'Alive', False:'Dead'}[self.BCI2000Running()]
+		import time; msg += ' at ' + time.strftime('%H:%M:%S')
+		if rem: msg += ' (RemoteLib query %s)' % repr( rem.GetSystemState() )
+		else: msg += ' (Telnet query)'
+		self.pingResult.configure( text=msg )
+		
+	def RenewBCI2000Remote( self ):
+		self.__remotelib = None
+		self.Remote()
+		
+	def Remote(self, cmd=None):
+		rem = self.__remotelib
+		if rem == None:
+			modname = 'BCI2000Remote'
+			location = self.__settings[ '_ProgDir' ]
+			module = sys.modules.get(modname, None)
+			if module == None:
+				import imp
+				try: file,filename,etc = imp.find_module(modname, [location])
+				except ImportError: raise Exception("could not find %s module in %s"  % (modname, location))
+				module = imp.load_module(modname, file, filename, etc)
+			rem = self.__remotelib = module.BCI2000Remote()
+		if not rem.Connected:
+			rem.Timeout = 5.0/60.0  # TODO: fix this
+			if not rem.Connect(): return rem.Result
+		if cmd != None and rem.Execute(cmd) != 0: return rem.Result
+		return None
 
 if __name__ == '__main__':
 	argv = getattr( sys, 'argv', [] )
 	if len( argv ) >= 2: settingsfile = argv[ 1 ]
 	else: settingsfile = None
-	g = SessionGUI( settingsfile=settingsfile )
+	if len( argv ) >= 3: debug = argv[ 2 ]
+	else: debug = ''
+	if debug.lower() in ['0', 'false', 'off']: debug = False
+	g = SessionGUI( settingsfile=settingsfile, debug=debug )
 
 
