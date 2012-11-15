@@ -121,7 +121,9 @@ class VisionEggRenderer(BciGenericRenderer):
 			for i in range(0,1):
 				if fontname.lower().endswith(' italic'): italic = True; fontname = fontname[:-len(' italic')]
 				if fontname.lower().endswith(' bold'): bold = True; fontname = fontname[:-len(' bold')]
-			return pygame.font.match_font(fontname, bold=int(bold), italic=int(italic))
+			try: f = pygame.font.match_font(fontname, bold=int(bold), italic=int(italic))
+			except MemoryError: f = pygame.font.get_default_font() # works around mysterious issue on Japanese systems reported by Chad Boulay 20121115
+			return f
 			
 		if not isinstance(fontnames, (list,tuple)): fontnames = [fontnames]
 		fontnames = [f for f in fontnames if f != None]
