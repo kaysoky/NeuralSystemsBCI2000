@@ -30,7 +30,7 @@ __doc__ = """
 Try this:
 
   from $0 import GridSet, ExampleGrids
-  g = Grids(ExampleGrids)
+  g = GridSet(ExampleGrids)
   print g
   print g.ChannelNames()
   print g.BipolarSpatialFilter()
@@ -44,7 +44,7 @@ standalone_doc = """
   $0 --example         print an annotated example of the input format
   $0 --clean-example   print the example without the annotations
 
-  $0 [--order=XX] [--sep=YY] [--prefix=ZZ] [--alphabetize] [--visualize=VV] FILENAME
+  $0 [--grids=XX] [--sep=YY] [--prefix=ZZ] [--alphabetize] [--visualize=VV] FILENAME
   
   Process the file specified by FILENAME (if given) or stdin (if not) and produce a parameter
   fragment containing the BCI2000 parameters ChannelNames, SpatialFilter, SpatialFilterType and
@@ -73,15 +73,26 @@ TG:
     .  .  .  .                 #  is free of electrodes by design - so there are no lost numbers.
     .  .  .  .
 
-# If there are discontinuities in numbering that cannot be handled by X's, the best bet is to
-# create separate grids.
+# If there are discontinuities in numbering that cannot be handled by X's, either create separate
+# grids, or number every electrode explicitly (padding lower numbers with zeros to help with
+# alignment as necessary).  The latter technique must also be used in the case of grids whose
+# electrodes do not fit in a square lattice - for example, grids with staggered rows, as follows:
+
+PG:
+    01    02    03    04
+       05    06    07       # non-square example
+    08    09    10    11
+       12    13    14   
+    15    16    17    18
+       19    20    21   
+    22    23    24    25
 
 """###    
 
 universaldoc = """
 
-  order        is a list of strings, or a comma-delimited string, specifying grid names - for
-               example, 'TG,FG'. By default, when order=None, grids come out in the order in
+  grids        is a list of strings, or a comma-delimited string, specifying grid names - for
+               example, 'TG,FG'. By default, when grids=None, grids come out in the order in
                which they were specified in the original text input.
 
   prefix       can be used to override the grid name
@@ -108,6 +119,9 @@ universaldoc = """
                output channel label to ensure that the spatial order is preserved.
 
   visualize    if given, outputs a VisualizeSpatialFilter parameter with the given value.
+
+  bipolar      if True, includes a preview of the bipolar connectsions
+			   that BipolarSpatialFilter would make on each grid
 """###
 
 __all__ = [
@@ -124,7 +138,7 @@ execname = os.path.split(__file__)[1]
 if execname.endswith('.pyc'): execname = execname[:-1]
 universaldoc = dict([(x.split()[0], '\n\n'+x.rstrip()+'\n') for x in universaldoc.strip('\n').split('\n\n')])
 standalone_doc = standalone_doc.replace('$0', execname)
-for arg in 'order sep prefix alphabetize visualize'.split(): standalone_doc = standalone_doc.rstrip() + universaldoc[arg]
+for arg in 'grids sep prefix alphabetize visualize'.split(): standalone_doc = standalone_doc.rstrip() + universaldoc[arg]
 __doc__ = __doc__.replace('$0', os.path.splitext(execname)[0]).rstrip()
 
 def adddoc(func):
@@ -221,16 +235,21 @@ def ParseOneGrid(lines, gridname):
 					word = ''
 			else:
 				word += char
-				
-	def regularize(coords):
-		c = sorted(list(set(coords)))
-		c = [c[i+1]-c[i] for i in range(len(c)-1)]
-		if len(c) == 0: return coords
-		mid = (len(c)-1)/2.0
-		stride = (c[int(math.floor(mid))] + c[int(math.ceil(mid))]) / 2.0
-		stride = math.ceil(stride)
-		return [int(round((x-min(coords))/stride)) for x in coords]
 
+	def signature(coords, denom):
+		sig = sorted([(int(x/float(denom)),round(x/float(denom)),serial) for serial,x in enumerate(coords)])
+		sig = [(s0,cmp(i0,i1),cmp(r0,r1)) for (i0,r0,s0),(i1,r1,s1) in zip(sig[:-1], sig[1:])]
+		sig.append((s1,0,0))
+		return tuple(sig)
+		
+	def regularize(coords):
+		mc = min(coords)
+		coords = [int(2.0 * (x-mc)) for x in coords]
+		target = signature(coords,1)
+		denom = max([1] + [x for x in range(2, max(coords)) if signature(coords,x) == target])
+		coords = [int(round(x/float(denom))) for x in coords]
+		return coords
+		
 	rows = regularize(rows)
 	cols = regularize(cols)
 		
@@ -269,8 +288,9 @@ def ParseOneGrid(lines, gridname):
 		prevval = entry[0]
 	
 	grid = sorted(grid, cmp=lambda x,y: cmp([x[1],x[2]],  [y[1],y[2]]) )
-	return [ElectrodeCoordinate(gridName=gridname, localNumber=x[0], localRowIndex=x[1], localColumnIndex=x[2]) for x in grid if x[-1]]  # select only those entries where keep[i] == True
-
+	grid = [ElectrodeCoordinate(gridName=gridname, localNumber=x[0], localRowIndex=x[1], localColumnIndex=x[2]) for x in grid if x[-1]]  # select only those entries where keep[i] == True
+	if len(set([x.localNumber for x in grid])) != len(grid): raise ValueError("duplicate numbers in %s" % gridname)
+	return grid
 
 def GetGridNames(gs):
 	return [g[0].gridName for g in gs] # if each grid is a separate sublist within gs $$$
@@ -282,10 +302,10 @@ def GetGrid(gs, gridname, numsort=True):
 	if numsort: subset = [x for n,x in sorted([(x.localNumber,x) for x in subset])]
 	return subset
 	
-def EachGrid(gs, order=None, numsort=True):
-	if isinstance(order, basestring): order = order.replace(',',' ').replace(';',' ').split()
-	if order == None: order = GetGridNames(gs)
-	return [(name, GetGrid(gs, name, numsort=numsort)) for name in order]
+def EachGrid(gs, grids=None, numsort=True):
+	if isinstance(grids, basestring): grids = grids.replace(',',' ').replace(';',' ').split()
+	if grids == None: grids = GetGridNames(gs)
+	return [(name, GetGrid(gs, name, numsort=numsort)) for name in grids]
 
 def NumericalPrecision(gs):
 	return max([int(math.ceil(math.log10(1.0 + max([x.localNumber for x in grid])))) for name,grid in EachGrid(gs)])
@@ -293,17 +313,17 @@ def NumericalPrecision(gs):
 
 
 @adddoc
-def ReportGrids(gs, order=None, sep='', precision=None):
+def ReportGrids(gs, grids=None, sep='', precision=None):
 	"""
 	Returns a full ASCII representation of each grid, with all the numbers filled in.
 	"""###
 	s = ''
 	if precision==None: precision = NumericalPrecision(gs)
 	blank = ' ' * precision
-	for gridname, subset in EachGrid(gs, order=order):
+	for gridname, subset in EachGrid(gs, grids=grids):
 		di = dict([((x.localRowIndex, x.localColumnIndex), x.name(prefix='', sep=sep, precision=precision)) for x in subset])
-		maxrow = max([x.localRowIndex for x in subset])
-		maxcol = max([x.localColumnIndex for x in subset])
+		maxrow = max([row for row,col in di.keys()])
+		maxcol = max([col for row,col in di.keys()])
 		s += gridname + ':\n'
 		for row in range(int(maxrow+1)):
 			s += '  '
@@ -313,17 +333,53 @@ def ReportGrids(gs, order=None, sep='', precision=None):
 	return s
 	
 @adddoc
-def PlotGrids(gs, order=None, drawnow=True):
+def ReportBipolar(gs, grids=None, sep='', precision=None):
+	"""
+	Returns a full ASCII representation of each grid, with all the numbers filled in and
+	bipolar connections marked.
+	"""###
+	s = ''
+	if precision==None: precision = NumericalPrecision(gs)
+	blank = ' ' * precision
+	sfmt = '%' + str(precision) + 's'
+	for gridname, subset in EachGrid(gs, grids=grids):
+		b = BipolarSpatialFilter([subset], prm=False)
+		di = dict([((x.localRowIndex*2, x.localColumnIndex*2), x.name(prefix='', sep=sep, precision=precision)) for x in subset])
+		rdi = dict([(x.localNumber, (x.localRowIndex*2, x.localColumnIndex*2)) for x in subset])
+		bdi = {}
+		for neg,pos in b:
+			avgcoords = (neg.localRowIndex+pos.localRowIndex,neg.localColumnIndex+pos.localColumnIndex)
+			if avgcoords in di: raise RuntimeError("urk!")
+			if avgcoords in bdi: raise RuntimeError("blurk!")
+			symbols = bdi[avgcoords] = bdi.get(avgcoords, [])
+			if pos.localRowIndex < neg.localRowIndex: symbols.append('^')
+			if pos.localRowIndex > neg.localRowIndex: symbols.append('v')
+			if pos.localColumnIndex < neg.localColumnIndex: symbols.append('<')
+			if pos.localColumnIndex > neg.localColumnIndex: symbols.append('>')
+		for k,v in bdi.items(): bdi[k] = ''.join(sorted(set(v))).replace('>^', '/').replace('>v', '\\')
+		di.update(dict([(k, sfmt % v) for k,v in bdi.items()]))
+		maxrow = max([row for row,col in di.keys()])
+		maxcol = max([col for row,col in di.keys()])
+		s += gridname + ':\n'
+		for row in range(int(maxrow+1)):
+			s += '  '
+			s += '  '.join([di.get((row,col), blank) for col in range(int(maxcol+1))])
+			s += '\n'
+		s += '\n'
+	return s
+	
+@adddoc
+def PlotGrids(gs, grids=None, drawnow=True):
 	"""
 	Plot the grids, each on a separate subplot if there are more than one, to be sure of the
-	row and column coordinates inferred for each numberred electrode.
+	row and column coordinates inferred for each numbered electrode.
 	
 	NB: requires installation of the matplotlib python package (including the pylab module)
 		for plotting.
 	"""###
 
 	import pylab
-	each = EachGrid(gs, order=order)
+	each = EachGrid(gs, grids=grids)
 	ngrids = len(each)
 	for rows in range(int(ngrids**0.5), 0, -1):
 		if ngrids % rows == 0: cols = ngrids / rows; break
@@ -356,13 +412,13 @@ def WriteFile(content, f):
 	else: return content
 
 @adddoc
-def ChannelNames(gs, prm=True, order=None, precision=None, prefix=None, sep='', numsort=True):
+def ChannelNames(gs, prm=True, grids=None, precision=None, prefix=None, sep='', numsort=True):
 	"""
 	Return (or save to file) a BCI2000 ChannelNames parameter based on the grid(s) gs.
 	"""###
 	if precision==None: precision = NumericalPrecision(gs)	
 	out = []
-	for gridname, subset in EachGrid(gs, order=order, numsort=numsort):
+	for gridname, subset in EachGrid(gs, grids=grids, numsort=numsort):
 		subset = [x.name(prefix=prefix, sep=sep, precision=precision) for x in subset]
 		out += subset
 	if prm:
@@ -371,24 +427,25 @@ def ChannelNames(gs, prm=True, order=None, precision=None, prefix=None, sep='', 
 	return out
 
 @adddoc
-def BipolarSpatialFilter(gs, prm=True, order=None, precision=None, prefix=None, sep='', alphabetize=False):
+def BipolarSpatialFilter(gs, prm=True, grids=None, precision=None, prefix=None, sep='', alphabetize=False):
 	"""
 	Return (or save to file) BCI2000 SpatialFilter and SpatialFilterType parameters that
 	"""###
 	if precision == None: precision = NumericalPrecision(gs)
 	out = []
-	for gridname,subset in EachGrid(gs, order=order):
+	for gridname,subset in EachGrid(gs, grids=grids):
 		thisgrid = []
-		for neg in subset:
-			for pos in subset:
-				pr,pc,nr,nc = pos.localRowIndex,pos.localColumnIndex,neg.localRowIndex,neg.localColumnIndex
-				# loc = (pos.localNumber+neg.localNumber)/2.0  # this would be a sort of numsort for bipolar interstices, but it doesn't work very well
-				loc = ((pr+nr)/2.0, (pc+nc)/2.0)
-				if pr == nr + 1 and pc == nc:
-					thisgrid.append((loc,neg,pos))
-				if pc == nc + 1 and pr == nr:
-					thisgrid.append((loc,neg,pos))
-				# TODO:  This only works for square grids.  Could use a distance-is-as-small-as-they-get-except-0-when-rounded criterion instead: that would capture hex grids too.
+		sqdist = []
+		for now in [False, True]:
+			if now: minsqdist = min(sqdist)
+			for neg in subset:
+				for pos in subset:
+					pr,pc,nr,nc = pos.localRowIndex,pos.localColumnIndex,neg.localRowIndex,neg.localColumnIndex
+					if (pc,-pr) <= (nc,-nr): continue
+					dsq = (pr-nr)**2 + (pc-nc)**2
+					loc = ((pr+nr)/2.0, (pc+nc)/2.0)
+					if not now: sqdist.append(dsq)
+					if now and dsq == minsqdist: thisgrid.append((loc,neg,pos))
 		out += [(neg,pos) for loc,neg,pos in sorted(thisgrid)]
 	globalPrecision = int(math.ceil(math.log10(1.0 + len(out))))
 	globalFmt = '%0' + str(globalPrecision) + 'd'
@@ -446,10 +503,14 @@ class GridSet(smartlist):
 		if not isinstance(arg, list): arg = ParseGrids(arg)
 		arg = [isinstance(x, Grid) and x or Grid(x) for x in arg] # if each grid is a separate sublist within gs $$$
 		list.__init__(self, arg)
-	def __str__(self): return self.report()	
-	ChannelNames = ChannelNames
+	__str__ = ReportGrids
 	BipolarSpatialFilter = BipolarSpatialFilter
-	report = ReportGrids
+	ChannelNames = ChannelNames
+	@adddoc
+	def report(self, bipolar=False, grids=None, sep='', precision=None):
+		"Return a string representation of the GridSet"
+		if bipolar: return ReportBipolar(self, grids=grids, sep=sep, precision=precision)
+		else: return ReportGrids(self, grids=grids, sep=sep, precision=precision)
 	def ChannelSet(self, **kwargs):
 		from Electrodes import ChannelSet
 		return ChannelSet(self.ChannelNames(prm=False, **kwargs))
@@ -459,7 +520,7 @@ __doc__ += '\n\nThis module can also be used as a standalone program:\n\n' + sta
 if __name__ == '__main__':
 	args = getattr(sys, 'argv', [])[1:]
 	try:
-		opts,args = getopt.getopt(args, '', ['help', 'example', 'clean-example', 'order=', 'sep=', 'prefix=', 'alphabetize', 'visualize='])
+		opts,args = getopt.getopt(args, '', ['help', 'example', 'clean-example', 'grids=', 'sep=', 'prefix=', 'alphabetize', 'visualize='])
 	except Exception,e:
 		sys.stderr.write(str(e)+'\n')
 		exit(1)
@@ -481,7 +542,8 @@ if __name__ == '__main__':
 	elif 'clean-example' in opts:
 		print CleanInput(ExampleGrids)
 	else:
-		d = GridSet(input)
+		try: d = GridSet(input)
+		except Exception,e: sys.stderr.write(str(e)+'\n'); exit(1)
 		print d.ChannelNames(**opts)
 		print d.BipolarSpatialFilter(alphabetize=alphabetize, **opts)
 		if len(visualize.strip()): print 'Visualization int VisualizeSpatialFilter= ' + str(visualize)
