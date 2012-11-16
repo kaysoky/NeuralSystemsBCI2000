@@ -1,3 +1,4 @@
+#!/usr/bin/env python #
 # -*- coding: utf-8 -*-
 # 
 #   $Id$
@@ -144,18 +145,19 @@ packet.  This is corrected for at the point commented with ??? in the Python cod
 def RisingEdge(x, axis=0):
 	return (numpy.diff(numpy.asarray(x, dtype=numpy.float64), axis=axis) > 0.0)
 
-def StimulusTiming(filename='.', ind=None, channels=0, trigger='StimulusCode > 0', msec=200, rectify=False, threshold=0.5, use_eo=True, **kwargs):
+def StimulusTiming(filename='.', ind=None, channels=0, trigger='StimulusCode > 0', msec=200, rectify=False, threshold=0.5, use_eo=True, save=None, **kwargs):
 	"""
-	In <filename> and <ind>, give it
-	  - a directory and ind=None:  for all .dat files in the directory, in session/run order
-	  - a directory and ind=an index or list of indices: for selected .dat files in the directory
-	  - a dat-file name and ind=anything:  for that particular file
-	  - a list of filenames and ind=anything: for certain explicitly-specified files
+In <filename> and <ind>, give it
+  - a directory and ind=None:  for all .dat files in the directory, in session/run order
+  - a directory and ind=an index or list of indices: for selected .dat files in the directory
+  - a dat-file name and ind=anything:  for that particular file
+  - a list of filenames and ind=anything: for certain explicitly-specified files
 
-	<channels> may be a 0-based index, list of indices, list of channel names, or space-delimited string of channel names
-	<rectify> subtracts the median and takes the abs before doing anything else
-	<threshold> is on the normalized scale of min=0, max=1 within the resulting image
-	<use_eo> uses the EventOffset state to correct timings
+<channels>  may be a 0-based index, list of indices, list of channel names, or space- or comma-
+			delimited string of channel names
+<rectify>   subtracts the median and takes the abs before doing anything else
+<threshold> is on the normalized scale of min=0, max=1 within the resulting image
+<use_eo>    uses the EventOffset state to correct timings
 	"""###
 	if hasattr(filename, 'filename'): filename = filename.filename
 		
@@ -169,7 +171,7 @@ def StimulusTiming(filename='.', ind=None, channels=0, trigger='StimulusCode > 0
 	if len(filename) == 1: filename = list(filename) * n
 	if len(ind) == 1: ind = list(ind) * n
 	
-	if isinstance(channels, basestring): channels = channels.split()
+	if isinstance(channels, basestring): channels = channels.replace(',', ' ').split()
 	if not isinstance(channels, (tuple,list)): channels = [channels]
 	out = [SigTools.sstruct(
 			files=[],
@@ -241,7 +243,61 @@ def StimulusTiming(filename='.', ind=None, channels=0, trigger='StimulusCode > 0
 		pylab.grid('on')
 		#pylab.ylim([len(s.img)+0.5,0.5]) # this corrupts the image!!
 	pylab.draw()
+	if save:
+		pylab.gcf().savefig(save, orientation='portrait')
 	return out
 	
 if __name__ == '__main__':
-	out = timing(sys.argv[1])
+	import getopt,sys,os
+	execname = os.path.split(getattr(sys, 'argv', [__file__])[0])[1]
+	args = getattr(sys, 'argv', [])[1:]
+	try: opts,args = getopt.getopt(args, 'shb', ['help', 'stimulus-timing', 'block-timing'])
+	except Exception,e: sys.stderr.write(str(e)+'\n'); exit(1)
+	
+	help = False
+	mode = None
+	kwargs = {}
+	for opt, val in opts:
+		if   opt in ('-s', '--stimulus-timing'): mode = 's'
+		elif opt in ('-b', '--block-timing'): mode = 'b'
+		elif opt in ('-h', '--help'): help = True
+		else:
+			try: val = int(val)
+			except:
+				try: val = float(val)
+				except: pass
+			kwargs[opt.lstrip('-')] = val
+			
+	for arg in args:
+		if arg.startswith('-'): sys.stderr.write('--opts must come before filenames\n'); exit(1)
+		if '=' in arg:
+			br = arg.index('=')
+			key = arg[:br].lstrip('-')
+			val = arg[br+1:]
+			try: val = int(val)
+			except:
+				try: val = float(val)
+				except: pass
+			kwargs[key]=val
+		elif 'filename' not in kwargs: kwargs['filename'] = arg
+		elif 'save'     not in kwargs: kwargs['save'    ] = arg
+		else: sys.stderr.write('too many input arguments\n'); exit(1)
+	
+	#for k,v in sorted(kwargs.items()): print k,'=',repr(v)
+
+	if mode == 's': func = StimulusTiming
+	else: func = TimingWindow
+	if help:
+		help = '$0: graphical display of either block timing or stimulus timing from a BCI2000 .dat file\n\n' + \
+		       '$0 [-b] [opts] filename [outputfilename] : make TimingWindow plot \n' + \
+		       '$0  -s  [opts] filename [outputfilename] : make StimulusTiming plot\n\n' + \
+		       'Apart from <filename>, supply any other function arguments as opts in --key=val format.\n\n'
+		if mode == None: help += 'For more help, use [-h|--help] in conjunction with either -s or -b\n'
+		else: help = help.rstrip(' \n.') + (':\n\n$0 -%s ...    calls %s(filename, ...):\n\n' % (mode, func.__name__)) + func.__doc__.lstrip('\n')
+		help = help.replace('$0', execname)
+		print help
+		exit(0)
+		
+	result = func(**kwargs)
+	if not kwargs.get('save', None): import pylab; pylab.show()
+	
