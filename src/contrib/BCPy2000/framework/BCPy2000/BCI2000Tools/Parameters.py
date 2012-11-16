@@ -676,6 +676,21 @@ class ParamList(list):
 		else: txt = delim.join(txt)
 		return txt
 		
+	def electrodes(self):
+		if 'ChannelNames' not in self: raise KeyError('no ChannelNames parameter')
+		from SigTools.Electrodes import ChannelSet
+		c = ChannelSet(self.ChannelNames.Value)
+		if 'ReferenceChannelName' in self: # despite the singular name, should be a list
+			ref = self.ReferenceChannelName.Value
+			if isinstance(ref, basestring): ref = ref.replace('+', ' ').replace(',', ' ').split()
+			c = c - ChannelSet(ref).mean()
+		if 'GroundChannelName' in self: # despite the singular name, should be a list
+			gnd = self.GroundChannelName.Value
+			if isinstance(gnd, basestring): gnd = gnd.replace('+', ' ').replace(',', ' ').split()
+			gnd = tuple(gnd)
+			for ci in c.flat: ci.gnd = gnd
+		return c
+		
 	def __str__(self):
 		return '\n'.join([str(xi) for xi in self])
 	def __repr__(self):

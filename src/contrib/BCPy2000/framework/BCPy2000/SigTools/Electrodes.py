@@ -450,23 +450,74 @@ class ChannelSet(numpy.matrix):
 	SLAP.__doc__ +=  __grok_filtering_opts.__doc__
 	
 	def McFarlandLaplacian(self, type='large', filters_as='columns'):
-		if   type == 'large': filt = {'C3':'F3  P3  Cz T7', 'C4':'F4  P4  Cz T8'}
-		elif type == 'small': filt = {'C3':'FC3 CP3 C1 C5', 'C4':'FC4 CP4 C2 C6'}
-		else: raise ValueError('type must be "large" or "small"')
-		
-		allnames = ' '.join(filt.keys() + filt.values()).split()
-		ind = self.find_labels(allnames, dict_output=True, error_if_not=' (required for %s Laplacian on [%s])' % (type,','.join(filt.keys())))
-		
-		W = numpy.zeros((len(self),len(filt)), dtype=float)
-		for col,(center,surround) in enumerate(sorted(filt.items())):
-			W[ind[center], col] = 1.0
-			surround = surround.split()
-			for x in surround: W[ind[x], col] = -1.0 / len(surround)
+		"""
+		TODO: still under construction.
+		"""###
+		masterdict, label2rc, rc2label = {}, {}, {}
+		scheme = ElectrodePositions.schemes['extended1020']
+		schpos = ElectrodePositions.schematic2D
+		for lab in scheme.split():
+			s = lab.upper().replace('Z', '0').replace('T', 'C')
+			rows = dict([(k,i) for i,k in enumerate('FP AF F FC C CP P PO O I'.split())])
+			cols = dict([(k,i) for i,k in enumerate('9 7 5 3 1 0 2 4 6 8 10'.split())])
+			br = [x in '0123456789' for x in s].index(True)
+			rc = (rows[s[:br]],cols[s[br:]])
+			label2rc[lab.lower()] = rc
+			rc2label[rc] = lab.lower()
+
+		selflabs = [x.lower() for x in self.get_labels()]
+		def sqdist(a, b): return (a[0]-b[0])**2 + (a[1]-b[1])**2
+		W = numpy.zeros((len(self), len(self)), dtype=float)
+		step = {'large':2, 'small':1}[type.lower()]
+		for col,c in enumerate(self.flat):
+			thislab = c.get_label().lower()
+			center = label2rc[thislab]
+			flankers = {}
+			flankers[1] = (center[0],center[1]-step)
+			flankers[-1] = (center[0], center[1]+step)
+			flankers[2] = (center[0]-step, center[1])
+			flankers[-2] = (center[0]+step, center[1])
+			surroundlabels = {}
+			for direction,flanker in flankers.items():
+				if flanker not in rc2label: continue
+				if rc2label[flanker] not in selflabs: continue # TODO: include this criterion?
+				target = schpos[rc2label[flanker]]
+				dsq,row,lab = min([(sqdist(schpos[lab],target),index,lab) for index,lab in enumerate(selflabs)])
+				if lab != thislab: W[row, col] = 1
+				surroundlabels[direction] = lab
+				
+			for direction in flankers.keys():
+				if direction in surroundlabels: continue
+				if -direction not in surroundlabels: continue
+				centerpos = schpos[thislab]
+				oppositepos = schpos[surroundlabels[-direction]]
+				target = [2*a-b for a,b in zip(centerpos,oppositepos)]
+				dsq,row,lab = min([(sqdist(schpos[lab],target),index,lab) for index,lab in enumerate(selflabs)])
+				drat = sqdist(centerpos, schpos[lab]) / sqdist(centerpos, oppositepos)
+				if not 0.8 < drat < 1.2: continue
+				if lab != thislab: W[row, col] = 1
+				surroundlabels[direction] = lab
+				
+			W[:,col] /= -W[:, col].sum()
+			W[col,col] = 1.0
+			masterdict[thislab] = ' '.join(surroundlabels.values())
+			
+			
+		if 0:
+			if   type == 'large': filt = {'C3':'F3  P3  Cz T7', 'C4':'F4  P4  Cz T8'}  # old-style
+			elif type == 'small': filt = {'C3':'FC3 CP3 C1 C5', 'C4':'FC4 CP4 C2 C6'}  #   hard-coded dict
+			else: raise ValueError('type must be "large" or "small"')
+			allnames = ' '.join(filt.keys() + filt.values()).split()
+			ind = self.find_labels(allnames, dict_output=True, error_if_not=' (required for %s Laplacian on [%s])' % (type,','.join(filt.keys())))
+			
+			W = numpy.zeros((len(self),len(filt)), dtype=float)
+			for col,(center,surround) in enumerate(sorted(filt.items())):
+				W[ind[center], col] = 1.0
+				surround = surround.split()
+				for x in surround: W[ind[x], col] = -1.0 / len(surround)
 		
 		if filters_as == 'rows': W = W.T
-		return W
-				
-		
+		return W,masterdict # TODO: returning masterdict is an interim solution. the best final solution might be to make the result valid for only one montage, and use a hard-coded masterdict that has been tweaked by hand in place of the small hard-coded dicts in the old method above
 	
 	def spfilt(self, W, inputs=None, exclude='auto', filters_as='columns'):
 		"""
