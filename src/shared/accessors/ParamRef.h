@@ -36,23 +36,22 @@
 #include "defines.h"
 #include "MeasurementUnits.h"
 
-class ParamRef
+class ParamRef;
+
+class ConstParamRef
 {
  public:
   enum { none = UINT_MAX / 2 };
 
  private:
-  ParamRef();
-  ParamRef& operator=( const ParamRef& );
+  ConstParamRef();
+  ConstParamRef& operator=( const ConstParamRef& );
 
  public:
-  explicit ParamRef( Param* param, size_t row = none, size_t column = none );
+  ConstParamRef( const ParamRef& );
+  explicit ConstParamRef( const Param* param, size_t row = none, size_t column = none );
   bool IsNull() const
     { return mpParam == NULL; }
-  // Assignment operators for write access.
-  ParamRef& operator=( const std::string& );
-  ParamRef& operator=( double );
-  ParamRef& operator=( const Param& );
   // Conversion operators for read access.
   operator const std::string&() const;
   const char* c_str() const;
@@ -83,26 +82,26 @@ class ParamRef
 
   // We also need to override operators to avoid ambiguities
   // when the compiler resolves expressions.
-  double operator-( const ParamRef& p ) const
+  double operator-( const ConstParamRef& p ) const
     { return double( *this ) - double( p ); }
-  double operator+( const ParamRef& p ) const
+  double operator+( const ConstParamRef& p ) const
     { return double( *this ) + double( p ); }
-  double operator*( const ParamRef& p ) const
+  double operator*( const ConstParamRef& p ) const
     { return double( *this ) * double( p ); }
-  double operator/( const ParamRef& p ) const
+  double operator/( const ConstParamRef& p ) const
     { return double( *this ) / double( p ); }
 
-  bool operator==( const ParamRef& p ) const
+  bool operator==( const ConstParamRef& p ) const
     { return (const std::string&)( *this ) == (const std::string&)( p ); }
-  bool operator!=( const ParamRef& p ) const
+  bool operator!=( const ConstParamRef& p ) const
     { return (const std::string&)( *this ) != (const std::string&)( p ); }
-  bool operator<( const ParamRef& p ) const
+  bool operator<( const ConstParamRef& p ) const
     { return double( *this ) < double( p ); }
-  bool operator>( const ParamRef& p ) const
+  bool operator>( const ConstParamRef& p ) const
     { return double( *this ) > double( p ); }
-  bool operator<=( const ParamRef& p ) const
+  bool operator<=( const ConstParamRef& p ) const
     { return double( *this ) <= double( p ); }
-  bool operator>=( const ParamRef& p ) const
+  bool operator>=( const ConstParamRef& p ) const
     { return double( *this ) >= double( p ); }
 
   // double
@@ -224,143 +223,178 @@ class ParamRef
 
 
   // Dereferencing operators for access to Param members.
-  Param* operator->();
   const Param* operator->() const;
   // Indexing operators for sub-parameters.
-  ParamRef operator()( size_t row, size_t col = none ) const;
-  ParamRef operator()( size_t row, const std::string&  ) const;
-  ParamRef operator()( const std::string&, size_t = none ) const;
-  ParamRef operator()( const std::string&, const std::string& ) const;
+  ConstParamRef operator()( size_t row, size_t col = none ) const;
+  ConstParamRef operator()( size_t row, const std::string&  ) const;
+  ConstParamRef operator()( const std::string&, size_t = none ) const;
+  ConstParamRef operator()( const std::string&, const std::string& ) const;
   // Stream i/o.
   std::ostream& WriteToStream( std::ostream& os ) const;
-  std::istream& ReadFromStream( std::istream& is );
+  
+ protected:
+  void SetValue( const std::string& );
 
  private:
   static size_t index( int idx )
     { return idx == none ? 0 : idx; }
 
  private:
-  Param* mpParam;
-  int    mIdx1, mIdx2;
+  const Param* mpParam;
+  int mIdx1, mIdx2;
 
-  static Param       sNullParam;
+  static Param sNullParam;
   static std::string sNullString;
 };
 
+class ParamRef : public ConstParamRef
+{
+ private:
+  ParamRef( const ConstParamRef& p )
+    : ConstParamRef( p ) {}
+ public:
+  explicit ParamRef( Param* param, size_t row = none, size_t column = none )
+    : ConstParamRef( param, row, column ) {}
+  operator ConstParamRef&() const
+    { return *const_cast<ConstParamRef*>( static_cast<const ConstParamRef*>( this ) ); }
+ 
+  // Assignment operators for write access.
+  ParamRef& operator=( const std::string& );
+  ParamRef& operator=( double );
+  ParamRef& operator=( const Param& );
+
+  // Dereferencing operators for access to Param members.
+  using ConstParamRef::operator->;
+  Param* operator->()
+    { return const_cast<Param*>( ConstParamRef::operator->() ); }
+  // Indexing operators for sub-parameters.
+  using ConstParamRef::operator();
+  ParamRef operator()( size_t row, size_t col = none )
+    { return ConstParamRef::operator()( row, col ); }
+  ParamRef operator()( size_t row, const std::string& col )
+    { return ConstParamRef::operator()( row, col ); }
+  ParamRef operator()( const std::string& row, size_t col = none )
+    { return ConstParamRef::operator()( row, col ); }
+  ParamRef operator()( const std::string& row, const std::string& col )
+    { return ConstParamRef::operator()( row, col ); }
+  // Stream i/o.
+  std::istream& ReadFromStream( std::istream& is );
+};
+
 // double
-inline double operator-( double d, const ParamRef& p )
+inline double operator-( double d, const ConstParamRef& p )
   { return d - double( p ); }
-inline double operator+( double d, const ParamRef& p )
+inline double operator+( double d, const ConstParamRef& p )
   { return d + double( p ); }
-inline double operator*( double d, const ParamRef& p )
+inline double operator*( double d, const ConstParamRef& p )
   { return d * double( p ); }
-inline double operator/( double d, const ParamRef& p )
+inline double operator/( double d, const ConstParamRef& p )
   { return d / double( p ); }
 
-inline bool operator==( double d, const ParamRef& p )
+inline bool operator==( double d, const ConstParamRef& p )
   { return d == double( p ); }
-inline bool operator!=( double d, const ParamRef& p )
+inline bool operator!=( double d, const ConstParamRef& p )
   { return d != double( p ); }
-inline bool operator<( double d, const ParamRef& p )
+inline bool operator<( double d, const ConstParamRef& p )
   { return d < double( p ); }
-inline bool operator>( double d, const ParamRef& p )
+inline bool operator>( double d, const ConstParamRef& p )
   { return d > double( p ); }
-inline bool operator<=( double d, const ParamRef& p )
+inline bool operator<=( double d, const ConstParamRef& p )
   { return d <= double( p ); }
-inline bool operator>=( double d, const ParamRef& p )
+inline bool operator>=( double d, const ConstParamRef& p )
   { return d >= double( p ); }
 
 #ifndef __BORLANDC__
 // float
-inline double operator-( float f, const ParamRef& p )
+inline double operator-( float f, const ConstParamRef& p )
   { return f - double( p ); }
-inline double operator+( float f, const ParamRef& p )
+inline double operator+( float f, const ConstParamRef& p )
   { return f + double( p ); }
-inline double operator*( float f, const ParamRef& p )
+inline double operator*( float f, const ConstParamRef& p )
   { return f * double( p ); }
-inline double operator/( float f, const ParamRef& p )
+inline double operator/( float f, const ConstParamRef& p )
   { return f / double( p ); }
 
-inline bool operator==( float f, const ParamRef& p )
+inline bool operator==( float f, const ConstParamRef& p )
   { return f == double( p ); }
-inline bool operator!=( float f, const ParamRef& p )
+inline bool operator!=( float f, const ConstParamRef& p )
   { return f != double( p ); }
-inline bool operator<( float f, const ParamRef& p )
+inline bool operator<( float f, const ConstParamRef& p )
   { return f < double( p ); }
-inline bool operator>( float f, const ParamRef& p )
+inline bool operator>( float f, const ConstParamRef& p )
   { return f > double( p ); }
-inline bool operator<=( float f, const ParamRef& p )
+inline bool operator<=( float f, const ConstParamRef& p )
   { return f <= double( p ); }
-inline bool operator>=( float f, const ParamRef& p )
+inline bool operator>=( float f, const ConstParamRef& p )
   { return f >= double( p ); }
 
 // int
-inline double operator-( int i, const ParamRef& p )
+inline double operator-( int i, const ConstParamRef& p )
   { return i - double( p ); }
-inline double operator+( int i, const ParamRef& p )
+inline double operator+( int i, const ConstParamRef& p )
   { return i + double( p ); }
-inline double operator*( int i, const ParamRef& p )
+inline double operator*( int i, const ConstParamRef& p )
   { return i * double( p ); }
-inline double operator/( int i, const ParamRef& p )
+inline double operator/( int i, const ConstParamRef& p )
   { return i / double( p ); }
 
-inline bool operator==( int i, const ParamRef& p )
+inline bool operator==( int i, const ConstParamRef& p )
   { return i == double( p ); }
-inline bool operator!=( int i, const ParamRef& p )
+inline bool operator!=( int i, const ConstParamRef& p )
   { return i != double( p ); }
-inline bool operator<( int i, const ParamRef& p )
+inline bool operator<( int i, const ConstParamRef& p )
   { return i < double( p ); }
-inline bool operator>( int i, const ParamRef& p )
+inline bool operator>( int i, const ConstParamRef& p )
   { return i > double( p ); }
-inline bool operator<=( int i, const ParamRef& p )
+inline bool operator<=( int i, const ConstParamRef& p )
   { return i <= double( p ); }
-inline bool operator>=( int i, const ParamRef& p )
+inline bool operator>=( int i, const ConstParamRef& p )
   { return i >= double( p ); }
 
 // unsigned int
-inline double operator-( unsigned int i, const ParamRef& p )
+inline double operator-( unsigned int i, const ConstParamRef& p )
   { return i - double( p ); }
-inline double operator+( unsigned int i, const ParamRef& p )
+inline double operator+( unsigned int i, const ConstParamRef& p )
   { return i + double( p ); }
-inline double operator*( unsigned int i, const ParamRef& p )
+inline double operator*( unsigned int i, const ConstParamRef& p )
   { return i * double( p ); }
-inline double operator/( unsigned int i, const ParamRef& p )
+inline double operator/( unsigned int i, const ConstParamRef& p )
   { return i / double( p ); }
 
-inline bool operator==( unsigned int i, const ParamRef& p )
+inline bool operator==( unsigned int i, const ConstParamRef& p )
   { return i == double( p ); }
-inline bool operator!=( unsigned int i, const ParamRef& p )
+inline bool operator!=( unsigned int i, const ConstParamRef& p )
   { return i != double( p ); }
-inline bool operator<( unsigned int i, const ParamRef& p )
+inline bool operator<( unsigned int i, const ConstParamRef& p )
   { return i < double( p ); }
-inline bool operator>( unsigned int i, const ParamRef& p )
+inline bool operator>( unsigned int i, const ConstParamRef& p )
   { return i > double( p ); }
-inline bool operator<=( unsigned int i, const ParamRef& p )
+inline bool operator<=( unsigned int i, const ConstParamRef& p )
   { return i <= double( p ); }
-inline bool operator>=( unsigned int i, const ParamRef& p )
+inline bool operator>=( unsigned int i, const ConstParamRef& p )
   { return i >= double( p ); }
 #endif // !__BORLANDC__
 
-inline bool operator==( const std::string& s, const ParamRef& p )
+inline bool operator==( const std::string& s, const ConstParamRef& p )
   { return p == s; }
-inline bool operator!=( const std::string& s, const ParamRef& p )
+inline bool operator!=( const std::string& s, const ConstParamRef& p )
   { return p != s; }
 
 template<class T>
-T& operator-=( T& d, const ParamRef& p )
+T& operator-=( T& d, const ConstParamRef& p )
   { return d -= T( p ); }
 template<class T>
-T& operator+=( T& d, const ParamRef& p )
+T& operator+=( T& d, const ConstParamRef& p )
   { return d += T( p ); }
 template<class T>
-T& operator*=( T& d, const ParamRef& p )
+T& operator*=( T& d, const ConstParamRef& p )
   { return d *= T( p ); }
 template<class T>
-T& operator/=( T& d, const ParamRef& p )
+T& operator/=( T& d, const ConstParamRef& p )
   { return d /= T( p ); }
 
 inline
-std::ostream& operator<<( std::ostream& s, const ParamRef& t )
+std::ostream& operator<<( std::ostream& s, const ConstParamRef& t )
   { return t.WriteToStream( s ); }
 
 inline
@@ -371,17 +405,40 @@ std::istream& operator>>( std::istream& s, ParamRef& t )
 // Definitions of inline functions
 ////////////////////////////////////////////////////////////////////////////////
 inline
-ParamRef::ParamRef( Param* param, size_t row, size_t column )
+ConstParamRef::ConstParamRef( const ParamRef& p )
+{
+  *this = p;
+}
+
+inline
+ConstParamRef::ConstParamRef( const Param* param, size_t row, size_t column )
 : mpParam( param ), mIdx1( static_cast<int>( row ) ), mIdx2( static_cast<int>( column ) )
 {
 }
 
 inline
+ConstParamRef&
+ConstParamRef::operator=( const ConstParamRef& p )
+{
+  mpParam = p.mpParam;
+  mIdx1 = p.mIdx1;
+  mIdx2 = p.mIdx2;
+  return *this;
+}
+
+inline
+void
+ConstParamRef::SetValue( const std::string& s )
+{
+  if( mpParam )
+    const_cast<Param*>( mpParam )->Value( index( mIdx1 ), index( mIdx2 ) ) = s;
+} 
+
+inline
 ParamRef&
 ParamRef::operator=( const std::string& s )
 {
-  if( mpParam )
-    mpParam->Value( index( mIdx1 ), index( mIdx2 ) ) = s;
+  SetValue( s );
   return *this;
 }
 
@@ -392,22 +449,21 @@ ParamRef::operator=( double d )
 {
   std::ostringstream os;
   os << d;
-  if( mpParam )
-    mpParam->Value( index( mIdx1 ), index( mIdx2 ) ) = os.str();
+  SetValue( os.str() );
   return *this;
 }
 
 
 inline
 const char*
-ParamRef::c_str() const
+ConstParamRef::c_str() const
 {
   return this->operator const std::string&().c_str();
 }
 
 
 inline
-ParamRef::operator const std::string&() const
+ConstParamRef::operator const std::string&() const
 {
   const std::string* result = &sNullString;
   if( mpParam )
@@ -419,10 +475,10 @@ ParamRef::operator const std::string&() const
 }
 
 
-inline Param*
-ParamRef::operator->()
+inline const Param*
+ConstParamRef::operator->() const
 {
-  Param* result = mpParam;
+  const Param* result = mpParam;
   if( mpParam && ( mIdx1 != none || mIdx2 != none ) )
     result = mpParam->Value( index( mIdx1 ), index( mIdx2 ) ).ToParam();
   if( result == NULL )
@@ -434,23 +490,16 @@ ParamRef::operator->()
 }
 
 
-inline const Param*
-ParamRef::operator->() const
+inline ConstParamRef
+ConstParamRef::operator()( size_t row, size_t col ) const
 {
-  return const_cast<ParamRef*>( this )->operator->();
-}
-
-
-inline ParamRef
-ParamRef::operator()( size_t row, size_t col ) const
-{
-  return ParamRef( const_cast<Param*>( operator->() ), row, col );
+  return ConstParamRef( const_cast<Param*>( operator->() ), row, col );
 }
 
 
 inline
 std::ostream&
-ParamRef::WriteToStream( std::ostream& os ) const
+ConstParamRef::WriteToStream( std::ostream& os ) const
 {
   os << operator const std::string&();
   return os;

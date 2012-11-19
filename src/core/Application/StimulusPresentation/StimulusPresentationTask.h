@@ -63,9 +63,9 @@ class StimulusPresentationTask : public StimulusTask
 
  private:
   void DetermineAttendedTarget();
-  ParamRef StimulusProperty( const ParamRef& inMatrixParam,
-                             int inColIndex,
-                             const std::string& inPropertyName ) const;
+  ConstParamRef StimulusProperty( const ParamRef& inMatrixParam,
+                                  int inColIndex,
+                                  const std::string& inPropertyName ) const;
 
   // Configuration parameters.
   int mNumberOfSequences,
@@ -89,7 +89,6 @@ class StimulusPresentationTask : public StimulusTask
   // Set of all existing targets.
   SetOfTargets mTargets;
 };
-
 
 #endif // STIMULUS_PRESENTATION_TASK_H
 

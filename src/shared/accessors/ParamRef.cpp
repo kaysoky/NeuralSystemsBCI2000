@@ -33,15 +33,15 @@
 
 using namespace std;
 
-Param  ParamRef::sNullParam;
-string ParamRef::sNullString;
+Param  ConstParamRef::sNullParam;
+string ConstParamRef::sNullString;
 
-ParamRef::operator double() const
+ConstParamRef::operator double() const
 {
   double result = 0.0;
   if( mpParam )
   {
-    const Param* p = mpParam; // const access
+    const Param* p = mpParam;
     const std::string& val = p->Value( index( mIdx1 ), index( mIdx2 ) );
     result = std::atof( val.c_str() );
     if( result == 0.0 )
@@ -54,29 +54,29 @@ ParamRef::operator double() const
   return result;
 }
 
-ParamRef
-ParamRef::operator()( size_t row, const string& col_label ) const
+ConstParamRef
+ConstParamRef::operator()( size_t row, const string& col_label ) const
 {
   const Param* subParam = operator->();
   size_t col_idx = subParam->ColumnLabels()[ col_label ];
-  return ParamRef( const_cast<Param*>( subParam ), row, col_idx );
+  return ConstParamRef( const_cast<Param*>( subParam ), row, col_idx );
 }
 
-ParamRef
-ParamRef::operator()( const string& row_label, size_t col ) const
+ConstParamRef
+ConstParamRef::operator()( const string& row_label, size_t col ) const
 {
   const Param* subParam = operator->();
   size_t row_idx = subParam->RowLabels()[ row_label ];
-  return ParamRef( const_cast<Param*>( subParam ), row_idx, col );
+  return ConstParamRef( const_cast<Param*>( subParam ), row_idx, col );
 }
 
-ParamRef
-ParamRef::operator()( const string& row_label, const string& col_label ) const
+ConstParamRef
+ConstParamRef::operator()( const string& row_label, const string& col_label ) const
 {
   const Param* subParam = operator->();
   size_t row_idx = subParam->RowLabels()[ row_label ],
          col_idx = subParam->ColumnLabels()[ col_label ];
-  return ParamRef( const_cast<Param*>( subParam ), row_idx, col_idx );
+  return ConstParamRef( const_cast<Param*>( subParam ), row_idx, col_idx );
 }
 
 

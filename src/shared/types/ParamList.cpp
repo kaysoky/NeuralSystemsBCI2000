@@ -28,6 +28,7 @@
 #pragma hdrstop
 
 #include "ParamList.h"
+#include "ParamRef.h"
 
 #include <sstream>
 #include <fstream>
@@ -64,6 +65,18 @@ ParamList::operator[]( const std::string& inName ) const
   if( i != mNameIndex.end() )
     result = &mParams[ i->second ].Param;
   return *result;
+}
+
+ParamRef
+ParamList::operator()( const std::string& inName )
+{
+  return ParamRef( &operator[]( inName ) );
+}
+
+ConstParamRef
+ParamList::operator()( const std::string& inName ) const
+{
+  return ConstParamRef( &operator[]( inName ) );
 }
 
 // **************************************************************************

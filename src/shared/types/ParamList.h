@@ -33,6 +33,9 @@
 #include "Param.h"
 #include "EncodedString.h"
 
+class ParamRef;
+class ConstParamRef;
+
 class ParamList
 {
  public:
@@ -42,6 +45,9 @@ class ParamList
                 { return mParams.at( index ).Param; }
   const Param&  operator[]( size_t index ) const
                 { return mParams.at( index ).Param; }
+                
+  ParamRef      operator()( const std::string& name );
+  ConstParamRef operator()( const std::string& name ) const;
 
         int     Size() const
                 { return static_cast<int>( mParams.size() ); }
