@@ -12,16 +12,15 @@ MESSAGE( "-- Adding Tool Project: " ${NAME} )
 # Set the project specific sources
 SET( SOURCES
   RDAgetparams.cpp
-  ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient/RDAQueue.cpp
+  ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient/RDAProtocol.cpp
 )
 SET( HEADERS
-  ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient/RDAQueue.h
-  ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient/RDA/RecorderRDA.h
+  ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient/RDAProtocol.h
 )
 
 # Add in the appropriate error handling module
 SET( SRC_SHARED_BCISTREAM 
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_tool.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_SHARED_BCISTREAM} )
 SET( SRC_BCI2000_FRAMEWORK

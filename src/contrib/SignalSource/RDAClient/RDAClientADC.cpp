@@ -32,178 +32,173 @@
 #include "RDAClientADC.h"
 
 #include "GenericSignal.h"
-#include "BCIError.h"
+#include "ThreadUtils.h"
+#include "BCIStream.h"
 #include <string>
 #include <sstream>
 
 using namespace std;
-
-const float eps = 1e-20f; // Smaller values are considered zero.
 
 // Register the source class with the framework.
 RegisterFilter( RDAClientADC, 1 );
 
 
 RDAClientADC::RDAClientADC()
+: mAddMarkerChannel( false )
 {
  BEGIN_PARAMETER_DEFINITIONS
-    "Source:Signal%20Properties int SourceCh= 33 33 1 %"
-            " // the number of digitized and stored channels including marker channel",
-    "Source:Signal%20Properties int SampleBlockSize= 20 20 1 %"
-            " // the number of samples transmitted at a time, incoming blocks are always 40ms",
-    "Source:Signal%20Properties int SamplingRate= 250 250 1 %"
-            " // the sample rate",
-    "Source string HostName= localhost"
-            " // the name of the host to connect to",
+  "Source:Signal%20Properties int SourceCh= 32 32 1 %"
+          " // the number of digitized and stored channels",
+  "Source:Signal%20Properties int SampleBlockSize= 20 20 1 %"
+          " // the number of samples transmitted at a time, incoming blocks are always 40ms",
+  "Source:Signal%20Properties int SamplingRate= 250 250 1 %"
+          " // the sample rate",
+  "Source string HostName= localhost"
+          " // the name of the host to connect to",
+  "Source int AddMarkerChannel= 1 0 0 1 "
+          "// duplicate marker data into an additional channel (boolean)",
  END_PARAMETER_DEFINITIONS
+ 
+ BEGIN_STATE_DEFINITIONS
+  "RDAMarkers 16 0 0 0",
+ END_STATE_DEFINITIONS
 }
 
 
 RDAClientADC::~RDAClientADC()
 {
-  Halt();
 }
 
 void
-RDAClientADC::Preflight( const SignalProperties&,
-                               SignalProperties& outSignalProperties ) const
+RDAClientADC::OnPreflight( SignalProperties& Output ) const
 {
   // Resource availability and parameter consistency checks.
-  RDAQueue preflightQueue;
-  size_t numInputChannels = 0;
-  preflightQueue.open( Parameter( "HostName" ).c_str() );
-  if( !( preflightQueue && preflightQueue.is_open() ) )
-    bcierr << "Cannot establish a connection to the recording software" << endl;
-  else
+  RDA::Connection preflightConnection;
+  int numSignalChannels = 0,
+      numMarkerChannels = 0,
+      numOutputChannels = 0;
+  preflightConnection.Open( Parameter( "HostName" ) );
+  if( preflightConnection )
   {
+    const RDA::Info& info = preflightConnection.Info();
     bool goodOffsets = true,
          goodGains   = true;
-    numInputChannels = preflightQueue.info().numChannels + 1;
-    const char* matchMessage = " parameter must match the number of channels"
-                               " in the recording software plus one";
-    if( Parameter( "SourceCh" ) != static_cast<int>( numInputChannels ) )
+    numSignalChannels = info.numChannels;
+    string matchMessage = " parameter must match the number of channels"
+                          " in the recording software";
+    if( Parameter( "AddMarkerChannel" ) != 0 )
+    {
+      numMarkerChannels = 1;
+      matchMessage += " plus one marker channel";
+    }
+    numOutputChannels = numSignalChannels + numMarkerChannels;
+    if( Parameter( "SourceCh" ) != numOutputChannels )
       bcierr << "The SourceCh "
              << matchMessage
-             << " (" << numInputChannels << ") "
-             << endl;
+             << " (" << numOutputChannels << ") ";
 
-    if( Parameter( "SourceChOffset" )->NumValues() != numInputChannels )
+    if( Parameter( "SourceChOffset" )->NumValues() != numOutputChannels )
       bcierr << "The number of values in the SourceChOffset"
              << matchMessage
-             << " (" << numInputChannels << ") "
-             << endl;
+             << " (" << numOutputChannels << ") ";
     else
-      for( size_t i = 0; i < numInputChannels - 1; ++i )
+      for( int i = 0; i < numSignalChannels; ++i )
         goodOffsets &= ( Parameter( "SourceChOffset" )( i ) == 0 );
 
     if( !goodOffsets )
       bcierr << "The SourceChOffset values for the first "
-             << numInputChannels - 1 << " channels "
-             << "must be 0"
-             << endl;
+             << numSignalChannels << " channels "
+             << "must be 0";
 
 
-    if( Parameter( "SourceChGain" )->NumValues() != numInputChannels )
+    if( Parameter( "SourceChGain" )->NumValues() != numOutputChannels )
       bcierr << "The number of values in the SourceChGain"
              << matchMessage
-             << " (" << numInputChannels << ") "
-             << endl;
+             << " (" << numOutputChannels << ") ";
     else
-      for( size_t i = 0; i < numInputChannels - 1; ++i )
+      for( int i = 0; i < numSignalChannels; ++i )
       {
-        double gain = preflightQueue.info().channelResolutions[ i ];
+        double gain = info.channelResolutions[ i ];
         double prmgain = Parameter( "SourceChGain")( i );
         bool same = ( 1e-3 > ::fabs( prmgain - gain ) / ( gain ? gain : 1.0 ) );
         goodGains &= same;
 
-        // bciout<<"channel "<<i+1<<": server="<<gain<<"   prm="<<prmgain<<endl;
         if ( !same ) bciout << "The RDA server says the gain of"
                             << " channel " << i+1
                             << " is " << gain
                             << " whereas the corresponding value in the"
-                            << " SourceChGain parameter is " << prmgain << endl;
+                            << " SourceChGain parameter is " << prmgain;
       }
 
     if( !goodGains )
       bcierr << "The SourceChGain values for the first "
-             << numInputChannels - 1 << " channels "
+             << numSignalChannels << " channels "
              << "must match the channel resolutions settings "
-             << "in the recording software"
-             << endl;
+             << "in the recording software";
 
 
-    if( preflightQueue.info().samplingInterval < eps )
+    if( info.samplingInterval < Limits( info.samplingInterval ).epsilon() )
       bcierr << "The recording software reports an infinite sampling rate "
-             << "-- make sure it shows a running signal in its window"
-             << endl;
+             << "-- make sure it shows a running signal in its window";
     else
     {
-      double sourceSamplingRate = 1e6 / preflightQueue.info().samplingInterval;
+      double sourceSamplingRate = 1e6 / info.samplingInterval;
       if( Parameter( "SamplingRate" ).InHertz() != sourceSamplingRate )
         bcierr << "The SamplingRate parameter must match "
                << "the setting in the recording software "
-               << "(" << sourceSamplingRate << ")"
-               << endl;
+               << "(" << sourceSamplingRate << ")";
 
       // Check whether block sizes are sub-optimal.
-      size_t sampleBlockSize = Parameter( "SampleBlockSize" ),
-             sourceBlockSize = static_cast<size_t>( preflightQueue.info().blockDuration / preflightQueue.info().samplingInterval );
-      if( sampleBlockSize % sourceBlockSize != 0 && sourceBlockSize % sampleBlockSize != 0 )
-        bciout << "Non-integral ratio between source block size (" << sourceBlockSize << ")"
-               << " and system block size (" << sampleBlockSize << "). "
-               << "This will cause interference jitter."
-               << endl;
+      int sampleBlockSize = Parameter( "SampleBlockSize" ),
+          sourceBlockSize = static_cast<int>( info.blockDuration / info.samplingInterval );
+      if( sampleBlockSize % sourceBlockSize != 0 )
+        bcierr << "System block size is " << sampleBlockSize << ", must be equal to "
+               << "or a multiple of the RDA server's block size, which is " << sourceBlockSize;
     }
   }
 
   // Requested output signal properties.
 #if RDA_FLOAT
-  outSignalProperties = SignalProperties(
-    numInputChannels, Parameter( "SampleBlockSize" ), SignalType::float32 );
+  Output = SignalProperties( numOutputChannels + 1, Parameter( "SampleBlockSize" ), SignalType::float32 );
 #else
-  bciout << "You are using the 16 bit variant of the RDA protocol, which is"
-         << " considered unreliable. Switching to float is recommended" << endl;
-  outSignalProperties = SignalProperties(
-    numInputChannels, Parameter( "SampleBlockSize" ), SignalType::int16 );
+  bciwarn << "You are using the 16 bit variant of the RDA protocol, which is"
+          << " considered unreliable. Switching to float is recommended" << endl;
+  Output = SignalProperties( numOutputChannels + 1, Parameter( "SampleBlockSize" ), SignalType::int16 );
 #endif // RDA_FLOAT
+  Output.ChannelLabels()[Output.Channels() - 1] = StateMark + string( "RDAMarkers" );
 }
 
 
 void
-RDAClientADC::Initialize( const SignalProperties&, const SignalProperties& )
+RDAClientADC::OnInitialize( const SignalProperties& )
 {
-  mHostName = string( Parameter( "HostName" ) );
+  mHostName = Parameter( "HostName" );
+  mAddMarkerChannel = ( Parameter( "AddMarkerChannel" ) != 0 );
+}
 
-  mInputQueue.clear();
-  mInputQueue.open( mHostName.c_str() );
-  if( !mInputQueue.is_open() )
-    bcierr << "Could not establish connection with recording software"
-           << endl;
+void
+RDAClientADC::OnStartAcquisition()
+{
+  mConnection.Open( mHostName );
 }
 
 
 void
-RDAClientADC::Process( const GenericSignal&, GenericSignal& Output )
+RDAClientADC::OnStopAcquisition()
 {
-  for( int sample = 0; sample < Output.Elements(); ++sample )
-    for( int channel = 0; channel < Output.Channels(); ++channel )
-    {
-      if( !mInputQueue )
-      {
-        bcierr << "Lost connection to VisionRecorder software" << endl;
-        return;
-      }
-      Output( channel, sample ) = mInputQueue.front();
-      mInputQueue.pop();
-    }
+  mConnection.Close();
 }
-
 
 void
-RDAClientADC::Halt()
+RDAClientADC::DoAcquire( GenericSignal& Output )
 {
-  mInputQueue.close();
-  mInputQueue.clear();
+  if( !mConnection.ReceiveData( Output ) )
+    Error( "Lost connection to VisionRecorder software" );
+  else if( mAddMarkerChannel )
+  {
+    int from = Output.Channels() - 2,
+        to = from + 1;
+    for( int el = 0; el < Output.Elements(); ++el )
+      Output( to, el ) = Output( from, el );
+  }
 }
-
-

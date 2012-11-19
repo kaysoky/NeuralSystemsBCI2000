@@ -11,12 +11,12 @@ SET( EXECUTABLE_NAME RDAClient )
 # Set the project specific sources
 SET( SRC_PROJECT
   RDAClientADC.cpp 
-  RDAQueue.cpp
+  RDAProtocol.cpp
 )
 SET( HDR_PROJECT
   RDA/RecorderRDA.h
   RDAClientADC.h
-  RDAQueue.h
+  RDAProtocol.h
 )
 
 # Create the signal source module

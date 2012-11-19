@@ -28,22 +28,24 @@
 #define RDA_CLIENT_ADC_H
 
 #include <string>
-#include "GenericADC.h"
-#include "RDAQueue.h"
+#include "BufferedADC.h"
+#include "RDAProtocol.h"
 
-class RDAClientADC : public GenericADC
+class RDAClientADC : public BufferedADC
 {
  public:
-                RDAClientADC();
-  virtual       ~RDAClientADC();
-  virtual void  Preflight( const SignalProperties&, SignalProperties& ) const;
-  virtual void  Initialize( const SignalProperties&, const SignalProperties& );
-  virtual void  Process( const GenericSignal&, GenericSignal& );
-  virtual void  Halt();
+  RDAClientADC();
+  ~RDAClientADC();
+  void OnPreflight( SignalProperties& ) const;
+  void OnInitialize( const SignalProperties& );
+  void OnStartAcquisition();
+  void OnStopAcquisition();
+  void DoAcquire( GenericSignal& );
 
  private:
-  std::string  mHostName;
-  RDAQueue     mInputQueue;
+  std::string      mHostName;
+  bool             mAddMarkerChannel;
+  RDA::Connection  mConnection;
 };
 
 #endif // RDA_CLIENT_ADC_H

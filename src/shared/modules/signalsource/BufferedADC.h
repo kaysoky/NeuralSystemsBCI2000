@@ -86,6 +86,9 @@ class BufferedADC : public GenericADC, private OSThread
   virtual bool SetsSourceTime() const { return true; }
 
  protected:
+  // Interface to descendants.
+  static const char StateMark = '@'; // Set a channel's name to "@MyState" in order to have its content copied into state "MyState".
+  void Error( const std::string& );
   // Virtual data acquisition interface.
   virtual void OnPreflight( SignalProperties& ) const = 0;
   virtual void OnInitialize( const SignalProperties& ) = 0;
@@ -96,14 +99,16 @@ class BufferedADC : public GenericADC, private OSThread
   virtual void OnHalt() {}
 
  private:
-  virtual int Execute();
+  virtual int OnExecute();
 
   std::vector<GenericSignal> mBuffer;
   std::vector<PrecisionTime> mTimeStamps;
+  std::string                mError;
   size_t                     mReadCursor,
                              mWriteCursor;
   OSMutex                    mMutex;
   OSEvent                    mAcquisitionDone;
+  mutable SignalProperties   mAcquisitionProperties;
 };
 
 #endif // BUFFERED_ADC_H

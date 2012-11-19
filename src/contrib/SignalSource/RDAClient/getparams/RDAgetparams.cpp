@@ -29,7 +29,7 @@
 #include <set>
 #include "Param.h"
 #include "ParamList.h"
-#include "RDAQueue.h"
+#include "RDAProtocol.h"
 
 #define PROGRAM "RDAgetparams"
 
@@ -73,15 +73,16 @@ int main( int argc, char** argv )
     return noError;
   }
 
-  RDAQueue q;
-  q.open( hostname );
-  if( !q )
+  RDA::Connection connection;
+  
+  if( !connection.Open( hostname ) )
   {
     cerr << "Could not open connection to host \"" << hostname << "\".\n\n"
          << "Hint: " << usage << endl;
     return generalError;
   }
-
+  
+  const RDA::Info& info = connection.Info();
   ParamList paramlist;
   const char* params[] =
   {
@@ -102,7 +103,7 @@ int main( int argc, char** argv )
     paramlist.Add( ( string( params[ i ] ) + " // getparams " + hostname ).c_str() );
 
   paramlist[ "HostName" ].Value() = hostname;
-  size_t numInputChannels = q.info().numChannels + 1;
+  size_t numInputChannels = info.numChannels + 1;
   paramlist[ "SourceCh" ].Value() = str( numInputChannels );
   paramlist[ "ChannelNames" ].SetNumValues( numInputChannels );
   paramlist[ "SourceChOffset" ].SetNumValues( numInputChannels );
@@ -112,17 +113,17 @@ int main( int argc, char** argv )
 
   for( size_t i = 0; i < numInputChannels - 1; ++i )
   {
-    paramlist[ "ChannelNames" ].Value( i ) = q.info().channelNames[i];
+    paramlist[ "ChannelNames" ].Value( i ) = info.channelNames[i];
     paramlist[ "SourceChOffset" ].Value( i ) = "0";
-    paramlist[ "SourceChGain" ].Value( i ) = str( q.info().channelResolutions[ i ] );
+    paramlist[ "SourceChGain" ].Value( i ) = str( info.channelResolutions[ i ] );
     paramlist[ "TransmitChList" ].Value( i ) = str( i + 1 );
     paramlist[ "SpatialFilter" ].Value( i, i ) = "1";
   }
   paramlist[ "ChannelNames" ].Value( numInputChannels - 1 ) = "T";
   paramlist[ "SourceChOffset" ].Value( numInputChannels - 1 ) = "0";
   paramlist[ "SourceChGain" ].Value( numInputChannels - 1 ) = "1";
-  paramlist[ "SamplingRate" ].Value() = str( 1e6 / q.info().samplingInterval );
-  paramlist[ "SampleBlockSize" ].Value() = str( q.info().blockDuration / q.info().samplingInterval );
+  paramlist[ "SamplingRate" ].Value() = str( 1e6 / info.samplingInterval );
+  paramlist[ "SampleBlockSize" ].Value() = str( info.blockDuration / info.samplingInterval );
 
   cout << paramlist;
 

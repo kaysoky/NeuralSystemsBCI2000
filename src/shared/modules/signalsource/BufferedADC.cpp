@@ -49,53 +49,87 @@ BufferedADC::~BufferedADC()
 
 void
 BufferedADC::Preflight( const SignalProperties&,
-                              SignalProperties& output ) const
+                              SignalProperties& Output ) const
 {
   if( Parameter( "SourceBufferSize" ).InSampleBlocks() < 2 )
     bcierr << "The SourceBufferSize parameter must be greater or"
            << " equal 2 sample blocks."
            << endl;
   State( "SourceTime" );
-  this->OnPreflight( output );
+  mAcquisitionProperties = Output;
+  this->OnPreflight( mAcquisitionProperties );
+  Output = mAcquisitionProperties;
+  int numStateChannels = 0;
+  for( int ch = 0; ch < Output.Channels(); ++ch )
+  {
+    bool isStateChannel = ( *Output.ChannelLabels()[ch].c_str() == StateMark );
+    if( numStateChannels && !isStateChannel )
+      bcierr_ << "State channels must be located at the end of the channel list";
+    else if( isStateChannel )
+      ++numStateChannels;
+  }
+  Output.SetChannels( Output.Channels() - numStateChannels );
 }
 
 void
 BufferedADC::Initialize( const SignalProperties&,
-                         const SignalProperties& output )
+                         const SignalProperties& Output )
 {
   mBuffer.clear();
   mTimeStamps.clear();
   size_t SourceBufferSize = static_cast<size_t>( Parameter( "SourceBufferSize" ).InSampleBlocks() );
-  mBuffer.resize( SourceBufferSize, GenericSignal( output ) );
+  mBuffer.resize( SourceBufferSize, GenericSignal( mAcquisitionProperties ) );
   mTimeStamps.resize( SourceBufferSize );
   mReadCursor = 0;
   mWriteCursor = 0;
-  this->OnInitialize( output );
+  this->OnInitialize( mAcquisitionProperties );
   OSThread::Start();
 }
 
 // The Process() function is called from the main thread in regular intervals.
 void
 BufferedADC::Process( const GenericSignal&,
-                            GenericSignal& output )
+                            GenericSignal& Output )
 {
   this->OnProcess();
-
-  bool waitForData = false;
+  
+  bool abort = false,
+       waitForData = false;
   {
     OSMutex::Lock lock( mMutex );
-    waitForData = ( mReadCursor == mWriteCursor );
+    abort = this->IsTerminated();
+    waitForData = ( mReadCursor == mWriteCursor ) && !abort;
     mAcquisitionDone.Reset();
   }
   if( waitForData )
     mAcquisitionDone.Wait();
 
-  output = mBuffer[mReadCursor];
+  const GenericSignal& acquired = mBuffer[mReadCursor];
+  if( acquired.Channels() == Output.Channels() )
+    Output = acquired;
+  else
+  {
+    const LabelIndex& labels = mAcquisitionProperties.ChannelLabels();
+    for( int el = 0; el < Output.Elements(); ++el )
+    {
+      for( int ch = 0; ch < Output.Channels(); ++ch )
+        Output( ch, el ) = acquired( ch, el );
+      for( int ch = Output.Channels(); ch < acquired.Channels(); ++ch )
+        State( labels[ch].c_str() + 1 )( el ) = static_cast<State::ValueType>( acquired( ch, el ) );
+    }
+  }
+  
   State( "SourceTime" ) = mTimeStamps[mReadCursor];
   {
     OSMutex::Lock lock( mMutex );
     ++mReadCursor %= mBuffer.size();
+    abort = this->IsTerminated();
   }
+
+  if( abort && State( "Running" ) )
+    State( "Running" ) = 0;
+  else if( abort )
+    bcierr_ << mError.empty() ? "Acquisition Error" : mError;
 }
 
 void
@@ -105,11 +139,18 @@ BufferedADC::Halt()
   OnHalt();
 }
 
+void
+BufferedADC::Error( const string& inError )
+{
+  mError = inError.empty() ? "Acquisition Error" : inError;
+}
+
 // The Execute() function runs in its own writer thread, concurrently with repeated calls to
 // Process() from the main thread, which is the reader thread.
 int
-BufferedADC::Execute()
+BufferedADC::OnExecute()
 {
+  mError.clear();
   this->OnStartAcquisition();
   while( !OSThread::IsTerminating() )
   {
@@ -117,6 +158,9 @@ BufferedADC::Execute()
     mTimeStamps[mWriteCursor] = PrecisionTime::Now();
     {
       OSMutex::Lock lock( mMutex );
+      if( !mError.empty() )
+        Terminate();
+      
       ++mWriteCursor %= mBuffer.size();
       if( mWriteCursor == mReadCursor )
         bciout << "Data acquisition buffer overflow" << endl;
