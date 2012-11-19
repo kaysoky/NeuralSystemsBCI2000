@@ -37,7 +37,7 @@
 #pragma hdrstop
 
 #include "CallbackBase.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "BCIException.h"
 
 using namespace std;

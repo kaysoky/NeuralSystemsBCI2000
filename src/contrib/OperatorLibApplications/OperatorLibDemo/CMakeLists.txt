@@ -21,7 +21,7 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 # Add in the appropriate error handling module
 SET( SRC_SHARED_BCISTREAM 
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_tool.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
 )
 
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_SHARED_BCISTREAM} )

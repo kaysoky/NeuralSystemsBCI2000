@@ -38,7 +38,7 @@
 #include "MessageHandler.h"
 #include "MeasurementUnits.h"
 #include "SockStream.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "VersionInfo.h"
 #include "FileUtils.h"
 #include "ProcessUtils.h"
@@ -180,7 +180,6 @@ CoreModule::Initialize( int& ioArgc, char** ioArgv )
     ++i;
   }
 
-  bciout__.SetFlushHandler( BCIError::PlainMessage );
   if( printVersion )
   {
     const VersionInfo& info = VersionInfo::Current;

@@ -27,7 +27,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include <iostream>
@@ -40,62 +40,69 @@ using namespace std;
 
 extern StateMachine* gpStateMachine;
 
-void
-BCIError::DebugMessage( const string& message )
+static void
+Handle( const string& inMessage, int inCallback )
 {
-  Warning( message );
-}
-
-void
-BCIError::Warning( const string& inMessage )
-{
-  if( inMessage.length() > 1 )
+  string message = inMessage;
+  if( message.find_last_of( '\n' ) == message.length() - 1 )
+    message = message.substr( 0, message.length() - 1 );
+  if( gpStateMachine && gpStateMachine->CallbackFunction( inCallback ) )
+    gpStateMachine->LogMessage( inCallback, message.c_str() );
+  else
   {
-    string message = inMessage;
-    if( message.find_last_of( '\n' ) == message.length() - 1 )
-      message = message.substr( 0, message.length() - 1 );
-    if( gpStateMachine && gpStateMachine->CallbackFunction( BCI_OnWarningMessage ) )
-      gpStateMachine->LogMessage( BCI_OnWarningMessage, message.c_str() );
-    else
+    std::ostream* pOut = &cout;
+    string title = "BCI2000 Operator";
+    switch( inCallback )
     {
-#ifdef _WIN32
-      ::MessageBoxA( NULL, message.c_str(), "BCI2000 Operator", MB_OK );
-#else
-      cout << message << endl;
-#endif
+      case BCI_OnErrorMessage:
+        title += " Error";
+        pOut = &cerr;
+        break;
+      case BCI_OnWarningMessage:
+        title += " Warning";
+        pOut = &cerr;
+        break;
     }
+#ifdef _WIN32
+    ::MessageBoxA( NULL, message.c_str(), title.c_str(), MB_OK );
+#else
+    *pOut << message << endl;
+#endif
   }
 }
 
 void
-BCIError::ConfigurationError( const string& inMessage )
+BCIStream::PlainMessage( const string& s )
 {
-  if( inMessage.length() > 1 )
-  {
-    string message = inMessage;
-    if( message.find_last_of( '\n' ) == message.length() - 1 )
-      message = message.substr( 0, message.length() - 1 );
-    if( gpStateMachine && gpStateMachine->CallbackFunction( BCI_OnErrorMessage ) )
-      gpStateMachine->LogMessage( BCI_OnErrorMessage, message.c_str() );
-    else
-    {
-#ifdef _WIN32
-      ::MessageBoxA( NULL, message.c_str(), "BCI2000 Operator Error", MB_OK );
-#else
-      cerr << message << endl;
-#endif
-    }
-  }
+  Handle( s, BCI_OnLogMessage );
 }
 
 void
-BCIError::RuntimeError( const string& message )
+BCIStream::DebugMessage( const string& s )
 {
-  ConfigurationError( message );
+  Handle( s, BCI_OnDebugMessage );
 }
 
 void
-BCIError::LogicError( const string& message )
+BCIStream::Warning( const string& s )
 {
-  ConfigurationError( message );
+  Handle( s, BCI_OnWarningMessage );
+}
+
+void
+BCIStream::ConfigurationError( const string& s )
+{
+  Handle( s, BCI_OnErrorMessage );
+}
+
+void
+BCIStream::RuntimeError( const string& s )
+{
+  Handle( s, BCI_OnErrorMessage );
+}
+
+void
+BCIStream::LogicError( const string& s )
+{
+  Handle( s, BCI_OnErrorMessage );
 }

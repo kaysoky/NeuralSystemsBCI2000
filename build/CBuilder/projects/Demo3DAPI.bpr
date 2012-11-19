@@ -20,8 +20,8 @@ Demo3DAPI.obj\threeDText.obj
 Demo3DAPI.obj\twoDCursor.obj
 Demo3DAPI.obj\twoDOverlay.obj
 Demo3DAPI.obj\twoDText.obj
-Demo3DAPI.obj\BCIError.obj
-Demo3DAPI.obj\BCIError_guiapp.obj
+Demo3DAPI.obj\BCIStream.obj
+Demo3DAPI.obj\BCIStream_guiapp.obj
 Demo3DAPI.obj\BCIException.obj
 Demo3DAPI.obj\GUI.obj
 Demo3DAPI.obj\GraphDisplay.obj
@@ -106,8 +106,8 @@ Demo3DAPI.obj\WildcardMatch.obj
       <FILE FILENAME="../../../src\extlib\3DAPI\twoDCursor.cpp" FORMNAME="" UNITNAME="twoDCursor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\extlib\3DAPI\twoDOverlay.cpp" FORMNAME="" UNITNAME="twoDOverlay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\extlib\3DAPI\twoDText.cpp" FORMNAME="" UNITNAME="twoDText" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="../../../src\shared\bcistream\BCIError.cpp" FORMNAME="" UNITNAME="BCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="../../../src\shared\bcistream\BCIError_guiapp.cpp" FORMNAME="" UNITNAME="BCIError_guiapp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIStream.cpp" FORMNAME="" UNITNAME="BCIStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIStream_guiapp.cpp" FORMNAME="" UNITNAME="BCIStream_guiapp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\gui\GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\gui\GraphDisplay.cpp" FORMNAME="" UNITNAME="GraphDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

@@ -1,5 +1,5 @@
 Root
-shared\bcistream\BCIError.cpp
+shared\bcistream\BCIStream.cpp
 shared\bcistream\BCIException.cpp
 shared\utils\VersionInfo.cpp
 shared\utils\ClassName.cpp

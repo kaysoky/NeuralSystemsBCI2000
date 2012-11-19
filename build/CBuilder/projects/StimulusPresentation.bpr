@@ -9,8 +9,8 @@ StimulusPresentation.obj\sapi.obj
 StimulusPresentation.obj\BCIEvent.obj
 StimulusPresentation.obj\Environment.obj
 StimulusPresentation.obj\ParamRef.obj
-StimulusPresentation.obj\BCIError.obj
-StimulusPresentation.obj\BCIError_module.obj
+StimulusPresentation.obj\BCIStream.obj
+StimulusPresentation.obj\BCIStream_module.obj
 StimulusPresentation.obj\BCIException.obj
 StimulusPresentation.obj\BCIDirectory.obj
 StimulusPresentation.obj\ChoiceCombination.obj
@@ -138,8 +138,8 @@ StimulusPresentation.obj\WildcardMatch.obj
       <FILE FILENAME="../../../src\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\accessors\Environment.cpp" FORMNAME="" UNITNAME="Environment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\accessors\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="../../../src\shared\bcistream\BCIError.cpp" FORMNAME="" UNITNAME="BCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="../../../src\shared\bcistream\BCIError_module.cpp" FORMNAME="" UNITNAME="BCIError_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIStream.cpp" FORMNAME="" UNITNAME="BCIStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIStream_module.cpp" FORMNAME="" UNITNAME="BCIStream_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\filters\ChoiceCombination.cpp" FORMNAME="" UNITNAME="ChoiceCombination" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

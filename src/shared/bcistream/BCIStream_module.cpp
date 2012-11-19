@@ -27,7 +27,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "Environment.h"
 #include "MessageHandler.h"
 #include "OSMutex.h"
@@ -57,16 +57,12 @@ ShowMessageBox( const string& inText, const string& inTitle, unsigned int inFlag
 void
 StatusMessage( const string& inText, int inCode )
 {
-  string text = inText.empty() ? inText : inText.substr( 0, inText.length() - 1 );
-  if( text.find_last_of( ".!?" ) != text.length() - 1 )
-    text += '.';
-
   // If the connection to the operator does not work, fall back to a local
   // error display.
   if( spOutputStream != NULL )
   {
     OSMutex::Lock lock( spOutputLock );
-    MessageHandler::PutMessage( *spOutputStream, Status( text, inCode ) );
+    MessageHandler::PutMessage( *spOutputStream, Status( inText, inCode ) );
     spOutputStream->flush();
   }
   sockstream* pSockStream = dynamic_cast<sockstream*>( spOutputStream );
@@ -75,60 +71,60 @@ StatusMessage( const string& inText, int inCode )
     if( inCode >= 400 )
     {
 #if !defined( _WIN32 ) || defined( __CONSOLE__ )
-      cerr << text << endl;
+      cerr << inText << endl;
 #else
-      ShowMessageBox( text, "BCI2000 Error", MB_OK | MB_ICONHAND | MB_SYSTEMMODAL | MB_SETFOREGROUND );
+      ShowMessageBox( inText, "BCI2000 Error", MB_OK | MB_ICONHAND | MB_SYSTEMMODAL | MB_SETFOREGROUND );
 #endif
     }
     else
     {
 #if !defined( _WIN32 ) || defined( __CONSOLE__ )
-      cout << text << endl;
+      cout << inText << endl;
 #else
-      ShowMessageBox( text, "BCI2000", MB_OK | MB_ICONINFORMATION | MB_SYSTEMMODAL | MB_SETFOREGROUND );
+      ShowMessageBox( inText, "BCI2000", MB_OK | MB_ICONINFORMATION | MB_SYSTEMMODAL | MB_SETFOREGROUND );
 #endif
     }
   }
 }
 
 void
-BCIError::DebugMessage( const string& message )
+BCIStream::DebugMessage( const string& s )
 {
-  StatusMessage( message, Status::debugMessage );
+  StatusMessage( s, Status::debugMessage );
 }
 
 void
-BCIError::PlainMessage( const string& message )
+BCIStream::PlainMessage( const string& s )
 {
-  StatusMessage( message, Status::plainMessage );
+  StatusMessage( s, Status::plainMessage );
 }
 
 void
-BCIError::Warning( const string& message )
+BCIStream::Warning( const string& s )
 {
-  StatusMessage( message, Status::warningMessage );
+  StatusMessage( s, Status::warningMessage );
 }
 
 void
-BCIError::ConfigurationError( const string& message )
+BCIStream::ConfigurationError( const string& s )
 {
-  StatusMessage( message, Status::configurationError );
+  StatusMessage( s, Status::configurationError );
 }
 
 void
-BCIError::RuntimeError( const string& message )
+BCIStream::RuntimeError( const string& s )
 {
-  StatusMessage( message, Status::runtimeError );
+  StatusMessage( s, Status::runtimeError );
 }
 
 void
-BCIError::LogicError( const string& message )
+BCIStream::LogicError( const string& s )
 {
-  StatusMessage( message, Status::logicError );
+  StatusMessage( s, Status::logicError );
 }
 
 void
-BCIError::SetOperatorStream( ostream* pStream, const OSMutex* pLock )
+BCIStream::SetOperatorStream( ostream* pStream, const OSMutex* pLock )
 {
   spOutputStream = pStream;
   spOutputLock = pLock;

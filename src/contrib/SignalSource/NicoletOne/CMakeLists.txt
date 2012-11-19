@@ -62,7 +62,7 @@ SET( BCI2000_SIGSRCSOURCES
   ${BCI2000_SIGSRCSOURCES}
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
   ${BCI2000_SRC_DIR}/shared/fileio/GenericFileWriter.cpp
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_module.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_module.cpp
 )
 
 SET( BCI2000_SIGSRCHEADERS

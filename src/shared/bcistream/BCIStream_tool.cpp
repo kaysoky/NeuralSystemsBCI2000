@@ -2,7 +2,7 @@
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: Implementation of bcierr and bciout message handlers for a
-//              Matlab MEX file.
+//              console-based BCI2000 command line tool.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -27,41 +27,52 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "BCIError.h"
-#include "BCIException.h"
-#include "mex.h"
+#include "BCIStream.h"
+#include <iostream>
 
 using namespace std;
 
+#ifdef BCI_DLL
+extern ostream sErr;
+static ostream& err = sErr;
+static ostream& out = sErr;
+#else
+static ostream& out = cout;
+static ostream& err = cerr;
+#endif // BCI_DLL
+
 void
-BCIError::DebugMessage( const string& message )
+BCIStream::PlainMessage( const string& s )
 {
-  ::mexWarnMsgTxt( message.c_str() );
+  out << s << endl;
 }
 
 void
-BCIError::Warning( const string& message )
+BCIStream::DebugMessage( const string& s )
 {
-  ::mexWarnMsgTxt( message.c_str() );
+  out << "Dbg: " << s << endl;
 }
 
 void
-BCIError::ConfigurationError( const string& message )
+BCIStream::Warning( const string& s )
 {
-  // mexErrMsgTxt() would abort execution without executing destructors,
-  // thus we need to throw an exception and call mexErrMsgTxt() from the
-  // catch() clause.
-  throw bciexception_( message );
+  err << "Warning: " << s << endl;
 }
 
 void
-BCIError::RuntimeError( const string& message )
+BCIStream::ConfigurationError( const string& s )
 {
-  ::mexWarnMsgTxt( ( "Runtime error: " + message + "\n" ).c_str () );
+  err << "Configuration Error: " << s << endl;
 }
 
 void
-BCIError::LogicError( const string& message )
+BCIStream::RuntimeError( const string& s )
 {
-  ::mexWarnMsgTxt( ( "Logic error: " + message + "\n" ).c_str () );
+  err << "Runtime Error: " << s << endl;
+}
+
+void
+BCIStream::LogicError( const string& s )
+{
+  err << "Logic Error: " << s << endl;
 }

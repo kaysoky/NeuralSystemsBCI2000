@@ -37,7 +37,7 @@ SET( SRC_SHARED_MODULES
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
 )
 SET( SRC_SHARED_BCISTREAM
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_module.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_module.cpp
 )
 
 SET( HDR_SHARED_MODULES 

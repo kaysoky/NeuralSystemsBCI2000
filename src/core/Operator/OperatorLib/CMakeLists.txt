@@ -89,10 +89,10 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 # Add missing framework files
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_opdll.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_opdll.cpp
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_opdll.cpp )
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_opdll.cpp )
 
 
 # Set the Project Source Groups

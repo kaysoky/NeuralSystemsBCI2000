@@ -11,7 +11,7 @@ SET( HDR_BCI2000_SHARED_MODULES
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.h
 )
 SET( SRC_BCI2000_SHARED_BCISTREAM
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_module.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_module.cpp
 )
 
 IF( BORLAND )

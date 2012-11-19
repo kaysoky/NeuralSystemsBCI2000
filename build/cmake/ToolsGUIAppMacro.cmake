@@ -14,7 +14,7 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 # Add Extra Sources
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_guiapp.cpp
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.cpp
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp
@@ -26,7 +26,7 @@ SET( HDR_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/utils/Settings.h
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp )
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_guiapp.cpp )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp 
   ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.cpp

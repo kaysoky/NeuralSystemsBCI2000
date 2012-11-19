@@ -76,6 +76,8 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/EnvVariable.h
   ${BCI2000_SRC_DIR}/shared/utils/SharedPointer.h
   ${BCI2000_SRC_DIR}/shared/utils/OSThreadLocal.h
+  ${BCI2000_SRC_DIR}/shared/utils/Uuid.h
+  ${BCI2000_SRC_DIR}/shared/utils/BinaryData.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
   ${BCI2000_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp
@@ -149,11 +151,11 @@ SET( HDR_BCI2000_SHARED_ACCESSORS
   ${BCI2000_SRC_DIR}/shared/accessors/StateRef.h  
 )
 SET( SRC_BCI2000_SHARED_BCISTREAM
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream.cpp
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.cpp
 )
 SET( HDR_BCI2000_SHARED_BCISTREAM
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError.h
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream.h
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.h
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIAssert.h
 )

@@ -151,7 +151,7 @@ EnvironmentBase::ErrorContext( const std::string& inQualifier, const Environment
     context += "::";
   }
   context += inQualifier;
-  BCIError::OutStream::SetContext( context );
+  BCIStream::OutStream::SetContext( context );
 }
 
 // Maintaining an object context to keep track of Parameter/State access.
@@ -346,8 +346,7 @@ EnvironmentBase::StateAccess( const string& inName ) const
 // Called to prevent access.
 void EnvironmentBase::EnterNonaccessPhase()
 {
-  bcierr__.SetFlushHandler( BCIError::LogicError );
-  bciout__.SetFlushHandler( BCIError::Warning );
+  bcierr__.SetFlushHandler( BCIStream::LogicError );
   switch( phase_ )
   {
     case nonaccess:
@@ -398,17 +397,12 @@ void EnvironmentBase::EnterConstructionPhase( ParamList*   inParamList,
                                               StateList*   inStateList,
                                               StateVector* inStateVector )
 {
-  bcierr__.SetFlushHandler( BCIError::LogicError );
-  bciout__.SetFlushHandler( BCIError::Warning );
-  bcidbg__.SetFlushHandler( BCIError::DebugMessage );
+  bcierr__.SetFlushHandler( BCIStream::LogicError );
   phase_ = construction;
   Accessor_<ParamList>::spGlobal = inParamList;
   Accessor_<StateList>::spGlobal = inStateList;
   Accessor_<StateVector>::spGlobal = inStateVector;
-  if( inParamList->Exists( "DebugLevel" ) )
-    BCIError::OutStream::SetDebugLevel(
-      ::atoi( ( *inParamList )[ "DebugLevel" ].Value().c_str() )
-    );
+  BCIStream::Apply( *inParamList );
   OwnedParams().clear();
   OwnedStates().clear();
 
@@ -425,16 +419,12 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
                                            StateList*   inStateList,
                                            StateVector* /*inStateVector*/ )
 {
-  bcierr__.SetFlushHandler( BCIError::ConfigurationError );
-  bciout__.SetFlushHandler( BCIError::Warning );
+  bcierr__.SetFlushHandler( BCIStream::ConfigurationError );
   phase_ = preflight;
   Accessor_<ParamList>::spGlobal = inParamList;
   Accessor_<StateList>::spGlobal = inStateList;
   Accessor_<StateVector>::spGlobal = NULL;
-  if( inParamList->Exists( "DebugLevel" ) )
-    BCIError::OutStream::SetDebugLevel(
-      ::atoi( ( *inParamList )[ "DebugLevel" ].Value().c_str() )
-    );
+  BCIStream::Apply( *inParamList );
 
   ParamsRangeChecked().clear();
   if( inParamList != NULL )
@@ -494,8 +484,7 @@ void EnvironmentBase::EnterInitializationPhase( ParamList*   inParamList,
                                                 StateList*   inStateList,
                                                 StateVector* inStateVector )
 {
-  bcierr__.SetFlushHandler( BCIError::RuntimeError );
-  bciout__.SetFlushHandler( BCIError::Warning );
+  bcierr__.SetFlushHandler( BCIStream::RuntimeError );
   phase_ = initialization;
   Accessor_<ParamList>::spGlobal = inParamList;
   Accessor_<StateList>::spGlobal = inStateList;
@@ -509,8 +498,7 @@ void EnvironmentBase::EnterStartRunPhase( ParamList*   inParamList,
                                           StateList*   inStateList,
                                           StateVector* inStateVector )
 {
-  bcierr__.SetFlushHandler( BCIError::RuntimeError );
-  bciout__.SetFlushHandler( BCIError::Warning );
+  bcierr__.SetFlushHandler( BCIStream::RuntimeError );
   BCIEvent::AllowEvents();
   phase_ = startRun;
   Accessor_<ParamList>::spGlobal = inParamList;
@@ -525,8 +513,7 @@ void EnvironmentBase::EnterProcessingPhase( ParamList*   inParamList,
                                             StateList*   inStateList,
                                             StateVector* inStateVector )
 {
-  bcierr__.SetFlushHandler( BCIError::RuntimeError );
-  bciout__.SetFlushHandler( BCIError::Warning );
+  bcierr__.SetFlushHandler( BCIStream::RuntimeError );
   phase_ = processing;
   Accessor_<ParamList>::spGlobal = inParamList;
   Accessor_<StateList>::spGlobal = inStateList;
@@ -540,8 +527,7 @@ void EnvironmentBase::EnterStopRunPhase( ParamList*   inParamList,
                                          StateList*   inStateList,
                                          StateVector* inStateVector )
 {
-  bcierr__.SetFlushHandler( BCIError::RuntimeError );
-  bciout__.SetFlushHandler( BCIError::Warning );
+  bcierr__.SetFlushHandler( BCIStream::RuntimeError );
   phase_ = stopRun;
   Accessor_<ParamList>::spGlobal = inParamList;
   Accessor_<StateList>::spGlobal = inStateList;
@@ -557,8 +543,7 @@ void EnvironmentBase::EnterRestingPhase( ParamList*   inParamList,
                                          StateList*   inStateList,
                                          StateVector* inStateVector )
 {
-  bcierr__.SetFlushHandler( BCIError::RuntimeError );
-  bciout__.SetFlushHandler( BCIError::Warning );
+  bcierr__.SetFlushHandler( BCIStream::RuntimeError );
   phase_ = resting;
   Accessor_<ParamList>::spGlobal = inParamList;
   Accessor_<StateList>::spGlobal = inStateList;

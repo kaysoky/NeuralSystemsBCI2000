@@ -11,8 +11,8 @@ PythonSignalProcessing.obj\FilterDesign.obj
 PythonSignalProcessing.obj\BCIEvent.obj
 PythonSignalProcessing.obj\Environment.obj
 PythonSignalProcessing.obj\ParamRef.obj
-PythonSignalProcessing.obj\BCIError.obj
-PythonSignalProcessing.obj\BCIError_module.obj
+PythonSignalProcessing.obj\BCIStream.obj
+PythonSignalProcessing.obj\BCIStream_module.obj
 PythonSignalProcessing.obj\BCIException.obj
 PythonSignalProcessing.obj\BCIDirectory.obj
 PythonSignalProcessing.obj\ChoiceCombination.obj
@@ -129,8 +129,8 @@ PythonSignalProcessing.obj\WildcardMatch.obj
       <FILE FILENAME="../../../src\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\accessors\Environment.cpp" FORMNAME="" UNITNAME="Environment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\accessors\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="../../../src\shared\bcistream\BCIError.cpp" FORMNAME="" UNITNAME="BCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="../../../src\shared\bcistream\BCIError_module.cpp" FORMNAME="" UNITNAME="BCIError_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIStream.cpp" FORMNAME="" UNITNAME="BCIStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="../../../src\shared\bcistream\BCIStream_module.cpp" FORMNAME="" UNITNAME="BCIStream_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\bcistream\BCIException.cpp" FORMNAME="" UNITNAME="BCIException" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="../../../src\shared\filters\ChoiceCombination.cpp" FORMNAME="" UNITNAME="ChoiceCombination" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

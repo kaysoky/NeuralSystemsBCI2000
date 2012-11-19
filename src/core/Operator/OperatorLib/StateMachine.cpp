@@ -36,7 +36,7 @@
 #include "StateMachine.h"
 
 #include "BCI_OperatorLib.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "BCIException.h"
 #include "BCIAssert.h"
 #include "ProtocolVersion.h"
@@ -112,7 +112,7 @@ StateMachine::Startup( const char* inArguments )
           sourcePort = false;
         }
       }
-      result &= ( bcierr__.Flushes() == 0 );
+      result &= bcierr__.Empty();
       if( !result )
         CloseConnections();
     }
@@ -455,6 +455,7 @@ StateMachine::PerformTransition( int inTransition )
   OSMutex::Lock lock( mDataMutex );
   switch( inTransition )
   {
+    case TRANSITION( Idle, Idle ):
     case TRANSITION( Idle, WaitingForConnection ):
     case TRANSITION( WaitingForConnection, Publishing ):
     case TRANSITION( Publishing, Publishing ):

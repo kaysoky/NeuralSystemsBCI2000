@@ -98,7 +98,7 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils\\DisplayFiltering FILES
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
   ${SRC_BCI2000_DISPLAYFILTERING}
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_guiapp.cpp
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp 
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.cpp
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
@@ -114,7 +114,7 @@ SET( HDR_BCI2000_FRAMEWORK
 )
 
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_guiapp.cpp 
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_guiapp.cpp 
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES
   ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp 

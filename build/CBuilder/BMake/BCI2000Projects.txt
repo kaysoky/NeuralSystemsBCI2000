@@ -95,7 +95,7 @@ shared\gui\GraphDisplay.cpp
 shared\types\Color.cpp
 shared\types\CfgID.cpp
 shared\types\VisID.cpp
-shared\bcistream\BCIError_guiapp.cpp
+shared\bcistream\BCIStream_guiapp.cpp
 
 #PROJECTGROUP#BCI2000Core
 #PROJECTGROUPTEMPLATE#ProjectGroup.bpg
@@ -252,8 +252,8 @@ shared\types\HierarchicalLabel.cpp
 shared\types\Brackets.cpp
 shared\types\EncodedString.cpp
 shared\types\LabelIndex.cpp
-shared\bcistream\BCIError.cpp
-shared\bcistream\BCIError_tool.cpp
+shared\bcistream\BCIStream.cpp
+shared\bcistream\BCIStream_tool.cpp
 shared\bcistream\BCIException.cpp
 shared\utils\ClassName.cpp
 shared\utils\OSMutex.cpp

@@ -35,7 +35,7 @@ shared\filters\ChoiceCombination.cpp
 shared\fileio\BCIDirectory.cpp
 shared\accessors\BCIEvent.cpp
 shared\utils\Expression\Expression.cpp
-shared\bcistream\BCIError_module.cpp
+shared\bcistream\BCIStream_module.cpp
 shared\utils\LogFile.cpp
 shared\utils\MeasurementUnits.cpp
 shared\utils\RandomGenerator.cpp

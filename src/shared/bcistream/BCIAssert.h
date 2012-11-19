@@ -27,20 +27,16 @@
 #ifndef BCI_ASSERT_H
 #define BCI_ASSERT_H
 
-#include "BCIException.h"
-
 #if BCIDEBUG
-# define bciassert(x) { if( !bci::id_(x) ) throw bciexception( "Assertion failed: " << #x << "\n" ); }
-#else // BCIDEBUG
-# define bciassert(x)
-#endif // BCIDEBUG
+
+#include "BCIException.h"
+#define bciassert(x) { if( !bci::id_(x) ) throw bciexception( "Assertion failed: " << #x << "\n" ); }
 
 namespace bci
 { // The id_() function is there to avoid "condition is always false" and
   // "unreachable code" compiler warnings.
   inline bool id_( bool x )
     { return x; }
-
 }
 
 // The function trick does not work with BCB.
@@ -48,6 +44,12 @@ namespace bci
 # pragma warn -8008
 # pragma warn -8066
 #endif // __BORLANDC__
+
+#else // BCIDEBUG
+
+# define bciassert(x)
+
+#endif // BCIDEBUG
 
 #endif // BCI_ASSERT_H
 
