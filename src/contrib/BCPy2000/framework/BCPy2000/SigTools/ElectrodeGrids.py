@@ -44,11 +44,12 @@ standalone_doc = """
   $0 --example         print an annotated example of the input format
   $0 --clean-example   print the example without the annotations
 
-  $0 [--grids=XX] [--sep=YY] [--prefix=ZZ] [--alphabetize] [--visualize=VV] FILENAME
+  $0 [--pretty] [--alphabetize] [--XXX=YYY] FILENAME
   
   Process the file specified by FILENAME (if given) or stdin (if not) and produce a parameter
   fragment containing the BCI2000 parameters ChannelNames, SpatialFilter, SpatialFilterType and
-  (optionally) VisualizeSpatialFilter.  Options are as follows:
+  (optionally) VisualizeSpatialFilter.  Except for those shown above, options should be passed
+  in --name=VALUE format.
 """###
 
 ExampleGrids = """
@@ -120,8 +121,11 @@ universaldoc = """
 
   visualize    if given, outputs a VisualizeSpatialFilter parameter with the given value.
 
-  bipolar      if True, includes a preview of the bipolar connectsions
-			   that BipolarSpatialFilter would make on each grid
+  pretty       if given, output a plain text representation, with all the numbers filled in,
+               instead of BCI2000 parameters
+
+  bipolar      if True, includes a preview of the bipolar connections that BipolarSpatialFilter
+               would make on each grid
 """###
 
 __all__ = [
@@ -138,7 +142,7 @@ execname = os.path.split(__file__)[1]
 if execname.endswith('.pyc'): execname = execname[:-1]
 universaldoc = dict([(x.split()[0], '\n\n'+x.rstrip()+'\n') for x in universaldoc.strip('\n').split('\n\n')])
 standalone_doc = standalone_doc.replace('$0', execname)
-for arg in 'grids sep prefix alphabetize visualize'.split(): standalone_doc = standalone_doc.rstrip() + universaldoc[arg]
+for arg in 'alphabetize pretty bipolar grids precision prefix sep visualize'.split(): standalone_doc = standalone_doc.rstrip() + universaldoc[arg]
 __doc__ = __doc__.replace('$0', os.path.splitext(execname)[0]).rstrip()
 
 def adddoc(func):
@@ -319,7 +323,7 @@ def ReportGrids(gs, grids=None, sep='', precision=None):
 	"""###
 	s = ''
 	if precision==None: precision = NumericalPrecision(gs)
-	blank = ' ' * precision
+	blank = ' ' * int(precision)
 	for gridname, subset in EachGrid(gs, grids=grids):
 		di = dict([((x.localRowIndex, x.localColumnIndex), x.name(prefix='', sep=sep, precision=precision)) for x in subset])
 		maxrow = max([row for row,col in di.keys()])
@@ -509,7 +513,7 @@ class GridSet(smartlist):
 	@adddoc
 	def report(self, bipolar=False, grids=None, sep='', precision=None):
 		"Return a string representation of the GridSet"
-		if bipolar: return ReportBipolar(self, grids=grids, sep=sep, precision=precision)
+		if bipolar and int(bipolar): return ReportBipolar(self, grids=grids, sep=sep, precision=precision)
 		else: return ReportGrids(self, grids=grids, sep=sep, precision=precision)
 	def ChannelSet(self, **kwargs):
 		from Electrodes import ChannelSet
@@ -520,7 +524,7 @@ __doc__ += '\n\nThis module can also be used as a standalone program:\n\n' + sta
 if __name__ == '__main__':
 	args = getattr(sys, 'argv', [])[1:]
 	try:
-		opts,args = getopt.getopt(args, '', ['help', 'example', 'clean-example', 'grids=', 'sep=', 'prefix=', 'alphabetize', 'visualize='])
+		opts,args = getopt.getopt(args, '', ['help', 'example', 'pretty', 'bipolar=', 'clean-example', 'grids=', 'sep=', 'prefix=', 'alphabetize', 'visualize=', 'precision='])
 	except Exception,e:
 		sys.stderr.write(str(e)+'\n')
 		exit(1)
@@ -544,6 +548,12 @@ if __name__ == '__main__':
 	else:
 		try: d = GridSet(input)
 		except Exception,e: sys.stderr.write(str(e)+'\n'); exit(1)
-		print d.ChannelNames(**opts)
-		print d.BipolarSpatialFilter(alphabetize=alphabetize, **opts)
-		if len(visualize.strip()): print 'Visualization int VisualizeSpatialFilter= ' + str(visualize)
+		if 'pretty' in opts:
+			opts.pop('pretty')
+			print d.report(**opts)
+		else:
+			bipolar = opts.pop('bipolar', '1').lower() not in ['0','false','none','']
+			print d.ChannelNames(**opts)
+			if bipolar:
+				print d.BipolarSpatialFilter(alphabetize=alphabetize, **opts)
+				if len(visualize.strip()): print 'Visualization int VisualizeSpatialFilter= ' + str(visualize)

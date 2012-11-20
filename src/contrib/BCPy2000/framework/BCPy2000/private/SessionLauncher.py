@@ -153,13 +153,8 @@ class SessionGUI( tk.Tk ):
 	def UpdateSettings( self ):
 		if not self.__valid: return False
 		
-		rem = self.__remotelib
-		if rem:
-			if self.__alive != None: self.__alive = rem.Connected
-			# self.__alive == None is the initial state, and it means "assume not alive, but don't query it"
-		else:
-			pass # just fall back on the existing setting, which reflects whether the "Launch BCI2000" or the "Quit BCI2000" button was pressed last - the telnet querying method is too flaky
-		
+		self.__alive = self.BCI2000Running()
+				
 		if self.__alive:
 			self.launchBCI2000Button.configure( state='disabled' )
 			self.quitBCI2000Button.configure( state='normal' )
@@ -215,9 +210,6 @@ class SessionGUI( tk.Tk ):
 		self.__afterid = self.after( 500, self.UpdateSettings )
 		#import time; print time.time()
 		return True
-
-	def GetShellExecutable( self ):
-		return os.path.realpath( os.path.join( self.__settings[ '_ProgDir' ], 'BCI2000Shell' ) )
 	
 	def GetShellExecutable( self ):
 		return os.path.realpath( os.path.join( self.__settings[ '_ProgDir' ], 'BCI2000Shell' ) )
@@ -293,19 +285,14 @@ class SessionGUI( tk.Tk ):
 	def BCI2000Running( self ):
 		rem = self.__remotelib
 		if rem: return rem.Connected
-		else: # non-RemoteLib fallback (flaky):
-			import telnetlib
-			try: t = telnetlib.Telnet( host=self.__host, port=self.__port, timeout=2 )
-			except: return False
-			else: t.close()
-			return True
+		else: return os.system( self.GetShellExecutable() + ' --ping' ) == 0
 		
 	def PingBCI2000( self ):
 		rem = self.__remotelib
 		msg = {True:'Alive', False:'Dead'}[self.BCI2000Running()]
 		import time; msg += ' at ' + time.strftime('%H:%M:%S')
 		if rem: msg += ' (RemoteLib query %s)' % repr( rem.GetSystemState() )
-		else: msg += ' (Telnet query)'
+		else: msg += ' (BCI2000 --ping query)'
 		self.pingResult.configure( text=msg )
 		
 	def RenewBCI2000Remote( self ):

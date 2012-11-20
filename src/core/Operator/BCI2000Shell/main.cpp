@@ -45,7 +45,7 @@ static const string sPrompt = sShellName + "> ";
 
 int main( int argc, char** argv )
 {
-  enum { execute, command, interactive, help, version } mode = execute;
+  enum { execute, ping, command, interactive, help, version } mode = execute;
   int idx = 1;
   while( idx < argc && *argv[idx] == '-' )
   {
@@ -53,6 +53,8 @@ int main( int argc, char** argv )
       mode = command;
     else if( !::strcmp( argv[idx], "-i" ) )
       mode = interactive;
+    else if( !::strcmp( argv[idx], "-p" ) || !::stricmp( argv[idx], "--ping" ) )
+      mode = ping;
     else if( !::strcmp( argv[idx], "-h" ) || !::stricmp( argv[idx], "--help" ) )
       mode = help;
     else if( !::strcmp( argv[idx], "-v" ) || !::stricmp( argv[idx], "--version" ) )
@@ -92,7 +94,10 @@ int main( int argc, char** argv )
   } bci;
   bci.OperatorPath( "" );
   bci.TelnetAddress( telnetAddress );
-  if( !bci.Connect() )
+  bool alreadyRunning = bci.Connect();
+  if( mode == ping )
+    return ( alreadyRunning ? 0 : 1 );
+  if( !alreadyRunning )
   {
     if( !bci.Run( FileUtils::InstallationDirectory() + sOperatorName, additionalArgs )
         || !bci.Connect() )
