@@ -33,11 +33,12 @@ function EEG = pop_loadBCI2000(fileName, events)
 %     >> EEG = pop_loadBCI2000({'set001.dat', 'set002.dat'});
 
 % Copyright by Clemens Brunner <clbrunner@ucsd.edu>
-% Revision: 0.30
-% Date: 09/14/2011
+% Revision: 0.31
+% Date: 11/20/2012
 % Parts based on BCI2000import.m from the BCI2000 distribution (www.bci2000.org)
 
 % Revision history:
+%   0.31  Loads calibrated data
 %   0.30: Create boundary events when loading multiple files
 %   0.26: Import channel labels
 %   0.25: Added EEG.urevent structure
@@ -61,7 +62,7 @@ if nargin < 1  % No input arguments specified, show GUI
     [fileName, filePath] = uigetfile('*.dat', 'Choose BCI2000 file(s) -- pop_loadBCI2000', 'multiselect', 'on');
     
     if ~iscell(fileName)  % If only one file was selected
-        [signal, states, parms] = load_bcidat(fullfile(filePath, fileName));
+        [signal, states, parms] = load_bcidat(fullfile(filePath, fileName), '-calibrated');
     else  % Multiple files were selected
         files = struct('name', fileName);
         totalSamples = zeros(1, length(files));
@@ -76,7 +77,7 @@ if nargin < 1  % No input arguments specified, show GUI
         for k = 2:length(files)
             fileBorders(k) = fileBorders(k - 1) + totalSamples(k - 1);  end
         
-        [signal, states, parms] = load_bcidat(files.name);  % Load all files
+        [signal, states, parms] = load_bcidat(files.name, '-calibrated');  % Load all files
     end
     
     % Build a string consisting of all events, separated by a "|" (necessary for
@@ -121,7 +122,7 @@ else  % Input arguments specified
             fileBorders(k) = fileBorders(k - 1) + totalSamples(k - 1);  end
     end
     
-    [signal, states, parms] = load_bcidat(files.name);  % Load all files
+    [signal, states, parms] = load_bcidat(files.name, '-calibrated');  % Load all files
     
     if ~exist('events', 'var')  % If no events were specified, select all events contained in the file
         events = 1:length(fieldnames(states)); end
