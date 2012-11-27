@@ -515,9 +515,24 @@ class GridSet(smartlist):
 		"Return a string representation of the GridSet"
 		if bipolar and int(bipolar): return ReportBipolar(self, grids=grids, sep=sep, precision=precision)
 		else: return ReportGrids(self, grids=grids, sep=sep, precision=precision)
-	def ChannelSet(self, **kwargs):
+	@adddoc
+	def ChannelSet(self, grids=None, precision=None, prefix=None, sep='', numsort=True):
+		"""
+		If the SigTools.Electrodes module is available, create a ChannelSet object from
+		the specified grid(s).  TODO: plotting non-EEG ChannelSets is still a work in progress.
+		"""###
 		from Electrodes import ChannelSet
-		return ChannelSet(self.ChannelNames(prm=False, **kwargs))
+		if precision==None: precision = NumericalPrecision(self)	
+		names = []; coords = []
+		for gridname, subset in EachGrid(self, grids=grids, numsort=numsort):
+			names  += [x.name(prefix=prefix, sep=sep, precision=precision) for x in subset]
+			coords += [(x.localColumnIndex/10.0, -x.localRowIndex/10.0) for x in subset]
+			# TODO: globalize and then scale the coordinates
+		coords = dict(zip(names,coords))
+		c = ChannelSet(names)
+		c.set_coords(coords)
+		c.set_plotopts(nose=False, ears=False, scheme=False, mask_surf=1.1, mask_contour=1.1)
+		return c
 
 __doc__ += '\n\nThis module can also be used as a standalone program:\n\n' + standalone_doc.lstrip('\n')
 	

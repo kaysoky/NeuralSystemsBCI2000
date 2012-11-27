@@ -151,8 +151,8 @@ class channel:
 		if lower: x = x.lower()
 		return x
 		
-	def get_position(self, type='schematic2D'):
-		return get_position(self.get_label(), type=type)
+	def get_position(self, type='schematic2D', coords=None):
+		return get_position(self.get_label(), type=type, coords=coords)
 		
 	def copy(self):
 		return copy.deepcopy(self)
@@ -178,11 +178,23 @@ class ChannelSet(numpy.matrix):
 		if s == None: self = []
 		self = cls.cparse(s)
 		self = numpy.matrix(self, dtype=numpy.object).view(cls)
+		self.__coords = None # note that default values should actually be set in __array_finalize__
+		self.__plotopts = None
 		if self.size == 0: self.shape = (0,1)
 		return self
+
+	def __array_finalize__(self, obj):
+		if obj is None: return
+		self.__coords = getattr(self, '__coords', None)
+		self.__plotopts = getattr(self, '__plotopts', None)
+		super(ChannelSet, self).__array_finalize__(obj) # since we're subclassing a subclass, we must be careful to run the __array_finalize__ method for the intermediate class
 		
 	def plot(self, *pargs, **kwargs):
-		trodeplot(self, *pargs, **kwargs)
+		return_handles = kwargs.pop('return_handles', False)
+		if 'coords' not in kwargs: kwargs['coords'] = self.__coords
+		if self.__plotopts: kwargs.update(self.__plotopts)
+		h = trodeplot(self, *pargs, **kwargs)
+		if return_handles: return h
 		
 	def stplot(self, img, fs=None, drawnow=True, **kwargs):
 		#kwargs['colorbar'] = kwargs.get('colorbar', True)
@@ -255,17 +267,45 @@ class ChannelSet(numpy.matrix):
 			
 		if dict_output: out = dict([(str(k),v) for k,v in zip(labels,out)])
 		return out
-			
-	def get_positions(self, type='schematic2D'):
+	
+	def set_plotopts(self, d=None, **kwargs):
+		if d != None: self.__plotopts = d
+		if self.__plotopts == None: self.__plotopts = {}
+		self.__plotopts.update(kwargs)
+		
+	def set_coords(self, coords):
+		"""
+		By default (coords=None) electrode coordinates are looked
+		up in the ElectrodePositions module. To override this
+		default behaviour, supply a dict <coords> whose keys
+		are channel labels, and whose values are coordinate tuples.
+		
+		The input argument may also be a dictionary of dictionaries,
+		to cope with multiple coordinate types. In this case, the
+		keys should match possible coordinate types, and the
+		corresponding values should be coordinate dicts as described
+		above - for example:
+		
+		{
+		  'schematic2D':  {'F3':(-1.0,0.0),  'Fz', (0.0,0.0), ....},
+		}
+		
+		
+		"""###
+		self.__coords = coords
+	
+	def get_positions(self, type='schematic2D', coords=None):
+		if coords == None: coords = self.__coords
 		x = numpy.zeros(self.shape, dtype=numpy.float64)
 		y = numpy.zeros(self.shape, dtype=numpy.float64)
 		lab = self.get_labels(lower=True, flatten=True)
 		for i,ch in enumerate(lab):
-			x.flat[i],y.flat[i] = get_position(ch, type=type)
+			x.flat[i],y.flat[i] = get_position(ch, type=type, coords=coords)
 		return x,y
 		
-	def sqdist(self, type='schematic2D'):
-		x,y = self.flatten().get_positions(type=type)
+	def sqdist(self, type='schematic2D', coords=None):
+		if coords == None: coords = self.__coords
+		x,y = self.flatten().get_positions(type=type, coords=coords)
 		p = x + 1j * y
 		q = numpy.abs(p - p.T)
 		return q ** 2
@@ -334,7 +374,7 @@ class ChannelSet(numpy.matrix):
 		nch = len(out)
 		return out
 	
-	def __grok_filtering_opts(self, exclude, keep, filters_as):
+	def __grok_filtering_opts(self, exclude, keep, filters_as, coords):
 		"""
 		exclude      a specification of which input channels should be
 		             excluded from computation of the filters, and also
@@ -358,10 +398,16 @@ class ChannelSet(numpy.matrix):
 		             denote whether each single spatial filter should be
 		             a column or a row of the output matrix
 		             (default: 'columns')
+		             
+		coords        By default (coords=None) electrode coordinates are looked
+		              up in the ElectrodePositions module. To override this
+		              default behaviour, supply a dict <coords> whose keys
+		              are channel labels, and whose values are coordinate tuples.
 		"""###
 		labels = self.get_labels(lower=True, flatten=True)
+		if coords == None: coords = self.__coords
 		if exclude == 'auto':
-			x,y = self.flatten().get_positions(type='schematic2D')
+			x,y = self.flatten().get_positions(type='schematic2D', coords=coords)
 			exclude = numpy.logical_not((x.flatten()**2 + y.flatten()**2)**0.5 <= 1.02)
 			# "not <= 1.02"  is better than "> 1.02"  because it classifies NaNs as outside
 		else:
@@ -394,14 +440,14 @@ class ChannelSet(numpy.matrix):
 		
 		return exclude,keep,filters_as_rows
 		
-	def CAR(self, exclude='auto', keep='all', filters_as='columns'):
+	def CAR(self, exclude='auto', keep='all', filters_as='columns', coords=None):
 		"""
 		Common-Average Reference: return a matrix of spatial filters for
 		applying a (possibly selective) common-average reference.
 		
 		"""###
 		if self.shape[0] != self.size: raise TypeError('CAR() method can only be called on single-column ChannelSet objects')
-		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude, keep, filters_as)
+		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude, keep, filters_as, coords)
 		n = len(self)
 		pos = numpy.eye(n, dtype=float)
 		neg = numpy.ones((n,n))
@@ -414,14 +460,14 @@ class ChannelSet(numpy.matrix):
 		return numpy.asmatrix(W)
 	CAR.__doc__ +=  __grok_filtering_opts.__doc__
 	
-	def SLAP(self, sigma1=0.04, sigma2=None, type='schematic2D', exclude='auto', keep='all', filters_as='columns'):
+	def SLAP(self, sigma1=0.04, sigma2=None, type='schematic2D', exclude='auto', keep='all', filters_as='columns', coords=None):
 		"""
 		Surface-Laplacian: return a matrix of spatial filters for applying a zero-sum
 		difference-of-Gaussians center-surround spatial filter to each channel.
 		
 		"""###
 		if self.shape[0] != self.size: raise TypeError('SLAP() method can only be called on single-column ChannelSet objects')
-		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude, keep, filters_as)
+		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude, keep, filters_as, coords)
 		if sigma2 == None: sigma2 = 3.0 * sigma1
 		n = len(self)
 		q = self.sqdist(type=type)
@@ -519,7 +565,7 @@ class ChannelSet(numpy.matrix):
 		if filters_as == 'rows': W = W.T
 		return W,masterdict # TODO: returning masterdict is an interim solution. the best final solution might be to make the result valid for only one montage, and use a hard-coded masterdict that has been tweaked by hand in place of the small hard-coded dicts in the old method above
 	
-	def spfilt(self, W, inputs=None, exclude='auto', filters_as='columns'):
+	def spfilt(self, W, inputs=None, exclude='auto', filters_as='columns', coords=None):
 		"""
 		Pre-computed spatial filters are packed as the columns (or rows, if
 		filters_as='rows') of matrix W. Let us assume a filter is a column
@@ -542,7 +588,7 @@ class ChannelSet(numpy.matrix):
 		
 		"""###
 		if self.shape[0] != self.size: raise TypeError('spfilt() method can only be called on single-column ChannelSet objects')
-		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude=exclude, keep='all', filters_as=filters_as)
+		exclude, keep, filters_as_rows = self.__grok_filtering_opts(exclude=exclude, keep='all', filters_as=filters_as, coords=coords)
 		n = len(self)
 		inputDimName = {'rows':'columns', 'columns':'rows'}.get(filters_as)
 		if filters_as_rows: Win = W.T
@@ -578,11 +624,12 @@ class ChannelSet(numpy.matrix):
 
 def trodeplot(channels=(), act='connected',
 		ref=None, gnd=None, troderadius='auto',
-		surf=70, contour='auto', scheme='auto',
+		surf=70, contour='auto', scheme='auto', coords=None,
 		head=True, eegbg='auto', ears='auto', nose='auto',
 		color='k', facecolor='auto', cmap='kelvin_i', clim='auto', balance=0.0,
 		labels='auto', indices='auto', one_based=False, fontsize='auto',
 		ax=None, layout=None, title=None, hold=False, drawnow=True, use_pcolor=False,
+		mask_surf=False, mask_contour=False,
 	):
 	"""
 	channels      Channels to plot. May be a sequence of strings, a single
@@ -611,6 +658,10 @@ def trodeplot(channels=(), act='connected',
 	              supplied, the default is to draw three schemes:
 	              scheme='extended1020 eyes_monopolar ears'. The strings
 	              must be keys of the dict ElectrodePositions.schemes
+	coords        By default (coords=None) electrode coordinates are looked
+	              up in the ElectrodePositions module. To override this
+	              default behaviour, supply a dict <coords> whose keys
+	              are channel labels, and whose values are coordinate tuples.
 	head          Whether to draw a circle for the head: True or False
 	eegbg         Whether to draw 10-20-system grid lines: True, False or
 	              'auto'.
@@ -649,7 +700,15 @@ def trodeplot(channels=(), act='connected',
 	title         Axes title (or sequence of titles)
 	hold          If True, do not clear the axes before starting.
 	drawnow       Whether to call pylab.draw() immediately at the end.
-	
+	mask_surf     False, True, or a floating-point number.  Dictates whether
+	              to limit the visible portion of the interpolated surface
+	              to only the convex hull of the points. A floating-point
+	              number here allows the hull to be expanded slightly
+	              outwards around the points---mask_surf=True is actually
+	              equivalent to the default mask_surf=1.1, i.e. 10% expansion)
+	mask_contour  As for mask_surf, but determines whether the contour lines
+	              should be masked. If a floating-point number is specified
+	              for both,  the expansion factor in mask_surf takes precedence.
 	"""###
 	
 	# TODO: meg mode, ecog mode
@@ -757,7 +816,7 @@ def trodeplot(channels=(), act='connected',
 	if surf or contour:
 		expand = 1.1
 		if not isinstance(expand, (tuple,list,numpy.ndarray)): expand = [expand]
-		positions = [get_position(ch, default=None) for ch in chk]
+		positions = [get_position(ch, default=None, coords=coords) for ch in chk]
 		chx,chy,chz = zip(*[p+(act[i],) for i,p in enumerate(positions) if p != None])	
 		xl = numpy.array([min(chx), max(chx)]); xl = xl.mean() + expand[0] * (xl - xl.mean())
 		yl = numpy.array([min(chy), max(chy)]); yl = yl.mean() + expand[-1] * (yl - yl.mean())
@@ -765,7 +824,7 @@ def trodeplot(channels=(), act='connected',
 		chxi = numpy.linspace(xl[0], xl[1], res, endpoint=True)
 		chyi = numpy.linspace(yl[0], yl[1], res, endpoint=True)
 		chzi = interp(chx, chy, chz, chxi, chyi)
-		h['contour'] = h['surf'] = None		
+		h['mask'] = h['contour'] = h['surf'] = None
 		if surf:
 			if use_pcolor:
 				h['surf'] = pylab.pcolor(chxi, chyi, chzi, zorder=1)
@@ -778,6 +837,22 @@ def trodeplot(channels=(), act='connected',
 			clim = h['surf'].get_clim()
 		if contour and chzi.ravel().ptp():
 			h['contour'] = pylab.contour(chxi,chyi,chzi, zorder=1.5, hold='on', colors=[color], linestyles=['--'])
+		if mask_surf or mask_contour:
+			if isinstance(mask_surf, float): grow = mask_surf
+			elif isinstance(mask_contour, float): grow = mask_contour
+			else: grow = 1.1
+			pos = numpy.asarray(positions)
+			m = numpy.expand_dims(pos.mean(axis=0), 0)
+			pos = (pos - m) * grow + m
+			hull = convex_hull(pos) # TODO: non-convex hulls would be a nice option, for ECoG grids
+			path = matplotlib.path.Path(hull+(hull[0],), [matplotlib.path.Path.MOVETO] + [matplotlib.path.Path.LINETO] * len(hull))
+			patch = matplotlib.patches.PathPatch(path, edgecolor='none')
+			ax.add_patch(patch)
+			h['mask'] = patch
+			if mask_surf:
+				if h.get('surf', None): h['surf'].set_clip_path(patch)
+			if mask_contour:
+				for hh in getattr(h.get('contour'), 'collections', []): hh.set_clip_path(patch)
 	
 	if highlight_connected:
 		for i,r in enumerate(ref):
@@ -795,7 +870,7 @@ def trodeplot(channels=(), act='connected',
 	
 	chk = [ch.lower() for ch in channels]
 	act += [numpy.nan] * (len(channels)-len(act))
-	chx,chy,chz = zip(*[get_position(ch)+(act[i],) for i,ch in enumerate(chk)])	
+	chx,chy,chz = zip(*[get_position(ch, coords=coords)+(act[i],) for i,ch in enumerate(chk)])	
 	chx,chy,chz = list(chx), list(chy), list(chz)
 	
 	if troderadius == 'auto':
@@ -834,8 +909,9 @@ def trodeplot(channels=(), act='connected',
 	if head or h.get('surf') or h.get('contour'): #or h.get('nose') or h.get('ears'):
 		h['head'] = pylab.Circle((0.0,0.0), radius=1.0, edgecolor='none', facecolor='none', clip_on=False, zorder=2); ax.add_patch(h['head'])
 		if head: h['head'].set_edgecolor(color)
-		if h.get('surf'): h['surf'].set_clip_path(h['head'])
-		for hh in getattr(h.get('contour'), 'collections', []): hh.set_clip_path(h['head'])
+		if not mask_surf and h.get('surf'): h['surf'].set_clip_path(h['head'])
+		if not mask_contour:
+			for hh in getattr(h.get('contour'), 'collections', []): hh.set_clip_path(h['head'])
 		#if h.get('nose'): h['nose'].set_clip_path(h['head'])  # TODO: how to invert the path?
 		#if h.get('ears'): h['ears'].set_clip_path(h['head'])  # TODO: how to invert the path?
 
@@ -854,13 +930,13 @@ def trodeplot(channels=(), act='connected',
 		]
 		if eegbg == 'auto':
 			drawing = zip(chx,chy)
-			gpos = [get_position(ch) for ch in ' '.join(gridlines).split()]
+			gpos = [get_position(ch, coords=coords) for ch in ' '.join(gridlines).split()]
 			eegbg = head and not surf and False not in [gp in drawing for gp in gpos]
 		if eegbg:
 			circ = pylab.Circle((0.0,0.0), radius=0.82, edgecolor=color, facecolor='none', zorder=3); ax.add_patch(circ)
 			h['gridlines'] = [circ]
 			for gl in gridlines:
-				x,y = zip(*[get_position(ch) for ch in gl.split()])
+				x,y = zip(*[get_position(ch, coords=coords) for ch in gl.split()])
 				h['gridlines'] += pylab.plot(x, y, linestyle='-', marker='None', color=color, zorder=3)
 			h['gridlines'] += pylab.plot([0,0], [-1,+1], linestyle='-', marker='None', color=color, zorder=3)
 			h['gridlines'] += pylab.plot([-1,+1], [0,0], linestyle='-', marker='None', color=color, zorder=3)
@@ -948,5 +1024,45 @@ def match_schemes(channels, force_schemes=None):
 	universe = channels + sorted(universe.values())
 	return universe,matchingschemes	
 
-def get_position(label, type='schematic2D', default=(numpy.nan,numpy.nan)):
-	return getattr(ElectrodePositions, type).get(label.lower(), default)
+def get_position(label, type='schematic2D', default=(numpy.nan,numpy.nan), coords=None):
+	if coords==None: return getattr(ElectrodePositions, type).get(label.lower(), default)
+	if hasattr(coords, type): coords = getattr(coords, type)
+	elif type in coords: coords = coords[type]
+	for k,v in coords.items():
+		if k.lower() == label.lower(): return v
+	return default
+
+
+def convex_hull(points):
+	"""
+	Calculate the convex hull of a set of points.
+	Adapted from http://code.activestate.com/recipes/66527/
+	"""###
+	
+	def _myDet(p, q, r):
+		sum1 = q[0]*r[1] + p[0]*q[1] + r[0]*p[1]
+		sum2 = q[0]*p[1] + r[0]*q[1] + p[0]*r[1]
+		return sum1 - sum2
+		
+	def _isRightTurn((p, q, r)):
+		#assert p != q and q != r and p != r
+		return _myDet(p, q, r) < 0
+		
+	# Get a local list copy of the points and sort them lexically.
+	points = sorted(set([tuple(p) for p in points]))
+	# Build upper half of the hull.
+	upper = [points[0], points[1]]
+	for p in points[2:]:
+		upper.append(p)
+		while len(upper) > 2 and not _isRightTurn(upper[-3:]): del upper[-2]
+	points.reverse()
+	# Build lower half of the hull.
+	lower = [points[0], points[1]]
+	for p in points[2:]:
+		lower.append(p)
+		while len(lower) > 2 and not _isRightTurn(lower[-3:]): del lower[-2]
+	# Remove duplicates.
+	del lower[0]
+	del lower[-1]
+	# Concatenate both halfs and return.
+	return tuple(upper + lower)
