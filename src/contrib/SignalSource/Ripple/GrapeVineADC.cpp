@@ -30,6 +30,7 @@
 #include "BCIError.h"
 
 #include "GrapeVineADC.h"
+#include "errno.h"
 
 using namespace std;
 
@@ -92,8 +93,9 @@ GrapeVineADC::Preflight( const SignalProperties&,SignalProperties& Output ) cons
     if (samplingRate==200) bciout << "Verify Grapevine set to deliver 200 Samples/Sec" << endl;
     else if (samplingRate==500)  bciout << "Verify Grapevine set to deliver 500 Samples/Sec"  << endl;
     else if (samplingRate==1000) bciout << "Verify Grapevine set to deliver 1000 Samples/Sec" << endl;
+    else if (samplingRate==1200) bciout << "Verify Grapevine set to deliver 1200 Samples/Sec" << endl;
     else if (samplingRate==2000) bciout << "Verify Grapevine set to deliver 2000 Samples/Sec" << endl;
-    else { bcierr << "Source Module only supports Grapevine Sample rates of 200, 1000, and 2000 sps." << endl; return; }
+    else { bcierr << "Source Module only supports Grapevine Sample rates of 200, 1000, 1200, and 2000 sps." << endl; return; }
 
     if ( Parameter("SourceCh") > 128 ) { bcierr << "Source Module supports maximum of 128 channels" << endl; return; }
 
@@ -119,6 +121,8 @@ GrapeVineADC::Initialize( const SignalProperties&, const SignalProperties& )
     mGvBciSampIndex = 0;
     mGvBciLastSeq   = 0;
 
+#ifdef _WIN32
+
     DWORD Priority;
     switch ((int) Parameter( "Priority" ))
     {
@@ -130,6 +134,32 @@ GrapeVineADC::Initialize( const SignalProperties&, const SignalProperties& )
     }
     SetPriorityClass(GetCurrentProcess(), Priority);
 
+#else // _WIN32
+    
+    int sched_policy;
+    sched_param param;
+    if (pthread_getschedparam(pthread_self(), &sched_policy, &param) != 0)
+    { bcierr << "Cannot get scheduler parameters" << endl;  return; }
+
+    int prio_min = sched_get_priority_min( sched_policy );
+    int prio_max = sched_get_priority_max( sched_policy );
+    if (prio_min == -1 || prio_max == -1)
+    { bcierr << "Cannot determine scheduler priority range" << endl;  return; }
+    
+    switch ((int) Parameter( "Priority" ))
+    {
+        case 0  : param.sched_priority = ((3*prio_min) + (1*prio_max)) / 4;   break;
+        case 1  : param.sched_priority = ((2*prio_min) + (2*prio_max)) / 4;   break;
+        case 2  : param.sched_priority = ((1*prio_min) + (3*prio_max)) / 4;   break;
+        case 3  : param.sched_priority = ((0*prio_min) + (4*prio_max)) / 4;   break;
+        default : param.sched_priority = ((2*prio_min) + (2*prio_max)) / 4;   break;
+    }
+
+    if (pthread_setschedparam(pthread_self(), sched_policy, &param))
+    { bcierr << "Cannot set thread priority" << endl;  return; }
+
+#endif // _WIN32
+    
     OpenSocket();
 }
 
@@ -161,18 +191,18 @@ GrapeVineADC::Process( const GenericSignal&, GenericSignal& Output )
                 mGvBciSampIndex = 0;  // rewind index to process sample blocks within mGvBciPacket
 
                 // Badly formed packets should be very rare events, flag error if one is caught
-                if (udpPacketSize != mGvBciPacket.GetPacketSize()) bcierr << "Bad UDP packet recieved " << endl;
-
+                if (udpPacketSize != mGvBciPacket.GetPacketSize()) bciout << "Bad UDP packet recieved " << endl;
+                
                 // Report packets recieved out of order (packet drops in instrument network)
                 if ( mGvBciLastSeq && (mGvBciPacket.sequence != (mGvBciLastSeq+1)) )
                     bciout << "Out of Order Packet, " << (mGvBciPacket.sequence - mGvBciLastSeq - 1)
                            << " packets skipped, " << " at time index " << mGvBciPacket.timeStamp << endl;
-                 mGvBciLastSeq = mGvBciPacket.sequence;
+                mGvBciLastSeq = mGvBciPacket.sequence;
             }
             else    // no packet waiting to be recieved or socket error (handle them the same here)
             {
                 mGvBciPacket.nSamp = 0;     // reset to ensure no samples in packet buffer are processed
-
+                
                 // sleep current thread to wait for next packet
                 if (++mGvSleepCount <= GV_SLEEP_CNT_MAX) Sleep(GV_SLEEP_TIME_MS);
                 else // too much sleep, clear Output and return to let interfaces update and program exit if needed
@@ -184,7 +214,7 @@ GrapeVineADC::Process( const GenericSignal&, GenericSignal& Output )
                     return;
                 }
             }
-         }
+        }
         else // unprocessed sample block in packet buffer, move it into the Output sample block
         {
             for( int ch = 0; ch < mSourceCh; ++ch )
@@ -213,7 +243,22 @@ GrapeVineADC::Halt()
     }
 
     // restore thread priority to normal levels
+#ifdef _WIN32      
+    
     SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+
+#else // _WIN32
+
+    int sched_policy;
+    sched_param param;
+    if (pthread_getschedparam(pthread_self(), &sched_policy, &param) == 0)
+    {
+        param.sched_priority = sched_get_priority_min( sched_policy );
+        int status = pthread_setschedparam(pthread_self(), sched_policy, &param);
+    }
+
+#endif // _WIN32
+    
 }
 
 
@@ -222,12 +267,51 @@ void GrapeVineADC::OpenSocket()
     // Open the socket (in win32, framework will call WSAStartup and WSACleanup)
     mGvBciSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (mGvBciSocket==INVALID_SOCKET) { bcierr << "Unable to Open Socket" << endl;  return; }
+    
+#ifdef _WIN32
+    
+    // bind socket to instrument network card with address btn 192.168.42.128 and 192.168.42.254
+    unsigned host = 127;
+    while ((++host) < 255)
+    {
+        struct sockaddr_in instSockAddr;
+        instSockAddr.sin_family		 = AF_INET;
+        instSockAddr.sin_port		 = htons(17454); // port ID for GvBciPackets from GV NIP
+        instSockAddr.sin_addr.s_addr = htonl( (192 << 24) | (168 << 16) | (42 << 8) | host );
+        if (bind(mGvBciSocket, (struct sockaddr *)&instSockAddr, sizeof(instSockAddr)) == 0) break;
+    }
+     
+    if (host < 255) bciout << "Bound to Socket 192.168.42." << host << endl;
+    else
+    {
+        closesocket(mGvBciSocket);
+        bcierr << "Unable to Bind Socket (" << strerror(errno) << ")" << endl;
+        return;
+    }    
+    
+#else // _WIN32
+    
+    struct sockaddr_in instSockAddr;
+    instSockAddr.sin_family		 = AF_INET;
+    instSockAddr.sin_port		 = htons(17454); // port ID for GvBciPackets from GV NIP
+    instSockAddr.sin_addr.s_addr = htonl( INADDR_ANY );
+    if (bind(mGvBciSocket, (struct sockaddr *)&instSockAddr, sizeof(instSockAddr)) == 0)
+        bciout << "Socket bound to all interfaces" << endl;
+    else
+    {
+        closesocket(mGvBciSocket);
+        bcierr << "Unable to Bind Socket (" << strerror(errno) << ")" << endl;
+        return;
+    }
+    
+#endif // _WIN32
 
+    
     // set broadcast mode and dont-route option for socket
-    BOOL optVal = TRUE;
-    int  optLen = sizeof(optVal);
-    if ( (setsockopt(mGvBciSocket, SOL_SOCKET, SO_BROADCAST, (char*)&optVal, optLen) == SOCKET_ERROR)
-      || (setsockopt(mGvBciSocket, SOL_SOCKET, SO_DONTROUTE, (char*)&optVal, optLen) == SOCKET_ERROR) )
+    int optVal = 1;
+    int optLen = sizeof(optVal);
+    if ( (setsockopt(mGvBciSocket, SOL_SOCKET, SO_BROADCAST, &optVal, optLen) == SOCKET_ERROR)
+      || (setsockopt(mGvBciSocket, SOL_SOCKET, SO_DONTROUTE, &optVal, optLen) == SOCKET_ERROR) )
     {
         closesocket(mGvBciSocket);
         bcierr << "Unable to Set Socket Modes" << endl;
@@ -245,6 +329,8 @@ void GrapeVineADC::OpenSocket()
     }
 
     // set the socket for non-blocking operation
+#ifdef _WIN32    
+
     u_long argVal = 1;
     if ( ioctlsocket(mGvBciSocket, FIONBIO, &argVal) == SOCKET_ERROR )
     {
@@ -253,18 +339,16 @@ void GrapeVineADC::OpenSocket()
         return;
     }
 
-    // bind socket to instrument network card with address btn 192.168.42.128 and 192.168.42.254
-    SOCKADDR_IN instSockAddr;
-    instSockAddr.sin_family		 = AF_INET;
-    instSockAddr.sin_port		 = htons(17454); // port ID for GvBciPackets from GV NIP
-    instSockAddr.sin_addr.s_addr = inet_addr("192.168.42.127");
-    while ( ++(instSockAddr.sin_addr.S_un.S_un_b.s_b4) < 255 )
-        if (bind(mGvBciSocket, (struct sockaddr FAR *)&instSockAddr, sizeof(instSockAddr))==0) break;
-    if ( (instSockAddr.sin_addr.S_un.S_un_b.s_b4) == 255 )
+#else // _WIN32
+    
+    int flags = fcntl(mGvBciSocket, F_GETFL, 0);
+    if (fcntl(mGvBciSocket, F_SETFL, flags | O_NONBLOCK))
     {
         closesocket(mGvBciSocket);
-        bcierr << "Unable to Bind Socket" << endl;
+        bcierr << "Unable to Set Socket for Non-Blocking Operation" << endl;
         return;
     }
-    else bciout << "Bound to Socket 192.168.42." << (int)(instSockAddr.sin_addr.S_un.S_un_b.s_b4) << endl;
+    
+#endif // _WIN32
+    
 }

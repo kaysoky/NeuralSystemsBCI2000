@@ -26,8 +26,27 @@
 #ifndef GRAPEVINE_ADC_H
 #define GRAPEVINE_ADC_H
 
-#include "sockstream.h"
 #include "GenericADC.h"
+
+#include "SockStream.h"
+
+// portable sockets
+#ifdef _WIN32
+typedef int socklen_t;
+#else
+#include <fcntl.h>
+#include <arpa/inet.h>
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR   -1
+#define closesocket(s) close(s)
+#endif
+
+// portable sleep
+#ifndef _WIN32
+#define Sleep(s) usleep(1000*(s))
+#endif
+
+
 
 #include "XippLegacy.h"
 
