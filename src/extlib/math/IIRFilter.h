@@ -51,6 +51,7 @@
 #include "FilterDesign.h"
 #include "BCIAssert.h"
 #include <limits>
+#include <string.h>
 
 namespace bci {
   template<typename T>

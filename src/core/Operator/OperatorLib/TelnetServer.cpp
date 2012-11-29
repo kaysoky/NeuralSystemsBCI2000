@@ -34,6 +34,10 @@
 #include <string>
 #include <iostream>
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif // _WIN32
+
 using namespace std;
 
 TelnetServer::TelnetServer( class StateMachine& inStateMachine, const string& inAddress )
