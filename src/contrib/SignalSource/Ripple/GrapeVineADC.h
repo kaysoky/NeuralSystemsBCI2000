@@ -30,25 +30,14 @@
 
 #include "SockStream.h"
 
-// portable sockets
-#ifdef _WIN32
-typedef int socklen_t;
-#else
+// Portability for non-windows builds using unix sockets and posix usleep
+#ifndef _WIN32
 #include <fcntl.h>
 #include <arpa/inet.h>
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR   -1
-#define closesocket(s) close(s)
-#endif
-
-// portable sleep
-#ifndef _WIN32
+#define INVALID_SOCKET -1           // to duplicate value used in Windows
 #define Sleep(s) usleep(1000*(s))
 #endif
 
-
-
-#include "XippLegacy.h"
 
 #define GRAPEVINE_SF 30000	// GrapeVine Sampling Frequency
 
@@ -84,12 +73,12 @@ private:
     #pragma pack(pop)
 
     void        OpenSocket(void);
+    void        CloseSocket(void);
 
     int			mSampleBlockSize;   // number of samples per bci2000 output sample block
     int         mSourceCh;          // number of channels per bci2000 output sample block
 
     SOCKET		mGvBciSocket;       // Socket for receiving UDP GvBciPackets from Grapevine
-    unsigned    mGvBciSampIndex;    // sample block within mGvBciPacket currently being processed
     unsigned    mGvSleepCount;      // number of consecutive Sleseps waiting for packets
     uint32_t    mGvBciLastSeq;      // sequence number of last GvBciPacket recieved
 

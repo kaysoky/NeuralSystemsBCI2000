@@ -118,7 +118,6 @@ GrapeVineADC::Initialize( const SignalProperties&, const SignalProperties& )
     for( int ch = 0; ch < (sizeof(mGvBciPacket.data)/sizeof(float)); ++ch ) mGvBciPacket.data[ch] = 0.0;
 
     mGvSleepCount   = 0;
-    mGvBciSampIndex = 0;
     mGvBciLastSeq   = 0;
 
 #ifdef _WIN32
@@ -180,50 +179,46 @@ GrapeVineADC::Process( const GenericSignal&, GenericSignal& Output )
     int sampleBlockIndex = 0;
     while( sampleBlockIndex < mSampleBlockSize )
     {
-        if (mGvBciSampIndex >= mGvBciPacket.nSamp) // Get next pkt if no more blocks in pkt buffer to process
+        if (mGvBciSocket==INVALID_SOCKET) return;   // force abort if Halt() is called
+
+        int udpPacketSize = recv(mGvBciSocket, (char*)&mGvBciPacket, sizeof(mGvBciPacket), 0);
+        if ( udpPacketSize > 0 )  // check for packet received
         {
-            if (mGvBciSocket==INVALID_SOCKET) return;   // force abort if Halt() is called
-
-            int udpPacketSize = recv(mGvBciSocket, (char*)&mGvBciPacket, sizeof(mGvBciPacket), 0);
-            if ( udpPacketSize > 0 )  // check for packet received
+            // Badly formed packets should be very rare events, flag error if one is caught
+            if (udpPacketSize != mGvBciPacket.GetPacketSize()) bcierr << "Bad UDP packet recieved " << endl;
+            
+            // Report packets recieved out of order (packet drops in instrument network)
+            if ( mGvBciLastSeq && (mGvBciPacket.sequence != (mGvBciLastSeq+1)) )
+                bciout << "Out of Order Packet, " << (mGvBciPacket.sequence - mGvBciLastSeq - 1)
+                << " packets skipped, " << " at time index " << mGvBciPacket.timeStamp << endl;
+            mGvBciLastSeq = mGvBciPacket.sequence;
+            
+            // move the packet contents to the block index buffer
+            for (unsigned smp=0; smp < mGvBciPacket.nSamp; ++smp)
             {
-                mGvSleepCount = 0;    // reset the sleep counter
-                mGvBciSampIndex = 0;  // rewind index to process sample blocks within mGvBciPacket
+                for( int ch = 0; ch < mSourceCh; ++ch )
+                    Output( ch, sampleBlockIndex ) = mGvBciPacket.GetSample(smp,ch);
+                ++sampleBlockIndex;
+            }
 
-                // Badly formed packets should be very rare events, flag error if one is caught
-                if (udpPacketSize != mGvBciPacket.GetPacketSize()) bciout << "Bad UDP packet recieved " << endl;
-                
-                // Report packets recieved out of order (packet drops in instrument network)
-                if ( mGvBciLastSeq && (mGvBciPacket.sequence != (mGvBciLastSeq+1)) )
-                    bciout << "Out of Order Packet, " << (mGvBciPacket.sequence - mGvBciLastSeq - 1)
-                           << " packets skipped, " << " at time index " << mGvBciPacket.timeStamp << endl;
-                mGvBciLastSeq = mGvBciPacket.sequence;
-            }
-            else    // no packet waiting to be recieved or socket error (handle them the same here)
-            {
-                mGvBciPacket.nSamp = 0;     // reset to ensure no samples in packet buffer are processed
-                
-                // sleep current thread to wait for next packet
-                if (++mGvSleepCount <= GV_SLEEP_CNT_MAX) Sleep(GV_SLEEP_TIME_MS);
-                else // too much sleep, clear Output and return to let interfaces update and program exit if needed
-                {
-                    for( int ch = 0; ch < mSourceCh; ++ch )
-                        for( int smp = 0; smp < mSampleBlockSize; ++smp) Output( ch, smp ) = 0.0;
-                    mGvSleepCount = 0;  // reset sleep counter
-                    mGvBciLastSeq = 0;  // reset sequence counter to prevent errors if acq system is restarted
-                    return;
-                }
-            }
+            // reset the sleep counter
+            mGvSleepCount = 0;    
         }
-        else // unprocessed sample block in packet buffer, move it into the Output sample block
+        else    // no packet waiting to be recieved or socket error (handle them the same here)
         {
-            for( int ch = 0; ch < mSourceCh; ++ch )
-                Output( ch, sampleBlockIndex ) = mGvBciPacket.GetSample(mGvBciSampIndex,ch);
-            ++sampleBlockIndex;
-            ++mGvBciSampIndex;
+            // sleep current thread to wait for next packet
+            if (++mGvSleepCount <= GV_SLEEP_CNT_MAX) Sleep(GV_SLEEP_TIME_MS);
+            else // too much sleep, clear Output and return to let interfaces update and program exit if needed
+            {
+                for( int ch = 0; ch < mSourceCh; ++ch )
+                    for( int smp = 0; smp < mSampleBlockSize; ++smp) Output( ch, smp ) = 0.0;
+                mGvSleepCount = 0;  // reset sleep counter
+                return;
+            }
         }
     }
 }
+
 
 void
 GrapeVineADC::StopRun()
@@ -235,19 +230,17 @@ GrapeVineADC::StopRun()
 void
 GrapeVineADC::Halt()
 {
-    if (mGvBciSocket != INVALID_SOCKET)
-    {
-        shutdown(mGvBciSocket,2);       // SD_BOTH=2, seems undefined in winsock.h
-        closesocket(mGvBciSocket);
-        mGvBciSocket = INVALID_SOCKET;
-    }
 
-    // restore thread priority to normal levels
-#ifdef _WIN32      
+    // make sure socket is closed
+    CloseSocket();
     
+    // restore thread priority to normal levels
+
+#ifdef _WIN32
+
     SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 
-#else // _WIN32
+#else 
 
     int sched_policy;
     sched_param param;
@@ -257,18 +250,19 @@ GrapeVineADC::Halt()
         int status = pthread_setschedparam(pthread_self(), sched_policy, &param);
     }
 
-#endif // _WIN32
+#endif
     
 }
 
 
 void GrapeVineADC::OpenSocket()
 {
+    
+#ifdef _WIN32
+
     // Open the socket (in win32, framework will call WSAStartup and WSACleanup)
     mGvBciSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (mGvBciSocket==INVALID_SOCKET) { bcierr << "Unable to Open Socket" << endl;  return; }
-    
-#ifdef _WIN32
     
     // bind socket to instrument network card with address btn 192.168.42.128 and 192.168.42.254
     unsigned host = 127;
@@ -282,14 +276,27 @@ void GrapeVineADC::OpenSocket()
     }
      
     if (host < 255) bciout << "Bound to Socket 192.168.42." << host << endl;
-    else
-    {
-        closesocket(mGvBciSocket);
-        bcierr << "Unable to Bind Socket (" << strerror(errno) << ")" << endl;
-        return;
-    }    
+    else {  CloseSocket();  bcierr << "Unable to Bind Socket (" << strerror(errno) << ")" << endl;  return;  }
     
-#else // _WIN32
+    // set broadcast mode and dont-route option for socket
+    int optTrue = 1;
+    int optBufSize = 1048576;
+    int optLen = sizeof(int);
+    if ( (setsockopt(mGvBciSocket, SOL_SOCKET, SO_BROADCAST, (char *)&optTrue, optLen) == SOCKET_ERROR)
+      || (setsockopt(mGvBciSocket, SOL_SOCKET, SO_DONTROUTE, (char *)&optTrue, optLen) == SOCKET_ERROR)
+      || (setsockopt(mGvBciSocket, SOL_SOCKET, SO_RCVBUF, (char *)&optBufSize, optLen) == SOCKET_ERROR) )
+    {   CloseSocket();  bcierr << "Unable to Set Socket Parameters" << endl;  return;    }
+
+    // set the socket for non-blocking operation
+    u_long argVal = 1;
+    if ( ioctlsocket(mGvBciSocket, FIONBIO, &argVal) == SOCKET_ERROR )
+    {   CloseSocket();  bcierr << "Unable to Set Socket for Non-Blocking Operation" << endl;  return;  }
+    
+#else 
+    
+    // Open the socket (in win32, framework will call WSAStartup and WSACleanup)
+    mGvBciSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (mGvBciSocket==INVALID_SOCKET) { bcierr << "Unable to Open Socket" << endl;  return; }
     
     struct sockaddr_in instSockAddr;
     instSockAddr.sin_family		 = AF_INET;
@@ -297,58 +304,52 @@ void GrapeVineADC::OpenSocket()
     instSockAddr.sin_addr.s_addr = htonl( INADDR_ANY );
     if (bind(mGvBciSocket, (struct sockaddr *)&instSockAddr, sizeof(instSockAddr)) == 0)
         bciout << "Socket bound to all interfaces" << endl;
-    else
-    {
-        closesocket(mGvBciSocket);
-        bcierr << "Unable to Bind Socket (" << strerror(errno) << ")" << endl;
-        return;
-    }
-    
-#endif // _WIN32
-
+    else {   CloseSocket();  bcierr << "Unable to Bind Socket (" << strerror(errno) << ")" << endl;  return;  }
     
     // set broadcast mode and dont-route option for socket
-    int optVal = 1;
-    int optLen = sizeof(optVal);
-    if ( (setsockopt(mGvBciSocket, SOL_SOCKET, SO_BROADCAST, &optVal, optLen) == SOCKET_ERROR)
-      || (setsockopt(mGvBciSocket, SOL_SOCKET, SO_DONTROUTE, &optVal, optLen) == SOCKET_ERROR) )
-    {
-        closesocket(mGvBciSocket);
-        bcierr << "Unable to Set Socket Modes" << endl;
-        return;
-    }
-
-    // set input data buffer size to a cool Meg
+    int optTrue = 1;
     int optBufSize = 1048576;
-        optLen = sizeof(optBufSize);
-    if ( setsockopt(mGvBciSocket, SOL_SOCKET, SO_RCVBUF, (char*)&optBufSize, optLen) == SOCKET_ERROR )
-    {
-        closesocket(mGvBciSocket);
-        bcierr << "Unable to Set Input Buffer Size" << endl;
-        return;
-    }
+    int optLen = sizeof(int);
+    if ( setsockopt(mGvBciSocket, SOL_SOCKET, SO_BROADCAST, &optTrue, optLen)
+      || setsockopt(mGvBciSocket, SOL_SOCKET, SO_DONTROUTE, &optTrue, optLen)
+      || setsockopt(mGvBciSocket, SOL_SOCKET, SO_RCVBUF, &optBufSize, optLen) )
+    {   CloseSocket();  bcierr << "Unable to Set Socket Parameters" << endl;  return;    }
 
     // set the socket for non-blocking operation
-#ifdef _WIN32    
-
-    u_long argVal = 1;
-    if ( ioctlsocket(mGvBciSocket, FIONBIO, &argVal) == SOCKET_ERROR )
-    {
-        closesocket(mGvBciSocket);
-        bcierr << "Unable to Set Socket for Non-Blocking Operation" << endl;
-        return;
-    }
-
-#else // _WIN32
-    
     int flags = fcntl(mGvBciSocket, F_GETFL, 0);
     if (fcntl(mGvBciSocket, F_SETFL, flags | O_NONBLOCK))
-    {
-        closesocket(mGvBciSocket);
-        bcierr << "Unable to Set Socket for Non-Blocking Operation" << endl;
-        return;
-    }
+    {   CloseSocket();  bcierr << "Unable to Set Socket for Non-Blocking Operation" << endl;  return;  }
     
 #endif // _WIN32
     
 }
+
+
+void GrapeVineADC::CloseSocket()
+{
+    
+#ifdef _WIN32
+    
+    // make sure socket is closed
+    if (mGvBciSocket != INVALID_SOCKET)
+    {
+        shutdown(mGvBciSocket,2);       // SD_BOTH=2, seems undefined in winsock.h
+        closesocket(mGvBciSocket);
+        mGvBciSocket = INVALID_SOCKET;
+    }
+    
+#else
+    
+    // make sure socket is closed
+    if (mGvBciSocket != INVALID_SOCKET)
+    {
+        shutdown(mGvBciSocket,SHUT_RDWR);
+        close(mGvBciSocket);
+        mGvBciSocket = INVALID_SOCKET;
+    }
+    
+#endif
+
+}
+
+
