@@ -21,6 +21,7 @@ string gDosLineEnding = "\r\n"; // we're dealing with template files that have a
 string gFileSeparator = "/";
 # include <sys/stat.h>
 # include <dirent.h>
+# include <unistd.h>
 #endif // _WIN32
 
 
