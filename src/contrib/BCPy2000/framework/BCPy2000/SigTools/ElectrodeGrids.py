@@ -531,7 +531,7 @@ class GridSet(smartlist):
 		coords = dict(zip(names,coords))
 		c = ChannelSet(names)
 		c.set_coords(coords)
-		c.set_plotopts(nose=False, ears=False, scheme=False, mask_surf=1.1, mask_contour=1.1)
+		c.set_plotopts(nose=False, ears=False, scheme=False, mask_surf='square', mask_contour='square')
 		return c
 
 __doc__ += '\n\nThis module can also be used as a standalone program:\n\n' + standalone_doc.lstrip('\n')

@@ -844,9 +844,22 @@ def trodeplot(channels=(), act='connected',
 			pos = numpy.asarray(positions)
 			m = numpy.expand_dims(pos.mean(axis=0), 0)
 			pos = (pos - m) * grow + m
-			hull = convex_hull(pos) # TODO: non-convex hulls would be a nice option, for ECoG grids
-			path = matplotlib.path.Path(hull+(hull[0],), [matplotlib.path.Path.MOVETO] + [matplotlib.path.Path.LINETO] * len(hull))
-			patch = matplotlib.patches.PathPatch(path, edgecolor='none')
+			hull = convex_hull(pos)
+			points = hull+(hull[0],)
+			codes = [matplotlib.path.Path.MOVETO] + [matplotlib.path.Path.LINETO] * len(hull)
+			
+			def squares(points):
+				def around(x, d=0.5): return ((x[0]-d,x[1]-d),(x[0]-d,x[1]+d),(x[0]+d,x[1]+d),(x[0]+d,x[1]-d))
+				d = 0.5 * min([d for d in SigTools.sqdist(points).flat if d != 0]) ** 0.5
+				v = [around(tuple(x), d) for x in points]
+				points,codes = (),()
+				for vi in v:
+					points = points + vi + (vi[0],)
+					codes = codes + (matplotlib.path.Path.MOVETO,) + (matplotlib.path.Path.LINETO,) * len(vi)
+				return points, codes
+			if mask_surf == 'square' or (not masksurf and mask_contour == 'square'):
+				points,codes = squares(positions) # TODO: non-convex rectilinear hull, for ECoG grids
+			patch = matplotlib.patches.PathPatch(matplotlib.path.Path(points, codes), edgecolor='none', facecolor='none')
 			ax.add_patch(patch)
 			h['mask'] = patch
 			if mask_surf:
@@ -1031,7 +1044,6 @@ def get_position(label, type='schematic2D', default=(numpy.nan,numpy.nan), coord
 	for k,v in coords.items():
 		if k.lower() == label.lower(): return v
 	return default
-
 
 def convex_hull(points):
 	"""
