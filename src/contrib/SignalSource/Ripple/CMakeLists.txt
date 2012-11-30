@@ -12,7 +12,6 @@ SET( SRC_PROJECT
 )
 SET( HDR_PROJECT
   GrapeVineADC.h
-  XippLegacy.h
 )
 
 # Create the signal processing module
