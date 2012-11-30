@@ -175,8 +175,8 @@ EnvironmentBase::IsGlobalEnvironment() const
 
 // Read/write access to a parameter by its name.
 // Use an additional pair of brackets for indices.
-ParamRef
-EnvironmentBase::Parameter( const string& inName ) const
+MutableParamRef
+EnvironmentBase::Parameter( const string& inName )
 {
   Param* pParam = NULL;
   if( Parameters == NULL )
@@ -193,11 +193,17 @@ EnvironmentBase::Parameter( const string& inName ) const
       bcierr_ << "Parameter \"" << inName << "\" does not exist."
               << endl;
   }
-  return ParamRef( pParam );
+  return MutableParamRef( pParam );
 }
 
 ParamRef
-EnvironmentBase::OptionalParameter( const string& inName, const string& inDefaultValue ) const
+EnvironmentBase::Parameter( const string& inName ) const
+{
+  return const_cast<EnvironmentBase*>( this )->Parameter( inName );
+}
+
+MutableParamRef
+EnvironmentBase::OptionalParameter( const string& inName, const string& inDefaultValue )
 {
   ParamAccess( inName );
 
@@ -212,15 +218,27 @@ EnvironmentBase::OptionalParameter( const string& inName, const string& inDefaul
     mDefaultParam.Value() = inDefaultValue;
     pParam = &mDefaultParam;
   }
-  return ParamRef( pParam );
+  return MutableParamRef( pParam );
+}
+
+ParamRef
+EnvironmentBase::OptionalParameter( const string& inName, const string& inDefaultValue ) const
+{
+  return const_cast<EnvironmentBase*>( this )->OptionalParameter( inName, inDefaultValue );
+}
+
+MutableParamRef
+EnvironmentBase::OptionalParameter( const string& inName, double inDefaultValue )
+{
+  ostringstream oss;
+  oss << inDefaultValue;
+  return OptionalParameter( inName, oss.str() );
 }
 
 ParamRef
 EnvironmentBase::OptionalParameter( const string& inName, double inDefaultValue ) const
 {
-  ostringstream oss;
-  oss << inDefaultValue;
-  return OptionalParameter( inName, oss.str() );
+  return const_cast<EnvironmentBase*>( this )->OptionalParameter( inName, inDefaultValue );
 }
 
 string

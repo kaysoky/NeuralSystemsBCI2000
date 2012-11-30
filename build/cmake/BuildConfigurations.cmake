@@ -59,7 +59,7 @@ IF( COMPILER_IS_GCC_COMPATIBLE )
   ENDIF()
 
   SET( CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -Wstrict-aliasing"
+    "${CMAKE_CXX_FLAGS} -Wstrict-aliasing -fvisibility=hidden"
   )
 
   SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")

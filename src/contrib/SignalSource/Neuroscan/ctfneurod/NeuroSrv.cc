@@ -49,7 +49,7 @@ NeuroSrv::SendEDFHeader( std::ostream& os )
   oss2 << setw( 4 ) << mBasicInfo.EEGChannels();
   oss << oss2.str().substr( 0, 4 );
 
-  const struct { (string ChannelInfo::*) s; size_t l; } fields[] =
+  const struct { string ChannelInfo::* s; size_t l; } fields[] =
   { // EDF fields in a channel entry, and their lengths
     { &ChannelInfo::name, 16 },
     { &ChannelInfo::type, 80 },

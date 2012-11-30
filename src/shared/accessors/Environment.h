@@ -290,9 +290,14 @@ class EnvironmentBase
  // the caller as an object.
  protected:
   // The Parameter()/OptionalParameter() functions allow access to parameters by name.
+  MutableParamRef Parameter( const std::string& name );
   ParamRef Parameter( const std::string& name ) const;
+  MutableParamRef OptionalParameter( const std::string& name,
+                                     const std::string& defaultValue = "" );
   ParamRef OptionalParameter( const std::string& name,
                               const std::string& defaultValue = "" ) const;
+  MutableParamRef OptionalParameter( const std::string& name,
+                                     double defaultValue );
   ParamRef OptionalParameter( const std::string& name,
                               double defaultValue ) const;
   static std::string DescribeValue( const Param&, size_t index1, size_t index2 );
@@ -301,7 +306,7 @@ class EnvironmentBase
   void ParamAccess( const std::string& name ) const;
   virtual void OnParamAccess( const std::string& name ) const {}
 
-  mutable Param mDefaultParam;
+  Param mDefaultParam;
 
  protected:
   // A macro/function combination for convenient formulation of parameter checks.

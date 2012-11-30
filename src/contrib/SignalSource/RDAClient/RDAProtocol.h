@@ -43,7 +43,11 @@ namespace RDA
 {
 
 namespace HeaderFile {
+  #if !_WIN32
+  # define GUID int
+  #endif
   #include "RDA/RecorderRDA.h"
+  #undef GUID
 }
 
   enum RDAMessageType
@@ -159,7 +163,7 @@ namespace HeaderFile {
       { return mStream && IsOpen(); }
     bool IsOpen() const
       { return mStream.is_open(); }
-    const Info& Info() const
+    const RDA::Info& Info() const
       { return mInfo; }
 
    private:

@@ -71,6 +71,10 @@ template<> struct BinaryIO<false>
   }
 };
 
+template<bool b> struct ErrorIf;
+template<> struct ErrorIf<false> {};
+template<> struct ErrorIf<true> { private: ErrorIf(); /* Intentional compiler error, results from unsuited type argument */ };
+
 template<typename T, int DataByteOrder> class BinaryData
 {
  public:
@@ -94,9 +98,6 @@ template<typename T, int DataByteOrder> class BinaryData
     IsFloat = std::numeric_limits<T>::is_specialized && !std::numeric_limits<T>::is_integer,
     IsStandardFloat = IsFloat && std::numeric_limits<T>::is_iec559,
   };
-  template<bool b> struct ErrorIf;
-  template<> struct ErrorIf<false> {};
-  template<> struct ErrorIf<true> { private: ErrorIf(); /* Intentional compiler error, results from unsuited type argument */ };
   ErrorIf<!IsElementaryNumericType> mError1;
   ErrorIf<IsFloat && !IsStandardFloat> mError2;
 };

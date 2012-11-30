@@ -35,6 +35,9 @@
 #  else
 #   define DLLEXPORT
 # endif /* LIBREMOTE_LIBRARY */
+#elif __GNUC__ && __GNUC__ >= 4
+# define STDCALL
+# define DLLEXPORT __attribute__ ((visibility ("default")))
 #else
 # define STDCALL
 # define DLLEXPORT

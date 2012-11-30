@@ -14,7 +14,7 @@ SET( SOURCES
   neuroscanget.cpp
 )
 SET( HEADERS
-  ${BCI2000_SRC_DIR}/contrib/SignalSource/Neuroscan/NeuroscanNetRead.h
+  ${BCI2000_SRC_DIR}/contrib/SignalSource/Neuroscan/NeuroscanProtocol.h
 )
 
 # Add in the appropriate error handling module

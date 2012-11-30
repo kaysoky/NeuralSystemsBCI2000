@@ -79,7 +79,7 @@ ParameterType::Set( CommandInterpreter& inInterpreter )
     ostringstream oss;
     {
       Lock<StateMachine> lock( inInterpreter.StateMachine() );
-      ParamRef param = GetParamRef( inInterpreter );
+      MutableParamRef param = GetParamRef( inInterpreter );
       if( param->Section() == "System" )
         throw bciexception_( "Cannot set system parameter" );
       name = param->Name();
@@ -144,7 +144,7 @@ ParameterType::Exists( CommandInterpreter& inInterpreter )
   return true;
 }
 
-ParamRef
+MutableParamRef
 ParameterType::GetParamRef( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
@@ -200,7 +200,7 @@ ParameterType::GetParamRef( CommandInterpreter& inInterpreter )
       if( nIdx > 1 )
         idx2 = GetIndex( args[i][1], pParam->ColumnLabels() );
     }
-    return ParamRef( pParam, idx1, idx2 );
+    return MutableParamRef( pParam, idx1, idx2 );
   }
   catch( const BCIException& e )
   {

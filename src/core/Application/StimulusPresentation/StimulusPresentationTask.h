@@ -63,7 +63,7 @@ class StimulusPresentationTask : public StimulusTask
 
  private:
   void DetermineAttendedTarget();
-  ConstParamRef StimulusProperty( const ParamRef& inMatrixParam,
+  ParamRef StimulusProperty( const ParamRef& inMatrixParam,
                                   int inColIndex,
                                   const std::string& inPropertyName ) const;
 

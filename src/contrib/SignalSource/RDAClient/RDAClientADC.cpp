@@ -172,7 +172,7 @@ RDAClientADC::OnPreflight( SignalProperties& Output ) const
 void
 RDAClientADC::OnInitialize( const SignalProperties& )
 {
-  mHostName = Parameter( "HostName" );
+  mHostName = string( Parameter( "HostName" ) );
   mAddMarkerChannel = ( Parameter( "AddMarkerChannel" ) != 0 );
 }
 

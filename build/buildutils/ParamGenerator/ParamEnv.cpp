@@ -29,10 +29,10 @@
 
 using namespace std;
 
-ParamRef
+MutableParamRef
 ParamEnv::operator()( const string& inName )
 {
   if( !Exists( inName ) )
     throw bciexception( "Parameter " << inName << " does not exist" );
-  return ParamRef( &( *this )[inName] );
+  return MutableParamRef( &( *this )[inName] );
 }

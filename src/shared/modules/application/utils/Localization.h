@@ -190,7 +190,7 @@ class Localization: public EnvironmentExtension
 
   private:
     static Localization sInstance;
-    void AddLocalizations_( const char**, int, const char**, int ) const;
+    void AddLocalizations_( const char**, int, const char**, int );
     typedef std::map<void*,std::vector<std::string> > GUIObjectStringsContainer;
     static GUIObjectStringsContainer& GUIObjectStrings();
     typedef std::map<std::string, std::string> LocalizedStringsContainer;

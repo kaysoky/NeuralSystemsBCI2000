@@ -65,7 +65,9 @@ class StandaloneChain : private EnvironmentBase, Uncopyable
 
   // Access to parameters. Call SetConfig() to apply changed parameters.
   ParamList& Parameters() { return *EnvironmentBase::Parameters; }
-  ParamRef Parameter( const std::string& s ) { return EnvironmentBase::Parameter( s ); }
+  const ParamList& Parameters() const { return *EnvironmentBase::Parameters; }
+  using EnvironmentBase::Parameter;
+
   // Access to states.
   StateList& States() { return *EnvironmentBase::States; }
   StateRef State( const std::string& s ) { return EnvironmentBase::State( s ); }

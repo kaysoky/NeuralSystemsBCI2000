@@ -137,7 +137,7 @@ Localization::AddLocalizations( const char** inLanguages, int inNumLanguages,
 
 void
 Localization::AddLocalizations_( const char** inLanguages, int inNumLanguages,
-                                 const char** inStrings,   int inNumStrings ) const
+                                 const char** inStrings,   int inNumStrings )
 {
   int numLocalizationEntries = inNumStrings / ( inNumLanguages + 1 );
   Param& p = *( Parameter( STRINGS_PARAM ).operator->() );

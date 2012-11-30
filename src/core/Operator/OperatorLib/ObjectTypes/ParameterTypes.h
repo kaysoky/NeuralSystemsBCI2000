@@ -45,7 +45,7 @@ class ParameterType : public ObjectType
   static bool Exists( CommandInterpreter& );
 
  private:
-  static ParamRef GetParamRef( CommandInterpreter& );
+  static MutableParamRef GetParamRef( CommandInterpreter& );
   static size_t GetIndex( const std::string&, const LabelIndex& );
 
   static const MethodEntry sMethodTable[];

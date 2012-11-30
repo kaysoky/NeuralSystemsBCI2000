@@ -67,16 +67,16 @@ ParamList::operator[]( const std::string& inName ) const
   return *result;
 }
 
-ParamRef
+MutableParamRef
 ParamList::operator()( const std::string& inName )
 {
-  return ParamRef( &operator[]( inName ) );
+  return MutableParamRef( &operator[]( inName ) );
 }
 
-ConstParamRef
+ParamRef
 ParamList::operator()( const std::string& inName ) const
 {
-  return ConstParamRef( &operator[]( inName ) );
+  return ParamRef( &operator[]( inName ) );
 }
 
 // **************************************************************************

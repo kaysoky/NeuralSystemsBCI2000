@@ -702,7 +702,7 @@ StimulusPresentationTask::DetermineAttendedTarget()
   SetAttendedTarget( pTarget );
 }
 
-ConstParamRef
+ParamRef
 StimulusPresentationTask::StimulusProperty( const ParamRef& inMatrixParam,
                                             int inColIndex,
                                             const std::string& inProperty ) const

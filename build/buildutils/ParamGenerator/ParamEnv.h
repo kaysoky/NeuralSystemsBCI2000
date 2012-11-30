@@ -34,7 +34,7 @@
 class ParamEnv : public ParamList
 {
   public:
-   ParamRef operator()( const std::string& name );
+   MutableParamRef operator()( const std::string& name );
 };
 
 #endif // PARAM_ENV_H
