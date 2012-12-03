@@ -30,6 +30,7 @@
 
 #include "ParamRef.h"
 #include <cstdlib>
+#include "defines.h"
 
 using namespace std;
 
