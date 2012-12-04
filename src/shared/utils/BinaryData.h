@@ -54,8 +54,8 @@ template<> struct BinaryIO<false>
   template<typename T> static
   std::istream& Get( std::istream& is, T& t )
   {
-    union { T* t; unsigned char* c; } p = { &t };
-    unsigned char* q = p.c + sizeof( T );
+    union { T* t; char* c; } p = { &t };
+    char* q = p.c + sizeof( T );
     while( q > p.c )
       is.get( *--q );
     return is;
@@ -63,8 +63,8 @@ template<> struct BinaryIO<false>
   template<typename T> static
   std::ostream& Put( std::ostream& os, const T& t )
   {
-    union { const T* t; const unsigned char* c; } p = { &t };
-    unsigned char* q = p.c + sizeof( T );
+    union { const T* t; const char* c; } p = { &t };
+    char* q = p.c + sizeof( T );
     while( q > p.c )
       os.put( *--q );
     return os;
