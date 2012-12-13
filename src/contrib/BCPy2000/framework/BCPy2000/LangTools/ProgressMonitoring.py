@@ -25,9 +25,22 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import sys,time
-
-class progress:
-	def __init__(self, todo=1.0, msg='progress', stream=None):
+__all__ = [
+	'progress',
+]
+class progress(object):
+	"""
+	number_of_things_to_do = 45
+	
+	pr = progress(number_of_things_to_do, 'snoozing')
+	
+	for i in range(number_of_things_to_do):
+		time.sleep(0.25 * (1 + i/float(number_of_things_to_do)))		
+		pr.update()
+	
+	pr.done()
+	"""###
+	def __init__(self, todo=1.0, msg='progress', stream=None, estimate=None):
 		if stream==None: stream = sys.stdout
 		self.stream = stream
 		self.ttymode = hasattr(self.stream, 'isatty') and self.stream.isatty()
@@ -35,6 +48,7 @@ class progress:
 		self.period = 2.0
 		self.wrap = 80
 		self.silent = True
+		self.estimate = estimate
 		self.start(todo)
 		
 	def start(self, todo=1.0):
@@ -46,23 +60,93 @@ class progress:
 		self.silent = True
 		self.linelength = 0
 		self.nextreport = self.started + self.period
+		self.timings = [(self.started,0.0)]
+		self.display_init()
+		
+	def elapsed(self, until=None):
+		if self.finished: until = self.finished
+		elif until == None: until = time.time()
+		return until - self.started
 	
+	def remaining(self, asof=None):
+		if self.finished: return 0.0
+		#if len(self.timings) and self.timings[-1][1] >= 1.0: return 0.0
+		# uncomment the line above, and a finished timer will display remaining: 00:00:00
+		# comment it out, and a finished timer will display remaining: --:--:--
+		if len(self.timings) < 2: return None
+		if asof == None: asof = time.time()
+		# NB: the algorithm below may seem to simple/naive to work well or be adaptive,
+		#     but it works beautifully in tandem with the SPWorley trick in update() below
+		t0,p0 = self.timings[0]
+		t1,p1 = self.timings[-1]
+		#self.debug = getattr(self, 'debug', []); self.debug.append((asof,t0,p0,t1,p1))
+		if p1 >= 1.0: return 0.0
+		if p1 <= p0: return None
+		if t1 < self.started + self.period * 2: return None
+		fromlast = (1.0 - p1) * (t1 - t0) / float(p1 - p0)
+		return t1 + fromlast - asof
+				
 	def update(self, amount_done=None, extra=''):
 		if amount_done == None: amount_done = self.amount_done + 1
 		self.amount_done = float(amount_done)
 		t = time.time()
+
+		if self.estimate:
+			proportion_done = self.amount_done / self.todo
+			if proportion_done - self.timings[-1][1] >= 1.0/200:
+				self.timings.append((t, proportion_done))
+
 		if self.amount_done == self.todo:
 			if self.silent: return
 		elif t < self.nextreport:
 			return
+		
+		self.display_start()
+		self.silent = False
+				
+		if self.estimate:
+			# the trick implemented by the next two lines is owes its existence to the mysterious genius SPWorley at http://stackoverflow.com/a/962772
+			lookfor = 2.0 * proportion_done - 1.0
+			while len(self.timings) > 1 and self.timings[0][1] < lookfor: self.timings.pop(0) 
+		
+		self.display_update(extra, self.elapsed(t), self.remaining(t))
+		self.nextreport = t + self.period
+		if self.amount_done == self.todo: self.done()
+	
+	def done(self):
+		self.finished = time.time()
+		self.display_done()
+		self.silent = True
+		
+	def __del__(self):
+		self.done()
+
+	def hmsstr(self, seconds):
+		if seconds == None: return '--:--:--'
+		seconds = max(0, int(round(seconds)))
+		hours = int(seconds / 3600); seconds -= hours * 3600
+		minutes = int(seconds / 60); seconds -= minutes * 60
+		return ' %02d:%02d:%02d  ' % (hours,minutes,seconds)
+	
+	def display_init(self):
+		if self.estimate == None: self.estimate = self.ttymode
+	
+	def display_start(self):
 		if self.silent:
 			self.stream.write(self.msg)
 			if self.ttymode: self.stream.write(': ')
 			else: self.stream.write(' - percent done:\n')
+	
+	def display_update(self, extra='', elapsed=None, remaining=None):			
 		percent = 100.0 * self.amount_done / self.todo
 		if self.ttymode:
+			extra += '     elapsed: %s' % self.hmsstr(elapsed)
+			if self.estimate: extra += '     remaining: %s' % self.hmsstr(remaining)
 			report = '%4d%% %s' % (round(percent), extra)
-			self.stream.write('\x08'*self.linelength + report)
+			self.stream.write('\x08' * self.linelength)
+			self.stream.write(' ' * self.linelength)
+			self.stream.write('\x08' * self.linelength)
+			self.stream.write(report)
 			self.linelength = len(report)
 		else:
 			report = '%4d ' % (round(percent),)
@@ -72,16 +156,9 @@ class progress:
 			self.stream.write(report)
 			self.linelength += len(report)
 		self.stream.flush()
-		self.silent = False
-		self.nextreport = t + self.period
-		if self.amount_done == self.todo: self.done()
 	
-	def done(self):
+	def display_done(self):
 		if not self.silent:
 			self.stream.write('\n')
 			self.stream.flush()
-		self.finished = time.time()
-		self.silent = True
-		
-	def __del__(self):
-		self.done()
+
