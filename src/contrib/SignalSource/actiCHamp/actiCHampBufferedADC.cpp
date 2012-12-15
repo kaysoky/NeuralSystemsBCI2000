@@ -43,9 +43,7 @@ actiCHampBufferedADC::actiCHampBufferedADC()
 	 "Source:ActiCHamp int actiCHampAmplifierID= 0 "
 		"10 0 % // Amplifier device to use",
 
-    "Source:ActiCHamp int Mode= 0 "
-       "0 0 % // Set the numerical analog of the mode.",
-
+   "Source:ActiCHamp int AcquisitionMode= 0 0 0 0 // mode in which to initialize the amplifier: 0: normal signal acquisition, 1: shielded signal acquisition, 2: impedance measurement, 3: test mode(enumeration)",
 	 "Source:Signal%20Properties float SamplingRate= 250 "
 		"2000 0.0 % // Sampling rate at which to run the amplifier",
 
@@ -70,8 +68,8 @@ actiCHampBufferedADC::actiCHampBufferedADC()
     "% % % // channels offset",
 
 
-    "Source:ActiCHamp int ReferenceChannel= -1 "
-       "% % % // Set the library reference channel, use -1 for OFF",
+    "Source:ActiCHamp int ReferenceChannel= 1 "
+       "% % % // Set the library reference channel",
 
 
  END_PARAMETER_DEFINITIONS
@@ -122,8 +120,8 @@ actiCHampBufferedADC::OnPreflight( SignalProperties& Output ) const
   if( 10000%(int)Parameter("SamplingRate") != 0)
       bcierr << "SamplingRate must go into 10000 evenly" << endl;
 
-  if( (unsigned int)Parameter("ReferenceChannel") < 0 )
-      bcierr << "ReferenceChannel must greater than 0"<<endl ;
+  if( (unsigned int)Parameter("ReferenceChannel") < -1 )
+      bcierr << "ReferenceChannel must greater than -1"<<endl ;
 
   if( (unsigned int)Parameter("ReferenceChannel") > Parameter("SourceCh") )
       bcierr << "ReferenceChannel must be smaller than SourceCh"<<endl ;
@@ -176,8 +174,8 @@ actiCHampBufferedADC::OnInitialize( const SignalProperties& Output )
 
 
 
-    referenceChannel = Parameter("referenceChannel");
-    mode             = Parameter ("Mode");
+    referenceChannel = (int)Parameter("referenceChannel") - 1;
+    mode             = Parameter ("AcquisitionMode");
     deviceNumber     = Parameter ("actiCHampAmplifierID");
     sampleRate       = Parameter( "SamplingRate" );
     mSampleBlockSize = Parameter( "SampleBlockSize" );

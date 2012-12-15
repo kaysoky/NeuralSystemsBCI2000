@@ -26,7 +26,6 @@
 #include <windows.h>
 #include <sstream>
 #include <iostream>
-#include <ciso646>
 
 
 #define _ACTICHAMP_ERROR_STREAM bcierr
@@ -153,16 +152,12 @@ void actiCHampDevice::close()
     {
         _ACTICHAMP_OUTPUT_STREAM <<"Device still in data acquisition mode, stop the device before closing.\n";
     } 
-    else if(device != NULL or device != 0)
+    else if(device != NULL || device != 0)
     {
         champClose(device);
         device = 0;
         CloseHandle(library_settings.acquisition_lock);
 
-    }
-    else
-    {
-        _ACTICHAMP_OUTPUT_STREAM << "Device not active.\n"; 
     }
 
 
@@ -293,6 +288,7 @@ bool actiCHampDevice::stop()
                 break;
 
         }
+        return false;
     }
 }
 
@@ -317,11 +313,12 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
 
         get_data_helper(dataaux, size_in_bytes);
 
-        for( int ch = 0; ch < output.Channels(); ch++ )
+        for( unsigned int ch = 0; ch < (unsigned int)output.Channels(); ch++ )
         {
              for( int el = 0; el < output.Elements(); el++ )
              {
-                 output( ch, el ) = get_channel(dataaux[el], ch) - get_channel(dataaux[el], library_settings.reference_channel); 
+                 output( ch, el ) = get_channel(dataaux[el], ch);
+                 output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
              }
         }
 
@@ -334,18 +331,19 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
 
         get_data_helper(data32, size_in_bytes);
 
-        for( int ch = 0; ch < output.Channels(); ch++ )
+        for( unsigned int ch = 0; ch < (unsigned int)output.Channels(); ch++ )
         {
              for( int el = 0; el < output.Elements(); el++ )
              {
-                 output( ch, el ) = get_channel(data32[el], ch) - get_channel(data32[el], library_settings.reference_channel); 
 
-                 if(ch < 8)
+                if(ch >= library_settings.number_of_channels -  8)
                  {
+                     output( ch, el ) = get_channel(data32[el], ch);
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
                  }
                  else
                  {
+                     output( ch, el ) = get_channel(data32[el], ch) - get_channel(data32[el], library_settings.reference_channel); 
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
                  }
 
@@ -359,17 +357,18 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
 
          get_data_helper(data64, size_in_bytes);
 
-        for( int ch = 0; ch < output.Channels(); ch++ )
+        for( unsigned int ch = 0; ch < (unsigned int)output.Channels(); ch++ )
         {
              for( int el = 0; el < output.Elements(); el++ )
              {
-                 output( ch, el ) = get_channel(data64[el], ch) - get_channel(data64[el], library_settings.reference_channel); 
-                 if(ch < 8)
+                if(ch >= library_settings.number_of_channels -  8)
                  {
+                     output( ch, el ) = get_channel(data64[el], ch);
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
                  }
                  else
                  {
+                     output( ch, el ) = get_channel(data64[el], ch) - get_channel(data64[el], library_settings.reference_channel); 
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
                  }
              }
@@ -382,17 +381,18 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
          
         get_data_helper(data96, size_in_bytes);
 
-        for( int ch = 0; ch < output.Channels(); ch++ )
+        for( unsigned int ch = 0; ch < (unsigned int)output.Channels(); ch++ )
         {
              for( int el = 0; el < output.Elements(); el++ )
              {
-                 output( ch, el ) = get_channel(data96[el], ch) - get_channel(data96[el], library_settings.reference_channel); 
-                 if(ch < 8)
+                if(ch >= library_settings.number_of_channels -  8)
                  {
+                 output( ch, el ) = get_channel(data96[el], ch);
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
                  }
                  else
                  {
+                     output( ch, el ) = get_channel(data96[el], ch) - get_channel(data96[el], library_settings.reference_channel); 
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
                  }
              }
@@ -406,17 +406,18 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
 
         get_data_helper(data128, size_in_bytes);
 
-        for( int ch = 0; ch < output.Channels(); ch++ )
+        for( unsigned int ch = 0; ch < (unsigned int)output.Channels(); ch++ )
         {
              for( int el = 0; el < output.Elements(); el++ )
              {
-                 output( ch, el ) = get_channel(data128[el], ch) - get_channel(data128[el], library_settings.reference_channel); 
-                 if(ch < 8)
+                if(ch >= library_settings.number_of_channels -  8)
                  {
+                     output( ch, el ) = get_channel(data128[el], ch); 
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
                  }
                  else
                  {
+                     output( ch, el ) = get_channel(data128[el], ch) - get_channel(data128[el], library_settings.reference_channel); 
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
                  }
              }
@@ -429,17 +430,18 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
         
         get_data_helper(data160, size_in_bytes);
 
-        for( int ch = 0; ch < output.Channels(); ch++ )
+        for( unsigned int ch = 0; ch < (unsigned int)output.Channels(); ch++ )
         {
              for( int el = 0; el < output.Elements(); el++ )
              {
-                 output( ch, el ) = get_channel(data160[el], ch) - get_channel(data160[el], library_settings.reference_channel); 
-                 if(ch < 8)
+                if(ch >= library_settings.number_of_channels -  8)
                  {
+                     output( ch, el ) = get_channel(data160[el], ch);
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
                  }
                  else
                  {
+                     output( ch, el ) = get_channel(data160[el], ch) - get_channel(data160[el], library_settings.reference_channel); 
                      output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
                  }
              }
@@ -660,16 +662,19 @@ bool actiCHampDevice::set_rate(unsigned int r)
             device_settings.rate = CHAMP_RATE_100KHZ;
             device_settings.averaging = CHAMP_ADC_NATIVE;
             device_settings.decimation = CHAMP_DECIMATION_0;
+            return true;
             break;
         case 50000:
             device_settings.rate = CHAMP_RATE_50KHZ;
             device_settings.averaging = CHAMP_ADC_NATIVE;
             device_settings.decimation = CHAMP_DECIMATION_0;
+            return true;
             break;
         case 10000:
             device_settings.rate = CHAMP_RATE_10KHZ;
             device_settings.averaging = CHAMP_ADC_NATIVE;
             device_settings.decimation = CHAMP_DECIMATION_0;
+            return true;
             break;
         default:
             if(device_settings.desired_rate > 100000)
@@ -682,12 +687,14 @@ bool actiCHampDevice::set_rate(unsigned int r)
                 if (100000%device_settings.desired_rate != 0)
                 {
                     _ACTICHAMP_ERROR_STREAM << "Unsupported user rate, must cleanly go into 10000" << endl;
+                    return false;
                 }
                 else
                 {
                     device_settings.rate = CHAMP_RATE_100KHZ;
                     device_settings.averaging = (t_champAdcFilter)((int)100000/device_settings.desired_rate);
                     device_settings.decimation = (t_champDecimation)((int)100000/device_settings.desired_rate);
+                    return true;
                 }
             }
             else if(device_settings.desired_rate > 10000)
@@ -695,12 +702,14 @@ bool actiCHampDevice::set_rate(unsigned int r)
                 if (50000%device_settings.desired_rate != 0)
                 {
                     _ACTICHAMP_ERROR_STREAM << "Unsupported user rate, must cleanly go into 10000" << endl;
+                    return false;
                 }
                 else
                 {
                     device_settings.rate = CHAMP_RATE_50KHZ;
                     device_settings.averaging = (t_champAdcFilter)((int)50000/device_settings.desired_rate);
                     device_settings.decimation = (t_champDecimation)((int)50000/device_settings.desired_rate);
+                    return true;
                 }
             }
             else if(device_settings.desired_rate > 0)
@@ -708,17 +717,20 @@ bool actiCHampDevice::set_rate(unsigned int r)
                 if (10000%device_settings.desired_rate != 0)
                 {
                     _ACTICHAMP_ERROR_STREAM << "Unsupported user rate, must cleanly go into 10000" << endl;
+                    return false;
                 }
                 else
                 {
                     device_settings.rate = CHAMP_RATE_10KHZ;
                     device_settings.averaging = (t_champAdcFilter)((int)50000/device_settings.desired_rate);
                     device_settings.decimation = (t_champDecimation)((int)10000/device_settings.desired_rate);
+                    return true;
                 }
             }
             break;
     }
 
+    return false;
 
 }
 
@@ -732,7 +744,7 @@ signed int actiCHampDevice::get_channel(t_champDataModelAux& data, unsigned int 
 signed int actiCHampDevice::get_channel(t_champDataModel32& data, unsigned int channel)
 {
     if(channel < library_settings.number_of_channels)
-        if(channel < 8)
+        if(channel >= library_settings.number_of_channels -  8)
         {
             return data.Aux[channel];
         }
@@ -746,7 +758,7 @@ signed int actiCHampDevice::get_channel(t_champDataModel32& data, unsigned int c
 signed int actiCHampDevice::get_channel(t_champDataModel64& data, unsigned int channel)
 {
     if(channel < library_settings.number_of_channels)
-        if(channel < 8)
+        if(channel >= library_settings.number_of_channels -  8)
         {
             return data.Aux[channel];
         }
@@ -761,7 +773,7 @@ signed int actiCHampDevice::get_channel(t_champDataModel64& data, unsigned int c
 signed int actiCHampDevice::get_channel(t_champDataModel96& data, unsigned int channel)
 {
     if(channel < library_settings.number_of_channels)
-        if(channel < 8)
+        if(channel >= library_settings.number_of_channels -  8)
         {
             return data.Aux[channel];
         }
@@ -775,7 +787,7 @@ signed int actiCHampDevice::get_channel(t_champDataModel96& data, unsigned int c
 signed int actiCHampDevice::get_channel(t_champDataModel128& data, unsigned int channel)
 {
     if(channel < library_settings.number_of_channels)
-        if(channel < 8)
+        if(channel >= library_settings.number_of_channels -  8)
         {
             return data.Aux[channel];
         }
@@ -789,7 +801,7 @@ signed int actiCHampDevice::get_channel(t_champDataModel128& data, unsigned int 
 signed int actiCHampDevice::get_channel(t_champDataModel160& data, unsigned int channel)
 {
     if(channel < library_settings.number_of_channels)
-        if(channel < 8)
+        if(channel >= library_settings.number_of_channels -  8)
         {
             return data.Aux[channel];
         }
