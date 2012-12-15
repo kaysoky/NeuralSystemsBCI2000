@@ -120,7 +120,7 @@ actiCHampBufferedADC::OnPreflight( SignalProperties& Output ) const
   if( 10000%(int)Parameter("SamplingRate") != 0)
       bcierr << "SamplingRate must go into 10000 evenly" << endl;
 
-  if( (unsigned int)Parameter("ReferenceChannel") < -1 )
+  if( (unsigned int)Parameter("ReferenceChannel") > -1 )
       bcierr << "ReferenceChannel must greater than -1"<<endl ;
 
   if( (unsigned int)Parameter("ReferenceChannel") > Parameter("SourceCh") )
