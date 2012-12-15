@@ -8,6 +8,7 @@ SET( DIR_NAME "${DIR_NAME}SignalSource/" )
 
 # Recurse down into all project subdirectories
 IF( WIN32 )
+  ADD_SUBDIRECTORY( actiCHamp )
   ADD_SUBDIRECTORY( AmpServerPro )
   ADD_SUBDIRECTORY( BioRadio )
   ADD_SUBDIRECTORY( Biosemi )
