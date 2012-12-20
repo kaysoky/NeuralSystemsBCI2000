@@ -61,7 +61,7 @@ ParamRef::operator()( size_t row, const string& col_label ) const
 {
   const Param* subParam = operator->();
   size_t col_idx = subParam->ColumnLabels()[ col_label ];
-  return ParamRef( const_cast<Param*>( subParam ), row, col_idx );
+  return ParamRef( subParam, row, col_idx );
 }
 
 ParamRef
@@ -69,7 +69,7 @@ ParamRef::operator()( const string& row_label, size_t col ) const
 {
   const Param* subParam = operator->();
   size_t row_idx = subParam->RowLabels()[ row_label ];
-  return ParamRef( const_cast<Param*>( subParam ), row_idx, col );
+  return ParamRef( subParam, row_idx, col );
 }
 
 ParamRef
@@ -78,5 +78,5 @@ ParamRef::operator()( const string& row_label, const string& col_label ) const
   const Param* subParam = operator->();
   size_t row_idx = subParam->RowLabels()[ row_label ],
          col_idx = subParam->ColumnLabels()[ col_label ];
-  return ParamRef( const_cast<Param*>( subParam ), row_idx, col_idx );
+  return ParamRef( subParam, row_idx, col_idx );
 }

@@ -258,11 +258,11 @@ class MutableParamRef : public ParamRef
 {
  private:
   MutableParamRef( const ParamRef& p )
-    : ParamRef( p ), p( *this ) {}
+    : ParamRef( p ) {}
 
  public:
   explicit MutableParamRef( Param* param, size_t row = ParamRef::none, size_t column = ParamRef::none )
-    : ParamRef( param, row, column ), p( *this ) {}
+    : ParamRef( param, row, column ) {}
 
   // Assignment operators for write access.
   MutableParamRef& operator=( const std::string& );
@@ -276,9 +276,6 @@ class MutableParamRef : public ParamRef
   MutableParamRef operator()( const std::string&, const std::string& ) const;
 
   std::istream& ReadFromStream( std::istream& is );
-  
- private:
-  const ParamRef& p;
 
 };
 
@@ -439,7 +436,7 @@ ParamRef::ToString() const
   if( mpParam )
   {
     const Param* p = mpParam;
-    result = &p->Value( index( mIdx1 ), index( mIdx2 ) ).ToString();
+    result = &p->Value( Idx1(), Idx2() ).ToString();
   }
   return *result;
 }
@@ -450,7 +447,7 @@ ParamRef::operator->() const
 {
   const Param* result = mpParam;
   if( mpParam && ( mIdx1 != ParamRef::none || mIdx2 != ParamRef::none ) )
-    result = mpParam->Value( index( mIdx1 ), index( mIdx2 ) ).ToParam();
+    result = mpParam->Value( Idx1(), Idx2() ).ToParam();
   if( result == NULL )
   {
     sNullParam = Param();
@@ -488,7 +485,7 @@ MutableParamRef&
 MutableParamRef::operator=( const std::string& s )
 {
   if( operator->() )
-    operator->()->Value( Idx1(), Idx2() ) = s;
+    operator->()->Value() = s;
   return *this;
 }
 
@@ -500,7 +497,7 @@ MutableParamRef::operator=( double d )
   std::ostringstream os;
   os << d;
   if( operator->() )
-    operator->()->Value( Idx1(), Idx2() ) = os.str();
+    operator->()->Value() = os.str();
   return *this;
 }
 
@@ -508,25 +505,25 @@ MutableParamRef::operator=( double d )
 inline MutableParamRef
 MutableParamRef::operator()( size_t row, size_t col ) const
 {
-  return p( row, col );
+  return ParamRef::operator()( row, col );
 }
 
 inline MutableParamRef
 MutableParamRef::operator()( size_t row, const std::string& col ) const
 {
-  return p( row, col );
+  return ParamRef::operator()( row, col );
 }
 
 inline MutableParamRef
 MutableParamRef::operator()( const std::string&  row, size_t col ) const
 {
-  return p( row, col );
+  return ParamRef::operator()( row, col );
 }
 
 inline MutableParamRef
 MutableParamRef::operator()( const std::string& row, const std::string& col ) const
 {
-  return p( row, col );
+  return ParamRef::operator()( row, col );
 }
 
 inline
