@@ -33,14 +33,19 @@ function EEG = pop_loadBCI2000(fileName, events)
 %     >> EEG = pop_loadBCI2000({'set001.dat', 'set002.dat'});
 
 % Copyright by Clemens Brunner <clbrunner@ucsd.edu>
-% Revision: 0.32
-% Date: 12/20/2012
+% Revision: 0.33
+% Date: 01/05/2013
 % Parts based on BCI2000import.m from the BCI2000 distribution (www.bci2000.org)
 
 % Revision history:
+%   0.33  Separated fileName logic and events logic.
+%         GUI mode asks to select states quickly again, as in 0.31
+%         Added a few states to ignore.
+%         Restored ability to pass a numeric vector as 'events'
 %   0.32  Added compatibility for cell array of filenames
-%         Removed loops and other simplifications.
-%         Keeps any state change to non-zero value as an event.
+%         Removed loops and other simplifications
+%         Keeps any state change to non-zero value as an event
+%         Keeps event durations
 %         -Chadwick Boulay boulay@bme.bio.keio.ac.jp        
 %   0.31  Loads calibrated data
 %   0.30: Create boundary events when loading multiple files
@@ -62,69 +67,52 @@ function EEG = pop_loadBCI2000(fileName, events)
 % this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 % Place - Suite 330, Boston, MA  02111-1307, USA.
 
+%% Process fileName(s)
 if nargin < 1  % No input arguments specified, show GUI
     [fileName, filePath] = uigetfile('*.dat', 'Choose BCI2000 file(s) -- pop_loadBCI2000', 'multiselect', 'on');
-    
-    if ~iscell(fileName)  % If only one file was selected
-        files = struct('name', fullfile(filePath, fileName));
-    else  % Multiple files were selected
+    files = struct('name', strcat(repmat({filePath}, size(fileName)), fileName));
+else %input argument may be cell array of fileName(s) or a string
+    if iscell(fileName)
         files = struct('name', fileName);
-        for k = 1:length(files)
-            files(k).name = fullfile(filePath, files(k).name);
-        end
+    else % Just a string (possibly containing wildcards)
+        files = dir(fileName); %Convert this to a cell array of fileName(s)
+        filePath = strcat(fileparts(fileName),filesep);
+        files = struct('name', strcat(repmat({filePath}, size(files)), {files.name}));
     end
-    [ signal, states, parameters, ~, file_samples ] ...
-        = load_bcidat( files.name, '-calibrated' );
+end
     
+%% Process which events to store.
+[ ~, states, ~ ] = load_bcidat( files(1).name, [0 0] );%Load state names
+stateNames = fieldnames(states);
+if nargin<1 %GUI
     % Build a string consisting of all events, separated by a "|" (necessary for
     % inputgui() below)
-    eventList = fieldnames(states);
-    eventString = sprintf('%s|', eventList{:});
+    eventString = sprintf('%s|', stateNames{:});
     eventString(end) = [];
-        
+    %Show GUI to ask to select events.
     temp = inputgui('geometry', {1, 1}, 'geomvert', [1, 10], ...
         'uilist', {{'style', 'text', 'string', 'Select events'}, ...
         {'style', 'listbox', 'string', eventString, 'min', 0, 'max', 2}});
-    
     if isempty(temp)  % Abort if user clicked "Cancel"
         error('Loading aborted.'); end
     
-    events = eventList(temp{1});
+    events = stateNames(temp{1});
     clear('temp');
-    
-else % fileName specified
-    if iscell(fileName)  % Multiple file names in a cell array
-        files = cell2struct(fileName, 'name', 1);
-    else  % Just a string (possibly containing wildcards)
-        files = dir(fileName);
-        for k = 1:length(files)
-            files(k).name = fullfile(fileparts(fileName), files(k).name);  % Add full path to each file name
-        end
+elseif nargin==1%No GUI, no events provided.
+    events = stateNames; %Select all events.
+elseif nargin==2 && ~iscell(events)
+    if isnumeric(events)
+        events = stateNames(events);
+    elseif ischar(events)
+        events = {events};
     end
-    [ signal, states, parameters, ~, file_samples ] ...
+end
+
+%% Load the data
+[ signal, states, parameters, ~, file_samples ] ...
         = load_bcidat(files.name, '-calibrated');
-    
-    if ~exist('events', 'var')  % If no events were specified, select all events contained in the file
-        events = fieldnames(states); end
-end
 
-% Determine first sample index of individual files
-if length(files)>1
-    fileBorders = [1 1+cumsum(double(file_samples(1:end-1)))];
-end
-
-%Remove events (states) that were not selected.
-stateNames = fieldnames(states);
-[~, ia, ib] = setxor(events, stateNames);
-if ~isempty(ia)
-    warning('''%s'' is not an event in the signal. Therefore, this event is being ignored.\n',...
-        events{ia});
-end
-states = rmfield(states, stateNames(ib));
-
-states = compressData(states);
-stateNames = fieldnames(states);
-
+%% Prepare output
 EEG = eeg_emptyset();
 EEG.setname = 'Imported BCI2000 data set';
 EEG.srate = parameters.SamplingRate.NumericValue;
@@ -135,6 +123,17 @@ EEG.data = signal';
 EEG.chanlocs = struct('labels', parameters.ChannelNames.Value);% Assign channel labels
 EEG = eeg_checkset(EEG);
 
+%% Remove states that were not selected (events).
+[~, ia, ib] = setxor(events, stateNames);
+if ~isempty(ia)
+    warning('''%s'' is not an event in the signal. Therefore, this event is being ignored.\n',...
+        events{ia});
+end
+states = rmfield(states, stateNames(ib));
+
+%% Convert states to compressed EEGLAB event format
+states = compressData(states);
+stateNames = fieldnames(states);
 for k = 1:length(stateNames)
     these_events = struct(...
         'latency', num2cell(states.(stateNames{k}).latency),...
@@ -144,12 +143,16 @@ for k = 1:length(stateNames)
     EEG.event = [EEG.event these_events'];
 end
 
-if exist('fileBorders', 'var')  % If multiple files were loaded and concatenated, create boundary events at the start of new files
-    EEG.event = eeg_insertbound(EEG.event, EEG.pnts * EEG.trials, fileBorders');  end
+%% Create boundary events at the start of new files if >1 file
+if length(files)>1
+    fileBorders = [1 1+cumsum(double(file_samples(1:end-1)))];
+    EEG.event = eeg_insertbound(EEG.event, EEG.pnts * EEG.trials, fileBorders');
+end
 
+%% Verify output
 EEG = eeg_checkset(EEG, 'eventconsistency');
 EEG = eeg_checkset(EEG, 'makeur'); %EEG.urevent
-EEG = eeg_checkset(EEG); %EEG.urevent
+EEG = eeg_checkset(EEG);
 
 
 function data = compressData(data)
@@ -157,10 +160,14 @@ function data = compressData(data)
 %
 % TODO: Detailed description
 
-% List of known event types to compress
-compressStates = {'TargetCode','ResultCode','IntertrialInterval','Feedback','Dwelling','StimulusCode'};
-
 if isstruct(data)
+    % Time stamps are not compressable, nor are they used by EEGLAB.
+    discardStates = {'SourceTime','StimulusTime'};
+    to_remove = intersect(fieldnames(data), discardStates);
+    data = rmfield(data, to_remove);
+    
+    % List of known event types to compress
+    compressStates = {'TargetCode','ResultCode','IntertrialInterval','Feedback','Dwelling','StimulusCode'};
     stateNames = fieldnames(data);
     for k = 1:length(stateNames)
         if ismember(stateNames{k}, compressStates)  % If the event is in the list of known events, compress it
@@ -189,8 +196,7 @@ if isstruct(data)
 else
     
     data = double(data);
-    ev_ch_bool = [false;diff(data) ~= 0]; %Any event change.
-    ev_ch_ix = find(ev_ch_bool); %Sample indices for event changes.
+    ev_ch_ix = find([false;diff(data) ~= 0]); %Sample indices for any event change.
     dur = [diff(ev_ch_ix);length(data)-ev_ch_ix(end)]; %Duration between event changes.
     pos = data(ev_ch_ix); %New value at event change.
     
