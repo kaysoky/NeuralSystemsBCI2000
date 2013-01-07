@@ -28,8 +28,8 @@
 #include <iostream>
 
 
-#define _ACTICHAMP_ERROR_STREAM bcierr
-#define _ACTICHAMP_OUTPUT_STREAM bciout
+#define preErrorStream bcierr
+#define preOutputStream bciout
 
 
 using namespace std;
@@ -63,7 +63,7 @@ bool actiCHampDevice::open(int devNum)
     //Get the number of devices, with this we can test if we can see hardware.
     if(champGetCount() == 0)
     {
-        _ACTICHAMP_ERROR_STREAM << "Hardware is not available" << endl;
+        preErrorStream << "Hardware is not available" << endl;
         return false;
     }
 
@@ -71,25 +71,25 @@ bool actiCHampDevice::open(int devNum)
 
     if(device == 0)
     {
-        _ACTICHAMP_ERROR_STREAM << "Failed to get device handle." << endl;
+        preErrorStream << "Failed to get device handle." << endl;
         return false;
     }
 
     e = champGetVersion(device, &device_settings.version);
     if (e != CHAMP_ERR_OK) {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device version. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device version. actiCHamp Error: " << e << endl;
         return false;
     }
     
     if (device_settings.version.Fpga == 0) {
         if (library_settings.init_tries < 1)
         {
-            _ACTICHAMP_ERROR_STREAM << "FPGA failed to initalize... exiting" << endl;
+            preErrorStream << "FPGA failed to initalize... exiting" << endl;
             return false;
         }
         else
         {
-            _ACTICHAMP_ERROR_STREAM << "FPGA not initialized on this try, make sure that the firmware file is in the same directory as the DLL." << endl << "Retrying to open the device...."<< endl;
+            preErrorStream << "FPGA not initialized on this try, make sure that the firmware file is in the same directory as the DLL." << endl << "Retrying to open the device...."<< endl;
             close();
             --library_settings.init_tries;
             return open(devNum);
@@ -100,14 +100,14 @@ bool actiCHampDevice::open(int devNum)
 
     e = champGetModules(device, &device_settings.modules);
     if (e != CHAMP_ERR_OK) {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device modules. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device modules. actiCHamp Error: " << e << endl;
         return false;
     }
 
 
     e = champGetProperty(device, &device_settings.properties);
     if (e != CHAMP_ERR_OK) {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device properties. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device properties. actiCHamp Error: " << e << endl;
         return false;
     }
 
@@ -115,7 +115,7 @@ bool actiCHampDevice::open(int devNum)
     e = champGetSettingsEx(device, &temp_settings);
     if( e != CHAMP_ERR_OK)
     {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device default settings. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device default settings. actiCHamp Error: " << e << endl;
         return false;
     }
 
@@ -128,7 +128,7 @@ bool actiCHampDevice::open(int devNum)
 
     if(library_settings.acquisition_lock == NULL)
     {
-        _ACTICHAMP_ERROR_STREAM << "CreateMutex error..." << GetLastError();
+        preErrorStream << "CreateMutex error..." << GetLastError();
         return false;
     }
 
@@ -150,7 +150,7 @@ void actiCHampDevice::close()
     //Acquire mutex first...
     if(library_settings.acquiring_data == true)
     {
-        _ACTICHAMP_OUTPUT_STREAM <<"Device still in data acquisition mode, stop the device before closing.\n";
+        preOutputStream <<"Device still in data acquisition mode, stop the device before closing.\n";
     } 
     else if(device != NULL || device != 0)
     {
@@ -173,7 +173,7 @@ bool actiCHampDevice::init()
 
     if (e != CHAMP_ERR_OK) 
     {
-        _ACTICHAMP_ERROR_STREAM << "Error could not set modules correctly. Error: " << e <<endl;
+        preErrorStream << "Error could not set modules correctly. Error: " << e <<endl;
         return false;
     }
 
@@ -191,7 +191,7 @@ bool actiCHampDevice::init()
     else if((device_settings.modules.Enabled &  (0x01)) == (0x01) )
         library_settings.number_of_channels = 8;
     else
-        _ACTICHAMP_ERROR_STREAM << "Unknown number of modules active" << endl;
+        preErrorStream << "Unknown number of modules active" << endl;
         
 
 
@@ -205,13 +205,13 @@ bool actiCHampDevice::init()
     e = champSetSettingsEx(device, &champ_init_settings); 
     if (e != CHAMP_ERR_OK) 
     {
-        _ACTICHAMP_ERROR_STREAM << "Error could not set settings correctly. Error: " << e <<endl;
+        preErrorStream << "Error could not set settings correctly. Error: " << e <<endl;
         return false;
     }
 
     e = champGetProperty(device, &device_settings.properties);
     if (e != CHAMP_ERR_OK) {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device properties. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device properties. actiCHamp Error: " << e << endl;
         return false;
     }
 
@@ -237,7 +237,7 @@ bool actiCHampDevice::start()
     e = champStart(device);
     if (e != CHAMP_ERR_OK) 
     {
-        _ACTICHAMP_ERROR_STREAM << "Error could not start the device correctly. Error: " << e <<endl;
+        preErrorStream << "Error could not start the device correctly. Error: " << e <<endl;
         return false;
     }
 
@@ -260,7 +260,7 @@ bool actiCHampDevice::stop()
 {
     if (!library_settings.acquiring_data)
     {
-        _ACTICHAMP_ERROR_STREAM << "Error device not in data acquisition mode, it is already in stopped state.";
+        preErrorStream << "Error device not in data acquisition mode, it is already in stopped state.";
         return false;
     }
     else
@@ -273,7 +273,7 @@ bool actiCHampDevice::stop()
                 e = champStop(device);
                 if (e != CHAMP_ERR_OK) 
                 {
-                    _ACTICHAMP_ERROR_STREAM << "Error could not stop the device correctly. Error: " << e <<endl;
+                    preErrorStream << "Error could not stop the device correctly. Error: " << e <<endl;
                     return false;
                 }
 
@@ -283,7 +283,7 @@ bool actiCHampDevice::stop()
 
             case WAIT_TIMEOUT:
             case WAIT_FAILED:
-                    _ACTICHAMP_ERROR_STREAM << "Error could not stop the device correctly. Could not acquire aquisition handle" << endl;
+                    preErrorStream << "Error could not stop the device correctly. Could not acquire aquisition handle" << endl;
                     return false;
                 break;
 
@@ -318,7 +318,7 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
              for( int el = 0; el < output.Elements(); el++ )
              {
                  output( ch, el ) = get_channel(dataaux[el], ch);
-                 output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
+                 output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux * 1000000;
              }
         }
 
@@ -339,12 +339,12 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
                 if(ch >= library_settings.number_of_channels -  8)
                  {
                      output( ch, el ) = get_channel(data32[el], ch);
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux * 1000000;
                  }
                  else
                  {
                      output( ch, el ) = get_channel(data32[el], ch) - get_channel(data32[el], library_settings.reference_channel); 
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg * 1000000;
                  }
 
              }
@@ -364,12 +364,12 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
                 if(ch >= library_settings.number_of_channels -  8)
                  {
                      output( ch, el ) = get_channel(data64[el], ch);
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux * 1000000;
                  }
                  else
                  {
                      output( ch, el ) = get_channel(data64[el], ch) - get_channel(data64[el], library_settings.reference_channel); 
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg * 1000000;
                  }
              }
         }
@@ -388,12 +388,12 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
                 if(ch >= library_settings.number_of_channels -  8)
                  {
                  output( ch, el ) = get_channel(data96[el], ch);
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux * 1000000;
                  }
                  else
                  {
                      output( ch, el ) = get_channel(data96[el], ch) - get_channel(data96[el], library_settings.reference_channel); 
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg * 1000000;
                  }
              }
         }
@@ -413,12 +413,12 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
                 if(ch >= library_settings.number_of_channels -  8)
                  {
                      output( ch, el ) = get_channel(data128[el], ch); 
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux * 1000000;
                  }
                  else
                  {
                      output( ch, el ) = get_channel(data128[el], ch) - get_channel(data128[el], library_settings.reference_channel); 
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg * 1000000;
                  }
              }
         }
@@ -437,19 +437,19 @@ void actiCHampDevice::get_data(GenericSignal & output, unsigned int size_in_samp
                 if(ch >= library_settings.number_of_channels -  8)
                  {
                      output( ch, el ) = get_channel(data160[el], ch);
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionAux * 1000000;
                  }
                  else
                  {
                      output( ch, el ) = get_channel(data160[el], ch) - get_channel(data160[el], library_settings.reference_channel); 
-                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg;
+                     output(ch,el) = output(ch,el) * device_settings.properties.ResolutionEeg * 1000000;
                  }
              }
         }
         delete[] data160;
     }
     else{
-        _ACTICHAMP_ERROR_STREAM << "Uknown number of modules present" <<endl ;
+        preErrorStream << "Uknown number of modules present" <<endl ;
     }
 
 
@@ -465,16 +465,16 @@ void actiCHampDevice::get_data_helper(void* buffer , unsigned int size)
             e = champGetDataBlocking(device, buffer, size);
             if (e < 0)
             {
-                _ACTICHAMP_ERROR_STREAM << "Error acquiring data" <<endl;
+                preErrorStream << "Error acquiring data" <<endl;
             }
             if (!ReleaseMutex(library_settings.acquisition_lock))
             {
-                _ACTICHAMP_ERROR_STREAM << "Could not release acquisition lock!" <<endl;
+                preErrorStream << "Could not release acquisition lock!" <<endl;
             }
             break;
         case WAIT_TIMEOUT:
         case WAIT_FAILED:
-            _ACTICHAMP_OUTPUT_STREAM << "Could not acquire mutex for acquisition, device must be terminating. This message is normal." <<endl;
+            preOutputStream << "Could not acquire mutex for acquisition, device must be terminating. This message is normal." <<endl;
             break;
     }
 
@@ -486,7 +486,7 @@ t_champDataStatus actiCHampDevice::get_data_status() const
     int e = champGetDataStatus(device, &champ_data_info);
     if (e != CHAMP_ERR_OK)
     {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device data status. actiCHamp data: " << e << endl;
+        preErrorStream << "Could not get device data status. actiCHamp data: " << e << endl;
     }
     return champ_data_info;
 }
@@ -497,7 +497,7 @@ t_champErrorStatus actiCHampDevice::get_error_status() const
     int e = champGetErrorStatus(device, &champ_error_info);
     if (e != CHAMP_ERR_OK)
     {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device error status. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device error status. actiCHamp Error: " << e << endl;
     }
     return champ_error_info;
 }
@@ -508,7 +508,7 @@ bool actiCHampDevice::Settings(string& settings) const
     int e = champGetSettingsEx(device, &temp_settings);
     if( e != CHAMP_ERR_OK)
     {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device settings. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device settings. actiCHamp Error: " << e << endl;
         return false;
     }
     else
@@ -542,7 +542,7 @@ bool actiCHampDevice::DataStatus(string& data_status) const
     int e = champGetDataStatus(device, &champ_data_info);
     if (e != CHAMP_ERR_OK)
     {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device data status. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device data status. actiCHamp Error: " << e << endl;
         return false;
     }
     else
@@ -576,7 +576,7 @@ bool actiCHampDevice::ErrorStatus(string& error_status) const
     int e = champGetErrorStatus(device, &champ_error_info);
     if (e != CHAMP_ERR_OK)
     {
-        _ACTICHAMP_ERROR_STREAM << "Could not get device error status. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device error status. actiCHamp Error: " << e << endl;
         return false;
     }
     else
@@ -642,9 +642,9 @@ void actiCHampDevice::GetProperties(string& properties) const
 
            << "numbers of output triggers: "                 << device_settings.properties.TriggersOut   << "\n"
            << "!< Sampling rate, Hz: "                       << device_settings.properties.Rate          << "\n"
-           << "!< EEG amplitude scale coefficients, V/bit: " << device_settings.properties.ResolutionEeg <<
+           << "!< EEG amplitude scale coefficients, V/bit: " << device_settings.properties.ResolutionEeg<<
     "\n"
-           << "!< AUX amplitude scale coefficients, V/bit: " << device_settings.properties.ResolutionAux <<
+           << "!< AUX amplitude scale coefficients, V/bit: " << device_settings.properties.ResolutionAux<<
     "\n"
            << "!< EEG input range peak-peak, V: "            << device_settings.properties.RangeEeg      << "\n"
            << "!< AUX input range peak-peak, V: "            << device_settings.properties.RangeAux      << "\n"
@@ -679,14 +679,14 @@ bool actiCHampDevice::set_rate(unsigned int r)
         default:
             if(device_settings.desired_rate > 100000)
             {
-            _ACTICHAMP_ERROR_STREAM << "Unsupported user entered rate" << endl;
+            preErrorStream << "Unsupported user entered rate" << endl;
             return false;
             }
             else if(device_settings.desired_rate > 50000)
             {
                 if (100000%device_settings.desired_rate != 0)
                 {
-                    _ACTICHAMP_ERROR_STREAM << "Unsupported user rate, must cleanly go into 10000" << endl;
+                    preErrorStream << "Unsupported user rate, must cleanly go into 10000" << endl;
                     return false;
                 }
                 else
@@ -701,7 +701,7 @@ bool actiCHampDevice::set_rate(unsigned int r)
             {
                 if (50000%device_settings.desired_rate != 0)
                 {
-                    _ACTICHAMP_ERROR_STREAM << "Unsupported user rate, must cleanly go into 10000" << endl;
+                    preErrorStream << "Unsupported user rate, must cleanly go into 10000" << endl;
                     return false;
                 }
                 else
@@ -716,7 +716,7 @@ bool actiCHampDevice::set_rate(unsigned int r)
             {
                 if (10000%device_settings.desired_rate != 0)
                 {
-                    _ACTICHAMP_ERROR_STREAM << "Unsupported user rate, must cleanly go into 10000" << endl;
+                    preErrorStream << "Unsupported user rate, must cleanly go into 10000" << endl;
                     return false;
                 }
                 else
@@ -812,6 +812,36 @@ signed int actiCHampDevice::get_channel(t_champDataModel160& data, unsigned int 
     else
         return 0;
 }
+
+void actiCHampDevice::get_impedance_data ()
+{
+    unsigned int *impedance_buffer;
+    int size = device_settings.properties.CountEeg + 1;
+    impedance_buffer = new unsigned int[size];
+
+
+    int e = champImpedanceGetData(device, impedance_buffer, size);
+
+
+    if( e == CHAMP_ERR_OK)
+    {
+        preOutputStream << "Current Impedance Values: " << endl;
+        for( unsigned int i = 0 ; i < device_settings.properties.CountEeg ; ++i)
+        {
+
+            preOutputStream << "Channel " << i << ":   " << impedance_buffer[i] << endl;
+
+        }
+    }
+    else
+    {
+        preOutputStream  << "Count not get impedance values for any channels." << endl;
+    }
+
+    delete[] impedance_buffer;
+
+}
+
 
 
 

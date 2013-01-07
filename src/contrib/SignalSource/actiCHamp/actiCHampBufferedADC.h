@@ -55,6 +55,7 @@ class actiCHampBufferedADC : public BufferedADC
   int mode;
   int deviceNumber;
   int referenceChannel;
+  unsigned int activeShieldGain;
 };
 
 #endif // INCLUDED_actiCHampBufferedADC_H

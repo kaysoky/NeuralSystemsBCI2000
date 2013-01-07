@@ -41,17 +41,17 @@ actiCHampBufferedADC::actiCHampBufferedADC()
 
  BEGIN_PARAMETER_DEFINITIONS
 	 "Source:ActiCHamp int actiCHampAmplifierID= 0 "
-		"10 0 % // Amplifier device to use",
+		"0 0 10 // Amplifier device to use",
 
-   "Source:ActiCHamp int AcquisitionMode= 0 0 0 0 // mode in which to initialize the amplifier: 0: normal signal acquisition, 1: shielded signal acquisition, 2: impedance measurement, 3: test mode(enumeration)",
+   "Source:ActiCHamp int AcquisitionMode= 0 0 0 3 // mode in which to initialize the amplifier: 0: normal signal acquisition, 1: ActiveShield signal acquisition, 2: impedance measurement, 3: test mode(enumeration)",
 	 "Source:Signal%20Properties float SamplingRate= 250 "
-		"2000 0.0 % // Sampling rate at which to run the amplifier",
+		"250 50 2000 // Sampling rate at which to run the amplifier",
 
     "Source:Signal%20Properties int SampleBlockSize= 10 "
-       "100 1 % // number of samples transmitted at a time",
+       "10 1 2000 // number of samples transmitted at a time",
 
    "Source:Signal%20Properties int SourceCh= 40 "
-       "168 1 % // number of source channels"
+       "40 1 168 // number of source channels"
 	   
     "Source:Signal%20Properties floatlist SourceChGain= 40 "
     "1 1 1 1 1 1 1 1 1 1 "
@@ -70,6 +70,9 @@ actiCHampBufferedADC::actiCHampBufferedADC()
 
     "Source:ActiCHamp int ReferenceChannel= 1 "
        "% % % // Set the library reference channel",
+
+    "Source:ActiCHamp int ActiveShieldGain= 100 "
+       "100 1 100 // Set the gain in ActiveShield mode"
 
 
  END_PARAMETER_DEFINITIONS
@@ -110,6 +113,14 @@ actiCHampBufferedADC::OnHalt()
 void
 actiCHampBufferedADC::OnPreflight( SignalProperties& Output ) const
 {
+  if ( (int) Parameter("Acquisitionmode") < 0 || (int) Parameter("Acquisitionmode") > 3 )
+  {
+      bcierr<< "Unknown AcquisitionMode" << endl;
+  }
+  if ( (int) Parameter("AcquisitionMode") == 1 && ( (int)Parameter("ActiveShieldGain") < 0 || (int) Parameter("ActiveShieldGain")> 100))
+  {
+      bcierr<< "Active Shield Gain must be between 1 and 100" << endl;
+  }
   if( (int)Parameter("actiCHampAmplifierID") < 0)
   {
       bcierr << "Wrong amplifier ID " << endl;
@@ -175,11 +186,12 @@ actiCHampBufferedADC::OnInitialize( const SignalProperties& Output )
 
 
     referenceChannel = (int)Parameter("referenceChannel") - 1;
-    mode             = Parameter ("AcquisitionMode");
+    mode             = (int)Parameter ("AcquisitionMode");
     deviceNumber     = Parameter ("actiCHampAmplifierID");
     sampleRate       = Parameter( "SamplingRate" );
     mSampleBlockSize = Parameter( "SampleBlockSize" );
     mMsecPerBlock    = 1000.0 * mSampleBlockSize / sampleRate;
+    activeShieldGain  = (int)Parameter("ActiveShieldGain");
 }
 
 void 
@@ -190,12 +202,37 @@ actiCHampBufferedADC::OnStartAcquisition()
     myDevice.set_mode((t_champMode) mode);
     myDevice.set_reference_channel(referenceChannel);
 
+    if(mode == 1)
+    {
+        myDevice.set_activeshield_gain(activeShieldGain);
+    }
+
 
     myDevice.init();
+
+
 
     if( !myDevice.start())
     {
       bcierr << "Device did not start";
+    }
+
+    if(mode == 2)
+    {
+        myDevice.get_impedance_data();
+        myDevice.stop();
+        myDevice.close();
+        mode = 0;
+        myDevice.open(deviceNumber);
+        myDevice.set_rate(sampleRate);
+        myDevice.set_mode((t_champMode) mode);
+        myDevice.set_reference_channel(referenceChannel);
+        myDevice.init();
+        if( !myDevice.start())
+        {
+          bcierr << "Device did not start";
+        }
+
     }
 
 }

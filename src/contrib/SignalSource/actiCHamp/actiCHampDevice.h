@@ -92,6 +92,7 @@ class actiCHampDevice {
         bool stop();
 
         // Data functions
+        void get_impedance_data ();
         void get_data (GenericSignal & output, unsigned int size_in_samples);
         void get_data_helper(void* buffer , unsigned int size);
 
@@ -177,8 +178,10 @@ class actiCHampDevice {
         void set_averaging  (t_champAdcFilter  a)
             { this->device_settings.averaging = a; };
 
+        int set_activeshield_gain (unsigned int g)
+            { return champSetActiveShieldGain(device, g);}
 
-        //TODO: Make error function useful here? Maybe?
+
         
     #ifndef ACTICHAMP_TESTING_TOOLKIT
     private:
