@@ -31,6 +31,7 @@
 #pragma hdrstop
 
 #include <limits>
+#include <algorithm>
 #include "SpatialFilter.h"
 
 using namespace std;
@@ -223,14 +224,19 @@ SpatialFilter::DoPreflightSparse( const SignalProperties& Input,
     // numeric indices. We make sure that labels will only be assigned to
     // indices that have not been specified as raw numbers.
     enum { input, output, weight };
-    set<string> labels;
     set<int> indices;
+    struct : vector<string>
+    { void Insert( const string& s )
+      { if( find( begin(), end(), s ) == end() ) push_back( s ); }
+      void Erase( const string& s )
+      { iterator i = find( begin(), end(), s ); if( i != end() ) erase( i ); }
+    } labels;
     for( int i = 0; i < SpatialFilter->NumRows(); ++i )
     {
       string outputAddress = SpatialFilter( i, output );
       double outputIdx = Output.ChannelIndex( outputAddress );
       if( outputIdx < 0 )
-        labels.insert( outputAddress );
+        labels.Insert( outputAddress );
       else
         indices.insert( static_cast<int>( outputIdx ) );
     }
@@ -248,7 +254,7 @@ SpatialFilter::DoPreflightSparse( const SignalProperties& Input,
         string outputAddress = SpatialFilter( i, output );
         double outputIdx = Output.ChannelIndex( outputAddress );
         if( outputIdx < 0 )
-          labels.erase( outputAddress );
+          labels.Erase( outputAddress );
         else
           indices.erase( static_cast<int>( outputIdx ) );
       }
@@ -266,7 +272,7 @@ SpatialFilter::DoPreflightSparse( const SignalProperties& Input,
 
     indices.insert( numOutputChannels );
     set<int>::const_iterator p = indices.begin();
-    set<string>::const_iterator q = labels.begin();
+    vector<string>::const_iterator q = labels.begin();
     int idxBegin = 0;
     while( q != labels.end() )
     {
