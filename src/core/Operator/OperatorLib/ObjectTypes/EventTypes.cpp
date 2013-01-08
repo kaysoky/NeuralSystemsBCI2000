@@ -79,7 +79,7 @@ bool
 EventType::Insert( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
-  string line = inInterpreter.GetRemainder(),
+  string line = inInterpreter.GetRemainingTokens(),
          eventline = name + " " + line + " 0 0";
   State event;
   istringstream iss( eventline );
@@ -135,7 +135,7 @@ bool
 EventsType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
-  string pattern = inInterpreter.GetOptionalRemainder();
+  string pattern = inInterpreter.GetRemainingTokens();
   if( pattern.empty() )
     pattern = "*";
   const StateList& events = inInterpreter.StateMachine().Events();

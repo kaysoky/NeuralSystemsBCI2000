@@ -126,7 +126,7 @@ ConditionType::Evaluate( CommandInterpreter& inInterpreter )
 bool
 ConditionType::EvaluateExpression( CommandInterpreter& inInterpreter )
 {
-  string token = inInterpreter.GetRemainder();
+  string token = inInterpreter.GetRemainingTokens();
   size_t pos = string::npos,
          len = 0;
   OpFun func = NULL;

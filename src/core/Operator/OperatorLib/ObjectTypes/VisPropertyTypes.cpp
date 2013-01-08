@@ -52,7 +52,7 @@ VisPropertyType::Set( CommandInterpreter& inInterpreter )
   string visID, cfgID;
   IDType numCfgID;
   GetVisPropertyIDs( inInterpreter, visID, cfgID, numCfgID );
-  string value = inInterpreter.GetRemainder();
+  string value = inInterpreter.GetRemainingTokens();
   {
     Lock<StateMachine> lock( inInterpreter.StateMachine() );
     inInterpreter.StateMachine().Visualizations()[visID].Put( numCfgID, value );
@@ -123,7 +123,7 @@ VisPropertiesType::Set( CommandInterpreter& inInterpreter )
       return false;
     Param p = parameters[paramName];
   }
-  string setID = inInterpreter.GetRemainder();
+  string setID = inInterpreter.GetRemainingTokens();
   if( !p.ColumnLabels().Exists( setID ) )
     throw bciexception_( "Invalid vis property set ID: " << setID );
   int col = p.ColumnLabels()[setID];

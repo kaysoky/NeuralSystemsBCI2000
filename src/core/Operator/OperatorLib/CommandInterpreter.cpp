@@ -152,7 +152,7 @@ CommandInterpreter::Execute( const string& inCommand )
     {
       success = ( CallbackBase::OK == mrStateMachine.ExecuteCallback( BCI_OnUnknownCommand, inCommand.c_str() ) );
       if( success )
-        GetOptionalRemainder();
+        GetRemainingTokens();
     }
     if( !success )
     {
@@ -349,6 +349,20 @@ CommandInterpreter::GetOptionalToken()
   string result = GetToken();
   if( InputFailed() )
     Unget();
+  return result;
+}
+
+string
+CommandInterpreter::GetRemainingTokens()
+{
+  string result = GetToken();
+  while( !InputFailed() )
+  {
+    string token = GetToken();
+    if( !InputFailed() )
+      result.append( " " ).append( token );
+  }
+  Unget();
   return result;
 }
 

@@ -38,7 +38,7 @@ class InterpreterExpression : public Expression
 {
  public:
   InterpreterExpression( CommandInterpreter& inInterpreter )
-    : Expression( inInterpreter.GetRemainder() ),
+    : Expression( inInterpreter.GetRemainingTokens() ),
       mrInterpreter( inInterpreter )
     { ThrowOnError( true ); }
   Node* Variable( const string& );

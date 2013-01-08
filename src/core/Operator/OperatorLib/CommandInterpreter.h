@@ -80,7 +80,8 @@ class CommandInterpreter
   //  GetToken() reads a single string, which may be quoted and URL-encoded.
   std::string GetToken();
   std::string GetOptionalToken();
-  //  GetRemainder() reads the remainder of the command line.
+  std::string GetRemainingTokens();
+  //  GetRemainder() reads the remainder of the command line verbatim.
   std::string GetRemainder();
   std::string GetOptionalRemainder();
   //  Unget() undoes a read operation. Without a previous read operation, it does nothing.

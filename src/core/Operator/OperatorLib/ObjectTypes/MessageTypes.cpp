@@ -49,7 +49,7 @@ const ObjectType::MethodEntry MessageType::sMethodTable[] =
 bool
 MessageType::Log( CommandInterpreter& inInterpreter )
 {
-  string message = inInterpreter.GetRemainder();
+  string message = inInterpreter.GetRemainingTokens();
   if( message.empty() )
     message = "<empty log entry>";
   inInterpreter.StateMachine().LogMessage( BCI_OnLogMessage, message.c_str() );
@@ -67,7 +67,7 @@ const ObjectType::MethodEntry MessagesType::sMethodTable[] =
 bool
 MessagesType::Capture( CommandInterpreter& inInterpreter )
 {
-  string types = inInterpreter.GetRemainder();
+  string types = inInterpreter.GetRemainingTokens();
   if( types.empty() )
   {
     inInterpreter.DontCaptureLog();
@@ -117,7 +117,7 @@ const ObjectType::MethodEntry WarningType::sMethodTable[] =
 bool
 WarningType::Issue( CommandInterpreter& inInterpreter )
 {
-  string message = inInterpreter.GetRemainder();
+  string message = inInterpreter.GetRemainingTokens();
   if( message.empty() )
     message = "unspecified warning";
   inInterpreter.StateMachine().LogMessage( BCI_OnWarningMessage, message.c_str() );
@@ -135,7 +135,7 @@ const ObjectType::MethodEntry ErrorType::sMethodTable[] =
 bool
 ErrorType::Report( CommandInterpreter& inInterpreter )
 {
-  string message = inInterpreter.GetRemainder();
+  string message = inInterpreter.GetRemainingTokens();
   if( message.empty() )
     message = "unspecified error";
   inInterpreter.StateMachine().LogMessage( BCI_OnErrorMessage, message.c_str() );

@@ -222,7 +222,7 @@ bool
 ImpliedType::Abort( CommandInterpreter& inInterpreter )
 {
   string message = "Execution aborted",
-         args = inInterpreter.GetOptionalRemainder();
+         args = inInterpreter.GetRemainingTokens();
   if( !args.empty() )
   {
     message += ": ";

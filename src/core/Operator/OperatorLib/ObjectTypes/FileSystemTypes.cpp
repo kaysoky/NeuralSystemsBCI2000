@@ -143,7 +143,7 @@ DirectoryType::List( CommandInterpreter& inInterpreter )
 #else
   args = "-l ";
 #endif
-  string remainder = inInterpreter.GetOptionalRemainder();
+  string remainder = inInterpreter.GetRemainingTokens();
   args += remainder;
   inInterpreter.Out() << ListDirectory( args );
   return true;

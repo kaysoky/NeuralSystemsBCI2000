@@ -56,7 +56,7 @@ LineType::Read( CommandInterpreter& inInterpreter )
 bool
 LineType::Write( CommandInterpreter& inInterpreter )
 {
-  string args = inInterpreter.GetOptionalRemainder(),
+  string args = inInterpreter.GetRemainingTokens(),
          line;
   istringstream iss( args );
   ParserToken arg;

@@ -152,7 +152,7 @@ bool
 StatesType::List( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
-  string pattern = inInterpreter.GetOptionalRemainder();
+  string pattern = inInterpreter.GetRemainingTokens();
   if( pattern.empty() )
     pattern = "*";
   const StateList& states = inInterpreter.StateMachine().States();

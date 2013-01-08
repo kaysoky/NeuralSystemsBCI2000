@@ -233,7 +233,7 @@ SystemType::Stop( CommandInterpreter& inInterpreter )
 bool
 SystemType::Startup( CommandInterpreter& inInterpreter )
 {
-  string args = inInterpreter.GetOptionalRemainder();
+  string args = inInterpreter.GetRemainingTokens();
   if( BCI_GetStateOfOperation() != BCI_StateIdle )
   {
     inInterpreter.Out() << "System already started up";
