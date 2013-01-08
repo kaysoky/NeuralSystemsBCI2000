@@ -40,6 +40,10 @@
 /*! Electrodes analog switch definition */
 #define CHAMP_EL_SWITCH_ON (1 << 2) /* Input analog switch to GND */
 #define CHAMP_EL_SWITCH_OFF (0 << 2) /* Input analog switch to input */
+
+/*! Parameters for function StartExt */
+#define CHAMP_START_WITH_DEFAULT_PARAMS (0)
+#define CHAMP_START_WITH_CHECK_CALIBRATION_COEFS (1)
 /*----------------------------------------------------------------------------*/
 /* Data Types */
 
@@ -109,7 +113,10 @@ typedef struct {
 /*! Device data type for ActiChamp-AUX model */
 typedef struct {
   signed int Aux[8]; /*!< auxiliary channels data */
-  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 15 MSB reserved bits + MyButton bit (bit 31) */
+  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 
+							  module error (bit 16: Aux module, bits 17 - 21: Eeg modules) + 
+							  module present (bit 22: Aux module, bits 23 - 27: Eeg modules) + 
+							  3 MSB reserved bits + MyButton bit (bit 31) */
   unsigned int Counter; /*!< 32-bit data sequencing cyclic counter for checking the data loss */
 } t_champDataModelAux;
 
@@ -117,7 +124,10 @@ typedef struct {
 typedef struct {
   signed int Main[32]; /*!< main channels data */
   signed int Aux[8]; /*!< auxiliary channels data */
-  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 15 MSB reserved bits + MyButton bit (bit 31) */
+  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 
+							  module error (bit 16: Aux module, bits 17 - 21: Eeg modules) + 
+							  module present (bit 22: Aux module, bits 23 - 27: Eeg modules) + 
+							  3 MSB reserved bits + MyButton bit (bit 31) */
   unsigned int Counter; /*!< 32-bit data sequencing cyclic counter for checking the data loss */
 } t_champDataModel32;
 
@@ -125,7 +135,10 @@ typedef struct {
 typedef struct {
   signed int Main[64]; /*!< main channels data */
   signed int Aux[8]; /*!< auxiliary channels data */
-  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 15 MSB reserved bits + MyButton bit (bit 31) */
+  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 
+							  module error (bit 16: Aux module, bits 17 - 21: Eeg modules) + 
+							  module present (bit 22: Aux module, bits 23 - 27: Eeg modules) + 
+							  3 MSB reserved bits + MyButton bit (bit 31) */
   unsigned int Counter; /*!< 32-bit data sequencing cyclic counter for checking the data loss */
 } t_champDataModel64;
 
@@ -133,7 +146,10 @@ typedef struct {
 typedef struct {
   signed int Main[96]; /*!< main channels data */
   signed int Aux[8]; /*!< auxiliary channels data */
-  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 15 MSB reserved bits + MyButton bit (bit 31) */
+  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 
+							  module error (bit 16: Aux module, bits 17 - 21: Eeg modules) + 
+							  module present (bit 22: Aux module, bits 23 - 27: Eeg modules) + 
+							  3 MSB reserved bits + MyButton bit (bit 31) */
   unsigned int Counter; /*!< 32-bit data sequencing cyclic counter for checking the data loss */
 } t_champDataModel96;
 
@@ -141,7 +157,10 @@ typedef struct {
 typedef struct {
   signed int Main[128]; /*!< main channels data */
   signed int Aux[8]; /*!< auxiliary channels data */
-  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 15 MSB reserved bits + MyButton bit (bit 31) */
+  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 
+							  module error (bit 16: Aux module, bits 17 - 21: Eeg modules) + 
+							  module present (bit 22: Aux module, bits 23 - 27: Eeg modules) + 
+							  3 MSB reserved bits + MyButton bit (bit 31) */
   unsigned int Counter; /*!< 32-bit data sequencing cyclic counter for checking the data loss */
 } t_champDataModel128;
 
@@ -149,7 +168,10 @@ typedef struct {
 typedef struct {
   signed int Main[160]; /*!< main channels data */
   signed int Aux[8]; /*!< auxiliary channels data */
-  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 15 MSB reserved bits + MyButton bit (bit 31) */
+  unsigned int Triggers; /*!< Digital inputs (bits 0 - 7) + output (bits 8 - 15) state + 
+							  module error (bit 16: Aux module, bits 17 - 21: Eeg modules) + 
+							  module present (bit 22: Aux module, bits 23 - 27: Eeg modules) + 
+							  3 MSB reserved bits + MyButton bit (bit 31) */
   unsigned int Counter; /*!< 32-bit data sequencing cyclic counter for checking the data loss */
 } t_champDataModel160;
 
@@ -303,6 +325,14 @@ CHAMP_API int WINAPI champGetProperty(HANDLE hDevice, t_champProperty *Property)
 \return - error code
 */
 CHAMP_API int WINAPI champStart(HANDLE hDevice);
+
+/*!  
+  Function to start data acquisition with additional options
+\param hDevice - device handle
+\param Params - additional options
+\return - error code
+*/
+CHAMP_API int WINAPI champStartExt(HANDLE hDevice, unsigned int Params);
 
 /*!  
   Function to stop data acquisition
