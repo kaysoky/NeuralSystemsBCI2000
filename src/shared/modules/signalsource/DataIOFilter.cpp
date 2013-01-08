@@ -238,7 +238,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   {
     int SampleBlockSize = Parameter( "SampleBlockSize" );
     PreflightCondition( SampleBlockSize > 0 );
-
+    
     if( Parameter( "VisualizeSourceDecimation" ) != string( "auto" ) )
     {
       int VisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
@@ -445,6 +445,8 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
 
   SignalProperties d = Output;
   int newElements = Output.Elements() * mVisualizeSourceBufferSize / mVisualizeSourceDecimation;
+  if( newElements < 1 )
+    newElements = 1;
   double trueDecimation = ( Output.Elements() * mVisualizeSourceBufferSize ) / newElements;
   d.SetName( "Source Signal" )
    .SetElements( newElements )
