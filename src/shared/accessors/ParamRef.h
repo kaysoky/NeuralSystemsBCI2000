@@ -241,6 +241,8 @@ class ParamRef
     { return index( mIdx1 ); }
   int Idx2() const
     { return index( mIdx2 ); }
+  const Param* Ptr() const
+    { return mpParam; }
 
  private:
   static size_t index( int idx )
@@ -484,8 +486,8 @@ inline
 MutableParamRef&
 MutableParamRef::operator=( const std::string& s )
 {
-  if( operator->() )
-    operator->()->Value() = s;
+  if( !IsNull() )
+    const_cast<Param*>( Ptr() )->Value( Idx1(), Idx2() ) = s;
   return *this;
 }
 
@@ -496,9 +498,7 @@ MutableParamRef::operator=( double d )
 {
   std::ostringstream os;
   os << d;
-  if( operator->() )
-    operator->()->Value() = os.str();
-  return *this;
+  return *this = os.str();
 }
 
 

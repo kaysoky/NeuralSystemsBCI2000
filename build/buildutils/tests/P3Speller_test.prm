@@ -98,4 +98,3 @@ Application:Text%20Window int TextWindowFontSize= 10 4 1 % // Text Window Font S
 Application:Text%20Window string TextWindowFilePath= % // Path for Saved Text File (directory)
 Connector:ConnectorOutput string ConnectorOutputAddress= % localhost:20320 % % // IP address/port to write to, e.g. localhost:20320
 Application:Localization string Language= Default Default % % // Language for user messages
-Application:Localization matrix LocalizedStrings= { German } { TIME%20OUT%20!!! Waiting%20to%20start%20... } Zeit%20abgelaufen! Warte%20... // Localized user messages

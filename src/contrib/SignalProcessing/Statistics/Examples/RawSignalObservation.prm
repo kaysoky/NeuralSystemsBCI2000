@@ -83,7 +83,6 @@ Application:Targets:CursorFeedbackTask int TestAllTargets= 1 0 0 1 // test all t
 Application:Human%20Interface%20Devices:KeystrokeFilter string KeystrokeStateName= % // State to be translated into keystrokes, empty for off
 Connector:ConnectorOutput string ConnectorOutputAddress= % localhost:20320 % % // IP address/port to write to, e.g. localhost:20320
 Application:Localization:Localization string Language= Default Default % % // Language for user messages
-Application:Localization:Localization matrix LocalizedStrings= { German } { Timeout Be%20prepared%20... T } Inaktiv Achtung%20... T // Localized user messages
 System:Core%20Connections string ApplicationPort= 4480 4200 1024 65535 // the Application module's listening port
 System:Core%20Connections string ApplicationIP= 134.2.123.129 127.0.0.1 % % // the Application module's listening IP
 System:Configuration matrix ApplicationVersion= { Framework Revision Build } 1 3.0.3 % Jan%2024%202012%2018:00:44 // Application version information

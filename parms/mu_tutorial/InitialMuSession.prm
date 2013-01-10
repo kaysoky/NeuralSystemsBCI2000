@@ -67,7 +67,6 @@ Application:Stimuli int AudioSwitch= 0 1 0 1 // Present audio files (boolean)
 Application:Stimuli float AudioVolume= 100 100 0 100 // Volume for audio playback in percent
 Connector:ConnectorOutput string ConnectorOutputAddress= % localhost:20320 % % // IP address/port to write to, e.g. localhost:20320
 Application:Localization string Language= Default Default % % // Language for user messages
-Application:Localization matrix LocalizedStrings= { German } { TIME%20OUT%20!!! Waiting%20to%20start%20... } Zeit%20abgelaufen! Warte%20... // Localized user messages
 System:Core%20Connections string ApplicationPort= 4069 4200 1024 65535 // the Application module's listening port
 System:Core%20Connections string ApplicationIP= 134.2.123.129 127.0.0.1 % % // the Application module's listening IP
 System:Configuration matrix ApplicationVersion= { Framework Revision Build } 1 2.x ,%20 Dec%2014%202007 // Application version information

@@ -76,4 +76,3 @@ Application:Cursor int CursorColor= 0xFF0000 0xFF0000 % % // feedback cursor col
 Application:Cursor float CursorWidth= 5 5 0.0 % // feedback cursor width in percent of screen width
 Connector:ConnectorOutput string ConnectorOutputAddress= % localhost:20320 % % // IP address/port to write to, e.g. localhost:20320
 Application:Localization string Language= Default Default % % // Language for user messages
-Application:Localization matrix LocalizedStrings= { German } { Timeout Be%20prepared%20... } Inaktiv Achtung%20... // Localized user messages

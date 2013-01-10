@@ -61,5 +61,4 @@ Application:Human%20Interface%20Devices int LogKeyPresses= 0 0 0 1 // log key pr
 Application:Human%20Interface%20Devices string KeystrokeStateName= % // State to be translated into keystrokes, empty for off
 Connector:ConnectorOutput string ConnectorOutputAddress= % localhost:20320 % % // IP address/port to write to, e.g. localhost:20320
 Application:Localization string Language= Default Default % % // Language for user messages
-Application:Localization matrix LocalizedStrings= { German } { Timeout Be%20prepared%20... } Inaktiv Achtung%20... // Localized user messages
 Connector:ConnectorInput list ConnectorInputFilter= 0 // list of state names or signal elements to allow, "*" for any, signal elements as in "Signal(1,0)"

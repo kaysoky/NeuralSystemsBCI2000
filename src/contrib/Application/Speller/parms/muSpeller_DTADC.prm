@@ -26,7 +26,6 @@ Statistics float YMeanProportion= 0.9842 0.0 0.0 2.0 // Proportion of signal mea
 SpellerSequence int ITITime= 10 10 0 5000 // Duration of ITI in units of SampleBlocks
 Localization string Language= Default Default % % // Language for user messages
 Statistics float TrendControlRate= -0.001 0 0.000 0.010 // Learning Rate for Linear Trend Control
-Localization matrix LocalizedStrings= { German } { Goal Waiting%20to%20start%20... CONGRATULATIONS%20!!! TIME%20OUT%20... TIME%20OUT%20!!! } Ziel Warte%20... GL%dcCKWUNSCH!!! ZEIT%20ABGELAUFEN ZEIT%20ABGELAUFEN!!! % % % // Localized user messages
 Statistics float XPixelsPerSec= 20 70 0 400 // Horizontal Pixel Rate
 Filtering float XMean= -5.00 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
 Filtering float XGain= 5.00 5.0 0.0 100.0 // Normal Filter Left/Right Slope

@@ -7,23 +7,23 @@
 //         There is at most one instance of this class.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -37,7 +37,7 @@
 
 #include "Localization.h"
 #include "LabelIndex.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 
 #ifdef UI_VCL
 # include <vcl.h>
@@ -105,9 +105,9 @@ Localization::Preflight() const
     for( size_t i = 0; i < numLanguages && !foundLanguage; ++i )
       foundLanguage = ( userLanguage == labels[ i ] );
     if( !foundLanguage )
-      bciout << "Language requested in the \"" LANG_PARAM "\" parameter is not "
-             << "present in the \"" STRINGS_PARAM "\" parameter."
-             << endl;
+      bciwarn << "Language requested in the \"" LANG_PARAM "\" parameter is not "
+              << "present in the \"" STRINGS_PARAM "\" parameter."
+              << endl;
   }
 }
 
@@ -180,8 +180,13 @@ Localization::AddLocalizations_( const char** inLanguages, int inNumLanguages,
   }
   for( int i = 0; i < numLocalizationEntries; ++i )
     for( int j = 0; j < inNumLanguages; ++j )
-      Parameter( STRINGS_PARAM )( inLanguages[ j ], inStrings[ i * ( inNumLanguages + 1 ) ] )
-               = inStrings[ i * ( inNumLanguages + 1 ) + j + 1 ];
+    {
+      const char* pLang = inLanguages[j],
+                * pOrig = inStrings[i * ( inNumLanguages + 1 )],
+                * pTrans = inStrings[i * ( inNumLanguages + 1 ) + j + 1];
+      bcidbg << pOrig << " in " << pLang << ": " << pTrans;
+      Parameter( STRINGS_PARAM )( pLang, pOrig ) = pTrans;
+    }
 }
 
 const char*
@@ -235,8 +240,6 @@ Localization::ApplyLocalizations( void* inObject )
   }
 #endif // UI_VCL
 
-// Qt has its own localization engine which is pretty rocking.  This code is preliminary and
-// this entire class could potentially be scrapped in the next version.
 #ifdef UI_QT
   QObject* obj = reinterpret_cast<QObject*>( inObject );
   if( dynamic_cast<QObject*>( obj ) )

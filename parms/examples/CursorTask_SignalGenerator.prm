@@ -93,4 +93,3 @@ Application:Targets string TargetTexture= % // path of target texture (inputfile
 Application:Targets int TestAllTargets= 0 0 0 1 // test all targets for cursor collision? 0: test only the visible current target, 1: test all targets (enumeration)
 Connector:ConnectorOutput string ConnectorOutputAddress= % localhost:20320 % % // IP address/port to write to, e.g. localhost:20320
 Application:Localization string Language= Default Default % % // Language for user messages
-Application:Localization matrix LocalizedStrings= { German } { Timeout Be%20prepared%20... T } Inaktiv Achtung%20... T // Localized user messages
