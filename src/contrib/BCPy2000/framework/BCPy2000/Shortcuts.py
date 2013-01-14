@@ -27,17 +27,16 @@
 
 import os, sys
 
-__IPYTHON_COMPAT__ = None;
+__OLDER_IPYTHON__ = None;
 
-if(type(__IPYTHON__) != bool):
-        __IPYTHON_COMPAT__ = True
-        
-        
-if(__IPYTHON_COMPAT__):
-	exec 'import os,sys' in __IPYTHON__.shell.user_ns # in case this is being run via import rather than execute
-else:
+try:
+	__IPYTHON__.shell.user_ns
+except AttributeError:
 	__IPYTHON__ = get_ipython()
 	exec 'import os,sys' in __IPYTHON__.user_ns # in case this is being run via import rather than execute
+else:
+	exec 'import os,sys' in __IPYTHON__.shell.user_ns # in case this is being run via import rather than execute
+	__OLDER_IPYTHON__ = True
 
 
 ################################################################################
@@ -54,7 +53,7 @@ class mymagic:
 	def makemagic(f):
 		name = f.__name__
 		if not name.startswith('magic_'): name = 'magic_' + name
-		if(__IPYTHON_COMPAT__):
+		if __OLDER_IPYTHON__:
 			setattr(__IPYTHON__, name, f)
 		else:
 			def wrapped(throwaway, *pargs, **kwargs): return f(*pargs,**kwargs)
@@ -284,7 +283,7 @@ is a shortcut for the following:
     import foo; foo = reload(foo)
     import bar; bar = reload(bar); from bar import *
 """###
-		if(__IPYTHON_COMPAT__):
+		if __OLDER_IPYTHON__:
 			ipython = __IPYTHON__.shell.user_ns
 		else:
 			ipython = __IPYTHON__.user_ns
@@ -315,7 +314,7 @@ the workspace.
 
 """###
 		import sys
-		if(__IPYTHON_COMPAT__):
+		if __OLDER_IPYTHON__:
 			ipython = __IPYTHON__.shell.user_ns
 		else:
 			ipython = __IPYTHON__.user_ns
@@ -326,7 +325,7 @@ the workspace.
 			if not 'matplotlib.backends' in sys.modules: matplotlib.interactive(True)
 			try: exec 'import matplotlib, pylab' in ipython
 			except ImportError: print "WARNING: failed to import pylab"
-			if(__IPYTHON_COMPAT__):
+			if __OLDER_IPYTHON__:
 				if len(d): exec ('from pylab import '+d) in ipython
 ############################################################################
 	@makemagic
@@ -338,7 +337,7 @@ SigTools, but also copy, struct, ctypes, numpy, scipy and matplotlib and pylab
 shortcut to SigTools.summarize, to give a quick look at object attributes---
 especially useful for numpy arrays.
 """###
-		if(__IPYTHON_COMPAT__):
+		if __OLDER_IPYTHON__:
 			ipython = __IPYTHON__.shell.user_ns
 		else:
 			ipython = __IPYTHON__.user_ns
@@ -352,12 +351,15 @@ especially useful for numpy arrays.
 		def magic_pp(name=''):
 			if name == None: return
 			exec 'print SigTools.summarize(' + name + ')' in ipython
-		__IPYTHON__.magic_pp = magic_pp
-		if(__IPYTHON_COMPAT__):
+			
+		if __OLDER_IPYTHON__:
 			__IPYTHON__.magic_loadpylab()
+			__IPYTHON__.magic_pp = magic_pp
 		else:
 			__IPYTHON__.magics_manager.user_magics.loadpylab()
-
+			def wrapped(throwaway, *pargs, **kwargs): return magic_pp(*pargs,**kwargs)
+			__IPYTHON__.define_magic('magic_pp', wrapped)
+			
 ################################################################################
 ################################################################################
 

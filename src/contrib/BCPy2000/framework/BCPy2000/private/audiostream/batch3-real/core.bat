@@ -40,9 +40,9 @@ show window; set title ${Extract file base $0}
 reset system
 startup system
 
-start executable ${SRC}                 AUTOSTART 127.0.0.1 --SignalSourceIP=127.0.0.1     $TIMINGFLAG
-start executable PythonSignalProcessing AUTOSTART 127.0.0.1 --SignalProcessingIP=127.0.0.1 --PythonSigWD=${PYWD} --PythonSigClassFile=Streaming.py       --PythonSigLog=${PYLOGDIR}/###-sig.txt --PythonSigShell=1
-start executable PythonApplication      AUTOSTART 127.0.0.1 --ApplicationIP=127.0.0.1      --PythonAppWD=${PYWD} --PythonAppClassFile=TrialStructure.py  --PythonAppLog=${PYLOGDIR}/###-app.txt --PythonAppShell=0
+start executable ${SRC}                 AUTOSTART 127.0.0.1 --AllowMultipleInstances --SignalSourceIP=127.0.0.1     $TIMINGFLAG
+start executable xterm -e PythonSignalProcessing AUTOSTART 127.0.0.1 --AllowMultipleInstances --SignalProcessingIP=127.0.0.1 --PythonSigWD=${PYWD} --PythonSigClassFile=Streaming.py       --PythonSigLog=${PYLOGDIR}/###-sig.txt --PythonSigShell=1
+start executable xterm -e PythonApplication      AUTOSTART 127.0.0.1 --AllowMultipleInstances --ApplicationIP=127.0.0.1      --PythonAppWD=${PYWD} --PythonAppClassFile=TrialStructure.py  --PythonAppLog=${PYLOGDIR}/###-app.txt --PythonAppShell=0
 # TODO: insert xterm -e above for OSX
 
 wait for connected 600
