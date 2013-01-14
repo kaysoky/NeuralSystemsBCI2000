@@ -52,16 +52,14 @@ class mymagic:
 
 	def makemagic(f):
 		name = f.__name__
-		if not name.startswith('magic_'): name = 'magic_' + name
 		if __OLDER_IPYTHON__:
+			if not name.startswith('magic_'): name = 'magic_' + name
 			setattr(__IPYTHON__, name, f)
 		else:
+			if name.startswith('magic_'): name = name[6:]
 			def wrapped(throwaway, *pargs, **kwargs): return f(*pargs,**kwargs)
 			if hasattr(f, '__doc__'): wrapped.__doc__ = f.__doc__
-			if name.startswith('magic_'):
-				__IPYTHON__.define_magic(name[6:], wrapped)
-			else:
-				__IPYTHON__.define_magic(name, wrapped)
+			__IPYTHON__.define_magic(name, wrapped)
 		return f
 		
 	############################################################################
@@ -358,7 +356,7 @@ especially useful for numpy arrays.
 		else:
 			__IPYTHON__.magics_manager.user_magics.loadpylab()
 			def wrapped(throwaway, *pargs, **kwargs): return magic_pp(*pargs,**kwargs)
-			__IPYTHON__.define_magic('magic_pp', wrapped)
+			__IPYTHON__.define_magic('pp', wrapped)
 			
 ################################################################################
 ################################################################################
