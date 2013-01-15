@@ -38,6 +38,7 @@ function EEG = pop_loadBCI2000(fileName, events)
 % Parts based on BCI2000import.m from the BCI2000 distribution (www.bci2000.org)
 
 % Revision history:
+%   0.34  For incompatible input files, fails before event selection GUI.
 %   0.33  Separated fileName logic and events logic.
 %         GUI mode asks to select states quickly again, as in 0.31
 %         Added a few states to ignore.
@@ -70,7 +71,11 @@ function EEG = pop_loadBCI2000(fileName, events)
 %% Process fileName(s)
 if nargin < 1  % No input arguments specified, show GUI
     [fileName, filePath] = uigetfile('*.dat', 'Choose BCI2000 file(s) -- pop_loadBCI2000', 'multiselect', 'on');
-    files = struct('name', strcat(repmat({filePath}, size(fileName)), fileName));
+    if isfloat(fileName)
+      files = struct('name', {});
+    else
+      files = struct('name', strcat(repmat({filePath}, size(fileName)), fileName));
+    end
 else %input argument may be cell array of fileName(s) or a string
     if iscell(fileName)
         files = struct('name', fileName);
@@ -82,7 +87,14 @@ else %input argument may be cell array of fileName(s) or a string
 end
     
 %% Process which events to store.
-[ ~, states, ~ ] = load_bcidat( files(1).name, [0 0] );%Load state names
+if isempty(files)
+  error('no files given');
+end
+args = {};
+for i =1:length(files)
+  args = { args{:}, files(i).name, [0 0] };
+end
+[ ~, states, ~ ] = load_bcidat( args{:} );%Load state names
 stateNames = fieldnames(states);
 if nargin<1 %GUI
     % Build a string consisting of all events, separated by a "|" (necessary for
