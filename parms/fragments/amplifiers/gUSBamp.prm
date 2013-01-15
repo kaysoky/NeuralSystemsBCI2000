@@ -3,8 +3,7 @@ Source:Signal%20Properties:DataIOFilter int SampleBlockSize= 8 32 1 % // number 
 Source:Signal%20Properties:DataIOFilter int SamplingRate= 256 256Hz 1 % // sample rate
 Source:Signal%20Properties:DataIOFilter list ChannelNames= 0 // list of channel names
 Source:Signal%20Properties:DataIOFilter floatlist SourceChOffset= 8 0 0 0 0 0 0 0 0 0 % % // Offset for channels in A/D units
-Source:Signal%20Properties:DataIOFilter floatlist SourceChGain= 8 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.003 % % // gain for each channel (A/D units -> muV)
-Source:gUSBampADC intlist SourceChList= 0 0 1 128 // list of channels to digitize
+Source:Signal%20Properties:DataIOFilter floatlist SourceChGain= 8 1 1 1 1 1 1 1 1 0.003 % % // gain for each channel (A/D units -> muV) Source:gUSBampADC intlist SourceChList= 0 0 1 128 // list of channels to digitize
 Source:gUSBampADC intlist SourceChDevices= 1 8 16 1 17 // number of digitized channels per device
 Source:gUSBampADC int NumBuffers= 2 1 2 32 // number of software buffers to use
 Source:gUSBampADC string DeviceIDMaster= auto // deviceID for the device whose SYNC goes to the slaves
