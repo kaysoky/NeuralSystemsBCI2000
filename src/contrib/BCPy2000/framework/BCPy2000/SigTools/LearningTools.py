@@ -1184,6 +1184,11 @@ class predictor(sstruct):
 		self.verbosity = verbosity
 		self._allowedfields = list(self._fields) + ['cv']
 	
+	def write(self, txt):
+		import sys
+		sys.stdout.write(txt)
+		sys.stdout.flush()
+		
 	def update_loss(self, func=None, field=None, training=True, testing=True):
 		self.loss.func = getattr(self.loss, 'func', None)
 		self.loss.field = getattr(self.loss, 'field', None)		
@@ -1244,7 +1249,6 @@ class predictor(sstruct):
 		of self are then actually updated to match the chosen setting, instead of a
 		copy being returned.
 		"""###
-		import sys; write = sys.stdout.write
 
 		folded = (outerfg != None)
 		varied = isinstance(self.hyper, experiment)
@@ -1300,7 +1304,7 @@ class predictor(sstruct):
 			
 		for icond,condition in enumerate(expt):
 			if self.verbosity and varied:
-				write('hyper[%d], condition %d of %d (%s):\n' % (icond, icond+1, len(expt), expt._shortdesc(condition)))
+				self.write('hyper[%d], condition %d of %d (%s):\n' % (icond, icond+1, len(expt), expt._shortdesc(condition)))
 			self_c = self.copy(deep=False)
 			self_c.hyper = condition
 
@@ -1342,10 +1346,10 @@ class predictor(sstruct):
 
 		if self.verbosity and varied:
 			for ifold,self_f in enumerate(chosen):
-				if folded: write('outerfg[%d] - ' % (ifold))
+				if folded: self.write('outerfg[%d] - ' % (ifold))
 				fname, outerstr = self_f.loss_str(field='test')
 				fname, innerstr = self_f.loss_str(field='train')
-				write("picked hyper[%d] (%s): %s = outer %s; inner %s\n" % (
+				self.write("picked hyper[%d] (%s): %s = outer %s; inner %s\n" % (
 					self_f.cv.chosen.index,
 					expt._shortdesc(self_f.cv.chosen.hyper),
 					fname,
@@ -1405,8 +1409,6 @@ class predictor(sstruct):
 		if printtime: import time; tstart = time.time()
 		if len(kwargs): raise TypeError("unexpected keyword arguments---use these only when self.hyper is an experiment object, so train() and cvtrain() are synonymous")
 			
-		import sys; write = sys.stdout.write
-
 		if 'kernel' in self.hyper._fields: self.input.K = None
 			
 		x,K,y,istrain,istest = self.resolve_training_inputs(x=x, K=K,y=y,istrain=istrain,istest=istest)
@@ -1462,8 +1464,8 @@ class predictor(sstruct):
 		self.input.istest = istest
 	
 		self.update_loss(training=True, testing=True)
-		if self.verbosity >= 2: write(self.summarystr()[0] + '\n')
-		elif self.verbosity >= 1: write(self.summarystr()[1])
+		if self.verbosity >= 2: self.write(self.summarystr()[0] + '\n')
+		elif self.verbosity >= 1: self.write(self.summarystr()[1])
 		if printtime: print "%.2f seconds" % (time.time() - tstart)
 		return self
 			
@@ -1493,7 +1495,7 @@ class predictor(sstruct):
 		self.loss.test = self.loss.test_se = None
 		got_true = (true != None)
 		if not got_true:
-			true = numpy.zeros((nnew,)+self.input.y.shape[1:], dtype=self.input.y.dtype)
+			true = numpy.zeros((nnew,)+self.input.y.shape[1:], dtype=float)
 			true.flat = numpy.nan
 			self.loss.test = self.loss.test_se = None
 		
@@ -1550,18 +1552,17 @@ class predictor(sstruct):
 			self._reorder_fields('verbosity', -1)
 			return self
 
-		import sys; write = sys.stdout.write
 		outer = self
 		outer.verbosity -= 1
 		verb = outer.verbosity
 		indent = '  '
-		if verb == 1: write(indent)
+		if verb == 1: self.write(indent)
 		if verb == 1: numstr = indent
 		outer.train(x=x, K=K, y=y, istrain=istrain, istest=istest)
 		del istrain, istest	
 
 		sep = '  // '
-		if verb == 1: write(sep)
+		if verb == 1: self.write(sep)
 		if verb == 1: numstr += outer.summarystr()[2] + sep
 		outer.verbosity += 1
 
@@ -1588,8 +1589,8 @@ class predictor(sstruct):
 		self.loss.train = result['mean']
 		self.loss.train_se = result['ste']
 		
-		if verb == 1: write(' (avg=%.3f)\n' % self.loss.train)
-		if verb == 1: write(numstr + '\n')
+		if verb == 1: self.write(' (avg=%.3f)\n' % self.loss.train)
+		if verb == 1: self.write(numstr + '\n')
 
 		return self
 
