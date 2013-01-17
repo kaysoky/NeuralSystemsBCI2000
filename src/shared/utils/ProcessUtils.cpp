@@ -41,7 +41,13 @@
 # include <vector>
 # include <fcntl.h>
 # include <sys/stat.h>
-# include <semaphore.h>
+# if USE_POSIX_SEMAPHORES
+#  include <semaphore.h>
+# else // USE_POSIX_SEMAPHORES
+#  include <sys/types.h>
+#  include <sys/ipc.h>
+#  include <sys/sem.h>
+# endif // USE_POSIX_SEMAPHORES
 # if __APPLE__
 #  include <crt_externs.h>
 #  define environ (*_NSGetEnviron())
@@ -231,7 +237,7 @@ class GlobalID
    ~GlobalID();
    bool Owned() const { return mHandle != NULL; }
    static void Cleanup( const string& name );
-   
+
  private:
    bool TryCreate( const string& inName );
    void Destroy();
@@ -272,6 +278,8 @@ GlobalID::TryCreate( const std::string& inName )
 
 #else // _WIN32
 
+# if USE_POSIX_SEMAPHORES
+
   string name = "/" + inName;
   sem_t* pSemaphore = ::sem_open( name.c_str(), O_CREAT | O_EXCL, 0666, 0 );
   if( pSemaphore != SEM_FAILED )
@@ -279,6 +287,31 @@ GlobalID::TryCreate( const std::string& inName )
     ::sem_close( pSemaphore );
     mHandle = new string( name );
   }
+
+# else // USE_POSIX_SEMAPHORES
+
+  key_t semkey = ftok( inName.c_str(), 'b' );
+  if( semkey != -1 )
+  {
+    // Try to get the semaphore for this key, creating it exclusively.
+    int semid = semget( semkey, 1, ( IPC_CREAT | IPC_EXCL | 0666 ) );
+    if( semid == -1 )
+      // If we cannot create it exclusively, let's get the existing semaphore
+      semid = semget( semkey, 1, 0666 );
+    else
+      // If we got the semaphore exclusively, set it to one
+      semctl( semid, 0, SETVAL, 1 );
+
+    // If we cannot subtract from the semaphore, we know that a process
+    // is still using it.  The SEM_UNDO flag causes this operation to 
+    // automatically revert this operation on the semaphore if the program
+    // crashes or closes in any way, shape, or form. (Even through GDB)
+    struct sembuf sops = { 0, -1, SEM_UNDO | IPC_NOWAIT };
+    if( semop( semid, &sops, 1 ) != -1 )
+      mHandle = new string( inName );
+  }
+
+# endif // USE_POSIX_SEMAPHORES
 
 #endif // _WIN32
 
@@ -299,12 +332,22 @@ GlobalID::Destroy()
 
 #else // _WIN32
 
+# if USE_POSIX_SEMAPHORES
+
   string* pName = reinterpret_cast<string*>( mHandle );
   ::sem_unlink( pName->c_str() );
   delete pName;
 
+# else // USE_POSIX_SEMAPHORES
+
+  key_t semkey = ftok( reinterpret_cast< string* >( mHandle )->c_str(), 'b' );
+  if( semkey != -1 )
+    semctl( semget( semkey, 1, 0666 ), 0, IPC_RMID );
+
+# endif // USE_POSIX_SEMAPHORES
+
 #endif // _WIN32
-  
+
   mHandle = NULL;
 }
 
@@ -312,8 +355,20 @@ void
 GlobalID::Cleanup( const string& inName )
 {
 #if !_WIN32
+
+# if USE_POSIX_SEMAPHORES
+
   ::sem_unlink( inName.c_str() );
-#endif // _WIN32
+
+# else // USE_POSIX_SEMAPHORES
+
+  key_t semkey = ftok( inName.c_str(), 'b' );
+  if( semkey != -1 )
+    semctl( semget( semkey, 1, 0666 ), 0, IPC_RMID );
+
+# endif // USE_POSIX_SEMAPHORES
+
+#endif // !_WIN32
 }
 
 } // namespace
@@ -321,7 +376,11 @@ GlobalID::Cleanup( const string& inName )
 bool
 ProcessUtils::AssertSingleInstance( int inArgc, char** inArgv, const std::string& inID, int inTimeout )
 {
+#ifdef _WIN32
   string name = inID.empty() ? FileUtils::ApplicationTitle() : inID;
+#else // _WIN32
+  string name = inArgv[0];
+#endif // _WIN32
   for( int i = 1; i < inArgc; ++i )
     if( !::stricmp( inArgv[i], "--AllowMultipleInstances" ) )
     {
