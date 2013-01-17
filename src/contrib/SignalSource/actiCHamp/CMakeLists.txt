@@ -39,11 +39,13 @@ ADD_CUSTOM_COMMAND(
 SET( SRC_PROJECT
   actiCHampBufferedADC.cpp
   actiCHampDevice.cpp
+
 )
 
 SET( HDR_PROJECT
   actiCHampBufferedADC.h
   actiCHampDevice.h
+
 )
 
 BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
@@ -52,10 +54,8 @@ BCI2000_ADD_SIGNAL_SOURCE_MODULE(
 )
 
 IF( CMAKE_CL_64 )
-    TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ActiChamp_x64.lib 
-        actiCHampDevice.lib )
+    TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ActiChamp_x64.lib  )
 ELSE( CMAKE_CL_64 )
-    TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ActiChamp_x86.lib 
-        actiCHampDevice.lib )
+    TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ActiChamp_x86.lib  )
 ENDIF( CMAKE_CL_64 )
 
