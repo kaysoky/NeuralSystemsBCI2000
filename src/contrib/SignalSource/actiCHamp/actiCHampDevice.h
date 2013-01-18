@@ -22,6 +22,10 @@
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifndef __ACTICHAMP_DEVICE_H
+#define  __ACTICHAMP_DEVICE_H
+
+#include "ChannelRouter.h"
 #include "ActiChamp.h"
 #include "GenericSignal.h"
 #include <string>
@@ -29,56 +33,41 @@
 #include <ostream>
 #include <sstream>
 
-struct DeviceSettings
-{
-    int               desired_rate;   // User desired sampling rate
-
-    t_champMode       mode;           // Device mode of operation
-    t_champRate       rate;           // Device sampling rate
-    t_champAdcFilter  averaging;      // Averaging filter values
-    t_champDecimation decimation;     // Decimation filter values
-
-    t_champModules    modules;        // Device Modules to use
-    t_champVersion    version;        // Version of device
-    t_champProperty   properties;     //Properties structure
-
-};
-
-struct LibrarySettings
-{
-    int init_tries;          // tries device has left to try to load FPGA firmware
-    bool debug;              // True for debug output
-
-    bool acquiring_data;     // If we are currently set up to aquire data
-
-    int reference_channel;   // What channel is our reference
-
-    unsigned int number_of_channels;
-
-    HANDLE acquisition_lock; // Mutex handling non-reentrant data collection
-
-
-    LibrarySettings()  
-    {
-        init_tries          = 3;
-        debug               = false;
-        acquiring_data      = false;
-        reference_channel   = 0;
-        number_of_channels  = 8;
-    };
-
-    LibrarySettings & operator= (const LibrarySettings o)
-    {
-        this->init_tries = o.init_tries;
-        this->debug = o.debug;
-        this->acquiring_data = o.acquiring_data;
-        this->reference_channel = o.reference_channel;
-
-        return *this;
-    };
-};
 
 class actiCHampDevice {
+    private:
+        void output_data(GenericSignal & output, t_champDataModelAux* data);
+        template<class T> 
+           void output_data(GenericSignal & output, T& data);
+        void read_data(void* buffer , unsigned int size);
+        t_champMode        m_mode;                // Device mode of operation
+        t_champRate        m_rate;                // Device sampling rate
+        t_champAdcFilter   m_averaging;           // Averaging filter values
+        t_champDecimation  m_decimation;          // Decimation filter values
+
+        t_champModules     m_modules;             // Device Modules to use
+        t_champVersion     m_version;             // Version of device
+        t_champProperty    m_properties;          // Properties structure
+
+
+        int                m_desired_rate;        // User desired sampling rate
+        int                m_init_tries;          // Attempts at initialization
+        int                m_reference_channel;   // What channel is our reference
+        bool               m_is_acquiring;        // Are we acquiring data?
+
+        HANDLE             m_acquisition_lock;    // Mutex for data acquisition
+        HANDLE             m_device;              // Device handle
+        ChannelRouter     *mp_channel_matrix;     // Our channel routing matrix
+
+        // Pointers for handling different data types (module numbers)
+        t_champDataModelAux *dataaux;
+        t_champDataModel32  *data32;
+        t_champDataModel64  *data64;
+        t_champDataModel96  *data96;
+        t_champDataModel128 *data128;
+        t_champDataModel160 *data160;
+
+
     public:
         actiCHampDevice();
         ~actiCHampDevice();
@@ -94,122 +83,82 @@ class actiCHampDevice {
         // Data functions
         void get_impedance_data ();
         void get_data (GenericSignal & output, unsigned int size_in_samples);
-        void get_data_helper(void* buffer , unsigned int size);
 
-        // Information Funtions
+        //Variable Manipulation functions.
+
+        // Mode
+        t_champMode mode() const
+            { return m_mode; };
+        void  set_mode(t_champMode m)
+            { m_mode = m; }
+
+        // Rate
+        t_champRate get_rate() const
+            {return m_rate; };
+        void  set_rate (t_champRate r)
+            { m_rate = r; };
+        bool set_rate (unsigned int  r);
+
+        //Averaging
+        t_champAdcFilter get_averaging() const
+            { return m_averaging; };
+        void set_averaging  (t_champAdcFilter  a)
+            { m_averaging = a; };
+
+        //Decimation
+        t_champDecimation get_decimation() const
+            { return m_decimation; };
+        void set_decimation (t_champDecimation  d)
+            { m_decimation = d; };
+
+        //Modules
+        t_champModules get_modules() const
+            { return m_modules; };
+        void set_modules(t_champModules m)
+            { m_modules = m; };
+
+        //Version
+        t_champVersion     get_version()       const
+            { return m_version; };
+        void DeviceVersion ( std::string& version      ) const;
+
+        //Properties
+        t_champProperty    get_properties()  const
+            { return m_properties; }; 
+        void GetProperties ( std::string& properties   ) const;
+
+        //Reference Channel
+        int get_reference_channel() const
+            { return m_reference_channel; };
+        void set_reference_channel(int r)
+            { m_reference_channel = r; };
+        
+        //Acquisiton
+        bool is_acquiring() const
+            { return m_is_acquiring; };
+
+        //ActiveShield Gain
+        int set_activeshield_gain (unsigned int g)
+            { return champSetActiveShieldGain(m_device, g);}
+
+        //Channels
+        unsigned int get_max_supported_eeg();
+        unsigned int get_max_supported_aux();
+        unsigned int get_max_supported_trigger();
+        bool setup_channels(unsigned int in_num_ch, unsigned int in_num_eeg, unsigned int in_num_aux, unsigned int in_num_triggers);
+        bool route_channels(unsigned int* in_eeg_list, unsigned int* in_aux_list, unsigned int* in_trigger_list);
+
+
+        //Error Functions
         t_champDataStatus  get_data_status()   const;
         t_champErrorStatus get_error_status()  const;
-        t_champVersion     get_version()       const
-            { return this->device_settings.version; };
-        t_champProperty    get_properties()  const
-            { return this->device_settings.properties; };
-
         bool Settings      ( std::string& settings     ) const;
         bool DataStatus    ( std::string& data_status  ) const;
         bool ErrorStatus   ( std::string& error_status ) const;
-        void DeviceVersion ( std::string& version      ) const;
-        void GetProperties ( std::string& properties   ) const;
-
-        //Get library_settings related functions
-        
-        LibrarySettings get_library_settings() const 
-            { return this->library_settings; };
-
-        bool get_debug() const
-            { return this->library_settings.debug; };
-
-        bool get_acquiring_data() const
-            { return this->library_settings.acquiring_data; };
-
-
-        int get_reference_channel() const
-            { return this->library_settings.reference_channel; };
-
-
-
-        //Set library_settings related functions
-        void set_library_settings(LibrarySettings& s)
-            { this->library_settings = s; }; 
-
-        void set_debug(bool d)
-            { this->library_settings.debug = d; };
-
-
-        void set_reference_channel(int r)
-            { this->library_settings.reference_channel = r; };
-
-
-        //Get device_settings related functions
-        DeviceSettings get_device_settings() const 
-            { return this->device_settings; };
-
-        t_champRate get_rate() const
-            {return this->device_settings.rate; };
-        t_champMode mode() const
-            { return this->device_settings.mode; };
-
-        t_champModules get_modules() const
-            { return this->device_settings.modules; };
-
-        t_champDecimation get_decimation() const
-            { return this->device_settings.decimation; };
-
-        t_champAdcFilter get_averaging() const
-            { return this->device_settings.averaging; };
-
-        //Set device_settings related functions
-        void set_device_settings(DeviceSettings s)
-            { this->device_settings=s; };
-
-        void  set_mode(t_champMode m)
-            { this->device_settings.mode = m; }
-
-        void set_modules(t_champModules m)
-            { this->device_settings.modules = m; };
-
-        bool set_rate (unsigned int  r);
-
-        void  set_rate (t_champRate r)
-            { this->device_settings.rate = r; };
-
-        void set_decimation (t_champDecimation  d)
-            { this->device_settings.decimation = d; };
-
-        void set_averaging  (t_champAdcFilter  a)
-            { this->device_settings.averaging = a; };
-
-        int set_activeshield_gain (unsigned int g)
-            { return champSetActiveShieldGain(device, g);}
-
 
         
-    #ifndef ACTICHAMP_TESTING_TOOLKIT
-    private:
-    #endif
-        
-        signed int get_channel(t_champDataModelAux& data, unsigned int channel);
-        signed int get_channel(t_champDataModel32&  data, unsigned int channel);
-        signed int get_channel(t_champDataModel64&  data, unsigned int channel);
-        signed int get_channel(t_champDataModel96&  data, unsigned int channel);
-        signed int get_channel(t_champDataModel128& data, unsigned int channel);
-        signed int get_channel(t_champDataModel160& data, unsigned int channel);
 
-        // Library Variables
-        DeviceSettings device_settings;
-        LibrarySettings library_settings;
-
-        t_champDataModelAux *dataaux;
-        t_champDataModel32 *data32;
-        t_champDataModel64 *data64;
-        t_champDataModel96 *data96;
-        t_champDataModel128 *data128;
-        t_champDataModel160 *data160;
-        // Hardware Handle
-        //
-        HANDLE device;
-
-        //Shortcut to apply all settings.
-        
 
 };
 
+#endif

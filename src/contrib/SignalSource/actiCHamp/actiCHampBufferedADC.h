@@ -55,7 +55,14 @@ class actiCHampBufferedADC : public BufferedADC
   int mode;
   int deviceNumber;
   int referenceChannel;
+  unsigned int m_total_channel_count;
+  unsigned int m_eeg_count;
+  unsigned int m_aux_count;
+  unsigned int m_trigger_count;
   unsigned int activeShieldGain;
+  unsigned int* mp_eeg_list;
+  unsigned int* mp_aux_list;
+  unsigned int* mp_trigger_list;
 };
 
 #endif // INCLUDED_actiCHampBufferedADC_H

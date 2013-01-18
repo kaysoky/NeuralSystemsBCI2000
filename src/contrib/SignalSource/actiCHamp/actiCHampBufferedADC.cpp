@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU General Public License along with // this program.  If not, see <http://www.gnu.org/licenses/>.  //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
+
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -50,26 +51,46 @@ actiCHampBufferedADC::actiCHampBufferedADC()
     "Source:Signal%20Properties int SampleBlockSize= 10 "
        "10 1 2000 // number of samples transmitted at a time",
 
-   "Source:Signal%20Properties int SourceCh= 40 "
-       "40 1 168 // number of source channels"
+   "Source:Signal%20Properties int SourceCh= 56 "
+       "56 1 184 // number of source channels",
 	   
-    "Source:Signal%20Properties floatlist SourceChGain= 40 "
+    "Source:Signal%20Properties:DataIOFilter floatlist SourceChGain= 56 "
     "1 1 1 1 1 1 1 1 1 1 "
     "1 1 1 1 1 1 1 1 1 1 "
     "1 1 1 1 1 1 1 1 1 1 "
     "1 1 1 1 1 1 1 1 1 1 "
+    "1 1 1 1 1 1 1 1 1 1 "
+    "1 1 1 1 1 1 "
     "% % % // channels gains",
 
-    "Source:Signal%20Properties floatlist SourceChOffset= 40 "
+    "Source:Signal%20Properties:DataIOFilter floatlist SourceChOffset= 56 "
     "0 0 0 0 0 0 0 0 0 0 "
     "0 0 0 0 0 0 0 0 0 0 "
     "0 0 0 0 0 0 0 0 0 0 "
     "0 0 0 0 0 0 0 0 0 0 "
+    "0 0 0 0 0 0 0 0 0 0 "
+    "0 0 0 0 0 0 "
     "% % % // channels offset",
 
 
     "Source:ActiCHamp int ReferenceChannel= 1 "
        "% % % // Set the library reference channel",
+
+    "Source:ActiCHamp intlist EegChList= 32 " 
+        "1 2 3 4 5 6 7 8 9 10 "
+        "11 12 13 14 15 16 17 18 19 20 "
+        "21 22 23 24 25 26 27 28 29 30 "
+        "31 32 "
+       "% 1 % // list of Eeg channel indices to use",
+
+    "Source:ActiCHamp intlist AuxChList= 8 " 
+        "1 2 3 4 5 6 7 8"
+       "% 1 % // list of Aux channel indices to use",
+
+    "Source:ActiCHamp intlist TriggerChList= 16 " 
+        "1 2 3 4 5 6 7 8 9 10 "
+        "11 12 13 14 15 16"
+       "% 1 % // list of Trigger channel indices to use",
 
     "Source:ActiCHamp int ActiveShieldGain= 100 "
        "100 1 100 // Set the gain in ActiveShield mode"
@@ -77,121 +98,134 @@ actiCHampBufferedADC::actiCHampBufferedADC()
 
  END_PARAMETER_DEFINITIONS
 
-
-  // ...and likewise any state variables.
-
- /* BEGIN_STATE_DEFINITIONS */
- // TODO: BATTERY STATES
-
- /*  // IMPORTANT NOTE ABOUT BUFFEREDADC AND STATES: */  
- /*  // * BCI2000 States can only be populated "per sample" if they're populated synchronously. */
- /*  // * States can only be populated synchronously by calling State( "Y" )( idx ) = X; in OnProcess. */
- /*  // * States can also be populated asynchronously by calling bcievent << "Y" << x; in DoAcquire. */
- /*  // * Asynchronous state population using bcievent cannot occur per sample, but only per sampleblock. */
- /*  // * If a state changes multiple times in a single sample block, data WILL BE LOST using the bcievent interface. */
- /*  // * This presents a problem for many amplifier APIs because many of them must be instantiated and run in a single */
- /*  //   thread (they are not thread-safe) and access to API state data must be managed carefully if its needed in the main thread. */
-
- /*   "SomeState       8 0 0 0",    // These are just examples. Change them, or remove them. */
- /*   "SomeOtherState 16 0 0 0", */
-
- /* END_STATE_DEFINITIONS */
-
+  mp_eeg_list     = 0;
+  mp_aux_list     = 0;
+  mp_trigger_list = 0;
 }
 
 actiCHampBufferedADC::~actiCHampBufferedADC()
 {
-  myDevice.close();
+    this->OnHalt();
 }
 
-void
-actiCHampBufferedADC::OnHalt()
+void actiCHampBufferedADC::OnHalt()
 {
-  myDevice.close();
+    delete[] mp_eeg_list;
+    delete[] mp_aux_list;
+    delete[] mp_trigger_list;
+    mp_eeg_list     = 0;
+    mp_aux_list     = 0;
+    mp_trigger_list = 0;
+    myDevice.close();
 }
 
-void
-actiCHampBufferedADC::OnPreflight( SignalProperties& Output ) const
+void actiCHampBufferedADC::OnPreflight( SignalProperties& Output ) const
 {
-  if ( (int) Parameter("Acquisitionmode") < 0 || (int) Parameter("Acquisitionmode") > 3 )
-  {
-      bcierr<< "Unknown AcquisitionMode" << endl;
-  }
-  if ( (int) Parameter("AcquisitionMode") == 1 && ( (int)Parameter("ActiveShieldGain") < 0 || (int) Parameter("ActiveShieldGain")> 100))
-  {
+    //Get max channel counts from device.
+    actiCHampDevice preflight_tester;
+    preflight_tester.open((int)Parameter ("actiCHampAmplifierID"));
+
+    int maxEeg           = preflight_tester.get_max_supported_eeg();
+    int maxAux           = preflight_tester.get_max_supported_aux();
+    int maxTrigger       = preflight_tester.get_max_supported_trigger();
+
+    //Parameters from config
+    int mode             = Parameter("AcquisitionMode");
+    int activeShieldGain = Parameter("ActiveShieldGain");
+    int triggerCount     = Parameter("TriggerChList")->NumValues();
+    int auxCount         = Parameter("AuxChList")->NumValues();
+    int eegCount         = Parameter("EegChList")->NumValues();
+    int samplingRate     = Parameter("SamplingRate");
+    int numberOfChannels = Parameter( "SourceCh" );
+    int samplesPerBlock  = Parameter( "SampleBlockSize" );
+    int referenceChannel = Parameter( "ReferenceChannel");
+
+    SignalType sigType   = SignalType::float32;
+    Output               = SignalProperties( numberOfChannels, samplesPerBlock, sigType );
+    preflight_tester.close();
+
+    //Tests Follow
+    //
+    if( mode == 1 && (activeShieldGain < 0 || activeShieldGain > 100))
       bcierr<< "Active Shield Gain must be between 1 and 100" << endl;
-  }
-  if( (int)Parameter("actiCHampAmplifierID") < 0)
-  {
-      bcierr << "Wrong amplifier ID " << endl;
-  }
-  if( (double)Parameter( "SamplingRate" ) == 0.0 )
-    bcierr << "SamplingRate cannot be zero" << endl;
 
-  if( 10000%(int)Parameter("SamplingRate") != 0)
-      bcierr << "SamplingRate must go into 10000 evenly" << endl;
+    if( 10000%samplingRate != 0 || samplingRate < 1)
+      bcierr << "SamplingRate must go into 10000 evenly, and be greater than 0" << endl;
 
-  if( (unsigned int)Parameter("ReferenceChannel") > -1 )
-      bcierr << "ReferenceChannel must greater than -1"<<endl ;
+    //Channel Tests
+    if(triggerCount + auxCount + eegCount != numberOfChannels)
+      bcierr<< "The number of channel elements in EegChList, AuxChList, and TriggerChList must add up to SourceCh"<<endl ;
 
-  if( (unsigned int)Parameter("ReferenceChannel") > Parameter("SourceCh") )
-      bcierr << "ReferenceChannel must be smaller than SourceCh"<<endl ;
+    if(referenceChannel < 0 || referenceChannel > maxEeg )
+      bcierr<< "ReferenceChannel must be between 0 and " << maxEeg << endl;
 
-  int samplingRate = Parameter("SamplingRate");
-  int numberOfChannels = Parameter( "SourceCh" );
-  int samplesPerBlock  = Parameter( "SampleBlockSize" );
-  int referenceChannel = Parameter( "ReferenceChannel");
-  SignalType sigType = SignalType::float32; 
-  Output = SignalProperties( numberOfChannels, samplesPerBlock, sigType );
+    if ( eegCount > maxEeg)
+      bcierr<<"Eeg channels cannot exceed " << maxEeg << endl;
+
+    if ( auxCount > maxAux)
+      bcierr<<"Aux channels cannot exceed " << maxAux << endl;
+
+    if ( triggerCount > maxTrigger)
+      bcierr<<"Trigger channels cannot exceed " << maxTrigger << endl;
+
+    for(int i = 0; i<eegCount; ++i)
+    {
+      int idx = Parameter( "EegChList" )(i);
+      if(idx <1 || idx > maxEeg)
+      {
+          bcierr <<"Eeg Channels in EegChList must be between 1 and " << maxEeg << endl;
+      }
+    }
+    for(int i = 0; i<auxCount; ++i)
+    {
+      int idx = Parameter( "AuxChList" )(i);
+      if(idx <1 || idx > maxAux)
+      {
+          bcierr <<"Aux Channels in AuxChList must be between 1 and " << maxAux << endl;
+      }
+    }
+
+    for(int i = 0; i<triggerCount; ++i)
+    {
+      int idx = Parameter( "TriggerChList" )(i);
+      if(idx <1 || idx > maxTrigger)
+      {
+          bcierr <<"Triggers in TriggerChList must be between 1 and " << maxTrigger << endl;
+      }
+    }
 
 }
 
-void
-actiCHampBufferedADC::OnInitialize( const SignalProperties& Output )
+void actiCHampBufferedADC::OnInitialize( const SignalProperties& Output )
 {
-  // The user has pressed "Set Config" and all Preflight checks have passed.
-  // The system will now transition into an "Initialized" state.
-  // The signal properties can no longer be modified, but the const limitation has gone, so
-  // the actiCHampBufferedADC instance itself can be modified. Allocate any memory you need
-  // store any information you need in private member variables.
+    referenceChannel      = (int)Parameter("referenceChannel") - 1;
+    mode                  = (int)Parameter ("AcquisitionMode");
+    deviceNumber          = Parameter ("actiCHampAmplifierID");
+    sampleRate            = Parameter( "SamplingRate" );
+    mSampleBlockSize      = Parameter( "SampleBlockSize" );
+    mMsecPerBlock         = 1000.0 * mSampleBlockSize / sampleRate;
+    activeShieldGain      = (int)Parameter("ActiveShieldGain");
+    m_total_channel_count = Parameter("SourceCh");
+    m_trigger_count       = Parameter("TriggerChList")->NumValues();
+    m_aux_count           = Parameter("AuxChList")->NumValues();
+    m_eeg_count           = Parameter("EegChList")->NumValues();
+    mp_eeg_list           = new unsigned int[m_eeg_count];
+    mp_aux_list           = new unsigned int[m_aux_count];
+    mp_trigger_list       = new unsigned int[m_trigger_count];
 
-  // As long as the system is in an initialized state, the module should be pushing data from
-  // the amplifier through the system.  Initialized != Running, however.  The system can call
-  // StartRun and StopRun many times while remaining initialized.  The system will only become
-  // uninitialized again once OnHalt is called.
-
-  // Don't bother with any amplifier-API stuff here, however: instead, do this in
-  // OnStartAcquisition() which will be called in the acquisition thread immediately after this
-  // method finishes.
-  /* myDevice.open((int)Parameter("actiCHampAmplifierID")); */
-  /* DeviceSettings settings; */
-  /* settings.direct_config = true; */
-  /* settings.rate = 250; */
-  /* settings.mode = (t_champMode) 0; */
-  /* settings.decimation = 40; */
-  /* settings.averaging = 1; */
-
-  /* LibrarySettings libset; */
-  /* libset.debug = false; */
-  /* libset.init_tries = 3; */
-
-  /* myDevice.set_device_settings(settings); */
-  /* myDevice.apply(); */
-
-
-  /* double samplesPerSecond = Parameter( "SamplingRate" ); */
-  /* mSampleBlockSize  = Parameter( "SampleBlockSize" ); */
-  /* mMsecPerBlock = 1000.0 * mSampleBlockSize / samplesPerSecond; */
-
-
-
-    referenceChannel = (int)Parameter("referenceChannel") - 1;
-    mode             = (int)Parameter ("AcquisitionMode");
-    deviceNumber     = Parameter ("actiCHampAmplifierID");
-    sampleRate       = Parameter( "SamplingRate" );
-    mSampleBlockSize = Parameter( "SampleBlockSize" );
-    mMsecPerBlock    = 1000.0 * mSampleBlockSize / sampleRate;
-    activeShieldGain  = (int)Parameter("ActiveShieldGain");
+    //Build our channel lists
+    for(unsigned int i = 0; i<m_eeg_count; ++i)
+    {
+      mp_eeg_list[i] = (unsigned int)(Parameter( "EegChList" )(i) - 1);
+    }
+    for(unsigned int i = 0; i<m_aux_count; ++i)
+    {
+      mp_aux_list[i] = (unsigned int)(Parameter( "AuxChList" )(i) - 1);
+    }
+    for(unsigned int i = 0; i<m_trigger_count; ++i)
+    {
+      mp_trigger_list[i] = (unsigned int)(Parameter( "TriggerChList" )(i) - 1);
+    }
 }
 
 void 
@@ -200,39 +234,39 @@ actiCHampBufferedADC::OnStartAcquisition()
     myDevice.open(deviceNumber);
     myDevice.set_rate(sampleRate);
     myDevice.set_mode((t_champMode) mode);
-    myDevice.set_reference_channel(referenceChannel);
+    myDevice.set_reference_channel(referenceChannel - 1);
+    myDevice.setup_channels(m_total_channel_count, m_eeg_count, m_aux_count, m_trigger_count);
+    myDevice.route_channels(mp_eeg_list, mp_aux_list, mp_trigger_list);
 
     if(mode == 1)
     {
         myDevice.set_activeshield_gain(activeShieldGain);
     }
 
-
     myDevice.init();
 
 
 
-    if( !myDevice.start())
-    {
-      bcierr << "Device did not start";
-    }
 
     if(mode == 2)
     {
+        if( !myDevice.start())
+        {
+          bcierr << "Device did not start"<<endl;;
+        }
         myDevice.get_impedance_data();
+        ThreadUtils::SleepFor(2);
         myDevice.stop();
         myDevice.close();
         mode = 0;
-        myDevice.open(deviceNumber);
-        myDevice.set_rate(sampleRate);
-        myDevice.set_mode((t_champMode) mode);
-        myDevice.set_reference_channel(referenceChannel);
-        myDevice.init();
+        this->OnStartAcquisition();
+    }
+    else
+    {
         if( !myDevice.start())
         {
-          bcierr << "Device did not start";
+          bcierr << "Device did not start"<<endl;
         }
-
     }
 
 }
@@ -247,14 +281,12 @@ actiCHampBufferedADC::StartRun()
 {
 }
 
-void
-actiCHampBufferedADC::StopRun()
+void actiCHampBufferedADC::StopRun()
 {
 }
 
-void
-actiCHampBufferedADC::OnStopAcquisition()
+void actiCHampBufferedADC::OnStopAcquisition()
 {
-  myDevice.stop();
+    myDevice.stop();
 }
 
