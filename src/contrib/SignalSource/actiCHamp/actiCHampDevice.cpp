@@ -18,7 +18,8 @@
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with // this program.  If not, see <http://www.gnu.org/licenses/>.  //
+// You should have received a copy of the GNU General Public License along with 
+// this program.  If not, see <http://www.gnu.org/licenses/>.  
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "ChannelRouter.h"
@@ -81,13 +82,13 @@ bool actiCHampDevice::open(int devNum)
 
     if(m_device == 0)
     {
-        preErrorStream << "Failed to get m_device handle." << endl;
+        preErrorStream << "Failed to get device handle." << endl;
         return false;
     }
 
     e = champGetVersion(m_device, &m_version);
     if (e != CHAMP_ERR_OK) {
-        preErrorStream << "Could not get m_device version. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device version. actiCHamp Error: " << e << endl;
         return false;
     }
     
@@ -99,7 +100,7 @@ bool actiCHampDevice::open(int devNum)
         }
         else
         {
-            preErrorStream << "FPGA not initialized on this try, make sure that the firmware file is in the same directory as the DLL." << endl << "Retrying to open the m_device...."<< endl;
+            preErrorStream << "FPGA not initialized on this try, make sure that the firmware file is in the same directory as the DLL. Retrying to open the device...."<< endl;
             close();
             --m_init_tries;
             return open(devNum);
@@ -110,14 +111,14 @@ bool actiCHampDevice::open(int devNum)
 
     e = champGetModules(m_device, &m_modules);
     if (e != CHAMP_ERR_OK) {
-        preErrorStream << "Could not get m_device modules. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device modules. actiCHamp Error: " << e << endl;
         return false;
     }
 
 
     e = champGetProperty(m_device, &m_properties);
     if (e != CHAMP_ERR_OK) {
-        preErrorStream << "Could not get m_device properties. actiCHamp Error: " << e << endl;
+        preErrorStream << "Could not get device properties. actiCHamp Error: " << e << endl;
         return false;
     }
 

@@ -23,11 +23,13 @@ LINK_DIRECTORIES(
 SET( SRC_PROJECT
   actiCHampBufferedADC.cpp
   actiCHampDevice.cpp
+  ChannelRouter.cpp
 )
 
 SET( HDR_PROJECT
   actiCHampBufferedADC.h
   actiCHampDevice.h
+  ChannelRouter.h
 )
 
 BCI2000_ADD_SIGNAL_SOURCE_MODULE( 

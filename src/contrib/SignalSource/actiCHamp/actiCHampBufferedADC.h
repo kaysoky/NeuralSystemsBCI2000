@@ -47,22 +47,21 @@ class actiCHampBufferedADC : public BufferedADC
   virtual void StopRun();
 
  private:
-   // Use this space to declare any actiCHampBufferedADC-specific methods and member variables you'll need
-  actiCHampDevice myDevice;
-  double mMsecPerBlock;
-  int mSampleBlockSize;
-  int sampleRate;
-  int mode;
-  int deviceNumber;
-  int referenceChannel;
-  unsigned int m_total_channel_count;
-  unsigned int m_eeg_count;
-  unsigned int m_aux_count;
-  unsigned int m_trigger_count;
-  unsigned int activeShieldGain;
-  unsigned int* mp_eeg_list;
-  unsigned int* mp_aux_list;
-  unsigned int* mp_trigger_list;
+  actiCHampDevice  m_actiCHamp;
+  double           m_msec_per_block;
+  int              m_sample_block_size;
+  int              m_sample_rate;
+  int              m_mode;
+  int              m_device_number;
+  int              m_reference_channel;
+  unsigned int     m_total_channel_count;
+  unsigned int     m_eeg_count;
+  unsigned int     m_aux_count;
+  unsigned int     m_trigger_count;
+  unsigned int     m_active_shield_gain;
+  unsigned int    *mp_eeg_list;
+  unsigned int    *mp_aux_list;
+  unsigned int    *mp_trigger_list;
 };
 
 #endif // INCLUDED_actiCHampBufferedADC_H

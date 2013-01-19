@@ -18,7 +18,8 @@
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with // this program.  If not, see <http://www.gnu.org/licenses/>.  //
+// You should have received a copy of the GNU General Public License along with 
+// this program.  If not, see <http://www.gnu.org/licenses/>.
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -116,7 +117,7 @@ void actiCHampBufferedADC::OnHalt()
     mp_eeg_list     = 0;
     mp_aux_list     = 0;
     mp_trigger_list = 0;
-    myDevice.close();
+    m_actiCHamp.close();
 }
 
 void actiCHampBufferedADC::OnPreflight( SignalProperties& Output ) const
@@ -198,13 +199,13 @@ void actiCHampBufferedADC::OnPreflight( SignalProperties& Output ) const
 
 void actiCHampBufferedADC::OnInitialize( const SignalProperties& Output )
 {
-    referenceChannel      = (int)Parameter("referenceChannel") - 1;
-    mode                  = (int)Parameter ("AcquisitionMode");
-    deviceNumber          = Parameter ("actiCHampAmplifierID");
-    sampleRate            = Parameter( "SamplingRate" );
-    mSampleBlockSize      = Parameter( "SampleBlockSize" );
-    mMsecPerBlock         = 1000.0 * mSampleBlockSize / sampleRate;
-    activeShieldGain      = (int)Parameter("ActiveShieldGain");
+    m_reference_channel    = (int)Parameter("referenceChannel") - 1;
+    m_mode                  = (int)Parameter ("AcquisitionMode");
+    m_device_number          = Parameter ("actiCHampAmplifierID");
+    m_sample_rate            = Parameter( "SamplingRate" );
+    m_sample_block_size      = Parameter( "SampleBlockSize" );
+    m_msec_per_block         = 1000.0 * m_sample_block_size / m_sample_rate;
+    m_active_shield_gain      = (int)Parameter("ActiveShieldGain");
     m_total_channel_count = Parameter("SourceCh");
     m_trigger_count       = Parameter("TriggerChList")->NumValues();
     m_aux_count           = Parameter("AuxChList")->NumValues();
@@ -231,39 +232,39 @@ void actiCHampBufferedADC::OnInitialize( const SignalProperties& Output )
 void 
 actiCHampBufferedADC::OnStartAcquisition()
 {
-    myDevice.open(deviceNumber);
-    myDevice.set_rate(sampleRate);
-    myDevice.set_mode((t_champMode) mode);
-    myDevice.set_reference_channel(referenceChannel - 1);
-    myDevice.setup_channels(m_total_channel_count, m_eeg_count, m_aux_count, m_trigger_count);
-    myDevice.route_channels(mp_eeg_list, mp_aux_list, mp_trigger_list);
+    m_actiCHamp.open(m_device_number);
+    m_actiCHamp.set_rate(m_sample_rate);
+    m_actiCHamp.set_mode((t_champMode) m_mode);
+    m_actiCHamp.set_reference_channel(m_reference_channel - 1);
+    m_actiCHamp.setup_channels(m_total_channel_count, m_eeg_count, m_aux_count, m_trigger_count);
+    m_actiCHamp.route_channels(mp_eeg_list, mp_aux_list, mp_trigger_list);
 
-    if(mode == 1)
+    if(m_mode == 1)
     {
-        myDevice.set_activeshield_gain(activeShieldGain);
+        m_actiCHamp.set_activeshield_gain(m_active_shield_gain);
     }
 
-    myDevice.init();
+    m_actiCHamp.init();
 
 
 
 
-    if(mode == 2)
+    if(m_mode == 2)
     {
-        if( !myDevice.start())
+        if( !m_actiCHamp.start())
         {
           bcierr << "Device did not start"<<endl;;
         }
-        myDevice.get_impedance_data();
+        m_actiCHamp.get_impedance_data();
         ThreadUtils::SleepFor(2);
-        myDevice.stop();
-        myDevice.close();
-        mode = 0;
+        m_actiCHamp.stop();
+        m_actiCHamp.close();
+        m_mode = 0;
         this->OnStartAcquisition();
     }
     else
     {
-        if( !myDevice.start())
+        if( !m_actiCHamp.start())
         {
           bcierr << "Device did not start"<<endl;
         }
@@ -273,7 +274,7 @@ actiCHampBufferedADC::OnStartAcquisition()
 
 void actiCHampBufferedADC::DoAcquire( GenericSignal& Output ) 
 {	
-    myDevice.get_data(Output, mSampleBlockSize);
+    m_actiCHamp.get_data(Output, m_sample_block_size);
 }
 
 void
@@ -287,6 +288,6 @@ void actiCHampBufferedADC::StopRun()
 
 void actiCHampBufferedADC::OnStopAcquisition()
 {
-    myDevice.stop();
+    m_actiCHamp.stop();
 }
 
