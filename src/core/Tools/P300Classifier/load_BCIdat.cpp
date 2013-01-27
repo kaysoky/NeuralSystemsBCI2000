@@ -110,7 +110,17 @@ for (int j=0; j<NumChannels; j++)
 parms.SamplingRate = static_cast<int>(CurrentFile->SamplingRate());
 
 // Get the Number of Sequences
-parms.NumberOfSequences = CurrentFile->Parameter("NumberOfSequences");
+
+if (CurrentFile->Parameters()->Exists("NumberOfSequences"))
+{
+	parms.NumberOfSequences = CurrentFile->Parameter("NumberOfSequences");
+}
+else
+{
+	printf("The parameter Number of Sequences does not exist");
+    exit(1);
+}
+
 
 if (mode == 1 || mode == 2)
 {

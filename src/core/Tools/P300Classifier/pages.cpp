@@ -940,6 +940,25 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
       }
     }
 
+	// Check the Parameter Number of Sequences - Modifiction Cristhian Potes - January 27, 2013
+	if (CurrentFile->Parameters()->Exists("NumberOfSequences"))
+	{
+	}  
+    else
+    {
+      ostringstream oss;
+      oss << "The parameter: Number Of Sequences of file " << fPathArr[files].c_str()<< " does not exist";
+      QMessageBox msgBox(QMessageBox::Warning, tr("Warning"),
+      oss.str().c_str(), 0, this);
+      msgBox.addButton(tr("&Continue"), QMessageBox::AcceptRole);
+      if (msgBox.exec() == QMessageBox::AcceptRole)
+      {
+        this->TrainingDataFilesList->item(files)->setBackgroundColor(QColor(tr("lightpink")));
+        this->GenerateFeatureWeights->setEnabled(false);
+        return false;
+      }
+    }
+
     IfMultipleMenusTrainingData = false; // make sure it is set correctly for StimulusPresentation files, jm
     // Check the NumMatrixRows. Cristhian Modification Oct 9, 2009
     if (CurrentFile->Parameters()->Exists("NumMatrixRows"))
