@@ -36,4 +36,5 @@ ADD_SUBDIRECTORY( RDAClient)
 ADD_SUBDIRECTORY( Neuroscan )
 ADD_SUBDIRECTORY( FieldTripBufferSource )
 ADD_SUBDIRECTORY( FilePlayback )
+ADD_SUBDIRECTORY( Blackrock )
 
