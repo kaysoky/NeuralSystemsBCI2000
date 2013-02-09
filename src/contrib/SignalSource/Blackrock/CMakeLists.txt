@@ -16,12 +16,12 @@ SET( HDR_PROJECT
   BlackrockADC.h
 )
 
-INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/private/SignalSource/Blackrock/lib/inc )
+INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Blackrock/lib/inc )
 
 IF( WIN32 )
-  LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/private/SignalSource/Blackrock/lib/coff )
+  LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Blackrock/lib/coff )
 ELSE( WIN32 )
-  LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/private/SignalSource/Blackrock/lib/dylib )
+  LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/Blackrock/lib/dylib )
 ENDIF( WIN32 )
 
 # Add the source module to the Makefile or compiler project file:
