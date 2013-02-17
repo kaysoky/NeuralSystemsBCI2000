@@ -37,14 +37,18 @@
 #include "Param.h"
 #include "TelnetServer.h"
 #include "defines.h"
+#include "BCIStream.h"
 
 using namespace std;
 
 StateMachine* gpStateMachine = NULL;
 static TelnetServer* spTelnetServer = NULL;
+static CommandInterpreter* spWatchInterpreter = NULL;
 
 typedef set<const char*> MemorySet;
 static MemorySet sAllocatedMemory;
+
+static int sNextWatchID = BCI_NumEvents;
 
 // An internal helper function that allocates output string buffers.
 static const char* AllocateCopy( const char* inString )
@@ -781,3 +785,74 @@ STDCALL BCI_CheckPendingCallback()
   return result;
 }
 
+/*
+function:  BCI_AddWatch
+purpose:   Create a watch consisting of one or more expressions. An event is triggered whenever
+           one of the expressions changes its value. Expressions are evaluated as described for
+           the EVALUATE EXPRESSION scripting command.
+           You may associate a callback with the created watch by specifying its watch ID as an
+           event ID to any of the callback registration functions. To the callback function, an
+           additional argument of type const char* will be provided, which contains a string
+           representation of all current expression values, separated by tab characters, and terminated
+           with a Windows newline sequence (CRLF).
+arguments: A string containing a list of expressions, separated by tab characters.
+returns:   A watch ID if successful, BCI_None otherwise. The function will fail if the list of expressions
+           contains an invalid expression.
+*/
+DLLEXPORT long
+STDCALL BCI_AddWatch( const char* inExprs )
+{
+  if( gpStateMachine == 0 )
+    return BCI_None;
+    
+  if( !spWatchInterpreter )
+    spWatchInterpreter = new CommandInterpreter( *gpStateMachine );
+
+  vector<string> exprs;
+  const string separators = "\0\t\n";
+  const char* p = inExprs;
+  while( *p )
+  {
+    const char* q = p;
+    while( separators.find( *q ) == string::npos )
+      ++q;
+    exprs.push_back( string( p, q - p - 1 ) );
+    p = q;
+  }
+  while( !exprs.empty() && exprs.back().empty() )
+    exprs.pop_back();
+    
+  long watchID = BCI_None;
+  try
+  {
+    Watch* p = new ExpressionWatch( exprs, *spWatchInterpreter, "", BCI_NumEvents );
+    watchID = p->ID();
+  }
+  catch( const BCIException& e )
+  {
+    bcierr << e.what();
+  }
+  return watchID;
+}
+
+/*
+function:  BCI_RemoveWatch
+purpose:   Removes a watch that was created using BCI_AddWatch(), and unregisters its associated callback function.
+arguments: Watch ID as returned by BCI_AddWatch.
+returns:   1 if successful, 0 if no watch was registered with the given ID.
+*/
+DLLEXPORT int
+STDCALL BCI_RemoveWatch( long inID )
+{
+  if( !gpStateMachine )
+    return 0;
+
+  ::Lock<Watch::List> lock( gpStateMachine->Watches() );
+  Watch* pWatch = gpStateMachine->Watches().FindByID( inID );
+  if( pWatch )
+  {
+    BCI_SetCallback( inID, 0, 0 );
+    delete pWatch;
+  }
+  return pWatch ? 1 : 0;
+}

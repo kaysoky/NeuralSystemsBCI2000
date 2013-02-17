@@ -41,8 +41,9 @@ using namespace Interpreter;
 ScriptType ScriptType::sInstance;
 const ObjectType::MethodEntry ScriptType::sMethodTable[] =
 {
-  METHOD( Set ), METHOD( Clear ),
-  METHOD( Get ),
+  METHOD( Set ),
+  METHOD( Get ), { "Show", &Get },
+  METHOD( Clear ), { "Drop", &Clear },
   METHOD( Execute ),
   END
 };

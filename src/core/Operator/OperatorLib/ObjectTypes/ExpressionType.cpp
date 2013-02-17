@@ -27,71 +27,27 @@
 #pragma hdrstop
 
 #include "ExpressionType.h"
-#include "CommandInterpreter.h"
-#include "Expression.h"
+#include "InterpreterExpression.h"
+#include "StateMachine.h"
+#include "WatchTypes.h"
 #include "BCIException.h"
 
 using namespace std;
 using namespace Interpreter;
-
-class InterpreterExpression : public Expression
-{
- public:
-  InterpreterExpression( CommandInterpreter& inInterpreter )
-    : Expression( inInterpreter.GetRemainingTokens() ),
-      mrInterpreter( inInterpreter )
-    { ThrowOnError( true ); }
-  Node* Variable( const string& );
-  Node* VariableAssignment( const string&, Node* );
-  Node* State( const string& name )
-    { return new StateNode( mrInterpreter, name ); }
-  Node* StateAssignment( const string& name, Node* rhs )
-    { return new StateAssignmentNode( mrInterpreter, name, rhs ); }
-  static bool StateExists( CommandInterpreter&, const string& );
-  static void AssertState( CommandInterpreter&, const string& );
-
- private:
-  CommandInterpreter& mrInterpreter;
-
-  class StateNode : public Node
-  {
-   public:
-    StateNode( CommandInterpreter& interpreter, const string& name )
-    : mrInterpreter( interpreter ), mName( name ) {}
-   protected:
-    double OnEvaluate();
-   private:
-    CommandInterpreter& mrInterpreter;
-    string mName;
-  };
-
-  class StateAssignmentNode : public Node
-  {
-   public:
-    StateAssignmentNode( CommandInterpreter& interpreter, const string& name, Node* rhs )
-    : mrInterpreter( interpreter ), mName( name ) { Add( rhs ); }
-   protected:
-    double OnEvaluate();
-   private:
-    CommandInterpreter& mrInterpreter;
-    string mName;
-  };
-};
 
 ExpressionType ExpressionType::sInstance;
 const ObjectType::MethodEntry ExpressionType::sMethodTable[] =
 {
   METHOD( Evaluate ),
   METHOD( Clear ),
+  METHOD( Watch ),
   END
 };
 
 bool
 ExpressionType::Evaluate( CommandInterpreter& inInterpreter )
 {
-  InterpreterExpression exp( inInterpreter );
-  exp.Compile( inInterpreter.ExpressionVariables() );
-  inInterpreter.Out() << exp.Execute( &inInterpreter.StateMachine().ControlSignal() );
+  inInterpreter.Out() << InterpreterExpression( inInterpreter ).Execute();
   return true;
 }
 
@@ -108,52 +64,8 @@ ExpressionType::Clear( CommandInterpreter& inInterpreter )
   return true;
 }
 
-// InterpreterExpression definitions
 bool
-InterpreterExpression::StateExists( CommandInterpreter& inInterpreter, const string& inName )
+ExpressionType::Watch( CommandInterpreter& inInterpreter )
 {
-  return inInterpreter.StateMachine().States().Exists( inName );
+  return WatchType::Create( inInterpreter, true );
 }
-
-void
-InterpreterExpression::AssertState( CommandInterpreter& inInterpreter, const string& inName )
-{
-  if( !StateExists( inInterpreter, inName ) )
-    throw bciexception_( "State \"" << inName << "\" does not exist" );
-}
-
-Expression::Node*
-InterpreterExpression::Variable( const string& inName )
-{
-  if( StateExists( mrInterpreter, inName ) )
-    return new StateNode( mrInterpreter, inName );
-  return ArithmeticExpression::Variable( inName );
-}
-
-Expression::Node*
-InterpreterExpression::VariableAssignment( const string& inName, Node* inRhs )
-{
-  if( StateExists( mrInterpreter, inName ) )
-    return new StateAssignmentNode( mrInterpreter, inName, inRhs );
-  return ArithmeticExpression::VariableAssignment( inName, inRhs );
-}
-
-double
-InterpreterExpression::StateNode::OnEvaluate()
-{
-  Lock<StateMachine> lock( mrInterpreter.StateMachine() );
-  AssertState( mrInterpreter, mName );
-  return mrInterpreter.StateMachine().GetStateValue( mName.c_str() );
-}
-
-double
-InterpreterExpression::StateAssignmentNode::OnEvaluate()
-{
-  double rhs = mChildren[0]->Evaluate();
-  Lock<StateMachine> lock( mrInterpreter.StateMachine() );
-  AssertState( mrInterpreter, mName );
-  if( !mrInterpreter.StateMachine().SetStateValue( mName.c_str(), static_cast<State::ValueType>( rhs ) ) )
-    throw bciexception_( "Could not set value of state " << mName );
-  return rhs;
-}
-

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: Arithmetic expression type for the script interpreter.
+// Description: Watch types for the script interpreter.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,27 +23,52 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef EXPRESSION_TYPE_H
-#define EXPRESSION_TYPE_H
+#ifndef WATCH_TYPES_H
+#define WATCH_TYPES_H
 
 #include "ObjectType.h"
+#include "Watches.h"
 
 namespace Interpreter {
 
-class ExpressionType : public ObjectType
+class WatchType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return "Expression"; }
+  virtual const char* Name() const { return "Watch"; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
 
  public:
-  static bool Evaluate( CommandInterpreter& );
-  static bool Clear( CommandInterpreter& );
-  static bool Watch( CommandInterpreter& );
+  static bool New( CommandInterpreter& );
+  static bool Create( CommandInterpreter&, bool singleToken );
+  static bool Delete( CommandInterpreter& );
+  static bool Check( CommandInterpreter& );
+  static bool Trigger( CommandInterpreter& );
 
  private:
+  static Watch::Set Find( CommandInterpreter& );
+ 
   static const MethodEntry sMethodTable[];
-  static ExpressionType sInstance;
+  static WatchType sInstance;
+};
+
+class WatchesType : public ObjectType
+{
+ protected:
+  virtual const char* Name() const { return "Watches"; }
+  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
+
+ public:
+  static bool Check( CommandInterpreter& );
+  static bool Trigger( CommandInterpreter& );
+  static bool List( CommandInterpreter& );
+  static bool Count( CommandInterpreter& );
+  static bool Delete( CommandInterpreter& );
+
+ private:
+  static Watch::Set Select( CommandInterpreter& );
+ 
+  static const MethodEntry sMethodTable[];
+  static WatchesType sInstance;
 };
 
 } // namespace

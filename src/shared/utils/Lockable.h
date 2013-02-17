@@ -35,20 +35,25 @@
 #ifndef LOCKABLE_H
 #define LOCKABLE_H
 
-#include "Uncopyable.h"
 #include "OSMutex.h"
+#include "BCIAssert.h"
 
-class Lockable : private Uncopyable
+class Lockable
 {
  public:
-  Lockable()          {}
+  Lockable() {}
+  Lockable( const Lockable& ) {}
   virtual ~Lockable() {}
+  Lockable& operator=( const Lockable& ) {}
+
   bool Lock() const   { return mMutex.Acquire(); }
   bool Unlock() const { return mMutex.Release(); }
 
  private:
   OSMutex mMutex;
 };
+
+template<typename T> class Lock;
 
 template<typename T>
 class Lock
@@ -59,22 +64,47 @@ class Lock
 
  public:
   Lock( T& t )
-    : mrT( t )
-    { mrT.Lock(); }
+    : mpT( &t ), mcpT( 0 )
+    { t.Lock(); }
+  Lock( const T& t )
+    : mpT( 0 ), mcpT( &t )
+    { t.Lock(); }
+  Lock( T* pT )
+    : mpT( pT ), mcpT( 0 )
+    { pT->Lock(); }
+  Lock( const T* cpT )
+    : mpT( 0 ), mcpT( cpT )
+    { cpT->Lock(); }
   // A copy constructor is required by some compilers that need it to implement
   //   return Lock( x );
   // An object of type T must allow recursive locking, otherwise the copy
   // constructor will block.
-  Lock( const Lock& lock )
-    : mrT( lock.mrT )
-    { mrT.Lock(); }
+  Lock( const Lock& other )
+    : mpT( other.mpT ), mcpT( other.mcpT )
+    { if( mpT ) mpT->Lock(); else if( mcpT ) mcpT->Lock(); }
   ~Lock()
-    { mrT.Unlock(); }
+    { if( mpT ) mpT->Unlock(); else if( mcpT ) mcpT->Unlock(); }
+    
+  const T& ConstRef() const
+    { return mpT ? *mpT : *mcpT; }
+  T& MutableRef() const
+    { bciassert( mpT ); return *mpT; }
   T& operator()() const
-    { return mrT; }
+    { return MutableRef(); }
 
  private:
-  T& mrT;
+  T* mpT;
+  const T* mcpT;
+};
+
+template<typename T>
+class Lock<const T> : public Lock<T>
+{
+  public:
+   Lock( const T* t ) : Lock<T>( t ) {}
+   Lock( const T& t ) : Lock<T>( t ) {}
+   const T& operator()() const
+    { return ConstRef(); }
 };
 
 template<typename T>

@@ -41,6 +41,7 @@
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
 #include "ParserToken.h"
+#include "WildcardMatch.h"
 #include "BCIException.h"
 #include "ObjectType.h"
 #include "ImpliedType.h"
@@ -81,6 +82,7 @@ CommandInterpreter::CommandInterpreter( CommandInterpreter& inOther )
 void
 CommandInterpreter::Init()
 {
+  mFlags = none;
   if( mpParent )
   {
     mpParent->AddListener( *this );
@@ -140,7 +142,7 @@ CommandInterpreter::Execute( const string& inCommand )
   mInputStream.str( inCommand );
   mInputStream >> ws;
   while( !mPosStack.empty() )
-    mPosStack.pop();
+    mPosStack.pop_back();
 
   string verb = GetToken();
   if( !verb.empty() )
@@ -167,6 +169,7 @@ CommandInterpreter::Execute( const string& inCommand )
       mInputStream.clear();
       mInputStream.seekg( 0 );
       mInputStream >> ws;
+      mPosStack.clear();
       success = ImpliedType::Get( *this );
     }
     if( !success )
@@ -336,53 +339,92 @@ CommandInterpreter::Background( int inSleepTime )
 string
 CommandInterpreter::GetToken()
 {
-  mInputStream.clear();
-  mPosStack.push( mInputStream.tellg() );
+  BeginRead();
   ParserToken token;
   mInputStream >> token >> ws;
   return token;
 }
 
 string
-CommandInterpreter::GetOptionalToken()
+CommandInterpreter::GetMatchingTokens( const string& inPattern )
 {
-  string result = GetToken();
-  if( InputFailed() )
-    Unget();
-  return result;
+  mInputStream >> ws;
+  BeginRead();
+  string s;
+  ParserToken token;
+  if( mInputStream >> token >> ws )
+    s = token;
+  bool match = false;
+  while( !( match = bci::WildcardMatch( inPattern, s, false ) )
+    && mInputStream >> token >> ws )
+    s.append( " " ).append( token );
+  if( !match )
+    s.clear();
+  return s;
+}
+
+bool
+CommandInterpreter::GetMatchingTokens( const string& inPattern, vector<string>& outMatches )
+{
+  string s = GetMatchingTokens( inPattern );
+  return !s.empty() && GetMatches( inPattern, s, outMatches );
+}
+
+bool
+CommandInterpreter::GetMatches( const string& inPattern, const string& inString, vector<string>& outMatches )
+{
+  bci::Matches matches = bci::ExtWildcardMatch( inPattern, inString, false );
+  outMatches.clear();
+  for( size_t i = 0; i < matches.size(); ++i )
+    outMatches.push_back( inString.substr( matches[i].begin, matches[i].length ) );
+  return matches;
 }
 
 string
 CommandInterpreter::GetRemainingTokens()
 {
-  string result = GetToken();
-  while( !InputFailed() )
-  {
-    string token = GetToken();
-    if( !InputFailed() )
-      result.append( " " ).append( token );
-  }
-  Unget();
+  SetFlag( optional );
+  BeginRead();
+  string result;
+  ParserToken token;
+  if( mInputStream >> ws >> token >> ws )
+    result = token;
+  while( mInputStream >> token >> ws )
+    result.append( " " ).append( token );
   return result;
 }
 
 string
 CommandInterpreter::GetRemainder()
 {
-  mInputStream.clear();
-  mPosStack.push( mInputStream.tellg() );
+  BeginRead();
   string result;
   std::getline( mInputStream >> ws, result, '\0' );
   return result;
 }
 
-string
-CommandInterpreter::GetOptionalRemainder()
+bool
+CommandInterpreter::MatchTokens( const string& inPattern )
 {
-  string result = GetRemainder();
-  if( InputFailed() )
-    Unget();
-  return result;
+  string s = GetMatchingTokens( inPattern );
+  Unget();
+  return !s.empty();
+}
+
+bool
+CommandInterpreter::MatchRemainingTokens( const string& inPattern )
+{
+  string s = GetRemainingTokens();
+  Unget();
+  return bci::WildcardMatch( inPattern, s, false );
+}
+
+bool
+CommandInterpreter::MatchRemainder( const string& inPattern )
+{
+  string s = GetOptionalRemainder();
+  Unget();
+  return bci::WildcardMatch( inPattern, s, false );
 }
 
 void
@@ -391,15 +433,39 @@ CommandInterpreter::Unget()
   if( mPosStack.empty() )
     throw bciexception_( "Cannot unget" );
   mInputStream.clear();
-  mInputStream.seekg( mPosStack.top() );
-  mPosStack.pop();
+  mInputStream.seekg( mPosStack.back().first );
+  mPosStack.pop_back();
+}
+
+void
+CommandInterpreter::BeginRead()
+{
+  mInputStream.clear();
+  mPosStack.push_back( make_pair( mInputStream.tellg(), mFlags ) );
+  mFlags = none;
 }
 
 bool
 CommandInterpreter::InputFailed()
 {
   mInputStream.clear();
-  return !mPosStack.empty() && mPosStack.top() == mInputStream.tellg();
+
+  if( mPosStack.empty() )
+    return false;
+
+  bool nothingRead = ( mInputStream.tellg() == mPosStack.back().first ),
+       optionalRead = ( mPosStack.back().second & optional );
+  if( nothingRead && !optionalRead )
+    return true;
+  
+  for( size_t i = mPosStack.size() - 1; i > 0; --i )
+  {
+    nothingRead = ( mPosStack[i].first == mPosStack[i-1].first );
+    optionalRead = ( mPosStack[i-1].second & optional );
+    if( nothingRead && !optionalRead )
+      return true;
+  }
+  return false;
 }
 
 bool

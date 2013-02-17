@@ -413,7 +413,7 @@ enum BCI_Event
 
   BCI_OnQuitRequest, /* ( void* refdata, const char** message ) executed when a script executes the QUIT command */
 
-  BCI_NumEvents
+  BCI_NumEvents,
 };
 
 /* Callback result codes. */
@@ -489,6 +489,32 @@ returns:   Returns 1 if the function was registered with BCI_SetExternalCallback
 */
 DLLEXPORT int
 STDCALL BCI_GetCallbackIsExternal( long );
+
+/*
+function:  BCI_AddWatch
+purpose:   Create a watch consisting of one or more expressions. An event is triggered whenever
+           one of the expressions changes its value. Expressions are evaluated as described for
+           the EVALUATE EXPRESSION scripting command.
+           You may associate a callback with the created watch by specifying its watch ID as an
+           event ID to any of the callback registration functions. To the callback function, an
+           additional argument of type const char* will be provided, which contains a string
+           representation of all current expression values, separated by tab characters, and terminated
+           with a Windows newline sequence (CRLF).
+arguments: A string containing a list of expressions, separated by tab characters.
+returns:   A watch ID if successful, BCI_None otherwise. The function will fail if the list of expressions
+           contains an invalid expression.
+*/
+DLLEXPORT long
+STDCALL BCI_AddWatch( const char* );
+
+/*
+function:  BCI_RemoveWatch
+purpose:   Removes a watch that was created using BCI_AddWatch(), and unregisters its associated callback function.
+arguments: Watch ID as returned by BCI_AddWatch.
+returns:   1 if successful, 0 if no watch was registered with the given ID.
+*/
+DLLEXPORT int
+STDCALL BCI_RemoveWatch( long );
 
 #ifdef __cplusplus
 }

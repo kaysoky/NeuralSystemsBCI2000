@@ -27,6 +27,7 @@
 #pragma hdrstop
 
 #include "Script.h"
+#include "CommandInterpreter.h"
 #include "BCIException.h"
 
 using namespace std;
@@ -85,6 +86,8 @@ Script::Execute( class CommandInterpreter& inInterpreter )
 {
   try
   {
+    if( !dynamic_cast<ScriptParser::Command*>( mpRootNode ) )
+      inInterpreter.Execute( "" ); // make sure to clear interpreter's state
     if( mpRootNode )
       mpRootNode->Execute( inInterpreter );
   }

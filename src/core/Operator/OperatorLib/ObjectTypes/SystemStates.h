@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: Arithmetic expression type for the script interpreter.
+// Description: Operator system state names.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,29 +23,15 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef EXPRESSION_TYPE_H
-#define EXPRESSION_TYPE_H
+#ifndef SYSTEM_STATES_H
+#define SYSTEM_STATES_H
 
-#include "ObjectType.h"
+#include <string>
 
-namespace Interpreter {
-
-class ExpressionType : public ObjectType
+namespace SystemStates
 {
- protected:
-  virtual const char* Name() const { return "Expression"; }
-  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
-
- public:
-  static bool Evaluate( CommandInterpreter& );
-  static bool Clear( CommandInterpreter& );
-  static bool Watch( CommandInterpreter& );
-
- private:
-  static const MethodEntry sMethodTable[];
-  static ExpressionType sInstance;
-};
-
+  const char* Name( int inState );
+  int Value( const std::string& inName );
 } // namespace
 
-#endif // EXPRESSION_TYPE_H
+#endif // SYSTEM_STATES_H

@@ -45,9 +45,11 @@
 #include "VersionInfo.h"
 #include "ProtocolVersion.h"
 #include "ScriptEvents.h"
+#include "Watches.h"
 #include "MessageHandler.h"
 #include "OSThread.h"
 #include "OSMutex.h"
+#include "Lockable.h"
 
 #include <set>
 #include <fstream>
@@ -115,10 +117,17 @@ class StateMachine : public CallbackBase, private OSThread
     { return static_cast<int>( mConnections.size() ); }
 
   //  Locking.
-  void Lock()
+  void Lock() const
     { mDataMutex.Acquire(); }
-  void Unlock()
+  void Unlock() const
     { mDataMutex.Release(); }
+  typedef ::Lock<StateMachine> DataLock;
+  struct WatchDataLock : DataLock
+  {
+    WatchDataLock( StateMachine* p ) : DataLock( p ) {}
+    WatchDataLock( StateMachine& s ) : DataLock( s ) {}
+    ~WatchDataLock() { ( *this )().Watches().Check(); }
+  };
 
   //  Parameter list.
   ParamList& Parameters()
@@ -158,6 +167,17 @@ class StateMachine : public CallbackBase, private OSThread
   const ScriptEvents& EventScripts() const
     { return mScriptEvents; }
 
+  // Watches.
+  Watch::List& Watches()
+    { return mWatches; }
+  const Watch::List& Watches() const
+    { return mWatches; }
+
+  // Address of local connection.
+  const std::string& LocalAddress() const
+    { return mLocalAddress; }
+  std::string SuggestUDPAddress( const std::string& ) const;
+
   // Issue a log message.
   void LogMessage( int messageCallbackID, const std::string& );
 
@@ -171,6 +191,7 @@ class StateMachine : public CallbackBase, private OSThread
  private:
   virtual int OnExecute();
 
+  void Init();
   void Terminate();
 
   void EnterState( enum SysState );
@@ -188,14 +209,14 @@ class StateMachine : public CallbackBase, private OSThread
   void RandomizationWarning();
 
   void TriggerEvent( int eventCallbackID );
-
+  
  private:
   enum SysState mSystemState;
   // A mutex protecting access to the SystemState property:
   OSMutex           mStateMutex;
-  // A mutex to be acquired while manipulating StateMachine data members,
-  // and released during callbacks:
+  // A mutex to be acquired while manipulating StateMachine data members.
   OSMutex           mDataMutex;
+  #define mDataMutex (void) // use Lock()/Unlock() rather than accessing this member directly
   // A mutex to serialize incoming BCI messages:
   OSMutex           mBCIMessageMutex;
 
@@ -207,13 +228,13 @@ class StateMachine : public CallbackBase, private OSThread
   StateVector       mStateVector;
   GenericSignal     mControlSignal;
   VisTable          mVisualizations;
-  ScriptEvents      mScriptEvents;
+  std::string       mLocalAddress;
 
   std::ofstream     mDebugLog;
 
-  struct Listeners : std::set<CommandInterpreter*>, Lockable
-  {
-  } mListeners;
+  struct Listeners : std::set<CommandInterpreter*>, Lockable {} mListeners;
+  ScriptEvents      mScriptEvents;
+  Watch::List       mWatches;
 
  public:
   struct ConnectionInfo
@@ -337,6 +358,7 @@ class StateMachine : public CallbackBase, private OSThread
 
   void CloseConnections()
   {
+    mLocalAddress = "";
     mpSourceModule = NULL;
     for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
       delete *i;

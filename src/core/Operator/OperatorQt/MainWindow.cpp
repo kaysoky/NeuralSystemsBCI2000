@@ -208,7 +208,7 @@ MainWindow::QuitOperator()
 {
   if( QMessageBox::Yes == QMessageBox::question(
        this,
-       "Question", "Do you really want to quit BCI2000?",
+       "Question", "Do you want to quit BCI2000?",
        QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes )
     )
     Terminate();
@@ -235,7 +235,7 @@ MainWindow::ReadCommandLine()
     }
     else if( qApp->arguments().at( i ) == "--Telnet" )
     {
-      if( ( i + 1 ) < qApp->arguments().size() )
+      if( ( i + 1 ) < qApp->arguments().size() && !qApp->arguments().at( i + 1 ).startsWith( "-" ) )
         mTelnet = qApp->arguments().at( ++i );
       else
         mTelnet = "localhost:3999";

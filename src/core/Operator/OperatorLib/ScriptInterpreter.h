@@ -29,7 +29,7 @@
 #include "StateMachine.h"
 #include "CommandInterpreter.h"
 
-class ScriptInterpreter : private CommandInterpreter
+class ScriptInterpreter : protected CommandInterpreter
 {
  public:
   ScriptInterpreter( class StateMachine& );

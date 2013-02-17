@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
-// Description: Arithmetic expression type for the script interpreter.
+// Description: Operator system state names.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -23,29 +23,45 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef EXPRESSION_TYPE_H
-#define EXPRESSION_TYPE_H
+#include "PCHIncludes.h"
+#pragma hdrstop
 
-#include "ObjectType.h"
+#include "SystemStates.h"
+#include "BCI_OperatorLib.h"
 
-namespace Interpreter {
-
-class ExpressionType : public ObjectType
+static const struct { int value; const char* name; }
+sSystemStates[] =
 {
- protected:
-  virtual const char* Name() const { return "Expression"; }
-  virtual const MethodEntry* MethodTable() const { return sMethodTable; }
-
- public:
-  static bool Evaluate( CommandInterpreter& );
-  static bool Clear( CommandInterpreter& );
-  static bool Watch( CommandInterpreter& );
-
- private:
-  static const MethodEntry sMethodTable[];
-  static ExpressionType sInstance;
+  #define ENTRY(x) { BCI_State##x, #x }
+  ENTRY( Unavailable ),
+  ENTRY( Idle ),
+  ENTRY( Startup ),
+  ENTRY( Initialization ), ENTRY( Connected ),
+  ENTRY( Resting ),
+  ENTRY( Suspended ),
+  ENTRY( ParamsModified ),
+  ENTRY( Running ),
+  ENTRY( Busy ),
+  #undef ENTRY
 };
+static size_t sStateCount = sizeof( sSystemStates ) / sizeof( *sSystemStates );
 
-} // namespace
+const char*
+SystemStates::Name( int inValue )
+{
+  const char* result = "";
+  for( size_t i = 0; *result == 0 && i < sStateCount; ++i )
+    if( sSystemStates[i].value == inValue )
+      result = sSystemStates[i].name;
+  return result;
+}
 
-#endif // EXPRESSION_TYPE_H
+int
+SystemStates::Value( const std::string& inName )
+{
+  int result = BCI_None;
+  for( size_t i = 0; result == BCI_None && i < sStateCount; ++i )
+    if( !::stricmp( sSystemStates[i].name, inName.c_str() ) )
+      result = sSystemStates[i].value;
+  return result;
+}

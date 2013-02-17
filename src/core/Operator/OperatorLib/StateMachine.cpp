@@ -62,10 +62,9 @@ using namespace std;
 
 StateMachine::StateMachine()
 : mSystemState( Idle ),
-  mIntroducedRandomSeed( false ),
   mEventLink( *this )
 {
-  Reset();
+  Init();
 
   string path;
   EnvVariable::Get( "PATH", path );
@@ -75,12 +74,27 @@ StateMachine::StateMachine()
   EnvVariable::Set( "BCI2000BINARY", FileUtils::ExecutablePath() );
 }
 
+void
+StateMachine::Init()
+{
+  CloseConnections();
+  WatchDataLock lock( this );
+  mParameters.Clear();
+  mStates.Clear();
+  mEvents.Clear();
+  mIntroducedRandomSeed = false;
+  mPreviousRandomSeed.clear();
+  mStateVector = StateVector();
+  mControlSignal = GenericSignal();
+  mVisualizations.clear();
+}
+
 bool
 StateMachine::Startup( const char* inArguments )
 {
   bool result = ( mSystemState == Idle );
   {
-    OSMutex::Lock lock( mDataMutex );
+    DataLock lock( this );
     if( result )
     {
       mIntroducedRandomSeed = false;
@@ -106,6 +120,7 @@ StateMachine::Startup( const char* inArguments )
         mConnections.push_back( new CoreConnection( *this, name, address, static_cast<int>( mConnections.size() + 1 ) ) );
         if( sourcePort )
         {
+          mLocalAddress = "localhost:" + port;
           int iPort;
           istringstream( port ) >> iPort;
           mEventLink.Open( iPort );
@@ -174,7 +189,7 @@ StateMachine::~StateMachine()
   pEvent->Wait();
 }
 
-// Send a state message containing a certain state value to the EEG source module.
+// Send a state message containing a certain state value to the SignalSource module.
 // This function is public because it is called from the CommandInterpreter class.
 bool
 StateMachine::SetStateValue( const char* inName, State::ValueType inValue )
@@ -199,7 +214,7 @@ StateMachine::SetStateValue( const char* inName, State::ValueType inValue )
     }
   }
 
-  OSMutex::Lock lock( mDataMutex );
+  WatchDataLock lock( this );
   if( !mStates.Exists( inName ) )
     return false;
   else
@@ -215,7 +230,7 @@ StateMachine::SetStateValue( const char* inName, State::ValueType inValue )
 State::ValueType
 StateMachine::GetStateValue( const char* inName ) const
 {
-  OSMutex::Lock lock( mDataMutex );
+  DataLock lock( this );
   if( !mStates.Exists( inName ) )
     return 0;
   return mStateVector.StateValue( inName );
@@ -337,16 +352,7 @@ StateMachine::Reset()
 {
   bool result = ( mSystemState == Idle );
   if( result )
-  {
-    mParameters.Clear();
-    mStates.Clear();
-    mEvents.Clear();
-    mIntroducedRandomSeed = false;
-    mPreviousRandomSeed.clear();
-    mStateVector = StateVector();
-    mControlSignal = GenericSignal();
-    mVisualizations.clear();
-  }
+    Init();
   return result;
 };
 
@@ -445,14 +451,13 @@ StateMachine::EnterState( SysState inState )
       mSystemState = inState;
     }
     ExecuteTransitionCallbacks( transition );
-    ExecuteCallback( BCI_OnSystemStateChange );
   }
 }
 
 void
 StateMachine::PerformTransition( int inTransition )
 {
-  OSMutex::Lock lock( mDataMutex );
+  DataLock lock( this );
   switch( inTransition )
   {
     case TRANSITION( Idle, Idle ):
@@ -614,6 +619,7 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
       break;
   }
   ExecuteCallback( BCI_OnSystemStateChange );
+  WatchDataLock lock( this );
 }
 
 int
@@ -631,6 +637,39 @@ StateMachine::OnExecute()
   }
   EnterState( Idle );
   return 0;
+}
+
+string
+StateMachine::SuggestUDPAddress( const string& inAddressHint ) const
+{
+  sending_udpsocket socket( LocalAddress().c_str() );
+  string result,
+         local = socket.address(),
+         local2,
+         hint = inAddressHint.empty() ? local : inAddressHint;
+  socket.open( socket.ip(), socket.port() + 1 );
+  local2 = socket.address();  
+
+  string ip = "";
+  uint16_t port = 0;
+  if( getline( istringstream( hint ), ip, ':' ) >> port )
+  {
+    int maxPort = port + 250;
+    for( ; port < maxPort && result.empty(); ++port )
+    {
+      socket.open( ip.c_str(), port );
+      if( socket.is_open() )
+      {
+        string a = socket.address();
+        bool ok = a != local
+                && a != local2
+                && Watches().SelectByAddress( a ).Empty();
+        if( ok )
+          result = a;
+      }
+    }
+  }
+  return result;
 }
 
 bool
@@ -1005,7 +1044,7 @@ StateMachine::CoreConnection::HandleParam( istream& is )
   {
     ostringstream oss;
     {
-      OSMutex::Lock lock( mrParent.mDataMutex );
+      StateMachine::DataLock lock( mrParent );
       mrParent.mParameters.Add( param, mTag );
       mrParent.mParameters[param.Name()].WriteToStream( oss );
       mrParent.ParameterChange();
@@ -1023,7 +1062,7 @@ StateMachine::CoreConnection::HandleState( istream& is )
   {
     ostringstream oss;
     {
-      OSMutex::Lock lock( mrParent.mDataMutex );
+      StateMachine::DataLock lock( mrParent );
       mrParent.mStates.Delete( state.Name() );
       mrParent.mStates.Add( state );
       state.WriteToStream( oss );
@@ -1037,7 +1076,7 @@ StateMachine::CoreConnection::HandleState( istream& is )
 bool
 StateMachine::CoreConnection::HandleStateVector( istream& is )
 {
-  OSMutex::Lock lock( mrParent.mDataMutex );
+  StateMachine::WatchDataLock lock( mrParent );
   return mrParent.mStateVector.ReadBinary( is );
 }
 
@@ -1049,7 +1088,7 @@ StateMachine::CoreConnection::HandleVisSignal( istream& is )
   {
     if( v.SourceID().empty() )
     {
-      OSMutex::Lock lock( mrParent.mDataMutex );
+      StateMachine::WatchDataLock lock( mrParent );
       mrParent.mControlSignal = v;
     }
     else
@@ -1077,7 +1116,7 @@ StateMachine::CoreConnection::HandleVisSignalProperties( istream& is )
   VisSignalProperties v;
   if( v.ReadBinary( is ) )
   {
-    OSMutex::Lock lock( mrParent.mDataMutex );
+    StateMachine::DataLock lock( mrParent );
     if( v.SourceID().empty() )
     {
       mrParent.mControlSignal.SetProperties( v );
@@ -1270,7 +1309,7 @@ StateMachine::CoreConnection::HandleVisCfg( istream& is )
   VisCfg v;
   if( v.ReadBinary( is ) )
   {
-    OSMutex::Lock lock( mrParent.mDataMutex );
+    StateMachine::DataLock lock( mrParent );
     mrParent.mVisualizations[v.SourceID()][v.CfgID()] = v.CfgValue();
     mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, v.SourceID().c_str(), v.CfgID(), v.CfgValue().c_str() );
   }

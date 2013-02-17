@@ -71,11 +71,6 @@ class streamsock
       infiniteTimeout = -1,
       defaultTimeout = 5000, // ms
     };
-    typedef union address
-    {
-      struct sockaddr sa;
-      struct sockaddr_in sa_in;
-    } address;
 
   private:
     streamsock( const streamsock& );            // Don't allow copies.
@@ -86,14 +81,14 @@ class streamsock
 
   public:
     virtual     ~streamsock();
-    void        open();
-    void        open( const char* address );
-    void        open( const char* ip, unsigned short port );
+    void        open( const std::string& address );
+    void        open( const std::string& ip, unsigned short port );
     void        close();
     bool        is_open() const; // A streamsock may be open but not connected.
     bool        connected();
     std::string ip() const;
-    unsigned short port() const;
+    int port() const;
+    std::string address() const;
     // If there is data available, this function returns true.
     bool        can_read()
                 { return wait_for_read( 0 ); }
@@ -126,8 +121,8 @@ class streamsock
   private:
     virtual void do_open() = 0;
     virtual void do_accept() {}
-    void         set_address( const char* address );
-    void         set_address( const char* ip, unsigned short port );
+    bool         set_address( const std::string& address );
+    bool         set_address( const std::string& ip, unsigned short port );
 
   protected:
     virtual void set_socket_options();
@@ -136,7 +131,11 @@ class streamsock
   protected:
     SOCKET  m_handle;
     bool    m_listening;
-    address m_address;
+    union address_
+    {
+      struct sockaddr sa;
+      struct sockaddr_in sa_in;
+    } m_address;
 
   // static members
   private:
@@ -162,13 +161,10 @@ class tcpsocket : public streamsock
 
 class server_tcpsocket : public tcpsocket
 {
-  private:
-    server_tcpsocket( const server_tcpsocket& ); // prevent copying
-    server_tcpsocket& operator=( const server_tcpsocket& ); // prevent assignment
   public:
     server_tcpsocket()
       {}
-    explicit server_tcpsocket( const char* address )
+    explicit server_tcpsocket( const std::string& address )
       { open( address ); }
     virtual ~server_tcpsocket()
       {}
@@ -180,13 +176,10 @@ class server_tcpsocket : public tcpsocket
 
 class client_tcpsocket : public tcpsocket
 {
-  private:
-    client_tcpsocket( const client_tcpsocket& ); // prevent copying
-    client_tcpsocket& operator=( const client_tcpsocket& ); // prevent assignment
   public:
     client_tcpsocket()
       {}
-    explicit client_tcpsocket( const char* address )
+    explicit client_tcpsocket( const std::string& address )
       { open( address ); }
     virtual ~client_tcpsocket()
       {}
@@ -196,13 +189,10 @@ class client_tcpsocket : public tcpsocket
 
 class receiving_udpsocket : public streamsock
 {
-  private:
-    receiving_udpsocket( const receiving_udpsocket& ); // prevent copying
-    receiving_udpsocket& operator=( const receiving_udpsocket& ); // prevent assignment
   public:
     receiving_udpsocket()
       {}
-    explicit receiving_udpsocket( const char* address )
+    explicit receiving_udpsocket( const std::string& address )
       { open( address ); }
     virtual ~receiving_udpsocket()
       {}
@@ -212,13 +202,10 @@ class receiving_udpsocket : public streamsock
 
 class sending_udpsocket : public streamsock
 {
-  private:
-    sending_udpsocket( const sending_udpsocket& ); // prevent copying
-    sending_udpsocket& operator=( const sending_udpsocket& ); // prevent assignment
   public:
     sending_udpsocket()
       {}
-    explicit sending_udpsocket( const char* address )
+    explicit sending_udpsocket( const std::string& address )
       { open( address ); }
     virtual ~sending_udpsocket()
       {}

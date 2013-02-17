@@ -7,8 +7,14 @@
 //    "?" matches a single arbitrary character,
 //    "[abc]" matches any of the characters "abc",
 //    "[a-c]" matches any character from the range between "a" and "c",
-//    "[-abc]" and "[-a-c]" both match any character not in "abc".
+//    "[!abc]" and "[!a-c]" both match any character not in "abc".
+//    "\<" matches the beginning of a word,
+//    "\>" matches the end of a word,
+//    "\b" matches either word boundary,
 //    "\" is used as an escape character; write "\\" to match a single backslash.
+//    Note that you must duplicate each backslash within a C string literal, so
+//    to express a literal backslash within a C string, you will need to write
+//    four backslashes: "\\\\".
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -30,11 +36,27 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
+#ifndef WILDCARD_MATCH_H
+#define WILDCARD_MATCH_H
+
 #include <string>
+#include <vector>
 
 namespace bci
 {
 
-bool WildcardMatch( const std::string& inPattern, const std::string& inString, bool inCaseSensitive = true );
+bool WildcardMatch( const char* pattern, const char* string, bool caseSensitive = true );
+bool WildcardMatch( const std::string& pattern, const std::string& string, bool caseSensitive = true );
+
+struct Match { size_t begin, length; };
+struct Matches : std::vector<Match>
+{
+  int Size() const { return size(); }
+  operator bool() const { return !empty(); }
+};
+Matches ExtWildcardMatch( const char* pattern, const char* string, bool caseSensitive = true );
+Matches ExtWildcardMatch( const std::string& pattern, const std::string& string, bool caseSensitive = true );
 
 } // namespace bci
+
+#endif // WILDCARD_MATCH_H

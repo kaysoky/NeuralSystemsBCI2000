@@ -129,7 +129,7 @@ BufferedADC::Process( const GenericSignal&,
   if( abort && State( "Running" ) )
     State( "Running" ) = 0;
   else if( abort )
-    bcierr_ << mError.empty() ? "Acquisition Error" : mError;
+    bcierr_ << ( mError.empty() ? "Acquisition Error" : mError );
 }
 
 void

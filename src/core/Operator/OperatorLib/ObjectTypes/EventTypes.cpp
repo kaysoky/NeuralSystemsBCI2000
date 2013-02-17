@@ -45,7 +45,7 @@ const ObjectType::MethodEntry EventType::sMethodTable[] =
 {
   METHOD( Set ), METHOD( Get ),
   METHOD( Insert ), { "Add", &Insert },
-  METHOD( List ),
+  METHOD( List ),   { "Show", &List },
   METHOD( Exists ), { "Is", &Exists },
   END
 };
@@ -107,7 +107,7 @@ EventType::Exists( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   bool exists = inInterpreter.StateMachine().Events().Exists( inInterpreter.GetToken() );
-  inInterpreter.Out() << exists ? "true" : "false";
+  inInterpreter.Out() << ( exists ? "true" : "false" );
   return true;
 }
 
@@ -127,7 +127,8 @@ EventType::GetEvent( CommandInterpreter& inInterpreter )
 EventsType EventsType::sInstance;
 const ObjectType::MethodEntry EventsType::sMethodTable[] =
 {
-  METHOD( List ), METHOD( Clear ),
+  METHOD( List ), { "Show", &List },
+  METHOD( Clear ), { "Drop", &Clear },
   END
 };
 

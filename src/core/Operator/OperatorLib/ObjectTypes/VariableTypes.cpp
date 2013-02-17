@@ -40,7 +40,7 @@ VariableType VariableType::sInstance;
 const ObjectType::MethodEntry VariableType::sMethodTable[] =
 {
   METHOD( Set ), METHOD( Get ),
-  METHOD( Clear ),
+  METHOD( Clear ), { "Drop", &Clear },
   END
 };
 
@@ -78,7 +78,7 @@ EnvironmentType EnvironmentType::sInstance;
 const ObjectType::MethodEntry EnvironmentType::sMethodTable[] =
 {
   METHOD( Set ), METHOD( Get ),
-  METHOD( Clear ),
+  METHOD( Clear ), { "Drop", &Clear },
   END
 };
 

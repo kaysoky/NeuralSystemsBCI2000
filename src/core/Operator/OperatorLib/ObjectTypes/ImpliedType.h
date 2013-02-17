@@ -68,6 +68,7 @@ class ImpliedType : public ObjectType
 
   static bool Square( CommandInterpreter& );
   
+  static bool Watch( CommandInterpreter& );  
 
  private:
   static const MethodEntry sMethodTable[];

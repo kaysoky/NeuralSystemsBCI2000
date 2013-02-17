@@ -37,6 +37,8 @@
 #include "ParameterTypes.h"
 #include "StateTypes.h"
 #include "EventTypes.h"
+#include "WatchTypes.h"
+#include "SystemStates.h"
 #include <limits>
 
 using namespace std;
@@ -49,27 +51,12 @@ static const double cDefaultTimeout = numeric_limits<double>::infinity(); // for
 SystemType SystemType::sInstance;
 const ObjectType::MethodEntry SystemType::sMethodTable[] =
 {
-  METHOD( Get ), METHOD( WaitFor ), METHOD( Sleep ), METHOD( SetConfig ),
+  METHOD( Get ), { "Show", &Get },
+  METHOD( WaitFor ), METHOD( Sleep ), METHOD( SetConfig ),
   METHOD( Start ), METHOD( Stop ), { "Suspend", &Stop },
   METHOD( Startup ), METHOD( Shutdown ), METHOD( Reset ),
   METHOD( Quit ), { "Exit", &Quit },
   END
-};
-
-static const struct { int value; const char* name; }
-sSystemStates[] =
-{
-  #define ENTRY(x) { BCI_State##x, #x }
-  ENTRY( Unavailable ),
-  ENTRY( Idle ),
-  ENTRY( Startup ),
-  ENTRY( Initialization ), ENTRY( Connected ),
-  ENTRY( Resting ),
-  ENTRY( Suspended ),
-  ENTRY( ParamsModified ),
-  ENTRY( Running ),
-  ENTRY( Busy ),
-  #undef ENTRY
 };
 
 bool
@@ -89,13 +76,7 @@ bool
 SystemType::GetState( CommandInterpreter& inInterpreter )
 {
   int state = BCI_GetStateOfOperation();
-  size_t i = 0;
-  string result;
-  while( result.empty() && i < sizeof( sSystemStates ) / sizeof( *sSystemStates ) )
-    if( sSystemStates[i].value == state )
-      result = sSystemStates[i].name;
-    else
-      ++i;
+  string result = SystemStates::Name( state );
   if( result.empty() )
     throw bciexception_( "Unknown system state: " << state );
   inInterpreter.Out() << result;
@@ -109,7 +90,6 @@ SystemType::GetVersion( CommandInterpreter& inInterpreter )
   return true;
 }
 
-
 bool
 SystemType::WaitFor( CommandInterpreter& inInterpreter )
 {
@@ -119,18 +99,8 @@ SystemType::WaitFor( CommandInterpreter& inInterpreter )
   string stateName;
   while( std::getline( iss, stateName, '|' ) )
   {
-    size_t i = 0;
-    int stateCode;
-    bool found = false;
-    while( !found && i < sizeof( sSystemStates ) / sizeof( *sSystemStates ) )
-      if( !::stricmp( sSystemStates[i].name, stateName.c_str() ) )
-      {
-        stateCode = sSystemStates[i].value;
-        found = true;
-      }
-      else
-        ++i;
-    if( !found )
+    int stateCode = SystemStates::Value( stateName );
+    if( stateCode == BCI_None )
       throw bciexception_( "Unknown system state: " << stateName );
     desiredStates.insert( stateCode );
   }

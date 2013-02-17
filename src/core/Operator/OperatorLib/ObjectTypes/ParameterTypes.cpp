@@ -48,7 +48,7 @@ const ObjectType::MethodEntry ParameterType::sMethodTable[] =
 {
   METHOD( Set ), METHOD( Get ),
   METHOD( Insert ), { "Add", &Insert },
-  METHOD( List ),
+  METHOD( List ),   { "Show", &List },
   METHOD( Exists ), { "Is", &Exists },
   END
 };
@@ -140,7 +140,7 @@ ParameterType::Exists( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   bool exists = inInterpreter.StateMachine().Parameters().Exists( inInterpreter.GetToken() );
-  inInterpreter.Out() << exists ? "true" : "false";
+  inInterpreter.Out() << ( exists ? "true" : "false" );
   return true;
 }
 
@@ -233,8 +233,9 @@ ParameterType::GetIndex( const string& inAddress, const LabelIndex& inLabels )
 ParametersType ParametersType::sInstance;
 const ObjectType::MethodEntry ParametersType::sMethodTable[] =
 {
-  METHOD( Load ), METHOD( List ),
-  METHOD( Apply ), METHOD( Clear ),
+  METHOD( Load ), METHOD( Apply ),
+  METHOD( List ), { "Show", &List },
+  METHOD( Clear ), { "Drop", &Clear },
   END
 };
 

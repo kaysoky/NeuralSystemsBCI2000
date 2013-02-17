@@ -22,6 +22,7 @@ SET( SRC_OBJECT_TYPES
   ObjectTypes/ConditionType.cpp
   ObjectTypes/ImpliedType.cpp
   ObjectTypes/SystemTypes.cpp
+  ObjectTypes/SystemStates.cpp
   ObjectTypes/ParameterTypes.cpp
   ObjectTypes/StateTypes.cpp
   ObjectTypes/EventTypes.cpp
@@ -31,6 +32,9 @@ SET( SRC_OBJECT_TYPES
   ObjectTypes/MessageTypes.cpp
   ObjectTypes/ScriptType.cpp
   ObjectTypes/ScriptEvents.cpp
+  ObjectTypes/InterpreterExpression.cpp
+  ObjectTypes/Watches.cpp
+  ObjectTypes/WatchTypes.cpp
   ObjectTypes/ExpressionType.cpp
   ObjectTypes/FileSystemTypes.cpp
   ObjectTypes/LineType.cpp
@@ -56,6 +60,7 @@ SET( HDR_OBJECT_TYPES
   ObjectTypes/ConditionType.h
   ObjectTypes/ImpliedType.h
   ObjectTypes/SystemTypes.h
+  ObjectTypes/SystemStates.h
   ObjectTypes/ParameterTypes.h
   ObjectTypes/StateTypes.h
   ObjectTypes/EventTypes.h
@@ -65,6 +70,9 @@ SET( HDR_OBJECT_TYPES
   ObjectTypes/MessageTypes.h
   ObjectTypes/ScriptType.h
   ObjectTypes/ScriptEvents.h
+  ObjectTypes/InterpreterExpression.h
+  ObjectTypes/Watches.h
+  ObjectTypes/WatchTypes.h
   ObjectTypes/ExpressionType.h
   ObjectTypes/FileSystemTypes.h
   ObjectTypes/LineType.h

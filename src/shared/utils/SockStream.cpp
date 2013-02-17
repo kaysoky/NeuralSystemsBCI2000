@@ -132,60 +132,55 @@ streamsock::~streamsock()
 }
 
 void
-streamsock::open()
+streamsock::open( const std::string& address )
 {
-  set_address( NULL, 0 );
-  do_open();
+  if( set_address( address ) )
+    do_open();
 }
 
 void
-streamsock::open( const char* address )
+streamsock::open( const std::string& ip, unsigned short port )
 {
-  set_address( address );
-  do_open();
+  if( set_address( ip, port ) )
+    do_open();
 }
 
-void
-streamsock::open( const char* ip, unsigned short port )
+bool
+streamsock::set_address( const std::string& address )
 {
-  set_address( ip, port );
-  do_open();
-}
-
-void
-streamsock::set_address( const char* address )
-{
-  const char port_separator = ':';
-  istringstream address_stream( address );
   string hostname;
-  getline( address_stream, hostname, port_separator );
-  unsigned short port = 0;
-  address_stream >> port;
-  set_address( hostname.c_str(), port );
+  istringstream iss( address );
+  if( getline( iss, hostname, ':' ) )
+  {
+    unsigned short port = 0;
+    iss >> port; // Not providing a port is ok, and means "any".
+    return set_address( hostname, port );
+  }
+  return false;
 }
 
-void
-streamsock::set_address( const char* inIP, unsigned short inPort )
+bool
+streamsock::set_address( const std::string& inIP, unsigned short inPort )
 {
-  char* buf = NULL;
-  const char* ip = "";
-  if( inIP != NULL )
-    ip = inIP;
-  else
-  {
-    const int buflen = 1024;
-    char buf [ buflen ];
-    if( SOCKET_ERROR != ::gethostname( buf, buflen ) )
-      ip = buf;
-  }
+  bool result = true;
   ::memset( &m_address, 0, sizeof( m_address ) );
   m_address.sa_in.sin_family = AF_INET;
   m_address.sa_in.sin_port = htons( inPort );
-  if( *ip == '*' ) // A "*" as IP address means "any local address" (for bind() ).
-    m_address.sa_in.sin_addr.s_addr = INADDR_ANY;
-  else if( INADDR_NONE == ( m_address.sa_in.sin_addr.s_addr = ::inet_addr( ip ) ) )
-    m_address.sa_in.sin_addr.s_addr = ::inet_addr( "127.0.0.1" );
-  delete[] buf;
+  in_addr& addr = m_address.sa_in.sin_addr;
+  if( inIP == "*" ) // A "*" as IP address means "any local address" (for bind() ).
+    addr.s_addr = INADDR_ANY;
+  else
+  {
+    addr.s_addr = ::inet_addr( inIP.c_str() );
+    if( addr.s_addr == INADDR_NONE )
+    {
+      ::hostent* host = ::gethostbyname( inIP.c_str() );
+      result = ( host && host->h_addrtype == AF_INET && host->h_addr_list && *host->h_addr_list );
+      if( result )
+        addr.s_addr = *reinterpret_cast<unsigned long*>( *host->h_addr_list );
+    }
+  }
+  return result;
 }
 
 bool
@@ -238,13 +233,27 @@ streamsock::update_address()
 string
 streamsock::ip() const
 {
+  if( m_handle == INVALID_SOCKET )
+    return "<N/A>";
   return ::inet_ntoa( m_address.sa_in.sin_addr );
 }
 
-unsigned short
+int
 streamsock::port() const
 {
+  if( m_handle == INVALID_SOCKET )
+    return -1;
   return ntohs( m_address.sa_in.sin_port );
+}
+
+string
+streamsock::address() const
+{
+  ostringstream oss;
+  oss << ip();
+  if( port() >= 0 )
+    oss << ':' << port(); 
+  return oss.str();
 }
 
 bool
@@ -556,7 +565,7 @@ sending_udpsocket::do_open()
   if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, 0 ) ) )
       return;
 
-  address bind_addr = m_address;
+  address_ bind_addr = m_address;
   bind_addr.sa_in.sin_addr.s_addr = INADDR_ANY;
   bind_addr.sa_in.sin_port = 0;
   if( ( SOCKET_ERROR == ::bind( m_handle, &bind_addr.sa, sizeof( bind_addr ) ) )

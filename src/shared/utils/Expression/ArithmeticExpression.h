@@ -77,6 +77,8 @@ class ArithmeticExpression
     { return mThrowOnError; }
   ArithmeticExpression& ThrowOnError( bool inThrow )
     { mThrowOnError = inThrow; return *this; }
+  const std::string& AsString() const
+    { return mExpression; }
 
   enum { none, attempted, success };
   int CompilationState() const

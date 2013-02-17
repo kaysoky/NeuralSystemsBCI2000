@@ -39,6 +39,7 @@
 #include "ConditionType.h"
 #include "FileSystemTypes.h"
 #include "LineType.h"
+#include "WatchTypes.h"
 
 #include "CommandInterpreter.h"
 #include "StateMachine.h"
@@ -84,6 +85,7 @@ const ObjectType::MethodEntry ImpliedType::sMethodTable[] =
   METHOD( System ), METHOD( Echo ), METHOD( Ls ), { "Dir", &Ls },
   METHOD( Cd ), METHOD( Pwd ), METHOD( MkDir ),
   { "[", &Square },
+  METHOD( Watch ),
   END
 };
 
@@ -114,11 +116,7 @@ ImpliedType::OnHelp( CommandInterpreter& inInterpreter ) const
 bool
 ImpliedType::Get( CommandInterpreter& inInterpreter )
 {
-  string object = inInterpreter.GetToken();
-  inInterpreter.Unget();
-  CommandInterpreter::ArgumentList args;
-  inInterpreter.ParseArguments( object, args );
-  if( !::stricmp( object.c_str(), "Signal" ) )
+  if( inInterpreter.MatchTokens( "Signal(*)" ) )
     return SignalType::Get( inInterpreter );
   try
   {
@@ -129,14 +127,14 @@ ImpliedType::Get( CommandInterpreter& inInterpreter )
   {
     inInterpreter.Unget();
   }
+  string object = inInterpreter.GetToken();
+  inInterpreter.Unget();
   if( inInterpreter.LocalVariables().Exists( object ) )
     return VariableType::Get( inInterpreter );
   if( EnvVariable::Get( object, object ) )
     return EnvironmentType::Get( inInterpreter );
   if( ConditionType::EvaluateExpression( inInterpreter ) )
     return true;
-  inInterpreter.Unget();
-
   return false;
 }
 
@@ -310,6 +308,12 @@ bool
 ImpliedType::Square( CommandInterpreter& inInterpreter )
 {
   return ConditionType::Evaluate( inInterpreter );
+}
+
+bool
+ImpliedType::Watch( CommandInterpreter& inInterpreter )
+{
+  return WatchType::New( inInterpreter );
 }
 
 //// ExecutableType

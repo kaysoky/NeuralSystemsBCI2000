@@ -38,9 +38,7 @@
 
 #include <vector>
 #include <sstream>
-#include <stack>
 #include <set>
-#include "StateMachine.h"
 #include "OSMutex.h"
 #include "ArithmeticExpression.h"
 #include "EnvVariable.h"
@@ -56,6 +54,9 @@ class CommandInterpreter
   //  The name of the local variable holding the result of the last scripting command.
   static const char* ResultName()
      { return "Result"; }
+  //  The name of the local variable holding the address and port of the current connection.
+  static const char* RemoteHostName()
+      { return "RemoteHost"; } 
   //  The result of the last executed scripting command.
   std::string Result() const
     { return mResultStream.str(); }
@@ -78,12 +79,33 @@ class CommandInterpreter
  public:
   // Begin: Interface to ObjectType instances.
   //  GetToken() reads a single string, which may be quoted and URL-encoded.
+  //  Absence of a further token is treated as an error.
+  //  Functions with "Optional" in their name do not treat missing data
+  //  as errors.
   std::string GetToken();
-  std::string GetOptionalToken();
+  std::string GetOptionalToken()
+    { SetFlag( optional ); return GetToken(); }
+  //  GetMatchingTokens() does case-insensitive wildcard matching.
+  //  Reads tokens until a match occurs, and returns the match.
+  //  Without a match, it returns an empty string.
+  //  In the second form, it returns whether a match has occurred,
+  //  and writes values of the pattern and any subpatterns into
+  //  its second argument.
+  //  Use \( and \) to mark subpatterns in the input pattern.
+  //  If no match is found, this causes an error.
+  std::string GetMatchingTokens( const std::string& );
+  bool GetMatchingTokens( const std::string&, std::vector<std::string>& );
+  //  GetRemainingTokens() reads as many tokens as possible, and never
+  //  results in an error.
   std::string GetRemainingTokens();
   //  GetRemainder() reads the remainder of the command line verbatim.
   std::string GetRemainder();
-  std::string GetOptionalRemainder();
+  std::string GetOptionalRemainder()
+    { SetFlag( optional ); return GetRemainder(); }
+  // Case-insensitive wildcard matching without affecting input state.
+  bool MatchTokens( const std::string& );
+  bool MatchRemainingTokens( const std::string& );
+  bool MatchRemainder( const std::string& );
   //  Unget() undoes a read operation. Without a previous read operation, it does nothing.
   void Unget();
   //  WriteLine() writes a line to the output stream associated with a command
@@ -167,12 +189,19 @@ class CommandInterpreter
   std::string GetVariable( const std::string& inName );
   int EvaluateResult( const std::string& inCommand );
   static bool OnWriteLineDefault( void*, const std::string& );
+  
+  enum flags { none = 0, optional = 1 };
+  void SetFlag( flags f ) { mFlags |= f; }
+  void BeginRead();
   bool InputFailed();
+
+  bool GetMatches( const std::string&, const std::string&, std::vector<std::string>& );
 
  private:
   std::ostringstream mResultStream;
   std::istringstream mInputStream;
-  std::stack<std::istream::pos_type> mPosStack;
+  int mFlags;
+  std::vector< std::pair<std::istream::pos_type, int> > mPosStack;
 
   class StateMachine& mrStateMachine;
   ArithmeticExpression::VariableContainer mExpressionVariables;
@@ -192,4 +221,4 @@ class CommandInterpreter
   void* mpReadLineData;
 };
 
-#endif // SCRIPT_INTERPRETER_H
+#endif // COMMAND_INTERPRETER_H

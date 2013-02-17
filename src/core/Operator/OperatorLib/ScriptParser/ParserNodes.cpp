@@ -79,7 +79,7 @@ ParserNode::OnExecute( CommandInterpreter& inInterpreter ) const
 }
 
 bool
-ParserNode::OnEvaluate( CommandInterpreter& ) const
+ParserNode::OnEvaluate( CommandInterpreter& inInterpreter ) const
 {
   return true;
 }

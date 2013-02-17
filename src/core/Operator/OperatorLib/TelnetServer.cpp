@@ -91,6 +91,7 @@ TelnetServer::OnExecute()
   if( !OSThread::IsTerminating() )
   {
     mpChild = new TelnetServer( this );
+    LocalVariables()[RemoteHostName()] = mSocket.address();
     WriteHello().WriteNewline().WritePrompt();
   }
   string line;

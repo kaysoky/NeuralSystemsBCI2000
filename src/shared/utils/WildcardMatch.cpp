@@ -8,7 +8,13 @@
 //    "[abc]" matches any of the characters "abc",
 //    "[a-c]" matches any character from the range between "a" and "c",
 //    "[!abc]" and "[!a-c]" both match any character not in "abc".
+//    "\<" matches the beginning of a word,
+//    "\>" matches the end of a word,
+//    "\b" matches either word boundary,
 //    "\" is used as an escape character; write "\\" to match a single backslash.
+//    Note that you must duplicate each backslash within a C string literal, so
+//    to express a literal backslash within a C string, you will need to write
+//    four backslashes: "\\\\".
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -35,14 +41,19 @@
 
 #include "WildcardMatch.h"
 #include "BCIException.h"
+#include "BCIAssert.h"
+#include <vector>
+#include <stack>
 
 using namespace std;
 using namespace bci;
 
+static const size_t cLengthLimit = 20*1024; // limit to avoid stack overflow
+
 namespace {
 
 #if BCIDEBUG
-const struct { const char* pattern, * match; }
+const struct TestCase { const char* pattern, * match; }
 sPositiveCases[] =
 {
   { "*", "" },
@@ -51,7 +62,8 @@ sPositiveCases[] =
   { "T*tString", "TestString" },
   { "T*tString", "TtttString" },
   { "Tes?String", "TestString" },
-  { "Test\?String", "Test?String" },
+  { "Test\\?String", "Test?String" },
+  { "Test\\*String", "Test*String" },
   { "?*estString", "TestString" },
   { "*TestString", "TestString" },
   { "*TestString*", "TestString" },
@@ -62,6 +74,17 @@ sPositiveCases[] =
   { "*TestString*", "TestString" },
   { "T*tring", "TestString" },
   { "*?String", "TestString" },
+  { "\\(*?\\)String", "TestString" },
+  { "\\<*ing", "TestString" },
+  { " \\<*ing", " TestString" },
+  { "*ing\\>", " TestString" },
+  { "*ing\\> ", " TestString " },
+  { " \\<*\\> \\<*\\> ", " Test String " },
+  { "\\b*ing", "TestString" },
+  { " \\b*ing", " TestString" },
+  { "\\(*\\)ing\\b", " TestString" },
+  { "*ing\\b ", " TestString " },
+  { " \\b\\(*\\b\\) \\b*\\b ", " Test String " },
 },
 sNegativeCases[] =
 {
@@ -70,100 +93,83 @@ sNegativeCases[] =
   { "TestString", "Test" },
   { "?*TestString", "TestString" },
   { "*[!s]tString", "TestString" },
+  { "\\<*ing", " TestString" },
+  { "*ing\\>", "TestString " },
+  { " \\<*\\> \\<*\\> ", " TestString " },
+  { "\\b*ing", " TestString" },
+  { "*ing\\b", "TestString " },
+  { " \\b*\\b \\b*\\b ", " TestString " },
+},
+sIllegalCases[] =
+{ // Note: Test strings for which pattern evaluation
+  // terminates early will not allow for detection
+  // of illegal patterns, e.g.:
+  // { "Test]String", "TessString" },
+  // will not detect the illegal pattern.
+  // This is by design, and *not* a test failure.
+  { "Test]String", "TestString" },
+  { "Test[String", "TestString" },
+  { "Test\\String", "TestString" },
+  { "TestString\\", "TestString " },
+  { "TestString\\(", "TestString" },
+  { "Test\\)String", "TestString" },
+  { "Test\\(String", "TestString" },
 };
 
 void RunTests()
 {
-  for( size_t i = 0; i < sizeof( sPositiveCases ) / sizeof( *sPositiveCases ); ++i )
-    if( !WildcardMatch( sPositiveCases[i].pattern, sPositiveCases[i].match ) )
+  const TestCase* pCase = 0;
+  try
+  {
+    for( size_t i = 0; i < sizeof( sPositiveCases ) / sizeof( *sPositiveCases ); ++i )
+    {
+      pCase = &sPositiveCases[i];
+      if( !ExtWildcardMatch( pCase->pattern, pCase->match ) )
+        throw bciexception(
+          "ExtWildcardMatch test case failed: \"" << pCase->pattern
+          << "\" does not match \"" << pCase->match << "\""
+        );
+    }
+    for( size_t i = 0; i < sizeof( sNegativeCases ) / sizeof( *sNegativeCases ); ++i )
+    {
+      pCase = &sNegativeCases[i];
+      if( ExtWildcardMatch( pCase->pattern, pCase->match ) )
+        throw bciexception(
+          "WildcardMatch test case failed: \"" << pCase->pattern
+          << "\" should not match \"" << pCase->match << "\""
+        );
+    }
+  }
+  catch( const BCIException& e )
+  {
+    string kind = pCase < sNegativeCases ? "positive" : "negative";
+    throw bciexception(
+      "Illegal pattern in " << kind << " WildcardMatch test case: \"" << pCase->pattern
+      << "\": " << e.what() );
+  }
+  for( size_t i = 0; i < sizeof( sIllegalCases ) / sizeof( *sIllegalCases ); ++i )
+  {
+    pCase = &sIllegalCases[i];
+    bool thrown = false;
+    try
+    { ExtWildcardMatch( pCase->pattern, pCase->match ); }
+    catch( const BCIException& )
+    { thrown = true; }
+    if( !thrown )
       throw bciexception(
-        "WildcardMatch test case failed: \"" << sPositiveCases[i].pattern
-        << "\" does not match \"" << sPositiveCases[i].match << "\""
+        "WildcardMatch test case failed: \"" << pCase->pattern
+        << "\" should be illegal, did not throw an error"
       );
-  for( size_t i = 0; i < sizeof( sNegativeCases ) / sizeof( *sNegativeCases ); ++i )
-    if( WildcardMatch( sNegativeCases[i].pattern, sNegativeCases[i].match ) )
-      throw bciexception(
-        "WildcardMatch test case failed: \"" << sNegativeCases[i].pattern
-        << "\" should not match \"" << sNegativeCases[i].match << "\""
-      );
+  }
+  // Check whether there is enough stack space for a maxLength string.
+  char largeString[cLengthLimit + 1] = "";
+  ::memset( largeString, 'x', cLengthLimit );
+  largeString[cLengthLimit] = 0;
+  WildcardMatch( largeString, largeString ); 
 }
 #endif // BCIDEBUG
 
-bool Match( const char* p, const char* s, bool cs )
-{
-  bool result = false;
-  switch( *p )
-  {
-    case '*':
-      result = Match( p + 1, s, cs ) || ( *s != '\0' ) && ( Match( p + 1, s + 1, cs ) || Match( p, s + 1, cs ) );
-      break;
-
-    case '?':
-      result = ( *s != '\0' ) && Match( p + 1, s + 1, cs );
-      break;
-
-    case '[':
-    {
-      ++p;
-      string charset;
-      bool negate = false;
-      while( *p != '\0' && *p != ']' )
-      {
-        switch( *p )
-        {
-          case '!':
-            if( charset.empty() )
-              negate = true;
-            else
-              charset += *p;
-            ++p;
-            break;
-          case '-':
-            ++p;
-            for( char c = *charset.rend(); c <= *p; ++c )
-              charset += c;
-            break;
-          case '\\':
-            if( *( p+1 ) != '\0' )
-              ++p;
-            /* no break */
-          default:
-            charset += *p++;
-        }
-        if( *p == '\0' )
-        {
-          result = false;
-        }
-        else
-        {
-          result = ( charset.find( *s ) != string::npos );
-          if( negate )
-            result = !result;
-          result = result && Match( p + 1, s + 1, cs );
-        }
-      }
-      break;
-    }
-
-    case '\0':
-      result = ( *s == '\0' );
-      break;
-
-    case '\\':
-      result = ( *( p + 1 ) != '\0' ) && Match( p + 1, s, cs );
-      break;
-
-    default:
-      result = cs ? ( *s == *p ) : ( ::tolower( *s ) == ::tolower( *p ) );
-      result = result && Match( p + 1, s + 1, cs );
-  }
-  return result;
-}
-
-} // namespace
-
-bool
-bci::WildcardMatch( const string& inPattern, const string& inString, bool inCaseSensitive )
+void EnsureTests()
 {
 #if BCIDEBUG
   static bool tested = false;
@@ -173,5 +179,279 @@ bci::WildcardMatch( const string& inPattern, const string& inString, bool inCase
     RunTests();
   }
 #endif // BCIDEBUG
-  return Match( inPattern.c_str(), inString.c_str(), inCaseSensitive );
+}
+
+class Matcher
+{
+ public:
+  explicit Matcher( bool inCS )
+    : cs( inCS ), s0( 0 ) { EnsureTests(); }
+  const string& Error() const
+    { return mError; }
+ 
+  bool operator()( const char* pat, const char* str, bci::Matches* = 0 );
+
+ private:
+  bool Equal( char, char ) const;
+  bool ApplyActions( bci::Matches* );
+ 
+  bool Match( const char* p, const char* s );
+  bool CharClassMatch( const char* p, const char* s );
+  bool BoundaryMatch( const char* p, const char* s );
+  bool SubMatch( const char* p, const char* s );
+  
+  static bool IsSpecialChar( char );
+  static bool IsWordChar( char );
+  static bool IsBoundary( char );
+  static bool IsSubMatch( char );
+
+  const bool cs;
+  const char* s0;
+  
+  string mError;
+  typedef pair<char, const char*> Action;
+  vector<Action> mActions;
+};
+
+bool
+Matcher::operator()( const char* pat, const char* str, Matches* outpMatches )
+{
+  mActions.clear();
+  mError.clear();
+  s0 = str;
+  Match( pat, s0 );
+  return ApplyActions( outpMatches );
+}
+
+bool
+Matcher::Equal( char a, char b ) const
+{
+  return cs ? ( a == b ) : ( ::tolower( a ) == ::tolower( b ) );
+}
+
+bool
+Matcher::ApplyActions( Matches* outpMatches )
+{
+  bool result = !mActions.empty() && mActions.back().first == '\0';
+  if( result && outpMatches )
+  {
+    Matches& matches = *outpMatches;
+    matches.clear();
+    Matches::value_type match = { 0, mActions.back().second - s0 };
+    matches.push_back( match );
+    stack<size_t> s;
+    for( size_t i = 0; i < mActions.size() - 1; ++i )
+    {
+      switch( mActions[i].first )
+      {
+        case '(':
+        {
+          s.push( matches.size() );
+          match.begin = mActions[i].second - s0;
+          match.length = 0;
+          matches.push_back( match );
+        } break;
+        case ')':
+          if( s.empty() )
+            mError = "Unbalanced \\)";
+          else
+          {
+            Matches::value_type& m = matches[s.top()];
+            m.length = ( mActions[i].second - s0 ) - m.begin;
+            s.pop();
+          }
+        default:
+          ;
+      }
+    }
+    if( !s.empty() )
+      mError = "Unbalanced \\(";
+  }
+  if( !mError.empty() )
+    throw bciexception_( "Error in wildcard pattern: " << mError );
+  mActions.clear();
+  return result;
+}
+
+bool
+Matcher::Match( const char* p, const char* s )
+{
+  bool result = false;
+  switch( *p )
+  {
+    case '*':
+      result = Match( p + 1, s ) || ( *s != '\0' ) && ( Match( p + 1, s + 1 ) || Match( p, s + 1 ) );
+      break;
+
+    case '?':
+      result = ( *s != '\0' ) && Match( p + 1, s + 1 );
+      break;
+
+    case '[':
+      result = CharClassMatch( p + 1, s );
+      break;
+
+    case ']':
+      mError = "Unbalanced ]";
+      break;
+
+    case '\0':
+      result = ( *s == '\0' );
+      if( result )
+        mActions.push_back( make_pair( '\0', s ) );
+      break;
+
+    case '\\':
+    {
+      char code = *( p + 1 );
+      if( IsBoundary( code ) )
+        result = BoundaryMatch( p + 1, s );
+      else if( IsSubMatch( code ) )
+        result = SubMatch( p + 1, s );
+      else if( IsSpecialChar( code ) )
+        result = Equal( code, *s ) && Match( p + 2, s + 1 );
+      else
+        mError = string( "Illegal escape code: \\" ) + code;
+    } break;
+
+    default:
+      result = Equal( *p, *s ) && Match( p + 1, s + 1 );
+  }
+  return result;
+}
+
+bool
+Matcher::CharClassMatch( const char *p, const char *s )
+{
+  bool result = false;
+
+  string charset;
+  bool negate = false;
+  while( *p != '\0' && *p != ']' )
+  {
+    switch( *p )
+    {
+      case '!':
+        if( charset.empty() )
+          negate = true;
+        else
+          charset += *p;
+        ++p;
+        break;
+      case '-':
+        ++p;
+        for( char c = *charset.rend(); c <= *p; ++c )
+          charset += c;
+        break;
+      case '\\':
+        if( *( p+1 ) != '\0' )
+          ++p;
+        /* no break */
+      default:
+        charset += *p++;
+    }
+    if( *p == '\0' )
+    {
+      mError = "Missing ]";
+      result = false;
+    }
+    else
+    {
+      result = ( charset.find( *s ) != string::npos );
+      if( negate )
+        result = !result;
+    }
+  }
+  return result && Match( p + 1, s + 1 );
+}
+
+bool
+Matcher::BoundaryMatch( const char* p, const char* s )
+{
+  bool result = false;
+  bool wasWord = s > s0 && IsWordChar( *( s - 1 ) ),
+       isWord = IsWordChar( *s ),
+       left = !wasWord && isWord,
+       right = wasWord && !isWord;
+  switch( *p )
+  {
+    case '<':
+      result = left;
+      break;
+    case '>':
+      result = right;
+      break;
+    case 'b':
+      result = left || right;
+      break;
+    default:
+      bciassert( false );
+  }
+  result = result && Match( p + 1, s );
+  return result;
+}
+
+bool
+Matcher::SubMatch( const char* p, const char* s )
+{
+  size_t oldSize = mActions.size();
+  mActions.push_back( make_pair( *p, s ) );
+  bool result = Match( p + 1, s );
+  if( !result )
+    mActions.resize( oldSize );
+  return result;
+}
+
+bool
+Matcher::IsSpecialChar( char c )
+{
+  static const string s = "*?[]\\";
+  return s.find( c ) != string::npos;
+}
+
+bool
+Matcher::IsWordChar( char c )
+{
+  return c >= 'a' && c <= 'z'
+      || c >= 'A' && c <= 'Z'
+      || c >= '0' && c <= '9'
+      || c == '_'
+      || ( c & 0x80 );
+}
+
+bool
+Matcher::IsBoundary( char c )
+{
+  static const string codes = "<>b";
+  return codes.find( c ) != string::npos;
+}
+
+bool
+Matcher::IsSubMatch( char c )
+{
+  static const string codes = "()";
+  return codes.find( c ) != string::npos;
+}
+
+} // namespace
+
+bool
+bci::WildcardMatch( const string& inPattern, const string& inString, bool inCaseSensitive )
+{ return WildcardMatch( inPattern.c_str(), inString.c_str(), inCaseSensitive ); }
+
+bool
+bci::WildcardMatch( const char* inPattern, const char* inString, bool inCaseSensitive )
+{ return Matcher( inCaseSensitive )( inPattern, inString ); }
+
+bci::Matches
+bci::ExtWildcardMatch( const string& inPattern, const string& inString, bool inCaseSensitive )
+{ return ExtWildcardMatch( inPattern.c_str(), inString.c_str(), inCaseSensitive ); }
+
+bci::Matches
+bci::ExtWildcardMatch( const char* inPattern, const char* inString, bool inCaseSensitive )
+{
+  bci::Matches result;
+  Matcher m( inCaseSensitive );
+  m( inPattern, inString, &result );
+  return result;
 }

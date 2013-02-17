@@ -57,7 +57,7 @@ main( int argc, char* argv[] )
             code += prev;
             break;
           case '/':
-            if( prev = '/' )
+            if( prev == '/' )
               state = readingCppComment;
             else
               code += prev;
