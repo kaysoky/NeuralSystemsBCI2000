@@ -123,7 +123,8 @@ class Watch
   CommandInterpreter mInterpreter;
   List& mrList;
 
-  struct : std::queue<std::string>, Lockable {} mQueue;
+  struct Queue : std::queue<std::string>, Lockable
+  {} mQueue;
   int mCount;
   OSMutex mCountMutex;
 

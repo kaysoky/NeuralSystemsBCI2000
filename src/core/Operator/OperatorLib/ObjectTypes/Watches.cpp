@@ -36,6 +36,7 @@
 #include <sstream>
 #include <iomanip>
 #include <limits>
+#include <algorithm>
 
 using namespace std;
 

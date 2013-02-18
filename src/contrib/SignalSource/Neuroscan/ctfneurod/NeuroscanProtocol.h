@@ -81,9 +81,10 @@ namespace BigEndian
       os.put( ( t >> ( i * 8 ) ) & 0xff );
   }
   template<>
-  static void put( std::ostream& os, float f )
+  void put( std::ostream& os, float f )
   {
-    put( os, *reinterpret_cast<unsigned int*>( &f ) );
+    union { const float* f; const unsigned int* i; } d = { &f };
+    put( os, *d.i );
   }
 
   template<typename T>
@@ -98,9 +99,10 @@ namespace BigEndian
     }
   }
   template<>
-  static void get( std::istream& is, float& f )
+  void get( std::istream& is, float& f )
   {
-    get( is, reinterpret_cast<unsigned int&>( f ) );
+    union { float* f; unsigned int* i; } d = { &f };
+    get( is, *d.i );
   }
 };
 
@@ -116,9 +118,10 @@ namespace LittleEndian
     }
   }
   template<>
-  static void put( std::ostream& os, float f )
+  void put( std::ostream& os, float f )
   {
-    put( os, *reinterpret_cast<unsigned int*>( &f ) );
+    union { const float* f; const unsigned int* i; } d = { &f };
+    put( os, *d.i );
   }
 
   template<typename T>
@@ -132,9 +135,10 @@ namespace LittleEndian
     }
   }
   template<>
-  static void get( std::istream& is, float& f )
+  void get( std::istream& is, float& f )
   {
-    get( is, reinterpret_cast<unsigned int&>( f ) );
+    union { float* f; unsigned int* i; } d = { &f };
+    get( is, *d.i );
   }
 };
 

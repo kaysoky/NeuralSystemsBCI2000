@@ -4,6 +4,9 @@
 ## Description: Build information for the Blackrock source module
 ###########################################################################
 
+IF( CMAKE_CL_64 OR NOT MSVC )
+  MESSAGE( "Blackrock libraries not available for your current platform" )
+ELSE()
 # Set the executable name
 SET( EXECUTABLE_NAME Blackrock )
 
@@ -54,3 +57,6 @@ ELSE( WIN32 )
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/lib/dylib/libcbsdk.so" "${BCI2000_ROOT_DIR}/prog" 
   )
 ENDIF( WIN32 )
+
+ENDIF() # CMAKE_CL_64 OR NOT MSVC
+

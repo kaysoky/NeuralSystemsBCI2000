@@ -32,6 +32,7 @@
 #include "BCIStream.h"
 #include "BCIAssert.h"
 #include "GenericSignal.h"
+#include <cstdlib>
 
 using namespace std;
 using namespace RDA;

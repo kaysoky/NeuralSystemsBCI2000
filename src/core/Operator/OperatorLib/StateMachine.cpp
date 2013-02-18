@@ -652,7 +652,8 @@ StateMachine::SuggestUDPAddress( const string& inAddressHint ) const
 
   string ip = "";
   uint16_t port = 0;
-  if( getline( istringstream( hint ), ip, ':' ) >> port )
+  istringstream iss( hint );
+  if( getline( iss, ip, ':' ) >> port )
   {
     int maxPort = port + 250;
     for( ; port < maxPort && result.empty(); ++port )

@@ -31,6 +31,7 @@
 #include "EnvVariable.h"
 #include "BCIException.h"
 #include <cstdlib>
+#include <cstring>
 
 using namespace std;
 using namespace Interpreter;

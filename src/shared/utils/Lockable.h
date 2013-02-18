@@ -104,7 +104,7 @@ class Lock<const T> : public Lock<T>
    Lock( const T* t ) : Lock<T>( t ) {}
    Lock( const T& t ) : Lock<T>( t ) {}
    const T& operator()() const
-    { return ConstRef(); }
+    { return Lock<T>::ConstRef(); }
 };
 
 template<typename T>
@@ -115,3 +115,4 @@ TemporaryLock( T& t )
 }
 
 #endif // LOCKABLE_H
+

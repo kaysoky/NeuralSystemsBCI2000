@@ -38,9 +38,9 @@
 
 enum
 {
-  HeaderIdCtrl = 'CTRL',
-  HeaderIdData = 'DATA',
-  HeaderIdFile = 'FILE',
+  HeaderIdCtrl = 0x4354524c, // 'CTRL'
+  HeaderIdData = 0x44415441, // 'DATA'
+  HeaderIdFile = 0x46494c45, // 'FILE'
 
   GeneralControlCode = 1,
     RequestForVersion = 1,
@@ -83,9 +83,10 @@ namespace BigEndianData
       os.put( ( t >> ( i * 8 ) ) & 0xff );
   }
   template<>
-  static void put( std::ostream& os, float f )
+  void put( std::ostream& os, float f )
   {
-    put( os, *reinterpret_cast<uint32_t*>( &f ) );
+    union { const float* f; const uint32_t* i; } data = { &f };
+    put( os, *data.i );
   }
 
   template<typename T>
@@ -100,9 +101,10 @@ namespace BigEndianData
     }
   }
   template<>
-  static void get( std::istream& is, float& f )
+  void get( std::istream& is, float& f )
   {
-    get( is, reinterpret_cast<uint32_t&>( f ) );
+    union { float* f; uint32_t* i; } data = { &f };
+    get( is, *data.i );
   }
 };
 
@@ -118,9 +120,10 @@ namespace LittleEndianData
     }
   }
   template<>
-  static void put( std::ostream& os, float f )
+  void put( std::ostream& os, float f )
   {
-    put( os, *reinterpret_cast<uint32_t*>( &f ) );
+    union { const float* f; const uint32_t* i; } data = { &f };
+    put( os, *data.i );
   }
 
   template<typename T>
@@ -134,9 +137,10 @@ namespace LittleEndianData
     }
   }
   template<>
-  static void get( std::istream& is, float& f )
+  void get( std::istream& is, float& f )
   {
-    get( is, reinterpret_cast<uint32_t&>( f ) );
+    union { float* f; uint32_t* i; } data = { &f };
+    get( is, *data.i );
   }
 };
 
@@ -369,7 +373,7 @@ class NscBasicInfo
     int   DataDepth() const      { return mDataDepth; }
     float Resolution() const     { return mResolution; }
 
-    std::ostream& WriteBinary( std::ostream& os )
+    std::ostream& WriteBinary( std::ostream& os ) const
     { // Packet data are transmitted in little endian format.
       LittleEndianData::put( os, mSizeField );
       LittleEndianData::put( os, mEEGChannels );
@@ -418,3 +422,4 @@ operator<<( std::ostream& os, const NscBasicInfo& h )
 }
 
 #endif // NEUROSCAN_H
+
