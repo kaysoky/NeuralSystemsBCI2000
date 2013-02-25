@@ -115,7 +115,7 @@ int main( int argc, char *argv[] )
 
     // Test to see if it's one of the states we should ignore
     string state;
-    stringstream ss( testLine );
+    istringstream ss( testLine );
     ss >> state;
     if( state == "SourceTime:" )
       continue;
@@ -123,6 +123,15 @@ int main( int argc, char *argv[] )
       continue;
     if( state == "TestLoggerCounter:" )
       continue;
+    { // Skip states that are absent from the reference file
+      string refState;
+      while(
+        istringstream( refLine ) >> refState 
+        && refState != state 
+        && !refState.empty() 
+        && *refState.rbegin() != ':' )
+        getline( in_ref, refLine );
+    }
     // For signal data, compute a relative error
     if( state == "VisSignal" )
     {
