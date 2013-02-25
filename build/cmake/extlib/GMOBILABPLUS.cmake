@@ -10,16 +10,18 @@
 ##       LIBS_EXTLIB - required library for gMOBIlabPlus
 ##       Also defines source groups for source files
 
-IF( WIN32 AND NOT CMAKE_CL_64 )
+IF( DYNAMIC_IMPORTS OR WIN32 AND NOT CMAKE_CL_64 )
 
 ADD_DEFINITIONS( -DGMOBILABPLUS )
 
 # Set the final Source and headers
 SET( SRC_EXTLIB
+  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.imports.cpp
 )
 
 SET( HDR_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.h
+  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.imports.h
 )
 
 # Define the include directory
@@ -39,11 +41,12 @@ SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/mingw )
 ENDIF( MINGW )
 
 # Set Libs required
-IF( MINGW )
+IF( DYNAMIC_IMPORTS )
+ELSEIF( MINGW )
 SET( LIBS_EXTLIB libgMOBIlabplus.a )
-ELSE( MINGW )
+ELSE()
 SET( LIBS_EXTLIB gMOBIlabplus.lib )
-ENDIF( MINGW )
+ENDIF()
 
 # Set the source groups
 SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\gtec\\gMOBIlabPlus FILES ${HDR_EXTLIB} )

@@ -39,6 +39,12 @@
 # error This code requires IEEE floats.
 #endif
 
+#if _MSC_VER
+# define STATIC_ static
+#else // _MSC_VER
+# define STATIC_
+#endif // _MSC_VER
+
 enum
 {
   GeneralControlCode = 1,
@@ -81,7 +87,7 @@ namespace BigEndian
       os.put( ( t >> ( i * 8 ) ) & 0xff );
   }
   template<>
-  void put( std::ostream& os, float f )
+  STATIC_ void put( std::ostream& os, float f )
   {
     union { const float* f; const unsigned int* i; } d = { &f };
     put( os, *d.i );
@@ -99,7 +105,7 @@ namespace BigEndian
     }
   }
   template<>
-  void get( std::istream& is, float& f )
+  STATIC_ void get( std::istream& is, float& f )
   {
     union { float* f; unsigned int* i; } d = { &f };
     get( is, *d.i );
@@ -118,7 +124,7 @@ namespace LittleEndian
     }
   }
   template<>
-  void put( std::ostream& os, float f )
+  STATIC_ void put( std::ostream& os, float f )
   {
     union { const float* f; const unsigned int* i; } d = { &f };
     put( os, *d.i );
@@ -135,7 +141,7 @@ namespace LittleEndian
     }
   }
   template<>
-  void get( std::istream& is, float& f )
+  STATIC_ void get( std::istream& is, float& f )
   {
     union { float* f; unsigned int* i; } d = { &f };
     get( is, *d.i );

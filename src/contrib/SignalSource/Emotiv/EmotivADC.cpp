@@ -28,7 +28,6 @@
 
 #include "EmotivADC.h"
 #include "PrecisionTime.h"
-#include "windows.h"
 #include <sstream>
 #include <stdio.h>
 
@@ -206,7 +205,10 @@ void EmotivADC::Preflight( const SignalProperties&,
   }
 
   if( !readyToCollect )
+  {
     bcierr << "Timeout occurred while waiting for device to become ready." << endl;
+    return;
+  }
 
   // Verify that signal names are correct
   if( Parameter( "ChannelNames" )->NumValues() != sizeof( targetChannelList ) / sizeof( EE_DataChannel_t ) )

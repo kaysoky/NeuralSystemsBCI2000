@@ -32,10 +32,10 @@
 // Number of buffers for g.USBamp acquisition
 //#define NUM_BUFS        1
 
-#include <windows.h>
 #include <vector>
 #include <string>
 #include <algorithm>
+#include "Win32Defs.h"
 #include "OSThread.h"
 #include "PrecisionTime.h"
 #include "Expression/Expression.h"

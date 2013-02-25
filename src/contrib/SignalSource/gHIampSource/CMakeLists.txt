@@ -4,7 +4,7 @@
 ## Description: Build information for the gHIampSource source module
 ###########################################################################
 
-IF( NOT WIN32 OR NOT MSVC )
+IF( NOT DYNAMIC_IMPORTS AND ( NOT WIN32 OR NOT MSVC ) )
 
   MESSAGE( "-- gHIamp doesn't support this Compiler/OS.  Will not build." )
 
@@ -17,18 +17,21 @@ ELSE()
   SET( SRC_PROJECT
     gHIampADC.cpp
     gHIampDevice.cpp
+    lib/gHIamp.imports.cpp
   )
 
   SET( HDR_PROJECT
     gHIampADC.h
     gHIampDevice.h
+    lib/gHIamp.imports.h
   )
 
   INCLUDE_DIRECTORIES(
-    ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/inc
+    ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib
   )
 
-  IF( BORLAND )
+  IF( DYNAMIC_IMPORTS )
+  ELSEIF( BORLAND )
     LINK_DIRECTORIES(
       ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/omf
     )
@@ -48,6 +51,8 @@ ELSE()
     "${SRC_PROJECT}" "${HDR_PROJECT}" 
   )
 
-  TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} gHIamp )
+  IF( NOT DYNAMIC_IMPORTS )
+    TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} gHIamp )
+  ENDIF()
 
 ENDIF()

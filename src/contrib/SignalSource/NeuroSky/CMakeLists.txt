@@ -9,24 +9,21 @@ SET( EXECUTABLE_NAME NeuroSky )
 # Set the project specific sources
 SET( SRC_PROJECT
   NeuroSkyADC.cpp 
+  lib/thinkgear.imports.cpp
 )
 SET( HDR_PROJECT
   NeuroSkyADC.h
   lib/thinkgear.h
+  lib/thinkgear.imports.h
 )
 
-# Define the library
-IF( BORLAND )
-  LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/NeuroSky/lib/omf )
-#  MESSAGE( "-- Borland not yet supported for NeuroSky module.  Will not build" )
-ENDIF( BORLAND )
-
-IF( MSVC )
+IF( DYNAMIC_IMPORTS )
+ELSEIF( MSVC )
   LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/NeuroSky/lib/coff )
-ENDIF( MSVC )
+ENDIF()
 
 # Put everything together
-IF( NOT MSVC AND NOT BORLAND OR CMAKE_CL_64 )
+IF( NOT DYNAMIC_IMPORTS AND (NOT MSVC AND NOT BORLAND OR CMAKE_CL_64) )
 
   MESSAGE( "-- NeuroSky does not provide libraries for this compiler/OS, will not build" )
 
@@ -38,8 +35,10 @@ ELSE()
     "${SRC_PROJECT}" "${HDR_PROJECT}" 
   )
 
-  # Link the NeuroSky Library
-  TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} thinkgear )
+  IF( NOT DYNAMIC_IMPORTS )
+    # Link the NeuroSky Library
+    TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} thinkgear )
+  ENDIF()
   
   ADD_CUSTOM_COMMAND(
     TARGET "${EXECUTABLE_NAME}"

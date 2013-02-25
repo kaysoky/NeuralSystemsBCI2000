@@ -10,12 +10,15 @@
 ##       LIBS_EXTLIB - required library for vAmp
 ##       Also defines source groups for source files
 
-IF( WIN32 AND NOT CMAKE_CL_64 )
+IF( DYNAMIC_IMPORTS OR WIN32 AND NOT CMAKE_CL_64 )
 
 # Set the Source and headers
-SET( SRC_EXTLIB )
+SET( SRC_EXTLIB
+  ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.imports.cpp
+)
 SET( HDR_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.h
+  ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.imports.h
 )
 
 # Define the include directory
@@ -35,11 +38,12 @@ SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/mingw )
 ENDIF( MINGW )
 
 # Set Libs required
-IF( MINGW )
+IF( DYNAMIC_IMPORTS )
+ELSEIF( MINGW )
 SET( LIBS_EXTLIB libFirstAmp.a )
-ELSE( MINGW )
+ELSE()
 SET( LIBS_EXTLIB FirstAmp.lib )
-ENDIF( MINGW )
+ENDIF()
 
 # Set the source groups
 SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\brainproducts\\vamp FILES ${SRC_EXTLIB} )

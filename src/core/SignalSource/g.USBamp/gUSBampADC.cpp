@@ -27,7 +27,7 @@
 #pragma hdrstop
 
 #include "gUSBampADC.h"
-#include "gUSBamp.h"
+#include "gUSBamp.imports.h"
 
 #include "defines.h"
 #include "GenericSignal.h"

@@ -27,7 +27,6 @@
 #pragma hdrstop
 
 #include "NeuroSkyADC.h"
-#include "windows.h"
 #include <sstream>
 
 using namespace std;

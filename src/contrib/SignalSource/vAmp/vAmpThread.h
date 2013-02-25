@@ -43,7 +43,7 @@
 #include "Color.h"
 #include "defines.h"
 #include "OSThread.h"
-#include "FirstAmp.h"
+#include "FirstAmp.imports.h"
 #include "vAmpChannelInfo.h"
 
 class vAmpThread : public OSThread

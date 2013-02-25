@@ -11,24 +11,30 @@ SET( SRC_PROJECT
   NIADC.cpp
   NIDAQ-Logging/NIDAQFilter.cpp
   NIDAQ-Logging/NIDAQLogger.cpp
+  nidaq/NIDAQmx.imports.cpp
 )
 SET( HDR_PROJECT
   NIDAQmxADC.h
   nidaq/NIDAQmx.h
+  nidaq/NIDAQmx.imports.h
   NIDAQ-Logging/NIDAQFilter.h
   NIDAQ-Logging/NIDAQLogger.h
 )
 
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/NIDAQ-MX/nidaq )
-LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/NIDAQ-MX/nidaq )
+IF( DYNAMIC_IMPORTS )
+ELSE()
+  LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/NIDAQ-MX/nidaq )
+ENDIF()
 
-IF( BORLAND OR MSVC AND NOT CMAKE_CL_64 )
+IF( DYNAMIC_IMPORTS OR BORLAND OR MSVC AND NOT CMAKE_CL_64 )
   # Create the signal source module
   BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
     "${EXECUTABLE_NAME}" 
     "${SRC_PROJECT}" "${HDR_PROJECT}" 
   )
-  IF( BORLAND )
+  IF( DYNAMIC_IMPORTS )
+  ELSEIF( BORLAND )
     TARGET_LINK_LIBRARIES( "${EXECUTABLE_NAME}" NIDAQmx.lib )
   ELSEIF( MSVC )
     TARGET_LINK_LIBRARIES( "${EXECUTABLE_NAME}" NIDAQmx_orig.lib )

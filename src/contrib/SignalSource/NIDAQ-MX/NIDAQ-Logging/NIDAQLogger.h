@@ -29,7 +29,7 @@
 
 #include "Environment.h"
 #include "OSThread.h"
-#include "NIDAQmx.h"
+#include "NIDAQmx.imports.h"
 #include <vector>
 #include <string>
 

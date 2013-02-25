@@ -40,7 +40,7 @@
 #pragma hdrstop
 
 #include "BioRadioADC.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "GenericSignal.h"
 #include "bioutils.h"
 
@@ -109,9 +109,6 @@ BioRadioADC::BioRadioADC()
           "14 = COM14 "
           "15 = COM15  (enumeration)",
 
-   "Source string ConfigPath= c:\\ % % % "
-       "// Path for the BioRadio150 configuration path",
-
    "Source int SampleBlockSize= 10 10 10 120 "
        "// Sample Block Size",
 
@@ -176,22 +173,6 @@ BioRadioADC::Preflight( const SignalProperties&,
     errorFlag = XERROR;
   }
 
-  // Obtain the path of the configuration file, and concat that with the name
-  // of the configuration file.
-  string path = Parameter("ConfigPath");
-  string pathFileName = path + CONFIG_FILE;
-
-  // Check to see if the path+file exists
-  FILE *pFile = fopen(pathFileName.c_str(), "w");
-
-  if(pFile==NULL)
-  {
-    bcierr<<"Error with filename and/or path. Ensure that the path ends with a backslash(\\)"<<endl;
-    errorFlag = XERROR;
-    fclose(pFile);
-  }
-  fclose(pFile);
-
   // Check to see if the specified sampling frequency is equal to one that
   // is available on the bioradio150
   double samplingRate = Parameter( "SamplingRate" ).InHertz();
@@ -226,14 +207,16 @@ BioRadioADC::Preflight( const SignalProperties&,
   {
 
     double vRange = GetBioRadioRangeValue(Parameter("VoltageRange"));
+    mTempFile.Open();
     if(WriteBioRadioConfig( static_cast<int>(Parameter( "SamplingRate" ).InHertz()),
                             BIT_RES,
                             vRange,
-                            pathFileName.c_str()))
+                            mTempFile))
     {
-      bcierr<<"Config file error."<<endl;
+      bcierr<<"Could not write temporary file."<<endl;
       errorFlag = XERROR;
     }
+    mTempFile.Close();
   // Create a bioradio object and try to start it, if it fails check the other
   // ports to see if those work.
   // If AUTO mode is selected, cycle through all ports to see which is the right
@@ -271,9 +254,9 @@ BioRadioADC::Preflight( const SignalProperties&,
     if(!radio.Start(GetPort(port)))
     {
       radio.Purge();      // set internal buffer to zero
-      if(radio.Program(pathFileName))
+      if(radio.Program(mTempFile.Name()))
       { radio.Stop();       //kill
-        bcierr<<"Error programing device, path may be incorrect."<<endl;
+        bcierr<<"Error programming device, path may be incorrect."<<endl;
       }
       radio.Stop();       //kill
     }
@@ -307,9 +290,6 @@ BioRadioADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
   // Get the translated value for the voltage range
   double vRange = GetBioRadioRangeValue(Parameter("VoltageRange"));
-  // Obtain path to the config file and concat it with the file name
-  string path = Parameter("ConfigPath");
-  mFileLocation = path + CONFIG_FILE;
   // Obtain all value from params
   ClearSampleIndices();
   mSamplerate = static_cast<int>(Parameter("SamplingRate").InHertz());
@@ -318,19 +298,21 @@ BioRadioADC::Initialize( const SignalProperties&, const SignalProperties& )
   mComPort = Parameter("ComPort");
 
   // Write a new config file from the params obtained
+  mTempFile.Open();
   WriteBioRadioConfig( mSamplerate,
                        BIT_RES,
                        vRange,
-                       mFileLocation.c_str());
+                       mTempFile );
+  mTempFile.Close();
 
   // Start the bioradio, ping, and program it
   // Dump the first buffer
   // If the bioradio does not start, complain. This may happen on occassion.
-    if(!mBioRadio150.Start(mBioRadio150.PortTest(mComPort)))
+  if(!mBioRadio150.Start(mBioRadio150.PortTest(mComPort)))
   {
     // set internal buffer to zero
     mBioRadio150.Purge();
-    mBioRadio150.Program(mFileLocation);
+    mBioRadio150.Program(mTempFile.Name());
     mpIndex = mBioRadio150.GetData();
     mDataRead = mBioRadio150.SamplesRead();
     mpIndex = mBioRadio150.GetData();

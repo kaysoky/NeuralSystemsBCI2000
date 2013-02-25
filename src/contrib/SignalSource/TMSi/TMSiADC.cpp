@@ -119,7 +119,8 @@ TMSiADC::TMSiADC()
 
         StartDriver();
 
-        mpMaster->Reference((BOOL)(OptionalParameter("TMSiAutoReference", 1)));
+        if( mpMaster )
+          mpMaster->Reference((BOOL)(OptionalParameter("TMSiAutoReference", 1)));
 }
 
 TMSiADC::~TMSiADC()

@@ -41,7 +41,6 @@
 #define Biosemi2ClientH
 
 #include <iterator>
-#include "LABVIEW_DLL.h"
 
 class Biosemi2Client{
 
@@ -384,12 +383,6 @@ protected:
     BOOL READ_POINTER(HANDLE hdevice,PDWORD pointer);
     BOOL CLOSE_DRIVER_ASYNC(HANDLE hdevice);
 *******************************************************************************/
-
-    dOPEN_DRIVER_ASYNC mfpOPEN_DRIVER_ASYNC;      // function pointer
-    dUSB_WRITE mfpUSB_WRITE;
-    dREAD_MULTIPLE_SWEEPS mfpREAD_MULTIPLE_SWEEPS;
-    dREAD_POINTER mfpREAD_POINTER;
-    dCLOSE_DRIVER_ASYNC mfpCLOSE_DRIVER_ASYNC;
 
     // I N N E R  C L A S S E S //
 

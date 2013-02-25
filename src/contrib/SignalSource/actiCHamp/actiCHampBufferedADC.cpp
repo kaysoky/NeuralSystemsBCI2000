@@ -124,7 +124,8 @@ void actiCHampBufferedADC::OnPreflight( SignalProperties& Output ) const
 {
     //Get max channel counts from device.
     actiCHampDevice preflight_tester;
-    preflight_tester.open((int)Parameter ("actiCHampAmplifierID"));
+    if( !preflight_tester.open((int)Parameter ("actiCHampAmplifierID")) )
+      return;
 
     int maxEeg           = preflight_tester.get_max_supported_eeg();
     int maxAux           = preflight_tester.get_max_supported_aux();

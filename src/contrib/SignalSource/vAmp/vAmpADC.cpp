@@ -340,7 +340,7 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
 	}
 	
 
-  ParamRef Impedances = Parameter( "Impedances" );
+  MutableParamRef Impedances = Parameter( "Impedances" );
   if( mImpedances.empty())
   {
     Impedances->SetDimensions( 1, 1 );

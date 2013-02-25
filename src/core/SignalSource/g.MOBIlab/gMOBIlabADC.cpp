@@ -31,10 +31,10 @@
 #include "gMOBIlabADC.h"
 
 #ifndef GMOBILABPLUS
-# include "spa20a.h"
+# include "spa20a.imports.h"
 #else // GMOBILABPLUS
 # define __CFG GFG__
-# include "gMOBIlabplus.h"
+# include "gMOBIlabplus.imports.h"
 #endif // GMOBILABPLUS
 
 const size_t cMaxReadBufSize = 1024; // Restriction of gtec driver.

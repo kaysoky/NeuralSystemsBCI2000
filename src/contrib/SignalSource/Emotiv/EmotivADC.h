@@ -28,9 +28,7 @@
 
 #include "PrecisionTime.h"
 #include "GenericADC.h"
-#include <EmoStateDLL.h>
-#include <edk.h>
-#include <edkErrorCode.h>
+#include "lib/edk.imports.h"
 #include <vector>
 #include <queue>
 

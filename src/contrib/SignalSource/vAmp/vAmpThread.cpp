@@ -31,7 +31,7 @@
 #include "PrecisionTime.h"
 #include "vAmpThread.h"
 #include "vAmpDisplay.h"
-#include "FirstAmp.h"
+#include "FirstAmp.imports.h"
 
 using namespace std;
 

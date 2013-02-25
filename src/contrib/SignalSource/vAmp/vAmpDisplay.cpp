@@ -40,8 +40,7 @@
 #include <sstream>
 #include <cstdio>
 
-#include <windows.h> // FirstAmp.h depends on this
-#include "FirstAmp.h"
+#include "FirstAmp.imports.h"
 
 #if _MSC_VER
 # define snprintf _snprintf

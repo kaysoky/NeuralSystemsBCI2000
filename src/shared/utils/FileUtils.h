@@ -28,6 +28,8 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
+#include "SharedPointer.h"
 
 #ifdef RemoveDirectory
 # undef RemoveDirectory
@@ -50,6 +52,7 @@ namespace FileUtils
   std::string EnsureSeparator( const std::string& );
   std::string ExecutablePath();
   std::string ApplicationTitle();
+
   const std::string& InstallationDirectoryS();
   inline std::string InstallationDirectory() { return InstallationDirectoryS() + DirSeparator; }
 
@@ -90,8 +93,25 @@ namespace FileUtils
   bool MakeDirectory( const std::string& );
   bool RemoveDirectory( const std::string&, bool force = false );
   bool RemoveFile( const std::string& );
+  
+  class TemporaryFile : public std::fstream
+  {
+   public:
+    TemporaryFile();
+    ~TemporaryFile() { Close(); }
+    const std::string& Name() const { return mpFile->name; }
+    bool Open();
+    void Close() { std::fstream::close(); }
+    
+   private:
+    struct File
+    {
+      ~File() { RemoveFile( name ); }
+      std::string name;
+    };
+    SharedPointer<File> mpFile;
+  };
 
 } // namespace FileUtils
 
 #endif // FILE_UTILS_H
-

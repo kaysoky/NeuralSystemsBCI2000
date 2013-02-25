@@ -47,6 +47,7 @@ SET( SRC_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/WildcardMatch.cpp
   ${BCI2000_SRC_DIR}/shared/utils/EscapedString.cpp
   ${BCI2000_SRC_DIR}/shared/utils/EnvVariable.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/DylibImports.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
   ${BCI2000_SRC_DIR}/shared/utils/LogFile.h
@@ -78,6 +79,7 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/OSThreadLocal.h
   ${BCI2000_SRC_DIR}/shared/utils/Uuid.h
   ${BCI2000_SRC_DIR}/shared/utils/BinaryData.h
+  ${BCI2000_SRC_DIR}/shared/utils/DylibImports.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
   ${BCI2000_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp

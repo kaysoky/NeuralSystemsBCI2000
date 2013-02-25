@@ -30,8 +30,8 @@
 #pragma hdrstop
 
 #include "BAlertADC.h"
-#include "BCIError.h"
-#include <BAlert.h>
+#include "BCIStream.h"
+#include "lib/BAlert.imports.h"
 
 using namespace std;
 

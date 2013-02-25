@@ -13,15 +13,7 @@
 #define FIRSTAMP_API __declspec(dllexport)
 #else
 /*! FIRSTAMP_API functions as being imported from a DLL */
-#if _MSC_VER
-// C++ mangled function names for MSVC lib file coming with the SDK, jm
-# define FIRSTAMP_API __declspec(dllimport)
-#elif __BORLANDC__
-// C function names for non-MSVC compilers
-# define FIRSTAMP_API extern "C" __declspec(dllimport)
-#else
-# define FIRSTAMP_API extern "C"
-#endif // _MSC_VER, __BORLANDC__
+#define FIRSTAMP_API __declspec(dllimport)
 #endif
 
 /*! Error codes */

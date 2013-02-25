@@ -10,12 +10,15 @@
 ##       LIBS_EXTLIB - required library for gUSBamp
 ##       Also defines source groups for source files
 
-IF( WIN32 )
+IF( DYNAMIC_IMPORTS OR WIN32 )
 
 # Set the Source and headers
-SET( SRC_EXTLIB )
+SET( SRC_EXTLIB
+  ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/gUSBamp.imports.cpp
+)
 SET( HDR_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/gUSBamp.h
+  ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/gUSBamp.imports.h
 )
 
 # Define the include directory
@@ -24,9 +27,6 @@ SET( INC_EXTLIB
 )
 
 # Define where the library is
-IF( BORLAND )
-  SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/omf )
-ENDIF( BORLAND )
 IF( MSVC )
   IF( CMAKE_CL_64 )
     SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/coff64 )
@@ -39,11 +39,12 @@ IF( MINGW )
 ENDIF( MINGW )
 
 # Set Libs required
-IF( MINGW )
+IF( DYNAMIC_IMPORTS )
+ELSEIF( MINGW )
   SET( LIBS_EXTLIB libgUSBamp.a )
-ELSE( MINGW )
+ELSE()
   SET( LIBS_EXTLIB gUSBamp.lib )
-ENDIF( MINGW )
+ENDIF()
 
 # Set the source groups
 SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\gtec\\gUSBamp FILES ${SRC_EXTLIB} )
@@ -52,9 +53,9 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\gtec\\gUSBamp FILES ${HDR_EXTL
 # Set success
 SET( EXTLIB_OK TRUE )
 
-ELSE( WIN32 )
+ELSE()
 
   MESSAGE( "- WARNING: gUSBamp libraries only exist for windows.  This module will not build." )
   SET( EXTLIB_OK FALSE )
 
-ENDIF( WIN32 )
+ENDIF()

@@ -10,11 +10,14 @@ SET( EXECUTABLE_NAME Biosemi2 )
 SET( SRC_PROJECT
   Biosemi2ADC.cpp
   Biosemi2Client.cpp
+  lib/Labview_DLL.imports.cpp
 )
 SET( HDR_PROJECT
   Biosemi2ADC.h
   Biosemi2Client.h
+  lib/Labview_DLL.imports.h
 )
+INCLUDE_DIRECTORIES( lib )
 
 BCI2000_INCLUDE( SOURCEFILTER )
 
@@ -27,5 +30,5 @@ BCI2000_ADD_SIGNAL_SOURCE_MODULE(
 ADD_CUSTOM_COMMAND(
   TARGET "${EXECUTABLE_NAME}"
   POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/Labview_DLL.dll" "${BCI2000_ROOT_DIR}/prog"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/lib/Labview_DLL.dll" "${BCI2000_ROOT_DIR}/prog"
 )

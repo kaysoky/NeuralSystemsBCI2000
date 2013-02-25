@@ -32,7 +32,7 @@
 
 #include "BR_defines.h"
 #include <string>
-#include <windows.h>
+#include <Win32Defs.h>
 
 class BR150
 {

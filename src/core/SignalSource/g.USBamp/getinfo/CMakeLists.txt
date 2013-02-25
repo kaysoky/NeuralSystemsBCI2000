@@ -16,6 +16,7 @@ SET( SRC_PROJECT
 SET( HDR_PROJECT
 )
 
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 # Tell the macro to link against the gUSBamp API found in EXTLIB
 BCI2000_INCLUDE( "GUSBAMP" )
 
@@ -28,9 +29,9 @@ IF( NOT FAILED )
   # Create the signal source module
   ADD_EXECUTABLE( 
     "${EXECUTABLE_NAME}" 
-    "${SRC_PROJECT}" "${HDR_PROJECT}" 
-    "${SRC_BCI2000_FRAMEWORK}"
-    "${HDR_BCI2000_FRAMEWORK}" 
+    ${SRC_PROJECT} ${HDR_PROJECT} 
+    ${SRC_BCI2000_FRAMEWORK}
+    ${HDR_BCI2000_FRAMEWORK} 
   )
   TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${LIBS} )
   

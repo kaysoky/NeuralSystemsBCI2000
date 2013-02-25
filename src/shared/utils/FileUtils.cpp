@@ -27,7 +27,7 @@
 #pragma hdrstop
 
 #if _WIN32
-# include "Windows.h"
+# include <Windows.h>
 # define S_ISLNK(x) ( false )
 # if _MSC_VER
 #  include <direct.h>
@@ -89,13 +89,6 @@ FileUtils::EnsureSeparator( const string& inDir )
   if( inDir.empty() || Separators().find( *inDir.rbegin() ) != string::npos )
     return inDir;
   return inDir + DirSeparator;
-}
-
-const string&
-FileUtils::InstallationDirectoryS()
-{
-  static string installationDirectory = ParentDirectoryS( ExecutablePath() );
-  return installationDirectory;
 }
 
 string
@@ -162,6 +155,13 @@ FileUtils::ApplicationTitle()
     title += *i;
   }
   return title;
+}
+
+const string&
+FileUtils::InstallationDirectoryS()
+{
+  static string installationDirectory = ParentDirectoryS( ExecutablePath() );
+  return installationDirectory;
 }
 
 string
@@ -363,7 +363,7 @@ FileUtils::Rename( const string& inName, const string& inNewName )
 bool
 FileUtils::RemoveFile( const string& inName )
 {
-  return !::unlink( inName.c_str() );
+  return inName.empty() || !::unlink( inName.c_str() );
 }
 
 bool
@@ -385,4 +385,25 @@ FileUtils::ListDirectory( const string& inPath, List& outList )
     ::closedir( dir );
   }
   return success;
+}
+
+FileUtils::TemporaryFile::TemporaryFile()
+: mpFile( new File )
+{
+  const char* p = ::tmpnam( 0 );
+  for( int trial = 0; trial < 20 && p && !is_open(); ++trial )
+  {
+    mpFile->name = p;
+    if( !Open() )
+      p = ::tmpnam( 0 );
+  }
+  if( !is_open() )
+    mpFile->name = "";
+}
+
+bool
+FileUtils::TemporaryFile::Open()
+{
+  open( mpFile->name.c_str(), ios_base::in | ios_base::out | ios_base::binary );
+  return is_open();
 }

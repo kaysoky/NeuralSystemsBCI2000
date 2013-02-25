@@ -49,7 +49,7 @@
 #include <vector>
 #include <string>
 #include "Biosemi2ADC.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "GenericSignal.h"
 
 #include "Biosemi2Client.h"
@@ -127,22 +127,6 @@ void Biosemi2ADC::Preflight( const SignalProperties& Input,
     State("MK2");
 
     int reqChannels     = Parameter("SourceCh");
-    int nEegRequested   = Parameter( "EEGChList" )->NumValues();
-    int nAibRequested   = Parameter( "AIBChList" )->NumValues();
-    int nTrigRequested  = Parameter( "TriggerChList" )->NumValues();
-    int nTotalRequested = nEegRequested + nAibRequested + nTrigRequested;
-
-    if ( reqChannels !=  nTotalRequested ) {
-        bcierr << "Combined number of indices in EEGChList + AIBChList + TriggerChList"
-               << " (" << nEegRequested
-               << "+"  << nAibRequested
-               << "+"  << nTrigRequested
-               << "="  << nTotalRequested << ")"
-               << " does not match SourceCh parameter value"
-               << " (=" << reqChannels << ")"
-               << endl;
-    }
-
     Biosemi2Client biosemi;
     bool result = biosemi.initialize(
       static_cast<int>(Parameter( "SamplingRate" ).InHertz()),
@@ -152,6 +136,22 @@ void Biosemi2ADC::Preflight( const SignalProperties& Input,
 
     if( result )
     {
+      int nEegRequested   = Parameter( "EEGChList" )->NumValues();
+      int nAibRequested   = Parameter( "AIBChList" )->NumValues();
+      int nTrigRequested  = Parameter( "TriggerChList" )->NumValues();
+      int nTotalRequested = nEegRequested + nAibRequested + nTrigRequested;
+
+      if ( reqChannels !=  nTotalRequested ) {
+          bcierr << "Combined number of indices in EEGChList + AIBChList + TriggerChList"
+                 << " (" << nEegRequested
+                 << "+"  << nAibRequested
+                 << "+"  << nTrigRequested
+                 << "="  << nTotalRequested << ")"
+                 << " does not match SourceCh parameter value"
+                 << " (=" << reqChannels << ")"
+                 << endl;
+      }
+
       int eegChannelsAvailable = biosemi.getNumEEGChannels();
       for( int i = 0 ; i < nEegRequested ; ++i ) {
           int ind = Parameter( "EEGChList" )( i );
@@ -258,7 +258,7 @@ void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
 
     State("BatteryLow") = mpBiosemi->isBatteryLow();
     if( State("BatteryLow" ) ){
-        bciout << "Warning: Battery low " << endl;
+        bciwarn << "Warning: Battery low " << endl;
     }
     State("MODE") =mpBiosemi->getMode();
     State("MK2") = mpBiosemi->isMK2();
@@ -285,7 +285,7 @@ void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& Output )
 
     if( !mpDataBlock->isDataValid() ){
         if( mpBiosemi->isBatteryLow() && !State("BatteryLow")){
-            bciout << "Warning: Battery Low" << endl;
+            bciwarn << "Warning: Battery Low" << endl;
 
 // we don't want to send messages to bicout everytime Process function is called,
 // only send once and hope the user is paying attention.

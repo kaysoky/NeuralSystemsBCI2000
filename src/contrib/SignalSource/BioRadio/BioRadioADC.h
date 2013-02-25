@@ -33,6 +33,7 @@
 #include "GenericADC.h"
 #include "BR_defines.h"
 #include "BR150.h"
+#include "FileUtils.h"
 
 class BioRadioADC : public GenericADC
 {
@@ -60,7 +61,7 @@ class BioRadioADC : public GenericADC
   int           mTracker;
   int           mSampleIndex[ALL_CHANNELS];
   int           mComPort;
-  std::string   mFileLocation;
+  mutable FileUtils::TemporaryFile mTempFile;
  };
 
 #endif // BioRadioADCH

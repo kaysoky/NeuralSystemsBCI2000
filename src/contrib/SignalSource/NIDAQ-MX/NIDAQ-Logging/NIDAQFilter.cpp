@@ -28,7 +28,6 @@
 #pragma hdrstop
 #include "NIDAQFilter.h"
 #include "BCIEvent.h"
-#include "NIDAQmx.h"
 #include <sstream>
 using namespace std;
 

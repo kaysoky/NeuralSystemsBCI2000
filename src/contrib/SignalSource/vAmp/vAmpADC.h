@@ -33,7 +33,7 @@
 #include <string>
 #include <algorithm>
 #include "PrecisionTime.h"
-#include "FirstAmp.h"
+#include "FirstAmp.imports.h"
 #include "vAmpChannelInfo.h"
 #include "vAmpThread.h"
 

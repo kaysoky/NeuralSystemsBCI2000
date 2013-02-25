@@ -26,7 +26,7 @@
 
 
 #include "ENOBIOADC.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 
 using namespace std;
 
@@ -41,7 +41,9 @@ Returns:    N/A
 *******************************************************************************/
 ENOBIOADC::ENOBIOADC()
 : mSourceCh(0),
-  mSampleBlockSize(0){
+  mSampleBlockSize(0),
+  mEnobio( 0 ) 
+{
   BEGIN_PARAMETER_DEFINITIONS
 	// Parameters required to interpret a data file are listed here
     // to enforce their presence:
@@ -64,6 +66,8 @@ ENOBIOADC::ENOBIOADC()
 	  
   mEnobio= CEnobioCreate(); //check if the Enobio is connected to the PC
   int LastErrorId=   CEnobioGetLastError(mEnobio);
+  if(LastErrorId != 0)
+    mEnobio = 0; // ? trying to avoid subsequent segfaults when no amp is available
   if(LastErrorId>0){
 	bcierr<<CEnobioStrError(LastErrorId,mEnobio)<<endl;
   }
@@ -72,7 +76,8 @@ ENOBIOADC::ENOBIOADC()
 ENOBIOADC::~ENOBIOADC()
 {
 	Halt();
-	CEnobioClose(mEnobio);
+	if( mEnobio )
+  	CEnobioClose(mEnobio);
 }
 
 
@@ -87,6 +92,11 @@ Returns:    N/A
 void ENOBIOADC::Preflight( const SignalProperties&,
 								   SignalProperties& Output ) const
 {
+  if( !mEnobio )
+  {
+    bcierr << "Could not connect to amplifier";
+    return;
+  }
 	int LastErrorId;
 	if(CEnobioIsInitialized(mEnobio)==false){
     if(CEnobioInitialize(mEnobio,Parameter("SampleBlockSize"))==false){
@@ -157,5 +167,6 @@ Returns:    N/A
 *******************************************************************************/
 void ENOBIOADC::Halt()
 {
-	CEnobioCaptureStop (mEnobio);
+  if( mEnobio )
+  	CEnobioCaptureStop (mEnobio);
 }

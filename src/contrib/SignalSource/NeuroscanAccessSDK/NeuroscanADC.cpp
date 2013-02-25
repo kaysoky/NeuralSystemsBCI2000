@@ -26,11 +26,8 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#define __AFXWIN_H__
-#define IMPORT_NSDEVICE
 #include "NeuroscanADC.h"
-#include "lib/NSDevice.h"
-#include <windows.h>
+#include "lib/NSDevice.imports.h"
 
 using namespace std;
 

@@ -44,7 +44,7 @@ class Lockable
   Lockable() {}
   Lockable( const Lockable& ) {}
   virtual ~Lockable() {}
-  Lockable& operator=( const Lockable& ) {}
+  Lockable& operator=( const Lockable& ) { return *this; }
 
   bool Lock() const   { return mMutex.Acquire(); }
   bool Unlock() const { return mMutex.Release(); }

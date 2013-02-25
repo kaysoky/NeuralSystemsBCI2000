@@ -82,7 +82,7 @@ ExpressionSource::OnInitialize( const Context& inContext )
         bcierr << "While processing \"" << mExpression << "\": "
                << "Data dimensions must be compatible across sub-expressions" << endl;
   }
-  mProperties.Name() == Name();
+  mProperties.Name() = Name();
 }
 
 void

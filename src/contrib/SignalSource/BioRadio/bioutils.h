@@ -30,6 +30,8 @@
 #ifndef BIOUTILS_H
 #define BIOUTILS_H
 
+#include <iostream>
+
 namespace bioutils
 {
               // Get port name from index value
@@ -39,7 +41,7 @@ namespace bioutils
               //Gets the index value associated with a specifed voltage range
   int         VRange2IndexOfRange(double vRange);
               // Writes config file for the bioradio
-  int         WriteBioRadioConfig(int fs, int bitRes, double vRange, const char *pathFile);
+  int         WriteBioRadioConfig(int fs, int bitRes, double vRange, std::ostream&);
               // Gets internal gain
   double      GetInternalGain(double vRange);
 }

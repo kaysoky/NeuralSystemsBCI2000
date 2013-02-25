@@ -7,7 +7,7 @@
 //    "?" matches a single arbitrary character,
 //    "[abc]" matches any of the characters "abc",
 //    "[a-c]" matches any character from the range between "a" and "c",
-//    "[!abc]" and "[!a-c]" both match any character not in "abc".
+//    "[^abc]" and "[^a-c]" both match any character not in "abc".
 //    "\<" matches the beginning of a word,
 //    "\>" matches the end of a word,
 //    "\b" matches either word boundary,
@@ -92,7 +92,7 @@ sNegativeCases[] =
   { "", "TestString" },
   { "TestString", "Test" },
   { "?*TestString", "TestString" },
-  { "*[!s]tString", "TestString" },
+  { "*[^s]tString", "TestString" },
   { "\\<*ing", " TestString" },
   { "*ing\\>", "TestString " },
   { " \\<*\\> \\<*\\> ", " TestString " },
@@ -331,7 +331,7 @@ Matcher::CharClassMatch( const char *p, const char *s )
   {
     switch( *p )
     {
-      case '!':
+      case '^':
         if( charset.empty() )
           negate = true;
         else
@@ -339,9 +339,14 @@ Matcher::CharClassMatch( const char *p, const char *s )
         ++p;
         break;
       case '-':
-        ++p;
-        for( char c = *charset.rend(); c <= *p; ++c )
-          charset += c;
+        if( charset.empty() )
+          charset += *p;
+        else
+        {
+          ++p;
+          for( char c = *charset.rbegin(); c <= *p; ++c )
+            charset += c;
+        }
         break;
       case '\\':
         if( *( p+1 ) != '\0' )

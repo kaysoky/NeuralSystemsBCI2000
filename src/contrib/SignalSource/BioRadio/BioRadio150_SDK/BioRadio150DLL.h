@@ -1,20 +1,20 @@
 //---------------------------------------------------------------------------
 #ifndef TUpdateStatusEvent
-	typedef void UpdateStatusFunc(char *Message, bool *Abort);
-	typedef UpdateStatusFunc* TUpdateStatusEvent;
+  typedef void UpdateStatusFunc(char *Message, bool *Abort);
+  typedef UpdateStatusFunc* TUpdateStatusEvent;
 #endif
 //---------------------------------------------------------------------------
 #ifndef TDeviceInfoStruct
 #define TDeviceInfoStruct
 struct TDeviceInfo{
- 	char PortName[260]; 
+  char PortName[260];
 };
 #endif
 //---------------------------------------------------------------------------
 #ifndef _BIORADIO_150_DLL_H_
 #define _BIORADIO_150_DLL_H_
 #include "BioRadioConfig.h"
-#define DllImport __declspec(dllexport)
+#define DllImport __declspec(dllimport)
 //---------------------------------------------------------------------------
 extern "C" {
 DllImport BOOL _stdcall FindDevices(TDeviceInfo *DeviceList, int *DeviceCount, int MaxCount, TUpdateStatusEvent UpdateStatusProc);
@@ -71,6 +71,6 @@ DllImport int _stdcall GetDeviceID(unsigned int BioRadio150, WORD *DeviceID);
 DllImport int _stdcall GetDeviceIDString(unsigned int BioRadio150, char *DeviceIDCStr, int StrLength);
 DllImport int _stdcall GetFirmwareVersionString(unsigned int BioRadio150, char *VersionString, int StrLength);
 DllImport void _stdcall GetDLLVersionString(char *VersionString, int StrLength);
-} 
+}
 //---------------------------------------------------------------------------
-#endif 
+#endif

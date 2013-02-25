@@ -28,8 +28,7 @@
 
 #include "PrecisionTime.h"
 #include "GenericADC.h"
-//#include "NeuroSkyThread.h"
-#include "lib/thinkgear.h"
+#include "lib/thinkgear.imports.h"
 #include <vector>
 
 class NeuroSkyADC : public GenericADC

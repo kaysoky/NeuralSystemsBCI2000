@@ -39,6 +39,7 @@ using namespace std;
 
 
 actiCHampDevice::actiCHampDevice()
+: m_device( 0 )
 {    
     //Null this out just in case of compiler issues.
     mp_channel_matrix = 0;

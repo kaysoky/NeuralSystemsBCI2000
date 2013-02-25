@@ -27,7 +27,7 @@
 #define  __ACTICHAMP_DEVICE_H
 
 #include "ChannelRouter.h"
-#include "ActiChamp.h"
+#include "ActiChamp.imports.h"
 #include "GenericSignal.h"
 #include <string>
 #include <iostream>

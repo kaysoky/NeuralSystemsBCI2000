@@ -24,13 +24,8 @@
 #define NImxADCH
 //---------------------------------------------------------------------------
 
-#include "NIDAQmx.h"
-
-//#include "UParameter.h"
-//#include "UState.h"
-//#include "UGenericSignal.h"
+#include "NIDAQmx.imports.h"
 #include "GenericADC.h"
-#include <windows.h>
 
 #define NIDAQ_ERR_GENERICERR    0
 #define NIDAQ_ERR_NOERR         1

@@ -26,9 +26,8 @@
 #ifndef INCLUDED_GHIAMPDEVICE_H
 #define INCLUDED_GHIAMPDEVICE_H
 
-#include <windows.h>
-#include <gHIamp.h>
 #include <vector>
+#include "gHIamp.imports.h"
 #include "GenericSignal.h"
 
 class gHIampDevice

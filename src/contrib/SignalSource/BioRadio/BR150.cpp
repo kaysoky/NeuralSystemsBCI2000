@@ -44,7 +44,7 @@
 #pragma hdrstop
 
 #include "BR150.h"
-#include "BioRadio150_SDK/BioRadio150DLL.h"
+#include "BioRadio150_SDK/BioRadio150DLL.imports.h"
 #include "bioutils.h"
 
 #include <string>

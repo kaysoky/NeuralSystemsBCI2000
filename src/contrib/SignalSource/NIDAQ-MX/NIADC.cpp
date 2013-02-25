@@ -50,7 +50,6 @@
 #include <stdio.h>
 
 #include "NIDAQmxADC.h"
-//#include "UBCIError.h"
 
 #define DAQmxErrChk(functionCall) if( DAQmxFailed(error=(functionCall)) ) goto Error; else
 
@@ -72,6 +71,8 @@ HANDLE bufferdone = NULL;
 // Returns:    N/A
 // **************************************************************************
 NIADC::NIADC()
+: taskHandle( 0 ),
+  iDevice( 0 )
 {
  // change all the parameters according to your ADC specification
  // the parameters are in the format value - default value
@@ -87,12 +88,6 @@ NIADC::NIADC()
        "// The NI-ADC board's device number",
  END_PARAMETER_DEFINITIONS
 
- // add all states that this ADC requests to the list of states
- // this is just an example (here, we don't really need all these states)
- BEGIN_STATE_DEFINITIONS
-   "Running 1 0 0 0",
-   "SourceTime 16 2347 0 0",
- END_STATE_DEFINITIONS
  data_mutex = ::CreateMutex( NULL, false, NULL );
  bufferdone = ::CreateEvent( NULL, false, false, NULL );
  piBuffer=NULL;
@@ -509,7 +504,7 @@ int NIADC::Stop()
  taskHandle=0;
 
  Error:
-	if( DAQmxFailed(error) )
+	if( Dylib::NIDAQmx_Loaded() && DAQmxFailed(error) )
 	{
 		DAQmxGetExtendedErrorInfo(errBuff,2048);
 	        bcierr << errBuff << endl;

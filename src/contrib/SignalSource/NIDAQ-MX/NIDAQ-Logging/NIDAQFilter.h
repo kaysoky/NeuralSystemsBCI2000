@@ -28,7 +28,7 @@
 
 #include "GenericFilter.h"
 #include "OSThread.h"
-#include "NIDAQmx.h"
+#include "NIDAQmx.imports.h"
 #include "Expression.h"
 #include <vector>
 #include <string>

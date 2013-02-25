@@ -38,7 +38,6 @@
  *  Added option to acquire trigger signals simultaneously in one 16-bit channel.
  */
 
-#include "stdafx.h"
 #include <string>
 #include <iostream>
 
@@ -46,6 +45,7 @@
 #include "BCIAssert.h"
 
 #include "Biosemi2Client.h"
+#include "Labview_DLL.imports.h"
 
 using namespace std;
 
@@ -82,39 +82,6 @@ Biosemi2Client::Biosemi2Client() :
     bciassert(sizeof(char) == 1);
 
     mpDataAsInt = reinterpret_cast<int *>(mpData);
-
-    //init
-    mfpOPEN_DRIVER_ASYNC = 0;
-    mfpUSB_WRITE = 0;
-    mfpREAD_MULTIPLE_SWEEPS = 0;
-    mfpREAD_POINTER = 0;
-    mfpCLOSE_DRIVER_ASYNC = 0;
-
-    HINSTANCE hLib;         //Handle to Labview_DLL.dll
-
-    // To begin with - Load "Labview_DLL.dll"
-    if(!(hLib = LoadLibrary("Labview_DLL.dll"))){
-        bcierr << "Could not load Labview_DLL" << endl;
-    }
-    else if ( !(mfpOPEN_DRIVER_ASYNC = (dOPEN_DRIVER_ASYNC)GetProcAddress(
-      hLib,"OPEN_DRIVER_ASYNC")) ) {
-        bcierr << "No OPEN_DRIVER_ASYNC" << endl;
-    }
-    else if ( !(mfpUSB_WRITE = (dUSB_WRITE)GetProcAddress(hLib,"USB_WRITE")) ){
-        bcierr << "No USB_WRITE" << endl;
-    }
-    else if ( !(mfpREAD_MULTIPLE_SWEEPS = (dREAD_MULTIPLE_SWEEPS)GetProcAddress(
-      hLib,"READ_MULTIPLE_SWEEPS")) ){
-        bcierr << "No READ_MULTIPLE_SWEEPS" << endl;
-    }
-    else if ( !(mfpREAD_POINTER = (dREAD_POINTER)GetProcAddress(
-      hLib,"READ_POINTER")) ){
-        bcierr << "No READ_POINTER" << endl;
-    }
-    else if ( !(mfpCLOSE_DRIVER_ASYNC = (dCLOSE_DRIVER_ASYNC)GetProcAddress(
-      hLib,"CLOSE_DRIVER_ASYNC")) ) {
-        bcierr << "No CLOSE_DRIVER_ASYNC" << endl;
-    }
 }
 
 Biosemi2Client::~Biosemi2Client(){
@@ -137,7 +104,7 @@ Call function OPEN_DRIVER_ASYNC, the output provides a "handle" parameter,
 used as an input for further function calls.
 *******************************************************************************/
 
-    mDevice=mfpOPEN_DRIVER_ASYNC();
+    mDevice=OPEN_DRIVER_ASYNC();
     if( mDevice == NULL || mDevice == INVALID_HANDLE_VALUE )
     {
       bcierr << "Could not connect to device." << endl;
@@ -152,7 +119,7 @@ use an array of 64 zero bytes for the "data" input.
 
       memset( mpUsbdata,0,USB_DATA_SIZE);
 
-      if( !mfpUSB_WRITE(mDevice, mpUsbdata) )
+      if( !USB_WRITE(mDevice, mpUsbdata) )
       {
         bcierr << "Could not initialize USB interface." << endl;
         return;
@@ -170,7 +137,7 @@ and the only thing to do is to enable the handshake.
 *******************************************************************************/
 
         // This is probably supposed to remove any pending data, so we don't report an error if it fails.
-        mfpREAD_MULTIPLE_SWEEPS(mDevice, mpData, BUFFER_SIZE_IN_BYTES);
+        READ_MULTIPLE_SWEEPS(mDevice, mpData, BUFFER_SIZE_IN_BYTES);
 
 /*******************************************************************************
 Step 4:  "Enable the handshake"
@@ -191,7 +158,7 @@ and the ringbuffer is filled with incoming data from the ActiveTwo.
 Your acquisition program should read the proper data for the ringbuffer.
 *******************************************************************************/
           mpUsbdata[0]=1;
-          if( !mfpUSB_WRITE(mDevice, mpUsbdata) )
+          if( !USB_WRITE(mDevice, mpUsbdata) )
           {
             bcierr << "Could not enable the handshake." << endl;
             return;
@@ -223,7 +190,7 @@ bool Biosemi2Client::initialize( int desiredSamplingRate,
 
     for( int i = 0; i < 10 ; i++ ){
 
-        if( !mfpREAD_POINTER(mDevice, mpBufferCursorPos) )
+        if( !READ_POINTER(mDevice, mpBufferCursorPos) )
         {
           bcierr << "Could not get device status." << endl;
           return false;
@@ -299,7 +266,7 @@ Finally, the interface drivers should be closed:
 
         mpUsbdata[0]=0;
 
-        mfpUSB_WRITE(mDevice, mpUsbdata);
+        USB_WRITE(mDevice, mpUsbdata);
 
 /*******************************************************************************
 Step 7:  "Close the drivers"
@@ -324,7 +291,7 @@ Step 7:  "Close the drivers"
 
 *******************************************************************************/
 
-        mfpCLOSE_DRIVER_ASYNC(mDevice);
+        CLOSE_DRIVER_ASYNC(mDevice);
 
         mWasDriverSetup= false;
         mDevice=NULL;
@@ -586,7 +553,7 @@ void Biosemi2Client::isDataReady(){
 
     while( mIntsAvailable < mNumIntsToRead){
         Sleep(10);
-        if( !mfpREAD_POINTER(mDevice, mpBufferCursorPos) )
+        if( !READ_POINTER(mDevice, mpBufferCursorPos) )
         {
           bcierr << "Could not read data from device." << endl;
           return;

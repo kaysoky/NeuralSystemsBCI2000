@@ -13,7 +13,7 @@
 #define ___nidaqmx_h___
 
 #ifdef __cplusplus
-	extern "C" {
+  extern "C" {
 #endif
 
 #ifdef __linux__
@@ -23,8 +23,8 @@
 #define CVICDECL
 #define CVICALLBACK     CVICDECL
 #else
-#define __CFUNC         __stdcall
-#define __CFUNC_C       __cdecl
+#define __CFUNC         __declspec(dllimport) __stdcall
+#define __CFUNC_C       __declspec(dllimport) __cdecl
 #define __CFUNCPTRVAR   __cdecl
 #define CVICDECL        __cdecl
 #define CVICALLBACK     CVICDECL
@@ -39,50 +39,50 @@
 // NI-DAQmx Typedefs
 #ifndef _NI_int8_DEFINED_
 #define _NI_int8_DEFINED_
-	typedef signed char        int8;
+  typedef signed char        int8;
 #endif
 #ifndef _NI_uInt8_DEFINED_
 #define _NI_uInt8_DEFINED_
-	typedef unsigned char      uInt8;
+  typedef unsigned char      uInt8;
 #endif
 #ifndef _NI_int16_DEFINED_
 #define _NI_int16_DEFINED_
-	typedef signed short       int16;
+  typedef signed short       int16;
 #endif
 #ifndef _NI_uInt16_DEFINED_
 #define _NI_uInt16_DEFINED_
-	typedef unsigned short     uInt16;
+  typedef unsigned short     uInt16;
 #endif
 #ifndef _NI_int32_DEFINED_
 #define _NI_int32_DEFINED_
-	typedef signed long        int32;
+  typedef signed long        int32;
 #endif
 #ifndef _NI_uInt32_DEFINED_
 #define _NI_uInt32_DEFINED_
-	typedef unsigned long      uInt32;
+  typedef unsigned long      uInt32;
 #endif
 #ifndef _NI_float32_DEFINED_
 #define _NI_float32_DEFINED_
-	typedef float              float32;
+  typedef float              float32;
 #endif
 #ifndef _NI_float64_DEFINED_
 #define _NI_float64_DEFINED_
-	typedef double             float64;
+  typedef double             float64;
 #endif
 #ifndef _NI_int64_DEFINED_
 #define _NI_int64_DEFINED_
 #ifdef __linux__
-	typedef long long int      int64;
+  typedef long long int      int64;
 #else
-	typedef __int64            int64;
+  typedef __int64            int64;
 #endif
 #endif
 #ifndef _NI_uInt64_DEFINED_
 #define _NI_uInt64_DEFINED_
 #ifdef __linux__
-	typedef unsigned long long uInt64;
+  typedef unsigned long long uInt64;
 #else
-	typedef unsigned __int64   uInt64;
+  typedef unsigned __int64   uInt64;
 #endif
 #endif
 
@@ -828,7 +828,7 @@ typedef uInt32             TaskHandle;
 
 // For backwards compatibility, the DAQmx_ReadWaitMode has to be defined because this was the original spelling
 // that has been later on corrected.
-#define DAQmx_ReadWaitMode	DAQmx_Read_WaitMode
+#define DAQmx_ReadWaitMode  DAQmx_Read_WaitMode
 
 /******************************************************************************
  *** NI-DAQmx Values **********************************************************
@@ -1936,7 +1936,7 @@ int32 __CFUNC     DAQmxReadDigitalU8         (TaskHandle taskHandle, int32 numSa
 int32 __CFUNC     DAQmxReadDigitalU16        (TaskHandle taskHandle, int32 numSampsPerChan, float64 timeout, bool32 fillMode, uInt16 readArray[], uInt32 arraySizeInSamps, int32 *sampsPerChanRead, bool32 *reserved);
 int32 __CFUNC     DAQmxReadDigitalU32        (TaskHandle taskHandle, int32 numSampsPerChan, float64 timeout, bool32 fillMode, uInt32 readArray[], uInt32 arraySizeInSamps, int32 *sampsPerChanRead, bool32 *reserved);
 int32 __CFUNC     DAQmxReadDigitalScalarU32  (TaskHandle taskHandle, float64 timeout, uInt32 *value, bool32 *reserved);
-int32 __CFUNC	    DAQmxReadDigitalLines      (TaskHandle taskHandle, int32 numSampsPerChan, float64 timeout, bool32 fillMode, uInt8 readArray[], uInt32 arraySizeInBytes, int32 *sampsPerChanRead, int32 *numBytesPerSamp, bool32 *reserved);
+int32 __CFUNC     DAQmxReadDigitalLines      (TaskHandle taskHandle, int32 numSampsPerChan, float64 timeout, bool32 fillMode, uInt8 readArray[], uInt32 arraySizeInBytes, int32 *sampsPerChanRead, int32 *numBytesPerSamp, bool32 *reserved);
 
 int32 __CFUNC     DAQmxReadCounterF64        (TaskHandle taskHandle, int32 numSampsPerChan, float64 timeout, float64 readArray[], uInt32 arraySizeInSamps, int32 *sampsPerChanRead, bool32 *reserved);
 int32 __CFUNC     DAQmxReadCounterU32        (TaskHandle taskHandle, int32 numSampsPerChan, float64 timeout, uInt32 readArray[], uInt32 arraySizeInSamps, int32 *sampsPerChanRead, bool32 *reserved);
@@ -6411,7 +6411,7 @@ int32 __CFUNC DAQmxResetSampClkTimingResponseMode(TaskHandle taskHandle);
 
 
 #ifdef __cplusplus
-	}
+  }
 #endif
 
 #endif // __nidaqmx_h__

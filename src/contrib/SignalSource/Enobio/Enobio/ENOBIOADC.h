@@ -27,8 +27,7 @@
 #define ENOBIOADCH
 
 #include "GenericADC.h"
-#include "lib/CEnobioCtrl.h"
-
+#include "lib/EnobioDLL.imports.h"
 
 class ENOBIOADC : public GenericADC
 {

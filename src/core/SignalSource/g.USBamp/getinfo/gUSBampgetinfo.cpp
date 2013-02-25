@@ -29,8 +29,7 @@
 #pragma hdrstop
 
 #include <stdio.h>
-#include <windows.h>
-#include "gUSBamp.h"
+#include "gUSBamp.imports.h"
 
 //---------------------------------------------------------------------------
 

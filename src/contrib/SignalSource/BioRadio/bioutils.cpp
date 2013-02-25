@@ -160,36 +160,30 @@ bioutils::VRange2IndexOfRange(double vRange)
 // Returns:    Returns success flag if no errors
 // **************************************************************************
 int
-bioutils::WriteBioRadioConfig(int fs, int bitRes, double vRange, const char *pathFile)
+bioutils::WriteBioRadioConfig(int fs, int bitRes, double vRange, ostream& file)
 {
-  ofstream file;
-  if( pathFile != NULL )
-    file.open( pathFile );
-  if( file.is_open() )
-  {
-    file << "[System]\n"
-         << "SystemSampleRate=" << fs << "\n"
-         << "BitResolution=" << bitRes << "\n"
-         << "SweepsPerPacket=10\n"
-         << "Format=0\n"
-         << "[DAQ Board]\n";
+  file << "[System]\n"
+       << "SystemSampleRate=" << fs << "\n"
+       << "BitResolution=" << bitRes << "\n"
+       << "SweepsPerPacket=10\n"
+       << "Format=0\n"
+       << "[DAQ Board]\n";
 
-    for( int i = 0; i < LAST_CHANNEL; ++i )
-      file << "Channel_" << setfill( '0' ) << setw( 2 ) << i
-           << "="
-           << "BitResolution" << bitRes << ","
-           << "Index=0,"
-           << "SampleRate=" << fs << ","
-           << "UpperScale=" << vRange << ","
-           << "ADCUpper=65536,"
-           << "ADCLower=0,"
-           << "Truncate=0,"
-           << "RangeIndex=" << VRange2IndexOfRange( vRange ) << ","
-           << "Enabled=1,"
-           << "InputType=0"
-           << "\n";
-  }
-  return ( file.is_open() && file ) ? 0 : 1;
+  for( int i = 0; i < LAST_CHANNEL; ++i )
+    file << "Channel_" << setfill( '0' ) << setw( 2 ) << i
+         << "="
+         << "BitResolution" << bitRes << ","
+         << "Index=0,"
+         << "SampleRate=" << fs << ","
+         << "UpperScale=" << vRange << ","
+         << "ADCUpper=65536,"
+         << "ADCLower=0,"
+         << "Truncate=0,"
+         << "RangeIndex=" << VRange2IndexOfRange( vRange ) << ","
+         << "Enabled=1,"
+         << "InputType=0"
+         << "\n";
+  return file ? 0 : 1;
 }
 
 

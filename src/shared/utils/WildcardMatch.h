@@ -7,7 +7,7 @@
 //    "?" matches a single arbitrary character,
 //    "[abc]" matches any of the characters "abc",
 //    "[a-c]" matches any character from the range between "a" and "c",
-//    "[!abc]" and "[!a-c]" both match any character not in "abc".
+//    "[^abc]" and "[^a-c]" both match any character not in "abc".
 //    "\<" matches the beginning of a word,
 //    "\>" matches the end of a word,
 //    "\b" matches either word boundary,
