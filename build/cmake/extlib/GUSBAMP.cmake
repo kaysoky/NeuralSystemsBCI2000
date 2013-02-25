@@ -10,7 +10,7 @@
 ##       LIBS_EXTLIB - required library for gUSBamp
 ##       Also defines source groups for source files
 
-IF( DYNAMIC_IMPORTS OR WIN32 )
+IF( WIN32 )
 
 # Set the Source and headers
 SET( SRC_EXTLIB
@@ -55,7 +55,7 @@ SET( EXTLIB_OK TRUE )
 
 ELSE()
 
-  MESSAGE( "- WARNING: gUSBamp libraries only exist for windows.  This module will not build." )
+  MESSAGE( "- WARNING: gUSBamp requires Windows.  This module will not build." )
   SET( EXTLIB_OK FALSE )
 
 ENDIF()

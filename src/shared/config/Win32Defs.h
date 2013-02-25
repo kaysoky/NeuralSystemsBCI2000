@@ -33,6 +33,9 @@
 #else // _WIN32
 
 # define __declspec(x)
+# define __stdcall
+# define __cdecl
+
 # include "defines.h"
 
   typedef char CHAR;

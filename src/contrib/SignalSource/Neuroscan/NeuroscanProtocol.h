@@ -83,7 +83,7 @@ namespace BigEndianData
       os.put( ( t >> ( i * 8 ) ) & 0xff );
   }
   template<>
-  void put( std::ostream& os, float f )
+  inline void put( std::ostream& os, float f )
   {
     union { const float* f; const uint32_t* i; } data = { &f };
     put( os, *data.i );
@@ -101,7 +101,7 @@ namespace BigEndianData
     }
   }
   template<>
-  void get( std::istream& is, float& f )
+  inline void get( std::istream& is, float& f )
   {
     union { float* f; uint32_t* i; } data = { &f };
     get( is, *data.i );
@@ -120,7 +120,7 @@ namespace LittleEndianData
     }
   }
   template<>
-  void put( std::ostream& os, float f )
+  inline void put( std::ostream& os, float f )
   {
     union { const float* f; const uint32_t* i; } data = { &f };
     put( os, *data.i );
@@ -137,7 +137,7 @@ namespace LittleEndianData
     }
   }
   template<>
-  void get( std::istream& is, float& f )
+  inline void get( std::istream& is, float& f )
   {
     union { float* f; uint32_t* i; } data = { &f };
     get( is, *data.i );

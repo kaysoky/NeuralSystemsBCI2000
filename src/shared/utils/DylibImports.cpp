@@ -71,7 +71,7 @@ LoadDylib( const string& inName )
   if( !result && sArchBits == 64 )
     result = ::LoadLibraryA( ( inName + "_x64" ).c_str() );
 #else
-  string name = inName,
+  string name = inName;
 # if __APPLE__
   name += ".dylib";
 # else

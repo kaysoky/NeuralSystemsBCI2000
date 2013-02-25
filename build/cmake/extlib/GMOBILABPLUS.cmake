@@ -10,7 +10,7 @@
 ##       LIBS_EXTLIB - required library for gMOBIlabPlus
 ##       Also defines source groups for source files
 
-IF( DYNAMIC_IMPORTS OR WIN32 AND NOT CMAKE_CL_64 )
+IF( DYNAMIC_IMPORTS AND WIN32 OR WIN32 AND NOT CMAKE_CL_64 )
 
 ADD_DEFINITIONS( -DGMOBILABPLUS )
 
@@ -56,7 +56,7 @@ SET( EXTLIB_OK TRUE )
 
 ELSE()
 
-  MESSAGE( "- WARNING: gMOBIlabPlus libraries only exist for windows 32bit.  This module will not build." )
+  MESSAGE( "- WARNING: gMOBIlabPlus requires Windows.  This module will not build." )
   SET( EXTLIB_OK FALSE )
 
 ENDIF()
