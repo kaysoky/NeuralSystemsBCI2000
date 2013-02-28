@@ -44,8 +44,6 @@ using namespace std;
 using namespace bci;
 using namespace Dylib;
 
-typedef vector< pair<string, void*> > Exports;
-
 static size_t sArchBits = 8 * sizeof( void* );
 
 static void*
@@ -112,38 +110,39 @@ GetDylibExports( void* inHandle, Exports& outExports )
   for( size_t i = 0; i < pExports->NumberOfNames; ++i )
   {
     const char* name = p + names[i];
-    outExports.push_back( make_pair<string, void*>( name, ::GetProcAddress( HMODULE( inHandle ), name ) ) );
+    Export export_ = { name, ::GetProcAddress( HMODULE( inHandle ), name ) };
+    outExports.push_back( export_ );
   }
 #elif __APPLE__
 #else
 #endif // _WIN32
 }
 
-// Loader class
-Loader::Loader( const std::string& lib )
-: mHandle( 0 ), mLibrary( lib ), mState( none )
+// Library class
+Library::Library( const std::string& lib )
+: mHandle( 0 ), mName( lib ), mState( none )
 {
   mHandle = LoadDylib( lib );
-  if( !mHandle && mError.empty() )
+  if( mHandle )
+    GetDylibExports( mHandle, mExports );
+  else if( mError.empty() )
     mError = "Library \"" + lib + "\" could not be found";
   mState = ( mHandle ? found : notFound );
 }
 
-Loader::~Loader()
+Library::~Library()
 {
   UnloadDylib( mHandle );
 }
 
 bool
-Loader::Resolve( const Import* inImports, int inCount )
+Library::Resolve( const Import* inImports, int inCount )
 {
   if( mState != found )
     return false;
 
   mState = resolvedNone;
   mError.clear();
-  Exports exports;
-  GetDylibExports( mHandle, exports );
   const Import* p = inImports;
   while( p->name && ( inCount < 1 || p < inImports + inCount ) )
   {
@@ -165,11 +164,11 @@ Loader::Resolve( const Import* inImports, int inCount )
     int matches = 0;
     void* addr = 0;
     for( size_t i = 0; ( countMatches || !addr ) && i < patterns.size(); ++i )
-      for( size_t j = 0; ( countMatches || !addr ) && j < exports.size(); ++j )
-        if( WildcardMatch( patterns[i], exports[j].first, true ) )
+      for( size_t j = 0; ( countMatches || !addr ) && j < mExports.size(); ++j )
+        if( WildcardMatch( patterns[i], mExports[j].name, true ) )
         {
           ++matches;
-          addr = exports[j].second;
+          addr = mExports[j].address;
         }
     if( matches > 1 && ( p->options & Import::cppMangled ) )
     {
@@ -197,29 +196,29 @@ Loader::Resolve( const Import* inImports, int inCount )
 
 // StartupLoader class
 StartupLoader::StartupLoader( const char* inLib, const Import* inImports, const char* inMsg, const char* inUrl, ThrowFunc inF )
-: Loader( inLib )
+: Library( inLib )
 {
-  if( !Loader::Error().empty() )
+  if( !Library::Error().empty() )
   {
     string exe = FileUtils::ExtractBase( FileUtils::ExecutablePath() ),
            msg = inMsg ? inMsg : "",
            url = inUrl ? inUrl : "";
     if( msg.empty() )
     {
-      msg = "Library \"" + Loader::Library() + "\" is not available, but is necessary for "
+      msg = "Library \"" + Library::Name() + "\" is not available, but is necessary for "
           + exe + " to run.";
       if( WildcardMatch( "*source*", exe, false ) || WildcardMatch( "*adc*", exe, false ) )
         msg += " You may need to install the driver software that came with your amplifier.";
     }
     BuildMessage( msg, url );
   }
-  else if( !Loader::Resolve( inImports, 0 ) )
+  else if( !Library::Resolve( inImports, 0 ) )
   {
-    string msg = "Could not load functions from dynamic library \"" + Loader::Library()
-               + "\" due to an error: " + Loader::Error();
-    if( Loader::State() == resolvedSome )
+    string msg = "Could not load functions from dynamic library \"" + Library::Name()
+               + "\" due to an error: " + Library::Error();
+    if( Library::State() == resolvedSome )
       msg += "An update to that library/driver may be necessary.";
-    BuildMessage( msg, "http://www.google.com/search?q=site%3Abci2000.org+" + Loader::Library() );
+    BuildMessage( msg, "http://www.google.com/search?q=site%3Abci2000.org+" + Library::Name() );
   }
   for( const Import* p = inImports; p->name; ++p )
     if( !*p->pointer )

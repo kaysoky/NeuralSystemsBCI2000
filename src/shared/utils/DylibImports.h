@@ -39,6 +39,7 @@
 #define DYLIB_IMPORTS_H
 
 #include <string>
+#include <vector>
 
 #if _WIN32
 # define CDECL__ __cdecl
@@ -54,7 +55,7 @@ namespace Dylib { \
   void CDECL__ name##_ErrorStub_() \
   { name.ThrowError(); } \
   bool name##_Loaded() \
-  { return name.State() == Loader::resolvedAll; } \
+  { return name.State() == Library::resolvedAll; } \
 }
 #else // DYNAMIC_IMPORTS
 #define RegisterDylib( name, imports, msg, url ) \
@@ -78,14 +79,22 @@ namespace Dylib
     };
     int options;
   };
+  struct Export
+  {
+    const char* name;
+    void* address;
+  };
+  typedef std::vector<Export> Exports;
 
-  class Loader
+  class Library
   {
    public:
-    Loader( const std::string& lib );
-    ~Loader();
-    const std::string& Library() const
-      { return mLibrary; }
+    Library( const std::string& lib );
+    ~Library();
+    const std::string& Name() const
+      { return mName; }
+    const Exports& Exports() const
+      { return mExports; }
     const std::string& Error() const
       { return mError; }
     enum { none, found, notFound, resolvedNone, resolvedSome, resolvedAll };
@@ -96,10 +105,11 @@ namespace Dylib
    private:
     void* mHandle;
     int mState;
-    std::string mLibrary, mError;
+    Dylib::Exports mExports;
+    std::string mName, mError;
   };
 
-  class StartupLoader : public Loader
+  class StartupLoader : public Library
   {
     // The ThrowFunc's address is assigned to function pointer that cannot be resolved, so
     // it may be called with any calling convention.
@@ -108,14 +118,14 @@ namespace Dylib
     // exit().
     // Typically, the ThrowFunc calls a StartupLoader's ThrowError() function.
     typedef void ( CDECL__ *ThrowFunc )();
-    
+
    public:
     StartupLoader( const char* lib, const Import*, const char* msg, const char* url, ThrowFunc );
     void ThrowError() const;
-    
+
    private:
     void BuildMessage( const std::string&, const std::string& );
-    std::string mMessage;  
+    std::string mMessage;
   };
 
 } // namespace

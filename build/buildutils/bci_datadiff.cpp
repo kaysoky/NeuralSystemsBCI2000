@@ -37,7 +37,7 @@ const double cSignificantError = 1.5;
 int main( int argc, char *argv[] )
 {
   // Welcome message
-  cout << "bci_datadiff" << endl << "BCI2000 Project 2009-2011" << endl << endl;
+  cout << "bci_datadiff" << endl << "BCI2000 Project 2009-2013" << endl << endl;
 
   // User has no idea how to use the program.
   if ( argc < 3 )
@@ -78,22 +78,13 @@ int main( int argc, char *argv[] )
 
   // Some of the data at the top of the file may be different
   // but not important.  We'll skip past that.
-  bool skipforward = true;
-  while( skipforward )
-  {
-    // Get the input from the test and the ref
-    string testLine;
-    getline( in_test, testLine );
-    string refLine;
-    getline( in_ref, refLine );
-
-    // Find out if we've skipped ahead far enough
-    string state;
-    stringstream ss( testLine );
-    ss >> state;
-    if( state == "VisSignalProperties" )
-      skipforward = false;
-  }
+  const string mark = "VisSignalProperties";
+  string s;
+  while( getline( in_test, s ) && istringstream( s ) >> s && s != mark )
+    ;
+  s = "";
+  while( getline( in_ref, s ) && istringstream( s ) >> s && s != mark )
+    ;
 
   // We havn't found differences yet
   int numDifferences = 0;
@@ -114,26 +105,26 @@ int main( int argc, char *argv[] )
     getline( in_ref, refLine );
 
     // Test to see if it's one of the states we should ignore
-    string state;
-    istringstream ss( testLine );
-    ss >> state;
-    if( state == "SourceTime:" )
+    string refState;
+    istringstream ss( refLine );
+    ss >> refState;
+    if( refState == "SourceTime:" )
       continue;
-    if( state == "StimulusTime:" )
+    if( refState == "StimulusTime:" )
       continue;
-    if( state == "TestLoggerCounter:" )
+    if( refState == "TestLoggerCounter:" )
       continue;
     { // Skip states that are absent from the reference file
-      string refState;
+      string testState;
       while(
-        istringstream( refLine ) >> refState 
-        && refState != state 
-        && !refState.empty() 
-        && *refState.rbegin() != ':' )
-        getline( in_ref, refLine );
+        istringstream( testLine ) >> testState 
+        && testState != refState 
+        && !testState.empty() 
+        && *testState.rbegin() == ':' )
+        getline( in_test, testLine );
     }
     // For signal data, compute a relative error
-    if( state == "VisSignal" )
+    if( refState == "VisSignal" )
     {
       getline( in_test, testLine );
       getline( in_ref, refLine );
