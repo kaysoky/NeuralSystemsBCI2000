@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
+#include <cstdio>
 #include <stdexcept>
 
 #include "SockStream.h"
