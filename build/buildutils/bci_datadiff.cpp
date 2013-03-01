@@ -79,12 +79,23 @@ int main( int argc, char *argv[] )
   // Some of the data at the top of the file may be different
   // but not important.  We'll skip past that.
   const string mark = "VisSignalProperties";
+  bool skip = true;
   string s;
-  while( getline( in_test, s ) && istringstream( s ) >> s && s != mark )
-    ;
-  s = "";
-  while( getline( in_ref, s ) && istringstream( s ) >> s && s != mark )
-    ;
+  while( skip )
+  {
+    skip = getline( in_test, s );
+    istringstream iss( s );
+    skip = skip && iss >> s;
+    skip = skip && s != mark;
+  }
+  skip = true;
+  while( skip )
+  {
+    skip = getline( in_ref, s );
+    istringstream iss( s );
+    skip = skip && iss >> s;
+    skip = skip && s != mark;
+  }
 
   // We havn't found differences yet
   int numDifferences = 0;
@@ -114,16 +125,16 @@ int main( int argc, char *argv[] )
       continue;
     if( refState == "TestLoggerCounter:" )
       continue;
-    { // Skip states that are absent from the reference file
-      bool skip = true;
-      while( skip )
-      {
-        string testState;
-        skip = istringstream( testLine ) >> testState;
-        skip = skip && testState != refState;
-        skip = skip && !testState.empty() && *testState.rbegin() == ':';
-        skip = skip && getline( in_test, testLine );
-      }
+    // Skip states that are absent from the reference file
+    skip = true;
+    while( skip )
+    {
+      string testState;
+      istringstream iss( testLine );
+      skip = iss >> testState;
+      skip = skip && testState != refState;
+      skip = skip && !testState.empty() && *testState.rbegin() == ':';
+      skip = skip && getline( in_test, testLine );
     }
     // For signal data, compute a relative error
     if( refState == "VisSignal" )

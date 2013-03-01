@@ -93,7 +93,7 @@ namespace Dylib
     ~Library();
     const std::string& Name() const
       { return mName; }
-    const Exports& Exports() const
+    const Dylib::Exports& Exports() const
       { return mExports; }
     const std::string& Error() const
       { return mError; }
