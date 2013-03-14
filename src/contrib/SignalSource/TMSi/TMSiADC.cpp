@@ -131,6 +131,13 @@ TMSiADC::~TMSiADC()
 void
 TMSiADC::StartDriver()
 {
+        if( !RTDevice().InitOk )
+        {
+          const char lib[] = RTLOADER;
+          bcierr << "Could not find library: " << lib + 1 << "\n"
+                 << "Make sure that you have installed the drivers coming with your amplifier.";
+          return;
+        }
         // Calling functions from the TMSI SDK
         for(ULONG Index=0;Index < MAX_DEVICE;Index++)
                 mpDevice[Index] = NULL;
