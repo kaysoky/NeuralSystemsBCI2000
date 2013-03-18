@@ -224,6 +224,8 @@ class StimulusTask : public ApplicationBase
   // Stimulus/Target configuration
   AssociationMap mAssociations;
 
+  bool           mAccumulateEvidence;
+  double         mMinimumEvidence;
   ClassResult    mClassResult;
   std::set<int>  mCodesPresented;
   Target*        mpAttendedTarget;

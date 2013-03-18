@@ -32,6 +32,7 @@
 
 #include "Association.h"
 #include <algorithm>
+#include <limits>
 
 // Association
 Association::Association()
@@ -217,20 +218,25 @@ Association::Targets() const
 
 // TargetClassification
 Target*
-TargetClassification::MostLikelyTarget() const
+TargetClassification::MostLikelyTarget( double& outEvidence ) const
 {
-  Target* result = empty() ? NULL : begin()->first;
-  double maxValue = empty() ? 0 : begin()->second;
-  const_iterator i = begin();
-  while( i != end() )
+  Target* result = NULL;
+  double max = std::numeric_limits<double>::quiet_NaN(),
+         next = max;
+  for( const_iterator i = begin(); i != end(); ++i )
   {
-    if( i->second > maxValue )
+    if( !( max > i->second ) ) // NaN comparison is always false
     {
       result = i->first;
-      maxValue = i->second;
+      next = max;
+      max = i->second;
     }
-    ++i;
+    else if( !( next > i->second ) )
+      next = i->second;
   }
+  outEvidence = max;
+  if( next <= max ) // could be NaN
+    outEvidence -= next;
   return result;
 }
 
@@ -246,28 +252,19 @@ TargetClassification::MostLikelyTarget() const
 TargetClassification
 AssociationMap::ClassifyTargets( const ClassResult& inResult )
 {
-  TargetClassification result,
-                       count;
+  TargetClassification evidence;
   for( ClassResult::const_iterator i = inResult.begin(); i != inResult.end(); ++i )
   {
     int stimulusCode = i->first;
-    const SetOfTargets& targets = ( *this )[ stimulusCode ].Targets();
+    const SetOfTargets& presented = ( *this )[stimulusCode].Targets();
     const ClassResult::mapped_type& stimResults = i->second;
-    for( SetOfTargets::const_iterator j = targets.begin(); j != targets.end(); ++j )
-    {
-      Target* pTarget = *j;
+    for( SetOfTargets::const_iterator j = presented.begin(); j != presented.end(); ++j )
       for( size_t epoch = 0; epoch < stimResults.size(); ++epoch )
-        for( int channel = 0; channel < stimResults[ epoch ].Channels(); ++channel )
-          for( int element = 0; element < stimResults[ epoch ].Elements(); ++element )
-        {
-          result[ pTarget ] += stimResults[ epoch ]( channel, element );
-          ++count[ pTarget ];
-        }
-    }
+        for( int channel = 0; channel < stimResults[epoch].Channels(); ++channel )
+          for( int element = 0; element < stimResults[epoch].Elements(); ++element )
+            evidence[*j] += stimResults[epoch]( channel, element );
   }
-  for( TargetClassification::iterator i = result.begin(); i != result.end(); ++i )
-    i->second /= count[ i->first ];
-  return result;
+  return evidence;
 }
 
 // Intersection of all sets of stimuli that are associated with a given target.

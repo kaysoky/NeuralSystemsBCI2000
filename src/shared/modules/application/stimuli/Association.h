@@ -99,7 +99,8 @@ typedef std::map<int, std::vector<GenericSignal> > ClassResult;
 // TargetClassification is a map connecting targets with scores.
 struct TargetClassification : public std::map<Target*, double>
 {
-  Target* MostLikelyTarget() const;
+  Target* MostLikelyTarget( double& outEvidence ) const;
+  Target* MostLikelyTarget() const { double d; return MostLikelyTarget( d ); }
 };
 
 struct AssociationMap : public std::map<int, Association>

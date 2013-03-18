@@ -63,6 +63,8 @@ StimulusTask::StimulusTask()
   mStimToClassDuration( 0 ),
   mpMessageField( NULL ),
   mpAttendedTarget( NULL ),
+  mAccumulateEvidence( false ),
+  mMinimumEvidence( 0 ),
   mrDisplay( Window() )
 {
   BEGIN_PARAMETER_DEFINITIONS
@@ -91,6 +93,11 @@ StimulusTask::StimulusTask()
         "(enumeration)",
    "Application:Result%20Processing int DisplayResults= 1 1 0 1 "
      "// display results of copy/free spelling (boolean)",
+
+   "Application:Result%20Processing int AccumulateEvidence= 0 0 0 1 "
+     "// accumulate evidence until a selection is made (boolean)",
+   "Application:Result%20Processing float MinimumEvidence= 0 0 0 % "
+     "// do not make a selection unless target evidence exceeds this value",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -199,6 +206,8 @@ StimulusTask::Initialize( const SignalProperties& Input,
   mStimToClassDuration = static_cast<int>( ::ceil( OptionalParameter( "EpochLength", mStimToClassDuration ).InSampleBlocks() ) );
 
   mInterpretMode = Parameter( "InterpretMode" );
+  mAccumulateEvidence = ( Parameter( "AccumulateEvidence" ) != 0 );
+  mMinimumEvidence = Parameter( "MinimumEvidence" );
   
   bcidbg( 2 ) << "Event: Initialize" << endl;
   OnInitialize( Input );
@@ -328,7 +337,7 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
       case postSequence:
         if( mInterpretMode != InterpretModes::None
             && mBlocksSinceStimulus >= mStimToClassDuration
-            && !mClassResult.empty() )
+            && !mClassResult.empty() && !mCodesPresented.empty() )
         {
           for( set<int>::const_iterator i = mCodesPresented.begin(); i != mCodesPresented.end(); ++i )
             if( mClassResult.find( *i ) == mClassResult.end() )
@@ -339,7 +348,8 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
           Target* pTarget = OnClassResult( mClassResult );
           if( pTarget != NULL )
             pTarget->Select();
-          mClassResult.clear();
+          if( !mAccumulateEvidence || pTarget )
+            mClassResult.clear();
           mCodesPresented.clear();
         }
         doProgress = ( mBlocksInPhase >= mPostSequenceDuration );
@@ -463,7 +473,12 @@ StimulusTask::OnStimulusEnd( int inStimulusCode )
 Target*
 StimulusTask::OnClassResult( const ClassResult& inResult )
 {
-  return Associations().ClassifyTargets( inResult ).MostLikelyTarget();
+  double evidence = 0;
+  Target* p = Associations().ClassifyTargets( inResult ).MostLikelyTarget( evidence );
+  bcidbg( 2 ) << "Target evidence: " << evidence << endl;
+  if( evidence < mMinimumEvidence )
+    p = 0;
+  return p;
 }
 
 void

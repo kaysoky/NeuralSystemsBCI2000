@@ -592,10 +592,10 @@ P3SpellerTask::OnClassResult( const ClassResult& inResult )
       fakeSignal( 0, 0 ) =  i->second.Contains( pClickedStimulus );
       fakeResult[ i->first ].push_back( fakeSignal );
     }
-    pTarget = Associations().ClassifyTargets( fakeResult ).MostLikelyTarget();
+    pTarget = StimulusTask::OnClassResult( fakeResult );
   }
   else
-    pTarget = Associations().ClassifyTargets( inResult ).MostLikelyTarget();
+    pTarget = StimulusTask::OnClassResult( inResult );
 
   // Compute the "Selected*" states from the result.
   // These are for documentation purposes only, and may lose their meaning
