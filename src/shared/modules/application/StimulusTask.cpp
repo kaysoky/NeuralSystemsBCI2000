@@ -97,7 +97,8 @@ StimulusTask::StimulusTask()
    "Application:Result%20Processing int AccumulateEvidence= 0 0 0 1 "
      "// accumulate evidence until a selection is made (boolean)",
    "Application:Result%20Processing float MinimumEvidence= 0 0 0 % "
-     "// do not make a selection unless target evidence exceeds this value",
+     "// do not make a selection unless target evidence exceeds this value. "
+     "For a normalized classifier, MinimumEvidence approximates -2.3*log10(Error Probability)",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
