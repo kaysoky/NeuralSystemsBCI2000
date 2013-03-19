@@ -46,28 +46,55 @@ using namespace Dylib;
 
 static size_t sArchBits = 8 * sizeof( void* );
 
+#if _WIN32
+#define OS_WOW6432 30
+#define IsOS_ORDINAL 437
+static BOOL (*IsOS_)( DWORD ) = 0;
+static HMODULE LoadLibrary_( const char* s )
+{
+  if( !IsOS_ )
+  {
+    HMODULE lib = ::LoadLibraryA( "shlwapi" );
+    const char* name = reinterpret_cast<const char*>( IsOS_ORDINAL );
+    *reinterpret_cast<void**>( IsOS_ ) = ::GetProcAddress( lib, name );
+  }
+  HMODULE h = 0;
+  try
+  {
+    h = ::LoadLibraryA( s );
+  }
+  catch( ... )
+  {
+  }
+  return h;
+}
+#undef LoadLibrary
+#define LoadLibraryA *dontuse*
+#define LoadLibraryW *dontuse*
+#endif // _WIN32
+
 static void*
 LoadDylib( const string& inName )
 {
   void* result = 0;
 #if _WIN32
-  result = ::LoadLibraryA( inName.c_str() );
+  result = LoadLibrary_( inName.c_str() );
   if( !result )
   {
     ostringstream oss;
     oss << inName << sArchBits;
-    result = ::LoadLibraryA( oss.str().c_str() );
+    result = LoadLibrary_( oss.str().c_str() );
     if( !result )
     {
       oss.str( inName );
       oss << "_" << sArchBits;
-      result = ::LoadLibraryA( oss.str().c_str() );
+      result = LoadLibrary_( oss.str().c_str() );
     }
   }
   if( !result && sArchBits == 32 )
-    result = ::LoadLibraryA( ( inName + "_x86" ).c_str() );
+    result = LoadLibrary_( ( inName + "_x86" ).c_str() );
   if( !result && sArchBits == 64 )
-    result = ::LoadLibraryA( ( inName + "_x64" ).c_str() );
+    result = LoadLibrary_( ( inName + "_x64" ).c_str() );
 #else
   string name = inName;
 # if __APPLE__
@@ -207,6 +234,12 @@ StartupLoader::StartupLoader( const char* inLib, const Import* inImports, const 
     {
       msg = "Library \"" + Library::Name() + "\" is not available, but is necessary for "
           + exe + " to run.";
+#if _WIN32
+      if( IsOS_ && IsOS_( OS_WOW6432 ) )
+        msg += " You are running a 32-bit executable on a 64-bit Windows installation. "
+               "Note that 32-bit system DLLs must reside in the SysWOW64 (yes, actually \"64\") "
+               "subdirectory of your Windows system directory.";
+#endif // _WIN32
       if( WildcardMatch( "*source*", exe, false ) || WildcardMatch( "*adc*", exe, false ) )
         msg += " You may need to install the driver software that came with your amplifier.";
     }
