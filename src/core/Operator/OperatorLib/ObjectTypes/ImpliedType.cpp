@@ -73,7 +73,7 @@ string ToShellArguments( const string& inTokens )
 ImpliedType ImpliedType::sInstance;
 const ObjectType::MethodEntry ImpliedType::sMethodTable[] =
 {
-  METHOD( Get ), METHOD( Set ),
+  METHOD( Get ), METHOD( Set ), METHOD( Print ), { "Decode", &Print }, METHOD( Encode ),
   METHOD( Wait ), METHOD( Sleep ),
   METHOD( SetConfig ),
   METHOD( Start ), { "Resume", &Start }, METHOD( Stop ), { "Suspend", &Stop },
@@ -150,6 +150,25 @@ ImpliedType::Set( CommandInterpreter& inInterpreter )
   if( EnvVariable::Get( object, object ) )
     return EnvironmentType::Set( inInterpreter );
   return VariableType::Set( inInterpreter );
+}
+
+bool
+ImpliedType::Print( CommandInterpreter& inInterpreter )
+{
+  return inInterpreter.Out() << inInterpreter.GetRemainingTokens();
+}
+
+bool
+ImpliedType::Encode( CommandInterpreter& inInterpreter )
+{
+  string line = inInterpreter.GetRemainder();
+  istringstream iss( line );
+  ParserToken token;
+  if( iss >> ws >> token )
+    inInterpreter.Out() << token;
+  while( iss >> ws >> token )
+    inInterpreter.Out() << " " << token;
+  return inInterpreter.Out();
 }
 
 bool

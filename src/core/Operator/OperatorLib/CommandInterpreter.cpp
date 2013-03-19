@@ -148,7 +148,7 @@ CommandInterpreter::Execute( const string& inCommand )
   if( !verb.empty() )
   {
     string type = GetOptionalToken();
-    ObjectType* pType = ObjectType::ByName( type );
+    ObjectType* pType = ObjectType::ByName( type.c_str() );
     bool success = ( pType && pType->Execute( verb, *this ) );
     if( !success )
     {
@@ -159,7 +159,7 @@ CommandInterpreter::Execute( const string& inCommand )
     if( !success )
     {
       Unget();
-      pType = ObjectType::ByName( "" );
+      pType = ObjectType::ByName( 0 );
       if( !pType )
         throw bciexception( "No implied type available" );
       success = pType->Execute( verb, *this );
@@ -176,7 +176,7 @@ CommandInterpreter::Execute( const string& inCommand )
     {
       if( type.empty() || !::isalpha( type[0] ) )
         throw bciexception_( "Cannot make sense of \"" << inCommand << "\"" );
-      else if( *pType->Name() != '\0' )
+      else if( pType->Name() )
         throw bciexception_( "Cannot " << verb << " " << pType->Name() << " objects" );
       else
         throw bciexception_( "Don't know how to " << verb << " " << type );

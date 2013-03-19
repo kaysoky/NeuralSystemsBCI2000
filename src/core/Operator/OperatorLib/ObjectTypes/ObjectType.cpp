@@ -71,11 +71,16 @@ ObjectType::Initialize( class StateMachine& inStateMachine )
 }
 
 ObjectType*
-ObjectType::ByName( const string& inName )
+ObjectType::ByName( const char* inName )
 {
   for( TypeDictionary::const_iterator i = Dictionary().begin(); i != Dictionary().end(); ++i )
-    if( 0 == ::stricmp( inName.c_str(), ( *i )->Name() ) )
+  {
+    bool match = !inName && !( *i )->Name();
+    if( !match )
+      match = ( inName && ( *i )->Name() && 0 == ::stricmp( inName, ( *i )->Name() ) );
+    if( match )
       return *i;
+  }
   return 0;
 }
 

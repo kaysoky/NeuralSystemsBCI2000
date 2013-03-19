@@ -45,7 +45,7 @@ class ObjectType
   void Help( CommandInterpreter& ) const;
   void ListMethods( std::ostream& ) const;
 
-  static ObjectType* ByName( const std::string& );
+  static ObjectType* ByName( const char* );
   static ObjectType* Next( const ObjectType* );
   static void Initialize( StateMachine& );
 

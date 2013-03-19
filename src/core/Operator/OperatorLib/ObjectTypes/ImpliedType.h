@@ -33,13 +33,15 @@ namespace Interpreter {
 class ImpliedType : public ObjectType
 {
  protected:
-  virtual const char* Name() const { return ""; }
+  virtual const char* Name() const { return 0; }
   virtual const MethodEntry* MethodTable() const { return sMethodTable; }
   virtual void OnHelp( CommandInterpreter& ) const;
 
  public:
   static bool Get( CommandInterpreter& );
   static bool Set( CommandInterpreter& );
+  static bool Print( CommandInterpreter& );
+  static bool Encode( CommandInterpreter& );
 
   static bool SetConfig( CommandInterpreter& );
   static bool Start( CommandInterpreter& );
@@ -67,8 +69,8 @@ class ImpliedType : public ObjectType
   static bool Error( CommandInterpreter& );
 
   static bool Square( CommandInterpreter& );
-  
-  static bool Watch( CommandInterpreter& );  
+
+  static bool Watch( CommandInterpreter& );
 
  private:
   static const MethodEntry sMethodTable[];

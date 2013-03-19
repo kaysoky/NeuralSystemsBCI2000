@@ -38,7 +38,7 @@ BCI2000Remote::SubjectID( const std::string& inSubjectID )
 {
   mSubjectID = inSubjectID;
   if( !inSubjectID.empty() )
-    SimpleCommand( "set parameter SubjectName " + mSubjectID );
+    SimpleCommand( "set parameter SubjectName \"" + mSubjectID + "\"" );
   return *this;
 }
 
@@ -47,7 +47,7 @@ BCI2000Remote::SessionID( const std::string& inSessionID )
 {
   mSessionID = inSessionID;
   if( !inSessionID.empty() )
-    SimpleCommand( "set parameter SubjectSession " + mSessionID );
+    SimpleCommand( "set parameter SubjectSession \"" + mSessionID + "\"" );
   return *this;
 }
 
@@ -56,7 +56,7 @@ BCI2000Remote::DataDirectory( const std::string& inDataDirectory )
 {
   mDataDirectory = inDataDirectory;
   if( !inDataDirectory.empty() )
-    SimpleCommand( "set parameter DataDirectory " + mDataDirectory );
+    SimpleCommand( "set parameter DataDirectory \"" + mDataDirectory + "\"" );
   return *this;
 }
 
@@ -151,7 +151,7 @@ BCI2000Remote::Stop()
 bool
 BCI2000Remote::SetParameter( const std::string& inName, const std::string& inValue )
 {
-  return SimpleCommand( "set parameter \"" + inName + "\" " + inValue );
+  return SimpleCommand( "set parameter \"" + inName + "\" \"" + inValue + "\"" );
 }
 
 bool
