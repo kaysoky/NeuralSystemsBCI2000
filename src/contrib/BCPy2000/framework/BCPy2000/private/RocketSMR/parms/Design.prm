@@ -1,19 +1,19 @@
-PythonApp:Design	int 	TrialsPerBlock= 	50 	  // number of trials in one block
-PythonApp:Design 	int 	BlocksPerRun= 		1 	 // number of sub-blocks in one run
-
-PythonApp:Screen 	int 	ScreenID= 		-1 -1 % % // monitor id (0,1,2..., or -1 for last)
-PythonApp:Screen 	float 	WindowSize= 	0.9 1.0 0.0 1.0 // size of the stimulus window, proportional to the screen
-PythonApp:ScoreDisplay 	float 		ScoreDisplayWidth= 		0.15 % 0.1 0.2 // proportion of stimulus window used to display Scores
-PythonApp:ScoreDisplay 	floatlist 	ScoreDisplayBgColor= 	3 0.2 0.2 0.2 % 0.0 1.0 // background color of score display (proportions of r,g,b color values)
-PythonApp:ScoreDisplay 	int 		ScoreFontSize= 			30 % 15 40 // size of Text displaying the Scores
-PythonApp:ScoreDisplay 	floatlist 	ScoreFontColor= 		3 1.0 1.0 1.0 % 0.0 1.0 // color of Text displaying the Scores
-
-PythonApp:Objects 	floatlist 	InitPaddleSize= 	{ width height } 0.2 0.07 % 0.0 1.0 // width and height of paddle proportional to gaming window size
-PythonApp:Objects 	floatlist 	CloudSize= 			{ width height } 0.3 0.15 % 0.0 1.0 // width and height of cloud proportional to gaming window size
-PythonApp:Objects 	floatlist 	DropSize= 			{ width height } 0.03 0.12 % 0.0 0.2 // width and height of drops proportional to gaming window size
-PythonApp:Objects 	floatlist 	InitSpaceshipSize= 	{ width height } 0.2 0.15 % 0.0 1.0 // width and height of spaceship proportional to gaming window size
-PythonApp:Objects 	floatlist 	RocketSize= 		{ width height } 0.03 0.12 % 0.0 0.2 // width and height of rocket proportional to gaming window size
-
-PythonApp:Objects 	stringlist 	Images= { paddle cloud drop spaceship rocket planet } cartred.png cloud.png raindrop.png spaceship.png rocket.png planet.png // images to be used for objects (spaceship, rocket(angle upright))
-PythonApp:Objects 	stringlist 	Sounds= { hitDrop missDrop hitRocket } hitDrop.wav missDrop.wav explosion.wav // Ingame sounds
-PythonApp:Objects 	float 		BottomOfWater= 0.23 // proportion of cart height were water starts to fill up cart
+PythonApp:Design        int         TrialsPerBlock=                     50            // number of trials in one block
+PythonApp:Design        int         BlocksPerRun=                        1            // number of sub-blocks in one run
+                    
+PythonApp:Screen        int         ScreenID=                           -1            // monitor id (0,1,2..., or -1 for last)
+PythonApp:Screen        float       WindowSize=                          0.9          // size of the stimulus window, proportional to the screen
+PythonApp:ScoreDisplay  float       ScoreDisplayWidth=                   0.15         // proportion of stimulus window used to display Scores
+PythonApp:ScoreDisplay  floatlist   ScoreDisplayBgColor=             3   0.2 0.2 0.2  // background color of score display (proportions of r,g,b color values)
+PythonApp:ScoreDisplay  int         ScoreFontSize=                      30            // size of Text displaying the Scores
+PythonApp:ScoreDisplay  floatlist   ScoreFontColor=                  3   1.0 1.0 1.0  // color of Text displaying the Scores
+           
+PythonApp:Objects       float       BottomOfWater=                       0.23         // proportion of cart height were water starts to fill up cart
+PythonApp:Objects       floatlist   InitPaddleSize=     { width height } 0.2  0.07    // width and height of paddle proportional to gaming window size
+PythonApp:Objects       floatlist   CloudSize=          { width height } 0.3  0.15    // width and height of cloud proportional to gaming window size
+PythonApp:Objects       floatlist   DropSize=           { width height } 0.03 0.12    // width and height of drops proportional to gaming window size
+PythonApp:Objects       floatlist   InitSpaceshipSize=  { width height } 0.2  0.15    // width and height of spaceship proportional to gaming window size
+PythonApp:Objects       floatlist   RocketSize=         { width height } 0.03 0.12    // width and height of rocket proportional to gaming window size
+    
+PythonApp:Objects       stringlist  Images= { paddle cloud drop spaceship rocket planet } cartred.png cloud.png raindrop.png spaceship.png rocket.png planet.png // images to be used for objects (spaceship, rocket(angle upright))
+PythonApp:Objects       stringlist  Sounds= { hitDrop missDrop hitRocket } hitDrop.wav missDrop.wav explosion.wav // Ingame sounds

@@ -6,6 +6,6 @@ Filtering:ARFilter                            float     FirstBinCenter=         
 Filtering:ARFilter                            float     LastBinCenter=           30Hz   // Center of last frequency bin (as a fraction of sampling rate or in Hz)
 Filtering:ARFilter                            float     BinWidth=                 3Hz   // Width of spectral bins (as a fraction of sampling rate or in Hz)
 Filtering:ARFilter                            int       EvaluationsPerBin=       15     // Number of uniformly spaced evaluation points entering into a single bin value
-Filtering:LogFilter                           float     LogFilterBase=            0     // 0 or 10
+Filtering:LogFilter                           float     LogFilterBase=           10     // 0 or 10
 Filtering:LPFilter                            float     LPTimeConstant=           0s    // time constant for the low pass filter
 
