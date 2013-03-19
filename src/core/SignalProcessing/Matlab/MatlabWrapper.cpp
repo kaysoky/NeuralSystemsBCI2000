@@ -415,28 +415,15 @@ MatlabEngine::PutMxArray( const string& inExp, const mxArray* inArray )
 bool
 MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProcNames )
 {
-  // According to Mathworks Helpdesk, Solution Number: 1-1134M0,
-  // this code works around a bug in Matlab R14Sp1 and R14Sp2
-  // by resetting the FPU.
-#if defined( __BORLANDC__ ) && ( __BORLANDC__ >= 0x0560 ) // bcc32 comes without an assembler
+  void* dllHandle = 0;
+  try
   {
-    static unsigned short CtrlWord = 0x123f;
-    __asm  fninit;             // initialize fpu
-    __asm  fnclex;             // clear fpu exceptions
-    __asm  fldcw CtrlWord;     // load fpu control word
+    dllHandle = ::LoadLibrary( inName );
   }
-#endif // __BORLANDC__
-#if defined( _MSC_VER ) && !defined( _WIN64 )
-  {
-    static unsigned short CtrlWord = 0x123f;
-    __asm  fninit;             // initialize fpu
-    __asm  fnclex;             // clear fpu exceptions
-    __asm  fldcw CtrlWord;     // load fpu control word
-  }
-#endif // _MSC_VER && !_WIN64
+  catch( ... )
+  {}
 
   bool success = true;
-  void* dllHandle = ::LoadLibrary( inName );
   if( !dllHandle )
   {
     success = false;
