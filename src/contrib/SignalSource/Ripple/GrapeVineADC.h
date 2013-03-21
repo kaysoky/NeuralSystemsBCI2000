@@ -27,7 +27,6 @@
 #define GRAPEVINE_ADC_H
 
 #include "GenericADC.h"
-
 #include "SockStream.h"
 
 // Portability for non-windows builds using unix sockets and posix usleep
@@ -37,12 +36,6 @@
 #define INVALID_SOCKET -1           // to duplicate value used in Windows
 #define Sleep(s) usleep(1000*(s))
 #endif
-
-
-#define GRAPEVINE_SF 30000	// GrapeVine Sampling Frequency
-
-static const unsigned GV_SLEEP_TIME_MS = 5;  // time used for Sleep commands when waiting on packets.
-static const unsigned GV_SLEEP_CNT_MAX = 20; // maximum consecutive Sleep commands before giving up
 
 class GrapeVineADC : public GenericADC
 {
@@ -60,29 +53,76 @@ public:
 
 private:
 
+    // Proprietary constants and structures to communicate between GV NIP and this source module
+    
+    enum GV_CMD_MODE
+    {
+        CMD_MODE_NORMAL = 0,    // normal mode
+        CMD_MODE_IMP_SNGL,      // check impedances once, then go to normal
+        CMD_MODE_IMP_CONT       // check impedances continually
+    };
+    
+    enum GV_IMP_ILIST           // impedance test currents (pk-pk)
+    {                           
+        IMP_ILIST_3 = 0,        //   3 nA
+        IMP_ILIST_10,           //  10 nA - use for micro and implanted electrodes
+        IMP_ILIST_30,           //  30 nA
+        IMP_ILIST_100           // 100 nA - use for surface electrodes
+    };
+
+    static const unsigned IMP_NCYCS_MIN = 30;       // number of sine cycles (1ms each)
+    static const unsigned IMP_NCYCS_MAX = 1000;     // to use to measure each channel
+    
+    static const unsigned FRONT_ENDS_MAX = 4;
+    static const unsigned CHANNELS_PER_FRONT_END = 32;
+    static const unsigned CHANNELS_MAX = FRONT_ENDS_MAX * CHANNELS_PER_FRONT_END;
+    
+    static const unsigned GV_SLEEP_TIME_MS = 5;  // time used for Sleep commands when waiting on packets.
+    static const unsigned GV_SLEEP_CNT_MAX = 20; // maximum consecutive Sleep commands before giving up
+    
+    static const unsigned GV_PORT_NIP_TO_BCI = 17454;
+    static const unsigned GV_PORT_BCI_TO_NIP = 17455;
+    
+    
     #pragma pack(push,1)
-    struct GvBciPacket {
-        uint32_t sequence;
-        uint32_t timeStamp;
-        uint32_t nSamp;
-        uint32_t nChan;
-        float    data[256];
+    
+    struct GvBciCommand         // Packets sent to NIP to set BCI mode
+    {
+        uint32_t mode;          // normal vs impedance mode from GV_CMD_MODE
+        uint32_t iListEntry;    // output test current (entry id from GV_IMP_ILIST)
+        uint32_t cycPerChan;    // sine cycles per channel per measurement (within IMP_NCYCS_*)
+    };
+    
+    struct GvBciData            // Packets received from NIP with signal or impedance data
+    {
+        uint32_t sequence;      // sequence counter for detecting dropped packets
+        uint32_t timeStamp;     // current NIP timestamp
+        uint32_t nSamp;         // number of samples in packet (0 = pkt contains impedance data)
+        uint32_t nChan;         // number of channels within the packet
+        float    data[256];     // floating point data[nSamp][nChan]
         inline unsigned GetPacketSize() { return (4*sizeof(uint32_t)) + (nChan*nSamp*sizeof(float)); }
         inline float GetSample( unsigned samp, unsigned chan ) { return data[ (samp*nChan) + chan ]; }
     };
+
     #pragma pack(pop)
 
+    // actual internal private members
+    
     void        OpenSocket(void);
     void        CloseSocket(void);
 
     int			mSampleBlockSize;   // number of samples per bci2000 output sample block
     int         mSourceCh;          // number of channels per bci2000 output sample block
+    int         mAcqMode;
 
+    SOCKET      mGvCtlSocket;
     SOCKET		mGvBciSocket;       // Socket for receiving UDP GvBciPackets from Grapevine
     unsigned    mGvSleepCount;      // number of consecutive Sleseps waiting for packets
     uint32_t    mGvBciLastSeq;      // sequence number of last GvBciPacket recieved
 
-    GvBciPacket mGvBciPacket;       // large buffer for holding currently processed GvBciPacket
+    GvBciData   mGvBciData;         // buffer for holding currently processed GvBciPacket
+
+    GenericVisualization mVis;
 };
 
 #endif // GRAPEVINE_ADC_H

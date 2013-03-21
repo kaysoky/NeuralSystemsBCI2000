@@ -32,6 +32,9 @@
 #include "GrapeVineADC.h"
 #include "errno.h"
 
+#include <stdio.h>
+#include <iomanip>
+
 using namespace std;
 
 // Register the source class with the framework.
@@ -74,11 +77,38 @@ GrapeVineADC::GrapeVineADC() :
     "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
     " // Channel Gain",
 
-    "Source int Priority= 1 1 0 3 "                     "// CPU priority for source module: "
-    "0: Normal, 1: AboveNormal, 2: High, 3: Realtime (enumeration)"
+    "Source int AcquisitionMode= 0 0 0 2 "
+    "// Data Acquisition Mode: "
+    " 0: acquisition,"
+    " 1: single-sweep impedance,"
+    " 2: continuous impedance,"
+    " (enumeration)",
+    
+    "Source int ImpedanceCurrent= 1 1 0 3 "
+    "// Impedance Current <nA pk-pk>: "
+    " 0: <3> Implant microelectrode,"
+    " 1: <10> Implant macroelectrode,"
+    " 2: <30> Surface hi-Z electrode,"
+    " 3: <100> Surface lo-Z electrode,"
+    " (enumeration)",
+    
+    "Source int ImpedanceSpeed= 0 0 0 2 "
+    "// Impedance Speed: "
+    " 0: Fast Estimate,"
+    " 1: More Accurate,"
+    " 2: Most Accurate,"
+    " (enumeration)",
+    
+    "Source int Priority= 1 1 0 3 "
+    "// CPU priority for source module: "
+    "0: Normal, 1: AboveNormal, 2: High, 3: Realtime (enumeration)",
+    
+    "Source matrix Impedances= 1 1 not%20measured%20yet % % % "
+    "// impedances measured by front ends in kohm "
+    "--rows represent front ends, columns represent channels",
 
   END_PARAMETER_DEFINITIONS
-
+    
     // initialize to invalid state to prevent Halt() from closing an invalid socket
     mGvBciSocket = INVALID_SOCKET;
 }
@@ -100,22 +130,25 @@ GrapeVineADC::Preflight( const SignalProperties&,SignalProperties& Output ) cons
     if ( Parameter("SourceCh") > 128 ) { bcierr << "Source Module supports maximum of 128 channels" << endl; return; }
 
     Output = SignalProperties( Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), SignalType::float32 );
+    
+    Parameter( "Impedances" );  // touch Impedances property so that BCI2k thinks it's checked
 }
 
 void
 GrapeVineADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
-    this->Halt();
+    // close socket if it is open
+    CloseSocket();
 
     mSourceCh = Parameter("SourceCh");
     mSampleBlockSize = Parameter("SampleBlockSize");
 
     // set packet buffer to all zeros, also provides flat traces if un-filled parts of buffer are sent on
-    mGvBciPacket.sequence  = 0;
-    mGvBciPacket.timeStamp = 0;
-    mGvBciPacket.nChan     = 0;
-    mGvBciPacket.nSamp     = 0;
-    for( int ch = 0; ch < (sizeof(mGvBciPacket.data)/sizeof(float)); ++ch ) mGvBciPacket.data[ch] = 0.0;
+    mGvBciData.sequence  = 0;
+    mGvBciData.timeStamp = 0;
+    mGvBciData.nChan     = 0;
+    mGvBciData.nSamp     = 0;
+    for( int ch = 0; ch < (sizeof(mGvBciData.data)/sizeof(float)); ++ch ) mGvBciData.data[ch] = 0.0;
 
     mGvSleepCount   = 0;
     mGvBciLastSeq   = 0;
@@ -159,7 +192,37 @@ GrapeVineADC::Initialize( const SignalProperties&, const SignalProperties& )
 
 #endif // _WIN32
     
+    // fire up the socket
     OpenSocket();
+    
+    // if impedance mode, resize impedance array and initialize to zero
+    mAcqMode = Parameter("AcquisitionMode");
+    bciout << "Acquisition Mode " << mAcqMode << endl;
+    if (mAcqMode) // true for impedance modes
+    {
+        MutableParamRef paramImpedances = Parameter( "Impedances" );
+        unsigned FrontEndCnt = (mSourceCh + (CHANNELS_PER_FRONT_END-1)) / CHANNELS_PER_FRONT_END;
+        paramImpedances->SetDimensions( FrontEndCnt, CHANNELS_PER_FRONT_END );
+        for( size_t i=0; i<FrontEndCnt; ++i )
+            for( size_t j=0; j<CHANNELS_PER_FRONT_END; ++j )
+            {
+                ostringstream oss;
+                oss << "0";
+                paramImpedances( i, j ) = oss.str();
+            }
+        
+        // and commend NIP into impedance measurement mode
+        int impCycles = Parameter("ImpedanceSpeed");
+        int impCurrent = Parameter("ImpedanceCurrent");
+        GvBciCommand gvBciCmdPkt = { mAcqMode, impCurrent, ((impCycles + 1) * IMP_NCYCS_MIN) };
+
+        sockaddr nipAddr = { 0 };
+        ((sockaddr_in *) &nipAddr)->sin_family      =  AF_INET;
+        ((sockaddr_in *) &nipAddr)->sin_port        =  htons( GV_PORT_BCI_TO_NIP );
+        ((sockaddr_in *) &nipAddr)->sin_addr.s_addr =  inet_addr( "192.168.42.1" );
+        if (!sendto( mGvBciSocket, &gvBciCmdPkt, sizeof(gvBciCmdPkt), 0, &nipAddr, sizeof(nipAddr)))
+            bcierr << "Unable to send BCI impedance control packet" << endl;
+    }
 }
 
 
@@ -181,28 +244,44 @@ GrapeVineADC::Process( const GenericSignal&, GenericSignal& Output )
     {
         if (mGvBciSocket==INVALID_SOCKET) return;   // force abort if Halt() is called
 
-        int udpPacketSize = recv(mGvBciSocket, (char*)&mGvBciPacket, sizeof(mGvBciPacket), 0);
+        int udpPacketSize = recv(mGvBciSocket, (char*)&mGvBciData, sizeof(mGvBciData), 0);
         if ( udpPacketSize > 0 )  // check for packet received
         {
             // Badly formed packets should be very rare events, flag error if one is caught
-            if (udpPacketSize != mGvBciPacket.GetPacketSize()) bcierr << "Bad UDP packet recieved " << endl;
+            if (udpPacketSize != mGvBciData.GetPacketSize()) bcierr << "Bad UDP packet recieved " << endl;
             
             // Report packets recieved out of order (packet drops in instrument network)
-            if ( mGvBciLastSeq && (mGvBciPacket.sequence != (mGvBciLastSeq+1)) )
-                bciout << "Out of Order Packet, " << (mGvBciPacket.sequence - mGvBciLastSeq - 1)
-                << " packets skipped, " << " at time index " << mGvBciPacket.timeStamp << endl;
-            mGvBciLastSeq = mGvBciPacket.sequence;
+            if ( mGvBciLastSeq && (mGvBciData.sequence != (mGvBciLastSeq+1)) )
+                bciout << "Out of Order Packet, " << (mGvBciData.sequence - mGvBciLastSeq - 1)
+                << " packets skipped, " << " at time index " << mGvBciData.timeStamp << endl;
+            mGvBciLastSeq = mGvBciData.sequence;
             
-            // move the packet contents to the block index buffer
-            for (unsigned smp=0; smp < mGvBciPacket.nSamp; ++smp)
+            if (mGvBciData.nSamp)
             {
-                for( int ch = 0; ch < mSourceCh; ++ch )
-                    Output( ch, sampleBlockIndex ) = mGvBciPacket.GetSample(smp,ch);
-                ++sampleBlockIndex;
+                // move the packet contents to the block index buffer
+                for (unsigned smp=0; smp < mGvBciData.nSamp; ++smp)
+                {
+                    for( int ch = 0; ch < mSourceCh; ++ch )
+                        Output( ch, sampleBlockIndex ) = mGvBciData.GetSample(smp,ch);
+                    ++sampleBlockIndex;
+                }
+            }
+            else // if nSamp == 0, packet contains impedance measurements
+            {
+                MutableParamRef paramImpedances = Parameter( "Impedances" );
+                for( unsigned ch=0; ch<mSourceCh; ++ch)
+                {
+                    ostringstream oss;
+                    oss << std::fixed << std::setprecision(1);
+                    oss << (0.001f * mGvBciData.GetSample(1,ch));
+                    size_t i = ch / CHANNELS_PER_FRONT_END;
+                    size_t j = ch % CHANNELS_PER_FRONT_END;
+                    paramImpedances( i, j ) = oss.str();
+                }
             }
 
             // reset the sleep counter
-            mGvSleepCount = 0;    
+            mGvSleepCount = 0;
         }
         else    // no packet waiting to be recieved or socket error (handle them the same here)
         {
@@ -223,14 +302,13 @@ GrapeVineADC::Process( const GenericSignal&, GenericSignal& Output )
 void
 GrapeVineADC::StopRun()
 {
-
+    
 }
 
 
 void
 GrapeVineADC::Halt()
 {
-
     // make sure socket is closed
     CloseSocket();
     
@@ -270,7 +348,7 @@ void GrapeVineADC::OpenSocket()
     {
         struct sockaddr_in instSockAddr;
         instSockAddr.sin_family		 = AF_INET;
-        instSockAddr.sin_port		 = htons(17454); // port ID for GvBciPackets from GV NIP
+        instSockAddr.sin_port		 = htons( GV_PORT_NIP_TO_BCI );
         instSockAddr.sin_addr.s_addr = htonl( (192 << 24) | (168 << 16) | (42 << 8) | host );
         if (bind(mGvBciSocket, (struct sockaddr *)&instSockAddr, sizeof(instSockAddr)) == 0) break;
     }
@@ -300,8 +378,8 @@ void GrapeVineADC::OpenSocket()
     
     struct sockaddr_in instSockAddr;
     instSockAddr.sin_family		 = AF_INET;
-    instSockAddr.sin_port		 = htons(17454); // port ID for GvBciPackets from GV NIP
     instSockAddr.sin_addr.s_addr = htonl( INADDR_ANY );
+    instSockAddr.sin_port		 = htons( GV_PORT_NIP_TO_BCI );
     if (bind(mGvBciSocket, (struct sockaddr *)&instSockAddr, sizeof(instSockAddr)) == 0)
         bciout << "Socket bound to all interfaces" << endl;
     else {   CloseSocket();  bcierr << "Unable to Bind Socket (" << strerror(errno) << ")" << endl;  return;  }
