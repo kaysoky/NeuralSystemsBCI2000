@@ -70,8 +70,12 @@ private:
         IMP_ILIST_100           // 100 nA - use for surface electrodes
     };
 
-    static const unsigned IMP_NCYCS_MIN = 30;       // number of sine cycles (1ms each)
-    static const unsigned IMP_NCYCS_MAX = 1000;     // to use to measure each channel
+    enum GV_IMP_NCYCS
+    {                               
+        IMP_NCYCS_FAST     =  20,   // number of sine cycles (1ms each)
+        IMP_NCYCS_MORE_ACC =  70,   // used to measure each channel
+        IMP_NCYCS_MOST_ACC = 150,   // (cycles for combo box settings)
+    };
     
     static const unsigned FRONT_ENDS_MAX = 4;
     static const unsigned CHANNELS_PER_FRONT_END = 32;
@@ -100,8 +104,9 @@ private:
         uint32_t nSamp;         // number of samples in packet (0 = pkt contains impedance data)
         uint32_t nChan;         // number of channels within the packet
         float    data[256];     // floating point data[nSamp][nChan]
-        inline unsigned GetPacketSize() { return (4*sizeof(uint32_t)) + (nChan*nSamp*sizeof(float)); }
         inline float GetSample( unsigned samp, unsigned chan ) { return data[ (samp*nChan) + chan ]; }
+        inline unsigned GetPacketSize() { return (4 * sizeof(uint32_t))
+                                               + (nChan * (nSamp ? nSamp : 1) * sizeof(float)); }
     };
 
     #pragma pack(pop)

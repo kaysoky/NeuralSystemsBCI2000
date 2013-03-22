@@ -210,19 +210,22 @@ GrapeVineADC::Initialize( const SignalProperties&, const SignalProperties& )
                 oss << "0";
                 paramImpedances( i, j ) = oss.str();
             }
-        
-        // and commend NIP into impedance measurement mode
-        int impCycles = Parameter("ImpedanceSpeed");
-        int impCurrent = Parameter("ImpedanceCurrent");
-        GvBciCommand gvBciCmdPkt = { mAcqMode, impCurrent, ((impCycles + 1) * IMP_NCYCS_MIN) };
-
-        sockaddr nipAddr = { 0 };
-        ((sockaddr_in *) &nipAddr)->sin_family      =  AF_INET;
-        ((sockaddr_in *) &nipAddr)->sin_port        =  htons( GV_PORT_BCI_TO_NIP );
-        ((sockaddr_in *) &nipAddr)->sin_addr.s_addr =  inet_addr( "192.168.42.1" );
-        if (!sendto( mGvBciSocket, &gvBciCmdPkt, sizeof(gvBciCmdPkt), 0, &nipAddr, sizeof(nipAddr)))
-            bcierr << "Unable to send BCI impedance control packet" << endl;
     }
+    
+    // Send NIP mode command
+    int selCurrent = Parameter("ImpedanceCurrent");
+    int selCycles  = Parameter("ImpedanceSpeed");
+    int impCycles  = (selCycles == 2) ? IMP_NCYCS_MOST_ACC
+                 :   (selCycles == 1) ? IMP_NCYCS_MORE_ACC
+                 : /* selCycles == 0 */ IMP_NCYCS_FAST;
+    GvBciCommand gvBciCmdPkt = { mAcqMode, selCurrent, impCycles };
+
+    sockaddr nipAddr = { 0 };
+    ((sockaddr_in *) &nipAddr)->sin_family      =  AF_INET;
+    ((sockaddr_in *) &nipAddr)->sin_port        =  htons( GV_PORT_BCI_TO_NIP );
+    ((sockaddr_in *) &nipAddr)->sin_addr.s_addr =  inet_addr( "192.168.42.1" );
+    if (!sendto( mGvBciSocket, &gvBciCmdPkt, sizeof(gvBciCmdPkt), 0, &nipAddr, sizeof(nipAddr)))
+        bcierr << "Unable to send BCI impedance control packet" << endl;
 }
 
 
