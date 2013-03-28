@@ -111,6 +111,7 @@ GazeMonitorFilter::GazeMonitorFilter() :
   BEGIN_STATE_DEFINITIONS
     "FixationViolated 1 0 0 0",
     "GazeCorrectionMode 1 0 0 0", // Set this state true to enable user correction
+    "FixationCrossVisible 1 1 0 0", // Set this state to turn off fixation cross rendering
   END_STATE_DEFINITIONS
 }
 
@@ -228,6 +229,7 @@ GazeMonitorFilter::Preflight( const SignalProperties &Input, SignalProperties &O
   }
   Parameter( "LogGazeInformation" );
   State( "GazeCorrectionMode" );
+  State( "FixationCrossVisible" );
 }
 
 void
@@ -602,6 +604,18 @@ GazeMonitorFilter::Process( const GenericSignal &Input, GenericSignal &Output )
   {
     bciout << "Attempting to use eyetracker correction without full fixation enforcement." << endl;
     State( "GazeCorrectionMode" ) = 0;
+  }
+
+  // Handle Fixation Cross Hiding
+  if( ( int )State( "FixationCrossVisible" ) == 0 )
+  {
+    if( mpFixationImage ) mpFixationImage->Hide();
+    if( mpFixationViolationImage ) mpFixationViolationImage->Hide();
+  } 
+  else 
+  {
+    if( mpFixationImage ) mpFixationImage->Show();
+    if( mpFixationViolationImage ) mpFixationViolationImage->Show();
   }
 
   // Draw preview frame
