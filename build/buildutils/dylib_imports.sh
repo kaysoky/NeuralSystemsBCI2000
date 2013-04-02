@@ -22,7 +22,7 @@ lib=$(basename $1 .h)
 gcc -DWIN32 -D_WIN32 -DWINAPI=__stdcall -E -x c "$@" \
 | grep -v "#" \
 | perl -ne "\$s.=\$_; if( \$s=~/;/) { \$s=~s/[\r\n]/ /g; \$s=~s/\s+/ /g; \$s=~s/^ //; \$s=~s/; /;/; \$s=~s/;/;\n/g; print \$s; \$s=\"\"; }" \
-| perl -ne "print if s/__attribute__\(\(dllimport\)\)\ //" \
+| perl -ne "print if s/__attribute__\(\(dllimport\)\)\ // || s/__declspec\(dllimport\)\ //" \
 > $tmp
 
 parse="\W*((const\s*|)((un|)signed\s*|)\w+\s*\**)\W+(__attribute__\(\((\w+)__\)\)\W+)*(\w+)(.*);"
