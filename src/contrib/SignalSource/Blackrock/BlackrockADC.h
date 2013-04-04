@@ -30,8 +30,8 @@
 #include "BufferedADC.h"
 #include "PrecisionTime.h"
 #include "OSMutex.h"
+#include "cbsdk.imports.h"
 
-#include <cbsdk.h>
 #include <queue>
 #include <map>
 

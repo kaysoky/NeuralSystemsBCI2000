@@ -274,7 +274,7 @@ bool
 BlackrockADC::Connect() const
 {
   cbSdkConnectionType conType = CBSDKCONNECTION_DEFAULT;
-  if( CereLinkError( cbSdkOpen( INST, conType ) ) ) return false;
+  if( CereLinkError( cbSdkOpen( INST, conType, cbSdkConnection() ) ) ) return false;
 
   cbSdkInstrumentType instType;
   if( CereLinkError( cbSdkGetType( INST, &conType, &instType ) ) )
