@@ -2,6 +2,9 @@
 #ifndef cbsdk_IMPORTS_H
 #define cbsdk_IMPORTS_H
 
+#ifdef _WIN32
+  #include "Win32Defs.h"
+#endif // _WIN32
 #include "cbhwlib.h"
 
 #if DYNAMIC_IMPORTS
