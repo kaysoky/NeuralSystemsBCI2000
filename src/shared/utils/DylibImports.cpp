@@ -56,7 +56,7 @@ static HMODULE LoadLibrary_( const char* s )
   {
     HMODULE lib = ::LoadLibraryA( "shlwapi" );
     const char* name = reinterpret_cast<const char*>( IsOS_ORDINAL );
-    *reinterpret_cast<void**>( IsOS_ ) = ::GetProcAddress( lib, name );
+    //*reinterpret_cast<void**>( IsOS_ ) = ::GetProcAddress( lib, name );
   }
   HMODULE h = 0;
   try
