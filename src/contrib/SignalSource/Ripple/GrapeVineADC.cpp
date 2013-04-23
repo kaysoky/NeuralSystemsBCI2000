@@ -224,7 +224,7 @@ GrapeVineADC::Initialize( const SignalProperties&, const SignalProperties& )
     ((sockaddr_in *) &nipAddr)->sin_family      =  AF_INET;
     ((sockaddr_in *) &nipAddr)->sin_port        =  htons( GV_PORT_BCI_TO_NIP );
     ((sockaddr_in *) &nipAddr)->sin_addr.s_addr =  inet_addr( "192.168.42.1" );
-    if (!sendto( mGvBciSocket, &gvBciCmdPkt, sizeof(gvBciCmdPkt), 0, &nipAddr, sizeof(nipAddr)))
+    if (!sendto( mGvBciSocket, reinterpret_cast<const char*>( &gvBciCmdPkt ), sizeof(gvBciCmdPkt), 0, &nipAddr, sizeof(nipAddr)))
         bcierr << "Unable to send BCI impedance control packet" << endl;
 }
 
@@ -272,13 +272,13 @@ GrapeVineADC::Process( const GenericSignal&, GenericSignal& Output )
             else // if nSamp == 0, packet contains impedance measurements
             {
                 MutableParamRef paramImpedances = Parameter( "Impedances" );
-                for( unsigned ch=0; ch<mSourceCh; ++ch)
+                for( int ch=0; ch<mSourceCh; ++ch)
                 {
                     ostringstream oss;
                     oss << std::fixed << std::setprecision(1);
                     oss << (0.001f * mGvBciData.GetSample(1,ch));
-                    size_t i = ch / CHANNELS_PER_FRONT_END;
-                    size_t j = ch % CHANNELS_PER_FRONT_END;
+                    int i = ch / CHANNELS_PER_FRONT_END;
+                    int j = ch % CHANNELS_PER_FRONT_END;
                     paramImpedances( i, j ) = oss.str();
                 }
             }
