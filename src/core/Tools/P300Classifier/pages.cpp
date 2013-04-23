@@ -32,6 +32,36 @@ static void Reset()
   g_pDetailsPage->Clear();
   g_pDataPage->findChild<QProgressBar*>()->setValue( 0 );
 }
+
+static ostream&
+PrintClassificationResults( ostream& oss, const vector<string>& predicted, const vector<double>& vresult )
+{
+  if( vresult.empty() )
+    return oss << "No classification results available (unknown target specification).\n\n";
+
+  // Display classification results
+  std::ios_base::fmtflags savedFlags = oss.flags();
+  oss.precision(0);
+  oss.setf(ios::fixed, ios::floatfield);
+  oss.setf(ios::left, ios::adjustfield);
+  int width = static_cast<int>(predicted.size())/static_cast<int>(vresult.size());
+  oss << "\nClassifying Responses...\n\n";
+  oss << setw(12) << "Flashes";
+  oss << setw(12) << "% Correct";
+  oss << setw(width) << "Predicted Symbols\n";
+
+  for (size_t k=0; k<vresult.size(); k++)
+  {
+    oss << setw(12) << k+1;
+    oss << setw(12) << vresult[k];
+    for (size_t j=k*width; j<(k+1)*width; j++)
+      oss << predicted[j];
+    oss << "\n";
+  }
+  oss.flags( savedFlags );
+  return oss << "\n";
+}
+
 // end jm
 
 void callback_status(string message)
@@ -1920,53 +1950,31 @@ void GenerateFeatureWeightsThread::run()
 
   emit signalProgressBar(2, 5, 4);
 
-if (!g_pDataPage->IfMultipleMenusTrainingData)
-{
-  if (g_pDataPage->mode_TrainingData == 1 || g_pDataPage->mode_TrainingData == 2)
-    // Classify the P3 Speller Task
-    P300_Classify(pscore, state.StimulusCode, state.StimulusType, state.trialnr,
-            parms.NumberOfSequences, parms.NumMatrixRows, parms.NumMatrixColumns,
-            state.TargetDefinitions, vresult, predicted);
-
-  if (g_pDataPage->mode_TrainingData == 3 || g_pDataPage->mode_TrainingData == 4)
-    // Classify the Stimulus Presentation Task
-    StimulusPresentation_Classify(pscore, state.StimulusCode, state.StimulusType,
-                    state.trialnr, parms.NumberOfSequences, NumberOfChoices,
-                    state.TargetDefinitions, vresult, predicted);
-  emit signalProgressBar(3, 5, 5);
-  signal_vector.clear();
-  trialnr.clear();
-  Code.clear();
-  Type.clear();
-  Flashing.clear();
-  state.TargetDefinitions.clear();
-  state_tmp.TargetDefinitions.clear();
-  numSequences = 1e6;
-
-  // Display classification results
-  oss.precision(0);
-  oss.setf(ios::fixed, ios::floatfield);
-  oss.setf(ios::left, ios::adjustfield);
-  int width = static_cast<int>(predicted.size())/static_cast<int>(vresult.size());
-  oss << "\nClassifying Responses...\n\n";
-  oss << setw(12) << "Flashes";
-  oss << setw(12) << "% Correct";
-  oss << setw(width) << "Predicted Symbols\n";
-  emit signalProgressText(oss.str().c_str());
-  oss.str("");
-
-  int k = 0;
-  for (int i=0; i<parms.NumberOfSequences; i++)
+  if (!g_pDataPage->IfMultipleMenusTrainingData)
   {
-    oss << setw(12) << i+1;
-    oss << setw(12) << vresult[k];
-    for (int j=i*width; j<(i+1)*width; j++)
-      oss << predicted[j];
-    oss << endl;
-    k++;
+    if (g_pDataPage->mode_TrainingData == 1 || g_pDataPage->mode_TrainingData == 2)
+      // Classify the P3 Speller Task
+      P300_Classify(pscore, state.StimulusCode, state.StimulusType, state.trialnr,
+              parms.NumberOfSequences, parms.NumMatrixRows, parms.NumMatrixColumns,
+              state.TargetDefinitions, vresult, predicted);
+
+    if (g_pDataPage->mode_TrainingData == 3 || g_pDataPage->mode_TrainingData == 4)
+      // Classify the Stimulus Presentation Task
+      StimulusPresentation_Classify(pscore, state.StimulusCode, state.StimulusType,
+                      state.trialnr, parms.NumberOfSequences, NumberOfChoices,
+                      state.TargetDefinitions, vresult, predicted);
+    emit signalProgressBar(3, 5, 5);
+    signal_vector.clear();
+    trialnr.clear();
+    Code.clear();
+    Type.clear();
+    Flashing.clear();
+    state.TargetDefinitions.clear();
+    state_tmp.TargetDefinitions.clear();
+    numSequences = 1e6;
+
+    PrintClassificationResults( oss, predicted, vresult );
   }
-  oss << "\n";
-}
   oss << "Done!\n\n";
   oss << "Time elapsed [s]: " << ((clock()-Clock0)/(float) CLOCKS_PER_SEC) << endl << endl;
 
@@ -2196,54 +2204,30 @@ void ApplyFeatureWeightsThread::run()
 
   emit signalProgressBar(2, 5, 4);
 
-if (!g_pDataPage->IfMultipleMenusTestingData)
-{
-  if (g_pDataPage->mode_TrainingData == 1 || g_pDataPage->mode_TrainingData == 2)
-    // Classify the P3 Speller Task
-    P300_Classify(pscore, state.StimulusCode, state.StimulusType, state.trialnr,
-            parms.NumberOfSequences, parms.NumMatrixRows, parms.NumMatrixColumns,
-            state.TargetDefinitions, vresult, predicted);
-
-  if (g_pDataPage->mode_TrainingData == 3 || g_pDataPage->mode_TrainingData == 4)
-    // Classify the Stimulus Presentation Task
-    StimulusPresentation_Classify(pscore, state.StimulusCode, state.StimulusType,
-                    state.trialnr, parms.NumberOfSequences, NumberOfChoices,
-                    state.TargetDefinitions, vresult, predicted);
-  emit signalProgressBar(3, 5, 5);
-  signal_vector.clear();
-  trialnr.clear();
-  Code.clear();
-  Type.clear();
-  Flashing.clear();
-  state.TargetDefinitions.clear();
-  state_tmp.TargetDefinitions.clear();
-  numSequences = 1e6;
-
-
-  // Display classification results
-  oss.precision(0);
-  oss.setf(ios::fixed, ios::floatfield);
-  oss.setf(ios::left, ios::adjustfield);
-  int width = static_cast<int>(predicted.size())/static_cast<int>(vresult.size());
-  oss << "Classifying Responses...\n\n";
-  oss << setw(12) << "Flashes";
-  oss << setw(12) << "% Correct";
-  oss << setw(width) << "Predicted Symbols\n";
-  emit signalProgressText(oss.str().c_str());
-  oss.str("");
-
-  int k = 0;
-  for (int i=0; i<parms.NumberOfSequences; i++)
+  if (!g_pDataPage->IfMultipleMenusTestingData)
   {
-    oss << setw(12) << i+1;
-    oss << setw(12) << vresult[k];
-    for (int j=i*width; j<(i+1)*width; j++)
-      oss << predicted[j];
-    oss << endl;
-    k++;
+    if (g_pDataPage->mode_TrainingData == 1 || g_pDataPage->mode_TrainingData == 2)
+      // Classify the P3 Speller Task
+      P300_Classify(pscore, state.StimulusCode, state.StimulusType, state.trialnr,
+              parms.NumberOfSequences, parms.NumMatrixRows, parms.NumMatrixColumns,
+              state.TargetDefinitions, vresult, predicted);
+
+    if (g_pDataPage->mode_TrainingData == 3 || g_pDataPage->mode_TrainingData == 4)
+      // Classify the Stimulus Presentation Task
+      StimulusPresentation_Classify(pscore, state.StimulusCode, state.StimulusType,
+                      state.trialnr, parms.NumberOfSequences, NumberOfChoices,
+                      state.TargetDefinitions, vresult, predicted);
+    emit signalProgressBar(3, 5, 5);
+    signal_vector.clear();
+    trialnr.clear();
+    Code.clear();
+    Type.clear();
+    Flashing.clear();
+    state.TargetDefinitions.clear();
+    state_tmp.TargetDefinitions.clear();
+    numSequences = 1e6;
+    PrintClassificationResults( oss, predicted, vresult );
   }
-  oss << "\n";
-}
   oss << "Done!\n\n";
   oss << "Time elapsed [s]: " << ((clock()-Clock0)/(float) CLOCKS_PER_SEC) << endl << endl;
 

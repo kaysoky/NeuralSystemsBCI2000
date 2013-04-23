@@ -37,6 +37,7 @@ if( NumMatrixColumns < 2 ) NumMatrixColumns = 0;
 ////////////////////////////////////////////////////////////////////////
 // Section: Define variables
 int choice, epoch;
+bool canpredict = true;
 static const double inf = std::numeric_limits<double>::infinity();
 double val, max_value_row= -inf, max_value_col= -inf, numletters, correct;
 ap::real_2d_array cflash;
@@ -49,7 +50,8 @@ vector<int> coderow;
 vector<int>::iterator it;
 
 numletters = (pscore.gethighbound(0)+1)/NumberOfSequences;
-choice = NumMatrixRows + NumMatrixColumns;
+choice = pscore.gethighbound(1) + 1;
+canpredict = ( choice == NumMatrixRows + NumMatrixColumns );  
 epoch = NumberOfSequences * choice;
 cflash.setbounds(0, choice-1, 0, pscore.gethighbound(0));
 predictedrow.setbounds(0, static_cast<int>(numletters-1), 0, NumberOfSequences-1);
@@ -164,8 +166,10 @@ for (int j=0; j<NumberOfSequences; j++)
 	{
 		if ((coderow[i] == predictedrow(i,j)) && codecol[i] == predictedcol(i,j))
 			correct++;
-	  predicted.push_back(TargetDefinitions[NumMatrixColumns*(predictedrow(i,j)-1-NumMatrixColumns)+predictedcol(i,j)-1]);
+    if( canpredict )
+      predicted.push_back(TargetDefinitions[NumMatrixColumns*(predictedrow(i,j)-1-NumMatrixColumns)+predictedcol(i,j)-1]);
 	}
-	result.push_back((correct/numletters)*100);
+  if( canpredict )
+  	result.push_back((correct/numletters)*100);
 }
 }
