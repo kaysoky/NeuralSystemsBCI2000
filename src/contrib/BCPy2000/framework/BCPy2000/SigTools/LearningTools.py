@@ -966,6 +966,7 @@ def confuse(true, predicted, labels=None, exemplar_dim=0):
 	if len(true) != len(predicted): raise ValueError('mismatched numbers of true and predicted labels')
 
 	def isequal(a,b):
+		if isinstance(a, basestring) and isinstance(b, basestring): return a == b
 		a = numpy.asarray(a)
 		b = numpy.asarray(b)
 		ndd = len(b.shape) - len(a.shape)
