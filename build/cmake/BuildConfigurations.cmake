@@ -126,10 +126,19 @@ IF( MSVC )
         CMAKE_MODULE_LINKER_FLAGS
   )
   FOREACH( flag_var ${LINKER_FLAG_VARS} )
+  
+     FOREACH( type_ ${CMAKE_CONFIGURATION_TYPES} )
+       STRING( TOUPPER "${type_}" type_ )
+       SET( name_ ${flag_var}_${type_} )
+       STRING( REGEX REPLACE "/INCREMENTAL[:YESNO]*" "" ${name_} "${${name_}}" )
+       SET( ${name_} "${${name_}} /INCREMENTAL:NO" )
+     ENDFOREACH()
+
      SET( ${flag_var}_DYNAMIC "${${flag_var}}" )
      SET( ${flag_var} "${${flag_var}} /NODEFAULTLIB:msvcrt /NODEFAULTLIB:msvcrtd /NODEFAULTLIB:msvcprt /NODEFAULTLIB:msvcprtd" )
      SET( ${flag_var}_STATIC "${${flag_var}}" )
-  ENDFOREACH( flag_var )
+     
+  ENDFOREACH()
 
   SET( FLAG_VARS ${CXX_FLAG_VARS} ${LINKER_FLAG_VARS} )
 
