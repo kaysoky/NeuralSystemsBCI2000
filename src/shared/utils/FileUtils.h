@@ -90,7 +90,7 @@ namespace FileUtils
   bool IsAbsolutePath( const std::string& );
 
   bool Rename( const std::string&, const std::string& );
-  bool MakeDirectory( const std::string& );
+  bool MakeDirectory( const std::string&, bool force = false );
   bool RemoveDirectory( const std::string&, bool force = false );
   bool RemoveFile( const std::string& );
   

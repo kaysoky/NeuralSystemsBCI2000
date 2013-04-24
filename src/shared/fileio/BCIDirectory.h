@@ -51,6 +51,8 @@ class BCIDirectory
   //   BCIDirectory().SetDataDirectory( "c:\\" ).SetSubjectName( "test" );
   BCIDirectory&      SetDataDirectory( const std::string& s )
                      { mDataDirectory = s; return UpdateRunNumber(); }
+  BCIDirectory&      SetFilePrefix( const std::string& s )
+                     { mFilePrefix = s; return UpdateRunNumber(); }
   BCIDirectory&      SetSubjectName( const std::string& s )
                      { mSubjectName = s; return UpdateRunNumber(); }
   BCIDirectory&      SetFileExtension( const std::string& s )
@@ -78,15 +80,15 @@ class BCIDirectory
   const BCIDirectory& CreatePath() const;
 
  private:
-  static int         GetLargestRun( const std::string& path,
-                                    const std::string& extension );
-  static int         ExtractRunNumber( const std::string& fileName );
-  static bool        ChangeForceDir( const std::string& );
-
+  static int         ExtractRunNumber( const std::string& fileName,
+                                       const std::string& fileBase );
   BCIDirectory&      UpdateRunNumber();
+  std::string        ConstructFileBase() const;
   std::string        ConstructFileName() const;
+  int                GetLargestRun( const std::string& path );
 
   std::string        mDataDirectory,
+                     mFilePrefix,
                      mSubjectName,
                      mFileExtension;
   int                mSessionNumber,

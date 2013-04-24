@@ -322,27 +322,34 @@ FileUtils::IsAbsolutePath( const string& inPath )
 }
 
 bool
-FileUtils::MakeDirectory( const string& inName )
+FileUtils::MakeDirectory( const string& inName, bool inForce )
 {
+  bool result = false;
 #ifdef _WIN32
-  return !::mkdir( inName.c_str() );
+  result = !::mkdir( inName.c_str() );
 #else
   const int rwxr_xr_x = 0755;
-  return !::mkdir( inName.c_str(), rwxr_xr_x );
+  result = !::mkdir( inName.c_str(), rwxr_xr_x );
 #endif
+  if( inForce )
+    result = result || IsDirectory( inName );
+  if( !result && inForce )
+    result = MakeDirectory( ParentDirectory( inName ), true ) && MakeDirectory( inName, false );
+  return result;
 }
 
 bool
 FileUtils::RemoveDirectory( const string& inName, bool inForce )
 {
   bool success = true;
+  string name = CanonicalPath( inName );
   if( inForce )
   {
     List entries;
-    success = ListDirectory( inName, entries );
+    success = ListDirectory( name, entries );
     for( size_t i = 0; success && i < entries.size(); ++i )
     {
-      string path = CanonicalPath( inName ) + DirSeparator + entries[i];
+      string path = name + DirSeparator + entries[i];
       if( IsFile( path ) || IsSymbolicLink( path ) )
         success = RemoveFile( path );
       else if( IsDirectory( path ) )
@@ -350,7 +357,7 @@ FileUtils::RemoveDirectory( const string& inName, bool inForce )
     }
   }
   if( success )
-    success = !::rmdir( inName.c_str() );
+    success = !::rmdir( name.c_str() );
   return success;
 }
 
@@ -371,7 +378,7 @@ FileUtils::ListDirectory( const string& inPath, List& outList )
 {
   bool success = true;
   outList.clear();
-  DIR* dir = ::opendir( inPath.c_str() );
+  DIR* dir = ::opendir( CanonicalPath( inPath ).c_str() );
   success = ( dir != NULL );
   if( success )
   {

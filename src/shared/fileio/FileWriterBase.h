@@ -56,6 +56,7 @@ class FileWriterBase: public GenericFileWriter, OSThread
 
  private:
   virtual int Execute();
+  void ConstructFileName( std::string&, int* = 0 ) const;
 
   GenericOutputFormat&     mrOutputFormat;
   std::string              mFileName;

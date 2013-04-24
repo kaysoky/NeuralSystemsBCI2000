@@ -53,7 +53,15 @@ FileWriterBase::~FileWriterBase()
 void
 FileWriterBase::Publish()
 {
-  if( ( OptionalParameter( "SavePrmFile" ) != 0 ) )
+  if( OptionalParameter( "DataFile", "\xff" ) != "\xff" )
+  {
+    BEGIN_PARAMETER_DEFINITIONS
+      "Storage:Data%20Location string DataFile= % % % % "
+        "// name of data file inside DataDirectory",
+    END_PARAMETER_DEFINITIONS
+  }
+
+  if( OptionalParameter( "SavePrmFile" ) != 0 )
   {
     BEGIN_PARAMETER_DEFINITIONS
       "Storage:Documentation int SavePrmFile= 0 1 0 1 "
@@ -74,39 +82,31 @@ FileWriterBase::Preflight( const SignalProperties& Input,
   State( "Recording" );
 
   // File accessibility.
-  string baseFileName = BCIDirectory()
-    .SetDataDirectory( Parameter( "DataDirectory" ) )
-    .SetSubjectName( Parameter( "SubjectName" ) )
-    .SetSessionNumber( Parameter( "SubjectSession" ) )
-    .SetRunNumber( Parameter( "SubjectRun" ) )
-    .SetFileExtension( mrOutputFormat.DataFileExtension() )
-    .CreatePath()
-    .FilePath();
+  string dataFileName;
+  ConstructFileName( dataFileName );
 
+  // Does the data file exist?
+  ifstream dataRead( dataFileName.c_str() );
+  if( dataRead.is_open() )
+    bcierr << "Data file " << dataFileName << " already exists, "
+           << "will not be touched." << endl;
+  else
   {
-    string dataFileName = baseFileName + mrOutputFormat.DataFileExtension();
-
-    // Does the data file exist?
-    ifstream dataRead( dataFileName.c_str() );
-    if( dataRead.is_open() )
-      bcierr << "Data file " << dataFileName << " already exists, "
-             << "will not be touched." << endl;
+    // It does not exist, can we write to it?
+    ofstream dataWrite( dataFileName.c_str() );
+    if( !dataWrite.is_open() )
+      bcierr << "Cannot write to file " << dataFileName << endl;
     else
     {
-      // It does not exist, can we write to it?
-      ofstream dataWrite( dataFileName.c_str() );
-      if( !dataWrite.is_open() )
-        bcierr << "Cannot write to file " << dataFileName << endl;
-      else
-      {
-        dataWrite.close();
-        ::remove( dataFileName.c_str() );
-      }
+      dataWrite.close();
+      ::remove( dataFileName.c_str() );
     }
   }
   if( OptionalParameter( "SavePrmFile" ) == 1 )
   {
-    string paramFileName =  baseFileName + bciParameterExtension;
+    string paramFileName = FileUtils::ExtractDirectory( dataFileName )
+                         + FileUtils::ExtractBase( dataFileName )
+                         + bciParameterExtension;
     ifstream paramRead( paramFileName.c_str() );
     if( paramRead.is_open() )
       bcierr << "Parameter file " << paramFileName << " already exists, "
@@ -141,18 +141,12 @@ FileWriterBase::Initialize( const SignalProperties& Input,
 void
 FileWriterBase::StartRun()
 {
-  BCIDirectory bciDirectory = BCIDirectory()
-    .SetDataDirectory( Parameter( "DataDirectory" ) )
-    .SetSubjectName( Parameter( "SubjectName" ) )
-    .SetSessionNumber( Parameter( "SubjectSession" ) )
-    .SetRunNumber( Parameter( "SubjectRun" ) )
-    .SetFileExtension( mrOutputFormat.DataFileExtension() );
-  string baseFileName = bciDirectory.FilePath();
-  mFileName = baseFileName + mrOutputFormat.DataFileExtension();
+  int runNumber;
+  ConstructFileName( mFileName, &runNumber );
   // BCIDirectory will update the run number to the largest unused one
   // -- we want this to be reflected by the "SubjectRun" parameter.
   ostringstream oss;
-  oss << setfill( '0' ) << setw( 2 ) << bciDirectory.RunNumber();
+  oss << setfill( '0' ) << setw( 2 ) << runNumber;
   Parameter( "SubjectRun" ) = oss.str();
 
   mOutputFile.close();
@@ -161,7 +155,9 @@ FileWriterBase::StartRun()
 
   if( OptionalParameter( "SavePrmFile" ) == 1 )
   {
-    string paramFileName =  baseFileName + bciParameterExtension;
+    string paramFileName = FileUtils::ExtractDirectory( mFileName )
+                         + FileUtils::ExtractBase( mFileName )
+                         + bciParameterExtension;
     ofstream file( paramFileName.c_str() );
     if( !( file << *Parameters << flush ) )
       bcierr << "Error writing parameters to file "
@@ -233,3 +229,25 @@ int FileWriterBase::Execute()
   return 0;
 }
 
+void FileWriterBase::ConstructFileName( string& outName, int* pOutRunNumber ) const
+{
+  BCIDirectory dir = BCIDirectory().SetDataDirectory( Parameter( "DataDirectory" ) );
+  string dataFile = OptionalParameter( "DataFile" ),
+    dataFileBase = FileUtils::ExtractBase( dataFile ),
+    dataFileExt = FileUtils::ExtractExtension( dataFile );
+  int runNumber = Parameter( "SubjectRun" ); // make sure to always access this parameter
+  if( dataFileBase.empty() )
+    dir.SetSubjectName( Parameter( "SubjectName" ) )
+       .SetSessionNumber( Parameter( "SubjectSession" ) )
+       .SetRunNumber( runNumber );
+  else
+    dir.SetFilePrefix( dataFileBase );
+  if( dataFileExt.empty() )
+    dir.SetFileExtension( mrOutputFormat.DataFileExtension() );
+  else
+    dir.SetFileExtension( dataFileExt );
+  dir.CreatePath();
+  outName = dir.FilePath() + dir.FileExtension();
+  if( pOutRunNumber )
+    *pOutRunNumber = dir.RunNumber();
+}

@@ -27,7 +27,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "BCIDirectory.h"
+#include "BCIDirectory.h" 
 
 #ifdef _WIN32
 # include "windows.h"
@@ -63,13 +63,9 @@ BCIDirectory::BCIDirectory()
 BCIDirectory&
 BCIDirectory::UpdateRunNumber()
 {
-  mActualRunNumber = mDesiredRunNumber;
-  if( mDesiredRunNumber != none )
-  {
-    int largestRunNumber = GetLargestRun( DirectoryPath(), mFileExtension ) + 1;
-    if( largestRunNumber > mDesiredRunNumber )
-      mActualRunNumber = largestRunNumber;
-  }
+  mActualRunNumber = GetLargestRun( DirectoryPath() ) + 1;
+  if( mDesiredRunNumber != none && mDesiredRunNumber > mActualRunNumber )
+    mActualRunNumber = mDesiredRunNumber;
   return *this;
 }
 
@@ -85,14 +81,17 @@ BCIDirectory::DirectoryPath() const
   }
   if( result.length() > 0 && result[ result.length() - 1 ] != DirSeparator )
     result += DirSeparator;
-  result += mSubjectName;
-  if( mSessionNumber != none )
+  if( !mSubjectName.empty() )
   {
-    ostringstream oss;
-    oss << setfill( '0' ) << setw( 3 ) << mSessionNumber;
-    result += oss.str();
+    result += mSubjectName;
+    if( mSessionNumber != none )
+    {
+      ostringstream oss;
+      oss << setfill( '0' ) << setw( 3 ) << mSessionNumber;
+      result += oss.str();
+    }
+    result += DirSeparator;
   }
-  result += DirSeparator;
   return result;
 }
 
@@ -106,97 +105,74 @@ BCIDirectory::FilePath() const
 const BCIDirectory&
 BCIDirectory::CreatePath() const
 {
-  string wd = GetCWD();
-  ChangeForceDir( DirectoryPath() );
-  ChangeDirectory( wd );
+  string fullPath = DirectoryPath();
+  if( !IsAbsolutePath( fullPath ) )
+    fullPath = InstallationDirectory() + fullPath;
+  MakeDirectory( fullPath, true );
   return *this;
 }
 
-
-bool
-BCIDirectory::ChangeForceDir( const string& inPath )
+string
+BCIDirectory::ConstructFileBase() const
 {
-  string fullPath = inPath;
-  if( !IsAbsolutePath( fullPath ) )
-    fullPath = InstallationDirectory() + fullPath;
-  if( fullPath.length() < 1 || fullPath[ fullPath.length() - 1 ] != DirSeparator )
-    fullPath += DirSeparator;
-  // Changing directory is necessary to verify that the directory exists and is accessible.
-  bool success = ChangeDirectory( fullPath.c_str() );
-  if( !success )
-  {
-    if( errno == EACCES )
-      return false;
-    else
-    {
-      size_t p = fullPath.rfind( DirSeparator, fullPath.length() - 2 );
-      if( p == string::npos )
-        return false;
-      success = ChangeForceDir( fullPath.substr( 0, p ) );
-      if( !success )
-        return false;
-      success = MakeDirectory( fullPath );
-      if( !success )
-        return false;
-      success = ChangeDirectory( fullPath.c_str() );
-    }
-  }
-  return success;
+  ostringstream oss;
+  oss << mFilePrefix << mSubjectName;
+  if( mSessionNumber != none )
+    oss << "S" << setfill( '0' ) << setw( 3 ) << mSessionNumber;
+  if( mDesiredRunNumber != none )
+    oss << "R";
+  if( !oss.tellp() )
+    oss << "Data";
+  return oss.str();
 }
-
 
 string
 BCIDirectory::ConstructFileName() const
 {
-  ostringstream oss;
-  oss << mSubjectName;
-  if( mSessionNumber != none )
+  std::ostringstream oss;
+  oss << ConstructFileBase();
+  if( mDesiredRunNumber == none )
   {
-     oss << "S" << setfill( '0' ) << setw( 3 ) << mSessionNumber;
-     if( mActualRunNumber != none )
-       oss << "R" << setfill( '0' ) << setw( 2 ) << mActualRunNumber;
+    if( mActualRunNumber > 1 )
+      oss << mActualRunNumber;
   }
+  else if( mActualRunNumber != none )
+    oss << setfill( '0' ) << setw( 2 ) << mActualRunNumber;
   return oss.str();
 }
 
-
 int
-BCIDirectory::GetLargestRun( const string& inPath, const string& inExtension )
+BCIDirectory::GetLargestRun( const string& inPath )
 {
   int largestRun = 0;
   DIR* dir = ::opendir( inPath.c_str() );
   if( dir != NULL )
   {
+    string base = ConstructFileBase();
     struct dirent* entry;
     while( NULL != ( entry = ::readdir( dir ) ) )
     {
       string fileName = entry->d_name;
-      if( fileName.length() >= inExtension.length()
-          && fileName.substr( fileName.length() - inExtension.length() ) == inExtension )
-      {
-        int curRun = ExtractRunNumber( entry->d_name );
-        if( curRun > largestRun )
-          largestRun = curRun;
-      }
+      int curRun = ExtractRunNumber( entry->d_name, base );
+      if( curRun > largestRun )
+        largestRun = curRun;
     }
     ::closedir( dir );
   }
   return largestRun;
 }
 
-
 int
-BCIDirectory::ExtractRunNumber( const string& inFileName )
+BCIDirectory::ExtractRunNumber( const string& inFileName, const string& inFileBase )
 {
-  int result = 0;
-  size_t runBegin = inFileName.find_last_of( "Rr" ),
-         numDigits = 0;
-  if( runBegin != string::npos )
+  int result = -1;
+  if( !::stricmp( inFileName.substr( 0, inFileBase.length() ).c_str(), inFileBase.c_str() ) )
   {
-    ++runBegin;
-    while( ::isdigit( inFileName[ runBegin + numDigits ] ) )
-      ++numDigits;
-    result = ::atoi( inFileName.substr( runBegin, numDigits ).c_str() );
+    string sub = inFileName.substr( inFileBase.length() );
+    if( sub.empty() || !::isdigit( sub[0] ) )
+      result = 1;
+    else
+      result = ::atoi( sub.c_str() );
   }
   return result;
 }
