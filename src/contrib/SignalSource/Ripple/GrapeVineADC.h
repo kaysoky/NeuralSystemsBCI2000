@@ -31,6 +31,7 @@
 
 // Portability for non-windows builds using unix sockets and posix usleep
 #ifndef _WIN32
+#include <unistd.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
 #define INVALID_SOCKET -1           // to duplicate value used in Windows
