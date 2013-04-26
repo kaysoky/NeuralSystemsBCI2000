@@ -49,7 +49,7 @@ static size_t sArchBits = 8 * sizeof( void* );
 #if _WIN32
 #define OS_WOW6432 30
 #define IsOS_ORDINAL 437
-static BOOL (*IsOS_)( DWORD ) = 0;
+static BOOL (WINAPI *IsOS_)( DWORD ) = 0;
 static HMODULE LoadLibrary_( const char* s )
 {
   if( !IsOS_ )
@@ -237,14 +237,22 @@ StartupLoader::StartupLoader( const char* inLib, const Import* inImports, const 
     {
       msg = "Library \"" + Library::Name() + "\" is not available, but is necessary for "
           + exe + " to run.";
+      bool isWow = false;
 #if _WIN32
-      if( IsOS_ && IsOS_( OS_WOW6432 ) )
-        msg += " You are running a 32-bit executable on a 64-bit Windows installation. "
-               "Note that 32-bit system DLLs must reside in the SysWOW64 (yes, actually \"64\") "
+      isWow = ( IsOS_ && IsOS_( OS_WOW6432 ) );
+      if( isWow )
+        msg += "\nNOTE: You are running a 32-bit executable on a 64-bit Windows installation. "
+               "This requires a 32-bit version of the " + Library::Name() + " DLL to be available. "
+               "32-bit system DLLs must reside in the SysWOW64 (yes, actually \"64\") "
                "subdirectory of your Windows system directory.";
 #endif // _WIN32
       if( WildcardMatch( "*source*", exe, false ) || WildcardMatch( "*adc*", exe, false ) )
-        msg += " You may need to install the driver software that came with your amplifier.";
+      {
+        msg += "\nYou may need to install ";
+        if( isWow )
+          msg += "the 32-bit version of ";
+        msg += "the driver software that came with your amplifier.";
+      }
     }
     BuildMessage( msg, url );
   }

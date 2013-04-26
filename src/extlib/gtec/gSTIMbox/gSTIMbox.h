@@ -15,12 +15,12 @@
 #define GSTIMBOX_API __declspec(dllimport)
 #endif
 
-#include <windows.h>
-#include <stdio.h>
-#include <math.h>
-#include <iostream>
+//#include <windows.h>
+//#include <stdio.h>
+//#include <math.h>
+//#include <iostream>
 
-using namespace std;
+//using namespace std;
 
 #ifdef __cplusplus
 extern "C" {

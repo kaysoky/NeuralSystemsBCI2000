@@ -91,7 +91,7 @@ static const Dylib::Import imports[] =
 EOF
 
 # add an array entry for each imported function
-cat $tmp | perl -ne "print if s/$parse/  { \"\$7\", (void**)&\$7, Dylib::Import::none },/" >>$file
+cat $tmp | perl -ne "print if s/$parse/  { \"\$7\", (void**)&\$7, Dylib::Import::cMangled },/" >>$file
 
 >>$file cat <<EOF
   { 0, 0, 0 }
