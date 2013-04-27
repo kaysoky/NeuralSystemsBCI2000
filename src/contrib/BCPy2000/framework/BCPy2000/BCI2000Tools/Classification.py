@@ -52,7 +52,15 @@ def ClassifyERPs (
 		folds=None,
 	):
 
-	d = DataFiles.load(featurefiles, catdim=0, maxcount=maxcount)
+	file_inventory = []
+	d = DataFiles.load(featurefiles, catdim=0, maxcount=maxcount, return_details=file_inventory)
+ 	if isinstance(folds, basestring) and folds.lower() in ['lofo', 'loro', 'leave on run out', 'leave one file out']:
+ 		n, folds = 0, []
+ 		for each in file_inventory:
+ 			neach = each[1]['x']
+ 			folds.append(range(n, n+neach))
+ 			n += neach
+ 	
  	if 'x' not in d: raise ValueError("found no trial data - no 'x' variable - in the specified files")
  	if 'y' not in d: raise ValueError("found no trial labels - no 'y' variable - in the specified files")
 
@@ -177,6 +185,19 @@ def ClassifyERPs (
 	
 	
 def Assess( files='*.pk', each=False, return_full=False, C=(1e+4,1e+2,1e-0,1e-2,1e-4,1e-6), gamma=0.0, **kwargs ):
+	"""
+	Assess(files, each=True, folds='loo')  # each file, leave-one-trial-out
+	Assess(files, folds='lofo')            # leave-one-run-out
+
+	# leave-one-run-out example:
+	aa = Assess(folds='lofo', return_full=True, C=100)
+	a = aa.classifier[0] # or a different one, if there were multiple hyperparameter settings
+	[balanced_loss(a.input.y[f], a.output.y[f])[0] for f in a.cv.folding['folds']]
+	# gives the balanced loss from testing file during leave-one-file-out
+	# (note, it will be slightly different from what was printed during the CV, unless
+	# you also specify rebias=False in the call to Assess)
+	
+	"""
 	if isinstance( files, basestring ):
 		if os.path.isdir( files ): files = os.path.join( files, '*.pk' )
 		files = glob.glob( files )

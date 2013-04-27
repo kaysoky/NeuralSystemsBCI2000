@@ -146,7 +146,7 @@ def scan(f, catdim=0, discard=True):
 
 #############################################################
 
-def load(f, catdim=0, maxcount=None, discard=True, ignore=None):
+def load(f, catdim=0, maxcount=None, discard=True, ignore=None, return_details=None):
 	"""
 	Load the contents of a file dumped by dump()
 	"""###
@@ -209,7 +209,8 @@ def load(f, catdim=0, maxcount=None, discard=True, ignore=None):
 		dtypes  = hdr['dtypes']
 		f,fn = start(hdr['file'])
 		
-		print "loading from " + fn
+		if 'x' in indices: print "loading %d exemplars from %s" % (len(indices['x']), fn)
+		else: print "loading from " + fn
 		
 		seen_in_this_file = {}
 		accepted_from_this_file = {}
@@ -244,9 +245,13 @@ def load(f, catdim=0, maxcount=None, discard=True, ignore=None):
 				if len(subs[k]) == 1: content[k][subs[k]] = v  # either a bug or a very weird feature in numpy requires this special case
 				else:                 content[k][subs[k]].flat = v.flat # though this *should* do the job either way
 			filled[k] += 1
-			
+		#print "    " + ', '.join([('%s (x %d)' % (k,v)) for k,v in sorted(accepted_from_this_file.items())])
+		if isinstance(return_details, dict): return_details[fn] =  accepted_from_this_file
+		if isinstance(return_details, list): return_details.append((fn, accepted_from_this_file))
+
 	if len(discards):
-		print "discarded: " + ', '.join([('%s:%d' % (k,v)) for k,v in sorted(discards.items())])
+		print "discarded variables: " + ', '.join([('%s (%d instances)' % (k,v)) for k,v in sorted(discards.items())])
+	
 	
 	return content
 

@@ -1973,6 +1973,7 @@ class lda2class(predictor):
 		self.output.y = numpy.sign(self.output.f)
 		self.output.p = logistic(self.output.f)
 		
+class FoldingError(Exception): pass
 
 class foldguide(object):
 	
@@ -1991,6 +1992,16 @@ class foldguide(object):
 		return r
 
 	def __init__(self, ids=None, labels=None, folds=None, ntrain=None, ntest=None, balance=True, randomseed='auto'):
+		"""
+		foldguide constructor parameters:
+		   ids:        a list of exemplar ids; shortcut: pass integer n if the ids should be just range(n)
+		   labels:     a list of labels, or None if balancing folds doesn't matter (or label information is unavailable)
+		   folds:      integer number of folds, or 'LOO' for leave-one-out; could also be a list of lists of test-fold ids for explicit() 
+		   ntrain:     the size of each training fold, or None for auto
+		   ntest:      the size of each test fold, or None for auto
+		   balance:    whether to ensure that each fold contains (approximately) the same relative proportions of classes
+		   randomseed: an integer (32-bit), or 'auto' 
+		"""###
 		#sstruct.__init__(self)
 		if ids == None: 
 			if labels == None: raise ValueError("either ids or labels must be supplied")
@@ -2006,6 +2017,12 @@ class foldguide(object):
 		elif len(labels) != self.n: raise ValueError("mismatched number of ids and labels")
 		else: self.labels = list(labels)
 
+		explicit_testfolds = None
+		if isinstance(folds, (tuple, list)):
+			explicit_testfolds = folds
+			folds = len(folds)
+			if ntrain != None or ntest != None: raise ValueError("cannot specify ntrain or ntest when folds are supplied as an explicit list")
+			
 		if ntrain != None and ntest != None: raise ValueError("specify either ntrain or ntest, or neither, but not both")
 		if ntrain != None and ntrain > self.n / 2.0: ntrain,ntest = None, self.n - ntrain
 		if ntest  != None and ntest  > self.n / 2.0: ntrain,ntest = self.n - ntest, None
@@ -2014,7 +2031,7 @@ class foldguide(object):
 		elif ntest != None: foldsize = float(ntest)
 		else:
 			if folds == None: folds = min(len(ids),10)
-			if isinstance(folds, basestring) and folds.lower() == 'loo': folds = len(ids)
+			if isinstance(folds, basestring) and folds.lower() in ['loo', 'leave one out']: folds = len(ids)
 			foldsize = float(self.n) / folds
 		if folds == None: folds = int(round( numpy.ceil(self.n / float(foldsize)) ))
 
@@ -2071,8 +2088,9 @@ class foldguide(object):
 		if swap: self.indices = tuple([(b,a) for a,b in self.indices])
 		try: self.classes.sort()
 		except: pass
-
-
+		if explicit_testfolds != None:
+			self.explicit(test = explicit_testfolds)
+		
 	def __repr__(self):
 		s = "<%s.%s instance at 0x%08X>" % (self.__class__.__module__,self.__class__.__name__,id(self))
 		trmean,tsmean = numpy.mean([ (len(tr),len(ts)) for tr,ts in self.indices], axis=0)
@@ -2107,26 +2125,25 @@ class foldguide(object):
 			tuple([lookup[x] for x in self.indices[fold][0]]),
 			tuple([lookup[x] for x in self.indices[fold][1]]),
 		)
-		
-		
+				
 	def check(self):
 		nfolds = len(self.indices)
 		for i in range(nfolds):
 			tr,ts = self.indices[i]
 			overlap = sorted(set(tr).intersection(ts))
 			union = sorted(set(tr).union(ts))
-			if len(tr) == 0:        raise RuntimeError("fold %d of foldguide 0x%08x is corrupt: training fold is empty" % (i, id(self),))
-			if len(ts) == 0:        raise RuntimeError("fold %d of foldguide 0x%08x is corrupt: test fold is empty" % (i, id(self),))
-			if len(overlap):        raise RuntimeError("fold %d of foldguide 0x%08x is corrupt: overlap of %d items between training and test fold" % (i, id(self), len(overlap),))
-			if len(union) < self.n: raise RuntimeError("fold %d of foldguide 0x%08x is corrupt: %d items are missing from both training and test fold" % (i, id(self), self.n-len(union)))
-			if len(union) > self.n: raise RuntimeError("fold %d of foldguide 0x%08x is corrupt: %d extra unexpected items" % (i, id(self), len(union)-self.n))		
+			if len(tr) == 0:        raise FoldingError("fold %d of foldguide 0x%08x is corrupt: training fold is empty" % (i, id(self),))
+			if len(ts) == 0:        raise FoldingError("fold %d of foldguide 0x%08x is corrupt: test fold is empty" % (i, id(self),))
+			if len(overlap):        raise FoldingError("fold %d of foldguide 0x%08x is corrupt: overlap of %d items between training and test fold" % (i, id(self), len(overlap),))
+			if len(union) < self.n: raise FoldingError("fold %d of foldguide 0x%08x is corrupt: %d items are missing from both training and test fold" % (i, id(self), self.n-len(union)))
+			if len(union) > self.n: raise FoldingError("fold %d of foldguide 0x%08x is corrupt: %d extra unexpected items" % (i, id(self), len(union)-self.n))		
 		tr,ts = zip(*self.indices)
 		tr = sorted(set(reduce(tuple.__add__, tr)))
-		if len(tr) < self.n: raise RuntimeError("foldguide 0x%08x is corrupt: %d items never appear in the training folds" % (id(self), self.n - len(tr)))
-		if len(tr) > self.n: raise RuntimeError("foldguide 0x%08x is corrupt: %d extra unexpected items appear in the training folds" % (id(self), len(tr) - self.n))
+		if len(tr) < self.n: raise FoldingError("foldguide 0x%08x is corrupt: %d items never appear in the training folds" % (id(self), self.n - len(tr)))
+		if len(tr) > self.n: raise FoldingError("foldguide 0x%08x is corrupt: %d extra unexpected items appear in the training folds" % (id(self), len(tr) - self.n))
 		ts = sorted(set(reduce(tuple.__add__, ts)))
-		if len(ts) < self.n: raise RuntimeError("foldguide 0x%08x is corrupt: %d items never appear in the test folds" % (id(self), self.n - len(ts)))
-		if len(ts) > self.n: raise RuntimeError("foldguide 0x%08x is corrupt: %d extra unexpected items appear in the test folds" % (id(self), len(ts) - self.n))
+		if len(ts) < self.n: raise FoldingError("foldguide 0x%08x is corrupt: %d items never appear in the test folds" % (id(self), self.n - len(ts)))
+		if len(ts) > self.n: raise FoldingError("foldguide 0x%08x is corrupt: %d extra unexpected items appear in the test folds" % (id(self), len(ts) - self.n))
 		
 		overlap_tr = {}
 		overlap_ts = {}
@@ -2143,6 +2160,36 @@ class foldguide(object):
 		overlap_ts['average'] = numpy.mean(overlap_ts.values())
 		return {'tr':overlap_tr, 'ts':overlap_ts}
 	
+	def explicit(self, training=None, test=None):
+		"""
+		Supply, as either <training> or <test> but not both,  a list of lists of ids.
+		The ids will be re-folded explicitly in the specified way.
+		"""###
+		if training == None and test == None: raise ValueError("must supply either training or test")
+		if training != None and test != None: raise ValueError("must supply either training or test, but not both")
+		if training != None: folded = training
+		else: folded = test
+		nfolds = len(folded)
+		unmatched = reduce(list.__add__, [[str(x) for x in foldids if x not in self.ids] for foldids in folded])
+		if len(unmatched): raise ValueError("ids not found: %s" % ','.join(unmatched))
+		result = []
+		allind = set(range(len(self.ids)))
+		for foldids in folded:
+			specified = [self.ids.index(x) for x in foldids]
+			rest = allind - set(specified)
+			if training != None: result.append((tuple(specified), tuple(rest)))
+			else: result.append((tuple(rest), tuple(specified)))
+				
+		oldindices = self.indices
+		self.indices = tuple(result)
+		try:
+			self.check()
+		except FoldingError,e:
+			self.indices = oldindices
+			raise FoldingError(str(e).split(':')[-1])
+		self.randomseed = 'explicit'
+		self.balanced = False # TODO: maybe could do better at inferring this
+		
 class experiment(sstruct):
 	"""
 	An sstruct subclass, hence inheriting (versions of) the
