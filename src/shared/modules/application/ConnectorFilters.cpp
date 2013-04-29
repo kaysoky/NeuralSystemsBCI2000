@@ -289,8 +289,8 @@ ConnectorOutput::Connection::OnExecute()
         }
         if( result && !IsTerminating() )
         {
+          message += "\n";
           mSocket.write( message.c_str(), message.length() );
-          mSocket.write( "\n", 1 );
         }
       }
     }
