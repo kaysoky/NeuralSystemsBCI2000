@@ -27,7 +27,7 @@
 #define SYSLOG_H
 
 #include <QString>
-#include <QTextEdit>
+#include <QTextBrowser>
 #include <QMutex>
 #include <QDialog>
 
@@ -51,12 +51,15 @@ class SysLog : public QDialog
   void AddEntry( const QString& text, int = logEntryNormal );
 
  private:
-  QTextEdit* mpLog;
+  bool MatchURL( const QString&, int&, int& );
+  
+  QTextBrowser* mpLog;
   QTextCharFormat mDefaultFormat;
   QMutex mCritsec;
   bool mEmpty,
        mDontClose;
   QString mLastLine;
+  QStringMatcher mURLMatcher;
 };
 
 #endif // SYSLOG_H

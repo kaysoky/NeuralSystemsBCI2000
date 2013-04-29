@@ -54,6 +54,7 @@
 #include <sys/stat.h>
 #include <cstdlib>
 #include <cerrno>
+#include <sstream>
 
 #include "StringUtils.h"
 #include "OSMutex.h"
@@ -414,3 +415,38 @@ FileUtils::TemporaryFile::Open()
   open( mpFile->name.c_str(), ios_base::in | ios_base::out | ios_base::binary );
   return is_open();
 }
+
+string
+FileUtils::SearchURL( const string& inSearchTerms )
+{
+#ifndef WEBSEARCH_DOMAIN
+  return "";
+#else
+  string url = "http://" WEBSEARCH_DOMAIN "/search?q=",
+         searchTerms = inSearchTerms;
+  if( searchTerms.empty() )
+    searchTerms = ApplicationTitle();
+  string site;
+#ifdef PROJECT_DOMAIN
+  if( !searchTerms.empty() )
+    site = PROJECT_DOMAIN;
+#endif
+#ifdef PROJECT_NAME
+  if( searchTerms.empty() )
+    searchTerms = PROJECT_NAME;
+#endif
+  if( searchTerms.empty() )
+    return "";
+  if( !site.empty() )
+    searchTerms = "site%3a" + site + " " + searchTerms;
+
+  istringstream iss( searchTerms );
+  string term;
+  iss >> ws >> term;
+  url += term;
+  while( iss >> ws >> term )
+    url += "+" + term;
+  return url;
+#endif // WEBSEARCH_DOMAIN
+}
+

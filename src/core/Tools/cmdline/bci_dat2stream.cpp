@@ -46,7 +46,7 @@ using namespace std;
 string ToolInfo[] =
 {
   "bci_dat2stream",
-  BCI2000_VERSION,
+  PROJECT_VERSION_DEF,
   "Convert a BCI2000 data file into a BCI2000 stream.",
   "Reads a BCI2000 data file (*.dat) compliant stream from "
     "standard input and writes it to the standard output as a BCI2000 "
@@ -81,7 +81,7 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
   string paramFileName = options.getopt( "-p|-P|--parameters", "" );
   string offsetString = options.getopt( "-s|-S|--start", "" );
   string durationString = options.getopt( "-d|-D|--duration", "" );
-  
+
   // Read the BCI2000 header.
   string token;
   int headerLength,

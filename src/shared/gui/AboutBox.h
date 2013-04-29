@@ -39,12 +39,10 @@ class AboutBox
     {}
   AboutBox& SetApplicationName( const std::string& s )
     { mApplicationName = s; return *this; }
-  AboutBox& SetVersionInfo( const std::string& s );
   const AboutBox& Display() const;
 
  private:
   std::string mApplicationName;
-  VersionInfo mVersionInfo;
 };
 
 #endif // ABOUT_BOX_H

@@ -41,7 +41,7 @@
 using namespace std;
 
 const string VersionInfo::sEmptyString;
-const VersionInfo VersionInfo::Current( BCI2000_VERSION );
+const VersionInfo VersionInfo::Current( PROJECT_VERSION_DEF );
 
 const char* VersionInfo::sNames[] =
 {

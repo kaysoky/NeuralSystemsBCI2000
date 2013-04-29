@@ -50,7 +50,7 @@ using namespace bci;
 string ToolInfo[] =
 {
   "bci_stream2asc",
-  BCI2000_VERSION,
+  PROJECT_VERSION,
   "Convert a binary BCI2000 stream into a human readable form.",
   "Reads a BCI2000 compliant binary stream from standard input, "
     "and writes it to standard output as a sequence of "

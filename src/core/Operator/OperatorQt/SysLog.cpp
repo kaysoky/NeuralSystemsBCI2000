@@ -30,9 +30,10 @@
 
 SysLog::SysLog( QWidget* inParent )
 : QDialog( inParent, Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint ),
-  mpLog( new QTextEdit ),
+  mpLog( new QTextBrowser ),
   mEmpty( true ),
-  mDontClose( false )
+  mDontClose( false ),
+  mURLMatcher( "://" )
 {
   QHBoxLayout* pLayout = new QHBoxLayout;
   pLayout->setContentsMargins( 0, 0, 0, 0 );
@@ -42,7 +43,7 @@ SysLog::SysLog( QWidget* inParent )
   this->resize( 600, 250 );
   OperatorUtils::RestoreWidget( this );
 
-  mpLog->setReadOnly( true );
+  mpLog->setOpenExternalLinks( true );
   mDefaultFormat = mpLog->currentCharFormat();
 }
 
@@ -95,6 +96,21 @@ SysLog::AddEntry( const QString& inText, int inMode )
   mpLog->moveCursor( QTextCursor::End );
   mpLog->setCurrentCharFormat( format );
   mpLog->insertPlainText( line );
+  QTextCursor c = mpLog->textCursor();
+  int begin = 0, end = begin;
+  while( MatchURL( inText, begin, end ) )
+  {
+    c.movePosition( QTextCursor::End, QTextCursor::MoveAnchor );
+    c.movePosition( QTextCursor::Left, QTextCursor::MoveAnchor, inText.length() - begin );
+    c.movePosition( QTextCursor::Right, QTextCursor::KeepAnchor, end - begin );
+    QTextCharFormat f;
+    f.setFontUnderline( true );
+    f.setForeground( Qt::blue );
+    f.setAnchor( true );
+    f.setAnchorHref( QUrl::fromUserInput( c.selectedText() ).toString() );
+    c.mergeCharFormat( f );
+    begin = end;
+  }
   switch( inMode )
   {
     case logEntryError:
@@ -111,3 +127,18 @@ SysLog::AddEntry( const QString& inText, int inMode )
   mpLog->moveCursor( QTextCursor::End );
   mpLog->ensureCursorVisible();
 }
+
+bool
+SysLog::MatchURL( const QString& s, int& begin, int& end )
+{
+  begin = mURLMatcher.indexIn( s, begin );
+  if( --begin < 0 )
+    return false;
+  end = begin + mURLMatcher.pattern().length();
+  while( begin > 0 && s[begin].isLetter() )
+    --begin;
+  while( end < s.length() && !s[end].isSpace() )
+    ++end;
+  return true;
+}
+

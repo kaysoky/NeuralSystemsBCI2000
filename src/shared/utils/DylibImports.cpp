@@ -235,24 +235,31 @@ StartupLoader::StartupLoader( const char* inLib, const Import* inImports, const 
            url = inUrl ? inUrl : "";
     if( msg.empty() )
     {
-      msg = "Library \"" + Library::Name() + "\" is not available, but is necessary for "
-          + exe + " to run.";
+      ostringstream oss;
+      oss << sArchBits << "-bit Library \"" 
+          << Library::Name()
+          << "\" is not available, but is necessary for "
+          << exe
+          << " to run.";
       bool isWow = false;
 #if _WIN32
       isWow = ( IsOS_ && IsOS_( OS_WOW6432 ) );
       if( isWow )
-        msg += "\nNOTE: You are running a 32-bit executable on a 64-bit Windows installation. "
-               "This requires a 32-bit version of the " + Library::Name() + " DLL to be available. "
-               "32-bit system DLLs must reside in the SysWOW64 (yes, actually \"64\") "
-               "subdirectory of your Windows system directory.";
+        oss << "\nNOTE: You are running a 32-bit executable on a 64-bit Windows installation. "
+            << "This requires a 32-bit version of the "
+            << Library::Name()
+            << " DLL to be available. "
+            << "32-bit system DLLs must reside in the SysWOW64 (yes, actually \"64\") "
+            << "subdirectory of your Windows system directory.";
 #endif // _WIN32
       if( WildcardMatch( "*source*", exe, false ) || WildcardMatch( "*adc*", exe, false ) )
       {
-        msg += "\nYou may need to install ";
+        oss << "\nYou may need to install ";
         if( isWow )
-          msg += "the 32-bit version of ";
-        msg += "the driver software that came with your amplifier.";
+          oss << "the 32-bit version of ";
+        oss << "the driver software that came with your amplifier.";
       }
+      msg = oss.str();
     }
     BuildMessage( msg, url );
   }
@@ -262,7 +269,7 @@ StartupLoader::StartupLoader( const char* inLib, const Import* inImports, const 
                + "\" due to an error: " + Library::Error();
     if( Library::State() == resolvedSome )
       msg += "An update to that library/driver may be necessary.";
-    BuildMessage( msg, "http://www.google.com/search?q=site%3Abci2000.org+" + Library::Name() );
+    BuildMessage( msg, "" );
   }
   for( const Import* p = inImports; p->name; ++p )
     if( !*p->pointer )
@@ -273,8 +280,11 @@ void
 StartupLoader::BuildMessage( const string& inMsg, const string& inUrl )
 {
   mMessage = inMsg;
-  if( !inUrl.empty() )
-    mMessage += "More information may be available at " + inUrl + "\n";
+  string url = inUrl;
+  if( url.empty() )
+    url = FileUtils::SearchURL( Library::Name() );
+  if( !url.empty() )
+    mMessage += " More information may be available at:\n" + url;
 }
 
 void

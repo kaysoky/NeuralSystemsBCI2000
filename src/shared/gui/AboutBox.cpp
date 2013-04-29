@@ -41,21 +41,12 @@ using namespace GUI;
 
 AboutBox::AboutBox()
 {
-  SetVersionInfo( BCI2000_VERSION );
-}
-
-AboutBox&
-AboutBox::SetVersionInfo( const std::string& s )
-{
-  istringstream iss( s );
-  iss >> mVersionInfo;
-  return *this;
 }
 
 const AboutBox&
 AboutBox::Display() const
 {
-  VersionInfoBase info = mVersionInfo;
+  VersionInfoBase info = VersionInfo::Current;
   string versionNumber = info[ "Version" ];
   info.erase( "Version" );
   string versionDetails;

@@ -6,8 +6,12 @@
 cmake_minimum_required( VERSION 2.8.2 )
 cmake_policy( VERSION 2.8 )
 
-# Define the project name
+# Define the project name and version
 PROJECT( BCI2000 )
+SET( PROJECT_VER_MAJOR "3" )
+SET( PROJECT_VER_MINOR "0" )
+SET( PROJECT_VER_PATCH "5" )
+
 
 # Set the variable where to find the top level project sources
 IF ( NOT DEFINED BCI2000_ROOT_DIR )
@@ -24,6 +28,18 @@ IF( DYNAMIC_IMPORTS )
   ADD_DEFINITIONS( -DDYNAMIC_IMPORTS )
 ENDIF()
 
+# Create project defines
+SET( PROJECT_VERSION "${PROJECT_VER_MAJOR}.${PROJECT_VER_MINOR}.${PROJECT_VER_PATCH}" )
+STRING( TOLOWER "${PROJECT_NAME}" PROJECT_DOMAIN )
+SET( PROJECT_DOMAIN "${PROJECT_DOMAIN}.org" )
+SET( SEARCH_ENGINE "google" )
+ADD_DEFINITIONS(
+  -DPROJECT_NAME="${PROJECT_NAME}"
+  -DPROJECT_DOMAIN="${PROJECT_DOMAIN}"
+  -DPROJECT_VERSION="${PROJECT_VERSION}"
+  -DWEBSEARCH_DOMAIN="www.${SEARCH_ENGINE}.com"
+)
+
 # Find required dependencies
 INCLUDE( ${BCI2000_CMAKE_DIR}/FindDependencies.cmake )
 
@@ -33,17 +49,8 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/SetupBCI2000Macros.cmake )
 # Setup build configurations
 INCLUDE( ${BCI2000_CMAKE_DIR}/BuildConfigurations.cmake )
 
-# Setup version info
-SET( BCI2000_VER_MAJOR "3" )
-SET( BCI2000_VER_MINOR "0" )
-SET( BCI2000_VER_PATCH "5" )
-SET( BCI2000_VERSION "${BCI2000_VER_MAJOR}.${BCI2000_VER_MINOR}.${BCI2000_VER_PATCH}" )
-ADD_DEFINITIONS(
-  -DBCI2000_VERSION_STRING="${BCI2000_VERSION}"
-  )
-
 # Tell the user what we're about to setup
-MESSAGE( "-- Creating Project files for BCI2000 Version " ${BCI2000_VERSION} )
+MESSAGE( "- Creating Project files for ${PROJECT_NAME} Version ${PROJECT_VERSION}" )
 
 INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )

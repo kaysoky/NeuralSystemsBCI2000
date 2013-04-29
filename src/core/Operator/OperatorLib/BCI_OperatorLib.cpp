@@ -96,7 +96,7 @@ returns:   Pointer to a null-terminated string holding the information requested
 DLLEXPORT const char*
 STDCALL BCI_GetInfo( void )
 {
-  const char* versionInfo = BCI2000_VERSION;
+  const char* versionInfo = PROJECT_VERSION_DEF;
   return AllocateCopy( versionInfo );
 }
 

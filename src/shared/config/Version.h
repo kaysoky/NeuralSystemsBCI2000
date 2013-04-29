@@ -30,15 +30,15 @@
 
 #include "Compiler.h"
 
-#ifndef BCI2000_VERSION_STRING
-# define BCI2000_VERSION_STRING "3.0"
+#ifndef PROJECT_VERSION
+# define PROJECT_VERSION "3.0"
 #endif
 
-#define BCI2000_VERSION  "$Version: " BCI2000_VERSION_STRING " $" \
-                         "$Build Date: " __DATE__ " " __TIME__ " $" \
-                         "$Compiler: " COMPILER_NAME " $"
+#define PROJECT_VERSION_DEF  "$Version: " PROJECT_VERSION " $" \
+                     "$Build Date: " __DATE__ " " __TIME__ " $" \
+                     "$Compiler: " COMPILER_NAME " $"
 
-#define BCI2000_COPYRIGHT "(C) 2000-2012, BCI2000 Project\n" \
-                          "http://www.bci2000.org"
+#define PROJECT_COPYRIGHT "(C) 2000-2013, " PROJECT_NAME " Project\n" \
+                          "http://www." PROJECT_DOMAIN
 
 #endif // VERSION_H

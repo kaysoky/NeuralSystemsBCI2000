@@ -37,7 +37,7 @@ using namespace std;
 string ToolInfo[] =
 {
   "bci_prm2stream",
-  BCI2000_VERSION,
+  PROJECT_VERSION,
   "Convert a BCI2000 compliant parameter file input into a BCI2000 stream.",
   "Reads a BCI2000 parameter file (*.prm) compliant stream from "
     "standard input and writes it to the standard output as a BCI2000 "

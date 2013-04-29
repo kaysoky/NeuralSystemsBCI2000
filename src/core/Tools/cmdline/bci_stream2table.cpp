@@ -43,7 +43,7 @@ using namespace std;
 string ToolInfo[] =
 {
   "bci_stream2table",
-  BCI2000_VERSION,
+  PROJECT_VERSION,
   "Convert a binary BCI2000 stream into a human readable tabular form.",
   "Reads a BCI2000 compliant binary stream from standard input, "
     "and writes it to standard output "

@@ -53,7 +53,7 @@ using namespace bci;
 string ToolInfo[] =
 {
   "",
-  BCI2000_VERSION,
+  PROJECT_VERSION_DEF,
   "Process standard input with the \"" FILTER_NAME "\" BCI2000 filter.",
   "Reads a BCI2000 compliant binary stream from standard input, applies the\n"
     FILTER_NAME " BCI2000 filter, and writes its output to standard output\n"

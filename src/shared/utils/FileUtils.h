@@ -112,6 +112,8 @@ namespace FileUtils
     SharedPointer<File> mpFile;
   };
 
+  std::string SearchURL( const std::string& searchTerms = "" );
+
 } // namespace FileUtils
 
 #endif // FILE_UTILS_H
