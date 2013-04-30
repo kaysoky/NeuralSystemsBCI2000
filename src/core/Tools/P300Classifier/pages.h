@@ -123,6 +123,7 @@ public:
 	bool			IfGenerateFeatureWeightsThread;
 	bool			IfMultipleMenusTrainingData;
 	bool			IfMultipleMenusTestingData;
+	bool			mAutoWrite;
 
 	// structures
 	InitialParameter IniParam;
@@ -148,7 +149,7 @@ public slots:
     void slotProgressText(QString message);
 	void slotProgressBar(int done, int total, int stage);
 	void slotErrorMessageDialog(QString errorMessage);
-	void WriteParameterFragment();
+	void WriteParameterFragment( bool showDialog = true );
 	bool ValidateLineEdit(QLineEdit *lineEdit);
 	void ShowToolTip(QLineEdit *lineEdit, QString message);
 	void MarkEditColor(QLineEdit *lineEdit, bool result);

@@ -20,7 +20,7 @@ public:
 
 public slots:
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
-	void SetFiles(QStringList TrainingDataFiles, QStringList TestingDataFiles, QString inicfgFile, bool barg_TrainingDataFiles);
+	void SetFiles(QStringList TrainingDataFiles, QStringList TestingDataFiles, QString inicfgFile, const QString& classifierOutputFile);
 
 private:
     void createIcons();

@@ -16,7 +16,6 @@ SET( SRC_PROJECT
   configdialog.cpp
   downsampling.cpp
   filter.cpp
-  get_cmd_parameters.cpp
   GetP3Responses.cpp
   GetScore.cpp
   in_out_variable.cpp
@@ -38,7 +37,6 @@ SET( HDR_PROJECT
   configdialog.h
   downsampling.h
   filter.h
-  get_cmd_parameters.h
   GetP3Responses.h
   GetScore.h
   in_out_variable.h

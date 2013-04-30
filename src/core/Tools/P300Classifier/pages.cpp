@@ -1,8 +1,9 @@
-#include <QtCore/QString>
-#include <QtCore/QTextStream>
 #include "configdialog.h"
 #include "pages.h"
+#include <QtCore/QString>
+#include <QtCore/QTextStream>
 #include <set>
+#include "FileUtils.h"
 
 GenerateFeatureWeightsThread *g_pGenerateFeatureWeightsThread = NULL;
 DataPage *g_pDataPage = NULL;
@@ -71,15 +72,16 @@ void callback_status(string message)
 }
 
 DataPage::DataPage(QWidget *parent)
-  : QWidget(parent)
+  : QWidget(parent),
+    mAutoWrite( false )
 {
   errorMessageDialog = new QErrorMessage(this);
 
   // Groups
-  TrainingDataGroup      = new QGroupBox(tr("[ -TrainingDataFiles] Training Data Files"));
+  TrainingDataGroup      = new QGroupBox(tr("[-TrainingDataFiles] Training Data Files"));
   TestingDataGroup       = new QGroupBox(tr("[-TestingDataFiles] Testing Data Files"));
   inicfgGroup            = new QGroupBox(tr("[-inicfg] Feature Extraction INI File"));
-  WritePRMGroup          = new QGroupBox(tr("Write *.prm File"));
+  WritePRMGroup          = new QGroupBox(tr("[-ClassifierOutputFile] Write *.prm File"));
   OverAllProgressGroup   = new QGroupBox(tr("Overall Progress"));
 
   // objects
@@ -166,6 +168,12 @@ DataPage::DataPage(QWidget *parent)
   g_pDataPage = this;
   g_pGenerateFeatureWeightsThread = &GenerateFeatureWeightsThread;
 
+  pathIniData = QString::fromLocal8Bit( FileUtils::WorkingDirectory().c_str() );
+  string path = FileUtils::InstallationDirectory() +  "../../data";
+  if( !FileUtils::IsDirectory( path ) )
+    path = FileUtils::InstallationDirectory();
+  pathTrainingData = QString::fromLocal8Bit( path.c_str() );
+  pathTestingData = pathTrainingData;
 }
 
 ParametersPage::ParametersPage(QWidget *parent)
@@ -486,7 +494,6 @@ void DataPage::LoadSettings()
 
 void DataPage::LoadTrainingButton()
 {
-  QString openFilesPath;
   QStringList files = QFileDialog::getOpenFileNames(
                                 this, tr("Load Training Data Files"),
                                 pathTrainingData,
@@ -498,6 +505,7 @@ void DataPage::LoadTrainingButton()
     this->TrainingDataFilesList->clear();
     fPathArr_TrainingData.clear();
 
+    QString openFilesPath;
     for (int i=0; i<files.count(); i++)
     {
       openFilesPath = files[i];
@@ -1991,21 +1999,26 @@ void GenerateFeatureWeightsThread::run()
   emit signalProgressBar(5, 5, 7);
 
   // Write the suggested name for the *.prm file
-  size_t found;
-  string filedata = g_pDataPage->fPathArr_TrainingData[0];
-  found = filedata.find_last_of("/\\");
-  string directory = filedata.substr(0, found);
-  string fileSug;
+  if( g_pDataPage->WritePRMLineEdit->text().length() == 0 )
+  {
+	  size_t found;
+	  string filedata = g_pDataPage->fPathArr_TrainingData[0];
+	  found = filedata.find_last_of("/\\");
+	  string fileSug = ( found == string::npos ? string() : filedata.substr(0, found + 1) ) + "P3Classifier_ChS1_";
+	  if (g_pDataPage->IniParam.SF == 1)
+		fileSug += "RAW_";
+	  else if (g_pDataPage->IniParam.SF == 2)
+		fileSug += "CAR_";
+	  fileSug += "SW.prm";
 
-  if (g_pDataPage->IniParam.SF == 1)
-    fileSug = "\\MUDChS1_RAW_SW.prm";
-  if (g_pDataPage->IniParam.SF == 2)
-    fileSug = "\\MUDChS1_CAR_SW.prm";
-
-  directory.append(fileSug);
-  g_pDataPage->WritePRMLineEdit->setText(directory.c_str());
-
+	  g_pDataPage->WritePRMLineEdit->setText(fileSug.c_str());
+  }
   g_pDataPage->IfGenerateFeatureWeightsThread = true;
+  if( g_pDataPage->mAutoWrite )
+  {
+    g_pDataPage->WriteParameterFragment( false );
+	QApplication::quit();
+  }
 }
 
 void DataPage::slotProgressBar(int done, int total, int stage)
@@ -2244,13 +2257,14 @@ void ApplyFeatureWeightsThread::run()
   emit signalProgressBar(5, 5, 7);
 }
 
-void DataPage::WriteParameterFragment()
+void DataPage::WriteParameterFragment( bool showDialog )
 {
-  QString fileName = QFileDialog::getSaveFileName(this,
-                                                  tr("Write *.prm File"),
-                                                  WritePRMLineEdit->text(),
-                                                  tr("Parameter Files (*.prm)"));
-
+  QString fileName = WritePRMLineEdit->text();
+  if( showDialog )
+    fileName = QFileDialog::getSaveFileName(this,
+                                            tr("Write *.prm File"),
+                                            fileName,
+                                            tr("Parameter Files (*.prm)"));
   if (!fileName.isEmpty())
   {
     WritePRMLineEdit->setText(fileName);

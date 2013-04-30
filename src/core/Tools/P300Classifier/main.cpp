@@ -88,7 +88,8 @@ P300ClassifierMain( int argc, char **argv, QApplication& app )
     arg_inicfg = "";
   }
 
-  dialog.SetFiles(arg_TrainingDataFilesList, arg_TestingDataFilesList, arg_inicfg, barg_TrainingDataFiles);
+  QString classifierOutputFile = cmdLine.GetSafeArgument( "-ClassifierOutputFile", 0, "" ).c_str();
+  dialog.SetFiles(arg_TrainingDataFilesList, arg_TestingDataFilesList, arg_inicfg, classifierOutputFile);
 
   return dialog.exec();
 }

@@ -85,7 +85,7 @@ void ConfigDialog::changePage(QListWidgetItem *current, QListWidgetItem *previou
     pagesWidget->setCurrentIndex(contentsWidget->row(current));
 }
 
-void ConfigDialog::SetFiles(QStringList TrainingDataFiles, QStringList TestingDataFiles, QString inicfgFile, bool barg_TrainingDataFiles)
+void ConfigDialog::SetFiles(QStringList TrainingDataFiles, QStringList TestingDataFiles, QString inicfgFile, const QString& inClassifierOutputFile)
 {
 	pDataPage->IfMUD = false;
 	pDataPage->IfTrueTrainingDataFiles = false;
@@ -94,6 +94,7 @@ void ConfigDialog::SetFiles(QStringList TrainingDataFiles, QStringList TestingDa
 	pDataPage->inicfgFileLineEdit	->setText(inicfgFile);
 	pDataPage->TrainingDataFilesList->addItems(TrainingDataFiles);
 	pDataPage->TestingDataFilesList	->addItems(TestingDataFiles);
+	pDataPage->WritePRMLineEdit->setText( inClassifierOutputFile );
 
 	pDataPage->LoadSettings();
 	pDataPage->ValidateSettings();
@@ -125,6 +126,9 @@ void ConfigDialog::SetFiles(QStringList TrainingDataFiles, QStringList TestingDa
 		pDataPage->ApplyFeatureWeights->setEnabled(false);
 
 	// Modification Cristhian Potes
-	if (pDataPage->IfTrueTrainingDataFiles && barg_TrainingDataFiles)
+	if (pDataPage->IfTrueTrainingDataFiles && TrainingDataFiles.count() > 0 )
+	{
+		pDataPage->mAutoWrite = ( inClassifierOutputFile.length() > 0 );
 		pDataPage->GenerateFeatureWeightsThread.start();
+	}
 }
