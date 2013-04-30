@@ -367,7 +367,7 @@ void actiCHampDevice::output_data(GenericSignal & output, t_champDataModelAux* d
 {
     for(unsigned int e = 0; e < (unsigned int) output.Elements(); ++e)
     {
-        bitset<32> channel_bits (data[e].Triggers);
+        bitset<32> channel_bits (static_cast<int>(data[e].Triggers));
         for(unsigned int i = 0; i < 6; i++)
         {
             if(channel_bits[16+i] == 1 && channel_bits[22+i] == 1)
@@ -410,7 +410,7 @@ void actiCHampDevice::output_data(GenericSignal & output, T& data)
     for(unsigned int e = 0; e < (unsigned int) output.Elements(); ++e)
     {
         //Check for data errors
-        bitset<32> channel_bits (data[e].Triggers);
+        bitset<32> channel_bits (static_cast<int>(data[e].Triggers));
         for(unsigned int i = 0; i < 6; i++)
         {
             if(channel_bits[16+i] == 1 && channel_bits[22+i] == 1)
