@@ -72,9 +72,11 @@ function EEG = pop_loadBCI2000(fileName, events)
 if nargin < 1  % No input arguments specified, show GUI
     [fileName, filePath] = uigetfile('*.dat', 'Choose BCI2000 file(s) -- pop_loadBCI2000', 'multiselect', 'on');
     if isfloat(fileName)
-      files = struct('name', {});
+        files = struct('name', {});
+    elseif ischar(fileName) % Only one chosen
+        files = struct('name', fullfile(filePath,fileName));
     else
-      files = struct('name', strcat(repmat({filePath}, size(fileName)), fileName));
+        files = struct('name', strcat(repmat({filePath}, size(fileName)), fileName));
     end
 else %input argument may be cell array of fileName(s) or a string
     if iscell(fileName)
