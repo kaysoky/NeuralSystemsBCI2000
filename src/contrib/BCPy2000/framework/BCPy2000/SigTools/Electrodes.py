@@ -331,6 +331,12 @@ class ChannelSet(numpy.matrix):
 
 		out,ind = [],0
 		for si in s:
+			
+			if isinstance(si, channel):
+				out.append((ind,si.copy()))
+				ind += 1
+				continue
+				
 			if isinstance(si, (tuple,list)):
 				row = list(si)
 			else:

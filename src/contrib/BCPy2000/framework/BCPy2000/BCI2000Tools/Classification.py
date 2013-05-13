@@ -61,8 +61,8 @@ def ClassifyERPs (
  			folds.append(range(n, n+neach))
  			n += neach
  	
- 	if 'x' not in d: raise ValueError("found no trial data - no 'x' variable - in the specified files")
- 	if 'y' not in d: raise ValueError("found no trial labels - no 'y' variable - in the specified files")
+	if 'x' not in d: raise ValueError("found no trial data - no 'x' variable - in the specified files")
+	if 'y' not in d: raise ValueError("found no trial labels - no 'y' variable - in the specified files")
 
 	x = d['x']
 	y = numpy.array(d['y'].flat)
