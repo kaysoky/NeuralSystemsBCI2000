@@ -42,9 +42,9 @@
 #pragma hdrstop
 
 #include "MicromedADC.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "GenericSignal.h"
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include <cstdio>
 #include <math.h>
 #include <mmsystem.h>
@@ -127,7 +127,7 @@ Halt();
 static void CALLBACK TimerCallback( UINT, UINT, DWORD
  inInstance, DWORD, DWORD )
    {
-     bciout << "Connection with user application timed out" << endl;
+     bciwarn << "Connection with user application timed out" << endl;
      MicromedADC* this_ = reinterpret_cast<MicromedADC*>( inInstance );
      if (!waitforconn) this_->Halt();
    }
@@ -262,7 +262,7 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
   MmServer.open( MmServerSocket );
   if( !MmServer.is_open() )
   {
-    bciout << "\nConnection to Micromed client timed out after "
+    bciwarn << "\nConnection to Micromed client timed out after "
            << float( cMmConnectionTimeout ) / 1e3 << "s"
            << endl;
     MmServer.close();
@@ -276,22 +276,11 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
 void
 MicromedADC::StartRun()
 {
-  char FName[120];
-  BCIDirectory bcidtry;
+  string notesFile = FileUtils::ExtractDirectory( CurrentRun() ) + FileUtils::ExtractBase( CurrentRun() ) + ".txt";
+  bciout << "Notes in " << notesFile << endl;
 
-  sampleNumber=0;
-  bcidtry
-    .SetDataDirectory( Parameter( "DataDirectory" ) )
-    .SetSubjectName( Parameter( "SubjectName" ) )
-    .SetSessionNumber( Parameter( "SubjectSession" ) )
-    .SetRunNumber( Parameter( "SubjectRun" ) );
-
-  strcpy(FName,( const char* ) bcidtry.FilePath().c_str());
-  strcat(FName,".txt");
-  bciout << "Notes in " << FName << endl;
-
-  hNotes = fopen(FName,"wt");
-  fprintf(hNotes,"%s\n",FName);
+  hNotes = fopen(notesFile.c_str(),"wt");
+  fprintf(hNotes,"%s\n",notesFile.c_str());
 
 }
 

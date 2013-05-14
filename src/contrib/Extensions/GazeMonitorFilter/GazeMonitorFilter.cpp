@@ -27,7 +27,7 @@
 #pragma hdrstop
 
 #include "GazeMonitorFilter.h"
-#include "BCIDirectory.h"
+#include "FileUtils.h"
 #include "MeasurementUnits.h"
 #include "ApplicationWindow.h"
 
@@ -632,9 +632,9 @@ GazeMonitorFilter::InitSound( const string& inFilename, WavePlayer& ioPlayer ) c
 {
   if( ioPlayer.ErrorState() != WavePlayer::noError )
     bcierr << "There was an issue creating a waveplayer object." << endl;
-  ioPlayer.SetFile( BCIDirectory::AbsolutePath( inFilename ) );
+  ioPlayer.SetFile( FileUtils::AbsolutePath( inFilename ) );
   if( ioPlayer.ErrorState() != WavePlayer::noError )
-    bcierr << "Could not open file: " << BCIDirectory::AbsolutePath( inFilename ) << endl;
+    bcierr << "Could not open file: " << FileUtils::AbsolutePath( inFilename ) << endl;
   ioPlayer.SetVolume( 1.0f );
 }
 

@@ -162,10 +162,11 @@ SET( HDR_BCI2000_SHARED_BCISTREAM
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIAssert.h
 )
 SET( SRC_BCI2000_SHARED_FILEIO
-  ${BCI2000_SRC_DIR}/shared/fileio/BCIDirectory.cpp
+  ${BCI2000_SRC_DIR}/shared/fileio/RunManager.cpp
 )
 SET( HDR_BCI2000_SHARED_FILEIO
   ${BCI2000_SRC_DIR}/shared/fileio/BCIDirectory.h
+  ${BCI2000_SRC_DIR}/shared/fileio/RunManager.h
 )
 SET( SRC_BCI2000_SHARED_FILEIO_DAT
   ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.cpp

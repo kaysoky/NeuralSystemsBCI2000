@@ -53,6 +53,7 @@
 
 #define IS_SRC_MODULE ( MODTYPE == 1 )
 
+class RunManager;
 class SignalProperties;
 class EnvironmentExtension;
 
@@ -84,7 +85,7 @@ class ApplicationWindowClient;
     {                                                                    \
       p.Sections().push_back( oss_.str() );                              \
       if( Parameters->Exists( p.Name() ) )                               \
-        p.AssignValues( ( *Parameters )[ p.Name() ] );                   \
+          p.AssignValues( ( *Parameters )[ p.Name() ] );                 \
       Parameters->Add( p, -Instance() );                                 \
       bcidbg( 10 ) << "Registered parameter " << p.Name() << ", "        \
                    << "sorting by (" << -Instance() << ","               \
@@ -428,9 +429,15 @@ class Environment : public EnvironmentBase
 
   using EnvironmentBase::OptionalParameter;
 
+ protected:
+  std::string CurrentRun() const;
+  std::string CurrentSession() const;
+
  private:
   virtual void OnParamAccess( const std::string& name ) const;
   virtual void OnStateAccess( const std::string& name ) const;
+
+  static RunManager sRunManager;
 };
 
 // A virtual interface for classes that provide global information and need

@@ -44,12 +44,12 @@
 #include "SysCommand.h"
 #include "StateVector.h"
 #include "FileUtils.h"
+#include "RunManager.h"
 #include "SignalProperties.h"
 #include "GenericVisualization.h"
 #include "Label.h"
 #include "ScriptInterpreter.h"
 #include "EnvVariable.h"
-#include "BCIDirectory.h"
 #include "ParamRef.h"
 
 #include <sstream>
@@ -258,22 +258,14 @@ StateMachine::MaintainDebugLog()
   // to get right in the presence of auto-incrementing run numbers.
   if( mParameters.Exists( "DebugLog" ) && ::atoi( mParameters[ "DebugLog" ].Value().c_str() ) != 0 )
   {
-    BCIDirectory bciDir;
-    bciDir.SetDataDirectory( mParameters[ "DataDirectory" ].Value() )
-          .SetSubjectName( mParameters[ "SubjectName" ].Value() )
-          .SetSessionNumber( ::atoi( mParameters[ "SubjectSession" ].Value().c_str() ) )
-          .SetRunNumber( ::atoi( mParameters[ "SubjectRun" ].Value().c_str() ) );
-
-    string extension = ".";
-    if( mParameters.Exists( "FileFormat" ) )
-    {
-      extension += mParameters[ "FileFormat" ].Value();
-      bciDir.SetFileExtension( extension );
-    }
-    string filePath = bciDir.CreatePath().FilePath() + ".dbg";
+    string filePath = RunManager::CurrentSession( mParameters ) + ".dbg",
+           dir = FileUtils::ExtractDirectory( filePath );
+    FileUtils::MakeDirectory( dir, true );
     mDebugLog.close();
     mDebugLog.clear();
     mDebugLog.open( filePath.c_str(), ios_base::out | ios_base::app );
+    if( !mDebugLog.is_open() )
+      bcierr << "Cannot write debug log: " << filePath;
   }
   else
     mDebugLog.close();

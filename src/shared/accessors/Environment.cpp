@@ -43,6 +43,7 @@
 #include "MessageHandler.h"
 #include "PhysicalUnit.h"
 #include "MeasurementUnits.h"
+#include "RunManager.h"
 #include "BCIEvent.h"
 #include "BCIAssert.h"
 
@@ -575,6 +576,20 @@ void EnvironmentBase::EnterRestingPhase( ParamList*   inParamList,
 ////////////////////////////////////////////////////////////////////////////////
 // Environment definitions
 ////////////////////////////////////////////////////////////////////////////////
+RunManager Environment::sRunManager;
+
+string
+Environment::CurrentSession() const
+{
+  return sRunManager.CurrentSession();
+}
+
+string
+Environment::CurrentRun() const
+{
+  return sRunManager.CurrentRun();
+}
+
 void
 Environment::OnParamAccess( const string& inName ) const
 {

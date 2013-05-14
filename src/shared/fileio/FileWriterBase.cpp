@@ -28,9 +28,8 @@
 #pragma hdrstop
 
 #include "FileWriterBase.h"
-
-#include "BCIError.h"
-#include "BCIDirectory.h"
+#include "BCIStream.h"
+#include "FileUtils.h"
 
 #include <fstream>
 #include <iostream>
@@ -39,6 +38,15 @@
 using namespace std;
 
 static const char* bciParameterExtension = ".prm";
+
+static string
+ParameterFile( const string& inDataFile )
+{
+  return FileUtils::ExtractDirectory( inDataFile )
+       + FileUtils::ExtractBase( inDataFile )
+       + bciParameterExtension;
+}
+
 
 FileWriterBase::FileWriterBase( GenericOutputFormat& inOutputFormat )
 : mrOutputFormat( inOutputFormat )
@@ -53,13 +61,15 @@ FileWriterBase::~FileWriterBase()
 void
 FileWriterBase::Publish()
 {
-  if( OptionalParameter( "DataFile", "\xff" ) != "\xff" )
-  {
-    BEGIN_PARAMETER_DEFINITIONS
-      "Storage:Data%20Location string DataFile= % % % % "
-        "// name of data file inside DataDirectory",
-    END_PARAMETER_DEFINITIONS
-  }
+  mrOutputFormat.Publish();
+  string ext = mrOutputFormat.DataFileExtension();
+  size_t i = 0;
+  while( i < ext.length() && ::ispunct( ext[i] ) )
+    ++i;
+  string def = "Storage string FileFormat= " + ext.substr( i )  + " % % % // format of data file (readonly)";
+  BEGIN_PARAMETER_DEFINITIONS
+    def.c_str(),
+  END_PARAMETER_DEFINITIONS
 
   if( OptionalParameter( "SavePrmFile" ) != 0 )
   {
@@ -68,8 +78,6 @@ FileWriterBase::Publish()
         "// save additional parameter file for each run (0=no, 1=yes) (boolean)",
     END_PARAMETER_DEFINITIONS
   }
-
-  mrOutputFormat.Publish();
 }
 
 void
@@ -82,44 +90,41 @@ FileWriterBase::Preflight( const SignalProperties& Input,
   State( "Recording" );
 
   // File accessibility.
-  string dataFileName;
-  ConstructFileName( dataFileName );
+  string dataFile = CurrentRun();
 
   // Does the data file exist?
-  ifstream dataRead( dataFileName.c_str() );
+  ifstream dataRead( dataFile.c_str() );
   if( dataRead.is_open() )
-    bcierr << "Data file " << dataFileName << " already exists, "
+    bcierr << "Data file " << dataFile << " already exists, "
            << "will not be touched." << endl;
   else
   {
     // It does not exist, can we write to it?
-    ofstream dataWrite( dataFileName.c_str() );
+    ofstream dataWrite( dataFile.c_str() );
     if( !dataWrite.is_open() )
-      bcierr << "Cannot write to file " << dataFileName << endl;
+      bcierr << "Cannot write to file " << dataFile << endl;
     else
     {
       dataWrite.close();
-      ::remove( dataFileName.c_str() );
+      ::remove( dataFile.c_str() );
     }
   }
   if( OptionalParameter( "SavePrmFile" ) == 1 )
   {
-    string paramFileName = FileUtils::ExtractDirectory( dataFileName )
-                         + FileUtils::ExtractBase( dataFileName )
-                         + bciParameterExtension;
-    ifstream paramRead( paramFileName.c_str() );
+    string paramFile = ParameterFile( dataFile );
+    ifstream paramRead( paramFile.c_str() );
     if( paramRead.is_open() )
-      bcierr << "Parameter file " << paramFileName << " already exists, "
+      bcierr << "Parameter file " << paramFile << " already exists, "
              << "will not be touched." << endl;
     else
     {
-      ofstream paramWrite( paramFileName.c_str() );
+      ofstream paramWrite( paramFile.c_str() );
       if( !paramWrite.is_open() )
-        bcierr << "Cannot write to file " << paramFileName << endl;
+        bcierr << "Cannot write to file " << paramFile << endl;
       else
       {
         paramWrite.close();
-        ::remove( paramFileName.c_str() );
+        ::remove( paramFile.c_str() );
       }
     }
   }
@@ -141,27 +146,18 @@ FileWriterBase::Initialize( const SignalProperties& Input,
 void
 FileWriterBase::StartRun()
 {
-  int runNumber;
-  ConstructFileName( mFileName, &runNumber );
-  // BCIDirectory will update the run number to the largest unused one
-  // -- we want this to be reflected by the "SubjectRun" parameter.
-  ostringstream oss;
-  oss << setfill( '0' ) << setw( 2 ) << runNumber;
-  Parameter( "SubjectRun" ) = oss.str();
-
   mOutputFile.close();
   mOutputFile.clear();
+  mFileName = CurrentRun();
   mOutputFile.open( mFileName.c_str(), ios::out | ios::binary );
 
   if( OptionalParameter( "SavePrmFile" ) == 1 )
   {
-    string paramFileName = FileUtils::ExtractDirectory( mFileName )
-                         + FileUtils::ExtractBase( mFileName )
-                         + bciParameterExtension;
-    ofstream file( paramFileName.c_str() );
+    string paramFile = ParameterFile( mFileName );
+    ofstream file( paramFile.c_str() );
     if( !( file << *Parameters << flush ) )
       bcierr << "Error writing parameters to file "
-             << paramFileName
+             << paramFile
              << endl;
   }
 
@@ -227,27 +223,4 @@ int FileWriterBase::Execute()
     }
   }
   return 0;
-}
-
-void FileWriterBase::ConstructFileName( string& outName, int* pOutRunNumber ) const
-{
-  BCIDirectory dir = BCIDirectory().SetDataDirectory( Parameter( "DataDirectory" ) );
-  string dataFile = OptionalParameter( "DataFile" ),
-    dataFileBase = FileUtils::ExtractBase( dataFile ),
-    dataFileExt = FileUtils::ExtractExtension( dataFile );
-  int runNumber = Parameter( "SubjectRun" ); // make sure to always access this parameter
-  if( dataFileBase.empty() )
-    dir.SetSubjectName( Parameter( "SubjectName" ) )
-       .SetSessionNumber( Parameter( "SubjectSession" ) )
-       .SetRunNumber( runNumber );
-  else
-    dir.SetFilePrefix( dataFileBase );
-  if( dataFileExt.empty() )
-    dir.SetFileExtension( mrOutputFormat.DataFileExtension() );
-  else
-    dir.SetFileExtension( dataFileExt );
-  dir.CreatePath();
-  outName = dir.FilePath() + dir.FileExtension();
-  if( pOutRunNumber )
-    *pOutRunNumber = dir.RunNumber();
 }

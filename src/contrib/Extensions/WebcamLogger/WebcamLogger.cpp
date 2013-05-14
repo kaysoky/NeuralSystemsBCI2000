@@ -18,11 +18,11 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "BCIDirectory.h"
-#include <cstring>
 #include "WebcamLogger.h"
+#include "FileUtils.h"
 #include "BCIEvent.h"
 
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 
@@ -195,21 +195,8 @@ void WebcamLogger::StartRun()
 {
 	if( mWebcamEnable )
 	{
-		BCIDirectory bciDirectory = BCIDirectory()
-			.SetDataDirectory( Parameter( "DataDirectory" ) )
-			.SetSubjectName( Parameter( "SubjectName" ) )
-			.SetSessionNumber( Parameter( "SubjectSession" ) )
-			.SetFileExtension(".dat")
-			.SetRunNumber( Parameter( "SubjectRun" ) );
-
-		ostringstream oss;
-		oss << setfill( '0' ) << setw( 2 ) << bciDirectory.RunNumber();
-		string baseFileName = bciDirectory.DirectoryPath();
-		mOutputFile = baseFileName +
-			string(Parameter( "SubjectName" )) +
-			"S" + string(Parameter( "SubjectSession" )) +
-			"R" + oss.str() + "_vid.avi";
-
+    mOutputFile = CurrentRun();
+    mOutputFile = FileUtils::ExtractDirectory( mOutputFile ) + FileUtils::ExtractBase( mOutputFile ) + "_vid.avi";
 		mpWebcamThread->SetResting(false);
 		//mpWebcamThread = new WebcamThread( this );
 	}

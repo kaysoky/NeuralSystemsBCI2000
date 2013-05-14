@@ -14,9 +14,9 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "BCIDirectory.h"
 #include <cstring>
 #include "AudioExtension.h"
+#include "FileUtils.h"
 #include "BCIEvent.h"
 #include "PrecisionTime.h"
 #include "FilterDesign.h"
@@ -273,12 +273,6 @@ void AudioExtension::Preflight() const
   Parameter( "AudioRecordInput" );
   Parameter( "AudioRecordOutput" );
   Parameter( "AudioRecordingFormat" );
-  
-  BCIDirectory bciDirectory = BCIDirectory()
-    .SetDataDirectory( Parameter( "DataDirectory" ) )
-    .SetSubjectName( Parameter( "SubjectName" ) )
-    .SetSessionNumber( Parameter( "SubjectSession" ) )
-    .SetRunNumber( Parameter( "SubjectRun" ) );
   
   // Retreive ifnormation for the requested HostAPI
   const PaHostApiInfo* apiInfo;
@@ -626,14 +620,7 @@ void AudioExtension::StartRun()
   
   // Determine Output Reording Format and filenames
   int recordingFormat = 0;
-  string extension;
-  BCIDirectory bciDirectory = BCIDirectory()
-    .SetDataDirectory( Parameter( "DataDirectory" ) )
-    .SetSubjectName( Parameter( "SubjectName" ) )
-    .SetSessionNumber( Parameter( "SubjectSession" ) )
-    .SetFileExtension( ".dat" )
-    .SetRunNumber( Parameter( "SubjectRun" ) );
-    
+  string extension;    
   switch( ( int )Parameter( "AudioRecordingFormat" ) )
   {
     case LOSSLESS:
@@ -656,10 +643,13 @@ void AudioExtension::StartRun()
   audioRecInputInfo.channels = mChannelDef.size();
   audioRecInputInfo.format = recordingFormat;
   audioRecInputInfo.samplerate = SAMPLE_RATE;
-  if( ( int )Parameter( "AudioRecordInput" ) && mChannelDef.size() ) 
+  if( ( int )Parameter( "AudioRecordInput" ) && mChannelDef.size() )
+  {
+    string file = FileUtils::StripExtension( CurrentRun() ) + "_in" + extension; 
     mpAudioRecInputFile = sf_open( 
-      string( bciDirectory.FilePath() + "_in" + extension ).c_str(),
+      file.c_str(),
       SFM_WRITE, &audioRecInputInfo );
+  }
   
   // Setup Output Recording
   SF_INFO audioRecOutputInfo;
@@ -667,9 +657,12 @@ void AudioExtension::StartRun()
   audioRecOutputInfo.format = recordingFormat;
   audioRecOutputInfo.samplerate = SAMPLE_RATE;
   if( ( int )Parameter( "AudioRecordOutput" ) && mOutputChannels ) 
+  {
+    string file = FileUtils::StripExtension( CurrentRun() ) + "_out" + extension;
     mpAudioRecOutputFile = sf_open(
-      string( bciDirectory.FilePath() + "_out" + extension ).c_str(),
+      file.c_str(),
       SFM_WRITE, &audioRecOutputInfo );
+  }
   
   // Start Audio I/O Stream and processing
   if( mpAudioInputFile ) sf_seek( mpAudioInputFile, 0, SEEK_SET );

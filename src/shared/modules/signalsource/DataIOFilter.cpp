@@ -32,10 +32,9 @@
 #include "defines.h"
 #include "GenericADC.h"
 #include "GenericFileWriter.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "BCIException.h"
 #include "BCIEvent.h"
-#include "BCIDirectory.h"
 #include "PrecisionTime.h"
 #include "ClassName.h"
 #include "MeasurementUnits.h"
@@ -307,7 +306,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
 
   if( !mpADC->IsRealTimeSource() )
     if( OptionalParameter( "EvaluateTiming", 1 ) == 0 )
-      bciout << "WARNING: the EvaluateTiming parameter is false, so realtime operation will not be enforced" << endl;
+      bciwarn << "The EvaluateTiming parameter is false, so realtime operation will not be enforced" << endl;
 
   if( mpSourceFilter )
   {
@@ -358,7 +357,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   mInputBuffer.SetProperties( Output );
 
   if( !PhysicalUnit().SetSymbol( "s" ).IsPhysical( Parameter( "VisualizeSourceTime" ) ) )
-    bciout << "The VisualizeSourceTime parameter is specified without a trailing \"s\". "
+    bciwarn << "The VisualizeSourceTime parameter is specified without a trailing \"s\". "
            << "This will lead to undesired results in future versions of BCI2000. "
            << "Please update your parameter files to prepare for the change."
            << endl;
@@ -555,7 +554,7 @@ DataIOFilter::Process( const GenericSignal& /*Input*/,
   if( mTimingSignal( 0, 0 ) < 0 )
   {
     if( mEvaluateTiming )
-      bciout << "Time measurement appears to be unreliable on your system. "
+      bciwarn << "Time measurement appears to be unreliable on your system. "
              << "You cannot use BCI2000 time stamps for timing evaluation."
              << endl;
     mEvaluateTiming = false;
@@ -669,12 +668,12 @@ DataIOFilter::EvaluateTiming( double inRoundtrip )
                << "%)"
                << endl;
       else if( avgRoundtrip >= 1.0 )
-        bciout << "Roundtrip time exceeds block duration (currently "
+        bciwarn << "Roundtrip time exceeds block duration (currently "
                << avgRoundtrip * 100
                << "%)"
                << endl;
       else if( avgRoundtrip >= 0.75 )
-        bciout << "Roundtrip time approaches block duration (currently "
+        bciwarn << "Roundtrip time approaches block duration (currently "
                << avgRoundtrip * 100
                << "%)"
                << endl;

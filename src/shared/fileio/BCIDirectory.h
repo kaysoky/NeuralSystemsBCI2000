@@ -29,71 +29,70 @@
 
 #include "FileUtils.h"
 
-class BCIDirectory
+#ifndef BACK_COMPAT
+  #define BACK_COMPAT 1
+#endif
+
+#if BACK_COMPAT
+#include "Environment.h"
+#include "BCIException.h"
+#define BCIDIR_OBSOLETE_(x) \
+  throw bciexception( \
+    "This function no longer available. Please use the CurrentRunFile() function to obtain the file name of the current run." \
+  ); \
+  return (x);
+
+class BCIDirectory : private Environment
 {
   enum { none = -1 };
 
- public:
-#if 1 // These functions are now in FileUtils, and provided here for backward
-      // compatibility only.
+  // These functions are now in FileUtils, and provided here for backward
+  // compatibility only.
   static std::string InstallationDirectory()
                      { return FileUtils::InstallationDirectory(); }
   static std::string AbsolutePath( const std::string& inPath )
                      { return FileUtils::AbsolutePath( inPath ); }
   static std::string GetCWD()
                      { return FileUtils::WorkingDirectory(); }
-#endif
 
-  // Class interface: Creating output directory, and file names for recorded files.
-  BCIDirectory();
-  // Write accessors return an instance reference
-  // -- this allows for "named parameter" constructs as in
-  //   BCIDirectory().SetDataDirectory( "c:\\" ).SetSubjectName( "test" );
-  BCIDirectory&      SetDataDirectory( const std::string& s )
-                     { mDataDirectory = s; return UpdateRunNumber(); }
-  BCIDirectory&      SetFilePrefix( const std::string& s )
-                     { mFilePrefix = s; return UpdateRunNumber(); }
-  BCIDirectory&      SetSubjectName( const std::string& s )
-                     { mSubjectName = s; return UpdateRunNumber(); }
-  BCIDirectory&      SetFileExtension( const std::string& s )
-                     { mFileExtension = s; return UpdateRunNumber(); }
-  BCIDirectory&      SetSessionNumber( int i )
-                     { mSessionNumber = i; return UpdateRunNumber(); }
-  BCIDirectory&      SetRunNumber( int i )
-                     { mDesiredRunNumber = i; return UpdateRunNumber(); }
- public:
+  // Dummy/forwarding implementation of the BCIDirectory interface.
+  BCIDirectory&    SetDataDirectory( const std::string& )
+                     { return *this; }
+  BCIDirectory&    SetSubjectName( const std::string& )
+                     { return *this; }
+  BCIDirectory&    SetFileExtension( const std::string& s )
+                     { mFileExtension = s; return *this; }
+  BCIDirectory&    SetSessionNumber( int i )
+                     { return *this; }
+  BCIDirectory&    SetRunNumber( int i )
+                     { return *this; }
   // Read accessors
   const std::string& DataDirectory() const
-                     { return mDataDirectory; }
+                     { BCIDIR_OBSOLETE_( mFileExtension ); }
   const std::string& SubjectName() const
-                     { return mSubjectName; }
+                     { BCIDIR_OBSOLETE_( mFileExtension ); }
   const std::string& FileExtension() const
                      { return mFileExtension; }
   int                SessionNumber() const
-                     { return mSessionNumber; }
+                     { BCIDIR_OBSOLETE_( 0 ); }
   int                RunNumber() const
-                     { return mActualRunNumber; }
-  // This returns the full path to the current file, but without the .dat extension.
-  std::string        FilePath() const;
-  std::string        DirectoryPath() const;
-  // This creates all directories contained in the file path if they don't exist.
-  const BCIDirectory& CreatePath() const;
+                     { BCIDIR_OBSOLETE_( 0 ); }
+
+  std::string        FilePath() const
+                     {
+                        string file = Environment::CurrentRun();
+                        return FileUtils::ExtractDirectory( file ) + FileUtils::ExtractBase( file );
+                     }
+  std::string        DirectoryPath() const
+                     { return FileUtils::ExtractDirectory( FilePath() ); }
+  const BCIDirectory& CreatePath() const
+                     { FilePath(); return *this; }
 
  private:
-  static int         ExtractRunNumber( const std::string& fileName,
-                                       const std::string& fileBase );
-  BCIDirectory&      UpdateRunNumber();
-  std::string        ConstructFileBase() const;
-  std::string        ConstructFileName() const;
-  int                GetLargestRun( const std::string& path );
-
-  std::string        mDataDirectory,
-                     mFilePrefix,
-                     mSubjectName,
-                     mFileExtension;
-  int                mSessionNumber,
-                     mDesiredRunNumber,
-                     mActualRunNumber;
+  std::string        mFileExtension;
 };
+#else // BACK_COMPAT
+  #error BCIDirectory is obsolete. Please use EnvironmentBase::CurrentRun()/CurrentSession() instead.
+#endif // BACK_COMPAT
 
 #endif // BCI_DIRECTORY_H

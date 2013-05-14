@@ -53,8 +53,6 @@ class LogFile: public std::ofstream, private EnvironmentExtension, private Uncop
       {}
 
   private:
-    std::string FilePath() const;
-
     std::string mExtension;
 };
 

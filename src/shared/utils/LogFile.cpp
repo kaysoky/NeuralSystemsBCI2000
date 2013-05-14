@@ -29,15 +29,15 @@
 
 #include "LogFile.h"
 
-#include "BCIError.h"
-#include "BCIDirectory.h"
+#include "BCIStream.h"
+#include "FileUtils.h"
 
 using namespace std;
 
 void
 LogFile::Preflight() const
 {
-  string name = FilePath();
+  string name = CurrentSession() + mExtension;
   ofstream preflightFile( name.c_str(), ios::out | ios::app );
   if( !preflightFile.is_open() )
     bcierr << "Could not open '" << name << "' for writing" << endl;
@@ -48,25 +48,9 @@ LogFile::StartRun()
 {
   close();
   clear();
-  string name = FilePath();
+  string name = CurrentSession() + mExtension;
   open( name.c_str(), ios::out | ios::app );
-  const char separators[] = "\\:/";
-  size_t dirpos = name.find_last_of( separators );
-  if( dirpos != name.npos )
-    name.replace( 0, dirpos + 1, "" );
   time_t now = ::time( NULL );
-  *this << name << '\n'
+  *this << FileUtils::ExtractFile( name ) << '\n'
         << ::asctime( ::localtime( &now ) ) << endl;
 }
-
-string
-LogFile::FilePath() const
-{
-  return BCIDirectory()
-    .SetDataDirectory( Parameter( "DataDirectory" ) )
-    .SetSubjectName( Parameter( "SubjectName" ) )
-    .SetSessionNumber( Parameter( "SubjectSession" ) )
-    .CreatePath()
-    .FilePath() + mExtension;
-}
-
