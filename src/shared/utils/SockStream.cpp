@@ -66,6 +66,14 @@
 # endif  // __GNUC__
 #endif   // _WIN32
 
+#ifndef IPPROTO_TCP
+# define IPPROTO_TCP 0
+#endif
+
+#ifndef IPPROTO_UDP
+# define IPPROTO_UDP 0
+#endif
+
 #include <string>
 #include <sstream>
 #include <algorithm>
@@ -225,7 +233,7 @@ streamsock::local_addresses()
 void
 streamsock::update_address()
 {
-  socklen_t addr_size = sizeof( m_address );
+  socklen_t addr_size = sizeof( m_address.sa );
   if( SOCKET_ERROR == ::getsockname( m_handle, &m_address.sa, &addr_size ) )
     close();
 }
@@ -455,7 +463,7 @@ void
 server_tcpsocket::do_open()
 {
   close();
-  m_handle = ::socket( PF_INET, SOCK_STREAM, 0 );
+  m_handle = ::socket( PF_INET, SOCK_STREAM, IPPROTO_TCP );
   bool success = ( m_handle != INVALID_SOCKET );
   if( success )
   {
@@ -464,7 +472,7 @@ server_tcpsocket::do_open()
                                                           reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
   if( success )
-    success = SOCKET_ERROR != ::bind( m_handle, &m_address.sa, sizeof( m_address ) );
+    success = SOCKET_ERROR != ::bind( m_handle, &m_address.sa, sizeof( m_address.sa ) );
   if( success )
     success = SOCKET_ERROR != ::listen( m_handle, 1 );
   if( success )
@@ -520,10 +528,10 @@ void
 client_tcpsocket::do_open()
 {
   close();
-  if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_STREAM, 0 ) ) )
+  if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_STREAM, IPPROTO_TCP ) ) )
     return;
 
-  if( SOCKET_ERROR == ::connect( m_handle, &m_address.sa, sizeof( m_address ) ) )
+  if( SOCKET_ERROR == ::connect( m_handle, &m_address.sa, sizeof( m_address.sa ) ) )
   {
     close();
     return;
@@ -535,10 +543,10 @@ void
 receiving_udpsocket::do_open()
 {
   close();
-  if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, 0 ) ) )
+  if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) )
     return;
 
-  if( SOCKET_ERROR == ::bind( m_handle, &m_address.sa, sizeof( m_address ) ) )
+  if( SOCKET_ERROR == ::bind( m_handle, &m_address.sa, sizeof( m_address.sa ) ) )
   {
     close();
     return;
@@ -562,7 +570,7 @@ void
 sending_udpsocket::do_open()
 {
   close();
-  if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, 0 ) ) )
+  if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) )
       return;
 
   address_ bind_addr = m_address;
@@ -570,7 +578,7 @@ sending_udpsocket::do_open()
   bind_addr.sa_in.sin_port = 0;
   if( ( SOCKET_ERROR == ::bind( m_handle, &bind_addr.sa, sizeof( bind_addr ) ) )
       ||
-      ( SOCKET_ERROR == ::connect( m_handle, &m_address.sa, sizeof( m_address ) ) ) )
+      ( SOCKET_ERROR == ::connect( m_handle, &m_address.sa, sizeof( m_address.sa ) ) ) )
   {
     close();
     return;
