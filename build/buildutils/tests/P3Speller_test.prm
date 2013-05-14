@@ -86,7 +86,7 @@ Application:Speller float StatusBarSize= 10 0 0 100 // size of status bar in per
 Application:Speller float StatusBarTextHeight= 4 0 0 100 // size of status bar text in percent of screen height
 Application:Speller string TextToSpell= SPELL // character or string to spell in offline copy mode
 Application:Speller string TextResult= % // user spelling result
-Application:Speller int TestMode= 1 0 0 1 // select targets by clicking on their associated stimuli (0=no, 1=yes) (boolean)
+Application:Speller int TestMode= 0 0 0 1 // select targets by clicking on their associated stimuli (0=no, 1=yes) (boolean)
 Application:Speller string DestinationAddress= % // network address for speller output in IP:port format
 Application:Text%20Window int TextWindowEnabled= 0 0 0 1 // Show Text Window (0=no, 1=yes) (boolean)
 Application:Text%20Window int TextWindowLeft= 600 0 0 % // Text Window X location
