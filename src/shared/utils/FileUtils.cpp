@@ -93,6 +93,14 @@ FileUtils::EnsureSeparator( const string& inDir )
 }
 
 string
+FileUtils::ClearSeparator( const string& inDir )
+{
+  if( inDir.empty() || Separators().find( *inDir.rbegin() ) == string::npos )
+    return inDir;
+  return inDir.substr( 0, inDir.length() - 1 );
+}
+
+string
 FileUtils::ExecutablePath()
 {
   string path;
@@ -250,7 +258,7 @@ FileUtils::ParentDirectoryS( const std::string& inPath )
 {
   if( IsFile( inPath ) )
     return FileUtils::ExtractDirectoryS( inPath );
-  return inPath + DirSeparator + "..";
+  return EnsureSeparator( inPath ) + "..";
 }
 
 string
@@ -302,14 +310,21 @@ bool
 FileUtils::IsDirectory( const std::string& inPath )
 {
   struct stat s;
-  return !::stat( inPath.c_str(), &s ) && ( S_ISDIR( s.st_mode ) );
+  return !::stat( ClearSeparator( inPath ).c_str(), &s ) && ( S_ISDIR( s.st_mode ) );
 }
 
 bool
 FileUtils::IsSymbolicLink( const std::string& inPath )
 {
   struct stat s;
-  return !::stat( inPath.c_str(), &s ) && ( S_ISLNK( s.st_mode ) );
+  return !::stat( ClearSeparator( inPath ).c_str(), &s ) && ( S_ISLNK( s.st_mode ) );
+}
+
+bool
+FileUtils::Exists( const std::string& inPath )
+{
+  struct stat s;
+  return !::stat( ClearSeparator( inPath ).c_str(), &s );
 }
 
 bool

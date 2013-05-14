@@ -50,6 +50,7 @@ namespace FileUtils
 #endif
 
   std::string EnsureSeparator( const std::string& );
+  std::string ClearSeparator( const std::string& );
   std::string ExecutablePath();
   std::string ApplicationTitle();
 
@@ -83,11 +84,14 @@ namespace FileUtils
   std::string ExtractFile( const std::string& );
   std::string ExtractBase( const std::string& );
   std::string ExtractExtension( const std::string& );
+  inline std::string StripDirectory( const std::string& s ) { return ExtractFile( s ); }
+  inline std::string StripExtension( const std::string& s ) { return ExtractDirectory( s ) + ExtractBase( s ); }
 
   bool IsFile( const std::string& );
   bool IsDirectory( const std::string& );
   bool IsSymbolicLink( const std::string& );
   bool IsAbsolutePath( const std::string& );
+  bool Exists( const std::string& );
 
   bool Rename( const std::string&, const std::string& );
   bool MakeDirectory( const std::string&, bool force = false );
