@@ -29,6 +29,9 @@
 #pragma hdrstop
 
 #include "BCIException.h"
+#if _WIN32
+# include "Windows.h"
+#endif
 
 using namespace std;
 
@@ -44,6 +47,27 @@ BCIException::BCIException( ostream& inStream )
   {
     mMessage = "BCIException: No message available (must be constructed from std::ostringstream object)";
   }
+#if BCIDEBUG
+ #if _WIN32
+  if( mMessage.find( "\nLine:" ) != string::npos )
+  {
+    string name = "<unknown process>";
+    DWORD size = ::GetModuleFileNameA( 0, 0, 0 );
+    char* pName = new char[size];
+    if( ::GetModuleFileNameA( 0, pName, size ) )
+      name = pName;
+    delete[] pName;
+    size_t pos = name.find_last_of( "/\\" );
+    if( pos == string::npos )
+      pos = 0;
+    string title = "BCIException in " + name.substr( pos ) + " (Debug Mode)",
+           text = mMessage +
+                  "\n\nThis dialog window gives you the opportunity to attach a debugger."
+                  "\nIf you don't want to debug this problem, press OK to continue.";          
+    ::MessageBoxA( 0, text.c_str(), title.c_str(), MB_OK );
+  }
+ #endif // _WIN32
+#endif // BCIDEBUG
 }
 
 const char*

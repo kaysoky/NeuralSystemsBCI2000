@@ -76,7 +76,7 @@ class BCIException : public std::exception
   BCIException( const std::string& inMessage )
     : mMessage( inMessage )
     {}
-  BCIException( std::ostream& );
+  BCIException( std::ostream&z );
 
   virtual ~BCIException() throw()
     {}
