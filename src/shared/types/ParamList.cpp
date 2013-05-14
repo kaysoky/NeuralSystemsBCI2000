@@ -275,22 +275,9 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
   if( file.fail() )
     return false;
 
+  // If desired, exclude parameters missing from the main parameter list.
   typedef set<string> NameSet;
   NameSet unwantedParams;
-
-  // Exclude parameters from unwanted sections.
-  for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
-    i != paramsFromFile.mParams.end(); ++i )
-  {
-    const HierarchicalLabel* pSections = &i->Param.Sections();
-    if( Exists( i->Param.mName ) )
-      pSections = &( *this )[i->Param.mName].Sections();
-    if( !pSections->empty() && Param::strciequal( ( *pSections )[0], "System" ) )
-      if( pSections->size() < 2 || !Param::strciequal( ( *pSections )[1], "Command Line Arguments" ) )
-        unwantedParams.insert( i->Param.mName );
-  }
-
-  // If desired, exclude parameters missing from the main parameter list.
   if( !inImportNonexisting )
     for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
                                          i != paramsFromFile.mParams.end(); ++i )
@@ -302,8 +289,11 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
 
   for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
                                        i != paramsFromFile.mParams.end(); ++i )
-    ( *this )[ i->Param.mName ].AssignValues( i->Param );
-
+  {
+    Param& p = ( *this )[ i->Param.mName ];
+    if( !p.Readonly() )
+      p.AssignValues( i->Param );
+  }
   return true;
 }
 

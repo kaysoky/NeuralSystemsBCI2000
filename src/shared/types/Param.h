@@ -129,6 +129,8 @@ class Param
   Param&             operator=( const Param& );
   Param&             AssignValues( const Param& );
 
+  bool               Readonly() const
+                     { return mReadonly; }
   // Sections
   HierarchicalLabel& Sections()
                      { mChanged = true; return mSections; }
@@ -170,8 +172,7 @@ class Param
   const std::string& HighRange() const
                      { return mHighRange; }
 
-  Param&             SetComment( const std::string& s )
-                     { mChanged = true; mComment = s; return *this; }
+  Param&             SetComment( const std::string& );
   const std::string& Comment() const
                      { return mComment; }
 
@@ -261,7 +262,8 @@ class Param
   LabelIndex          mDim1Index,
                       mDim2Index;
   typedef std::vector<ParamValue> ValueContainer;
-  bool                mChanged;
+  bool                mReadonly,
+                      mChanged;
   ValueContainer      mValues;
   const EncodedString cEmptyString;
 

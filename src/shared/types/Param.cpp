@@ -38,6 +38,7 @@ using namespace std;
 
 static const char* sDefaultValue = "";
 static const string sCommentSeparator = "//";
+static const string sReadonlyTag = "(readonly)";
 static const string cEmptyString = "";
 
 const ctype<char>&
@@ -110,7 +111,8 @@ Param::SetDimensions( size_t inRows, size_t inCols )
 // Returns:    N/A
 // **************************************************************************
 Param::Param()
-: mChanged( false ),
+: mReadonly( false ), 
+  mChanged( false ),
   mValues( 1, sDefaultValue )
 {
 }
@@ -128,14 +130,15 @@ Param::Param( const std::string& inName, const std::string& inSection,
 : mDefaultValue( inDefaultValue ),
   mLowRange( inLowRange ),
   mHighRange( inHighRange ),
-  mComment( inComment ),
-  mChanged( false )
+  mChanged( false ),
+  mReadonly( false )
 {
   SetName( inName );
   SetSection( inSection );
   SetType( inType );
   SetNumValues( 1 );
   Value() = inValue;
+  SetComment( inComment );
 }
 
 // **************************************************************************
@@ -188,8 +191,31 @@ Param::SetSection( const std::string& s )
   else
     mSections[ 0 ] = s;
   mChanged = true;
+  SetComment( mComment );
   return *this;
 }
+
+Param&
+Param::SetComment( const std::string& s )
+{
+  mChanged = true;
+  mComment = s;
+  string t = mComment;
+  tolower( t );
+  mReadonly = ( t.find( sReadonlyTag ) != string::npos );
+#ifdef TODO
+# error Remove "System" check for V4
+#endif
+  if( !mReadonly )
+    if( !mSections.empty() && Param::strciequal( mSections[0], "System" ) )
+      if( mSections.size() < 2 || !Param::strciequal( mSections[1], "Command Line Arguments" ) )
+      {
+        mReadonly = true;
+        mComment += sReadonlyTag;
+      }
+  return *this;
+}
+
 
 // **************************************************************************
 // Function:   Value
@@ -329,6 +355,7 @@ Param::ReadFromStream( istream& is )
 
   if( unnamedParam )
     is.get();
+  SetComment( mComment );
   // Use the stream's failbit to report syntax errors.
   is.clear();
   if( syntaxError )
@@ -425,8 +452,13 @@ Param::operator=( const Param& p )
     mDefaultValue = p.mDefaultValue;
     mLowRange = p.mLowRange;
     mHighRange = p.mHighRange;
-    mComment = p.mComment;
-    AssignValues( p );
+    SetComment( p.mComment );
+
+    mDim1Index = p.mDim1Index;
+    mDim2Index = p.mDim2Index;
+    mValues = p.mValues;
+
+    mChanged = p.mChanged;
   }
   return *this;
 }
@@ -442,6 +474,9 @@ Param::AssignValues( const Param& p )
 {
   if( this != &p )
   {
+    if( Readonly() )
+      throw bciexception( "Trying to assign to readonly parameter " << Name() );
+
     mDim1Index = p.mDim1Index;
     mDim2Index = p.mDim2Index;
     mValues = p.mValues;
