@@ -11,7 +11,6 @@ INCLUDE_DIRECTORIES(
 )
 # Set the project specific sources
 SET( SRC_PROJECT
-  ENOBIO.cpp
   ENOBIOADC.cpp
   EnobioStatusConsumer.cpp
   EnobioDataConsumer.cpp 
