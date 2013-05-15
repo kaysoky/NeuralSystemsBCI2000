@@ -3,6 +3,8 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for OperatorCl
 
+IF( BUILD_DEMOS )
+
 # Set the executable name
 SET( EXECUTABLE_NAME OperatorLibDemo )
 
@@ -58,6 +60,7 @@ IF( NOT FAILED )
   TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${QT_LIBRARIES} ${LIBS} )
 
   # Set the project build folder
-  SET_PROPERTY( TARGET ${EXECUTABLE_NAME} PROPERTY FOLDER "${DIR_NAME}" )
+  SET_PROPERTY( TARGET ${EXECUTABLE_NAME} PROPERTY FOLDER Demos/OperatorLib )
 ENDIF( NOT FAILED )
 
+ENDIF( BUILD_DEMOS )

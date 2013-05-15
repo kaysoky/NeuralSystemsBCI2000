@@ -17,13 +17,13 @@ SET( HDR_PROJECT
   lib/EnobioDLL.imports.h
 )
 
-IF( DYNAMIC_IMPORTS )
+IF( USE_DYNAMIC_IMPORTS )
 ELSEIF( MSVC )
   LINK_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/lib/MSVC )
 ENDIF()
 
 # Put everything together
-IF( NOT DYNAMIC_IMPORTS AND (NOT MSVC OR CMAKE_CL_64) )
+IF( NOT USE_DYNAMIC_IMPORTS AND (NOT MSVC OR CMAKE_CL_64) )
   MESSAGE( "-- ENOBIO does not provide libraries for this compiler/OS,  Will not build" )
 ELSE()
 
@@ -33,7 +33,7 @@ ELSE()
     "${SRC_PROJECT}" "${HDR_PROJECT}" 
   )
 
-IF( NOT DYNAMIC_IMPORTS )
+IF( NOT USE_DYNAMIC_IMPORTS )
   # Link the Enobio Library
   TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} EnobioDLL )
 ENDIF()

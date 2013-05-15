@@ -32,11 +32,7 @@
 #endif
 
 #if _WIN32
-# define _WIN32_WINNT 0x0500 // MinGW defines it to be 0x0400
-#endif
-
-#ifndef NO_PCHINCLUDES
-# define NO_PCHINCLUDES
+# define _WIN32_WINNT 0x0600 // MinGW defines it to be 0x0400
 #endif
 
 #ifndef __FUNC__

@@ -29,6 +29,7 @@ LINK_DIRECTORIES(
 # BCI2000_INCLUDE( "MATH" )
 
 # Add the source module to the Makefile or compiler project file:
+LIST( APPEND SRC_PROJECT ${BCI2000_SRC_DIR}/shared/modules/CoreMain.cpp )
 BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 

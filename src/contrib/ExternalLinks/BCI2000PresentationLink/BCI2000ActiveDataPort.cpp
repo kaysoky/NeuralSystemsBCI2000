@@ -66,9 +66,9 @@ CBCI2000ActiveDataPort::getServerTime( double* outTimeMicro, double* outUncertai
   ::QueryPerformanceFrequency( &freq );
   *outTimeMicro = 1e-6 * now.QuadPart / freq.QuadPart;
   *outUncertaintyMicro = 2 * 1e-6 / freq.QuadPart;
-  // We cause a time delay that reflects connection speed.
-  // This way, Presentation's uncertainty estimate will be more appropriate.
-  mBCI2000.Execute( "" );
+  // We cause a time delay that reflects connection delay.
+  // This way, Presentation's uncertainty estimate will be more accurate.
+  mBCI2000.Execute( "", 0 );
   COM_METHOD_END
 }
 
@@ -117,7 +117,7 @@ CBCI2000ActiveDataPort::sendData( BSTR inEventType, BSTR inEventCode, double, do
     }
     ostringstream oss;
     oss << "set event " << eventType << " " << code;
-    mBCI2000.Execute( oss.str() );
+    mBCI2000.Execute( oss.str(), 0 );
     success = mBCI2000.Result().empty();
   }
   if( !success )
@@ -129,7 +129,7 @@ STDMETHODIMP
 CBCI2000ActiveDataPort::processMessage(BSTR inMessage, BSTR* outResult)
 {
   COM_METHOD_START
-  mBCI2000.Execute( com::DualString( inMessage ) );
+  mBCI2000.Execute( com::DualString( inMessage ), 0 );
   *outResult = ::SysAllocString( com::DualString( mBCI2000.Result() ).ToWin().c_str() );
   COM_METHOD_END
 }
@@ -178,7 +178,7 @@ CBCI2000ActiveDataPort::Initialize( const DataPortSettings& inSettings )
       throw bciexception_( mBCI2000.Result() );
   }
   mBCI2000.WindowTitle( "Connected to Presentation" );
-  mBCI2000.Execute( "shutdown system" );
+  mBCI2000.Execute( "shutdown system", 0 );
   mUseResumePause = !inSettings[DataPortSettings::UseResumePause].empty();
   mEventTypes.clear();
   istringstream iss( inSettings[DataPortSettings::EventTypes] );
@@ -186,9 +186,9 @@ CBCI2000ActiveDataPort::Initialize( const DataPortSettings& inSettings )
   while( iss >> eventType )
   {
     mEventTypes.push_back( eventType );
-    mBCI2000.Execute( "add event " + eventType + " 32 0" );
+    mBCI2000.Execute( "add event " + eventType + " 32 0", 0 );
   }
-  mBCI2000.Execute( "startup system localhost" );
+  mBCI2000.Execute( "startup system localhost", 0 );
   if( !mBCI2000.Result().empty() )
     throw bciexception_( mBCI2000.Result() );
 }

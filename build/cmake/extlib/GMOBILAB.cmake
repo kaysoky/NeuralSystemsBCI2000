@@ -10,7 +10,7 @@
 ##       LIBS_EXTLIB - required library for gMOBIlab
 ##       Also defines source groups for source files
 
-IF( DYNAMIC_IMPORTS AND WIN32 OR WIN32 AND NOT CMAKE_CL_64 )
+IF( (USE_DYNAMIC_IMPORTS AND WIN32) OR (WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8) )
 
 # Set the final Source and headers
 SET( SRC_EXTLIB
@@ -39,7 +39,7 @@ SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlab/mingw )
 ENDIF( MINGW )
 
 # Set Libs required
-IF( DYNAMIC_IMPORTS )
+IF( USE_DYNAMIC_IMPORTS )
 ELSEIF( MINGW )
 SET( LIBS_EXTLIB libspa20a.a )
 ELSE()

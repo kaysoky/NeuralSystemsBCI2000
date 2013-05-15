@@ -1,4 +1,4 @@
-###########################################################################
+######################################################
 ## $Id$
 ## Author: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for extlib projects
@@ -12,4 +12,12 @@ ADD_SUBDIRECTORY(
 ADD_SUBDIRECTORY(
   ${BCI2000_SRC_DIR}/extlib/math/statistics/test
   "${CMAKE_CURRENT_BINARY_DIR}/math/statistics/test"
+)
+ADD_SUBDIRECTORY(
+  ${BCI2000_SRC_DIR}/extlib/portaudio
+  "${CMAKE_CURRENT_BINARY_DIR}/portaudio"
+)
+ADD_SUBDIRECTORY(
+  ${BCI2000_SRC_DIR}/extlib/libsndfile
+  "${CMAKE_CURRENT_BINARY_DIR}/libsndfile"
 )

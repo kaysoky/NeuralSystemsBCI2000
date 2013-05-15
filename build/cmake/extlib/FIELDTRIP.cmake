@@ -53,5 +53,7 @@ SET( INC_EXTLIB
 SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\fieldtrip\\buffer FILES ${SRC_EXTLIB} )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\fieldtrip\\buffer FILES ${HDR_EXTLIB} )
 
+SET_SOURCE_FILES_PROPERTIES( ${SRC_EXTLIB} PROPERTIES LANGUAGE CXX )
+
 # Set success
 SET( EXTLIB_OK TRUE )

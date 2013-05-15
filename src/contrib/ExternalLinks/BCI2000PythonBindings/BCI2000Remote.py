@@ -155,15 +155,18 @@ class BCI2000Remote(object):
     def Disconnect(self):
         return self._lib.BCI2000Remote_Disconnect( self._instance )
 
-    def Execute(self, command):
+    def Encode(self, val):
+        return self._get_string_result( self._lib.BCI2000Remote_Encode, ctypes.c_char_p( val ) )
+
+    def Execute(self, command, exitCode=[]):
         """Execute an Operator Scripting command.
 
-        This function returns the last command's execution status, which
-        is a true integer, with a value of 0 indicating success.
-        All other int-returning functions return a boolean integer which is
-        1 on success, and 0 on failure.
+        This function appends the last command's execution status to the optional list argument.
         """
-        return self._lib.BCI2000Remote_Execute( self._instance, ctypes.c_char_p( command ) )
+        i = c_int()
+        result = self._lib.BCI2000Remote_Execute( self._instance, ctypes.c_char_p( command ), ctypes.byref( i ) )
+        exitCode.append( i )
+        return result
 
     def StartupModules(self, modules):
         """Start up and connect to a set of core modules.

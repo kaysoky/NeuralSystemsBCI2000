@@ -37,7 +37,13 @@
 #pragma warn -8058 // suppress warning on initialized data in header
 #endif
 
-#ifndef NO_PCHINCLUDES
+#if defined( NO_PCHINCLUDES )
+# undef PRECOMPILED_HEADERS
+#elif __BORLANDC__
+# define PRECOMPILED_HEADERS 1
+#endif
+
+#if PRECOMPILED_HEADERS
 
 #ifdef __BORLANDC__
 #include <vcl.h>
@@ -48,14 +54,19 @@
 // would break those projects.
 
 // STL headers
-#include <map>
-#include <set>
 #include <list>
 #include <vector>
+#include <map>
+#include <set>
+#include <stack>
 #include <string>
-#include <iostream>
-#include <sstream>
 
-#endif // NO_PCHINCLUDES
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <limits>
+
+#endif // PRECOMPILED_HEADERS
 
 #endif // PCHINCLUDES_H

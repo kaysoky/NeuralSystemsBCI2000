@@ -3,6 +3,8 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for 3D API Demo in Qt
 
+IF( BUILD_DEMOS )
+
 # Set the executable name
 SET( EXECUTABLE_NAME Demo3DAPI )
 
@@ -11,7 +13,7 @@ SET( SRC_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/gui/GraphDisplay.cpp
   ${BCI2000_SRC_DIR}/shared/gui/GraphObject.cpp
 )
-SET( HDR_FRAMEWÓRK
+SET( HDR_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/gui/GUI.h
   ${BCI2000_SRC_DIR}/shared/gui/GraphDisplay.h
   ${BCI2000_SRC_DIR}/shared/gui/GraphObject.h
@@ -47,6 +49,7 @@ INCLUDE_DIRECTORIES(
 
 # Let the macro know we want to use the 3D API
 BCI2000_INCLUDE( "3DAPI" )
+SET( DIR_NAME Demos/3DAPI )
 
 # Create the module
 BCI2000_ADD_TOOLS_GUIAPP( 
@@ -56,3 +59,5 @@ BCI2000_ADD_TOOLS_GUIAPP(
 )
 
 SET_OUTPUT_DIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR} ${EXECUTABLE_NAME} )
+
+ENDIF( BUILD_DEMOS )

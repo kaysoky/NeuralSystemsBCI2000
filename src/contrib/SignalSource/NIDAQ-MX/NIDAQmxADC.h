@@ -88,8 +88,8 @@ private:
         static  NIADC* cur_adc;
         static  int32 CVICALLBACK Callback (TaskHandle , int32 , uInt32 , void *);
 public:
-        NIADC::NIADC();       // overwrite constructor
-        NIADC::~NIADC();
+        NIADC();
+        ~NIADC();
         virtual void     Preflight(const SignalProperties&, SignalProperties&) const;
         virtual void     Initialize(const SignalProperties&, const SignalProperties&);
         virtual void     Process(const GenericSignal&, GenericSignal&);

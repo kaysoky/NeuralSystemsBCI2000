@@ -65,7 +65,7 @@ class Watch
     Set( const Set& );
     ~Set();
     
-    int Size() const { return size(); }
+    int Size() const { return static_cast<int>( size() ); }
     bool Empty() const { return empty(); }
     
     Watch* First() const;

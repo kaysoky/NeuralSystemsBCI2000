@@ -7,6 +7,9 @@ IF( WIN32 )
 
 # Set the executable name
 SET( EXECUTABLE_NAME BCI2000PresentationLink )
+IF( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+  SET( EXECUTABLE_NAME "${EXECUTABLE_NAME}64" )
+ENDIF()
 
 # DEBUG
 MESSAGE( "-- Adding Project: ${EXECUTABLE_NAME}" )

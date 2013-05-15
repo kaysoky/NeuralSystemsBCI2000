@@ -82,9 +82,16 @@ class BCI2000Connection
   // Disconnect from an existing connection. Terminates the running Operator module
   // if it was started by the previous Connect() call.
   bool Disconnect();
-  // Execute a BCI2000 scripting command. If the command executed a shell
-  // command, returns the command's exit code, and 0 otherwise.
-  int Execute( const std::string& );
+  // Execute a BCI2000 scripting command. Successful completion indicates that the command
+  // has been executed, and a result has been received. It does not indicate whethe command execution
+  // was successful.
+  // If a second argument is given, the pointed-to integer variable will be assigned an exit code as follows:
+  // For the SYSTEM command, the exit code matches the command's exit code.
+  // For other commands, when interpretation of the result as a boolean value 
+  // is obvious, an exit code of 0 will indicate "true", and 1 will indicate "false".
+  // Otherwise, the exit code will be -2 to indicate that the caller will need to process the command's output
+  // in order to determine a result.
+  bool Execute( const std::string&, int* exitCode /*= 0*/ );
   // Run a BCI2000 operator module, or batch file, with parameters appropriate for
   // remote control. Normally, BCI2000 is started up by the Connect() method, so you
   // will not need to call this function.

@@ -35,19 +35,19 @@ ${BCI2000_SRC_DIR}/shared/modules/signalsource/SourceFilter.h
 
 # Define the library
 IF( MSVC )
-  IF( CMAKE_CL_64 )
-    # N/A
+  IF( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+    SET( libdir lib )
   ELSE()
-    SET( libdir_ lib )
+    # N/A
   ENDIF()
 ENDIF()
 
 # Put everything together
-IF( NOT $libdir_ )
+IF( NOT libdir )
   MESSAGE( "-- ENOBIO3G does not provide libraries for this compiler/OS,  Will not build" )
 ELSE()
 
-  LINK_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/$libdir_ )
+  LINK_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/${libdir} )
 
   # Create the signal source module
   BCI2000_ADD_SIGNAL_SOURCE_MODULE( 

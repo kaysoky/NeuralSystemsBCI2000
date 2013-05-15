@@ -1,8 +1,6 @@
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :: $Id$
-:: Description: Script that registers BCI2000Automation components.
-::   Will do per-machine registration when user has administrator rights, and
-::   per-user registration otherwise.
+:: Description: Script that registers a COM DLL.
 ::   Call with /u switch to unregister.
 ::
 :: $BEGIN_BCI2000_LICENSE$
@@ -25,4 +23,17 @@
 :: 
 :: $END_BCI2000_LICENSE$
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-@regsvr32 %1 /s /n /i:any BCI2000Automation.dll
+@echo off
+setlocal
+set name_=BCI2000Automation
+
+set dll_=%name_%.dll
+if exist "%name_%32.dll" set dll_=%name_%32.dll
+if exist "%SystemRoot%\SysWOW64" set dir_=%SystemRoot%\SysWOW64\
+if exist "%dll_%" "%dir_%regsvr32" %* "%dll_%"
+
+set dll_=%name_%64.dll
+if %PROCESSOR_ARCHITECTURE% == x86 (
+  if not defined PROCESSOR_ARCHITEW6432 set dll_=
+)
+if exist "%dll_%" regsvr32 %* "%dll_%"

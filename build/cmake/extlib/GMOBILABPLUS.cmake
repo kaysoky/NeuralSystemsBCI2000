@@ -10,7 +10,7 @@
 ##       LIBS_EXTLIB - required library for gMOBIlabPlus
 ##       Also defines source groups for source files
 
-IF( DYNAMIC_IMPORTS AND WIN32 OR WIN32 AND NOT CMAKE_CL_64 )
+IF( (USE_DYNAMIC_IMPORTS AND WIN32) OR (WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8) )
 
 ADD_DEFINITIONS( -DGMOBILABPLUS )
 
@@ -41,7 +41,7 @@ SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/mingw )
 ENDIF( MINGW )
 
 # Set Libs required
-IF( DYNAMIC_IMPORTS )
+IF( USE_DYNAMIC_IMPORTS )
 ELSEIF( MINGW )
 SET( LIBS_EXTLIB libgMOBIlabplus.a )
 ELSE()

@@ -274,7 +274,8 @@ Run( int inArgc, char** inArgs, BCI2000Remote& ioBCI )
     getline( file, script, '\0' );
   }
   if( result == ok && !script.empty() )
-    result = ioBCI.Execute( script );
+    if( !ioBCI.Execute( script, &result ) )
+      result = error;
   return result;
 }
 
@@ -372,7 +373,10 @@ GetControlSignal( int, char** inArgs, BCI2000Remote& ioBCI )
 int
 Execute( int, char** inArgs, BCI2000Remote& ioBCI )
 {
-  return ioBCI.Execute( inArgs[0] );
+  int result = ok;
+  if( !ioBCI.Execute( inArgs[0], &result ) )
+    result = error;
+  return result;
 }
 
 int

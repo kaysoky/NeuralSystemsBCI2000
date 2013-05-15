@@ -89,6 +89,7 @@ class CallbackBase
   Context CallbackContext( int event ) const;
 
   bool CheckPendingCallback();
+  bool YieldToMainThread() const;
 
   Result ExecuteCallback( int event );
   template<class T>
@@ -219,8 +220,10 @@ class CallbackBase
   pthread_t      mMainThreadID;
 #endif
   OSMutex        mMainThreadAccess, // A mutex that blocks multiple threads while waiting for the main thread to become available.
-                 mPendingCallbackAccess; // A mutex that protects access to the mpPendingCallback variable.
+                 mPendingCallbackAccess, // A mutex that protects access to the mpPendingCallback variable.
+                 mExecutingAccess; // Protecting access to mExecuting.
   Callback*      mpPendingCallback;
+  bool           mExecuting;
 };
 
 

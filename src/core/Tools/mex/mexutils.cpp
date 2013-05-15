@@ -39,19 +39,6 @@
 
 using namespace std;
 
-void
-TypeCheck()
-{
-  bool ok = 
-  (
-    sizeof( int16 ) == 2 && sizeof( int32 ) == 4 && sizeof( float32 ) == 4
-    && sizeof( uint8 ) == 1 && sizeof( uint16 ) == 2 && sizeof( uint32 ) == 4
-    && sizeof( uint64 ) == 8
-  );
-  if( !ok )
-    throw bciexception_( "Numeric types don't agree with this function's assumptions." );
-}
-
 bool
 PrintVersion( const char* inSourceFile, int inNargin, const mxArray** inVarargin )
 {
@@ -332,7 +319,6 @@ mexFunction( int nargout, mxArray* varargout[],
   bcierr__.Reset();
   try
   {
-    TypeCheck();
     BCIMexFunction( nargout, varargout, nargin, varargin );
   }
   catch( const BCIException& e )

@@ -44,6 +44,7 @@ INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/NicoletOne/lib/Incl
 FOREACH( flag_var ${FLAG_VARS} )
    SET( ${flag_var} "${${flag_var}_DYNAMIC}" )
 ENDFOREACH( flag_var )
+SET( USE_PRECOMPILED_HEADERS OFF )
 
 # We need to define wchar_t as not defined by the compiler.
 SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t-" )

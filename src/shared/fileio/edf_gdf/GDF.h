@@ -34,7 +34,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include "defines.h"
+#include <stdint.h>
 
 namespace GDF
 {

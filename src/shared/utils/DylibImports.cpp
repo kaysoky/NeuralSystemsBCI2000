@@ -140,7 +140,7 @@ GetDylibExports( void* inHandle, Exports& outExports )
   for( size_t i = 0; i < pExports->NumberOfNames; ++i )
   {
     const char* name = p + names[i];
-    Export export_ = { name, ::GetProcAddress( HMODULE( inHandle ), name ) };
+    Export export_ = { name, (void*)::GetProcAddress( HMODULE( inHandle ), name ) };
     outExports.push_back( export_ );
   }
 #elif __APPLE__

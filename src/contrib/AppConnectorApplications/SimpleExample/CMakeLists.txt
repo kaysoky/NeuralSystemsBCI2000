@@ -3,6 +3,8 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for the ParallelSwitch example
 
+IF( BUILD_DEMOS )
+
 # Set the executable name
 SET( NAME SimpleExample )
 
@@ -36,4 +38,6 @@ IF( WIN32 )
 ENDIF( WIN32 )
 
 # Set the project build folder
-SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER "${DIR_NAME}" )
+SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER Demos/AppConnector )
+
+ENDIF( BUILD_DEMOS )

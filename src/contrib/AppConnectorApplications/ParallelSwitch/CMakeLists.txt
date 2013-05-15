@@ -3,6 +3,8 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for the ParallelSwitch example
 
+IF( BUILD_DEMOS )
+
 IF( WIN32 )
 
 # Set the executable name
@@ -34,10 +36,12 @@ SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/src/contrib/AppConnectorApplications/P
 ADD_EXECUTABLE( ${NAME} ${SRC_PROJECT} ${HDR_PROJECT} )
 
 # Set the target build folder
-SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER ${DIR_NAME} )
+SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER Demos/AppConnector )
 
 IF( WIN32 )
   TARGET_LINK_LIBRARIES( ${NAME} ws2_32 )
 ENDIF( WIN32 )
 
 ENDIF( WIN32 )
+
+ENDIF( BUILD_DEMOS )

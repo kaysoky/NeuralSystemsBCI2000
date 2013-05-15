@@ -71,11 +71,15 @@ class BCI2000Remote : public BCI2000Connection
   // Set event scripts.
   bool SetScript( const std::string&, const std::string& );
   bool GetScript( const std::string&, std::string& );
+  // Encode a single value for use as an argument, or in parameter lines.
+  // This will make sure that a value is recognized as a single token, and that
+  // it does not contain specially treated characters such as ${}.
+  static std::string EncodeValue( const std::string& );
 
  private:
   bool WaitForSystemState( const std::string& );
   bool SimpleCommand( const std::string& );
-  std::string EscapeSpecialChars( const std::string& );
+  static std::string EscapeSpecialChars( const std::string&, const std::string& = " " );
 
   std::string mSubjectID,
               mSessionID,

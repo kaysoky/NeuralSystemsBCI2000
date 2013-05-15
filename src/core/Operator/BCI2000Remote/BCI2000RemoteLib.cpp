@@ -284,14 +284,18 @@ STDCALL BCI2000Remote_Disconnect( void* inObject )
   return pInstance->Disconnect();
 }
 
-
-DLLEXPORT int
-STDCALL BCI2000Remote_Execute( void* inObject, const char* inScript )
+DLLEXPORT const char*
+STDCALL BCI2000Remote_Encode( void*, const char* inValue )
 {
-  INSTANCE_CAST
-  return pInstance->Execute( inScript );
+  return AllocateString( BCI2000Remote::EncodeValue( inValue ).c_str() );
 }
 
+DLLEXPORT int
+STDCALL BCI2000Remote_Execute( void* inObject, const char* inScript, int* outpExitCode )
+{
+  INSTANCE_CAST
+  return pInstance->Execute( inScript, outpExitCode );
+}
 
 DLLEXPORT int
 STDCALL BCI2000Remote_StartupModules( void* inObject, const char* inModules )

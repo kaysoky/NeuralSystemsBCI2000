@@ -3,18 +3,18 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 7.00.0500 */
-/* at Thu Jul 05 19:32:15 2012
+ /* File created by MIDL compiler version 7.00.0555 */
+/* at Wed Mar 20 15:00:21 2013
  */
 /* Compiler settings for BCI2000Automation.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run)
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
          DECLSPEC_UUID(), MIDL_INTERFACE()
 */
-//@@MIDL_FILE_HEADING(  )
+/* @@MIDL_FILE_HEADING(  ) */
 
 #pragma warning( disable: 4049 )  /* more than 64k source lines */
 
@@ -201,9 +201,14 @@ EXTERN_C const IID IID_IBCI2000Remote;
             /* [out][in] */ double *value,
             /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
+        virtual /* [helpstring] */ HRESULT __stdcall Encode( 
+            /* [in] */ BSTR rawValue,
+            /* [retval][out] */ BSTR *encodedValue) = 0;
+        
         virtual /* [helpstring] */ HRESULT __stdcall Execute( 
             /* [in] */ BSTR command,
-            /* [retval][out] */ int *exitCode) = 0;
+            /* [out][in][optional] */ VARIANT *exitCode,
+            /* [retval][out] */ VARIANT_BOOL *success) = 0;
         
         virtual /* [helpstring] */ HRESULT __stdcall SetScript( 
             /* [in] */ BSTR eventName,
@@ -226,7 +231,7 @@ EXTERN_C const IID IID_IBCI2000Remote;
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             IBCI2000Remote * This,
             /* [in] */ REFIID riid,
-            /* [iid_is][out] */ 
+            /* [annotation][iid_is][out] */ 
             __RPC__deref_out  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
@@ -410,10 +415,16 @@ EXTERN_C const IID IID_IBCI2000Remote;
             /* [out][in] */ double *value,
             /* [retval][out] */ VARIANT_BOOL *success);
         
+        /* [helpstring] */ HRESULT ( __stdcall *Encode )( 
+            IBCI2000Remote * This,
+            /* [in] */ BSTR rawValue,
+            /* [retval][out] */ BSTR *encodedValue);
+        
         /* [helpstring] */ HRESULT ( __stdcall *Execute )( 
             IBCI2000Remote * This,
             /* [in] */ BSTR command,
-            /* [retval][out] */ int *exitCode);
+            /* [out][in][optional] */ VARIANT *exitCode,
+            /* [retval][out] */ VARIANT_BOOL *success);
         
         /* [helpstring] */ HRESULT ( __stdcall *SetScript )( 
             IBCI2000Remote * This,
@@ -559,8 +570,11 @@ EXTERN_C const IID IID_IBCI2000Remote;
 #define IBCI2000Remote_GetControlSignal(This,channel,element,value,success)	\
     ( (This)->lpVtbl -> GetControlSignal(This,channel,element,value,success) ) 
 
-#define IBCI2000Remote_Execute(This,command,exitCode)	\
-    ( (This)->lpVtbl -> Execute(This,command,exitCode) ) 
+#define IBCI2000Remote_Encode(This,rawValue,encodedValue)	\
+    ( (This)->lpVtbl -> Encode(This,rawValue,encodedValue) ) 
+
+#define IBCI2000Remote_Execute(This,command,exitCode,success)	\
+    ( (This)->lpVtbl -> Execute(This,command,exitCode,success) ) 
 
 #define IBCI2000Remote_SetScript(This,eventName,script,success)	\
     ( (This)->lpVtbl -> SetScript(This,eventName,script,success) ) 
@@ -609,6 +623,11 @@ unsigned long             __RPC_USER  LPSAFEARRAY_UserSize(     unsigned long *,
 unsigned char * __RPC_USER  LPSAFEARRAY_UserMarshal(  unsigned long *, unsigned char *, LPSAFEARRAY * ); 
 unsigned char * __RPC_USER  LPSAFEARRAY_UserUnmarshal(unsigned long *, unsigned char *, LPSAFEARRAY * ); 
 void                      __RPC_USER  LPSAFEARRAY_UserFree(     unsigned long *, LPSAFEARRAY * ); 
+
+unsigned long             __RPC_USER  VARIANT_UserSize(     unsigned long *, unsigned long            , VARIANT * ); 
+unsigned char * __RPC_USER  VARIANT_UserMarshal(  unsigned long *, unsigned char *, VARIANT * ); 
+unsigned char * __RPC_USER  VARIANT_UserUnmarshal(unsigned long *, unsigned char *, VARIANT * ); 
+void                      __RPC_USER  VARIANT_UserFree(     unsigned long *, VARIANT * ); 
 
 /* end of Additional Prototypes */
 

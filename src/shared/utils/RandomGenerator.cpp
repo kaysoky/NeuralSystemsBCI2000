@@ -109,7 +109,7 @@ RandomGenerator::Initialize()
     SeedType value = 0;
     for( size_t j = 0; j < sizeof( SeedType ); ++j )
     {
-      SeedType c = static_cast<uint8>( mID[i * sizeof( SeedType ) + j] );
+      SeedType c = static_cast<uint8_t>( mID[i * sizeof( SeedType ) + j] );
       value |= c << ( 8 * j );
     }
     mSeed ^= value;

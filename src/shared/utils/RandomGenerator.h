@@ -30,7 +30,7 @@
 #define RANDOM_GENERATOR_H
 
 #include "Environment.h"
-#include "defines.h"
+#include <stdint.h>
 
 class RandomGenerator : private EnvironmentExtension
 {

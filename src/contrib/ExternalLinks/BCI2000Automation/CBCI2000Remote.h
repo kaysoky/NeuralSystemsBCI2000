@@ -290,11 +290,22 @@ public:
           return S_OK;
         }
 
+    virtual /* [helpstring] */ HRESULT __stdcall Encode( 
+        /* [in] */ BSTR rawValue,
+        /* [retval][out] */ BSTR *encodedValue)
+        {
+          std::string buf = BCI2000Remote::EncodeValue( com::DualString( rawValue ) );
+          *encodedValue = ::SysAllocString( com::DualString( buf ).c_str() );
+          return S_OK;
+        }
+        
     virtual /* [helpstring] */ HRESULT __stdcall Execute(
         /* [in] */ BSTR command,
-        /* [retval][out] */ int *exitCode)
+        /* [optional][out][in] */ VARIANT *exitCode,
+        /* [retval][out] */ VARIANT_BOOL *success)
         {
-          *exitCode = BCI2000Remote::Execute( com::DualString( command ) );
+          int* p = exitCode ? &exitCode->intVal : 0;
+          BOOLRESULT( Execute( com::DualString( command ), p ) );
           return S_OK;
         }
 

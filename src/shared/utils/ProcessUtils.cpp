@@ -78,29 +78,32 @@ ProcessUtils::ExecuteSynchronously( const string& inExecutable, const string& in
   sa.nLength = sizeof( sa );
   sa.bInheritHandle = TRUE;
   sa.lpSecurityDescriptor = NULL;
+  
   HANDLE pipeReadTmp = NULL,
          pipeRead = NULL,
          pipeWrite = NULL,
          pipeWrite2 = NULL;
-  result &= ::CreatePipe( &pipeReadTmp, &pipeWrite, &sa, 0 );
-  result &= ::DuplicateHandle( ::GetCurrentProcess(), pipeWrite, ::GetCurrentProcess(), &pipeWrite2, 0, TRUE, DUPLICATE_SAME_ACCESS );
-  result &= ::DuplicateHandle( ::GetCurrentProcess(), pipeReadTmp, ::GetCurrentProcess(), &pipeRead, 0, FALSE, DUPLICATE_SAME_ACCESS );
-  result &= ::CloseHandle( pipeReadTmp );
+  result = result && ::CreatePipe( &pipeReadTmp, &pipeWrite, &sa, 0 );
+  result = result && ::DuplicateHandle( ::GetCurrentProcess(), pipeWrite, ::GetCurrentProcess(), &pipeWrite2, 0, TRUE, DUPLICATE_SAME_ACCESS );
+  result = result && ::DuplicateHandle( ::GetCurrentProcess(), pipeReadTmp, ::GetCurrentProcess(), &pipeRead, 0, FALSE, DUPLICATE_SAME_ACCESS );
+  ::CloseHandle( pipeReadTmp );
+  
+  HANDLE nulRead = ::CreateFileA( "NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, OPEN_EXISTING, 0, 0 );
+  result = result && ( nulRead != INVALID_HANDLE_VALUE );
 
-  PROCESS_INFORMATION procInfo;
-  ::ZeroMemory( &procInfo, sizeof( procInfo ) );
-  STARTUPINFO startInfo;
-  ::ZeroMemory( &startInfo, sizeof( startInfo ) );
+  PROCESS_INFORMATION procInfo = { 0 };
+  STARTUPINFO startInfo = { 0 };
   startInfo.cb = sizeof( startInfo );
   startInfo.hStdError = pipeWrite2;
   startInfo.hStdOutput = pipeWrite;
-  startInfo.hStdInput = ::GetStdHandle( STD_INPUT_HANDLE );
+  startInfo.hStdInput = nulRead;
   startInfo.wShowWindow = SW_SHOWNA;
   startInfo.dwFlags |= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
 
-  result &= ::CreateProcessA( NULL, const_cast<char*>( command.c_str() ), NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &startInfo, &procInfo );
-  result &= ::CloseHandle( pipeWrite );
-  result &= ::CloseHandle( pipeWrite2 );
+  result = result && ::CreateProcessA( NULL, const_cast<char*>( command.c_str() ), NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &startInfo, &procInfo );
+  ::CloseHandle( pipeWrite );
+  ::CloseHandle( pipeWrite2 );
+  ::CloseHandle( nulRead );
 
   DWORD dwExitCode;
   while( ( result &= ::GetExitCodeProcess( procInfo.hProcess, &dwExitCode ) ) && dwExitCode == STILL_ACTIVE )

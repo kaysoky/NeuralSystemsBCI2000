@@ -2,11 +2,11 @@
 #include "DylibImports.h"
 
 extern "C" {
-extern HANDLE (__cdecl *OPEN_DRIVER_ASYNC)(void) = 0;
-extern BOOL (__cdecl *USB_WRITE)(HANDLE HAN, PCHAR data) = 0;
-extern BOOL (__cdecl *READ_MULTIPLE_SWEEPS)(HANDLE HAN, PCHAR data, DWORD nBytesToRead) = 0;
-extern BOOL (__cdecl *READ_POINTER)(HANDLE HAN, PDWORD Pointer) = 0;
-extern BOOL (__cdecl *CLOSE_DRIVER_ASYNC)(HANDLE HAN) = 0;
+HANDLE (__cdecl *OPEN_DRIVER_ASYNC)(void) = 0;
+BOOL (__cdecl *USB_WRITE)(HANDLE HAN, PCHAR data) = 0;
+BOOL (__cdecl *READ_MULTIPLE_SWEEPS)(HANDLE HAN, PCHAR data, DWORD nBytesToRead) = 0;
+BOOL (__cdecl *READ_POINTER)(HANDLE HAN, PDWORD Pointer) = 0;
+BOOL (__cdecl *CLOSE_DRIVER_ASYNC)(HANDLE HAN) = 0;
 }
 
 static const Dylib::Import imports[] =

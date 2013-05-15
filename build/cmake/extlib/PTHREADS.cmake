@@ -10,7 +10,7 @@
 ##       LIBS_EXTLIB - required library for pthreads
 ##       Also defines source groups for source files
 
-IF( WIN32 AND NOT CMAKE_CL_64 )
+IF( WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
 # Set the Source and headers
 SET( SRC_EXTLIB )

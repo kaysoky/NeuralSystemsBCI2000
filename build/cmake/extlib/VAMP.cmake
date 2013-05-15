@@ -10,7 +10,7 @@
 ##       LIBS_EXTLIB - required library for vAmp
 ##       Also defines source groups for source files
 
-IF( DYNAMIC_IMPORTS OR WIN32 AND NOT CMAKE_CL_64 )
+IF( USE_DYNAMIC_IMPORTS OR (WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8) )
 
 # Set the Source and headers
 SET( SRC_EXTLIB
@@ -38,7 +38,7 @@ SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/mingw )
 ENDIF( MINGW )
 
 # Set Libs required
-IF( DYNAMIC_IMPORTS )
+IF( USE_DYNAMIC_IMPORTS )
 ELSEIF( MINGW )
 SET( LIBS_EXTLIB libFirstAmp.a )
 ELSE()

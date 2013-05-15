@@ -106,7 +106,7 @@ int main( int argc, char** argv )
       return -1;
     }
   }
-  bci.Execute( "cd \"" + FileUtils::WorkingDirectory() + "\"" );
+  bci.Execute( "cd \"" + FileUtils::WorkingDirectory() + "\"", 0 );
   int exitCode = 0;
   if( mode == interactive )
   {
@@ -114,9 +114,8 @@ int main( int argc, char** argv )
     string line;
     while( bci.Connected() && getline( cin, line ) )
     {
-      if( bci.Connected() )
+      if( bci.Connected() && bci.Execute( line, &exitCode ) )
       {
-        exitCode = bci.Execute( line );
         if( !bci.Result().empty() )
           cerr << bci.Result() << '\n';
       }
@@ -148,7 +147,7 @@ int main( int argc, char** argv )
         script = "execute script \"" + script + "\"" + additionalArgs;
         break;
     }
-    exitCode = bci.Execute( script );
+    bci.Execute( script, &exitCode );
     if( !bci.Result().empty() )
       cerr << bci.Result() << '\n';
   }

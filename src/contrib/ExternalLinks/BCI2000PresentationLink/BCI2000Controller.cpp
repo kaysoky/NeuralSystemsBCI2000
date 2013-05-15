@@ -464,7 +464,10 @@ void
 CBCI2000Controller::execute( ArgList& ioArgs )
 {
   std::string command = ioArgs.GetString( 1 );
-  int result = mBCI2000.Execute( command );
+  int exitCode = 0,
+      result = mBCI2000.Execute( command, &exitCode );
+  if( ioArgs.size() > 2 )
+    ioArgs.SetInt( 1, exitCode );
   ioArgs.SetString( 2, com::DualString( mBCI2000.Result() ).ToWin() );
   ioArgs.SetInt( 0, result );
 }

@@ -51,7 +51,7 @@ bool WildcardMatch( const std::string& pattern, const std::string& string, bool 
 struct Match { size_t begin, length; };
 struct Matches : std::vector<Match>
 {
-  int Size() const { return size(); }
+  int Size() const { return static_cast<int>( size() ); }
   operator bool() const { return !empty(); }
 };
 Matches ExtWildcardMatch( const char* pattern, const char* string, bool caseSensitive = true );

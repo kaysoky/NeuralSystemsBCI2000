@@ -9,13 +9,13 @@ namespace Dylib { bool NSDevice_Loaded() { return true; } }
 #else // DYNAMIC_IMPORTS
 
 extern "C" {
-long (__stdcall *NSDConnect)(int nType = 1,const char* pId = 0) = 0;
+long (__stdcall *NSDConnect)(int nType,const char* pId) = 0;
 int (__stdcall *NSDDisconnect)(void) = 0;
 int (__stdcall *NSDGetCapabilities)(char* pCapabilities) = 0;
 int (__stdcall *NSDGetBlocksPerSecond)(void) = 0;
 int (__stdcall *NSDGetConfiguration)(char* pConfiguration) = 0;
 int (__stdcall *NSDSetConfiguration)(char* pConfiguration) = 0;
-int (__stdcall *NSDCreateConfiguration)(int nChannels = 70, int nRate = 1000) = 0;
+int (__stdcall *NSDCreateConfiguration)(int nChannels, int nRate) = 0;
 int (__stdcall *NSDGetData)(float* pData) = 0;
 }
 

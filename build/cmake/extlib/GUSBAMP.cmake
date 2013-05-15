@@ -28,7 +28,7 @@ SET( INC_EXTLIB
 
 # Define where the library is
 IF( MSVC )
-  IF( CMAKE_CL_64 )
+  IF( CMAKE_SIZEOF_VOID_P EQUAL 8 )
     SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/coff64 )
   ELSE()
     SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/coff )
@@ -39,7 +39,7 @@ IF( MINGW )
 ENDIF( MINGW )
 
 # Set Libs required
-IF( DYNAMIC_IMPORTS )
+IF( USE_DYNAMIC_IMPORTS )
 ELSEIF( MINGW )
   SET( LIBS_EXTLIB libgUSBamp.a )
 ELSE()

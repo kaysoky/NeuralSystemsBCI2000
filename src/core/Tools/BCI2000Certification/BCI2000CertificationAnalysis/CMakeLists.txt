@@ -3,6 +3,8 @@
 ## Authors: Adam Wilson
 ## Description: Build information for BCI2000CertAnalysis
 
+IF( BUILD_TESTS )
+
 # Set the executable name
 SET( EXECUTABLE_NAME BCI2000CertAnalysis)
 
@@ -40,6 +42,7 @@ SET( GENERATED
 )
 
 INCLUDE_DIRECTORIES( ../ )
+SET( DIR_NAME Tests/Certification )
 
 # Create the signal processing module
 BCI2000_ADD_TOOLS_GUIAPP( 
@@ -49,3 +52,5 @@ BCI2000_ADD_TOOLS_GUIAPP(
 )
 
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/tools/BCI2000Certification ${EXECUTABLE_NAME} )
+
+ENDIF( BUILD_TESTS )

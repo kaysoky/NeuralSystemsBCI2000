@@ -17,13 +17,13 @@ SET( HDR_PROJECT
   lib/thinkgear.imports.h
 )
 
-IF( DYNAMIC_IMPORTS )
+IF( USE_DYNAMIC_IMPORTS )
 ELSEIF( MSVC )
   LINK_DIRECTORIES( ${BCI2000_SRC_DIR}/contrib/SignalSource/NeuroSky/lib/coff )
 ENDIF()
 
 # Put everything together
-IF( NOT DYNAMIC_IMPORTS AND (NOT MSVC AND NOT BORLAND OR CMAKE_CL_64) )
+IF( NOT USE_DYNAMIC_IMPORTS AND (NOT MSVC AND NOT BORLAND OR CMAKE_CL_64) )
 
   MESSAGE( "-- NeuroSky does not provide libraries for this compiler/OS, will not build" )
 
@@ -35,7 +35,7 @@ ELSE()
     "${SRC_PROJECT}" "${HDR_PROJECT}" 
   )
 
-  IF( NOT DYNAMIC_IMPORTS )
+  IF( NOT USE_DYNAMIC_IMPORTS )
     # Link the NeuroSky Library
     TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} thinkgear )
   ENDIF()

@@ -29,18 +29,11 @@
 # define BACK_COMPAT 1
 #endif // BACK_COMPAT
 
-// stdint types
-
-#if _MSC_VER // temporary solution until switch to C++11
-# include "../extlib/fieldtrip/buffer/src/win32/stdint.h"
-#else
-# include <stdint.h>
-#endif
-
+#include <stdint.h>
 typedef float float32_t;
 
 // Backward compatibility (for new code, use stdint types):
-#if BACK_COMPAT
+#if 0 //BACK_COMPAT
 typedef uint8_t uint8;
 typedef int8_t sint8;
 typedef uint16_t uint16;
@@ -52,35 +45,16 @@ typedef int64_t sint64;
 typedef float32_t float32;
 #endif
 
-// limits
+#include "config/Endian.h"
 
+#if __cplusplus
+// limits
 #include <limits>
 
 template <typename T>
 std::numeric_limits<T> Limits( const T& = 0 )
 { return std::numeric_limits<T>(); }
-
-// endianness
-
-#if _WIN32
-# define LITTLE_ENDIAN 1
-# define BIG_ENDIAN 2
-# define BYTE_ORDER LITTLE_ENDIAN
-#else
-# include <sys/param.h>
-# ifndef BYTE_ORDER
-#  define BYTE_ORDER __BYTE_ORDER
-#  define LITTLE_ENDIAN __LITTLE_ENDIAN
-#  define BIG_ENDIAN __BIG_ENDIAN
-# endif
-#endif
-
-enum
-{
-  LittleEndian = LITTLE_ENDIAN,
-  BigEndian = BIG_ENDIAN,
-  HostOrder = BYTE_ORDER,
-};
+#endif // __cplusplus
 
 // obsolescent definitions
 #if BACK_COMPAT

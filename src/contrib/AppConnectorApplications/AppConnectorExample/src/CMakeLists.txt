@@ -3,6 +3,8 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for the AppConnectorExample
 
+IF( BUILD_DEMOS )
+
 # Set the executable name
 SET( NAME AppConnectorExample )
 
@@ -35,7 +37,7 @@ ADD_EXECUTABLE( ${NAME} WIN32 ${SRC_PROJECT} ${HDR_PROJECT} )
 SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
 
 # Set the project build folder
-SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER "${DIR_NAME}" )
+SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER Demos/AppConnector )
 
 TARGET_LINK_LIBRARIES( ${NAME} ${QT_LIBRARIES} )
 IF( WIN32 )
@@ -43,3 +45,5 @@ IF( WIN32 )
 ENDIF( WIN32 )
 
 ENDIF( NOT BORLAND )
+
+ENDIF( BUILD_DEMOS )

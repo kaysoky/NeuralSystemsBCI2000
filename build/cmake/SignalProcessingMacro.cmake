@@ -32,6 +32,7 @@ IF( NOT FAILED )
   SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
 
   # Add the executable to the project
+  ADD_TARGET_HOOK()
   ADD_EXECUTABLE( ${NAME} WIN32 ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
 
   # Link against required libraries

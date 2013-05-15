@@ -64,7 +64,7 @@ namespace HeaderFile {
   struct String : std::string
   { std::istream& Get( std::istream& is ) { return getline( is, *this, '\0' ); } };
 #if RDA_FLOAT
-  typedef BinaryData<float32, LittleEndian> DataType;
+  typedef BinaryData<float32_t, LittleEndian> DataType;
   enum { PortNumber = 51244, DataPacket = RDAData32, BadDataPacket = RDAData };
 #else
   typedef BinaryData<int16_t, LittleEndian> DataType;

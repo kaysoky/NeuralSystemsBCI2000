@@ -3,7 +3,7 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for Calculator
 
-SET( DIR_NAME "${DIR_NAME}Shared/" )
+IF( BUILD_TESTS )
 
 SET( SRC
   Calculator.cpp
@@ -12,6 +12,7 @@ SET( SRC
 SET( HDR
 )
 
+SET( DIR_NAME Tests/Expressions )
 BCI2000_ADD_TOOLS_CMDLINE( 
   Calculator
   "${SRC}"
@@ -19,3 +20,5 @@ BCI2000_ADD_TOOLS_CMDLINE(
   FALSE
 )
 SET_OUTPUT_DIRECTORY( ${CMAKE_CURRENT_SOURCE_DIR} Calculator )
+
+ENDIF( BUILD_TESTS )

@@ -28,11 +28,17 @@
 
 #include "PrecisionTime.h"
 
+#ifdef Yield
+# undef Yield
+#endif
+
 namespace ThreadUtils
 {
 
 bool InMainThread();
 
+ // yield to other threads
+void Yield();
  // sleep for milliseconds
 void SleepFor( int ms );
  // sleep for milliseconds, with maximum precision

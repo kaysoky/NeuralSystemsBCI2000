@@ -4,17 +4,29 @@
 
 #if _WIN32
 # include <Windows.h>
-# include <Dbghelp.h>
 #endif
 
-#if _GNUC_
+#if __GNUC__
+# include <malloc.h>
 # include <cxxabi.h>
 #endif
 
 using namespace std;
 
+#if _WIN32
+#define UNDNAME_NO_ACCESS_SPECIFIERS 0x80
+#define UNDNAME_NO_MEMBER_TYPE 0x200
+typedef DWORD (WINAPI *pUnDecorateSymbolNameA)( PCSTR, PSTR, DWORD, DWORD );
+static pUnDecorateSymbolNameA UnDecorateSymbolNameA = 0;
+#endif // _WIN32
+
 int main( int argc, char** argv )
 {
+#if _WIN32
+  HMODULE hLib = ::LoadLibraryA( "dbghelp" );
+  if( hLib )
+    UnDecorateSymbolNameA = (pUnDecorateSymbolNameA)::GetProcAddress( hLib, "UnDecorateSymbolNameA" );
+#endif
   char buf[2048];
   string s;
   while( getline( cin, s ) )
@@ -22,10 +34,12 @@ int main( int argc, char** argv )
     string d;
 #if _WIN32
     int flags = UNDNAME_NO_ACCESS_SPECIFIERS | UNDNAME_NO_MEMBER_TYPE;
-    if( ::UnDecorateSymbolName( s.c_str(), buf, sizeof( buf ) - 1, flags ) )
+    if( UnDecorateSymbolNameA &&
+        UnDecorateSymbolNameA( s.c_str(), buf, sizeof( buf ) - 1, flags )
+    )
       d = buf;
-#endif // _WIN32
-#if _GNUC_
+#endif // _MSC_VER
+#if __GNUC__
     if( d.empty() || d == s )
     {
       int status = 0;
@@ -35,7 +49,7 @@ int main( int argc, char** argv )
       if( p )
         ::free( p );
     }
-#endif // _GNUC_
+#endif // __GNUC__
      cout << ( d.empty() ? s : d ) << "\n";
   }
   return 0;

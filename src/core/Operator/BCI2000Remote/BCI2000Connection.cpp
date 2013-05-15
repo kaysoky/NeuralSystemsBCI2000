@@ -49,9 +49,9 @@ BCI2000Connection::WindowVisible( int inVisible )
   if( mSocket.connected() && mWindowVisible != dontChange )
   {
     if( mWindowVisible == 0 )
-      Execute( "hide window" );
+      Execute( "hide window", 0 );
     else
-      Execute( "show window" );
+      Execute( "show window", 0 );
   }
   return *this;
 }
@@ -61,7 +61,7 @@ BCI2000Connection::WindowTitle( const std::string& inTitle )
 {
   mWindowTitle = inTitle;
   if( mSocket.connected() )
-    Execute( "set title \"" + inTitle + "\"" );
+    Execute( "set title \"" + inTitle + "\"", 0 );
   return *this;
 }
 
@@ -141,14 +141,14 @@ BCI2000Connection::Connected()
   return mSocket.connected();
 }
 
-int
-BCI2000Connection::Execute( const string& inCommand )
+bool
+BCI2000Connection::Execute( const string& inCommand, int* outpExitCode )
 {
   mResult.clear();
   if( !mSocket.connected() )
   {
     mResult = "Not connected (call BCI2000Connection::Connect() to establish a connection)";
-    return -1;
+    return false;
   }
   struct Waiting
   {
@@ -164,15 +164,16 @@ BCI2000Connection::Execute( const string& inCommand )
     if( !mSocket.connected() )
     {
       mResult = "Lost connection to Operator module";
-      return -1;
+      return false;
     }
   }
-  int exitCode = 0;
+  int ignore, &outExitCode = outpExitCode ? *outpExitCode : ignore;
+  outExitCode = 0;
   string line;
-  while( line != Prompt || mConnection.rdbuf()->in_avail() )
+  while( mConnection && ( ( line != Prompt ) || mConnection.rdbuf()->in_avail() ) )
   {
-    char c = mConnection.get();
-    if( c == '\n' )
+    int c = mConnection.get();
+    if( c == '\n' || c == EOF )
     {
       if( line == ReadlineTag )
       {
@@ -185,18 +186,18 @@ BCI2000Connection::Execute( const string& inCommand )
               || line.find( AckTag ) != 0 )
           {
             mResult = "Did not receive input acknowledgement";
-            return -1;
+            return false;
           }
         }
         else
         {
           mResult = "Could not handle request for input (override BCI2000Connection::OnInput())";
-          return -1;
+          return false;
         }
       }
       else if( line.find( ExitCodeTag ) == 0 )
       {
-        istringstream( line.substr( ExitCodeTag.length() ) ) >> exitCode;
+        istringstream( line.substr( ExitCodeTag.length() ) ) >> outExitCode;
       }
       else if( line == TerminationTag )
       {
@@ -204,7 +205,7 @@ BCI2000Connection::Execute( const string& inCommand )
         mConnection.close();
         mConnection.clear();
         mTerminateOperator = false;
-        return exitCode;
+        return true;
       }
       else
       {
@@ -215,16 +216,17 @@ BCI2000Connection::Execute( const string& inCommand )
           mResult += line;
         }
         double value;
-        if( ( istringstream( line ) >> value ).eof() )
-          exitCode = ( value != 0 ) ? 0 : 1;
+        istringstream iss( line );
+        if( ( iss >> ws >> value >> ws ).eof() )
+          outExitCode = ( value != 0 ) ? 0 : 1;
         else if( !::stricmp( line.c_str(), "true" ) )
-          exitCode = 0;
+          outExitCode = 0;
         else if( !::stricmp( line.c_str(), "false" ) )
-          exitCode = 1;
+          outExitCode = 1;
         else if( line.empty() )
-          exitCode = 0;
+          outExitCode = 0;
         else
-          exitCode = 1;
+          outExitCode = -1;
       }
       line.clear();
     }
@@ -233,7 +235,7 @@ BCI2000Connection::Execute( const string& inCommand )
       line += c;
     }
   }
-  return exitCode;
+  return true;
 }
 
 bool
@@ -267,7 +269,7 @@ BCI2000Connection::Run( const string& inOperatorPath, const string& inOptions )
 bool
 BCI2000Connection::Quit()
 {
-  Execute( "quit" );
+  Execute( "quit", 0 );
   return Result().empty();
 }
 

@@ -241,7 +241,9 @@ void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
         mChInd[chInd_ind++] = Biosemi2Client::FIRST_EEG_CHANNEL + ind - 1;
     }
 
-	int first_aib = (mpBiosemi->isMK2() ? Biosemi2Client::FIRST_AIB_CHANNEL_MK2 : Biosemi2Client::FIRST_AIB_CHANNEL_MK1);
+    int first_aib = Biosemi2Client::FIRST_AIB_CHANNEL_MK1;
+    if(mpBiosemi->isMK2())
+        first_aib = Biosemi2Client::FIRST_AIB_CHANNEL_MK2;
     int nAibRequested   = Parameter( "AIBChList" )->NumValues();
     for( int i = 0 ; i < nAibRequested ; ++i ) {
         int ind = Parameter( "AIBChList" )( i );

@@ -63,7 +63,7 @@ BCI2000Remote::DataDirectory( const std::string& inDataDirectory )
 bool
 BCI2000Remote::StartupModules( const std::vector<string>& inModules )
 {
-  Execute( "shutdown system" );
+  Execute( "shutdown system", 0 );
   bool success = WaitForSystemState( "Idle" );
   if( success )
   {
@@ -72,7 +72,7 @@ BCI2000Remote::StartupModules( const std::vector<string>& inModules )
     startupCommand << "startup system localhost ";
     for( size_t i = 0; i < inModules.size(); ++i )
       startupCommand << "module" << i + 1 << ":" << port++ << " ";
-    Execute( startupCommand.str() );
+    Execute( startupCommand.str(), 0 );
     success = ( Result().find( "not" ) == string::npos );
   }
   if( success )
@@ -80,7 +80,8 @@ BCI2000Remote::StartupModules( const std::vector<string>& inModules )
     ostringstream errors;
     for( size_t i = 0; i < inModules.size(); ++i )
     {
-      int code = Execute( "start executable " + inModules[i] + " --local" );
+      int code = 0;
+      Execute( "start executable " + inModules[i] + " --local", &code );
       if( code )
         errors << "\n" << inModules[i] << " returned " << code;
       else if( !Result().empty() )
@@ -101,16 +102,16 @@ BCI2000Remote::SetConfig()
   SubjectID( mSubjectID );
   SessionID( mSessionID );
   DataDirectory( mDataDirectory );
-  Execute( "capture messages none warnings errors" );
+  Execute( "capture messages none warnings errors", 0 );
   string tempResult;
   if( SimpleCommand( "set config" ) )
     WaitForSystemState( "Resting|Initialization" );
   else
     tempResult = Result();
-  Execute( "capture messages none" );
-  Execute( "get system state" );
+  Execute( "capture messages none", 0 );
+  Execute( "get system state", 0 );
   bool success = !::stricmp( "Resting", Result().c_str() );
-  Execute( "flush messages" );
+  Execute( "flush messages", 0 );
   if( !tempResult.empty() )
     mResult = tempResult + '\n' + mResult;
   return success;
@@ -120,7 +121,7 @@ bool
 BCI2000Remote::Start()
 {
   bool success = true;
-  Execute( "get system state" );
+  Execute( "get system state", 0 );
   string state = Result();
   if( !::stricmp( state.c_str(), "Running" ) )
   {
@@ -139,7 +140,7 @@ BCI2000Remote::Start()
 bool
 BCI2000Remote::Stop()
 {
-  Execute( "get system state" );
+  Execute( "get system state", 0 );
   bool success = !::stricmp( Result().c_str(), "Running" );
   if( !success )
     mResult = "System is not in running state";
@@ -157,10 +158,12 @@ BCI2000Remote::SetParameter( const std::string& inName, const std::string& inVal
 bool
 BCI2000Remote::GetParameter( const std::string& inName, std::string& outValue )
 {
-  bool success = ( 0 == Execute( "is parameter \"" + inName + "\"" ) );
+  int exitCode = 1;
+  Execute( "is parameter \"" + inName + "\"", &exitCode );
+  bool success = ( exitCode == 0 );
   if( success )
   {
-    Execute( "get parameter \"" + inName + "\"" );
+    Execute( "get parameter \"" + inName + "\"", 0 );
     outValue = Result();
   }
   return success;
@@ -177,7 +180,7 @@ BCI2000Remote::LoadParametersLocal( const string& inFileName )
   {
     string line;
     while( std::getline( file, line ) )
-      Execute( "set parameter " + EscapeSpecialChars( line ) );
+      Execute( "set parameter " + EscapeSpecialChars( line ), 0 );
   }
   return success;
 }
@@ -201,21 +204,21 @@ BCI2000Remote::SetStateVariable( const string& inStateName, double inValue )
 {
   ostringstream value;
   value << inValue;
-  Execute( "set state \"" + inStateName + "\" " + value.str() );
+  Execute( "set state \"" + inStateName + "\" " + value.str(), 0 );
   return Result().empty();
 }
 
 bool
 BCI2000Remote::GetStateVariable( const string& inStateName, double& outValue )
 {
-  Execute( "get state \"" + inStateName + "\"" );
+  Execute( "get state \"" + inStateName + "\"", 0 );
   return istringstream( Result() ) >> outValue;
 }
 
 bool
 BCI2000Remote::GetSystemState( string& outResult )
 {
-  bool success = ( 1 == Execute( "get system state" ) );
+  bool success = Execute( "get system state", 0 );
   if( success )
     outResult = Result();
   else
@@ -228,7 +231,7 @@ BCI2000Remote::GetControlSignal( int inChannel, int inElement, double& outValue 
 {
   ostringstream oss;
   oss << "get signal(" << inChannel << "," << inElement << ")";
-  Execute( oss.str() );
+  Execute( oss.str(), 0 );
   return istringstream( Result() ) >> outValue;
 }
 
@@ -241,7 +244,7 @@ BCI2000Remote::SetScript( const string& inEvent, const string& inScript )
 bool
 BCI2000Remote::GetScript( const string& inEvent, string& outScript )
 {
-  Execute( "get script " + inEvent );
+  Execute( "get script " + inEvent, 0 );
   bool success = true;
   const string tag = "scripting event:";
   size_t pos = Result().find( tag );
@@ -266,6 +269,12 @@ BCI2000Remote::GetScript( const string& inEvent, string& outScript )
   return success;
 }
 
+string
+BCI2000Remote::EncodeValue( const string& inValue )
+{
+  return EscapeSpecialChars( inValue, "" );
+}
+
 bool
 BCI2000Remote::WaitForSystemState( const string& inState )
 {
@@ -277,19 +286,21 @@ BCI2000Remote::WaitForSystemState( const string& inState )
 bool
 BCI2000Remote::SimpleCommand( const string& inCommand )
 {
-  Execute( inCommand );
+  Execute( inCommand, 0 );
   return Result().empty();
 }
 
 string
-BCI2000Remote::EscapeSpecialChars( const string& inString )
+BCI2000Remote::EscapeSpecialChars( const string& inString, const string& inExcept )
 {
   // Encode characters that might be special to the ScriptInterpreter shell.
   ostringstream oss;
-  const string escapeThese = "#\"${}`&|<>;\n";
+  static const string escapeThese = "#\"${}`&|<>;\n";
   for( string::const_iterator i = inString.begin(); i != inString.end(); ++i )
   {
-    if( escapeThese.find( *i ) != string::npos )
+    bool doEscape = *i <= 0x20 || *i >= 0x80 || escapeThese.find( *i ) != string::npos;
+    doEscape = doEscape && inExcept.find( *i ) == string::npos;
+    if( doEscape )
       oss << "%" << hex << ( *i >> 8 ) << ( *i & 0xf );
     else
       oss.put( *i );

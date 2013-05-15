@@ -245,12 +245,12 @@ class ParamRef
     { return mpParam; }
 
  private:
-  static size_t index( int idx )
+  static int index( int idx )
     { return idx == ParamRef::none ? 0 : idx; }
 
  private:
   const Param* mpParam;
-  size_t mIdx1, mIdx2;
+  int mIdx1, mIdx2;
 
   static Param       sNullParam;
   static std::string sNullString;

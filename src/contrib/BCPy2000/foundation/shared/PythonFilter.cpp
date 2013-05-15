@@ -25,6 +25,7 @@
 //
 #ifdef _WIN32
 # ifndef __BORLANDC__
+#  undef _WIN32_WINNT
 #  define _WIN32_WINNT 0x500
 # else // __BORLANDC__
 # include <float.h>

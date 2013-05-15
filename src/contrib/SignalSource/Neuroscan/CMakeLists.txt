@@ -4,7 +4,12 @@
 ## Description: Build information for Neuroscan source
 
 ADD_SUBDIRECTORY( getparams )
-ADD_SUBDIRECTORY( ctfneurod )
+IF( BUILD_DEMOS )
+  SET( DIR_NAME_ ${DIR_NAME} )
+  SET( DIR_NAME Demos/Neuroscan )
+  ADD_SUBDIRECTORY( ctfneurod )
+  SET( DIR_NAME ${DIR_NAME_} )
+ENDIF()
 
 # Set the executable name
 SET( EXECUTABLE_NAME NeuroscanClient )

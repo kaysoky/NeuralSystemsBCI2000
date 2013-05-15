@@ -37,7 +37,7 @@
 # include "gMOBIlabplus.imports.h"
 #endif // GMOBILABPLUS
 
-const size_t cMaxReadBufSize = 1024; // Restriction of gtec driver.
+const UINT cMaxReadBufSize = 1024;   // Restriction of gtec driver.
 const int cMinDataTimeoutMs = 1000;  // Minimum data timeout in ms.
 const int cMaxVoidLoopCount = 3;     // Maximum number of zero reads in data acquisition loop.
 

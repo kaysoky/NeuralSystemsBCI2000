@@ -4,22 +4,15 @@
 
 SET( BCI2000_SIGSRCLIBS
   ${BCI2000_SIGSRCLIBS}
-  portaudio_x86
-  libsndfile-1
-)
-
-SET( BCI2000_SIGSRCLIBDIRS
-  ${BCI2000_SIGSRCLIBDIRS}
-  ${BCI2000_EXTENSION_DIR}/portaudio/lib/coff
-  ${BCI2000_EXTENSION_DIR}/libsndfile/lib/coff 
+  PortAudio
+  Sndfile
 )
 
 SET( BCI2000_SIGSRCINCDIRS
   ${BCI2000_SIGSRCINCDIRS}
-  ${BCI2000_EXTENSION_DIR}
-  ${BCI2000_EXTENSION_DIR}/portaudio/inc
-  ${BCI2000_EXTENSION_DIR}/libsndfile/inc
   ${BCI2000_SRC_DIR}/extlib/math
+  ${BCI2000_SRC_DIR}/extlib/libsndfile/include
+  ${BCI2000_SRC_DIR}/extlib/portaudio/portaudio/include
 )
 
 SET( BCI2000_SIGSRCHEADERS_EXTENSIONS
@@ -31,10 +24,4 @@ SET( BCI2000_SIGSRCSOURCES_EXTENSIONS
   ${BCI2000_SIGSRCSOURCES_EXTENSIONS}
   ${BCI2000_EXTENSION_DIR}/AudioExtension.cpp
   ${BCI2000_SRC_DIR}/extlib/math/FilterDesign.cpp
-)
-
-SET( BCI2000_SIGSRCDLLS
-  ${BCI2000_SIGSRCDLLS}
-  ${BCI2000_EXTENSION_DIR}/portaudio/dylib/portaudio_x86.dll
-  ${BCI2000_EXTENSION_DIR}/libsndfile/dylib/libsndfile-1.dll
 )

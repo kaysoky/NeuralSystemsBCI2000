@@ -50,18 +50,18 @@ struct StateInfo
             length;
   union
   {
-    uint8*  data8;
-    uint16* data16;
-    uint32* data32;
-    uint64* data64;
+    uint8_t*  data8;
+    uint16_t* data16;
+    uint32_t* data32;
+    uint64_t* data64;
   };
   mxClassID classID;
 };
 
 struct FileInfo
 {
-  sint64 begin, // range of samples to read
-         end;
+  int64_t begin, // range of samples to read
+          end;
   BCI2000FileReader* data;
 };
 
@@ -81,7 +81,7 @@ void
 ReadSignal( FileContainer& inFiles, mxArray* ioSignal )
 {
   T* data = reinterpret_cast<T*>( mxGetData( ioSignal ) );
-  sint64 sampleOffset = 0,
+  int64_t sampleOffset = 0,
          totalSamples = 0;
   for( FileContainer::iterator i = inFiles.begin(); i != inFiles.end(); ++i )
     totalSamples += i->end - i->begin;
@@ -89,9 +89,9 @@ ReadSignal( FileContainer& inFiles, mxArray* ioSignal )
   for( FileContainer::iterator i = inFiles.begin(); i != inFiles.end(); ++i )
   {
     BCI2000FileReader* file = i->data;
-    sint64 numSamples = i->end - i->begin;
+    int64_t numSamples = i->end - i->begin;
     int numChannels = file->SignalProperties().Channels();
-    for( sint64 sample = 0; sample < numSamples; ++sample )
+    for( int64_t sample = 0; sample < numSamples; ++sample )
       for( int channel = 0; channel < numChannels; ++channel )
         data[ totalSamples * channel + sample + sampleOffset ]
           = static_cast<T>(
@@ -134,7 +134,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       BCI2000FileReader* file = new BCI2000FileReader;
       FileInfo fileInfo =
       {
-        0, numeric_limits<sint64>::max(),
+        0, numeric_limits<int64_t>::max(),
         file
       };
       files.push_back( fileInfo );
@@ -144,9 +144,9 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       if( !file->IsOpen() )
         throw bciexception_( "Could not open \"" << stringArg << "\" as a BCI2000 data file." );
 
-      sint64 samplesInFile = file->NumSamples(),
+      int64_t samplesInFile = file->NumSamples(),
              begin = 0,
-             end = numeric_limits<sint64>::max();
+             end = numeric_limits<int64_t>::max();
 
       if( ( i + 1 < nargin )
            && ( mxGetClassID( varargin[ i + 1 ] ) == mxDOUBLE_CLASS ) )
@@ -162,9 +162,9 @@ BCIMexFunction( int nargout, mxArray* varargout[],
             throw bciexception_( "Nonnegative integers expected in range vector." );
 
         if( numEntries > 0 )
-          begin = static_cast<sint64>( range[ 0 ] - 1 );
+          begin = static_cast<int64_t>( range[ 0 ] - 1 );
         if( numEntries > 1 )
-          end = static_cast<sint64>( range[ 1 ] );
+          end = static_cast<int64_t>( range[ 1 ] );
       }
       if( begin == -1 && end == 0 ) // The [0 0] case.
         begin = 0;
@@ -185,7 +185,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
 
   if( files.empty() )
     throw bciexception_( "No file name given." );
-  sint64 totalSamples = files[ 0 ].end - files[ 0 ].begin;
+  int64_t totalSamples = files[ 0 ].end - files[ 0 ].begin;
   int numChannels = files[ 0 ].data->SignalProperties().Channels();
   SignalType dataType = files[ 0 ].data->SignalProperties().Type();
   mxClassID classID = mxDOUBLE_CLASS;
@@ -234,15 +234,15 @@ BCIMexFunction( int nargout, mxArray* varargout[],
   switch( classID )
   {
     case mxINT16_CLASS:
-      ReadSignal<int16, true>( files, signal );
+      ReadSignal<int16_t, true>( files, signal );
       break;
 
     case mxINT32_CLASS:
-      ReadSignal<int32, true>( files, signal );
+      ReadSignal<int32_t, true>( files, signal );
       break;
 
     case mxSINGLE_CLASS:
-      ReadSignal<float32, true>( files, signal );
+      ReadSignal<float32_t, true>( files, signal );
       break;
 
     case mxDOUBLE_CLASS:
@@ -307,7 +307,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       if( stateArray == NULL )
         throw bciexception_( "Out of memory when allocating space for state variables." );
       mxSetFieldByNumber( states, 0, i, stateArray );
-      stateInfo[ i ].data8 = reinterpret_cast<uint8*>( mxGetData( stateArray ) );
+      stateInfo[ i ].data8 = reinterpret_cast<uint8_t*>( mxGetData( stateArray ) );
     }
     for( FileContainer::iterator file = files.begin(); file != files.end(); ++file )
     { // Locations and lengths are not necessarily compatible across files, so we must
@@ -320,7 +320,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
         stateInfo[ i ].location = s.Location();
         stateInfo[ i ].length = s.Length();
       }
-      for( sint64 sample = file->begin; sample < file->end; ++sample )
+      for( int64_t sample = file->begin; sample < file->end; ++sample )
       { // Iterating over samples in the outer loop will avoid scanning
         // the file multiple times.
         file->data->ReadStateVector( sample );
@@ -331,19 +331,19 @@ BCIMexFunction( int nargout, mxArray* varargout[],
           switch( stateInfo[ i ].classID )
           {
             case mxUINT8_CLASS:
-              *stateInfo[ i ].data8++ = static_cast<uint8>( value );
+              *stateInfo[ i ].data8++ = static_cast<uint8_t>( value );
               break;
 
             case mxUINT16_CLASS:
-              *stateInfo[ i ].data16++ = static_cast<uint16>( value );
+              *stateInfo[ i ].data16++ = static_cast<uint16_t>( value );
               break;
 
             case mxUINT32_CLASS:
-              *stateInfo[ i ].data32++ = static_cast<uint32>( value );
+              *stateInfo[ i ].data32++ = static_cast<uint32_t>( value );
               break;
 
             case mxUINT64_CLASS:
-              *stateInfo[ i ].data64++ = static_cast<uint64>( value );
+              *stateInfo[ i ].data64++ = static_cast<uint64_t>( value );
               break;
 
             default:
@@ -362,7 +362,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
   // of the number of samples requested for each file.
   if( nargout > 3 )
   {
-    uint64 numSamples = 0;
+    uint64_t numSamples = 0;
     for( FileContainer::const_iterator i = files.begin(); i != files.end(); ++i )
       numSamples += i->data->NumSamples();
     varargout[ 3 ] = mxCreateDoubleScalar( static_cast<double>( numSamples ) );
@@ -373,7 +373,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
   {
     mwSize dims[] = { 1, files.size() };
     varargout[4] = mxCreateNumericArray( 2, dims, mxUINT64_CLASS, mxREAL );
-    uint64* pSizes = static_cast<uint64*>( mxGetData( varargout[4] ) );
+    uint64_t* pSizes = static_cast<uint64_t*>( mxGetData( varargout[4] ) );
     for( FileContainer::const_iterator i = files.begin(); i != files.end(); ++i )
       *pSizes++ = i->data->NumSamples();
   }

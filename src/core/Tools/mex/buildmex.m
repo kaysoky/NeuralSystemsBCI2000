@@ -62,6 +62,10 @@ BCIFRM = [ BCIROOT 'src/shared/' ];
 TESTFILE = 'testdata';
 
 MEXSRC = { ...
+    'mexutils.cpp', ...
+    [ BCIFRM 'bcistream/BCIStream_mex.cpp' ], ...
+    [ BCIFRM 'bcistream/BCIException.cpp' ], ...
+    [ BCIFRM 'bcistream/BCIStream.cpp' ], ...
     [ BCIFRM 'fileio/dat/BCI2000FileReader.cpp' ], ...
     [ BCIFRM 'fileio/dat/BCI2000OutputFormat.cpp' ], ...
     [ BCIFRM 'fileio/edf_gdf/EDFOutputBase.cpp' ], ...
@@ -115,10 +119,6 @@ MEXSRC = { ...
     [ BCIFRM 'utils/ExceptionCatcher.cpp' ], ...
     [ BCIFRM 'utils/ReusableThread.cpp' ], ...
     [ BCIFRM 'utils/PrecisionTime.cpp' ], ...
-    [ BCIFRM 'bcistream/BCIException.cpp' ], ...
-    [ BCIFRM 'bcistream/BCIStream.cpp' ], ...
-    [ BCIFRM 'bcistream/BCIStream_mex.cpp' ], ...
-    'mexutils.cpp', ...
     };
 
 INCLUDEPATHS = { ...
@@ -142,6 +142,7 @@ INCLUDEPATHS = { ...
 LIBRARIES = { ...
     };
 LIBPATHS = { ...
+  '-L.' ...
     };
 
 BINDIR = [ BCIROOT 'tools/mex' ];
@@ -153,146 +154,194 @@ DEFINES = { ...
     '-DNO_PCHINCLUDES', ...
     '-D_USE_MATH_DEFINES', ...
     '-DNOMINMAX', ...
-    '-v',...
     };
 
-switch( computer )
-  case { 'PCWIN', 'PCWIN64' }
-    build_version_header = 'cmd /c "cd ..\..\..\shared\config && "%ProgramFiles%\TortoiseSVN\bin\SubWCRev" ..\.. Version.h.in Version.h"';
-    LIBRARIES = { LIBRARIES{:} '-lwinmm' };
-  otherwise % we assume gcc on all other platforms
-    build_version_header = '(cd ../../../buildutils && ./update_version_header.sh)';
-    CXXFLAGS = '-fPIC -include gccprefix.h';
-    LDFLAGS = '-dead_strip';
-    switch( computer )
-      case { 'MACI', 'MACI64' }
-        ;
-      otherwise
-        LIBRARIES = { LIBRARIES{:} '-lrt' };
-    end
-end;
+LIBBCIMEX = 'libbcimex';
+NOLIBTAG = 'nolibbcimex_';
+ADD_CFLAGS = '';
+ADD_LDFLAGS = '';
+
+if ispc
+  CFLAGS_NAME = 'COMPFLAGS';
+  LDFLAGS_NAME = 'LINKFLAGS';
+  build_version_header = 'cmd /c "cd ..\..\..\shared\config && "%ProgramFiles%\TortoiseSVN\bin\SubWCRev" ..\.. Version.h.in Version.h"';
+  LIBRARIES = [LIBRARIES {'-lwinmm'}];
+else
+  CFLAGS_NAME = 'CFLAGS';
+  LDFLAGS_NAME = 'LDFLAGS';
+  build_version_header = '(cd ../../../buildutils && ./update_version_header.sh)';
+  if ~ismac 
+    LIBRARIES = [LIBRARIES {'-lrt'}];
+  end
+end
 
 options = {};
 if( nargin < 1 )
-    target = 'all';
+  target = 'all';
 else
-    target = varargin{ nargin };
-    options = { varargin{ 1 : end-1 } };
-    if( target(1) == '-' )
-        options = { options{:}, target };
-        target = 'all';
-    end
+  target = varargin{ nargin };
+  options = varargin( 1 : end-1 );
+  if( target(1) == '-' )
+    options = [options {target}];
+    target = 'all';
+  end
 end
 
-switch( target )
+MSVC = strcmp( mex.getCompilerConfigurations('C').Manufacturer, 'Microsoft' );
+if MSVC
+  INCLUDEPATHS = [INCLUDEPATHS {['-I' BCIFRM 'compat']}];
+  CFLAGS = mex.getCompilerConfigurations('C').Details.CompilerFlags;
+  CFLAGS = strrep( CFLAGS, '/MD', '/MT' ); % avoid msvcrt dll dependency
+  ADD_CFLAGS = [ADD_CFLAGS ' /MP /wd4996 /wd4355 /wd4800'];
+  LIBEXT = '.lib';
+  AR_NAME = 'lib';
+  AR_OUTPUT_SWITCH = '/out:';
+  options = [options {'POSTLINK_CMDS=""'}];
+  for i = 1:9
+    options = [options {['POSTLINK_CMDS' num2str(i) '=""']}]; %#ok<AGROW>
+  end
+else
+  ADD_CFLAGS = [ADD_CFLAGS ' -fPIC -include gccprefix.h'];
+  ADD_LDFLAGS = [ADD_LDFLAGS ' -dead_strip'];
+  LIBEXT = '.a';
+  AR_NAME = 'ar';
+  AR_OUTPUT_SWITCH = 'rcs ';
+end
+
+switch target
+  case 'all'
+    buildmex( options{:}, LIBBCIMEX );
+    for i = 1:length( TARGETS )
+      buildmex( options{:}, [NOLIBTAG TARGETS{i}] );
+    end
+    buildmex test;
+  case 'build'
+    system( build_version_header );
+    buildmex( options{:}, 'all' );
+  case 'test'
+    fprintf( 1, 'Testing mex files ... ' );
+    success = true;
+    try
+      [signal, states, parameters] = load_bcidat( [TESTFILE '.dat'] );
+      ref = load( [TESTFILE '.mat'] );
+      if( any( signal ~= ref.signal ) )
+        error( 'Testing load_bcidat: Signal data mismatch' );
+      end
+      if( ~equal_structs( states, ref.states ) )
+        error( 'Testing load_bcidat: State vector data mismatch' );
+      end
+      if( ~equal_structs( parameters, ref.parameters ) )
+        error( 'Testing load_bcidat: Parameter mismatch' );
+      end
+      if( ~equal_structs( parameters, convert_bciprm( convert_bciprm( parameters ) ) ) )
+        error( 'Testing convert_bciprm: Mismatch when converting forth and back' );
+      end
+      spectrum_ = mem( double( signal ), [16, 0, 0.4, 0.02, 15, 0] );
+      if( any( spectrum_ ~= ref.spectrum_ ) )
+        rel_err = sqrt( norm( spectrum_ - ref.spectrum_, 'fro' ) / norm( spectrum_, 'fro' ) );
+        fprintf( 1, 'Warning: mem: Mismatch between computed spectra (relative error is %d)\n', rel_err );
+        err_limit = 1e-6;
+        if( rel_err > err_limit )
+          error( 'Testing mem: Mismatch between computed spectra exceeds relative error limit of %f\n', err_limit );
+        end
+      end
+      clear signal states parameters spectrum ref;
+    catch err
+      success = false;
+    end
+    if( success )
+      fprintf( 1, 'Mex files tested OK.\n' );
+    else
+      fprintf( 1, 'Error: %s.\n', err.message );
+    end
     
-    case 'all'
-        for( i = 1:length( TARGETS ) )
-            buildmex( options{:}, TARGETS{i} );
+  otherwise
+    if strncmp( target, NOLIBTAG, length(NOLIBTAG) )
+      target = target( length(NOLIBTAG)+1:end );
+    elseif ~strcmp( target, LIBBCIMEX )
+      buildmex( options{:}, [NOLIBTAG LIBBCIMEX] );
+    end
+    
+    fprintf( 1, ['Building ' target ' ...'] );
+    switch target
+      case LIBBCIMEX
+        INSTALL = 0;
+        SOURCES = MEXSRC;
+        LDFLAGS = '';
+        options = [options ...
+          {['LINKER="' AR_NAME '"']} ...
+          {['MEX_NAME="' LIBBCIMEX '"']} ...
+          {['NAME_OUTPUT="' AR_OUTPUT_SWITCH LIBBCIMEX LIBEXT '"']} ...
+        ];
+      otherwise
+        INSTALL = 1;
+        SOURCES = { [target '.cpp'] };
+        LIBRARIES = [LIBRARIES {'-lbcimex'}];
+    end
+    args = [options INCLUDEPATHS LIBRARIES LIBPATHS DEFINES];
+    if exist( 'CFLAGS', 'var' )
+      ADD_CFLAGS = [CFLAGS ' ' ADD_CFLAGS];
+      args = [args {['"' CFLAGS_NAME '="""']}];
+    end
+    if exist( 'LDFLAGS', 'var' )
+      ADD_LDFLAGS = [LDFLAGS ' ' ADD_LDFLAGS];
+      args = [args {['"' LDFLAGS_NAME '="""']}];
+    end
+    ADD_CFLAGS = ['"' CFLAGS_NAME '="$' CFLAGS_NAME ' ' ADD_CFLAGS '""'];
+    args = [args {ADD_CFLAGS}];
+    ADD_LDFLAGS = ['"' LDFLAGS_NAME '="$' LDFLAGS_NAME ' ' ADD_LDFLAGS '""'];
+    args = [args {ADD_LDFLAGS}];
+    
+    args = [args SOURCES];
+    mex( args{:} );
+    
+    if INSTALL
+      if( ~exist( BINDIR, 'dir' ) )
+        mkdir( BINDIR );
+      end
+      if( exist( 'COPYFILES', 'var' ) )
+        for f = COPYFILES
+          copyfile( f{:}, BINDIR );
         end
-        buildmex test;
-        
-    case 'build'
-        system( build_version_header );
-        buildmex( options{:}, 'all' );
-        
-    case 'test'
-        fprintf( 1, [ 'Testing mex files ... ' ] );
-        success = true;
-        try
-            [ signal, states, parameters ] = load_bcidat( [ TESTFILE '.dat' ] );
-            ref = load( [ TESTFILE '.mat' ] );
-            if( any( signal ~= ref.signal ) )
-                error( 'Testing load_bcidat: Signal data mismatch' );
-            end
-            if( ~equal_structs( states, ref.states ) )
-                error( 'Testing load_bcidat: State vector data mismatch' );
-            end
-            if( ~equal_structs( parameters, ref.parameters ) )
-                error( 'Testing load_bcidat: Parameter mismatch' );
-            end
-            if( ~equal_structs( parameters, convert_bciprm( convert_bciprm( parameters ) ) ) )
-                error( 'Testing convert_bciprm: Mismatch when converting forth and back' );
-            end
-            spectrum_ = mem( double( signal ), [16, 0, 0.4, 0.02, 15, 0] );
-            if( any( spectrum_ ~= ref.spectrum_ ) )
-                rel_err = sqrt( norm( spectrum_ - ref.spectrum_, 'fro' ) / norm( spectrum_, 'fro' ) );
-                fprintf( 1, 'Warning: mem: Mismatch between computed spectra (relative error is %d)\n', rel_err );
-                err_limit = 1e-6;
-                if( rel_err > err_limit )
-                    error( 'Testing mem: Mismatch between computed spectra exceeds relative error limit of %f\n', err_limit );
-                end
-            end
-            clear signal states parameters spectrum ref;
-        catch err
-            success = false;
-        end
-        if( success )
-            fprintf( 1, 'Mex files tested OK.\n' );
-        else
-            fprintf( 1, 'Error: %s.\n', err.message );
-        end
-        
-    otherwise
-        fprintf( 1, [ 'Building ' target ' ...\n' ] );
-        args = { options{:}, INCLUDEPATHS{:}, LIBRARIES{:}, LIBPATHS{:}, DEFINES{:} };
-        if( exist( 'CXXFLAGS' ) )
-          CXXFLAGS = [ 'CXXFLAGS=""\$CXXFLAGS ' CXXFLAGS '""' ];
-          args = { args{:}, CXXFLAGS };
-        end
-        if( exist( 'LDFLAGS' ) )
-          LDFLAGS =  [ 'LDFLAGS=""\$LDFLAGS ' LDFLAGS '""' ];
-          args = { args{:}, LDFLAGS };
-        end
-        args = { args{:}, [target '.cpp'], MEXSRC{:} };
-        mex( args{:} );
-        if( ~exist( BINDIR ) )
-            mkdir( BINDIR );
-        end
-        if( exist( 'COPYFILES' ) )
-          for( f = COPYFILES )
-              copyfile( f{:}, BINDIR );
-          end
-        end
-        
-        targetfile = [ target '.' mexext ];
+      end
+
+      targetfile = [ target '.' mexext ];
+      clear( targetfile );
+      copyfile( targetfile, BINDIR );
+
+      targetfile = [ target '.m' ];
+      if( exist( targetfile, 'file' ) )
         clear( targetfile );
         copyfile( targetfile, BINDIR );
-        
-        targetfile = [ target '.m' ];
-        if( exist( targetfile ) )
-          clear( targetfile );
-          copyfile( targetfile, BINDIR );
-        end
-        
-        fprintf( 1, [ 'Finished building ' target '\n' ] );
+      end
+    end
+    fprintf( 1, [ ' done.\n' ] );
 end
 
 % A helper function to test structs for equality.
 function result = equal_structs( inStruct1, inStruct2 )
-
 result = true;
 fnames = fieldnames( inStruct1 );
 if( length( fnames )~=length(fieldnames(inStruct2)) )
-    result = false;
+  result = false;
 elseif( ~strcmp( fnames, fieldnames( inStruct2 ) ) )
-    result = false;
+  result = false;
 else
-    for( i = 1:length( fnames ) )
-        if( isstruct( inStruct1.(fnames{i}) ) )
-            if( ~equal_structs( inStruct1.(fnames{i}), inStruct2.(fnames{i}) ) )
-                result = false;
-            end
-        elseif( ischar( inStruct1.(fnames{i}) ) || iscell( inStruct1.(fnames{i}) ) )
-            if( ~strcmp( inStruct1.(fnames{i}), inStruct2.(fnames{i}) ) )
-                result = false;
-            end
-        elseif( isnumeric( inStruct1.(fnames{i}) ) )
-            result = isequalwithequalnans( inStruct1.(fnames{i}), inStruct2.(fnames{i}) );
-        else
-            if( any( inStruct1.(fnames{i}) ~= inStruct2.(fnames{i}) ) )
-                result = false;
-            end
-        end
+  for i = 1:length( fnames )
+    if( isstruct( inStruct1.(fnames{i}) ) )
+      if( ~equal_structs( inStruct1.(fnames{i}), inStruct2.(fnames{i}) ) )
+        result = false;
+      end
+    elseif( ischar( inStruct1.(fnames{i}) ) || iscell( inStruct1.(fnames{i}) ) )
+      if( ~strcmp( inStruct1.(fnames{i}), inStruct2.(fnames{i}) ) )
+        result = false;
+      end
+    elseif( isnumeric( inStruct1.(fnames{i}) ) )
+        result = isequalwithequalnans( inStruct1.(fnames{i}), inStruct2.(fnames{i}) );
+    else
+      if( any( inStruct1.(fnames{i}) ~= inStruct2.(fnames{i}) ) )
+        result = false;
+      end
     end
+  end
 end

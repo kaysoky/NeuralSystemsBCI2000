@@ -38,7 +38,7 @@ function [ signal, states, parameters, total_samples, file_samples ] ...
 %  If multiple files are given, parameter values will match the ones contained 
 %  in the first file.
 %
-%  Optionally, a sample range may be given after each file name:
+%  Optionally, sample ranges may be specified for individual files:
 %  [ signal, states, parameters ] = load_bcidat( 'filename', [first last] )
 %  will load a subset of samples defined by first and last sample index.
 %  Specifying [0 0] for an empty sample range allows to read states and 

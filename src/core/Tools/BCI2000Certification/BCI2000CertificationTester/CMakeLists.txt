@@ -3,6 +3,8 @@
 ## Authors: Adam Wilson
 ## Description: Build information for BCI2000Certification
 
+IF( BUILD_TESTS )
+
 # Set the executable name
 SET( EXECUTABLE_NAME BCI2000Certification)
 
@@ -44,4 +46,6 @@ SET_PROPERTY( TARGET ${EXECUTABLE_NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT"
 TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${QT_LIBRARIES} )
 
 # Set the project build folder
-SET_PROPERTY( TARGET ${EXECUTABLE_NAME} PROPERTY FOLDER "${DIR_NAME}" )
+SET_PROPERTY( TARGET ${EXECUTABLE_NAME} PROPERTY FOLDER Tests/Certification )
+
+ENDIF( BUILD_TESTS )

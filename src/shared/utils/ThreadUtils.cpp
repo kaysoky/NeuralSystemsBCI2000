@@ -42,15 +42,17 @@ using namespace std;
 using namespace ThreadUtils;
 
 #if _WIN32
-#else // _WIN32
-static pthread_t sMainThread = ::pthread_self();
-#endif // _WIN32
-
-#if _WIN32
 
 static unsigned int sMainThreadID = ::GetCurrentThreadId();
 static bool sInitialized = false;
 static OSMutex sMutex;
+
+#undef Yield
+void
+ThreadUtils::Yield()
+{
+  ::Sleep( 0 );
+}
 
 #ifdef __BORLANDC__
 # pragma option push
@@ -121,6 +123,14 @@ ThreadUtils::NumberOfProcessors()
 }
 
 #else // _WIN32
+
+static pthread_t sMainThread = ::pthread_self();
+
+void
+ThreadUtils::Yield()
+{
+  ::pthread_yield();
+}
 
 void
 ThreadUtils::PrecisionSleepFor( double inMs )

@@ -422,14 +422,12 @@ NIDAQLogger::Preflight() const
 						bciout << "Device sample rate is above 256. Some lag may occur" << endl;
 			if (OptionalParameter("LogDigiIn") != "")
 			{
-				if (mDigital)
-					if (ReportError(DAQmxClearTask(mDigital)) < 0)
-						bcierr << "Failed to clear existing task handling digital input" << endl;
-				if (ReportError(DAQmxCreateTask("Digital_Input",&(TaskHandle)mDigital)) < 0)
+                TaskHandle task;
+                if (ReportError(DAQmxCreateTask("Digital_Input",&task)) < 0)
 					bcierr << "Unable to create task \"Digital_Input\" " << endl;
-				if (ReportError(DAQmxCreateDIChan(mDigital,mActive[0].c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
+                if (ReportError(DAQmxCreateDIChan(task,mActive[0].c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
 					bcierr << "Unable to create channel operating on the following lines: \n" << mActive[0] << endl;
-				if (ReportError(DAQmxClearTask(mDigital)) < 0)
+                if (ReportError(DAQmxClearTask(task)) < 0)
 					bcierr << "Failed to clear task \"Digital_Input\" " << endl;
 			}
 			if (OptionalParameter("LogAnaIn") != "")
@@ -441,14 +439,12 @@ NIDAQLogger::Preflight() const
 					lMin = mRanges[0];
 				if (ReportError(DAQmxCreateLinScale("MilliVolts",1000.0,lMin*-2000.0,DAQmx_Val_Volts,"mV")) < 0)
 					bcierr << "Failed to construct linear scale (MilliVolts)" << endl;
-				if (mAnalog)
-					if (ReportError(DAQmxClearTask(mAnalog)) < 0)
-						bcierr << "Failed to clear existing task handling analog input" << endl;
-				if (ReportError(DAQmxCreateTask("Analog_Input",&(TaskHandle)mAnalog)) < 0)
+                TaskHandle task;
+                if (ReportError(DAQmxCreateTask("Analog_Input",&task)) < 0)
 					bcierr << "Unable to create task \"Analog_Input\" " << endl;
-				if (ReportError(DAQmxCreateAIVoltageChan(mAnalog,mActive[1].c_str(),"",DAQmx_Val_RSE,-lMin*1000,-lMin*3000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
+                if (ReportError(DAQmxCreateAIVoltageChan(task,mActive[1].c_str(),"",DAQmx_Val_RSE,-lMin*1000,-lMin*3000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
 					bcierr << "Failed to create channel operating on the following lines: \n" << mActive[1] << endl;
-				if (ReportError(DAQmxClearTask(mAnalog)) < 0)
+                if (ReportError(DAQmxClearTask(task)) < 0)
 					bcierr << "Failed to clear task \"Analog_Input\" " << endl;
 			}
 		}
@@ -463,7 +459,8 @@ NIDAQLogger::Preflight() const
 void
 NIDAQLogger::Initialize()
 {
-	if ((mUsed = (int)OptionalParameter("LogNIDAQin")) == true) // if the device is being used (and setting mDeviceEnable to true or false)
+    mUsed = ( OptionalParameter("LogNIDAQin") != 0 );
+    if (mUsed) // if the device is being used (and setting mDeviceEnable to true or false)
 	{
 		// Reset Some Minor Things (We want to have a nice clean start whenever Initialize() is called) //
 		mCounter[0] = mCounter[1] = 0;
@@ -477,7 +474,7 @@ NIDAQLogger::Initialize()
 				mCounter[0]++;
 		if (mFound[0])
 		{
-			if (ReportError(DAQmxCreateTask("Digital_Input",&(TaskHandle)mDigital)) < 0)
+            if (ReportError(DAQmxCreateTask("Digital_Input",&mDigital)) < 0)
 				bcierr << "Unable to create task \"Digital_Input\" " << endl;
 			if (ReportError(DAQmxCreateDIChan(mDigital,mActive[0].c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
 				bcierr << "Failed to create channel operating on the following lines:\n" << mActive[0] << endl;
@@ -494,7 +491,7 @@ NIDAQLogger::Initialize()
 				lMin = mRanges[(int)OptionalParameter(string(mDevs[1]).append("IVRanges").c_str())*2];
 			else
 				lMin = mRanges[0];
-			if (ReportError(DAQmxCreateTask("Analog_Input",&(TaskHandle)mAnalog)) < 0)
+            if (ReportError(DAQmxCreateTask("Analog_Input",&mAnalog)) < 0)
 				bcierr << "Unable to create task \"Analog_Input\" " << endl;
 			if (ReportError(DAQmxCreateAIVoltageChan(mAnalog,mActive[1].c_str(),"",DAQmx_Val_RSE,-lMin*1000,-lMin*3000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
 				bcierr << "Failed to create channel operating on the following lines:\n" << mActive[1] << endl;
@@ -545,4 +542,10 @@ NIDAQLogger::StopRun()
 }
 // If the task is halted... //
 void
-NIDAQLogger::Halt() { StopRun(); }
+NIDAQLogger::Halt()
+{
+    if( mAnalog )
+        DAQmxClearTask( mAnalog );
+    if( mDigital )
+        DAQmxClearTask( mDigital );
+}

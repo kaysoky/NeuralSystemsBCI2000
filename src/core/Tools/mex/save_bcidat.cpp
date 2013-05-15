@@ -53,10 +53,10 @@ struct StateInfo
 {
   int   mLength, mLocation;
   void* mpData;
-  void ( StateInfo::*mfpCopyState )( sint64, StateVector& ) const;
+  void ( StateInfo::*mfpCopyState )( int64_t, StateVector& ) const;
 
   template<typename T>
-  void CopyState( sint64 inBlockStart, StateVector& outStatevector ) const
+  void CopyState( int64_t inBlockStart, StateVector& outStatevector ) const
   {
     T* data = reinterpret_cast<T*>( mpData ) + inBlockStart;
     for( int sample = 0; sample < outStatevector.Samples(); ++sample )
@@ -67,7 +67,7 @@ struct StateInfo
 
 template<typename T>
 void
-ReadSignal( void* inData, sint64 inNumSamples, sint64 inSampleOffset, GenericSignal& outSignal )
+ReadSignal( void* inData, int64_t inNumSamples, int64_t inSampleOffset, GenericSignal& outSignal )
 {
   for( int ch = 0; ch < outSignal.Channels(); ++ch )
   {
@@ -184,7 +184,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
     throw bciexception_( "Signal data must have two dimensions." );
   mwSize totalSamples = dims[0];
 
-  void ( *fpReadSignal )( void*, sint64, sint64, GenericSignal& ) = NULL;
+  void ( *fpReadSignal )( void*, int64_t, int64_t, GenericSignal& ) = NULL;
   SignalType type = SignalType::int16;
   switch( mxGetClassID( pSignal ) )
   {
@@ -194,32 +194,32 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       break;
 
     case mxSINGLE_CLASS:
-      fpReadSignal = ReadSignal<float32>;
+      fpReadSignal = ReadSignal<float32_t>;
       type = SignalType::float32;
       break;
 
     case mxINT8_CLASS:
-      fpReadSignal = ReadSignal<int8>;
+      fpReadSignal = ReadSignal<int8_t>;
       type = SignalType::int16;
       break;
 
     case mxUINT8_CLASS:
-      fpReadSignal = ReadSignal<uint8>;
+      fpReadSignal = ReadSignal<uint8_t>;
       type = SignalType::int16;
       break;
 
     case mxINT16_CLASS:
-      fpReadSignal = ReadSignal<int16>;
+      fpReadSignal = ReadSignal<int16_t>;
       type = SignalType::int16;
       break;
 
     case mxUINT16_CLASS:
-      fpReadSignal = ReadSignal<uint16>;
+      fpReadSignal = ReadSignal<uint16_t>;
       type = SignalType::int32;
       break;
 
     case mxINT32_CLASS:
-      fpReadSignal = ReadSignal<int32>;
+      fpReadSignal = ReadSignal<int32_t>;
       type = SignalType::int32;
       break;
 
@@ -253,7 +253,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
     const mxArray* pField = mxGetFieldByNumber( pStates, 0, i );
     const mwSize* dims = mxGetDimensions( pField );
     if( dims[0] < totalSamples )
-      throw bciexception_( "Too little samples in state \"" << name << "\": "
+      throw bciexception_( "Too few samples in state \"" << name << "\": "
                << "state variables should provide a value for each sample point." );
     if( dims[1] != 1 )
       throw bciexception_( "State variables should provide a single value per sample point." );
@@ -266,24 +266,24 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       case mxINT8_CLASS:
       case mxUINT8_CLASS:
         entry.mLength = 8;
-        entry.mfpCopyState = &StateInfo::CopyState<uint8>;
+        entry.mfpCopyState = &StateInfo::CopyState<uint8_t>;
         break;
 
       case mxINT16_CLASS:
       case mxUINT16_CLASS:
         entry.mLength = 16;
-        entry.mfpCopyState = &StateInfo::CopyState<uint16>;
+        entry.mfpCopyState = &StateInfo::CopyState<uint16_t>;
         break;
 
       case mxINT32_CLASS:
       case mxUINT32_CLASS:
         entry.mLength = 32;
-        entry.mfpCopyState = &StateInfo::CopyState<uint32>;
+        entry.mfpCopyState = &StateInfo::CopyState<uint32_t>;
         break;
 
       case mxSINGLE_CLASS:
         entry.mLength = 32;
-        entry.mfpCopyState = &StateInfo::CopyState<float32>;
+        entry.mfpCopyState = &StateInfo::CopyState<float32_t>;
         break;
 
       case mxDOUBLE_CLASS:
@@ -393,7 +393,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
   wrapper.StartRun( outputFile, outputFileName );
 
   GenericSignal signal( properties );
-  for( sint64 blockStart = 0; blockStart + sampleBlockSize <= totalSamples; blockStart += sampleBlockSize )
+  for( int64_t blockStart = 0; blockStart + sampleBlockSize <= totalSamples; blockStart += sampleBlockSize )
   {
     fpReadSignal( pSignalData, totalSamples, blockStart, signal );
     for( StateInfoMap::const_iterator i = stateInfo.begin(); i != stateInfo.end(); ++i )

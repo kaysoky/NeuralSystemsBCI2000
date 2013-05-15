@@ -80,7 +80,7 @@ class Registrar
   ~Registrar() { delete mpRootNode; }
   bool Parse( const std::string&, const Environment& );
   void Print( std::ostream& os ) const { return mpRootNode->Print( os ); }
-  LONG Execute( int inAction ) const { return mpRootNode->Execute( NULL, inAction ); }
+  HRESULT Execute( int inAction ) const { return mpRootNode->Execute( NULL, inAction ); }
 
  private:
   class Node;
@@ -103,7 +103,7 @@ class Registrar
     virtual ~Node() { for( size_t i = 0; i < mNodes.size(); ++i ) delete mNodes[i]; }
     void AddChild( Node* inNode ) { mNodes.push_back( inNode ); }
     virtual void Print( std::ostream& ) const;
-    virtual LONG Execute( HKEY, int ) const;
+    virtual HRESULT Execute( HKEY, int ) const;
    private:
     std::vector<Node*> mNodes;
   };
@@ -115,7 +115,7 @@ class Registrar
     Key( const std::string& name, const std::string& value, int flags )
     : mName( name ), mValue( value ), mFlags( flags ) {}
     void Print( std::ostream& ) const;
-    LONG Execute( HKEY, int ) const;
+    HRESULT Execute( HKEY, int ) const;
    private:
     std::string mName, mValue;
     int mFlags;
@@ -127,7 +127,7 @@ class Registrar
     Value( const std::string& name, const std::string& value )
     : mName( name ), mValue( value ) {}
     void Print( std::ostream& os ) const { os << "val " << mName << " = s '" << mValue << "'\n"; }
-    LONG Execute( HKEY, int ) const;
+    HRESULT Execute( HKEY, int ) const;
    private:
     std::string mName, mValue;
   };

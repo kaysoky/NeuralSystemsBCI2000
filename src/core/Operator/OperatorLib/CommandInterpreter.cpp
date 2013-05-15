@@ -332,8 +332,18 @@ CommandInterpreter::Background( int inSleepTime )
     mAbort = false;
     throw bciexception_( "Script execution aborted" );
   }
-  ThreadUtils::SleepFor( inSleepTime );
-  return inSleepTime;
+  int result = 0;
+  if( inSleepTime >= 0 )
+  { // Measure the time spent in background.
+    int sleepTime = inSleepTime;
+    PrecisionTime start = PrecisionTime::Now();
+    if( mrStateMachine.YieldToMainThread() )
+      sleepTime -= PrecisionTime::UnsignedDiff( PrecisionTime::Now(), start );
+    if( sleepTime >= 0 )
+      ThreadUtils::SleepFor( sleepTime );
+    result = PrecisionTime::UnsignedDiff( PrecisionTime::Now(), start );
+  }
+  return result;
 }
 
 string

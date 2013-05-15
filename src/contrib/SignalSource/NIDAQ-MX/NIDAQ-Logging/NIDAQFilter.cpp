@@ -230,14 +230,12 @@ NIDAQFilter::Preflight(const SignalProperties& Input, SignalProperties& Output) 
 			int localCounter = 0;
 			if (OptionalParameter("LogDigiOut") != "")
 			{
-				if (mDigital)
-					if (ReportError(DAQmxClearTask(mDigital)) < 0)
-						bcierr << "Failed to clear existing task handling digital output" << endl;
-				if (ReportError(DAQmxCreateTask("Digital_Output",&(TaskHandle)mDigital)) < 0)
+                TaskHandle task;
+                if (ReportError(DAQmxCreateTask("Digital_Output",&task)) < 0)
 					bcierr << "Unable to create task \"Digital_Output\" " << endl;
-				if (ReportError(DAQmxCreateDIChan(mDigital,mActive[0].c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
+                if (ReportError(DAQmxCreateDIChan(task,mActive[0].c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
 					bcierr << "Unable to create channel operating on the following lines: \n" << mActive[0] << endl;
-				if (ReportError(DAQmxClearTask(mDigital)) < 0)
+                if (ReportError(DAQmxClearTask(task)) < 0)
 					bcierr << "Failed to clear task \"Digital_Output\" " << endl;
 			}
 			if (OptionalParameter("LogAnaOut") != "")
@@ -256,14 +254,12 @@ NIDAQFilter::Preflight(const SignalProperties& Input, SignalProperties& Output) 
 				}
 				if (ReportError(DAQmxCreateLinScale("MilliVolts",1000.0,lMin*-2000.0,DAQmx_Val_Volts,"mV")) < 0)
 					bcierr << "Failed to construct linear scale (MilliVolts)" << endl;
-				if (mAnalog)
-					if (ReportError(DAQmxClearTask(mAnalog)) < 0)
-						bcierr << "Failed to clear existing task handling analog output" << endl;
-				if (ReportError(DAQmxCreateTask("Analog_Output",&(TaskHandle)mAnalog)) < 0)
+                TaskHandle task;
+                if (ReportError(DAQmxCreateTask("Analog_Output",&task)) < 0)
 					bcierr << "Unable to create task \"Analog_Output\" " << endl;
-				if (ReportError(DAQmxCreateAOVoltageChan(mAnalog,mActive[1].c_str(),"",lMin*1000,lMax*1000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
+                if (ReportError(DAQmxCreateAOVoltageChan(task,mActive[1].c_str(),"",lMin*1000,lMax*1000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
 					bcierr << "Failed to create channel operating on the following lines: \n" << mActive[1] << endl;
-				if (ReportError(DAQmxClearTask(mAnalog)) < 0)
+                if (ReportError(DAQmxClearTask(task)) < 0)
 					bcierr << "Failed to clear task \"Analog_Output\" " << endl;
 			}
 			for (int i = 0; i < (int)mLines.size(); i++)
@@ -276,9 +272,10 @@ NIDAQFilter::Preflight(const SignalProperties& Input, SignalProperties& Output) 
 					bcierr << "Row count MUST be a positive integer" << endl;
 				if (OptionalParameter("FilterExpressions")->NumColumns() > 1)
 					bciout << "Only one column is needed for FilterExpressions. Only Expressions column will be read" << endl;
-				for ( ; localLoop < OptionalParameter("FilterExpressions")->NumRows(); localLoop++)
+                GenericSignal signal( Input );
+                for ( ; localLoop < OptionalParameter("FilterExpressions")->NumRows(); localLoop++)
 				{
-					Expression((string)(OptionalParameter("FilterExpressions")(localLoop,0))).Evaluate(&GenericSignal(Input));
+                    Expression((string)(OptionalParameter("FilterExpressions")(localLoop,0))).Evaluate(&signal);
 					if ((string)OptionalParameter("FilterExpressions")(localLoop,0) == "0" && localLoop < localCounter)
 						bciout << "Expression of value 0 detected on row " << localLoop << ". If intended, disregard warning" << endl;
 				}
@@ -306,7 +303,7 @@ NIDAQFilter::Initialize(const SignalProperties& Input, const SignalProperties& O
 				mCounter[0]++;
 		if (mFound[0])
 		{
-			if (ReportError(DAQmxCreateTask("Digital_Output",&(TaskHandle)mDigital)) < 0)
+            if (ReportError(DAQmxCreateTask("Digital_Output",&mDigital)) < 0)
 				bcierr << "Unable to create task \"Digital_Output\" " << endl;
 			if (ReportError(DAQmxCreateDIChan(mDigital,mActive[0].c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
 				bcierr << "Failed to create channel operating on the following lines:\n" << mActive[0] << endl;
@@ -328,7 +325,7 @@ NIDAQFilter::Initialize(const SignalProperties& Input, const SignalProperties& O
 				localMin = mRanges[0];
 				localMax = mRanges[1];
 			}
-			if (ReportError(DAQmxCreateTask("Analog_Output",&(TaskHandle)mAnalog)) < 0)
+            if (ReportError(DAQmxCreateTask("Analog_Output",&mAnalog)) < 0)
 				bcierr << "Unable to create task \"Analog_Output\" " << endl;
 			if (ReportError(DAQmxCreateAOVoltageChan(mAnalog,mActive[1].c_str(),"",localMin*1000,localMax*1000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
 				bcierr << "Failed to create channel operating on the following lines:\n" << mActive[1] << endl;
@@ -387,12 +384,12 @@ NIDAQFilter::StartRun()
 void
 NIDAQFilter::StopRun()
 {
-  if (mRan && mAnalog != NULL)
+  if (mRan && mAnalog)
   {
     if (ReportError(DAQmxStopTask(mAnalog)) < 0)
     bcierr << "Failed to stop task \"Analog_Output\" " << endl;
   }
-  if (mRan && mDigital != NULL)
+  if (mRan && mDigital)
   {
     if (ReportError(DAQmxStopTask(mDigital)) < 0)
     bcierr << "Failed to stop task \"Digital_Output\" " << endl;
@@ -400,7 +397,13 @@ NIDAQFilter::StopRun()
 }
 // Halt the main loop //
 void
-NIDAQFilter::Halt() { StopRun(); }
+NIDAQFilter::Halt()
+{
+  if( mAnalog )
+    DAQmxClearTask( mAnalog );
+  if( mDigital )
+    DAQmxClearTask( mDigital );
+}
 // Report any NIDAQmx Errors that may occur //
 int
 NIDAQFilter::ReportError(int errCode) const

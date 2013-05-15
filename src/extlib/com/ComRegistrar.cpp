@@ -27,6 +27,7 @@
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "ComRegistrar.h"
+#include <Olectl.h>
 
 using namespace com;
 using namespace std;
@@ -153,15 +154,15 @@ Registrar::Token::ReadFromStream( istream& is )
   return is;
 }
 
-LONG
+HRESULT
 Registrar::Node::Execute( HKEY inParent, int inAction ) const
 {
-  LONG result = ERROR_SUCCESS;
+  HRESULT result = S_OK;
   vector<Node*>::const_iterator i = mNodes.begin();
   while( i != mNodes.end() )
   {
-    LONG subResult = ( *i++ )->Execute( inParent, inAction );
-    if( result == ERROR_SUCCESS )
+    HRESULT subResult = ( *i++ )->Execute( inParent, inAction );
+    if( result == S_OK )
       result = subResult;
   }
   return result;
@@ -179,11 +180,11 @@ Registrar::Node::Print( ostream& os ) const
   os << "}\n";
 }
 
-LONG
+HRESULT
 Registrar::Key::Execute( HKEY inParent, int inAction ) const
 {
   HKEY key = inParent;
-  LONG result = ERROR_SUCCESS;
+  LONG error = ERROR_SUCCESS;
   if( key == 0 )
   {
     if( mName == "HKCR" )
@@ -198,27 +199,32 @@ Registrar::Key::Execute( HKEY inParent, int inAction ) const
       key = HKEY_USERS;
     else
       return ERROR_BADKEY;
-    result = ::RegOpenKeyEx( key, NULL, 0, KEY_ALL_ACCESS, &key );
+    error = ::RegOpenKeyEx( key, NULL, 0, KEY_ALL_ACCESS, &key );
   }
   else
   {
-    result = ::RegCreateKeyExA( key, mName.c_str(), 0, NULL, 0, KEY_ALL_ACCESS, NULL, &key, NULL );
-    if( ERROR_SUCCESS == result && ( mFlags & SetValue ) && ( inAction & Create ) )
-      result = ::RegSetValueExA( key, NULL, 0, REG_SZ, reinterpret_cast<const BYTE*>( mValue.c_str() ), static_cast<DWORD>( mValue.length() + 1 ) );
+    error = ::RegCreateKeyExA( key, mName.c_str(), 0, NULL, 0, KEY_ALL_ACCESS, NULL, &key, NULL );
+    if( ERROR_SUCCESS == error && ( mFlags & SetValue ) && ( inAction & Create ) )
+      error = ::RegSetValueExA( key, NULL, 0, REG_SZ, reinterpret_cast<const BYTE*>( mValue.c_str() ), static_cast<DWORD>( mValue.length() + 1 ) );
   }
-  if( result != ERROR_SUCCESS )
-    return result;
-  result = Node::Execute( key, inAction );
+  if( error != ERROR_SUCCESS )
+    return SELFREG_E_CLASS;
+
+  HRESULT result = Node::Execute( key, inAction );
   if( inParent )
   {
-    LONG subResult = ERROR_SUCCESS;
+    error = ERROR_SUCCESS;
     if( ( inAction & Remove ) && ( mFlags & ForceRemove ) )
-      subResult = DeleteSubentries( key );
+      error = DeleteSubentries( key );
     ::RegCloseKey( key );
-    if( subResult == ERROR_SUCCESS && ( inAction & Remove ) && !( mFlags & NoRemove ) )
-      subResult = ::RegDeleteKeyA( inParent, mName.c_str() );
-    if( result == ERROR_SUCCESS )
-      result = subResult;
+    if( error == ERROR_SUCCESS && ( inAction & Remove ) && !( mFlags & NoRemove ) )
+    {
+      error = ::RegDeleteKeyA( inParent, mName.c_str() );
+      if( error != ERROR_SUCCESS && result == S_OK )
+        result = S_FALSE;
+    }
+    if( result == S_OK && error != ERROR_SUCCESS )
+      result = SELFREG_E_CLASS;
   }
   return result;
 }
@@ -237,13 +243,13 @@ Registrar::Key::Print( ostream& os ) const
   Node::Print( os );
 }
 
-LONG
+HRESULT
 Registrar::Value::Execute( HKEY inParent, int inAction ) const
 {
-  LONG result = ERROR_SUCCESS;
+  LONG error = ERROR_SUCCESS;
   if( inAction & Create )
-    result = ::RegSetValueExA( inParent, mName.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>( mValue.c_str() ), static_cast<DWORD>( mValue.length() + 1 ) );
+    error = ::RegSetValueExA( inParent, mName.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>( mValue.c_str() ), static_cast<DWORD>( mValue.length() + 1 ) );
   if( inAction & Remove )
     ::RegDeleteValueA( inParent, mName.c_str() ); // no error on nonexisting value
-  return result;
+  return error == ERROR_SUCCESS ? S_OK : SELFREG_E_CLASS;
 }

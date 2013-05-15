@@ -14,20 +14,17 @@ SET( PROJECT_VER_PATCH "5" )
 
 
 # Set the variable where to find the top level project sources
-IF ( NOT DEFINED BCI2000_ROOT_DIR )
-    SET ( BCI2000_ROOT_DIR ${BCI2000_SOURCE_DIR}/.. )
+IF( NOT DEFINED BCI2000_ROOT_DIR )
+  SET ( BCI2000_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. )
 ENDIF( NOT DEFINED BCI2000_ROOT_DIR )
 
 # Set directory paths
 SET( BCI2000_SRC_DIR ${BCI2000_ROOT_DIR}/src )
 SET( BCI2000_CMAKE_DIR ${BCI2000_SOURCE_DIR}/cmake )
+SET( BCI2000_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles )
 SET( CMAKE_INCLUDE_CURRENT_DIR ON )
 
-SET( DYNAMIC_IMPORTS TRUE CACHE BOOL "Set to FALSE in case of problems with imports from 3rd party DLLs" )
-IF( DYNAMIC_IMPORTS )
-  ADD_DEFINITIONS( -DDYNAMIC_IMPORTS )
-ENDIF()
-
+INCLUDE( ${BCI2000_CMAKE_DIR}/BuildOptions.cmake )
 # Create project defines
 SET( PROJECT_VERSION "${PROJECT_VER_MAJOR}.${PROJECT_VER_MINOR}.${PROJECT_VER_PATCH}" )
 STRING( TOLOWER "${PROJECT_NAME}" PROJECT_DOMAIN )
@@ -40,13 +37,8 @@ ADD_DEFINITIONS(
   -DWEBSEARCH_DOMAIN="www.${SEARCH_ENGINE}.com"
 )
 
-# Find required dependencies
 INCLUDE( ${BCI2000_CMAKE_DIR}/FindDependencies.cmake )
-
-# Setup required cmake macros
 INCLUDE( ${BCI2000_CMAKE_DIR}/SetupBCI2000Macros.cmake )
-
-# Setup build configurations
 INCLUDE( ${BCI2000_CMAKE_DIR}/BuildConfigurations.cmake )
 
 # Tell the user what we're about to setup
@@ -55,12 +47,12 @@ MESSAGE( "- Creating Project files for ${PROJECT_NAME} Version ${PROJECT_VERSION
 INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )
 INCLUDE( "${BCI2000_SRC_DIR}/contrib/Extensions/Extensions.cmake" )
-IF ( EXISTS ${BCI2000_SRC_DIR}/private AND NOT "$ENV{BCI2000_NO_PRIVATE}" )
+IF( EXISTS ${BCI2000_SRC_DIR}/private AND BCI2000_BUILD_PRIVATE )
   INCLUDE( "${BCI2000_SRC_DIR}/private/PrivateConfig.cmake" )
-ENDIF ( EXISTS ${BCI2000_SRC_DIR}/private AND NOT "$ENV{BCI2000_NO_PRIVATE}" )
-ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/frameworks "${CMAKE_CURRENT_BINARY_DIR}/frameworks" )
-ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/extlib "${CMAKE_CURRENT_BINARY_DIR}/extlib" )
-ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/shared/utils/Expression/test "${CMAKE_CURRENT_BINARY_DIR}/shared" )
+ENDIF()
+ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/frameworks "${BCI2000_BINARY_DIR}/frameworks" )
+ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/extlib "${BCI2000_BINARY_DIR}/extlib" )
+ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/shared/utils/Expression/test "${BCI2000_BINARY_DIR}/shared" )
 
 # Recurse down into all project subdirectories
 
@@ -71,29 +63,21 @@ ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/shared/utils/Expression/test "${CMAKE_CURRE
 SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
 
 # src/private : stuff we use that is not released yet
-IF ( EXISTS ${BCI2000_SRC_DIR}/private AND NOT "$ENV{BCI2000_NO_PRIVATE}" )
-  ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/private "${CMAKE_CURRENT_BINARY_DIR}/private" )
-ENDIF( EXISTS ${BCI2000_SRC_DIR}/private AND NOT "$ENV{BCI2000_NO_PRIVATE}" )
+IF( EXISTS ${BCI2000_SRC_DIR}/private AND BUILD_PRIVATE )
+  ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/private "${BCI2000_BINARY_DIR}/private" )
+ENDIF()
 
 # the standard distro: build/buildutils, src/core and src/contrib
-ADD_SUBDIRECTORY( buildutils "${CMAKE_CURRENT_BINARY_DIR}/buildtesting")
-ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/core "${CMAKE_CURRENT_BINARY_DIR}/core" )
-ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/contrib "${CMAKE_CURRENT_BINARY_DIR}/contrib" )
+ADD_SUBDIRECTORY( buildutils "${BCI2000_BINARY_DIR}/buildtesting")
+ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/core "${BCI2000_BINARY_DIR}/core" )
+ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/contrib "${BCI2000_BINARY_DIR}/contrib" )
 
 # src/custom : a convenient place for users' own development without causing svn chaos 
 IF ( EXISTS ${BCI2000_SRC_DIR}/custom ) 
-  ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/custom "${CMAKE_CURRENT_BINARY_DIR}/custom" )
+  ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/custom "${BCI2000_BINARY_DIR}/custom" )
 ENDIF( EXISTS ${BCI2000_SRC_DIR}/custom )
 
 
 INCLUDE( ${BCI2000_CMAKE_DIR}/BCI2000Package.cmake )
 
 MARK_AS_ADVANCED( CMAKE_INSTALL_PREFIX )
-
-
-IF( NOT CMAKE_BUILD_TYPE )
-  SET( CMAKE_BUILD_TYPE Release CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-      FORCE )
-ENDIF( NOT CMAKE_BUILD_TYPE )
-MARK_AS_ADVANCED( CMAKE_BUILD_TYPE )

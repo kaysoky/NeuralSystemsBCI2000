@@ -39,6 +39,7 @@
 #include "CallbackBase.h"
 #include "BCIStream.h"
 #include "BCIException.h"
+#include "ThreadUtils.h"
 
 using namespace std;
 
@@ -46,7 +47,7 @@ CallbackBase::CallbackBase()
 : mMainThreadID( 0 ),
   mpPendingCallback( NULL )
 {
-#if _WIN32
+#if _WIN32 // cannot use ThreadUtils::InMainThread() here
   mMainThreadID = ::GetCurrentThreadId();
 #else
   mMainThreadID = ::pthread_self();
@@ -174,14 +175,34 @@ CallbackBase::CheckPendingCallback()
   OSMutex::Lock lock( mPendingCallbackAccess );
   if( mpPendingCallback != NULL )
   {
+    {
+      OSMutex::Lock lock( mExecutingAccess );
+      mExecuting = true;
+    }
     mpPendingCallback->Execute();
     mpPendingCallback->ResumeThread();
     mpPendingCallback = NULL;
+    {
+      OSMutex::Lock lock( mExecutingAccess );
+      mExecuting = false;
+    }
     return true;
   }
   return false;
 }
 
+bool
+CallbackBase::YieldToMainThread() const
+{
+  bool yield = false;
+  {
+    OSMutex::Lock lock( mExecutingAccess );
+    yield = mExecuting;
+  }
+  if( yield )
+    ThreadUtils::Yield();
+  return yield;
+}
 
 // CallbackBase::Callback
 CallbackBase::Callback::Callback( CallbackBase::Function inFunction, void* inData, CallbackBase::Context inContext )

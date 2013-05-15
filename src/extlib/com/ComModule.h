@@ -55,8 +55,17 @@ class Module
   static HRESULT DllInstall( BOOL, LPCWSTR );
 
  private:
+  static bool AvailableToAllUsers();
+  static bool RunningAsAdmin();
+
+  static HRESULT DllInstall( BOOL );
+  static HRESULT DllInstallAskElevation( BOOL );
+
   enum RedirectionType { None, System, User };
   static LONG RedirectHKCR( RedirectionType );
+  static bool TypeLibKeyExists( RedirectionType = None, bool remove = false );
+  static HRESULT DoRegisterServer( RedirectionType );
+  static HRESULT DoUnregisterServer( RedirectionType );
   static HRESULT RunRegScripts( int action );
   static BOOL CALLBACK RunRegScript( HMODULE, LPCWSTR, LPWSTR, LONG_PTR );
 

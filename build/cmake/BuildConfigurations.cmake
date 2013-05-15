@@ -43,49 +43,72 @@ IF( COMPILER_IS_GCC_COMPATIBLE )
   ENDIF( NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE )
 
   # Select flags.
-  SET( CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -include \"${BCI2000_SRC_DIR}/shared/config/gccprefix.h\""
+  SET( cflags_
+      "-include \"${BCI2000_SRC_DIR}/shared/config/gccprefix.h\""
   )
   IF( USE_SSE2 )
-    SET( CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -msse2"
-    )
+    LIST( APPEND cflags_ -msse2 )
   ENDIF()
 
   IF( NOT WIN32 )
-    SET( CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -fPIC"
+    SET( cflags_
+      ${cflags_}
+      -fPIC
+      -fvisibility=hidden
     )
   ENDIF()
-
-  SET( CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -Wstrict-aliasing -fvisibility=hidden"
+  
+  SET( cflags_
+    ${cflags_}
+    -Wstrict-aliasing
+    -Wno-endif-labels
+    -Wno-multichar
   )
+
+  FOREACH( flag_ ${cflags_} )
+    SET( CMAKE_C_FLAGS
+      "${CMAKE_C_FLAGS} ${flag_}"
+    )
+    SET( CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} ${flag_}"
+    )
+  ENDFOREACH()
 
   SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
   SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
   SET(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 
+  SET( lflags_ )
   IF( WIN32 )
-    SET(CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc"
+    SET( lflags_
+      ${lflags_}
+      -static-libgcc
+      -Wl,--enable-stdcall-fixup
     )
   ELSEIF( APPLE )
-    SET(CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS} -dead_strip"
+    SET( lflags
+      ${lflags_}
+      -dead_strip
     )
   ENDIF()
+
+  FOREACH( var_ EXE;SHARED;MODULE )
+    FOREACH( flag_ ${lflags_} )
+      SET( CMAKE_${var_}_LINKER_FLAGS
+        "${CMAKE_${var_}_LINKER_FLAGS} ${flag_}"
+      )
+    ENDFOREACH()
+  ENDFOREACH()
 
 ENDIF( COMPILER_IS_GCC_COMPATIBLE )
 
 # MSVC specific flags
 IF( MSVC )
 
-  SET( BUILD_USE_SOLUTION_FOLDERS FALSE CACHE BOOL "Enable target group folders in VS (non-express)" )
   SET_PROPERTY( GLOBAL PROPERTY USE_FOLDERS ${BUILD_USE_SOLUTION_FOLDERS} )
-
+  
   SET( CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} /EHsc /W3 /wd4355 /wd4800"
+    "${CMAKE_CXX_FLAGS} /EHsc"
   )
   IF( USE_SSE2 )
     SET( CMAKE_CXX_FLAGS
@@ -93,32 +116,43 @@ IF( MSVC )
     )
   ENDIF()
 
-  ADD_DEFINITIONS(
-    -DNOMINMAX
-    -D_CRT_SECURE_NO_WARNINGS
-    -D_CRT_SECURE_NO_DEPRECATE
-    -D_CRT_NONSTDC_NO_WARNINGS
-    -D_SCL_SECURE_NO_WARNINGS
-  )
   SET( CMAKE_CXX_FLAGS_RELEASE
     "${CMAKE_CXX_FLAGS_RELEASE} /D_SECURE_SCL=0"
+  )
+  ADD_DEFINITIONS(
+    /DNOMINMAX
+    /D_CRT_SECURE_NO_WARNINGS
+    /D_CRT_SECURE_NO_DEPRECATE
+    /D_CRT_NONSTDC_NO_WARNINGS
+    /D_SCL_SECURE_NO_WARNINGS
+    /W3
+    /wd4355
+    /wd4800
+  )
+  INCLUDE_DIRECTORIES(
+    ${BCI2000_SRC_DIR}/shared/compat
   )
   # Adjust flags such that by default programs are built statically against the MSVC runtime;
   # save defaults as "_DYNAMIC" for use with MFC-based projects.
   # Support for statically linking MFC appears to be broken in CMake, see
   # http://www.cmake.org/Wiki/CMake_FAQ#How_to_use_MFC_with_CMake, so
   # we need to go back to dynamic linking for MFC.
-  SET( CXX_FLAG_VARS
+  SET( COMP_FLAG_VARS
          CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
          CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO
+         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+         CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
   )
-  FOREACH( flag_var ${CXX_FLAG_VARS} )
+  FOREACH( flag_var ${COMP_FLAG_VARS} )
     SET( ${flag_var}_DYNAMIC "${${flag_var}}" )
     IF( ${flag_var} MATCHES "/MD" )
       STRING( REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}" )
     ENDIF( ${flag_var} MATCHES "/MD" )
     SET( ${flag_var}_STATIC "${${flag_var}}" )
   ENDFOREACH( flag_var )
+
+  SET( CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /INCREMENTAL:NO" )
+  SET( CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /INCREMENTAL:NO" )
 
   SET( LINKER_FLAG_VARS
         CMAKE_EXE_LINKER_FLAGS
@@ -140,7 +174,7 @@ IF( MSVC )
      
   ENDFOREACH()
 
-  SET( FLAG_VARS ${CXX_FLAG_VARS} ${LINKER_FLAG_VARS} )
+  SET( FLAG_VARS ${COMP_FLAG_VARS} ${LINKER_FLAG_VARS} )
 
 ENDIF( MSVC )
 
@@ -178,7 +212,6 @@ ADD_DEFINITIONS(
   )
 
 # Add global definitions.
-ADD_DEFINITIONS( -DNO_PCHINCLUDES )
 ADD_DEFINITIONS( -D_USE_MATH_DEFINES )
 
 # Control behavior of bciassert() macro

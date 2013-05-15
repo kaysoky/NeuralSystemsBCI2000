@@ -3,6 +3,8 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for the MFCDemo
 
+IF( BUILD_DEMOS )
+
 # This being MFC, this app will only build in MSVC.
 IF( MSVC )
 
@@ -11,7 +13,6 @@ SET( EXECUTABLE_NAME MFCDemo )
 
 # DEBUG
 MESSAGE( "-- Adding MFC Application Project: " ${EXECUTABLE_NAME} )
-
 
 # Set the project specific sources
 SET( SRC_PROJECT
@@ -57,6 +58,7 @@ ADD_DEFINITIONS( -D_AFXDLL )
 SET( CMAKE_MFC_FLAG 2 )
 
 # Switch to dynamic linking
+SET( USE_PRECOMPILED_HEADERS OFF )
 FOREACH( flag_var ${FLAG_VARS} )
    SET( ${flag_var} "${${flag_var}_DYNAMIC}" )
 ENDFOREACH( flag_var )
@@ -94,10 +96,10 @@ IF( NOT FAILED )
   TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${LIBS} winmm )
 
   # Set the project build folder
-  SET_PROPERTY( TARGET ${EXECUTABLE_NAME} PROPERTY FOLDER "${DIR_NAME}" )
+  SET_PROPERTY( TARGET ${EXECUTABLE_NAME} PROPERTY FOLDER Demos/MFC )
 
 ENDIF( NOT FAILED )
 
 ENDIF( MSVC )
 
-
+ENDIF( BUILD_DEMOS )

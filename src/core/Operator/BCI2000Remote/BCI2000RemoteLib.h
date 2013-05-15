@@ -140,13 +140,11 @@ STDCALL BCI2000Remote_Connect( void* );
 DLLEXPORT int
 STDCALL BCI2000Remote_Disconnect( void* );
 
-/* NB: This function returns the last command's execution status, which
-   is a true integer, with a value of 0 indicating success.
-   All other int-returning functions return a boolean integer which is
-   1 on success, and 0 on failure.
-*/
+DLLEXPORT const char*
+STDCALL BCI2000Remote_Encode( void*, const char* );
+/* In Execute(), the last argument may be a null pointer. */
 DLLEXPORT int
-STDCALL BCI2000Remote_Execute( void*, const char* );
+STDCALL BCI2000Remote_Execute( void*, const char*, int* );
 
 /* Provide a zero-delimited list of C strings, containing module names
    with command line arguments in the form
