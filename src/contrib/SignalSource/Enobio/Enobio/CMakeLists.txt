@@ -23,7 +23,7 @@ ELSEIF( MSVC )
 ENDIF()
 
 # Put everything together
-IF( NOT DYNAMIC_IMPORTS AND (NOT MSVC AND NOT BORLAND OR CMAKE_CL_64) )
+IF( NOT DYNAMIC_IMPORTS AND (NOT MSVC OR CMAKE_CL_64) )
   MESSAGE( "-- ENOBIO does not provide libraries for this compiler/OS,  Will not build" )
 ELSE()
 
