@@ -102,7 +102,7 @@ AddressNode::OnSimplify()
 double
 AddressNode::OnEvaluate()
 {
-  throw bciexception( "This function should never be called" );
+  throw std_logic_error( "This function should never be called" );
   return 0;
 }
 

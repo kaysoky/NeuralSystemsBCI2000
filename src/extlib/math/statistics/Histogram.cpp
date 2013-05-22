@@ -125,7 +125,7 @@ Number
 Histogram::InverseCDF( Number inCumulatedWeight ) const
 {
   if( empty() )
-    throw bciexception( "Trying to compute inverse cumulated weight without observation" );
+    throw std_runtime_error( "Trying to compute inverse cumulated weight without observation" );
 
   Number sum = 0;
   const_iterator i = begin();

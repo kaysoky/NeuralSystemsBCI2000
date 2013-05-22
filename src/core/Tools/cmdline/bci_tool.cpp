@@ -44,7 +44,7 @@
 
 using namespace std;
 
-int main( int argc, const char** argv )
+int main( int argc, char** argv )
 {
   if( ToolInfo[ name ] == "" )
   {
@@ -76,6 +76,7 @@ int main( int argc, const char** argv )
     bool execute;
     bool help;
     bool version;
+    bool bcitest;
     string inputFile;
     string outputFile;
     int bufferSize;

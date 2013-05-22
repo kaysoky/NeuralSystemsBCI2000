@@ -106,7 +106,7 @@ CommandInterpreter::Init()
   for( size_t i = 0; i < sizeof( timevars ) / sizeof( *timevars ); ++i )
   {
     if( !::strftime( buffer, sizeof( buffer ) / sizeof( *buffer ), timevars[i].format, pTime ) )
-      throw bciexception( "Could not format time variable: " << timevars[i].name );
+      throw std_runtime_error( "Could not format time variable: " << timevars[i].name );
     mLocalVariables[timevars[i].name] = buffer;
   }
 }
@@ -161,7 +161,7 @@ CommandInterpreter::Execute( const string& inCommand )
       Unget();
       pType = ObjectType::ByName( 0 );
       if( !pType )
-        throw bciexception( "No implied type available" );
+        throw std_logic_error( "No implied type available" );
       success = pType->Execute( verb, *this );
     }
     if( !success )
@@ -175,17 +175,17 @@ CommandInterpreter::Execute( const string& inCommand )
     if( !success )
     {
       if( type.empty() || !::isalpha( type[0] ) )
-        throw bciexception_( "Cannot make sense of \"" << inCommand << "\"" );
+        throw bciexception( "Cannot make sense of \"" << inCommand << "\"" );
       else if( pType->Name() )
-        throw bciexception_( "Cannot " << verb << " " << pType->Name() << " objects" );
+        throw bciexception( "Cannot " << verb << " " << pType->Name() << " objects" );
       else
-        throw bciexception_( "Don't know how to " << verb << " " << type );
+        throw bciexception( "Don't know how to " << verb << " " << type );
     }
     if( InputFailed() )
-      throw bciexception_( "Missing argument" );
+      throw bciexception( "Missing argument" );
     mInputStream.clear();
     if( mInputStream.tellg() != static_cast<streampos>( inCommand.length() ) )
-      throw bciexception_( "Extra argument" );
+      throw bciexception( "Extra argument" );
   }
   mLocalVariables[ResultName()] = mResultStream.str();
   return EvaluateResult( inCommand );
@@ -330,7 +330,7 @@ CommandInterpreter::Background( int inSleepTime )
   if( mAbort )
   {
     mAbort = false;
-    throw bciexception_( "Script execution aborted" );
+    throw bciexception( "Script execution aborted" );
   }
   int result = 0;
   if( inSleepTime >= 0 )
@@ -441,7 +441,7 @@ void
 CommandInterpreter::Unget()
 {
   if( mPosStack.empty() )
-    throw bciexception_( "Cannot unget" );
+    throw bciexception( "Cannot unget" );
   mInputStream.clear();
   mInputStream.seekg( mPosStack.back().first );
   mPosStack.pop_back();
@@ -530,7 +530,7 @@ CommandInterpreter::ParseArguments( string& ioFunction, ArgumentList& outArgs )
   {
     size_t pos2 = ioFunction.find( ')', pos1 + 1 );
     if( pos2 == string::npos )
-      throw bciexception_( ioFunction << ": missing ')'" );
+      throw bciexception( ioFunction << ": missing ')'" );
     istringstream args( ioFunction.substr( pos1 + 1, pos2 - pos1 - 1 ) );
     vector<string> arglist;
     string arg;

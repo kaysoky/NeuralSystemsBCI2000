@@ -3,50 +3,20 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Contains a macro for creating a signal processing module
 
-MACRO( BCI2000_ADD_SIGNAL_PROCESSING_MODULE NAME SOURCES HEADERS )
+MACRO( BCI2000_ADD_SIGNAL_PROCESSING_MODULE )
+  BCI2000_PARSE_ARGS( "NAME;SOURCES" ${ARGV} )
 
-# DEBUG
-MESSAGE( "-- Adding Signal Processing Project: " ${NAME} )
+  MESSAGE( "-- Adding Signal Processing Project: " ${NAME} )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/SigProcModule.cmake )
-
-# Set the Project Source Groups
-SOURCE_GROUP( Source\\Project FILES ${SOURCES} )
-SOURCE_GROUP( Headers\\Project FILES ${HEADERS} )
-
-BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS FAILED )
-BCI2000_ADD_CORE_MAIN( ${NAME} ${SOURCES} )
-
-# If we're building a Qt project, we need to automoc the sources
-IF( NOT BORLAND )
-  SET(qtproject_SRCS
-    ${SRC_BCI2000_FRAMEWORK}
-    ${SOURCES}
-  )
-  QT4_AUTOMOC(${qtproject_SRCS})
-ENDIF( NOT BORLAND )
-
-IF( NOT FAILED )
-  BCI2000_ADD_TO_INVENTORY( SignalProcessing ${NAME} )
-  
+  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/SigProcModule.cmake )
+  BCI2000_ADD_CORE_MAIN( ${NAME} ${SOURCES} )
   SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
+  BCI2000_ADD_TARGET( QTAPP ${NAME} ${SOURCES} )
 
-  # Add the executable to the project
-  ADD_TARGET_HOOK()
-  ADD_EXECUTABLE( ${NAME} WIN32 ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
+  IF( NOT FAILED )
+    BCI2000_ADD_TO_INVENTORY( SignalProcessing ${NAME} )
+    BCI2000_ADD_FLAG( ${NAME} -DMODTYPE=2 )
+    BCI2000_ADD_BCITEST( ${NAME} )
+  ENDIF()
 
-  # Link against required libraries
-  TARGET_LINK_LIBRARIES( ${NAME} ${LIBS} )
-
-  # Add Pre-processor defines
-  IF( NOT BORLAND )
-    SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DMODTYPE=2 -DUSE_QT" )
-  ELSE( NOT BORLAND )
-    SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DMODTYPE=2" )
-  ENDIF( NOT BORLAND )
-
-  # Set the project build folder
-  SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER "${DIR_NAME}" )
-ENDIF( NOT FAILED )
-
-ENDMACRO( BCI2000_ADD_SIGNAL_PROCESSING_MODULE NAME SOURCES HEADERS )
+ENDMACRO()

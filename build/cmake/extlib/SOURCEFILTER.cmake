@@ -8,7 +8,6 @@
 ##       INC_EXTLIB - Include directories
 ##       LIBDIR_EXTLIB - Library directories
 ##       LIBS_EXTLIB - required libraries
-##       Also defines source groups for source files
 
 
 SET( SRC_EXTLIB
@@ -34,10 +33,6 @@ SET( LIBDIR_EXTLIB
 
 SET( LIBS_EXTLIB
 )
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\SourceFilter FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\SourceFilter FILES ${HDR_EXTLIB} )
 
 # Set success
 SET( EXTLIB_OK TRUE )

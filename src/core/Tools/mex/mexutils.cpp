@@ -90,7 +90,7 @@ ParamToStruct( const Param& p )
 {
   mxArray* param = mxCreateStructMatrix( 1, 1, 0, NULL );
   if( param == NULL )
-    throw bciexception_( "Out of memory when allocating space for a parameter." );
+    throw bciexception( "Out of memory when allocating space for a parameter." );
 
   struct
   {
@@ -128,7 +128,7 @@ ValuesToCells( const Param& p )
 {
   mxArray* paramArray = mxCreateCellMatrix( p.NumRows(), p.NumColumns() );
   if( paramArray == NULL )
-    throw bciexception_( "Out of memory when allocating space for parameter values." );
+    throw bciexception( "Out of memory when allocating space for parameter values." );
   int cell = 0;
   for( int col = 0; col < p.NumColumns(); ++col )
     for( int row = 0; row < p.NumRows(); ++row, ++cell )
@@ -154,7 +154,7 @@ ValuesToNumbers( const Param& p )
 
   mxArray* paramArray = mxCreateDoubleMatrix( p.NumRows(), p.NumColumns(), mxREAL );
   if( paramArray == NULL )
-    throw bciexception_( "Out of memory when allocating space for parameter values." );
+    throw bciexception( "Out of memory when allocating space for parameter values." );
   double* pMatrix = mxGetPr( paramArray );
 
   int cell = 0;
@@ -188,7 +188,7 @@ LabelsToCells( const LabelIndex& labels, size_t numEntries )
 {
   mxArray* labelArray = mxCreateCellMatrix( numEntries, 1 );
   if( labelArray == NULL )
-    throw bciexception_( "Out of memory when allocating space for parameter labels." );
+    throw bciexception( "Out of memory when allocating space for parameter labels." );
   for( size_t idx = 0; idx < numEntries; ++idx )
     mxSetCell( labelArray, idx, mxCreateString( labels[ idx ].c_str() ) );
 
@@ -200,7 +200,7 @@ void
 StructToParamlist( const mxArray* inStruct, ParamList& outParamlist )
 {
   if( !mxIsStruct( inStruct ) )
-    throw bciexception_( "Input argument is not a Matlab struct." );
+    throw bciexception( "Input argument is not a Matlab struct." );
 
   outParamlist.Clear();
   size_t numParams = mxGetNumberOfFields( inStruct );
@@ -236,7 +236,7 @@ StructToParam( const mxArray* inStruct, const char* inName )
          * rowLabels = mxGetField( inStruct, 0, "RowLabels" ),
          * colLabels = mxGetField( inStruct, 0, "ColumnLabels" );
   if( values == NULL )
-    throw bciexception_( "Could not access \"Value\" field." );
+    throw bciexception( "Could not access \"Value\" field." );
   CellsToValues( values, p );
   if( rowLabels != NULL )
     CellsToLabels( rowLabels, p.RowLabels() );
@@ -276,7 +276,7 @@ CellsToValues( const mxArray* inCells, Param& ioParam )
           break;
 
         default:
-          throw bciexception_( "Parameter values must be strings or cell arrays of strings." );
+          throw bciexception( "Parameter values must be strings or cell arrays of strings." );
       }
     }
 }
@@ -297,7 +297,7 @@ CellsToLabels( const mxArray* inCells, LabelIndex& ioIndexer )
         break;
 
       default:
-        throw bciexception_( "Parameter labels must be strings." );
+        throw bciexception( "Parameter labels must be strings." );
     }
   }
 }
@@ -307,7 +307,7 @@ GetStringField( const mxArray* inStruct, const char* inName )
 {
   mxArray* field = mxGetField( inStruct, 0, inName );
   if( field == NULL || !mxIsChar( field ) )
-    throw bciexception_( "Could not access string field \"" << inName << "\"." );
+    throw bciexception( "Could not access string field \"" << inName << "\"." );
   return mxArrayToString( field );
 }
 
@@ -324,6 +324,6 @@ mexFunction( int nargout, mxArray* varargout[],
   catch( const BCIException& e )
   {
 #undef mexErrMsgTxt
-    ::mexErrMsgTxt( e.what() );
+    ::mexErrMsgTxt( e.What() );
   }
 }

@@ -6,7 +6,6 @@
 ##       SRC_EXTLIB - Required source files for the statistics library
 ##       HDR_EXTLIB - Required header files for the statistics library
 ##       INC_EXTLIB - Include directory for the statistics library
-##       Also defines source groups for the statistics files
 
 # Define the source files
 SET( SRC_EXTLIB
@@ -27,11 +26,6 @@ SET( HDR_EXTLIB
   ${BCI2000_SRC_DIR}/extlib/math/statistics/Histogram.h 
   ${BCI2000_SRC_DIR}/extlib/math/statistics/CombinedObserver.h 
 )
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\math\\statistics FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\math\\statistics FILES ${HDR_EXTLIB} )
-
 
 # Define include directories
 SET( INC_EXTLIB

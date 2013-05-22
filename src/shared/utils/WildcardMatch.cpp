@@ -40,6 +40,7 @@
 #pragma hdrstop
 
 #include "WildcardMatch.h"
+#include "BCITest.h"
 #include "BCIException.h"
 #include "BCIAssert.h"
 #include <vector>
@@ -145,7 +146,7 @@ void RunTests()
     string kind = pCase < sNegativeCases ? "positive" : "negative";
     throw bciexception(
       "Illegal pattern in " << kind << " WildcardMatch test case: \"" << pCase->pattern
-      << "\": " << e.what() );
+      << "\": " << e.What() );
   }
   for( size_t i = 0; i < sizeof( sIllegalCases ) / sizeof( *sIllegalCases ); ++i )
   {
@@ -268,7 +269,7 @@ Matcher::ApplyActions( Matches* outpMatches )
       mError = "Unbalanced \\(";
   }
   if( !mError.empty() )
-    throw bciexception_( "Error in wildcard pattern: " << mError );
+    throw bciexception( "Error in wildcard pattern: " << mError );
   mActions.clear();
   return result;
 }

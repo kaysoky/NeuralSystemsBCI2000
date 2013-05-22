@@ -35,7 +35,7 @@
 using namespace std;
 
 int
-main( int argc, char** )
+main( int argc, char** argv )
 {
   if( argc > 1 )
   {

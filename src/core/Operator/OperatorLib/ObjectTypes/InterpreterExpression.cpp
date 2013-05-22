@@ -57,14 +57,14 @@ void
 InterpreterExpression::AssertState( CommandInterpreter& inInterpreter, const string& inName )
 {
   if( !StateExists( inInterpreter, inName ) )
-    throw bciexception_( "State \"" << inName << "\" does not exist" );
+    throw bciexception( "State \"" << inName << "\" does not exist" );
 }
 
 void
 InterpreterExpression::AssertAssignment() const
 {
   if( !mAllowAssignment )
-    throw bciexception_( "Assignment not supported in current context" );
+    throw bciexception( "Assignment not supported in current context" );
 }
 
 Expression::Node*
@@ -113,6 +113,6 @@ InterpreterExpression::StateAssignmentNode::OnEvaluate()
   Lock<StateMachine> lock( mrInterpreter.StateMachine() );
   AssertState( mrInterpreter, mName );
   if( !mrInterpreter.StateMachine().SetStateValue( mName.c_str(), static_cast<State::ValueType>( rhs ) ) )
-    throw bciexception_( "Could not set value of state " << mName );
+    throw bciexception( "Could not set value of state " << mName );
   return rhs;
 }

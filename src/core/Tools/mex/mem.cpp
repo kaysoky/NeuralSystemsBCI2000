@@ -70,20 +70,20 @@ BCIMexFunction( int nlhs, mxArray* plhs[],
 
   // Check for proper number of arguments
   if( nrhs != 2 )
-    throw bciexception_( "Two input arguments required -- " USAGE );
+    throw bciexception( "Two input arguments required -- " USAGE );
   if( nlhs > 2 )
-    throw bciexception_( "Too many output arguments -- " USAGE );
+    throw bciexception( "Too many output arguments -- " USAGE );
 
   int numSamples  = static_cast<int>( ::mxGetM( inSignalArray ) ),
       numChannels = static_cast<int>( ::mxGetN( inSignalArray ) );
   mwSize numParms = static_cast<mwSize>( ::mxGetNumberOfElements( inParmsArray ) );
 
   if( !::mxIsDouble( inSignalArray ) || ::mxIsComplex( inSignalArray ) )
-    throw bciexception_( "Expected real double input signal -- " USAGE );
+    throw bciexception( "Expected real double input signal -- " USAGE );
   if( !::mxIsDouble( inParmsArray ) || ::mxIsComplex( inParmsArray ) )
-    throw bciexception_( "Expected real double parameter vector -- " USAGE );
+    throw bciexception( "Expected real double parameter vector -- " USAGE );
   if ( numParms < 5 )
-    throw bciexception_( "Expected at least 5 MEM parameter values -- " USAGE );
+    throw bciexception( "Expected at least 5 MEM parameter values -- " USAGE );
 
   double* inSignal = ::mxGetPr( inSignalArray ),
         * inParms  = ::mxGetPr( inParmsArray ),
@@ -99,23 +99,23 @@ BCIMexFunction( int nlhs, mxArray* plhs[],
           windowLength      = numParms > ( p - inParms ) ? *p++ : 1;
 
   if( modelOrder >= numSamples )
-    throw bciexception_( "The number of input samples must exceed the model order." );
+    throw bciexception( "The number of input samples must exceed the model order." );
   if( binWidth <= 0.0 || binWidth > frequency/2 )
-    throw bciexception_( "Bin width must be between 0 and half the sampling rate." );
+    throw bciexception( "Bin width must be between 0 and half the sampling rate." );
   if( firstBinCenter < 0.0 || firstBinCenter > frequency/2 )
-    throw bciexception_( "First bin center must be between 0 and half the sampling rate." );
+    throw bciexception( "First bin center must be between 0 and half the sampling rate." );
   if( lastBinCenter < firstBinCenter || lastBinCenter > frequency/2 )
-    throw bciexception_( "Last bin center must be between firstBinCenter and half the sampling rate." );
+    throw bciexception( "Last bin center must be between firstBinCenter and half the sampling rate." );
   if( evaluationsPerBin < 1 )
-    throw bciexception_( "There must be at least 1 evaluation per bin." );
+    throw bciexception( "There must be at least 1 evaluation per bin." );
   if( frequency < eps )
-    throw bciexception_( "Frequency must be > 0." );
+    throw bciexception( "Frequency must be > 0." );
   if( sampleBlockSize < 1 )
-    throw bciexception_( "Sample block size must be >= 1." );
+    throw bciexception( "Sample block size must be >= 1." );
   if( windowLength * sampleBlockSize < modelOrder )
-    throw bciexception_( "Window must contain more samples than the model order." );
+    throw bciexception( "Window must contain more samples than the model order." );
   if( windowLength * sampleBlockSize > numSamples )
-    throw bciexception_( "Window may not exceed the number of samples." );
+    throw bciexception( "Window may not exceed the number of samples." );
   switch( static_cast<int>( detrendOption ) )
   {
     case WindowingThread::None:
@@ -123,7 +123,7 @@ BCIMexFunction( int nlhs, mxArray* plhs[],
     case WindowingThread::Linear:
       break;
     default:
-      throw bciexception_( "Unknown detrend option." );
+      throw bciexception( "Unknown detrend option." );
   }
   StandaloneFilter<ARFilter> filter;
   filter.Parameter( "WindowLength" ) = windowLength;

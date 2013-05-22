@@ -108,7 +108,7 @@ STDMETHODIMP CBCI2000PCLLibrary::getType(long inIndex, IPCLType** outType)
   COM_METHOD_START
   size_t index = static_cast<size_t>( inIndex );
   if( index < 0 || index >= mTypeInstantiators.size() )
-    throw bciexception_( "Invalid type index: " << inIndex << " sent to extension." );
+    throw bciexception( "Invalid type index: " << inIndex << " sent to extension." );
   com::Ptr<IPCLType> pType = mTypeInstantiators[inIndex]( this );
   *outType = pType;
   ( *outType )->AddRef();

@@ -38,7 +38,7 @@
 
 #define COM_METHOD_START try {
 #define COM_METHOD_END \
-} catch( const BCIException& e ) { \
+} catch( const std::exception& e ) { \
   mLastError = com::DualString( e.what() ); return E_FAIL;\
 } catch( ... ) { \
   mLastError = L"Unknown exception in "; \
@@ -99,7 +99,7 @@ ArgList::ArgList( const struct Method<T>& inMethod, IPCLArguments* pArgs )
     pArg->getRank( &rank );
     match = match && rank == inMethod.result.rank;
     if( !match )
-      throw bciexception_( "Return type does not match when calling " << methodName );
+      throw bciexception( "Return type does not match when calling " << methodName );
   }
 #endif // BCIDEBUG
 
@@ -111,7 +111,7 @@ ArgList::ArgList( const struct Method<T>& inMethod, IPCLArguments* pArgs )
   while( methodArgs < maxArgs && inMethod.arguments[methodArgs].name != NULL )
     ++methodArgs;
   if( numArgs != methodArgs )
-    throw bciexception_( "Number of arguments does not match when calling " << methodName );
+    throw bciexception( "Number of arguments does not match when calling " << methodName );
 #endif // BCIDEBUG
 
   for( long i = 0; i < numArgs; ++i )
@@ -126,7 +126,7 @@ ArgList::ArgList( const struct Method<T>& inMethod, IPCLArguments* pArgs )
     pArg->getRank( &rank );
     match = match && rank == inMethod.arguments[i].rank;
     if( !match )
-      throw bciexception_(
+      throw bciexception(
         "Type of argument #" << i + 1 << " is \""
         << std::string( com::DualString( type ) )
         << ( rank > 0 ? " array" : "" )

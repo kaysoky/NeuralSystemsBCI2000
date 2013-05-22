@@ -9,7 +9,6 @@
 ##       INC_EXTLIB - Include directory
 ##       LIBDIR_EXTLIB - Library directory
 ##       LIBS_EXTLIB - required libraries
-##       Also defines source groups for COM
 
 IF( WIN32 )
 
@@ -34,10 +33,6 @@ SET( HDR_EXTLIB
 
 # Define the include directory
 SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/com )
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\com FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\com FILES ${HDR_EXTLIB} )
 
 # Define libraries
 SET( LIBS_EXTLIB

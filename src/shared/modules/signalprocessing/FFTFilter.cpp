@@ -305,6 +305,6 @@ FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTT
       break;
 
     default:
-      throw bciexception( "Unknown value of FFT type" );
+      throw std_logic_error( "Unknown value of FFT type" );
   }
 }

@@ -4,26 +4,26 @@
 // Description: A type that represents a single BCI2000 parameter.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"                               
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "Param.h"
@@ -153,7 +153,7 @@ Param::Param( const std::string& line )
 {
   istringstream iss( line );
   if( !( iss >> *this ) )
-    throw bciexception( "Invalid parameter line" );
+    throw std_invalid_argument( "Invalid parameter line" );
 }
 
 // **************************************************************************
@@ -227,7 +227,7 @@ const Param::ParamValue&
 Param::Value( size_t idx ) const
 {
   if( idx >= mValues.size() )
-    throw bciexception( "Index " << idx << " out of range when accessing parameter " << Name() );
+    throw std_range_error( "Index " << idx << " out of range when accessing parameter " << Name() );
   return mValues[idx];
 }
 
@@ -256,9 +256,9 @@ void
 Param::BoundsCheck( size_t row, size_t col ) const
 {
   if( static_cast<int>( row ) >= NumRows() )
-    throw bciexception( "Row index " << row << " out of range when accessing parameter " << Name() );
+    throw std_range_error( "Row index " << row << " out of range when accessing parameter " << Name() );
   if( static_cast<int>( col ) >= NumColumns() )
-    throw bciexception( "Column index " << col << " out of range when accessing parameter " << Name() );
+    throw std_range_error( "Column index " << col << " out of range when accessing parameter " << Name() );
 }
 
 // **************************************************************************
@@ -475,7 +475,7 @@ Param::AssignValues( const Param& p )
   if( this != &p )
   {
     if( Readonly() )
-      throw bciexception( "Trying to assign to readonly parameter " << Name() );
+      throw std_runtime_error( "Trying to assign to readonly parameter " << Name() );
 
     mDim1Index = p.mDim1Index;
     mDim2Index = p.mDim2Index;

@@ -114,7 +114,7 @@ ConditionType::Evaluate( CommandInterpreter& inInterpreter )
       if( op == sOperators[i].name )
         func = sOperators[i].func;
     if( func == NULL )
-      throw bciexception_( "Unknown operator: " << op );
+      throw bciexception( "Unknown operator: " << op );
     result = func( a.c_str(), b.c_str() );
   }
   if( result )
@@ -145,7 +145,7 @@ ConditionType::EvaluateExpression( CommandInterpreter& inInterpreter )
     return false;
   string args[] = { token.substr( 0, pos ), token.substr( pos + len ) };
   for( size_t i = 0; i < sizeof( args ) / sizeof( *args ); ++i )
-  { 
+  {
     string& object = args[i];
     if( object.length() > 2 && *object.begin() == '\"' )
     {

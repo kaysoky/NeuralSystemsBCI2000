@@ -116,10 +116,10 @@ BCIMexFunction( int nargout, mxArray* varargout[],
   while( i < nargin )
   {
     if( mxGetClassID( varargin[ i ] ) != mxCHAR_CLASS )
-      throw bciexception_( "File name or option expected in argument " << i + 1 << "." );
+      throw bciexception( "File name or option expected in argument " << i + 1 << "." );
     char* stringArg = mxArrayToString( varargin[ i ] );
     if( stringArg == NULL )
-      throw bciexception_( "Out of memory when reading string argument." );
+      throw bciexception( "Out of memory when reading string argument." );
     else if( *stringArg == '-' )
     { // Parse options
       if( string( "-raw" ) == stringArg )
@@ -127,7 +127,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       else if( string( "-calibrated" ) == stringArg )
         rawData = false;
       else
-        throw bciexception_( "Unknown option: " << stringArg );
+        throw bciexception( "Unknown option: " << stringArg );
     }
     else
     {
@@ -142,7 +142,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       if( !file->IsOpen() )
         file->Open( ( string( stringArg ) + ".dat" ).c_str() );
       if( !file->IsOpen() )
-        throw bciexception_( "Could not open \"" << stringArg << "\" as a BCI2000 data file." );
+        throw bciexception( "Could not open \"" << stringArg << "\" as a BCI2000 data file." );
 
       int64_t samplesInFile = file->NumSamples(),
              begin = 0,
@@ -159,7 +159,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
         double* range = mxGetPr( varargin[ i ] );
         for( mwSize j = 0; j < numEntries; ++j )
           if( floor( fabs( range[ j ] ) ) != range[ j ] )
-            throw bciexception_( "Nonnegative integers expected in range vector." );
+            throw bciexception( "Nonnegative integers expected in range vector." );
 
         if( numEntries > 0 )
           begin = static_cast<int64_t>( range[ 0 ] - 1 );
@@ -173,7 +173,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       if( begin >= samplesInFile )
         begin = end;
       if( begin < 0 || ( end - begin ) < 0 )
-        throw bciexception_( "Invalid sample range specified for file \"" << stringArg << "\"." );
+        throw bciexception( "Invalid sample range specified for file \"" << stringArg << "\"." );
       if( begin > end )
         end = begin;
       files.rbegin()->begin = begin;
@@ -184,7 +184,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
   }
 
   if( files.empty() )
-    throw bciexception_( "No file name given." );
+    throw bciexception( "No file name given." );
   int64_t totalSamples = files[ 0 ].end - files[ 0 ].begin;
   int numChannels = files[ 0 ].data->SignalProperties().Channels();
   SignalType dataType = files[ 0 ].data->SignalProperties().Type();
@@ -215,7 +215,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
   {
     totalSamples += files[ i ].end - files[ i ].begin;
     if( files[ i ].data->SignalProperties().Channels() != numChannels )
-      throw bciexception_( "All input files must have identical numbers of channels." );
+      throw bciexception( "All input files must have identical numbers of channels." );
 
     if( files[ i ].data->SignalProperties().Type() != dataType )
       classID = mxDOUBLE_CLASS;
@@ -223,14 +223,14 @@ BCIMexFunction( int nargout, mxArray* varargout[],
     if( nargout > 1 ) // The caller wants us to read state information.
       for( int j = 0; j < statelist->Size(); ++j )
         if( !files[ i ].data->States()->Exists( ( *statelist )[ j ].Name() ) )
-          throw bciexception_( "Incompatible state information across input files." );
+          throw bciexception( "Incompatible state information across input files." );
   }
 
   // Read EEG data into the first output argument.
   mwSize dim[] = { static_cast<mwSize>( totalSamples ), numChannels };
   mxArray* signal = mxCreateNumericArray( 2, dim, classID, mxREAL );
   if( signal == NULL )
-    throw bciexception_( "Out of memory when allocating space for the signal variable." );
+    throw bciexception( "Out of memory when allocating space for the signal variable." );
   switch( classID )
   {
     case mxINT16_CLASS:
@@ -253,7 +253,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       break;
 
     default:
-      throw bciexception_( "Unsupported class ID" );
+      throw bciexception( "Unsupported class ID" );
   }
   varargout[ 0 ] = signal;
 
@@ -305,7 +305,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
         stateArray = mxCreateNumericMatrix( static_cast<mwSize>( totalSamples ), 1, mxUINT64_CLASS, mxREAL );
       }
       if( stateArray == NULL )
-        throw bciexception_( "Out of memory when allocating space for state variables." );
+        throw bciexception( "Out of memory when allocating space for state variables." );
       mxSetFieldByNumber( states, 0, i, stateArray );
       stateInfo[ i ].data8 = reinterpret_cast<uint8_t*>( mxGetData( stateArray ) );
     }
@@ -347,7 +347,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
               break;
 
             default:
-              throw bciexception_( "Unexpected data type." );
+              throw bciexception( "Unexpected data type." );
           }
         }
       }

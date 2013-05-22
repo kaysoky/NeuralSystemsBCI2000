@@ -93,7 +93,7 @@ Script::Execute( class CommandInterpreter& inInterpreter )
   }
   catch( const BCIException& e )
   {
-    ReportError( e.what() );
+    ReportError( e.What() );
   }
   return *this;
 }
@@ -102,9 +102,9 @@ void
 Script::ReportError( const string& inError ) const
 {
   if( mName.empty() )
-    throw bciexception_( inError );
+    throw bciexception( inError );
   else
-    throw bciexception_( mName << ", line " << mLine << ": " << inError );
+    throw bciexception( mName << ", line " << mLine << ": " << inError );
 }
 
 void

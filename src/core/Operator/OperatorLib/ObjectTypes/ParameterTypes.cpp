@@ -64,9 +64,9 @@ ParameterType::Set( CommandInterpreter& inInterpreter )
     Lock<StateMachine> lock( inInterpreter.StateMachine() );
     ParamList& list = inInterpreter.StateMachine().Parameters();
     if( !list.Exists( param.Name() ) )
-      throw bciexception_( "Parameter " << param.Name() << " does not exist" );
+      throw bciexception( "Parameter " << param.Name() << " does not exist" );
     if( list[param.Name()].Section() == "System" )
-      throw bciexception_( "Cannot set parameter from the \"System\" section" );
+      throw bciexception( "Cannot set parameter from the \"System\" section" );
     list[param.Name()].AssignValues( param );
     inInterpreter.StateMachine().ExecuteCallback( BCI_OnParameter, line.c_str() );
     inInterpreter.StateMachine().ParameterChange();
@@ -81,7 +81,7 @@ ParameterType::Set( CommandInterpreter& inInterpreter )
       Lock<StateMachine> lock( inInterpreter.StateMachine() );
       MutableParamRef param = GetParamRef( inInterpreter );
       if( param->Section() == "System" )
-        throw bciexception_( "Cannot set system parameter" );
+        throw bciexception( "Cannot set system parameter" );
       name = param->Name();
       value = inInterpreter.GetToken();
       param = value;
@@ -113,12 +113,12 @@ ParameterType::Insert( CommandInterpreter& inInterpreter )
   istringstream iss( line );
   Param param;
   if( !( iss >> param ) )
-    throw bciexception_( "Invalid parameter line: " << line );
+    throw bciexception( "Invalid parameter line: " << line );
   {
     Lock<StateMachine> lock( inInterpreter.StateMachine() );
     if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle
         && inInterpreter.StateMachine().SystemState() != StateMachine::Publishing )
-      throw bciexception_( "Can not add parameter to list after publishing phase" );
+      throw bciexception( "Can not add parameter to list after publishing phase" );
     inInterpreter.StateMachine().Parameters().Add( param );
   }
   inInterpreter.StateMachine().ExecuteCallback( BCI_OnParameter, line.c_str() );
@@ -149,15 +149,15 @@ ParameterType::GetParamRef( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
   if( name.empty() )
-    throw bciexception_( "Expected a parameter name, with optional indices in parentheses" );
+    throw bciexception( "Expected a parameter name, with optional indices in parentheses" );
   CommandInterpreter::ArgumentList args;
   inInterpreter.ParseArguments( name, args );
   if( !inInterpreter.StateMachine().Parameters().Exists( name ) )
-    throw bciexception_( "Parameter " << name << " does not exist" );
+    throw bciexception( "Parameter " << name << " does not exist" );
 
   Param* pParam = &inInterpreter.StateMachine().Parameters()[name];
   if( pParam->NumValues() < 1 )
-    throw bciexception_( "Parameter " << name << " is empty" );
+    throw bciexception( "Parameter " << name << " is empty" );
   try
   {
     size_t maxIdx = 0,
@@ -194,7 +194,7 @@ ParameterType::GetParamRef( CommandInterpreter& inInterpreter )
       nIdx = args[i].size();
       maxIdx = max( nIdx, maxIdx );
       if( maxIdx > 2 )
-        throw bciexception_( "Too many (" << maxIdx << ") indices" );
+        throw bciexception( "Too many (" << maxIdx << ") indices" );
       if( nIdx > 0 )
         idx1 = GetIndex( args[i][0], pParam->RowLabels() );
       if( nIdx > 1 )
@@ -202,9 +202,9 @@ ParameterType::GetParamRef( CommandInterpreter& inInterpreter )
     }
     return MutableParamRef( pParam, idx1, idx2 );
   }
-  catch( const BCIException& e )
+  catch( const exception& e )
   {
-    throw bciexception_( name << ": " << e.what() );
+    throw bciexception( name << ": " << e.what() );
   }
 }
 
@@ -216,7 +216,7 @@ ParameterType::GetIndex( const string& inAddress, const LabelIndex& inLabels )
   {
     result = ::atoi( inAddress.c_str() ) - 1;
     if( result < 0 || result >= inLabels.Size() )
-      throw bciexception_( "Index " << inAddress << " out of range" );
+      throw bciexception( "Index " << inAddress << " out of range" );
   }
   else if( inLabels.Exists( inAddress ) )
   {
@@ -224,7 +224,7 @@ ParameterType::GetIndex( const string& inAddress, const LabelIndex& inLabels )
   }
   else
   {
-    throw bciexception_( "Label " << inAddress << " does not exist" );
+    throw bciexception( "Label " << inAddress << " does not exist" );
   }
   return result;
 }
@@ -270,7 +270,7 @@ ParametersType::Clear( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )
-    throw bciexception_( "Must be in idle state to clear parameters" );
+    throw bciexception( "Must be in idle state to clear parameters" );
   inInterpreter.StateMachine().Parameters().Clear();
   return true;
 }
@@ -288,10 +288,10 @@ ParameterfileType::Load( CommandInterpreter& inInterpreter )
 {
   string fileName = inInterpreter.GetToken();
   if( fileName.empty() )
-    throw bciexception_( "Must specify a file name" );
+    throw bciexception( "Must specify a file name" );
   fileName = FileUtils::AbsolutePath( fileName );
   if( !inInterpreter.StateMachine().Parameters().Load( fileName.c_str(), false ) )
-    throw bciexception_( "Could not load \"" << fileName << "\" as a parameter file" );
+    throw bciexception( "Could not load \"" << fileName << "\" as a parameter file" );
   inInterpreter.StateMachine().ParameterChange();
   inInterpreter.Log() << "Loaded parameter file \"" << fileName << "\"";
   return true;

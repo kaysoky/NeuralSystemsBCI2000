@@ -68,7 +68,7 @@ SystemType::Get( CommandInterpreter& inInterpreter )
   else if( !::stricmp( noun.c_str(), "Version" ) )
     GetVersion( inInterpreter );
   else
-    throw bciexception_( "Cannot get anything from System except State or Version" );
+    throw bciexception( "Cannot get anything from System except State or Version" );
   return true;
 }
 
@@ -78,7 +78,7 @@ SystemType::GetState( CommandInterpreter& inInterpreter )
   int state = BCI_GetStateOfOperation();
   string result = SystemStates::Name( state );
   if( result.empty() )
-    throw bciexception_( "Unknown system state: " << state );
+    throw bciexception( "Unknown system state: " << state );
   inInterpreter.Out() << result;
   return true;
 }
@@ -101,14 +101,14 @@ SystemType::WaitFor( CommandInterpreter& inInterpreter )
   {
     int stateCode = SystemStates::Value( stateName );
     if( stateCode == BCI_None )
-      throw bciexception_( "Unknown system state: " << stateName );
+      throw bciexception( "Unknown system state: " << stateName );
     desiredStates.insert( stateCode );
   }
   double timeout = 0;
   if( !( istringstream( inInterpreter.GetOptionalToken() ) >> timeout ) )
     timeout = cDefaultTimeout;
   if( timeout < 0 )
-    throw bciexception_( "Timeout must be >= 0" );
+    throw bciexception( "Timeout must be >= 0" );
 
   return DoWaitFor( desiredStates, timeout, inInterpreter );
 }
@@ -126,7 +126,7 @@ SystemType::DoWaitFor( const set<int>& inStates, double inTimeout, CommandInterp
     state = BCI_GetStateOfOperation();
   }
   if( inStates.find( state ) == inStates.end() )
-    throw bciexception_( "Wait aborted" );
+    throw bciexception( "Wait aborted" );
   else if( timeElapsed >= 1e3 * inTimeout )
     inInterpreter.Out() << "Timeout occurred after " << inTimeout << " seconds";
   return true;
@@ -137,9 +137,9 @@ SystemType::Sleep( CommandInterpreter& inInterpreter )
 {
   double duration = 0;
   if( !( istringstream( inInterpreter.GetToken() ) >> duration ) )
-    throw bciexception_( "Invalid sleep duration" );
+    throw bciexception( "Invalid sleep duration" );
   if( duration < 0 )
-    throw bciexception_( "Sleep duration must be >= 0" );
+    throw bciexception( "Sleep duration must be >= 0" );
   int timeElapsed = 0;
   while( timeElapsed < 1e3 * duration )
     timeElapsed += inInterpreter.Background( cTimeResolution );
@@ -150,13 +150,13 @@ bool
 SystemType::SetConfig( CommandInterpreter& inInterpreter )
 {
   if( !inInterpreter.StateMachine().SetConfig() )
-    throw bciexception_( "Must be in Connected state to set configuration" );
+    throw bciexception( "Must be in Connected state to set configuration" );
   set<int> states;
   states.insert( BCI_StateConnected );
   states.insert( BCI_StateResting );
   DoWaitFor( states, cDefaultTimeout, inInterpreter );
   if( BCI_GetStateOfOperation() != BCI_StateResting )
-    throw bciexception_( "Could not set configuration" );
+    throw bciexception( "Could not set configuration" );
   return true;
 }
 
@@ -169,12 +169,12 @@ SystemType::Start( CommandInterpreter& inInterpreter )
     return true;
   }
   if( !inInterpreter.StateMachine().StartRun() )
-    throw bciexception_( "Must be in Resting or Suspended state to start operation" );
+    throw bciexception( "Must be in Resting or Suspended state to start operation" );
   set<int> states;
   states.insert( BCI_StateRunning );
   DoWaitFor( states, cDefaultTimeout, inInterpreter );
   if( BCI_GetStateOfOperation() != BCI_StateRunning )
-    throw bciexception_( "Could not start operation" );
+    throw bciexception( "Could not start operation" );
   return true;
 }
 
@@ -196,7 +196,7 @@ SystemType::Stop( CommandInterpreter& inInterpreter )
     success = ( BCI_GetStateOfOperation() == BCI_StateSuspended );
   }
   if( !success )
-    throw bciexception_( "Could not stop operation" );
+    throw bciexception( "Could not stop operation" );
   return true;
 }
 
@@ -220,7 +220,7 @@ SystemType::Startup( CommandInterpreter& inInterpreter )
                 || BCI_GetStateOfOperation() == BCI_StateConnected );
   }
   if( !success )
-    throw bciexception_( "Could not start up system" );
+    throw bciexception( "Could not start up system" );
   return true;
 }
 
@@ -243,7 +243,7 @@ SystemType::Shutdown( CommandInterpreter& inInterpreter )
     success = ( BCI_GetStateOfOperation() == BCI_StateIdle );
   }
   if( !success )
-    throw bciexception_( "Could not shut down system" );
+    throw bciexception( "Could not shut down system" );
   return true;
 }
 
@@ -262,7 +262,7 @@ SystemType::Quit( CommandInterpreter& inInterpreter )
 {
   string result = inInterpreter.GetOptionalToken();
   if( !inInterpreter.StateMachine().CallbackFunction( BCI_OnQuitRequest ) )
-    throw bciexception_( "Quit request not handled by application" );
+    throw bciexception( "Quit request not handled by application" );
   const char* pMessage = NULL;
   inInterpreter.StateMachine().ExecuteCallback( BCI_OnQuitRequest, &pMessage );
   if( pMessage && *pMessage )

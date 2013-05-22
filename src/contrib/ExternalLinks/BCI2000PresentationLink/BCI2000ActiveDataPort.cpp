@@ -121,7 +121,7 @@ CBCI2000ActiveDataPort::sendData( BSTR inEventType, BSTR inEventCode, double, do
     success = mBCI2000.Result().empty();
   }
   if( !success )
-    throw bciexception_( "Error when processing event of type " << eventType << ": " << mBCI2000.Result() );
+    throw bciexception( "Error when processing event of type " << eventType << ": " << mBCI2000.Result() );
   COM_METHOD_END
 }
 
@@ -150,12 +150,12 @@ CBCI2000ActiveDataPort::Initialize( const DataPortSettings& inSettings )
   {
     mBCI2000.OperatorPath( "" );
     if( !mBCI2000.Connect() )
-      throw bciexception_( mBCI2000.Result() );
+      throw bciexception( mBCI2000.Result() );
   }
   else if( inSettings[DataPortSettings::OperatorPath].empty() )
   {
     if( !com::Module::GetLocation() )
-      throw bciexception_( "Could not determine path to BCI2000PresentationLink" );
+      throw bciexception( "Could not determine path to BCI2000PresentationLink" );
     com::DualString path = com::Module::GetLocation();
     wchar_t* pOperator = NULL;
     if( ::LoadStringW( com::Module::GetHInstance(), IDS_OperatorName, reinterpret_cast<wchar_t*>( &pOperator ), 0 ) )
@@ -164,7 +164,7 @@ CBCI2000ActiveDataPort::Initialize( const DataPortSettings& inSettings )
       path += L"Operator.exe";
     mBCI2000.OperatorPath( string( path ) );
     if( !mBCI2000.Connect() )
-      throw bciexception_(
+      throw bciexception(
              "Could not start up BCI2000 -- "
              "does the BCI2000PresentationLink plugin reside in the BCI2000 prog folder?"
              "\nError was:\n"
@@ -175,7 +175,7 @@ CBCI2000ActiveDataPort::Initialize( const DataPortSettings& inSettings )
   {
     mBCI2000.OperatorPath( inSettings[DataPortSettings::OperatorPath] );
     if( !mBCI2000.Connect() )
-      throw bciexception_( mBCI2000.Result() );
+      throw bciexception( mBCI2000.Result() );
   }
   mBCI2000.WindowTitle( "Connected to Presentation" );
   mBCI2000.Execute( "shutdown system", 0 );
@@ -190,6 +190,6 @@ CBCI2000ActiveDataPort::Initialize( const DataPortSettings& inSettings )
   }
   mBCI2000.Execute( "startup system localhost", 0 );
   if( !mBCI2000.Result().empty() )
-    throw bciexception_( mBCI2000.Result() );
+    throw bciexception( mBCI2000.Result() );
 }
 

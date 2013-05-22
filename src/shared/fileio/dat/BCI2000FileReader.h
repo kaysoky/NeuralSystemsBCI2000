@@ -92,8 +92,8 @@ class BCI2000FileReader
                      { return &mStatelist; }
   const class StateVector* StateVector() const
                      { return mpStatevector; }
-  const ParamRef     Parameter( const std::string& name ) const;
-  const StateRef     State( const std::string& name ) const;
+  ParamRef Parameter( const std::string& name ) const;
+  const StateRef State( const std::string& name ) const;
 
   int   HeaderLength() const
         { return mHeaderLength; }

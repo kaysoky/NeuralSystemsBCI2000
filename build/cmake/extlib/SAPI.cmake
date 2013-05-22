@@ -9,7 +9,6 @@
 ##       INC_EXTLIB - Include directory for SAPI 5.1
 ##       LIBDIR_EXTLIB - Library directory for SAPI 5.1
 ##       LIBS_EXTLIB - required library for SAPI 5.1
-##       Also defines source groups for SAPI
 
 IF( WIN32 )
 
@@ -39,10 +38,6 @@ ENDIF( BORLAND )
 
 # Set Libs required
 SET( LIBS_EXTLIB sapi.lib )
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\SAPILib FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\SAPILib FILES ${HDR_EXTLIB} )
 
 # Set success
 SET( EXTLIB_OK TRUE )

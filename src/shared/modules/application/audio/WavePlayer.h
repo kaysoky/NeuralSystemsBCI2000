@@ -86,6 +86,8 @@ class WavePlayer
     { return mErrorState; }
 
  private:
+  void PlayDummySound();
+ 
   float       mVolume,
               mPan;
   std::string mFile;

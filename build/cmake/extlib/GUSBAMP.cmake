@@ -8,7 +8,6 @@
 ##       INC_EXTLIB - Include directory for gUSBamp
 ##       LIBDIR_EXTLIB - Library directory for gUSBamp
 ##       LIBS_EXTLIB - required library for gUSBamp
-##       Also defines source groups for source files
 
 IF( WIN32 )
 
@@ -45,10 +44,6 @@ ELSEIF( MINGW )
 ELSE()
   SET( LIBS_EXTLIB gUSBamp.lib )
 ENDIF()
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\gtec\\gUSBamp FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\gtec\\gUSBamp FILES ${HDR_EXTLIB} )
 
 # Set success
 SET( EXTLIB_OK TRUE )

@@ -41,7 +41,7 @@
 #endif // _WIN32
 
 #if _MSC_VER
-# include "dirent_win.h"
+# include "../fileio/dirent_win.h"
 #else // _MSC_VER
 # include <dirent.h>
 #endif // _MSC_VER
@@ -55,10 +55,12 @@
 #include <cstdlib>
 #include <cerrno>
 #include <sstream>
+#include <algorithm>
 
 #include "StringUtils.h"
 #include "OSMutex.h"
 #include "FileUtils.h"
+#include "BCIException.h"
 
 using namespace std;
 using namespace FileUtils;
@@ -214,8 +216,7 @@ FileUtils::AbsolutePath( const string& inPath )
 string
 FileUtils::CanonicalPath( const std::string& inPath )
 {
-  OSMutex::Lock lock( WorkingDirMutex() );
-  string path = inPath,
+  string path = AbsolutePath( inPath ),
          sep;
   if( !path.empty() && Separators().find( *path.rbegin() ) != string::npos )
   {
@@ -224,14 +225,15 @@ FileUtils::CanonicalPath( const std::string& inPath )
   }
   string result;
 #if _WIN32
-  wchar_t* pFilePart;
-  wstring wpath = StringUtils::ToWide( path );
-  DWORD size = ::GetFullPathNameW( wpath.c_str(), 0, NULL, &pFilePart );
+  std::replace( path.begin(), path.end(), '/', '\\' );
+  const wstring prefix = L"\\\\?\\";
+  wstring wpath = prefix + StringUtils::ToWide( path );
+  DWORD size = ::GetLongPathNameW( wpath.c_str(), 0, 0 );
   if( size > 0 )
   {
-    wchar_t* pBuf = new wchar_t[size];
-    if( ::GetFullPathNameW( wpath.c_str(), size, pBuf, &pFilePart ) )
-      result = StringUtils::ToNarrow( pBuf );
+    wchar_t* pBuf = new wchar_t[size+1];
+    if( ::GetLongPathNameW( wpath.c_str(), pBuf, size ) )
+      result = StringUtils::ToNarrow( pBuf ).substr( prefix.length() );
     delete[] pBuf;
   }
 #elif _GNU_SOURCE
@@ -331,9 +333,9 @@ bool
 FileUtils::IsAbsolutePath( const string& inPath )
 {
 #ifdef _WIN32
-  return inPath.length() > 1 && ( inPath[ 1 ] == DriveSeparator || inPath[ 0 ] == DirSeparator && inPath[ 1 ] == DirSeparator );
+  return inPath.length() > 1 && ( inPath[1] == DriveSeparator || inPath[0] == DirSeparator && inPath[1] == DirSeparator );
 #else
-  return inPath.length() > 0 && inPath[ 0 ] == DirSeparator;
+  return inPath.length() > 0 && inPath[0] == DirSeparator;
 #endif
 }
 
@@ -413,21 +415,26 @@ FileUtils::ListDirectory( const string& inPath, List& outList )
 FileUtils::TemporaryFile::TemporaryFile()
 : mpFile( new File )
 {
-  const char* p = ::tmpnam( 0 );
-  for( int trial = 0; trial < 20 && p && !is_open(); ++trial )
+  string prefix = ExtractBase( ExecutablePath() );
+  for( int trial = 0; trial < 20 && !is_open(); ++trial )
   {
-    mpFile->name = p;
-    if( !Open() )
-      p = ::tmpnam( 0 );
+    char* p = ::tempnam( 0, prefix.c_str() );
+    if( p )
+    {
+      mpFile->name = p;
+      ::free( p );
+      mpFile->name = CanonicalPath( ExtractDirectory( mpFile->name ) ) + ExtractFile( mpFile->name );
+      open( mpFile->name.c_str(), ios::in | ios::out | ios::binary | ios::trunc );
+    }
   }
   if( !is_open() )
-    mpFile->name = "";
+    throw std_runtime_error( "Could not create temporary file: " << mpFile->name );
 }
 
 bool
 FileUtils::TemporaryFile::Open()
 {
-  open( mpFile->name.c_str(), ios_base::in | ios_base::out | ios_base::binary );
+  open( mpFile->name.c_str(), ios::in | ios::out | ios::binary );
   return is_open();
 }
 

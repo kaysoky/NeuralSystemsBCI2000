@@ -417,7 +417,7 @@ void
 MainWindow::SetupScripts()
 {
   if( !gpPreferences )
-    throw bciexception( "Global preferences object does not exist" );
+    throw std_logic_error( "Global preferences object does not exist" );
 
   static const struct { int id; const char* name; }
   events[] =

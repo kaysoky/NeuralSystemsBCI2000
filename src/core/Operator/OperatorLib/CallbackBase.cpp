@@ -146,7 +146,7 @@ CallbackBase::DoExecute( Callback& inCallback )
       break;
 
     default:
-      throw bciexception( "Unknown callback execution context:" << context );
+      throw std_logic_error( "Unknown callback execution context:" << context );
   }
   return inCallback.Result();
 }
@@ -225,7 +225,7 @@ void
 CallbackBase::Callback::SuspendThread()
 {
   if( !mpWaitEvent )
-    throw bciexception( "trying to wait for NULL event" );
+    throw std_logic_error( "trying to wait for NULL event" );
   mpWaitEvent->Wait();
 }
 

@@ -82,7 +82,7 @@ void
 FilterThread::Run( Runnable& inRunnable )
 {
   if( !ReusableThread::Run( inRunnable ) )
-    throw bciexception( "Could not start execution: thread busy" );
+    throw std_runtime_error( "Could not start execution: thread busy" );
 }
 
 void

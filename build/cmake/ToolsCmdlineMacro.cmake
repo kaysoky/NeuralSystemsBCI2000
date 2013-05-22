@@ -3,78 +3,33 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Contains a macro for creating a commandline application
 
-MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
-       
-  # DEBUG
+MACRO( BCI2000_ADD_TOOLS_CMDLINE ) # NAME SOURCES [HEADERS] REQUESTQT
+  BCI2000_PARSE_ARGS( "NAME;SOURCES" ${ARGV} )
+  LIST( REVERSE SOURCES )
+  LIST( GET SOURCES 0 USEQT )
+  LIST( REMOVE_AT SOURCES 0 )
+
   MESSAGE( "-- Adding Commandline Project: " ${NAME} )
-  #MESSAGE( "${NAME} sources: ${SOURCES}" )
-  #MESSAGE( "${NAME} headers: ${HEADERS}" )
-  
-  # Generate the required framework
-  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
   
   SET( SOURCES
     ${SOURCES}
     ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_tool.cpp
-  )
-  SET( HEADERS
-    ${HEADERS}
-    ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_tool.h
-  )
-  
-  # Add in the appropriate error handling module
-  SET( SRC_SHARED_BCISTREAM 
     ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
   )
-  SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\bcistream FILES ${SRC_SHARED_BCISTREAM} )
-  SET( SRC_BCI2000_FRAMEWORK
-    ${SRC_BCI2000_FRAMEWORK}
-    ${SRC_SHARED_BCISTREAM}
-  )
+
+  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
   
-  # Set the Project Source Groups
-  SOURCE_GROUP( Source\\Project FILES ${SOURCES} )
-  SOURCE_GROUP( Headers\\Project FILES ${HEADERS} )
-  
-  # Add in external required libraries
-  BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS FAILED )
-  
-  # If we're building a Qt project, we need to automoc the headers, generating new files
-  SET( USEQT ${REQUESTQT} )
-  IF( BORLAND )
-     SET( USEQT "FALSE" )
-  ENDIF( BORLAND )
-  IF( ${USEQT} )
-    QT4_AUTOMOC( ${HEADERS} )  
-  ENDIF( ${USEQT} )
-  
-  # Set output directories
   SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/tools/cmdline" )
-
-  IF( NOT FAILED )
-    # Add the executable to the project
-    ADD_EXECUTABLE( ${NAME} ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
+  BCI2000_ADD_TARGET( EXECUTABLE ${NAME} ${SOURCES} )
   
-    # Add Pre-processor defines
-    IF( ${USEQT} )
-      SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
-    ENDIF( ${USEQT} )
+  IF( ${USEQT} )
+    MESSAGE( "-- (NB: ${NAME} is using Qt)" )
+    SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
+    TARGET_LINK_LIBRARIES( ${NAME} ${QT_LIBRARIES} )
+  ENDIF()
+  BCI2000_ADD_BCITEST( ${NAME} )
 
-    # Link against the Qt/VCL Libraries
-    IF( BORLAND )
-      TARGET_LINK_LIBRARIES( ${NAME} vcl rtl ${VXL_VGUI_LIBRARIES} ${LIBS} )
-    ELSEIF( ${USEQT} )
-      MESSAGE( "-- (NB: ${NAME} is using Qt)" )
-      TARGET_LINK_LIBRARIES( ${NAME} ${QT_LIBRARIES} ${LIBS} )
-    ELSE()
-      TARGET_LINK_LIBRARIES( ${NAME} ${LIBS} )
-    ENDIF()
-
-    # Set the project build folder
-    SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER "${DIR_NAME}" )
-  ENDIF( NOT FAILED )
-
-ENDMACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS )
+ENDMACRO()
 
 ################################################################################################
 
@@ -84,10 +39,7 @@ MACRO( BCI2000_ADD_CMDLINE_CONVERTER NAME )
     ${NAME}.cpp
     ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_tool.cpp
   )
-  SET( HEADERS
-    ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_tool.h
-  )
-  BCI2000_ADD_TOOLS_CMDLINE( ${NAME} "${SOURCES}" "${HEADERS}" FALSE )
+  BCI2000_ADD_TOOLS_CMDLINE( ${NAME} ${SOURCES} FALSE )
   
 ENDMACRO( BCI2000_ADD_CMDLINE_CONVERTER NAME )
 
@@ -115,9 +67,9 @@ MACRO(PARSE_ARGUMENTS prefix arg_names option_names)
       SET(loption_names ${option_names})    
       LIST(FIND loption_names "${arg}" is_option)            
       IF (is_option GREATER -1)
-	     SET(${prefix}_${arg} TRUE)
+       SET(${prefix}_${arg} TRUE)
       ELSE (is_option GREATER -1)
-	     SET(current_arg_list ${current_arg_list} ${arg})
+       SET(current_arg_list ${current_arg_list} ${arg})
       ENDIF (is_option GREATER -1)
     ENDIF (is_arg_name GREATER -1)
   ENDFOREACH(arg)
@@ -152,10 +104,6 @@ MACRO( BCI2000_ADD_CMDLINE_FILTER )
     ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_tool.cpp
     ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_filtertool.cpp
     ${CMDLINEFILTER_EXTRA_SOURCES}
-  )
-  SET( HEADERS
-    ${MAINSTEM}.h
-    ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_tool.h
     ${CMDLINEFILTER_EXTRA_HEADERS}
   )
 
@@ -168,7 +116,7 @@ MACRO( BCI2000_ADD_CMDLINE_FILTER )
     ENDIF( ${DEPENDENCY} STREQUAL QT )
   ENDFOREACH( DEPENDENCY )
   
-  BCI2000_ADD_TOOLS_CMDLINE( ${NAME} "${SOURCES}" "${HEADERS}" ${USEQT} )
+  BCI2000_ADD_TOOLS_CMDLINE( ${NAME} ${SOURCES} ${USEQT} )
 
 ENDMACRO( BCI2000_ADD_CMDLINE_FILTER )
 

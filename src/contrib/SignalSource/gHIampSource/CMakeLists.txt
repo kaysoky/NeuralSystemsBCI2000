@@ -31,11 +31,7 @@ ELSE()
   )
 
   IF( USE_DYNAMIC_IMPORTS )
-  ELSEIF( BORLAND )
-    LINK_DIRECTORIES(
-      ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/omf
-    )
-  ELSEIF( CMAKE_CL_64 )
+  ELSEIF( CMAKE_SIZEOF_VOID_P EQUAL 8 )
     LINK_DIRECTORIES(
       ${BCI2000_SRC_DIR}/contrib/SignalSource/gHIampSource/lib/coff64
     )

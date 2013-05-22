@@ -15,21 +15,7 @@ SET( SRC_PROJECT
   SimpleExample.cpp
   ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
 )
-SET( HDR_PROJECT
-  ${BCI2000_SRC_DIR}/shared/utils/SockStream.h
-)
 
-SOURCE_GROUP( Source\\Project FILES
-  ParallelSwitch.cpp
-)
-SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES 
-  ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
-)
-SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES 
-  ${BCI2000_SRC_DIR}/shared/utils/SockStream.h
-)
-
-INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/utils )
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/src/contrib/AppConnectorApplications/SimpleExample )
 ADD_EXECUTABLE( ${NAME} ${SRC_PROJECT} ${HDR_PROJECT} )
 

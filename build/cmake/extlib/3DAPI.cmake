@@ -7,7 +7,6 @@
 ##       HDR_EXTLIB - Required header files for the 3D API
 ##       INC_EXTLIB - Include directory for the 3D API
 ##       LIBS_EXTLIB - Required libraries for the 3DAPI (OpenGL)
-##       Also defines source groups for the 3D API files
 
 # Let CMake know we plan to link against the Qt OPENGL libraries
 SET( QT_USE_QTOPENGL TRUE )
@@ -65,10 +64,6 @@ SET( HDR_EXTLIB
 
 # Define the include directory
 SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/3DAPI )
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\3DAPI FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\3DAPI FILES ${HDR_EXTLIB} )
 
 # Set success
 SET( EXTLIB_OK TRUE )

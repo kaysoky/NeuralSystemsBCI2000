@@ -8,7 +8,6 @@
 ##       INC_EXTLIB - Include directory for vAmp
 ##       LIBDIR_EXTLIB - Library directory for vAmp
 ##       LIBS_EXTLIB - required library for vAmp
-##       Also defines source groups for source files
 
 IF( USE_DYNAMIC_IMPORTS OR (WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8) )
 
@@ -44,10 +43,6 @@ SET( LIBS_EXTLIB libFirstAmp.a )
 ELSE()
 SET( LIBS_EXTLIB FirstAmp.lib )
 ENDIF()
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\brainproducts\\vamp FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\brainproducts\\vamp FILES ${HDR_EXTLIB} )
 
 # Set success
 SET( EXTLIB_OK TRUE )

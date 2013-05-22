@@ -5,23 +5,23 @@
 //              See Expression.h for details about expressions.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 //////////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -136,7 +136,7 @@ double
 Expression::SignalNode::OnEvaluate()
 {
   if( mrpSignal == NULL )
-    throw bciexception_( "No signal specified for expression evaluation" );
+    throw bciexception( "No signal specified for expression evaluation" );
 
   int channel = mChannelIdx;
   if( channel < 0 )
@@ -147,7 +147,7 @@ Expression::SignalNode::OnEvaluate()
       mChannelIdx = channel;
   }
   if( channel < 0 || channel >= mrpSignal->Channels() )
-    throw bciexception_( "Channel index or address (" << mpChannelAddress->EvaluateToString() << ") out of range" );
+    throw bciexception( "Channel index or address (" << mpChannelAddress->EvaluateToString() << ") out of range" );
 
   int element = mElementIdx;
   if( element < 0 )
@@ -158,7 +158,7 @@ Expression::SignalNode::OnEvaluate()
       mElementIdx = element;
   }
   if( element < 0 || element >= mrpSignal->Elements() )
-    throw bciexception_( "Element index or address (" << mpElementAddress->EvaluateToString() << ") out of range" );
+    throw bciexception( "Element index or address (" << mpElementAddress->EvaluateToString() << ") out of range" );
 
   return ( *mrpSignal )( channel, element );
 }

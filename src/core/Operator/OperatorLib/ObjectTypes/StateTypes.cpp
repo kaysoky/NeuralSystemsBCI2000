@@ -63,7 +63,7 @@ StateType::Set( CommandInterpreter& inInterpreter )
     name = state.Name();
     value = ::atoi( inInterpreter.GetToken().c_str() );
     if( !inInterpreter.StateMachine().SetStateValue( name.c_str(), value ) )
-      throw bciexception_( "Could not set state " << name << " to " << value );
+      throw bciexception( "Could not set state " << name << " to " << value );
     // StateMachine::SetStateValue() does not set the value of the state object in its state list.
     state.SetValue( value );
     oss << state;
@@ -91,7 +91,7 @@ StateType::Insert( CommandInterpreter& inInterpreter )
   State state;
   istringstream iss( stateline );
   if( !( iss >> state ) )
-    throw bciexception_( "Invalid state definition" );
+    throw bciexception( "Invalid state definition" );
   {
     Lock<StateMachine> lock( inInterpreter.StateMachine() );
     switch( inInterpreter.StateMachine().SystemState() )
@@ -102,7 +102,7 @@ StateType::Insert( CommandInterpreter& inInterpreter )
       case StateMachine::Information:
         break;
       default:
-        throw bciexception_( "Could not add state " << name << " to list after information phase" );
+        throw bciexception( "Could not add state " << name << " to list after information phase" );
     }
     inInterpreter.StateMachine().States().Add( state );
   }
@@ -134,9 +134,9 @@ StateType::GetState( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
   if( name.empty() )
-    throw bciexception_( "Expected a state name" );
+    throw bciexception( "Expected a state name" );
   if( !inInterpreter.StateMachine().States().Exists( name ) )
-    throw bciexception_( "State " << name << " does not exist" );
+    throw bciexception( "State " << name << " does not exist" );
   return inInterpreter.StateMachine().States()[name];
 }
 
@@ -168,7 +168,7 @@ StatesType::Clear( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )
-    throw bciexception_( "Must be in idle state to clear states" );
+    throw bciexception( "Must be in idle state to clear states" );
   inInterpreter.StateMachine().States().Clear();
   return true;
 }

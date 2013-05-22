@@ -232,7 +232,7 @@ STDMETHODIMP CBCI2000Controller::callMethod(long inIndex, IPCLArguments* pArgs)
 {
   COM_METHOD_START
   if( inIndex < 0 || inIndex >= sNumMethods )
-    throw bciexception_( "Invalid function index: " << inIndex << " in CBCI2000Controller::callMethod" );
+    throw bciexception( "Invalid function index: " << inIndex << " in CBCI2000Controller::callMethod" );
 
   ArgList args( sMethods[inIndex], pArgs );
   (this->*sMethods[inIndex].function)( args );
@@ -256,7 +256,7 @@ STDMETHODIMP CBCI2000Controller::getLastError(BSTR* pResult)
 void CBCI2000Controller::callConstructor(long inIndex, IPCLArguments* pArgs)
 {
   if( inIndex < 0 || inIndex >= sNumConstructors )
-    throw bciexception_( "Invalid index: " << inIndex << " in CBCI2000Controller::callConstructor" );
+    throw bciexception( "Invalid index: " << inIndex << " in CBCI2000Controller::callConstructor" );
   ArgList args( sConstructors[inIndex], pArgs );
   (this->*sConstructors[inIndex].function)( args );
 }
@@ -313,10 +313,10 @@ CBCI2000Controller::constructor_data_port_ext( ArgList& ioArgs )
   com::Ptr<IActiveDataPort> pInterface;
   ioArgs[1]->QueryInterface( IID_IActiveDataPort, pInterface.Assignee() );
   if( !pInterface )
-    throw bciexception_( "Argument is not an IActiveDataPort descendant" );
+    throw bciexception( "Argument is not an IActiveDataPort descendant" );
   mpDataPort = dynamic_cast<CBCI2000ActiveDataPort*>( static_cast<IActiveDataPort*>( pInterface ) );
   if( !mpDataPort )
-    throw bciexception_( "Argument does not refer to a BCI2000PresentationLink data port" );
+    throw bciexception( "Argument does not refer to a BCI2000PresentationLink data port" );
   mBCI2000.Connect( mpDataPort->BCI2000() );
 }
 
@@ -342,7 +342,7 @@ CBCI2000Controller::constructor_string( ArgList& ioArgs )
 }
 
 #undef CALL
-#define CALL(x) if( !mBCI2000.x ) throw bciexception_( mBCI2000.Result() )
+#define CALL(x) if( !mBCI2000.x ) throw bciexception( mBCI2000.Result() )
 
 void
 CBCI2000Controller::hide_window( ArgList& )

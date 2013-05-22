@@ -61,9 +61,9 @@ EventType::Set( CommandInterpreter& inInterpreter )
     name = event.Name();
     value = ::atoi( inInterpreter.GetToken().c_str() );
     if( ( value & ~( ( 1LL << event.Length() ) - 1LL ) ) != 0 )
-      throw bciexception_( "Event value " << value << " out of range" );
+      throw bciexception( "Event value " << value << " out of range" );
     if( !inInterpreter.StateMachine().SetEvent( name.c_str(), value ) )
-      throw bciexception_( "Could not set event " << name << " to " << value );
+      throw bciexception( "Could not set event " << name << " to " << value );
   }
   return true;
 }
@@ -84,11 +84,11 @@ EventType::Insert( CommandInterpreter& inInterpreter )
   State event;
   istringstream iss( eventline );
   if( !( iss >> event ) )
-    throw bciexception_( "Invalid event definition: " << eventline );
+    throw bciexception( "Invalid event definition: " << eventline );
   {
     Lock<StateMachine> lock( inInterpreter.StateMachine() );
     if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )
-      throw bciexception_( "Could not add event " << name << " to list outside idle state" );
+      throw bciexception( "Could not add event " << name << " to list outside idle state" );
     inInterpreter.StateMachine().Events().Add( event );
   }
   return true;
@@ -117,9 +117,9 @@ EventType::GetEvent( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
   if( name.empty() )
-    throw bciexception_( "Expected an event name" );
+    throw bciexception( "Expected an event name" );
   if( !inInterpreter.StateMachine().Events().Exists( name ) )
-    throw bciexception_( "Event " << name << " does not exist" );
+    throw bciexception( "Event " << name << " does not exist" );
   return inInterpreter.StateMachine().Events()[name];
 }
 
@@ -151,7 +151,7 @@ EventsType::Clear( CommandInterpreter& inInterpreter )
 {
   Lock<StateMachine> lock( inInterpreter.StateMachine() );
   if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )
-    throw bciexception_( "Must be in idle state to clear events" );
+    throw bciexception( "Must be in idle state to clear events" );
   inInterpreter.StateMachine().Events().Clear();
   return true;
 }

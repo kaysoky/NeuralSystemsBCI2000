@@ -88,7 +88,7 @@ EnvironmentType::Set( CommandInterpreter& inInterpreter )
   string name = inInterpreter.GetToken(),
          value = inInterpreter.GetToken();
   if( !EnvVariable::Set( name, value ) )
-    throw bciexception_( "Could not set environment variable \"" << name << "\"" );
+    throw bciexception( "Could not set environment variable \"" << name << "\"" );
   return true;
 }
 
@@ -107,6 +107,6 @@ EnvironmentType::Clear( CommandInterpreter& inInterpreter )
 {
   string name = inInterpreter.GetToken();
   if( !EnvVariable::Clear( name ) )
-    throw bciexception_( "Could not clear environment variable \"" << name << "\"" );
+    throw bciexception( "Could not clear environment variable \"" << name << "\"" );
   return true;
 }

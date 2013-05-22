@@ -56,6 +56,9 @@ class Runnable
   virtual void OnRun() = 0;
 };
 
+struct Run
+{ Run( Runnable& r ) { r.Run(); } };
+
 template<typename R> class FunctionResult_
 {
  public:
@@ -262,7 +265,7 @@ template<typename R, class C, typename T1, typename T2, typename T3> class Membe
   T3 t3;
 };
 
-#if !defined( NDEBUG ) && !defined( __GNUC__ ) 
+#if !defined( NDEBUG ) && !defined( __GNUC__ )
 // Test whether all templates can be instantiated.
 // Disabled for GCC due to a linker error on OSX.
 

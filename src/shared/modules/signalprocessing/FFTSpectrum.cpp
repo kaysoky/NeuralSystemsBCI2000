@@ -92,9 +92,9 @@ FFTThread::OnInitialize( const SignalProperties& Input, const SignalProperties& 
          << ", Input resampling: " << mInputResampling
          << ", Spectrum oversampling: " << mSpectrumOversampling
          << endl;
-  // To match the first bin's center, we shift the spectrum to the left by the 
+  // To match the first bin's center, we shift the spectrum to the left by the
   // amount given by firstBinCenter.
-  // This is achieved by multiplication with a carrier that has a negative 
+  // This is achieved by multiplication with a carrier that has a negative
   // frequency, and zero phase.
   mShiftCarrier.resize( fftSize );
   Real carrierOmega = -firstBinCenter * mInputResampling / 2 / M_PI,
@@ -176,7 +176,7 @@ FFTThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
         break;
 
       default:
-        throw bciexception_( "Unhandled output type: " << mOutputType );
+        throw std_logic_error( "Unhandled output type: " << mOutputType );
     }
 
     switch( mOutputType )
@@ -199,7 +199,7 @@ FFTThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
         break;
 
       default:
-        throw bciexception_( "Unhandled output type: " << mOutputType );
+        throw std_logic_error( "Unhandled output type: " << mOutputType );
     }
   }
 }

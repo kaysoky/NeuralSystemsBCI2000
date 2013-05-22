@@ -120,7 +120,7 @@ for (files=0; files<fPathArr.size(); files++)
 	// Check the number of stimulus in the Stimulus Presentation Task
 	if (CurrentFile->Parameters()->Exists("Stimuli"))
 	{
-		const ParamRef parameter = CurrentFile->Parameter("Stimuli");
+		ParamRef parameter = CurrentFile->Parameter("Stimuli");
 		NumStimuli.push_back(parameter->NumValues());
 	}
 	else

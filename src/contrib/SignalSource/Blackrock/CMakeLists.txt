@@ -4,7 +4,7 @@
 ## Description: Build information for the Blackrock source module
 ###########################################################################
 
-IF( CMAKE_CL_64 OR NOT MSVC )
+IF( CMAKE_SIZEOF_VOID_P EQUAL 8 OR NOT MSVC )
   MESSAGE( "Blackrock libraries not available for your current platform" )
 ELSE()
 # Set the executable name
@@ -54,5 +54,5 @@ ELSE( WIN32 )
   )
 ENDIF( WIN32 )
 
-ENDIF() # CMAKE_CL_64 OR NOT MSVC
+ENDIF() # CMAKE_SIZEOF_VOID_P EQUAL 8 OR NOT MSVC
 

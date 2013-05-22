@@ -13,15 +13,15 @@
 ##   SourcesVar, and additional dependencies are returned in the DependsVar
 ##   variable.
 
-MACRO( BCI2000_ADD_REGISTRY NAME SOURCES DEPENDS )
+MACRO( BCI2000_ADD_REGISTRY name_ sources_ depends_ )
 
-  SET( REGISTRY_INC ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.inc )
+  SET( REGISTRY_INC ${CMAKE_CURRENT_BINARY_DIR}/${name_}.inc )
   
   ADD_CUSTOM_COMMAND(
     OUTPUT ${REGISTRY_INC}
     COMMAND ${CMAKE_COMMAND} -E echo "// Generated file -- do not edit" > ${REGISTRY_INC}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    DEPENDS ${INVENTORY_INC} # rebuild on every CMake run (which re-creates the inventory)
+    DEPENDS  extract_registry
     VERBATIM
   )
   FOREACH( CPP_FILE ${SRC_BCI2000_FRAMEWORK} )
@@ -41,35 +41,34 @@ MACRO( BCI2000_ADD_REGISTRY NAME SOURCES DEPENDS )
     SOURCE ${REGISTRY_CPP}
     APPEND PROPERTY OBJECT_DEPENDS "${REGISTRY_INC};${INVENTORY_INC}"
   )
-  SET( ${SOURCES}
-    ${${SOURCES}}
+  SET( ${sources_}
+    ${${sources_}}
     ${INVENTORY_INC}
     ${REGISTRY_INC}
     ${REGISTRY_CPP}
   )
-  SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\config FILES ${REGISTRY_CPP} )
-  SOURCE_GROUP( Generated FILES ${REGISTRY_INC} ${INVENTORY_INC} )
+  SOURCE_GROUP( "Generated\\BCI2000 Framework" FILES ${REGISTRY_INC} ${INVENTORY_INC} )
 
-  ADD_DEFINITIONS( "-DREGISTRY_NAME=${NAME}" )
+  ADD_DEFINITIONS( "-DREGISTRY_NAME=${name_}" )
 
-  SET( ${DEPENDS}
-    ${${DEPENDS}}
+  SET( ${depends_}
+    ${${depends_}}
     extract_registry
   )
 
 ENDMACRO()
 
 
-MACRO( FORCE_INCLUDE_OBJECT NAME )
+MACRO( FORCE_INCLUDE_OBJECT name_ )
   IF( ( WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4 ) OR APPLE )
-    SET( SNAME "_${NAME}" )
+    SET( sname_ "_${name_}" )
   ELSE()
-    SET( SNAME "${NAME}" )
+    SET( sname_ "${name_}" )
   ENDIF()
   IF( MSVC )
-    SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /include:${SNAME}" )
+    SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /include:${sname_}" )
   ELSEIF( COMPILER_IS_GCC_COMPATIBLE )
-    SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-u,${SNAME}" )
+    SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-u,${sname_}" )
   ENDIF()
 ENDMACRO()
 

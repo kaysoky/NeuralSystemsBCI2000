@@ -31,7 +31,7 @@
 
 #include "ExceptionCatcher.h"
 #include "BCIException.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "OSError.h"
 #include "ClassName.h"
 
@@ -93,9 +93,15 @@ namespace {
 }
 #endif // !_WIN32
 
-#if _MSC_VER
 bool
 ExceptionCatcher::Run( Runnable& inRunnable )
+{
+  return Run1( inRunnable );
+}
+
+#if _MSC_VER
+bool
+ExceptionCatcher::Run1( Runnable& inRunnable )
 {
   // This function catches Win32 "structured" exceptions.
   // Handling of those cannot coexist with C++ exception handling in the same function,
@@ -114,7 +120,7 @@ ExceptionCatcher::Run( Runnable& inRunnable )
 }
 #elif HANDLE_SIGNALS
 bool
-ExceptionCatcher::Run( Runnable& inRunnable )
+ExceptionCatcher::Run1( Runnable& inRunnable )
 {
   bool result = false;
   static bool signalHandlingInstalled = false;
@@ -145,7 +151,7 @@ ExceptionCatcher::Run( Runnable& inRunnable )
 }
 #else // !_MSC_VER, !HANDLE_SIGNALS
 bool
-ExceptionCatcher::Run( Runnable& inRunnable )
+ExceptionCatcher::Run1( Runnable& inRunnable )
 {
   return Run2( inRunnable );
 }
@@ -163,13 +169,13 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
   }
   catch( const BCIException& e )
   {
-    message = e.what() + UserMessage();
+    message = e.What() + e.Where() + UserMessage();
   }
   catch( const exception& e )
   {
     message = "Unhandled exception of type "
               + bci::ClassName( typeid( e ) )
-              + ": " 
+              + ": "
               + e.what()
               + UserMessage();
   }
@@ -178,7 +184,7 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
   {
     message = "Unhandled exception of type "
               + bci::ClassName( typeid( e ) )
-              + ": " 
+              + ": "
               + AnsiString( e.Message ).c_str()
               + UserMessage();
   }
@@ -272,5 +278,5 @@ ExceptionCatcher::UserMessage() const
 void
 ExceptionCatcher::OnReportException( const string& inMessage )
 {
-  bcierr__ << inMessage << endl;
+  bcierr__ << inMessage;
 }

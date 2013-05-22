@@ -50,7 +50,7 @@ TelnetServer::TelnetServer( class StateMachine& inStateMachine, const string& in
 {
   mpListeningSocket->open( inAddress.c_str() );
   if( !mpListeningSocket->is_open() )
-    throw bciexception_( "TelnetServer: Cannot listen at " << mAddress );
+    throw bciexception( "TelnetServer: Cannot listen at " << mAddress );
   Initialize();
 }
 

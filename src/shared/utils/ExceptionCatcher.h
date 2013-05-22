@@ -48,6 +48,7 @@ class ExceptionCatcher
   virtual void OnReportException( const std::string& );
 
  private:
+  bool Run1( Runnable& );
   bool Run2( Runnable& );
   void ReportWin32Exception( int code );
   void ReportSignal( int code );

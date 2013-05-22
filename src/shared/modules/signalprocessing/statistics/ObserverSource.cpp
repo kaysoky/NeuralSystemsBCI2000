@@ -38,14 +38,14 @@ using namespace StatisticalObserver;
 double
 ObserverNode::OnEvaluate()
 {
-  throw bciexception( "Function should never be called" );
+  throw std_logic_error( "Function should never be called" );
   return 0;
 }
 
 ExpressionParser::Node*
 ObserverNode::OnSimplify()
 {
-  throw bciexception_( Name() << "Observers must be used with statistics functions" );
+  throw bciexception( Name() << "Observers must be used with statistics functions" );
   return this;
 }
 
@@ -146,7 +146,7 @@ ObserverSource::OnProcess( const Context& inContext )
 
   for( mCurSample = 0; mCurSample < mStreamingMax; ++mCurSample )
   {
-    int agingCount = ( ( mCurSample + 1 ) * mSampleBlockSize ) / mStreamingMax 
+    int agingCount = ( ( mCurSample + 1 ) * mSampleBlockSize ) / mStreamingMax
                            - ( mCurSample * mSampleBlockSize ) / mStreamingMax;
     for( size_t i = 0; i < mObservers.size(); ++i )
       mObservers[i]->AgeBy( agingCount );
@@ -157,7 +157,7 @@ ObserverSource::OnProcess( const Context& inContext )
 DataSource::Value
 ObserverSource::OnData( int )
 {
-  throw bciexception( "Function should never be called" );
+  throw std_logic_error( "Function should never be called" );
   return 0;
 }
 

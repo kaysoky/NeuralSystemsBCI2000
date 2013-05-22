@@ -93,7 +93,7 @@ MessagesType::Capture( CommandInterpreter& inInterpreter )
       else if( !::stricmp( type.c_str(), "Log" ) )
         inInterpreter.CaptureLog( BCI_OnLogMessage );
       else
-        throw bciexception_( "Unknown message type" );
+        throw bciexception( "Unknown message type" );
     }
   }
   return true;

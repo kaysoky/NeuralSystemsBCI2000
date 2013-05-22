@@ -141,9 +141,9 @@ ArithmeticExpression::DoEvaluate()
     for( size_t i = 0; i < mStatements.size(); ++i )
       result = mStatements[i]->Evaluate();
   }
-  catch( const exception& e )
+  catch( const BCIException& e )
   {
-    Errors() << e.what() << endl;
+    Errors() << e.What() << endl;
   }
 #ifdef VCL_EXCEPTIONS
   catch( const class EMathError& e )
@@ -243,7 +243,7 @@ ArithmeticExpression::Function( const std::string& inName, const NodeList& inArg
   else if( functions[i].numArgs != inArguments.size() )
   {
     Errors() << inName << "(): Wrong number of arguments, expected "
-             << functions[i].numArgs << ", got " 
+             << functions[i].numArgs << ", got "
              << inArguments.size()
              << endl;
   }
@@ -311,9 +311,9 @@ ArithmeticExpression::Parse()
   {
     ExpressionParser::yyparse( this );
   }
-  catch( const exception& e )
+  catch( const BCIException& e )
   {
-    Errors() << e.what() << endl;
+    Errors() << e.What() << endl;
   }
 #ifdef VCL_EXCEPTIONS
   catch( const class EMathError& e )
@@ -359,7 +359,7 @@ ArithmeticExpression::ReportErrors()
   if( !errorReport.str().empty() )
   {
     if( mThrowOnError )
-      throw bciexception_( errorReport.str() );
+      throw bciexception( errorReport.str() );
     else
       bcierr_ << errorReport.str() << flush;
   }
@@ -369,7 +369,7 @@ void
 ArithmeticExpression::Cleanup()
 {
   while( !mAllocations.empty() )
-  { 
+  {
     mAllocations.begin()->Delete();
     mAllocations.erase( mAllocations.begin() );
   }

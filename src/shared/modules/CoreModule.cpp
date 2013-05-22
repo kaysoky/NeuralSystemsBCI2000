@@ -129,7 +129,8 @@ CoreModule::Initialize( int& ioArgc, char** ioArgv )
   OnInitialize( ioArgc, ioArgv );
 
   string operatorAddress;
-  bool   printVersion = false,
+  bool   executeTests = false,
+         printVersion = false,
          printHelp = false;
   int i = 1;
   while( i < ioArgc )

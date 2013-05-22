@@ -34,12 +34,12 @@ using namespace std;
 #undef CHECK_IDX
 #define CHECK_IDX( idx ) \
   if( idx < 0 || idx >= static_cast<int>( size() ) ) \
-    throw bciexception_( "Index: " << idx << " out of bounds in " << __FUNCTION__ );
+    throw bciexception( "Index: " << idx << " out of bounds in " << __FUNCTION__ );
 
 #undef CHECK_TYPE
 #define CHECK_TYPE( idx, type, ptr ) \
   if( !ptr ) \
-    throw bciexception_( "Argument #" << idx << " is not of type " #type );
+    throw bciexception( "Argument #" << idx << " is not of type " #type );
 
 #undef GETTER
 #define GETTER( pclType, comType, cType ) \

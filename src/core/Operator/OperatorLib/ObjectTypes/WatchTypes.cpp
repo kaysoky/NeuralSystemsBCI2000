@@ -106,14 +106,14 @@ WatchType::Create( CommandInterpreter& inInterpreter, bool inSingleToken )
   {
     case sysstate:
       if( tokens.size() != 1 )
-        throw bciexception_( "Unexpected additional arguments for SYSTEM STATE watch" );
+        throw bciexception( "Unexpected additional arguments for SYSTEM STATE watch" );
       pWatch = new SystemStateWatch( inInterpreter, address );
       token = " " + tokens[0];
       break;
       
     case expr:
       if( tokens.empty() )
-        throw bciexception_( "No watch expression given" );
+        throw bciexception( "No watch expression given" );
       token.clear();
       for( size_t j = 0; j < tokens.size(); ++j )
       {
@@ -140,7 +140,7 @@ WatchType::Create( CommandInterpreter& inInterpreter, bool inSingleToken )
   else
   {
     delete pWatch;
-    throw bciexception_(
+    throw bciexception(
       "Could not create watch" 
       << ( address.empty() ? "" : ( " at address \"" + address + "\"" ) )
     );
@@ -177,9 +177,9 @@ WatchType::Find( CommandInterpreter& inInterpreter )
   string addr = inInterpreter.GetToken();
   Watch::Set s = inInterpreter.StateMachine().Watches().SelectByAddress( addr );
   if( s.Empty() )
-    throw bciexception_( "No watch associated with address \"" << addr << "\"" );
+    throw bciexception( "No watch associated with address \"" << addr << "\"" );
   else if( s.Size() > 1 )
-    throw bciexception_( s.Size() << " watches associated with address \"" << addr << "\"" );
+    throw bciexception( s.Size() << " watches associated with address \"" << addr << "\"" );
   return s;
 }
 

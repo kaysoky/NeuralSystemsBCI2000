@@ -74,7 +74,7 @@ OSThread::Start()
     mpTerminationEvent->Reset();
   }
   else
-    throw bciexception( ::strerror( errno ) );
+    throw std_runtime_error( ::strerror( errno ) );
 }
 
 bool
@@ -126,7 +126,7 @@ OSThread::InOwnThread() const
 OSThread::~OSThread()
 {
   if( !IsTerminated() )
-    throw bciexception(
+    throw std_logic_error(
       "Thread still running when being destructed -- "
       "call OSThread::TerminateWait() from your derived class' destructor for a fix"
     );
@@ -144,7 +144,7 @@ bool
 OSThread::TerminateWait( int inTimeout )
 {
   if( InOwnThread() )
-    throw bciexception( "Called from own thread, throwing exception to prevent deadlock" );
+    throw std_logic_error( "Called from own thread, throwing exception to prevent deadlock" );
   return Terminate()->Wait( inTimeout );
 }
 

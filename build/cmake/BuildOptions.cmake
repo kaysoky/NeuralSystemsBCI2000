@@ -3,6 +3,8 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: User-configurable build options
 
+OPTION( VERBOSE_CONFIG "Set to ON to receive more detailed information during configuration" OFF )
+
 OPTION( USE_DYNAMIC_IMPORTS "Set to OFF in case of problems with imports from 3rd party DLLs" ON )
 IF( USE_DYNAMIC_IMPORTS )
   ADD_DEFINITIONS( -DDYNAMIC_IMPORTS )
@@ -30,11 +32,15 @@ IF( BUILD_ALL_TESTS )
 ENDIF()
 IF( BUILD_TESTS )
   ENABLE_TESTING()
+  ADD_CUSTOM_TARGET( RUN_TESTS_VERBOSE ctest -VV --output-on-failure )
+  SET_PROPERTY( TARGET RUN_TESTS_VERBOSE PROPERTY FOLDER Build/BuildUtils )
   ADD_TEST(
     NAME BCI2000Executables
     COMMAND BCI2000Shell ${BCI2000_ROOT_DIR}/build/buildutils/tests/RunTests.bciscript 0
   )
   SET( BUILD_DEMOS ON )
+ELSE()
+  ADD_DEFINITIONS( -DDISABLE_BCITEST )
 ENDIF()
 
 # Buildtests for external libraries

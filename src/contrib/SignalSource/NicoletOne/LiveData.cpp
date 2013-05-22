@@ -96,7 +96,7 @@ void CLiveData::_GrabData()
          {
             // 's' is the datagram from channel 'liDataSerie' and sample 'liSample' in segment 'liDataSegment'
             short s = *pData++;
-		    mCurData[liDataSerie].push( ( double )s * dResolution + dOffset );
+    		    mCurData[liDataSerie].push( static_cast<float>( s * dResolution + dOffset ) );
          }
 			 
       }
@@ -138,7 +138,7 @@ bool CLiveData::GetData( int ChannelSize, int DataBlockSize, float** DataBlock, 
 		return true;
 	}
 	// Return false if we don't have any data for this channel
-	if( mCurData[0].size() < DataBlockSize )
+	if( static_cast<int>( mCurData[0].size() ) < DataBlockSize )
 	{
 		mDataLock->Unlock();
 		return true;

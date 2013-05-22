@@ -8,7 +8,6 @@
 ##       INC_EXTLIB - Include directory for pthreads
 ##       LIBDIR_EXTLIB - Library directory for pthreads
 ##       LIBS_EXTLIB - required library for pthreads
-##       Also defines source groups for source files
 
 IF( WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
@@ -36,10 +35,6 @@ ELSEIF( MSVC )
 ELSEIF( BORLAND )
   SET( LIBS_EXTLIB pthreadVC2.bcb.lib )
 ENDIF()
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\fieldtrip\\pthreads-win32 FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\fieldtrip\\pthreads-win32 FILES ${HDR_EXTLIB} )
 
 # Set success
 SET( EXTLIB_OK TRUE )

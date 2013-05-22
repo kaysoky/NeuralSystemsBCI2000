@@ -28,70 +28,87 @@
 #pragma hdrstop
 
 #include "BCIStream.h"
-#include "Status.h"
 
-#ifdef __BORLANDC__
-# include <vcl.h>
-#else
+#if _WIN32
+# ifdef __CONSOLE__
+#  define USE_CERR 1
+# endif // __CONSOLE__
+# include <Windows.h>
+#elif USE_QT
 # include <QMessageBox>
+#else
+# define USE_CERR 1
 #endif
 
 using namespace std;
 
-struct StatusMessage
+enum
 {
- void operator()( const string& inText, int inCode )
- {
+  plain,
+  warning, 
+  error
+};
+
+static void Display( const string& inText, int inType = plain )
+{
   string text = inText;
   if( text.find_last_of( ".!?" ) != text.length() - 1 )
     text += '.';
+  string kind;
+  switch( inType )
+  {
+    case warning:
+      kind = "Warning";
+      break;
+    case error:
+      kind = "Error";
+      break;
+  }
+  string title = "BCI2000" + kind.empty() ? " " : "" + kind;
 
-#if !defined( _WIN32 ) || defined( __CONSOLE__ )
-  cerr << text << endl;
+#if USE_CERR
+  ostream& os = ( inType == error ? cerr : cout );
+  os << kind.empty() ? "" : ": " << text << endl;
+#elif _WIN32
+  ::MessageBoxA( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONHAND | MB_SYSTEMMODAL | MB_SETFOREGROUND );
 #else
-# ifdef __BORLANDC__
- ::MessageBoxA( NULL, text.c_str(), "BCI2000 Error",
-                   MB_OK | MB_ICONHAND | MB_SYSTEMMODAL | MB_SETFOREGROUND );
-# else // __BORLANDC__
- QMessageBox::critical( NULL, "BCI2000 Error", text.c_str() );
-# endif // __BORLANDC__
+  QMessageBox::critical( NULL, title.c_str(), text.c_str() );
 #endif
- }
-} StatusMessage;
+}
 
 void
 BCIStream::PlainMessage( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::plainMessage );
+  Display( message );
 }
 
 void
 BCIStream::DebugMessage( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::debugMessage );
+  Display( message );
 }
 
 void
 BCIStream::Warning( const string& message )
 {
-  StatusMessage( string( "Warning: " ) + message.substr( 0, message.length() - 1 ), Status::warningMessage );
+  Display( message, warning );
 }
 
 void
 BCIStream::ConfigurationError( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::configurationError );
+  Display( message, error );
 }
 
 void
 BCIStream::RuntimeError( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::runtimeError );
+  Display( message, error );
 }
 
 void
 BCIStream::LogicError( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), Status::logicError );
+  Display( message, error );
 }
 

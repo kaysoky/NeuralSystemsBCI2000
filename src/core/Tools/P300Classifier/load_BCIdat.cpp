@@ -81,7 +81,7 @@ for (int i=0; i<NumSamples; i++)
 // Get the channel gains
 if (CurrentFile->Parameters()->Exists("SourceChGain"))
 {
-  const ParamRef parameter = CurrentFile->Parameter("SourceChGain");
+  ParamRef parameter = CurrentFile->Parameter("SourceChGain");
   SourceChGain.setbounds(0,parameter->NumValues()-1);
   for (int i=0; i<parameter->NumValues(); i++)
     SourceChGain(i) = (float)CurrentFile->Parameter("SourceChGain")(i);
@@ -90,7 +90,7 @@ if (CurrentFile->Parameters()->Exists("SourceChGain"))
 // Get the channel offsets
 if (CurrentFile->Parameters()->Exists("SourceChOffSet"))
 {
-  const ParamRef parameter = CurrentFile->Parameter("SourceChOffSet");
+  ParamRef parameter = CurrentFile->Parameter("SourceChOffSet");
   SourceChOffSet.setbounds(0,parameter->NumValues()-1);
   for (int i=0; i<parameter->NumValues(); i++)
     SourceChOffSet(i) = (float)CurrentFile->Parameter("SourceChOffSet")(i);
@@ -146,7 +146,7 @@ parms.SoftwareCh = NumChannels;
 // Get the Target Definitions
 if (CurrentFile->Parameters()->Exists("TargetDefinitions"))
 {
-  const ParamRef parameter = CurrentFile->Parameter("TargetDefinitions");
+  ParamRef parameter = CurrentFile->Parameter("TargetDefinitions");
 
   for (int i=0; i<parameter->NumRows(); i++)
   {
@@ -168,7 +168,7 @@ else
 // Get the Stimuli
 if (CurrentFile->Parameters()->Exists("Stimuli"))
 {
-  const ParamRef parameter = CurrentFile->Parameter("Stimuli");
+  ParamRef parameter = CurrentFile->Parameter("Stimuli");
 
   for (int i=0; i<parameter->NumColumns(); i++) // jm
     state.TargetDefinitions.push_back(parameter(0,i));

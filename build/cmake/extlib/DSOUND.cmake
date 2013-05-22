@@ -8,7 +8,6 @@
 ##       INC_EXTLIB - Include directory for DirectSound
 ##       LIBDIR_EXTLIB - Directory where the DSound library resides
 ##       LIBS_EXTLIB - Required libraries for DirectSound
-##       Also defines source groups for the DirectSound files
 
 IF( WIN32 )
 IF( NOT BORLAND )
@@ -21,9 +20,6 @@ SET( HDR_EXTLIB ${BCI2000_SRC_DIR}/extlib/dxsdk/include/dsound.h )
 
 # Define the include directory
 SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/dxsdk/include )
-
-# Set the source groups
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\dxsdk\\include FILES ${HDR_EXTLIB} )
 
 # Set where the libraries can be found
 SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/dxsdk/lib )

@@ -4,23 +4,23 @@
 // Description: A class wrapper for the system's high precision timer.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 /////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -57,11 +57,11 @@ PrecisionTime
 PrecisionTime::Now()
 {
   if( sPrecTimeBase.QuadPart == 0 )
-    throw bciexception( "Your system does not provide a high precision timer" );
+    throw std_runtime_error( "Your system does not provide a high precision timer" );
   // Get the current time from the Windows precision timer.
   LARGE_INTEGER prectime;
   if( !::QueryPerformanceCounter( &prectime ) )
-    throw bciexception( "Could not read high precision timer: " << OSError().Message() );
+    throw std_runtime_error( "Could not read high precision timer: " << OSError().Message() );
   return static_cast<PrecisionTime::NumType>( ( prectime.QuadPart * 1000 ) / sPrecTimeBase.QuadPart );
 }
 
@@ -74,9 +74,9 @@ PrecisionTime
 PrecisionTime::Now()
 {
   static int64_t mt0;
-  static double  multiplier = 0.0;  
+  static double  multiplier = 0.0;
   if(!multiplier) {
-  	mach_timebase_info_data_t mtbinfo;
+    mach_timebase_info_data_t mtbinfo;
     mach_timebase_info( &mtbinfo );
     multiplier = 1.0e-6 * (double(mtbinfo.numer) / double(mtbinfo.denom));
     mt0 = mach_absolute_time();

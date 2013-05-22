@@ -54,7 +54,7 @@ BCI2000_ADD_CMDLINE_FILTER( FFTFilter             FROM ${SIGPROC_DIR} INCLUDING 
 
 
 # The MatlabFilter must be listed last, else all filter executables will depend on libeng and libmx.
-
+ADD_DEFINITIONS( -DDISABLE_BCITEST )
 BCI2000_ADD_CMDLINE_FILTER( MatlabFilter          FROM ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab INCLUDING "MATLAB"
                             EXTRA_SOURCES ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab/MatlabWrapper.cpp
                             EXTRA_HEADERS ${BCI2000_ROOT_DIR}/src/core/SignalProcessing/Matlab/MatlabWrapper.h   )

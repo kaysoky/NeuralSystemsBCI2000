@@ -119,7 +119,7 @@ ARThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
       } break;
 
       default:
-        throw bciexception( "Unknown output type" );
+        throw std_logic_error( "Unknown output type" );
     }
   }
 }

@@ -47,7 +47,7 @@ MESSAGE( "- Creating Project files for ${PROJECT_NAME} Version ${PROJECT_VERSION
 INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )
 INCLUDE( "${BCI2000_SRC_DIR}/contrib/Extensions/Extensions.cmake" )
-IF( EXISTS ${BCI2000_SRC_DIR}/private AND BCI2000_BUILD_PRIVATE )
+IF( EXISTS ${BCI2000_SRC_DIR}/private AND BUILD_PRIVATE )
   INCLUDE( "${BCI2000_SRC_DIR}/private/PrivateConfig.cmake" )
 ENDIF()
 ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/frameworks "${BCI2000_BINARY_DIR}/frameworks" )
@@ -73,8 +73,11 @@ ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/core "${BCI2000_BINARY_DIR}/core" )
 ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/contrib "${BCI2000_BINARY_DIR}/contrib" )
 
 # src/custom : a convenient place for users' own development without causing svn chaos 
-IF ( EXISTS ${BCI2000_SRC_DIR}/custom ) 
+IF ( EXISTS ${BCI2000_SRC_DIR}/custom )
+  SET( saved_ ${DIR_NAME} )
+  SET( DIR_NAME "${DIR_NAME}Custom/" )
   ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/custom "${BCI2000_BINARY_DIR}/custom" )
+  SET( DIR_NAME ${saved_} )
 ENDIF( EXISTS ${BCI2000_SRC_DIR}/custom )
 
 

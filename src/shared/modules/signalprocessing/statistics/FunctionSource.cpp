@@ -107,7 +107,7 @@ FunctionSource::FunctionSource( const string& inName, int inFunctionID, const No
   while( functionIdx < count && functions[functionIdx].functionID != mFunctionID )
     ++functionIdx;
   if( functionIdx == count )
-    throw bciexception( "Unknown function ID: " << mFunctionID );
+    throw std_logic_error( "Unknown function ID: " << mFunctionID );
   mReturnType = functions[functionIdx].returnType;
 
   vector<ObserverNode*> observerNodes( functions[functionIdx].numObservers );
@@ -117,17 +117,17 @@ FunctionSource::FunctionSource( const string& inName, int inFunctionID, const No
   for( size_t i = 0; i < observerNodes.size(); ++i )
   {
     if( observerNodes[i] == NULL )
-      throw bciexception_( inName << "(): Requires " << observerNodes.size() << " observers as arguments" );
+      throw bciexception( inName << "(): Requires " << observerNodes.size() << " observers as arguments" );
     else
       mObservers[i] = observerNodes[i]->ObserverSource();
   }
   if( !mObservers.empty() )
     for( size_t i = 1; i < mObservers.size(); ++i )
       if( mObservers[i]->OuterDimensions() != mObservers[0]->OuterDimensions() )
-        throw bciexception_( inName << "(): Outer dimensions of observers must match" );
+        throw bciexception( inName << "(): Outer dimensions of observers must match" );
   for( size_t i = mObservers.size(); i < inArgs.size(); ++i )
     if( dynamic_cast<ObserverNode*>( inArgs[i] ) )
-      throw bciexception_( inName << "(" << i + 1 << "): Unexpected observer argument" );
+      throw bciexception( inName << "(" << i + 1 << "): Unexpected observer argument" );
 
   switch( mFunctionID )
   {
@@ -154,13 +154,13 @@ FunctionSource::FunctionSource( const string& inName, int inFunctionID, const No
       resultDimensions = 2;
       break;
     default:
-      throw bciexception( "Unhandled return type: " << mReturnType );
+      throw std_logic_error( "Unhandled return type: " << mReturnType );
   }
   int minArgs = functions[functionIdx].numArgs,
       maxArgs = minArgs + resultDimensions;
   int remainingArgs = static_cast<int>( inArgs.size() - mObservers.size() );
   if( remainingArgs < minArgs || remainingArgs > maxArgs )
-    throw bciexception(
+    throw std_invalid_argument(
       inName << "(): Expected between "
       << minArgs
       << " and "
@@ -242,12 +242,12 @@ FunctionSource::OnInitialize( const Context& inContext )
         {
           for( size_t i = 0; i < 3; ++i )
             if( !mChildren[i]->IsConst() )
-              throw bciexception_( "First 3 arguments to " << Name() << " function must be constant" );
+              throw bciexception( "First 3 arguments to " << Name() << " function must be constant" );
           double center = mChildren[0]->Evaluate(),
                  resolution = mChildren[1]->Evaluate();
           int numBins = static_cast<int>( mChildren[2]->Evaluate() );
           if( resolution <= 0 || numBins <= 0 )
-            throw bciexception_( "Second and third argument to " << Name() << " function must be greater 0" );
+            throw bciexception( "Second and third argument to " << Name() << " function must be greater 0" );
           Dimension d;
           d.labels.Resize( numBins );
           d.unit = observationProperties[0].Unit();
@@ -263,7 +263,7 @@ FunctionSource::OnInitialize( const Context& inContext )
         case QQuantiles:
         {
           if( !mChildren[0]->IsConst() )
-            throw bciexception_( "First argument to " << Name() << " function must be constant" );
+            throw bciexception( "First argument to " << Name() << " function must be constant" );
           int q = static_cast<int>( mChildren[0]->Evaluate() );
           CheckSizeArg( 0, q );
           Dimension d;
@@ -284,7 +284,7 @@ FunctionSource::OnInitialize( const Context& inContext )
       break;
 
     default:
-      throw bciexception( "Unhandled return type: " << mReturnType );
+      throw std_logic_error( "Unhandled return type: " << mReturnType );
   }
 
   mProperties = DataProperties();
@@ -347,7 +347,7 @@ FunctionSource::OnInitialize( const Context& inContext )
       u.SetRawMin( -3 ).SetRawMax( 3 );
       break;
     default:
-      throw bciexception( "Unhandled function ID: " << mFunctionID );
+      throw std_logic_error( "Unhandled function ID: " << mFunctionID );
   }
   mProperties.Unit() = u;
 }
@@ -398,7 +398,7 @@ FunctionSource::OnData( int inIdx )
       result = ( *mMatrixResult )[mResultIdx[0]][mResultIdx[1]];
       break;
     default:
-      throw bciexception( "Unhandled number of result dimensions" );
+      throw std_logic_error( "Unhandled number of result dimensions" );
   }
   return result;
 }
@@ -476,7 +476,7 @@ FunctionSource::Compute( int inObserverIdx )
       mMatrixResult = pObserver1->QQuantiles( static_cast<int>( mArgBuffer[0] ), mMemPool );
       break;
     default:
-      throw bciexception( "Unhandled function ID: " << mFunctionID );
+      throw std_logic_error( "Unhandled function ID: " << mFunctionID );
   }
   mArgsChanged = false;
 }
@@ -492,6 +492,6 @@ FunctionSource::CheckSizeArg( int inPos, int inValue, int inSize ) const
         << inValue + 1 << ", should be >= 1";
     if( inSize >= 0 )
       oss << " and " << inSize;
-    throw bciexception_( oss.str() );
+    throw bciexception( oss.str() );
   }
 }

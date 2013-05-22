@@ -44,7 +44,7 @@ SpatialFilterThread::Start( const GenericSignal& Input, GenericSignal& Output )
   mpInput = &Input;
   mpOutput = &Output;
   if( !ReusableThread::Run( *this ) )
-    throw bciexception( "Could not start execution: thread busy" );
+    throw std_runtime_error( "Could not start execution: thread busy" );
   return *this;
 }
 
@@ -88,7 +88,7 @@ SpatialFilterThread::OnRun()
     }
   }
   else
-    throw bciexception( "Missing configuration" );
+    throw std_runtime_error( "Missing configuration" );
 }
 
 void

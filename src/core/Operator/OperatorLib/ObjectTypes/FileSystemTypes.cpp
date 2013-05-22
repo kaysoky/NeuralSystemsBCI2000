@@ -106,9 +106,9 @@ DirectoryType::Rename( CommandInterpreter& inInterpreter )
   string dir = inInterpreter.GetToken(),
          newName = inInterpreter.GetToken();
   if( !FileUtils::IsDirectory( dir ) )
-    throw bciexception_( "There is no directory named \"" << dir << "\"" );
+    throw bciexception( "There is no directory named \"" << dir << "\"" );
   if( !FileUtils::Rename( dir, newName ) )
-    throw bciexception_( "Could not rename \"" << dir << "\" to \"" << newName << "\"" );
+    throw bciexception( "Could not rename \"" << dir << "\" to \"" << newName << "\"" );
   return true;
 }
 
@@ -117,9 +117,9 @@ DirectoryType::Remove( CommandInterpreter& inInterpreter )
 {
   string dir = inInterpreter.GetToken();
   if( !FileUtils::IsDirectory( dir ) )
-    throw bciexception_( "There is no directory named \"" << dir << "\"" );
+    throw bciexception( "There is no directory named \"" << dir << "\"" );
   if( !FileUtils::RemoveDirectory( dir, false ) )
-    throw bciexception_( "Could not remove directory \"" << dir << "\"" );
+    throw bciexception( "Could not remove directory \"" << dir << "\"" );
   return true;
 }
 
@@ -128,9 +128,9 @@ DirectoryType::ForceRemove( CommandInterpreter& inInterpreter )
 {
   string dir = inInterpreter.GetToken();
   if( !FileUtils::IsDirectory( dir ) )
-    throw bciexception_( "There is no directory named \"" << dir << "\"" );
+    throw bciexception( "There is no directory named \"" << dir << "\"" );
   if( !FileUtils::RemoveDirectory( dir, true ) )
-    throw bciexception_( "Could not remove directory \"" << dir << "\"" );
+    throw bciexception( "Could not remove directory \"" << dir << "\"" );
   return true;
 }
 
@@ -163,7 +163,7 @@ DirectoryType::ListDirectory( const string& inArgs )
   int exitCode = 0;
   stringstream oss;
   if( !ProcessUtils::ExecuteSynchronously( shell, command, oss, exitCode ) )
-    throw bciexception_( "Could not get directory listing" );
+    throw bciexception( "Could not get directory listing" );
 #if _WIN32
   string listing;
   char c;
@@ -184,7 +184,7 @@ DirectoryType::ListSelection( CommandInterpreter& inInterpreter, const string& i
   dir = FileUtils::CanonicalPath( dir );
   FileUtils::List list;
   if( !FileUtils::ListDirectory( dir, list ) )
-    throw bciexception_( "Could not list directory \"" << dir << "\"" );
+    throw bciexception( "Could not list directory \"" << dir << "\"" );
   for( size_t i = 0; i < list.size(); ++i )
     if( bci::WildcardMatch( wildcard, list[i], false ) && inSelector( FileUtils::EnsureSeparator( dir ) + list[i] ) )
       inInterpreter.Out() << list[i] << '\n';
@@ -249,9 +249,9 @@ FileType::Remove( CommandInterpreter& inInterpreter )
 {
   string file = inInterpreter.GetToken();
   if( !FileUtils::IsFile( file ) )
-    throw bciexception_( "There is no file named \"" << file << "\"" );
+    throw bciexception( "There is no file named \"" << file << "\"" );
   if( !FileUtils::RemoveFile( file ) )
-    throw bciexception_( "Could not remove file \"" << file << "\"" );
+    throw bciexception( "Could not remove file \"" << file << "\"" );
   return true;
 }
 
@@ -261,9 +261,9 @@ FileType::Rename( CommandInterpreter& inInterpreter )
   string file = inInterpreter.GetToken(),
          newName = inInterpreter.GetToken();
   if( !FileUtils::IsFile( file ) )
-    throw bciexception_( "There is no file named \"" << file << "\"" );
+    throw bciexception( "There is no file named \"" << file << "\"" );
   if( !FileUtils::Rename( file, newName ) )
-    throw bciexception_( "Could not rename file \"" << file << "\" to \"" << newName << "\"" );
+    throw bciexception( "Could not rename file \"" << file << "\" to \"" << newName << "\"" );
   return true;
 }
 

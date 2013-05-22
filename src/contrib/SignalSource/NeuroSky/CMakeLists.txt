@@ -23,7 +23,7 @@ ELSEIF( MSVC )
 ENDIF()
 
 # Put everything together
-IF( NOT USE_DYNAMIC_IMPORTS AND (NOT MSVC AND NOT BORLAND OR CMAKE_CL_64) )
+IF( NOT USE_DYNAMIC_IMPORTS AND (NOT MSVC OR CMAKE_SIZEOF_VOID_P EQUAL 8) )
 
   MESSAGE( "-- NeuroSky does not provide libraries for this compiler/OS, will not build" )
 

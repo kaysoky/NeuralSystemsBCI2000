@@ -143,7 +143,7 @@ WindowingThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
         break;
 
       default:
-        throw bciexception( "Unknown detrend option" );
+        throw std_logic_error( "Unknown detrend option" );
     }
 
     if( mWindowFunction == Rectangular )

@@ -123,7 +123,7 @@ StateList::BitLength() const
     ostringstream oss;
     for( UsageList::const_iterator i = usage.begin(); i != usage.end(); ++i )
       oss << *i->second << '\n';
-    throw bciexception( "Inconsistent state positions:\n" + oss.str() );
+    throw std_logic_error( "Inconsistent state positions:\n" + oss.str() );
   }
   return usage.rbegin()->first + usage.rbegin()->second->Length();
 }

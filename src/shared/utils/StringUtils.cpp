@@ -27,16 +27,22 @@
 #pragma hdrstop
 
 #include "StringUtils.h"
+#include "BCITest.h"
+#include "defines.h"
 
 #if _WIN32
 # include <Windows.h>
 #else // _WIN32
 # include <locale>
 #endif // _WIN32
+
 #include <cstring>
+#include <ctime>
+#include <cstdlib>
+#include <sstream>
+#include <functional>
 
 using namespace std;
-using namespace StringUtils;
 
 wstring
 StringUtils::ToWide( const char* inString )
@@ -80,3 +86,132 @@ StringUtils::ToNarrow( const wchar_t* inString )
   return result;
 }
 
+static const char cBase64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+static const uint8_t cBase64Fill = 64;
+static uint8_t cInvBase64[256] = "";
+
+static int
+InitBase64()
+{
+  for( size_t i = 0; i < sizeof( cInvBase64 ); ++i )
+    cInvBase64[i] = 255;
+  for( size_t i = 0; i < sizeof( cBase64 ); ++i )
+    cInvBase64[cBase64[i]] = i;
+  return 0;
+}
+static int sInitBase64 = InitBase64();
+
+ostream&
+StringUtils::WriteAsBase64( ostream& os, const string& s )
+{
+  const uint32_t mask64 = ( 1 << 6 ) - 1;
+  size_t pos = 0;
+  uint32_t triplet = 0;
+  bool done = false,
+       atEnd = false;
+  int count = 0,
+      rem = 0;
+  while( !done )
+  {
+    if( pos >= s.length() )
+    {
+      atEnd = true;
+      done = ( count == 0 );
+    }
+    uint32_t c = atEnd ? 0 : static_cast<uint8_t>( s[pos++] );
+    if( atEnd )
+      ++rem;
+    triplet <<= 8;
+    triplet |= c;
+    if( ++count == 3 )
+    {
+      for( int i = 3; i >= rem; --i )
+        os.put( cBase64[( triplet >> ( 6 * i ) ) & mask64] );
+      for( int i = 0; i < rem - 1; ++i )
+        os.put( cBase64[cBase64Fill] );
+      count = 0;
+      rem = 0;
+      triplet = 0;
+    }
+  }
+  return os;
+}
+
+namespace {
+template<typename T>
+istream&
+ReadAsBase64_( istream& is, string& s, T stopIf )
+{
+  s.clear();
+  const uint32_t mask256 = ( 1 << 8 ) - 1;
+  bool done = false,
+       atEnd = false;
+  uint32_t triplet = 0;
+  int rem = 0, count = 0;
+  while( !done )
+  {
+    int c = cBase64[cBase64Fill];
+    if( !atEnd )
+    {
+      c = is.get();
+      if( stopIf( c ) || c >= 256 || c < 0 )
+      {
+        atEnd = true;
+        done = ( count == 0 );
+      }
+    }
+    uint32_t code = cInvBase64[c];
+    if( code == cBase64Fill )
+    {
+      ++rem;
+      code = 0;
+    }
+    if( code < cBase64Fill )
+    {
+      triplet <<= 6;
+      triplet |= code;
+      if( ++count == 4 )
+      {
+        for( int i = 2; i >= rem; --i )
+          s += static_cast<char>( triplet >> ( 8 * i ) & mask256 );
+        count = 0;
+        rem = 0;
+        triplet = 0;
+        done = atEnd;
+      }
+    }
+  }
+  return is;
+}
+} // namespace
+
+istream&
+StringUtils::ReadAsBase64( std::istream& is, std::string& s, int (*stopIf)( int ) )
+{
+  static struct { bool operator()( int ) { return false; } } constFalse;
+  return stopIf ? ReadAsBase64_( is, s, stopIf ) : ReadAsBase64_( is, s, constFalse );
+}
+
+istream&
+StringUtils::ReadAsBase64( std::istream& is, std::string& s, int stopAt )
+{
+  return ReadAsBase64_( is, s, std::bind1st( std::equal_to<int>(), stopAt ) );
+}
+
+bcitest( Base64Test )
+{
+  unsigned int seed = static_cast<unsigned int>( ::time( NULL ) );
+  ::srand( seed );
+  for( int i = 0; i < 100; ++i )
+  {
+    string s;
+    while( rand() < ( 99 * RAND_MAX / 100 ) )
+      s += static_cast<char>( rand() % 256 );
+    stringstream stream;
+    StringUtils::WriteAsBase64( stream, s );
+    string s2;
+    StringUtils::ReadAsBase64( stream, s2 );
+    bcifail_if( s != s2, "seed: " << seed << ", iteration: " << i );
+  }
+  ::srand( 1 );
+}

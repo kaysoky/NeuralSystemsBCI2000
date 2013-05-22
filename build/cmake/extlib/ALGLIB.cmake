@@ -6,7 +6,6 @@
 ##       SRC_EXTLIB - Required source files for the alglib
 ##       HDR_EXTLIB - Required header files for the alglib
 ##       INC_EXTLIB - Include directory for the alglib
-##       Also defines source groups for the ALGLIB files
 
 # Define the source files
 SET( SRC_EXTLIB
@@ -43,10 +42,6 @@ SET( HDR_EXTLIB
 
 # Define the include directory
 SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/alglib )
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\alglib FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\alglib FILES ${HDR_EXTLIB} )
 
 # Set success
 SET( EXTLIB_OK TRUE )

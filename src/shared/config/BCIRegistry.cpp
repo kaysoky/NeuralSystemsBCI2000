@@ -53,11 +53,15 @@
 // Re-define second-level macros to create declarations of global variables.
 #undef RegisterFilter_
 #define RegisterFilter_( name, pos, priority ) \
-   extern "C" int FilterObjectName_( name, pos, priority );
+   extern "C" long FilterObjectName_( name, pos, priority );
 
 #undef RegisterExtension_
 #define RegisterExtension_( x ) \
-   extern "C" int ExtensionObjectName_( x );
+   extern "C" long ExtensionObjectName_( x );
+
+#undef bcitest
+#define bcitest( x ) \
+   extern "C" long TestObjectName_( x );
 
 #include INCLUDE_FILE( REGISTRY_NAME )
 
@@ -70,9 +74,13 @@
 #define RegisterExtension_( x ) \
    result += ExtensionObjectName_( x );
 
+#undef bcitest
+#define bcitest( x ) \
+   result += TestObjectName_( x );
+
 // Define a global function called REGISTRY_NAME. Force inclusion of that function
 // using MSVC's /include linker switch, or gcc's -Wl,-u option
-extern "C" int REGISTRY_NAME()
+extern "C" long REGISTRY_NAME()
 {
   int result = 0;
 #include INCLUDE_FILE( REGISTRY_NAME )

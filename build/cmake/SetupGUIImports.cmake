@@ -19,6 +19,7 @@ FOREACH( USE ${BCI2000_GUI_IMPORT} )
     SET( ${SOURCES}
          ${${SOURCES}}
          ${SRC_GUI}
+         ${UI_GUI}
     )
     SET( ${HEADERS}
          ${${HEADERS}}
@@ -29,10 +30,6 @@ FOREACH( USE ${BCI2000_GUI_IMPORT} )
          ${MOC}
          ${MOC_GUI}
     )
-    SET( UI
-         ${UI}
-         ${UI_GUI}
-    )
   ENDIF( GUI_OK )
 
   UNSET( SRC_GUI )
@@ -42,24 +39,6 @@ FOREACH( USE ${BCI2000_GUI_IMPORT} )
   UNSET( GUI_OK )
 
 ENDFOREACH( USE )
-
-IF( NOT BORLAND )
-# Wrap UI files
-QT4_WRAP_UI( UI_SRCS ${UI} )
-SOURCE_GROUP( Generated FILES ${UI_SRCS} )
-SET( ${SOURCES}
-  ${${SOURCES}}
-  ${UI_SRCS}
-)
-
-# Wrap MOCable sources for this GUI
-QT4_WRAP_CPP( MOC_SRCS ${MOC} )
-SOURCE_GROUP( Generated FILES ${MOC_SRCS} )
-SET( ${SOURCES}
-  ${${SOURCES}}
-  ${MOC_SRCS}
-)
-ENDIF( NOT BORLAND )
 
 # Clear out all imports for next project
 UNSET( BCI2000_GUI_IMPORT)

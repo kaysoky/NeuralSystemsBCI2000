@@ -694,7 +694,7 @@ StateMachine::LogMessage( int inCallbackID, const string& inMessage )
       separator = ": Error: ";
       break;
     default:
-      throw bciexception( "Unknown log message callback ID: " << inCallbackID );
+      throw std_logic_error( "Unknown log message callback ID: " << inCallbackID );
   }
   ExecuteCallback( inCallbackID, inMessage.c_str() );
   time_t t = ::time( NULL );
@@ -709,7 +709,7 @@ StateMachine::TriggerEvent( int inCallbackID )
 {
   const char* pName = ScriptEvents::Name( inCallbackID );
   if( !pName )
-    throw bciexception( "Unknown operator event callback ID: " << inCallbackID );
+    throw std_logic_error( "Unknown operator event callback ID: " << inCallbackID );
 
   ExecuteCallback( inCallbackID );
   string script = mScriptEvents.Get( inCallbackID );

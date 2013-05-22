@@ -6,7 +6,6 @@
 ##       SRC_EXTLIB - Required source files for FieldTrip
 ##       HDR_EXTLIB - Required header files for FieldTrip
 ##       INC_EXTLIB - Include directory for FieldTrip
-##       Also defines source groups for source files
 
 # Set the Source and headers
 SET( SRC_EXTLIB
@@ -48,10 +47,6 @@ ENDIF( WIN32 )
 SET( INC_EXTLIB 
   ${BCI2000_SRC_DIR}/extlib/fieldtrip/buffer/src/
 )
-
-# Set the source groups
-SOURCE_GROUP( Source\\BCI2000_Framework\\extlib\\fieldtrip\\buffer FILES ${SRC_EXTLIB} )
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\fieldtrip\\buffer FILES ${HDR_EXTLIB} )
 
 SET_SOURCE_FILES_PROPERTIES( ${SRC_EXTLIB} PROPERTIES LANGUAGE CXX )
 

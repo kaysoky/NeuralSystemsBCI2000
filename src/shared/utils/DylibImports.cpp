@@ -290,5 +290,5 @@ StartupLoader::BuildMessage( const string& inMsg, const string& inUrl )
 void
 StartupLoader::ThrowError() const
 {
-  throw bciexception_( mMessage );
+  throw std_runtime_error( mMessage );
 }

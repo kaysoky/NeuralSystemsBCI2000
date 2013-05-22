@@ -1,14 +1,13 @@
 //////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: An exception class to report BCI2000 run-time errors,
-//   and a std::ostream based object that allows convenient creation
-//   of exceptions with message content.
-//   To throw a BCI2000 exception, write:
+// Description: A std::exception derived BCIException class for
+//   specific exceptions, and a stream-to-string conversion
+//   function to simplify throwing exceptions:
 //
 //   #include "BCIException.h"
 //   ...
-//   throw bciexception( "Illegal value of n: " << n );
+//   throw stdexception( invalid_argument, "Illegal value of n: " << n );
 //
 //
 // $BEGIN_BCI2000_LICENSE$
@@ -67,25 +66,48 @@
 // first argument (reference) cannot be initialized with a temporary. The expression would be resolved to
 // std::ostream::operator<<( void* ), and the address of the string literal inserted into the stream
 // rather than the string itself.
-#define bciexception_(x) BCIException( std::ostringstream() << std::flush << x )
-#define bciexception(x)  bciexception_( x << EXCEPTION_CONTEXT_ )
+#define EXCEPTION_ARG_(x)       bci::Exception::ToString( std::ostringstream() << std::flush << x )
+#define stdexception(type,x)    bci::Exception_<std::type>( EXCEPTION_ARG_(x), EXCEPTION_ARG_( EXCEPTION_CONTEXT_ ) )
+#define std_logic_error(x)      stdexception(logic_error,x)
+#define std_domain_error(x)     stdexception(domain_error,x)
+#define std_invalid_argument(x) stdexception(invalid_argument,x)
+#define std_length_error(x)     stdexception(length_error,x)
+#define std_runtime_error(x)    stdexception(runtime_error,x)
+#define std_out_of_range(x)     stdexception(out_of_range,x)
+#define std_range_error(x)      stdexception(range_error,x)
+#define std_overflow_error(x)   stdexception(overflow_error,x)
+#define std_underflow_error(x)  stdexception(underflow_error,x)
+#define std_bad_alloc(x)        stdexception(bad_alloc,x)
 
-class BCIException : public std::exception
-{
- public:
-  BCIException( const std::string& inMessage )
-    : mMessage( inMessage )
-    {}
-  BCIException( std::ostream&z );
+#define bciexception(x)         stdexception(exception,x)
 
-  virtual ~BCIException() throw()
-    {}
+namespace bci {
+  struct Exception
+  {
+    static std::string ToString( std::ostream& os )
+    {
+      std::ostringstream* p = dynamic_cast<std::ostringstream*>( &os.flush() );
+      return p ? p->str() : "bci::Exception::ToString(): Expected std::ostringstream argument";
+    }
 
-  virtual const char* what() const throw();
+    explicit Exception( const std::string& inWhat, const std::string& inWhere = "" )
+    : mWhat( inWhat ), mWhere( inWhere ) {}
+    virtual ~Exception() throw() {}
 
- private:
-  std::string mMessage;
-};
+    virtual const std::string& Where() const throw() { return mWhere; }
+    virtual const std::string& What() const throw() { return mWhat; }
+    private: std::string mWhat, mWhere;
+  };
+
+  template<typename T>
+  struct Exception_ : Exception, T
+  {
+    explicit Exception_( const std::string& what, const std::string& where = "" )
+    : T( ( what + where ).c_str() ), Exception( what, where ) {}
+    virtual ~Exception_() throw() {}
+  };
+} // namespace bci
+
+typedef bci::Exception BCIException;
 
 #endif // BCI_EXCEPTION_H
-

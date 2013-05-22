@@ -366,7 +366,7 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
         break;
 
       default:
-        throw bciexception( "Unknown phase value: " << mPhase );
+        throw std_runtime_error( "Unknown phase value: " << mPhase );
     }
     if( doProgress )
     {
@@ -449,7 +449,7 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
           break;
 
         default:
-          throw bciexception( "Unknown phase value: " << mPhase );
+          throw std_logic_error( "Unknown phase value: " << mPhase );
       }
     }
   }

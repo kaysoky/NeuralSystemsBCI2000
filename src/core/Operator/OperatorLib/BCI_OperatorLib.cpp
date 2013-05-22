@@ -37,6 +37,7 @@
 #include "Param.h"
 #include "TelnetServer.h"
 #include "defines.h"
+#include "BCIException.h"
 #include "BCIStream.h"
 
 using namespace std;
@@ -830,7 +831,7 @@ STDCALL BCI_AddWatch( const char* inExprs )
   }
   catch( const BCIException& e )
   {
-    bcierr << e.what();
+    bcierr << e.What();
   }
   return watchID;
 }

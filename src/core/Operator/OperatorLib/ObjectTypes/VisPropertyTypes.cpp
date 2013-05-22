@@ -83,10 +83,10 @@ VisPropertyType::GetVisPropertyIDs( CommandInterpreter& inInterpreter, string& o
   std::getline( iss, outVisID, '.' );
   std::getline( iss, outCfgID );
   if( outVisID.empty() || outCfgID.empty() )
-    throw bciexception_( "Expected <visID>.<configID> pair" );
+    throw bciexception( "Expected <visID>.<configID> pair" );
   outNumCfgID = CfgID( outCfgID );
   if( outNumCfgID == static_cast<IDType>( CfgID::None ) )
-    throw bciexception_( "Invalid config ID " << outCfgID );
+    throw bciexception( "Invalid config ID " << outCfgID );
 }
 
 
@@ -125,7 +125,7 @@ VisPropertiesType::Set( CommandInterpreter& inInterpreter )
   }
   string setID = inInterpreter.GetRemainingTokens();
   if( !p.ColumnLabels().Exists( setID ) )
-    throw bciexception_( "Invalid vis property set ID: " << setID );
+    throw bciexception( "Invalid vis property set ID: " << setID );
   int col = p.ColumnLabels()[setID];
   for( int row = 0; row < p.NumRows(); ++row )
   {

@@ -62,11 +62,12 @@
 
 // A macro that tells the extract_registry tool which macro calls to extract from source files.
 // This macro must list all macros defined above.
-#define REGISTRY_MACROS { "Filter", "RegisterFilter", "Extension", "RegisterExtension" }
+#define REGISTRY_MACROS { "Filter", "RegisterFilter", "Extension", "RegisterExtension", "bcitest" }
 
 // Macros to create names of global objects.
 #define FilterObjectName_( name, pos, priority ) name##Registrar##priority
 #define ExtensionObjectName_( name )             name##Instance
+#define TestObjectName_( name )                  name##TestInstance
 
 // Define second-level macros to create definitions of global variables.
 // We use int type and "extern C" so we need not deal with name mangling, and can reference objects
@@ -80,6 +81,10 @@
 # define RegisterExtension_( x )  \
   extern "C" long ExtensionObjectName_( x ); \
   long ExtensionObjectName_( x ) __attribute__(( used )) = (long)EnvironmentExtension::AutoDelete( new x );
+
+# define RegisterTest_( x )  \
+  extern "C" long TestObjectName_( x ); \
+  long TestObjectName_( x ) __attribute__(( used )) = (long)&x;
 
 #elif( _MSC_VER )
 
@@ -97,6 +102,10 @@
    extern "C" int ExtensionObjectName_( x ) = (int)EnvironmentExtension::AutoDelete( new x ); \
    __pragma( comment( linker, "/include:" MANGLING_ #x "Instance" ) )
 
+# define RegisterTest_( x )  \
+   extern "C" int TestObjectName_( x ) = (int)&x; \
+   __pragma( comment( linker, "/include:" MANGLING_ #x "TestInstance" ) )
+
 #else // __GNUC__, _MSC_VER // for other compilers, we cannot use registration in static libraries
 
 # define RegisterFilter_( name, pos, priority )  \
@@ -104,6 +113,9 @@
 
 # define RegisterExtension_( x )  \
   x ExtensionObjectName_( x );
+
+# define RegisterTest_( x )  \
+  x TestObjectName_( x );
 
 #endif // __GNUC__, _MSC_VER
 

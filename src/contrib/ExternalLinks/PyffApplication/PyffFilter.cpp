@@ -149,7 +149,7 @@ FILTER_NAME::FILTER_NAME()
   catch(EndUserError& e) {
     HandleEndUserError(e, "Construct");
   }
-  catch(BCIException& e) {
+  catch(std::exception& e) {
     HandleException(e, "Construct");
   }
 }
@@ -177,7 +177,7 @@ FILTER_NAME::~FILTER_NAME()
       catch(EndUserError& e) {
         HandleEndUserError(e, "Destruct");
       }
-      catch(BCIException& e) {
+      catch(std::exception& e) {
         HandleException(e, "Destruct");
       }
     }
@@ -224,7 +224,7 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
   catch(EndUserError& e) {
     HandleEndUserError(e, "Preflight");
   }
-  catch(BCIException& e) {
+  catch(std::exception& e) {
     HandleException(e, "Preflight");
   }
 }
@@ -249,7 +249,7 @@ FILTER_NAME::Initialize( const SignalProperties& inSignalProperties,
   catch(EndUserError& e) {
     HandleEndUserError(e, "Initialize");
   }
-  catch(BCIException& e) {
+  catch(std::exception& e) {
     HandleException(e, "Initialize");
   }
 }
@@ -277,7 +277,7 @@ FILTER_NAME::Process( const GenericSignal& input, GenericSignal& output )
     State("Running") = 0;
     HandleEndUserError(e, "Process");
   }
-  catch(BCIException& e) {
+  catch(std::exception& e) {
     State("Running") = 0;
     HandleException(e, "Process");
   }
@@ -300,7 +300,7 @@ FILTER_NAME::StartRun()
   catch(EndUserError& e) {
     HandleEndUserError(e, "StartRun");
   }
-  catch(BCIException& e) {
+  catch(std::exception& e) {
     HandleException(e, "StartRun");
   }
 }
@@ -318,7 +318,7 @@ FILTER_NAME::StopRun()
   catch(EndUserError& e) {
     HandleEndUserError(e, "StopRun");
   }
-  catch(BCIException& e) {
+  catch(std::exception& e) {
     HandleException(e, "StopRun");
   }
 }
@@ -334,7 +334,7 @@ FILTER_NAME::Resting()
   catch(EndUserError& e) {
     HandleEndUserError(e, "Resting");
   }
-  catch(BCIException& e) {
+  catch(std::exception& e) {
     HandleException(e, "Resting");
   }
 }
@@ -350,7 +350,7 @@ FILTER_NAME::Halt()
   catch(EndUserError& e) {
     HandleEndUserError(e, "Halt");
   }
-  catch(BCIException& e) {
+  catch(std::exception& e) {
     HandleException(e, "Halt");
   }
 }
@@ -677,7 +677,7 @@ FILTER_NAME::ConvertPyObjectToProperties(PyObject* pyOutSignalProperties, Signal
     outSignalProperties.SetType(SignalType::int32);
   }
   else {
-    throw bciexception_( "'" << name << "' is not one of the supported data types" );
+    throw bciexception( "'" << name << "' is not one of the supported data types" );
   }
   ConvertPyListToLabelIndex(PyDict_GetItemString(pyOutSignalProperties, "ChannelLabels"), outSignalProperties.ChannelLabels());
   ConvertPyListToLabelIndex(PyDict_GetItemString(pyOutSignalProperties, "ElementLabels"), outSignalProperties.ElementLabels());
@@ -760,11 +760,11 @@ void
 FILTER_NAME::HandleEndUserError(EndUserError& e, string qualifier) const
 {
   UnblockThreads();
-  bcierr << e.what() << endl;
+  bcierr << e.What() << endl;
 }
 
 void
-FILTER_NAME::HandleException(BCIException& e, string qualifier) const
+FILTER_NAME::HandleException(std::exception& e, string qualifier) const
 {
   UnblockThreads();
   DoubleErr(e.what(), qualifier.c_str(), true);
@@ -774,7 +774,7 @@ void
 FILTER_NAME::ChangeDir(string& d)
 {
   if( !FileUtils::ChangeDirectory( d ) )
-    throw bciexception_( "failed to change working directory from " << FileUtils::WorkingDirectory() << " to " << d );
+    throw bciexception( "failed to change working directory from " << FileUtils::WorkingDirectory() << " to " << d );
 }
 
 void
@@ -834,19 +834,19 @@ FILTER_NAME::CallModuleMember(string module, string member, PyObject* arg)
 {
   PyObject* mod = PyImport_AddModule((char*)module.c_str());
   HandlePythonError("PyImport_AddModule on " + module);
-  if(!mod){throw bciexception_("module object for " + module + " is NULL");}
+  if(!mod){throw bciexception("module object for " + module + " is NULL");}
 
   PyObject* dict = PyModule_GetDict(mod);
   HandlePythonError("PyModule_GetDict on " + module);
-  if(!dict){throw bciexception_("dict object for module " + module + " is NULL");}
+  if(!dict){throw bciexception("dict object for module " + module + " is NULL");}
 
   PyObject* func = PyDict_GetItemString(dict, member.c_str());
   HandlePythonError("PyDict_GetItemString on " + member + " from " + module);
-  if(!func){throw bciexception_("item " + member + " from module " + module + " is NULL");}
+  if(!func){throw bciexception("item " + member + " from module " + module + " is NULL");}
 
   PyObject* result = PyObject_CallFunctionObjArgs(func, arg, NULL);
   HandlePythonError("PyObject_CallFunctionObjArgs on " + member + " from " + module);
-  if(!result){throw bciexception_("result of calling " + member + "() from module " + module + " is NULL");}
+  if(!result){throw bciexception("result of calling " + member + "() from module " + module + " is NULL");}
 
   // apparently should not decref mod, dict and func here
   return result;
@@ -909,7 +909,7 @@ FILTER_NAME::HandlePythonError(string msg, bool errorCodeReturned) const
   if(msg.length()) msg = "Python error during " + msg;
   else msg = "Python error";
   if(report.length()) msg = msg + ": " + report;
-  throw bciexception_(msg);
+  throw bciexception(msg);
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

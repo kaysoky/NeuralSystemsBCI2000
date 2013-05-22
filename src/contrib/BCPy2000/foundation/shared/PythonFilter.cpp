@@ -85,7 +85,7 @@ Filter( FILTER_NAME, 2.C );
 RegisterFilter( FILTER_NAME, 3 );
 #endif
 
-#define FAIL(a) throw bciexception_(a)
+#define FAIL(a) throw bciexception(a)
 
 EndUserError::EndUserError(const char* s) : BCIException(s) {}
 
@@ -699,7 +699,7 @@ FILTER_NAME::ConvertSignalToPyObject(const GenericSignal& sig, PyObject* pyobj) 
   double* vals = (double*)PyString_AsString(pyobj);
   for(size_t ch = 0; ch < nCh; ch++)
     for(size_t el = 0; el < nEl; el++)
-	  *vals++ = sig(ch, el);
+    *vals++ = sig(ch, el);
   return pyobj;
 }
 
@@ -716,7 +716,7 @@ FILTER_NAME::ConvertPyObjectToSignal(PyObject* pyobj, GenericSignal& sig) const
   double* vals = (double*)PyString_AsString(pyobj);
   for(size_t ch = 0; ch < nCh; ch++)
     for(size_t el = 0; el < nEl; el++)
-	  sig(ch, el) = *vals++;
+    sig(ch, el) = *vals++;
 }
 
 PyObject*
@@ -847,14 +847,14 @@ void
 FILTER_NAME::HandleEndUserError(EndUserError& e, std::string qualifier) const
 {
   UnblockThreads();
-  bcierr << e.what() << endl;
+  bcierr << e.What() << endl;
 }
 
 void
 FILTER_NAME::HandleException(BCIException& e, std::string qualifier) const
 {
   UnblockThreads();
-  DoubleErr(e.what(), qualifier.c_str(), true);
+  DoubleErr(e.What().c_str(), qualifier.c_str(), true);
 }
 
 void

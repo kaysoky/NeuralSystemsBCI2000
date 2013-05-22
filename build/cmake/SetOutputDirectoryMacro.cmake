@@ -10,7 +10,7 @@
 MACRO( SET_OUTPUT_DIRECTORY )
 
   SET( targets ${ARGN} )
-  LIST( GET targets 0 dir ) # LIST( GET ${ARGN} 0 dir ) fails, returning NOTFOUND in dir
+  LIST( GET targets 0 dir )
   LIST( REMOVE_AT targets 0 )
   
   SET( products Runtime Library Archive )
@@ -30,6 +30,12 @@ MACRO( SET_OUTPUT_DIRECTORY )
 
       IF( targets )
         SET_TARGET_PROPERTIES( ${targets} PROPERTIES "${product}_OUTPUT_DIRECTORY_${config}" "${dir}" )
+        FOREACH( target ${targets} )
+          LIST( FIND BCITESTS ${target} idx )
+          IF( NOT idx LESS  0 )
+            BCI2000_ADD_BCITEST( ${target} )
+          ENDIF()
+        ENDFOREACH()
       ELSE()
         SET( "CMAKE_${product}_OUTPUT_DIRECTORY_${config}" "${dir}" )
       ENDIF()

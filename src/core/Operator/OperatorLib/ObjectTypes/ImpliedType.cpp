@@ -123,7 +123,7 @@ ImpliedType::Get( CommandInterpreter& inInterpreter )
     ExpressionType::Evaluate( inInterpreter );
     return true;
   }
-  catch( const BCIException& )
+  catch( const exception& )
   {
     inInterpreter.Unget();
   }
@@ -245,7 +245,7 @@ ImpliedType::Abort( CommandInterpreter& inInterpreter )
     message += ": ";
     message += args;
   }
-  throw bciexception_( message );
+  throw bciexception( message );
   return true;
 }
 
@@ -282,7 +282,7 @@ ImpliedType::System( CommandInterpreter& inInterpreter )
 #endif
   int exitCode = 0;
   if( !ProcessUtils::ExecuteSynchronously( shell, args, inInterpreter.Out(), exitCode ) )
-    throw bciexception_( "Could not run \"" << command.c_str() << "\"" );
+    throw bciexception( "Could not run \"" << command.c_str() << "\"" );
   if( exitCode != 0 )
     inInterpreter.Out() << inInterpreter.ExitCodeTag() << exitCode;
   inInterpreter.Log() << "Executed \"" << command.c_str() << "\"";
@@ -350,7 +350,7 @@ ExecutableType::Start( CommandInterpreter& inInterpreter )
          arguments = ToShellArguments( inInterpreter.GetOptionalRemainder() );
   int exitCode = 0;
   if( !ProcessUtils::ExecuteAsynchronously( executable, arguments, exitCode ) )
-    throw bciexception_( "Could not run \"" << executable.c_str() << "\"" );
+    throw bciexception( "Could not run \"" << executable.c_str() << "\"" );
   if( exitCode != 0 )
     inInterpreter.Out() << inInterpreter.ExitCodeTag() << exitCode;
   inInterpreter.Log() << "Started \"" << executable.c_str() << "\"";

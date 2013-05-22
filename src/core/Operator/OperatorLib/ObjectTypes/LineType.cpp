@@ -48,7 +48,7 @@ LineType::Read( CommandInterpreter& inInterpreter )
 {
   string line;
   if( !inInterpreter.ReadLine( line ) )
-    throw bciexception_( "No input associated with command interpreter of type " << bci::ClassName( typeid( inInterpreter ) ) );
+    throw bciexception( "No input associated with command interpreter of type " << bci::ClassName( typeid( inInterpreter ) ) );
   inInterpreter.Out() << line;
   return true;
 }
@@ -68,6 +68,6 @@ LineType::Write( CommandInterpreter& inInterpreter )
     line += arg;
   }
   if( !inInterpreter.WriteLine( line ) )
-    throw bciexception_( "No output associated with command interpreter of type " << bci::ClassName( typeid( inInterpreter ) ) );
+    throw bciexception( "No output associated with command interpreter of type " << bci::ClassName( typeid( inInterpreter ) ) );
   return true;
 }

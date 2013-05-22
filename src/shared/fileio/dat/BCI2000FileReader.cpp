@@ -193,16 +193,16 @@ BCI2000FileReader::Open( const char* inFilename, int inBufSize )
   return *this;
 }
 
-const ParamRef
+ParamRef
 BCI2000FileReader::Parameter( const std::string& name ) const
 {
   const Param* param = NULL;
   if( Parameters() != NULL && Parameters()->Exists( name ) )
     param = &( *Parameters() )[ name ];
   else
-    throw bciexception( "Parameter " << name << " does not exist" );
+    throw std_range_error( "Parameter " << name << " does not exist" );
 
-  return ParamRef( const_cast<Param*>( param ) );
+  return ParamRef( param );
 }
 
 const StateRef
@@ -213,10 +213,10 @@ BCI2000FileReader::State( const std::string& name ) const
   {
     pState = &( *States() )[ name ];
     if( pState->Length() < 1 )
-      throw bciexception( "Requested state " << name << " has zero length" );
+      throw std_range_error( "Requested state " << name << " has zero length" );
   }
   else
-    throw bciexception( "Requested state " << name << " is not accessible" );
+    throw std_runtime_error( "Requested state " << name << " is not accessible" );
 
   return StateRef( const_cast<class State*>( pState ), const_cast<class StateVector*>( StateVector() ), 0 );
 }
@@ -440,13 +440,13 @@ const char*
 BCI2000FileReader::BufferSample( long long inSample )
 {
   if( inSample >= NumSamples() )
-    throw bciexception( "Sample position " << inSample << " exceeds file size of " << NumSamples() );
+    throw std_range_error( "Sample position " << inSample << " exceeds file size of " << NumSamples() );
   int numChannels = SignalProperties().Channels();
   long long filepos = HeaderLength() + inSample * ( mDataSize * numChannels + StateVectorLength() );
   if( filepos < mBufferBegin || filepos + mDataSize * numChannels + StateVectorLength() >= mBufferEnd )
   {
     if( 0 != ::fseeko64( mpFile, filepos, SEEK_SET ) )
-      throw bciexception( "Could not seek to sample position" );
+      throw std_runtime_error( "Could not seek to sample position" );
 
     mBufferBegin = filepos;
     mBufferEnd = mBufferBegin;

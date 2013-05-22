@@ -13,23 +13,23 @@
 //  into the output file unchanged.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
@@ -171,17 +171,17 @@ BCIMexFunction( int nargout, mxArray* varargout[],
     return;
 
   if( nargin < 1 || !mxIsChar( varargin[0] ) )
-    throw bciexception_( "No file name given." );
+    throw bciexception( "No file name given." );
   const char* outputFileName = mxArrayToString( varargin[0] );
 
   if( nargin < 2 || !mxIsNumeric( varargin[1] ) )
-    throw bciexception_( "No signal data given." );
+    throw bciexception( "No signal data given." );
 
   const mxArray* pSignal = varargin[1];
   mwSize nDim = mxGetNumberOfDimensions( pSignal );
   const mwSize* dims = mxGetDimensions( pSignal );
   if( nDim != 2 )
-    throw bciexception_( "Signal data must have two dimensions." );
+    throw bciexception( "Signal data must have two dimensions." );
   mwSize totalSamples = dims[0];
 
   void ( *fpReadSignal )( void*, int64_t, int64_t, GenericSignal& ) = NULL;
@@ -224,7 +224,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       break;
 
     default:
-      throw bciexception_(
+      throw bciexception(
               "Cannot handle signal data in "
              << mxGetClassName( pSignal )
              << " format."
@@ -236,7 +236,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
             .SetType( type );
 
   if( nargin < 3 || !mxIsStruct( varargin[2] ) )
-    throw bciexception_( 
+    throw bciexception(
             "No state information given. "
              << "Please provide state information in the format "
              << "returned by load_bcidat."
@@ -256,7 +256,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
       throw bciexception_( "Too few samples in state \"" << name << "\": "
                << "state variables should provide a value for each sample point." );
     if( dims[1] != 1 )
-      throw bciexception_( "State variables should provide a single value per sample point." );
+      throw bciexception( "State variables should provide a single value per sample point." );
 
     StateInfo entry;
     entry.mLocation = 0;
@@ -292,7 +292,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
         break;
 
       default:
-        throw bciexception_(
+        throw bciexception(
                  "Cannot handle state data in "
                  << mxGetClassName( pField )
                  << " format."
@@ -307,7 +307,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
   };
 
   if( nargin < 4 || !mxIsStruct( varargin[3] ) )
-    throw bciexception_( 
+    throw bciexception(
             "No parameter information given. "
              << "Please provide parameter information in the format "
              << "returned by load_bcidat."
@@ -385,7 +385,7 @@ BCIMexFunction( int nargout, mxArray* varargout[],
 
   ofstream outputFile( outputFileName, ios::out | ios::binary );
   if( !outputFile.is_open() )
-    throw bciexception_(
+    throw bciexception(
              "Could not open file \""
              << outputFileName
              << "\" for output."

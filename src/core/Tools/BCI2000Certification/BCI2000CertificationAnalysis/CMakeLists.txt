@@ -6,18 +6,10 @@
 IF( BUILD_TESTS )
 
 # Set the executable name
-SET( EXECUTABLE_NAME BCI2000CertAnalysis)
+SET( NAME BCI2000CertAnalysis)
 
 # Set the project specific sources
-SET( HDR_PROJECT
-  analysisClass.h
-  ../Functions.h
-  ../TaskType.h
-  analysisGUI.h
-  certificationClass.h
-  ../progressClass.h
-)
-SET( SRC_PROJECT
+SET( SOURCES
   analysisClass.cpp
   analysisMain.cpp
   ../Functions.cpp
@@ -26,11 +18,13 @@ SET( SRC_PROJECT
   certificationClass.cpp
   ../progressClass.cpp
 )
-
-# Wrap the Qt files
-QT4_WRAP_CPP( GENERATED_MOC 
-  ../progressClass.h
+SET( HEADERS
+  analysisClass.h
+  ../Functions.h
+  ../TaskType.h
   analysisGUI.h
+  certificationClass.h
+  ../progressClass.h
 )
 SET( GENERATED
   ${GENERATED_MOC}

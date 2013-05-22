@@ -97,7 +97,7 @@ State::ReadFromStream( istream& is )
       bitLocation = 0;
   is >> mName >> mLength >> mValue >> byteLocation >> bitLocation;
   if( mLength > 8 * sizeof( ValueType ) )
-    throw bciexception( "State " << mName << ": length of " << mLength << " exceeds size of State::ValueType" );
+    throw std_range_error( "State " << mName << ": length of " << mLength << " exceeds size of State::ValueType" );
   SetByteLocation( byteLocation );
   SetBitLocation( bitLocation );
   mKind = StateKind;

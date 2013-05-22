@@ -116,9 +116,9 @@ State::ValueType
 StateVectorSample::StateValue( size_t inLocation, size_t inLength ) const
 {
   if( inLength > 8 * sizeof( State::ValueType ) )
-    throw bciexception( "Invalid state length: " << inLength );
+    throw std_range_error( "Invalid state length: " << inLength );
   if( inLocation + inLength > 8 * mByteLength )
-    throw bciexception( "Accessing non-existent state vector data, location: " << inLocation );
+    throw std_range_error( "Accessing non-existent state vector data, location: " << inLocation );
 
   State::ValueType result = 0;
   for( int bitIndex = static_cast<int>( inLocation + inLength ) - 1;
@@ -146,7 +146,7 @@ StateVectorSample::SetStateValue( size_t inLocation, size_t inLength, State::Val
 {
   State::ValueType valueMask = ( ~State::ValueType( 0 ) >> ( 8 * sizeof( State::ValueType ) - inLength ) );
   if( inValue < 0 || ( inValue & valueMask ) != inValue )
-    throw bciexception(
+    throw std_range_error(
       "Illegal value "
       << inValue
       << " was passed to "
@@ -155,9 +155,9 @@ StateVectorSample::SetStateValue( size_t inLocation, size_t inLength, State::Val
       << inLocation
       );
   if( inLength > 8 * sizeof( State::ValueType ) )
-    throw bciexception( "Invalid state length of " << inLength );
+    throw std_range_error( "Invalid state length of " << inLength );
   if( inLocation + inLength > 8 * mByteLength )
-    throw bciexception( "Accessing non-existent state vector data, location: " << inLocation );
+    throw std_range_error( "Accessing non-existent state vector data, location: " << inLocation );
   SetStateValue_( inLocation, inLength, inValue );
 }
 

@@ -5,23 +5,23 @@
 //   given DisplayContext.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -230,7 +230,7 @@ SignalDisplay::WrapForward( const GenericSignal& inSignal )
     invalidRect.setRight( min<int>( firstValidPixel - mDataWidth, mDataRect.right() ) );
     if( invalidRect.left() < invalidRect.right() )
       pWindow->repaint( invalidRect );
-    
+
     if( mShowNumericValues )
     {
       invalidRect.setLeft( mDataRect.right() - mNumericValueWidth );
@@ -353,7 +353,7 @@ SignalDisplay::SyncLabelWidth()
         if( mChannelUnit.empty() )
           oss << i + cChannelBase;
         else
-          oss << fixed << setprecision( 1 ) 
+          oss << fixed << setprecision( 1 )
               << i * mUnitsPerChannel << mChannelUnit;
         mChannelNameCache[ i ] = oss.str();
       }
@@ -589,7 +589,7 @@ SignalDisplay::DrawSignalPolyline( const PaintInfo& p )
   }
   catch( const bad_alloc& )
   {
-    throw bciexception( "Could not allocate memory for " << mNumSamples << " points" );
+    throw std_bad_alloc( "Could not allocate memory for " << mNumSamples << " points" );
   }
   int numPens = static_cast<int>( p.signalPens.size() );
 
@@ -883,7 +883,7 @@ SignalDisplay::DrawNumericValues( const PaintInfo& p )
       QFontMetrics metrics( p.monoFont );
       int w = metrics.width( labelText );
       int h = metrics.height();
-      if( mNumericValueWidth < w ) mNumericValueWidth = w; 
+      if( mNumericValueWidth < w ) mNumericValueWidth = w;
       QRect tickRect(
           mDisplayRect.width() - w,
           tickY - h * 1.5,

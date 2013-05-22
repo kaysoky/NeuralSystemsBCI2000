@@ -29,7 +29,10 @@
 
 #include "WavePlayer.h"
 #include "FileUtils.h"
-#include "BCIError.h"
+#include "ThreadUtils.h"
+#include "Resources.h"
+#include "BCIException.h"
+#include "BCIStream.h"
 
 using namespace std;
 
@@ -113,6 +116,7 @@ WavePlayer::Construct()
     }
     if( dllHandle != NULL )
       ::FreeLibrary( dllHandle );
+    PlayDummySound(); // make sure that sound output is properly initialized
   }
   if( sPrimarySoundBuffer == NULL )
     mErrorState = initError;
@@ -371,6 +375,9 @@ WavePlayer::PlayingPos() const
 
 #else // USE_DSOUND
 
+#include <QTemporaryFile>
+#include <QDir>
+
 WavePlayer::WavePlayer()
 : mVolume( 1.0 ),
   mPan( 0.0 ),
@@ -414,11 +421,14 @@ WavePlayer::~WavePlayer()
 void
 WavePlayer::Construct()
 {
+  if( sNumInstances++ < 1 )
+    PlayDummySound();
 }
 
 void
 WavePlayer::Destruct()
 {
+  --sNumInstances;
   Clear();
 }
 
@@ -466,7 +476,7 @@ WavePlayer::SetVolume( float inVolume )
 {
   if( inVolume != 1.0 && !mVolumeWarningIssued )
   {
-    bciout << "Cannot adjust volume in non-windows builds" << endl;
+    bciwarn << "Cannot adjust volume in non-windows builds" << endl;
     mVolumeWarningIssued = true;
   }
   mVolume = 1.0;
@@ -478,7 +488,7 @@ WavePlayer::SetPan( float inPan )
 {
   if( inPan != 0.0 && !mPanWarningIssued )
   {
-    bciout << "Cannot adjust pan in non-windows builds" << endl;
+    bciwarn << "Cannot adjust pan in non-windows builds" << endl;
     mPanWarningIssued = true;
   }
   mPan = 0.0;
@@ -506,3 +516,17 @@ WavePlayer::PlayingPos() const
 }
 
 #endif // USE_DSOUND
+
+void
+WavePlayer::PlayDummySound()
+{
+  Resource res( Resources::EmptyWaveFile );
+  SetFile( res.SaveAsTemp() );
+  SetVolume( 1 );
+  Play();
+  while( IsPlaying() )
+    ThreadUtils::SleepFor( 1 );
+  if( ErrorState() != noError )
+    throw bciexception( "Could not initialize sound output device" );
+  Clear();
+}

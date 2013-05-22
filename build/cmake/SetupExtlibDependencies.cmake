@@ -7,8 +7,8 @@
 MACRO( BCI2000_SETUP_EXTLIB_DEPENDENCIES SRC_FRAMEWORK HDR_FRAMEWORK LIBS FAILED )
 
 # Make sure the input is treated as variables
-SET( SOURCES "${SRC_FRAMEWORK}" )
-SET( HEADERS "${HDR_FRAMEWORK}" )
+SET( SOURCES_ "${SRC_FRAMEWORK}" )
+SET( HEADERS_ "${HDR_FRAMEWORK}" )
 SET( LIBRARIES "${LIBS}" )
 SET( ${FAILED} "" )
 
@@ -29,12 +29,12 @@ FOREACH( INC ${BCI2000_INCLUDING} )
     UNSET( LIBS_EXTLIB )
     INCLUDE( ${BCI2000_CMAKE_DIR}/extlib/${INC}.cmake )
     IF( EXTLIB_OK )
-      SET( ${SOURCES}
-        ${${SOURCES}}
+      SET( ${SOURCES_}
+        ${${SOURCES_}}
         ${SRC_EXTLIB}
       )
-      SET( ${HEADERS}
-        ${${HEADERS}}
+      SET( ${HEADERS_}
+        ${${HEADERS_}}
         ${HDR_EXTLIB}
       )
       INCLUDE_DIRECTORIES( ${INC_EXTLIB} )
@@ -89,3 +89,4 @@ MACRO( BCI2000_USE LIB )
     ENDIF()
   ENDIF()
 ENDMACRO( BCI2000_USE LIB )
+

@@ -74,7 +74,7 @@ ScriptInterpreter::Execute( const string& inScript, const string& inName )
     Script( inScript, inName ).Compile().Execute( *this );
     success = true;
   }
-  catch( const BCIException& e )
+  catch( const exception& e )
   {
     OnScriptError( e.what() );
   }

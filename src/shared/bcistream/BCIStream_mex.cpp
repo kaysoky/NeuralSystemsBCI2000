@@ -57,7 +57,7 @@ BCIStream::ConfigurationError( const string& s )
   // mexErrMsgTxt() would abort execution without executing destructors,
   // thus we need to throw an exception and call mexErrMsgTxt() from the
   // catch() clause.
-  throw bciexception_( s );
+  throw bciexception( s );
 }
 
 void

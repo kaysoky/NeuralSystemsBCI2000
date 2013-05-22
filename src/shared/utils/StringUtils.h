@@ -27,6 +27,7 @@
 #define STRING_UTILS_H
 
 #include <string>
+#include <iostream>
 
 namespace StringUtils
 {
@@ -34,11 +35,15 @@ namespace StringUtils
   inline std::wstring ToWide( const std::string& s ) { return ToWide( s.c_str() ); }
   inline std::wstring FromNarrow( const char* s ) { return ToWide( s ); }
   inline std::wstring FromNarrow( const std::string& s ) { return ToWide( s.c_str() ); }
-  
+
   std::string ToNarrow( const wchar_t* );
   inline std::string ToNarrow( const std::wstring& s ) { return ToNarrow( s.c_str() ); }
   inline std::string FromWide( const wchar_t* s ) { return ToNarrow( s ); }
   inline std::string FromWide( const std::wstring& s ) { return ToNarrow( s.c_str() ); }
+
+  std::ostream& WriteAsBase64( std::ostream&, const std::string& );
+  std::istream& ReadAsBase64( std::istream&, std::string&, int stopAtChar );
+  std::istream& ReadAsBase64( std::istream&, std::string&, int (*stopIf)( int ) = 0 );
 } // namespace StringUtils
 
 #endif // STRING_UTILS_H

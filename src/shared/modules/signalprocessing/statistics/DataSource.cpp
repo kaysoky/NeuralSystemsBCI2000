@@ -122,7 +122,7 @@ DataSource::DataProperties::operator SignalProperties() const
       if( streamingDim == -1 )
         streamingDim = static_cast<int>( i );
       else if( mDimensions[i].unit != mDimensions[streamingDim].unit )
-        throw bciexception( "Incompatible streaming dimensions" );
+        throw std_runtime_error( "Incompatible streaming dimensions" );
     }
   }
   SignalProperties result( 0, 0 );

@@ -41,9 +41,9 @@ StatisticalObserver::BinEdges( Number inCenter, Number inResolution, unsigned in
 {
   Vector binEdges;
   if( inNumBins < 1 )
-    throw bciexception( "NumBins argument is " << inNumBins << ", must be > 0" );
+    throw std_invalid_argument( "NumBins argument is " << inNumBins << ", must be > 0" );
   if( ::fabs( inResolution ) < eps )
-    throw bciexception( "Resolution argument is " << inResolution << ", may not be 0" );
+    throw std_invalid_argument( "Resolution argument is " << inResolution << ", may not be 0" );
   binEdges.resize( inNumBins - 1 );
   for( size_t i = 0; i < inNumBins - 1; ++i )
     binEdges[i] = inResolution * ( i + 1 ) + inCenter - inResolution * inNumBins / 2;
@@ -55,7 +55,7 @@ MatrixPtr
 StatisticalObserver::RSquared( const ObserverBase& inObs1, const ObserverBase& inObs2, MemPool& ioPool )
 {
   if( inObs1.SampleSize() == 0 || inObs2.SampleSize() == 0 )
-    throw bciexception( "Trying to compute RSquared without observation" );
+    throw std_runtime_error( "Trying to compute RSquared without observation" );
 
   MatrixPtr result = ioPool.NewMatrix( inObs1.SampleSize(), inObs2.SampleSize() );
 
@@ -115,7 +115,7 @@ ObserverBase::ObserverBase( int inConfig, int inSupported )
   mSampleSize( 0 )
 {
   if( mConfig & ~ImpliedConfig( inSupported ) )
-    throw bciexception( "Unsupported function requested" );
+    throw std_logic_error( "Unsupported function requested" );
 }
 
 // Observations
@@ -137,7 +137,7 @@ ObserverBase::Observe( const Vector& inV, Number inWeight )
     DoChange();
   }
   if( inV.size() != mSampleSize )
-    throw bciexception(
+    throw std_logic_error(
       "Observe(Vector) called with inconsistent sample sizes, expected: " << mSampleSize
       << ", got: " << inV.size()
     );
@@ -167,7 +167,7 @@ ObserverBase&
 ObserverBase::SetWindowLength( Number inLength )
 {
   if( inLength != Unlimited && inLength < eps )
-    throw bciexception( "Argument is " << inLength << ", must be > 0, or \"Unlimited\"" );
+    throw std_invalid_argument( "Argument is " << inLength << ", must be > 0, or \"Unlimited\"" );
   mWindowLength = inLength;
   return Change();
 }
@@ -176,7 +176,7 @@ ObserverBase&
 ObserverBase::SetQuantileAccuracy( Number inAccuracy )
 {
   if( inAccuracy != Auto && ( inAccuracy < 0 || inAccuracy > 1 ) )
-    throw bciexception( "QuantileAccuracy is " << mQuantileAccuracy << ", must be in [0,1], or \"Auto\"" );
+    throw std_invalid_argument( "QuantileAccuracy is " << mQuantileAccuracy << ", must be in [0,1], or \"Auto\"" );
   mQuantileAccuracy = inAccuracy;
   Change();
   return *this;
@@ -208,7 +208,7 @@ ObserverBase::Change()
 // Statistical results
 #define REQUIRE( x )  \
   if( !( mConfig & StatisticalObserver::x ) ) \
-    throw bciexception( ClassName( typeid( *this ) ) << " was not configured to compute function " << #x << "()" )
+    throw std_logic_error( ClassName( typeid( *this ) ) << " was not configured to compute function " << #x << "()" )
 
 Number
 ObserverBase::Count( MemPool& ioPool ) const
@@ -373,7 +373,7 @@ ObserverBase::Quantile( Number inP, MemPool& ioPool ) const
 {
   REQUIRE( Quantile );
   if( inP < 0 || inP > 1 )
-    throw bciexception( "Argument is " << inP << ", must be in [0,1]" );
+    throw std_invalid_argument( "Argument is " << inP << ", must be in [0,1]" );
   return InverseCDF( inP * PowerSum0( ioPool ), ioPool );
 }
 
@@ -425,7 +425,7 @@ ObserverBase::PowerSum2Diag( MemPool& ioPool ) const
   return result;
 }
 
-#define UNSUPPORTED throw bciexception( ClassName( typeid( *this ) ) << " does not support this computation" )
+#define UNSUPPORTED throw std_logic_error( ClassName( typeid( *this ) ) << " does not support this computation" )
 
 MatrixPtr
 ObserverBase::PowerSum2Full( MemPool& ioPool ) const

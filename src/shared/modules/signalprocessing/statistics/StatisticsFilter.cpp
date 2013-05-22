@@ -470,7 +470,7 @@ StatisticsFilter::AbortThread::Execute()
     return 0;
 
   if( mResolutionMs < 0 )
-    throw bciexception( "Resolution is " << mResolutionMs << ", must be >= 0" );
+    throw std_range_error( "Resolution is " << mResolutionMs << ", must be >= 0" );
 
   int remainingTime = mTimeoutMs;
   PrecisionTime last = PrecisionTime::Now();

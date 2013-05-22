@@ -10,17 +10,7 @@ SET( EXECUTABLE_NAME BCI2000FileInfo )
 SET( SRC_PROJECT
   main.cpp 
   bci2000fileinfo.cpp
-)
-SET( HDR_PROJECT
-  bci2000fileinfo.h
-)
-
-# Wrap the Qt files
-QT4_WRAP_UI( GENERATED_UI bci2000fileinfo.ui )
-QT4_WRAP_CPP( GENERATED_MOC bci2000fileinfo.h )
-SET( GENERATED
-  ${GENERATED_UI}
-  ${GENERATED_MOC}
+  bci2000fileinfo.ui
 )
 
 # Tell the macro to link against a few external GUIs
@@ -34,8 +24,5 @@ BCI2000_IMPORT_GUI( "OperatorUtilsQt" )
 # Create the signal processing module
 BCI2000_ADD_TOOLS_GUIAPP( 
   "${EXECUTABLE_NAME}" 
-  "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${GENERATED}"
+  "${SRC_PROJECT}"
 )
-
-

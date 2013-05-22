@@ -15,6 +15,5 @@ MACRO( BCI2000_ADD_CORE_MAIN NAME )
       ${SRC_BCI2000_FRAMEWORK}
       ${CORE_MAIN}
     )
-    SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules FILES ${CORE_MAIN} )
   ENDIF()
 ENDMACRO()  

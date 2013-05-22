@@ -58,67 +58,67 @@
 #endif
 
 class EndUserError : public BCIException {
-	public:
-		EndUserError(const char* s);
+  public:
+    EndUserError(const char* s);
 };
 
 typedef                            long   StateType;
 typedef std::map<std::string, StateType>  StateMap;
 class FILTER_NAME : public GenericFilter
 {
-	public:
-		FILTER_NAME();
-		virtual ~FILTER_NAME();
-		virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
-		virtual void Initialize( const SignalProperties&, const SignalProperties& );
-		virtual void Process( const GenericSignal& Input, GenericSignal& Output );
-		virtual void StartRun();
-		virtual void StopRun();
-		virtual void Resting();
-		virtual void Halt();
+  public:
+    FILTER_NAME();
+    virtual ~FILTER_NAME();
+    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+    virtual void Initialize( const SignalProperties&, const SignalProperties& );
+    virtual void Process( const GenericSignal& Input, GenericSignal& Output );
+    virtual void StartRun();
+    virtual void StopRun();
+    virtual void Resting();
+    virtual void Halt();
 
-	private:
-		PyObject*      mpInstance;
-		bool           mUseConsole;
+  private:
+    PyObject*      mpInstance;
+    bool           mUseConsole;
 
-		mutable bool           mStayOpen;
-		mutable PyThreadState* mpThreadState;
+    mutable bool           mStayOpen;
+    mutable PyThreadState* mpThreadState;
 
-	protected:
-		void        SendParametersToPython() const;
-		void        ReceiveParametersFromPython();
-		void        SendStatesToPython() const;
-		StateMap    ReceiveStatesFromPython() const;
-		void        UpdateStateChangesFromPython(StateMap& before, StateMap& after) const;
-		void        SendStatePrecisionsToPython() const;
+  protected:
+    void        SendParametersToPython() const;
+    void        ReceiveParametersFromPython();
+    void        SendStatesToPython() const;
+    StateMap    ReceiveStatesFromPython() const;
+    void        UpdateStateChangesFromPython(StateMap& before, StateMap& after) const;
+    void        SendStatePrecisionsToPython() const;
 
-		PyObject*   ConvertSignalToPyObject(const GenericSignal& inSignal) const;
-		void        ConvertPyObjectToSignal(PyObject* pyOutSignal, GenericSignal& outSignal) const;
+    PyObject*   ConvertSignalToPyObject(const GenericSignal& inSignal) const;
+    void        ConvertPyObjectToSignal(PyObject* pyOutSignal, GenericSignal& outSignal) const;
 
-		PyObject*   ConvertPropertiesToPyObject(const SignalProperties& inSignalProperties) const;
-		void        ConvertPyObjectToProperties(PyObject* pyOutSignalProperties, SignalProperties& outSignalProperties) const;
+    PyObject*   ConvertPropertiesToPyObject(const SignalProperties& inSignalProperties) const;
+    void        ConvertPyObjectToProperties(PyObject* pyOutSignalProperties, SignalProperties& outSignalProperties) const;
 
-		PyObject*   ConvertLabelIndexToPyList(LabelIndex from) const;
-		void        ConvertPyListToLabelIndex(PyObject*, LabelIndex& to) const;
+    PyObject*   ConvertLabelIndexToPyList(LabelIndex from) const;
+    void        ConvertPyListToLabelIndex(PyObject*, LabelIndex& to) const;
 
-		PyObject*   ConvertPhysicalUnitToPyDict(PhysicalUnit from) const;
-		void        ConvertPyDictToPhysicalUnit(PyObject* from, PhysicalUnit& to) const;
+    PyObject*   ConvertPhysicalUnitToPyDict(PhysicalUnit from) const;
+    void        ConvertPyDictToPhysicalUnit(PyObject* from, PhysicalUnit& to) const;
 
-		void        DoubleErr(const char *msg, const char *qualifier=NULL, bool notify_restart=false) const;
-		void        HandleEndUserError(EndUserError& e, std::string qualifier) const;
-		void        HandleException(BCIException& e, std::string qualifier) const;
-		void        ChangeDir(std::string& d);
-		void        OpenConsole(const char *title);
+    void        DoubleErr(const char *msg, const char *qualifier=NULL, bool notify_restart=false) const;
+    void        HandleEndUserError(EndUserError& e, std::string qualifier) const;
+    void        HandleException(std::exception& e, std::string qualifier) const;
+    void        ChangeDir(std::string& d);
+    void        OpenConsole(const char *title);
 
-		void        BlockThreads() const;
-		void        UnblockThreads() const;
+    void        BlockThreads() const;
+    void        UnblockThreads() const;
 
-		std::string EscapePythonString(std::string in);
-		void        EvalPythonString(std::string s);
-		PyObject*   CallModuleMember(std::string module, std::string member, PyObject* arg=NULL);
-		PyObject*   CallMethod(const char* name, PyObject* arg1=NULL, PyObject* arg2=NULL, PyObject* arg3=NULL) const;
-		PyObject*   CallHook(const char* name, PyObject* arg1=NULL, PyObject* arg2=NULL) const;
-		void        HandlePythonError(std::string msg, bool errorCodeReturned=false) const;
+    std::string EscapePythonString(std::string in);
+    void        EvalPythonString(std::string s);
+    PyObject*   CallModuleMember(std::string module, std::string member, PyObject* arg=NULL);
+    PyObject*   CallMethod(const char* name, PyObject* arg1=NULL, PyObject* arg2=NULL, PyObject* arg3=NULL) const;
+    PyObject*   CallHook(const char* name, PyObject* arg1=NULL, PyObject* arg2=NULL) const;
+    void        HandlePythonError(std::string msg, bool errorCodeReturned=false) const;
 
 };
 

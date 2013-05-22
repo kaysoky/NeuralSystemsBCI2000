@@ -8,7 +8,6 @@
 ##       INC_EXTLIB - Include directory for gMOBIlab
 ##       LIBDIR_EXTLIB - Library directory for gMOBIlab
 ##       LIBS_EXTLIB - required library for gMOBIlab
-##       Also defines source groups for source files
 
 IF( (USE_DYNAMIC_IMPORTS AND WIN32) OR (WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8) )
 
@@ -45,9 +44,6 @@ SET( LIBS_EXTLIB libspa20a.a )
 ELSE()
 SET( LIBS_EXTLIB spa20a.lib )
 ENDIF()
-
-# Set the source groups
-SOURCE_GROUP( Headers\\BCI2000_Framework\\extlib\\gtec\\gMOBIlab FILES ${HDR_EXTLIB} )
 
 # Set success
 SET( EXTLIB_OK TRUE )

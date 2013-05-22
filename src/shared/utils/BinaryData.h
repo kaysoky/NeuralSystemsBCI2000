@@ -29,9 +29,28 @@
 
 #include <iostream>
 #include <limits>
-#include "defines.h"
+
+#if _WIN32
+# define LITTLE_ENDIAN 1
+# define BIG_ENDIAN 2
+# define BYTE_ORDER LITTLE_ENDIAN
+#else
+# include <sys/param.h>
+# ifndef BYTE_ORDER
+#  define BYTE_ORDER __BYTE_ORDER
+#  define LITTLE_ENDIAN __LITTLE_ENDIAN
+#  define BIG_ENDIAN __BIG_ENDIAN
+# endif
+#endif
 
 namespace bci {
+
+enum
+{
+  LittleEndian = LITTLE_ENDIAN,
+  BigEndian = BIG_ENDIAN,
+  HostOrder = BYTE_ORDER,
+};
 
 template<bool HostMatchesData> struct BinaryIO;
 template<> struct BinaryIO<true>
@@ -90,7 +109,7 @@ template<typename T, int DataByteOrder> class BinaryData
 
  private:
   T mData;
-  
+
   // Avoid instantiation for unsuited types T:
   enum
   {

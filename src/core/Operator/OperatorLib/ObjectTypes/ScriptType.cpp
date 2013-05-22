@@ -100,7 +100,7 @@ ScriptType::Execute( CommandInterpreter& inInterpreter )
     }
     ifstream file( name.c_str() );
     if( !file.is_open() )
-      throw bciexception_( "Could not open script file \"" << name << "\"" );
+      throw bciexception( "Could not open script file \"" << name << "\"" );
     getline( file, script, '\0' );
     path = FileUtils::AbsolutePath( name );
   }
@@ -122,7 +122,7 @@ ScriptType::EventID( const string& inEventName )
 {
   int eventID = ScriptEvents::ID( inEventName );
   if( eventID == BCI_None )
-    throw bciexception_( "Unknown scripting event: " << inEventName );
+    throw bciexception( "Unknown scripting event: " << inEventName );
   return eventID;
 }
 

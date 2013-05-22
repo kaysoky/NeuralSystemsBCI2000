@@ -55,8 +55,8 @@ bool
 ReusableThread::Run( Runnable& inRunnable )
 {
   if( !mAlive )
-    throw bciexception( "Thread is no longer available for execution" );
-    
+    throw std_runtime_error( "Thread is no longer available for execution" );
+
   if( mpRunnable )
     return false;
 

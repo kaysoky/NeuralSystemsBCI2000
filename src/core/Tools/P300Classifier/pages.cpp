@@ -1065,7 +1065,7 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
     // Check the number of stimulus in the Stimulus Presentation Task
     if (CurrentFile->Parameters()->Exists("Stimuli"))
     {
-      const ParamRef parameter = CurrentFile->Parameter("Stimuli");
+      ParamRef parameter = CurrentFile->Parameter("Stimuli");
       NumStimuli.push_back(parameter->NumColumns());
     }
     else
@@ -1551,7 +1551,7 @@ bool DataPage::ValidateTestingDataFiles(vector<string> &fPathArr, int &numSample
     // Check the number of stimulus in the Stimulus Presentation Task
     if (CurrentFile->Parameters()->Exists("Stimuli"))
     {
-      const ParamRef parameter = CurrentFile->Parameter("Stimuli");
+      ParamRef parameter = CurrentFile->Parameter("Stimuli");
       NumStimuli.push_back(parameter->NumColumns());
     }
     else
@@ -2293,7 +2293,7 @@ bool DataPage::ValidateStimulusFrequencies( BCI2000FileReader& ioFile, string& i
 
   int numStimuli = ioFile.Parameter( "Stimuli" )->NumColumns();
   vector<int> stimulusFrequencies( numStimuli, 0 );
-  const ParamRef Sequence = ioFile.Parameter( "Sequence" );
+  ParamRef Sequence = ioFile.Parameter( "Sequence" );
   if( ioFile.Parameter( "SequenceType" ) == 0 ) // deterministic sequence
   {
     for( int i = 0; i < Sequence->NumValues(); ++i )

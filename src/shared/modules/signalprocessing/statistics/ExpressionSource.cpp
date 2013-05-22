@@ -143,7 +143,7 @@ ExpressionSource::MemberFunction( const std::string& inObject, const std::string
     }
     catch( const BCIException& e )
     {
-      Errors() << e.what() << endl;
+      Errors() << e.What() << endl;
     }
     if( pFunction )
     {
