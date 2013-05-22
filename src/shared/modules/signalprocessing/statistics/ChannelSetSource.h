@@ -32,7 +32,7 @@
 class ChannelSetSource : public DataSource
 {
  public:
-  typedef std::vector<int> ChannelSet;
+   typedef std::vector<int> ChannelSet;
 
   ChannelSetSource( const std::string& inName, const ChannelSet& inSet );
 

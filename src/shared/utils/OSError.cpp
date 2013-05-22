@@ -34,11 +34,8 @@
 
 using namespace std;
 
-const string OSError::cDefaultMessage = "<n/a>";
-
 OSError::OSError()
-: mCode( 0 ),
-  mMessage( cDefaultMessage )
+: mCode( 0 )
 {
 #ifdef _WIN32
   mCode = ::GetLastError();
@@ -48,7 +45,7 @@ OSError::OSError()
 const char*
 OSError::Message() const
 {
-  mMessage = cDefaultMessage;
+  mMessage = "<n/a>";
 #ifdef _WIN32
   char* pMessage = NULL;
   bool success = ::FormatMessageA(

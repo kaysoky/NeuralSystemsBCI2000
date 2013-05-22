@@ -57,6 +57,27 @@ LabelIndex::LabelIndex( const PhysicalUnit& inP )
   mNeedSync = true;
 }
 
+double
+LabelIndex::AddressToIndex( const string& inAddress,
+                            const PhysicalUnit& inUnit ) const
+{
+  double result = -1;
+  // Does the address match an existing label?
+  if( Exists( inAddress ) )
+    result = ( *this )[inAddress];
+  // Is it a value in physical units?
+  else if( inUnit.IsPhysical( inAddress ) )
+    result = inUnit.PhysicalToRaw( inAddress );
+  // If neither, then we interpret it as a 1-based index.
+  else
+  {
+    istringstream is( inAddress );
+    double number;
+    if( is >> number && is.eof() )
+      result = number - 1;
+  }
+  return result;
+}
 
 // **************************************************************************
 // Function:   operator[]

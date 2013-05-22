@@ -35,6 +35,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/utils/EscapedString.cpp
   ${BCI2000_SRC_DIR}/shared/utils/EnvVariable.cpp
   ${BCI2000_SRC_DIR}/shared/utils/DylibImports.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/IndexList.cpp
 
   ${BCI2000_SRC_DIR}/shared/utils/FPExceptMask.h
   ${BCI2000_SRC_DIR}/shared/utils/Lockable.h

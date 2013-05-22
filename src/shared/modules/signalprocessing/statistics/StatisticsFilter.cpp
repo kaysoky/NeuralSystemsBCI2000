@@ -59,8 +59,8 @@ StatisticsFilter::StatisticsFilter()
     " : "
     " % % % //"
     " Rows represent channel sets, defined as space-separated lists of channel names. "
-    " Use row labels to name channel sets. Channel names may include * and ? wildcards, "
-    " and character ranges enclosed in [], optionally negated by an exclamation mark. "
+    " Use row labels to name channel sets. Channel names may contain * and ? wildcards, "
+    " and character ranges enclosed in []; wildcard patterns may be negated by an exclamation mark. "
     " Ranges of channels may be specified using : or - to separate begin from end.",
   "Statistics matrix Observers= "
     "{ Target1 Target2 Baseline Continuous } "
@@ -229,55 +229,22 @@ StatisticsFilter::LoadChannelSets( const Context& ioContext ) const
     ChannelSet channelSet;
     while( iss >> ws >> entry )
     {
-      size_t pos = entry.find_first_of( ":-" );
-      if( pos == string::npos )
-      { // single address entry, use pattern matching
-        int matches = 0;
-        for( int idx = 0; idx < Input.Channels(); ++idx )
-        {
-          if( WildcardMatch( entry, Input.ChannelLabels()[idx] ) )
-          {
-            channelSet.push_back( idx );
-            ++matches;
-          }
-        }
-        if( matches == 0 )
-        {
-          if( sets.find( entry ) != sets.end() ) // A channel list with that name exists, copy it.
-            for( size_t i = 0; i < sets[entry].size(); ++i )
-              channelSet.push_back( sets[entry][i] );
-          else // Try whether it matches a label, or is a number.
-          {
-            int idx = static_cast<int>( Input.ChannelIndex( entry ) );
-            if( idx < 0 )
-              bcierr << "Channel set \"" << name << "\":"
-                     << " entry \"" << entry << "\""
-                     << " does not match any channel"
-                     << endl;
-            else
-              channelSet.push_back( idx );
-          }
-        }
+      if( sets.find( entry ) != sets.end() )
+      { // A channel list with that name exists, copy it.
+        for( size_t i = 0; i < sets[entry].size(); ++i )
+          channelSet.push_back( sets[entry][i] );
       }
       else
-      { // range of addresses, no pattern matching
-        string addr1 = entry.substr( 0, pos ),
-               addr2 = entry.substr( pos + 1 );
-        int idx1 = addr1.empty() ? 0 : static_cast<int>( Input.ChannelIndex( addr1 ) ),
-            idx2 = addr2.empty() ? Input.Channels() - 1 : static_cast<int>( Input.ChannelIndex( addr2 ) );
-        if( idx1 < 0 )
-          bcierr << "Channel set \"" << name << "\":"
-                 << " identifier \"" << addr1 << "\""
-                 << " does not match a channel"
-                 << endl;
-        if( idx2 < 0 )
-          bcierr << "Channel set \"" << name << "\":"
-                 << " identifier \"" << addr2 << "\""
-                 << " does not match a channel"
-                 << endl;
-        if( idx1 >= 0 && idx2 >= 0 )
-          for( int idx = idx1; idx <= idx2; ++idx )
-            channelSet.push_back( idx );
+      {
+        IndexList s( entry, Input.ChannelLabels(), Input.ChannelUnit() );
+        string errors = s.Errors();
+        if( errors.empty() && s.Empty() )
+          errors = "entry \"" + entry + "\" does not match any channel";
+        if( errors.empty() )
+          for( int i = 0; i < s.Size(); ++i )
+            channelSet.push_back( static_cast<int>( s[i] ) );
+        else
+          bcierr << "Channel set \"" << name << "\": " << errors;
       }
     }
     if( channelSet.empty() )

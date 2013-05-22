@@ -34,8 +34,7 @@ class OSError : private Uncopyable
  public:
   OSError(); // This constructor obtains the last error code.
   OSError( long inErrorCode )
-  : mCode( inErrorCode ),
-    mMessage( cDefaultMessage )
+  : mCode( inErrorCode )
   {}
   // Properties
   long        Code() const
@@ -45,8 +44,6 @@ class OSError : private Uncopyable
  private:
   long mCode;
   mutable std::string mMessage;
-
-  static const std::string cDefaultMessage;
 };
 
 #endif // OS_ERROR_H

@@ -136,6 +136,8 @@ FileUtils::ExecutablePath()
     path = OriginalWD() + path;
   path = CanonicalPath( path );
 #endif // _WIN32
+  if( path.empty() )
+    throw std_runtime_error( "Could not obtain executable path" );
   return path;
 }
 
@@ -216,7 +218,8 @@ FileUtils::AbsolutePath( const string& inPath )
 string
 FileUtils::CanonicalPath( const std::string& inPath )
 {
-  string path = AbsolutePath( inPath ),
+  OSMutex::Lock lock( WorkingDirMutex() );
+  string path = inPath,
          sep;
   if( !path.empty() && Separators().find( *path.rbegin() ) != string::npos )
   {
@@ -225,10 +228,19 @@ FileUtils::CanonicalPath( const std::string& inPath )
   }
   string result;
 #if _WIN32
-  std::replace( path.begin(), path.end(), '/', '\\' );
-  const wstring prefix = L"\\\\?\\";
-  wstring wpath = prefix + StringUtils::ToWide( path );
-  DWORD size = ::GetLongPathNameW( wpath.c_str(), 0, 0 );
+  wstring wpath = StringUtils::ToWide( path );
+  DWORD size = ::GetFullPathNameW( wpath.c_str(), 0, 0, 0 );
+  if( size > 0 )
+  {
+    wchar_t* pBuf = new wchar_t[size+1];
+    if( ::GetFullPathNameW( wpath.c_str(), size, pBuf, 0 ) )
+      wpath = pBuf;
+    delete[] pBuf;
+  }
+  std::replace( wpath.begin(), wpath.end(), L'/', L'\\' );
+  static const wstring prefix = L"\\\\?\\";
+  wpath = prefix + wpath;
+  size = ::GetLongPathNameW( wpath.c_str(), 0, 0 );
   if( size > 0 )
   {
     wchar_t* pBuf = new wchar_t[size+1];

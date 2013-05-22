@@ -111,29 +111,6 @@ SignalProperties::SamplingRate() const
 }
 
 
-double
-SignalProperties::AddressToIndex( const string& inAddress,
-                                  const LabelIndex& inLabelIndex,
-                                  const PhysicalUnit& inUnit ) const
-{
-  double result = -1;
-  // Does the address match an existing label?
-  if( inLabelIndex.Exists( inAddress ) )
-    result = inLabelIndex[ inAddress ];
-  // Is it a value in physical units?
-  else if( inUnit.IsPhysical( inAddress ) )
-    result = inUnit.PhysicalToRaw( inAddress );
-  // If neither, then we interpret it as a 1-based index.
-  else
-  {
-    istringstream is( inAddress );
-    double number;
-    if( is >> number && is.eof() )
-      result = number - 1;
-  }
-  return result;
-}
-
 bool
 SignalProperties::IsStream() const
 {

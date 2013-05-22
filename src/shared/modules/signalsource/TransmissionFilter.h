@@ -42,6 +42,8 @@ class TransmissionFilter: public GenericFilter
   virtual void Process( const GenericSignal& Input,
                               GenericSignal& Output );
  private:
+   std::string FlatParameter( const std::string& ) const;
+
    typedef std::vector<size_t> mChannelList_type;
    mChannelList_type           mChannelList;
 };

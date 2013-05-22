@@ -95,7 +95,7 @@ class SignalProperties
     // Convert a string-valued channel address into a numeric index.
     // The address may be a label or a value in physical units.
     double            ChannelIndex( const std::string& address ) const
-                      { return AddressToIndex( address, ChannelLabels(), ChannelUnit() ); }
+                      { return ChannelLabels().AddressToIndex( address, ChannelUnit() ); }
 
     LabelIndex&       ElementLabels()
                       { return mElementLabels; }
@@ -108,7 +108,7 @@ class SignalProperties
     // Convert a string-valued element address into a numeric index.
     // The address may be a label or a value in physical units.
     double            ElementIndex( const std::string& address ) const
-                      { return AddressToIndex( address, ElementLabels(), ElementUnit() ); }
+                      { return ElementLabels().AddressToIndex( address, ElementUnit() ); }
 
     PhysicalUnit&     ValueUnit( size_t ch = 0 );
     const PhysicalUnit& ValueUnit( size_t ch = 0 ) const
@@ -149,7 +149,6 @@ class SignalProperties
 
   private:
     void   InitMembers( size_t numChannels, size_t numElements );
-    double AddressToIndex( const std::string&, const LabelIndex&, const PhysicalUnit& ) const;
 
     EncodedString                      mName;
     LabelIndex                         mChannelLabels,

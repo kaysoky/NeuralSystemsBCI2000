@@ -27,9 +27,10 @@
 #ifndef BCI_ASSERT_H
 #define BCI_ASSERT_H
 
+#include "BCIException.h"
+
 #if BCIDEBUG
 
-#include "BCIException.h"
 #define bciassert(x) { if( !bci::id_(x) ) throw std_logic_error( "Assertion failed: " << #x << "\n" ); }
 
 namespace bci

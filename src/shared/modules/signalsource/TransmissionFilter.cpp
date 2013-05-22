@@ -28,9 +28,8 @@
 #pragma hdrstop
 
 #include "TransmissionFilter.h"
-
-#include "defines.h"
-#include "BCIError.h"
+#include "IndexList.h"
+#include "BCIStream.h"
 
 #include <limits>
 
@@ -41,36 +40,37 @@ RegisterFilter( TransmissionFilter, 1.2 );
 TransmissionFilter::TransmissionFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
-    "Source:Online%20Processing list TransmitChList= 4 1 2 3 4 % % % "
-      "// list of transmitted channels",
+    "Source:Online%20Processing list TransmitChList= 1 * % % % "
+    "// list of transmitted channels: Channel names may contain * and ? wildcards, "
+    " and character ranges enclosed in []; wildcard patterns may be negated by an exclamation mark. "
+    " Ranges of channels may be specified using : or - to separate begin from end.",
   END_PARAMETER_DEFINITIONS
 }
 
 void TransmissionFilter::Preflight( const SignalProperties& Input,
                                           SignalProperties& Output ) const
 {
+  string TransmitChList = FlatParameter( "TransmitChList" );
+  IndexList idx( TransmitChList, Input.ChannelLabels() );
+  if( !idx.Errors().empty() )
+    bcierr << "Invalid TransmitChList: " << TransmitChList << ": " << idx.Errors();
+  else if( idx.Empty() )
+    bciwarn << "TransmitChList \"" << TransmitChList << "\" does not match any channel";
+
   Output = Input;
   Output.SetName( "Transmitted Channels" );
-  Output.SetChannels( Parameter( "TransmitChList" )->NumValues() );
-  for( int idxOut = 0; idxOut < Parameter( "TransmitChList" )->NumValues(); ++idxOut )
-  {
-    string addressIn = Parameter( "TransmitChList" )( idxOut );
-    int idxIn = static_cast<int>( Input.ChannelIndex( addressIn ) );
-    if( idxIn < 0 || idxIn >= Input.Channels() )
-      bcierr << "TransmitChList entry \"" << addressIn
-             << "\" is not a valid channel specification"
-             << endl;
-    else if( !Input.ChannelLabels().IsTrivial() )
-      Output.ChannelLabels()[ idxOut ] = Input.ChannelLabels()[ idxIn ];
-  }
+  Output.SetChannels( idx.Size() );
+  for( int idxOut = 0; idxOut < idx.Size(); ++idxOut )
+    Output.ChannelLabels()[idxOut] = Input.ChannelLabels()[static_cast<int>( idx[idxOut] )];
 }
 
 void TransmissionFilter::Initialize( const SignalProperties& Input,
                                      const SignalProperties& /*Output*/ )
 {
   mChannelList.clear();
-  for( int i = 0; i < Parameter( "TransmitChList" )->NumValues(); ++i )
-    mChannelList.push_back( static_cast<size_t>( Input.ChannelIndex( Parameter( "TransmitChList" )( i ) ) ) );
+  IndexList idx( FlatParameter( "TransmitChList" ), Input.ChannelLabels() );
+  for( int i = 0; i < idx.Size(); ++i )
+    mChannelList.push_back( static_cast<size_t>( idx[i] ) );
 }
 
 void TransmissionFilter::Process( const GenericSignal& Input,
@@ -81,3 +81,12 @@ void TransmissionFilter::Process( const GenericSignal& Input,
       Output( i, j ) = Input( mChannelList[ i ], j );
 }
 
+string
+TransmissionFilter::FlatParameter( const string& inName ) const
+{
+  ParamRef p = Parameter( inName );
+  string flat = p( 0 );
+  for( int i = 1; i < p->NumValues(); ++i )
+    flat += " " + string( p( i ) );
+  return flat;
+}

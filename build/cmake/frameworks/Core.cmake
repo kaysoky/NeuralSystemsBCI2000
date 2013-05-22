@@ -33,13 +33,14 @@ IF( USE_PRECOMPILED_HEADERS )
     IF( NOT EXISTS ${pchsrc_} )
       FILE( WRITE "${pchsrc_}" "#include \"${CORE_PCH}\"" )
     ENDIF()
+    SET( pchfile_ "$(OutDir)/$(TargetName)_Core.pch" )
     SET_SOURCE_FILES_PROPERTIES(
       ${pchsrc_} PROPERTIES
-      COMPILE_FLAGS "/Yc\"${CORE_PCH}\" /Fp\"$(TargetPath).pch\""
-      OBJECT_OUTPUTS "\"$(TargetPath).pch\""
+      COMPILE_FLAGS "/Yc\"${CORE_PCH}\" /Fp\"${pchfile_}\""
+      OBJECT_OUTPUTS "\"${pchfile_}\""
     )
     SET( CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} /Yu\"${CORE_PCH}\" /FI\"${CORE_PCH}\" /Fp\"$(TargetPath).pch\""
+      "${CMAKE_CXX_FLAGS} /Yu\"${CORE_PCH}\" /FI\"${CORE_PCH}\" /Fp\"${pchfile_}\""
     )
   ELSEIF( COMPILER_IS_GCC_COMPATIBLE )
     SET( pchsrc_ ${BCI2000_SRC_DIR}/shared/config/${CORE_PCH} )

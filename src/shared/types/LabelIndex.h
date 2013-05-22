@@ -31,8 +31,7 @@
 #include <map>
 #include <vector>
 #include "EncodedString.h"
-
-class PhysicalUnit;
+#include "PhysicalUnit.h"
 
 class LabelIndex
 {
@@ -59,6 +58,8 @@ class LabelIndex
   // A reverse lookup operator.
   const std::string& operator[]( size_t ) const;
   std::string& operator[]( size_t );
+  // More complex mapping.
+  double AddressToIndex( const std::string&, const PhysicalUnit& = PhysicalUnit() ) const;
   // Comparison.
   bool operator==( const LabelIndex& inL ) const
               { return mReverseIndex == inL.mReverseIndex; }
