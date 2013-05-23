@@ -35,6 +35,7 @@
 #include "ObserverSource.h"
 #include "ViewSource.h"
 #include "WildcardMatch.h"
+#include "IndexList.h"
 #include "BCIException.h"
 
 using namespace std;
