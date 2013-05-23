@@ -87,7 +87,7 @@ RegisterFilter( FILTER_NAME, 3 );
 
 #define FAIL(a) throw bciexception(a)
 
-EndUserError::EndUserError(const char* s) : BCIException(s) {}
+EndUserError::EndUserError(const char* s) : bci::Exception(s) {}
 
 stringstream DBSTRING;
 void _DB() {DBSTRING << " && pause"; string s = DBSTRING.str(), t = "echo ", u = t + s; system(u.c_str()); DBSTRING.str("");}
@@ -241,7 +241,7 @@ FILTER_NAME::FILTER_NAME()
   catch(EndUserError& e) {
     HandleEndUserError(e, "Construct");
   }
-  catch(BCIException& e) {
+  catch(bci::Exception& e) {
     HandleException(e, "Construct");
   }
 }
@@ -267,7 +267,7 @@ FILTER_NAME::~FILTER_NAME()
     catch(EndUserError& e) {
       HandleEndUserError(e, "Destruct");
     }
-    catch(BCIException& e) {
+    catch(bci::Exception& e) {
       HandleException(e, "Destruct");
     }
 #ifdef _WIN32
@@ -312,7 +312,7 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
   catch(EndUserError& e) {
     HandleEndUserError(e, "Preflight");
   }
-  catch(BCIException& e) {
+  catch(bci::Exception& e) {
     HandleException(e, "Preflight");
   }
 }
@@ -337,7 +337,7 @@ FILTER_NAME::Initialize( const SignalProperties& inSignalProperties,
   catch(EndUserError& e) {
     HandleEndUserError(e, "Initialize");
   }
-  catch(BCIException& e) {
+  catch(bci::Exception& e) {
     HandleException(e, "Initialize");
   }
 }
@@ -369,7 +369,7 @@ try {
     State("Running") = 0;
     HandleEndUserError(e, "Process");
   }
-  catch(BCIException& e) {
+  catch(bci::Exception& e) {
     State("Running") = 0;
     HandleException(e, "Process");
   }
@@ -394,7 +394,7 @@ FILTER_NAME::StartRun()
   catch(EndUserError& e) {
     HandleEndUserError(e, "StartRun");
   }
-  catch(BCIException& e) {
+  catch(bci::Exception& e) {
     HandleException(e, "StartRun");
   }
 }
@@ -412,7 +412,7 @@ FILTER_NAME::StopRun()
   catch(EndUserError& e) {
     HandleEndUserError(e, "StopRun");
   }
-  catch(BCIException& e) {
+  catch(bci::Exception& e) {
     HandleException(e, "StopRun");
   }
 }
@@ -431,7 +431,7 @@ FILTER_NAME::Resting()
   catch(EndUserError& e) {
     HandleEndUserError(e, "Resting");
   }
-  catch(BCIException& e) {
+  catch(bci::Exception& e) {
     HandleException(e, "Resting");
   }
 }
@@ -447,7 +447,7 @@ FILTER_NAME::Halt()
   catch(EndUserError& e) {
     HandleEndUserError(e, "Halt");
   }
-  catch(BCIException& e) {
+  catch(bci::Exception& e) {
     HandleException(e, "Halt");
   }
 }
@@ -851,7 +851,7 @@ FILTER_NAME::HandleEndUserError(EndUserError& e, std::string qualifier) const
 }
 
 void
-FILTER_NAME::HandleException(BCIException& e, std::string qualifier) const
+FILTER_NAME::HandleException(bci::Exception& e, std::string qualifier) const
 {
   UnblockThreads();
   DoubleErr(e.What().c_str(), qualifier.c_str(), true);

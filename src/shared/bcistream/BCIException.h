@@ -108,6 +108,4 @@ namespace bci {
   };
 } // namespace bci
 
-typedef bci::Exception BCIException;
-
-#endif // BCI_EXCEPTION_H
+typedef bci::Exception BCIException;#endif // BCI_EXCEPTION_H

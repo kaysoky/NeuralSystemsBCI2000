@@ -78,7 +78,7 @@
 #endif
 
 
-class EndUserError : public BCIException {
+class EndUserError : public bci::Exception {
   public:
     EndUserError(const char* s);
 };
@@ -132,7 +132,7 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 
     void        DoubleErr(const char *msg, const char *qualifier=NULL, bool notify_restart=false) const;
     void        HandleEndUserError(EndUserError& e, std::string qualifier) const;
-    void        HandleException(BCIException& e, std::string qualifier) const;
+    void        HandleException(bci::Exception& e, std::string qualifier) const;
     void        ChangeDir(std::string& d);
     void        OpenConsole(const char *title);
 

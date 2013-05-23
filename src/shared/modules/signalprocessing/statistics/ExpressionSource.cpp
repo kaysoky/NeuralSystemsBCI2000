@@ -141,7 +141,7 @@ ExpressionSource::MemberFunction( const std::string& inObject, const std::string
       args.insert( args.begin(), pObserverNode );
       pFunction = FunctionSource::NewFunctionSource( inName, args, mDataIndex );
     }
-    catch( const BCIException& e )
+    catch( const bci::Exception& e )
     {
       Errors() << e.What() << endl;
     }

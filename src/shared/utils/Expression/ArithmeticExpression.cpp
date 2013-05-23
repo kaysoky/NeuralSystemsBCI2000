@@ -141,7 +141,7 @@ ArithmeticExpression::DoEvaluate()
     for( size_t i = 0; i < mStatements.size(); ++i )
       result = mStatements[i]->Evaluate();
   }
-  catch( const BCIException& e )
+  catch( const bci::Exception& e )
   {
     Errors() << e.What() << endl;
   }
@@ -311,7 +311,7 @@ ArithmeticExpression::Parse()
   {
     ExpressionParser::yyparse( this );
   }
-  catch( const BCIException& e )
+  catch( const bci::Exception& e )
   {
     Errors() << e.What() << endl;
   }

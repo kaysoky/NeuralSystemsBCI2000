@@ -829,7 +829,7 @@ STDCALL BCI_AddWatch( const char* inExprs )
     Watch* p = new ExpressionWatch( exprs, *spWatchInterpreter, "", BCI_NumEvents );
     watchID = p->ID();
   }
-  catch( const BCIException& e )
+  catch( const bci::Exception& e )
   {
     bcierr << e.What();
   }

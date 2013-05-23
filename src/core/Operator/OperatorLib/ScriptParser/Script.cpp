@@ -91,7 +91,7 @@ Script::Execute( class CommandInterpreter& inInterpreter )
     if( mpRootNode )
       mpRootNode->Execute( inInterpreter );
   }
-  catch( const BCIException& e )
+  catch( const bci::Exception& e )
   {
     ReportError( e.What() );
   }

@@ -57,7 +57,7 @@
 # define PYTHON_CLASS "Bci2000PyffAdapter"
 #endif
 
-class EndUserError : public BCIException {
+class EndUserError : public bci::Exception {
   public:
     EndUserError(const char* s);
 };

@@ -141,7 +141,7 @@ void RunTests()
         );
     }
   }
-  catch( const BCIException& e )
+  catch( const bci::Exception& e )
   {
     string kind = pCase < sNegativeCases ? "positive" : "negative";
     throw bciexception(
@@ -154,7 +154,7 @@ void RunTests()
     bool thrown = false;
     try
     { ExtWildcardMatch( pCase->pattern, pCase->match ); }
-    catch( const BCIException& )
+    catch( const bci::Exception& )
     { thrown = true; }
     if( !thrown )
       throw bciexception(

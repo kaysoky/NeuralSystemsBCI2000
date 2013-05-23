@@ -167,7 +167,7 @@ ConnectorInput::Process( const GenericSignal& Input, GenericSignal& Output )
       }
     }
   }
-  catch( const BCIException& e )
+  catch( const bci::Exception& e )
   {
     bciout << e.What() << endl;
   }

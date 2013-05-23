@@ -39,7 +39,7 @@ using namespace std;
 
 RegisterFilter( FILTER_NAME, 3 );
 
-EndUserError::EndUserError(const char* s) : BCIException(s) {}
+EndUserError::EndUserError(const char* s) : bci::Exception(s) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implementations of the usual GenericFilter virtual methods

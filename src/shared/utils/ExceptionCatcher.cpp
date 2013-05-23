@@ -167,11 +167,11 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
   {
     inRunnable.Run();
   }
-  catch( const BCIException& e )
+  catch( const bci::Exception& e )
   {
     message = e.What() + e.Where() + UserMessage();
   }
-  catch( const exception& e )
+  catch( const std::exception& e )
   {
     message = "Unhandled exception of type "
               + bci::ClassName( typeid( e ) )

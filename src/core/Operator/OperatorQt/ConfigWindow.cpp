@@ -43,6 +43,7 @@
 #include "Preferences.h"
 #include "ParamList.h"
 #include "ShowParameters.h"
+#include "FileUtils.h"
 #include "ExecutableHelp.h"
 
 using namespace std;
@@ -342,23 +343,24 @@ ConfigWindow::LoadParameters( const QString& inName )
   QString fileExtension = QFileInfo( inName ).suffix();
   if( fileExtension == "dat" )
   {
-    QTemporaryFile temp;
-    if( temp.open() )
+    BCI2000FileReader file( inName.toLocal8Bit().constData() );
+    if( file.IsOpen() )
     {
-        BCI2000FileReader file( inName.toLocal8Bit().constData() );
-        if( file.IsOpen() )
-            file.Parameters()->Save( temp.fileName().toLocal8Bit().constData() );
-        // do not import non-existing parameters
-        result = paramsFromFile.Load( temp.fileName().toLocal8Bit().constData(), false );
+      FileUtils::TemporaryFile temp;
+      file.Parameters()->Save( temp.Name() );
+      result = paramsFromFile.Load( temp.Name(), false );
     }
   }
   else
     result = paramsFromFile.Load( inName.toLocal8Bit().constData(), false );
 
   for( int i = 0; i < paramsFromFile.Size(); ++i )
-    if( 0 == OperatorUtils::GetFilterStatus( paramsFromFile[ i ].Name().c_str(), OperatorUtils::loadFilter ) )
-      ( *mpParameters )[ paramsFromFile[ i ].Name() ].AssignValues( paramsFromFile[ i ] );
-
+  {
+    Param& p = ( *mpParameters )[paramsFromFile[i].Name()];
+    if( !p.Readonly() &&
+         0 == OperatorUtils::GetFilterStatus( p.Name().c_str(), OperatorUtils::loadFilter ) )
+      p.AssignValues( paramsFromFile[i] );
+  }
   return  result;
 }
 
