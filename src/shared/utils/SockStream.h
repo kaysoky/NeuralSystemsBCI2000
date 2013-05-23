@@ -131,11 +131,7 @@ class streamsock
   protected:
     SOCKET  m_handle;
     bool    m_listening;
-    union address_
-    {
-      struct sockaddr sa;
-      struct sockaddr_in sa_in;
-    } m_address;
+    sockaddr_in m_address;
 
   // static members
   private:

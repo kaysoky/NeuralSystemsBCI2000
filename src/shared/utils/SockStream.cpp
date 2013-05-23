@@ -172,9 +172,9 @@ streamsock::set_address( const std::string& inIP, unsigned short inPort )
 {
   bool result = true;
   ::memset( &m_address, 0, sizeof( m_address ) );
-  m_address.sa_in.sin_family = AF_INET;
-  m_address.sa_in.sin_port = htons( inPort );
-  in_addr& addr = m_address.sa_in.sin_addr;
+  m_address.sin_family = AF_INET;
+  m_address.sin_port = htons( inPort );
+  in_addr& addr = m_address.sin_addr;
   if( inIP == "*" ) // A "*" as IP address means "any local address" (for bind() ).
     addr.s_addr = INADDR_ANY;
   else
@@ -233,8 +233,8 @@ streamsock::local_addresses()
 void
 streamsock::update_address()
 {
-  socklen_t addr_size = sizeof( m_address.sa );
-  if( SOCKET_ERROR == ::getsockname( m_handle, &m_address.sa, &addr_size ) )
+  socklen_t addr_size = sizeof( m_address );
+  if( SOCKET_ERROR == ::getsockname( m_handle, (sockaddr*)&m_address, &addr_size ) )
     close();
 }
 
@@ -243,7 +243,7 @@ streamsock::ip() const
 {
   if( m_handle == INVALID_SOCKET )
     return "<N/A>";
-  return ::inet_ntoa( m_address.sa_in.sin_addr );
+  return ::inet_ntoa( m_address.sin_addr );
 }
 
 int
@@ -251,7 +251,7 @@ streamsock::port() const
 {
   if( m_handle == INVALID_SOCKET )
     return -1;
-  return ntohs( m_address.sa_in.sin_port );
+  return ntohs( m_address.sin_port );
 }
 
 string
@@ -472,7 +472,7 @@ server_tcpsocket::do_open()
                                                           reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
   if( success )
-    success = SOCKET_ERROR != ::bind( m_handle, &m_address.sa, sizeof( m_address.sa ) );
+    success = SOCKET_ERROR != ::bind( m_handle, (const sockaddr*)&m_address, sizeof( m_address ) );
   if( success )
     success = SOCKET_ERROR != ::listen( m_handle, 1 );
   if( success )
@@ -531,7 +531,7 @@ client_tcpsocket::do_open()
   if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_STREAM, IPPROTO_TCP ) ) )
     return;
 
-  if( SOCKET_ERROR == ::connect( m_handle, &m_address.sa, sizeof( m_address.sa ) ) )
+  if( SOCKET_ERROR == ::connect( m_handle, (const sockaddr*)&m_address, sizeof( m_address ) ) )
   {
     close();
     return;
@@ -546,7 +546,7 @@ receiving_udpsocket::do_open()
   if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) )
     return;
 
-  if( SOCKET_ERROR == ::bind( m_handle, &m_address.sa, sizeof( m_address.sa ) ) )
+  if( SOCKET_ERROR == ::bind( m_handle, (const sockaddr*)&m_address, sizeof( m_address ) ) )
   {
     close();
     return;
@@ -560,7 +560,7 @@ sending_udpsocket::set_socket_options()
   streamsock::set_socket_options();
   if( m_handle != INVALID_SOCKET )
   {
-    int val = !::strcmp( ::inet_ntoa( m_address.sa_in.sin_addr ), "255.255.255.255" ); // Broadcast address
+    int val = !::strcmp( ::inet_ntoa( m_address.sin_addr ), "255.255.255.255" ); // Broadcast address
     ::setsockopt( m_handle, SOL_SOCKET, SO_BROADCAST,
                         reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
@@ -573,12 +573,12 @@ sending_udpsocket::do_open()
   if( INVALID_SOCKET == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) )
       return;
 
-  address_ bind_addr = m_address;
-  bind_addr.sa_in.sin_addr.s_addr = INADDR_ANY;
-  bind_addr.sa_in.sin_port = 0;
-  if( ( SOCKET_ERROR == ::bind( m_handle, &bind_addr.sa, sizeof( bind_addr ) ) )
+  sockaddr_in bind_addr = m_address;
+  bind_addr.sin_addr.s_addr = INADDR_ANY;
+  bind_addr.sin_port = 0;
+  if( ( SOCKET_ERROR == ::bind( m_handle, (const sockaddr*)&bind_addr, sizeof( bind_addr ) ) )
       ||
-      ( SOCKET_ERROR == ::connect( m_handle, &m_address.sa, sizeof( m_address.sa ) ) ) )
+      ( SOCKET_ERROR == ::connect( m_handle, (const sockaddr*)&m_address, sizeof( m_address ) ) ) )
   {
     close();
     return;
