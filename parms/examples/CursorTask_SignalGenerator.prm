@@ -1,9 +1,9 @@
-Source:Signal%20Properties int SourceCh= 4 16 1 % // number of digitized and stored channels
+Source:Signal%20Properties int SourceCh= 8 16 1 % // number of digitized and stored channels
 Source:Signal%20Properties int SampleBlockSize= 8 32 1 % // number of samples transmitted at a time
 Source:Signal%20Properties int SamplingRate= 256 256Hz 1 % // sample rate
-Source:Signal%20Properties list ChannelNames= 0 // list of channel names
-Source:Signal%20Properties floatlist SourceChOffset= 4 0 0 0 0 0 % % // Offset for channels in A/D units
-Source:Signal%20Properties floatlist SourceChGain= 4 0.008 0.008 0.008 0.008 0.003 % % // gain for each channel (A/D units -> muV)
+Source:Signal%20Properties list ChannelNames= 16 Ch1 Ch2 Ch3 Ch4 Ch5 Ch6 Ch7 Ch8 // list of channel names
+Source:Signal%20Properties floatlist SourceChOffset= 8 0 0 0 0 0 0 0 0 0 % % // Offset for channels in A/D units
+Source:Signal%20Properties floatlist SourceChGain= 8 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.003 % % // gain for each channel (A/D units -> muV)
 Storage:Data%20Location string DataDirectory= ../data ../data % % // path to top level data directory (directory)
 Storage:Session string SubjectName= test Name % % // subject alias
 Storage:Session string SubjectSession= 001 001 % % // three-digit session number
@@ -34,8 +34,9 @@ Source:Source%20Filter int HighPassFilter= 0 0 0 1 // Source high pass filter: 0
 Source:Alignment int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
 Source:Alignment floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
 Visualize:AlignmentFilter int VisualizeAlignment= 0 0 0 1 // visualize aligned channels (0=no, 1=yes) (boolean)
-Source:Online%20Processing intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels
+Source:Online%20Processing stringlist TransmitChList= 1 * 1 1 128 // list of transmitted channels
 Filtering:SpatialFilter matrix SpatialFilter= 4 4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 % % // columns represent input channels, rows represent output channels
+Filtering:SpatialFilter int SpatialFilterType= 0 // 
 Visualize:SpatialFilter int VisualizeSpatialFiltering= 0 0 0 1 // visualize spatially filtered signals (0=no 1=yes) (boolean)
 Filtering:ARFilter int WindowLength= 0.5s 0.5s % % // Time window for spectrum computation
 Filtering:ARFilter int Detrend= 0 0 0 2 // Detrend data? 0: no, 1: mean, 2: linear (enumeration)

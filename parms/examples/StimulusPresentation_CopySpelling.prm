@@ -33,7 +33,7 @@ Source:Notch%20Filter int NotchFilter= 0 0 0 2 // Power line notch filter: 0: di
 Source:Alignment int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
 Source:Alignment floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
 Visualize:AlignmentFilter int VisualizeAlignment= 0 0 0 1 // visualize aligned channels (0=no, 1=yes) (boolean)
-Source:Online%20Processing intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels
+Source:Online%20Processing stringlist TransmitChList= 1 1:4 1 1 128 // list of transmitted channels
 Filtering:SpatialFilter matrix SpatialFilter= 4 4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 % % // columns represent input channels, rows represent output channels
 Visualize:SpatialFilter int VisualizeSpatialFiltering= 0 0 0 1 // visualize spatially filtered signals (0=no 1=yes) (boolean)
 Filtering:P3TemporalFilter int EpochLength= 500ms 500ms 0 % // Length of data epoch from stimulus onset
