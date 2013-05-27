@@ -36,21 +36,22 @@ Show Window; Set title ${Extract file base $0}
 MaxIdx:=$1
 Echo Testing BCI2000 executables, ${MaxIdx+1} parameter files each.
 
-If Exists directory $DataDir/test
-  Echo Removing existing test data ...
-  ForceRemove directory $DataDir/test
+Set ResultDir $DataDir/test
+If Exists directory $ResultDir
+  Echo Removing existing test results ...
+  ForceRemove directory $ResultDir
 End
 
 Execute script ${TestingDir}/RunConfiguration SpectralSignalProcessing CursorTask $MaxIdx
 Execute script ${TestingDir}/RunConfiguration DummySignalProcessing StimulusPresentation $MaxIdx
 Execute script ${TestingDir}/RunConfiguration P3SignalProcessing P3Speller $MaxIdx
 
-If Execute script $TestingDir/ProcessTestData $DataDir/test $DataDir/ref
+If Execute script $TestingDir/ProcessTestData $ResultDir $DataDir/ref
   Echo Success.
   Set Success true
 Else
   Echo Executable test failed.
-  Echo See the *_Results.txt files for details.
+  Echo See the *_Results.txt files in $ResultDir for details.
   Set Success false
 End
 Exit $Success

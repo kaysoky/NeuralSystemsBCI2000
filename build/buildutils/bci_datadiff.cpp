@@ -39,6 +39,9 @@ int main( int argc, char *argv[] )
   // Welcome message
   cout << "bci_datadiff" << endl << "BCI2000 Project 2009-2013" << endl << endl;
 
+  if( argc > 1 && !::stricmp( argv[1], "-v" ) )
+    return 0;
+
   // User has no idea how to use the program.
   if ( argc < 3 )
   {

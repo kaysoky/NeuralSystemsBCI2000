@@ -45,7 +45,7 @@ const ctype<char>&
 Param::ct()
 {
   static const ctype<char>& _ct
-    = use_facet<ctype<char> >( std::locale() );
+    = use_facet<ctype<char> >( locale() );
   return _ct;
 }
 
@@ -123,10 +123,10 @@ Param::Param()
 // Parameters: self-explanatory
 // Returns:    N/A
 // **************************************************************************
-Param::Param( const std::string& inName, const std::string& inSection,
-              const std::string& inType, const std::string& inValue,
-              const std::string& inDefaultValue, const std::string& inLowRange,
-              const std::string& inHighRange, const std::string& inComment )
+Param::Param( const string& inName, const string& inSection,
+              const string& inType, const string& inValue,
+              const string& inDefaultValue, const string& inLowRange,
+              const string& inHighRange, const string& inComment )
 : mDefaultValue( inDefaultValue ),
   mLowRange( inLowRange ),
   mHighRange( inHighRange ),
@@ -148,7 +148,7 @@ Param::Param( const std::string& inName, const std::string& inSection,
 // Parameters: char *paramstring
 // Returns:    N/A
 // **************************************************************************
-Param::Param( const std::string& line )
+Param::Param( const string& line )
 : mChanged( false )
 {
   istringstream iss( line );
@@ -184,7 +184,7 @@ Param::SetNumValues( size_t inN )
 // Returns:    N/A
 // **************************************************************************
 Param&
-Param::SetSection( const std::string& s )
+Param::SetSection( const string& s )
 {
   if( mSections.empty() )
     mSections.push_back( s );
@@ -196,7 +196,7 @@ Param::SetSection( const std::string& s )
 }
 
 Param&
-Param::SetComment( const std::string& s )
+Param::SetComment( const string& s )
 {
   mChanged = true;
   mComment = s;
@@ -528,27 +528,15 @@ Param::ParamValue::Kind() const
 void
 Param::ParamValue::Assign( const ParamValue& p )
 {
-  if( p.mpString == NULL )
+  if( &p != this )
   {
+    Param* pt = mpParam;
+    mpParam = p.mpParam ? new Param( *p.mpParam ) : 0;
+
     delete mpString;
-    mpString = NULL;
-  }
-  else
-  {
-    EncodedString* temp = mpString;
-    mpString = new EncodedString( *p.mpString );
-    delete temp;
-  }
-  if( p.mpParam == NULL )
-  {
-    delete mpParam;
-    mpParam = NULL;
-  }
-  else
-  {
-    Param* temp = mpParam;
-    mpParam = new Param( *p.mpParam );
-    delete temp;
+    mpString = p.mpString ? new EncodedString( *p.mpString ) : 0;
+
+    delete pt; // defer deletion in case assignment is from a child
   }
 }
 
@@ -561,11 +549,13 @@ Param::ParamValue::Assign( const ParamValue& p )
 void
 Param::ParamValue::Assign( const string& s )
 {
-  EncodedString* temp = mpString;
-  mpString = new EncodedString( s );
-  delete temp;
-  delete mpParam;
-  mpParam = NULL;
+  if( &s != mpString )
+  {
+    delete mpString;
+    mpString = new EncodedString( s );
+    delete mpParam;
+    mpParam = NULL;
+  }
 }
 
 // **************************************************************************
@@ -577,11 +567,13 @@ Param::ParamValue::Assign( const string& s )
 void
 Param::ParamValue::Assign( const Param& p )
 {
-  Param* temp = mpParam;
-  mpParam = new Param( p );
-  delete temp;
-  delete mpString;
-  mpString = NULL;
+  if( &p != mpParam )
+  {
+    delete mpParam;
+    mpParam = new Param( p );
+    delete mpString;
+    mpString = NULL;
+  }
 }
 
 // **************************************************************************

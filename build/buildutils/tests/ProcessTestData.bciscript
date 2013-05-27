@@ -33,17 +33,30 @@ Echo Processing data files ...
 
 Set Success true
 Set CmdDir ${Canonical Path $BCI2000LAUNCHDIR/../tools/cmdline}
-For i in ${List directories $1}
-  For j in ${List files $1/$i *.dat}
-    Echo " $j"
-    Echo "  Preprocessing ..."
-    Set File1 ${Canonical path "$1/$i/$j"}
-    Set File2 ${Canonical path "$2/$i/$j"}
-    System "$CmdDir/bci_dat2stream" --transmit-ds --raw < "$File1" | "$CmdDir/bci_stream2asc" > "$File1.tmp~"
-    System "$CmdDir/bci_dat2stream" --transmit-ds --raw < "$File2" | "$CmdDir/bci_stream2asc" > "$File2.tmp~"
-    Echo "  Comparing ..."
-    If not System "./bci_datadiff" "$File1.tmp~" "$File2.tmp~" "$j_Results.txt"
-      Set Success false
+
+Set ToStream "$CmdDir/bci_dat2stream"
+Set ToAsc "$CmdDir/bci_stream2asc"
+Set Diff "./bci_datadiff"
+For Exe in ${ToStream} ${ToAsc} ${Diff}
+  If not System "$Exe" -v
+    Echo "Error in $0: $Exe does not exist"
+    Set Success false
+  End
+End
+
+If $Success
+  For i in ${List directories $1}
+    For j in ${List files $1/$i *.dat}
+      Echo " $j"
+      Echo "  Preprocessing ..."
+      Set File1 ${Canonical path "$1/$i/$j"}
+      Set File2 ${Canonical path "$2/$i/$j"}
+      System "$ToStream" --transmit-ds --raw < "$File1" | "$ToAsc" > "$File1.tmp~"
+      System "$ToStream" --transmit-ds --raw < "$File2" | "$ToAsc" > "$File2.tmp~"
+      Echo "  Comparing ..."
+      If not System "${Diff}" "$File1.tmp~" "$File2.tmp~" "$1/$j_Results.txt"
+        Set Success false
+      End
     End
   End
 End

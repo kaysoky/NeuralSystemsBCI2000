@@ -53,10 +53,7 @@ IntToString( int inNumber, int inWidth )
 static int
 StringToInt( const string& inString )
 {
-  int result = 0;
-  istringstream iss( inString );
-  iss >> result;
-  return result;
+  return ::atoi( inString.c_str() );
 }
 
 RunManager::RunManager()
@@ -128,7 +125,7 @@ RunManager::DataDirectory( ParamList& inParams )
   Param& session = inParams["SubjectSession"];
   session.Value() = IntToString( StringToInt( session.Value() ), 3 );
   Param& run = inParams["SubjectRun"];
-  run.Value() = IntToString( StringToInt( run.Value() ), 3 );
+  run.Value() = IntToString( StringToInt( run.Value() ), 2 );
 
   string path = inParams["DataDirectory"].Value();
   if( !IsAbsolutePath( path ) )
