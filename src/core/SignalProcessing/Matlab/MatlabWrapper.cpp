@@ -30,7 +30,7 @@
 
 #include "MatlabWrapper.h"
 #include "OSError.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 
 #include <sstream>
 
@@ -415,20 +415,12 @@ MatlabEngine::PutMxArray( const string& inExp, const mxArray* inArray )
 bool
 MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProcNames )
 {
-  void* dllHandle = 0;
-  try
-  {
-    dllHandle = ::LoadLibrary( inName );
-  }
-  catch( ... )
-  {}
-
-  bool success = true;
+  bool success = false;
+  void* dllHandle = ::LoadLibraryA( inName );
   if( !dllHandle )
   {
-    success = false;
-    bcierr << "Could not load library " << inName << ":\n"
-           << OSError().Message() << endl;
+    string msg = OSError().Message();
+    bcierr << "Could not load library \"" << inName << "\": " << msg;
   }
   else
   {
@@ -437,14 +429,13 @@ MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProc
       void* address = ( void* )::GetProcAddress( ( HMODULE )dllHandle, inProcNames[ i ].mName );
       if( !address )
       {
-        success = false;
-        bcierr << "Could not get address of " << inProcNames[ i ].mName << ":\n"
-               << OSError().Message() << endl;
+        string msg = OSError().Message();
+        bcierr << "Could not get address of \"" << inProcNames[ i ].mName << "\": " << msg;
       }
       *reinterpret_cast<void**>( inProcNames[ i ].mProc ) = address;
     }
   }
-  return success;
+  return bcierr__.Empty();
 }
 #endif // _WIN32
 

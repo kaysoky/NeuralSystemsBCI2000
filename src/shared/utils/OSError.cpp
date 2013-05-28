@@ -53,7 +53,7 @@ OSError::Message() const
     NULL,
     mCode,
     MAKELANGID( LANG_ENGLISH, SUBLANG_DEFAULT ),
-    reinterpret_cast<char*>( *pMessage ),
+    reinterpret_cast<char*>( &pMessage ),
     0,
     NULL
   );
@@ -63,5 +63,7 @@ OSError::Message() const
     ::LocalFree( pMessage );
   }
 #endif // _WIN32
+  while( !mMessage.empty() && ::isspace( *mMessage.rbegin() ) )
+    mMessage = mMessage.substr( 0, mMessage.length() - 1 );
   return mMessage.c_str();
 }
