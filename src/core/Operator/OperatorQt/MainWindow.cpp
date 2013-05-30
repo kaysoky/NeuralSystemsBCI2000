@@ -319,9 +319,18 @@ MainWindow::UpdateDisplay()
   for( int i = 0; i < nStatusLabels - 1; ++i )
   {
     const char* p = BCI_GetCoreModuleStatus( i );
-    if( mpStatusLabels[ i + 1 ]->text() != p )
-      mpStatusLabels[ i + 1 ]->setText( p );
+    QString s( p );
     BCI_ReleaseObject( p );
+
+    const int maxLines = 2;
+    int lines = 0, pos = 0;
+    while( pos >= 0 && lines++ < maxLines )
+      pos = s.indexOf( '\n', pos + 1 );
+    if( pos >= 0 )
+      s.truncate( pos );
+
+    if( mpStatusLabels[i + 1]->text() != s )
+      mpStatusLabels[i + 1]->setText( s );
   }
 
   QString runSystemCaption = "Start";
