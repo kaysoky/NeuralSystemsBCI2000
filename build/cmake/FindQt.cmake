@@ -32,9 +32,15 @@ IF( NOT USE_EXTERNAL_QT )
   ENDIF()
   IF( qtarch_ AND qtcc_ )
     SET( qtdir_ "${qtarch_}-${qtcc_}" )
-    IF( NOT EXISTS ${BCI2000_SRC_DIR}/extlib/qt/${qtdir_} )
-      MESSAGE( "-- Extracting BCI2000-specific version of qt" )
-      EXECUTE_PROCESS( COMMAND ${BCI2000_SRC_DIR}/extlib/qt.${qarch_}.exe -y -o. )
+    IF( NOT EXISTS "${BCI2000_SRC_DIR}/extlib/qt/${qtdir_}" )
+      MESSAGE( STATUS "Extracting BCI2000-specific version of Qt (this may take some time)..." )
+      EXECUTE_PROCESS(
+        COMMAND "${BCI2000_SRC_DIR}/extlib/qt.${qtarch_}.exe" -y "-o${BCI2000_SRC_DIR}/extlib"
+        RESULT_VARIABLE sfxresult_
+      )
+      IF( NOT sfxresult_ EQUAL 0 )
+        MESSAGE( FATAL_ERROR "Could not extract qt, error is: ${sfxresult_}" )
+      ENDIF()
     ENDIF()
     SET( qmake_ "${BCI2000_SRC_DIR}/extlib/qt/${qtdir_}/bin/qmake.exe" )
     IF( EXISTS ${qmake_} )
