@@ -212,16 +212,17 @@ vAmpDisplay::DisplayImpedances( int inID, const vector<float>& inImpedances )
   const int frame = 2;
   int idx[numRects];
   string labels[numRects];
-  for( size_t i = 0; i < inImpedances.size() - 1; ++i )
+  int numImps = static_cast<int>( inImpedances.size() );
+  for( int i = 0; i < numImps - 1; ++i )
   {
     idx[i] = i;
     ostringstream oss;
     oss << " Ch " << i + 1 << ": ";
     labels[i] = oss.str();
   }
-  for( int i = inImpedances.size() - 1; i < numRects - 1; ++i )
+  for( int i = numImps - 1; i < numRects - 1; ++i )
     idx[i] = -1;
-  idx[numRects - 1] = inImpedances.size() - 1;
+  idx[numRects - 1] = numImps - 1;
   labels[numRects - 1] = " Ref: ";
 
   p->setFont( QFont( "Helvetica", 14, QFont::Bold ) );

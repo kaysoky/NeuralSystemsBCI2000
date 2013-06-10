@@ -137,17 +137,17 @@ bioutils::GetBioRadioRangeValue(int range)
 int
 bioutils::VRange2IndexOfRange(double vRange)
 {
-  int indexOfRange = ZERO;
+  size_t indexOfRange = 0;
   double range[] = {RANGE750uV, RANGE1p5mV, RANGE3mV, RANGE6mV, RANGE12mV, RANGE25mV, RANGE50mV, RANGE100mV};
 
-  for(size_t i = ZERO; i < sizeof(range)/sizeof(*range); ++i)
+  for(size_t i = 0; i < sizeof(range)/sizeof(*range); ++i)
     if(range[i] == vRange)
       {
         indexOfRange = i;
         break;
       }
 
-   return indexOfRange;
+   return static_cast<int>( indexOfRange );
 }
 
 // **************************************************************************

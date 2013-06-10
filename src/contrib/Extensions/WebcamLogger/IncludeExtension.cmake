@@ -2,17 +2,16 @@
 ## $Id: IncludeExtension.cmake 3069 2011-01-19 23:27:37Z jhill $
 ## Authors: jezhill@gmail.com
 
-IF( MSVC )
-	SET( OPENCV_LIBDIR
-		${BCI2000_SRC_DIR}/extlib/opencv/lib/msvc
-	)
-ELSEIF( MINGW )
-	SET( OPENCV_LIBDIR
-		${BCI2000_SRC_DIR}/extlib/opencv/lib/mingw
-	)
-ELSE()
-	MESSAGE( "**** WebcamLogger failed: opencv libraries not found for this platform" )
-	RETURN()
+IF( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+  IF( MSVC )
+    SET( OPENCV_LIBDIR ${BCI2000_SRC_DIR}/extlib/opencv/lib/msvc )
+  ELSEIF( MINGW )
+    SET( OPENCV_LIBDIR ${BCI2000_SRC_DIR}/extlib/opencv/lib/mingw )
+   ENDIF()
+ENDIF()
+IF( NOT OPENCV_LIBDIR )
+  MESSAGE( "**** WebcamLogger failed: opencv libraries not found for this platform" )
+  RETURN()
 ENDIF()
 
 SET( BCI2000_SIGSRCLIBS

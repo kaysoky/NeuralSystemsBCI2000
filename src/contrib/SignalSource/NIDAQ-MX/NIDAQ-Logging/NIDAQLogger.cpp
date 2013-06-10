@@ -364,7 +364,7 @@ NIDAQLogger::Publish()
 				string lParameter = "Source:NILogger int ";
 				lParameter.append(mDevs[1]);
 				lParameter.append("IVRanges= 0 0 0 ");
-				lParameter.append(IntToString((mRanges.size()/2)-1));
+				lParameter.append(IntToString(int((mRanges.size()/2)-1)));
 				lParameter.append(" // Support Input Voltage Ranges ");
 				for (int i = 0; i < (int)mRanges.size(); i += 2)
 				{

@@ -171,7 +171,7 @@ vAmpThread::vAmpThread(
 		}
 		if (mChList[ch] ==  (m_nEEGChannels + m_nAUXChannels))
 		{
-			mDigChs.insert(ch);
+			mDigChs.insert(int(ch));
 		}
 	}
     // Retrieves device properties.

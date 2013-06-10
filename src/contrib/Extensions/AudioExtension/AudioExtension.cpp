@@ -531,7 +531,7 @@ int AudioExtension::Execute()
       mInputFilter.Process( mAudioInputEnvelope, mAudioInputEnvelope );
       for( size_t chan = 0; chan < mInputEnvelopeFilter.size(); chan++ )
       {
-        GenericChannel channelData( mAudioInputEnvelope, chan );
+        GenericChannel channelData( mAudioInputEnvelope, static_cast<int>( chan ) );
         Rectify::FullWaveRectify( channelData, channelData );
         mInputEnvelopeFilter[chan].Process( channelData, channelData );
         unsigned short value = static_cast< unsigned short >( RootMeanSquare( channelData ) * 65535.0f );
@@ -560,7 +560,7 @@ int AudioExtension::Execute()
       mOutputFilter.Process( mAudioOutputEnvelope, mAudioOutputEnvelope );
       for( size_t chan = 0; chan < mOutputEnvelopeFilter.size(); chan++ )
       {
-        GenericChannel channelData( mAudioOutputEnvelope, chan );
+        GenericChannel channelData( mAudioOutputEnvelope, static_cast<int>( chan ) );
         Rectify::FullWaveRectify( channelData, channelData );
         mOutputEnvelopeFilter[chan].Process( channelData, channelData );
         unsigned short value = static_cast< unsigned short >( RootMeanSquare( channelData ) * 65535.0f );
@@ -640,7 +640,7 @@ void AudioExtension::StartRun()
   
   // Setup Input Recording
   SF_INFO audioRecInputInfo;
-  audioRecInputInfo.channels = mChannelDef.size();
+  audioRecInputInfo.channels = static_cast<int>( mChannelDef.size() );
   audioRecInputInfo.format = recordingFormat;
   audioRecInputInfo.samplerate = SAMPLE_RATE;
   if( ( int )Parameter( "AudioRecordInput" ) && mChannelDef.size() )
@@ -912,7 +912,7 @@ bool AudioExtension::KillStream()
 // Parameters: N/A
 // Returns:    true if error occurred, false if not.
 // **************************************************************************
-void AudioExtension::DesignFilterbank( const ParamRef &matrix, IIRFilter< FilterDesign::Real > &filter, int numCh ) const
+void AudioExtension::DesignFilterbank( const ParamRef &matrix, IIRFilter< FilterDesign::Real > &filter, size_t numCh ) const
 {
   if( matrix->NumColumns() != 4 )
     bcierr << "Filterbank Matrix \"" << matrix->Name() 

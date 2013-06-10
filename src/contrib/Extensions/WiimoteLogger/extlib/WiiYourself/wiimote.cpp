@@ -2481,7 +2481,7 @@ bool wiimote::Load16bitMonoSampleWAV (const TCHAR* filepath, wiimote_sample &out
 				goto corrupt_file;
 
 			// grab the data
-			unsigned total_samples = chunk_header.ckSize / wf.x.nBlockAlign;
+			size_t total_samples = chunk_header.ckSize / wf.x.nBlockAlign;
 			if(total_samples == 0)
 				goto corrupt_file;
 			

@@ -84,14 +84,13 @@ class vAmpThread : public OSThread
 
     int   mBlockSize,
           mTimeout,
-          mBufSize,
           mNumPoints,
-          mWriteCursor,
-          mReadCursor,
           mRingBufferSize,
           mDecimate,
           mNumChannels,
           mImpInitState; // contains the feedback value from Impedance initialisation
+    size_t mBufSize,
+           mReadCursor, mWriteCursor;
     float mSampleRate;
     unsigned short mPrevTime;
     std::ostringstream mLastErr,

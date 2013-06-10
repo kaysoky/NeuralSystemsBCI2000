@@ -95,7 +95,7 @@ InitBase64()
 {
   for( size_t i = 0; i < sizeof( cInvBase64 ); ++i )
     cInvBase64[i] = 255;
-  for( size_t i = 0; i < sizeof( cBase64 ); ++i )
+  for( uint8_t i = 0; i < sizeof( cBase64 ); ++i )
     cInvBase64[cBase64[i]] = i;
   return 0;
 }

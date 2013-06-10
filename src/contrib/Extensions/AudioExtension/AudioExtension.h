@@ -60,7 +60,7 @@ class AudioExtension : public EnvironmentExtension, public OSThread
   void LoadMixer( const ParamRef &matrix, ExpressionMatrix &mixer,
     ChannelDef &channelDef, int audioIns, int audioOuts, int fileIns ) const;
   void EvaluateMixer( ExpressionMatrix &mixer, std::vector< std::vector< float > > &gainMatrix ) const;
-  void DesignFilterbank( const ParamRef &matrix, IIRFilter< FilterDesign::Real > &filter, int numCh ) const;
+  void DesignFilterbank( const ParamRef &matrix, IIRFilter< FilterDesign::Real > &filter, size_t numCh ) const;
   bool KillStream();
   
   // Static audio callback
@@ -78,8 +78,8 @@ class AudioExtension : public EnvironmentExtension, public OSThread
                                      mAudioInputEnvelope,
                                      mAudioOutputEnvelope;
   
-  unsigned int                       mFrameCount;
-  size_t                             mFramesPerBuffer,
+  unsigned int                       mFrameCount,
+                                     mFramesPerBuffer,
                                      mMaxInputEnvelopes,
                                      mMaxOutputEnvelopes;
   

@@ -160,7 +160,7 @@ NIDAQFilter::NIDAQFilter()
 				string lParameter = "Filtering:NIFilter int ";
 				lParameter.append(mDevs[1]);
 				lParameter.append("OVRanges= 0 0 0 ");
-				lParameter.append(IntToString((mRanges.size()/2)-1));
+				lParameter.append(IntToString(int((mRanges.size()/2)-1)));
 				lParameter.append(" // Support Output Voltage Ranges ");
 				for (int i = 0; i < (int)mRanges.size(); i += 2)	// 1: 0.0<->5.0 , for example
 				{

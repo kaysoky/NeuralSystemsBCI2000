@@ -410,7 +410,7 @@ Module::TypeLibKeyExists( RedirectionType inWhere, bool inRemove )
   bool result = true;
   wchar_t key[MAX_PATH] = L"TypeLib\\";
   size_t len = ::wcslen( key );
-  if( ::StringFromGUID2( pLibAttr->guid, key + len, MAX_PATH - len ) )
+  if( ::StringFromGUID2( pLibAttr->guid, key + len, static_cast<int>( MAX_PATH - len ) ) )
   {
     len = ::wcslen( key );
     if( 0 < ::_snwprintf( key + len, MAX_PATH - len, L"\\%d.%d", pLibAttr->wMajorVerNum, pLibAttr->wMinorVerNum ) )

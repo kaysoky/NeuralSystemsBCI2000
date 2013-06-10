@@ -120,6 +120,7 @@ IF(MSVC)
     /FIC99Defs.h
     /FIPOSIXDefs.h
     /wd4244 # conversion: possible loss of data
+    /wd4267 # assignment: possible loss of data
     /wd4305 # truncation
   )
 ENDIF()

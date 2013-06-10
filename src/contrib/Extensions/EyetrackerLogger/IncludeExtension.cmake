@@ -3,29 +3,25 @@
 ## Authors: jezhill@gmail.com, griffin.milsap@gmail.com
 
 IF( NOT WIN32 )
-	MESSAGE( "**** EyetrackerLogger failed: tet.dll and ttime.dll not found for this platform" )
-	RETURN()
+  MESSAGE( "**** EyetrackerLogger failed: tet.dll and ttime.dll not found for this platform" )
+  RETURN()
 ENDIF()
 
-IF( MSVC OR MINGW )
-	SET( TOBII_LIB_DIR  ${BCI2000_EXTENSION_DIR}/extlib/lib/msvc )
-	SET( BCI2000_SIGSRCLIBS
-	   ${BCI2000_SIGSRCLIBS}
-	   "${TOBII_LIB_DIR}/cv.lib"
-	   "${TOBII_LIB_DIR}/tet.lib"
-	   "${TOBII_LIB_DIR}/ttime.lib"
-	)
-ELSEIF( BORLAND )
-	SET( TOBII_LIB_DIR  ${BCI2000_EXTENSION_DIR}/extlib/lib/borland )
-	SET( BCI2000_SIGSRCLIBS
-	   ${BCI2000_SIGSRCLIBS}
-	   "${TOBII_LIB_DIR}/cv_omf.lib"
-	   "${TOBII_LIB_DIR}/tet_omf.lib"
-	   "${TOBII_LIB_DIR}/ttime_omf.lib"
-	)
-ELSE( )
-	MESSAGE( "**** EyetrackerLogger failed: tobii libraries (cv, tet, ttime) are not found for this platform/compiler" )
-	RETURN()
+IF( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+  IF( MSVC OR MINGW )
+    SET( TOBII_LIB_DIR  ${BCI2000_EXTENSION_DIR}/extlib/lib/msvc )
+    SET( BCI2000_SIGSRCLIBS
+       ${BCI2000_SIGSRCLIBS}
+       "${TOBII_LIB_DIR}/cv.lib"
+       "${TOBII_LIB_DIR}/tet.lib"
+       "${TOBII_LIB_DIR}/ttime.lib"
+    )
+  ENDIF()
+ENDIF()
+
+IF( NOT TOBII_LIB_DIR )
+  MESSAGE( "**** EyetrackerLogger failed: tobii libraries (cv, tet, ttime) are not found for this platform/compiler" )
+  RETURN()
 ENDIF()
 
 SET( BCI2000_SIGSRCLIBS
