@@ -3,6 +3,17 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Find Qt4
 
+FUNCTION( CLEAR_QT_VARIABLES )
+
+  GET_CMAKE_PROPERTY( vars VARIABLES )
+  FOREACH( var ${vars} )
+    IF( var MATCHES "QT_.*" )
+      UNSET( ${var} CACHE )
+    ENDIF()
+  ENDFOREACH()
+
+ENDFUNCTION()
+
 
 FUNCTION( DOWNLOAD_EXTRACT_QT qtver arch qmake )
 
@@ -13,6 +24,7 @@ FUNCTION( DOWNLOAD_EXTRACT_QT qtver arch qmake )
   FILE( REMOVE "${qttemp}" )
   IF( NOT EXISTS "${qtdir}/${arch}" )
 
+    CLEAR_QT_VARIABLES()
     MESSAGE( STATUS "Checking availability of qt-${qtver}.${arch} ..." )
     FILE( DOWNLOAD "${qturl}" "${qttemp}" TIMEOUT 20 INACTIVITY_TIMEOUT 300 STATUS result SHOW_PROGRESS )
     IF( NOT result EQUAL 0 )
@@ -79,17 +91,6 @@ FUNCTION( GET_QT_FROM_SERVER qtver )
 ENDFUNCTION()
 
 
-FUNCTION( CLEAR_QT_VARIABLES )
-
-  GET_CMAKE_PROPERTY( vars VARIABLES )
-  FOREACH( var ${vars} )
-    IF( var MATCHES "QT_.*" )
-      UNSET( ${var} CACHE )
-    ENDIF()
-  ENDFOREACH()
-
-ENDFUNCTION()
-
 ## Main
 
 IF( USE_EXTERNAL_QT AND QT_BCI2000 )
@@ -110,7 +111,7 @@ IF( QT_BCI2000 )
     OFF
   )
 ELSE()
-  SET( USE_EXTERNAL_QT ON )
+  SET( USE_EXTERNAL_QT ON CACHE INTERNAL "" FORCE )
 ENDIF()
 
 FIND_PACKAGE( Qt4 REQUIRED )
