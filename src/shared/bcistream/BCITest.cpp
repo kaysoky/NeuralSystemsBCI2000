@@ -64,17 +64,17 @@ Test::Test( const string& inName )
 }
 
 ostream&
-Test::FailStream( const char* inFile, int inLine )
+Test::FailStream_( const char* inFile, int inLine )
 {
   return mFailStream << mDesc << " failed in " << inFile << ", line " << inLine << ":\n";
 }
 
 bool
-Test::Run( FailHandler inHandler )
+Test::Run_( FailHandler_ inHandler )
 {
   mFailStream.clear();
   mFailStream.str( "" );
-  OnRun();
+  OnRun_();
   mFailStream.flush();
   string s = mFailStream.str();
   if( !s.empty() )
@@ -88,7 +88,7 @@ Test::Run( FailHandler inHandler )
 }
 
 int
-Test::Parse( int argc, char** argv, bool exitIfFound )
+Test::Parse_( int argc, char** argv, bool exitIfFound )
 {
   bool found = false;
   for( int i = 0; !found && i < argc; ++i )
@@ -104,14 +104,14 @@ Test::Parse( int argc, char** argv, bool exitIfFound )
   int result = 0;
   if( found )
   {
-    result = RunTests();
+    result = RunAll_();
     if( exitIfFound )
       ::exit( result );
   }
   return result;
 }
 
-Test::RunTests::RunTests( Test::FailHandler inHandler )
+Test::RunAll_::RunAll_( Test::FailHandler_ inHandler )
 : failures( 0 )
 {
 #if DISABLE_BCITEST
@@ -123,7 +123,7 @@ Test::RunTests::RunTests( Test::FailHandler inHandler )
   failures = -1;
 #else // DISABLE_BCITEST
   for( size_t i = 0; i < sTests.size(); ++i )
-    if( !Test::sTests[i]->Run( inHandler ) )
+    if( !Test::sTests[i]->Run_( inHandler ) )
       ++failures;
 #endif // DISABLE_BCITEST
 }

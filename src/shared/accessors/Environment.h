@@ -42,7 +42,7 @@
 #include "State.h"
 #include "StateList.h"
 #include "StateRef.h"
-#include "BCIError.h"
+#include "BCIError.h" // no "BCIStream.h" here to avoid breaking existing filters
 #include "BCIException.h"
 #include "ClassName.h"
 #include "OSThreadLocal.h"
@@ -303,11 +303,18 @@ class EnvironmentBase
                               double defaultValue ) const;
   static std::string DescribeValue( const Param&, size_t index1, size_t index2 );
 
+  typedef std::set<std::string, Param::NameCmp> NameSet;
+
+  bool AutoConfig_( bool );
+  #define AutoConfig_
+
  private:
-  void ParamAccess( const std::string& name ) const;
+  Param* ParamAccess( const std::string& name, bool optional = false ) const;
   virtual void OnParamAccess( const std::string& name ) const {}
 
-  Param mDefaultParam;
+  bool mAutoConfig;
+  mutable NameSet mAutoConfigParams;
+  mutable ParamList mTemporaryParams;
 
  protected:
   // A macro/function combination for convenient formulation of parameter checks.
@@ -395,7 +402,6 @@ class EnvironmentBase
   static ExtensionsContainer& ExtensionsPublished();
 
  protected:
-  typedef std::set<std::string, Param::NameCmp> NameSet;
   static NameSet& ParamsRangeChecked();
 
   typedef std::map<const EnvironmentBase*, NameSet> NameSetMap;
@@ -406,8 +412,7 @@ class EnvironmentBase
 
  private:
   static ExecutionPhase phase_;
-  // No direct use of the phase_ member, please.
-  #define phase_        (void)
+  #define phase_ (void) // No direct use of the phase_ member, please.
 
  private:
   int mInstance;

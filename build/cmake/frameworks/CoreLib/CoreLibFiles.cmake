@@ -36,6 +36,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/utils/EnvVariable.cpp
   ${BCI2000_SRC_DIR}/shared/utils/DylibImports.cpp
   ${BCI2000_SRC_DIR}/shared/utils/IndexList.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Debugging.cpp
 
   ${BCI2000_SRC_DIR}/shared/utils/FPExceptMask.h
   ${BCI2000_SRC_DIR}/shared/utils/Lockable.h
@@ -84,11 +85,17 @@ SET( SRC_BCI2000_FRAMEWORK
 
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream.cpp
   ${BCI2000_SRC_DIR}/shared/bcistream/BCITest.cpp
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.h
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.cpp
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIAssert.h
 
   ${BCI2000_SRC_DIR}/shared/fileio/RunManager.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/RunManager.h
 
   ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.cpp
 )
+
+IF( WIN32 )
+  SET( SRC_BCI2000_FRAMEWORK
+    ${SRC_BCI2000_FRAMEWORK}
+    ${BCI2000_SRC_DIR}/shared/utils/SerialStream.cpp
+  )
+ENDIF()

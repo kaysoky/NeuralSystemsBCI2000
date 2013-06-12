@@ -28,25 +28,28 @@
 
 #include "GenericADC.h"
 #include "SockStream.h"
+#include "NeuroscanProtocol.h"
 
 class NeuroscanADC : public GenericADC
 {
  public:
-               NeuroscanADC();
-  virtual      ~NeuroscanADC();
+  NeuroscanADC();
+  ~NeuroscanADC();
 
-  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
-  virtual void Initialize( const SignalProperties&, const SignalProperties& );
-  virtual void Process( const GenericSignal&, GenericSignal& );
-  virtual void Halt();
+  void AutoConfig( const SignalProperties& );
+  void Preflight( const SignalProperties&, SignalProperties& ) const;
+  void Initialize( const SignalProperties&, const SignalProperties& );
+  void Process( const GenericSignal&, GenericSignal& );
+  void Halt();
 
  private:
+  void AwaitResponse();
   template<typename T> void ReadData( GenericSignal& );
  
   client_tcpsocket mSocket;
   sockstream mServer;
+  NscBasicInfo mAcqSettings;
   int mEventChannels;
 };
 
 #endif // NeuroscanADCH
-

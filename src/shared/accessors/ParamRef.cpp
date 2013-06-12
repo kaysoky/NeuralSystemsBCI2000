@@ -80,3 +80,44 @@ ParamRef::operator()( const string& row_label, const string& col_label ) const
          col_idx = subParam->ColumnLabels()[ col_label ];
   return ParamRef( subParam, row_idx, col_idx );
 }
+
+ParamRef::Stream::Stream( Stream& s )
+: std::iostream( &mBuf ),
+  mpParam( s.mpParam ),
+  mIdx1( s.mIdx1 ),
+  mIdx2( s.mIdx2 )
+{
+  s.mpParam = 0;
+  s.flush();
+  mBuf.str( s.mBuf.str() );
+  seekg( s.tellg() );
+  seekp( s.tellp() );
+  copyfmt( s );
+  setstate( s.rdstate() );
+}
+
+ParamRef::Stream::Stream( const string& s )
+: std::iostream( &mBuf ),
+  mpParam( 0 ),
+  mIdx1( 0 ),
+  mIdx2( 0 )
+{
+  mBuf.str( s );
+}
+
+ParamRef::Stream::Stream( Param* p, int idx1, int idx2 )
+: std::iostream( &mBuf ),
+  mpParam( p ),
+  mIdx1( idx1 ),
+  mIdx2( idx2 )
+{
+}
+
+ParamRef::Stream::~Stream()
+{
+  if( mpParam )
+  {
+    flush();
+    mpParam->Value( mIdx1, mIdx2 ) = mBuf.str();
+  }
+}

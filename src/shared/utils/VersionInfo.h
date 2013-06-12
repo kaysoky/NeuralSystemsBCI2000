@@ -48,6 +48,9 @@ class VersionInfo : public VersionInfoBase
     Revision,
     SourceDate,
     BuildDate,
+    BuildType,
+    Compiler,
+    Build,
   };
   VersionInfo( const std::string& inString = "" );
   const std::string& operator[]( const std::string& s )

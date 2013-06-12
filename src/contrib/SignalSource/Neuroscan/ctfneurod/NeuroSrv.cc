@@ -82,6 +82,13 @@ NeuroSrv::SendEDFHeader( std::ostream& os )
   os.write( header.data(), header.length() ).flush();
 }
 
+void
+NeuroSrv::SendASTSetupFile( std::ostream& os )
+{
+  NscPacketHeader( 'FILE', SetupFile, 0, 0 ).WriteBinary( os );
+  os.flush();
+}
+
 int
 NeuroSrv::Run( int argc, const char* argv[] )
 {
@@ -93,14 +100,14 @@ NeuroSrv::Run( int argc, const char* argv[] )
 
   typedef void ( NeuroSrv::*MessageAction )( ostream& );
   map<NscPacketHeader, MessageAction> messageActions;
-/*messageActions[ NscPacketHeader( 'CTRL', ::GeneralControlCode,::RequestForVersion, 0 ) ]
+/*  messageActions[ NscPacketHeader( 'CTRL', ::GeneralControlCode,::RequestForVersion, 0 ) ]
     = &NeuroSrv::SendVersion;*/
   messageActions[ NscPacketHeader( 'CTRL', ::GeneralControlCode,::ClosingUp, 0 ) ]
     = &NeuroSrv::CloseConnection;
   messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestEDFHeader, 0 ) ]
     = &NeuroSrv::SendEDFHeader;
-/*messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestAstFile, 0 ) ]
-    = &NeuroSrv::SendASTSetupFile;*/
+  messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestAstFile, 0 ) ]
+    = &NeuroSrv::SendASTSetupFile;
   messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestBasicInfo, 0 ) ]
     = &NeuroSrv::SendBasicInfo;
   messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestStartData, 0 ) ]

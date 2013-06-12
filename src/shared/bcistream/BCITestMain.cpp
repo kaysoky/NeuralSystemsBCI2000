@@ -25,24 +25,10 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma hdrstop
 
-#if BCITEST_MAIN
-# undef main
-# include "BCITest.h"
-int main( int, char** )
-{
-  return bci::Test::RunTests();
-}
-#elif defined( main ) && ( main == bcitest_main_ )
-# include "BCITest.h"
-# define ACTUAL_MAIN_ main
-# undef main
-
-int ACTUAL_MAIN_( int, char** );
+#include "BCITest.h"
 
 int main( int argc, char** argv )
 {
-  if( bci::Test::Parse( argc, argv ) )
-    return bci::Test::RunTests();
-  return ACTUAL_MAIN_( argc, argv );
+  bci::Test::Parse_( argc, argv, true );
+  return bci::Test::RunAll_();
 }
-#endif // main

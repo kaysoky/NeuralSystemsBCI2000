@@ -60,13 +60,13 @@ class Blob
 };
 
 inline
-std::ostream& operator<<( const Blob& b, std::ostream& os )
+std::ostream& operator<<( std::ostream& os, const Blob& b )
 {
   return b.WriteToStream( os );
 }
 
 inline
-std::istream& operator>>( Blob& b, std::istream& is )
+std::istream& operator>>( std::istream& is, Blob& b )
 {
   return b.ReadFromStream( is );
 }

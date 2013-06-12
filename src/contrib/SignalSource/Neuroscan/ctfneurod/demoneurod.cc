@@ -22,9 +22,11 @@ class DemoNeuroSrv : public NeuroSrv
   DemoNeuroSrv( int, char** );
   int Run();
   
- private:
+ protected:
   virtual int SendData( std::ostream& );
+  virtual void SendASTSetupFile( std::ostream& );
 
+ private:
   int mRemArgc;
   char** mRemArgv;
 };
@@ -57,6 +59,17 @@ DemoNeuroSrv::Run()
   return NeuroSrv::Run( mRemArgc, const_cast<const char**>( mRemArgv ) );
 }
 
+void
+DemoNeuroSrv::SendASTSetupFile( std::ostream& os )
+{
+  char data[2049];
+  for( size_t i = 0; i < sizeof( data ) / sizeof( *data ); ++i )
+    data[i] = static_cast<char>( i );
+  NscPacketHeader( 'FILE', SetupFile, CtfDSFormat, sizeof( data ) ).WriteBinary( os );
+  os.write( data, sizeof( data ) );
+  os.flush();
+}
+
 int
 DemoNeuroSrv::SendData( std::ostream& os )
 {
@@ -73,7 +86,7 @@ DemoNeuroSrv::SendData( std::ostream& os )
     default:
       throw runtime_error( "unsupported value in mBasicInfo.DataDepth()" );
   }
-  NscPacketHeader( 'DATA', DataType_EegData, dataType, numBytes ).WriteBinary( os );
+  NscPacketHeader( HeaderIdData, DataType_EegData, dataType, numBytes ).WriteBinary( os );
   for( int i = 0; i < numBytes; ++i )
     os.put( i );
   os.flush();

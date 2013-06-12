@@ -30,6 +30,8 @@
 #include "ClassName.h"
 #include <limits>
 
+#undef AutoConfig_
+
 using namespace std;
 using namespace bci;
 
@@ -199,6 +201,16 @@ GenericFilter::CallPublish()
 }
 
 void
+GenericFilter::CallAutoConfig( const SignalProperties& Input )
+{
+  bool prev = AutoConfig_( true );
+  ErrorContext( "AutoConfig", this );
+  this->AutoConfig( Input );
+  ErrorContext( "" );
+  AutoConfig_( prev );
+}
+
+void
 GenericFilter::CallPreflight( const SignalProperties& Input,
                                     SignalProperties& Output ) const
 {
@@ -328,6 +340,10 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
   for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
   {
     currentFilter = *i;
+    int f = bcierr__.Flushes();
+    currentFilter->CallAutoConfig( *currentInput );
+    if( bcierr__.Flushes() > f )
+      return;
     SignalProperties currentOutput;
     currentFilter->CallPreflight( *currentInput, currentOutput );
     if( currentOutput.Name() == currentInput->Name()

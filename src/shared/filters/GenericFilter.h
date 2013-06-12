@@ -51,6 +51,15 @@ class GenericFilter : protected Environment, private Uncopyable
   // constructor. For greater flexibility, we are migrating towards a separate
   // Publish() method, but will maintain compatibility with existing code.
   virtual void Publish() {}
+  // AutoConfig() allows filters to update parameter values according to hardware
+  // settings, or input properties.
+  // AutoConfig() may access parameters arbitrarily, but changes to parameters
+  // are ignored unless a parameter's value is set to "auto".
+  // Also, AutoConfig() changes are ignored if the AutoConfig parameter is
+  // nonexistent, or set to 0, but the function is called nevertheless, so it may
+  // be used for hardware initialization which is independent of parameter settings.
+  virtual void AutoConfig( const SignalProperties& Input ) {}
+  // Preflight will always check 
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const = 0;
   // Initialize() performs initialization required when parameter settings
@@ -76,6 +85,7 @@ class GenericFilter : protected Environment, private Uncopyable
 
  public: // Calling interface to virtual functions -- allows for setting up context.
   void CallPublish();
+  void CallAutoConfig( const SignalProperties& Input );
   void CallPreflight( const SignalProperties& Input,
                             SignalProperties& Output ) const;
   void CallInitialize( const SignalProperties& Input,

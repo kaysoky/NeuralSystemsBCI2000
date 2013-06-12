@@ -27,7 +27,7 @@
 #pragma hdrstop
 
 #include "SignalGeneratorADC.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "GenericSignal.h"
 #include "OSThread.h"
 
@@ -77,6 +77,10 @@ SignalGeneratorADC::Publish()
        "32 1 % // number of samples transmitted at a time",
     "Source:Signal%20Properties int SamplingRate= 256Hz "
        "256Hz 1 % // sample rate",
+
+    "Source list SourceChOffset= 1 auto % % %",
+    "Source list SourceChGain= 1 auto % % %",
+
 #if _WIN32 || USE_QT
     "Source int ModulateAmplitude= 0 0 0 1 "
       "// Modulate the amplitude with the mouse (0=no, 1=yes) (boolean)",
@@ -108,13 +112,25 @@ SignalGeneratorADC::Publish()
   END_PARAMETER_DEFINITIONS
 }
 
+void
+SignalGeneratorADC::AutoConfig( const SignalProperties& )
+{
+  int numChannels = Parameter( "SourceCh" );
+  Parameter( "SourceChOffset" )->SetNumValues( numChannels );
+  Parameter( "SourceChGain" )->SetNumValues( numChannels );
+  for( int i = 0; i < numChannels; ++i )
+  {
+    Parameter( "SourceChOffset" )( i ) = 0;
+    Parameter( "SourceChGain" )( i ) = "0.1muV";
+  }
+}
 
 void
 SignalGeneratorADC::Preflight( const SignalProperties&,
                                      SignalProperties& Output ) const
 {
-  Parameter( "SourceChGain" );
   Parameter( "SourceChOffset" );
+  Parameter( "SourceChGain" );
   Parameter( "SineFrequency" ).InHertz();
   Parameter( "SineAmplitude" ).InMicrovolts();
   Parameter( "NoiseAmplitude" ).InMicrovolts();

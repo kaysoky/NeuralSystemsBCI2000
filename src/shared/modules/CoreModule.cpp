@@ -70,7 +70,8 @@ CoreModule::CoreModule()
   mNeedStopRun( false ),
   mGlobalID( NULL ),
   mSampleBlockSize( 0 ),
-  mOperatorBackLink( false )
+  mOperatorBackLink( false ),
+  mAutoConfig( false )
 #if _WIN32
 , mFPMask( cDisabledFPExceptions )
 #endif // _WIN32
@@ -189,7 +190,7 @@ CoreModule::Initialize( int& ioArgc, char** ioArgv )
     if( !info[VersionInfo::Revision].empty() )
       bciout__ << " Revision: " << info[VersionInfo::Revision]
                <<          ", " << info[VersionInfo::SourceDate] << " \n";
-    bciout__ << " Build: " << info[VersionInfo::BuildDate]
+      bciout__ << " Build: " << info[VersionInfo::BuildDate] + " " + info[VersionInfo::BuildType]
              << endl;
     return true;
   }
@@ -365,7 +366,7 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
     mParamlist[ THISMODULE "Version" ].Value( "Revision" )
       = info[ VersionInfo::Revision ] + ", " +  info[ VersionInfo::SourceDate ];
   mParamlist[ THISMODULE "Version" ].Value( "Build" )
-    = info[ VersionInfo::BuildDate ];
+    = info[VersionInfo::Build];
   // Filter chain documentation
   mParamlist.Add(
     "System:Configuration matrix " THISMODULE "FilterChain= "
@@ -453,54 +454,113 @@ CoreModule::ResetStatevector()
 }
 
 void
-CoreModule::InitializeFilters( const SignalProperties& inputProperties )
+CoreModule::InitializeFilterChain( const SignalProperties& Input )
 {
-  mStartRunPending = true;
   bcierr__.Clear();
+  mStartRunPending = true;
   GenericFilter::HaltFilters();
-  bool errorOccurred = ( bcierr__.Flushes() > 0 );
-  EnvironmentBase::EnterPreflightPhase( &mParamlist, &mStatelist, &mStatevector );
+  InitializeInputSignal( Input );
+
+  // Does the Operator module accept the AutoConfig protocol?
+  if( mParamlist.Exists( "AutoConfig" ) )
+    mAutoConfig = ::atoi( mParamlist["AutoConfig"].Value().c_str() );
+
+  AutoConfigFilters();
+  if( bcierr__.Empty() )
+    InitializeFilters();
+}
+
+void
+CoreModule::InitializeInputSignal( const SignalProperties& Input )
+{
 #ifdef TODO
 # error The inputPropertiesFixed variable may be removed once property messages contain an UpdateRate field.
 #endif // TODO
-  SignalProperties inputPropertiesFixed( inputProperties );
-  // MeasurementUnits gets initialized in Environment::EnterPreflightPhase
-  inputPropertiesFixed.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
-  mInputSignal = GenericSignal( inputPropertiesFixed );
-  SignalProperties outputProperties( 0, 0 );
-  GenericFilter::PreflightFilters( inputPropertiesFixed, outputProperties );
+  SignalProperties inputFixed( Input );
+#if ( MODTYPE != SIGSRC )
+  MeasurementUnits::Initialize( mParamlist );
+  inputFixed.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
+#endif // MODTYPE
+  mInputSignal = GenericSignal( inputFixed );
+}
+
+void
+CoreModule::AutoConfigFilters()
+{
+  for( int i = 0; i < mParamlist.Size(); ++i )
+    mParamlist[i].Unchanged();
+
+  ParamList restoreParams;
+  if( !mAutoConfig )
+  {
+    restoreParams = mParamlist;
+    if( restoreParams.Exists( "SubjectRun" ) )
+      restoreParams.Delete( "SubjectRun" ); // special case for backward compatibility reasons
+  }
+
+  EnvironmentBase::EnterPreflightPhase( &mParamlist, &mStatelist, &mStatevector );
+  SignalProperties Output( 0, 0 );
+  GenericFilter::PreflightFilters( mInputSignal.Properties(), Output );
   EnvironmentBase::EnterNonaccessPhase();
-  errorOccurred |= ( bcierr__.Flushes() > 0 );
+  mOutputSignal = GenericSignal( Output );
+
+  for( int i = 0; i < restoreParams.Size(); ++i )
+  {
+    const Param& r = restoreParams[i];
+    Param& p = mParamlist[r.Name()];
+    if( p.Changed() )
+    {
+      p = r;
+      p.Unchanged();
+    }
+  }
+  if( mParamlist.Exists( "DebugLevel" ) && ::atoi( mParamlist["DebugLevel"].Value().c_str() ) )
+  {
+    for( int i = 0; i < mParamlist.Size(); ++i )
+      if( mParamlist[i].Changed() )
+        bciout << "AutoConfig: " << mParamlist[i];
+  }
+  if( mAutoConfig && bcierr__.Empty() )
+  {
+    BroadcastParameterChanges();
+    OSMutex::Lock lock( mConnectionLock );
+    if( !MessageHandler::PutMessage( mOperator, Output ) )
+      BCIERR << "Could not send output properties to Operator module" << endl;
+  }
+}
+
+void
+CoreModule::InitializeFilters()
+{
   OSMutex::Lock lock( mConnectionLock );
-  if( !errorOccurred )
+  if( bcierr__.Empty() )
   {
     if( mParamlist.Exists( "OperatorBackLink" ) )
-      mOperatorBackLink = ::atoi( mParamlist["OperatorBackLink"].Value().ToString().c_str() );
+      mOperatorBackLink = ::atoi( mParamlist["OperatorBackLink"].Value().c_str() );
+    if( !mAutoConfig )
+    {
 #if( MODTYPE == APP )
-    if( mOperatorBackLink && !MessageHandler::PutMessage( mOperator, outputProperties ) )
-      BCIERR << "Could not send output properties to Operator module" << endl;
+      if( mOperatorBackLink && !MessageHandler::PutMessage( mOperator, mOutputSignal.Properties() ) )
+        BCIERR << "Could not send output properties to Operator module" << endl;
 #else // APP
-    if( !MessageHandler::PutMessage( mNextModule, outputProperties ) )
-      BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
+      if( !MessageHandler::PutMessage( mNextModule, mOutputSignal.Properties() ) )
+        BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
 #endif // APP
-    mOutputSignal = GenericSignal( outputProperties );
+    }
     EnvironmentBase::EnterInitializationPhase( &mParamlist, &mStatelist, &mStatevector );
     GenericFilter::InitializeFilters();
     EnvironmentBase::EnterNonaccessPhase();
-    errorOccurred |= ( bcierr__.Flushes() > 0 );
   }
   if( !mPreviousModule.is_open() )
-  {
     BCIERR << PREVMODULE " dropped connection unexpectedly" << endl;
-    errorOccurred = true;
-  }
-  if( !errorOccurred )
+
+  if( bcierr__.Empty() )
   {
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " initialized", Status::firstInitializedMessage + MODTYPE - 1 ) );
     mFiltersInitialized = true;
   }
 #if( MODTYPE == SIGSRC )
-  mResting = !errorOccurred;
+  mResting = bcierr__.Empty();
 #endif // SIGSRC
 }
 
@@ -712,10 +772,10 @@ bool
 CoreModule::HandleVisSignalProperties( istream& is )
 {
   VisSignalProperties s;
-  if( s.ReadBinary( is ) && s.SourceID() == "" )
+  if( s.ReadBinary( is ) && s.SourceID().empty() )
   {
     if( !mFiltersInitialized )
-      InitializeFilters( s.SignalProperties() );
+      InitializeFilterChain( s.SignalProperties() );
   }
   return is ? true : false;
 }
@@ -756,10 +816,13 @@ CoreModule::HandleSysCommand( istream& is )
   {
     int sampleBlockSize = 1;
     if( mParamlist.Exists( "SampleBlockSize" ) )
-      sampleBlockSize = static_cast<int>( PhysicalUnit()
-                                         .SetOffset( 0.0 ).SetGain( 1.0 ).SetSymbol( "" )
-                                         .PhysicalToRaw( mParamlist[ "SampleBlockSize" ].Value() )
-                                        );
+    {
+      const Param& p = mParamlist["SampleBlockSize"];
+      PhysicalUnit unit;
+      unit.SetOffset( 0.0 ).SetGain( 1.0 ).SetSymbol( "" );
+      if( unit.IsPhysical( p.Value() ) )
+        sampleBlockSize = static_cast<int>( unit.PhysicalToRaw( p.Value() ) );
+    }
     if( sampleBlockSize < 1 )
       sampleBlockSize = 1;
     mSampleBlockSize = sampleBlockSize;
@@ -778,7 +841,6 @@ CoreModule::HandleSysCommand( istream& is )
     }
     else if( s == SysCommand::EndOfParameter )
     {
-      // This happens for all initializations.
       mFiltersInitialized = false;
     }
     else if( s == SysCommand::Start )

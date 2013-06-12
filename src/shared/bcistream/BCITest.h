@@ -50,19 +50,19 @@
 #if DISABLE_BCITEST
 
 # define bcitest( name ) \
-static struct name##_ { name##_() {} private: void OnRun(); } name; \
-void name##_::OnRun()
+static struct name##_ { name##_() {} private: void OnRun_(); } name; \
+void name##_::OnRun_()
 
-# define bcifail BCIStream::Nullstream()
+# define bcifail BCIStream::NullStream()
 # define bcifail_if( cond, msg )
 
 #else // DISABLE_BCITEST
 
 # define bcitest( name ) \
-static struct name##_ : bci::Test { name##_() : bci::Test( #name ) {} private: void OnRun(); } name; \
-RegisterTest_( name ); void name##_::OnRun()
+static struct name##_ : bci::Test { name##_() : bci::Test( #name ) {} private: void OnRun_(); } name; \
+RegisterTest_( name ); void name##_::OnRun_()
 
-# define bcifail FailStream( __FILE__ , __LINE__ )
+# define bcifail FailStream_( __FILE__ , __LINE__ )
 # define bcifail_if( cond, msg ) if( cond ) bcifail << #cond << ", " << msg << std::endl;
 
 #endif // DISABLE_BCITEST
@@ -72,29 +72,29 @@ namespace bci {
 class Test
 {
  public:
-  typedef void(*FailHandler)( const std::string& );
+  typedef void(*FailHandler_)( const std::string& );
   
   Test( const std::string& name );
-  bool Run( FailHandler = NULL );
+  bool Run_( FailHandler_ = NULL );
 
-  struct RunTests
+  struct RunAll_
   {
-    RunTests( FailHandler = 0 );
+    RunAll_( FailHandler_ = 0 );
     operator int() const { return failures; }
     private: int failures;
   };
-  static int Parse( int argc, char** argv, bool exitIfFound = true );
+  static int Parse_( int argc, char** argv, bool exitIfFound = true );
 
  protected:
-  std::ostream& FailStream( const char*, int );
-  virtual void OnRun() = 0;
+  std::ostream& FailStream_( const char*, int );
+  virtual void OnRun_() = 0;
 
  private:
   const std::string mDesc;
   std::ostringstream mFailStream;
 
   static std::vector<Test*> sTests;
-  friend struct RunTests;
+  friend struct RunAll_;
 };
 
 } // namespace

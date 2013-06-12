@@ -28,13 +28,14 @@
 
 #include "GenericVisualization.h"
 #include "MessageHandler.h"
-#include "OSMutex.h"
-#include "BCIError.h"
-#include "defines.h"
+#include "Label.h"
+#include "HierarchicalLabel.h"
+#include "BCIStream.h"
 
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <iomanip>
 #include <cstdlib>
 
 using namespace std;
@@ -145,6 +146,129 @@ VisSignalProperties::WriteBinarySelf( ostream& os ) const
 {
   mSignalProperties.WriteToStream( os );
 }
+
+vector<VisCfg>
+VisSignalProperties::ToVisCfg() const
+{
+  // Translation of a VisSignalProperties message into a set of VisCfg messages.
+  vector<VisCfg> result;
+  const class SignalProperties& s = SignalProperties();
+
+  if( !s.Name().empty() )
+    result.push_back( VisCfg( SourceID(), CfgID::WindowTitle, s.Name() ) );
+
+  string channelUnit = s.ChannelUnit().RawToPhysical( s.ChannelUnit().Offset() + 1 );
+  result.push_back( VisCfg( SourceID(), CfgID::ChannelUnit, channelUnit ) );
+
+  int numSamples = static_cast<int>( s.ElementUnit().RawMax() - s.ElementUnit().RawMin() + 1 );
+  result.push_back( VisCfg( SourceID(), CfgID::NumSamples, numSamples ) );
+
+  if( numSamples > 0 )
+  {
+    string symbol;
+    double value = s.ElementUnit().Gain() * numSamples;
+    int magnitude = static_cast<int>( ::log10( ::fabs( value ) ) );
+    if( magnitude > 0 )
+      --magnitude;
+    else if( magnitude < 0 )
+      ++magnitude;
+    magnitude /= 3;
+    if( magnitude < -3 )
+      magnitude = -3;
+    if( magnitude > 3 )
+      magnitude = 3;
+    switch( magnitude )
+    {
+      case -3:
+        symbol = "n";
+        value /= 1e-9;
+        break;
+      case -2:
+        symbol = "mu";
+        value /= 1e-6;
+        break;
+      case -1:
+        symbol = "m";
+        value /= 1e-3;
+        break;
+      case 0:
+        break;
+      case 1:
+        symbol = "k";
+        value /= 1e3;
+        break;
+      case 2:
+        symbol = "M";
+        value /= 1e6;
+        break;
+      case 3:
+        symbol = "G";
+        value /= 1e9;
+        break;
+    }
+    ostringstream oss;
+    oss << setprecision( 10 ) << value / numSamples << symbol << s.ElementUnit().Symbol();
+    result.push_back( VisCfg( SourceID(), CfgID::SampleUnit, oss.str() ) );
+    result.push_back( VisCfg( SourceID(), CfgID::SampleOffset, s.ElementUnit().Offset() ) );
+  }
+
+  // Although the SignalProperties class allows for individual units for
+  // individual channels, the SignalDisplay class is restricted to a single
+  // unit and range.
+  string valueUnit = s.ValueUnit().RawToPhysical( s.ValueUnit().Offset() + 1 );
+  result.push_back( VisCfg( SourceID(), CfgID::ValueUnit, valueUnit ) );
+
+  double rangeMin = s.ValueUnit().RawMin(),
+         rangeMax = s.ValueUnit().RawMax();
+  if( rangeMin == rangeMax )
+  {
+    result.push_back( VisCfg( SourceID(), CfgID::MinValue, "none" ) );
+    result.push_back( VisCfg( SourceID(), CfgID::MaxValue, "none" ) );
+  }
+  else
+  {
+    result.push_back( VisCfg( SourceID(), CfgID::MinValue, rangeMin ) );
+    result.push_back( VisCfg( SourceID(), CfgID::MaxValue, rangeMax ) );
+  }
+
+  LabelList groupLabels,
+            channelLabels;
+  int channelGroupSize = 1;
+  if( !s.ChannelLabels().IsTrivial() )
+  {
+    for( int i = 0; i < s.ChannelLabels().Size(); ++i )
+    {
+      istringstream iss( s.ChannelLabels()[ i ] );
+      HierarchicalLabel label;
+      iss >> label;
+      if( label.size() == 2 )
+      {
+        if( groupLabels.empty() )
+        {
+          groupLabels.push_back( Label( 0, label[ 0 ] ) );
+        }
+        else
+        {
+          if( label[ 0 ] == groupLabels.begin()->Text() )
+            ++channelGroupSize;
+          if( label[ 0 ] != groupLabels.rbegin()->Text() )
+            groupLabels.push_back( Label( static_cast<int>( groupLabels.size() ), label[ 0 ] ) );
+        }
+        channelLabels.push_back( Label( static_cast<int>( channelLabels.size() ), label[ 1 ] ) );
+      }
+      else
+      {
+        channelLabels.push_back( Label( i, s.ChannelLabels()[ i ] ) );
+      }
+    }
+  }
+  result.push_back( VisCfg( SourceID(), CfgID::ChannelGroupSize, channelGroupSize ) );
+  result.push_back( VisCfg( SourceID(), CfgID::ChannelLabels, channelLabels ) );
+  result.push_back( VisCfg( SourceID(), CfgID::GroupLabels, groupLabels ) );
+
+  return result;
+}
+
 
 // Bitmap message.
 void

@@ -431,11 +431,13 @@ streamsock::write( const char* buffer, size_t count )
 void
 streamsock::set_socket_options()
 {
+#ifndef _WIN32
   if( m_handle != INVALID_SOCKET )
   {
     struct linger val = { 1, 1 }; // close after one second
     ::setsockopt( m_handle, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
+#endif // _WIN32
 }
 
 void

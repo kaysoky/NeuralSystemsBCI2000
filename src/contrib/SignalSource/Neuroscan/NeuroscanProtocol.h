@@ -34,7 +34,7 @@
 #include <iostream>
 #include <cstring>
 #include <cfloat>
-#include "defines.h"
+#include <stdint.h>
 
 enum
 {
@@ -61,6 +61,7 @@ enum
 
   SetupFile = 1,
     NeuroscanASTFormat = 1,
+    CtfDSFormat = 0x43544644, // 'CTFD', BCI2000-specific extension
 
   DataType_InfoBlock = 1,
     InfoType_Version = 1,
@@ -248,7 +249,7 @@ class NscPacketHeader
             }
             break;
           }
-	    break;
+      break;
 
       case HeaderIdFile:
         switch( mCode )
@@ -325,6 +326,18 @@ inline
 NscPacketHeader NscInfoRequest()
 {
   return NscPacketHeader( HeaderIdCtrl, ClientControlCode, RequestBasicInfo );
+}
+
+inline
+NscPacketHeader NscEDFHeaderRequest()
+{
+  return NscPacketHeader( HeaderIdCtrl, ClientControlCode, RequestEDFHeader );
+}
+
+inline
+NscPacketHeader NscSetupFileRequest()
+{
+  return NscPacketHeader( HeaderIdCtrl, ClientControlCode, RequestAstFile );
 }
 
 inline
@@ -411,7 +424,7 @@ class NscBasicInfo
               mSamplesInBlock, // Samples in block
               mSamplingRate,   // Sampling rate (in Hz)
               mDataDepth;      // 2 for "short", 4 for "int" type of data
-    float32_t mResolution;     // Resolution for LSB
+    float     mResolution;     // Resolution for LSB
 };
 
 inline

@@ -117,11 +117,11 @@ DataIOFilter::Publish()
     // Parameters required to interpret a data file are listed here
     // to enforce their presence:
     "Source:Signal%20Properties int SourceCh= 16 "
-      "16 1 % // number of digitized and stored channels",
+      "% % % // number of digitized and stored channels",
     "Source:Signal%20Properties int SampleBlockSize= 32 "
-      "32 1 % // number of samples transmitted at a time",
+      "% % % // number of samples transmitted at a time",
     "Source:Signal%20Properties int SamplingRate= 256Hz "
-      "256Hz 1 % // sample rate",
+      "% % % // sample rate",
     "Source:Signal%20Properties list ChannelNames= 0 "
       "% % % // list of channel names",
     "Source:Signal%20Properties floatlist SourceChOffset= 16 "
@@ -200,6 +200,21 @@ DataIOFilter::~DataIOFilter()
   BCIEvent::SetEventQueue( NULL );
 }
 
+
+void
+DataIOFilter::AutoConfig( const SignalProperties& Input )
+{
+  if( !mpADC )
+    bcierr << "Expected an ADC filter instance to be present";
+  else
+    mpADC->CallAutoConfig( Input );
+
+  Parameter( "SamplingRate" ) = 1;
+  Parameter( "SampleBlockSize" ) = 1;
+  Parameter( "ChannelNames" )->SetNumValues( 0 );
+
+  MeasurementUnits::Initialize( *Parameters );
+}
 
 void
 DataIOFilter::Preflight( const SignalProperties& Input,
@@ -282,9 +297,14 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   if( sourceChOffsetConsistent && sourceChGainConsistent )
   {
     for( int ch = 0; ch < adcInput.Channels(); ++ch )
-      adcInput.ValueUnit( ch ).SetGain( Parameter( "SourceChGain" )( ch ) * 1e-6 )
-                              .SetOffset( Parameter( "SourceChOffset" )( ch ) )
-                              .SetSymbol( "V" );
+    {
+      double gain = 0;
+      string symbol;
+      Parameter( "SourceChGain" )( ch ) >> gain >> symbol;
+      adcInput.ValueUnit( ch ).SetOffset( Parameter( "SourceChOffset" )( ch ) )
+                              .SetGain( gain )
+                              .SetSymbol( symbol );
+    }
   }
   adcInput.ElementUnit().SetOffset( 0 )
                         .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
@@ -292,9 +312,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   Output = adcInput;
   mADCInput.SetProperties( adcInput );
 
-  if( !mpADC )
-    bcierr << "Expected an ADC filter instance to be present" << endl;
-  else
+  if( mpADC )
     mpADC->CallPreflight( adcInput, Output );
 
   // Fix update and sampling rates in case Output has been reset by the ADC's Preflight() function:
@@ -311,6 +329,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   if( mpSourceFilter )
   {
     SignalProperties sourceFilterInput( Output );
+    mpSourceFilter->CallAutoConfig( sourceFilterInput );
     mpSourceFilter->CallPreflight( sourceFilterInput, Output );
     if( Output != sourceFilterInput )
       bcierr << ClassName( typeid( *mpSourceFilter ) )
@@ -326,6 +345,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   else
   {
     SignalProperties writerOutput;
+    mpFileWriter->CallAutoConfig( Output );
     mpFileWriter->CallPreflight( Output, writerOutput );
     if( !writerOutput.IsEmpty() )
       bcierr << "Expected empty output signal from file writer" << endl;

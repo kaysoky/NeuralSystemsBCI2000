@@ -77,6 +77,14 @@ class VisCfg : public VisBase
     : mCfgID( InvalidID ) {}
     VisCfg( const ::VisID& inVisID, int inCfgID, const std::string& inCfgValue )
     : VisBase( inVisID ), mCfgID( inCfgID ), mCfgValue( inCfgValue ) {}
+    template<typename T>
+    VisCfg( const ::VisID& inVisID, int inCfgID, const T& inCfgValue )
+    : VisBase( inVisID ), mCfgID( inCfgID )
+    {
+      std::ostringstream oss;
+      oss << inCfgValue;
+      mCfgValue = oss.str();
+    }
 
     int CfgID() const { return mCfgID; }
     const std::string& CfgValue() const { return mCfgValue; }
@@ -138,6 +146,7 @@ class VisSignalProperties : public VisBase
 
     const ::SignalProperties& SignalProperties() const { return mSignalProperties; }
     operator const ::SignalProperties&() const         { return mSignalProperties; }
+    std::vector<VisCfg> ToVisCfg() const;
 
   private:
     virtual void ReadBinarySelf( std::istream& );

@@ -100,6 +100,20 @@ IF( COMPILER_IS_GCC_COMPATIBLE )
     ENDFOREACH()
   ENDFOREACH()
 
+  # Build the compiler description string.
+  COMPILER_DUMPVERSION( GCC_VERSION )
+  IF( APPLE )
+    SET( COMPILER_SUB "apple" )
+  ELSEIF( MINGW )
+    SET( COMPILER_SUB "mingw" )
+  ELSEIF( CYGWIN )
+    SET( COMPILER_SUB "cygwin" )
+  ELSE()
+    SET( COMPILER_SUB "unknown" )
+  ENDIF()
+
+  SET( COMPILER_NAME_ "gcc-${COMPILER_SUB}-${GCC_VERSION}" )
+
 ENDIF( COMPILER_IS_GCC_COMPATIBLE )
 
 # MSVC specific flags
@@ -178,43 +192,16 @@ IF( MSVC )
 
 ENDIF( MSVC )
 
-# Build the compiler description string.
-IF( MSVC )
-  SET(
-    COMPILER_NAME_ "MSVC"
-    )
-ELSEIF( BORLAND )
-  SET(
-    COMPILER_NAME_ "Borland"
-    )
-ELSEIF( COMPILER_IS_GCC_COMPATIBLE )
-  COMPILER_DUMPVERSION( GCC_VERSION )
-  IF( APPLE )
-    SET( COMPILER_SUB "apple" )
-  ELSEIF( MINGW )
-    SET( COMPILER_SUB "mingw" )
-  ELSEIF( CYGWIN )
-    SET( COMPILER_SUB "cygwin" )
-  ELSE()
-    SET( COMPILER_SUB "unknown" )
-  ENDIF()
-
-  SET(
-    COMPILER_NAME_ "gcc-${COMPILER_SUB}-${GCC_VERSION}"
-    )
-ELSE()
-  SET(
-    COMPILER_NAME_ "unknown"
-    )
-ENDIF()
-ADD_DEFINITIONS(
-  -DCOMPILER_NAME="${COMPILER_NAME_}"
+IF( COMPILER_NAME_ )
+  ADD_DEFINITIONS(
+    -DCOMPILER_NAME="${COMPILER_NAME_}"
   )
+ENDIF()
 
 # Add global definitions.
 ADD_DEFINITIONS( -D_USE_MATH_DEFINES )
 
 # Control behavior of bciassert() macro
-SET( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBCIDEBUG=1" )
+SET( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBCIDEBUG=1 -DDEBUG_BUILD=1" )
 
 

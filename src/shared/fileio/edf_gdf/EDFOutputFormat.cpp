@@ -4,23 +4,23 @@
 // Description: Output into an EDF data file.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -95,6 +95,9 @@ EDFOutputFormat::StartRun( ostream& os, const string& inFileName )
 {
   EDFOutputBase::StartRun( os, inFileName );
 
+  EDFHeader h;
+  h.Version = "0";
+
   time_t now = ::time( NULL );
   struct tm* time = ::localtime( &now );
   ostringstream year;
@@ -106,6 +109,7 @@ EDFOutputFormat::StartRun( ostream& os, const string& inFileName )
             << setw( 2 ) << setfill( '0' ) << time->tm_hour << '.'
             << setw( 2 ) << setfill( '0' ) << time->tm_min << '.'
             << setw( 2 ) << setfill( '0' ) << time->tm_sec;
+  h.Startdate = startdate.str();
 
   ostringstream patient;
   patient << GDF::EncodedString( Parameter( "SubjectName" ) )
@@ -123,6 +127,7 @@ EDFOutputFormat::StartRun( ostream& os, const string& inFileName )
       break;
   }
   patient << " XX-XXX-" << GDF::EncodedString( Parameter( "SubjectYearOfBirth" ) );
+  h.Patient = patient.str();
 
   ostringstream recording;
   recording << "Startdate "
@@ -133,27 +138,11 @@ EDFOutputFormat::StartRun( ostream& os, const string& inFileName )
             << GDF::EncodedString( Parameter( "TechnicianID" ) )
             << ' '
             << GDF::EncodedString( Parameter( "EquipmentID" ) );
+  h.Recording = recording.str();
 
-  PutField< Str<8>  >( os, "0" );
-  PutField< Str<80> >( os, patient.str() );
-  PutField< Str<80> >( os, recording.str() );
-  PutField< Str<16> >( os, startdate.str() );
-  PutField< Str<8>  >( os, static_cast<int>( 256 * ( Channels().size() + 1 ) ) );
-  PutField< Str<44> >( os );
-  PutField< Str<8>  >( os, -1 );
-  PutField< Str<8>  >( os, Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" ) );
-  PutField< Str<4>  >( os, Channels().size() );
-
-  PutArray< Str<16> >( os, Channels(), &ChannelInfo::Label );
-  PutArray< Str<80> >( os, Channels(), &ChannelInfo::TransducerType );
-  PutArray< Str<8>  >( os, Channels(), &ChannelInfo::PhysicalDimension );
-  PutArray< Str<8>  >( os, Channels(), &ChannelInfo::PhysicalMinimum );
-  PutArray< Str<8>  >( os, Channels(), &ChannelInfo::PhysicalMaximum );
-  PutArray< Str<8>  >( os, Channels(), &ChannelInfo::DigitalMinimum );
-  PutArray< Str<8>  >( os, Channels(), &ChannelInfo::DigitalMaximum );
-  PutArray< Str<80> >( os, Channels(), &ChannelInfo::Filtering );
-  PutArray< Str<8>  >( os, Channels(), &ChannelInfo::SamplesPerRecord );
-  PutArray< Str<32> >( os, Channels() );
+  h.Channels = Channels();
+  h.BlockDuration = Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" );
+  h.WriteBinary( os );
 }
 
 void

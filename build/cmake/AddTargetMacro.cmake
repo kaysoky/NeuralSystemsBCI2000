@@ -224,7 +224,7 @@ FUNCTION( BCI2000_AUTODEPEND  listname_ libsname_ )
   LIST( FIND defs_ "DISABLE_BCITEST" idx_ )
   IF( idx_ LESS 0 ) # BCITEST enabled
     # This file will not do anything unless "main" is redefined by BCI2000_ADD_TEST
-    LIST( APPEND newfiles_ ${BCI2000_SRC_DIR}/shared/bcistream/BCITestMain.cpp )
+    #LIST( APPEND newfiles_ ${BCI2000_SRC_DIR}/shared/bcistream/BCITestMain.cpp )
   ENDIF()
 
   FOREACH( file_ ${${listname_}} )

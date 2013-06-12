@@ -72,6 +72,7 @@ ChoiceCombination::Preflight( const SignalProperties& Input, SignalProperties& O
   if( configOK )
   {
     int choice = Parameter( mParamName );
+    mFilters[choice]->CallAutoConfig( Input );
     mFilters[choice]->CallPreflight( Input, Output );
   }
 }

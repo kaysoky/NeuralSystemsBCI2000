@@ -131,6 +131,7 @@ StandaloneChain::DoPreflightInitialize( const SignalProperties& inS )
   for( size_t i = 0; i < mFilters.size(); ++i )
   {
     Output = *pInput;
+    mFilters[i]->CallAutoConfig( *pInput );
     mFilters[i]->CallPreflight( *pInput, Output );
     mSignals.push_back( GenericSignal( Output ) );
     pInput = &mSignals.back().Properties();

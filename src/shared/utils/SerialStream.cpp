@@ -33,13 +33,12 @@
 // 
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifdef __BORLANDC__
-# include "PCHIncludes.h"
-# pragma hdrstop
-#endif // __BORLANDC__
-
 #include "SerialStream.h"
-#include "Windows.h"
+#if _WIN32
+# include "Windows.h"
+#else
+# error SerialStream is currently implemented for Windows only.
+#endif
 
 using namespace std;
 ////////////////////////////////////////////////////////////////////////////////

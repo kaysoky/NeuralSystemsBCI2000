@@ -36,6 +36,7 @@ class GenericADC : public GenericFilter
  public:
   virtual ~GenericADC() {}
   // GenericFilter inherited functions, forcing implementation of Halt().
+  virtual void AutoConfig( const SignalProperties& ) {}
   virtual void Preflight( const SignalProperties&,
                                 SignalProperties& ) const = 0;
   virtual void Initialize( const SignalProperties&,

@@ -130,7 +130,10 @@ class CoreModule : private MessageHandler, private OSThread
   void ShutdownSystem();
   void ResetStatevector();
 
-  void InitializeFilters( const class SignalProperties& );
+  void InitializeFilterChain( const class SignalProperties& );
+  void InitializeInputSignal( const class SignalProperties& );
+  void AutoConfigFilters();
+  void InitializeFilters();
   void StartRunFilters();
   void StopRunFilters();
   void BroadcastParameterChanges();
@@ -175,7 +178,8 @@ class CoreModule : private MessageHandler, private OSThread
                    mNeedStopRun;
   void*            mGlobalID;
   int              mSampleBlockSize;
-  bool             mOperatorBackLink;
+  bool             mOperatorBackLink,
+                   mAutoConfig;
 #if _WIN32
   FPExceptMask     mFPMask;
 #endif // _WIN32

@@ -35,17 +35,18 @@
 class SignalGeneratorADC : public GenericADC
 {
  public:
-               SignalGeneratorADC();
-  virtual      ~SignalGeneratorADC();
+  SignalGeneratorADC();
+  ~SignalGeneratorADC();
 
-  virtual void Publish();
-  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
-  virtual void Initialize( const SignalProperties&, const SignalProperties& );
-  virtual void StartRun();
-  virtual void Process( const GenericSignal&, GenericSignal& );
-  virtual void Halt();
+  void Publish();
+  void AutoConfig( const SignalProperties& );
+  void Preflight( const SignalProperties&, SignalProperties& ) const;
+  void Initialize( const SignalProperties&, const SignalProperties& );
+  void StartRun();
+  void Process( const GenericSignal&, GenericSignal& );
+  void Halt();
 
-  virtual bool IsRealTimeSource() const { return false; } // permits --EvaluateTiming=0, to launch without realtime checking
+  bool IsRealTimeSource() const { return false; } // permits --EvaluateTiming=0, to launch without realtime checking
 
  private:
   // Configuration

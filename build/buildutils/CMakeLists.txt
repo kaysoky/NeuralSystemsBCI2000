@@ -5,6 +5,7 @@
 
 SET( DIR_NAME "${DIR_NAME}Build/BuildUtils/" )
 SET( USE_PRECOMPILED_HEADERS OFF )
+ADD_DEFINITIONS( -DDISABLE_BCITEST )
 
 OPTION( BUILD_ALL_BUILDUTILS "Enables building of additional build utils" OFF )
 IF( BUILD_ALL_BUILDUTILS )
@@ -27,9 +28,12 @@ BCI2000_ADD_TARGET( EXECUTABLE extract_registry extract_registry.cpp )
 BCI2000_ADD_TARGET( EXECUTABLE create_resource
   create_resource.cpp
   ${BCI2000_SRC_DIR}/shared/types/Blob.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.cpp
   ${BCI2000_SRC_DIR}/shared/utils/FileUtils.cpp
   ${BCI2000_SRC_DIR}/shared/utils/StringUtils.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Debugging.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/ClassName.cpp
 )
 
 IF( BUILD_ALL_BUILDUTILS )

@@ -33,11 +33,10 @@
 #ifndef STATE_MACHINE_H
 #define STATE_MACHINE_H
 
+#include "MessageHandler.h"
 #include "CallbackBase.h"
 #include "SockStream.h"
-#include "Param.h"
 #include "ParamList.h"
-#include "State.h"
 #include "StateList.h"
 #include "StateVector.h"
 #include "GenericSignal.h"
@@ -46,7 +45,6 @@
 #include "ProtocolVersion.h"
 #include "ScriptEvents.h"
 #include "Watches.h"
-#include "MessageHandler.h"
 #include "OSThread.h"
 #include "OSMutex.h"
 #include "Lockable.h"
@@ -98,19 +96,20 @@ class StateMachine : public CallbackBase, private OSThread
     Initialization,
     SetConfigIssued,
     Resting,
-    RestingParamsModified,
     RunningInitiated,
     Running,
     SuspendInitiated,
     Suspended,
-    SuspendedParamsModified,
     Fatal,
     Transition,
 
-    NumStates
+    NumStates,
+
+    ParamsModified = 1 << 8,
+    StateFlags = ParamsModified,
   };
 
-  enum SysState SystemState() const
+  int SystemState() const
     { OSMutex::Lock lock( mStateMutex ); return mSystemState; }
 
   int NumConnections() const
@@ -124,10 +123,11 @@ class StateMachine : public CallbackBase, private OSThread
   typedef ::Lock<StateMachine> DataLock;
   struct WatchDataLock : DataLock
   {
-    WatchDataLock( StateMachine* p ) : DataLock( p ) {}
+    WatchDataLock( StateMachine* s ) : DataLock( s ) {}
     WatchDataLock( StateMachine& s ) : DataLock( s ) {}
     ~WatchDataLock() { ( *this )().Watches().Check(); }
   };
+  void CheckWatches() { WatchDataLock( this ); }
 
   //  Parameter list.
   ParamList& Parameters()
@@ -205,13 +205,14 @@ class StateMachine : public CallbackBase, private OSThread
   void InitializeStateVector();
   void InitializeModules();
   void MaintainDebugLog();
+  void DebugWarning();
   void Randomize();
   void RandomizationWarning();
 
   void TriggerEvent( int eventCallbackID );
   
  private:
-  enum SysState mSystemState;
+  int mSystemState;
   // A mutex protecting access to the SystemState property:
   OSMutex           mStateMutex;
   // A mutex to be acquired while manipulating StateMachine data members.
@@ -222,7 +223,8 @@ class StateMachine : public CallbackBase, private OSThread
 
   bool              mIntroducedRandomSeed;
   std::string       mPreviousRandomSeed;
-  ParamList         mParameters;
+  ParamList         mParameters,
+                    mAutoParameters;
   StateList         mStates,
                     mEvents;
   StateVector       mStateVector;
@@ -237,7 +239,7 @@ class StateMachine : public CallbackBase, private OSThread
   Watch::List       mWatches;
 
  public:
-  struct ConnectionInfo
+   struct ConnectionInfo : Lockable
   {
     ConnectionInfo()
     : Version( ProtocolVersion::None() ),
@@ -257,53 +259,27 @@ class StateMachine : public CallbackBase, private OSThread
   };
 
  private:
-  class CoreConnection;
-  friend class CoreConnection;
   class CoreConnection : public MessageHandler
   {
-    friend class StateMachine;
+    typedef StateMachine::SysState SysState;
 
    public:
-    CoreConnection( StateMachine&, const std::string& inName, const std::string& inAddress, int inTag );
-    ~CoreConnection();
+    CoreConnection( StateMachine&, const std::string& name, const std::string& address, ptrdiff_t tag );
+    ~CoreConnection() {}
 
-    enum Confirmation
-    {
-      ConfirmInitialized,
-      ConfirmRunning,
-      ConfirmSuspended,
-      ConfirmEndOfStates,
+    ptrdiff_t Tag() const
+      { return mTag; }
+    SysState State() const
+      { return mState_; }
+    ::Lock<const ConnectionInfo> Info() const
+      { return mInfo_; }
+    streamsock* Socket()
+      { return &mSocket; }
 
-      NumConfirmations
-    };
-
-   private:
-    void Confirm( Confirmation c )
-      { mConfirmed[c] = true; }
-   public:
-    void ClearConfirmation( Confirmation c )
-      { mConfirmed[c] = false; }
-    bool Confirmed( Confirmation c ) const
-      { return mConfirmed[c]; }
-   private:
-    bool mConfirmed[NumConfirmations];
-
-   public:
     void ProcessBCIMessages();
-
+    void EnterState( SysState );
     template<typename T> bool PutMessage( const T& t )
-      {
-        bool result = MessageHandler::PutMessage<T>( mStream, t ).flush();
-        if( result )
-        {
-          OSMutex::Lock lock( mInfoMutex );
-          ++mInfo.MessagesSent;
-        }
-        return result;
-      }
-
-    const ConnectionInfo Info() const
-      { OSMutex::Lock lock( mInfoMutex ); return mInfo; }
+      { return OnPutMessage( MessageHandler::PutMessage<T>( mStream, t ).flush() ); }
 
    private:
     virtual bool HandleProtocolVersion( std::istream& );
@@ -320,53 +296,47 @@ class StateMachine : public CallbackBase, private OSThread
 
     void OnAccept();
     void OnDisconnect();
-
+    bool OnPutMessage( bool inSuccess )
+      { if( inSuccess ) ++Info()().MessagesSent; return inSuccess; }
+    ::Lock<ConnectionInfo> Info()
+      { return mInfo_; }
+ 
     StateMachine&    mrParent;
     std::string      mAddress;
-    int              mTag;
+    ptrdiff_t        mTag;
     server_tcpsocket mSocket;
     sockstream       mStream;
-    bool             mConnected;
-    bool             mConfirmation[NumConfirmations];
-    ConnectionInfo   mInfo;
-    // A mutex to protect info data.
-    OSMutex          mInfoMutex;
+    // Members that should not be accessed directly.
+    SysState         mState_;
+    ConnectionInfo   mInfo_;
   };
   typedef std::vector<CoreConnection*> ConnectionList;
-
 
  public:
   ConnectionInfo Info( size_t i ) const;
 
+ public:
+  bool HandleStateVector( const CoreConnection&, std::istream& );
+  void Handle( const CoreConnection&, const ProtocolVersion& );
+  void Handle( const CoreConnection&, const Status& );
+  void Handle( const CoreConnection&, const SysCommand& );
+  void Handle( const CoreConnection&, const Param& );
+  void Handle( const CoreConnection&, const State& );
+  void Handle( const CoreConnection&, const VisSignal& );
+  void Handle( const CoreConnection&, const VisSignalProperties& );
+  void Handle( const CoreConnection&, const VisMemo& );
+  void Handle( const CoreConnection&, const VisBitmap& );
+  void Handle( const CoreConnection&, const VisCfg& );
+  void Handle( const CoreConnection&, SysState );
+
  private:
+  bool IsConsistentState( SysState ) const;
+  void SetConnectionState( SysState );
+  void CloseConnections();
+
   streamsock::set_of_instances mSockets;
-  CoreConnection* mpSourceModule;
-
-  void ClearConfirmation( CoreConnection::Confirmation c )
-  {
-    for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
-      ( *i )->ClearConfirmation( c );
-  }
-
-  bool Confirmed( CoreConnection::Confirmation c ) const
-  {
-    bool result = true;
-    for( ConnectionList::const_iterator i = mConnections.begin(); i != mConnections.end(); ++i )
-      result &= ( *i )->Confirmed( c );
-    return result;
-  }
-
-  void CloseConnections()
-  {
-    mLocalAddress = "";
-    mpSourceModule = NULL;
-    for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
-      delete *i;
-    mConnections.clear();
-    mEventLink.Close();
-  }
-
   ConnectionList mConnections;
+  CoreConnection* mpSourceModule;
 
  private:
   bool CheckInitializeVis( const std::string& sourceID, const std::string& kind );

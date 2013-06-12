@@ -54,8 +54,8 @@ class FilterCombination : public GenericFilter
    virtual void Halt();
 
  protected:
-   F1 mFilter1;
-   F2 mFilter2;
+   mutable F1 mFilter1;
+   mutable F2 mFilter2;
    mutable SignalProperties mProperties1,
                             mProperties2;
    GenericSignal mOutput1,
@@ -143,7 +143,9 @@ template<class F1, class F2>
 void
 ParallelCombination<F1, F2>::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
 {
+  mFilter1.CallAutoConfig( Input );
   mFilter1.CallPreflight( Input, mProperties1 );
+  mFilter2.CallAutoConfig( Input );
   mFilter2.CallPreflight( Input, mProperties2 );
 
   Output = Input;
@@ -197,7 +199,9 @@ template<class F1, class F2>
 void
 LinearCombination<F1, F2>::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
 {
+  mFilter1.CallAutoConfig( Input );
   mFilter1.CallPreflight( Input, mProperties1 );
+  mFilter2.CallAutoConfig( mProperties1 );
   mFilter2.CallPreflight( mProperties1, Output );
 }
 

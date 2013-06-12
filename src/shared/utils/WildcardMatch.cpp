@@ -53,7 +53,6 @@ static const size_t cLengthLimit = 20*1024; // limit to avoid stack overflow
 
 namespace {
 
-#if BCIDEBUG
 const struct TestCase { const char* pattern, * match; }
 sPositiveCases[] =
 {
@@ -120,33 +119,23 @@ sIllegalCases[] =
 void RunTests()
 {
   const TestCase* pCase = 0;
-  try
+  for( size_t i = 0; i < sizeof( sPositiveCases ) / sizeof( *sPositiveCases ); ++i )
   {
-    for( size_t i = 0; i < sizeof( sPositiveCases ) / sizeof( *sPositiveCases ); ++i )
-    {
-      pCase = &sPositiveCases[i];
-      if( !ExtWildcardMatch( pCase->pattern, pCase->match ) )
-        throw bciexception(
-          "ExtWildcardMatch test case failed: \"" << pCase->pattern
-          << "\" does not match \"" << pCase->match << "\""
-        );
-    }
-    for( size_t i = 0; i < sizeof( sNegativeCases ) / sizeof( *sNegativeCases ); ++i )
-    {
-      pCase = &sNegativeCases[i];
-      if( ExtWildcardMatch( pCase->pattern, pCase->match ) )
-        throw bciexception(
-          "WildcardMatch test case failed: \"" << pCase->pattern
-          << "\" should not match \"" << pCase->match << "\""
-        );
-    }
+    pCase = &sPositiveCases[i];
+    if( !ExtWildcardMatch( pCase->pattern, pCase->match ) )
+      throw bciexception(
+        "ExtWildcardMatch test case failed: \"" << pCase->pattern
+        << "\" does not match \"" << pCase->match << "\""
+      );
   }
-  catch( const bci::Exception& e )
+  for( size_t i = 0; i < sizeof( sNegativeCases ) / sizeof( *sNegativeCases ); ++i )
   {
-    string kind = pCase < sNegativeCases ? "positive" : "negative";
-    throw bciexception(
-      "Illegal pattern in " << kind << " WildcardMatch test case: \"" << pCase->pattern
-      << "\": " << e.What() );
+    pCase = &sNegativeCases[i];
+    if( ExtWildcardMatch( pCase->pattern, pCase->match ) )
+      throw bciexception(
+        "WildcardMatch test case failed: \"" << pCase->pattern
+        << "\" should not match \"" << pCase->match << "\""
+      );
   }
   for( size_t i = 0; i < sizeof( sIllegalCases ) / sizeof( *sIllegalCases ); ++i )
   {
@@ -168,25 +157,12 @@ void RunTests()
   largeString[cLengthLimit] = 0;
   WildcardMatch( largeString, largeString ); 
 }
-#endif // BCIDEBUG
-
-void EnsureTests()
-{
-#if BCIDEBUG
-  static bool tested = false;
-  if( !tested )
-  {
-    tested = true;
-    RunTests();
-  }
-#endif // BCIDEBUG
-}
 
 class Matcher
 {
  public:
   explicit Matcher( bool inCS )
-    : cs( inCS ), s0( 0 ) { EnsureTests(); }
+    : cs( inCS ), s0( 0 ) {}
   const string& Error() const
     { return mError; }
  
@@ -217,6 +193,19 @@ class Matcher
 bool
 Matcher::operator()( const char* pat, const char* str, Matches* outpMatches )
 {
+#if DEBUG_BUILD
+  bool specialsInPattern = false;
+  for( const char* p = pat; *p; ++p )
+    specialsInPattern = specialsInPattern || IsSpecialChar( *p );
+  bool specialsInString = false;
+  for( const char* p = str; *p; ++p )
+    specialsInString = specialsInString || IsSpecialChar( *p );
+  if( specialsInString && !specialsInPattern )
+    bcidebug(
+      "WildcardMatch: Special characters in target but not in pattern -- inverted arguments?\n\n"
+      << "Pattern:\t" << pat << "\nTarget:\t" << str
+    );
+#endif // DEBUG_BUILD
   mActions.clear();
   mError.clear();
   s0 = str;
@@ -460,4 +449,16 @@ bci::ExtWildcardMatch( const char* inPattern, const char* inString, bool inCaseS
   Matcher m( inCaseSensitive );
   m( inPattern, inString, &result );
   return result;
+}
+
+bcitest( WildcardTest )
+{
+  try
+  {
+    ::RunTests();
+  }
+  catch( const bci::Exception& e )
+  {
+    bcifail << e.What();
+  }
 }

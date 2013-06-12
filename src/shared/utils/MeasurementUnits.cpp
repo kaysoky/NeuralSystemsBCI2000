@@ -51,7 +51,6 @@ MeasurementUnits::Initialize( const ParamList& inParams )
     if( sSamplingRate <= 0.0 )
       bcierr << "Parameter SamplingRate needs to be greater zero" << endl;
   }
-
   if( inParams.Exists( "SampleBlockSize" ) )
   {
     sSampleBlockSize = PhysicalUnit()

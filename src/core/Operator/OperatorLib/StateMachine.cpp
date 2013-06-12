@@ -51,6 +51,7 @@
 #include "ScriptInterpreter.h"
 #include "EnvVariable.h"
 #include "ParamRef.h"
+#include "WildcardMatch.h"
 
 #include <sstream>
 #include <iomanip>
@@ -92,82 +93,92 @@ StateMachine::Init()
 bool
 StateMachine::Startup( const char* inArguments )
 {
-  bool result = ( mSystemState == Idle );
+  if( SystemState() != Idle )
+    return false;
+
+  DataLock lock( this );
+  mSystemState = Transition;
+
+  const VersionInfo& info = VersionInfo::Current;
+  mParameters.Add(
+    "System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 Operator % %"
+    " % % % // operator module version information" );
+  mParameters["OperatorVersion"].Value( "Framework" )
+    = info[VersionInfo::VersionID];
+  if( info[VersionInfo::Revision].empty() )
+    mParameters["OperatorVersion"].Value( "Revision" )
+      = info[VersionInfo::SourceDate];
+  else
+    mParameters["OperatorVersion"].Value( "Revision" )
+      = info[VersionInfo::Revision] + ", " +  info[VersionInfo::SourceDate];
+  mParameters["OperatorVersion"].Value( "Build" )
+    = info[VersionInfo::Build];
+
+  mParameters.Add(
+    "System:Protocol int OperatorBackLink= 1"
+    " 1 0 1 // Send final state and signal information to Operator (boolean)" );
+
+  mParameters.Add(
+    "System:Protocol int AutoConfig= 1"
+    " 1 0 1 // Use AutoConfig protocol extension (boolean)" );
+
+  mIntroducedRandomSeed = false;
+  mLocalAddress.clear();
+  mpSourceModule = 0;
+
+  string arguments = inArguments ? inArguments : "";
+  if( arguments.empty() )
+    arguments = "*";
+  istringstream argstream( arguments );
+  string ip;
+  argstream >> ip;
+  string modules;
+  getline( argstream, modules, '\0' );
+  if( modules.empty() )
+    modules = "Source:4000 SignalProcessing:4001 Application:4002";
+  istringstream iss( modules );
+  while( !iss.eof() )
   {
-    DataLock lock( this );
-    if( result )
+    string name;
+    std::getline( iss >> ws, name, ':' );
+    string port;
+    iss >> port >> ws;
+    string address = ip + ":" + port;
+    CoreConnection* p = new CoreConnection( *this, name, address, static_cast<int>( mConnections.size() + 1 ) );
+    mConnections.push_back( p );
+    mSockets.insert( p->Socket() );
+    if( mLocalAddress.empty() )
     {
-      mIntroducedRandomSeed = false;
-      string arguments = inArguments ? inArguments : "";
-      if( arguments.empty() )
-        arguments = "*";
-      istringstream argstream( arguments );
-      string ip;
-      argstream >> ip;
-      string modules;
-      getline( argstream, modules, '\0' );
-      if( modules.empty() )
-        modules = "Source:4000 SignalProcessing:4001 Application:4002";
-      istringstream iss( modules );
-      bool sourcePort = true;
-      while( !iss.eof() )
-      {
-        string name;
-        std::getline( iss >> ws, name, ':' );
-        string port;
-        iss >> port >> ws;
-        string address = ip + ":" + port;
-        mConnections.push_back( new CoreConnection( *this, name, address, static_cast<int>( mConnections.size() + 1 ) ) );
-        if( sourcePort )
-        {
-          mLocalAddress = "localhost:" + port;
-          int iPort;
-          istringstream( port ) >> iPort;
-          mEventLink.Open( iPort );
-          sourcePort = false;
-        }
-      }
-      result &= bcierr__.Empty();
-      if( !result )
-        CloseConnections();
+      mpSourceModule = p;
+      mLocalAddress = "localhost:" + port;
+      mEventLink.Open( ::atoi( port.c_str() ) );
     }
-    if( result )
-    {
-      mpSourceModule = *mConnections.begin();
-
-      const VersionInfo& info = VersionInfo::Current;
-      mParameters.Add(
-        "System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 Operator % %"
-        " % % % // operator module version information" );
-      mParameters["OperatorVersion"].Value( "Framework" )
-        = info[VersionInfo::VersionID];
-      if( info[VersionInfo::Revision].empty() )
-      {
-        mParameters["OperatorVersion"].Value( "Revision" )
-          = info[VersionInfo::SourceDate];
-      }
-      else
-      {
-        mParameters["OperatorVersion"].Value( "Revision" )
-          = info[VersionInfo::Revision] + ", " +  info[VersionInfo::SourceDate];
-      }
-      mParameters["OperatorVersion"].Value( "Build" )
-        = info[VersionInfo::BuildDate];
-
-      mParameters.Add(
-        "System:Additional%20Connections int OperatorBackLink= 1"
-        " 1 0 1 // Send final state and signal information to Operator (boolean)" );
-
-      OSThread::Start();
-      result &= ( bcierr__.Flushes() == 0 );
-    }
-    bcierr__.Clear();
   }
-  if( result )
+  mSystemState = Idle;
+  if( bcierr__.Empty() && IsConsistentState( WaitingForConnection ) )
     EnterState( WaitingForConnection );
-  return result;
+  bool success = bcierr__.Empty() && SystemState() == WaitingForConnection;
+  if( success )
+    OSThread::Start();
+  else
+    CloseConnections();
+  bcierr__.Clear();
+  return success;
 }
 
+void
+StateMachine::CloseConnections()
+{
+  mLocalAddress = "";
+  mpSourceModule = NULL;
+  for( size_t i = 0; i < mConnections.size(); ++i )
+  {
+    mSockets.erase( mConnections[i]->Socket() );
+    delete mConnections[i];
+  }
+  mConnections.clear();
+  mEventLink.Close();
+}
 
 StateMachine::~StateMachine()
 {
@@ -202,6 +213,8 @@ StateMachine::SetStateValue( const char* inName, State::ValueType inValue )
     {
       case Resting:
       case Suspended:
+      case Resting | ParamsModified:
+      case Suspended | ParamsModified:
         if( inValue )
           EnterState( RunningInitiated );
         break;
@@ -271,6 +284,32 @@ StateMachine::MaintainDebugLog()
     mDebugLog.close();
 }
 
+void
+StateMachine::DebugWarning()
+{
+  const string suffix = "Version",
+               row = "Build",
+               pattern = "*\\<debug\\>*",
+               sep = ", ";
+  string debugList;
+  for( int i = 0; i < mParameters.Size(); ++i )
+  {
+    const Param& p = mParameters[i];
+    ptrdiff_t pos = p.Name().length() - suffix.length();
+    if( pos > 0 && p.Name().substr( pos ) == suffix )
+    {
+      string module = p.Name().substr( 0, pos );
+      if( p.RowLabels().Exists( row ) && bci::WildcardMatch( pattern, p.Value( row, 0 ), false ) )
+        debugList += sep + module;
+    }
+  }
+  if( !debugList.empty() )
+    bciwarn__ << "The following modules were built in debug mode: "
+              << debugList.substr( sep.length() ) << ".\n"
+              << "Debug mode is useful for development, but affects perfomance"
+              << " -- do not use debug builds for experiments!\n";
+}
+
 bool
 StateMachine::SetConfig()
 {
@@ -280,9 +319,9 @@ StateMachine::SetConfig()
     case Information:
     case Initialization:
     case Resting:
-    case RestingParamsModified:
     case Suspended:
-    case SuspendedParamsModified:
+    case Resting | ParamsModified:
+    case Suspended | ParamsModified:
       result = true;
       EnterState( SetConfigIssued );
       break;
@@ -301,6 +340,8 @@ StateMachine::StartRun()
   {
     case Resting:
     case Suspended:
+    case Resting | ParamsModified:
+    case Suspended | ParamsModified:
       result = SetStateValue( "Running", true );
       break;
 
@@ -354,15 +395,9 @@ StateMachine::ParameterChange()
   switch( mSystemState )
   {
     case Resting:
-      EnterState( RestingParamsModified );
-      break;
-
     case Suspended:
-      EnterState( SuspendedParamsModified );
+      mSystemState |= ParamsModified;
       break;
-
-    default:
-      ;
   }
 }
 
@@ -370,17 +405,19 @@ StateMachine::ConnectionInfo
 StateMachine::Info( size_t i ) const
 {
   if( i < mConnections.size() )
-    return mConnections[i]->Info();
+  {
+    const CoreConnection* p = mConnections[i];
+    return p->Info()();
+  }
   return ConnectionInfo();
 }
 
 void
 StateMachine::BroadcastParameters()
 {
-  int numParams = mParameters.Size();
-  for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
-    if( ( *i )->PutMessage( mParameters ) )
-      OSThread::Sleep( 0 );
+  for( size_t i = 0; i < mConnections.size(); ++i )
+    if( mConnections[i]->PutMessage( mParameters ) )
+      ThreadUtils::Yield();
 }
 
 void
@@ -396,7 +433,7 @@ StateMachine::BroadcastStates()
   int numStates = mStates.Size();
   for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
     if( ( *i )->PutMessage( mStates ) )
-      OSThread::Sleep( 0 );
+      ThreadUtils::Yield();
 }
 
 void
@@ -423,6 +460,7 @@ StateMachine::InitializeStateVector()
 void
 StateMachine::InitializeModules()
 {
+  mAutoParameters.Clear();
   mpSourceModule->PutMessage( SignalProperties( 0, 0 ) );
 }
 
@@ -431,15 +469,22 @@ StateMachine::InitializeModules()
 void
 StateMachine::EnterState( SysState inState )
 {
-  if( mSystemState != Fatal || inState == Fatal )
+  int curState = mSystemState & ~StateFlags;
+  if( curState != Fatal || inState == Fatal )
   {
-    int transition = TRANSITION( mSystemState, inState ),
-        prevState;
+    int transition = TRANSITION( curState, inState );
     {
       OSMutex::Lock lock( mStateMutex );
-      prevState = mSystemState;
       mSystemState = Transition;
       PerformTransition( transition );
+      switch( inState )
+      {
+        case Initialization:
+        case SetConfigIssued:
+        case RunningInitiated:
+          SetConnectionState( inState );
+          break;
+      }
       mSystemState = inState;
     }
     ExecuteTransitionCallbacks( transition );
@@ -459,6 +504,7 @@ StateMachine::PerformTransition( int inTransition )
       break;
 
     case TRANSITION( Publishing, Information ):
+      DebugWarning();
       Randomize();
       mEventLink.ConfirmConnection();
       break;
@@ -476,8 +522,6 @@ StateMachine::PerformTransition( int inTransition )
     case TRANSITION( Initialization, SetConfigIssued ):
     case TRANSITION( Resting, SetConfigIssued ):
     case TRANSITION( Suspended, SetConfigIssued ):
-    case TRANSITION( SuspendedParamsModified, SetConfigIssued ):
-    case TRANSITION( RestingParamsModified, SetConfigIssued ):
       MaintainDebugLog();
       BroadcastParameters();
       BroadcastEndOfParameter();
@@ -504,23 +548,17 @@ StateMachine::PerformTransition( int inTransition )
       BroadcastParameters(); // no EndOfParameter
       break;
 
-    case TRANSITION( Suspended, SuspendedParamsModified ):
-    case TRANSITION( Resting, RestingParamsModified ):
-      break;
-
     case TRANSITION( WaitingForConnection, Idle ):
     case TRANSITION( Publishing, Idle ):
     case TRANSITION( Information, Idle ):
     case TRANSITION( Initialization, Idle ):
     case TRANSITION( SetConfigIssued, Idle ):
     case TRANSITION( Resting, Idle ):
-    case TRANSITION( RestingParamsModified, Idle ):
     case TRANSITION( RunningInitiated, Idle ):
     case TRANSITION( Running, Idle ):
     case TRANSITION( SuspendInitiated, Idle ):
     case TRANSITION( Suspended, Idle ):
-    case TRANSITION( SuspendedParamsModified, Idle ):
-      // Send a system command 'Reset' to the EEGsource.
+      // Send a system command 'Reset' to the SignalSource module.
       mpSourceModule->PutMessage( SysCommand::Reset );
       mDebugLog.close();
       CloseConnections();
@@ -533,20 +571,19 @@ StateMachine::PerformTransition( int inTransition )
     case TRANSITION( Initialization, Fatal ):
     case TRANSITION( SetConfigIssued, Fatal ):
     case TRANSITION( Resting, Fatal ):
-    case TRANSITION( RestingParamsModified, Fatal ):
     case TRANSITION( RunningInitiated, Fatal ):
     case TRANSITION( Running, Fatal ):
     case TRANSITION( SuspendInitiated, Fatal ):
     case TRANSITION( Suspended, Fatal ):
-    case TRANSITION( SuspendedParamsModified, Fatal ):
     case TRANSITION( Transition, Fatal ):
     case TRANSITION( Fatal, Fatal ):
       break;
 
     default:
-      bcierr << "Unexpected system state transition: "
-             << ( inTransition >> 8 ) << " -> " << ( inTransition & 0xff )
-             << endl;
+      bcidebug(
+        "Unexpected system state transition: " 
+         << ( inTransition >> 8 ) << " -> " << ( inTransition & 0xff )
+      );
   }
 }
 
@@ -567,8 +604,6 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
     case TRANSITION( Initialization, SetConfigIssued ):
     case TRANSITION( Resting, SetConfigIssued ):
     case TRANSITION( Suspended, SetConfigIssued ):
-    case TRANSITION( SuspendedParamsModified, SetConfigIssued ):
-    case TRANSITION( RestingParamsModified, SetConfigIssued ):
       LogMessage( BCI_OnLogMessage, "Operator set configuration" );
       break;
 
@@ -600,18 +635,16 @@ StateMachine::ExecuteTransitionCallbacks( int inTransition )
     case TRANSITION( Initialization, Idle ):
     case TRANSITION( SetConfigIssued, Idle ):
     case TRANSITION( Resting, Idle ):
-    case TRANSITION( RestingParamsModified, Idle ):
     case TRANSITION( RunningInitiated, Idle ):
     case TRANSITION( Running, Idle ):
     case TRANSITION( SuspendInitiated, Idle ):
     case TRANSITION( Suspended, Idle ):
-    case TRANSITION( SuspendedParamsModified, Idle ):
       TriggerEvent( BCI_OnShutdown );
       LogMessage( BCI_OnLogMessage, "Operator shut down connections" );
       break;
   }
   ExecuteCallback( BCI_OnSystemStateChange );
-  WatchDataLock lock( this );
+  CheckWatches();
 }
 
 int
@@ -772,6 +805,262 @@ StateMachine::RandomizationWarning()
   mPreviousRandomSeed = mParameters["RandomSeed"].Value().c_str();
 }
 
+void
+StateMachine::Handle( const CoreConnection&, const ProtocolVersion& )
+{
+}
+
+void
+StateMachine::Handle( const CoreConnection& c, const Status& s )
+{
+  int kind = 0;
+  switch( s.Content() )
+  {
+    case Status::debug:
+      kind = BCI_OnDebugMessage;
+      break;
+    case Status::warning:
+      kind = BCI_OnWarningMessage;
+      break;
+    case Status::error:
+      kind = BCI_OnErrorMessage;
+      break;
+    default:
+      kind = BCI_OnLogMessage;
+  }
+  string name = c.Info()().Name,
+         msg = s.Message();
+  if( kind == BCI_OnLogMessage )
+  {
+    if( !::stricmp( name.c_str(), msg.substr( 0, name.length() ).c_str() ) )
+      msg = msg.substr( name.length() );
+    if( !msg.empty() )
+    {
+      if( !::isspace( *msg.begin() ) )
+        msg = " " + msg;
+      string::iterator i = msg.begin();
+      while( ::isspace( *i ) && i != msg.end() )
+        ++i;
+      if( i != msg.end() )
+        *i = ::toupper( *i );
+      msg = ":" + msg;
+    }
+    msg = name + msg;
+  }
+  else if( mConnections.size() > 1 )
+  {
+    msg = "[" + name + "] " + msg;
+  }
+  LogMessage( kind, msg );
+
+  if( s.Content() == Status::error )
+  {
+    switch( SystemState() )
+    {
+      case Initialization:
+        break;
+      case SetConfigIssued:
+        EnterState( Initialization );
+        break;
+      default:
+        EnterState( Fatal );
+    }
+  }
+}
+
+void
+StateMachine::Handle( const CoreConnection& c, const SysCommand& s )
+{
+  if( s == SysCommand::Reset )
+  {
+    Shutdown();
+  }
+  else if( s == SysCommand::Suspend )
+  {
+    if( SystemState() == Running )
+      EnterState( SuspendInitiated );
+  }
+  else if( s == SysCommand::EndOfParameter )
+  {
+    /* do nothing */
+  }
+  else if( s == SysCommand::EndOfState )
+  {
+    ConnectionInfo info = c.Info()();
+    if( !info.Version.Matches( ProtocolVersion::Current() ) )
+    {
+      string older = info.Name,
+             newer = "Operator";
+      if( info.Version.MoreRecentThan( ProtocolVersion::Current() ) )
+        swap( older, newer );
+
+      bcierr__ << "Protocol version mismatch between Operator and "
+               << info.Name << " module. \n"
+               << "The " << newer << " module appears to be more recent than the "
+               << older << " module. \n\n"
+               << "Please make sure that all modules share the same"
+               << " BCI2000 major version number. \n"
+               << "The operator module's version number is "
+               << mParameters[ "OperatorVersion" ].Value( "Framework" )
+               << ". \n\n"
+               << "BCI2000 will now quit."
+               << endl;
+      Shutdown();
+    }
+  }
+}
+
+void
+StateMachine::Handle( const CoreConnection& inConnection, const Param& inParam )
+{
+  switch( SystemState() & ~StateFlags )
+  {
+    case SetConfigIssued:
+      mAutoParameters[inParam.Name()] = inParam;
+      break;
+    
+    default:
+    { ostringstream oss;
+      {
+        DataLock lock( this );
+        mParameters.Add( inParam, inConnection.Tag() );
+        mParameters[inParam.Name()].WriteToStream( oss );
+        ParameterChange();
+      }
+      ExecuteCallback( BCI_OnParameter, oss.str().c_str() );
+    } break;
+  }
+}
+
+void
+StateMachine::Handle( const CoreConnection&, const State& inState )
+{
+  ostringstream oss;
+  {
+    DataLock lock( this );
+    mStates.Delete( inState.Name() );
+    mStates.Add( inState );
+    inState.WriteToStream( oss );
+  }
+  ExecuteCallback( BCI_OnState, oss.str().c_str() );
+}
+
+bool
+StateMachine::HandleStateVector( const CoreConnection&, istream& is )
+{
+  WatchDataLock lock( this );
+  return mStateVector.ReadBinary( is );
+}
+
+void
+StateMachine::Handle( const CoreConnection&, const VisSignal& inSignal )
+{
+  if( inSignal.SourceID().empty() )
+  {
+    WatchDataLock lock( this );
+    mControlSignal = inSignal;
+  }
+  else
+  {
+    const string kind = "Graph";
+    CheckInitializeVis( inSignal.SourceID(), kind );
+    int channels = inSignal.Signal().Channels(),
+        elements = inSignal.Signal().Elements(),
+        size = channels * elements;
+    bciassert( size >= 0 );
+    float* pData = new float[ channels * elements ];
+    for( int ch = 0; ch < channels; ++ch )
+      for( int el = 0; el < elements; ++el )
+        pData[ ch * elements + el ] = static_cast<float>( inSignal.Signal()( ch, el ) );
+    ExecuteCallback( BCI_OnVisSignal, inSignal.SourceID().c_str(), channels, elements, pData );
+    delete[] pData;
+  }
+}
+
+void
+StateMachine::Handle( const CoreConnection& c, const VisSignalProperties& v )
+{
+  DataLock lock( this );
+  if( v.SourceID().empty() )
+  {
+    if( ( SystemState() & ~StateFlags ) == SetConfigIssued )
+    {
+      size_t idx = c.Tag();
+      for( size_t i = idx; i < mConnections.size(); ++i )
+        if( mConnections[i]->PutMessage( mAutoParameters ) )
+          ThreadUtils::Yield();
+      if( idx < mConnections.size() )
+        mConnections[idx]->PutMessage( v );
+      else
+        mControlSignal.SetProperties( v );
+    }
+  }
+  else
+  {
+    vector<VisCfg> visCfg = v.ToVisCfg();
+    for( size_t i = 0; i < visCfg.size(); ++i )
+      Handle( c, visCfg[i] );
+  }
+}
+
+void
+StateMachine::Handle( const CoreConnection&, const VisMemo& v )
+{
+  const string kind = "Memo";
+  CheckInitializeVis( v.SourceID(), kind );
+  ExecuteCallback( BCI_OnVisMemo, v.SourceID().c_str(), v.MemoText().c_str() );
+}
+
+void
+StateMachine::Handle( const CoreConnection&, const VisBitmap& v )
+{
+  const string kind = "Bitmap";
+  CheckInitializeVis( v.SourceID(), kind );
+  const BitmapImage& b = v.BitmapImage();
+  ExecuteCallback( BCI_OnVisBitmap, v.SourceID().c_str(), b.Width(), b.Height(), b.RawData() );
+}
+
+void
+StateMachine::Handle( const CoreConnection&, const VisCfg& v )
+{
+  DataLock lock( this );
+  mVisualizations[v.SourceID()][v.CfgID()] = v.CfgValue();
+  ExecuteCallback( BCI_OnVisPropertyMessage, v.SourceID().c_str(), v.CfgID(), v.CfgValue().c_str() );
+}
+
+void
+StateMachine::Handle( const CoreConnection& inConnection, SysState inState )
+{
+  int systemState = SystemState() & ~StateFlags;
+  if( systemState == Transition || systemState == inState )
+    return;
+
+  switch( inState )
+  {
+    case Publishing:
+      EnterState( Publishing );
+      break;
+    default:
+      if( IsConsistentState( inState ) )
+        EnterState( inState );
+  }
+}
+
+bool
+StateMachine::IsConsistentState( SysState s ) const
+{
+  for( size_t i = 0; i < mConnections.size(); ++i )
+    if( mConnections[i]->State() != s )
+      return false;
+  return true;
+}
+
+void
+StateMachine::SetConnectionState( SysState s )
+{
+  for( size_t i = 0; i < mConnections.size(); ++i )
+    mConnections[i]->EnterState( s );
+}
 
 // ------------------------ CoreConnection definitions -------------------------
 
@@ -782,16 +1071,9 @@ StateMachine::CoreConnection::CoreConnection( StateMachine& inParent,
 : mrParent( inParent ),
   mAddress( inAddress ),
   mTag( inTag ),
-  mConnected( false )
+  mState_( Idle )
 {
-  for( int i = 0; i < NumConfirmations; ++i )
-    mConfirmed[i] = false;
-
-  {
-    OSMutex::Lock lock( mInfoMutex );
-    mInfo.Name = inName;
-  }
-  mrParent.mSockets.insert( &mSocket );
+  Info()().Name = inName;
   mSocket.set_tcpnodelay( true );
   const int timeout = 1000, // ms
             resolution = 20;
@@ -805,44 +1087,34 @@ StateMachine::CoreConnection::CoreConnection( StateMachine& inParent,
       OSThread::Sleep( resolution );
     }
   }
-  if( !mSocket.is_open() )
-    bcierr__ << "Operator: Could not open socket for listening on "
-             << mAddress
-             << endl;
+  if( mSocket.is_open() )
+    EnterState( WaitingForConnection );
+  else
+    bcierr__ << "Operator: Could not open socket for listening on " << mAddress;
 }
-
-
-StateMachine::CoreConnection::~CoreConnection()
-{
-  mrParent.mSockets.erase( &mSocket );
-}
-
 
 void
 StateMachine::CoreConnection::ProcessBCIMessages()
 {
-  if( mSocket.connected() && !mConnected )
-  {
-    OSMutex::Lock lock( mrParent.mBCIMessageMutex );
+  if( mSocket.connected() && State() == WaitingForConnection )
     OnAccept();
-  }
-  else if( !mSocket.connected() && mConnected )
-  {
-    OSMutex::Lock lock( mrParent.mBCIMessageMutex );
+  else if( !mSocket.connected() && State() != WaitingForConnection )
     OnDisconnect();
-  }
-  mConnected = mSocket.connected();
   while( mStream && mStream.rdbuf()->in_avail() && !mrParent.IsTerminating() )
   {
     OSMutex::Lock lock( mrParent.mBCIMessageMutex ); // Serialize messages
     HandleMessage( mStream );
-    {
-      OSMutex::Lock lock( mInfoMutex );
-      ++mInfo.MessagesRecv;
-    }
-    if( !( mStream && mStream.is_open() ) || ( bcierr__.Flushes() > 0 ) )
-      mrParent.EnterState( Fatal );
+    ++Info()().MessagesRecv;
+    if( !( mStream && mStream.is_open() ) )
+      EnterState( Fatal );
   }
+}
+
+void
+StateMachine::CoreConnection::EnterState( SysState inState )
+{
+  mState_ = inState;
+  mrParent.Handle( *this, inState );
 }
 
 //----------------------- Connection bookkeeping -------------------------------
@@ -852,14 +1124,17 @@ StateMachine::CoreConnection::ProcessBCIMessages()
 void
 StateMachine::CoreConnection::OnAccept()
 {
-  mStream.clear();
-  mStream.open( mSocket );
-  if( mStream.is_open() )
   {
-    ostringstream oss;
-    oss << mSocket.ip() << ":" << mSocket.port();
-    OSMutex::Lock lock( mInfoMutex );
-    mInfo.Address = oss.str();
+    OSMutex::Lock lock( mrParent.mBCIMessageMutex );
+    mStream.clear();
+    mStream.open( mSocket );
+    if( mStream.is_open() )
+    {
+      ostringstream oss;
+      oss << mSocket.ip() << ":" << mSocket.port();
+      Info()().Address = oss.str();
+      EnterState( Publishing );
+    }
   }
 }
 
@@ -867,13 +1142,14 @@ StateMachine::CoreConnection::OnAccept()
 // the information in its ConnectionInfo::Address[] entry.
 void
 StateMachine::CoreConnection::OnDisconnect()
-{
-  mStream.close();
-  mSocket.open( mAddress.c_str() );
-  OSMutex::Lock lock( mInfoMutex );
-  mInfo.Address = "";
+{ 
+  {
+    OSMutex::Lock lock( mrParent.mBCIMessageMutex );
+    mStream.close();
+    Info()().Address = "";
+  }
+  EnterState( Idle );
 }
-
 
 //--------------------- Handlers for BCI messages ------------------------------
 bool
@@ -881,10 +1157,7 @@ StateMachine::CoreConnection::HandleProtocolVersion( istream& is )
 {
   ProtocolVersion version;
   if( version.ReadBinary( is ) )
-  {
-    OSMutex::Lock lock( mInfoMutex );
-    mInfo.Version = version;
-  }
+    Info()().Version = version;
   return true;
 }
 
@@ -894,89 +1167,20 @@ StateMachine::CoreConnection::HandleStatus( istream& is )
   Status status;
   if( status.ReadBinary( is ) )
   {
-    {
-      OSMutex::Lock lock( mInfoMutex );
-      mInfo.Status = status.Message().c_str();
-    }
+    Info()().Status = status.Message().c_str();
+    mrParent.Handle( *this, status );
     switch( status.Content() )
     {
-      case Status::debug:
-        mrParent.LogMessage( BCI_OnDebugMessage, status.Message() );
-        break;
-      case Status::warning:
-        mrParent.LogMessage( BCI_OnWarningMessage, status.Message() );
-        break;
-      case Status::error:
-        mrParent.LogMessage( BCI_OnErrorMessage, status.Message() );
-        break;
       case Status::initialized:
-      { // If the operator received successful status messages from
-        // all core modules, then this is the end of the initialization phase.
-        string message;
-        {
-          OSMutex::Lock lock( mInfoMutex );
-          message = mInfo.Name + " confirmed new parameters ...";
-        }
-        mrParent.LogMessage( BCI_OnLogMessage, message );
-      } break;
+        EnterState( Resting );
+        break;
       case Status::running:
-        Confirm( ConfirmRunning );
+        EnterState( Running );
         break;
       case Status::suspended:
-        Confirm( ConfirmSuspended );
-        break;
-      default:
-        mrParent.LogMessage( BCI_OnLogMessage, status.Message() );
-    }
-
-    switch( mrParent.SystemState() )
-    {
-      case Publishing:
-        if( mrParent.Confirmed( ConfirmEndOfStates ) )
-        {
-          mrParent.ClearConfirmation( ConfirmEndOfStates );
-          mrParent.EnterState( StateMachine::Information );
-        }
-        break;
-
-      case SetConfigIssued:
-        switch( status.Content() )
-        {
-          case Status::error:
-            mrParent.ClearConfirmation( ConfirmInitialized );
-            mrParent.EnterState( StateMachine::Initialization );
-            break;
-
-          case Status::initialized:
-            Confirm( ConfirmInitialized );
-            if( mrParent.Confirmed( ConfirmInitialized ) )
-            {
-              mrParent.ClearConfirmation( ConfirmInitialized );
-              mrParent.EnterState( StateMachine::Resting );
-            }
-            break;
-        }
-        break;
-
-      case SuspendInitiated:
-        if( mrParent.Confirmed( ConfirmSuspended ) )
-        {
-          mrParent.ClearConfirmation( ConfirmSuspended );
-          mrParent.EnterState( StateMachine::Suspended );
-        }
-        break;
-
-      case RunningInitiated:
-        if( mrParent.Confirmed( ConfirmRunning ) )
-        {
-          mrParent.ClearConfirmation( ConfirmRunning );
-          mrParent.EnterState( StateMachine::Running );
-        }
+        EnterState( Suspended );
         break;
     }
-
-    if( status.Content() == Status::error && mrParent.SystemState() != Initialization )
-      mrParent.EnterState( Fatal );
   }
   return true;
 }
@@ -986,45 +1190,10 @@ StateMachine::CoreConnection::HandleSysCommand( istream& is )
 {
   SysCommand syscmd;
   if( syscmd.ReadBinary( is ) )
-  {
-    if( syscmd == SysCommand::Reset )
-    {
-      mrParent.Shutdown();
-    }
-    else if( syscmd == SysCommand::Suspend )
-    {
-      mrParent.EnterState( SuspendInitiated );
-    }
-    else if( syscmd == SysCommand::EndOfParameter )
-    {
-      /* do nothing */
-    }
-    // The operator receiving 'EndOfState' marks the end of the publishing phase.
-    else if( syscmd == SysCommand::EndOfState )
-    {
-      Confirm( ConfirmEndOfStates );
-      OSMutex::Lock lock( mInfoMutex );
-      if( !mInfo.Version.Matches( ProtocolVersion::Current() ) )
-      {
-        string older = mInfo.Name,
-               newer = "Operator";
-        if( mInfo.Version.MoreRecentThan( ProtocolVersion::Current() ) )
-          swap( older, newer );
-
-        bcierr__ << "Protocol version mismatch between Operator and "
-                 << mInfo.Name << " module. \n"
-                 << "The " << newer << " module appears to be more recent than the "
-                 << older << " module. \n\n"
-                 << "Please make sure that all modules share the same"
-                 << " BCI2000 major version number. \n"
-                 << "The operator module's version number is "
-                 << mrParent.mParameters[ "OperatorVersion" ].Value( "Framework" )
-                 << ". \n\n"
-                 << "BCI2000 will now quit."
-                 << endl;
-        mrParent.Shutdown();
-      }
-    }
+  { // Receiving 'EndOfState' marks the end of the publishing phase.
+    if( syscmd == SysCommand::EndOfState )
+      EnterState( Information );
+    mrParent.Handle( *this, syscmd );
   }
   return true;
 }
@@ -1034,16 +1203,7 @@ StateMachine::CoreConnection::HandleParam( istream& is )
 {
   Param param;
   if( param.ReadBinary( is ) )
-  {
-    ostringstream oss;
-    {
-      StateMachine::DataLock lock( mrParent );
-      mrParent.mParameters.Add( param, mTag );
-      mrParent.mParameters[param.Name()].WriteToStream( oss );
-      mrParent.ParameterChange();
-    }
-    mrParent.ExecuteCallback( BCI_OnParameter, oss.str().c_str() );
-  }
+    mrParent.Handle( *this, param );
   return true;
 }
 
@@ -1052,25 +1212,14 @@ StateMachine::CoreConnection::HandleState( istream& is )
 {
   class State state;
   if( state.ReadBinary( is ) )
-  {
-    ostringstream oss;
-    {
-      StateMachine::DataLock lock( mrParent );
-      mrParent.mStates.Delete( state.Name() );
-      mrParent.mStates.Add( state );
-      state.WriteToStream( oss );
-    }
-    mrParent.ExecuteCallback( BCI_OnState, oss.str().c_str() );
-    mrParent.EnterState( Publishing );
-  }
+    mrParent.Handle( *this, state );
   return true;
 }
 
 bool
 StateMachine::CoreConnection::HandleStateVector( istream& is )
 {
-  StateMachine::WatchDataLock lock( mrParent );
-  return mrParent.mStateVector.ReadBinary( is );
+  return mrParent.HandleStateVector( *this, is );
 }
 
 bool
@@ -1078,28 +1227,7 @@ StateMachine::CoreConnection::HandleVisSignal( istream& is )
 {
   VisSignal v;
   if( v.ReadBinary( is ) )
-  {
-    if( v.SourceID().empty() )
-    {
-      StateMachine::WatchDataLock lock( mrParent );
-      mrParent.mControlSignal = v;
-    }
-    else
-    {
-      const string kind = "Graph";
-      mrParent.CheckInitializeVis( v.SourceID(), kind );
-      int channels = v.Signal().Channels(),
-          elements = v.Signal().Elements(),
-          size = channels * elements;
-      bciassert( size >= 0 );
-      float* pData = new float[ channels * elements ];
-      for( int ch = 0; ch < channels; ++ch )
-        for( int el = 0; el < elements; ++el )
-          pData[ ch * elements + el ] = static_cast<float>( v.Signal()( ch, el ) );
-      mrParent.ExecuteCallback( BCI_OnVisSignal, v.SourceID().c_str(), channels, elements, pData );
-      delete[] pData;
-    }
-  }
+    mrParent.Handle( *this, v );
   return true;
 }
 
@@ -1108,164 +1236,7 @@ StateMachine::CoreConnection::HandleVisSignalProperties( istream& is )
 {
   VisSignalProperties v;
   if( v.ReadBinary( is ) )
-  {
-    StateMachine::DataLock lock( mrParent );
-    if( v.SourceID().empty() )
-    {
-      mrParent.mControlSignal.SetProperties( v );
-    }
-    else
-    {
-      // We treat a VisSignalProperties message as a set of VisCfg
-      // messages.
-#ifdef TODO
-# error Factor this out into a VisSignalProperties::ToVisCfg() method.
-#endif // TODO
-      const SignalProperties& s = v.SignalProperties();
-      const char* sourceID = v.SourceID().c_str();
-      VisProperties& p = mrParent.mVisualizations[sourceID];
-      if( !s.Name().empty() )
-      {
-        p.Put( CfgID::WindowTitle, s.Name() );
-        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::WindowTitle, s.Name().c_str() );
-      }
-
-      string channelUnit = s.ChannelUnit().RawToPhysical( s.ChannelUnit().Offset() + 1 );
-      p.Put( CfgID::ChannelUnit, channelUnit );
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ChannelUnit, channelUnit.c_str() );
-
-      int numSamples = static_cast<int>( s.ElementUnit().RawMax() - s.ElementUnit().RawMin() + 1 );
-      p.Put( CfgID::NumSamples, numSamples );
-      ostringstream oss;
-      oss << numSamples;
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::NumSamples, oss.str().c_str() );
-
-      if( numSamples > 0 )
-      {
-        string symbol;
-        double value = s.ElementUnit().Gain() * numSamples;
-        int magnitude = static_cast<int>( ::log10( ::fabs( value ) ) );
-        if( magnitude > 0 )
-          --magnitude;
-        else if( magnitude < 0 )
-          ++magnitude;
-        magnitude /= 3;
-        if( magnitude < -3 )
-          magnitude = -3;
-        if( magnitude > 3 )
-          magnitude = 3;
-        switch( magnitude )
-        {
-          case -3:
-            symbol = "n";
-            value /= 1e-9;
-            break;
-          case -2:
-            symbol = "mu";
-            value /= 1e-6;
-            break;
-          case -1:
-            symbol = "m";
-            value /= 1e-3;
-            break;
-          case 0:
-            break;
-          case 1:
-            symbol = "k";
-            value /= 1e3;
-            break;
-          case 2:
-            symbol = "M";
-            value /= 1e6;
-            break;
-          case 3:
-            symbol = "G";
-            value /= 1e9;
-            break;
-        }
-        ostringstream oss;
-        oss << setprecision( 10 ) << value / numSamples << symbol << s.ElementUnit().Symbol();
-        p.Put( CfgID::SampleUnit, oss.str() );
-        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::SampleUnit, oss.str().c_str() );
-        p.Put( CfgID::SampleOffset, s.ElementUnit().Offset() );
-        oss.str( "" );
-        oss << s.ElementUnit().Offset();
-        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::SampleOffset, oss.str().c_str() );
-      }
-
-      // Although the SignalProperties class allows for individual units for
-      // individual channels, the SignalDisplay class is restricted to a single
-      // unit and range.
-      string valueUnit = s.ValueUnit().RawToPhysical( s.ValueUnit().Offset() + 1 );
-      p.Put( CfgID::ValueUnit, valueUnit );
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ValueUnit, valueUnit.c_str() );
-
-      double rangeMin = s.ValueUnit().RawMin(),
-             rangeMax = s.ValueUnit().RawMax();
-      if( rangeMin == rangeMax )
-      {
-        p.erase( CfgID::MinValue );
-        p.erase( CfgID::MaxValue );
-      }
-      else
-      {
-        p.Put( CfgID::MinValue, rangeMin );
-        oss.str( "" );
-        oss << rangeMin;
-        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::MinValue, oss.str().c_str() );
-        p.Put( CfgID::MaxValue, rangeMax );
-        oss.str( "" );
-        oss << rangeMax;
-        mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::MaxValue, oss.str().c_str() );
-      }
-
-      LabelList groupLabels,
-                channelLabels;
-      int channelGroupSize = 1;
-      if( !s.ChannelLabels().IsTrivial() )
-      {
-        for( int i = 0; i < s.ChannelLabels().Size(); ++i )
-        {
-          istringstream iss( s.ChannelLabels()[ i ] );
-          HierarchicalLabel label;
-          iss >> label;
-          if( label.size() == 2 )
-          {
-            if( groupLabels.empty() )
-            {
-              groupLabels.push_back( Label( 0, label[ 0 ] ) );
-            }
-            else
-            {
-              if( label[ 0 ] == groupLabels.begin()->Text() )
-                ++channelGroupSize;
-              if( label[ 0 ] != groupLabels.rbegin()->Text() )
-                groupLabels.push_back( Label( static_cast<int>( groupLabels.size() ), label[ 0 ] ) );
-            }
-            channelLabels.push_back( Label( static_cast<int>( channelLabels.size() ), label[ 1 ] ) );
-          }
-          else
-          {
-            channelLabels.push_back( Label( i, s.ChannelLabels()[ i ] ) );
-          }
-        }
-      }
-      p.Put( CfgID::ChannelGroupSize, channelGroupSize );
-      oss.str( "" );
-      oss << channelGroupSize;
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ChannelGroupSize, oss.str().c_str() );
-
-      p.Put( CfgID::ChannelLabels, channelLabels );
-      oss.str( "" );
-      oss << channelLabels;
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::ChannelLabels, oss.str().c_str() );
-
-      p.Put( CfgID::GroupLabels, groupLabels );
-      oss.str( "" );
-      oss << groupLabels;
-      mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, sourceID, CfgID::GroupLabels, oss.str().c_str() );
-    }
-  }
+    mrParent.Handle( *this, v );
   return true;
 }
 
@@ -1274,11 +1245,7 @@ StateMachine::CoreConnection::HandleVisMemo( istream& is )
 {
   VisMemo v;
   if( v.ReadBinary( is ) )
-  {
-    const string kind = "Memo";
-    mrParent.CheckInitializeVis( v.SourceID(), kind );
-    mrParent.ExecuteCallback( BCI_OnVisMemo, v.SourceID().c_str(), v.MemoText().c_str() );
-  }
+    mrParent.Handle( *this, v );
   return true;
 }
 
@@ -1287,12 +1254,7 @@ StateMachine::CoreConnection::HandleVisBitmap( istream& is )
 {
   VisBitmap v;
   if( v.ReadBinary( is ) )
-  {
-    const string kind = "Bitmap";
-    mrParent.CheckInitializeVis( v.SourceID(), kind );
-    const BitmapImage& b = v.BitmapImage();
-    mrParent.ExecuteCallback( BCI_OnVisBitmap, v.SourceID().c_str(), b.Width(), b.Height(), b.RawData() );
-  }
+    mrParent.Handle( *this, v );
   return true;
 }
 
@@ -1301,11 +1263,7 @@ StateMachine::CoreConnection::HandleVisCfg( istream& is )
 {
   VisCfg v;
   if( v.ReadBinary( is ) )
-  {
-    StateMachine::DataLock lock( mrParent );
-    mrParent.mVisualizations[v.SourceID()][v.CfgID()] = v.CfgValue();
-    mrParent.ExecuteCallback( BCI_OnVisPropertyMessage, v.SourceID().c_str(), v.CfgID(), v.CfgValue().c_str() );
-  }
+    mrParent.Handle( *this, v );
   return true;
 }
 
@@ -1347,10 +1305,11 @@ StateMachine::EventLink::OnExecute()
     serverSocket.close();
     if( !IsTerminating() )
     {
-      ::Lock<EventLink> lock1( *this );
-      istringstream iss( mrParent.mpSourceModule->Info().Address );
+      const CoreConnection* p = *mrParent.mConnections.begin();
+      istringstream iss( p->Info()().Address );
       string sourceIP;
       std::getline( iss, sourceIP, ':' );
+      ::Lock<EventLink> lock1( *this );
       mSocket.open( sourceIP.c_str(), mPort + 1 );
       this->clear();
       this->open( mSocket );

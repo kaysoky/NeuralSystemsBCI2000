@@ -94,6 +94,7 @@ namespace GDF
    public:
     EncodedString( const std::string& s = "" ) : std::string( s ) {}
     void WriteToStream( std::ostream& os ) const;
+    void ReadFromStream( std::istream& is );
   };
 
   // Conversion of an extended time_t type into a string.
@@ -116,7 +117,10 @@ namespace GDF
       Str( double );
       template<class U>
        Str( const U& );
+      template<class U>
+       operator U() const;
       void WriteToStream( std::ostream& ) const;
+      void ReadFromStream( std::istream& is );
     };
 
   template<class T, int N=1>
@@ -128,21 +132,30 @@ namespace GDF
       template<class U>
        Num( const U* );
       void WriteToStream( std::ostream& os ) const;
+      void ReadFromStream( std::istream& is );
      private:
       typename T::ValueType mValues[N];
     };
 
   template<class F>
     void PutField( std::ostream& );
+  template<class F>
+    void GetField( std::istream& );
 
   template<class F, class V>
     void PutField( std::ostream&, const V& v );
+  template<class F, class V>
+    void GetField( std::istream&, V& v );
 
   template<class F, class C>
     void PutArray( std::ostream&, const C& c );
+  template<class F, class C>
+    void GetArray( std::istream&, const C& c );
 
   template<class F, class C, class P>
     void PutArray( std::ostream&, const C& c, P p );
+  template<class F, class C, class P>
+    void GetArray( std::istream&, C& c, P p );
 
 }; // namespace GDF
 
@@ -154,12 +167,30 @@ GDF::PutField( std::ostream& os )
   F().WriteToStream( os );
 }
 
+template<class F>
+inline
+void
+GDF::GetField( std::istream& is )
+{
+  F().ReadFromStream( is );
+}
+
 template<class F, class V>
 inline
 void
 GDF::PutField( std::ostream& os, const V& v )
 {
   F( v ).WriteToStream( os );
+}
+
+template<class F, class V>
+inline
+void
+GDF::GetField( std::istream& is, V& v )
+{
+  F f;
+  f.ReadFromStream( is );
+  v = f;
 }
 
 template<class F, class C>
@@ -171,6 +202,15 @@ GDF::PutArray( std::ostream& os, const C& c )
     F( 0 ).WriteToStream( os );
 }
 
+template<class F, class C>
+inline
+void
+GDF::GetArray( std::istream& is, const C& c )
+{
+  for( typename C::const_iterator i = c.begin(); i != c.end(); ++i )
+    F().ReadFromStream( is );
+}
+
 template<class F, class C, class P>
 inline
 void
@@ -178,6 +218,19 @@ GDF::PutArray( std::ostream& os, const C& c, P p )
 {
   for( typename C::const_iterator i = c.begin(); i != c.end(); ++i )
     F( ( *i ).*p ).WriteToStream( os );
+}
+
+template<class F, class C, class P>
+inline
+void
+GDF::GetArray( std::istream& is, C& c, P p )
+{
+  for( typename C::iterator i = c.begin(); i != c.end(); ++i )
+  {
+    F f;
+    f.ReadFromStream( is );
+    ( *i ).*p = f;
+  }
 }
 
 template<int tLength>
@@ -221,10 +274,27 @@ GDF::Str<tLength>::Str( const U& u )
 }
 
 template<int tLength>
+template<class U>
+GDF::Str<tLength>::operator U() const
+{
+  U u;
+  std::istringstream iss( *this );
+  iss >> u;
+  return u;
+}
+
+template<int tLength>
 void
 GDF::Str<tLength>::WriteToStream( std::ostream& os ) const
 {
   os.write( this->data(), tLength );
+}
+
+template<int tLength>
+void
+GDF::Str<tLength>::ReadFromStream( std::istream& is )
+{
+  is.read( const_cast<char*>( this->data() ), tLength );
 }
 
 template<class T, int N>

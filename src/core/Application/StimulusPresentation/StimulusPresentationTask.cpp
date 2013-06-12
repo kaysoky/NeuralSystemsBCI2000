@@ -148,7 +148,7 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& Input ) const
         if( Sequence( i ) < 1 )
           bcierr << "Invalid stimulus code "
                  << "(" << Sequence( i ) << ") "
-                 << "at Sequence(" << i << ")"
+                 << "at Sequence(" << i + 1 << ")"
                  << endl;
       break;
 
@@ -157,7 +157,7 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& Input ) const
         if( Sequence( i ) < 0 )
           bcierr << "Invalid frequency "
                  << "(" << Sequence( i ) << ") "
-                 << "at Sequence(" << i << ")"
+                 << "at Sequence(" << i + 1 << ")"
                  << endl;
       break;
 

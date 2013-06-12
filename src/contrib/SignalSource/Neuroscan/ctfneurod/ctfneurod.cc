@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 #include "./CtfNeuroSrv.h"
 #include <string>
+#include <fstream>
 #include <exception>
 #include <csignal>
 #include <regex.h>
@@ -33,6 +34,7 @@ main( int argc, const char* argv[] )
   int rem_argc = 1;
   const char** rem_argv = new const char* [ argc ];
   rem_argv[ 0 ] = argv[ 0 ];
+  ofstream elocFile, sourceParamFile;
   const char* pattern = NULL;
   double freqCorrectionFactor = 1.0;
   int outputFormat = DataTypeRaw16bit;
@@ -51,6 +53,16 @@ main( int argc, const char* argv[] )
       return 0;
     }
 #endif // APPREVISION
+    if( string( argv[ i ] ) == "--elocFile" || string( argv[ i ] ) == "-e" )
+    {
+      if( argc >= i )
+        elocFile.open( argv[ ++i ] );
+    }
+    if( string( argv[ i ] ) == "--sourceParamFile" || string( argv[ i ] ) == "-s" )
+    {
+      if( argc >= i )
+        sourceParamFile.open( argv[ ++i ] );
+    }
     if( string( argv[ i ] ) == "--pattern" || string( argv[ i ] ) == "-p" )
     {
       if( argc >= i )
@@ -71,12 +83,12 @@ main( int argc, const char* argv[] )
         else if( outputFormatString.find( "32" ) != string::npos )
           outputFormat = DataTypeRaw32bit;
         else
-        {
+	{
           cerr << "Unknown output format: " << outputFormatString << ",\n"
                << "  use \"16\" or \"32\" as output format specifiers."
                << endl;
           return -1;
-        }
+	}
       } 
     }
     else if( string( argv[ i ] ) == "--disableHP" || string( argv[ i ] ) == "-d" )
@@ -118,7 +130,7 @@ main( int argc, const char* argv[] )
   int result = 0;
   try
   {
-    pNeuroSrv = new CtfNeuroSrv( pCompiledPattern, freqCorrectionFactor, outputFormat, !disableHP );
+    pNeuroSrv = new CtfNeuroSrv( pCompiledPattern, freqCorrectionFactor, outputFormat, !disableHP, elocFile, sourceParamFile );
     result = pNeuroSrv->Run( rem_argc, rem_argv );
   }
   catch( const exception& e )

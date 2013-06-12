@@ -22,6 +22,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileWriter.cpp
   ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000OutputFormat.cpp
 
+  ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/EDFHeader.cpp
   ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/EDFFileWriter.cpp
   ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/EDFOutputBase.cpp
   ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/EDFOutputFormat.cpp

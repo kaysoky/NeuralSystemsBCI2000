@@ -34,8 +34,13 @@
 # define PROJECT_VERSION "3.0"
 #endif
 
+#ifndef BUILD_TYPE
+# define BUILD_TYPE "unknown"
+#endif
+
 #define PROJECT_VERSION_DEF  "$Version: " PROJECT_VERSION " $" \
                      "$Build Date: " __DATE__ " " __TIME__ " $" \
+                     "$Build Type: " BUILD_TYPE " $" \
                      "$Compiler: " COMPILER_NAME " $"
 
 #define PROJECT_COPYRIGHT "(C) 2000-2013, " PROJECT_NAME " Project\n" \

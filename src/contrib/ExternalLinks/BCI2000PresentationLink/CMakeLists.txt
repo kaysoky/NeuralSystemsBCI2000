@@ -26,10 +26,15 @@ SET( SOURCES
   Resource.h
 
   ${BCI2000_SRC_DIR}/shared/config/Version.h
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.h
-
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIException.cpp
   ${BCI2000_SRC_DIR}/shared/utils/VersionInfo.cpp
   ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Debugging.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/ClassName.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/FileUtils.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/StringUtils.cpp
+
   ${BCI2000_SRC_DIR}/core/Operator/BCI2000Remote/BCI2000Remote.cpp  
   ${BCI2000_SRC_DIR}/core/Operator/BCI2000Remote/BCI2000Connection.cpp  
 

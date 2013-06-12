@@ -5,4 +5,3 @@
 ##   application modules.
 
 BCI2000_ADD_LIBRARY_TEST( Core )
-

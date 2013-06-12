@@ -49,6 +49,9 @@ const char* VersionInfo::sNames[] =
  "Source Revision",
  "Source Date",
  "Build Date",
+ "Build Type",
+ "Compiler",
+ "Build",
 };
 const size_t VersionInfo::sNumNames = sizeof( sNames ) / sizeof( *sNames );
 
@@ -99,6 +102,15 @@ VersionInfo::ReadFromStream( istream& is )
     { "build",       BuildDate },
     { "built",       BuildDate },
     { "builddate",   BuildDate },
+
+    { "Build Type",  BuildType },
+    { "buildtype",   BuildType },
+
+    { "Compiler",    Compiler },
+    { "compiler",    Compiler },
+
+    { "Build",       Build },
+    { "build",       Build },
   };
 
   string line;
@@ -111,11 +123,23 @@ VersionInfo::ReadFromStream( istream& is )
       for( size_t i = 0; i < sizeof( substitutions ) / sizeof( *substitutions ); ++i )
         if( !::stricmp( keyword.c_str(), substitutions[ i ].keyword ) )
           keyword = sNames[ substitutions[ i ].replaceBy ];
-      while( !value.empty() && iswspace( *value.rbegin() ) )
-        value = value.substr( 0, value.length() - 1 );
+      size_t pos = value.length();
+      while( pos > 0 && ::isspace( value[pos-1] ) )
+        --pos;
+      value = value.substr( 0, pos );
       if( !value.empty() )
         VersionInfoBase::operator[]( keyword ) = value;
     }
+  }
+  if( find( "Build" ) == end() )
+  {
+    string build;
+    static const char* buildinfo[] = { "Compiler", "Build Type", "Build Date" };
+    for( size_t i = 0; i < sizeof( buildinfo ) / sizeof( *buildinfo ); ++i )
+      if( find( buildinfo[i] ) != end() )
+        build += " " + (*this)[buildinfo[i]];
+    if( !build.empty() )
+      VersionInfoBase::operator[]( "Build" ) = build.substr( 1 );
   }
   return is;
 }

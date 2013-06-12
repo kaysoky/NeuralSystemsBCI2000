@@ -1,13 +1,12 @@
 //////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A std::exception derived BCIException class for
-//   specific exceptions, and a stream-to-string conversion
-//   function to simplify throwing exceptions:
+// Description: Classes for convenient throwing and catching of
+//   expected and unexpected exceptions.
 //
 //   #include "BCIException.h"
 //   ...
-//   throw stdexception( invalid_argument, "Illegal value of n: " << n );
+//   throw std_invalid_argument( "Illegal value of n: " << n );
 //
 //
 // $BEGIN_BCI2000_LICENSE$
@@ -35,19 +34,8 @@
 
 #include <exception>
 #include <sstream>
-
-#define STR_(x) STR__(x)
-#define STR__(x) #x
-
-#ifndef __BORLANDC__
-# if defined( __FUNCTION__ )
-#  define FUNCTION_ __FUNCTION__
-# elif defined( __PRETTY_FUNCTION__ )
-#  define FUNCTION_   __PRETTY_FUNCTION__
-# elif defined( __func__ )
-#  define FUNCTION_   __func__
-# endif
-#endif // __BORLANDC__
+#include <typeinfo>
+#include "Compiler.h"
 
 #define FILE_CONTEXT_ \
      "\nFile: " << __FILE__ \
@@ -82,28 +70,30 @@
 #define bciexception(x)         stdexception(exception,x)
 
 namespace bci {
-  struct Exception
+  class Exception
   {
-    static std::string ToString( std::ostream& os )
-    {
-      std::ostringstream* p = dynamic_cast<std::ostringstream*>( &os.flush() );
-      return p ? p->str() : "bci::Exception::ToString(): Expected std::ostringstream argument";
-    }
-
-    explicit Exception( const std::string& inWhat, const std::string& inWhere = "" )
-    : mWhat( inWhat ), mWhere( inWhere ) {}
+   public:
+    explicit Exception(
+      const std::string& inWhat,
+      const std::string& inWhere = "",
+      const std::type_info& inType = typeid( Exception )
+    );
     virtual ~Exception() throw() {}
 
     virtual const std::string& Where() const throw() { return mWhere; }
     virtual const std::string& What() const throw() { return mWhat; }
-    private: std::string mWhat, mWhere;
+
+    static std::string ToString( std::ostream& );
+
+    private:
+     std::string mWhat, mWhere;
   };
 
   template<typename T>
   struct Exception_ : Exception, T
   {
     explicit Exception_( const std::string& what, const std::string& where = "" )
-    : T( ( what + where ).c_str() ), Exception( what, where ) {}
+      : T( ( what + where ).c_str() ), Exception( what, where, typeid( T ) ) {}
     virtual ~Exception_() throw() {}
   };
 } // namespace bci

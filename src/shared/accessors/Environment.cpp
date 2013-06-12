@@ -46,6 +46,7 @@
 #include "RunManager.h"
 #include "BCIEvent.h"
 #include "BCIAssert.h"
+#include "BCIStream.h"
 
 #include <cstdlib>
 
@@ -59,6 +60,7 @@ template<> ParamList* EnvironmentBase::Accessor_<ParamList>::spGlobal = NULL;
 template<> StateList* EnvironmentBase::Accessor_<StateList>::spGlobal = NULL;
 template<> StateVector* EnvironmentBase::Accessor_<StateVector>::spGlobal = NULL;
 
+#undef AutoConfig_
 #undef phase_
 EnvironmentBase::ExecutionPhase EnvironmentBase::phase_ = EnvironmentBase::nonaccess;
 int EnvironmentBase::sMaxInstanceID = 0;
@@ -121,6 +123,7 @@ EnvironmentBase::StatesAccessedDuringPreflight()
 // Constructors
 EnvironmentBase::EnvironmentBase()
 : mInstance( ++sMaxInstanceID ),
+  mAutoConfig( false ),
   Parameters( NULL ),
   States( NULL ),
   Statevector( NULL )
@@ -129,6 +132,7 @@ EnvironmentBase::EnvironmentBase()
 
 EnvironmentBase::EnvironmentBase( ParamList& rParameters, StateList& rStates, StateVector& rStatevector )
 : mInstance( ++sMaxInstanceID ),
+  mAutoConfig( false ),
   Parameters( &rParameters ),
   States( &rStates ),
   Statevector( &rStatevector )
@@ -179,45 +183,24 @@ EnvironmentBase::IsGlobalEnvironment() const
 MutableParamRef
 EnvironmentBase::Parameter( const string& inName )
 {
-  Param* pParam = NULL;
-  if( Parameters == NULL )
-    bcierr_ << "Attempted parameter access during non-access phase."
-            << endl;
-  else
-  {
-    if( Parameters->Exists( inName ) )
-    {
-      ParamAccess( inName );
-      pParam = &( *Parameters )[ inName ];
-    }
-    else
-      bcierr_ << "Parameter \"" << inName << "\" does not exist."
-              << endl;
-  }
+  Param* pParam = ParamAccess( inName );
   return MutableParamRef( pParam );
 }
 
 ParamRef
 EnvironmentBase::Parameter( const string& inName ) const
 {
-  return const_cast<EnvironmentBase*>( this )->Parameter( inName );
+  return ParamRef( ParamAccess( inName ) );
 }
 
 MutableParamRef
 EnvironmentBase::OptionalParameter( const string& inName, const string& inDefaultValue )
 {
-  ParamAccess( inName );
-
-  Param* pParam = NULL;
-  if( Parameters == NULL )
-    bcierr_ << "Attempted parameter access during non-access phase."
-            << endl;
-  else if( Parameters->Exists( inName ) )
-    pParam = &( *Parameters )[ inName ];
-  else
+  Param* pParam = ParamAccess( inName, true );
+  if( !pParam )
   {
-    mDefaultParam.Value() = inDefaultValue;
-    pParam = &mDefaultParam;
+    mTemporaryParams[inName].Value() = inDefaultValue;
+    pParam = &mTemporaryParams[inName];
   }
   return MutableParamRef( pParam );
 }
@@ -258,8 +241,8 @@ EnvironmentBase::DescribeValue( const Param& inParam, size_t inIdx1, size_t inId
   return oss.str();
 }
 
-void
-EnvironmentBase::ParamAccess( const string& inName ) const
+Param*
+EnvironmentBase::ParamAccess( const string& inName, bool inOptional ) const
 {
   if( IsGlobalEnvironment() )
   {
@@ -268,6 +251,57 @@ EnvironmentBase::ParamAccess( const string& inName ) const
       accessedParams.insert( inName );
     OnParamAccess( inName );
   }
+
+  Param* pParam = 0;
+  if( Parameters == 0 )
+    bcierr_ << "Attempted parameter access during non-access phase.";
+  else if( Parameters->Exists( inName ) )
+    pParam = &( *Parameters )[inName];
+  else if( !inOptional )
+    bcierr_ << "Parameter \"" << inName << "\" does not exist.";
+
+  if( mAutoConfig && pParam )
+  {
+    bool inAutoSet = ( mAutoConfigParams.find( inName ) != mAutoConfigParams.end() ),
+         mayWrite = inAutoSet;
+
+    const NameSet& ownedParams = OwnedParams()[ObjectContext()];
+    if( ownedParams.find( inName ) == ownedParams.end() )
+    {
+      if( !inAutoSet )
+        bcierr_ << "Parameter " << inName << " is inaccessible. "
+                << "From AutoConfig(), a filter may only access its own parameters.";
+      mAutoConfigParams.insert( inName );
+      mayWrite = false;
+    }
+    if( !mayWrite && !mTemporaryParams.Exists( inName ) )
+    {
+      static const char* autoTypes[] = { "blob", },
+                       * autoTags[] = { "auto", "AutoConfig", };
+      for( size_t i = 0; i < sizeof( autoTypes ) / sizeof( *autoTypes ); ++i )
+        if( !::stricmp( pParam->Type().c_str(), autoTypes[i] ) )
+          mayWrite = true;
+      for( size_t i = 0; i < sizeof( autoTags ) / sizeof( *autoTags ); ++i )
+        mayWrite = mayWrite || ( pParam->NumValues() == 1 && !::stricmp( pParam->Value().c_str(), autoTags[i] ) );
+      if( mayWrite )
+        mAutoConfigParams.insert( inName );
+      else
+        mTemporaryParams[inName] = *pParam;
+    }
+    if( !mayWrite )
+      pParam = &mTemporaryParams[inName];
+  }
+  return pParam;
+}
+
+bool
+EnvironmentBase::AutoConfig_( bool inAutoConfig )
+{
+  bool result = mAutoConfig;
+  mAutoConfigParams.clear();
+  mTemporaryParams.Clear();
+  mAutoConfig = inAutoConfig;
+  return result;
 }
 
 bool
@@ -277,7 +311,7 @@ EnvironmentBase::PreflightCondition_( const char* inConditionString,
   if( !inConditionValue )
     bcierr_ << "A necessary condition is violated. "
             << "Please make sure that the following is true: "
-            << inConditionString << endl;
+            << inConditionString;
   return inConditionValue;
 }
 
@@ -292,15 +326,13 @@ EnvironmentBase::State( const std::string& inName ) const
   if( pStatelist != NULL )
   {
     if( !pStatelist->Exists( inName ) )
-      bcierr_ << "State \"" << inName << "\" is inaccessible."
-              << endl;
+      bcierr_ << "State \"" << inName << "\" is inaccessible.";
     else
     {
       StateAccess( inName );
       pState = &( *pStatelist )[ inName ];
       if( pState->Length() < 1 )
-        bcierr_ << "State \"" << inName << "\" has zero length."
-                << endl;
+        bcierr_ << "State \"" << inName << "\" has zero length.";
     }
   }
   return StateRef( pState, Statevector, 0 );
@@ -321,8 +353,7 @@ EnvironmentBase::OptionalState( const std::string& inName, State::ValueType inDe
     pState = &( *pStatelist )[ inName ];
     pStatevector = Statevector;
     if( pState->Length() < 1 )
-      bcierr_ << "State \"" << inName << "\" has zero length."
-              << endl;
+      bcierr_ << "State \"" << inName << "\" has zero length.";
   }
   return StateRef( pState, pStatevector, 0, inDefaultValue );
 }
@@ -344,8 +375,7 @@ EnvironmentBase::StateListAccess() const
     pStatelist = States;
 
   if( pStatelist == NULL )
-    bcierr_ << "States are inaccessible at this time."
-            << endl;
+    bcierr_ << "States are inaccessible at this time.";
 
   return pStatelist;
 }
@@ -369,7 +399,7 @@ void EnvironmentBase::EnterNonaccessPhase()
   switch( phase_ )
   {
     case nonaccess:
-      bcierr << "Already in non-access phase" << endl;
+      bcierr << "Already in non-access phase";
       break;
     case construction:
       for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
@@ -403,7 +433,7 @@ void EnvironmentBase::EnterNonaccessPhase()
     case resting:
       break;
     default:
-      bcierr << "Unknown execution phase" << endl;
+      bcierr << "Unknown execution phase";
   }
   phase_ = nonaccess;
   Accessor_<ParamList>::spGlobal = NULL;
@@ -466,8 +496,7 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
               if( value < lowRange )
                 bcierr__ << DescribeValue( p, j, k )
                          << " is "
-                         << value << ", exceeds lower range (" << lowRange << ")"
-                         << endl;
+                         << value << ", exceeds lower range (" << lowRange << ")";
             }
         }
         if( checkHighRange )
@@ -480,8 +509,7 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
               if( value > highRange )
                 bcierr__ << DescribeValue( p, j, k )
                          << " is "
-                         << value << ", exceeds high range (" << highRange << ")"
-                         << endl;
+                         << value << ", exceeds high range (" << highRange << ")";
             }
         }
         if( checkLowRange || checkHighRange )
@@ -490,9 +518,6 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
   }
   ParamsAccessedDuringPreflight().clear();
   StatesAccessedDuringPreflight().clear();
-
-  if( inParamList != NULL )
-    MeasurementUnits::Initialize( *inParamList );
 
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallPreflight();

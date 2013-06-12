@@ -30,8 +30,6 @@
 
 #include "GDF.h"
 
-#include "BCIError.h"
-
 #include <iomanip>
 #include <string>
 #include <ctime>

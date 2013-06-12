@@ -46,6 +46,8 @@ class SysCommand
   public:
     bool          operator<( const SysCommand& ) const;
     bool          operator==( const SysCommand& ) const;
+    bool          operator!=( const SysCommand& other ) const
+                  { return !operator==( other ); }
 
     std::ostream& WriteToStream( std::ostream& ) const;
     std::istream& ReadFromStream( std::istream& );

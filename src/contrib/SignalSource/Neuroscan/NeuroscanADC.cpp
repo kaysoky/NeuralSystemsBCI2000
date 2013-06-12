@@ -27,8 +27,11 @@
 #pragma hdrstop
 
 #include "NeuroscanADC.h"
-#include "NeuroscanProtocol.h"
+#include "EDFHeader.h"
+#include "Blob.h"
 #include "ThreadUtils.h"
+#include "BCIException.h"
+#include "BCIStream.h"
 
 using namespace std;
 
@@ -37,18 +40,21 @@ static const int cTimeout = 2000; // ms
 RegisterFilter( NeuroscanADC, 1 );
 
 NeuroscanADC::NeuroscanADC()
-: mServer( mSocket ),
-  mEventChannels( 0 )
+: mEventChannels( 0 )
 {
  BEGIN_PARAMETER_DEFINITIONS
-   "Source int SourceCh=      16 16 1 % "
-       "// number of digitized channels (has to match Neuroscan)",
-   "Source int SampleBlockSize= 32 5 1 % "
-       "// number of samples per block (has to match Neuroscan)",
-   "Source int SamplingRate=    256 128 1 % "
-       "// the signal sampling rate (has to match Neuroscan)",
-   "Source string ServerAddress= localhost:3998 "
-       "// address and port of the Neuroscan Acquire server",
+   "Source string ServerAddress= localhost:3998 % % % "
+       "// IP address and port of the Neuroscan Acquire server",
+   "Source blob AcquisitionSetupFile= % % % % "
+       "// auxiliary acquisition information",
+
+   "Source int SampleBlockSize= auto",
+   "Source float SamplingRate= auto",
+
+   "Source int SourceCh= auto",
+   "Source list SourceChOffset= 1 auto",
+   "Source list SourceChGain= 1 auto",
+   "Source stringlist ChannelNames= 1 auto",
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -62,97 +68,173 @@ NeuroscanADC::~NeuroscanADC()
 }
 
 void
+NeuroscanADC::AutoConfig( const SignalProperties& )
+{
+  try
+  { // Connect to the server and gather basic info to configure BCI2000 parameter settings
+    string address = Parameter( "ServerAddress" );
+    mSocket.open( address.c_str() );
+    mServer.open( mSocket );
+    if( !mServer.is_open() )
+      throw bciexception(
+        "Could not connect to server at " << address << ". "
+         << "Make sure Acquire is running and the server is enabled at the correct port."
+      );
+
+    // Basic info
+    NscInfoRequest().WriteBinary( mServer );
+    AwaitResponse();
+    NscPacketHeader header;
+    bool done = false;
+    while( mServer && mServer.is_open() && !done )
+    {
+      header.ReadBinary( mServer );
+      done = (
+        header.Id() == HeaderIdData
+        && header.Code() == DataType_InfoBlock 
+        && header.Value() == InfoType_BasicInfo
+      );
+      if( mServer && !done )
+        mServer.ignore( header.DataSize() );
+    }
+    if( mServer && done )
+      mAcqSettings.ReadBinary( mServer );
+    if( !done || !mServer )
+      throw bciexception( "Did not receive BasicInfo block" );
+
+    mEventChannels = mAcqSettings.EventChannels();
+    Parameter( "SamplingRate" ) << mAcqSettings.SamplingRate() << "Hz";
+    Parameter( "SampleBlockSize" ) = mAcqSettings.SamplesInBlock();
+    Parameter( "SourceCh" ) = mAcqSettings.EEGChannels();
+    Parameter( "SourceChOffset" )->SetNumValues( mAcqSettings.EEGChannels() );
+    Parameter( "SourceChGain" )->SetNumValues( mAcqSettings.EEGChannels() );
+    for( int ch = 0; ch < mAcqSettings.EEGChannels(); ++ch )
+    {
+      Parameter( "SourceChOffset" )( ch ) = 0;
+      Parameter( "SourceChGain" )( ch ) = mAcqSettings.Resolution();
+    }
+    // EDF header
+    NscEDFHeaderRequest().WriteBinary( mServer );
+    AwaitResponse();
+    header.ReadBinary( mServer );
+    if( header.Id() != HeaderIdData
+        || header.Code() != DataType_InfoBlock 
+        || header.Value() != InfoType_EdfHeader )
+    {
+      mServer.ignore( header.DataSize() );
+      bciwarn << "Server " << address << " does not provide EDF header information";
+    }
+    else
+    {
+      EDFHeader h;
+      h.ReadBinary( mServer );
+      if( h.Channels.size() != mAcqSettings.EEGChannels() )
+      {
+        bciwarn << "Ignoring inconsistent EDF header";
+      }
+      else
+      {
+#if 0
+        for( size_t i = 0; i < h.Channels.size(); ++i )
+        {
+          const EDFHeader::ChannelInfo& ch = h.Channels[i];
+          bool good = false;
+          double range = ch.DigitalMaximum - ch.DigitalMinimum,
+                 gain = 0,
+                 offset = 0;
+          if( range != 0 )
+          {
+            gain = ( ch.PhysicalMaximum - ch.PhysicalMinimum ) / range;
+            if( gain != 0 )
+            {
+              offset = ch.PhysicalMaximum / gain - ch.DigitalMaximum;
+              offset = ::floor( offset + 0.5 ); // EDF implies integer data
+            }
+          }
+          if( gain != 0 )
+          {
+            Parameter( "SourceChGain" )( i ) << fixed << gain << ch.PhysicalDimension;
+            Parameter( "SourceChOffset" )( i ) = offset;
+          }
+        }
+#endif
+        Parameter( "ChannelNames" )->SetNumValues( h.Channels.size() );
+        for( size_t i = 0; i < h.Channels.size(); ++i )
+        {
+          const string& name = h.Channels[i].Label;
+          size_t idx = name.length();
+          while( idx > 0 && ::isspace( name[idx-1] ) )
+            --idx;
+          Parameter( "ChannelNames" )( i ) = name.substr( 0, idx );
+        }
+      }
+    }
+    // Setup file
+    NscSetupFileRequest().WriteBinary( mServer );
+    AwaitResponse();
+    header.ReadBinary( mServer );
+    if( header.Id() != HeaderIdFile
+        || header.Code() != SetupFile )
+    {
+      mServer.ignore( header.DataSize() );
+      bciwarn << "Server " << address << " does not provide setup file information";
+    }
+    else
+    {
+      string format = "unknown";
+      switch( header.Code() )
+      {
+        case NeuroscanASTFormat:
+          format = "ast";
+          break;
+        case CtfDSFormat: // BCI2000-specific extension
+          format = "ds.tar";
+          break;
+        default:
+          bciwarn << "Unknown setup file format ID: " << header.Value();
+      }
+      char* pData = new char[header.DataSize()];
+      mServer.read( pData, header.DataSize() );
+      Parameter( "AcquisitionSetupFile" ) << Blob( pData, header.DataSize(), format );
+    }
+  }
+  catch( const bci::Exception& e )
+  {
+    bcierr << e.What();
+  }
+}
+
+void
 NeuroscanADC::Preflight( const SignalProperties&, SignalProperties& Output ) const
 {
-  // Connect to the server and gather basic info to compare against the BCI2000 parameter settings
-  client_tcpsocket socket( Parameter( "ServerAddress" ).c_str() );
-  sockstream server( socket );
-  if( !server.is_open() )
-  {
-    bcierr << "Could not connect to ServerAddress=" << Parameter( "ServerAddress" ) << ". "
-           << "Make sure Acquire is running and the server is enabled at the correct port."
-           << endl;
-    return;
-  }
-  NscInfoRequest().WriteBinary( server ).flush();
-  NscPacketHeader response;
-  if( socket.wait_for_read( cTimeout ) )
-    response.ReadBinary( server );
-  else
-  {
-    bcierr << "Server connection timed out" << endl;
-    return;
-  }
-  if( response.Id() != HeaderIdData || response.Code() != DataType_InfoBlock || response.Value() != InfoType_BasicInfo )
-  {
-    bcierr << "Unexpected packet from server: " << response << endl;
-    return;
-  }
-  NscBasicInfo AcqSettings;
-  AcqSettings.ReadBinary( server );
-  if( !server )
-  {
-    bcierr << "Could not read data packet" << endl;
-    return;
-  }
-  NscCloseRequest().WriteBinary( server ).flush();
-  socket.close();
-  
-  PreflightCondition( Parameter( "SourceCh" ) == AcqSettings.EEGChannels() );
-  PreflightCondition( Parameter( "SampleBlockSize" ) == AcqSettings.SamplesInBlock() );
-  PreflightCondition( Parameter( "SamplingRate" ).InHertz() == AcqSettings.SamplingRate() );
+  PreflightCondition( Parameter( "SourceCh" ) == mAcqSettings.EEGChannels() );
+  PreflightCondition( Parameter( "SampleBlockSize" ) == mAcqSettings.SamplesInBlock() );
+  PreflightCondition( Parameter( "SamplingRate" ).InHertz() == mAcqSettings.SamplingRate() );
   for( int ch = 0; ch < Parameter( "SourceCh" )->NumValues(); ++ch )
   {
     PreflightCondition( Parameter( "SourceChOffset" )( ch ) == 0 );
-    PreflightCondition( fabs( Parameter( "SourceChGain" )( ch ) - AcqSettings.Resolution() ) < 1e-3 );
+    PreflightCondition( fabs( Parameter( "SourceChGain" )( ch ) - mAcqSettings.Resolution() ) < 1e-3 );
   }
 
-  SignalType outSignalType;
-  switch( AcqSettings.DataDepth() )
+  SignalType outType;
+  switch( mAcqSettings.DataDepth() )
   {
     case 2:
-      outSignalType = SignalType::int16;
+      outType = SignalType::int16;
       break;
     case 4:
-      outSignalType = SignalType::int32;
+      outType = SignalType::int32;
       break;
     default:
       bcierr << "Server reports unsupported data size "
-             << "(" << AcqSettings.DataDepth() * 8 << " bits per sample)"
-             << endl;
+             << "(" << mAcqSettings.DataDepth() * 8 << " bits per sample)";
   }
-  Output = SignalProperties( Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), outSignalType );
+  Output = SignalProperties( Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), outType );
 }
 
 void
 NeuroscanADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
-  mServer.clear();
-  int timeout = 2000,
-      resolution = 100;
-  while( !mSocket.is_open() && timeout > 0 )
-  {
-    mSocket.open( Parameter( "ServerAddress" ).c_str() );
-    if( !mSocket.is_open() )
-    {
-      ThreadUtils::SleepFor( resolution );
-      timeout -= resolution;
-    }
-  }
-  NscInfoRequest().WriteBinary( mServer ).flush();
-  NscPacketHeader header;
-  while( mServer && mServer.is_open() &&
-    ( header.Id() != HeaderIdData
-      || header.Code() != DataType_InfoBlock 
-      || header.Value() != InfoType_BasicInfo )
-  )
-  {
-    mServer.ignore( header.DataSize() );
-    header.ReadBinary( mServer );
-  }
-  NscBasicInfo info;
-  info.ReadBinary( mServer );
-  mEventChannels = info.EventChannels();
   NscStartAcquisition().WriteBinary( mServer );
   NscStartDataRequest().WriteBinary( mServer );
   mServer.flush();
@@ -189,7 +271,22 @@ NeuroscanADC::Halt()
   NscStopDataRequest().WriteBinary( mServer );
   NscCloseRequest().WriteBinary( mServer );
   mServer.flush();
+  mServer.close();
   mSocket.close();
+  mServer.clear();
+}
+
+void
+NeuroscanADC::AwaitResponse()
+{
+  mServer.flush();
+  if( !mServer || !mServer.is_open() )
+    throw bciexception( "Lost connection to Acquire server" );
+  if( !mSocket.wait_for_read( cTimeout ) )
+    throw bciexception(
+      "Did not receive response from Acquire server after " 
+      << cTimeout / 1e3 << "s of waiting."
+    );
 }
 
 template<typename T>
@@ -212,4 +309,3 @@ NeuroscanADC::ReadData( GenericSignal& Output )
     }
   }
 }
-

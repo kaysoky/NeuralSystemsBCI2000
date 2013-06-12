@@ -39,6 +39,22 @@ class MutableParamRef;
 
 class ParamRef
 {
+ protected:
+  class Stream : public std::iostream
+  {
+   public:
+    Stream( Stream& );
+    Stream( const std::string& );
+    Stream( Param*, int, int );
+    virtual ~Stream();
+    template<class T> std::ostream& operator<<( const T& t )
+      { return std::ostream::operator<<( std::flush ) << t; }
+   private:
+    std::stringbuf mBuf;
+    Param* mpParam;
+    int mIdx1, mIdx2;
+  };
+
  public:
   enum { none = ~size_t( 0 ) };
 
@@ -57,6 +73,8 @@ class ParamRef
   double ToNumber() const;
   const std::string& ToString() const;
   const char* c_str() const;
+  template<typename T> Stream operator>>( T& t ) const
+    { Stream s( ToString() ); s >> t; return s; }
 
   // Conversion operators for read access.
   operator const std::string&() const
@@ -270,6 +288,8 @@ class MutableParamRef : public ParamRef
   MutableParamRef& operator=( const std::string& );
   MutableParamRef& operator=( double );
   MutableParamRef& operator=( const Param& );
+  template<typename T> Stream operator<<( const T& t )
+  { Stream s( const_cast<Param*>( Ptr() ), Idx1(), Idx2() ); std::ostream& os = s; os << t; return s; }
 
   Param* operator->();
   MutableParamRef operator()( size_t row, size_t col = ParamRef::none ) const;
@@ -278,7 +298,6 @@ class MutableParamRef : public ParamRef
   MutableParamRef operator()( const std::string&, const std::string& ) const;
 
   std::istream& ReadFromStream( std::istream& is );
-
 };
 
 // double
@@ -500,7 +519,6 @@ MutableParamRef::operator=( double d )
   os << d;
   return *this = os.str();
 }
-
 
 inline MutableParamRef
 MutableParamRef::operator()( size_t row, size_t col ) const

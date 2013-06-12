@@ -426,8 +426,8 @@ STDCALL BCI_GetStateOfOperation()
     case StateMachine::Suspended:
       return BCI_StateSuspended;
 
-    case StateMachine::RestingParamsModified:
-    case StateMachine::SuspendedParamsModified:
+    case StateMachine::Resting | StateMachine::ParamsModified:
+    case StateMachine::Suspended | StateMachine::ParamsModified:
       return BCI_StateParamsModified;
 
     case StateMachine::Running:

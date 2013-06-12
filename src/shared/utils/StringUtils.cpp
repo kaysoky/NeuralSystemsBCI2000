@@ -123,14 +123,13 @@ StringUtils::WriteAsBase64( ostream& os, const string& s )
       ++rem;
     triplet <<= 8;
     triplet |= c;
-    if( ++count == 3 )
+    ++count %= 3;
+    if( 0 == count )
     {
       for( int i = 3; i >= rem; --i )
         os.put( cBase64[( triplet >> ( 6 * i ) ) & mask64] );
-      for( int i = 0; i < rem - 1; ++i )
+      for( int i = 0; i < rem; ++i )
         os.put( cBase64[cBase64Fill] );
-      count = 0;
-      rem = 0;
       triplet = 0;
     }
   }

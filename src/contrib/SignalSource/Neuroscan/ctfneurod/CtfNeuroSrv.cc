@@ -16,10 +16,13 @@
 #include "PhysicalSet.h"
 #include "MEGDefs.h"
 
+#include <iostream>
+#include <string>
+#include <sstream>
+
 #include <sys/shm.h>
 #include <sys/time.h>
 #include <errno.h>
-#include <string.h>
 #include <regex.h>
 
 #undef BIG_ENDIAN_INPUT
@@ -30,7 +33,9 @@ CtfNeuroSrv::CtfNeuroSrv(
   const regex_t* inChannelNameRegex, 
   double         inFreqCorrectionFactor,
   int            inDataOutputFormat,
-  bool           inDoHPFiltering  )
+  bool           inDoHPFiltering,
+  ostream&       ioElocFile,
+  ostream&       ioSourceParamFile  )
 : mShmHandle( -1 ),
   mPacketIndex( 0 ),
   mpMessageQueue( NULL ),
@@ -39,7 +44,9 @@ CtfNeuroSrv::CtfNeuroSrv(
   mFreqCorrectionFactor( inFreqCorrectionFactor ),
   mDataOutputFormat( inDataOutputFormat ),
   mBytesPerSample( 0 ),
-  mDoHPFiltering( inDoHPFiltering )
+  mDoHPFiltering( inDoHPFiltering ),
+  mrElocFile( ioElocFile ),
+  mrSourceParamFile( ioSourceParamFile )
 {
   size_t shmSize = sizeof( ACQ_MessagePacket ) * ACQ_MSGQ_SIZE;
   mShmHandle = ::shmget( ACQ_MESQ_SHMKEY, shmSize, 0666 | IPC_CREAT );
@@ -68,7 +75,8 @@ CtfNeuroSrv::CtfNeuroSrv(
   cout << "received." << endl;
   try
   {
-    PhysicalSet ds( reinterpret_cast<const char*>( mpMessageQueue[ 0 ].data ) );
+    mDsFilePath = reinterpret_cast<const char*>( mpMessageQueue[ 0 ].data );
+    PhysicalSet ds( mDsFilePath.c_str() );
     const ACQ_MessagePacket& firstPacket = mpMessageQueue[ 1 ];
     if( firstPacket.numChannels != ds.getNumberOfChannels() )
       cerr << "Received inconsistent data" << endl;
@@ -86,46 +94,71 @@ CtfNeuroSrv::CtfNeuroSrv(
     mChannelIndices.clear();
     mChannelGains.clear();
     mHPChannelOffsets.clear();
+    vector<int> channelTypes;
+    vector<string> channelNames;
+    vector<Point> megPos;
+
     for( Channel_t i = 0; i < ds.getNumberOfChannels(); ++i )
     {
       const Channel& ch = ds.getChannel( i );
-#if 0
-      cout << "Channel " << i << ": " << ch.getName()
-           << " (" << ch.getSensorTypeName() << ", " << ch.getSensorClassName() << ")\n"
-           << " Proper Gain: " << ch.getProperGain() << '\n'
-           << "      Q Gain: " << ch.getQGain() << '\n'
-           << "     IO Gain: " << ch.getIOGain() << '\n';
-#endif
       bool useChannel = false;
       if( mpChannelNameRegex )
-	useChannel = !::regexec( mpChannelNameRegex, ch.getName(), 0, NULL, 0 );
+  useChannel = !::regexec( mpChannelNameRegex, ch.getName(), 0, NULL, 0 );
       else
         switch( ch.getSensorClass() )
         {
           case MEGSensor:
           case badMEGSensor:
-	    useChannel = true;
+      useChannel = true;
             break;
         }
       if( useChannel )
       {
         mChannelIndices.push_back( i );
-	switch( ch.getSensorClass() )
-	{
-	  case EEGSensor:
-	  case badEEGSensor:
-	    mChannelGains.push_back( cEEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
-	    break;
-	  case MEGSensor:
-	  case badMEGSensor:
+        channelTypes.push_back( ch.getSensorClass() );
+  switch( ch.getSensorClass() )
+  {
+    case EEGSensor:
+    case badEEGSensor:
+      mChannelGains.push_back( cEEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
+      break;
+    case MEGSensor:
+    case badMEGSensor:
             mChannelGains.push_back( cMEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
-	    break;
-	  default:
-	    mChannelGains.push_back( 1.0 );
-	}
-	mHPChannelOffsets.push_back( 0.0 );
+      break;
+    default:
+      mChannelGains.push_back( 1.0 );
+  }
+  mHPChannelOffsets.push_back( 0.0 );
+        channelNames.push_back( string( ch.getName() ) );
+        switch( ch.getSensorClass() )
+        {
+          case MEGSensor:
+          case badMEGSensor:
+            megPos.push_back( ch.getDewarCoilPosition( 0 ) );
+            break;
+          default:
+            ;
+        }
       }
     }
+
+    Point centerPos;
+    for( size_t i = 0; i < megPos.size(); ++i )
+      centerPos += megPos[ i ];
+    centerPos /= megPos.size();
+
+    double maxRadius = 0;
+    vector<double> megAngles, megRadii;
+    for( size_t i = 0; i < megPos.size(); ++i )
+    {
+      Point p = megPos[ i ] - centerPos;
+      megAngles.push_back( p.getTheta() );
+      double r = p.getPhi();
+      maxRadius = max( r, maxRadius );
+      megRadii.push_back( r );
+    }
+
     mDecayFactor = ::exp( -1.0 / ds.getSampleRate() / mFreqCorrectionFactor / cHPTimeConstant );
     double resolution = 1.0;
     switch( mDataOutputFormat )
@@ -141,12 +174,60 @@ CtfNeuroSrv::CtfNeuroSrv(
       default:
         cerr << "Unknown output data type: " << mDataOutputFormat << endl;
     }
+    size_t numChannels = mChannelIndices.size();
+    int samplingRate = ::floor( ds.getSampleRate() * mFreqCorrectionFactor + 0.5 );
+    ostringstream parmChannelNames, parmSourceCh, parmSourceChGain, parmSourceChOffset,
+                  parmSamplingRate, parmSampleBlockSize;
+    parmChannelNames << "Source stringlist ChannelNames= " << numChannels << " ";
+    parmSourceCh << "Source int SourceCh= " << numChannels;
+    parmSourceChGain << "Source floatlist SourceChGain= " << numChannels << " ";
+    parmSourceChOffset << "Source floatlist SourceChOffset= " << numChannels << " ";
+    parmSamplingRate << "Source float SamplingRate= " << samplingRate << "Hz";
+    parmSampleBlockSize << "Source int SampleBlockSize= " << firstPacket.numSamples;
+    double pi = 4 * ::atan( 1 );
+    size_t megIdx = 0;
+    for( size_t i = 0; i < numChannels; ++i )
+    {
+      string elocName = channelNames[ i ];
+      double elocAngle = 0,
+             elocRadius = 1;
+      switch( channelTypes[ i ] )
+      {
+        case MEGSensor:
+        case badMEGSensor:
+          elocName = channelNames[ i ].substr( 0, 4 );
+          elocRadius = megRadii[ megIdx ] / 2 / maxRadius;
+          elocAngle = - megAngles[ megIdx++ ] * 180 / pi + 45;
+          break;
+      default:
+         ;
+      }
+      for( size_t j = elocName.length(); j < 4; ++j )
+        elocName += '.';
+      mrElocFile << i + 1 << ' ' << elocAngle << ' ' << elocRadius << ' ' << elocName << "\r\n";
+
+      parmChannelNames << ' ' << channelNames[ i ];
+      parmSourceChGain << ' ' << resolution;
+      parmSourceChOffset << ' ' << int( 0 ); 
+    }
+    mrElocFile.flush();
+    time_t t = ::time( NULL );
+    string comment = " // Created by ctfneurod, ";
+    comment += ::ctime( &t );
+    comment = comment.substr( 0, comment.length() - 1 );
+    mrSourceParamFile << parmSourceCh.str() << comment << "\r\n"
+                      << parmSourceChGain.str() << comment << "\r\n"
+                      << parmSourceChOffset.str() << comment << "\r\n"
+                      << parmChannelNames.str() << comment << "\r\n"
+                      << parmSamplingRate.str() << comment << "\r\n"
+                      << parmSampleBlockSize.str() << comment << "\r\n"
+                      << flush;
  
     mBasicInfo = NscBasicInfo( 
       mChannelIndices.size(), // signal channels
       0,                      // event channels
       firstPacket.numSamples, // samples per block
-      ::floor( ds.getSampleRate() * mFreqCorrectionFactor + 0.5 ), // sampling rate
+      samplingRate, // sampling rate
       mBytesPerSample,        // bytes per sample
       resolution              // resolution
     );
@@ -171,6 +252,40 @@ CtfNeuroSrv::~CtfNeuroSrv()
     cerr << "Could not mark shared memory block for removal"
          << " (" << ::strerror( errno ) << ")" 
          << endl;
+}
+
+void
+CtfNeuroSrv::SendASTSetupFile( std::ostream& os )
+{
+  char* pBuf = 0;
+  size_t length = 0;
+
+  char* pTemp = ::tempnam( 0, "ast" );
+  string command = "tar -czf \"";
+  command += pTemp;
+  command += "\" \" + mDsPath + "\"";
+  if( ::system( command.c_str() ) )
+    cerr << "Could not execute command: " << command << endl;
+  else
+  {
+    ifstream file( pTemp );
+    if( file.is_open() )
+    {
+      file.seekg( 0, file.end );
+      length = file.tellg();
+      file.seekg( 0, file.beg );
+      pBuf = new char[length];
+      file.read( pBuf, length );
+    }
+    if( !file )
+      cerr << "Could not read file: " << pTemp << endl;
+  }
+  NscPacketHeader( 'FILE', SetupFile, CtfDSFileFormat, length ).WriteBinary( os );
+  os.write( pBuf, length );
+  os.flush();
+  delete[] pBuf;
+  ::unlink( pTemp );
+  ::free( pTemp );
 }
 
 void
@@ -214,31 +329,31 @@ CtfNeuroSrv::SendData( ostream& os )
         size_t dataLength = mChannelIndices.size() * curPacket->numSamples * mBytesPerSample;
         NscPacketHeader( 'DATA', DataType_EegData, mDataOutputFormat, dataLength ).WriteBinary( os );
 
-	for( size_t sample = 0; sample < curPacket->numSamples; ++sample )
+  for( size_t sample = 0; sample < curPacket->numSamples; ++sample )
           for( size_t i = 0; i < mChannelIndices.size(); ++i )
-	  {
+    {
 #ifdef BIG_ENDIAN_INPUT // The old system provided data in big endian format:
-	    // We get the data in 32 bit big endian format -- convert it to machine format.
-	    const unsigned char* inBytes = reinterpret_cast<const unsigned char*>( 
+      // We get the data in 32 bit big endian format -- convert it to machine format.
+      const unsigned char* inBytes = reinterpret_cast<const unsigned char*>( 
                &curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ] );
             signed int intValue = 0;
-	    for( int j = 0; j < 4; ++j )
-	    {
-	      intValue <<= 8;
-	      intValue |= inBytes[ j ];
-	    }
+      for( int j = 0; j < 4; ++j )
+      {
+        intValue <<= 8;
+        intValue |= inBytes[ j ];
+      }
 #else // BIG_ENDIAN_INPUT The new system provides data in little endian format:
-	    signed int intValue = curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ];
+      signed int intValue = curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ];
 #endif // BIG_ENDIAN_INPUT
             // Apply the individual gain factor for the channel (should be in the order of 1.0).
             double floatValue = intValue * mChannelGains[ i ];
-	    if( mDoHPFiltering )
+      if( mDoHPFiltering )
               ApplyHP( i, floatValue );
 
             switch( mDataOutputFormat )
             {
               case DataTypeRaw16bit:
-	      {
+        {
                 const double maxShort = 1 << 15 - 1;
                 if( floatValue > maxShort )
                   floatValue = maxShort;
@@ -250,15 +365,15 @@ CtfNeuroSrv::SendData( ostream& os )
 
               case DataTypeRaw32bit:
                  // Write the scaled data value into the output stream. 
-		 intValue = ::floor( floatValue );
+     intValue = ::floor( floatValue );
                  os.write( reinterpret_cast<const char*>( &intValue ), 4 );
                  break;
 
-	      default:
+        default:
                 cerr << "Unknown data output format: " << mDataOutputFormat << endl;
                 TerminateConnection();
-	    }
-	  }
+      }
+    }
         os.flush();
       } break;
       case ACQ_MSGQ_CLOSE_COLLECTION: // We don't know how to correctly handle this message because

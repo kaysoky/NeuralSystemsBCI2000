@@ -28,6 +28,7 @@
 #pragma hdrstop
 
 #include "BCIStream.h"
+#include "BCIAssert.h"
 #include "Environment.h"
 #include "MessageHandler.h"
 #include "OSMutex.h"
@@ -70,11 +71,12 @@ StatusMessage( const string& inText, int inCode )
   {
     if( inCode >= 400 )
     {
-#if !defined( _WIN32 ) || defined( __CONSOLE__ )
+      bcidebug( inText );
+# if !defined( _WIN32 ) || defined( __CONSOLE__ )
       cerr << inText << endl;
-#else
+# else
       ShowMessageBox( inText, "BCI2000 Error", MB_OK | MB_ICONHAND | MB_SYSTEMMODAL | MB_SETFOREGROUND );
-#endif
+# endif
     }
     else
     {

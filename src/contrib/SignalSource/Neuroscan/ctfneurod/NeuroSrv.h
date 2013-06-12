@@ -31,7 +31,7 @@ class NeuroSrv
     virtual void SendVersion( std::ostream& )      { /* not yet */ }
     virtual void CloseConnection( std::ostream& );
     virtual void SendEDFHeader( std::ostream& );
-    virtual void SendASTSetupFile( std::ostream& ) { /* not yet */ }
+    virtual void SendASTSetupFile( std::ostream& );
     virtual void SendBasicInfo( std::ostream& );
     virtual void StartAcquisition( std::ostream& ) {}
     virtual void StopAcquisition( std::ostream& )  {}

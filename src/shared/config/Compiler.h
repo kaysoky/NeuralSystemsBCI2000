@@ -28,9 +28,22 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
+#define STR_(x) STR__(x)
+#define STR__(x) #x
+
+#ifndef __BORLANDC__
+# if defined( __FUNCTION__ )
+#  define FUNCTION_ __FUNCTION__
+# elif defined( __PRETTY_FUNCTION__ )
+#  define FUNCTION_   __PRETTY_FUNCTION__
+# elif defined( __func__ )
+#  define FUNCTION_   __func__
+# endif
+#endif // __BORLANDC__
+
 #ifndef COMPILER_NAME
 # ifdef _MSC_VER
-#  define COMPILER_NAME "MSVC"
+#  define COMPILER_NAME "msvc-" STR_( _MSC_VER )
 # elif defined( __INTEL_COMPILER )
 #  define COMPILER_NAME "Intel"
 # elif defined( __GNUC__ )
@@ -40,6 +53,12 @@
 # else
 #  define COMPILER_NAME "<unknown>"
 # endif
+#endif
+
+#ifdef DEBUG_BUILD
+# define BUILD_TYPE "debug"
+#else
+# define BUILD_TYPE "release"
 #endif
 
 #endif // COMPILER_H

@@ -15,6 +15,7 @@
 
 #include "NeuroSrv.h"
 
+#include <iostream>
 #include <vector>
 #include <regex.h>
 
@@ -27,10 +28,12 @@ class CtfNeuroSrv : public NeuroSrv
   static const int cBitsToIgnore = 2; // Number of least significant bits that will be ignored from the MEG data.
 
   public:
-    CtfNeuroSrv( const regex_t* inChannelNameRegex = NULL, 
+    CtfNeuroSrv( const regex_t* inChannelNameRegex = NULL,
                  double         inFreqCorrectionFactor = 1.0,
                  int            inDataOutputFormat = DataTypeRaw16bit,
-                 bool           inDoHPFiltering = true );
+                 bool           inDoHPFiltering = true,
+                 std::ostream&  ioElocFile = std::cout,
+                 std::ostream&  ioSourceParamFile = std::cout );
     virtual ~CtfNeuroSrv();
 
   protected:
@@ -40,10 +43,12 @@ class CtfNeuroSrv : public NeuroSrv
     // The return value is an estimation of how many ms the process may safely sleep
     // before calling SendData() the next time.
     virtual int SendData( std::ostream& );
+    virtual void SendASTSetupFile( std::ostream& );
 
   private:
     void ApplyHP( int channel, double& );
 
+    std::string                 mDsFilePath;
     int                         mShmHandle,
                                 mPacketIndex;
     struct ACQ_MessagePacket*   mpMessageQueue;
@@ -57,6 +62,8 @@ class CtfNeuroSrv : public NeuroSrv
     int                         mDataOutputFormat,
                                 mBytesPerSample;
     bool                        mDoHPFiltering;
+    std::ostream&               mrElocFile,
+                &               mrSourceParamFile;
 };
 
 #endif // CTFNEUROSRV_H

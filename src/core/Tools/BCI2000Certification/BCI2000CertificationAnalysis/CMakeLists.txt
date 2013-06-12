@@ -18,33 +18,8 @@ SET( SOURCES
   certificationClass.cpp
   ../progressClass.cpp
 )
-SET( HEADERS
-  analysisClass.h
-  ../Functions.h
-  ../TaskType.h
-  analysisGUI.h
-  certificationClass.h
-  ../progressClass.h
-)
-SET( GENERATED
-  ${GENERATED_MOC}
-)
-
-SET( GENERATED
-  ${GENERATED}
-  ${GENERATED_RCC}
-)
-
-INCLUDE_DIRECTORIES( ../ )
 SET( DIR_NAME Tests/Certification )
-
-# Create the signal processing module
-BCI2000_ADD_TOOLS_GUIAPP( 
-  "${EXECUTABLE_NAME}" 
-  "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${GENERATED}"
-)
-
-SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/tools/BCI2000Certification ${EXECUTABLE_NAME} )
+BCI2000_ADD_TOOLS_GUIAPP( ${NAME} ${SOURCES} )
+SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/tools/BCI2000Certification ${NAME} )
 
 ENDIF( BUILD_TESTS )
