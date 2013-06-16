@@ -923,7 +923,7 @@ StateMachine::Handle( const CoreConnection& inConnection, const Param& inParam )
     { ostringstream oss;
       {
         DataLock lock( this );
-        mParameters.Add( inParam, inConnection.Tag() );
+        mParameters.Add( inParam, static_cast<int>( inConnection.Tag() ) );
         mParameters[inParam.Name()].WriteToStream( oss );
         ParameterChange();
       }
@@ -1067,7 +1067,7 @@ StateMachine::SetConnectionState( SysState s )
 StateMachine::CoreConnection::CoreConnection( StateMachine& inParent,
                                               const std::string& inName,
                                               const std::string& inAddress,
-                                              int inTag )
+                                              ptrdiff_t inTag )
 : mrParent( inParent ),
   mAddress( inAddress ),
   mTag( inTag ),

@@ -103,7 +103,7 @@ template<typename T, int DataByteOrder> class BinaryData
   BinaryData( T t ) : mData( t ) {}
   BinaryData( std::istream& is ) { Get( is ); }
   operator T() const { return mData; }
-  static size_t Size() { return sizeof( T ); }
+  static int Size() { return static_cast<int>( sizeof( T ) ); }
   std::istream& Get( std::istream& is ) { return BinaryIO<DataByteOrder == HostOrder>::Get( is, mData ); }
   std::ostream& Put( std::ostream& os ) const { return BinaryIO<DataByteOrder == HostOrder>::Put( os, mData ); }
 

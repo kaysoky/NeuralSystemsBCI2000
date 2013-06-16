@@ -1,4 +1,4 @@
-// A tool to set the debug flag on COFF obj file sections.
+// A tool to manipulate flags on COFF obj file sections.
 // This should be possible using objcopy --set-section-flags but that seems to be broken
 // for the debug flag.
 #include <iostream>
@@ -6,44 +6,65 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <inttypes.h>
+#include "BinaryData.h"
 
 using namespace std;
+
+static const struct { const string name; uint32_t pattern; } flags[] =
+{
+  { "debug", 2 },
+  { "read", 0x40000000 },
+  { "write", 0x80000000 },
+};
 
 int main( int argc, char** argv )
 {
   const char* pFile = 0;
   bool verbose = false;
   vector<string> sections;
-  int value = 1;
+  vector< pair<uint32_t, uint32_t> > setflags;
   for( int i = 1; i < argc; ++i )
   {
-    if( *argv[i] != '-' )
+    uint32_t value = 0;
+    bool found = false;
+    switch( *argv[i] )
     {
-      if( !pFile )
-        pFile = argv[i];
-      else
-      {
-        cerr << "Only one file may be given." << endl;
-        return -1;
-      }
-    }
-    else switch( argv[i][1] )
-    {
-      case 'v':
-        verbose = true;
-        break;
-      case 's':
-        sections.push_back( argv[i] + 2 );
-        break;
-      case '1':
+      case '+':
         value = 1;
+        /* fall through */
+      case '-':
+        switch( argv[i][1] )
+        {
+          case 'v':
+            verbose = true;
+            break;
+          case 's':
+            sections.push_back( argv[i] + 2 );
+            break;
+          default:
+            for( size_t j = 0; j < sizeof( flags ) / sizeof( *flags ); ++j )
+              if( flags[j].name == argv[i] + 1 )
+              {
+                found = true;
+                setflags.push_back( make_pair( flags[j].pattern, value ) );
+              }
+            if( !found )
+            {
+              cerr << "Unknown flag name: " << argv[i] + 1 << endl;
+              return -1;
+            }
+        }
         break;
-      case '0':
-        value = 0;
-        break;
+
       default:
-        cerr << "Illegal option." << endl;
-        return -1;
+        if( !pFile )
+          pFile = argv[i];
+        else
+        {
+          cerr << "Only one file may be given." << endl;
+          return -1;
+        }
     }
   }
   if( !pFile )
@@ -93,28 +114,32 @@ int main( int argc, char** argv )
       name = name.substr( 0, ::strlen( name.c_str() ) );
       if( find( sections.begin(), sections.end(), name ) != sections.end() )
       {
-        int offset = 3,
-            debug = 2,
-            flags = header[sizeof( header ) - offset];
+        bci::BinaryData<uint32_t, bci::LittleEndian> flags;
+        size_t pos = file.tellg();
+        file.seekg( -flags.Size(), ios_base::cur );
+        flags.Get( file );
+
         bool write = false;
-        if( value && !( flags & debug ) )
+        for( size_t j = 0; j < setflags.size(); ++j )
         {
-          flags |= debug;
-          ++count;
-          write = true;
-        }
-        else if( !value && ( flags & debug ) )
-        {
-          flags &= ~debug;
-          ++count;
-          write = true;
+          int pattern = setflags[j].first,
+              value = setflags[j].second;
+          if( value && !( flags & pattern ) )
+          {
+            flags = flags | pattern;
+            write = true;
+          }
+          else if( !value && ( flags & pattern ) )
+          {
+            flags = flags & ~pattern;
+            write = true;
+          }
         }
         if( write )
         {
-          size_t pos = file.tellg();
-          file.seekp( -offset, ios_base::cur );
-          file.put( flags );
-          file.seekg( pos );
+          ++count;
+          file.seekp( pos - flags.Size() );
+          flags.Put( file );
         }
       }
     }
@@ -124,9 +149,7 @@ int main( int argc, char** argv )
     cerr << "Error modifying flags" << endl;
     return -1;
   }
-  if( verbose && value )
-    cout << "Set debug flags on " << count << " sections." << endl;
-  else if( verbose )
-    cout << "Cleared debug flag on " << count << " sections. " << endl;
+  if( verbose )
+    cout << "Set flags on " << count << " sections." << endl;
   return 0;
 }

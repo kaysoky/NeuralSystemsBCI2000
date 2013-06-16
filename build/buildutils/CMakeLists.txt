@@ -38,7 +38,10 @@ BCI2000_ADD_TARGET( EXECUTABLE create_resource
 
 IF( BUILD_ALL_BUILDUTILS )
   BCI2000_ADD_TARGET( EXECUTABLE fixup_msvc_lib fixup_msvc_lib.cpp )
-  BCI2000_ADD_TARGET( EXECUTABLE coff_set_debug coff_set_debug.cpp )
+  BCI2000_ADD_TARGET( EXECUTABLE coff_set_section_flags
+    coff_set_section_flags.cpp
+    ${BCI2000_SRC_DIR}/shared/utils/BinaryData.h
+  )
   BCI2000_ADD_TARGET( EXECUTABLE cpp_demangle cpp_demangle.cpp )
   INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModule.cmake )
   BCI2000_ADD_TARGET( EXECUTABLE dylib_exports dylib_exports.cpp )

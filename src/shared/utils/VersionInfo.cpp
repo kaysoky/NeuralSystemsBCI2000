@@ -131,10 +131,24 @@ VersionInfo::ReadFromStream( istream& is )
         VersionInfoBase::operator[]( keyword ) = value;
     }
   }
-  if( find( "Build" ) == end() )
+  string& arch = VersionInfoBase::operator[]( "Architecture" );
+  switch( sizeof( void* ) )
+  {
+    case 2:
+      arch = "16bit";
+      break;
+    case 4:
+      arch = "32bit";
+      break;
+    case 8:
+      arch = "64bit";
+      break;
+    default:
+      arch = "unknown";
+  }  if( find( "Build" ) == end() )
   {
     string build;
-    static const char* buildinfo[] = { "Compiler", "Build Type", "Build Date" };
+    static const char* buildinfo[] = { "Compiler", "Architecture", "Build Type", "Build Date" };
     for( size_t i = 0; i < sizeof( buildinfo ) / sizeof( *buildinfo ); ++i )
       if( find( buildinfo[i] ) != end() )
         build += " " + (*this)[buildinfo[i]];

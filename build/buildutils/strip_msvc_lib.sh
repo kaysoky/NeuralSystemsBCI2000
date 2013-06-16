@@ -6,7 +6,6 @@
 # Author: juergen.mellinger@uni-tuebingen.de
 
 dir=$(dirname $0)
-objcopy_=objcopy
 
 function strip_()
 {
@@ -14,11 +13,18 @@ function strip_()
   echo Fixing up object file names ...
   ${dir}/fixup_msvc_lib "$(cygpath -a -w $f)" || exit -1
   echo Clearing .drectve debug flag ...
-  ${dir}/coff_set_debug -v -s.drectve -0 "$(cygpath -a -w $f)" || exit -1
+  ${dir}/coff_set_section_flags -v -s.drectve -debug "$(cygpath -a -w $f)" || exit -1
   echo Running objcopy -g ...
-  ${objcopy_} -g $f || exit -1
+  objcopy -g $f || exit -1
   echo Enabling .drectve debug flag ...
-  ${dir}/coff_set_debug -v -s.drectve -1 "$(cygpath -a -w $f)" || exit -1
+  ${dir}/coff_set_section_flags -v -s.drectve +debug "$(cygpath -a -w $f)" || exit -1
+}
+
+function strip64_()
+{ # in x64 lib files, it seems we cannot remove sections without breaking things
+  f=$1
+  echo Disabling debugging info ...
+  sed -b -i 's/\.debug\$./\.ignored/g' $f || exit -1
 }
 
 if [ ! $1 ]; then
@@ -26,15 +32,19 @@ if [ ! $1 ]; then
   exit -1
 fi
 
-if [ "$1"=="-64" ]; then
-  objcopy_=x86_64-pc-cygwin-objcopy
-  shift
-fi
-
 res_=0
-for i in $*; do
-  echo "Stripping $i:"
-  strip_ $i && echo "Done." && echo || ( echo "Failed." && set res_=-1 )
-done
+if [ "$1"=="-64" ]; then
+  is64=1
+  shift
+  for i in $*; do
+    echo "Stripping $i:"
+    strip64_ $i && echo "Done." && echo || ( echo "Failed." && set res_=-1 )
+  done
+else
+  for i in $*; do
+    echo "Stripping $i:"
+    strip_ $i && echo "Done." && echo || ( echo "Failed." && set res_=-1 )
+  done
+fi
 
 exit $res_

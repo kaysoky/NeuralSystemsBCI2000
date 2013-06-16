@@ -14,22 +14,8 @@ SET( SRC_PROJECT
   ARGenerator.cpp
   P3Generator.cpp
   main.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
 )
-
-SET( HDR_PROJECT
-  ParamEnv.h
-  Generator.h
-  SourceGenerator.h
-  SpatialGenerator.h
-  ARGenerator.h
-  P3Generator.h
-)
-
-# Create the Command line module
-BCI2000_ADD_TOOLS_CMDLINE( 
-  "${NAME}" 
-  "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  FALSE # do not use Qt
-)
-
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+BCI2000_ADD_TARGET( EXECUTABLE "${NAME}" "${SRC_PROJECT}" )
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/build/buildutils/${NAME} ${NAME} )

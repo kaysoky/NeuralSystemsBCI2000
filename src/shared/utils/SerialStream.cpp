@@ -177,10 +177,12 @@ serialbuf::sync()
     setp( buf, buf + buf_size );
     write_ptr = pbase();
   }
-  DWORD actuallyWritten = 0;
-  while( ::WriteFile( m_handle, write_ptr, pptr() - write_ptr, &actuallyWritten, NULL )
-    && actuallyWritten > 0 )
-    write_ptr += actuallyWritten;
+  DWORD written = 0, toWrite = static_cast<DWORD>( pptr() - write_ptr );
+  while( ::WriteFile( m_handle, write_ptr, toWrite, &written, 0 ) && written > 0 )
+  {
+    write_ptr += written;
+    toWrite -= written;
+  }
   setp( pbase(), epptr() );
   return 0;
 }
