@@ -20,30 +20,22 @@ function strip_()
   "${dir}/coff_set_section_flags" -v -s.drectve +debug "$(cygpath -a -w $f)" || exit -1
 }
 
-function strip64_()
-{ # in x64 lib files, it seems we cannot remove sections without breaking things
+function hide_()
+{ # in recent lib files, it seems we cannot remove sections without breaking things
   f=$1
-  echo Disabling debugging info ...
+  echo Hiding debugging info ...
   sed -b -i 's/\.debug\$./\.ignored/g' $f || exit -1
 }
 
 if [ ! $1 ]; then
-  echo "Expected names of libraries to strip." 2>&1
+  echo "Expected names of libraries to process." 2>&1
   exit -1
 fi
 
 res_=0
-if [ "$1" == "-64" ]; then
-  shift
-  for i in $*; do
-    echo "Cleaning $i:"
-    strip64_ $i && echo "Done." && echo || ( echo "Failed." && set res_=-1 )
-  done
-else
-  for i in $*; do
-    echo "Stripping $i:"
-    strip_ $i && echo "Done." && echo || ( echo "Failed." && set res_=-1 )
-  done
-fi
+for i in $*; do
+  echo "Processing $i:"
+  hide_ $i && echo "Done." && echo || ( echo "Failed." && set res_=-1 )
+done
 
 exit $res_
