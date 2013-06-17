@@ -50,7 +50,7 @@ Blob::Blob( const string& inFileName )
   if( !in.is_open() )
     throw runtime_error( "Could not open file for reading: " + inFileName );
   in.seekg( 0, ios::end );
-  mLength = in.tellg();
+  mLength = static_cast<size_t>( in.tellg() );
 }
 
 Blob::Blob( const bci::Resource& inResource )
@@ -122,7 +122,7 @@ ostream&
 Blob::WriteAsResource( ostream& os ) const
 {
   GetStringData();
-  string indent = string( os.width(), os.fill() );
+  string indent( static_cast<size_t>( os.width() ), os.fill() );
   ios::fmtflags format = os.flags();
   os << dec << indent << "\"" << mType << "\", " << mLength << ",\n" << indent << "\""
      << oct;

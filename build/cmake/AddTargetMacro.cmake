@@ -12,7 +12,6 @@ FUNCTION( BCI2000_ADD_TARGET )
   IF( NOT failed_ )
 
     BCI2000_SETUP_RESOURCES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK )
-    BCI2000_SETUP_GUI_IMPORTS( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK )
     SET( sources_ ${sources_} ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} )
 
     BCI2000_AUTODEPEND( sources_ LIBS )
@@ -20,6 +19,7 @@ FUNCTION( BCI2000_ADD_TARGET )
     BCI2000_AUTOSOURCEGROUPS( sources_ )
     BCI2000_AUTOMOC( sources_ )
     BCI2000_AUTOINCLUDE( sources_ )
+    BCI2000_FIXUP_FILES( sources_ )
     
     IF( ADD_TARGET_HOOK )
       ADD_TARGET_HOOK()
@@ -128,7 +128,8 @@ FUNCTION( BCI2000_AUTOSOURCEGROUPS listname_ )
     GET_FILENAME_COMPONENT( path_ ${file_} PATH )
     FILE( TO_CMAKE_PATH "${path_}" path_ )
     GET_FILENAME_COMPONENT( ext_ ${file_} EXT )
-    IF( pos LESS 0 ) # Either not a framework file, or defined relative to project
+    IF( pos LESS 0 )
+      # Either not a framework file, or defined relative to project
       FILE( RELATIVE_PATH rpath_ "${proj_dir_}" "${path_}" )
       FILE( TO_CMAKE_PATH "${rpath_}" rpath_ )
     ELSE()
@@ -257,6 +258,30 @@ FUNCTION( BCI2000_AUTOINCLUDE listname_ )
   ENDIF()
 
 ENDFUNCTION()
+
+# Work around IDE/CMake bugs
+FUNCTION( BCI2000_FIXUP_FILES listname_ )
+
+  IF( MSVC ) # With the VS2010 generator, there are problems 
+             # with non-compiled files appearing in multiple projects.
+             # As a workaround, we construct globally unique paths for such files.
+    GET_FILENAME_COMPONENT( proj_dir_ "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE )
+    GET_FILENAME_COMPONENT( proj_dir_name_ "${CMAKE_CURRENT_SOURCE_DIR}" NAME )
+    SET( files_ )
+    FOREACH( file_ ${${listname_}} )
+      IF( NOT file_ MATCHES  .*\\.\(h|c|cpp\) )
+        GET_FILENAME_COMPONENT( file_ "${file_}" ABSOLUTE )
+        FILE( RELATIVE_PATH rpath_ "${proj_dir_}" "${file_}" )
+        FILE( TO_CMAKE_PATH "${rpath_}" rpath_ )
+        SET( file_ "../${proj_dir_name_}/${rpath_}" )
+      ENDIF()
+      LIST( APPEND files_ "${file_}" )
+    ENDFOREACH()      
+    SET( ${listname_} ${files_} PARENT_SCOPE )
+  ENDIF()
+
+ENDFUNCTION()
+
 
 FUNCTION( BCI2000_ADD_FLAG name_ flag_ )
 

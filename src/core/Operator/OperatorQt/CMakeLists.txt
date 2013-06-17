@@ -11,16 +11,18 @@ MESSAGE( "-- Adding Project: ${EXECUTABLE_NAME}" )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  MainWindow.ui
-  ConnectionInfo.ui
-  ShowStates.ui
-
   main.cpp 
+  MainWindow.ui
   MainWindow.cpp
-  ../OperatorLib/ScriptParser/ParserToken.cpp
+  ConnectionInfo.ui
   ConnectionInfo.cpp
-  SysLog.cpp
+  ShowStates.ui
   ShowStates.cpp
+  SysLog.cpp
+
+  ${BCI2000_PARAMETER_GUI}
+
+  ../OperatorLib/ScriptParser/ParserToken.cpp
   VisDisplay.cpp
   VisDisplayWindow.cpp
   VisDisplayLayer.cpp
@@ -42,15 +44,7 @@ SET( SRC_PROJECT
 )
 
 BCI2000_INCLUDE( "MATH" )
-BCI2000_IMPORT_GUI( "ConfigWindowQt" )
-BCI2000_IMPORT_GUI( "EditMatrixQt" )
-BCI2000_IMPORT_GUI( "ShowParametersQt" )
-BCI2000_IMPORT_GUI( "PrefDialogQt" )
-BCI2000_IMPORT_GUI( "PreferencesQt" )
-BCI2000_IMPORT_GUI( "OperatorUtilsQt" )
-
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
-
 BCI2000_ADD_TO_INVENTORY( Operator ${EXECUTABLE_NAME} )
 BCI2000_ADD_TARGET( QTAPP ${EXECUTABLE_NAME}  ${SRC_PROJECT} )
 TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} OperatorLib )

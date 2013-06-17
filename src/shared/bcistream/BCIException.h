@@ -37,6 +37,9 @@
 #include <typeinfo>
 #include "Compiler.h"
 
+#define STR_(x) STR__(x)
+#define STR__(x) #x
+
 #define FILE_CONTEXT_ \
      "\nFile: " << __FILE__ \
   << "\nLine: " << STR_( __LINE__ )

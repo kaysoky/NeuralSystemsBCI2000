@@ -28,9 +28,6 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-#define STR_(x) STR__(x)
-#define STR__(x) #x
-
 #ifndef __BORLANDC__
 # if defined( __FUNCTION__ )
 #  define FUNCTION_ __FUNCTION__
@@ -43,7 +40,7 @@
 
 #ifndef COMPILER_NAME
 # ifdef _MSC_VER
-#  define COMPILER_NAME "msvc-" STR_( _MSC_VER )
+#  define COMPILER_NAME "MSVC"
 # elif defined( __INTEL_COMPILER )
 #  define COMPILER_NAME "Intel"
 # elif defined( __GNUC__ )

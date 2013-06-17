@@ -18,12 +18,6 @@ OPTION( USE_PRECOMPILED_HEADERS "Set to OFF in case of linking or runtime proble
 
 OPTION( BUILD_TOOLS "Build BCI2000 tools" ON )
 OPTION( BUILD_CONTRIB "Build contrib modules" ON )
-IF( MSVC )
-  OPTION( BUILD_MFC "Build modules that use MFC" OFF )
-  OPTION( BUILD_USE_SOLUTION_FOLDERS "Enable target group folders in VS (non-express)" ${BUILD_MFC} )
-ELSE()
-  SET( BUILD_MFC OFF )
-ENDIF()
 OPTION( BUILD_DEMOS "Build demo projects" OFF )
 OPTION( BUILD_ALL_TESTS "Build BCI2000 tests plus extlib tests" OFF )
 OPTION( BUILD_TESTS "Build BCI2000 executable tests" OFF )
@@ -64,3 +58,18 @@ IF( EXISTS ${BCI2000_SRC_DIR}/private )
   ENDIF()
   OPTION( BUILD_PRIVATE "Build contents of src/private directory" ${onoff_} )
 ENDIF()
+
+# MSVC specific
+IF( MSVC )
+  OPTION( BUILD_MFC "Build modules that use MFC" OFF )
+ELSE()
+  SET( BUILD_MFC OFF )
+ENDIF()
+
+SET( folders_ ON )
+IF( MSVC AND MSVC_VERSION LESS 1600 AND NOT BUILD_MFC )
+  SET( folders_ OFF ) # VS2008 express will not open a folders-enabled solution,
+                      # VS2010 == 1600 will ignore folders
+ENDIF()
+OPTION( BUILD_USE_SOLUTION_FOLDERS "Enable target group folders (does not work with non-express VS)" ${folders_} )
+

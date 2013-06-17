@@ -79,7 +79,7 @@ int main( int argc, char** argv )
     cerr << "Could not open file in read/write mode: " << pFile << endl;
     return -1;
   }
-  vector<size_t> offsets( 1, 0 );
+  vector<streamoff> offsets( 1, 0 );
   const char sig[] = "!<arch>\n";
   char ghdr[sizeof( sig ) - 1];
   file.read( ghdr, sizeof( ghdr ) );
@@ -115,7 +115,7 @@ int main( int argc, char** argv )
       if( find( sections.begin(), sections.end(), name ) != sections.end() )
       {
         bci::BinaryData<uint32_t, bci::LittleEndian> flags;
-        size_t pos = file.tellg();
+        streamoff pos = file.tellg();
         file.seekg( -flags.Size(), ios_base::cur );
         flags.Get( file );
 

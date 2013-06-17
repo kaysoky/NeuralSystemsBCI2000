@@ -5,19 +5,19 @@
 #   using GNU binutils.
 # Author: juergen.mellinger@uni-tuebingen.de
 
-dir=$(dirname $0)
+dir=$(dirname "$0")
 
 function strip_()
 {
   f=$1
   echo Fixing up object file names ...
-  ${dir}/fixup_msvc_lib "$(cygpath -a -w $f)" || exit -1
+  "${dir}/fixup_msvc_lib" "$(cygpath -a -w $f)" || exit -1
   echo Clearing .drectve debug flag ...
-  ${dir}/coff_set_section_flags -v -s.drectve -debug "$(cygpath -a -w $f)" || exit -1
+  "${dir}/coff_set_section_flags" -v -s.drectve -debug "$(cygpath -a -w $f)" || exit -2
   echo Running objcopy -g ...
   objcopy -g $f || exit -1
   echo Enabling .drectve debug flag ...
-  ${dir}/coff_set_section_flags -v -s.drectve +debug "$(cygpath -a -w $f)" || exit -1
+  "${dir}/coff_set_section_flags" -v -s.drectve +debug "$(cygpath -a -w $f)" || exit -1
 }
 
 function strip64_()
@@ -33,11 +33,10 @@ if [ ! $1 ]; then
 fi
 
 res_=0
-if [ "$1"=="-64" ]; then
-  is64=1
+if [ "$1" == "-64" ]; then
   shift
   for i in $*; do
-    echo "Stripping $i:"
+    echo "Cleaning $i:"
     strip64_ $i && echo "Done." && echo || ( echo "Failed." && set res_=-1 )
   done
 else
