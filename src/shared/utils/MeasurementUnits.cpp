@@ -37,6 +37,17 @@ double MeasurementUnits::sSampleBlockSize = 1.0;
 PhysicalUnit MeasurementUnits::sTimeUnit;
 PhysicalUnit MeasurementUnits::sFreqUnit;
 PhysicalUnit MeasurementUnits::sVoltageUnit;
+bool ignored = MeasurementUnits::PreInitialize();
+
+bool
+MeasurementUnits::PreInitialize()
+{
+  // Set the unit for raw numbers representing frequencies to 1Hz.
+  sFreqUnit.SetOffset( 0 ).SetGain( 1.0 ).SetSymbol( "Hz" );
+  // Set the unit for raw numbers representing voltages to Microvolts.
+  sVoltageUnit.SetOffset( 0 ).SetGain( 1e-6 ).SetSymbol( "V" );
+  return true;
+}
 
 void
 MeasurementUnits::Initialize( const ParamList& inParams )
@@ -63,10 +74,6 @@ MeasurementUnits::Initialize( const ParamList& inParams )
   }
   // Set the unit for raw numbers representing time to multiples of sample block duration.
   sTimeUnit.SetOffset( 0 ).SetGain( sSampleBlockSize / sSamplingRate ).SetSymbol( "s" );
-  // Set the unit for raw numbers representing frequencies to 1Hz.
-  sFreqUnit.SetOffset( 0 ).SetGain( 1.0 ).SetSymbol( "Hz" );
-  // Set the unit for raw numbers representing voltages to Microvolts.
-  sVoltageUnit.SetOffset( 0 ).SetGain( 1e-6 ).SetSymbol( "V" );
 }
 
 #if MEASUREMENT_UNITS_BACK_COMPAT

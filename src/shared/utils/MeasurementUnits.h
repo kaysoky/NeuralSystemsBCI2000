@@ -68,6 +68,7 @@ class MeasurementUnits
     static double SampleBlockDuration()
     { return sSampleBlockSize / sSamplingRate; }
 
+    static bool PreInitialize();
     static void Initialize( const ParamList& );
 
 #if MEASUREMENT_UNITS_BACK_COMPAT
