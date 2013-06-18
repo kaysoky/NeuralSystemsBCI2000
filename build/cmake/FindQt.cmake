@@ -3,6 +3,11 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Find Qt4
 
+SET( TRY_INTERNAL_QT
+  "4.8.4"
+  "4.7.0"
+)
+
 FUNCTION( CLEAR_QT_VARIABLES )
 
   GET_CMAKE_PROPERTY( vars VARIABLES )
@@ -24,7 +29,6 @@ FUNCTION( DOWNLOAD_EXTRACT_QT qtver arch qmake )
   FILE( REMOVE "${qttemp}" )
   IF( NOT EXISTS "${qtdir}/${arch}" )
 
-    CLEAR_QT_VARIABLES()
     MESSAGE( STATUS "Checking availability of qt-${qtver}.${arch} ..." )
     FILE( DOWNLOAD "${qturl}" "${qttemp}" TIMEOUT 20 INACTIVITY_TIMEOUT 300 STATUS result SHOW_PROGRESS )
     IF( NOT result EQUAL 0 )
@@ -80,6 +84,10 @@ FUNCTION( GET_QT_FROM_SERVER qtver )
     DOWNLOAD_EXTRACT_QT( ${qtver} "${arch}" qmake_ )
 
     IF( qmake_ AND EXISTS "${qmake_}" )
+      IF( NOT QT_QMAKE_EXECUTABLE OR NOT QT_QMAKE_EXECUTABLE STREQUAL qmake_ )
+        CLEAR_QT_VARIABLES()
+      ENDIF()
+
       DOWNLOAD_EXTRACT_QT( ${qtver} "include" ignore )
       SET( ENV{QMAKESPEC} "${qtarch}-${cc}" )
       SET( QT_QMAKE_EXECUTABLE "${qmake_}" CACHE FILEPATH "" FORCE )
@@ -97,16 +105,18 @@ IF( USE_EXTERNAL_QT AND QT_BCI2000 )
   CLEAR_QT_VARIABLES()
 ENDIF()
 IF( NOT USE_EXTERNAL_QT )
-  IF( NOT QT_BCI2000 )
-    CLEAR_QT_VARIABLES()
-  ENDIF()
-  GET_QT_FROM_SERVER( "4.7.0" )
+  SET( QT_BCI2000 FALSE CACHE INTERNAL "" FORCE ) 
+  FOREACH( qtver ${TRY_INTERNAL_QT} )
+    IF( NOT QT_BCI2000 )
+      GET_QT_FROM_SERVER( ${qtver} )
+    ENDIF()
+  ENDFOREACH()
 ENDIF()
 
 IF( QT_BCI2000 )
   OPTION( USE_EXTERNAL_QT
-    "Set to ON to dynamically link BCI2000 against an existing Qt installation.
-    Note that this will introduce various run-time dependencies which may be difficult
+    "Set to ON to link BCI2000 against an existing Qt installation.
+    Note that this may introduce various run-time dependencies which will be difficult
     to manage when deploying the resulting executables."
     OFF
   )
