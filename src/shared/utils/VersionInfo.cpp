@@ -50,7 +50,9 @@ const char* VersionInfo::sNames[] =
  "Source Date",
  "Build Date",
  "Build Type",
+ "Build User", 
  "Compiler",
+ "Config",
  "Build",
 };
 const size_t VersionInfo::sNumNames = sizeof( sNames ) / sizeof( *sNames );
@@ -106,8 +108,14 @@ VersionInfo::ReadFromStream( istream& is )
     { "Build Type",  BuildType },
     { "buildtype",   BuildType },
 
+    { "Build User",  BuildUser },
+    { "builduser",   BuildUser },
+
     { "Compiler",    Compiler },
     { "compiler",    Compiler },
+
+    { "Config",      Config },
+    { "config",      Config },
 
     { "Build",       Build },
     { "build",       Build },
@@ -134,12 +142,12 @@ VersionInfo::ReadFromStream( istream& is )
   if( find( "Build" ) == end() )
   {
     string build;
-    static const char* buildinfo[] = { "Compiler", "Build Type", "Build Date" };
+    static const char* buildinfo[] = { "Compiler", "Build Type", "Build Date", "Build User" };
     for( size_t i = 0; i < sizeof( buildinfo ) / sizeof( *buildinfo ); ++i )
       if( find( buildinfo[i] ) != end() )
-        build += " " + (*this)[buildinfo[i]];
+        build += ", " + (*this)[buildinfo[i]];
     if( !build.empty() )
-      VersionInfoBase::operator[]( "Build" ) = build.substr( 1 );
+      VersionInfoBase::operator[]( "Build" ) = build.substr( 2 );
   }
   return is;
 }

@@ -190,8 +190,9 @@ CoreModule::Initialize( int& ioArgc, char** ioArgv )
     if( !info[VersionInfo::Revision].empty() )
       bciout__ << " Revision: " << info[VersionInfo::Revision]
                <<          ", " << info[VersionInfo::SourceDate] << " \n";
-      bciout__ << " Build: " << info[VersionInfo::BuildDate] + " " + info[VersionInfo::BuildType]
-             << endl;
+    if( !info[VersionInfo::Config].empty() )
+      bciout__ << " Config: " << info[VersionInfo::Config] << " \n";
+    bciout__ << " Build: " << info[VersionInfo::Build] << endl;
     return true;
   }
   if( printHelp )
@@ -337,48 +338,47 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   EnvironmentBase::EnterNonaccessPhase();
   if( bcierr__.Flushes() > 0 )
     return;
-  // add parameters for socket connection
-  // my receiving socket port number
-  mParamlist.Add(
-    "System:Core%20Connections string " THISMODULE "Port= x"
-    " 4200 1024 65535 // the " THISMODULE " module's listening port" );
-  ostringstream port;
-  port << mPreviousModuleSocket.port();
-  mParamlist[ THISMODULE "Port" ].Value() = port.str();
-  // and IP address
-  mParamlist.Add(
-    "System:Core%20Connections string " THISMODULE "IP= x"
-    " 127.0.0.1 % % // the " THISMODULE " module's listening IP" );
-  mParamlist[ THISMODULE "IP" ].Value() = mPreviousModuleSocket.ip();
 
-  // Version control
-  const VersionInfo& info = VersionInfo::Current;
-  mParamlist.Add(
-    "System:Configuration matrix " THISMODULE "Version= "
-      "{ Framework Revision Build } 1 "
-      " % % % // " THISMODULE " version information" );
-  mParamlist[ THISMODULE "Version" ].Value( "Framework" )
-    = info[ VersionInfo::VersionID ];
-  if( info[ VersionInfo::Revision ].empty() )
-    mParamlist[ THISMODULE "Version" ].Value( "Revision" )
-      = info[ VersionInfo::SourceDate ];
-  else
-    mParamlist[ THISMODULE "Version" ].Value( "Revision" )
-      = info[ VersionInfo::Revision ] + ", " +  info[ VersionInfo::SourceDate ];
-  mParamlist[ THISMODULE "Version" ].Value( "Build" )
-    = info[VersionInfo::Build];
-  // Filter chain documentation
-  mParamlist.Add(
-    "System:Configuration matrix " THISMODULE "FilterChain= "
-      "0 { Filter%20Name Position%20String } "
-      " % % % // " THISMODULE " filter chain" );
-  Param& p = mParamlist[ THISMODULE "FilterChain" ];
-  const GenericFilter::ChainInfo& chain = GenericFilter::GetChainInfo();
-  p.SetNumRows( chain.size() );
-  for( size_t row = 0; row < chain.size(); ++row )
-  {
-    p.Value( row, "Filter Name" ) = chain[ row ].name;
-    p.Value( row, "Position String" ) = chain[ row ].position;
+  { // add parameters for socket connection
+    // my receiving socket port number
+    mParamlist.Add(
+      "System:Core%20Connections string " THISMODULE "Port= x"
+      " 4200 1024 65535 // the " THISMODULE " module's listening port" );
+    ostringstream port;
+    port << mPreviousModuleSocket.port();
+    mParamlist[ THISMODULE "Port" ].Value() = port.str();
+    // and IP address
+    mParamlist.Add(
+      "System:Core%20Connections string " THISMODULE "IP= x"
+      " 127.0.0.1 % % // the " THISMODULE " module's listening IP" );
+    mParamlist[ THISMODULE "IP" ].Value() = mPreviousModuleSocket.ip();
+  }
+  { // Version info
+    const VersionInfo& info = VersionInfo::Current;
+    mParamlist.Add(
+      "System:Configuration matrix " THISMODULE "Version= "
+        "{ Framework Revision Build Config } 1 "
+        " % % % // " THISMODULE " version information" );
+    Param& p = mParamlist[THISMODULE "Version"];
+    p.Value( "Framework" ) = info[VersionInfo::VersionID];
+    p.Value( "Revision" ) = info[VersionInfo::Revision] + ", " +  info[VersionInfo::SourceDate];
+    p.Value( "Build" ) = info[VersionInfo::Build];
+    p.Value( "Config" ) = info[VersionInfo::Config];
+  }
+
+  { // Filter chain documentation
+    mParamlist.Add(
+      "System:Configuration matrix " THISMODULE "FilterChain= "
+        "0 { Filter%20Name Position%20String } "
+        " % % % // " THISMODULE " filter chain" );
+    Param& p = mParamlist[ THISMODULE "FilterChain" ];
+    const GenericFilter::ChainInfo& chain = GenericFilter::GetChainInfo();
+    p.SetNumRows( chain.size() );
+    for( size_t row = 0; row < chain.size(); ++row )
+    {
+      p.Value( row, "Filter Name" ) = chain[ row ].name;
+      p.Value( row, "Position String" ) = chain[ row ].position;
+    }
   }
   // First, send a protocol version message
   MessageHandler::PutMessage( mOperator, ProtocolVersion::Current() );

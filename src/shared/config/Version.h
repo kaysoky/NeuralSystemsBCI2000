@@ -30,18 +30,41 @@
 
 #include "Compiler.h"
 
-#ifndef PROJECT_VERSION
-# define PROJECT_VERSION "3.0"
+#ifdef PROJECT_VERSION
+# define VERSION_ "$Version: " PROJECT_VERSION " $"
+#else
+# define VERSION_
+#endif
+#ifdef PROJECT_REVISION
+# define SOURCE_REVISION_ "$Source Revision: " PROJECT_REVISION " $"
+#else
+# define SOURCE_REVISION_
+#endif
+#ifdef PROJECT_DATE
+# define SOURCE_DATE_ "$Source Date: " PROJECT_DATE " $"
+#else
+# define SOURCE_DATE_
+#endif
+#ifdef BUILD_TYPE
+# define BUILD_TYPE_ "$Build Type: " BUILD_TYPE " $"
+#else
+# define BUILD_TYPE_
+#endif
+#ifdef BUILD_USER
+# define BUILD_USER_ "$Build User: " BUILD_USER " $"
+#else
+# define BUILD_USER_
+#endif
+#ifdef BUILD_CONFIG
+# define BUILD_CONFIG_ "$Config: " BUILD_CONFIG " $"
+#else
+# define BUILD_CONFIG_
 #endif
 
-#ifndef BUILD_TYPE
-# define BUILD_TYPE "unknown"
-#endif
-
-#define PROJECT_VERSION_DEF  "$Version: " PROJECT_VERSION " $" \
-                     "$Build Date: " __DATE__ " " __TIME__ " $" \
-                     "$Build Type: " BUILD_TYPE " $" \
-                     "$Compiler: " COMPILER_NAME " $"
+#define PROJECT_VERSION_DEF  VERSION_ SOURCE_REVISION_ SOURCE_DATE_ \
+                             BUILD_TYPE_ BUILD_USER_ BUILD_CONFIG_ \
+                            "$Build Date: " __DATE__ " " __TIME__ " $" \
+                            "$Compiler: " COMPILER_NAME " $"
 
 #define PROJECT_COPYRIGHT "(C) 2000-2013, " PROJECT_NAME " Project\n" \
                           "http://www." PROJECT_DOMAIN

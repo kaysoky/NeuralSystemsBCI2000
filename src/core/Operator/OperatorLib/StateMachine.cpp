@@ -101,18 +101,13 @@ StateMachine::Startup( const char* inArguments )
 
   const VersionInfo& info = VersionInfo::Current;
   mParameters.Add(
-    "System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 Operator % %"
+    "System:Configuration matrix OperatorVersion= { Framework Revision Build Config } 1 Operator % %"
     " % % % // operator module version information" );
-  mParameters["OperatorVersion"].Value( "Framework" )
-    = info[VersionInfo::VersionID];
-  if( info[VersionInfo::Revision].empty() )
-    mParameters["OperatorVersion"].Value( "Revision" )
-      = info[VersionInfo::SourceDate];
-  else
-    mParameters["OperatorVersion"].Value( "Revision" )
-      = info[VersionInfo::Revision] + ", " +  info[VersionInfo::SourceDate];
-  mParameters["OperatorVersion"].Value( "Build" )
-    = info[VersionInfo::Build];
+  Param& p = mParameters["OperatorVersion"];
+  p.Value( "Framework" ) = info[VersionInfo::VersionID];
+  p.Value( "Revision" ) = info[VersionInfo::Revision] + ", " +  info[VersionInfo::SourceDate];
+  p.Value( "Build" ) = info[VersionInfo::Build];
+  p.Value( "Config" ) = info[VersionInfo::Config];
 
   mParameters.Add(
     "System:Protocol int OperatorBackLink= 1"
