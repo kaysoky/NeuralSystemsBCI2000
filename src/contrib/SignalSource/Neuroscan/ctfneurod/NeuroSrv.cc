@@ -16,17 +16,16 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
-#include <cstdio>
-#include <stdexcept>
 
 #include "SockStream.h"
+#include "EDFHeader.h"
 
 using namespace std;
 
 void
 NeuroSrv::CloseConnection( ostream& os )
 {
-  os.put( EOF );
+  NscCloseRequest().WriteBinary( os );
   TerminateConnection();
 }
 
@@ -42,44 +41,22 @@ NeuroSrv::SendBasicInfo( ostream& os )
 void
 NeuroSrv::SendEDFHeader( std::ostream& os )
 {
-  ostringstream oss;
-  oss.put( '0' );
-  for( int i = 1; i < 256 - 4; ++i )
-    oss.put( ' ' );
-  ostringstream oss2;
-  oss2 << setw( 4 ) << mBasicInfo.EEGChannels();
-  oss << oss2.str().substr( 0, 4 );
-
-  const struct { string ChannelInfo::* s; size_t l; } fields[] =
-  { // EDF fields in a channel entry, and their lengths
-    { &ChannelInfo::name, 16 },
-    { &ChannelInfo::type, 80 },
-    { &ChannelInfo::unit, 8 },
-    { NULL, 8 }, { NULL, 8 }, { NULL, 8 }, { NULL, 8 },
-    { NULL, 80 }, { NULL, 8 }, { NULL, 32 }
-  };
-  for( size_t j = 0; j < sizeof( fields ) / sizeof( *fields ); ++j )
+  mEDFHeader.BlockDuration = ( 1.0 * mBasicInfo.SamplesInBlock() ) / mBasicInfo.SamplingRate();
+  for( EDFHeader::ChannelList::iterator i = mChannelInfo.begin(); i != mChannelInfo.end(); ++i )
   {
-    for( int i = 0; i < min<int>( mBasicInfo.EEGChannels(), mChannelInfo.size() ); ++i )
-    {
-      static const string empty;
-      const string& s = fields[j].s ? mChannelInfo[i].*(fields[j].s) : empty;
-      for( size_t k = 0; k < min( s.length(), fields[j].l ); ++k )
-        oss.put( s[k] );
-      for( size_t k = s.length(); k < fields[j].l; ++k )
-        oss.put( ' ' );
-    }
-    for( size_t i = mChannelInfo.size(); i < static_cast<size_t>( mBasicInfo.EEGChannels() ); ++i )
-      for( int k = 0; k < 256; ++k )
-        oss.put( ' ' );
+#if 0 
+    if( i->PhysicalMaximum == i->PhysicalMinimum )
+      cerr << i->Label << ": PhysicalMaximum == PhysicalMinimum == "
+           << i->PhysicalMaximum << endl;
+#endif
+    i->DigitalMaximum = i->PhysicalMaximum / mBasicInfo.Resolution();
+    i->DigitalMinimum = i->PhysicalMinimum / mBasicInfo.Resolution();
+    i->SamplesPerRecord = mBasicInfo.SamplesInBlock();
   }
-
-  string header = oss.str();
-  if( header.length() != 256 * ( 1 + mBasicInfo.EEGChannels() ) )
-    throw std::logic_error( "Invalid EDF header" );
-  
-  NscPacketHeader( 'DATA', DataType_InfoBlock, InfoType_EdfHeader, header.length() ).WriteBinary( os );
-  os.write( header.data(), header.length() ).flush();
+  ostringstream oss;
+  mEDFHeader.WriteBinary( oss );
+  NscPacketHeader( 'DATA', DataType_InfoBlock, InfoType_EdfHeader, oss.str().size() ).WriteBinary( os );
+  os.write( oss.str().data(), oss.str().size() ).flush();
 }
 
 void
@@ -100,24 +77,15 @@ NeuroSrv::Run( int argc, const char* argv[] )
 
   typedef void ( NeuroSrv::*MessageAction )( ostream& );
   map<NscPacketHeader, MessageAction> messageActions;
-/*  messageActions[ NscPacketHeader( 'CTRL', ::GeneralControlCode,::RequestForVersion, 0 ) ]
-    = &NeuroSrv::SendVersion;*/
-  messageActions[ NscPacketHeader( 'CTRL', ::GeneralControlCode,::ClosingUp, 0 ) ]
-    = &NeuroSrv::CloseConnection;
-  messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestEDFHeader, 0 ) ]
-    = &NeuroSrv::SendEDFHeader;
-  messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestAstFile, 0 ) ]
-    = &NeuroSrv::SendASTSetupFile;
-  messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestBasicInfo, 0 ) ]
-    = &NeuroSrv::SendBasicInfo;
-  messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestStartData, 0 ) ]
-    = &NeuroSrv::StartSendingData;
-  messageActions[ NscPacketHeader( 'CTRL', ::ClientControlCode, ::RequestStopData, 0 ) ]
-    = &NeuroSrv::StopSendingData;
-  messageActions[ NscPacketHeader( 'CTRL', ::ServerControlCode, ::StartAcquisition, 0 ) ]
-    = &NeuroSrv::StartAcquisition;
-  messageActions[ NscPacketHeader( 'CTRL', ::ServerControlCode, ::StopAcquisition, 0 ) ]
-    = &NeuroSrv::StopAcquisition;
+//  messageActions[NscVersionRequest()] = &NeuroSrv::SendVersion;
+  messageActions[NscCloseRequest()] = &NeuroSrv::CloseConnection;
+  messageActions[NscEDFHeaderRequest()] = &NeuroSrv::SendEDFHeader;
+  messageActions[NscSetupFileRequest()] = &NeuroSrv::SendASTSetupFile;
+  messageActions[NscInfoRequest()] = &NeuroSrv::SendBasicInfo;
+  messageActions[NscStartDataRequest()] = &NeuroSrv::StartSendingData;
+  messageActions[NscStopDataRequest()] = &NeuroSrv::StopSendingData;
+  messageActions[NscStartAcquisition()] = &NeuroSrv::StartAcquisition;
+  messageActions[NscStopAcquisition()] = &NeuroSrv::StopAcquisition;
 
   const char* address = "localhost:4000";
   if( argc > 1 )
@@ -127,37 +95,41 @@ NeuroSrv::Run( int argc, const char* argv[] )
   {
     sockstream client;
     server_tcpsocket serverSocket( address );
+    if( serverSocket.is_open() )
+      cout << "Listening on " << serverSocket.address() << "... " << flush;
+    else
+      cerr << "Could not open socket for listening on " << address << endl;
     serverSocket.wait_for_read( tcpsocket::infiniteTimeout );
     client.open( serverSocket );
+    if( client.is_open() )
+      cout << "connected." << endl;
     mSendingData = false;
     mTerminatingConnection = false;
     NscPacketHeader header;
-    while( client && client.is_open() )
+    while( client && !mTerminatingConnection )
     {
-      if( mSendingData )
-      {
-        int timeout = SendData( client );
-        serverSocket.wait_for_read( timeout );
-      }
-      else
-        serverSocket.wait_for_read( tcpsocket::infiniteTimeout );
-
       while( client.rdbuf()->in_avail() && header.ReadBinary( client ) )
       {
-        MessageAction action = messageActions[ header ];
+        MessageAction action = messageActions[header];
         if( action != NULL )
           ( this->*action )( client );
         else
         {
           cerr << argv[ 0 ] << ": received unhandled message(" << header << "), aborting" << endl;
           CloseConnection( client );
-          client.close();
           result = errorOccurred;
         }
       }
-      if( mTerminatingConnection )
-        client.close();
+      if( !mSendingData )
+        mTerminatingConnection = !serverSocket.wait_for_read( tcpsocket::infiniteTimeout );
+      else
+      {
+        int timeout = SendData( client );
+        serverSocket.wait_for_read( timeout );
+	mTerminatingConnection = !serverSocket.is_open();
+      }
     }
+    cout << "Connection closed." << endl;
   }
   return result;
 }

@@ -48,7 +48,7 @@ class CtfNeuroSrv : public NeuroSrv
   private:
     void ApplyHP( int channel, double& );
 
-    std::string                 mDsFilePath;
+    std::string                 mDsPath;
     int                         mShmHandle,
                                 mPacketIndex;
     struct ACQ_MessagePacket*   mpMessageQueue;

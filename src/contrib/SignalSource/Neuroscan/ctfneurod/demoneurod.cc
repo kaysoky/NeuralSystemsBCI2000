@@ -40,16 +40,20 @@ DemoNeuroSrv::DemoNeuroSrv( int argc, char** argv )
       samplesInBlock = 17,
       samplingRate = 129,
       dataDepth = 4;
-  float resolution = ::pow( 2.f, -dataDepth * 8 + 7 );
+  float resolution = 1.f/30;
   
   mBasicInfo = NscBasicInfo( eegChannels, eventChannels, samplesInBlock, samplingRate, dataDepth, resolution );
   mChannelInfo.resize( eegChannels );
   for( size_t i = 0; i < mChannelInfo.size(); ++i )
   {
+    EDFHeader::ChannelInfo& ch = mChannelInfo[i];
     ostringstream oss;
-    oss << "EEG Ch" << i + 1;
-    mChannelInfo[i].name = oss.str();
-    mChannelInfo[i].unit = "uV";
+    oss << "Demo Ch" << i + 1;
+    ch.Label = oss.str();
+    ch.PhysicalDimension = "uV";
+    ch.TransducerType = "EEG";
+    ch.PhysicalMaximum = 5000;
+    ch.PhysicalMinimum = -5000;
   }
 }
 
@@ -73,7 +77,8 @@ DemoNeuroSrv::SendASTSetupFile( std::ostream& os )
 int
 DemoNeuroSrv::SendData( std::ostream& os )
 {
-  int numBytes = ( mBasicInfo.EEGChannels() + mBasicInfo.EventChannels() ) * mBasicInfo.SamplesInBlock() * mBasicInfo.DataDepth(),
+  int numBytes = ( mBasicInfo.EEGChannels() + mBasicInfo.EventChannels() )
+                 * mBasicInfo.SamplesInBlock() * mBasicInfo.DataDepth(),
       dataType;
   switch( mBasicInfo.DataDepth() )
   {
@@ -87,8 +92,19 @@ DemoNeuroSrv::SendData( std::ostream& os )
       throw runtime_error( "unsupported value in mBasicInfo.DataDepth()" );
   }
   NscPacketHeader( HeaderIdData, DataType_EegData, dataType, numBytes ).WriteBinary( os );
-  for( int i = 0; i < numBytes; ++i )
-    os.put( i );
+  int numNumbers = numBytes / mBasicInfo.DataDepth(),
+      amplitude = static_cast<int>( 100 / mBasicInfo.Resolution() );
+  switch( dataType )
+  {
+    case DataTypeRaw16bit:
+      for( int i = 0; i < numNumbers; ++i )
+        LittleEndianData::put<int16_t>( os, static_cast<int16_t>( ( i * amplitude ) / numNumbers ) );
+      break;
+    case DataTypeRaw32bit:
+      for( int i = 0; i < numNumbers; ++i )
+        LittleEndianData::put<int32_t>( os, ( i * amplitude ) / numNumbers );
+      break;
+  }
   os.flush();
   return ( 1000 * mBasicInfo.SamplesInBlock() ) / mBasicInfo.SamplingRate();
 }

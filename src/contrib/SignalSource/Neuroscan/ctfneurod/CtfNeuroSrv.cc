@@ -75,8 +75,8 @@ CtfNeuroSrv::CtfNeuroSrv(
   cout << "received." << endl;
   try
   {
-    mDsFilePath = reinterpret_cast<const char*>( mpMessageQueue[ 0 ].data );
-    PhysicalSet ds( mDsFilePath.c_str() );
+    mDsPath = reinterpret_cast<const char*>( mpMessageQueue[ 0 ].data );
+    PhysicalSet ds( mDsPath.c_str() );
     const ACQ_MessagePacket& firstPacket = mpMessageQueue[ 1 ];
     if( firstPacket.numChannels != ds.getNumberOfChannels() )
       cerr << "Received inconsistent data" << endl;
@@ -103,33 +103,32 @@ CtfNeuroSrv::CtfNeuroSrv(
       const Channel& ch = ds.getChannel( i );
       bool useChannel = false;
       if( mpChannelNameRegex )
-  useChannel = !::regexec( mpChannelNameRegex, ch.getName(), 0, NULL, 0 );
-      else
-        switch( ch.getSensorClass() )
-        {
-          case MEGSensor:
-          case badMEGSensor:
-      useChannel = true;
-            break;
-        }
+	useChannel = !::regexec( mpChannelNameRegex, ch.getName(), 0, NULL, 0 );
+      else switch( ch.getSensorClass() )
+      {
+        case MEGSensor:
+        case badMEGSensor:
+          useChannel = true;
+          break;
+      }
       if( useChannel )
       {
         mChannelIndices.push_back( i );
         channelTypes.push_back( ch.getSensorClass() );
-  switch( ch.getSensorClass() )
-  {
-    case EEGSensor:
-    case badEEGSensor:
-      mChannelGains.push_back( cEEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
-      break;
-    case MEGSensor:
-    case badMEGSensor:
+	switch( ch.getSensorClass() )
+	{
+	  case EEGSensor:
+	  case badEEGSensor:
+	    mChannelGains.push_back( cEEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
+	    break;
+	  case MEGSensor:
+	  case badMEGSensor:
             mChannelGains.push_back( cMEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
-      break;
-    default:
-      mChannelGains.push_back( 1.0 );
-  }
-  mHPChannelOffsets.push_back( 0.0 );
+	    break;
+	  default:
+	    mChannelGains.push_back( 1.0 );
+	}
+	mHPChannelOffsets.push_back( 0.0 );
         channelNames.push_back( string( ch.getName() ) );
         switch( ch.getSensorClass() )
         {
@@ -184,17 +183,24 @@ CtfNeuroSrv::CtfNeuroSrv(
     parmSourceChOffset << "Source floatlist SourceChOffset= " << numChannels << " ";
     parmSamplingRate << "Source float SamplingRate= " << samplingRate << "Hz";
     parmSampleBlockSize << "Source int SampleBlockSize= " << firstPacket.numSamples;
+    mChannelInfo.resize( numChannels );
     double pi = 4 * ::atan( 1 );
     size_t megIdx = 0;
     for( size_t i = 0; i < numChannels; ++i )
     {
+      mChannelInfo[i].Label = channelNames[i];
       string elocName = channelNames[ i ];
       double elocAngle = 0,
              elocRadius = 1;
       switch( channelTypes[ i ] )
       {
+        case EEGSensor:
+          mChannelInfo[i].TransducerType = "EEG";
+	  break;
         case MEGSensor:
         case badMEGSensor:
+          mChannelInfo[i].TransducerType = "MEG";  
+          mChannelInfo[i].PhysicalDimension = "fT";  
           elocName = channelNames[ i ].substr( 0, 4 );
           elocRadius = megRadii[ megIdx ] / 2 / maxRadius;
           elocAngle = - megAngles[ megIdx++ ] * 180 / pi + 45;
@@ -255,15 +261,15 @@ CtfNeuroSrv::~CtfNeuroSrv()
 }
 
 void
-CtfNeuroSrv::SendASTSetupFile( std::ostream& os )
+CtfNeuroSrv::SendASTSetupFile( ostream& os )
 {
   char* pBuf = 0;
   size_t length = 0;
 
   char* pTemp = ::tempnam( 0, "ast" );
-  string command = "tar -czf \"";
+  string command = "tar -Pczf \"";
   command += pTemp;
-  command += "\" \" + mDsPath + "\"";
+  command += "\" \"" + mDsPath + "\"";
   if( ::system( command.c_str() ) )
     cerr << "Could not execute command: " << command << endl;
   else
@@ -280,7 +286,7 @@ CtfNeuroSrv::SendASTSetupFile( std::ostream& os )
     if( !file )
       cerr << "Could not read file: " << pTemp << endl;
   }
-  NscPacketHeader( 'FILE', SetupFile, CtfDSFileFormat, length ).WriteBinary( os );
+  NscPacketHeader( 'FILE', SetupFile, 'CTFD', length ).WriteBinary( os );
   os.write( pBuf, length );
   os.flush();
   delete[] pBuf;
@@ -329,52 +335,52 @@ CtfNeuroSrv::SendData( ostream& os )
         size_t dataLength = mChannelIndices.size() * curPacket->numSamples * mBytesPerSample;
         NscPacketHeader( 'DATA', DataType_EegData, mDataOutputFormat, dataLength ).WriteBinary( os );
 
-  for( size_t sample = 0; sample < curPacket->numSamples; ++sample )
-          for( size_t i = 0; i < mChannelIndices.size(); ++i )
-    {
+	for( size_t sample = 0; sample < curPacket->numSamples; ++sample )
+	  for( size_t i = 0; i < mChannelIndices.size(); ++i )
+	{
 #ifdef BIG_ENDIAN_INPUT // The old system provided data in big endian format:
-      // We get the data in 32 bit big endian format -- convert it to machine format.
-      const unsigned char* inBytes = reinterpret_cast<const unsigned char*>( 
-               &curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ] );
-            signed int intValue = 0;
-      for( int j = 0; j < 4; ++j )
-      {
-        intValue <<= 8;
-        intValue |= inBytes[ j ];
-      }
+	  // We get the data in 32 bit big endian format -- convert it to machine format.
+	  const unsigned char* inBytes = reinterpret_cast<const unsigned char*>( 
+        	   &curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ] );
+        	signed int intValue = 0;
+	  for( int j = 0; j < 4; ++j )
+	  {
+            intValue <<= 8;
+            intValue |= inBytes[ j ];
+	  }
 #else // BIG_ENDIAN_INPUT The new system provides data in little endian format:
-      signed int intValue = curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ];
+	  signed int intValue = curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ];
 #endif // BIG_ENDIAN_INPUT
-            // Apply the individual gain factor for the channel (should be in the order of 1.0).
-            double floatValue = intValue * mChannelGains[ i ];
-      if( mDoHPFiltering )
-              ApplyHP( i, floatValue );
+	  // Apply the individual gain factor for the channel (should be in the order of 1.0).
+	  double floatValue = intValue * mChannelGains[ i ];
+	  if( mDoHPFiltering )
+            ApplyHP( i, floatValue );
 
-            switch( mDataOutputFormat )
+	  switch( mDataOutputFormat )
+	  {
+            case DataTypeRaw16bit:
             {
-              case DataTypeRaw16bit:
-        {
-                const double maxShort = 1 << 15 - 1;
-                if( floatValue > maxShort )
-                  floatValue = maxShort;
-                else if( floatValue < -maxShort )
-                  floatValue = -maxShort;
-                signed short shortValue = floatValue;
-                os.write( reinterpret_cast<const char*>( &shortValue ), 2 );
-              } break;
+              const double maxShort = 1 << 15 - 1;
+              if( floatValue > maxShort )
+        	floatValue = maxShort;
+              else if( floatValue < -maxShort )
+        	floatValue = -maxShort;
+              signed short shortValue = floatValue;
+              os.write( reinterpret_cast<const char*>( &shortValue ), 2 );
+            } break;
 
-              case DataTypeRaw32bit:
-                 // Write the scaled data value into the output stream. 
-     intValue = ::floor( floatValue );
-                 os.write( reinterpret_cast<const char*>( &intValue ), 4 );
-                 break;
+            case DataTypeRaw32bit:
+              // Write the scaled data value into the output stream. 
+              intValue = ::floor( floatValue );
+              os.write( reinterpret_cast<const char*>( &intValue ), 4 );
+              break;
 
-        default:
-                cerr << "Unknown data output format: " << mDataOutputFormat << endl;
-                TerminateConnection();
-      }
-    }
-        os.flush();
+            default:
+              cerr << "Unknown data output format: " << mDataOutputFormat << endl;
+              TerminateConnection();
+	  }
+	}
+	os.flush();
       } break;
       case ACQ_MSGQ_CLOSE_COLLECTION: // We don't know how to correctly handle this message because
                                       // we can't notify a neuroscan client of a changing hardware setup.
@@ -390,7 +396,7 @@ CtfNeuroSrv::SendData( ostream& os )
     ++mPacketIndex %= ACQ_MSGQ_SIZE;
     curPacket = mpMessageQueue + mPacketIndex;
   }
-  return 11;
+  return 5;
 }
 
 void

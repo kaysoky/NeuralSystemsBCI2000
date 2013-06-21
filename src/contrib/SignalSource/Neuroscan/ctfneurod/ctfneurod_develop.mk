@@ -25,6 +25,7 @@ CXXSRC  =       ACQ_MessagePacketQueue.cc \
 		CtfNeuroSrv.cc \
 		NeuroSrv.cc \
 		SockStream.cc \
+		EDFHeader.cc \
 			$(MAIN)
 
 

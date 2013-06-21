@@ -431,7 +431,7 @@ streamsock::write( const char* buffer, size_t count )
 void
 streamsock::set_socket_options()
 {
-#ifndef _WIN32
+#if 0 //ndef _WIN32
   if( m_handle != INVALID_SOCKET )
   {
     struct linger val = { 1, 1 }; // close after one second

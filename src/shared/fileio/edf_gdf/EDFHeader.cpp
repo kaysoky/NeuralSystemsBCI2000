@@ -31,6 +31,14 @@
 using namespace std;
 using namespace GDF;
 
+size_t
+EDFHeader::Length() const
+{
+  const size_t h = 8 + 80 + 80 + 16 + 8 + 44 + 8 + 8 + 4,
+               ch = 16 + 80 + 5*8 + 80 + 8 + 32;
+  return h + Channels.size() * ch;
+}
+
 ostream&
 EDFHeader::WriteBinary( ostream& os ) const
 {

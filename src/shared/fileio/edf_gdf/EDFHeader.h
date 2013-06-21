@@ -67,9 +67,12 @@ struct EDFHeader
     { ::memset( ElectrodePosition, 0, sizeof( ElectrodePosition ) ); }
 
   };
-  std::vector<ChannelInfo> Channels;
+  struct ChannelList : std::vector<ChannelInfo>
+  { int Size() const { return static_cast<int>( size() ); }
+  } Channels;
 
   EDFHeader() : Version( "0" ), NumBlocks( -1 ), BlockDuration( 0 ) {}
+  size_t Length() const;
   std::ostream& WriteBinary( std::ostream& ) const;
   std::istream& ReadBinary( std::istream& );
 };

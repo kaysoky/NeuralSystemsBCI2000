@@ -9,6 +9,9 @@ ADD_EXECUTABLE(
   NeuroSrv.h
   SockStream.cc
   SockStream.h
+  EDFHeader.cc
+  EDFHeader.h
+  GDF.h
   NeuroscanProtocol.h
 )
 

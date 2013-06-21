@@ -14,6 +14,7 @@
 #define NEUROSRV_H
 
 #include "NeuroscanProtocol.h"
+#include "EDFHeader.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -21,7 +22,7 @@
 class NeuroSrv
 {
   public:
-    NeuroSrv() : mSendingData( false ), mTerminatingConnection( false ) {}
+    NeuroSrv() : mSendingData( false ), mTerminatingConnection( false ), mChannelInfo( mEDFHeader.Channels ) {}
     virtual ~NeuroSrv() {}
     int Run( int argc, const char** argv );
 
@@ -50,15 +51,10 @@ class NeuroSrv
 
   protected:
     NscBasicInfo mBasicInfo;
-    struct ChannelInfo
-    {
-      std::string name,
-                  type,
-                  unit;
-    };
-    std::vector<ChannelInfo> mChannelInfo;
+    EDFHeader::ChannelList& mChannelInfo;
 
   private:
+    EDFHeader mEDFHeader;
     // Program state:
     bool mSendingData,
          mTerminatingConnection;

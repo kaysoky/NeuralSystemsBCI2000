@@ -31,6 +31,8 @@ Terminate( int )
 int
 main( int argc, const char* argv[] )
 {
+  cout << argv[0] << ", " __DATE__ " " __TIME__ << endl;
+
   int rem_argc = 1;
   const char** rem_argv = new const char* [ argc ];
   rem_argv[ 0 ] = argv[ 0 ];

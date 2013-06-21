@@ -28,7 +28,7 @@
 #define NEUROSCAN_H
 
 #ifndef DBG_LEVEL
-# define DBG_LEVEL 0
+# define DBG_LEVEL 1
 #endif
 
 #include <iostream>
@@ -192,7 +192,7 @@ class NscPacketHeader
       BigEndianData::put( os, mDataSize );
 #if( DBG_LEVEL > 0 )
 # if( DBG_LEVEL < 2 )
-      if( mId != HeaderData || mCode != DataType_EegData )
+      if( mId != HeaderIdData || mCode != DataType_EegData )
 # endif
 #endif
       {
@@ -258,6 +258,7 @@ class NscPacketHeader
           switch( mValue )
           {
             CONSIDER( NeuroscanASTFormat ) break;
+            CONSIDER( CtfDSFormat ) break;
           }
           break;
         }
@@ -320,6 +321,12 @@ inline
 NscPacketHeader NscStopAcquisition()
 {
   return NscPacketHeader( HeaderIdCtrl, ServerControlCode, StopAcquisition );
+}
+
+inline
+NscPacketHeader NscVersionRequest()
+{
+  return NscPacketHeader( HeaderIdCtrl, GeneralControlCode, RequestForVersion );
 }
 
 inline
