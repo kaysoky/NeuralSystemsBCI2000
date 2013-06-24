@@ -30,6 +30,7 @@
 #include "EDFHeader.h"
 #include "Blob.h"
 #include "ThreadUtils.h"
+#include "StringUtils.h"
 #include "BCIException.h"
 #include "BCIStream.h"
 
@@ -111,7 +112,7 @@ NeuroscanADC::AutoConfig( const SignalProperties& )
     for( int ch = 0; ch < mAcqSettings.EEGChannels(); ++ch )
     {
       Parameter( "SourceChOffset" )( ch ) = 0;
-      Parameter( "SourceChGain" )( ch ) = mAcqSettings.Resolution();
+      Parameter( "SourceChGain" )( ch ) << fixed << mAcqSettings.Resolution() << "muV";
     }
     // EDF header
     NscEDFHeaderRequest().WriteBinary( mServer );
@@ -134,7 +135,6 @@ NeuroscanADC::AutoConfig( const SignalProperties& )
       }
       else
       {
-#if 0
         for( size_t i = 0; i < h.Channels.size(); ++i )
         {
           const EDFHeader::ChannelInfo& ch = h.Channels[i];
@@ -153,20 +153,13 @@ NeuroscanADC::AutoConfig( const SignalProperties& )
           }
           if( gain != 0 )
           {
-            Parameter( "SourceChGain" )( i ) << fixed << gain << ch.PhysicalDimension;
+            Parameter( "SourceChGain" )( i ) << fixed << gain << StringUtils::Strip( ch.PhysicalDimension );
             Parameter( "SourceChOffset" )( i ) = offset;
           }
         }
-#endif
         Parameter( "ChannelNames" )->SetNumValues( h.Channels.size() );
         for( size_t i = 0; i < h.Channels.size(); ++i )
-        {
-          const string& name = h.Channels[i].Label;
-          size_t idx = name.length();
-          while( idx > 0 && ::isspace( name[idx-1] ) )
-            --idx;
-          Parameter( "ChannelNames" )( i ) = name.substr( 0, idx );
-        }
+          Parameter( "ChannelNames" )( i ) = StringUtils::Strip( h.Channels[i].Label );
       }
     }
     // Setup file
@@ -210,10 +203,15 @@ NeuroscanADC::Preflight( const SignalProperties&, SignalProperties& Output ) con
   PreflightCondition( Parameter( "SourceCh" ) == mAcqSettings.EEGChannels() );
   PreflightCondition( Parameter( "SampleBlockSize" ) == mAcqSettings.SamplesInBlock() );
   PreflightCondition( Parameter( "SamplingRate" ).InHertz() == mAcqSettings.SamplingRate() );
+  ParamRef SourceChGain = Parameter( "SourceChGain" ),
+           SourceChOffset = Parameter( "SourceChOffset" );
   for( int ch = 0; ch < Parameter( "SourceCh" )->NumValues(); ++ch )
   {
-    PreflightCondition( Parameter( "SourceChOffset" )( ch ) == 0 );
-    PreflightCondition( fabs( Parameter( "SourceChGain" )( ch ) - mAcqSettings.Resolution() ) < 1e-3 );
+    PreflightCondition( SourceChOffset( ch ) == 0 );
+    double gain = SourceChGain( ch );
+    if( fabs( gain - mAcqSettings.Resolution() ) > 1e-3 )
+      bcierr << "SourceChGain(" << SourceChGain->RowLabels()[ch] << ") == "
+             << gain << " != " << mAcqSettings.Resolution();
   }
 
   SignalType outType;
@@ -268,10 +266,12 @@ NeuroscanADC::Process( const GenericSignal&, GenericSignal& Output )
 void
 NeuroscanADC::Halt()
 {
-  NscStopDataRequest().WriteBinary( mServer );
-  NscCloseRequest().WriteBinary( mServer );
-  mServer.flush();
-  mServer.close();
+  if( mServer.is_open() )
+  {
+    NscCloseRequest().WriteBinary( mServer ).flush();
+    mSocket.wait_for_read( cTimeout );
+    mServer.close();
+  }
   mSocket.close();
   mServer.clear();
 }

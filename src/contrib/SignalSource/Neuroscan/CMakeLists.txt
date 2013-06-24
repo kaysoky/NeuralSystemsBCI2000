@@ -3,7 +3,6 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for Neuroscan source
 
-ADD_SUBDIRECTORY( getparams )
 IF( BUILD_DEMOS )
   SET( DIR_NAME_ ${DIR_NAME} )
   SET( DIR_NAME Demos/Neuroscan )
