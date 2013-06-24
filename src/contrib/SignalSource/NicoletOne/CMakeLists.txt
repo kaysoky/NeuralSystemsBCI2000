@@ -11,9 +11,6 @@ IF( MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 4 )
 # Set the executable name
 SET( EXECUTABLE_NAME NicoletOne )
 
-# DEBUG
-MESSAGE( "-- Adding Signal Source Project: " ${EXECUTABLE_NAME} )
-
 # Set the project specific sources
 SET( SRC_PROJECT
   NicoletOne.cpp
@@ -57,7 +54,7 @@ INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreLib/CoreLibFiles.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 
 LINK_DIRECTORIES( ${BCI2000_SIGSRCLIBDIRS} )
-BCI2000_ADD_TARGET( WINAPP ${EXECUTABLE_NAME} ${SRC_PROJECT} ${HDR_PROJECT} )
+BCI2000_ADD_TARGET( INFO "Signal source module" WINAPP ${EXECUTABLE_NAME} ${SRC_PROJECT} ${HDR_PROJECT} )
 
 IF( NOT FAILED )
   BCI2000_ADD_TO_INVENTORY( SignalSource ${EXECUTABLE_NAME} )

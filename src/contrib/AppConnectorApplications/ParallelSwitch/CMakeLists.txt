@@ -10,8 +10,6 @@ IF( WIN32 )
 # Set the executable name
 SET( NAME ParallelSwitch )
 
-MESSAGE( "-- Adding Example Project: " ${NAME} )
-
 # Set the project specific sources
 SET( SRC_PROJECT
   ParallelSwitch.cpp
@@ -20,7 +18,7 @@ SET( SRC_PROJECT
 
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/utils )
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/src/contrib/AppConnectorApplications/ParallelSwitch )
-BCI2000_ADD_TARGET( EXECUTABLE ${NAME} ${SRC_PROJECT} )
+BCI2000_ADD_TARGET( INFO "AppConnector example" EXECUTABLE ${NAME} ${SRC_PROJECT} )
 
 # Set the target build folder
 SET_PROPERTY( TARGET ${NAME} PROPERTY FOLDER Demos/AppConnector )

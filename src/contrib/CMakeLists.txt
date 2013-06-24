@@ -6,32 +6,28 @@
 # Set this directory name
 SET( DIR_NAME "${DIR_NAME}Contrib/" )
 
+OPTION( BUILD_ALL_SOURCEMODULES "Build all available source modules" ON )
+OPTION( BUILD_CONTRIB "Build contrib modules" ON )
+IF( BUILD_CONTRIB )
+  SET( BUILD_ALL_SOURCEMODULES ON )
+ENDIF()
 
-# Recurse down into all project subdirectories
+IF( BUILD_ALL_SOURCEMODULES )
+  ADD_SUBDIRECTORY( SignalSource )
+ENDIF()
 
-SET( BUILD_MFC
-     FALSE CACHE BOOL
-	 "Whether to build modules that use MFC (leave this disabled unless you are using a full, paid-for version of Visual Studio)"
-)
-
-SET( BUILD_CONTRIB
-     FALSE CACHE BOOL
-	 "Whether to build contrib modules"
-)
 IF( BUILD_CONTRIB )
   ADD_SUBDIRECTORY( AppConnectorApplications )
   ADD_SUBDIRECTORY( OperatorLibApplications )
-  ADD_SUBDIRECTORY( SignalSource )
   ADD_SUBDIRECTORY( SignalProcessing )
   ADD_SUBDIRECTORY( Application )
-  ADD_SUBDIRECTORY( Extensions )
   ADD_SUBDIRECTORY( ExternalLinks )
-ENDIF( BUILD_CONTRIB )
-
+  ADD_SUBDIRECTORY( Extensions )
+ENDIF()
 
 SET( BUILD_BCPY2000
      FALSE CACHE BOOL
-	 "Whether to build BCPy2000 Python modules"
+   "Whether to build BCPy2000 Python modules"
 )
 IF( BUILD_BCPY2000 )
   ADD_SUBDIRECTORY( BCPy2000 )

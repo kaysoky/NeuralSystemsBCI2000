@@ -8,5 +8,5 @@ echo
 echo "Press enter to proceed, or ctrl-C to abort."
 read
 echo "Running CMake ..."
-CMake -DUSE_SSE2:BOOL=TRUE -DBUILD_TOOLS:BOOL=TRUE -G "Xcode"
+./Configure.sh.cmd -DUSE_SSE2:BOOL=TRUE -DBUILD_TOOLS:BOOL=TRUE -G "Xcode"
 

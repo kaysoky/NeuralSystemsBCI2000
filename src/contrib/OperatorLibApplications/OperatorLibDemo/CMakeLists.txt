@@ -8,9 +8,6 @@ IF( BUILD_DEMOS )
 # Set the executable name
 SET( EXECUTABLE_NAME OperatorLibDemo )
 
-# DEBUG
-MESSAGE( "-- Adding Project: ${EXECUTABLE_NAME}" )
-
 # Set the project specific sources
 SET( SRC_PROJECT
   main.cpp 

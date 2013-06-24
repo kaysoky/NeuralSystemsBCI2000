@@ -11,9 +11,6 @@ IF( MSVC )
 # Set the executable name
 SET( EXECUTABLE_NAME MFCDemo )
 
-# DEBUG
-MESSAGE( "-- Adding MFC Application Project: " ${EXECUTABLE_NAME} )
-
 # Set the project specific sources
 SET( SRC_PROJECT
   MFCdemo.cpp
@@ -58,7 +55,7 @@ SET( HDR_BCI2000_FRAMEWORK
   ${BCI2000_APPHEADERS}
 )
 
-BCI2000_ADD_TARGET( WINAPP ${EXECUTABLE_NAME} ${SRC_PROJECT} )
+BCI2000_ADD_TARGET( INFO "MFC demo application module" WINAPP ${EXECUTABLE_NAME} ${SRC_PROJECT} )
 
 IF( NOT FAILED )
 

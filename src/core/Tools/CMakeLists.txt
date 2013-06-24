@@ -6,16 +6,13 @@
 # Set this directory name
 SET( DIR_NAME "${DIR_NAME}Tools/" )
 
-
-# Recurse down into all project subdirectories
-IF( NOT BORLAND )
+OPTION( BUILD_TOOLS "Build ${PROJECT_NAME} tools" ON )
+IF( BUILD_TOOLS )
   ADD_SUBDIRECTORY( BCI2000FileInfoQt )
   ADD_SUBDIRECTORY( BCI2000ViewerQt )
   ADD_SUBDIRECTORY( BCI2000ExportQt )
   ADD_SUBDIRECTORY( BCI2000LauncherQt )
   ADD_SUBDIRECTORY( P300Classifier )
-  IF( WIN32 )
-    ADD_SUBDIRECTORY( BCI2000Certification )
-  ENDIF( WIN32 )
-ENDIF( NOT BORLAND )
+  ADD_SUBDIRECTORY( BCI2000Certification )
+ENDIF()
 ADD_SUBDIRECTORY( cmdline )

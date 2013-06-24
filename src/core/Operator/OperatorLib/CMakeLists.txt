@@ -6,9 +6,6 @@
 # Set the executable name
 SET( NAME OperatorLib )
 
-# DEBUG
-MESSAGE( "-- Adding Project: " ${NAME} )
-
 SET( SRC_PROJECT
   BCI_OperatorLib.cpp
   CallbackBase.cpp
@@ -56,7 +53,7 @@ ENDIF( WIN32 )
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 # Add the executable to the project
-BCI2000_ADD_TARGET( DLL ${NAME} ${SRC_PROJECT} )
+BCI2000_ADD_TARGET( INFO "Operator library" DLL ${NAME} ${SRC_PROJECT} )
 
 # Add Pre-processor defines
 IF( WIN32 )

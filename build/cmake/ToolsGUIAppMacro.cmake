@@ -4,9 +4,7 @@
 ## Description: Contains a macro for creating a GUI based tool application
 
 MACRO( BCI2000_ADD_TOOLS_GUIAPP ) 
-  BCI2000_PARSE_ARGS( "NAME;SOURCES" ${ARGV} )
-
-  MESSAGE( "-- Adding Tool Project: " ${NAME} )
+  UTILS_PARSE_ARGS( "NAME;SOURCES" ${ARGV} )
 
   SET( SOURCES
     ${SOURCES}
@@ -19,7 +17,7 @@ MACRO( BCI2000_ADD_TOOLS_GUIAPP )
 
   INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
   SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/tools/${NAME} )
-  BCI2000_ADD_TARGET( QTAPP ${NAME} ${SOURCES} )
+  BCI2000_ADD_TARGET( INFO Tool GUIAPP ${NAME} ${SOURCES} )
   BCI2000_ADD_TO_INVENTORY( Tool ${NAME} )
 
 ENDMACRO()

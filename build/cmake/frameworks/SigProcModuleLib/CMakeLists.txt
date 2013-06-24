@@ -8,8 +8,6 @@ ADD_SUBDIRECTORY( test )
 
 SET( NAME BCI2000FrameworkSigProcModule )
 
-MESSAGE( "---Adding Framework Library: ${NAME}" )
-
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleLib.cmake )
 
 SET( SRC_BCI2000_FRAMEWORK
@@ -44,7 +42,7 @@ BCI2000_INCLUDE( "FFT" )
 
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/SigProcModule.cmake )
 BCI2000_ADD_REGISTRY( ${REGISTRY_NAME} SRC_BCI2000_FRAMEWORK DEPTARGETS )
-BCI2000_ADD_TARGET( STATIC_LIBRARY ${NAME} )
+BCI2000_ADD_TARGET( INFO "Framework library" STATIC_LIBRARY ${NAME} )
 
 IF( FAILED )
   MESSAGE( WARNING "Could not satisfy dependencies of the SignalProcessing library. SignalProcessing modules will not build." )
@@ -52,10 +50,5 @@ ELSE( FAILED )
 
   TARGET_LINK_LIBRARIES( ${NAME} ${DEPLIBS} BCI2000FrameworkCore )
   ADD_DEPENDENCIES( ${NAME} ${DEPTARGETS} )
-  BCI2000_ADD_FLAG( ${NAME} -DMODTYPE=2 )
-
-  BCI2000_ADD_FLAG( ${NAME} -DUSE_QT )
-#  TARGET_LINK_LIBRARIES( ${NAME} ${QT_LIBRARIES} )
 
 ENDIF( FAILED )
-

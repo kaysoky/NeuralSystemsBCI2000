@@ -1,0 +1,214 @@
+###########################################################################
+## $Id$
+## Authors: juergen.mellinger@uni-tuebingen.de
+## Description: CMake utility functions
+
+### Defines and options
+
+# Determine source code revision
+EXECUTE_PROCESS( COMMAND svn info "${BCI2000_ROOT_DIR}" RESULT_VARIABLE result_ OUTPUT_VARIABLE output_ )
+IF( result_ EQUAL 0 )
+  STRING( REGEX REPLACE ".*\nLast Changed Rev: *([^\n]+).*" "\\1" PROJECT_REVISION ${output_} )
+  STRING( REGEX REPLACE ".*\nLast Changed Date: *([^\n\\(]+).*" "\\1" PROJECT_DATE ${output_} )
+  STRING( STRIP "${PROJECT_DATE}" PROJECT_DATE )
+  ADD_DEFINITIONS(
+    -DPROJECT_REVISION="${PROJECT_REVISION}"
+    -DPROJECT_DATE="${PROJECT_DATE}"
+  )
+ENDIF()
+
+# Create project defines
+SET( PROJECT_VERSION "${LATEST_RELEASE}" )
+IF( PROJECT_REVISION )
+  MATH( EXPR PROJECT_VER_PATCH "${PROJECT_REVISION} - ${LATEST_RELEASE_REVISION}" )
+ENDIF()
+IF( PROJECT_VER_PATCH )
+  SET( PROJECT_VERSION "${PROJECT_VERSION}.${PROJECT_VER_PATCH}" )
+ENDIF()
+
+STRING( TOLOWER "${PROJECT_NAME}" domain_ )
+SET( PROJECT_DOMAIN "${domain_}.org" CACHE STRING "Domain name of main project" )
+SET( PROJECT_SEARCH_ENGINE "google" CACHE STRING "Name of search engine for searching project domain" )
+MARK_AS_ADVANCED( PROJECT_DOMAIN PROJECT_SEARCH_ENGINE )
+ADD_DEFINITIONS(
+  -DPROJECT_NAME="${PROJECT_NAME}"
+  -DPROJECT_DOMAIN="${PROJECT_DOMAIN}"
+  -DPROJECT_VERSION="${PROJECT_VERSION}"
+  -DWEBSEARCH_DOMAIN="www.${PROJECT_SEARCH_ENGINE}.com"
+)
+
+# Determine host and user name
+IF( NOT CONFIG_BUILD_USER )
+  SITE_NAME( site_ )
+  IF( CMAKE_HOST_WIN32 )
+    EXECUTE_PROCESS( COMMAND net config workstation RESULT_VARIABLE result_ OUTPUT_VARIABLE output_ )
+    IF( result_ EQUAL 0 )
+      SET( pat_ ".*\nFull Computer name.([^\n]+).*" )
+      IF( output_ MATCHES ${pat_} )
+        STRING( REGEX REPLACE  ${pat_} "\\1" site_ ${output_} )
+        STRING( STRIP "${site_}" site_ )
+      ENDIF()
+    ENDIF()
+  ENDIF()
+  SET( user_ "$ENV{USER}" )
+  IF( user_ STREQUAL "" )
+    SET( user_ "$ENV{USERNAME}" )
+  ENDIF()
+  IF( user_ STREQUAL "" )
+    SET( user_ "unknown" )
+  ENDIF()
+  SET( CONFIG_BUILD_USER "${user_}@${site_}" CACHE STRING "Build user ID, may be used to track down the origin of executables" )
+  UNSET( site_ CACHE )
+ENDIF()
+ADD_DEFINITIONS(
+  -DBUILD_USER="${CONFIG_BUILD_USER}"
+)
+
+# Conditionally emit a status message
+OPTION( CONFIG_VERBOSE "Set to OFF to suppress status information during configuration" ON )
+FUNCTION( UTILS_CONFIG_STATUS )
+  IF( CONFIG_VERBOSE )
+    MESSAGE( STATUS ${ARGV} )
+  ENDIF()
+ENDFUNCTION()
+
+### Functions
+
+# Parse arguments into provided variable names
+MACRO( UTILS_PARSE_ARGS args_ )
+
+  SET( firstargs_ ${args_} )
+  LIST( LENGTH firstargs_ pos_ )
+  IF( ${ARGC} LESS pos_ ) 
+    MESSAGE( FATAL_ERROR "Too few arguments: args_ = \"${args_}\", ARGN = \"${ARGN}\"" )
+  ENDIF()
+  MATH( EXPR pos_ "${pos_}-1" )
+  LIST( GET firstargs_ ${pos_} lastarg_ )
+  LIST( REMOVE_AT firstargs_ ${pos_} )
+
+  SET( remargs_ ${ARGN} )
+  FOREACH( arg_ ${firstargs_} )
+    LIST( GET remargs_ 0 ${arg_} )
+    LIST( REMOVE_AT remargs_ 0 )
+  ENDFOREACH()
+  SET( ${lastarg_} )
+  FOREACH( arg_ ${remargs_} )
+    LIST( APPEND ${lastarg_} ${arg_} )
+  ENDFOREACH()
+
+ENDMACRO()
+
+# Automatically add header files
+FUNCTION( UTILS_AUTOHEADERS listname_ )
+
+  SET( newlist_ ${${listname_}} )
+  FOREACH( file_ ${${listname_}} )
+    IF( file_ MATCHES .*\\.\(c|cpp\) )
+      STRING( REGEX REPLACE \(c|cpp\)$ h header_ "${file_}" )
+      IF( EXISTS ${header_} OR EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${header_} )
+        LIST( APPEND newlist_ "${header_}" )
+      ENDIF()
+    ENDIF()
+  ENDFOREACH()
+  LIST( REMOVE_DUPLICATES newlist_ )
+  SET( ${listname_} ${newlist_} PARENT_SCOPE )
+  
+ENDFUNCTION()
+
+# Automatically handle Qt preprocessing
+FUNCTION( UTILS_AUTOMOC ioList outNeedqt )
+
+  SET( generated )
+  FOREACH( file_ ${${ioList}} )
+    IF( file_ MATCHES .*\\.h )
+      FILE( STRINGS ${file_} qobjects REGEX [^/]*Q_OBJECT.* )
+      LIST( LENGTH qobjects qobjects )
+      IF( qobjects GREATER 0 )
+        QT4_WRAP_CPP( generated ${file_} )
+      ENDIF()
+    ELSEIF( file_ MATCHES .*\\.ui )
+      QT4_WRAP_UI( generated ${file_} )
+    ENDIF()
+  ENDFOREACH()
+
+  SET( needqt FALSE )
+  IF( generated )
+    SOURCE_GROUP( Generated\\Qt FILES ${generated} )
+    SET( ${ioList} ${${ioList}} ${generated} PARENT_SCOPE )
+    SET( needqt TRUE )
+  ELSE()
+    UTILS_IS_INCLUDED( ${QT_QTCORE_INCLUDE_DIR} needqt )
+  ENDIF()
+  SET( ${outNeedqt} ${needqt} PARENT_SCOPE )
+  
+ENDFUNCTION()
+
+# Work around IDE/CMake bugs
+FUNCTION( UTILS_FIXUP_FILES listname_ )
+
+  IF( MSVC ) # With the VS2010 generator, there are problems 
+             # with non-compiled files appearing in multiple projects.
+             # As a workaround, we construct globally unique paths for such files.
+    GET_FILENAME_COMPONENT( proj_dir_ "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE )
+    GET_FILENAME_COMPONENT( proj_dir_name_ "${CMAKE_CURRENT_SOURCE_DIR}" NAME )
+    SET( files_ )
+    FOREACH( file_ ${${listname_}} )
+      IF( NOT file_ MATCHES  .*\\.\(h|c|cpp\) )
+        GET_FILENAME_COMPONENT( file_ "${file_}" ABSOLUTE )
+        FILE( RELATIVE_PATH rpath_ "${proj_dir_}" "${file_}" )
+        FILE( TO_CMAKE_PATH "${rpath_}" rpath_ )
+        SET( file_ "../${proj_dir_name_}/${rpath_}" )
+      ENDIF()
+      LIST( APPEND files_ "${file_}" )
+    ENDFOREACH()      
+    SET( ${listname_} ${files_} PARENT_SCOPE )
+  ENDIF()
+
+ENDFUNCTION()
+
+# Check if a preprocessor define exists in the current directory
+FUNCTION( UTILS_IS_DEFINITION inDef outResult )
+
+  GET_DIRECTORY_PROPERTY( defs COMPILE_DEFINITIONS )  
+  SET( ${outResult} FALSE PARENT_SCOPE )
+  UTILS_REGEX_ESCAPE( inDef )
+  FOREACH( def ${defs} )
+    IF( def MATCHES "^${inDef}$" OR def MATCHES "^${inDef}=.*" )
+      SET( ${outResult} TRUE PARENT_SCOPE )
+      RETURN()
+    ENDIF()
+  ENDFOREACH()
+
+ENDFUNCTION()
+
+# Check whether a path is being included
+FUNCTION( UTILS_IS_INCLUDED inPath outResult )
+
+  SET( ${outResult} FALSE PARENT_SCOPE )
+  IF( "${inPath}" STREQUAL "" )
+    RETURN()
+  ENDIF()
+  
+  GET_FILENAME_COMPONENT( path "${inPath}" ABSOLUTE )
+  GET_DIRECTORY_PROPERTY( dirs INCLUDE_DIRECTORIES )
+  FOREACH( dir ${dirs} )
+    GET_FILENAME_COMPONENT( dir "${dir}" ABSOLUTE )
+    IF( dir STREQUAL path )
+      SET( ${outResult} TRUE PARENT_SCOPE )
+      RETURN()
+    ENDIF()
+  ENDFOREACH()
+
+ENDFUNCTION()
+
+# Add a flag to an existing target
+FUNCTION( UTILS_ADD_FLAG name_ flag_ )
+  GET_PROPERTY( flags_ TARGET ${name_} PROPERTY COMPILE_FLAGS )
+  SET_PROPERTY( TARGET ${name_} PROPERTY COMPILE_FLAGS "${flags_} ${flag_}" )
+ENDFUNCTION()
+
+# Escape special regex metacharacters with a backslash
+FUNCTION( UTILS_REGEX_ESCAPE ioVar )
+  STRING( REGEX REPLACE "([$^.[|*+?()]|])" "\\\\\\1" result "${${ioVar}}" )
+  SET( ${ioVar} ${result} PARENT_SCOPE )
+ENDFUNCTION()

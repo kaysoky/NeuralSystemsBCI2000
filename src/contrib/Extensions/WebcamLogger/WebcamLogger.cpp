@@ -23,12 +23,35 @@
 #include "BCIEvent.h"
 
 #include <cstring>
+#include <ctime>
 #include <iomanip>
 #include <iostream>
 
 using namespace std;
 
 Extension( WebcamLogger );
+
+static time_t Now()
+{ return ::time( 0 ); }
+
+static string TimeToString( time_t inTime )
+{ // format is "MM/dd/yy hh:mm:ss"
+  struct ::tm t = { 0 },
+             *p = ::localtime( &inTime );
+  if( !p )
+    return "<n/a>";
+
+  t = *p;
+  ostringstream oss;
+  oss << setfill( '0' )
+      << setw( 2 ) << t.tm_mon + 1 << '/'
+      << setw( 2 ) << t.tm_mday << '/'
+      << setw( 2 ) << t.tm_year % 100 << ' '
+      << setw( 2 ) << t.tm_hour << ':'
+      << setw( 2 ) << t.tm_min << ':'
+      << setw( 2 ) << t.tm_sec;
+  return oss.str();
+}
 
 // **************************************************************************
 // Function:   WebcamLogger
@@ -135,7 +158,7 @@ void WebcamLogger::Preflight() const
 			frame = cvQueryFrame( capture );
 		}
 		PrecisionTime t2 = PrecisionTime::UnsignedDiff(PrecisionTime::Now(),t1);
-		float fps = 1000.0/(float(t2)/nFrames);
+		float fps = 1000.0f/(float(t2)/nFrames);
 		bciout << "Avg. webcam framerate="<<fps<<endl;
 
 		//disconnect the camera
@@ -227,7 +250,7 @@ void WebcamLogger::Halt()
 		mpWebcamThread->SetRunning( false );
 		mpWebcamThread->TerminateWait();
 		delete mpWebcamThread;
-		bcidbg( 10 ) << "4. Distroy Thread" << endl;
+		bcidbg( 10 ) << "4. Destroy Thread" << endl;
 		mpWebcamThread = NULL;
 	}
 }
@@ -321,7 +344,7 @@ void WebcamLogger::WebcamThread::InitText()
 	if (mTextLocation > 0)
 	{
 		cvInitFont(&mFont, CV_FONT_HERSHEY_SIMPLEX,0.5,0.5,0,1,CV_AA);
-		string dt = QDateTime::currentDateTime().toString("dd/MM/yy hh:mm:ss").toStdString();
+		string dt = TimeToString( Now() );
 		CvSize textSize;
 		int baseline;
 		cvGetTextSize(dt.c_str(), &mFont, &textSize, &baseline);
@@ -366,7 +389,7 @@ void WebcamLogger::WebcamThread::InitCam()
 		mFrame = cvQueryFrame( mCapture );
 	}
 	PrecisionTime t2 = PrecisionTime::UnsignedDiff(PrecisionTime::Now(), t1);
-	mFps = 1000.0/(float(t2)/nFrames);
+	mFps = 1000.0f/(float(t2)/nFrames);
 }
 
 void WebcamLogger::WebcamThread::SetResting(bool val)
@@ -470,7 +493,7 @@ void WebcamLogger::WebcamThread::GetFrame()
 
 void WebcamLogger::WebcamThread::AddDateTime()
 {
-	QString dt = QDateTime::currentDateTime().toString("MM/dd/yy hh:mm:ss");
-	cvPutText(mFrame, dt.toStdString().c_str(), mTextLoc, &mFont, cvScalar(0,0,255,0));
+	string dt = TimeToString( Now() );//QDateTime::currentDateTime().toString("MM/dd/yy hh:mm:ss");
+	cvPutText(mFrame, dt.c_str(), mTextLoc, &mFont, cvScalar(0,0,255,0));
 
 }

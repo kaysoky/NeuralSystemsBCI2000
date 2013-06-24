@@ -1,5 +1,0 @@
-Root
-#PROJECTTEMPLATE#ConsoleApp.bpr
-#OUTDIR##ROOT#\..\prog\
-shared\config
-shared

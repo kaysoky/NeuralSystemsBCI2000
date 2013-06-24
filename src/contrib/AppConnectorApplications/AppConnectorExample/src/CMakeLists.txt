@@ -8,8 +8,6 @@ IF( BUILD_DEMOS )
 # Set the executable name
 SET( NAME AppConnectorExample )
 
-MESSAGE( "-- Adding Example Project: " ${NAME} )
-
 # Set the project specific sources
 SET( SRC_PROJECT
   main.cpp

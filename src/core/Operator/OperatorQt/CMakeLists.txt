@@ -6,9 +6,6 @@
 # Set the executable name
 SET( EXECUTABLE_NAME Operator )
 
-# DEBUG
-MESSAGE( "-- Adding Project: ${EXECUTABLE_NAME}" )
-
 # Set the project specific sources
 SET( SRC_PROJECT
   main.cpp 
@@ -46,6 +43,6 @@ SET( SRC_PROJECT
 BCI2000_INCLUDE( "MATH" )
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 BCI2000_ADD_TO_INVENTORY( Operator ${EXECUTABLE_NAME} )
-BCI2000_ADD_TARGET( QTAPP ${EXECUTABLE_NAME}  ${SRC_PROJECT} )
+BCI2000_ADD_TARGET( INFO "Operator module" QTAPP ${EXECUTABLE_NAME}  ${SRC_PROJECT} )
 TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} OperatorLib )
 

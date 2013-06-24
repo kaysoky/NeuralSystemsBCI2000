@@ -8,8 +8,6 @@ IF( BUILD_DEMOS )
 # Set the executable name
 SET( NAME SimpleExample )
 
-MESSAGE( "-- Adding Example Project: " ${NAME} )
-
 # Set the project specific sources
 SET( SRC_PROJECT
   SimpleExample.cpp
@@ -17,7 +15,7 @@ SET( SRC_PROJECT
 )
 
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/src/contrib/AppConnectorApplications/SimpleExample )
-BCI2000_ADD_TARGET( EXECUTABLE ${NAME} ${SRC_PROJECT} )
+BCI2000_ADD_TARGET( INFO "AppConnector example" EXECUTABLE ${NAME} ${SRC_PROJECT} )
 
 IF( WIN32 )
   TARGET_LINK_LIBRARIES( ${NAME} ws2_32 )

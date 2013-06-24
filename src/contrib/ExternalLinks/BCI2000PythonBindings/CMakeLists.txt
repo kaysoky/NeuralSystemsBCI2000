@@ -6,9 +6,6 @@
 # Set the executable name
 SET( NAME BCI2000PythonBindings )
 
-# DEBUG
-MESSAGE( "-- Adding Project: ${NAME}" )
-
 ADD_CUSTOM_TARGET(
   ${NAME}
   ALL

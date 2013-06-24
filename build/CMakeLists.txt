@@ -8,9 +8,8 @@ cmake_policy( VERSION 2.8 )
 
 # Define the project name and version
 PROJECT( BCI2000 )
-SET( PROJECT_VER_MAJOR "3" )
-SET( PROJECT_VER_MINOR "0" )
-SET( PROJECT_VER_PATCH "5" )
+SET( LATEST_RELEASE "3.05" )
+SET( LATEST_RELEASE_REVISION "4230" )
 
 # Set the variable where to find the top level project sources
 IF( NOT DEFINED BCI2000_ROOT_DIR )
@@ -23,13 +22,14 @@ SET( BCI2000_CMAKE_DIR ${BCI2000_SOURCE_DIR}/cmake )
 SET( BCI2000_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles )
 SET( CMAKE_INCLUDE_CURRENT_DIR ON )
 
+INCLUDE( ${BCI2000_CMAKE_DIR}/Utils.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/BuildOptions.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/FindDependencies.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/SetupBCI2000Macros.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/BuildConfigurations.cmake )
 
 # Tell the user what we're about to setup
-MESSAGE( STATUS "Creating Project files for ${PROJECT_NAME} Version ${PROJECT_VERSION} Rev ${PROJECT_REVISION}" )
+MESSAGE( STATUS "Configuring project ${PROJECT_NAME} Version ${PROJECT_VERSION}" )
 
 INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
 INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )

@@ -35,8 +35,6 @@
 //#include "cv.h"
 #include <string>
 #include <iostream>
-#include <QDateTime>
-#include <QString>
 #include "Environment.h"
 #include "OSThread.h"
 #include "OSMutex.h"

@@ -5,8 +5,5 @@
 
 SET( SRC_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/CoreModule.h
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_module.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/CoreModuleQT.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/CoreModuleQT.h
 )

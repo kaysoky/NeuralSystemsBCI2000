@@ -5,8 +5,6 @@
 
 SET( NAME RDAgetparams )
 
-MESSAGE( "-- Adding Tool Project: " ${NAME} )
-
 SET( SOURCES
   RDAgetparams.cpp
   ${BCI2000_SRC_DIR}/contrib/SignalSource/RDAClient/RDAProtocol.cpp
@@ -14,5 +12,5 @@ SET( SOURCES
 )
 
 INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
-BCI2000_ADD_TARGET( EXECUTABLE ${NAME} ${SOURCES} )
+BCI2000_ADD_TARGET( INFO Tool EXECUTABLE ${NAME} ${SOURCES} )
 BCI2000_ADD_TO_INVENTORY( Tool ${NAME} )

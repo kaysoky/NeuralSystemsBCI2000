@@ -3,9 +3,68 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Macro that simplifies BCI2000 CMake files
 
-FUNCTION( BCI2000_ADD_TARGET )
+# Counting targets
+SET( ENV{TARGET_NUMBER} 0 )
+FUNCTION( NEXT_TARGET outTargetNumber )
+  MATH( EXPR target "$ENV{TARGET_NUMBER} + 1" )
+  SET( ENV{TARGET_NUMBER} ${target} )
+  SET( ${outTargetNumber} ${target} PARENT_SCOPE )
+ENDFUNCTION()
+  
+# Debugging targets
+SET( DebugCMake_Target 0 CACHE STRING "Target number to be debugged, 0 for none" )
+SET( DebugCMake_DumpProperties
+  "DIRECTORY\;COMPILE_DEFINITIONS;CMAKE\;VARIABLES"
+  CACHE STRING "Properties to display when debugging"
+)
+MARK_AS_ADVANCED( DebugCMake_Target DebugCMake_DumpProperties )
 
-  BCI2000_PARSE_ARGS( "kind_;name_;sources_" ${ARGV} )
+MACRO( dump_debug_info_ )
+  MESSAGE( "======= Dumping debug info for target #${target}: ${kind_} ${name_} =======" )
+  FOREACH( _prop ${DebugCMake_DumpProperties} )
+    MESSAGE( "======= ${_prop} =======" )
+    LIST( GET _prop 0 _type )
+    LIST( GET _prop 1 _name )
+    IF( _type STREQUAL CMAKE )
+      GET_CMAKE_PROPERTY( _vars ${_name} )
+    ELSE()
+      GET_PROPERTY( _vars ${_type} PROPERTY ${_name} )
+    ENDIF()
+    FOREACH( _var ${_vars}) 
+      IF( DEFINED ${_var} )
+        MESSAGE( "${_var}==${${_var}}" )
+      ELSE()
+        MESSAGE( "${_var}" )
+      ENDIF()
+    ENDFOREACH()
+  ENDFOREACH()
+  MESSAGE( "======= End of debug info for ${name_} =======" )
+ENDMACRO()
+
+# Add any kind of target
+FUNCTION( BCI2000_ADD_TARGET )
+  UTILS_PARSE_ARGS( "kind_;name_;sources_" ${ARGV} )
+  IF( kind_ STREQUAL INFO )
+    SET( info_ ${name_} )
+    UTILS_PARSE_ARGS( "kind_;name_;sources_" ${sources_} )
+  ENDIF()
+
+  IF( kind_ STREQUAL WINDLL OR kind_ STREQUAL WINAPP )
+    IF( NOT WIN32 )
+      SET( FAILED TRUE PARENT_SCOPE )
+      RETURN()
+    ENDIF()
+  ENDIF()
+  IF( kind_ STREQUAL WINDLL AND CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    SET( name_ "${name_}64" )
+  ENDIF()
+
+  NEXT_TARGET( target )
+  SET( debug OFF )
+  IF( DebugCMake_Target EQUAL target )
+    SET( debug ON )
+  ENDIF()
+
   SET( failed_ FALSE )
   BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS failed_ )
 
@@ -15,25 +74,45 @@ FUNCTION( BCI2000_ADD_TARGET )
     SET( sources_ ${sources_} ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} )
 
     BCI2000_AUTODEPEND( sources_ LIBS )
-    BCI2000_AUTOHEADERS( sources_ )
-    BCI2000_AUTOSOURCEGROUPS( sources_ )
-    BCI2000_AUTOMOC( sources_ )
+    UTILS_AUTOHEADERS( sources_ )
+    BCI2000_AUTOSOURCEGROUPS( sources_ companions )
+    UTILS_AUTOMOC( sources_ needqt_ )
     BCI2000_AUTOINCLUDE( sources_ )
-    BCI2000_FIXUP_FILES( sources_ )
+    UTILS_FIXUP_FILES( sources_ )
+    IF( NOT needqt_ )
+      UTILS_IS_DEFINITION( USE_QT needqt_ )
+    ENDIF()
     
+    IF( debug )
+      dump_debug_info_()
+    ENDIF()
+    
+    SET( build_config_ ${BUILD_CONFIG} )
+    IF( needqt_ )
+      IF( kind_ STREQUAL GUIAPP OR kind_ STREQUAL EXECUTABLE )
+        SET( kind_ QTAPP )
+      ENDIF()
+      INCLUDE( ${QT_USE_FILE} )
+      SET( build_config_ "${build_config_} Qt:${QT_VERSION}:{QT_QMAKE_EXECUTABLE}" )
+    ENDIF()
+    ADD_DEFINITIONS( -DBUILD_CONFIG=\"${build_config_}\" )
+
+    IF( DEFINED info_ )
+      SET( info_ "${info_}, " )
+    ENDIF()
+    UTILS_CONFIG_STATUS( "Target #${target}: ${name_} (${info_}${kind_})" )
+
+    # Now, add the target
     IF( ADD_TARGET_HOOK )
       ADD_TARGET_HOOK()
-    ENDIF()
-    IF( VERBOSE_CONFIG )
-      MESSAGE( "--- Adding ${kind_}: " ${name_} )
     ENDIF()
     
     IF( kind_ STREQUAL QTAPP )
       ADD_EXECUTABLE( ${name_} WIN32 ${sources_} )
-      BCI2000_ADD_FLAG( ${name_} "-DUSE_QT" )
+      UTILS_ADD_FLAG( ${name_} "-DUSE_QT" )
       TARGET_LINK_LIBRARIES( ${name_} ${QT_LIBRARIES} )
 
-    ELSEIF( kind_ STREQUAL WINAPP )
+    ELSEIF( kind_ STREQUAL WINAPP OR kind_ STREQUAL GUIAPP )
       ADD_EXECUTABLE( ${name_} WIN32 ${sources_} )
 
     ELSEIF( kind_ STREQUAL EXECUTABLE )
@@ -42,7 +121,7 @@ FUNCTION( BCI2000_ADD_TARGET )
     ELSEIF( kind_ STREQUAL STATIC_LIBRARY )
       ADD_LIBRARY( ${name_} STATIC ${sources_} )
 
-    ELSEIF( kind_ STREQUAL MODULE )
+    ELSEIF( kind_ STREQUAL MODULE OR kind_ STREQUAL WINDLL )
       ADD_LIBRARY( ${name_} MODULE ${sources_} )
       SET_PROPERTY( TARGET "${name_}" PROPERTY PREFIX "" )
 
@@ -71,41 +150,34 @@ FUNCTION( BCI2000_ADD_TARGET )
   IF( NOT failed_ )
     TARGET_LINK_LIBRARIES( ${name_} ${LIBS} )
     SET_PROPERTY( TARGET ${name_} PROPERTY FOLDER ${DIR_NAME} )
+
+    # Handle companion files
+    GET_PROPERTY( outputDir TARGET ${name_} PROPERTY RUNTIME_OUTPUT_DIRECTORY )
+    FOREACH( companion ${companions} )
+      IF( companion MATCHES "\\.bat" )
+        SET( copyto "${outputDir}/../batch" )
+      ELSE()
+        SET( copyto "${outputDir}" )
+      ENDIF()
+      
+      ADD_CUSTOM_COMMAND(
+        TARGET ${name_}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "${companion}" "${copyto}"
+      )
+    ENDFOREACH()
   ENDIF()
   
   SET( FAILED "${failed_}" PARENT_SCOPE )
 
 ENDFUNCTION()
 
-# Parse arguments into provided variable names
-MACRO( BCI2000_PARSE_ARGS args_ )
-
-  SET( firstargs_ ${args_} )
-  LIST( LENGTH firstargs_ pos_ )
-  IF( ${ARGC} LESS pos_ ) 
-    MESSAGE( FATAL_ERROR "Too few arguments: args_ = \"${args_}\", ARGN = \"${ARGN}\"" )
-  ENDIF()
-  MATH( EXPR pos_ "${pos_}-1" )
-  LIST( GET firstargs_ ${pos_} lastarg_ )
-  LIST( REMOVE_AT firstargs_ ${pos_} )
-
-  SET( remargs_ ${ARGN} )
-  FOREACH( arg_ ${firstargs_} )
-    LIST( GET remargs_ 0 ${arg_} )
-    LIST( REMOVE_AT remargs_ 0 )
-  ENDFOREACH()
-  SET( ${lastarg_} )
-  FOREACH( arg_ ${remargs_} )
-    LIST( APPEND ${lastarg_} ${arg_} )
-  ENDFOREACH()
-
-ENDMACRO()
-
 # Automatically define source groups for framework files
-FUNCTION( BCI2000_AUTOSOURCEGROUPS listname_ )
+FUNCTION( BCI2000_AUTOSOURCEGROUPS listname_ outCompanions )
 
   GET_FILENAME_COMPONENT( proj_dir_ "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE )
   GET_FILENAME_COMPONENT( frame_dir_ "${BCI2000_SRC_DIR}" ABSOLUTE )
+  SET( companions )
 
   FOREACH( file_ ${${listname_}} )
 
@@ -114,6 +186,9 @@ FUNCTION( BCI2000_AUTOSOURCEGROUPS listname_ )
       SET( section_ Headers )
     ELSEIF( file_ MATCHES .*\\.\(res|rc|rsrc|ui|def\) )
       SET( section_ Resources )
+    ELSEIF( file_ MATCHES .*\\.\(bat|dll|so|cmd|exe|txt|htm|html|rtf|pdf|tex\) )
+      SET( section_ Companions )
+      LIST( APPEND companions ${file_} )
     ELSEIF( RESOURCE_FILES )
       LIST( FIND RESOURCE_FILES ${file_} pos )
       IF( NOT pos LESS 0 )
@@ -166,53 +241,17 @@ FUNCTION( BCI2000_AUTOSOURCEGROUPS listname_ )
   FOREACH( rule_ ${rules_} )
     STRING( REPLACE "|" ";" rule_ ${rule_} )
     SET( rule_ ${rule_} )
-    BCI2000_PARSE_ARGS( "group_;path_;ext_" ${rule_} )
-    REGEX_ESCAPE_STRING( path_ "${path_}" )
-    REGEX_ESCAPE_STRING( ext_ "${ext_}" )
+    UTILS_PARSE_ARGS( "group_;path_;ext_" ${rule_} )
+    UTILS_REGEX_ESCAPE( path_ )
+    UTILS_REGEX_ESCAPE( ext_ )
     SET( regex_ "${path_}/[^/]*${ext_}" )
     STRING( REPLACE "/" "\\" group_ "${group_}" )
     # Using SOURCE_GROUP( REGULAR_EXPRESSION ) allows override by SOURCE_GROUP( FILES )
     SOURCE_GROUP( "${group_}" REGULAR_EXPRESSION "${regex_}" )
   ENDFOREACH()
   
-ENDFUNCTION()
-
-# Automatically add header files
-FUNCTION( BCI2000_AUTOHEADERS listname_ )
-
-  SET( newlist_ ${${listname_}} )
-  FOREACH( file_ ${${listname_}} )
-    IF( file_ MATCHES .*\\.\(c|cpp\) )
-      STRING( REGEX REPLACE \(c|cpp\)$ h header_ "${file_}" )
-      IF( EXISTS ${header_} OR EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${header_} )
-        LIST( APPEND newlist_ "${header_}" )
-      ENDIF()
-    ENDIF()
-  ENDFOREACH()
-  LIST( REMOVE_DUPLICATES newlist_ )
-  SET( ${listname_} ${newlist_} PARENT_SCOPE )
+  SET( ${outCompanions} ${companions} PARENT_SCOPE )
   
-ENDFUNCTION()
-
-# Automatically handle Qt preprocessing
-FUNCTION( BCI2000_AUTOMOC listname_ )
-
-  FOREACH( file_ ${${listname_}} )
-    IF( file_ MATCHES .*\\.h )
-      FILE( STRINGS ${file_} qobjects REGEX [^/]*Q_OBJECT.* )
-      LIST( LENGTH qobjects qobjects )
-      IF( qobjects GREATER 0 )
-        QT4_WRAP_CPP( generated ${file_} )
-      ENDIF()
-    ELSEIF( file_ MATCHES .*\\.ui )
-      QT4_WRAP_UI( generated ${file_} )
-    ENDIF()
-  ENDFOREACH()
-  IF( generated )
-    SOURCE_GROUP( Generated\\Qt FILES ${generated} )
-    SET( ${listname_} ${${listname_}} ${generated} PARENT_SCOPE )
-  ENDIF()
-
 ENDFUNCTION()
 
 # Add dependencies of individual source files
@@ -221,9 +260,8 @@ FUNCTION( BCI2000_AUTODEPEND  listname_ libsname_ )
   SET( newlibs_ )
   SET( newfiles_ )
 
-  GET_DIRECTORY_PROPERTY( defs_ COMPILE_DEFINITIONS )
-  LIST( FIND defs_ "DISABLE_BCITEST" idx_ )
-  IF( idx_ LESS 0 ) # BCITEST enabled
+  UTILS_IS_DEFINITION( DISABLE_BCITEST disabled_ )
+  IF( NOT disabled_ )
     # This file will not do anything unless "main" is redefined by BCI2000_ADD_TEST
     #LIST( APPEND newfiles_ ${BCI2000_SRC_DIR}/shared/bcistream/BCITestMain.cpp )
   ENDIF()
@@ -258,56 +296,3 @@ FUNCTION( BCI2000_AUTOINCLUDE listname_ )
   ENDIF()
 
 ENDFUNCTION()
-
-# Work around IDE/CMake bugs
-FUNCTION( BCI2000_FIXUP_FILES listname_ )
-
-  IF( MSVC ) # With the VS2010 generator, there are problems 
-             # with non-compiled files appearing in multiple projects.
-             # As a workaround, we construct globally unique paths for such files.
-    GET_FILENAME_COMPONENT( proj_dir_ "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE )
-    GET_FILENAME_COMPONENT( proj_dir_name_ "${CMAKE_CURRENT_SOURCE_DIR}" NAME )
-    SET( files_ )
-    FOREACH( file_ ${${listname_}} )
-      IF( NOT file_ MATCHES  .*\\.\(h|c|cpp\) )
-        GET_FILENAME_COMPONENT( file_ "${file_}" ABSOLUTE )
-        FILE( RELATIVE_PATH rpath_ "${proj_dir_}" "${file_}" )
-        FILE( TO_CMAKE_PATH "${rpath_}" rpath_ )
-        SET( file_ "../${proj_dir_name_}/${rpath_}" )
-      ENDIF()
-      LIST( APPEND files_ "${file_}" )
-    ENDFOREACH()      
-    SET( ${listname_} ${files_} PARENT_SCOPE )
-  ENDIF()
-
-ENDFUNCTION()
-
-
-FUNCTION( BCI2000_ADD_FLAG name_ flag_ )
-
-  GET_PROPERTY( flags_ TARGET ${name_} PROPERTY COMPILE_FLAGS )
-  SET_PROPERTY( TARGET ${name_} PROPERTY COMPILE_FLAGS "${flags_} ${flag_}" )
-
-ENDFUNCTION()
-
-
-# Escape special regex metacharacters with a backslash
-MACRO(REGEX_ESCAPE_STRING _OUT _IN)
-  string(REGEX REPLACE "([$^.[|*+?()]|])" "\\\\\\1" ${_OUT} "${_IN}")
-ENDMACRO()
-
-# Debugging:
-# SET( DEBUG 1 ) in a directory's CMakeLists.txt will write debug files when projects are created
-IF( NOT ADD_TARGET_HOOK )
-  MACRO( ADD_TARGET_HOOK )
-    IF( DEBUG )
-      set( debug_file_ "${CMAKE_CURRENT_SOURCE_DIR}/cmake-debug.txt" )
-      file( APPEND "${debug_file_}" "==== Target: $name_ ============================\n" )
-      get_cmake_property(_variableNames VARIABLES)
-      foreach (_variableName ${_variableNames})
-        file( APPEND "${debug_file_}" "${_variableName}=${${_variableName}}\n" )
-      endforeach()
-      file( APPEND "${debug_file_}" "================================\n" )
-    ENDIF( DEBUG )
-  ENDMACRO( ADD_TARGET_HOOK )
-ENDIF()

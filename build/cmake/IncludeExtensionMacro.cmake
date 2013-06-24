@@ -7,16 +7,20 @@
 
 MACRO( INCLUDE_EXTENSION NAME DIR)
   STRING( TOUPPER ${NAME} UPPERNAME )
-  SET( SETTINGNAME "BUILD_${UPPERNAME}" )
-  SET( ${SETTINGNAME} FALSE CACHE BOOL "Whether to augment the BCI2000 Framework using the contributed ${NAME} extension"  )
+  SET( SETTINGNAME "EXTENSIONS_${UPPERNAME}" )
+  OPTION( ${SETTINGNAME} "Whether to augment the BCI2000 Framework using the contributed ${NAME} extension" OFF )
   SET( SETTINGVAL  ${${SETTINGNAME}} )
   SET( BCI2000_EXTENSION_DIR "${DIR}" )
   IF( ${SETTINGVAL} )
-    MESSAGE( "-- Including custom extension ${NAME}" )
-    MESSAGE( "---- (to disable, set the ${SETTINGNAME} setting to FALSE)" )
+    UTILS_CONFIG_STATUS(
+      "Including custom extension ${NAME} "
+      "---- (to disable, set ${SETTINGNAME} to OFF)"
+    )
     INCLUDE( "${BCI2000_EXTENSION_DIR}/IncludeExtension.cmake" )
   ELSE()
-    MESSAGE( "-- Skipping custom extension ${NAME}" )
-    MESSAGE( "---- (to enable, set the ${SETTINGNAME} setting to TRUE)" )
+    UTILS_CONFIG_STATUS(
+      "Skipping custom extension ${NAME} "
+      "---- (to enable, set ${SETTINGNAME} to ON)"
+    )
   ENDIF( ${SETTINGVAL} )
 ENDMACRO( INCLUDE_EXTENSION NAME DIR)

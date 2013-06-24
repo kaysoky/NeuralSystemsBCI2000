@@ -47,5 +47,3 @@ IF( BUILD_ALL_BUILDUTILS )
   BCI2000_ADD_TARGET( EXECUTABLE dylib_exports dylib_exports.cpp )
   TARGET_LINK_LIBRARIES( dylib_exports ${LIBS} )
 ENDIF()
-
-MESSAGE( "-- Added Build Utils" )

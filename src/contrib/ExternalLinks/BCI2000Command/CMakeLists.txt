@@ -6,9 +6,6 @@
 # Set the executable name
 SET( EXECUTABLE_NAME BCI2000Command )
 
-# DEBUG
-MESSAGE( "-- Adding Project: ${EXECUTABLE_NAME}" )
-
 ADD_DEFINITIONS(
   -DEXECUTABLE_NAME=\"${EXECUTABLE_NAME}\"
   -DOPERATOR_NAME=\"Operator\"

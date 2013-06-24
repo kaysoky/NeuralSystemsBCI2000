@@ -106,23 +106,23 @@ IF( USE_EXTERNAL_QT AND QT_BCI2000 )
 ENDIF()
 IF( NOT USE_EXTERNAL_QT )
   SET( QT_BCI2000 FALSE CACHE INTERNAL "" FORCE ) 
-  FOREACH( qtver ${TRY_INTERNAL_QT} )
+  FOREACH( qtver_ ${TRY_INTERNAL_QT} )
     IF( NOT QT_BCI2000 )
-      GET_QT_FROM_SERVER( ${qtver} )
+      GET_QT_FROM_SERVER( ${qtver_} )
     ENDIF()
   ENDFOREACH()
 ENDIF()
 
+SET( doc_ 
+  "Set to ON to link BCI2000 against an existing Qt installation.
+  Note that this may introduce various run-time dependencies which will be difficult
+  to manage when deploying the resulting executables."
+)
 IF( QT_BCI2000 )
-  OPTION( USE_EXTERNAL_QT
-    "Set to ON to link BCI2000 against an existing Qt installation.
-    Note that this may introduce various run-time dependencies which will be difficult
-    to manage when deploying the resulting executables."
-    OFF
-  )
+  OPTION( USE_EXTERNAL_QT "${doc_}" OFF )
 ELSE()
-  SET( USE_EXTERNAL_QT ON CACHE INTERNAL "" FORCE )
+  SET( USE_EXTERNAL_QT ON CACHE BOOL "${doc_}" FORCE )
 ENDIF()
 
-FIND_PACKAGE( Qt4 REQUIRED )
-INCLUDE( ${QT_USE_FILE} )
+LIST( GET TRY_INTERNAL_QT -1 qtmin_ )
+FIND_PACKAGE( Qt4 ${qtmin_} REQUIRED )
