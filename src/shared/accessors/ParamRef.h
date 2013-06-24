@@ -39,20 +39,17 @@ class MutableParamRef;
 
 class ParamRef
 {
- protected:
-  class Stream : public std::iostream
+  struct IstreamRef
   {
-   public:
-    Stream( Stream& );
-    Stream( const std::string& );
-    Stream( Param*, int, int );
-    virtual ~Stream();
-    template<class T> std::ostream& operator<<( const T& t )
-      { return std::ostream::operator<<( std::flush ) << t; }
-   private:
-    std::stringbuf mBuf;
-    Param* mpParam;
-    int mIdx1, mIdx2;
+    IstreamRef( const ParamRef& r )
+      : p( new std::istringstream( r.ToString() ) ) {}
+    IstreamRef( IstreamRef& r )
+      : p( r.p ) { r.p = 0; }
+    ~IstreamRef()
+      { delete p; }
+    template<typename T>IstreamRef& operator>>( T& t )
+      { *p >> t; return *this; }
+    std::istringstream* p;
   };
 
  public:
@@ -73,8 +70,8 @@ class ParamRef
   double ToNumber() const;
   const std::string& ToString() const;
   const char* c_str() const;
-  template<typename T> Stream operator>>( T& t ) const
-    { Stream s( ToString() ); s >> t; return s; }
+  template<typename T> IstreamRef operator>>( T& t ) const
+    { return IstreamRef( *this ) >> t; }
 
   // Conversion operators for read access.
   operator const std::string&() const
@@ -276,6 +273,20 @@ class ParamRef
 
 class MutableParamRef : public ParamRef
 {
+  struct OstreamRef
+  {
+    OstreamRef( MutableParamRef& r )
+      : r( r ), p( new std::ostringstream ) {}
+    OstreamRef( OstreamRef& os )
+      : r( os.r ), p( os.p ) { os.p = 0; }
+    ~OstreamRef()
+      { if( p ) { p->flush(); r = p->str(); delete p; } }
+    template<typename T> OstreamRef& operator<<( const T& t )
+      { *p << t; return *this; }
+    std::ostringstream* p;
+    MutableParamRef& r;
+  };
+
  private:
   MutableParamRef( const ParamRef& p )
     : ParamRef( p ) {}
@@ -288,8 +299,8 @@ class MutableParamRef : public ParamRef
   MutableParamRef& operator=( const std::string& );
   MutableParamRef& operator=( double );
   MutableParamRef& operator=( const Param& );
-  template<typename T> Stream operator<<( const T& t )
-  { Stream s( const_cast<Param*>( Ptr() ), Idx1(), Idx2() ); std::ostream& os = s; os << t; return s; }
+  template<typename T> OstreamRef operator<<( const T& t )
+    { return OstreamRef( *this ) << t; }
 
   Param* operator->();
   MutableParamRef operator()( size_t row, size_t col = ParamRef::none ) const;

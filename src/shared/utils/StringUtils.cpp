@@ -86,6 +86,28 @@ StringUtils::ToNarrow( const wchar_t* inString )
   return result;
 }
 
+const string StringUtils::WhiteSpace = " \n\t\r";
+
+string
+StringUtils::LStrip( const string& s, const string& chars )
+{
+  size_t pos = s.find_first_not_of( chars );
+  return pos == string::npos ? "" : s.substr( pos );
+}
+
+string
+StringUtils::RStrip( const string& s, const string& chars )
+{
+  size_t pos = s.find_last_not_of( chars );
+  return pos == string::npos ? "" : s.substr( 0, pos + 1 );
+}
+
+string
+StringUtils::Strip( const string& s, const string& chars )
+{
+  return RStrip( LStrip( s, chars ), chars );
+}
+
 static const char cBase64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 static const uint8_t cBase64Fill = 64;
 static uint8_t cInvBase64[256] = "";

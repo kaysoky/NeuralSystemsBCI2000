@@ -47,8 +47,8 @@ class EDFOutputBase: public GenericOutputFormat
 
  protected:
   typedef EDFHeader::ChannelInfo ChannelInfo;
-  typedef std::vector<ChannelInfo> ChannelContainer;
-  ChannelContainer& Channels() { return mChannels; }
+  typedef EDFHeader::ChannelList ChannelList;
+  ChannelList& Channels() { return mChannels; }
   unsigned int NumRecords() const { return mNumRecords; }
 
  private:
@@ -56,7 +56,7 @@ class EDFOutputBase: public GenericOutputFormat
                                       const GenericSignal&,
                                       const StateVector& );
 
-  ChannelContainer         mChannels;
+  ChannelList              mChannels;
   unsigned int             mNumRecords;
   std::vector<std::string> mStateNames;
 };

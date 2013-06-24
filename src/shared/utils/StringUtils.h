@@ -41,6 +41,11 @@ namespace StringUtils
   inline std::string FromWide( const wchar_t* s ) { return ToNarrow( s ); }
   inline std::string FromWide( const std::wstring& s ) { return ToNarrow( s.c_str() ); }
 
+  extern const std::string WhiteSpace;
+  std::string LStrip( const std::string&, const std::string& = WhiteSpace );
+  std::string RStrip( const std::string&, const std::string& = WhiteSpace );
+  std::string Strip( const std::string&, const std::string& = WhiteSpace );
+
   std::ostream& WriteAsBase64( std::ostream&, const std::string& );
   std::istream& ReadAsBase64( std::istream&, std::string&, int stopAtChar );
   std::istream& ReadAsBase64( std::istream&, std::string&, int (*stopIf)( int ) = 0 );
