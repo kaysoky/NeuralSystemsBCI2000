@@ -33,22 +33,14 @@
 #include "Color.h"
 #include <set>
 #include <list>
-#ifdef _WIN32
-# include "windows.h"
-#endif
-#ifdef __BORLANDC__
-# include "VCL.h"
-#else // __BORLANDC__
+#if USE_QT
 # include <QWidget>
-#endif // __BORLANDC__
+namespace GUI { class WidgetBase; }
+#endif
 
 class BitmapImage;
 
 namespace GUI {
-
-#ifndef __BORLANDC__
-  class WidgetBase;
-#endif // __BORLANDC__
 
 typedef std::set<GraphObject*>   SetOfGraphObjects;
 struct QueueOfGraphObjects : public std::list<GraphObject*>
@@ -115,28 +107,19 @@ public:
 
  private:
   void ClearOffscreenBuffer();
-#if _WIN32
-  static void BitmapImageFromHDC( BitmapImage&, HDC, const RECT& );
-#endif // _WIN32
-#ifndef __BORLANDC__
-  static void BitmapImageFromQPixmap( BitmapImage&, const QPixmap& );
-#endif // __BORLANDC__
 
   DrawContext         mContext;
   RGBColor            mColor;
   SetOfGraphObjects   mObjects;
   QueueOfGraphObjects mObjectsClicked;
 
-#ifdef __BORLANDC__
-  HDC                 mOffscreenDC;
-  HBITMAP             mOffscreenBmp;
-#else // __BORLANDC__
+#if USE_QT
   friend class GUI::WidgetBase;
-  QPixmap* mOffscreenBmp;
+  QPixmap* mpOffscreenBmp;
   QRegion  mInvalidRegion;
   QWidget* mpWidget;
   bool     mUsingGL;
-#endif // __BORLANDC__
+#endif
 };
 
 } // namespace GUI

@@ -27,14 +27,14 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#ifndef __BORLANDC__
+#if USE_QT
 # include <QPainter>
 # include <QGLWidget>
 # include <QImage>
 # include <QPixmap>
 # include <QPaintEvent>
 # include <QMouseEvent>
-#endif // __BORLANDC__
+#endif
 
 #include "GraphDisplay.h"
 #include "BitmapImage.h"
@@ -44,7 +44,7 @@
 using namespace GUI;
 using namespace std;
 
-#ifndef __BORLANDC__
+#if USE_QT
 namespace GUI
 {
 
@@ -87,8 +87,81 @@ class Widget : public QWidget, private WidgetBase
 };
 
 } // namespace GUI
-#endif // __BORLANDC__
+#endif // USE_QT
 
+#if _WIN32
+// This function uses StretchBlt() to read only required pixels from
+// video memory. Thus, it is considerably faster to use it than using Qt's
+// QPixmap::grabWindow() followed with QPixmap::scaled().
+static void
+BitmapImageFromHDC( BitmapImage& ioImage, HDC inDC, const RECT& inSourceRect )
+{
+  int width = ioImage.Width(),
+      height = ioImage.Height(),
+      originalWidth = inSourceRect.right - inSourceRect.left,
+      originalHeight = inSourceRect.bottom - inSourceRect.top;
+  if( width > 0 && height > 0 && inDC != NULL )
+  {
+    HDC miniDC = ::CreateCompatibleDC( inDC );
+    HBITMAP miniBmp = ::CreateCompatibleBitmap( inDC, width, height );
+    ::DeleteObject( ::SelectObject( miniDC, miniBmp ) );
+    // STRETCH_DELETESCANS is the only option that ignores intermediate pixels,
+    // thus it is the fastest one here.
+    ::SetStretchBltMode( miniDC, STRETCH_DELETESCANS );
+    ::StretchBlt(
+      miniDC, 0, 0, width, height,
+      inDC, inSourceRect.left, inSourceRect.top, originalWidth, originalHeight,
+      SRCCOPY
+    );
+
+    BITMAPINFO info;
+    ::memset( &info, 0, sizeof( BITMAPINFO ) );
+    info.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+    info.bmiHeader.biHeight = -height;
+    info.bmiHeader.biWidth = width;
+    info.bmiHeader.biPlanes = 1;
+    info.bmiHeader.biBitCount = 32;
+    info.bmiHeader.biCompression = 0;
+    uint32_t* pBitmapData = new uint32_t[ width * height ];
+    int result = ::GetDIBits(
+                     miniDC, miniBmp,
+                     0, height,
+                     pBitmapData,
+                     &info, DIB_RGB_COLORS
+                   );
+    if( result > 0 )
+      for( int x = 0; x < width; ++x )
+        for( int y = 0; y < height; ++y )
+          ioImage( x, y ) = RGBColor( pBitmapData[ x + y * width ] & 0xffffff );
+    delete[] pBitmapData;
+    ::DeleteDC( miniDC );
+    ::DeleteObject( miniBmp );
+  }
+}
+#endif // _WIN32
+
+#if USE_QT
+static void
+BitmapImageFromQPixmap( BitmapImage& ioImage, const QPixmap& inPixmap )
+{
+  int width = ioImage.Width(),
+      height = ioImage.Height();
+  QImage img( inPixmap.scaled( width, height ).toImage() );
+  for( int x = 0; x < width; ++x )
+  {
+    for( int y = 0; y < height; ++y )
+    {
+      QColor color = QColor::fromRgba( img.pixel( x, y ) );
+      if( color.alpha() == 0 )
+        ioImage( x, y ) = RGBColor::NullColor;
+      else
+        ioImage( x, y ) = RGBColor( color.red(), color.green(), color.blue() );
+    }
+  }
+}
+#endif // USE_QT
+
+// GraphDisplay definitions
 GraphDisplay::GraphDisplay()
 : mColor( RGBColor::Gray )
 {
@@ -96,24 +169,21 @@ GraphDisplay::GraphDisplay()
   mContext.rect.top = 0;
   mContext.rect.right = 0;
   mContext.rect.bottom = 0;
-#ifdef __BORLANDC__
-  mContext.handle = NULL;
-  mOffscreenDC = NULL;
-#else // __BORLANDC__
+#if USE_QT
   mContext.handle.device = NULL;
   mContext.handle.painter = NULL;
   mContext.handle.glContext = NULL;
   mpWidget = NULL;
   mUsingGL = false;
-#endif // __BORLANDC__
-  mOffscreenBmp = NULL;
+#endif
+  mpOffscreenBmp = NULL;
 }
 
 GraphDisplay::~GraphDisplay()
 {
-#ifndef __BORLANDC__
+#if USE_QT
   delete mpWidget;
-#endif // __BORLANDC__
+#endif
   ClearOffscreenBuffer();
   DeleteObjects();
 }
@@ -122,17 +192,10 @@ GraphDisplay::~GraphDisplay()
 const GraphDisplay&
 GraphDisplay::Update() const
 {
-#ifdef __BORLANDC__
-  if( mContext.handle != NULL )
-  {
-    HWND window = ::WindowFromDC( ( HDC )mContext.handle );
-    if( window != NULL )
-      ::UpdateWindow( window );
-  }
-#else // __BORLANDC__
+#if USE_QT
   if( mpWidget )
     mpWidget->repaint( mInvalidRegion.translated( -mpWidget->pos() ) );
-#endif // __BORLANDC__
+#endif
   return *this;
 }
 
@@ -157,7 +220,7 @@ GraphDisplay::Remove( GraphObject* inObj )
 void
 GraphDisplay::Change()
 {
-#ifndef __BORLANDC__
+#if USE_QT
   bool useGL = false;
   for( SetOfGraphObjects::iterator i = mObjects.begin(); i != mObjects.end(); ++i )
     useGL |= ( *i )->NeedsGL();
@@ -210,7 +273,7 @@ GraphDisplay::Change()
       mContext.rect.bottom - mContext.rect.top
     );
   }
-#endif // __BORLANDC__
+#endif // USE_QT
   ClearOffscreenBuffer();
   Invalidate();
   for( SetOfGraphObjects::iterator i = mObjects.begin(); i != mObjects.end(); ++i )
@@ -220,89 +283,19 @@ GraphDisplay::Change()
 void
 GraphDisplay::Paint( const void* inRegionHandle )
 {
-#ifdef __BORLANDC__
-  int formatFlags = PFD_SUPPORT_GDI;
-  HDC outputDC = (HDC)mContext.handle,
-      drawDC = outputDC;
-  int width = mContext.rect.right,
-      height = mContext.rect.bottom;
-
-  if( mContext.handle != NULL )
-  {
-    switch( ::GetObjectType( outputDC ) )
-    {
-      case OBJ_METADC:
-      case OBJ_ENHMETADC:
-        break;
-
-      default:
-      { // Adapt to various aspects of the DC's pixel format.
-        int formatID = ::GetPixelFormat( outputDC );
-        PIXELFORMATDESCRIPTOR pfd;
-        if( formatID > 0 && ::DescribePixelFormat( outputDC, formatID, sizeof( pfd ), &pfd ) )
-          formatFlags = pfd.dwFlags;
-
-        if( ( formatFlags & PFD_SUPPORT_GDI ) && !( formatFlags & PFD_DOUBLEBUFFER ) )
-        {
-          if( mOffscreenDC == NULL )
-            mOffscreenDC = ::CreateCompatibleDC( outputDC );
-          if( mOffscreenBmp == NULL )
-            mOffscreenBmp = ::CreateCompatibleBitmap( outputDC, width, height );
-          ::DeleteObject( ::SelectObject( mOffscreenDC, mOffscreenBmp ) );
-          if( inRegionHandle != NULL )
-            ::SelectClipRgn( mOffscreenDC, (HRGN)inRegionHandle );
-
-          if( formatFlags & PFD_SUPPORT_OPENGL )
-            ::SetPixelFormat( mOffscreenDC, formatID, &pfd );
-
-          drawDC = mOffscreenDC;
-        }
-      }
-    }
-    if( inRegionHandle != NULL )
-      ::SelectClipRgn( outputDC, (HRGN)inRegionHandle );
-  }
-  else
-  {
-    if( mOffscreenDC == NULL )
-      mOffscreenDC = ::CreateCompatibleDC( NULL );
-    if( mOffscreenBmp == NULL )
-      mOffscreenBmp = ::CreateBitmap( width, height, 1, GetDeviceCaps( mOffscreenDC, BITSPIXEL ), NULL );
-    ::DeleteObject( ::SelectObject( mOffscreenDC, mOffscreenBmp ) );
-
-    drawDC = mOffscreenDC;
-  }
-
-  if( ( formatFlags & PFD_SUPPORT_GDI ) && !( formatFlags & PFD_SUPPORT_OPENGL ) )
-  {
-    RECT winRect =
-    {
-      mContext.rect.left,
-      mContext.rect.top,
-      mContext.rect.right,
-      mContext.rect.bottom
-    };
-    HBRUSH brush = ::CreateSolidBrush( mColor.ToWinColor() );
-    ::FillRect( drawDC, &winRect, brush );
-    ::DeleteObject( brush );
-  }
-
-  mContext.handle = drawDC;
-
-#else // __BORLANDC__
-
+#if USE_QT
   int left = static_cast<int>( mContext.rect.left ),
       top = static_cast<int>( mContext.rect.top ),
       width = static_cast<int>( mContext.rect.right - mContext.rect.left ),
       height = static_cast<int>( mContext.rect.bottom - mContext.rect.top );
 
-  if( !mpWidget && mOffscreenBmp == NULL )
-    mOffscreenBmp = new QPixmap( width, height );
+  if( !mpWidget && mpOffscreenBmp == NULL )
+    mpOffscreenBmp = new QPixmap( width, height );
 
-  if( mOffscreenBmp && mColor == RGBColor::NullColor )
-    mOffscreenBmp->fill( Qt::transparent );
+  if( mpOffscreenBmp && mColor == RGBColor::NullColor )
+    mpOffscreenBmp->fill( Qt::transparent );
 
-  QPainter* pPainter = mpWidget ? new QPainter( mpWidget ) : new QPainter( mOffscreenBmp );
+  QPainter* pPainter = mpWidget ? new QPainter( mpWidget ) : new QPainter( mpOffscreenBmp );
   pPainter->translate( -left, -top );
   const QRegion* pInputRegion = reinterpret_cast<const QRegion*>( inRegionHandle );
   if( pInputRegion )
@@ -315,46 +308,19 @@ GraphDisplay::Paint( const void* inRegionHandle )
       QColor( mColor.R(), mColor.G(), mColor.B() )
     );
   mContext.handle.painter = pPainter;
-
-#endif // __BORLANDC__
+#endif // USE_QT
 
   vector<GraphObject*> objects( mObjects.begin(), mObjects.end() );
   sort( objects.begin(), objects.end(), GraphObject::CompareByZOrder() );
   for( vector<GraphObject*>::iterator i = objects.begin(); i != objects.end(); ++i )
     ( *i )->Paint();
 
-#ifndef __BORLANDC__
-
+#if USE_QT
   pPainter->end();
   mContext.handle.painter = NULL;
   delete pPainter;
   mInvalidRegion = QRegion();
-
-#else // __BORLANDC__
-
-  // Copy the data from the buffer into the target device context (usually a window).
-  if( mContext.handle != NULL )
-  {
-    if( mOffscreenBmp )
-    {
-      ::BitBlt( outputDC,
-                0,
-                0,
-                mContext.rect.right,
-                mContext.rect.bottom,
-                drawDC,
-                0,
-                0,
-                SRCCOPY
-      );
-    }
-    if( formatFlags & PFD_DOUBLEBUFFER )
-      ::SwapBuffers( outputDC );
-
-    mContext.handle = outputDC;
-  }
-
-#endif // __BORLANDC__
+#endif
 }
 
 void
@@ -382,22 +348,7 @@ GraphDisplay::Invalidate()
 GraphDisplay&
 GraphDisplay::InvalidateRect( const GUI::Rect& inRect )
 {
-#ifdef __BORLANDC__
-  if( mContext.handle != NULL )
-  {
-#ifdef _WIN32
-    HWND window = ::WindowFromDC( (HDC)mContext.handle );
-    RECT rect =
-    {
-      inRect.left,
-      inRect.top,
-      inRect.right,
-      inRect.bottom
-    };
-    ::InvalidateRect( window, &rect, false );
-#endif // _WIN32
-  }
-#else // __BORLANDC__
+#if USE_QT
   QRegion rgn(
       static_cast<int>( inRect.left ),
       static_cast<int>( inRect.top ),
@@ -413,7 +364,7 @@ GraphDisplay::InvalidateRect( const GUI::Rect& inRect )
   // a QGLWidget to avoid it being redrawn multiple times.
   if( mpWidget && !mUsingGL )
     mpWidget->update( rgn.translated( -mpWidget->pos() ) );
-#endif // __BORLANDC__
+#endif // USE_QT
   return *this;
 }
 
@@ -464,23 +415,10 @@ GraphDisplay::BitmapData( int inWidth, int inHeight ) const
     height = originalHeight;
   }
   BitmapImage image( width, height );
-#ifdef __BORLANDC__
-
-  RECT rect = { 0, 0, originalWidth, originalHeight };
-  HDC sourceDC = mOffscreenDC;
-  if( !mOffscreenDC )
+#if USE_QT
+  if( mpOffscreenBmp != NULL )
   {
-    rect.left += mContext.rect.left;
-    rect.right += mContext.rect.left;
-    rect.top += mContext.rect.top;
-    rect.bottom += mContext.rect.top;
-    sourceDC = (HDC)mContext.handle;
-  }
-  BitmapImageFromHDC( image, sourceDC, rect );
-#else // __BORLANDC__
-  if( mOffscreenBmp != NULL )
-  {
-    BitmapImageFromQPixmap( image, *mOffscreenBmp );
+    BitmapImageFromQPixmap( image, *mpOffscreenBmp );
   }
   else if( mpWidget != NULL )
   {
@@ -494,106 +432,20 @@ GraphDisplay::BitmapData( int inWidth, int inHeight ) const
     BitmapImageFromQPixmap( image, QPixmap::grabWindow( mpWidget->winId() ) );
 #endif // _WIN32
   }
-#endif // __BORLANDC__
+#endif // USE_QT
   return image;
 }
 
 void
 GraphDisplay::ClearOffscreenBuffer()
 {
-#ifdef __BORLANDC__
-  if( mOffscreenDC != NULL )
-  {
-    ::DeleteDC( mOffscreenDC );
-    mOffscreenDC = NULL;
-  }
-  if( mOffscreenBmp != NULL )
-  {
-    ::DeleteObject( mOffscreenBmp );
-    mOffscreenBmp = NULL;
-  }
-#else // __BORLANDC__
-  if( mOffscreenBmp != NULL )
-  {
-    delete mOffscreenBmp;
-    mOffscreenBmp = NULL;
-  }
-#endif // __BORLANDC__
+#if USE_QT
+  delete mpOffscreenBmp;
+  mpOffscreenBmp = 0;
+#endif
 }
 
-#if _WIN32
-// This function uses StretchBlt() to read only required pixels from
-// video memory. Thus, it is considerably faster to use it than using Qt's
-// QPixmap::grabWindow() followed with QPixmap::scaled().
-void
-GraphDisplay::BitmapImageFromHDC( BitmapImage& ioImage, HDC inDC, const RECT& inSourceRect )
-{
-  int width = ioImage.Width(),
-      height = ioImage.Height(),
-      originalWidth = inSourceRect.right - inSourceRect.left,
-      originalHeight = inSourceRect.bottom - inSourceRect.top;
-  if( width > 0 && height > 0 && inDC != NULL )
-  {
-    HDC miniDC = ::CreateCompatibleDC( inDC );
-    HBITMAP miniBmp = ::CreateCompatibleBitmap( inDC, width, height );
-    ::DeleteObject( ::SelectObject( miniDC, miniBmp ) );
-    // STRETCH_DELETESCANS is the only option that ignores intermediate pixels,
-    // thus it is the fastest one here.
-    ::SetStretchBltMode( miniDC, STRETCH_DELETESCANS );
-    ::StretchBlt(
-      miniDC, 0, 0, width, height,
-      inDC, inSourceRect.left, inSourceRect.top, originalWidth, originalHeight,
-      SRCCOPY
-    );
-
-    BITMAPINFO info;
-    ::memset( &info, 0, sizeof( BITMAPINFO ) );
-    info.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
-    info.bmiHeader.biHeight = -height;
-    info.bmiHeader.biWidth = width;
-    info.bmiHeader.biPlanes = 1;
-    info.bmiHeader.biBitCount = 32;
-    info.bmiHeader.biCompression = 0;
-    uint32_t* pBitmapData = new uint32_t[ width * height ];
-    int result = ::GetDIBits(
-                     miniDC, miniBmp,
-                     0, height,
-                     pBitmapData,
-                     &info, DIB_RGB_COLORS
-                   );
-    if( result > 0 )
-      for( int x = 0; x < width; ++x )
-        for( int y = 0; y < height; ++y )
-          ioImage( x, y ) = RGBColor( pBitmapData[ x + y * width ] & 0xffffff );
-    delete[] pBitmapData;
-    ::DeleteDC( miniDC );
-    ::DeleteObject( miniBmp );
-  }
-}
-#endif // _WIN32
-
-#ifndef __BORLANDC__
-void
-GraphDisplay::BitmapImageFromQPixmap( BitmapImage& ioImage, const QPixmap& inPixmap )
-{
-  int width = ioImage.Width(),
-      height = ioImage.Height();
-  QImage img( inPixmap.scaled( width, height ).toImage() );
-  for( int x = 0; x < width; ++x )
-  {
-    for( int y = 0; y < height; ++y )
-    {
-      QColor color = QColor::fromRgba( img.pixel( x, y ) );
-      if( color.alpha() == 0 )
-        ioImage( x, y ) = RGBColor::NullColor;
-      else
-        ioImage( x, y ) = RGBColor( color.red(), color.green(), color.blue() );
-    }
-  }
-}
-#endif // __BORLANDC__
-
-#ifndef __BORLANDC__
+#if USE_QT
 WidgetBase::WidgetBase( GraphDisplay& inDisplay )
 : mrGraphDisplay( inDisplay ),
   mpWidget( NULL )
@@ -635,4 +487,4 @@ WidgetBase::OnMousePressEvent( QMouseEvent* iopEvent )
     iopEvent->accept();
   }
 }
-#endif // __BORLANDC__
+#endif // USE_QT

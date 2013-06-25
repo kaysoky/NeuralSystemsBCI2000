@@ -29,11 +29,9 @@
 #include "Shapes.h"
 #include <limits>
 
-#ifdef __BORLANDC__
-# include <VCL.h>
-#else // __BORLANDC__
+#if USE_QT
 # include <QPainter>
-#endif // __BORLANDC__
+#endif
 
 using namespace std;
 using namespace GUI;
@@ -176,39 +174,7 @@ RectangularShape::IntersectsArea( const Shape& s ) const
 void
 RectangularShape::OnPaint( const GUI::DrawContext& inDC )
 {
-#ifdef __BORLANDC__
-  TCanvas* pCanvas = new TCanvas;
-  try
-  {
-    pCanvas->Handle = ( HDC )inDC.handle;
-    TRect winRect( mRect.left, mRect.top, mRect.right, mRect.bottom );
-    if( this->FillColor() == RGBColor::NullColor )
-    {
-      pCanvas->Brush->Style = bsClear;
-    }
-    else
-    {
-      pCanvas->Brush->Style = bsSolid;
-      pCanvas->Brush->Color = TColor( this->FillColor().ToWinColor() );
-    }
-    if( this->Color() == RGBColor::NullColor )
-    {
-      pCanvas->Pen->Style = psClear;
-    }
-    else
-    {
-      pCanvas->Pen->Style = psSolid;
-      pCanvas->Pen->Color = TColor( this->Color().ToWinColor() );
-      pCanvas->Pen->Width = this->LineWidth();
-    }
-    pCanvas->Rectangle( winRect );
-  }
-  __finally
-  {
-    delete pCanvas;
-  }
-#else // __BORLANDC__
-  // Prepare the brush
+#if USE_QT
   QPainter* p = inDC.handle.painter;
   QRect drawRect(
     static_cast<int>( mRect.left ),
@@ -216,6 +182,8 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
     static_cast<int>( mRect.right - mRect.left ),
     static_cast<int>( mRect.bottom - mRect.top )
   );
+
+  // Prepare the brush
   QBrush fillBrush;
   if( this->FillColor() == RGBColor( RGBColor::NullColor ) )
     fillBrush.setStyle( Qt::NoBrush );
@@ -242,7 +210,7 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
 
   // Draw the rectangle
   p->drawRect( drawRect );
-#endif // __BORLANDC__
+#endif // USE_QT
 }
 
 // EllipticShape
@@ -349,39 +317,7 @@ EllipticShape::IntersectsArea( const Shape& s ) const
 void
 EllipticShape::OnPaint( const GUI::DrawContext& inDC )
 {
-#ifdef __BORLANDC__
-  TCanvas* pCanvas = new TCanvas;
-  try
-  {
-    pCanvas->Handle = ( HDC )inDC.handle;
-    TRect winRect( mRect.left, mRect.top, mRect.right, mRect.bottom );
-    if( this->FillColor() == RGBColor::NullColor )
-    {
-      pCanvas->Brush->Style = bsClear;
-    }
-    else
-    {
-      pCanvas->Brush->Style = bsSolid;
-      pCanvas->Brush->Color = TColor( this->FillColor().ToWinColor() );
-    }
-    if( this->Color() == RGBColor::NullColor )
-    {
-      pCanvas->Pen->Style = psClear;
-    }
-    else
-    {
-      pCanvas->Pen->Style = psSolid;
-      pCanvas->Pen->Color = TColor( this->Color().ToWinColor() );
-      pCanvas->Pen->Width = this->LineWidth();
-    }
-    pCanvas->Ellipse( winRect );
-  }
-  __finally
-  {
-    delete pCanvas;
-  }
-#else // __BORLANDC__
-  // Prepare the Brush
+#if USE_QT
   QPainter* p = inDC.handle.painter;
   QRect drawRect(
     static_cast<int>( mRect.left ),
@@ -389,6 +325,8 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
     static_cast<int>( mRect.right - mRect.left ),
     static_cast<int>( mRect.bottom - mRect.top )
   );
+
+  // Prepare the Brush
   QBrush fillBrush;
   if( this->FillColor() == RGBColor( RGBColor::NullColor ) )
     fillBrush.setStyle( Qt::NoBrush );
@@ -415,6 +353,6 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
 
   // Draw the rectangle
   p->drawEllipse( drawRect );
-#endif // __BORLANDC__
+#endif // USE_QT
 }
 

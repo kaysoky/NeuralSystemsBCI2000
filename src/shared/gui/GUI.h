@@ -29,14 +29,12 @@
 #include "Color.h"
 #include "BCIException.h"
 
-#ifdef __BORLANDC__
-# include <vcl.h>
-#else
+#if USE_QT
 # include <QPaintDevice>
 # include <QPainter>
 # include <QImage>
 class QGLWidget;
-#endif // __BORLANDC__
+#endif
 
 namespace GUI
 {
@@ -75,15 +73,8 @@ struct Rect
 {
   float left, top, right, bottom;
 
-  float Width() const
-  {
-    return right - left;
-  }
-
-  float Height() const
-  {
-    return bottom - top;
-  }
+  float Width() const { return right - left; }
+  float Height() const { return bottom - top; }
 
   bool operator==( const Rect& r ) const
   {
@@ -93,10 +84,7 @@ struct Rect
         && bottom == r.bottom;
   }
 
-  bool operator!=( const Rect& r ) const
-  {
-    return !operator==( r );
-  }
+  bool operator!=( const Rect& r ) const { return !operator==( r ); }
 };
 
 // Test whether a point is contained in a rectangle.
@@ -113,16 +101,16 @@ bool EmptyRect( const Rect& r );
 // to an offscreen buffer.
 struct DrawContext
 {
-#ifdef __BORLANDC__
-  HDC handle;
-#else // __BORLANDC__
+#if USE_QT
   struct
   {
     QPaintDevice* device;
     QPainter*     painter;
     QGLWidget*    glContext;
   } handle;
-#endif // __BORLANDC__
+#else
+  void* handle;
+#endif
   Rect  rect;
 };
 
@@ -153,42 +141,7 @@ template<int Mode, class T>
 void
 GUI::GraphicResource::Render( const T& inGraphic, const GUI::DrawContext& inDC )
 {
-#ifdef __BORLANDC__
-  TCanvas* pCanvas = new TCanvas;
-  pCanvas->Handle = reinterpret_cast<HDC>( inDC.handle );
-  int left = inDC.rect.left,
-      right = left + Width( inGraphic ),
-      run = 2,
-      x = left,
-      y = inDC.rect.top;
-  while( inGraphic[ run ].count > 0 )
-  {
-    int grayValue = inGraphic[ run ].color;
-    for( int i = 0; i < inGraphic[ run ].count; ++i )
-    {
-      switch( Mode ) // evaluated at compile time
-      {
-        case RenderingMode::Transparent:
-        { COLORREF pixelColor = pCanvas->Pixels[x][y];
-          int r = ( GetRValue( pixelColor ) * grayValue ) / 0xff,
-              g = ( GetGValue( pixelColor ) * grayValue ) / 0xff,
-              b = ( GetBValue( pixelColor ) * grayValue ) / 0xff;
-          pCanvas->Pixels[x][y] = TColor( RGB( r, g, b ) );
-        } break;
-        case RenderingMode::Opaque:
-          pCanvas->Pixels[x][y] = TColor( RGB( grayValue, grayValue, grayValue ) );
-          break;
-      }
-      if( ++x >= right )
-      {
-        ++y;
-        x = left;
-      }
-    }
-    ++run;
-  }
-  delete pCanvas;
-#else // __BORLANDC__
+#if USE_QT
   if( inDC.handle.device != NULL )
   {
     if( Mode != RenderingMode::Opaque )
@@ -230,7 +183,7 @@ GUI::GraphicResource::Render( const T& inGraphic, const GUI::DrawContext& inDC )
       p.drawImage( targetRect, image );
     }
   }
-#endif // __BORLANDC__
+#endif
 }
 
 #endif // GUI_H

@@ -33,10 +33,20 @@
 
 #include "GraphObject.h"
 #include "GraphDisplay.h"
+#include <algorithm>
 
 using namespace GUI;
 
 static GUI::Rect sNullRect = { 0, 0, 0, 0 };
+
+static void Normalize( GUI::Rect& ioRect )
+{
+  if( ioRect.Width() < 0 )
+    std::swap( ioRect.right, ioRect.left );
+  if( ioRect.Height() < 0 )
+    std::swap( ioRect.top, ioRect.bottom );
+}
+
 
 GraphObject::GraphObject( GraphDisplay& display, float zOrder )
 : mDisplay( display ),
@@ -67,17 +77,19 @@ GraphObject::Invalidate()
 GraphObject&
 GraphObject::SetObjectRect( const GUI::Rect& inRect )
 {
-  if( mObjectRect != inRect )
+  GUI::Rect r = inRect;
+  Normalize( r );
+  if( mObjectRect != r )
   {
     int changedFlags = Position;
-    bool resized = mObjectRect.Width() != inRect.Width()
-                 || mObjectRect.Height() != inRect.Height();
+    bool resized = mObjectRect.Width() != r.Width()
+                 || mObjectRect.Height() != r.Height();
     if( resized )
       changedFlags |= Size;
 
     Invalidate();
-    mObjectRect = inRect;
-    mBoundingRect = mDisplay.NormalizedToPixelCoords( inRect );
+    mObjectRect = r;
+    mBoundingRect = mDisplay.NormalizedToPixelCoords( r );
     mRectSet = true;
     Change( changedFlags );
   }
@@ -101,13 +113,9 @@ GraphObject::Paint()
       { 0, 0, 0, 0 }
     };
     dc.rect = mBoundingRect;
-#ifndef __BORLANDC__
-    dc.handle.painter->save();
-#endif // __BORLANDC__
+    SaveDC( dc );
     OnPaint( dc );
-#ifndef __BORLANDC__
-    dc.handle.painter->restore();
-#endif // __BORLANDC__
+    RestoreDC( dc );
   }
 }
 
@@ -138,6 +146,7 @@ GraphObject::Change( int inWhich )
       OnChange( dc );
 
     mBoundingRect = dc.rect;
+    Normalize( mBoundingRect );
     Invalidate();
   }
 }
@@ -147,5 +156,21 @@ GraphObject::Click( const GUI::Point& p )
 {
   Rect r = mDisplay.PixelToNormalizedCoords( mBoundingRect );
   return PointInRect( p, r ) && OnClick( p );
+}
+
+void
+GraphObject::SaveDC( DrawContext& ioDC )
+{
+#if USE_QT
+  ioDC.handle.painter->save();
+#endif
+}
+
+void
+GraphObject::RestoreDC( DrawContext& ioDC )
+{
+#if USE_QT
+  ioDC.handle.painter->restore();
+#endif
 }
 

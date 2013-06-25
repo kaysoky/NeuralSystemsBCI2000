@@ -168,6 +168,9 @@ class GraphObject
   };
 
  private:
+  void SaveDC( GUI::DrawContext& );
+  void RestoreDC( GUI::DrawContext& );
+  
   GraphDisplay& mDisplay;
   bool          mVisible,
                 mRectSet;
