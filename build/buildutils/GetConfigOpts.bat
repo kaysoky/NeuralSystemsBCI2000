@@ -15,7 +15,7 @@ echo.
 if not "%1" == "IncludingMFC" goto SkipMFC
 set OPT=BUILD_MFC
 :BUILD_MFC
-set /p "ANS=Are you using an Express version of Visual Studio (y/n)? (in doubt, say 'y') "
+set /p "ANS=Are you using an full (non-express) version of Visual Studio (y/n)? (in doubt, say 'n') "
 call :ProcessAnswer
 :SkipMFC
 

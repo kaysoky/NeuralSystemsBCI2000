@@ -7,14 +7,14 @@
 SET( DIR_NAME "${DIR_NAME}SignalProcessing/" )
 
 # Recurse down into all project subdirectories
-ADD_SUBDIRECTORY( FieldTripBuffer )
-ADD_SUBDIRECTORY( FIR )
-ADD_SUBDIRECTORY( PeakDetector )
-ADD_SUBDIRECTORY( SW )
-ADD_SUBDIRECTORY( Coherence )
-ADD_SUBDIRECTORY( CoherenceFFT )
-ADD_SUBDIRECTORY( Statistics )
-ADD_SUBDIRECTORY( HilbertSignalProcessing )
+UTILS_MATCH_SUBDIR( BUILD_MODULES FieldTripBuffer )
+UTILS_MATCH_SUBDIR( BUILD_MODULES FIR )
+UTILS_MATCH_SUBDIR( BUILD_MODULES PeakDetector )
+UTILS_MATCH_SUBDIR( BUILD_MODULES SW )
+UTILS_MATCH_SUBDIR( BUILD_MODULES Coherence )
+UTILS_MATCH_SUBDIR( BUILD_MODULES CoherenceFFT )
+UTILS_MATCH_SUBDIR( BUILD_MODULES Statistics )
+UTILS_MATCH_SUBDIR( BUILD_MODULES HilbertSignalProcessing )
 
 # Command line filters cannot be defined in their associated signal processing 
 # modules' CMakeLists.txt, so they are defined here:

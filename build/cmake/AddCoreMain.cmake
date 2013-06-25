@@ -16,6 +16,13 @@ MACRO( BCI2000_ADD_CORE_MAIN NAME )
       ${CORE_MAIN}
     )
   ENDIF()
+
+  SET( SRC_BCI2000_FRAMEWORK
+    ${SRC_BCI2000_FRAMEWORK}
+    ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
+    ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_module.cpp
+  )
+
   UTILS_IS_DEFINITION( USE_QT needqt_ )
   IF( needqt_ )
     SET( SRC_BCI2000_FRAMEWORK

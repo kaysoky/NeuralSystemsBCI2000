@@ -14,10 +14,32 @@ ELSE()
   SET( USE_SSE2 OFF )
 ENDIF()
 
+SET( vars_
+  USE_DYNAMIC_IMPORTS
+  USE_SSE2
+  USE_PRECOMPILED_HEADERS
+)  
+FOREACH( var_ ${vars_} )
+  SET( BUILD_CONFIG "${BUILD_CONFIG} ${var_}:${${var_}}" )
+ENDFOREACH()
+
+# Whether to include certain projects
 OPTION( BUILD_DEMOS "Build demo projects" OFF )
 OPTION( BUILD_ALL_TESTS "Build ${PROJECT_NAME} tests plus extlib tests" OFF )
 OPTION( BUILD_TESTS "Build ${PROJECT_NAME} executable tests" OFF )
 OPTION( BUILD_DISTRIBUTION "Enable distribution package targets" OFF )
+
+SET( mod_ "core" )
+IF( BUILD_CONTRIB )
+  LIST( APPEND mod_ "contrib" )
+ENDIF()
+IF( BUILD_MODULES )
+  LIST( APPEND mod_ "SignalSource" )
+ENDIF()
+IF( BUILD_BCPY2000 )
+  LIST( APPEND mod_ "BCPy2000" )
+ENDIF()
+SET( BUILD_MODULES "${mod_}" CACHE STRING "List of module subdirectory matches" )
 
 IF( BUILD_ALL_TESTS )
   SET( BUILD_TESTS ON )
@@ -72,12 +94,3 @@ IF( MSVC AND MSVC_VERSION LESS 1600 AND NOT BUILD_MFC )
 ENDIF()
 OPTION( BUILD_USE_SOLUTION_FOLDERS "Enable target group folders (does not work with non-express VS)" ${folders_} )
 
-# Setup build config information
-SET( vars_
-  USE_DYNAMIC_IMPORTS
-  USE_SSE2
-  USE_PRECOMPILED_HEADERS
-)  
-FOREACH( var_ ${vars_} )
-  SET( BUILD_CONFIG "${BUILD_CONFIG} ${var_}:${${var_}}" )
-ENDFOREACH()

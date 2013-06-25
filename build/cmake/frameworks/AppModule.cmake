@@ -4,7 +4,7 @@
 ## Description: Sets up include directories and dependencies for 
 ##   Application Modules using the AppModule library
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModule.cmake )
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
 
 INCLUDE_DIRECTORIES(
   ${BCI2000_SRC_DIR}/shared

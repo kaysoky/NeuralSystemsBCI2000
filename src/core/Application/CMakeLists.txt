@@ -7,8 +7,8 @@
 SET( DIR_NAME "${DIR_NAME}Application/" )
 
 # Recurse down into all project subdirectories
-ADD_SUBDIRECTORY( StimulusPresentation )
-ADD_SUBDIRECTORY( P3Speller )
-ADD_SUBDIRECTORY( FeedbackDemo )
-ADD_SUBDIRECTORY( CursorTask )
+UTILS_MATCH_SUBDIR( BUILD_MODULES StimulusPresentation )
+UTILS_MATCH_SUBDIR( BUILD_MODULES P3Speller )
+UTILS_MATCH_SUBDIR( BUILD_MODULES FeedbackDemo )
+UTILS_MATCH_SUBDIR( BUILD_MODULES CursorTask )
 ADD_SUBDIRECTORY( Dummy )

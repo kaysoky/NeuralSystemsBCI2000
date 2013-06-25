@@ -8,8 +8,6 @@ ADD_SUBDIRECTORY( test )
 
 SET( NAME BCI2000FrameworkSigProcModule )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreModuleLib.cmake )
-
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
   ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/SpatialFilter.cpp

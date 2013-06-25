@@ -8,5 +8,5 @@ SET( DIR_NAME "${DIR_NAME}Application/" )
 
 # Recurse down into all project subdirectories
 IF( BUILD_MFC )
-  ADD_SUBDIRECTORY( MFCDemo )
+  UTILS_MATCH_SUBDIR( BUILD_MODULES MFCDemo )
 ENDIF()
