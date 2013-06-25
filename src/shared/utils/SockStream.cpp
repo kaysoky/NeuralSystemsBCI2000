@@ -431,10 +431,12 @@ streamsock::write( const char* buffer, size_t count )
 void
 streamsock::set_socket_options()
 {
-#if 0 //ndef _WIN32
+#if 1 //ndef _WIN32
   if( m_handle != INVALID_SOCKET )
   {
-    struct linger val = { 1, 1 }; // close after one second
+    struct linger val = { 0 };
+    val.l_onoff = 1;
+    val.l_linger = 0;
     ::setsockopt( m_handle, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
 #endif // _WIN32
@@ -467,7 +469,7 @@ server_tcpsocket::do_open()
   close();
   m_handle = ::socket( PF_INET, SOCK_STREAM, IPPROTO_TCP );
   bool success = ( m_handle != INVALID_SOCKET );
-#ifndef _WIN32
+#if 1 //ndef _WIN32
   if( success )
   {
     int val = 1;
