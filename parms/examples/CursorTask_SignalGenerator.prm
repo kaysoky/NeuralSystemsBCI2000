@@ -1,7 +1,7 @@
 Source:Signal%20Properties int SourceCh= 8 16 1 % // number of digitized and stored channels
 Source:Signal%20Properties int SampleBlockSize= 8 32 1 % // number of samples transmitted at a time
 Source:Signal%20Properties int SamplingRate= 256 256Hz 1 % // sample rate
-Source:Signal%20Properties list ChannelNames= 16 Ch1 Ch2 Ch3 Ch4 Ch5 Ch6 Ch7 Ch8 // list of channel names
+Source:Signal%20Properties list ChannelNames= 8 Ch1 Ch2 Ch3 Ch4 Ch5 Ch6 Ch7 Ch8 // list of channel names
 Source:Signal%20Properties floatlist SourceChOffset= 8 0 0 0 0 0 0 0 0 0 % % // Offset for channels in A/D units
 Source:Signal%20Properties floatlist SourceChGain= 8 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.003 % % // gain for each channel (A/D units -> muV)
 Storage:Data%20Location string DataDirectory= ../data ../data % % // path to top level data directory (directory)

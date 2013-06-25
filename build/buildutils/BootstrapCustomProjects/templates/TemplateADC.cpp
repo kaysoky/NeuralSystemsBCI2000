@@ -28,7 +28,7 @@
 #pragma hdrstop
 
 #include "`.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 
 #include "OSThread.h" // for OSThread::Sleep()
 

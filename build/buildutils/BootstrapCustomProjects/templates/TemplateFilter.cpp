@@ -1,34 +1,34 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id: $
-// Authors: 
+// Authors:
 // Description: ` implementation
-//   
-//   
+//
+//
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "`.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 
 
 using namespace std;
@@ -39,7 +39,7 @@ RegisterFilter( `, 2.X );
      // Change the location as appropriate, to determine where your filter gets
      // sorted into the chain. By convention:
      //  - filter locations within SignalSource modules begin with "1."
-     //  - filter locations witin SignalProcessing modules begin with "2."  
+     //  - filter locations witin SignalProcessing modules begin with "2."
      //       (NB: Filter() commands in a separate PipeDefinition.cpp file may override the default location set here with RegisterFilter)
      //  - filter locations within Application modules begin with "3."
 
@@ -48,24 +48,24 @@ RegisterFilter( `, 2.X );
 {
 
   // Declare any parameters that the filter needs....
-	
+
  BEGIN_PARAMETER_DEFINITIONS
 
    "Filtering:` int Enable`= 0 0 0 1 // enable `? (boolean)",                       // These are just examples:
    "Filtering:` float SomeParameter=  0.0 0.0 -1.0 1.0 // a useless ` parameter",   //  change them, or remove them.
 
  END_PARAMETER_DEFINITIONS
- 
- 
+
+
   // ...and likewise any state variables:
 
  BEGIN_STATE_DEFINITIONS
- 
+
    "SomeState       8 0 0 0",    // These are just examples. Change them, or remove them.
    "SomeOtherState 16 0 0 0",
-   
+
  END_STATE_DEFINITIONS
- 
+
 }
 
 
@@ -96,14 +96,14 @@ void
   //
   // if( (float)Parameter( "Denominator" ) == 0.0f )
   //      bcierr << "Denominator cannot be zero" << endl;
-  // 
+  //
   // Errors issued in this way, during Preflight, still allow the user to open
   // the Config dialog box, fix bad parameters and re-try.  By contrast, errors
   // and C++ exceptions at any other stage (outside Preflight) will make the
   // system stop, such that BCI2000 will need to be relaunched entirely.
-  
+
   Output = Input; // this simply passes information through about SampleBlock dimensions, etc....
-  
+
   // ... or alternatively, we could modify that info here:
 
   // Let's imagine this filter has only one output, namely the amount of stuff detected in the signal:
@@ -112,7 +112,7 @@ void
 
   // Imagine we want to output twice as many samples (or bins) as we receive from the input:
   // Output.SetElements( Input.Elements() * 2 );
-  
+
   // Note that the ` instance itself, and its members, are read-only during
   // this phase, due to the "const" at the end of the Preflight prototype above.
   // Any methods called by Preflight must also be "const" in the same way.
@@ -142,11 +142,11 @@ void
 
   // And now we're processing a single SampleBlock of data.
   // Remember not to take too much CPU time here, or you will break the real-time constraint.
-  
+
   Output = Input; // Pass the signal through unmodified.
                   // ( Obviously this will no longer fly if we modified the shape of the
                   //   output SignalProperties during Preflight ).
-                  
+
   // Or we could do it one value at a time:
   /*
   for( ch = 0; ch < Output.Channels(); ch++ )
@@ -164,7 +164,7 @@ void
 {
   // The Running state has been set to 0, either because the user has pressed "Suspend",
   // or because the run has reached its natural end.
-  bciout << "Goodbye World." << endl;
+  bciwarn << "Goodbye World." << endl;
   // You know, you can delete methods if you're not using them.
   // Remove the corresponding declaration from `.h too, if so.
 }

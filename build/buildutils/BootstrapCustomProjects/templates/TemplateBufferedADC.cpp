@@ -28,7 +28,7 @@
 #pragma hdrstop
 
 #include "`.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 
 #include "ThreadUtils.h" // for SleepFor()
 
@@ -67,7 +67,7 @@ RegisterFilter( `, 1 );
 
  BEGIN_STATE_DEFINITIONS
 
-  // IMPORTANT NOTE ABOUT BUFFEREDADC AND STATES:  
+  // IMPORTANT NOTE ABOUT BUFFEREDADC AND STATES:
   // * BCI2000 States can only be populated "per sample" if they're populated synchronously.
   // * States can only be populated synchronously by calling State( "Y" )( idx ) = X; in OnProcess.
   // * States can also be populated asynchronously by calling bcievent << "Y" << x; in DoAcquire.
@@ -96,7 +96,7 @@ void
   // Good practice is to write the OnHalt() method such that it is safe to call it even *before*
   // OnInitialize, and safe to call it twice (e.g. make sure you do not delete [] pointers that
   // have already been deleted:  set them to NULL after deletion).
-  
+
   // Note that OnStopAcquisition() will be called immediately before this, in the acquisition
   // thread. OnStopAcquisition() is the proper place to do any amplifier-API cleanup.
 }
@@ -156,7 +156,7 @@ void
   mLastTime = PrecisionTime::Now();
 }
 
-void 
+void
 `::OnStartAcquisition()
 {
   // This method is called from the acquisition thread once the system is initialized.
@@ -169,7 +169,7 @@ void
 {
   // Now we're acquiring a single SampleBlock of data in the acquisition thread.
   // Keep in mind that even though we're writing this data from another thread, the main thread
-  // will block until we've written the SampleBlock, so be sure this is done in a timely manner 
+  // will block until we've written the SampleBlock, so be sure this is done in a timely manner
   // or the system will not be able to perform in real-time.
 
   // Internally, BufferedADC writes this data to a buffer, then locks a mutex and pushes the data
@@ -211,7 +211,7 @@ void
   // to shut down the amplifier API (undoing whatever was done in OnStartAcquisition).
   // Immediately after this returns, the system will go into an un-initialized state and
   // OnHalt will be called in the main thread: (there you can undo whatever was done in
-  // OnInitialize). 
+  // OnInitialize).
 
   // This method will always be called before OnHalt is called.
 }
