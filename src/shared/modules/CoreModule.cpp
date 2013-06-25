@@ -48,9 +48,6 @@
 #include <sstream>
 #include <cstdlib>
 
-#ifdef __BORLANDC__
-# include <vcl.h>
-#endif
 #ifndef _WIN32
 # include <sys/sem.h>
 #endif
@@ -477,10 +474,10 @@ CoreModule::InitializeInputSignal( const SignalProperties& Input )
 # error The inputPropertiesFixed variable may be removed once property messages contain an UpdateRate field.
 #endif // TODO
   SignalProperties inputFixed( Input );
-#if ( MODTYPE != SIGSRC )
+#if !IS_FIRST_MODULE
   MeasurementUnits::Initialize( mParamlist );
   inputFixed.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
-#endif // MODTYPE
+#endif
   mInputSignal = GenericSignal( inputFixed );
 }
 
@@ -539,13 +536,13 @@ CoreModule::InitializeFilters()
       mOperatorBackLink = ::atoi( mParamlist["OperatorBackLink"].Value().c_str() );
     if( !mAutoConfig )
     {
-#if( MODTYPE == APP )
+#if IS_LAST_MODULE
       if( mOperatorBackLink && !MessageHandler::PutMessage( mOperator, mOutputSignal.Properties() ) )
         BCIERR << "Could not send output properties to Operator module" << endl;
-#else // APP
+#else // IS_LAST_MODULE
       if( !MessageHandler::PutMessage( mNextModule, mOutputSignal.Properties() ) )
         BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
-#endif // APP
+#endif // IS_LAST_MODULE
     }
     EnvironmentBase::EnterInitializationPhase( &mParamlist, &mStatelist, &mStatevector );
     GenericFilter::InitializeFilters();
@@ -559,9 +556,9 @@ CoreModule::InitializeFilters()
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " initialized", Status::firstInitializedMessage + MODTYPE - 1 ) );
     mFiltersInitialized = true;
   }
-#if( MODTYPE == SIGSRC )
+#if IS_FIRST_MODULE
   mResting = bcierr__.Empty();
-#endif // SIGSRC
+#endif
 }
 
 
@@ -598,9 +595,9 @@ CoreModule::StopRunFilters()
     BroadcastParameterChanges();
 
     OSMutex::Lock lock( mConnectionLock );
-#if( MODTYPE == SIGSRC ) // The operator wants an extra invitation from the source module.
+#if IS_FIRST_MODULE // The operator wants an extra invitation from the source module.
     MessageHandler::PutMessage( mOperator, SysCommand::Suspend );
-#endif // SIGSRC
+#endif
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " suspended", Status::firstSuspendedMessage + 2 * ( MODTYPE - 1 ) ) );
     mResting = true;
   }
@@ -642,15 +639,15 @@ CoreModule::ProcessFilters( const GenericSignal& input )
     mStopSent = !running;
     OSMutex::Lock lock( mConnectionLock );
     MessageHandler::PutMessage( mNextModule, mStatevector );
-#if( MODTYPE == APP )
+#if IS_LAST_MODULE
     if( mOperatorBackLink )
     {
       MessageHandler::PutMessage( mOperator, mStatevector );
       MessageHandler::PutMessage( mOperator, mOutputSignal );
     }
-#else // APP
+#else // IS_LAST_MODULE
     MessageHandler::PutMessage( mNextModule, mOutputSignal );
-#endif // APP
+#endif // IS_LAST_MODULE
   }
 }
 
@@ -675,11 +672,11 @@ void
 CoreModule::HandleResting()
 {
   RestingFilters();
-#if( MODTYPE != SIGSRC ) // For non-source modules, Resting() is called once
+#ifndef IS_FIRST_MODULE  // For non-source modules, Resting() is called once
                          // after the Running state drops to 0.
   mResting = false;      // For source modules, Resting() is called repeatedly
                          // while the Running state is 0.
-#endif // SIGSRC
+#endif
 }
 
 
@@ -704,7 +701,7 @@ CoreModule::HandleState( istream& is )
   {
     if( mStatevector.Length() > 0 )
     {
-#if( MODTYPE == SIGSRC )
+#if IS_FIRST_MODULE
       // Changing a state's value via mStatevector.PostStateChange()
       // will buffer the change, and postpone it until the next call to
       // mStatevector.CommitStateChanges(). That call happens
@@ -724,9 +721,9 @@ CoreModule::HandleState( istream& is )
           ProcessFilters( sNullSignal );
         }
       }
-#else // SIGSRC
+#else // IS_FIRST_MODULE
       bcierr << "Unexpectedly received a State message" << endl;
-#endif // SIGSRC
+#endif // IS_FIRST_MODULE
     }
     else
     {
@@ -786,7 +783,7 @@ CoreModule::HandleStateVector( istream& is )
 {
   if( mStatevector.ReadBinary( is ) )
   {
-#if( MODTYPE == SIGSRC )
+#if IS_FIRST_MODULE
     mStatevector.CommitStateChanges();
     // The source module does not receive a signal, so handling must take place
     // on arrival of a StateVector message.
@@ -800,9 +797,9 @@ CoreModule::HandleStateVector( istream& is )
       if( !mStatevector.StateValue( "Running" ) )
         StopRunFilters();
     }
-#else // SIGSRC
+#else // IS_FIRST_MODULE
     mStopRunPending = !mStatevector.StateValue( "Running" );
-#endif // SIGSRC
+#endif // IS_FIRST_MODULE
   }
   return is ? true : false;
 }
@@ -814,18 +811,13 @@ CoreModule::HandleSysCommand( istream& is )
   SysCommand s;
   if( s.ReadBinary( is ) )
   {
-    int sampleBlockSize = 1;
     if( mParamlist.Exists( "SampleBlockSize" ) )
     {
       const Param& p = mParamlist["SampleBlockSize"];
       PhysicalUnit unit;
       unit.SetOffset( 0.0 ).SetGain( 1.0 ).SetSymbol( "" );
-      if( unit.IsPhysical( p.Value() ) )
-        sampleBlockSize = static_cast<int>( unit.PhysicalToRaw( p.Value() ) );
+      mSampleBlockSize = static_cast<int>( unit.PhysicalToRaw( p.Value() ) );
     }
-    if( sampleBlockSize < 1 )
-      sampleBlockSize = 1;
-    mSampleBlockSize = sampleBlockSize;
 
     if( s == SysCommand::EndOfState )
     {
@@ -834,6 +826,7 @@ CoreModule::HandleSysCommand( istream& is )
         bcierr << "Unexpected SysCommand::EndOfState message" << endl;
       // The state vector holds an additional sample which is used to initialize
       // the subsequent state vector at the beginning of a new block.
+      bciassert( mSampleBlockSize > 0 );
       mStatevector = StateVector( mStatelist, mSampleBlockSize + 1 );
       mInitialStatevector = mStatevector;
       mStatevector.CommitStateChanges();

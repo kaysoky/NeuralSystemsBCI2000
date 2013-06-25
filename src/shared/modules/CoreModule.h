@@ -73,6 +73,8 @@
 # include "FPExceptMask.h"
 #endif // _WIN32
 
+#if MODTYPE
+
 #define SIGSRC  1
 #define SIGSRC_NAME  "SignalSource"
 #define SIGPROC 2
@@ -99,6 +101,15 @@
 # error Unknown MODTYPE value
 #endif
 
+#else // MODTYPE
+
+# define MODTYPE 1
+# define THISMODULE "ThisModule"
+# define THISOPPORT "4000"
+# define PREVMODULE "PreviousModule"
+# define NEXTMODULE "NextModule"
+
+#endif // MODTYPE
 
 class CoreModule : private MessageHandler, private OSThread
 {
