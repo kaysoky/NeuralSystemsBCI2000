@@ -29,7 +29,7 @@
 
 #if USE_QT
 # include <QApplication>
-# include "CoreModuleQT.h"
+# include "CoreModule_Qt.h"
 # include "FileUtils.h"
 #endif
 

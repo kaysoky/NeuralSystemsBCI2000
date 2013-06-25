@@ -27,7 +27,7 @@
 #pragma hdrstop
 
 #include "MeasurementUnits.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include <limits>
 
 using namespace std;
@@ -60,17 +60,19 @@ MeasurementUnits::Initialize( const ParamList& inParams )
                    .SetSymbol( "Hz" )
                    .PhysicalToRaw( inParams[ "SamplingRate" ].Value() );
     if( sSamplingRate <= 0.0 )
-      bcierr << "Parameter SamplingRate needs to be greater zero" << endl;
+      bcierr << "Parameter SamplingRate needs to be greater zero";
   }
   if( inParams.Exists( "SampleBlockSize" ) )
   {
-    sSampleBlockSize = PhysicalUnit()
-                      .SetGain( 1.0 )
-                      .SetOffset( 0.0 )
-                      .SetSymbol( "" )
-                      .PhysicalToRaw( inParams[ "SampleBlockSize" ].Value().c_str() );
-    if( sSampleBlockSize < 1 )
-      bcierr << "Parameter SampleBlockSize needs to be >= 1" << endl;
+    string value = inParams[ "SampleBlockSize" ].Value();
+    if( PhysicalUnit().SetSymbol( "s" ).IsPhysical( value ) )
+      bcierr << "Parameter SampleBlockSize must be given in samples, not in seconds";
+    else
+    {
+      sSampleBlockSize = PhysicalUnit().SetSymbol( "" ).PhysicalToRaw( value );
+      if( sSampleBlockSize < 1 )
+        bcierr << "Parameter SampleBlockSize needs to be >= 1";
+    }
   }
   // Set the unit for raw numbers representing time to multiples of sample block duration.
   sTimeUnit.SetOffset( 0 ).SetGain( sSampleBlockSize / sSamplingRate ).SetSymbol( "s" );
@@ -81,16 +83,14 @@ MeasurementUnits::Initialize( const ParamList& inParams )
 double 
 MeasurementUnits::ReadAsTime( const std::string& value )
 {
-  bciout << "MeasurementUnits::ReadAsTime() is deprecated. Please call MeasurementUnits::TimeInSampleBlocks() instead."
-         << endl;
+  bciwarn << "MeasurementUnits::ReadAsTime() is deprecated. Please call MeasurementUnits::TimeInSampleBlocks() instead.";
   return TimeInSampleBlocks( value );
 }
 
 double 
 MeasurementUnits::ReadAsFreq( const std::string& value )
 {
-  bciout << "MeasurementUnits::ReadAsFreq() is deprecated. Please use MeasurementUnits::FreqInHertz() / Input.SamplingRate() instead."
-         << endl;
+  bciwarn << "MeasurementUnits::ReadAsFreq() is deprecated. Please use MeasurementUnits::FreqInHertz() / Input.SamplingRate() instead.";
   return FreqInHertz( value ) / SamplingRate();
 }
 #endif // MEASUREMENT_UNITS_BACK_COMPAT

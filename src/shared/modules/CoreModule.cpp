@@ -465,6 +465,9 @@ CoreModule::InitializeFilterChain( const SignalProperties& Input )
   AutoConfigFilters();
   if( bcierr__.Empty() )
     InitializeFilters();
+#if IS_FIRST_MODULE
+  mResting = bcierr__.Empty();
+#endif
 }
 
 void
@@ -556,9 +559,6 @@ CoreModule::InitializeFilters()
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " initialized", Status::firstInitializedMessage + MODTYPE - 1 ) );
     mFiltersInitialized = true;
   }
-#if IS_FIRST_MODULE
-  mResting = bcierr__.Empty();
-#endif
 }
 
 
@@ -812,12 +812,7 @@ CoreModule::HandleSysCommand( istream& is )
   if( s.ReadBinary( is ) )
   {
     if( mParamlist.Exists( "SampleBlockSize" ) )
-    {
-      const Param& p = mParamlist["SampleBlockSize"];
-      PhysicalUnit unit;
-      unit.SetOffset( 0.0 ).SetGain( 1.0 ).SetSymbol( "" );
-      mSampleBlockSize = static_cast<int>( unit.PhysicalToRaw( p.Value() ) );
-    }
+      mSampleBlockSize = ::atoi( mParamlist["SampleBlockSize"].Value().c_str() );
 
     if( s == SysCommand::EndOfState )
     {

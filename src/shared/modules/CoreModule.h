@@ -104,10 +104,10 @@
 #else // MODTYPE
 
 # define MODTYPE 1
-# define THISMODULE "ThisModule"
+# define THISMODULE "Module"
 # define THISOPPORT "4000"
-# define PREVMODULE "PreviousModule"
-# define NEXTMODULE "NextModule"
+# define PREVMODULE "previous"
+# define NEXTMODULE "next"
 
 #endif // MODTYPE
 

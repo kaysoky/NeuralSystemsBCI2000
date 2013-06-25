@@ -221,10 +221,9 @@ DataIOFilter::Preflight( const SignalProperties& Input,
                                SignalProperties& Output ) const
 {
   // Parameter existence and range.
-  Parameter( "SignalSourceIP" );
-  Parameter( "ApplicationIP" );
+  OptionalParameter( "SignalSourceIP" );
+  OptionalParameter( "ApplicationIP" );
   PreflightCondition( Parameter( "SamplingRate" ).InHertz() > 0 );
-  PreflightCondition( Parameter( "SampleBlockSize" ).InHertz() > 0 );
 
   bool sourceChOffsetConsistent = ( Parameter( "SourceChOffset" )->NumValues() >= Parameter( "SourceCh" ) );
   if( !sourceChOffsetConsistent )

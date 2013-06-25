@@ -27,7 +27,7 @@ MACRO( BCI2000_ADD_CORE_MAIN NAME )
   IF( needqt_ )
     SET( SRC_BCI2000_FRAMEWORK
       ${SRC_BCI2000_FRAMEWORK}
-      ${BCI2000_SRC_DIR}/shared/modules/CoreModuleQT.cpp
+      ${BCI2000_SRC_DIR}/shared/modules/CoreModule_Qt.cpp
     )
   ENDIF()    
 ENDMACRO()  

@@ -790,12 +790,11 @@ StateMachine::RandomizationWarning()
       && ::atoi( mParameters["RandomizationWarning"].Value().c_str() )
       && mParameters["RandomSeed"].Value().c_str() == mPreviousRandomSeed
       && ::atoi( mPreviousRandomSeed.c_str() ) )
-    bciout__ << "In the present configuration, the RandomSeed value does not "
-             << "automatically change between runs. "
-             << "Any 'random' behavior, such as randomization of the order of trials, "
-             << "or the generation of noise signals, will be exactly the same "
-             << "on this run as on the previous run."
-             << endl;
+    bciwarn__ << "In the present configuration, the RandomSeed value does not "
+              << "automatically change between runs. "
+              << "Any 'random' behavior, such as randomization of the order of trials, "
+              << "or the generation of noise signals, will be exactly the same "
+              << "on this run as on the previous run.";
 
   mPreviousRandomSeed = mParameters["RandomSeed"].Value().c_str();
 }

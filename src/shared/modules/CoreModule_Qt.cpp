@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Author: juergen.mellinger@uni-tuebingen.de
+// Author: griffin.milsap@gmail.com
 // Description: A class that implements the CoreModule GUI interface functions
-//          for VCL-based modules.
+//          for QT-based modules, and an appropriate main() function.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -24,30 +24,51 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef CORE_MODULE_VCL_H
-#define CORE_MODULE_VCL_H
+#include "PCHIncludes.h"
+#pragma hdrstop
 
-#include "CoreModule.h"
-#include <vcl.h>
-#include <windows.h>
+#include "CoreModule_Qt.h"
+#include "ThreadUtils.h"
+#include "BCIAssert.h"
+#include <QApplication>
 
-class CoreModuleVCL : public CoreModule
+// In some versions of Qt4, QApplication::hasPendingEvents() always returns true.
+static const int cMaxPending = 100;
+
+CoreModuleQT::CoreModuleQT()
+: mCount( 0 )
 {
-  virtual void OnInitialize( int&, char** )
-  {
-#if __BORLANDC__ >= 0x590 // C++ Builder 2007
-    Application->MainFormOnTaskBar = true;
-#endif // __BORLANDC__
-  }
-  virtual void OnProcessGUIMessages()
-  {
-    Application->ProcessMessages();
-    ::Sleep( 0 );
-  }
-  virtual bool OnGUIMessagesPending()
-  {
-    return ::GetQueueStatus( QS_ALLINPUT );
-  }
-};
+  bciassert( qApp == NULL );
+}
 
-#endif // CORE_MODULE_VCL_H
+CoreModuleQT::~CoreModuleQT()
+{
+  delete qApp;
+}
+
+void
+CoreModuleQT::OnInitialize( int& ioArgc, char** ioArgv )
+{
+  new QApplication( ioArgc, ioArgv );
+  qApp->processEvents();
+}
+
+void
+CoreModuleQT::OnProcessGUIMessages()
+{
+  if( qApp )
+  {
+    qApp->sendPostedEvents();
+    qApp->processEvents();
+  }
+#ifdef __APPLE__
+  ThreadUtils::SleepFor(2);  // prevents core modules from taking 100% CPU on OSX under Qt 4.7
+#endif // __APPLE__
+}
+
+bool
+CoreModuleQT::OnGUIMessagesPending()
+{
+  return qApp && qApp->hasPendingEvents() && ( ++mCount % cMaxPending );
+}
+
