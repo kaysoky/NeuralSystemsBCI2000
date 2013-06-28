@@ -9,22 +9,15 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE ) # NAME SOURCES [HEADERS] REQUESTQT
   LIST( GET SOURCES 0 USEQT )
   LIST( REMOVE_AT SOURCES 0 )
 
-  SET( SOURCES
+  UTILS_INCLUDE( frameworks/Core )
+  BCI2000_ADD_TARGET(
+    INFO "Command line tool"
+    EXECUTABLE ${NAME}
     ${SOURCES}
-    ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_tool.cpp
-    ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
+    ${PROJECT_SRC_DIR}/core/Tools/cmdline/bci_tool.cpp
+    ${PROJECT_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
+    OUTPUT_DIRECTORY "${PROJECT_ROOT_DIR}/tools/cmdline"
   )
-
-  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
-  
-  SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/tools/cmdline" )
-  BCI2000_ADD_TARGET( INFO "Command line tool" EXECUTABLE ${NAME} ${SOURCES} )
-  
-  IF( ${USEQT} )
-    MESSAGE( "-- (NB: ${NAME} is using Qt)" )
-    SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
-    TARGET_LINK_LIBRARIES( ${NAME} ${QT_LIBRARIES} )
-  ENDIF()
   BCI2000_ADD_BCITEST( ${NAME} )
 
 ENDMACRO()
@@ -35,7 +28,7 @@ MACRO( BCI2000_ADD_CMDLINE_CONVERTER NAME )
 
   SET( SOURCES
     ${NAME}.cpp
-    ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_tool.cpp
+    ${PROJECT_SRC_DIR}/core/Tools/cmdline/bci_tool.cpp
   )
   BCI2000_ADD_TOOLS_CMDLINE( ${NAME} ${SOURCES} FALSE )
   
@@ -102,8 +95,8 @@ MACRO( BCI2000_ADD_CMDLINE_FILTER )
   
   SET( SOURCES
     ${MAINSTEM}.cpp
-    ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_tool.cpp
-    ${BCI2000_SRC_DIR}/core/Tools/cmdline/bci_filtertool.cpp
+    ${PROJECT_SRC_DIR}/core/Tools/cmdline/bci_tool.cpp
+    ${PROJECT_SRC_DIR}/core/Tools/cmdline/bci_filtertool.cpp
     ${CMDLINEFILTER_EXTRA_SOURCES}
     ${CMDLINEFILTER_EXTRA_HEADERS}
   )

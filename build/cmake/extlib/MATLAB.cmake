@@ -14,15 +14,15 @@ IF( WIN32 )
 
   # Define the headers
   SET( HDR_EXTLIB
-    ${BCI2000_SRC_DIR}/extlib/matlab/engine.h
-    ${BCI2000_SRC_DIR}/extlib/matlab/mat.h
-    ${BCI2000_SRC_DIR}/extlib/matlab/matrix.h
-    ${BCI2000_SRC_DIR}/extlib/matlab/mex.h
-    ${BCI2000_SRC_DIR}/extlib/matlab/mwdebug.h
+    ${PROJECT_SRC_DIR}/extlib/matlab/engine.h
+    ${PROJECT_SRC_DIR}/extlib/matlab/mat.h
+    ${PROJECT_SRC_DIR}/extlib/matlab/matrix.h
+    ${PROJECT_SRC_DIR}/extlib/matlab/mex.h
+    ${PROJECT_SRC_DIR}/extlib/matlab/mwdebug.h
   )
 
   # Define the include directory
-  SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/matlab )
+  SET( INC_EXTLIB ${PROJECT_SRC_DIR}/extlib/matlab )
 
   # Set success
   SET( EXTLIB_OK TRUE )

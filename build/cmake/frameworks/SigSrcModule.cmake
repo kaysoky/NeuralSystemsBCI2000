@@ -4,15 +4,15 @@
 ## Description: Sets up include directories and dependencies for 
 ##   SignalSource Modules using the SigSrcModule library
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 
 # Define include directories
 INCLUDE_DIRECTORIES(
-  ${BCI2000_SRC_DIR}/shared/utils
-  ${BCI2000_SRC_DIR}/shared/fileio
-  ${BCI2000_SRC_DIR}/shared/fileio/dat
-  ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource
+  ${PROJECT_SRC_DIR}/shared/utils
+  ${PROJECT_SRC_DIR}/shared/fileio
+  ${PROJECT_SRC_DIR}/shared/fileio/dat
+  ${PROJECT_SRC_DIR}/shared/fileio/edf_gdf
+  ${PROJECT_SRC_DIR}/shared/modules/signalsource
 )
 
 INCLUDE_DIRECTORIES( ${BCI2000_SIGSRCINCDIRS} )
@@ -22,4 +22,4 @@ SET( REGISTRY_NAME SigSrcRegistry )
 FORCE_INCLUDE_OBJECT( ${REGISTRY_NAME} )
 
 SET( LIBS ${LIBS} BCI2000FrameworkSigSrcModule )
-ADD_DEFINITIONS( -DMODTYPE=1 -DIS_FIRST_MODULE ) 
+ADD_DEFINITIONS( -DIS_FIRST_MODULE ) 

@@ -14,25 +14,25 @@ IF( WIN32 )
 
 # Define the source files
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/com/ComModule.def
-  ${BCI2000_SRC_DIR}/extlib/com/ComModule.cpp
-  ${BCI2000_SRC_DIR}/extlib/com/ComClassFactory.cpp
-  ${BCI2000_SRC_DIR}/extlib/com/ComRegistrar.cpp
-  ${BCI2000_SRC_DIR}/extlib/com/ComStrings.cpp
+  ${PROJECT_SRC_DIR}/extlib/com/ComModule.def
+  ${PROJECT_SRC_DIR}/extlib/com/ComModule.cpp
+  ${PROJECT_SRC_DIR}/extlib/com/ComClassFactory.cpp
+  ${PROJECT_SRC_DIR}/extlib/com/ComRegistrar.cpp
+  ${PROJECT_SRC_DIR}/extlib/com/ComStrings.cpp
 )
 
 # Define the headers
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/com/ComModule.h
-  ${BCI2000_SRC_DIR}/extlib/com/ComClassFactory.h
-  ${BCI2000_SRC_DIR}/extlib/com/ComCoClass.h
-  ${BCI2000_SRC_DIR}/extlib/com/ComRegistrar.h
-  ${BCI2000_SRC_DIR}/extlib/com/ComStrings.h
-  ${BCI2000_SRC_DIR}/extlib/com/ComPtr.h
+  ${PROJECT_SRC_DIR}/extlib/com/ComModule.h
+  ${PROJECT_SRC_DIR}/extlib/com/ComClassFactory.h
+  ${PROJECT_SRC_DIR}/extlib/com/ComCoClass.h
+  ${PROJECT_SRC_DIR}/extlib/com/ComRegistrar.h
+  ${PROJECT_SRC_DIR}/extlib/com/ComStrings.h
+  ${PROJECT_SRC_DIR}/extlib/com/ComPtr.h
 )
 
 # Define the include directory
-SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/com )
+SET( INC_EXTLIB ${PROJECT_SRC_DIR}/extlib/com )
 
 # Define libraries
 SET( LIBS_EXTLIB

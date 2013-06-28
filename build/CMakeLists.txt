@@ -5,41 +5,40 @@
 
 cmake_minimum_required( VERSION 2.8.2 )
 cmake_policy( VERSION 2.8 )
+set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 # Define the project name and version
 PROJECT( BCI2000 )
 SET( LATEST_RELEASE "3.05" )
 SET( LATEST_RELEASE_REVISION "4230" )
 
-# Set the variable where to find the top level project sources
-IF( NOT DEFINED BCI2000_ROOT_DIR )
-  SET ( BCI2000_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. )
-ENDIF()
+GET_FILENAME_COMPONENT( PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE )
+SET( PROJECT_SRC_DIR "${PROJECT_ROOT_DIR}/src" )
+SET( PROJECT_OUTPUT_DIR "${PROJECT_ROOT_DIR}/prog" )
+SET( PROJECT_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles )
 
-# Set directory paths
-SET( BCI2000_SRC_DIR ${BCI2000_ROOT_DIR}/src )
-SET( BCI2000_CMAKE_DIR ${BCI2000_SOURCE_DIR}/cmake )
-SET( BCI2000_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles )
-SET( CMAKE_INCLUDE_CURRENT_DIR ON )
+INCLUDE( ${PROJECT_ROOT_DIR}/build/cmake/Utils.cmake )
+UTILS_INCLUDE( BuildOptions )
+UTILS_INCLUDE( FindQt )
+UTILS_INCLUDE( SetupBCI2000Macros )
+UTILS_INCLUDE( BuildConfigurations )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/Utils.cmake )
-INCLUDE( ${BCI2000_CMAKE_DIR}/BuildOptions.cmake )
-INCLUDE( ${BCI2000_CMAKE_DIR}/FindDependencies.cmake )
-INCLUDE( ${BCI2000_CMAKE_DIR}/SetupBCI2000Macros.cmake )
-INCLUDE( ${BCI2000_CMAKE_DIR}/BuildConfigurations.cmake )
+SET( BCI2000_ROOT_DIR "${PROJECT_ROOT_DIR}" )
+SET( BCI2000_SRC_DIR "${PROJECT_SRC_DIR}" )
+SET( BCI2000_BINARY_DIR "${PROJECT_BUILD_DIR}" )
 
 # Tell the user what we're about to setup
 MESSAGE( STATUS "Configuring project ${PROJECT_NAME} Version ${PROJECT_VERSION}" )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
-INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )
-INCLUDE( "${BCI2000_SRC_DIR}/contrib/Extensions/Extensions.cmake" )
-IF( EXISTS ${BCI2000_SRC_DIR}/private AND BUILD_PRIVATE )
-  INCLUDE( "${BCI2000_SRC_DIR}/private/PrivateConfig.cmake" )
+UTILS_INCLUDE( SignalSourceCommons )
+UTILS_INCLUDE( ApplicationCommons )
+INCLUDE( "${PROJECT_SRC_DIR}/contrib/Extensions/Extensions.cmake" )
+IF( EXISTS ${PROJECT_SRC_DIR}/private AND BUILD_PRIVATE )
+  INCLUDE( "${PROJECT_SRC_DIR}/private/PrivateConfig.cmake" )
 ENDIF()
-ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/frameworks "${BCI2000_BINARY_DIR}/frameworks" )
-ADD_SUBDIRECTORY( ${BCI2000_CMAKE_DIR}/extlib "${BCI2000_BINARY_DIR}/extlib" )
-ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/shared/utils/Expression/test "${BCI2000_BINARY_DIR}/shared" )
+ADD_SUBDIRECTORY( ${PROJECT_ROOT_DIR}/build/cmake/frameworks "${PROJECT_BUILD_DIR}/frameworks" )
+ADD_SUBDIRECTORY( ${PROJECT_ROOT_DIR}/build/cmake/extlib "${PROJECT_BUILD_DIR}/extlib" )
+ADD_SUBDIRECTORY( ${PROJECT_SRC_DIR}/shared/utils/Expression/test "${PROJECT_BUILD_DIR}/shared" )
 
 # Recurse down into all project subdirectories
 
@@ -47,7 +46,7 @@ ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/shared/utils/Expression/test "${BCI2000_BIN
 # This comes after static libraries have been created, so these 
 # maintain build-type specific output directories
 # (to avoid errors from linking to libraries with different build type)
-SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/prog" )
+SET_OUTPUT_DIRECTORY( "${PROJECT_OUTPUT_DIR}" )
 
 # src/private : stuff we use that is not released yet
 IF( EXISTS ${BCI2000_SRC_DIR}/private AND BUILD_PRIVATE )
@@ -68,6 +67,6 @@ IF ( EXISTS ${BCI2000_SRC_DIR}/custom )
 ENDIF( EXISTS ${BCI2000_SRC_DIR}/custom )
 
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/BCI2000Package.cmake )
+UTILS_INCLUDE( BCI2000Package )
 
 MARK_AS_ADVANCED( CMAKE_INSTALL_PREFIX )

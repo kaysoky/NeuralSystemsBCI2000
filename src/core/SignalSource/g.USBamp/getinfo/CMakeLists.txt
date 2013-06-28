@@ -5,7 +5,7 @@
 
 SET( NAME gUSBampgetinfo )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 # Tell the macro to link against the gUSBamp API found in EXTLIB
 BCI2000_INCLUDE( "GUSBAMP" )
 BCI2000_ADD_TARGET( INFO Tool EXECUTABLE ${NAME} gUSBampgetinfo.cpp )

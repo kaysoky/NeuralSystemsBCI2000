@@ -41,10 +41,10 @@ MACRO( BCI2000_USE_INVENTORY SOURCES )
     ${INVENTORY_INCLUDES}
   )
   SET( INVENTORY_H
-    ${BCI2000_SRC_DIR}/shared/config/ModuleInventory.h
+    ${PROJECT_SRC_DIR}/shared/config/ModuleInventory.h
   )
   SET( INVENTORY_CPP
-    ${BCI2000_SRC_DIR}/shared/config/ModuleInventory.cpp
+    ${PROJECT_SRC_DIR}/shared/config/ModuleInventory.cpp
   )
   SET_PROPERTY( # Make sure the inventory cpp file is re-compiled each time the inventory has changed.
     SOURCE ${INVENTORY_CPP}

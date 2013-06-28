@@ -13,27 +13,27 @@ IF( USE_DYNAMIC_IMPORTS OR (WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8) )
 
 # Set the Source and headers
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.imports.cpp
+  ${PROJECT_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.imports.cpp
 )
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.h
-  ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.imports.h
+  ${PROJECT_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.h
+  ${PROJECT_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.imports.h
 )
 
 # Define the include directory
 SET( INC_EXTLIB 
-  ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp
+  ${PROJECT_SRC_DIR}/extlib/brainproducts/vamp
 )
 
 # Define where the library is
 IF( BORLAND )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/brainproducts/vamp )
 ENDIF( BORLAND )
 IF( MSVC )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/coff )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/brainproducts/vamp/coff )
 ENDIF( MSVC )
 IF( MINGW )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/mingw )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/brainproducts/vamp/mingw )
 ENDIF( MINGW )
 
 # Set Libs required

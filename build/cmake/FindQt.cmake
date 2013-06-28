@@ -8,6 +8,8 @@ SET( TRY_INTERNAL_QT
   "4.7.0"
 )
 
+SET( internalqt_ QT_${PROJECT_NAME} )
+
 FUNCTION( CLEAR_QT_VARIABLES )
 
   GET_CMAKE_PROPERTY( vars VARIABLES )
@@ -22,8 +24,8 @@ ENDFUNCTION()
 
 FUNCTION( DOWNLOAD_EXTRACT_QT qtver arch qmake )
 
-  SET( qturl "http://www.bci2000.org/externals/qt/qt-${qtver}.${arch}" )
-  SET( basedir "${BCI2000_BINARY_DIR}/extlib" )
+  SET( qturl "http://${PROJECT_DOMAIN}/externals/qt/qt-${qtver}.${arch}" )
+  SET( basedir "${PROJECT_BUILD_DIR}/extlib" )
   SET( qtdir "${basedir}/qt-${qtver}" )
   SET( qttemp "${qtdir}/qttemp.exe" )
   FILE( REMOVE "${qttemp}" )
@@ -92,7 +94,7 @@ FUNCTION( GET_QT_FROM_SERVER qtver )
       SET( ENV{QMAKESPEC} "${qtarch}-${cc}" )
       SET( QT_QMAKE_EXECUTABLE "${qmake_}" CACHE FILEPATH "" FORCE )
       SET( QT_BCI2000 TRUE CACHE INTERNAL "" FORCE )
-      MARK_AS_ADVANCED( FORCE QT_QMAKE_EXECUTABLE QT_BCI2000 )
+      MARK_AS_ADVANCED( FORCE QT_QMAKE_EXECUTABLE ${internalqt_} )
     ENDIF()
   ENDIF()
 
@@ -101,24 +103,24 @@ ENDFUNCTION()
 
 ## Main
 
-IF( USE_EXTERNAL_QT AND QT_BCI2000 )
+IF( USE_EXTERNAL_QT AND ${internalqt_} )
   CLEAR_QT_VARIABLES()
 ENDIF()
 IF( NOT USE_EXTERNAL_QT )
-  SET( QT_BCI2000 FALSE CACHE INTERNAL "" FORCE ) 
+  SET( ${internalqt_} FALSE CACHE INTERNAL "" FORCE ) 
   FOREACH( qtver_ ${TRY_INTERNAL_QT} )
-    IF( NOT QT_BCI2000 )
+    IF( NOT ${internalqt_} )
       GET_QT_FROM_SERVER( ${qtver_} )
     ENDIF()
   ENDFOREACH()
 ENDIF()
 
 SET( doc_ 
-  "Set to ON to link BCI2000 against an existing Qt installation.
+  "Set to ON to link ${PROJECT_NAME} against an existing Qt installation.
   Note that this may introduce various run-time dependencies which will be difficult
   to manage when deploying the resulting executables."
 )
-IF( QT_BCI2000 )
+IF( ${internalqt_} )
   OPTION( USE_EXTERNAL_QT "${doc_}" OFF )
 ELSE()
   SET( USE_EXTERNAL_QT ON CACHE BOOL "${doc_}" FORCE )

@@ -6,13 +6,13 @@
 
 SET( BCI2000_APPSOURCES
   ${BCI2000_APPSOURCES}
-  ${BCI2000_SRC_DIR}/shared/modules/application/ConnectorFilters.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/ConnectorFilters.cpp
   # Add extra Application components from the BCI2000 framework here
 )
 
 SET( BCI2000_APPHEADERS
   ${BCI2000_APPHEADERS}
-  ${BCI2000_SRC_DIR}/shared/modules/application/ConnectorFilters.h
+  ${PROJECT_SRC_DIR}/shared/modules/application/ConnectorFilters.h
   # Add extra Application components from the BCI2000 framework here
 )
 
@@ -39,10 +39,10 @@ SET( BCI2000_APPHEADERS_EXT
 IF( WIN32 )
   SET( BCI2000_HIDSOURCES
     ${BCI2000_HIDSOURCES}
-    ${BCI2000_SRC_DIR}/shared/modules/application/human_interface_devices/KeystrokeFilter.cpp
+    ${PROJECT_SRC_DIR}/shared/modules/application/human_interface_devices/KeystrokeFilter.cpp
   )
   SET( BCI2000_HIDHEADERS
     ${BCI2000_HIDHEADERS}
-    ${BCI2000_SRC_DIR}/shared/modules/application/human_interface_devices/KeystrokeFilter.h
+    ${PROJECT_SRC_DIR}/shared/modules/application/human_interface_devices/KeystrokeFilter.h
   )
 ENDIF( WIN32 )

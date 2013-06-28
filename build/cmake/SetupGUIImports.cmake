@@ -3,7 +3,7 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Modifies the framework and sets up GUIs to be imported
 
-SET( dir_ ${BCI2000_SRC_DIR}/core/Operator/OperatorQt )
+SET( dir_ ${PROJECT_SRC_DIR}/core/Operator/OperatorQt )
 
 SET( BCI2000_PARAMETER_GUI
 
@@ -21,5 +21,5 @@ SET( BCI2000_PARAMETER_GUI
   ${dir_}/ParsedComment.cpp
   ${dir_}/ParamDisplay.cpp
 
-  ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.cpp
+  ${PROJECT_SRC_DIR}/shared/gui/ExecutableHelp.cpp
 )

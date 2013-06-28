@@ -4,10 +4,10 @@
 ## Description: Sets up include directories and dependencies for 
 ##   SigProc Modules using the SigProcModule library
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 
 # Define include directories
-INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/modules/signalprocessing )
+INCLUDE_DIRECTORIES( ${PROJECT_SRC_DIR}/shared/modules/signalprocessing )
 
 BCI2000_USE( "MATH" )
 BCI2000_USE( "STATISTICS" )
@@ -16,4 +16,4 @@ SET( REGISTRY_NAME SigProcRegistry )
 FORCE_INCLUDE_OBJECT( ${REGISTRY_NAME} )
 
 SET( LIBS ${LIBS} BCI2000FrameworkSigProcModule )
-ADD_DEFINITIONS( -DMODTYPE=2 )
+

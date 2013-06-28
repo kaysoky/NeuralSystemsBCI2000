@@ -12,13 +12,13 @@ SET( EXTLIB_OK TRUE )
 
 # Define the source files
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/fftlib/FFTLibWrap.cpp
+  ${PROJECT_SRC_DIR}/extlib/fftlib/FFTLibWrap.cpp
 )
 
 # Define the headers
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/fftlib/FFTLibWrap.h
+  ${PROJECT_SRC_DIR}/extlib/fftlib/FFTLibWrap.h
 )
 
 # Define the include directory
-SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/fftlib )
+SET( INC_EXTLIB ${PROJECT_SRC_DIR}/extlib/fftlib )

@@ -11,21 +11,21 @@
 
 
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/SourceFilter.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.cpp
-  ${BCI2000_SRC_DIR}/extlib/math/FilterDesign.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/signalsource/SourceFilter.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.cpp
+  ${PROJECT_SRC_DIR}/extlib/math/FilterDesign.cpp
 )
 
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/SourceFilter.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.h
-  ${BCI2000_SRC_DIR}/extlib/math/FilterDesign.h
-  ${BCI2000_SRC_DIR}/extlib/math/IIRFilter.h
+  ${PROJECT_SRC_DIR}/shared/modules/signalsource/SourceFilter.h
+  ${PROJECT_SRC_DIR}/shared/modules/signalprocessing/IIRFilterBase.h
+  ${PROJECT_SRC_DIR}/extlib/math/FilterDesign.h
+  ${PROJECT_SRC_DIR}/extlib/math/IIRFilter.h
 )
 
 SET( INC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/math
-  ${BCI2000_SRC_DIR}/shared/modules/signalprocessing
+  ${PROJECT_SRC_DIR}/extlib/math
+  ${PROJECT_SRC_DIR}/shared/modules/signalprocessing
 )
 
 SET( LIBDIR_EXTLIB

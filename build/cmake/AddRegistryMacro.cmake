@@ -35,7 +35,7 @@ MACRO( BCI2000_ADD_REGISTRY name_ sources_ depends_ )
   ENDFOREACH()
 
   SET( REGISTRY_CPP
-    ${BCI2000_SRC_DIR}/shared/config/BCIRegistry.cpp
+    ${PROJECT_SRC_DIR}/shared/config/BCIRegistry.cpp
   )
   SET_PROPERTY( # Make sure the registry cpp file is re-compiled each time the registry file has changed.
     SOURCE ${REGISTRY_CPP}

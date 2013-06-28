@@ -7,7 +7,7 @@ ADD_SUBDIRECTORY( test )
 
 SET( NAME BCI2000FrameworkCore )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreLib/CoreLibFiles.cmake )
+UTILS_INCLUDE( frameworks/CoreLib/CoreLibFiles )
 
 IF( WIN32 )
   SET( DEPLIBS ws2_32 winmm )
@@ -17,7 +17,7 @@ IF( NOT APPLE AND NOT WIN32 )
 ENDIF()
 
 # Include "usage header" to define include directories and extlib dependencies
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 #BCI2000_ADD_REGISTRY( ${REGISTRY_NAME} SRC_BCI2000_FRAMEWORK DEPTARGETS )
 BCI2000_ADD_TARGET( INFO "Framework library" STATIC_LIBRARY ${NAME} )
 IF( FAILED )

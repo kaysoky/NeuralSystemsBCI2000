@@ -44,7 +44,7 @@ IF( COMPILER_IS_GCC_COMPATIBLE )
 
   # Select flags.
   SET( cflags_
-      "-include \"${BCI2000_SRC_DIR}/shared/config/gccprefix.h\""
+      "-include \"${PROJECT_SRC_DIR}/shared/config/gccprefix.h\""
   )
   IF( USE_SSE2 )
     LIST( APPEND cflags_ -msse2 )
@@ -147,7 +147,7 @@ IF( MSVC )
     /wd4800
   )
   INCLUDE_DIRECTORIES(
-    ${BCI2000_SRC_DIR}/shared/compat
+    ${PROJECT_SRC_DIR}/shared/compat
   )
   # Adjust flags such that by default programs are built statically against the MSVC runtime;
   # save defaults as "_DYNAMIC" for use with MFC-based projects.

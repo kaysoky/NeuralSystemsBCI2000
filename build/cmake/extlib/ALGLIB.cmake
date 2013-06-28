@@ -9,39 +9,39 @@
 
 # Define the source files
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/alglib/ap.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/betacf.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/betai.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/blas.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/gammln.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/qr.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/reflections.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/remmean.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/stepcalc.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/stepnext.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/stepwisefit.cpp
-  ${BCI2000_SRC_DIR}/extlib/alglib/tcdf.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/ap.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/betacf.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/betai.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/blas.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/gammln.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/qr.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/reflections.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/remmean.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/stepcalc.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/stepnext.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/stepwisefit.cpp
+  ${PROJECT_SRC_DIR}/extlib/alglib/tcdf.cpp
 )
 
 # Define the headers
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/alglib/ap.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/apvt.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/betacf.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/betai.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/blas.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/gammln.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/qr.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/reflections.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/remmean.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/stepcalc.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/stepnext.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/stepwisefit.h
-  ${BCI2000_SRC_DIR}/extlib/alglib/tcdf.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/ap.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/apvt.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/betacf.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/betai.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/blas.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/gammln.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/qr.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/reflections.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/remmean.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/stepcalc.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/stepnext.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/stepwisefit.h
+  ${PROJECT_SRC_DIR}/extlib/alglib/tcdf.h
 )
 
 # Define the include directory
-SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/alglib )
+SET( INC_EXTLIB ${PROJECT_SRC_DIR}/extlib/alglib )
 
 # Set success
 SET( EXTLIB_OK TRUE )

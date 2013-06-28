@@ -14,28 +14,28 @@ IF( WIN32 )
 
 # Set the Source and headers
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/gtec/gSTIMbox/gSTIMbox.imports.cpp
+  ${PROJECT_SRC_DIR}/extlib/gtec/gSTIMbox/gSTIMbox.imports.cpp
 )
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/gtec/gSTIMbox/gSTIMbox.h
-  ${BCI2000_SRC_DIR}/extlib/gtec/gSTIMbox/gSTIMbox.imports.h
+  ${PROJECT_SRC_DIR}/extlib/gtec/gSTIMbox/gSTIMbox.h
+  ${PROJECT_SRC_DIR}/extlib/gtec/gSTIMbox/gSTIMbox.imports.h
 )
 
 # Define the include directory
 SET( INC_EXTLIB 
-  ${BCI2000_SRC_DIR}/extlib/gtec/gSTIMbox
+  ${PROJECT_SRC_DIR}/extlib/gtec/gSTIMbox
 )
 
 # Define where the library is
 IF( MSVC )
   IF( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-    SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gSTIMbox/coff64 )
+    SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gSTIMbox/coff64 )
   ELSE()
-    SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gSTIMbox/coff )
+    SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gSTIMbox/coff )
   ENDIF()
 ENDIF( MSVC )
 IF( MINGW )
-  SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gSTIMbox/mingw )
+  SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gSTIMbox/mingw )
 ENDIF( MINGW )
 
 # Set Libs required

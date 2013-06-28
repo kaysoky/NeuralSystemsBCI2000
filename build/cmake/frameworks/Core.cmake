@@ -4,17 +4,17 @@
 ## Description: Usage header for BCI2000FrameworkCore library
 
 INCLUDE_DIRECTORIES(
-  ${BCI2000_SRC_DIR}/shared
-  ${BCI2000_SRC_DIR}/shared/accessors
-  ${BCI2000_SRC_DIR}/shared/bcistream
-  ${BCI2000_SRC_DIR}/shared/config
-  ${BCI2000_SRC_DIR}/shared/modules
-  ${BCI2000_SRC_DIR}/shared/filters
-  ${BCI2000_SRC_DIR}/shared/types
-  ${BCI2000_SRC_DIR}/shared/utils
-  ${BCI2000_SRC_DIR}/shared/utils/Expression
-  ${BCI2000_SRC_DIR}/shared/fileio
-  ${BCI2000_SRC_DIR}/shared/fileio/dat
+  ${PROJECT_SRC_DIR}/shared
+  ${PROJECT_SRC_DIR}/shared/accessors
+  ${PROJECT_SRC_DIR}/shared/bcistream
+  ${PROJECT_SRC_DIR}/shared/config
+  ${PROJECT_SRC_DIR}/shared/modules
+  ${PROJECT_SRC_DIR}/shared/filters
+  ${PROJECT_SRC_DIR}/shared/types
+  ${PROJECT_SRC_DIR}/shared/utils
+  ${PROJECT_SRC_DIR}/shared/utils/Expression
+  ${PROJECT_SRC_DIR}/shared/fileio
+  ${PROJECT_SRC_DIR}/shared/fileio/dat
 )
 
 #SET( REGISTRY_NAME CoreRegistry )
@@ -43,7 +43,7 @@ IF( NOT DEFINED USE_PRECOMPILED_HEADERS OR USE_PRECOMPILED_HEADERS )
       "${CMAKE_CXX_FLAGS} /Yu\"${CORE_PCH}\" /FI\"${CORE_PCH}\" /Fp\"${pchfile_}\""
     )
   ELSEIF( 0 ) # COMPILER_IS_GCC_COMPATIBLE )
-    SET( pchsrc_ ${BCI2000_SRC_DIR}/shared/config/${CORE_PCH} )
+    SET( pchsrc_ ${PROJECT_SRC_DIR}/shared/config/${CORE_PCH} )
     IF( NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${CORE_PCH}" )
       FILE( WRITE "${CMAKE_CURRENT_BINARY_DIR}/${CORE_PCH}" "#error Not using precompiled header file." )
     ENDIF()

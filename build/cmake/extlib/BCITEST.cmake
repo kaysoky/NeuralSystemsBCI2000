@@ -10,11 +10,11 @@
 ##       LIBS_EXTLIB - required library
 
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCITestMain.cpp
+  ${PROJECT_SRC_DIR}/shared/bcistream/BCITestMain.cpp
 )
 
 SET( INC_EXTLIB 
-  ${BCI2000_SRC_DIR}/shared/bcistream
+  ${PROJECT_SRC_DIR}/shared/bcistream
 )
 
 SET( EXTLIB_OK TRUE )

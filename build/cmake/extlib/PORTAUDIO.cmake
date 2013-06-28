@@ -11,7 +11,7 @@
 
 SET( SRC_EXTLIB )
 SET( HDR_EXTLIB )
-SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/portaudio/portaudio/include )
+SET( INC_EXTLIB ${PROJECT_SRC_DIR}/extlib/portaudio/portaudio/include )
 SET( LIBDIR_EXTLIB )
 SET( LIBS_EXTLIB PortAudio )
 SET( EXTLIB_OK TRUE )

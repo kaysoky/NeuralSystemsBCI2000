@@ -10,7 +10,7 @@ MACRO( BCI2000_ADD_CORE_MAIN NAME )
   LIST( REMOVE_AT sources 0 )
   LIST( FIND sources "${NAME}.cpp" IDX )
   IF( IDX EQUAL -1 )
-    SET( CORE_MAIN ${BCI2000_SRC_DIR}/shared/modules/CoreMain.cpp )
+    SET( CORE_MAIN ${PROJECT_SRC_DIR}/shared/modules/CoreMain.cpp )
     SET( SRC_BCI2000_FRAMEWORK
       ${SRC_BCI2000_FRAMEWORK}
       ${CORE_MAIN}
@@ -19,15 +19,15 @@ MACRO( BCI2000_ADD_CORE_MAIN NAME )
 
   SET( SRC_BCI2000_FRAMEWORK
     ${SRC_BCI2000_FRAMEWORK}
-    ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
-    ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_module.cpp
+    ${PROJECT_SRC_DIR}/shared/modules/CoreModule.cpp
+    ${PROJECT_SRC_DIR}/shared/bcistream/BCIStream_module.cpp
   )
 
   UTILS_IS_DEFINITION( USE_QT needqt_ )
   IF( needqt_ )
     SET( SRC_BCI2000_FRAMEWORK
       ${SRC_BCI2000_FRAMEWORK}
-      ${BCI2000_SRC_DIR}/shared/modules/CoreModule_Qt.cpp
+      ${PROJECT_SRC_DIR}/shared/modules/CoreModule_Qt.cpp
     )
   ENDIF()    
 ENDMACRO()  

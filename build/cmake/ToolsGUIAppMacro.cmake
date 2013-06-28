@@ -8,16 +8,20 @@ MACRO( BCI2000_ADD_TOOLS_GUIAPP )
 
   SET( SOURCES
     ${SOURCES}
-    ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_guiapp.cpp
-    ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
-    ${BCI2000_SRC_DIR}/shared/gui/ExecutableHelp.cpp
-    ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp
-    ${BCI2000_SRC_DIR}/shared/gui/ColorListChooser.cpp
+    ${PROJECT_SRC_DIR}/shared/bcistream/BCIStream_guiapp.cpp
+    ${PROJECT_SRC_DIR}/shared/gui/AboutBox.cpp
+    ${PROJECT_SRC_DIR}/shared/gui/ExecutableHelp.cpp
+    ${PROJECT_SRC_DIR}/shared/utils/Settings.cpp
+    ${PROJECT_SRC_DIR}/shared/gui/ColorListChooser.cpp
   )
 
-  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
-  SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/tools/${NAME} )
-  BCI2000_ADD_TARGET( INFO Tool GUIAPP ${NAME} ${SOURCES} )
+  UTILS_INCLUDE( frameworks/Core )
+  BCI2000_ADD_TARGET(
+    INFO Tool
+    GUIAPP ${NAME}
+    ${SOURCES}
+    OUTPUT_DIRECTORY ${PROJECT_ROOT_DIR}/tools/${NAME}
+  )
   BCI2000_ADD_TO_INVENTORY( Tool ${NAME} )
 
 ENDMACRO()

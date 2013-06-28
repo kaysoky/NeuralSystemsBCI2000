@@ -16,13 +16,13 @@ IF( NOT BORLAND )
 SET( SRC_EXTLIB )
 
 # Define the headers
-SET( HDR_EXTLIB ${BCI2000_SRC_DIR}/extlib/dxsdk/include/dsound.h )
+SET( HDR_EXTLIB ${PROJECT_SRC_DIR}/extlib/dxsdk/include/dsound.h )
 
 # Define the include directory
-SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/dxsdk/include )
+SET( INC_EXTLIB ${PROJECT_SRC_DIR}/extlib/dxsdk/include )
 
 # Set where the libraries can be found
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/dxsdk/lib )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/dxsdk/lib )
 
 # Set the name of the library to link against within LIBDIR
 SET( LIBS_EXTLIB dsound.lib )

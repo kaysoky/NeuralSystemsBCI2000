@@ -37,12 +37,11 @@ SET( SRC_PROJECT
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.cpp
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
   ${BCI2000_SRC_DIR}/shared/gui/ColorListChooser.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp 
+  ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp
 )
 
 BCI2000_INCLUDE( "MATH" )
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 BCI2000_ADD_TO_INVENTORY( Operator ${EXECUTABLE_NAME} )
 BCI2000_ADD_TARGET( INFO "Operator module" QTAPP ${EXECUTABLE_NAME}  ${SRC_PROJECT} )
 TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} OperatorLib )
-

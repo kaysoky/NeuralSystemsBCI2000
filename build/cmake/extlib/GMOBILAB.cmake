@@ -13,28 +13,28 @@ IF( (USE_DYNAMIC_IMPORTS AND WIN32) OR (WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 
 
 # Set the final Source and headers
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlab/spa20a.imports.cpp
+  ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlab/spa20a.imports.cpp
 )
 
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlab/spa20a.h
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlab/spa20a.imports.h
+  ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlab/spa20a.h
+  ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlab/spa20a.imports.h
 )
 
 # Define the include directory
 SET( INC_EXTLIB 
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlab 
+  ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlab 
 )
 
 # Define where the library is
 IF( BORLAND )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlab/omf )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlab/omf )
 ENDIF( BORLAND )
 IF( MSVC )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlab/coff )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlab/coff )
 ENDIF( MSVC )
 IF( MINGW )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlab/mingw )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlab/mingw )
 ENDIF( MINGW )
 
 # Set Libs required

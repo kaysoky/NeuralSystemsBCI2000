@@ -11,7 +11,7 @@ SET( BCITESTS "" )
 MACRO( BCI2000_ADD_LIBRARY_TEST libname_ )
 
   SET( name_ "bcitest_BCI2000Framework${libname_}" )
-  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/${libname_}.cmake )
+  UTILS_INCLUDE( frameworks/${libname_} )
   BCI2000_ADD_TEST_EXECUTABLE( ${name_} )
 
 ENDMACRO()
@@ -21,7 +21,7 @@ MACRO( BCI2000_ADD_UNIT_TEST )
 
   GET_FILENAME_COMPONENT( name_ ${ARGV0} NAME_WE )
   SET( name_ "bcitest_${name_}" )
-  INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+  UTILS_INCLUDE( frameworks/Core )
   BCI2000_ADD_TEST_EXECUTABLE( ${name_} ${ARGV} )
 
 ENDMACRO()
@@ -49,8 +49,8 @@ MACRO( BCI2000_ADD_TEST_EXECUTABLE name_ )
   IF( BUILD_TESTS )
     SET( sources_
       ${ARGN}
-      ${BCI2000_SRC_DIR}/shared/bcistream/BCITestMain.cpp
-      ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
+      ${PROJECT_SRC_DIR}/shared/bcistream/BCITestMain.cpp
+      ${PROJECT_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
     )
     SET_OUTPUT_DIRECTORY( "${BCI2000_ROOT_DIR}/build/buildutils/tests" )
     #BCI2000_ADD_REGISTRY( ${name_}_Registry sources_ DEPTARGETS )

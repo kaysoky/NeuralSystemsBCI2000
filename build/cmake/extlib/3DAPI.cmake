@@ -26,44 +26,44 @@ ENDIF( OPENGL_FOUND )
 
 # Define the source files
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/buffers.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/cameraNlight.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/cuboids.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/geomObj.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/halfSpace.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/Load3DS.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/model3D.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/primObj.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/Scene.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/sphere.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/threeDText.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/twoDCursor.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/twoDOverlay.cpp
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/twoDText.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/buffers.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/cameraNlight.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/cuboids.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/geomObj.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/halfSpace.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/Load3DS.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/model3D.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/primObj.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/Scene.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/sphere.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/threeDText.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/twoDCursor.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/twoDOverlay.cpp
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/twoDText.cpp
 )
 
 # Define the headers
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/buffers.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/cameraNlight.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/component.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/cuboids.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/geomObj.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/glheaders.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/halfSpace.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/Load3DS.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/model3D.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/primObj.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/Scene.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/sphere.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/threeDText.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/twoDCursor.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/twoDOverlay.h
-  ${BCI2000_SRC_DIR}/extlib/3DAPI/twoDText.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/buffers.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/cameraNlight.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/component.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/cuboids.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/geomObj.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/glheaders.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/halfSpace.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/Load3DS.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/model3D.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/primObj.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/Scene.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/sphere.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/threeDText.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/twoDCursor.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/twoDOverlay.h
+  ${PROJECT_SRC_DIR}/extlib/3DAPI/twoDText.h
 )
 
 # Define the include directory
-SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/3DAPI )
+SET( INC_EXTLIB ${PROJECT_SRC_DIR}/extlib/3DAPI )
 
 # Set success
 SET( EXTLIB_OK TRUE )

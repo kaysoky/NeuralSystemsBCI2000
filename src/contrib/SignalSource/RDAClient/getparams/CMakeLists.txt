@@ -11,6 +11,6 @@ SET( SOURCES
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
 )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 BCI2000_ADD_TARGET( INFO Tool EXECUTABLE ${NAME} ${SOURCES} )
 BCI2000_ADD_TO_INVENTORY( Tool ${NAME} )

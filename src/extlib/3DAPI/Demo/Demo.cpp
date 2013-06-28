@@ -39,6 +39,7 @@ USEFORM("UDemoWindow.cpp", DemoWindow);
 
 //---------------------------------------------------------------------------
 #ifdef _WIN32
+#include <Windows.h>
 
 int main( int argc, char** argv );
 

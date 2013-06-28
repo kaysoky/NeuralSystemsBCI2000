@@ -15,7 +15,7 @@ SET( ${FAILED} "" )
 # We'll loop through the using statements
 FOREACH( INC ${BCI2000_INCLUDING} )
   
-  IF( NOT EXISTS ${BCI2000_CMAKE_DIR}/extlib/${INC}.cmake )
+  IF( NOT EXISTS ${PROJECT_UTILS_DIR}/extlib/${INC}.cmake )
     MESSAGE( FATAL_ERROR
       "Unknown extlib dependency: ${INC}."
       "Make sure all BCI2000_INCLUDE statements have a corresponding .cmake file in src/extlib."
@@ -27,7 +27,7 @@ FOREACH( INC ${BCI2000_INCLUDING} )
     UNSET( SRC_EXTLIB )
     UNSET( LIBDIR_EXTLIB )
     UNSET( LIBS_EXTLIB )
-    INCLUDE( ${BCI2000_CMAKE_DIR}/extlib/${INC}.cmake )
+    INCLUDE( ${PROJECT_UTILS_DIR}/extlib/${INC}.cmake )
     IF( EXTLIB_OK )
       SET( ${SOURCES_}
         ${${SOURCES_}}
@@ -73,7 +73,7 @@ ENDMACRO( BCI2000_INCLUDE LIB )
 # Use an EXTLIB that is contained in a library
 MACRO( BCI2000_USE LIB )
   STRING( TOUPPER( ${LIB} LIB ) )
-  IF( NOT EXISTS ${BCI2000_CMAKE_DIR}/extlib/${LIB}.cmake )
+  IF( NOT EXISTS ${PROJECT_UTILS_DIR}/extlib/${LIB}.cmake )
     MESSAGE( FATAL_ERROR
       "Unknown extlib dependency: ${LIB}."
       "Make sure all BCI2000_USE statements have a corresponding .cmake file in src/extlib."
@@ -82,7 +82,7 @@ MACRO( BCI2000_USE LIB )
     SET( EXTLIB_OK FALSE )
     UNSET( INC_EXTLIB )
     UNSET( LIBDIR_EXTLIB )
-    INCLUDE( ${BCI2000_CMAKE_DIR}/extlib/${LIB}.cmake )
+    INCLUDE( ${PROJECT_UTILS_DIR}/extlib/${LIB}.cmake )
     IF( EXTLIB_OK )
       INCLUDE_DIRECTORIES( ${INC_EXTLIB} )
       LINK_DIRECTORIES( ${LIBDIR_EXTLIB} )

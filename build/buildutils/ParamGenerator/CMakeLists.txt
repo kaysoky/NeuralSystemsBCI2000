@@ -14,8 +14,7 @@ SET( SRC_PROJECT
   ARGenerator.cpp
   P3Generator.cpp
   main.cpp
-  ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
+  ${PROJECT_SRC_DIR}/shared/bcistream/BCIStream_tool.cpp
 )
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
-BCI2000_ADD_TARGET( EXECUTABLE "${NAME}" "${SRC_PROJECT}" )
-SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/build/buildutils/${NAME} ${NAME} )
+UTILS_INCLUDE( frameworks/Core )
+BCI2000_ADD_TARGET( EXECUTABLE "${NAME}" "${SRC_PROJECT}" ${PROJECT_ROOT_DIR}/build/buildutils/${NAME} )

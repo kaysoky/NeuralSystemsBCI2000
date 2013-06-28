@@ -13,28 +13,28 @@ IF( WIN32 )
 
 # Set the Source and headers
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/gUSBamp.imports.cpp
+  ${PROJECT_SRC_DIR}/extlib/gtec/gUSBamp/gUSBamp.imports.cpp
 )
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/gUSBamp.h
-  ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/gUSBamp.imports.h
+  ${PROJECT_SRC_DIR}/extlib/gtec/gUSBamp/gUSBamp.h
+  ${PROJECT_SRC_DIR}/extlib/gtec/gUSBamp/gUSBamp.imports.h
 )
 
 # Define the include directory
 SET( INC_EXTLIB 
-  ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp
+  ${PROJECT_SRC_DIR}/extlib/gtec/gUSBamp
 )
 
 # Define where the library is
 IF( MSVC )
   IF( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-    SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/coff64 )
+    SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gUSBamp/coff64 )
   ELSE()
-    SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/coff )
+    SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gUSBamp/coff )
   ENDIF()
 ENDIF( MSVC )
 IF( MINGW )
-  SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gUSBamp/mingw )
+  SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gUSBamp/mingw )
 ENDIF( MINGW )
 
 # Set Libs required

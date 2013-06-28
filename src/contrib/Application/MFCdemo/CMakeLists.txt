@@ -34,12 +34,12 @@ ENDFOREACH( flag_var )
 
 # Include the required framework
 SET( LIBS_ ${LIBS} )
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 SET( LIBS ${LIBS_} )
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreLib/CoreLibFiles.cmake )
+UTILS_INCLUDE( frameworks/CoreLib/CoreLibFiles )
 
 # Setup Global Application Module Contents
-INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationCommons.cmake )
+UTILS_INCLUDE( ApplicationCommons )
 
 # Add the global and specific application files into the framework for this project
 SET( SRC_BCI2000_FRAMEWORK

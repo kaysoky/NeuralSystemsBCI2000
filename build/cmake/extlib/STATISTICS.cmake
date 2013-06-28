@@ -9,27 +9,27 @@
 
 # Define the source files
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/ObserverMemory.cpp
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/ObserverBase.cpp
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/PowerSumObserver.cpp 
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/HistogramObserver.cpp 
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/Histogram.cpp 
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/ObserverMemory.cpp
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/ObserverBase.cpp
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/PowerSumObserver.cpp 
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/HistogramObserver.cpp 
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/Histogram.cpp 
 )
 
 # Define the headers
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/StatisticalObserver.h 
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/ObserverMemory.h
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/ObserverBase.h 
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/PowerSumObserver.h 
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/HistogramObserver.h 
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/Histogram.h 
-  ${BCI2000_SRC_DIR}/extlib/math/statistics/CombinedObserver.h 
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/StatisticalObserver.h 
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/ObserverMemory.h
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/ObserverBase.h 
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/PowerSumObserver.h 
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/HistogramObserver.h 
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/Histogram.h 
+  ${PROJECT_SRC_DIR}/extlib/math/statistics/CombinedObserver.h 
 )
 
 # Define include directories
 SET( INC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/math/statistics
+  ${PROJECT_SRC_DIR}/extlib/math/statistics
 )
 
 # Set success

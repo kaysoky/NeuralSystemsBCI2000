@@ -14,25 +14,25 @@ IF( WIN32 )
 
 # Define the source files
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/SAPILib/sapi.cpp
+  ${PROJECT_SRC_DIR}/extlib/SAPILib/sapi.cpp
 )
 
 # Define the headers
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/SAPILib/sapi.h
+  ${PROJECT_SRC_DIR}/extlib/SAPILib/sapi.h
 )
 
 # Define the include directory
-SET( INC_EXTLIB ${BCI2000_SRC_DIR}/extlib/SAPILib )
+SET( INC_EXTLIB ${PROJECT_SRC_DIR}/extlib/SAPILib )
 
 # Define where the library is
 IF( BORLAND )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/SAPILib )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/SAPILib )
 ELSE( BORLAND )
 IF( MSVC )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/SAPILib/lib )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/SAPILib/lib )
 ELSE( MSVC )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/SAPILib/lib )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/SAPILib/lib )
 ENDIF( MSVC )
 ENDIF( BORLAND )
 

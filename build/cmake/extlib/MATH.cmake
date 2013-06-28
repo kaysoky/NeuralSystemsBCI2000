@@ -9,23 +9,23 @@
 
 # Define the source files
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/math/FilterDesign.cpp
+  ${PROJECT_SRC_DIR}/extlib/math/FilterDesign.cpp
 )
 
 # Define the headers
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/math/Detrend.h
-  ${BCI2000_SRC_DIR}/extlib/math/FilterDesign.h
-  ${BCI2000_SRC_DIR}/extlib/math/IIRFilter.h
-  ${BCI2000_SRC_DIR}/extlib/math/LinearPredictor.h
-  ${BCI2000_SRC_DIR}/extlib/math/MEMPredictor.h
-  ${BCI2000_SRC_DIR}/extlib/math/Polynomials.h
-  ${BCI2000_SRC_DIR}/extlib/math/TransferSpectrum.h
+  ${PROJECT_SRC_DIR}/extlib/math/Detrend.h
+  ${PROJECT_SRC_DIR}/extlib/math/FilterDesign.h
+  ${PROJECT_SRC_DIR}/extlib/math/IIRFilter.h
+  ${PROJECT_SRC_DIR}/extlib/math/LinearPredictor.h
+  ${PROJECT_SRC_DIR}/extlib/math/MEMPredictor.h
+  ${PROJECT_SRC_DIR}/extlib/math/Polynomials.h
+  ${PROJECT_SRC_DIR}/extlib/math/TransferSpectrum.h
 )
 
 # Define include directories
 SET( INC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/math
+  ${PROJECT_SRC_DIR}/extlib/math
 )
 
 # Set success

@@ -4,6 +4,7 @@
 ## Description: CMake utility functions
 
 ### Defines and options
+SET( PROJECT_UTILS_DIR ${CMAKE_CURRENT_LIST_DIR} )
 
 # Determine source code revision
 EXECUTE_PROCESS( COMMAND svn info "${BCI2000_ROOT_DIR}" RESULT_VARIABLE result_ OUTPUT_VARIABLE output_ )
@@ -20,6 +21,7 @@ ENDIF()
 # Create project defines
 SET( PROJECT_VERSION "${LATEST_RELEASE}" )
 IF( PROJECT_REVISION )
+  # Set patch number to difference between current revision, and latest release
   MATH( EXPR PROJECT_VER_PATCH "${PROJECT_REVISION} - ${LATEST_RELEASE_REVISION}" )
 ENDIF()
 IF( PROJECT_VER_PATCH )
@@ -74,6 +76,11 @@ ENDFUNCTION()
 
 ### Functions
 
+# Include a file from the utils directory
+MACRO( UTILS_INCLUDE file_ )
+  INCLUDE( ${PROJECT_UTILS_DIR}/${file_}.cmake )
+ENDMACRO()
+
 # Parse arguments into provided variable names
 MACRO( UTILS_PARSE_ARGS args_ )
 
@@ -99,19 +106,21 @@ MACRO( UTILS_PARSE_ARGS args_ )
 ENDMACRO()
 
 # Automatically add header files
-FUNCTION( UTILS_AUTOHEADERS listname_ )
+FUNCTION( UTILS_AUTOHEADERS ioList )
 
-  SET( newlist_ ${${listname_}} )
-  FOREACH( file_ ${${listname_}} )
+  FOREACH( file_ ${${ioList}} )
     IF( file_ MATCHES .*\\.\(c|cpp\) )
       STRING( REGEX REPLACE \(c|cpp\)$ h header_ "${file_}" )
       IF( EXISTS ${header_} OR EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${header_} )
-        LIST( APPEND newlist_ "${header_}" )
+        LIST( APPEND files_ "${header_}" )
       ENDIF()
     ENDIF()
+    LIST( APPEND files_ "${file_}" )
   ENDFOREACH()
-  LIST( REMOVE_DUPLICATES newlist_ )
-  SET( ${listname_} ${newlist_} PARENT_SCOPE )
+  IF( DEFINED files_ )
+    LIST( REMOVE_DUPLICATES files_ )
+    SET( ${ioList} ${files_} PARENT_SCOPE )
+  ENDIF()
   
 ENDFUNCTION()
 

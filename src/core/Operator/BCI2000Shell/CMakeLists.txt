@@ -6,7 +6,7 @@
 # Set the executable name
 SET( NAME BCI2000Shell )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 
 SET( SRC_PROJECT
   main.cpp

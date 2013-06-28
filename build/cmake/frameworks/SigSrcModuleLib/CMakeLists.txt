@@ -12,23 +12,23 @@ SET( NAME BCI2000FrameworkSigSrcModule )
 SET( SRC_BCI2000_FRAMEWORK
   ${SRC_BCI2000_FRAMEWORK}
 
-  ${BCI2000_SRC_DIR}/shared/fileio/FileWriterBase.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/GenericFileWriter.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/NullFileWriter.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/FileWriterBase.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/GenericFileWriter.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/NullFileWriter.cpp
 
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000FileWriter.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/dat/BCI2000OutputFormat.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/dat/BCI2000FileWriter.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/dat/BCI2000OutputFormat.cpp
 
-  ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/EDFHeader.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/EDFFileWriter.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/EDFOutputBase.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/EDFOutputFormat.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/GDF.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/GDFFileWriter.cpp
-  ${BCI2000_SRC_DIR}/shared/fileio/edf_gdf/GDFOutputFormat.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/edf_gdf/EDFHeader.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/edf_gdf/EDFFileWriter.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/edf_gdf/EDFOutputBase.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/edf_gdf/EDFOutputFormat.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/edf_gdf/GDF.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/edf_gdf/GDFFileWriter.cpp
+  ${PROJECT_SRC_DIR}/shared/fileio/edf_gdf/GDFOutputFormat.cpp
 
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/BufferedADC.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/GenericADC.h
+  ${PROJECT_SRC_DIR}/shared/modules/signalsource/BufferedADC.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/signalsource/GenericADC.h
 )
 
 SET( SRC_BCI2000_FRAMEWORK
@@ -46,7 +46,7 @@ SET( SRC_BCI2000_FRAMEWORK
 LINK_DIRECTORIES( ${BCI2000_SIGSRCLIBDIRS} )
 
 # Create the library project
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/SigSrcModule.cmake )
+UTILS_INCLUDE( frameworks/SigSrcModule )
 BCI2000_ADD_REGISTRY( ${REGISTRY_NAME} SRC_BCI2000_FRAMEWORK DEPTARGETS )
 BCI2000_ADD_TARGET( INFO "Framework library" STATIC_LIBRARY ${NAME} ${BCI2000_SIGSRCDLLS} )
 

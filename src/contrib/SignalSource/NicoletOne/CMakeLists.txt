@@ -48,10 +48,10 @@ ADD_DEFINITIONS( -D_AFXDLL )
 SET( CMAKE_MFC_FLAG 2 )
 
 SET( LIBS_ ${LIBS} )
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 SET( LIBS ${LIBS_} )
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/CoreLib/CoreLibFiles.cmake )
-INCLUDE( ${BCI2000_CMAKE_DIR}/SignalSourceCommons.cmake )
+UTILS_INCLUDE( frameworks/CoreLib/CoreLibFiles )
+UTILS_INCLUDE( SignalSourceCommons )
 
 LINK_DIRECTORIES( ${BCI2000_SIGSRCLIBDIRS} )
 BCI2000_ADD_TARGET( INFO "Signal source module" WINAPP ${EXECUTABLE_NAME} ${SRC_PROJECT} ${HDR_PROJECT} )

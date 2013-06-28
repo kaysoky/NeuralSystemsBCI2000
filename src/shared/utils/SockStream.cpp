@@ -40,10 +40,8 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#ifdef __BORLANDC__
 # include "PCHIncludes.h"
 # pragma hdrstop
-#endif // __BORLANDC__
 
 #include "SockStream.h"
 
@@ -176,11 +174,13 @@ streamsock::set_address( const std::string& inIP, unsigned short inPort )
   m_address.sin_port = htons( inPort );
   in_addr& addr = m_address.sin_addr;
   if( inIP == "*" ) // A "*" as IP address means "any local address" (for bind() ).
-    addr.s_addr = INADDR_ANY;
+    addr.s_addr = htonl( INADDR_ANY );
+  else if( inIP == "localhost" ) // Make sure we don't get an external address from gethostbyname().
+    addr.s_addr = htonl( INADDR_LOOPBACK );
   else
   {
     addr.s_addr = ::inet_addr( inIP.c_str() );
-    if( addr.s_addr == INADDR_NONE )
+    if( addr.s_addr == htonl( INADDR_NONE ) )
     {
       ::hostent* host = ::gethostbyname( inIP.c_str() );
       result = ( host && host->h_addrtype == AF_INET && host->h_addr_list && *host->h_addr_list );
@@ -580,7 +580,7 @@ sending_udpsocket::do_open()
       return;
 
   sockaddr_in bind_addr = m_address;
-  bind_addr.sin_addr.s_addr = INADDR_ANY;
+  bind_addr.sin_addr.s_addr = htonl( INADDR_ANY );
   bind_addr.sin_port = 0;
   if( ( SOCKET_ERROR == ::bind( m_handle, (const sockaddr*)&bind_addr, sizeof( bind_addr ) ) )
       ||

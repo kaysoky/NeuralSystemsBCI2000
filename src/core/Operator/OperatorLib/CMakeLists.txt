@@ -50,7 +50,7 @@ IF( WIN32 )
   )
 ENDIF( WIN32 )
 
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/Core.cmake )
+UTILS_INCLUDE( frameworks/Core )
 
 # Add the executable to the project
 BCI2000_ADD_TARGET( INFO "Operator library" DLL ${NAME} ${SRC_PROJECT} )

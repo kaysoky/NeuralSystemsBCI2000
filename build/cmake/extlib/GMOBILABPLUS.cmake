@@ -15,28 +15,28 @@ ADD_DEFINITIONS( -DGMOBILABPLUS )
 
 # Set the final Source and headers
 SET( SRC_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.imports.cpp
+  ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.imports.cpp
 )
 
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.h
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.imports.h
+  ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.h
+  ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlabPlus/gMOBIlabplus.imports.h
 )
 
 # Define the include directory
 SET( INC_EXTLIB 
-  ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus 
+  ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlabPlus 
 )
 
 # Define where the library is
 IF( BORLAND )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/omf )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlabPlus/omf )
 ENDIF( BORLAND )
 IF( MSVC )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/coff )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlabPlus/coff )
 ENDIF( MSVC )
 IF( MINGW )
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/gtec/gMOBIlabPlus/mingw )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/gtec/gMOBIlabPlus/mingw )
 ENDIF( MINGW )
 
 # Set Libs required

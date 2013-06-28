@@ -11,49 +11,49 @@ SET( NAME BCI2000FrameworkAppModule )
 SET( SRC_BCI2000_FRAMEWORK 
   ${SRC_BCI2000_FRAMEWORK}
 
-  ${BCI2000_SRC_DIR}/shared/gui/GraphObject.cpp
-  ${BCI2000_SRC_DIR}/shared/gui/DisplayWindow.cpp
-  ${BCI2000_SRC_DIR}/shared/gui/GraphDisplay.cpp
-  ${BCI2000_SRC_DIR}/shared/gui/TextField.cpp
-  ${BCI2000_SRC_DIR}/shared/gui/GUI.cpp
-  ${BCI2000_SRC_DIR}/shared/gui/Shapes.cpp
+  ${PROJECT_SRC_DIR}/shared/gui/GraphObject.cpp
+  ${PROJECT_SRC_DIR}/shared/gui/DisplayWindow.cpp
+  ${PROJECT_SRC_DIR}/shared/gui/GraphDisplay.cpp
+  ${PROJECT_SRC_DIR}/shared/gui/TextField.cpp
+  ${PROJECT_SRC_DIR}/shared/gui/GUI.cpp
+  ${PROJECT_SRC_DIR}/shared/gui/Shapes.cpp
 
-  ${BCI2000_SRC_DIR}/shared/modules/application/ApplicationBase.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/StimulusTask.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/FeedbackTask.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/ApplicationBase.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/StimulusTask.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/FeedbackTask.cpp
 
-  ${BCI2000_SRC_DIR}/shared/modules/application/audio/WavePlayer.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/audio/TextToSpeech.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/audio/WavePlayer.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/audio/TextToSpeech.cpp
 
-  ${BCI2000_SRC_DIR}/shared/modules/application/gui/ApplicationWindow.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/gui/TextWindow.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/gui/StatusBar.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/gui/ApplicationWindow.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/gui/TextWindow.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/gui/StatusBar.cpp
 
-  ${BCI2000_SRC_DIR}/shared/modules/application/utils/TrialStatistics.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/utils/BlockRandSeq.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/utils/Localization.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/utils/TrialStatistics.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/utils/BlockRandSeq.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/utils/Localization.cpp
 
-  ${BCI2000_SRC_DIR}/shared/modules/application/stimuli/Association.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/stimuli/AudioStimulus.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/stimuli/ImageStimulus.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/stimuli/TextStimulus.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/stimuli/VisualStimulus.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/stimuli/SpeechStimulus.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/stimuli/SoundStimulus.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/stimuli/Association.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/stimuli/AudioStimulus.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/stimuli/ImageStimulus.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/stimuli/TextStimulus.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/stimuli/VisualStimulus.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/stimuli/SpeechStimulus.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/stimuli/SoundStimulus.cpp
 
-  ${BCI2000_SRC_DIR}/shared/modules/application/speller/SpellerCommand.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/speller/Speller.cpp
-  ${BCI2000_SRC_DIR}/shared/modules/application/speller/AudioSpellerTarget.h
+  ${PROJECT_SRC_DIR}/shared/modules/application/speller/SpellerCommand.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/speller/Speller.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/speller/AudioSpellerTarget.h
 )
 
 IF( WIN32 )
   SET( SRC_BCI2000_FRAMEWORK 
     ${SRC_BCI2000_FRAMEWORK}
-    ${BCI2000_SRC_DIR}/shared/modules/application/audio/MidiPlayer.cpp
+    ${PROJECT_SRC_DIR}/shared/modules/application/audio/MidiPlayer.cpp
   )
 ENDIF( WIN32 )
 
-BCI2000_ADD_RESOURCE( EmptyWaveFile ${BCI2000_SRC_DIR}/shared/modules/application/audio/Empty.wav )
+BCI2000_ADD_RESOURCE( EmptyWaveFile ${PROJECT_SRC_DIR}/shared/modules/application/audio/Empty.wav )
 
 # Add global application files
 SET( SRC_BCI2000_FRAMEWORK
@@ -75,7 +75,7 @@ BCI2000_INCLUDE( "PORTAUDIO" )
 BCI2000_INCLUDE( "3DAPI" )
 
 # Create the library project
-INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/AppModule.cmake )
+UTILS_INCLUDE( frameworks/AppModule )
 BCI2000_ADD_REGISTRY( ${REGISTRY_NAME} SRC_BCI2000_FRAMEWORK DEPTARGETS )
 BCI2000_ADD_TARGET( INFO "Framework library" STATIC_LIBRARY ${NAME} )
 

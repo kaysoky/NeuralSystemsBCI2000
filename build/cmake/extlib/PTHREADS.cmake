@@ -14,18 +14,18 @@ IF( WIN32 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8 )
 # Set the Source and headers
 SET( SRC_EXTLIB )
 SET( HDR_EXTLIB
-  ${BCI2000_SRC_DIR}/extlib/fieldtrip/pthreads-win32/include/pthread.h
-  ${BCI2000_SRC_DIR}/extlib/fieldtrip/pthreads-win32/include/sched.h
-  ${BCI2000_SRC_DIR}/extlib/fieldtrip/pthreads-win32/include/semaphore.h
+  ${PROJECT_SRC_DIR}/extlib/fieldtrip/pthreads-win32/include/pthread.h
+  ${PROJECT_SRC_DIR}/extlib/fieldtrip/pthreads-win32/include/sched.h
+  ${PROJECT_SRC_DIR}/extlib/fieldtrip/pthreads-win32/include/semaphore.h
 )
 
 # Define the include directory
 SET( INC_EXTLIB 
-  ${BCI2000_SRC_DIR}/extlib/fieldtrip/pthreads-win32/include
+  ${PROJECT_SRC_DIR}/extlib/fieldtrip/pthreads-win32/include
 )
 
 # Define where the library is
-SET( LIBDIR_EXTLIB ${BCI2000_SRC_DIR}/extlib/fieldtrip/pthreads-win32/lib )
+SET( LIBDIR_EXTLIB ${PROJECT_SRC_DIR}/extlib/fieldtrip/pthreads-win32/lib )
 
 # Set Libs required
 IF( MINGW )

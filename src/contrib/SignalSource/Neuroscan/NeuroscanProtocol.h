@@ -155,11 +155,11 @@ class NscPacketHeader
       mDataSize( 0 )
     {
     };
-    NscPacketHeader( int id, int code, int value, int dataSize = 0 )
+    NscPacketHeader( int id, int code, int value, size_t dataSize = 0 )
     : mId( id ),
       mCode( code ),
       mValue( value ),
-      mDataSize( dataSize )
+      mDataSize( static_cast<int32_t>( dataSize ) )
     {
     };
     bool operator<( const NscPacketHeader& n ) const
