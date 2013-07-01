@@ -3,12 +3,12 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Find Qt4
 
-SET( TRY_INTERNAL_QT
+SET( TRY_PRECOMP_QT
   "4.8.4"
   "4.7.0"
 )
 
-SET( internalqt_ QT_${PROJECT_NAME} )
+SET( precompqt_ QT_${PROJECT_NAME} )
 
 FUNCTION( CLEAR_QT_VARIABLES )
 
@@ -22,44 +22,44 @@ FUNCTION( CLEAR_QT_VARIABLES )
 ENDFUNCTION()
 
 
-FUNCTION( DOWNLOAD_EXTRACT_QT qtver arch qmake )
+FUNCTION( GET_EXTRACT_QT qtver arch qmake )
 
-  SET( qturl "http://${PROJECT_DOMAIN}/externals/qt/qt-${qtver}.${arch}" )
+  SET( qtfile "qt/qt-${qtver}.${arch}" )
   SET( basedir "${PROJECT_BUILD_DIR}/extlib" )
   SET( qtdir "${basedir}/qt-${qtver}" )
-  SET( qttemp "${qtdir}/qttemp.exe" )
-  FILE( REMOVE "${qttemp}" )
+  
   IF( NOT EXISTS "${qtdir}/${arch}" )
-
-    MESSAGE( STATUS "Checking availability of qt-${qtver}.${arch} ..." )
-    FILE( DOWNLOAD "${qturl}" "${qttemp}" TIMEOUT 20 INACTIVITY_TIMEOUT 300 STATUS result SHOW_PROGRESS )
-    IF( NOT result EQUAL 0 )
-      MESSAGE( STATUS "qt-${qtver}.${arch} is not available, you may need to manually install Qt on your machine." )
+    SET( qttemp "${qtdir}/qttemp.exe" )
+    FILE( REMOVE "${qttemp}" )
+    UTILS_GET_EXTERNAL( "${qtfile}" qttemp )
+    IF( NOT qttemp )
+      SET( qmake_ ${qttemp} )
     ELSE()
-      IF( NOT EXISTS "${qttemp}" )
-        MESSAGE( FATAL_ERROR "Could not download file: ${qturl}" )
-      ELSE()
-        MESSAGE( STATUS "Extracting ..." )
-        EXECUTE_PROCESS( COMMAND "${qttemp}" -y "-o${basedir}" RESULT_VARIABLE sfxresult )
-        IF( NOT sfxresult EQUAL 0 )
-          MESSAGE( FATAL_ERROR "Could not extract qt, error is: ${sfxresult}" )
-        ENDIF()
+      MESSAGE( STATUS "Setting up ${qtfile} ..." )
+      EXECUTE_PROCESS( COMMAND "${qttemp}" -y "-o${basedir}" RESULT_VARIABLE sfxresult )
+      IF( NOT sfxresult EQUAL 0 )
+        MESSAGE( FATAL_ERROR "Could not extract ${qttemp}, error is: ${sfxresult}" )
       ENDIF()
-    ENDIF()
-    
+    ENDIF()    
   ENDIF()
 
-  SET( qmake_ "${qtdir}/${arch}/bin/qmake" )
-  IF( arch MATCHES "win.*" )
-    SET( qmake_ "${qmake_}.exe" )
+  IF( EXISTS "${qtdir}/${arch}" )
+    SET( qmake_ "${qtdir}/${arch}/bin/qmake" )
+    IF( arch MATCHES "win.*" )
+      SET( qmake_ "${qmake_}.exe" )
+    ENDIF()
+    IF( NOT EXISTS "${qmake_}" )
+      SET( qmake_ TRUE )
+    ENDIF()
   ENDIF()
   SET( ${qmake} "${qmake_}" PARENT_SCOPE )  
 
 ENDFUNCTION()
 
 
-FUNCTION( GET_QT_FROM_SERVER qtver )
+FUNCTION( GET_PRECOMP_QT qtver outResult )
 
+  SET( result NOTFOUND )
   IF( WIN32 )
     IF( CMAKE_SIZEOF_VOID_P EQUAL 4 )
       SET( arch "win32" )
@@ -82,19 +82,55 @@ FUNCTION( GET_QT_FROM_SERVER qtver )
   ENDIF()
 
   IF( arch AND cc )
-    SET( arch "${arch}-${cc}" )
-    DOWNLOAD_EXTRACT_QT( ${qtver} "${arch}" qmake_ )
+    GET_EXTRACT_QT( ${qtver} "include" result )
+    IF( result )
+      GET_EXTRACT_QT( ${qtver} "${arch}-${cc}" result )
+    ENDIF()
 
-    IF( qmake_ AND EXISTS "${qmake_}" )
+    IF( result )
       IF( NOT QT_QMAKE_EXECUTABLE OR NOT QT_QMAKE_EXECUTABLE STREQUAL qmake_ )
         CLEAR_QT_VARIABLES()
       ENDIF()
 
-      DOWNLOAD_EXTRACT_QT( ${qtver} "include" ignore )
       SET( ENV{QMAKESPEC} "${qtarch}-${cc}" )
-      SET( QT_QMAKE_EXECUTABLE "${qmake_}" CACHE FILEPATH "" FORCE )
-      SET( QT_BCI2000 TRUE CACHE INTERNAL "" FORCE )
-      MARK_AS_ADVANCED( FORCE QT_QMAKE_EXECUTABLE ${internalqt_} )
+      SET( QT_QMAKE_EXECUTABLE "${result}" CACHE FILEPATH "" FORCE )
+      MARK_AS_ADVANCED( FORCE QT_QMAKE_EXECUTABLE )
+    ENDIF()
+  ENDIF()
+  SET( ${outResult} "${result}" PARENT_SCOPE )
+
+ENDFUNCTION()
+
+
+FUNCTION( FIND_PRECOMP_QT outResult )
+
+  SET( ${outResult} NOTFOUND PARENT_SCOPE )
+  SET( ${precompqt_} FALSE CACHE INTERNAL "" FORCE )
+  MARK_AS_ADVANCED( FORCE ${precompqt_} )
+  FOREACH( qtver_ ${TRY_PRECOMP_QT} )
+    GET_PRECOMP_QT( ${qtver_} result )
+    SET( ${outResult} "${result}" PARENT_SCOPE )
+    IF( result )
+      SET( ${precompqt_} TRUE CACHE INTERNAL "" FORCE )
+      RETURN()
+    ENDIF()
+  ENDFOREACH()  
+
+ENDFUNCTION()
+
+
+FUNCTION( GET_QT_VERSION outVer )
+
+  SET( ${outVer} NOTFOUND PARENT_SCOPE )
+  IF( EXISTS ${QT_QMAKE_EXECUTABLE} )
+    EXECUTE_PROCESS(
+      COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_VERSION
+      OUTPUT_VARIABLE ver
+      RESULT_VARIABLE result
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    IF( result EQUAL 0 )
+      SET( ${outVer} ${ver} PARENT_SCOPE )
     ENDIF()
   ENDIF()
 
@@ -103,16 +139,32 @@ ENDFUNCTION()
 
 ## Main
 
-IF( USE_EXTERNAL_QT AND ${internalqt_} )
+SET( result_ )
+IF( USE_EXTERNAL_QT AND ${precompqt_} )
   CLEAR_QT_VARIABLES()
 ENDIF()
 IF( NOT USE_EXTERNAL_QT )
-  SET( ${internalqt_} FALSE CACHE INTERNAL "" FORCE ) 
-  FOREACH( qtver_ ${TRY_INTERNAL_QT} )
-    IF( NOT ${internalqt_} )
-      GET_QT_FROM_SERVER( ${qtver_} )
-    ENDIF()
-  ENDFOREACH()
+  FIND_PRECOMP_QT( result_ )
+ENDIF()
+LIST( GET TRY_PRECOMP_QT -1 qtmin_ )
+FIND_PACKAGE( Qt4 ${qtmin_} )
+GET_QT_VERSION( qtver_ )
+
+IF( NOT qtver_ OR qtver_ VERSION_LESS qtmin_ )
+  IF( "${result_}" STREQUAL CANTCONNECT-NOTFOUND )
+    UTILS_FATAL_ERROR(
+      "Pre-compiled Qt libraries could not be downloaded because no connection to ${PROJECT_DOMAIN} could be made.\n"
+      "NOTE: If you need to configure ${PROJECT_NAME} without an internet connection, do a checkout "
+      "from \"offline/trunk/\" rather than \"trunk/\"."
+    )
+  ELSEIF( "${result_}" STREQUAL NOTFOUND )
+    UTILS_FATAL_ERROR(
+      "There is no precompiled version of Qt available for your platform/compiler.\n"
+      "You will need to install Qt >=${qtmin_} on your machine in order to build ${PROJECT_NAME}."
+    )
+  ELSE()
+    UTILS_FATAL_ERROR( "Qt >=${qtmin_} must be available to build ${PROJECT_NAME}." )
+  ENDIF()
 ENDIF()
 
 SET( doc_ 
@@ -120,11 +172,9 @@ SET( doc_
   Note that this may introduce various run-time dependencies which will be difficult
   to manage when deploying the resulting executables."
 )
-IF( ${internalqt_} )
+IF( ${precompqt_} )
   OPTION( USE_EXTERNAL_QT "${doc_}" OFF )
 ELSE()
   SET( USE_EXTERNAL_QT ON CACHE BOOL "${doc_}" FORCE )
 ENDIF()
 
-LIST( GET TRY_INTERNAL_QT -1 qtmin_ )
-FIND_PACKAGE( Qt4 ${qtmin_} REQUIRED )

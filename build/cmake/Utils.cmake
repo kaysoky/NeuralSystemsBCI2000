@@ -74,6 +74,13 @@ FUNCTION( UTILS_CONFIG_STATUS )
   ENDIF()
 ENDFUNCTION()
 
+FUNCTION( UTILS_FATAL_ERROR )
+  IF( CONFIG_VERBOSE )
+    MESSAGE( ${ARGV} "\n" )
+  ENDIF()
+  MESSAGE( FATAL_ERROR ${ARGV} "\n" )
+ENDFUNCTION()
+
 ### Functions
 
 # Include a file from the utils directory
@@ -232,4 +239,53 @@ FUNCTION( UTILS_MATCH_SUBDIR inExpr inDir )
       RETURN()
     ENDIF()
   ENDFOREACH()
+ENDFUNCTION()
+
+
+# Get an external file from a local cache, or from the net.
+FUNCTION( UTILS_GET_EXTERNAL inFile ioTempVar )
+
+  MESSAGE( STATUS "Looking for ${inFile} ..." )
+  SET( cachedfile "${CMAKE_SOURCE_DIR}/download_cache/${inFile}" )
+  SET( can_connect FALSE )
+  IF( EXISTS "${cachedfile}" )
+    UTILS_CONFIG_STATUS( "... found locally at ${cachedfile}" )
+  ELSE()
+    SET( urlbase "http://${PROJECT_DOMAIN}/externals" )
+    SET( url "${urlbase}/${inFile}" )
+    # Try a direct download
+    FILE( DOWNLOAD "${urlbase}" "${cachedfile}" TIMEOUT 20 INACTIVITY_TIMEOUT 300 STATUS result )
+    IF( result EQUAL 0 )
+      SET( can_connect TRUE )
+      FILE( DOWNLOAD "${url}" "${cachedfile}" TIMEOUT 20 INACTIVITY_TIMEOUT 300 STATUS result SHOW_PROGRESS )
+    ELSE()
+      EXECUTE_PROCESS( COMMAND svn list "${urlbase}" TIMEOUT 60 RESULT_VARIABLE result OUTPUT_QUIET ERROR_QUIET  )
+      IF( result EQUAL 0 )
+        SET( can_connect TRUE )
+        EXECUTE_PROCESS( COMMAND svn list "${url}" TIMEOUT 60 RESULT_VARIABLE result OUTPUT_QUIET ERROR_QUIET  )
+        IF( result EQUAL 0 )
+          FILE( WRITE "${cachedfile}" "" ) # ensure parent directory
+          UTILS_CONFIG_STATUS( "... found at ${url}, downloading ..." )
+          EXECUTE_PROCESS( COMMAND svn cat "${url}" TIMEOUT 60 RESULT_VARIABLE result OUTPUT_FILE "${cachedfile}" ERROR_QUIET )
+        ENDIF()
+      ENDIF()
+    ENDIF()
+    IF( NOT result EQUAL 0 )
+      FILE( REMOVE "${cachedfile}" )
+      IF( can_connect )
+        UTILS_CONFIG_STATUS( "... not found." )
+      ELSE()
+        UTILS_CONFIG_STATUS( "... connection failed." )
+      ENDIF()
+    ENDIF()
+  ENDIF()
+
+  IF( EXISTS "${cachedfile}" )
+    EXECUTE_PROCESS( COMMAND "${CMAKE_COMMAND}" -E copy "${cachedfile}" "${${ioTempVar}}" )
+  ELSEIF( can_connect )
+    SET( ${ioTempVar} NOTFOUND PARENT_SCOPE )
+  ELSE()
+    SET( ${ioTempVar} CANTCONNECT-NOTFOUND PARENT_SCOPE )
+  ENDIF()
+  
 ENDFUNCTION()
