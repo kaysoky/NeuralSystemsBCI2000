@@ -1,5 +1,0 @@
-Filtering:ExpressionFilter 	matrix 	Expressions= 		2 1 Signal(1,1) Signal(2,1) // expressions used to compute the output of the ExpressionFilter (rows are channels; empty matrix for none)
-Filtering:Normalizer 		intlist Adaptation= 		2 2 2 0 0 2 // 0: no adaptation, 1: zero mean, 2: zero mean, unit variance (enumeration)
-Filtering:Normalizer 		matrix 	BufferConditions= 	2 2 (TargetCode==1)&&(Feedback==1) (TargetCode==1)&&(Feedback==1) (TargetCode==2)&&(Feedback==1) (TargetCode==2)&&(Feedback==1) // expressions corresponding to data buffers (columns correspond to output channels, multiple rows correspond to multiple buffers)
-Filtering:Normalizer 		float 	BufferLength= 		40s 9s % % // time window of past data per buffer that enters into statistic
-Filtering:Normalizer 		string 	UpdateTrigger= 		Feedback==0 // expression to trigger offset/gain update when changing from 0 (use empty string for continuous update)

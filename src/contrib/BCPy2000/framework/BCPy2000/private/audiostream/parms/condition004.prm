@@ -1,2 +1,0 @@
-PythonSig:Streams                             matrix    StreamStimuli=          2 { Standard Target } ../sounds/ticktock/tick.wav 20msec   ../sounds/ticktock/tock.wav 20msec  //
-PythonSig:Streams                             floatlist StreamVolumes=            2       0.2      0.2  //

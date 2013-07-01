@@ -1,3 +1,0 @@
-PythonSig:Epoch                               list      TriggerChannels=             0             // 
-PythonSig:Streams                             int       SurroundSoundTrigger=        0             // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)
-PythonSig:Streams                             matrix    SoundChannels=         4 3   1 % S1   % 1 S2   1 % F   % 1 F  // if checked, deliver the trigger signal in sound channels 3 and 4 (boolean)

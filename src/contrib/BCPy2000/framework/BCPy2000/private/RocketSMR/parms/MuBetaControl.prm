@@ -1,2 +1,0 @@
-PythonApp:Settings 		string 	PaddleExpression= 			(Signal(2,1)-Signal(1,1))*2 // Signal to use for paddle speed
-PythonApp:Settings 		int 	UseDirectWiimoteControl= 	0 // use direct control via Wiimotes (boolean)

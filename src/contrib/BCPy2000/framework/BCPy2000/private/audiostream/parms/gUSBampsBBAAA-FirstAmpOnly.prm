@@ -1,2 +1,0 @@
-Source:gUSBampADC                             string    DeviceIDMaster=             UB-2009.04.10  // deviceID for the device whose SYNC goes to the slaves
-Source:gUSBampADC                             list      DeviceIDs=             1    UB-2009.04.10 UB-2009.04.11 UA-2007.02.02 UA-2007.04.10 UA-2007.10.37    // list of USBamps to be used (or auto)
