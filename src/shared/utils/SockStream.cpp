@@ -40,9 +40,6 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-# include "PCHIncludes.h"
-# pragma hdrstop
-
 #include "SockStream.h"
 
 #ifdef _WIN32
