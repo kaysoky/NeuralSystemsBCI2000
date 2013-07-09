@@ -30,7 +30,6 @@
 #include "lib/Enobio3G.h"
 #include "EnobioStatusConsumer.h"
 #include "EnobioDataConsumer.h"
-//#include "IIRFilter.h"
 class Enobio_ADC : public GenericADC
 {
 public:

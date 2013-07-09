@@ -54,11 +54,6 @@ mSampleBlockSize(0){
 		"// the signal sampling rate",
     "Source string BluetoothMAC= 00:07:80:00:00:00 % % % "
     "// Bluetooth MAC address",
-		"Source intlist EEGChList=  8   1 2 3 4 5 6 7 8 % 1 8 "
-		"// list of physical channel indices for the EEG channels in use",
-		"Source intlist TriggerChList= 8  1 2 3 4 5 6 7 8  % 1 8 "
-		"// list of one-bit trigger channels to append to the end (included in the SourceCh total)"
-		" or a single 0 to acquire all trigger channels as a single 16-bit channel",
 		"Source:Signal%20Properties:DataIOFilter floatlist SourceChOffset=  8  0 0 0 0 0 0 0 0 0 % % "
 		"// offset for channels in A/D units",
 		"Source:Signal%20Properties:DataIOFilter floatlist SourceChGain=    8  0.001 0.001 0.001 0.001 0.001 0.001 0.001 0.001 0.001 % % "
