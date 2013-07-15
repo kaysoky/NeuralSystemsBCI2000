@@ -37,6 +37,10 @@ double MeasurementUnits::sSampleBlockSize = 1.0;
 PhysicalUnit MeasurementUnits::sTimeUnit;
 PhysicalUnit MeasurementUnits::sFreqUnit;
 PhysicalUnit MeasurementUnits::sVoltageUnit;
+
+typedef vector< SharedPointer<Runnable> > CallbackList;
+static CallbackList sCallbacks;
+
 bool ignored = MeasurementUnits::PreInitialize();
 
 bool
@@ -76,6 +80,15 @@ MeasurementUnits::Initialize( const ParamList& inParams )
   }
   // Set the unit for raw numbers representing time to multiples of sample block duration.
   sTimeUnit.SetOffset( 0 ).SetGain( sSampleBlockSize / sSamplingRate ).SetSymbol( "s" );
+
+  for( CallbackList::iterator i = sCallbacks.begin(); i != sCallbacks.end(); ++i )
+    (*i)->Run();
+}
+
+void
+MeasurementUnits::AddInitializeCallback( const SharedPointer<Runnable>& r )
+{
+  sCallbacks.push_back( r );
 }
 
 #if MEASUREMENT_UNITS_BACK_COMPAT

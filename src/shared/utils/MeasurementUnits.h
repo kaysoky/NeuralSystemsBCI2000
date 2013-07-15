@@ -29,6 +29,8 @@
 #include "PhysicalUnit.h"
 #include "SignalProperties.h"
 #include "ParamList.h"
+#include "Runnable.h"
+#include "SharedPointer.h"
 #include <string>
 
 #define MEASUREMENT_UNITS_BACK_COMPAT 1
@@ -70,6 +72,7 @@ class MeasurementUnits
 
     static bool PreInitialize();
     static void Initialize( const ParamList& );
+    static void AddInitializeCallback( const SharedPointer<Runnable>& );
 
 #if MEASUREMENT_UNITS_BACK_COMPAT
     // These functions are deprecated, as their names are ambiguous:

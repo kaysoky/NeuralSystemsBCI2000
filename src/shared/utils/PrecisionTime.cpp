@@ -51,13 +51,17 @@ GetPrecTimeBase()
   return result;
 }
 
-static LARGE_INTEGER sPrecTimeBase = GetPrecTimeBase();
+static LARGE_INTEGER sPrecTimeBase = { 0 };
 
 PrecisionTime
 PrecisionTime::Now()
 {
   if( sPrecTimeBase.QuadPart == 0 )
-    throw std_runtime_error( "Your system does not provide a high precision timer" );
+  {
+    sPrecTimeBase = GetPrecTimeBase();
+    if( sPrecTimeBase.QuadPart == 0 )
+      throw std_runtime_error( "Your system does not provide a high precision timer" );
+  }
   // Get the current time from the Windows precision timer.
   LARGE_INTEGER prectime;
   if( !::QueryPerformanceCounter( &prectime ) )

@@ -49,17 +49,17 @@ ConnectionInfo::~ConnectionInfo()
 void
 ConnectionInfo::UpdateDisplay()
 {
-  const char* p = NULL;
+  const char* p = 0;
   p = BCI_GetConnectionInfo( 0 );
-  m_ui->label_Source->setText( p );
+  m_ui->label_Source->setText( p ? p : "<n/a>" );
   BCI_ReleaseObject( p );
 
   p = BCI_GetConnectionInfo( 1 );
-  m_ui->label_SigProc->setText( p );
+  m_ui->label_SigProc->setText( p ? p : "<n/a>" );
   BCI_ReleaseObject( p );
 
   p = BCI_GetConnectionInfo( 2 );
-  m_ui->label_App->setText( p );
+  m_ui->label_App->setText( p ? p : "<n/a>" );
   BCI_ReleaseObject( p );
 }
 

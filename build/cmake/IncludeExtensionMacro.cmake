@@ -13,13 +13,13 @@ MACRO( INCLUDE_EXTENSION NAME DIR)
   SET( BCI2000_EXTENSION_DIR "${DIR}" )
   IF( ${SETTINGVAL} )
     UTILS_CONFIG_STATUS(
-      "Including custom extension ${NAME} "
+      "Including custom extension ${NAME}\n"
       "---- (to disable, set ${SETTINGNAME} to OFF)"
     )
     INCLUDE( "${BCI2000_EXTENSION_DIR}/IncludeExtension.cmake" )
   ELSE()
     UTILS_CONFIG_STATUS(
-      "Skipping custom extension ${NAME} "
+      "Skipping custom extension ${NAME}\n"
       "---- (to enable, set ${SETTINGNAME} to ON)"
     )
   ENDIF( ${SETTINGVAL} )

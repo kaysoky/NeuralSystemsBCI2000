@@ -50,8 +50,8 @@ class ExceptionCatcher
  private:
   bool Run1( Runnable& );
   bool Run2( Runnable& );
-  void ReportWin32Exception( int code );
   void ReportSignal( int code );
+  void ReportWin32Exception( const struct Win32Exception& );
   std::string UserMessage() const;
 
  private:

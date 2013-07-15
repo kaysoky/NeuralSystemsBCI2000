@@ -66,16 +66,15 @@ CoreModule::CoreModule()
   mStopSent( false ),
   mNeedStopRun( false ),
   mGlobalID( NULL ),
-  mSampleBlockSize( 0 ),
   mOperatorBackLink( false ),
   mAutoConfig( false )
-#if _WIN32
-, mFPMask( cDisabledFPExceptions )
-#endif // _WIN32
 {
   mOperatorSocket.set_tcpnodelay( true );
   mNextModuleSocket.set_tcpnodelay( true );
   mPreviousModuleSocket.set_tcpnodelay( true );
+
+  SharedPointer<Runnable> p( new MemberCall<void(CoreModule*)>( &CoreModule::InitializeStatevector, this ) );
+  MeasurementUnits::AddInitializeCallback( p );
 }
 
 CoreModule::~CoreModule()
@@ -445,6 +444,20 @@ CoreModule::ShutdownSystem()
 }
 
 void
+CoreModule::InitializeStatevector()
+{
+  int sampleBlockSize = ::atoi( mParamlist["SampleBlockSize"].Value().c_str() );
+  if( sampleBlockSize > 0 && sampleBlockSize + 1 != mStatevector.Samples() )
+  {
+    // The state vector holds an additional sample which is used to initialize
+    // the subsequent state vector at the beginning of a new block.
+    mStatevector = StateVector( mStatelist, sampleBlockSize + 1 );
+    mInitialStatevector = mStatevector;
+    mStatevector.CommitStateChanges();
+  }
+}
+
+void
 CoreModule::ResetStatevector()
 {
   mStatevector = mInitialStatevector;
@@ -465,6 +478,7 @@ CoreModule::InitializeFilterChain( const SignalProperties& Input )
   AutoConfigFilters();
   if( bcierr__.Empty() )
     InitializeFilters();
+
 #if IS_FIRST_MODULE
   mResting = bcierr__.Empty();
 #endif
@@ -811,20 +825,8 @@ CoreModule::HandleSysCommand( istream& is )
   SysCommand s;
   if( s.ReadBinary( is ) )
   {
-    if( mParamlist.Exists( "SampleBlockSize" ) )
-      mSampleBlockSize = ::atoi( mParamlist["SampleBlockSize"].Value().c_str() );
-
     if( s == SysCommand::EndOfState )
     {
-      // This happens during the first initialization only.
-      if( mStatevector.Length() > 0 )
-        bcierr << "Unexpected SysCommand::EndOfState message" << endl;
-      // The state vector holds an additional sample which is used to initialize
-      // the subsequent state vector at the beginning of a new block.
-      bciassert( mSampleBlockSize > 0 );
-      mStatevector = StateVector( mStatelist, mSampleBlockSize + 1 );
-      mInitialStatevector = mStatevector;
-      mStatevector.CommitStateChanges();
       InitializeCoreConnections();
     }
     else if( s == SysCommand::EndOfParameter )
@@ -846,5 +848,3 @@ CoreModule::HandleSysCommand( istream& is )
   }
   return is ? true : false;
 }
-
-

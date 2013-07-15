@@ -293,6 +293,9 @@ class EnvironmentBase
   // The Parameter()/OptionalParameter() functions allow access to parameters by name.
   MutableParamRef Parameter( const std::string& name );
   ParamRef Parameter( const std::string& name ) const;
+#if 1
+  ParamRef ActualParameter( const std::string& name ) const;
+#endif
   MutableParamRef OptionalParameter( const std::string& name,
                                      const std::string& defaultValue = "" );
   ParamRef OptionalParameter( const std::string& name,
@@ -309,7 +312,8 @@ class EnvironmentBase
   #define AutoConfig_
 
  private:
-  Param* ParamAccess( const std::string& name, bool optional = false ) const;
+  enum ParamAccessFlags { none = 0, optional = 1, actual = 2 };
+  Param* ParamAccess( const std::string& name, int flags = none ) const;
   virtual void OnParamAccess( const std::string& name ) const {}
 
   bool mAutoConfig;

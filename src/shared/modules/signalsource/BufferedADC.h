@@ -6,6 +6,9 @@
 //   To interface with an ADC, you need to implement the following functions:
 //     Constructor:
 //       Define configuration parameters as done in BCI2000 filters.
+//     OnAutoConfig()
+//       The standard AutoConfig() function as documented for BCI2000 filters,
+//       except that it takes no input argument.
 //     OnPreflight( SignalProperties& output )
 //       The standard Preflight() function as documented for BCI2000 filters
 //       except that it takes a single output signal properties argument, and
@@ -73,6 +76,7 @@ class BufferedADC : public GenericADC, private OSThread
  public:
   virtual ~BufferedADC();
   // GenericFilter inherited functions.
+  virtual void AutoConfig( const SignalProperties& );
   virtual void Preflight( const SignalProperties&,
                                 SignalProperties& ) const;
   virtual void Initialize( const SignalProperties&,
@@ -90,15 +94,29 @@ class BufferedADC : public GenericADC, private OSThread
   static const char StateMark = '@'; // Set a channel's name to "@MyState" in order to have its content copied into state "MyState".
   void Error( const std::string& );
   // Virtual data acquisition interface.
+  virtual void OnAutoConfig() {}
   virtual void OnPreflight( SignalProperties& ) const = 0;
   virtual void OnInitialize( const SignalProperties& ) = 0;
   virtual void OnProcess() {}
   virtual void OnStartAcquisition() = 0;
   virtual void OnStopAcquisition() = 0;
-  virtual void DoAcquire( GenericSignal& ) = 0;
+  virtual void DoAcquire( GenericSignal& ) {};
   virtual void OnHalt() {}
+  // When using a callback interface rather than blocking reads, then
+  // 1) Don't implement DoAcquire().
+  // 2) Override UseAcquisitionThread() to return false.
+  virtual bool UseAcquisitionThread() const { return true; }
+  // 3) In your callback function, call GetBuffer() before writing data.
+  GenericSignal* GetBuffer();
+  // 4) Call ReleaseBuffer() to indicate that you are done writing to a
+  //    buffer.
+  void ReleaseBuffer( GenericSignal* );
 
  private:
+  void StartAcquisition();
+  void StopAcquisition();
+  bool IsAcquiring() const;
+
   virtual int OnExecute();
 
   std::vector<GenericSignal> mBuffer;
@@ -109,7 +127,7 @@ class BufferedADC : public GenericADC, private OSThread
   OSMutex                    mMutex;
   OSEvent                    mAcquisitionDone;
   mutable SignalProperties   mAcquisitionProperties;
+  bool                       mAcquiring;
 };
 
 #endif // BUFFERED_ADC_H
-

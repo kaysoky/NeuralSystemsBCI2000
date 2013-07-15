@@ -32,11 +32,44 @@
 
 #include "BCIStream.h"
 #include "ThreadUtils.h"
+#include "OSThread.h"
 #include "ParamList.h"
 #include "ParamRef.h"
+#include <set>
+#include <ctime>
 
 using namespace std;
 using namespace BCIStream;
+
+namespace BCIStream {
+
+class MessageDispatcher : public Dispatcher, private OSThread
+{
+  static const int cMaxTimeDiff = 1; // s
+
+ public:
+  MessageDispatcher();
+  ~MessageDispatcher();
+
+ protected:
+  void OnFilter( BCIStream::Action&, string& );
+  void OnCompress( BCIStream::Action, const string& );
+
+  int OnExecute();
+
+ private:
+  void ReportRepetitions();
+
+  static set<MessageDispatcher*>& Instances();
+  static OSMutex& GlobalMutex();
+
+  int mCount;
+  time_t mLastTime;
+  BCIStream::Action mPrevAction;
+  string mPrevMessage;
+};
+
+} // namespace
 
 // Make sure ios_base is properly initialized before our OutStreams are
 // constructed.
@@ -63,35 +96,34 @@ BCIStream::Apply( const ParamList& p )
     bcidbg.SetVerbosity( p( "DebugLevel" ) );
 }
 
-void
-OutStream::MessageFilter( OutStream::FlushHandler& ioHandler, string& ioMessage )
-{
-  if( !ioMessage.empty() && *ioMessage.rbegin() == '\n' )
-    ioMessage.erase( ioMessage.length() - 1 );
-  if( !ioMessage.empty() && !::ispunct( *ioMessage.rbegin() ) )
-    ioMessage += '.';
-
-  if( ioHandler == &Warning || ioHandler == &PlainMessage )
-  {
-    static const string warning = "warning";
-    if( !::stricmp( ioMessage.substr( 0, warning.length() ).c_str(), warning.c_str() ) )
-    {
-      size_t pos = warning.length();
-      while( pos < ioMessage.length() && ( ::ispunct( ioMessage[pos] ) || ::isspace( ioMessage[pos] ) ) )
-        ++pos;
-      ioMessage = ioMessage.substr( pos );
-      ioHandler = &Warning;
-    }
-  }
-}
-
-OutStream::OutStream( FlushHandler f, int level )
+// OutStream
+OutStream::OutStream( Action f, int level )
 : std::ostream( 0 ),
   mVerbosityLevel( level ),
-  mVerbosityLocked( false )
+  mVerbosityLocked( false ),
+  mpDispatcher( new MessageDispatcher )
 {
   this->init( &mBuf );
-  mBuf.SetFlushHandler( f );
+  SetAction( f );
+}
+
+OutStream::~OutStream()
+{
+  mBuf.SetDispatcher( 0 );
+  delete mpDispatcher;
+}
+
+void
+OutStream::SetAction( Action inAction )
+{
+  if( mpDispatcher->Action() != inAction )
+  {
+    mBuf.SetDispatcher( 0 );
+    delete mpDispatcher;
+    mpDispatcher = new MessageDispatcher;
+    mpDispatcher->SetAction( inAction );
+    mBuf.SetDispatcher( mpDispatcher );
+  }
 }
 
 OutStream&
@@ -100,7 +132,6 @@ OutStream::operator()()
   mBuf.SetContext( sContext );
   return ResetFormat();
 }
-
 
 OutStream&
 OutStream::operator()( const string& inContext )
@@ -148,6 +179,14 @@ OutStream::SetContext( const std::string& s )
     OutStream::sContext.push_back( s );
 }
 
+// OutStream::StringBuf
+OutStream::StringBuf::StringBuf()
+: std::stringbuf( std::ios_base::out ),
+  mpDispatcher( 0 ),
+  mNumFlushes( 0 )
+{
+}
+
 void
 OutStream::StringBuf::SetContext( const list<string>& s )
 {
@@ -166,17 +205,16 @@ OutStream::StringBuf::SetContext( const std::string& s )
     mContext = s + ": ";
 }
 
-OutStream::FlushHandler
-OutStream::StringBuf::SetFlushHandler( OutStream::FlushHandler f )
+void
+OutStream::StringBuf::SetDispatcher( Dispatcher* inpDispatcher )
 {
-  FlushHandler previous = mpOnFlush;
-  bool empty = str().empty();
+  bool previous = mpDispatcher,
+       empty = str().empty();
   if( previous && !empty )
     Flush();
-  mpOnFlush = f;
+  mpDispatcher = inpDispatcher;
   if( !previous && !empty )
     Flush();
-  return previous;
 }
 
 void
@@ -192,10 +230,8 @@ OutStream::StringBuf::Flush()
   else for( size_t pos = s.find( '\0' ); pos != string::npos; pos = s.find( '\0', pos ) )
     s = s.substr( 0, pos ) + s.substr( pos + 1 );
 
-  FlushHandler f = mpOnFlush;
-  MessageFilter( f, s );
-  if( f )
-    f( mContext + s );
+  if( mpDispatcher )
+    mpDispatcher->Dispatch( mContext, s );
 }
 
 int
@@ -207,4 +243,140 @@ OutStream::StringBuf::sync()
   int r = stringbuf::sync();
   Flush();
   return r;
+}
+
+// Dispatcher
+void
+Dispatcher::Dispatch( const string& inContext, const string& inMessage )
+{
+  BCIStream::Action action = mAction;
+  string message = inMessage;
+  OnFilter( action, message );
+  OnCompress( action, inContext + message );
+}
+
+// MessageDispatcher
+MessageDispatcher::MessageDispatcher()
+: mPrevAction( LogicError ),
+  mLastTime( ::time( 0 ) ),
+  mCount( 0 )
+{
+  {
+    OSMutex::Lock lock( GlobalMutex() );
+    Instances().insert( this );
+  }
+}
+
+MessageDispatcher::~MessageDispatcher()
+{
+  {
+    OSMutex::Lock lock( GlobalMutex() );
+    Instances().erase( this );
+  }
+  ReportRepetitions();
+  OSThread::TerminateWait();
+}
+
+void
+MessageDispatcher::OnFilter( BCIStream::Action& ioAction, string& ioMessage )
+{
+  if( !ioMessage.empty() && *ioMessage.rbegin() == '\n' )
+    ioMessage.erase( ioMessage.length() - 1 );
+  if( !ioMessage.empty() && !::ispunct( *ioMessage.rbegin() ) )
+    ioMessage += '.';
+
+  if( ioAction == &Warning || ioAction == &PlainMessage )
+  {
+    static const string warning = "warning";
+    if( !::stricmp( ioMessage.substr( 0, warning.length() ).c_str(), warning.c_str() ) )
+    {
+      size_t pos = warning.length();
+      while( pos < ioMessage.length() && ( ::ispunct( ioMessage[pos] ) || ::isspace( ioMessage[pos] ) ) )
+        ++pos;
+      ioMessage = ioMessage.substr( pos );
+      ioAction = &Warning;
+    }
+  }
+}
+
+void
+MessageDispatcher::OnCompress( BCIStream::Action inAction, const string& inMessage )
+{
+  {
+    OSMutex::Lock lock( GlobalMutex() );
+    for( set<MessageDispatcher*>::const_iterator i = Instances().begin(); i != Instances().end(); ++i )
+      if( *i != this )
+        (*i)->ReportRepetitions();
+  }
+  if( inMessage != mPrevMessage )
+  {
+    ReportRepetitions();
+    inAction( inMessage );
+    mPrevMessage = inMessage;
+    mPrevAction = inAction;
+    if( OSThread::IsTerminated() )
+      OSThread::Start();
+  }
+  else
+  {
+    ++mCount;
+    if( ::difftime( ::time( 0 ), mLastTime ) >= cMaxTimeDiff )
+      ReportRepetitions();
+  }
+}
+
+void
+MessageDispatcher::ReportRepetitions()
+{
+  OSMutex::Lock lock( GlobalMutex() );
+  if( mCount > 0 )
+  {
+    string message = mPrevMessage;
+    if( mCount > 1 )
+    {
+      ostringstream oss;
+      oss << " (";
+      switch( mCount )
+      {
+        case 2:
+          oss << "twice";
+          break;
+        default:
+          oss << mCount << " times";
+      }
+      oss << ")";
+      message += oss.str();
+    }
+    mPrevAction( message );
+  }
+  mCount = 0;
+  mLastTime = ::time( 0 );
+}
+
+int
+MessageDispatcher::OnExecute()
+{
+  while( !IsTerminating() )
+  {
+    ReportRepetitions();
+    static const int resolution = 100,
+                     total = cMaxTimeDiff * 1100;
+    for( int i = 0; i < total / resolution && !IsTerminating(); ++i )
+      SleepFor( resolution );
+  }
+  return 0;
+}
+
+set<MessageDispatcher*>&
+MessageDispatcher::Instances()
+{
+  static set<MessageDispatcher*> s;
+  return s;
+}
+
+OSMutex&
+MessageDispatcher::GlobalMutex()
+{
+  static OSMutex m;
+  return m;
 }

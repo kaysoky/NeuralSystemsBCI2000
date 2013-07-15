@@ -29,12 +29,14 @@
 #pragma hdrstop
 
 #include "BufferedADC.h"
+#include "BCIStream.h"
 
 using namespace std;
 
 BufferedADC::BufferedADC()
 : mReadCursor( 0 ),
-  mWriteCursor( 0 )
+  mWriteCursor( 0 ),
+  mAcquiring( false )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Buffering int SourceBufferSize= 2s "
@@ -45,6 +47,12 @@ BufferedADC::BufferedADC()
 BufferedADC::~BufferedADC()
 {
   BufferedADC::Halt();
+}
+
+void
+BufferedADC::AutoConfig( const SignalProperties& )
+{
+  this->OnAutoConfig();
 }
 
 void
@@ -83,7 +91,8 @@ BufferedADC::Initialize( const SignalProperties&,
   mReadCursor = 0;
   mWriteCursor = 0;
   this->OnInitialize( mAcquisitionProperties );
-  OSThread::Start();
+  if( bcierr.Empty() )
+    StartAcquisition();
 }
 
 // The Process() function is called from the main thread in regular intervals.
@@ -97,7 +106,7 @@ BufferedADC::Process( const GenericSignal&,
        waitForData = false;
   {
     OSMutex::Lock lock( mMutex );
-    abort = this->IsTerminated();
+    abort = !IsAcquiring();
     waitForData = ( mReadCursor == mWriteCursor ) && !abort;
     mAcquisitionDone.Reset();
   }
@@ -123,7 +132,7 @@ BufferedADC::Process( const GenericSignal&,
   {
     OSMutex::Lock lock( mMutex );
     ++mReadCursor %= mBuffer.size();
-    abort = this->IsTerminated();
+    abort = !IsAcquiring();
   }
 
   if( abort && State( "Running" ) )
@@ -135,6 +144,7 @@ BufferedADC::Process( const GenericSignal&,
 void
 BufferedADC::Halt()
 {
+  StopAcquisition();
   OSThread::TerminateWait();
   OnHalt();
 }
@@ -145,29 +155,73 @@ BufferedADC::Error( const string& inError )
   mError = inError.empty() ? "Acquisition Error" : inError;
 }
 
-// The Execute() function runs in its own writer thread, concurrently with repeated calls to
-// Process() from the main thread, which is the reader thread.
+// When UseAcquisitionThread() returns true, the Execute() function runs in its own writer thread,
+// concurrently with repeated calls to Process() from the main thread, which is the reader thread.
 int
 BufferedADC::OnExecute()
 {
-  mError.clear();
   this->OnStartAcquisition();
   while( !OSThread::IsTerminating() )
   {
-    this->DoAcquire( mBuffer[mWriteCursor] );
-    mTimeStamps[mWriteCursor] = PrecisionTime::Now();
-    {
-      OSMutex::Lock lock( mMutex );
-      if( !mError.empty() )
-        Terminate();
-      
-      ++mWriteCursor %= mBuffer.size();
-      if( mWriteCursor == mReadCursor )
-        bciout << "Data acquisition buffer overflow" << endl;
-      mAcquisitionDone.Set();
-    }
+    GenericSignal* p = GetBuffer();
+    this->DoAcquire( *p );
+    ReleaseBuffer( p );
   }
   this->OnStopAcquisition();
   return 0;
 }
 
+GenericSignal*
+BufferedADC::GetBuffer()
+{
+  return &mBuffer[mWriteCursor];
+}
+
+void
+BufferedADC::ReleaseBuffer( GenericSignal* inpBuffer )
+{
+  bciassert( inpBuffer == GetBuffer() );
+  mTimeStamps[mWriteCursor] = PrecisionTime::Now();
+
+  OSMutex::Lock lock( mMutex );
+  if( !mError.empty() )
+    StopAcquisition();
+  
+  ++mWriteCursor %= mBuffer.size();
+  if( mWriteCursor == mReadCursor )
+    bciwarn << "Data acquisition buffer overflow";
+  mAcquisitionDone.Set();
+}
+
+void
+BufferedADC::StartAcquisition()
+{
+  mError.clear();
+  if( UseAcquisitionThread() )
+    OSThread::Start();
+  else
+  {
+    this->OnStartAcquisition();
+    mAcquiring = mError.empty();
+  }
+}
+
+void
+BufferedADC::StopAcquisition()
+{
+  if( UseAcquisitionThread() )
+    OSThread::Terminate();
+  else
+  {
+    this->OnStopAcquisition();
+    mAcquiring = false;
+  }
+}
+
+bool
+BufferedADC::IsAcquiring() const
+{
+  if( UseAcquisitionThread() )
+    return !OSThread::IsTerminated();
+  return mAcquiring;
+}

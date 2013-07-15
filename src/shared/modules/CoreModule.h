@@ -69,10 +69,6 @@
 #include "OSMutex.h"
 #include "OSEvent.h"
 
-#if _WIN32
-# include "FPExceptMask.h"
-#endif // _WIN32
-
 #if MODTYPE
 
 #define SIGSRC  1
@@ -114,9 +110,6 @@
 class CoreModule : private MessageHandler, private OSThread
 {
   static const int cInitialConnectionTimeout = 20000; // ms
-#if _WIN32
-  static const int cDisabledFPExceptions = _MCW_EM; // disable all exceptions for core modules
-#endif // _WIN32
 
  public:
   CoreModule();
@@ -139,6 +132,7 @@ class CoreModule : private MessageHandler, private OSThread
   void InitializeOperatorConnection( const std::string& operatorAddress );
   void InitializeCoreConnections();
   void ShutdownSystem();
+  void InitializeStatevector();
   void ResetStatevector();
 
   void InitializeFilterChain( const class SignalProperties& );
@@ -188,12 +182,8 @@ class CoreModule : private MessageHandler, private OSThread
                    mStopSent,
                    mNeedStopRun;
   void*            mGlobalID;
-  int              mSampleBlockSize;
   bool             mOperatorBackLink,
                    mAutoConfig;
-#if _WIN32
-  FPExceptMask     mFPMask;
-#endif // _WIN32
 };
 
 #endif // CORE_MODULE_H

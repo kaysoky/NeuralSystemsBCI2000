@@ -135,7 +135,7 @@ DataIOFilter::Publish()
       "0.003 0.003 0.003 0.003 "
       "0.003 0.003 0.003 0.003 "
       "0.003 0.003 0.003 0.003 "
-      "0.003 % % // gain for each channel (A/D units -> muV)",
+      "0.003 % % // gain for each channel (A/D units per physical unit)",
 
     // Storage related parameters are listed here to enforce their presence
     // even if not used by all FileWriter classes.
@@ -319,6 +319,16 @@ DataIOFilter::Preflight( const SignalProperties& Input,
     Output.ElementUnit().SetOffset( 0 )
                         .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
                         .SetSymbol( "s" );
+
+  for( int ch = 0; ch < Output.Channels(); ++ch )
+  {
+    double gain = 0;
+    string symbol;
+    Parameter( "SourceChGain" )( ch ) >> gain >> symbol;
+    Output.ValueUnit( ch ).SetOffset( Parameter( "SourceChOffset" )( ch ) )
+                          .SetGain( gain )
+                          .SetSymbol( symbol );
+  }
   Output.SetUpdateRate( Parameter( "SamplingRate" ).InHertz() / Parameter( "SampleBlockSize" ) );
 
   if( !mpADC->IsRealTimeSource() )

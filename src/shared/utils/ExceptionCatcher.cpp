@@ -34,6 +34,7 @@
 #include "BCIStream.h"
 #include "OSError.h"
 #include "ClassName.h"
+#include "Debugging.h"
 
 #define HANDLE_SIGNALS ( !defined( _MSC_VER ) && !defined( __BORLANDC__ ) )
 #if HANDLE_SIGNALS
@@ -100,6 +101,16 @@ ExceptionCatcher::Run( Runnable& inRunnable )
 }
 
 #if _MSC_VER
+struct Win32Exception
+{
+  string Describe() const;
+  DWORD Filter( LPEXCEPTION_POINTERS );
+
+  DWORD code;
+  EXCEPTION_RECORD exception;
+  CONTEXT context;
+};
+
 bool
 ExceptionCatcher::Run1( Runnable& inRunnable )
 {
@@ -107,14 +118,14 @@ ExceptionCatcher::Run1( Runnable& inRunnable )
   // Handling of those cannot coexist with C++ exception handling in the same function,
   // so we need another function Run2() that handles C++ exceptions.
   bool result = false;
+  Win32Exception winException = { 0 };
   __try
   {
     result = Run2( inRunnable );
   }
-  // For breakpoint exceptions, we want to execute the default handler (which opens the debugger).
-  __except( ::GetExceptionCode() == EXCEPTION_BREAKPOINT ? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER )
+  __except( winException.Filter( GetExceptionInformation() ) )
   {
-    ReportWin32Exception( ::GetExceptionCode() );
+    ReportWin32Exception( winException );
   }
   return result;
 }
@@ -201,8 +212,8 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
 }
 
 #if _MSC_VER
-void
-ExceptionCatcher::ReportWin32Exception( int inCode )
+string
+Win32Exception::Describe() const
 {
 # define EXCEPTION( x ) { EXCEPTION_##x, #x },
   static const struct
@@ -237,15 +248,33 @@ ExceptionCatcher::ReportWin32Exception( int inCode )
   };
   static const size_t numExceptions = sizeof( exceptions ) / sizeof( *exceptions );
   size_t i = 0;
-  while( i < numExceptions && exceptions[i].code != inCode )
+  while( i < numExceptions && exceptions[i].code != this->code )
     ++i;
   const char* pDescription = i < numExceptions ? exceptions[i].description : "<n/a>";
   ostringstream oss;
   oss << "Unhandled Win32 exception 0x"
-      << hex << inCode << ": "
-      << pDescription
-      << UserMessage();
-  OnReportException( oss.str() );
+      << hex << this->code << ": "
+      << pDescription;
+  return oss.str();
+}
+
+DWORD
+Win32Exception::Filter( LPEXCEPTION_POINTERS p )
+{
+  code = p->ExceptionRecord->ExceptionCode;
+  exception = *p->ExceptionRecord;
+  context = *p->ContextRecord;
+  // For breakpoint exceptions, we want to execute the default handler (which opens the debugger).
+  DWORD result = ( code == EXCEPTION_BREAKPOINT ? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER );
+  if( result != EXCEPTION_CONTINUE_SEARCH )
+    bcidebug( Describe() );
+  return result;
+}
+
+void
+ExceptionCatcher::ReportWin32Exception( const Win32Exception& inException )
+{
+  OnReportException( inException.Describe() + UserMessage() );
 }
 #endif // _MSC_VER
 

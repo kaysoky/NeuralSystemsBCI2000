@@ -51,9 +51,9 @@ namespace bci
 
 #else // BCIDEBUG
 
-# define bciassert(x)
-# define bcidebug(x)
-# define bciDebugBreak()
+# define bciassert(x)    (0)
+# define bcidebug(x)     (0)
+# define bciDebugBreak() (0)
 
 #endif // BCIDEBUG
 

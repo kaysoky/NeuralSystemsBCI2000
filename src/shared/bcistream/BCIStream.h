@@ -82,6 +82,7 @@ class ParamList;
 namespace BCIStream
 {
   // Stream message handling actions for bcierr/bciout/bciwarn/bcidebug
+  typedef void (*Action)( const std::string& );
   void DebugMessage( const std::string& );
   void PlainMessage( const std::string& );
   void Warning( const std::string& );
@@ -93,16 +94,15 @@ namespace BCIStream
   void Apply( const ParamList& );
   void SetOperatorStream( std::ostream*, const OSMutex* = NULL );
   
-  class ContextFrame;
 
+  class ContextFrame;
+  class Dispatcher;
   class OutStream : public Lockable, public std::ostream
   {
    friend class ::EnvironmentBase;
    friend class ::CoreModule;
    friend class ContextFrame;
    friend void Apply( const ParamList& );
-
-   typedef void ( *FlushHandler )( const std::string& );
 
    public:
     static const int AlwaysDisplayMessage = INT_MIN;
@@ -111,7 +111,8 @@ namespace BCIStream
     static const int DisplayAllMessages = INT_MAX - 1;
     static const int SuppressAllMessages = INT_MIN;
 
-    OutStream( FlushHandler f = NULL, int verbosityLevel = DisplayAllMessages );
+    OutStream( Action = 0, int verbosityLevel = DisplayAllMessages );
+    ~OutStream();
     OutStream& operator()();
     OutStream& operator()( const std::string& );
     // Specifying a verbosity/debug level with a message will result in filtering out all
@@ -132,37 +133,35 @@ namespace BCIStream
       
    private:
     static void SetContext( const std::string& );
-    static void MessageFilter( OutStream::FlushHandler&, std::string& );
     void SetVerbosity( int level )
       { mVerbosityLevel = level; }
 
-    FlushHandler SetFlushHandler( FlushHandler f = NULL )
-      { return mBuf.SetFlushHandler( f ); }
+    void SetAction( Action action = 0 );
+#if 1
+    void SetFlushHandler( Action action = 0 )
+      { SetAction( action ); }
+#endif
+
 
     class StringBuf : public std::stringbuf
     {
      public:
-      StringBuf()
-      : std::stringbuf( std::ios_base::out ),
-        mpOnFlush( LogicError ),
-        mNumFlushes( 0 )
-      {}
-
+      StringBuf();
       void SetContext( const std::list<std::string>& );
       void SetContext( const std::string& );
-      FlushHandler SetFlushHandler( FlushHandler f = NULL );
+      void SetDispatcher( Dispatcher* );
       void Flush();
       int Flushes()
         { return mNumFlushes; }
       void Clear()
-        { SetFlushHandler( mpOnFlush ); mNumFlushes = 0; }
+        { SetDispatcher( mpDispatcher ); mNumFlushes = 0; }
       void Reset()
         { str( "" ); mNumFlushes = 0; }
 
      private:
-      FlushHandler mpOnFlush;
       int          mNumFlushes;
       std::string  mContext;
+      Dispatcher*  mpDispatcher;
 
      protected:
       // This function gets called on ostream::flush().
@@ -170,6 +169,7 @@ namespace BCIStream
     } mBuf;
     int mVerbosityLevel;
     bool mVerbosityLocked;
+    Dispatcher* mpDispatcher;
 
     static std::list<std::string> sContext;
   };
@@ -215,9 +215,32 @@ namespace BCIStream
       {}
   };
   
+  class Dispatcher
+  {
+   public:
+    Dispatcher( Action a = LogicError )
+      : mAction( a ) {}
+    virtual ~Dispatcher()
+      {}
+    Action Action() const
+      { return mAction; }
+    void SetAction( BCIStream::Action a )
+      { mAction = a; }
+    void Dispatch( const std::string& context, const std::string& message );
+
+   protected:
+    virtual void OnFilter( BCIStream::Action&, std::string& )
+      {}
+    virtual void OnCompress( BCIStream::Action a, const std::string& s )
+      { a( s ); }
+
+   private:
+    BCIStream::Action mAction;
+  };
+
   template<int x = 1> struct IsSet
   { static const bool Value = x; };
-    
+
 } // namespace BCIStream
 
 #endif // BCI_STREAM_H

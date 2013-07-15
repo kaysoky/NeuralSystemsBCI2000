@@ -653,6 +653,8 @@ StateMachine::OnExecute()
         ( *i )->ProcessBCIMessages();
       if( !OSThread::IsTerminating() )
         ExecuteCallback( BCI_OnCoreInput );
+      if( IsConsistentState( Idle ) )
+        Terminate();
     }
   }
   EnterState( Idle );
@@ -1034,6 +1036,8 @@ StateMachine::Handle( const CoreConnection& inConnection, SysState inState )
     case Publishing:
       EnterState( Publishing );
       break;
+    case Idle:
+      break;
     default:
       if( IsConsistentState( inState ) )
         EnterState( inState );
@@ -1092,16 +1096,14 @@ StateMachine::CoreConnection::ProcessBCIMessages()
 {
   if( mSocket.connected() && State() == WaitingForConnection )
     OnAccept();
-  else if( !mSocket.connected() && State() != WaitingForConnection )
-    OnDisconnect();
-  while( mStream && mStream.rdbuf()->in_avail() && !mrParent.IsTerminating() )
+  while( mStream && mStream.rdbuf() && mStream.rdbuf()->in_avail() && !mrParent.IsTerminating() )
   {
     OSMutex::Lock lock( mrParent.mBCIMessageMutex ); // Serialize messages
     HandleMessage( mStream );
     ++Info()().MessagesRecv;
-    if( !( mStream && mStream.is_open() ) )
-      EnterState( Fatal );
   }
+  if( !mSocket.connected() && State() != WaitingForConnection )
+    OnDisconnect();
 }
 
 void

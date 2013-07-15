@@ -192,7 +192,6 @@ class StateMachine : public CallbackBase, private OSThread
   virtual int OnExecute();
 
   void Init();
-  void Terminate();
 
   void EnterState( enum SysState );
   void PerformTransition( int transition );
