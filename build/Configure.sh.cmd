@@ -8,7 +8,7 @@ dir=$(dirname "$0")
 if [ %1 ]; then
   cmake $* "$dir"
   echo
-  echo Run $(basename "$0") to edit configuration options.
+  echo Running $(basename "$0") will allow you to fine-tune configuration options.
 elif which ccmake; then
   ccmake "$dir"
 elif which cmake-gui; then
@@ -27,6 +27,6 @@ if "%1"=="" (
 ) else (
   cmake %* "%~dp0"
   echo.
-  echo Run %~nx0 to edit configuration options.
+  echo Running %~nx0 will allow you to fine-tune configuration options.
   pause
 )
