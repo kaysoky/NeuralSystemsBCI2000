@@ -30,7 +30,7 @@ void WritePRM(string filename, parameters tMUD, int opt)
 		}
 		fout << "// Linear classification matrix in sparse representation" << endl; 
 		fout << "Filtering:P3TemporalFilter int EpochLength= " << ap::ifloor(tMUD.windowlen(1)*1000/tMUD.smprate) << "ms 500ms 0 % // Length of data epoch from stimulus onset" << endl;
-		fout << "Source:gUSBampADC intlist SourceChDevices= 1 " << tMUD.softwarech << " " << tMUD.softwarech << " 1 " << tMUD.softwarech << " // number of digitized channels total" << endl;
+//		fout << "Source:gUSBampADC intlist SourceChDevices= 1 " << tMUD.softwarech << " " << tMUD.softwarech << " 1 " << tMUD.softwarech << " // number of digitized channels total" << endl;
 		if (opt == 2)
 		{
 			fout << "Filtering:SpatialFilter int SpatialFilterType= " << int (3) << " 2 0 3 // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)" << endl;
