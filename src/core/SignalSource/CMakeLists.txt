@@ -8,6 +8,7 @@ SET( DIR_NAME "${DIR_NAME}SignalSource/" )
 
 # Recurse down into all project subdirectories
 ADD_SUBDIRECTORY( SignalGenerator )
+ADD_SUBDIRECTORY( SoundcardSource )
 UTILS_MATCH_SUBDIR( BUILD_MODULES g.USBamp )
 UTILS_MATCH_SUBDIR( BUILD_MODULES g.MOBIlab )
 UTILS_MATCH_SUBDIR( BUILD_MODULES g.MOBIlabPlus )
