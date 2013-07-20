@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id$
+// $Id: FFTSpectrum.cpp 3858 2012-03-03 16:57:57Z mellinger $
 // Authors: mcfarlan@wadsworth.org, juergen.mellinger@uni-tuebingen.de,
 //          Adam Wilson
 // Description: The ARSpectrum filter fits a Maximum Entropy AR model to
@@ -136,6 +136,10 @@ FFTThread::OnProcess( const GenericSignal& Input, GenericSignal& Output )
       mFFT.Input( idxLeft ) -= value * fracPart;
       fracPart = ::modf( right, &intPart );
       int idxRight = static_cast<int>( intPart );
+
+	  // This is a temporary fix to a reported bug (regarding floating point and off-by-one)
+	  idxRight = idxRight < mFFT.Size() ? idxRight :  mFFT.Size() - 1;
+
       for( int j = idxLeft; j < idxRight; ++j )
         mFFT.Input( j ) += value;
       mFFT.Input( idxRight ) += value * fracPart;

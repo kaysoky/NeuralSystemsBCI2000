@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id$
+// $Id: ConnectorFilters.cpp 3854 2012-03-03 16:08:47Z mellinger $
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A pair of filters that send/receive states and signals over a
 //         UDP connection.
@@ -197,7 +197,7 @@ ConnectorOutput::Preflight( const SignalProperties& inSignalProperties,
   string address;
   while( iss >> address )
   {
-    sending_udpsocket preflightSocket( address.c_str() );
+    client_tcpsocket preflightSocket( address.c_str() );
     if( !preflightSocket.is_open() )
       bcierr << "Could not connect to " << address << endl;
   }

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id$
+// $Id: VisDisplayGraph.h 4171 2012-06-22 12:14:13Z mellinger $
 // Authors: schalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
 // Description: A class for graph type visualization windows.
 //
@@ -44,7 +44,7 @@ class VisDisplayGraph : public VisDisplayLayer
 
   enum
   {
-    cMaxUserScaling = 4, // The maximum number of scaling steps a user
+    cMaxUserScaling = 100, // The maximum number of scaling steps a user
                         // can take from the default.
     cDisplayOversampling = 10, // The number of data points drawn per pixel, if available.
     cStatusBarHeight = 12, // The height of the status bar, in pixels.

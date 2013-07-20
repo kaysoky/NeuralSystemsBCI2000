@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id$
+// $Id: ConnectorFilters.h 3832 2012-02-29 16:07:29Z mellinger $
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A pair of filters that send/receive states and signals over a
 //         UDP connection.
@@ -94,7 +94,7 @@ class ConnectorOutput : public GenericFilter
    private:
     int OnExecute();
    private:
-    sending_udpsocket mSocket;
+    client_tcpsocket mSocket;
   };
   std::string mConnectorOutputAddresses;
   std::vector<Connection*> mConnections;

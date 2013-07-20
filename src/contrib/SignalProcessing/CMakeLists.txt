@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id$
+## $Id: CMakeLists.txt 3900 2012-03-30 21:30:33Z gmilsap $
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for BCI2000 and CMake
 
@@ -15,6 +15,7 @@ ADD_SUBDIRECTORY( Coherence )
 ADD_SUBDIRECTORY( CoherenceFFT )
 ADD_SUBDIRECTORY( Statistics )
 ADD_SUBDIRECTORY( HilbertSignalProcessing )
+ADD_SUBDIRECTORY( EMD )
 
 # Command line filters cannot be defined in their associated signal processing 
 # modules' CMakeLists.txt, so they are defined here:

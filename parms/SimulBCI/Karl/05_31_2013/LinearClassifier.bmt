@@ -1,0 +1,1 @@
+Filtering:LinearClassifier matrix Classifier= 4 { input%20channel input%20element%20(bin) output%20channel weight } 1 13Hz 1 -.5 1 15Hz 1 -.5 2 11Hz 1 .5 2 13Hz 1 .5 // Linear classification matrix in sparse representation
