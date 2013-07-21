@@ -1,6 +1,6 @@
 ###########################################################################
-## $Id: CMakeLists.txt 3577 2011-09-30 16:18:48Z mellinger $
-## Authors: griffin.milsap@gmail.com
+## $Id$
+## Authors: 
 ## Description: Build information for DynamicFeedbackTask in Qt
 
 # Set the executable name

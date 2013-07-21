@@ -180,7 +180,7 @@ ConnectorOutput::ConnectorOutput()
   BEGIN_PARAMETER_DEFINITIONS
     SECTION " string ConnectorOutputAddress= % "
       "localhost:20321 % % // one or more IP:Port combinations, e.g. localhost:20321",
-    SECTION " string ConnectorOutputFormat= % "
+    SECTION " string ConnectorOutputFormat= Verbose "
       "Verbose % % // Either \"Verbose\" or \"JSON\"",
   END_PARAMETER_DEFINITIONS
 }
@@ -205,7 +205,7 @@ ConnectorOutput::Preflight( const SignalProperties& inSignalProperties,
   }
   
   string outputFormat = string( Parameter( "ConnectorOutputFormat" ) );
-  if (outputFormat.compare("Verbose") != 0 || outputFormat.compare("JSON") != 0) {
+  if (outputFormat.compare("Verbose") != 0 && outputFormat.compare("JSON") != 0) {
     bcierr << "Unknown output format: \"" << outputFormat << "\"" << endl;
   }
   
@@ -268,16 +268,16 @@ ConnectorOutput::Process( const GenericSignal& Input, GenericSignal& Output )
         }
         
         // Channels is a dictionary of { Channel index : [Array of signal values], ... }
-        **i << "},\"Channels\":{"
+        **i << "},\"Channels\":{";
         for( int channel = 0; channel < Input.Channels(); ++channel ) {
           if (channel > 0) **i << ",";
-          **i << "\"" << channel << "\":["
-          if (Input.Elements() > 0) **i << Input(channel, element);
+          **i << "\"" << channel << "\":[";
+          if (Input.Elements() > 0) **i << Input(channel, 0);
           
           for( int element = 0; element < Input.Elements(); ++element ) {
             **i << "," << Input( channel, element );
           }
-          **i << "]"
+          **i << "]";
         }
         **i << "}}\n";
                 

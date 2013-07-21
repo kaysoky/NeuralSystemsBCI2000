@@ -414,10 +414,12 @@ streamsock::read( char* buffer, size_t count )
  */
 std::string streamsock::readline() {
   while (!hasline()) { updateBuffer(); }
-  return readlineBuffer.getline();
+  std::string line;
+  std::getline(readlineBuffer, line);
+  return line;
 }
 
-std::string hasline() {
+bool streamsock::hasline() {
   if (can_read()) updateBuffer();
   return readlineBuffer.str().find('\n') != std::string::npos;
 }
@@ -425,7 +427,7 @@ std::string hasline() {
 /**
  * Pulls some data from the socket into the buffer.
  */
-void updateBuffer() {
+void streamsock::updateBuffer() {
   size_t count = 1000;
   char* buffer = new char[count];
   size_t res = read(buffer, count);

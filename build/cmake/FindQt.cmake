@@ -9,8 +9,8 @@ IF( NOT BORLAND )
 # BCI2000 source tree
 SET( USE_STD_QT FALSE )
 
+FIND_PACKAGE( Qt4 REQUIRED )
 IF( USE_STD_QT )
-  FIND_PACKAGE( Qt4 REQUIRED )
 ELSE()
   INCLUDE( cmake/extlib/Qt4.cmake )
 ENDIF()

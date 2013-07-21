@@ -7,13 +7,19 @@
 
 #include "B2B.h"
 #include "Localization.h"
+//#include "FileUtils.h"
 #include "DFBuildScene2D.h"
+//#include "FeedbackScene3D.h"
 
 #include "buffers.h"
 #include <stdio.h>
 #include <math.h>
 #include <sstream>
 #include <algorithm>
+
+//#include "TactorManager.h"
+//#include "TactorBoard.h"
+
 
 #ifndef __BORLANDC__
 #include <QImage>
@@ -45,26 +51,38 @@ RegisterFilter( DynamicFeedbackTask, 3 );
 using namespace std;
 
 DynamicFeedbackTask::DynamicFeedbackTask()
-    : mpFeedbackScene( NULL ),
-      mRenderingQuality( 0 ),
-      mpMessage( NULL ),
-      mpMessage2( NULL ),
-      mCursorColorFront( RGBColor::White ),
-      mCursorColorBack( RGBColor::White ),
-      mRunCount( 0 ),
-      mTrialCount( 0 ),
-      mCurFeedbackDuration( 0 ),
-      mMaxFeedbackDuration( 0 ),
-      mCursorSpeedX( 1.0 ),
-      mCursorSpeedY( 1.0 ),
-      mCursorSpeedZ( 1.0 ),
-      mScore(0.0),//new score variable?
-      mScoreCount(0.0),//score counter
-      mTaskDiff(1.0),
-      mrWindow( Window() ),
-      mVisualFeedback( false),
-      mIsVisualCatchTrial( false ) {
-      
+: mpFeedbackScene( NULL ),
+  mRenderingQuality( 0 ),
+  mpMessage( NULL ),
+  mpMessage2( NULL ),
+  //mpBackground( NULL ),
+  mCursorColorFront( RGBColor::White ),
+  mCursorColorBack( RGBColor::White ),
+  mRunCount( 0 ),
+  mTrialCount( 0 ),
+  mCurFeedbackDuration( 0 ),
+  mMaxFeedbackDuration( 0 ),
+  mCursorSpeedX( 1.0 ),
+  mCursorSpeedY( 1.0 ),
+  mCursorSpeedZ( 1.0 ),
+  mScore(0.0),//new score variable?
+  mScoreCount(0.0),//score counter
+  mTaskDiff(1.0),
+  mrWindow( Window() ),
+  //mFeedbackModulationType ( 0 ),
+  //mTactorBoard( NULL ),
+  //mTactileFeedback( false ),
+  mVisualFeedback( false),
+  //mIsTactileCatchTrial( false ),
+  mIsVisualCatchTrial( false )
+  //mTactorVar( 0.0 ),
+  //mTactorVarDelta( 0.0 ),
+  //mMaxValue( 0 ),
+  //mMinValue( 0 ),
+  //mHeldGain( 0 ),
+  //mHeldFrequency( 0 )
+
+{
   BEGIN_PARAMETER_DEFINITIONS
 	  "Application:Targets int TaskDifficulty= 5"
 	  " // Difficulty is from to 1(hardest) to 5(easiest) ",
@@ -76,6 +94,11 @@ DynamicFeedbackTask::DynamicFeedbackTask()
       "  50  25  50 8 8 8 "
       "  50  10  50 8 8 8 "
       "   0   0   4 8 8 8 "
+	  /*"  35  35  50 8 8 8 "
+      "  65  35  50 8 8 8 "
+      "  35  65  50 8 8 8 "
+      "  65  65  50 8 8 8 "
+      "   0   0   4 8 8 8 "*/
       " // target positions and widths in percentage coordinates",
     "Application:Targets int TargetColor= 0x0000FF % % % " //0x808080
        " // target color (color)",
@@ -136,8 +159,24 @@ DynamicFeedbackTask::DynamicFeedbackTask()
 
     "Application:Feedback int VisualFeedback= 1 1 0 1 "
       "// provide visual stimulus (boolean)",
+    //"Application:Feedback int TactileFeedback= 1 1 0 1 "
+    //  "// provide tactile stimulus (boolean)",
     "Application:Feedback intlist VisualCatchTrials= 4 1 3 4 2 % % % // "
 	  "// list of visual catch trials, leave empty for none",
+ //   "Application:Feedback intlist TactileCatchTrials= 4 1 3 4 2 % % % // "
+	//  "// list of tactile catch trials, leave empty for none",
+ //   "Application:Stimuli string TactorBoardComPort= % % % % // "
+ //     "COM Port for target tactor control board",
+	//"Application:Stimuli int TactileFeedbackModulationType= 0 0 0 1 // "
+	//  "Tactile feedback modulation type 0 intensity, 1 frequency (enumeration)",
+	//"Application:Stimuli int MaxValue= 320 0 % % // "
+	//  "// max value for stimulus feedback",
+	//"Application:Stimuli int MinValue= 30 0 % % // "
+	//  "// min value for stimulus feedback",
+	//"Application:Stimuli int HeldGain= 90 0 % % // "
+	//  "// gain during frequency modulation",
+	//"Application:Stimuli int HeldFrequency= 150 0 % % // "
+	//  "// frequency during gain modulatin",
 
 	"Application:Connector string ConnectorAddress= % "
     "localhost:20320 % % // IP address/port to read from, e.g. localhost:20320",
@@ -163,6 +202,17 @@ DynamicFeedbackTask::DynamicFeedbackTask()
             .SetColor( RGBColor::Gray ) //Grey
             .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
             .SetObjectRect( rect );
+
+ 
+  /*
+  GUI::Rect rect2 = { 0.8f, 0.00f, 1.0f, 0.1f };
+  //rect2->SetColor(RGBColor::Lime);
+  TextField mpBackground = TextField( mrWindow );
+  mpBackground->setTextColor(RGBColor::Black);
+			.SetColor(RGBColor::Lime)
+			.SetObjectRect(rect2)
+			.SetAspectRatioMode(GUI::AspectRatioModes::AdjustNone);
+  */
 
   //Score Message in top right corner
   GUI::Rect rect3 = { 0.89f, 0.01f, .99f, 0.09f };
@@ -210,7 +260,9 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
   };
   for( size_t i = 0; i < sizeof( texParams ) / sizeof( *texParams ); ++i ) {
     string filename = Parameter( texParams[ i ] );
-    if( showTextures && !filename.empty() ) {
+    if( showTextures && !filename.empty() )
+    {
+//      filename = FileUtils::AbsolutePath( filename );
       bool err = !ifstream( filename.c_str() ).is_open();
       if( !err )
       {
@@ -281,7 +333,8 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
 }
 
 void
-DynamicFeedbackTask::OnInitialize( const SignalProperties& Input ) {
+DynamicFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
+{
 
   mConnectorAddress = string( Parameter( "ConnectorAddress" ) );
 
@@ -310,7 +363,7 @@ DynamicFeedbackTask::OnInitialize( const SignalProperties& Input ) {
   mpFeedbackScene->SetCursorColor( mCursorColorFront );
 
   mrWindow.Show();
-  DisplayMessage( LocalizableString( "Timeout" ) );
+  DisplayMessage( "Timeout" );
   DisplayScore("0");
 
   mVisualFeedback = ( Parameter( "VisualFeedback" ) == 1);
@@ -334,7 +387,7 @@ DynamicFeedbackTask::OnStartRun() {
   State("PrimaryAxis") = mCursorAxis;
 
   AppLog << "Run #" << mRunCount << " started" << endl;
-  DisplayMessage( LocalizableString( ">> Get Ready! <<" ) );
+  DisplayMessage( ">> Get Ready! <<" );
 
   mSocket.open( mConnectorAddress );
 }
@@ -352,7 +405,7 @@ DynamicFeedbackTask::OnStopRun() {
 		   << "Game Score:\n " << mScore ;
   AppLog   << "====================="  << endl;
 
-  DisplayMessage( LocalizableString( "Timeout" ) );
+  DisplayMessage( "Timeout" );
   mSocket.close();
 }
 
@@ -451,7 +504,10 @@ DynamicFeedbackTask::OnFeedbackEnd()
   stringstream ss (stringstream::in | stringstream::out);
   int intScore = (mScore >= 0) ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
   ss << intScore;
-  DisplayScore(ss.str());
+  DisplayScore(ss.str());//LocalizableString( "Current Score:")
+
+  //if (mTactileFeedback == true && mIsTactileCatchTrial == false)
+	 // mTactorBoard->stopAllTactors();
  
 }
 
@@ -630,7 +686,7 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
 		mpFeedbackScene->SetTargetColor( RGBColor::Red, State( "ResultCode" ) - 1 );
 
 		//ADD: Send message of hit out to B2B Game
-    mSocket.mSocket.write("1", 1);
+        mSocket.write("1", 1);
 
 		mScoreCount = 0;
 

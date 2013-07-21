@@ -93,10 +93,10 @@ VisDisplayBase::ConfigContainer::Restore()
     QStringList cfgIDs = settings.childKeys();
     for( QStringList::iterator j = cfgIDs.begin(); j != cfgIDs.end(); ++j )
     {
-      CfgID cfgID( j->toStdString() );
+      CfgID cfgID( j->toLocal8Bit().constData() );
       if( cfgID != CfgID::None )
       {
-        string value = settings.value( *j ).toString().toStdString();
+        string value = settings.value( *j ).toString().toLocal8Bit().constData();
         ( *this )[ visID ].Put( cfgID, value, OnceUserDefined );
       }
     }
