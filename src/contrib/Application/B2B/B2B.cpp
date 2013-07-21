@@ -7,20 +7,13 @@
 
 #include "B2B.h"
 #include "Localization.h"
-//#include "FileUtils.h"
 #include "DFBuildScene2D.h"
-//#include "FeedbackScene3D.h"
 
 #include "buffers.h"
 #include <stdio.h>
 #include <math.h>
-
 #include <sstream>
 #include <algorithm>
-
-//#include "TactorManager.h"
-//#include "TactorBoard.h"
-
 
 #ifndef __BORLANDC__
 #include <QImage>
@@ -52,38 +45,26 @@ RegisterFilter( DynamicFeedbackTask, 3 );
 using namespace std;
 
 DynamicFeedbackTask::DynamicFeedbackTask()
-: mpFeedbackScene( NULL ),
-  mRenderingQuality( 0 ),
-  mpMessage( NULL ),
-  mpMessage2( NULL ),
-  //mpBackground( NULL ),
-  mCursorColorFront( RGBColor::White ),
-  mCursorColorBack( RGBColor::White ),
-  mRunCount( 0 ),
-  mTrialCount( 0 ),
-  mCurFeedbackDuration( 0 ),
-  mMaxFeedbackDuration( 0 ),
-  mCursorSpeedX( 1.0 ),
-  mCursorSpeedY( 1.0 ),
-  mCursorSpeedZ( 1.0 ),
-  mScore(0.0),//new score variable?
-  mScoreCount(0.0),//score counter
-  mTaskDiff(1.0),
-  mrWindow( Window() ),
-  //mFeedbackModulationType ( 0 ),
-  //mTactorBoard( NULL ),
-  //mTactileFeedback( false ),
-  mVisualFeedback( false),
-  //mIsTactileCatchTrial( false ),
-  mIsVisualCatchTrial( false )
-  //mTactorVar( 0.0 ),
-  //mTactorVarDelta( 0.0 ),
-  //mMaxValue( 0 ),
-  //mMinValue( 0 ),
-  //mHeldGain( 0 ),
-  //mHeldFrequency( 0 )
-
-{
+    : mpFeedbackScene( NULL ),
+      mRenderingQuality( 0 ),
+      mpMessage( NULL ),
+      mpMessage2( NULL ),
+      mCursorColorFront( RGBColor::White ),
+      mCursorColorBack( RGBColor::White ),
+      mRunCount( 0 ),
+      mTrialCount( 0 ),
+      mCurFeedbackDuration( 0 ),
+      mMaxFeedbackDuration( 0 ),
+      mCursorSpeedX( 1.0 ),
+      mCursorSpeedY( 1.0 ),
+      mCursorSpeedZ( 1.0 ),
+      mScore(0.0),//new score variable?
+      mScoreCount(0.0),//score counter
+      mTaskDiff(1.0),
+      mrWindow( Window() ),
+      mVisualFeedback( false),
+      mIsVisualCatchTrial( false ) {
+      
   BEGIN_PARAMETER_DEFINITIONS
 	  "Application:Targets int TaskDifficulty= 5"
 	  " // Difficulty is from to 1(hardest) to 5(easiest) ",
@@ -95,11 +76,6 @@ DynamicFeedbackTask::DynamicFeedbackTask()
       "  50  25  50 8 8 8 "
       "  50  10  50 8 8 8 "
       "   0   0   4 8 8 8 "
-	  /*"  35  35  50 8 8 8 "
-      "  65  35  50 8 8 8 "
-      "  35  65  50 8 8 8 "
-      "  65  65  50 8 8 8 "
-      "   0   0   4 8 8 8 "*/
       " // target positions and widths in percentage coordinates",
     "Application:Targets int TargetColor= 0x0000FF % % % " //0x808080
        " // target color (color)",
@@ -110,7 +86,6 @@ DynamicFeedbackTask::DynamicFeedbackTask()
           "0: test only the visible current target, "
           "1: test all targets "
           "(enumeration)",
-
 	
     "Application:Cursor float CursorWidth= 10 10 0.0 % "
       " // feedback cursor width in percent of screen width",
@@ -161,29 +136,11 @@ DynamicFeedbackTask::DynamicFeedbackTask()
 
     "Application:Feedback int VisualFeedback= 1 1 0 1 "
       "// provide visual stimulus (boolean)",
-    //"Application:Feedback int TactileFeedback= 1 1 0 1 "
-    //  "// provide tactile stimulus (boolean)",
     "Application:Feedback intlist VisualCatchTrials= 4 1 3 4 2 % % % // "
 	  "// list of visual catch trials, leave empty for none",
- //   "Application:Feedback intlist TactileCatchTrials= 4 1 3 4 2 % % % // "
-	//  "// list of tactile catch trials, leave empty for none",
- //   "Application:Stimuli string TactorBoardComPort= % % % % // "
- //     "COM Port for target tactor control board",
-	//"Application:Stimuli int TactileFeedbackModulationType= 0 0 0 1 // "
-	//  "Tactile feedback modulation type 0 intensity, 1 frequency (enumeration)",
-	//"Application:Stimuli int MaxValue= 320 0 % % // "
-	//  "// max value for stimulus feedback",
-	//"Application:Stimuli int MinValue= 30 0 % % // "
-	//  "// min value for stimulus feedback",
-	//"Application:Stimuli int HeldGain= 90 0 % % // "
-	//  "// gain during frequency modulation",
-	//"Application:Stimuli int HeldFrequency= 150 0 % % // "
-	//  "// frequency during gain modulatin",
 
 	"Application:Connector string ConnectorAddress= % "
     "localhost:20320 % % // IP address/port to read from, e.g. localhost:20320",
-
-
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -191,11 +148,11 @@ DynamicFeedbackTask::DynamicFeedbackTask()
     "CursorPosY " CURSOR_POS_BITS " 0 0 0",
     "CursorPosZ " CURSOR_POS_BITS " 0 0 0",
 	"GameScore " SCORE_BITS " 0 0 0", //score bits
-	"TaskDiff " TASK_DIFF_BITS " 0 0 0",//task difficulty
-	"TargetXWidth " TARGET_XWIDTH_BITS " 0 0 0",//target width in x
-	"TargetYWidth " TARGET_YWIDTH_BITS " 0 0 0",//target width in y
-	"CursorRadius " CURSOR_RADIUS_BITS " 0 0 0",//cursor radius
-	"PrimaryAxis " PRIMARY_AXIS_BITS " 0 0 0",//cursor radius
+	"TaskDiff " TASK_DIFF_BITS " 0 0 0", //task difficulty
+	"TargetXWidth " TARGET_XWIDTH_BITS " 0 0 0", //target width in x
+	"TargetYWidth " TARGET_YWIDTH_BITS " 0 0 0", //target width in y
+	"CursorRadius " CURSOR_RADIUS_BITS " 0 0 0", //cursor radius
+	"PrimaryAxis " PRIMARY_AXIS_BITS " 0 0 0", //cursor radius
   END_STATE_DEFINITIONS
 
   //Title Screen Messages
@@ -207,39 +164,23 @@ DynamicFeedbackTask::DynamicFeedbackTask()
             .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
             .SetObjectRect( rect );
 
- 
-  /*
-  GUI::Rect rect2 = { 0.8f, 0.00f, 1.0f, 0.1f };
-  //rect2->SetColor(RGBColor::Lime);
-  TextField mpBackground = TextField( mrWindow );
-  mpBackground->setTextColor(RGBColor::Black);
-			.SetColor(RGBColor::Lime)
-			.SetObjectRect(rect2)
-			.SetAspectRatioMode(GUI::AspectRatioModes::AdjustNone);
-  */
-
   //Score Message in top right corner
   GUI::Rect rect3 = { 0.89f, 0.01f, .99f, 0.09f };
-  //GUI::Rect rect2 = { 0.5f, 0.4f, 0.5f, 0.6f }; // x pos, xWidth, x pos, yHeight
   mpMessage2 = new TextField( mrWindow );
   mpMessage2->SetTextColor( RGBColor::Black )
             .SetTextHeight( 0.45f )
             .SetColor( RGBColor::White )
-            //.SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
 			.SetAspectRatioMode( GUI::AspectRatioModes::AdjustNone)
             .SetObjectRect( rect3 );
 }
 
-DynamicFeedbackTask::~DynamicFeedbackTask()
-{
+DynamicFeedbackTask::~DynamicFeedbackTask() {
   delete mpFeedbackScene;
 }
 
 void
-DynamicFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
-{
-  const char* vectorParams[] =
-  {
+DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
+  const char* vectorParams[] = {
     "CameraPos",
     "CameraAim",
     "LightSourcePos",
@@ -250,8 +191,7 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
       bcierr << "Parameter \"" << vectorParams[ i ] << "\" must have 3 entries" << endl;
 
   Parameter( "WorkspaceBoundaryColor" );
-  const char* colorParams[] =
-  {
+  const char* colorParams[] = {
     "CursorColorBack",
     "CursorColorFront",
     "TargetColor",
@@ -263,18 +203,14 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
       bcierr << "Invalid RGB value in " << colorParams[ i ] << endl;
 
   bool showTextures = ( Parameter( "RenderingQuality" ) > 0 );
-  const char* texParams[] =
-  {
+  const char* texParams[] = {
     "CursorTexture",
     "TargetTexture",
     "WorkspaceBoundaryTexture",
   };
-  for( size_t i = 0; i < sizeof( texParams ) / sizeof( *texParams ); ++i )
-  {
+  for( size_t i = 0; i < sizeof( texParams ) / sizeof( *texParams ); ++i ) {
     string filename = Parameter( texParams[ i ] );
-    if( showTextures && !filename.empty() )
-    {
-//      filename = FileUtils::AbsolutePath( filename );
+    if( showTextures && !filename.empty() ) {
       bool err = !ifstream( filename.c_str() ).is_open();
       if( !err )
       {
@@ -345,8 +281,7 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
 }
 
 void
-DynamicFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
-{
+DynamicFeedbackTask::OnInitialize( const SignalProperties& Input ) {
 
   mConnectorAddress = string( Parameter( "ConnectorAddress" ) );
 
@@ -365,16 +300,12 @@ DynamicFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
   mCursorAxis = static_cast<int>( Parameter( "cPrimaryAxis" )); //Primary control axis
 
   int renderingQuality = Parameter( "RenderingQuality" );
-  if( renderingQuality != mRenderingQuality )
-  {
+  if( renderingQuality != mRenderingQuality ) {
     mrWindow.Hide();
     mRenderingQuality = renderingQuality;
   }
   delete mpFeedbackScene;
-//  if( renderingQuality == 0 )
-    mpFeedbackScene = new DFBuildScene2D( mrWindow );
-//  else
-  //  mpFeedbackScene = new FeedbackScene3D( mrWindow );
+  mpFeedbackScene = new DFBuildScene2D( mrWindow );
   mpFeedbackScene->Initialize();
   mpFeedbackScene->SetCursorColor( mCursorColorFront );
 
@@ -389,12 +320,10 @@ DynamicFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
       for( int j = 0; j < Parameter( "VisualCatchTrials" )->NumValues(); ++j )
 	      mVisualCatchTrials.push_back( Parameter( "VisualCatchTrials" )( j ) );
   }
-
 }
 
 void
-DynamicFeedbackTask::OnStartRun()
-{
+DynamicFeedbackTask::OnStartRun() {
   ++mRunCount;
   mTrialCount = 0;
   mTrialStatistics.Reset();
@@ -407,14 +336,11 @@ DynamicFeedbackTask::OnStartRun()
   AppLog << "Run #" << mRunCount << " started" << endl;
   DisplayMessage( LocalizableString( ">> Get Ready! <<" ) );
 
-  mSocket = ConnectionToGame( &latestLineFromGame );
-  mSocket.mSocket.open( mConnectorAddress );
-  mSocket.Start();
+  mSocket.open( mConnectorAddress );
 }
 
 void
-DynamicFeedbackTask::OnStopRun()
-{
+DynamicFeedbackTask::OnStopRun() {
   AppLog   << "Run " << mRunCount << " finished: "
            << mTrialStatistics.Total() << " trials, "
            << mTrialStatistics.Hits() << " hits, "
@@ -426,18 +352,19 @@ DynamicFeedbackTask::OnStopRun()
 		   << "Game Score:\n " << mScore ;
   AppLog   << "====================="  << endl;
 
-  //mTactorBoard->disconnect();
-
   DisplayMessage( LocalizableString( "Timeout" ) );
-  mSocket.mSocket.close();
+  mSocket.close();
 }
 
 void
-DynamicFeedbackTask::OnTrialBegin()
-{
-  //ADD: read from socket:  if t_start... continue.
-  if (latestLineFromGame.compare("t_start") != 0)
+DynamicFeedbackTask::OnTrialBegin() {
+  // Block until the start signal is given
+  std::string line = mSocket.readline();
+  if (line.compare("t_start") != 0) {
+    // Crash out if the input is malformed
+    bcierr << "Unexpected input from socket: " << line << endl;
     return;
+  }
 
   ++mTrialCount;
   AppLog.Screen << "Trial #" << mTrialCount
@@ -484,9 +411,6 @@ DynamicFeedbackTask::OnTrialEnd()
 void
 DynamicFeedbackTask::OnFeedbackBegin()
 {
-  if (latestLineFromGame.compare("t_start") != 0)
-    return;
-
   mCurFeedbackDuration = 0;
 
   enum { x, y, z };
@@ -494,8 +418,6 @@ DynamicFeedbackTask::OnFeedbackBegin()
   MoveCursorTo( CursorPos( x ), CursorPos( y ), CursorPos( z ) );
   if (mVisualFeedback == true && mIsVisualCatchTrial == false)
     mpFeedbackScene->SetCursorVisible( true );
-
-
 }
 
 void
@@ -529,10 +451,7 @@ DynamicFeedbackTask::OnFeedbackEnd()
   stringstream ss (stringstream::in | stringstream::out);
   int intScore = (mScore >= 0) ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
   ss << intScore;
-  DisplayScore(ss.str());//LocalizableString( "Current Score:")
-
-  //if (mTactileFeedback == true && mIsTactileCatchTrial == false)
-	 // mTactorBoard->stopAllTactors();
+  DisplayScore(ss.str());
  
 }
 
@@ -748,9 +667,20 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
 
 	}
 	
-	doProgress = ( ++mCurFeedbackDuration > mMaxFeedbackDuration );
-    if (latestLineFromGame.compare("t_stop") != 0)
-      return;
+    if (mSocket.hasline()) {
+        std::string line = mSocket.readline();
+        if (line.compare("t_stop") != 0) {
+            // Crash out if the input is malformed
+            bcierr << "Unexpected input from socket: " << line << endl;
+            return;
+        }
+        doProgress = false;
+    } else {
+        // We don't want to stop the trial until the stop signal is received
+	    // doProgress = ( ++mCurFeedbackDuration > mMaxFeedbackDuration );
+        doProgress = true;
+    }
+    
   //doProgress = doProgress|| ( State( "ResultCode" ) != 0 );  Will keep things moving until end?
 }
 
@@ -809,14 +739,3 @@ DynamicFeedbackTask::DisplayScore( const string& inMessage )
 //   ss << number;//add number to the stream
 //   return ss.str();//return a string with the contents of the stream
 //}
-
-int 
-DynamicFeedbackTask::ConnectionToGame::OnExecute() 
-{
-  while (mSocket.is_open()) {
-    char buffer[100];
-    int res = mSocket.read(buffer, sizeof(buffer));
-    if (res > 0) 
-      *latestLine = std::string(buffer);
-  }
-}

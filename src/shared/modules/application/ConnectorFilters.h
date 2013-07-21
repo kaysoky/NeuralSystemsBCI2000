@@ -98,6 +98,7 @@ class ConnectorOutput : public GenericFilter
   };
   std::string mConnectorOutputAddresses;
   std::vector<Connection*> mConnections;
+  std::string mOutputFormat;
 };
 #endif // CONNECTOR_FILTERS_H
 

@@ -84,24 +84,9 @@ class DynamicFeedbackTask : public FeedbackTask
 		mIsVisualCatchTrial;
 
   TrialStatistics mTrialStatistics;
- 
-  class ConnectionToGame : public OSThread
-  {
-   public:
-    ConnectionToGame( std::string* line ) : mSocket() 
-    {
-      latestLine = line;
-    }
-    ~ConnectionToGame() { TerminateWait(); }
-    client_tcpsocket mSocket;
-   private:
-    int OnExecute();
-    std::string *latestLine;
-  };
-
-  ConnectionToGame mSocket;
+  
+  client_tcpsocket mSocket;
   std::string mConnectorAddress;
-  std::string latestLineFromGame;
 };
 
 #endif // CURSOR_FEEDBACK_TASK_H

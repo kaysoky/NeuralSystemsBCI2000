@@ -60,6 +60,7 @@
 #endif // _WIN32
 
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <set>
 
@@ -99,6 +100,9 @@ class streamsock
     bool        wait_for_write( int timeout = defaultTimeout, bool return_on_accept = false );
 
     size_t      read( char* buffer, size_t count );
+    std::string readline();
+    bool        hasline();
+    void        updateBuffer();
     size_t      write( const char* buffer, size_t count );
 
     typedef std::set<streamsock*> set_of_instances;
@@ -119,10 +123,11 @@ class streamsock
 
 
   private:
-    virtual void do_open() = 0;
-    virtual void do_accept() {}
-    bool         set_address( const std::string& address );
-    bool         set_address( const std::string& ip, unsigned short port );
+    virtual void      do_open() = 0;
+    virtual void      do_accept() {}
+    bool              set_address( const std::string& address );
+    bool              set_address( const std::string& ip, unsigned short port );
+    std::stringstream readlineBuffer;
 
   protected:
     virtual void set_socket_options();
