@@ -254,7 +254,7 @@ ConnectorOutput::Process( const GenericSignal& Input, GenericSignal& Output )
       Lock<Connection> lock( **i );
       ( **i ).Clear();
       
-      if (mOutputFormat.compare("Verbose") == 0) {
+      if (mOutputFormat.compare("JSON") == 0) {
         // Output a JSON dictionary with two root elements, "States" and "Channels"
         // States is a dictionary of { State name : State value, ... }
         **i << "{\"States\":{";

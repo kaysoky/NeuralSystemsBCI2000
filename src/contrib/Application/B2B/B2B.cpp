@@ -415,7 +415,7 @@ DynamicFeedbackTask::OnTrialBegin() {
   std::string line = mSocket.readline();
   if (line.compare("t_start") != 0) {
     // Crash out if the input is malformed
-    bcierr << "Unexpected input from socket: " << line << endl;
+    // bcierr << "Unexpected input from socket: " << line << endl;
     return;
   }
 
@@ -727,7 +727,7 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
         std::string line = mSocket.readline();
         if (line.compare("t_stop") != 0) {
             // Crash out if the input is malformed
-            bcierr << "Unexpected input from socket: " << line << endl;
+            // bcierr << "Unexpected input from socket: " << line << endl;
             return;
         }
         doProgress = false;
