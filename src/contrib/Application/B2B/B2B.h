@@ -17,38 +17,36 @@
 #include "DFBuildScene.h"
 #include "SockStream.h"
 
-class DynamicFeedbackTask : public FeedbackTask
-{
- public:
-  DynamicFeedbackTask();
-  virtual ~DynamicFeedbackTask();
+class DynamicFeedbackTask : public FeedbackTask {
+public:
+    DynamicFeedbackTask();
+    virtual ~DynamicFeedbackTask();
 
- private:
-  // Events to be handled by FeedbackTask descendants.
-  //  Events triggered by the GenericFilter interface
-  virtual void OnPreflight( const SignalProperties& Input ) const;
-  virtual void OnInitialize( const SignalProperties& Input );
-  virtual void OnStartRun();
-  virtual void OnStopRun();
-  virtual void OnHalt()                                           {}
-  //  Events triggered during the course of a trial
-  virtual void OnTrialBegin();
-  virtual void OnTrialEnd();
-  virtual void OnFeedbackBegin();
-  virtual void OnFeedbackEnd();
-  //  Dispatching of the input signal.
-  //  Each call to GenericSignal::Process() is dispatched to one of these
-  //  events, depending on the phase in the sequence.
-  //  There, each handler function corresponds to a phase.
-  //  If a handler sets the "progress" argument to true, the application's
-  //  state will switch to the next phase.
-  virtual void DoPreRun(       const GenericSignal&, bool& doProgress );
-  virtual void DoPreFeedback(  const GenericSignal&, bool& doProgress );
-  virtual void DoFeedback(     const GenericSignal&, bool& doProgress );
-  virtual void DoPostFeedback( const GenericSignal&, bool& doProgress );
-  virtual void DoITI(          const GenericSignal&, bool& doProgress );
+private:
+    // See: http://www.bci2000.org/wiki/index.php/Programming_Reference:FeedbackTask_Class#Events_Summary
+    // Note: any method with a 'doProgress' bool can loop when set to false
+    
+    // Startup events
+    virtual void OnPreflight( const SignalProperties& Input ) const;
+    virtual void OnInitialize( const SignalProperties& Input );
+    virtual void OnStartRun();
+    virtual void DoPreRun( const GenericSignal&, bool& doProgress );
+    
+        // Trial Loop
+        virtual void OnTrialBegin();
+        virtual void DoPreFeedback( const GenericSignal&, bool& doProgress ) { doProgress = true; };
+        virtual void OnFeedbackBegin();
+        virtual void DoFeedback( const GenericSignal&, bool& doProgress );
+        virtual void OnFeedbackEnd();
+        virtual void DoPostFeedback( const GenericSignal&, bool& doProgress ) { doProgress = true; };
+        virtual void OnTrialEnd();
+        virtual void DoITI( const GenericSignal&, bool& doProgress );
+        
+    // Cleanup events
+    virtual void OnStopRun();
+    virtual void OnHalt() {};
 
- private:
+private:
   void MoveCursorTo( float x, float y, float z );
   void DisplayMessage( const std::string& );
   void DisplayScore( const std::string& );
@@ -64,18 +62,19 @@ class DynamicFeedbackTask : public FeedbackTask
 
   RGBColor mCursorColorFront,
            mCursorColorBack;
-  int      mRunCount,
-           mTrialCount,
-		   mTaskDiff,//task difficulty
-		   mCursorAxis,//cursor control axis
-           mCurFeedbackDuration,
-           mMaxFeedbackDuration;
 
-  float    mCursorSpeedX,
-           mCursorSpeedY,
-           mCursorSpeedZ,
-		   mScore,//Score
-		   mScoreCount;//Score counter
+  int mRunCount,
+      mTrialCount,
+		  mTaskDiff, //task difficulty
+		  mCursorAxis, //cursor control axis
+      mCurFeedbackDuration,
+      mMaxFeedbackDuration;
+
+  float mCursorSpeedX,
+        mCursorSpeedY,
+        mCursorSpeedZ,
+		    mScore, //Score
+		    mScoreCount; //Score counter
   
  
   std::vector<int> mVisualCatchTrials;

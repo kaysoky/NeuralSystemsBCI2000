@@ -108,7 +108,9 @@ GradientEllipticShape::OnPaint( const GUI::DrawContext& inDC )
 //
 //    fillBrush.setStyle( Qt::CrossPattern ); //change from solid Pattern to Radial Gradient
 	fillGradient.setColorAt(0, fillColor);
-	fillGradient.setColorAt(1, Qt::black); // TODO, this should be set to the background color
+  fillGradient.setColorAt(1, fillColor);
+  // Disable gradient
+	// fillGradient.setColorAt(1, Qt::black);
 //    fillBrush.setColor( fillColor );
   }
 

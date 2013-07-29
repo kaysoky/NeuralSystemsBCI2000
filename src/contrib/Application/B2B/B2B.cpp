@@ -333,9 +333,7 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
 }
 
 void
-DynamicFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
-{
-
+DynamicFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ ) {
   mConnectorAddress = string( Parameter( "ConnectorAddress" ) );
 
   // Cursor speed in pixels per signal block duration:
@@ -393,32 +391,22 @@ DynamicFeedbackTask::OnStartRun() {
 }
 
 void
-DynamicFeedbackTask::OnStopRun() {
-  AppLog   << "Run " << mRunCount << " finished: "
-           << mTrialStatistics.Total() << " trials, "
-           << mTrialStatistics.Hits() << " hits, "
-           << mTrialStatistics.Invalid() << " invalid.\n";
-  int validTrials = mTrialStatistics.Total() - mTrialStatistics.Invalid();
-  if( validTrials > 0 )
-    AppLog << ( 200 * mTrialStatistics.Hits() + 1 ) / validTrials / 2  << "% correct, "
-           << mTrialStatistics.Bits() << " bits transferred.\n, "
-		   << "Game Score:\n " << mScore ;
-  AppLog   << "====================="  << endl;
+DynamicFeedbackTask::DoPreRun( const GenericSignal&, bool& doProgress ) {
+  // Wait for the start signal
+  doProgress = false;
+  if (mSocket.can_read()) {
+    std::string line = mSocket.readline();
 
-  DisplayMessage( "Timeout" );
-  mSocket.close();
+    if (line.compare("t_start") != 0) {
+      bciout << "DoPreRun: Unexpected input = \"" << line << "\"" << endl;
+      return;
+    }
+    doProgress = true;
+  }
 }
 
 void
 DynamicFeedbackTask::OnTrialBegin() {
-  // Block until the start signal is given
-  std::string line = mSocket.readline();
-  if (line.compare("t_start") != 0) {
-    // Crash out if the input is malformed
-    // bcierr << "Unexpected input from socket: " << line << endl;
-    return;
-  }
-
   ++mTrialCount;
   AppLog.Screen << "Trial #" << mTrialCount
                 << ", target: " << State( "TargetCode" )
@@ -451,19 +439,7 @@ DynamicFeedbackTask::OnTrialBegin() {
 }
 
 void
-DynamicFeedbackTask::OnTrialEnd()
-{
-  DisplayMessage( "" );
-  if (mVisualFeedback == true && mIsVisualCatchTrial == false)
-    mpFeedbackScene->SetCursorVisible( false );
-
-  for( int i = 0; i < mpFeedbackScene->NumTargets(); ++i )
-    mpFeedbackScene->SetTargetVisible( false, i );
-}
-
-void
-DynamicFeedbackTask::OnFeedbackBegin()
-{
+DynamicFeedbackTask::OnFeedbackBegin() {
   mCurFeedbackDuration = 0;
 
   enum { x, y, z };
@@ -474,177 +450,14 @@ DynamicFeedbackTask::OnFeedbackBegin()
 }
 
 void
-DynamicFeedbackTask::OnFeedbackEnd()
-{
-
-  if( State( "ResultCode" ) == 0 )
-  {
-    AppLog.Screen << "-> aborted" << endl;
-    mTrialStatistics.UpdateInvalid();
-  }
-  else
-  {
-    mTrialStatistics.Update( State( "TargetCode" ), State( "ResultCode" ) );
-    if( State( "TargetCode" ) == State( "ResultCode" ) )
-    {
-	  //mScore = mScore + 100;//NEED to figure out way to add based on target... try with multi-targ for now.
-      //mpFeedbackScene->SetCursorColor( RGBColor::Yellow );
-      //mpFeedbackScene->SetTargetColor( RGBColor::Yellow, State( "ResultCode" ) - 1 );
-      AppLog.Screen << "-> hit\n " << "Your Score:" << mScore << endl;
-	  State("GameScore") = mScore;
-    }
-    else
-    {
-      mScore = mScore;
-	  AppLog.Screen << "-> miss\n " << "Your Score:" << mScore << endl;
-	  State("GameScore") = mScore;
-    }
-  }
-  //Persistent Score Display
-  stringstream ss (stringstream::in | stringstream::out);
-  int intScore = (mScore >= 0) ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
-  ss << intScore;
-  DisplayScore(ss.str());//LocalizableString( "Current Score:")
-
-  //if (mTactileFeedback == true && mIsTactileCatchTrial == false)
-	 // mTactorBoard->stopAllTactors();
- 
-}
-
-void
-DynamicFeedbackTask::DoPreRun( const GenericSignal&, bool& /*doProgress*/ )
-{
-}
-
-void
-DynamicFeedbackTask::DoPreFeedback( const GenericSignal&, bool& /*doProgress*/ )
-{
-}
-
-void
-DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProgress )
-{
-	
-	// Update cursor position
-	float x = mpFeedbackScene->CursorXPosition(),
-		y = mpFeedbackScene->CursorYPosition(),
-		z = mpFeedbackScene->CursorZPosition();
-
-	//Set Cursor axis number of dimensions
+DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProgress ) {
+	doProgress = false;
   
-
-	//Simultaneous BCI input (control (brain) signal for Y DOF, keyboard for the X DOF)
-	if (Parameter( "KeyboardControl" ) == 1) {
-	if( mCursorAxis == 1)
-	{
-		if( ControlSignal.Channels() > 0 )
-		{
-			float dy = mCursorSpeedX * ControlSignal( 0, 0 ); //store dy to modulate speed in the x direction
-			
-			//AppLog.Screen<<"X Pos: "<<x<<endl;
-
-			bool rightArrow = false;
-			bool leftArrow = false;
-
-			//State variable is a vector with length SampleBlockSize. Check entire vector for key press
-			for(int i = 0;i<Parameter( "SampleBlockSize" );i++)
-			{
-				//check for left key press
-				if(!rightArrow && (State("KeyDown")(i) == VK_RIGHT))
-				{
-					rightArrow = true;
-					//AppLog.Screen<<"RIGHT RIGHT RIGHT RIGHT RIGHT"<<endl;
-					break; //break from loop if we detect an arrow press
-				}
-				//check for left arrow press
-				else if(!leftArrow && (State("KeyDown")(i) == VK_LEFT))
-				{
-					leftArrow = true;
-					//AppLog.Screen<<"LEFT LEFT LEFT LEFT LEFT LEFT"<<endl;
-					break; //break from loop if we detect an arrow press
-				}
-			}
-
-			//implement gravity to pull cursor back towards center along keyboard controlled axis
-			if(Parameter( "CursorControlMode" )==0) //Gravity mode
-			{
-				//update y position. Add in gravity term
-				float gravity = mCursorSpeedX*Parameter("CursorGravity")*((x>50) - (x<50));
-				x += Parameter( "CursorSpeedMult" )*mCursorSpeedX*(rightArrow - leftArrow);
-
-				if((x>50.0) && ((x-gravity)<50.0))
-				{
-					x = 50.0;
-				}
-				else if((x<50) && ((x-gravity)>50))
-				{
-					x = 50.0;
-				}
-				else
-					x-=gravity;
-			}
-			else if (Parameter( "CursorControlMode" )==1) // velocity dependent on velocity in brain controlled axis direction
-			{
-				//find the soon to be updated Y position to compute velocity
-				float actualY = max( mpFeedbackScene->CursorRadius(), min( 100 - mpFeedbackScene->CursorRadius(), y+dy ) );
-
-				//move cursor either right or left (only one of the bools will be true). modulate by velocity
-				x += Parameter( "CursorSpeedMult" )*abs(actualY-y+1)*mCursorSpeedX * (rightArrow - leftArrow);
-			}
-			y += dy;
-		}
-	}
-
-	//Simultaneous BCI input (control (brain) signal for Y DOF, keyboard for the X DOF)
-	else if( mCursorAxis == 2)
-	{
-		if( ControlSignal.Channels() > 0 )
-		{
-			float dx = mCursorSpeedX * ControlSignal( 0, 0 ); //store dy to modulate speed in the x direction
-			
-			//AppLog.Screen<<"Position Update"<<endl;
-
-			bool upArrow = false;
-			bool downArrow = false;
-
-			//State variable is a vector with length SampleBlockSize. Check entire vector for key press
-			for(int i = 0;i<Parameter( "SampleBlockSize" );i++)
-			{
-				//check for left key press
-				if(!upArrow && (State("KeyDown")(i) == VK_UP))
-				{
-					upArrow = true;
-					//AppLog.Screen<<"UP UP UP UP UP UP"<<endl;
-					break; //break from loop if we detect an arrow press
-				}
-				//check for left arrow press
-				else if(!downArrow && (State("KeyDown")(i) == VK_DOWN))
-				{
-					downArrow = true;
-					//AppLog.Screen<<"DOWN DOWN DOWN DOWN DOWN DOWN"<<endl;
-					break; //break from loop if we detect an arrow press
-				}
-			}
-
-			//implement gravity to pull cursor back towards center along keyboard controlled axis
-			if(Parameter( "CursorControlMode" )==0) //Gravity mode
-			{
-				//update y position. Add in gravity term
-				float gravity = mCursorSpeedX*Parameter("CursorGravity")*((y>50) - (y<50));
-				y += Parameter( "CursorSpeedMult" )*mCursorSpeedX * (upArrow - downArrow) + gravity;
-			}
-			else if (Parameter( "CursorControlMode" )==1) // velocity dependent on velocity in brain controlled axis direction
-			{
-				//find the soon to be updated X position to compute velocity
-				float actualX = max( mpFeedbackScene->CursorRadius(), min( 100 - mpFeedbackScene->CursorRadius(), x+dx ) );
-
-				//move cursor either right or left (only one of the bools will be true). modulate by velocity
-				y += Parameter( "CursorSpeedMult" )*abs(actualX-x+1)*mCursorSpeedX * (upArrow - downArrow);
-			}
-			x += dx;
-		}  
-	}
-	}
+  // Update cursor position
+  float x = mpFeedbackScene->CursorXPosition(),
+        y = mpFeedbackScene->CursorYPosition(),
+        z = mpFeedbackScene->CursorZPosition();
+  
 	// Restrict cursor movement to the inside of the bounding box:
 	float r = mpFeedbackScene->CursorRadius();
 	x = max( r, min( 100 - r, x ) ),
@@ -657,99 +470,104 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
 	State( "CursorPosY" ) = static_cast<int>( y * coordToState );
 	State( "CursorPosZ" ) = static_cast<int>( z * coordToState );
 
-	// Test for target hits
-	if( Parameter( "TestAllTargets" ) != 0 )
-	{
-		int hitTarget = 0;
-		for( int i = 0; i < mpFeedbackScene->NumTargets(); ++i )
-		{
-			if(mpFeedbackScene->TargetHit(i))
-			{ // In case of a positive hit test for multiple targets, take the closer one.
-				if(hitTarget==0 || (mpFeedbackScene->CursorTargetDistance(hitTarget-1) > mpFeedbackScene->CursorTargetDistance(i)))
-				hitTarget = i + 1;
-			}
-		}
-		State( "ResultCode" ) = hitTarget;
-		////Change color while feedback is ongoing
-		//mpFeedbackScene->SetCursorColor( RGBColor::Red );
-		//mpFeedbackScene->SetTargetColor( RGBColor::Red, State( "ResultCode" ) - 1 );
-		////will this work as a counter?
-		//mScoreCount = 10*(5-(mpFeedbackScene->CursorTargetDistance( hitTarget - 1 )))/mTaskDiff;//5 is 'radius'+1
-		//mScore = mScore + mScoreCount;
-	}
-	else
-	{
-	if( mpFeedbackScene->TargetHit( State( "TargetCode" ) - 1 ) ) //targets 1-5, index 0-4
-	{
-		State( "ResultCode" ) = State( "TargetCode" );
-		mpFeedbackScene->SetCursorColor( RGBColor::White );
-		mpFeedbackScene->SetTargetColor( RGBColor::Red, State( "ResultCode" ) - 1 );
+  // AppLog.Screen << "Cursor distance: " << mpFeedbackScene->CursorTargetDistance( State( "TargetCode" ) - 1 ) << endl;
 
-		//ADD: Send message of hit out to B2B Game
-        mSocket.write("1", 1);
+  if( mpFeedbackScene->TargetHit( State( "TargetCode" ) - 1 ) ) {
+    State( "ResultCode" ) = State( "TargetCode" );
+    mpFeedbackScene->SetCursorColor( RGBColor::White );
+    mpFeedbackScene->SetTargetColor( RGBColor::Red, State( "ResultCode" ) - 1 );
 
-		mScoreCount = 0;
+    // Send message of hit out to B2B Game
+    mSocket.write("1", 1);
+    doProgress = true;
+  }
 
-		//will this work as a counter?
-		float cursorDist = abs(mpFeedbackScene->CursorTargetDistance( State( "ResultCode" ) - 1 ));
-		//mScoreCount = abs(5-cursorDist)/mTaskDiff;//5 is 'radius'+1
+  if (mSocket.can_read()) {
+    std::string line = mSocket.readline();
 
-
-		mScoreCount = mTaskDiff*(1/(1+cursorDist));
-	  
-		AppLog.Screen << "-> In Scoring Range...\n " << "Points Added:" << mScoreCount <<"\t Dist: "<<cursorDist<< endl;
-		mScore = mScore + mScoreCount;
-		State("GameScore") = mScore;
-		//Display Score update
-		stringstream ss (stringstream::in | stringstream::out);
-		int intScore = (mScore >= 0) ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
-		ss << intScore;
-		DisplayScore(ss.str());//LocalizableString( "Current Score:")
-	}
-	else
-	{
-		RGBColor targetColor = RGBColor( Parameter( "TargetColor" ) );
-		mpFeedbackScene->SetTargetColor( targetColor, State( "TargetCode" ) - 1 );
-		mScoreCount = 0;
-		//AppLog.Screen << "-> Out of Range...\n " << "Points Added:" << mScoreCount << endl;
-		mScore = mScore + mScoreCount;
-		State("GameScore") = mScore;
-		//Display Score update
-		stringstream ss (stringstream::in | stringstream::out);
-		int intScore = (mScore >= 0) ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
-		ss << intScore;
-		DisplayScore(ss.str());//LocalizableString( "Current Score:")
-	}
-
-	}
-	
-    if (mSocket.hasline()) {
-        std::string line = mSocket.readline();
-        if (line.compare("t_stop") != 0) {
-            // Crash out if the input is malformed
-            // bcierr << "Unexpected input from socket: " << line << endl;
-            return;
-        }
-        doProgress = false;
-    } else {
-        // We don't want to stop the trial until the stop signal is received
-	    // doProgress = ( ++mCurFeedbackDuration > mMaxFeedbackDuration );
-        doProgress = true;
+    if (line.compare("t_stop") != 0) {
+      bciout << "DoFeedback: Unexpected input = \"" << line << "\"" << endl;
+      return;
     }
-    
-  //doProgress = doProgress|| ( State( "ResultCode" ) != 0 );  Will keep things moving until end?
+    doProgress = true;
+  }
 }
 
 void
-DynamicFeedbackTask::DoPostFeedback( const GenericSignal&, bool& /*doProgress*/ )
-{
-	//Add time for free movement?
+DynamicFeedbackTask::OnFeedbackEnd() {
+  if( State( "ResultCode" ) == 0 ) {
+    AppLog.Screen << "-> aborted" << endl;
+    mTrialStatistics.UpdateInvalid();
+
+  } else {
+    mTrialStatistics.Update( State( "TargetCode" ), State( "ResultCode" ) );
+    if( State( "TargetCode" ) == State( "ResultCode" ) ) {
+	    //mScore = mScore + 100;//NEED to figure out way to add based on target... try with multi-targ for now.
+      //mpFeedbackScene->SetCursorColor( RGBColor::Yellow );
+      //mpFeedbackScene->SetTargetColor( RGBColor::Yellow, State( "ResultCode" ) - 1 );
+      AppLog.Screen << "-> hit\n " << "Your Score:" << mScore << endl;
+	    State("GameScore") = mScore;
+    } else {
+      mScore = mScore;
+	    AppLog.Screen << "-> miss\n " << "Your Score:" << mScore << endl;
+	    State("GameScore") = mScore;
+    }
+  }
+
+  //Persistent Score Display
+  stringstream ss (stringstream::in | stringstream::out);
+  int intScore = mScore >= 0 ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
+  ss << intScore;
+  DisplayScore(ss.str());
+
+  if (mVisualFeedback == true && mIsVisualCatchTrial == false) {
+    // mpFeedbackScene->SetCursorVisible( false );
+  }
 }
 
 void
-DynamicFeedbackTask::DoITI( const GenericSignal&, bool& /*doProgress*/ )
-{
+DynamicFeedbackTask::OnTrialEnd() {
+  for( int i = 0; i < mpFeedbackScene->NumTargets(); ++i ) {
+    // mpFeedbackScene->SetTargetVisible( false, i );
+  }
 }
+
+void
+DynamicFeedbackTask::DoITI( const GenericSignal&, bool& doProgress ) {
+  // Wait for the start signal
+  doProgress = false;
+  if (mSocket.can_read()) {
+    std::string line = mSocket.readline();
+
+    if (line.compare("t_stop") == 0) {
+      bciout << "DoITI: Already waiting for t_start" << endl;
+    }
+
+    if (line.compare("t_start") != 0) {
+      bciout << "DoITI: Unexpected input = \"" << line << "\"" << endl;
+      return;
+    }
+    doProgress = true;
+  }
+}
+
+void
+DynamicFeedbackTask::OnStopRun() {
+  AppLog   << "Run " << mRunCount << " finished: "
+           << mTrialStatistics.Total() << " trials, "
+           << mTrialStatistics.Hits() << " hits, "
+           << mTrialStatistics.Invalid() << " invalid.\n";
+  int validTrials = mTrialStatistics.Total() - mTrialStatistics.Invalid();
+  if( validTrials > 0 )
+    AppLog << ( 200 * mTrialStatistics.Hits() + 1 ) / validTrials / 2  << "% correct, "
+           << mTrialStatistics.Bits() << " bits transferred.\n, "
+		   << "Game Score:\n " << mScore ;
+  AppLog   << "====================="  << endl;
+
+  DisplayMessage( "Timeout" );
+  mSocket.close();
+}
+
 
 // Access to graphic objects
 void
@@ -788,10 +606,3 @@ DynamicFeedbackTask::DisplayScore( const string& inMessage )
     mpMessage2->Show();
   }
 }
-
-//DynamicFeedbackTask::IntToString(int number)
-//{
-//   stringstream ss;//create a stringstream
-//   ss << number;//add number to the stream
-//   return ss.str();//return a string with the contents of the stream
-//}

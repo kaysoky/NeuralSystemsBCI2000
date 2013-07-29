@@ -408,31 +408,15 @@ streamsock::read( char* buffer, size_t count )
   return result;
 }
 
-/**
- * This method keeps an internal buffer of the socket stream, 
- * meaning that calling read() will not output contiguously.
- */
 std::string streamsock::readline() {
-  while (!hasline()) { updateBuffer(); }
-  std::string line;
-  std::getline(readlineBuffer, line);
-  return line;
-}
-
-bool streamsock::hasline() {
-  if (can_read()) updateBuffer();
-  return readlineBuffer.str().find('\n') != std::string::npos;
-}
-
-/**
- * Pulls some data from the socket into the buffer.
- */
-void streamsock::updateBuffer() {
-  size_t count = 1000;
+  size_t count = 50;
   char* buffer = new char[count];
   size_t res = read(buffer, count);
-  readlineBuffer.write(buffer, res);
-  delete [] buffer;
+
+  stringstream line;
+  line.write(buffer, res);
+
+  return line.str();
 }
 
 size_t

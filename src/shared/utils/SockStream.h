@@ -127,7 +127,6 @@ class streamsock
     virtual void      do_accept() {}
     bool              set_address( const std::string& address );
     bool              set_address( const std::string& ip, unsigned short port );
-    std::stringstream readlineBuffer;
 
   protected:
     virtual void set_socket_options();
