@@ -47,26 +47,39 @@
 
 using namespace std;
 using namespace bci;
+using namespace StatisticalObserver;
+
+static double CalibrateTo = 1e-6; // muV
 
 RegisterFilter( DataIOFilter, 0 );
 
+enum TimingChannelIdx
+{
+  Block,
+  BlockNom,
+  BlockAvg,
+  Roundtrip,
+  Stimulus,
+
+  NumTimingChannels
+};
 
 DataIOFilter::DataIOFilter()
 : mpADC( GenericFilter::PassFilter<GenericADC>() ),
   mpSourceFilter( NULL ),
   mpFileWriter( NULL ),
+  mpFileWriterInput( NULL ),
   mVisualizeSource( false ),
   mVisualizeTiming( false ),
   mVisualizeSourceDecimation( 1 ),
   mVisualizeSourceBufferSize( 1 ),
   mSourceVis( "SRCD" ),
   mTimingVis( "RNDT" ),
-  mTimingSignal( 3, 1 ),
+  mTimingSignal( NumTimingChannels, 1 ),
   mBlockCount( 0 ),
+  mIsFirstBlock( false ),
   mBlockDuration( 0 ),
-  mSampleBlockSize( 0 ),
-  mTimingBufferCursor( 0 ),
-  mEvaluateTiming( true )
+  mSampleBlockSize( 0 )
 {
   BCIEvent::SetEventQueue( &mBCIEvents );
 
@@ -165,9 +178,9 @@ DataIOFilter::Publish()
       "// number of blocks to aggregate before sending to operator",
     "Visualize:Source%20Signal int VisualizeSourceTime= 2s 2s 0 % "
       "// how much time in Source visualization",
-    "Visualize:Source%20Signal int SourceMin= -100muV -100muV % % "
+    "Visualize:Source%20Signal int SourceMin= auto % % % "
       "// raw signal vis Min Value",
-    "Visualize:Source%20Signal int SourceMax= 100muV 100muV % % "
+    "Visualize:Source%20Signal int SourceMax= auto % % % "
       "// raw signal vis Max Value",
   END_PARAMETER_DEFINITIONS
 
@@ -289,85 +302,12 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   // Sub-filter preflight/signal properties.
   // The ADC and file writer filters must have a position string greater than
   // that of the DataIOFilter.
-  SignalProperties adcInput;
-  adcInput.SetChannels( Parameter( "SourceCh" ) )
-          .SetElements( Parameter( "SampleBlockSize" ) )
-          .SetUpdateRate( Parameter( "SamplingRate" ).InHertz() / Parameter( "SampleBlockSize" ) );
-  if( sourceChOffsetConsistent && sourceChGainConsistent )
-  {
-    for( int ch = 0; ch < adcInput.Channels(); ++ch )
-    {
-      double gain = 0;
-      string symbol;
-      Parameter( "SourceChGain" )( ch ) >> gain >> symbol;
-      adcInput.ValueUnit( ch ).SetOffset( Parameter( "SourceChOffset" )( ch ) )
-                              .SetGain( gain )
-                              .SetSymbol( symbol );
-    }
-  }
-  adcInput.ElementUnit().SetOffset( 0 )
-                        .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
-                        .SetSymbol( "s" );
-  Output = adcInput;
-  mADCInput.SetProperties( adcInput );
-
-  if( mpADC )
-    mpADC->CallPreflight( adcInput, Output );
-
-  // Fix update and sampling rates in case Output has been reset by the ADC's Preflight() function:
-  if( Output.ElementUnit().Symbol().empty() )
-    Output.ElementUnit().SetOffset( 0 )
-                        .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
-                        .SetSymbol( "s" );
-
-  for( int ch = 0; ch < Output.Channels(); ++ch )
-  {
-    double gain = 0;
-    string symbol;
-    Parameter( "SourceChGain" )( ch ) >> gain >> symbol;
-    Output.ValueUnit( ch ).SetOffset( Parameter( "SourceChOffset" )( ch ) )
-                          .SetGain( gain )
-                          .SetSymbol( symbol );
-  }
-  Output.SetUpdateRate( Parameter( "SamplingRate" ).InHertz() / Parameter( "SampleBlockSize" ) );
-
-  if( !mpADC->IsRealTimeSource() )
-    if( OptionalParameter( "EvaluateTiming", 1 ) == 0 )
-      bciwarn << "The EvaluateTiming parameter is false, so realtime operation will not be enforced" << endl;
-
-  if( mpSourceFilter )
-  {
-    SignalProperties sourceFilterInput( Output );
-    mpSourceFilter->CallAutoConfig( sourceFilterInput );
-    mpSourceFilter->CallPreflight( sourceFilterInput, Output );
-    if( Output != sourceFilterInput )
-      bcierr << ClassName( typeid( *mpSourceFilter ) )
-             << " input and output signal properties must match"
-             << " when used as a source filter"
-             << endl;
-  }
-
-  if( !mpFileWriter )
-  {
-    bcierr << "Expected a file writer filter instance to be present" << endl;
-  }
-  else
-  {
-    SignalProperties writerOutput;
-    mpFileWriter->CallAutoConfig( Output );
-    mpFileWriter->CallPreflight( Output, writerOutput );
-    if( !writerOutput.IsEmpty() )
-      bcierr << "Expected empty output signal from file writer" << endl;
-  }
-
-  // Signal properties.
-  if( !Input.IsEmpty() )
-    bcierr << "Expected empty input signal" << endl;
-
+  SignalProperties adcOutput;
+  AdjustProperties( adcOutput );
   // Channel labels.
   set<string> names;
-  LabelIndex& outputLabels = Output.ChannelLabels();
-  int namesFromParam = min( Output.Channels(), Parameter( "ChannelNames" )->NumValues() );
+  LabelIndex& outputLabels = adcOutput.ChannelLabels();
+  int namesFromParam = min( adcOutput.Channels(), Parameter( "ChannelNames" )->NumValues() );
   for( int i = 0; i < namesFromParam; ++i )
   {
     string name = Parameter( "ChannelNames" )( i );
@@ -377,62 +317,130 @@ DataIOFilter::Preflight( const SignalProperties& Input,
       bcierr << "Duplicate name: \"" << name << "\" in ChannelNames parameter" << endl;
     outputLabels[i] = name;
   }
-  for( int i = namesFromParam; i < Output.Channels(); ++i )
+  for( int i = namesFromParam; i < adcOutput.Channels(); ++i )
   {
     ostringstream oss;
     oss << "Ch" << i + 1;
     outputLabels[i] = oss.str();
   }
-  mInputBuffer.SetProperties( Output );
+  // Calibration
+  bool unitsPresent = false;
+  for( int ch = 0; ch < adcOutput.Channels(); ++ch )
+  {
+    PhysicalUnit& u = adcOutput.ValueUnit( ch );
+    u.SetOffset( Parameter( "SourceChOffset" )( ch ) )
+     .SetGainWithSymbol( Parameter( "SourceChGain" )( ch ) );
+    unitsPresent |= !u.Symbol().empty();
+  }
+  if( !unitsPresent )
+  {
+    for( int ch = 0; ch < adcOutput.Channels(); ++ch )
+    {
+      PhysicalUnit& u = adcOutput.ValueUnit( ch );
+        u.SetGain( u.Gain() * 1e-6 ).SetSymbol( "V" );
+    }
+  }
+  Output = adcOutput;
+  if( mpADC )
+    mpADC->CallPreflight( adcOutput, Output );
+  // Fixup Output properties without destroying changes made by the ADC filter.
+  AdjustProperties( Output );
+  for( int ch = 0; ch < Output.Channels(); ++ch )
+  {
+    PhysicalUnit& a = adcOutput.ValueUnit( ch ),
+                & u = Output.ValueUnit( ch );
+    u.SetOffset( a.Offset() )
+     .SetGain( a.Gain() )
+     .SetSymbol( a.Symbol() );
+  }
+  adcOutput = Output;
+  mADCOutput.SetProperties( adcOutput );
+  if( !mpADC->IsRealTimeSource() )
+    if( OptionalParameter( "EvaluateTiming", 1 ) == 0 )
+      bciwarn << "The EvaluateTiming parameter is false, so realtime operation will not be enforced" << endl;
 
+  if( !mpSourceFilter )
+  {
+    mSourceFilterOutput = GenericSignal();
+    mpFileWriterInput = &mADCOutput;
+  }
+  else
+  {
+    mpSourceFilter->CallAutoConfig( adcOutput );
+    SignalProperties sourceFilterOutput( adcOutput );
+    mpSourceFilter->CallPreflight( adcOutput, sourceFilterOutput );
+    mSourceFilterOutput.SetProperties( sourceFilterOutput );
+    mpFileWriterInput = &mSourceFilterOutput;
+  }
+
+  if( !mpFileWriter )
+  {
+    bcierr << "Expected a file writer filter instance to be present" << endl;
+  }
+  else
+  {
+    SignalProperties writerOutput;
+    mpFileWriter->CallAutoConfig( mpFileWriterInput->Properties() );
+    mpFileWriter->CallPreflight( mpFileWriterInput->Properties(), writerOutput );
+    if( !writerOutput.IsEmpty() )
+      bcierr << "Expected empty output signal from file writer" << endl;
+  }
+
+  // Signal properties.
+  if( !Input.IsEmpty() )
+    bcierr << "Expected empty input signal" << endl;
+
+  for( int ch = 0; ch < Output.Channels(); ++ch )
+  {
+    PhysicalUnit& u = Output.ValueUnit( ch );
+    double physMin = u.RawToPhysicalValue( u.RawMin() ),
+           physMax = u.RawToPhysicalValue( u.RawMax() );
+    u.SetOffset( 0 )
+     .SetGain( CalibrateTo );
+    u.SetRawMin( u.PhysicalToRawValue( physMin ) )
+     .SetRawMax( u.PhysicalToRawValue( physMax ) );
+  }
+  Output.SetType( SignalType::float32 );
+
+  // Range.
+  if( Parameter( "SourceMin" ) != "auto" )
+  {
+    double rangeMin = Output.ValueUnit().PhysicalToRaw( Parameter( "SourceMin" ) );
+    for( int ch = 0; ch < Output.Channels(); ++ch )
+      Output.ValueUnit( ch ).SetRawMin( rangeMin );
+  }
+  if( Parameter( "SourceMax" ) != "auto" )
+  {
+    double rangeMax = Output.ValueUnit().PhysicalToRaw( Parameter( "SourceMax" ) );
+    for( int ch = 0; ch < Output.Channels(); ++ch )
+      Output.ValueUnit( ch ).SetRawMax( rangeMax );
+  }
+
+  double numSamplesInDisplay = Parameter( "VisualizeSourceTime" ).InSeconds() * Parameter( "SamplingRate" ).InHertz();
   if( !PhysicalUnit().SetSymbol( "s" ).IsPhysical( Parameter( "VisualizeSourceTime" ) ) )
-    bciwarn << "The VisualizeSourceTime parameter is specified without a trailing \"s\". "
-           << "This will lead to undesired results in future versions of BCI2000. "
-           << "Please update your parameter files to prepare for the change."
-           << endl;
-  double numSamplesInDisplay = Parameter( "VisualizeSourceTime" )/*.InSeconds()*/ * Parameter( "SamplingRate" ).InHertz();
+    bciwarn << "The VisualizeSourceTime parameter specifies time without unit. "
+            << "Throughout BCI2000, time specifications without unit are now consistently interpreted "
+            << "as being given in sample blocks.\n"
+            << "If your source display appears strange, try appending the letter \"s\" to the "
+            << "VisualizeSourceTime parameters value.";
   Output.ElementUnit().SetRawMin( 0 )
                       .SetRawMax( numSamplesInDisplay - 1 );
-  // We output calibrated signals in float32 format.
-  Output.SetType( SignalType::float32 );
-  Output.ValueUnit().SetOffset( 0 )
-                    .SetGain( 1e-6 )
-                    .SetSymbol( "V" );
-  double rangeMin = Output.ValueUnit().PhysicalToRaw( Parameter( "SourceMin" ) ),
-         rangeMax = Output.ValueUnit().PhysicalToRaw( Parameter( "SourceMax" ) );
-  Output.ValueUnit().SetRawMin( rangeMin )
-                    .SetRawMax( rangeMax );
 }
-
 
 void
 DataIOFilter::Initialize( const SignalProperties& /*Input*/,
                           const SignalProperties& Output )
 {
-  const SignalProperties& adcInput = mADCInput.Properties(),
-                        & adcOutput = mInputBuffer.Properties();
-
-  mBlockDuration = 1e3 / adcInput.UpdateRate();
-  mSampleBlockSize = adcInput.Elements();
+  mOutputBuffer.SetProperties( Output );
+  const SignalProperties& adcOutput = mADCOutput.Properties();
+  mBlockDuration = 1e3 / adcOutput.UpdateRate();
+  mSampleBlockSize = adcOutput.Elements();
 
   State( "Recording" ) = 0;
-  mOutputBuffer = GenericSignal( 0, 0 );
-  mpADC->CallInitialize( adcInput, adcOutput );
+  mpADC->CallInitialize( adcOutput, adcOutput );
   if( mpSourceFilter )
-  {
-    mpSourceFilter->CallInitialize( adcOutput, adcOutput );
-    mpSourceFilter->CallStartRun();
-  }
-  mpFileWriter->CallInitialize( adcOutput, SignalProperties( 0, 0 ) );
-
-  // Calibration is handled by the DataIOFilter as well.
-  mSourceChOffset.resize( mInputBuffer.Channels(), 0.0 );
-  mSourceChGain.resize( mInputBuffer.Channels(), 1.0 );
-  for( int channel = 0; channel < mInputBuffer.Channels(); ++channel )
-  {
-    mSourceChOffset[ channel ] = Parameter( "SourceChOffset" )( channel );
-    mSourceChGain[ channel ] = Parameter( "SourceChGain" )( channel );
-  }
+    mpSourceFilter->CallInitialize( adcOutput, mSourceFilterOutput.Properties() );
+  mpFileWriter->CallInitialize( mpFileWriterInput->Properties(), SignalProperties( 0, 0 ) );
 
   // Configure visualizations.
   mVisualizeSource = ( Parameter( "VisualizeSource" ) == 1 );
@@ -456,7 +464,7 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
 
   if( Parameter( "VisualizeSourceDecimation" ) == string( "auto" ) )
   {
-    mVisualizeSourceDecimation = static_cast<int>( ::floor( adcInput.SamplingRate() / 256.0 ) );
+    mVisualizeSourceDecimation = static_cast<int>( ::floor( adcOutput.SamplingRate() / 256.0 ) );
     if( mVisualizeSourceDecimation < 1 )
       mVisualizeSourceDecimation = 1;
     int numSamplesBuffered = static_cast<int>( mVisualizeSourceBufferSize * mSampleBlockSize );
@@ -470,6 +478,7 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
     mVisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
   }
   mBlockCount = 0;
+  mIsFirstBlock = true;
 
   SignalProperties d = Output;
   int newElements = Output.Elements() * mVisualizeSourceBufferSize / mVisualizeSourceDecimation;
@@ -484,39 +493,50 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
   mDecimatedSignal.SetProperties( d );
   if( mVisualizeSource )
     mSourceVis.Send( mDecimatedSignal.Properties() );
+  mSourceVis.Send( CfgID::Visible, mVisualizeSource );
 
   mVisualizeTiming = ( Parameter( "VisualizeTiming" ) == 1 );
 
-  if( !mpADC->IsRealTimeSource() )
-    mEvaluateTiming = ( OptionalParameter( "EvaluateTiming", 1 ) != 0 );
-
   bool measureStimulus = ( Parameter( "SignalSourceIP" ) == Parameter( "ApplicationIP" ) );
   SignalProperties p = mTimingSignal.Properties();
-  p.SetChannels( measureStimulus ? 3 : 2 );
+  p.SetChannels( measureStimulus ? NumTimingChannels : NumTimingChannels - 1 );
   p.SetName( "Timing" );
   // Roundtrip values are in ms, and we want a range that is twice the value
   // of what we expect for the second signal (the time between subsequent
   // completions of the ADC's Process()).
   p.ValueUnit().SetRawMin( 0 ).SetRawMax( 2 * mBlockDuration )
                .SetOffset( 0 ).SetGain( 1e-3 ).SetSymbol( "s" );
-  p.ChannelLabels()[ 0 ] = ":Block";
-  p.ChannelLabels()[ 1 ] = ":Roundtrip";
+  p.ChannelLabels()[Block] = ":Block";
+  p.ChannelLabels()[BlockNom] = ":%20%20nominal";
+  p.ChannelLabels()[BlockAvg] = ":%20%20average";
+  p.ChannelLabels()[Roundtrip] = ":Roundtrip";
   if( measureStimulus )
-    p.ChannelLabels()[ 2 ] = ":Stimulus";
+    p.ChannelLabels()[Stimulus] = ":Stimulus";
   p.ElementUnit().SetRawMin( 0 ).SetRawMax( 127 )
                  .SetOffset( 0 ).SetGain( mBlockDuration / 1e3 ).SetSymbol( "s" );
-  mTimingSignal.SetProperties( p );
+  mTimingSignal = GenericSignal( p, GenericSignal::NaN );
+  mTimingSignal( BlockNom, 0 ) = mBlockDuration;
+
+  mTimingObserver.Observer().SetWindowLength( static_cast<size_t>( MeasurementUnits::TimeInSampleBlocks( "10s" ) ) );
+  mTimingObserver.SetEnabled( mpADC->IsRealTimeSource() || ( OptionalParameter( "EvaluateTiming", 1 ) != 0 ) );
 
   if( mVisualizeTiming )
   {
     mTimingVis.Send( mTimingSignal.Properties() );
+    ColorList colors( NumTimingChannels );
+    colors[Block] = RGBColor::White;
+    colors[BlockAvg] = RGBColor::Red;
+    colors[BlockNom] = RGBColor::Aqua;
+    colors[Roundtrip] = RGBColor::LtGray;
+    colors[Stimulus] = RGBColor::DkGray;
 
-    RGBColor colors[] = { RGBColor::White, RGBColor::LtGray, RGBColor::DkGray, ColorList::End };
-    mTimingVis.Send( CfgID::ChannelColors, ColorList( colors ) )
+    mTimingVis.Send( CfgID::ChannelColors, colors )
               .Send( CfgID::ShowBaselines, true )
               .Send( CfgID::AutoScale, "off" );
   }
   mTimingVis.Send( CfgID::Visible, mVisualizeTiming );
+  if( mpSourceFilter )
+    mpSourceFilter->CallStartRun();
 }
 
 
@@ -526,17 +546,10 @@ DataIOFilter::StartRun()
   mpADC->CallStartRun();
   mpFileWriter->CallStartRun();
 
-  // Initialize time stamps with the current time to get a correct roundtrip
-  // time, and a zero stimulus delay, for the first block.
-  PrecisionTime now = PrecisionTime::Now();
-  State( "SourceTime" ) = now;
-  State( "StimulusTime" ) = now;
-  State( "Recording" ) = 1;
+  mStatevectorBuffer = *Statevector;
+  mStatevectorBuffer.SetStateValue( "Recording", 0 );
 
-  // Reset timing evaluation buffer.
-  mTimingBuffer.resize( 0 );
-  mTimingBuffer.resize( static_cast<size_t>( MeasurementUnits::TimeInSampleBlocks( "10s" ) ), 0 );
-  mTimingBufferCursor = 0;
+  State( "Recording" ) = 1;
 }
 
 
@@ -545,8 +558,12 @@ DataIOFilter::StopRun()
 {
   mpADC->CallStopRun();
   mpFileWriter->CallStopRun();
-  mOutputBuffer = GenericSignal( 0, 0 );
+
   State( "Recording" ) = 0;
+
+  mTimingSignal( Roundtrip, 0 ) = GenericSignal::NaN;
+  if( mTimingSignal.Channels() > Stimulus )
+    mTimingSignal( Stimulus, 0 ) = GenericSignal::NaN;
 }
 
 
@@ -563,81 +580,71 @@ DataIOFilter::Process( const GenericSignal& /*Input*/,
   // The BCI2000 standard requires that the state vector saved with a data block
   // is the one that existed when the data came out of the ADC.
   // So we also need to buffer the state vector between calls to Process().
-  bool visualizeTiming = false;
-  if( !mOutputBuffer.Properties().IsEmpty() )
+  if( mStatevectorBuffer.StateValue( "Recording" ) )
   {
-    if( State( "Recording" ) == 1 )
-      mpFileWriter->CallWrite( mOutputBuffer, mStatevectorBuffer );
-    visualizeTiming = mVisualizeTiming;
+    mpFileWriter->CallWrite( *mpFileWriterInput, mStatevectorBuffer );
+    PrecisionTime prevSourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) ),
+                  stimulusTime = static_cast<PrecisionTime::NumType>( State( "StimulusTime" ) );
+    mTimingSignal( Roundtrip, 0 ) = PrecisionTime::SignedDiff( functionEntry, prevSourceTime );
+    if( mTimingSignal.Channels() > Stimulus )
+      mTimingSignal( Stimulus, 0 ) = PrecisionTime::SignedDiff( stimulusTime, prevSourceTime );
   }
 
-  PrecisionTime prevSourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) );
-
-  mpADC->CallProcess( mADCInput, mInputBuffer );
-  if( !mpADC->SetsSourceTime() )
-    State( "SourceTime" ) = PrecisionTime::Now();
-
-  PrecisionTime sourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) ),
-                stimulusTime = static_cast<PrecisionTime::NumType>( State( "StimulusTime" ) );
-  mTimingSignal( 0, 0 ) = PrecisionTime::SignedDiff( sourceTime, prevSourceTime ); // sample block duration
-  if( mTimingSignal( 0, 0 ) < 0 )
-  {
-    if( mEvaluateTiming )
-      bciwarn << "Time measurement appears to be unreliable on your system. "
-             << "You cannot use BCI2000 time stamps for timing evaluation."
-             << endl;
-    mEvaluateTiming = false;
-  }
-  mTimingSignal( 1, 0 ) = PrecisionTime::SignedDiff( functionEntry, prevSourceTime ); // roundtrip
-  if( mTimingSignal.Channels() > 2 )
-    mTimingSignal( 2, 0 ) = PrecisionTime::SignedDiff( stimulusTime, prevSourceTime ); // source-to-stimulus delay
-  if( mEvaluateTiming )
-    EvaluateTiming( mTimingSignal( 1, 0 ) );
-  if( visualizeTiming )
-    mTimingVis.Send( mTimingSignal );
-
-  if( mpSourceFilter )
-  {
-    GenericSignal sourceFilterInput( mInputBuffer );
-    mpSourceFilter->CallProcess( sourceFilterInput, mInputBuffer );
-  }
-
+  AcquireData();
+  Output = mOutputBuffer;
   ResetStates( State::EventKind );
   ProcessBCIEvents();
   mStatevectorBuffer = *Statevector;
-  mOutputBuffer = mInputBuffer;
   ResetStates( State::StateKind );
-
-  for( int i = 0; i < Output.Channels(); ++i )
-    for( int j = 0; j < Output.Elements(); ++j )
-      Output( i, j )  = ( mInputBuffer( i, j ) - mSourceChOffset[ i ] ) * mSourceChGain[ i ];
-
-  CopyBlock( Output, mVisSourceBuffer, mBlockCount++ );
-  bool doSend = ( mBlockCount == mVisualizeSourceBufferSize );
-  if( doSend )
-    mBlockCount = 0;
-  if( mVisualizeSource && doSend )
-  {
-    Downsample( mVisSourceBuffer, mDecimatedSignal );
-    mSourceVis.Send( mDecimatedSignal );
-  }
 }
 
 void
 DataIOFilter::Resting()
 {
-  mpADC->CallProcess( mADCInput, mInputBuffer );
+  AcquireData();
+}
+
+void
+DataIOFilter::Halt()
+{
+  if( mpADC )
+    mpADC->CallHalt();
   if( mpSourceFilter )
+    mpSourceFilter->CallHalt();
+  if( mpFileWriter )
+    mpFileWriter->CallHalt();
+}
+
+void
+DataIOFilter::AdjustProperties( SignalProperties& p ) const
+{
+  p.SetChannels( Parameter( "SourceCh" ) )
+   .SetElements( Parameter( "SampleBlockSize" ) )
+   .SetUpdateRate( Parameter( "SamplingRate" ).InHertz() / Parameter( "SampleBlockSize" ) );
+  p.ElementUnit().SetOffset( 0 )
+                 .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
+                 .SetSymbol( "s" );
+}
+
+void
+DataIOFilter::AcquireData()
+{
+  PrecisionTime prevSourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) );
+  mpADC->CallProcess( mADCOutput, mADCOutput );
+  if( !mpADC->SetsSourceTime() )
+    State( "SourceTime" ) = PrecisionTime::Now();
+
+  if( mpSourceFilter )
+    mpSourceFilter->CallProcess( mADCOutput, *mpFileWriterInput );
+
+  for( int ch = 0; ch < mpFileWriterInput->Channels(); ++ch )
   {
-    GenericSignal sourceFilterInput( mInputBuffer );
-    mpSourceFilter->CallProcess( sourceFilterInput, mInputBuffer );
+    const PhysicalUnit& u = mpFileWriterInput->Properties().ValueUnit( ch );
+    for( int el = 0; el < mOutputBuffer.Elements(); ++el )
+      mOutputBuffer( ch, el ) = u.RawToPhysicalValue( (*mpFileWriterInput)( ch, el ) ) / CalibrateTo;
   }
 
-  for( int i = 0; i < mInputBuffer.Channels(); ++i )
-    for( int j = 0; j < mInputBuffer.Elements(); ++j )
-      mInputBuffer( i, j ) = ( mInputBuffer( i, j ) - mSourceChOffset[ i ] ) * mSourceChGain[ i ];
-
-  CopyBlock( mInputBuffer, mVisSourceBuffer, mBlockCount++ );
+  CopyBlock( mOutputBuffer, mVisSourceBuffer, mBlockCount++ );
   bool doSend = ( mBlockCount == mVisualizeSourceBufferSize );
   if( doSend )
     mBlockCount = 0;
@@ -646,16 +653,16 @@ DataIOFilter::Resting()
     Downsample( mVisSourceBuffer, mDecimatedSignal );
     mSourceVis.Send( mDecimatedSignal );
   }
-}
 
-void
-DataIOFilter::Halt()
-{
-  mOutputBuffer = GenericSignal( 0, 0 );
-  if( mpADC )
-    mpADC->CallHalt();
-  if( mpFileWriter )
-    mpFileWriter->CallHalt();
+  if( !mIsFirstBlock )
+  {
+    PrecisionTime sourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) );
+    mTimingSignal( Block, 0 ) = PrecisionTime::SignedDiff( sourceTime, prevSourceTime );
+    mTimingObserver.Observe( mTimingSignal );
+    if( mVisualizeTiming )
+      mTimingVis.Send( mTimingSignal );
+  }
+  mIsFirstBlock = false;
 }
 
 void
@@ -679,36 +686,6 @@ DataIOFilter::CopyBlock( const GenericSignal& Input, GenericSignal& Output, int 
   for( int ch = 0; ch < Input.Channels(); ++ch )
     for( int sample = 0; sample < Input.Elements(); ++sample )
       Output( ch, sample + blockSize * inBlock ) = Input( ch, sample );
-}
-
-void
-DataIOFilter::EvaluateTiming( double inRoundtrip )
-{
-  if( !mTimingBuffer.empty() )
-  {
-    mTimingBuffer[ mTimingBufferCursor++ ] = inRoundtrip;
-    if( mTimingBufferCursor == mTimingBuffer.size() / 2 || mTimingBufferCursor == mTimingBuffer.size() )
-    {
-      double avgRoundtrip = accumulate( mTimingBuffer.begin(), mTimingBuffer.end(), 0.0 ) / mTimingBuffer.size();
-      avgRoundtrip = avgRoundtrip / mBlockDuration;
-      if( avgRoundtrip >= 1.1 )
-        bcierr << "Roundtrip time consistently exceeds block duration (currently "
-               << avgRoundtrip * 100
-               << "%)"
-               << endl;
-      else if( avgRoundtrip >= 1.0 )
-        bciwarn << "Roundtrip time exceeds block duration (currently "
-               << avgRoundtrip * 100
-               << "%)"
-               << endl;
-      else if( avgRoundtrip >= 0.75 )
-        bciwarn << "Roundtrip time approaches block duration (currently "
-               << avgRoundtrip * 100
-               << "%)"
-               << endl;
-    }
-    mTimingBufferCursor %= mTimingBuffer.size();
-  }
 }
 
 void
@@ -797,3 +774,105 @@ DataIOFilter::ResetStates( int inKind )
     }
   }
 }
+
+// DataIOFilter::TimingObserver
+DataIOFilter::TimingObserver::TimingObserver()
+: mState( 0 ), mBuffer( 2 ), mObserver( Mean )
+{
+}
+
+ObserverBase& DataIOFilter::TimingObserver::Observer()
+{
+  return mObserver;
+}
+
+void DataIOFilter::TimingObserver::SetEnabled( bool inEnabled )
+{
+  mObserver.Clear();
+  mState = inEnabled ? 1 : 0;
+}
+
+void DataIOFilter::TimingObserver::Observe( GenericSignal& ioSignal )
+{
+  enum
+  {
+    enabled = 1,
+
+    rtripApproaching = 2,
+    rtripExceeding = 4,
+    rtripTooLarge = 6,
+    rtrip = rtripApproaching | rtripExceeding | rtripTooLarge,
+
+    blockLow = 8,
+    blockHigh = 16,
+    block = blockLow | blockHigh,
+  };
+  if( ioSignal( Block, 0 ) < 0 )
+  {
+    bciwarn << "Time measurement appears to be unreliable on your system. "
+            << "You cannot use BCI2000 time stamps for timing evaluation."
+            << endl;
+    mState = 0;
+  }
+
+  mBuffer[0] = ioSignal( Block, 0 );
+  mBuffer[1] = ioSignal( Roundtrip, 0 );
+  mObserver.AgeBy( 1 );
+  mObserver.Observe( mBuffer );
+  VectorPtr mean = mObserver.Mean();
+  ioSignal( BlockAvg, 0 ) = mean()[0];
+  if( !( mState & enabled ) || mObserver.Age() < mObserver.WindowLength() )
+    return;
+
+  double avgBlockDuration = mean()[0] / ioSignal( BlockNom, 0 ),
+         avgRoundtrip = mean()[1] / ioSignal( BlockNom, 0 );
+
+  int newState = mState & enabled;
+
+  if( avgRoundtrip >= 1.1 )
+    newState |= rtripTooLarge;
+  else if( avgRoundtrip >= 1.0 )
+    newState |= rtripExceeding;
+  else if( avgRoundtrip >= 0.75 )
+    newState |= rtripApproaching;
+
+  if( avgBlockDuration > 1.05 )
+    newState |= blockHigh;
+  else if( avgBlockDuration < 0.95 )
+    newState |= blockLow;
+
+  if( (newState & rtrip) > (mState & rtrip) )
+    switch( newState & rtrip )
+    {
+      case rtripTooLarge:
+        bcierr << "Roundtrip time consistently exceeds nominal block duration (currently "
+               << avgRoundtrip * 100
+               << "%)"
+               << endl;
+        break;
+      case rtripExceeding:
+        bciwarn << "Roundtrip time exceeds nominal block duration (currently "
+               << avgRoundtrip * 100
+               << "%)"
+               << endl;
+        break;
+      case rtripApproaching:
+        bciwarn << "Roundtrip time approaches nominal block duration (currently "
+               << avgRoundtrip * 100
+               << "%)"
+               << endl;
+        break;
+    }
+
+  if( (newState & block) != (mState & block) )
+    switch( newState & block )
+    {
+      case blockLow:
+      case blockHigh:
+        bciwarn << "Average block duration is off by more than 5%.\n"
+                << "Nominal: " << ioSignal( BlockNom, 0 ) << "ms, Actual: " << mean()[0] << "ms";
+    }
+
+  mState = newState;
+}
+

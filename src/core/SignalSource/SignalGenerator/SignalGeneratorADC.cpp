@@ -29,9 +29,7 @@
 #include "SignalGeneratorADC.h"
 #include "BCIStream.h"
 #include "GenericSignal.h"
-#include "OSThread.h"
 
-#include <cmath>
 #if _WIN32
 # include <Windows.h>
 #elif USE_QT
@@ -58,8 +56,7 @@ SignalGeneratorADC::SignalGeneratorADC()
   mAmplitudeX( 1 ),
   mAmplitudeY( 1 ),
   mAmplitudeZ( 1 ),
-  mSinePhase( 0 ),
-  mLasttime( 0 )
+  mSinePhase( 0 )
 {
 }
 
@@ -129,12 +126,16 @@ void
 SignalGeneratorADC::Preflight( const SignalProperties&,
                                      SignalProperties& Output ) const
 {
-  Parameter( "SourceChOffset" );
-  Parameter( "SourceChGain" );
+  for( int ch = 0; ch < Output.Channels(); ++ch )
+  {
+    PhysicalUnit u = Output.ValueUnit( ch );
+    u.SetRawMin( u.PhysicalToRaw( "-100muV" ) )
+     .SetRawMax( u.PhysicalToRaw( "100muV" ) );
+  }
   Parameter( "SineFrequency" ).InHertz();
-  Parameter( "SineAmplitude" ).InMicrovolts();
-  Parameter( "NoiseAmplitude" ).InMicrovolts();
-  if( Parameter( "DCOffset" ).InMicrovolts() != 0 )
+  Parameter( "SineAmplitude" ).InVolts();
+  Parameter( "NoiseAmplitude" ).InVolts();
+  if( Parameter( "DCOffset" ).InVolts() != 0 )
     Expression( Parameter( "OffsetMultiplier" ) ).Evaluate();
   Expression( Parameter( "AmplitudeMultiplier" ) ).Evaluate();
   Parameter( "RandomSeed" );
@@ -161,25 +162,18 @@ SignalGeneratorADC::Preflight( const SignalProperties&,
     default:
       bcierr << "Unknown SignalType value" << endl;
   }
-  Output = SignalProperties(
-    Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), signalType );
+  Output.SetType( signalType );
 }
 
 
 void
-SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties& )
+SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties& Output )
 {
-  mSourceChGain.resize( Parameter( "SourceChGain" )->NumValues() );
-  for( size_t i = 0; i < mSourceChGain.size(); ++i )
-    mSourceChGain[i] = Parameter( "SourceChGain" )( i );
-  mSourceChOffset.resize( Parameter( "SourceChOffset" )->NumValues() );
-  for( size_t i = 0; i < mSourceChOffset.size(); ++i )
-    mSourceChOffset[i] = Parameter( "SourceChOffset" )( i );
   mSineFrequency = Parameter( "SineFrequency" ).InHertz() / Parameter( "SamplingRate" ).InHertz();
-  mSineAmplitude = Parameter( "SineAmplitude" ).InMicrovolts();
-  mSinePhase = M_PI / 2;
-  mNoiseAmplitude = Parameter( "NoiseAmplitude" ).InMicrovolts();
-  mDCOffset = Parameter( "DCOffset" ).InMicrovolts();
+  mSineAmplitude = Parameter( "SineAmplitude" ).In( "muV" ) * 1e-6;
+  mSinePhase = Pi( mSinePhase ) / 2;
+  mNoiseAmplitude = Parameter( "NoiseAmplitude" ).In( "muV" ) * 1e-6;
+  mDCOffset = Parameter( "DCOffset" ).In( "muV" ) * 1e-6;
   if( mDCOffset == 0 )
     mOffsetMultiplier = Expression( "" );
   else
@@ -196,7 +190,9 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
   mModulateAmplitude = ( Parameter( "ModulateAmplitude" ) != 0 );
 #endif // _WIN32 || USE_QT
 
-  mLasttime = PrecisionTime::Now();
+  mClock.SetInterval( 1e3 * MeasurementUnits::SampleBlockDuration() );
+  mClock.Reset();
+  mClock.Start();
 }
 
 
@@ -211,6 +207,9 @@ SignalGeneratorADC::StartRun()
 void
 SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
 {
+  mClock.Wait();
+  mClock.Reset();
+
 #if _WIN32
   if( mModulateAmplitude )
   {
@@ -242,8 +241,8 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
 
   for( int sample = 0; sample < Output.Elements(); ++sample )
   {
-    mSinePhase += 2 * M_PI * mSineFrequency;
-    mSinePhase = ::fmod( mSinePhase, 2 * M_PI );
+    mSinePhase += 2 * Pi( mSinePhase ) * mSineFrequency;
+    mSinePhase = ::fmod( mSinePhase, 2 * Pi( mSinePhase ) );
     double sineValue = ::sin( mSinePhase ) * mSineAmplitude * mAmplitudeMultiplier.Evaluate();
 
     double offset = mDCOffset;
@@ -260,26 +259,17 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
       if( mSineChannelZ == ch + 1 )
         value += sineValue * mAmplitudeZ;
 
-      value /= mSourceChGain[ch];
-      value += mSourceChOffset[ch];
-
+      value = Output.Properties().ValueUnit( ch ).PhysicalToRawValue( value );
       value = max( value, minVal );
       value = min( value, maxVal );
-
       Output( ch, sample ) = value;
     }
   }
-  // Wait for the amount of time that corresponds to the length of a data block.
-  int blockDuration = static_cast<int>( 1e3 * MeasurementUnits::SampleBlockDuration() );
-  OSThread::PrecisionSleepUntil( mLasttime + blockDuration );
-  mLasttime = PrecisionTime::Now();
 }
 
 
 void
 SignalGeneratorADC::Halt()
 {
+  mClock.Stop();
 }
-
-
-

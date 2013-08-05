@@ -29,6 +29,7 @@
 
 #include "GenericFilter.h"
 #include "GenericVisualization.h"
+#include "StatisticalObserver.h"
 #include "EventQueue.h"
 
 #include <vector>
@@ -59,12 +60,13 @@ class DataIOFilter: public GenericFilter
   virtual bool AllowsVisualization() const { return false; }
 
  private:
+  void AdjustProperties( SignalProperties& ) const;
+  void AcquireData();
   static void Downsample( const GenericSignal& Input,
                                 GenericSignal& Output );
   static void CopyBlock( const GenericSignal& Input,
                                GenericSignal& Output,
                                int            block );
-  void EvaluateTiming( double inRoundtrip );
   void ProcessBCIEvents();
   void ResetStates( int kind );
 
@@ -75,25 +77,35 @@ class DataIOFilter: public GenericFilter
   StateVector            mStatevectorBuffer;
 
   bool                   mVisualizeSource,
-                         mVisualizeTiming,
-                         mEvaluateTiming;
+                         mVisualizeTiming;
   int                    mVisualizeSourceDecimation,
                          mVisualizeSourceBufferSize;
   GenericVisualization   mSourceVis,
                          mTimingVis;
   GenericSignal          mDecimatedSignal,
                          mTimingSignal;
-  mutable GenericSignal  mADCInput,
-                         mInputBuffer,
+  mutable GenericSignal  mADCOutput,
+                         mSourceFilterOutput,
+                         *mpFileWriterInput,
                          mVisSourceBuffer;
-  mutable int            mBlockCount;
-  std::vector<double>    mSourceChOffset,
-                         mSourceChGain,
-                         mTimingBuffer;
-  EventQueue             mBCIEvents;
+  int                    mBlockCount;
+  bool                   mIsFirstBlock;
   double                 mBlockDuration;
   int                    mSampleBlockSize;
-  size_t                 mTimingBufferCursor;
+  EventQueue             mBCIEvents;
+
+  class TimingObserver
+  {
+   public:
+    TimingObserver();
+    StatisticalObserver::ObserverBase& Observer();
+    void SetEnabled( bool = true );
+    void Observe( GenericSignal& );
+   private:
+    int mState;
+    StatisticalObserver::Vector mBuffer;
+    StatisticalObserver::PowerSumObserver mObserver;
+  } mTimingObserver;
 };
 
 #endif // DATA_IO_FILTER_H

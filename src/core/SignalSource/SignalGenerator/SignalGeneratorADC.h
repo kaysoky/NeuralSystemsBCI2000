@@ -27,7 +27,7 @@
 #define SIGNAL_GENERATOR_ADC_H
 
 #include "GenericADC.h"
-#include "PrecisionTime.h"
+#include "Clock.h"
 #include "Expression.h"
 #include "RandomGenerator.h"
 #include <vector>
@@ -54,8 +54,6 @@ class SignalGeneratorADC : public GenericADC
          mSineAmplitude,
          mNoiseAmplitude,
          mDCOffset;
-  std::vector<double> mSourceChGain,
-                      mSourceChOffset;
   Expression mOffsetMultiplier,
              mAmplitudeMultiplier;
   int    mSineChannelX,
@@ -67,7 +65,7 @@ class SignalGeneratorADC : public GenericADC
          mAmplitudeY,
          mAmplitudeZ,
          mSinePhase;
-  PrecisionTime mLasttime;
+  Clock mClock;
   RandomGenerator mRandomGenerator;
 };
 
