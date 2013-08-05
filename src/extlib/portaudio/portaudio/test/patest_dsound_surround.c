@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: $
  * Portable Audio I/O Library
  * Windows DirectSound surround sound output test
  *

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id:$
  * PortAudio Portable Real-Time Audio Library
  * Latest Version at: http://www.portaudio.com
  * AudioScience HPI implementation by Fred Gleason, Ludwig Schwardt and

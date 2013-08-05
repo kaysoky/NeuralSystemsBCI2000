@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: pa_memorybarrier.h 1240 2007-07-17 13:05:07Z bjornroche $
  * Portable Audio I/O Library
  * Memory barrier utilities
  *

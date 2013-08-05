@@ -6,7 +6,7 @@
     @author Phil Burk <philburk@softsynth.com>
 */
 /*
- * $Id$
+ * $Id: patest_timing.c 578 2003-09-02 04:17:38Z rossbencina $
  *
  * This program uses the PortAudio Portable Audio Library.
  * For more information see: http://www.portaudio.com/

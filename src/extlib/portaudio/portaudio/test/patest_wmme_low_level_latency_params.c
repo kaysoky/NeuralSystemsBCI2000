@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: $
  * Portable Audio I/O Library
  * Windows MME low level buffer parameters test
  *

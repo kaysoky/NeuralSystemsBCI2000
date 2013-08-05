@@ -14,7 +14,7 @@
     as in test pa_devs.c.
 */
 /*
- * $Id$
+ * $Id: paqa_devs.c 1756 2011-09-08 06:09:29Z philburk $
  *
  * This program uses the PortAudio Portable Audio Library.
  * For more information see: http://www.portaudio.com

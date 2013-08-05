@@ -8,7 +8,7 @@
     see http://www.portaudio.com/trac/wiki/V19ConvertersStatus for a discussion of this.
 */
 /*
- * $Id$
+ * $Id: $
  *
  * This program uses the PortAudio Portable Audio Library.
  * For more information see: http://www.portaudio.com/

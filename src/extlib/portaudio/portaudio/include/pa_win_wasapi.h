@@ -1,7 +1,7 @@
 #ifndef PA_WIN_WASAPI_H
 #define PA_WIN_WASAPI_H
 /*
- * $Id$
+ * $Id:  $
  * PortAudio Portable Real-Time Audio Library
  * DirectSound specific extensions
  *

@@ -4,7 +4,7 @@
 	@author Ross Bencina <rossb@audiomulch.com>
 */
 /*
- * $Id$
+ * $Id: $
  * Portable Audio I/O Library
  * Windows MME surround sound output test
  *
