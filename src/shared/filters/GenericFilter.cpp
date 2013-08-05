@@ -192,83 +192,32 @@ GenericFilter::ChainInfo::WriteToStream( ostream& os )
 }
 
 // Wrapper functions for "handler" calls.
-void
-GenericFilter::CallPublish()
-{
-  ErrorContext( "Publish", this );
-  this->Publish();
+#define CALL_BODY_( x, b ) \
+  ErrorContext( #x, this ); \
+  try { this->x b; } \
+  catch( const BCIException& e ) { bcierr_ << e.What(); } \
   ErrorContext( "" );
-}
+#define CALL_DEF_( x, a, b ) void GenericFilter::Call##x a { CALL_BODY_( x, b ) }
 
+#define CALL_0( x ) CALL_DEF_( x, (), () )
+#define CALL_1( x, T ) CALL_DEF_( x, (T t), (t) )
+#define CALL_2( x, T, U ) CALL_DEF_( x, (T t, U u), (t, u) )
+
+CALL_0( Publish )
 void
 GenericFilter::CallAutoConfig( const SignalProperties& Input )
 {
   bool prev = AutoConfig_( true );
-  ErrorContext( "AutoConfig", this );
-  this->AutoConfig( Input );
-  ErrorContext( "" );
+  CALL_BODY_( AutoConfig, (Input) );
   AutoConfig_( prev );
 }
-
-void
-GenericFilter::CallPreflight( const SignalProperties& Input,
-                                    SignalProperties& Output ) const
-{
-  ErrorContext( "Preflight", this );
-  this->Preflight( Input, Output );
-  ErrorContext( "" );
-}
-
-void
-GenericFilter::CallInitialize( const SignalProperties& Input,
-                               const SignalProperties& Output )
-{
-  ErrorContext( "Initialize", this );
-  this->Initialize( Input, Output );
-  ErrorContext( "" );
-}
-
-void
-GenericFilter::CallStartRun()
-{
-  ErrorContext( "StartRun", this );
-  this->StartRun();
-  ErrorContext( "" );
-}
-
-void
-GenericFilter::CallStopRun()
-{
-  ErrorContext( "StopRun", this );
-  this->StopRun();
-  ErrorContext( "" );
-}
-
-void
-GenericFilter::CallProcess( const GenericSignal& Input,
-                                  GenericSignal& Output )
-{
-  ErrorContext( "Process", this );
-  this->Process( Input, Output );
-  ErrorContext( "" );
-}
-
-void
-GenericFilter::CallResting()
-{
-  ErrorContext( "Resting", this );
-  this->Resting();
-  ErrorContext( "" );
-}
-
-void
-GenericFilter::CallHalt()
-{
-  ErrorContext( "Halt", this );
-  this->Halt();
-  ErrorContext( "" );
-}
-
+CALL_DEF_( Preflight, (const SignalProperties& Input, SignalProperties& Output) const, (Input, Output) )
+CALL_2( Initialize, const SignalProperties&, const SignalProperties& )
+CALL_0( StartRun )
+CALL_0( StopRun )
+CALL_2( Process, const GenericSignal&, GenericSignal& )
+CALL_0( Resting )
+CALL_0( Halt )
 
 // Instantiate all registered filters once.
 // We iterate through the registrars in reverse order. This implies that
@@ -346,8 +295,7 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
       return;
     SignalProperties currentOutput;
     currentFilter->CallPreflight( *currentInput, currentOutput );
-    if( currentOutput.Name() == currentInput->Name()
-        || currentOutput.Name().empty() )
+    if( currentOutput.Name() == currentInput->Name() || currentOutput.Name().empty() )
       currentOutput.SetName( ClassName( typeid( *currentFilter ) ) );
     // The output signal will be created here if it does not exist.
     OwnedSignals()[ currentFilter ].SetProperties( currentOutput );
