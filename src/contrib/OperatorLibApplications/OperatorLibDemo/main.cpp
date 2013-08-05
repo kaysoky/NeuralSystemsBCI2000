@@ -74,7 +74,7 @@ main( int argc, char* argv[] )
   while( !data.terminate )
   {
     BCI_CheckPendingCallback();
-    OSThread::Sleep( 50 );
+    ThreadUtils::SleepFor( 50 );
 
     switch( BCI_GetStateOfOperation() )
     {

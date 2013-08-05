@@ -54,9 +54,9 @@ mReverse( false )
   mTemplateFileName = string( OptionalParameter("PlaybackFileName", "") );
   if( mTemplateFileName.size() ) // --PlaybackFileName was given as a command-line option. Use this opportunity to declare all the parameters and states that are in the file, giving the file's parameter values as defaults (with a few exceptions, below).
   {
-    OSThread::Sleep( 2000 );  // If we connect to the operator after the other modules, Parameter declarations from the other modules will be overwritten by ours, which is what we want.
-                              // (TODO:  is there any way of making this more certain? i.e. detecting whether other modules have connected yet rather than just hoping 2 sec will be enough?)
-                              // NB by contrast, parameters already declared by *this* module will not be overwritten by a second BEGIN_PARAMETER_DEFINITIONS:  we will actually need to detect this case and update the parameter
+    ThreadUtils::SleepFor( 2000 );  // If we connect to the operator after the other modules, Parameter declarations from the other modules will be overwritten by ours, which is what we want.
+                                    // (TODO:  is there any way of making this more certain? i.e. detecting whether other modules have connected yet rather than just hoping 2 sec will be enough?)
+                                    // NB by contrast, parameters already declared by *this* module will not be overwritten by a second BEGIN_PARAMETER_DEFINITIONS:  we will actually need to detect this case and update the parameter
     BCI2000FileReader dataFile( mTemplateFileName.c_str() );
     CheckFile( mTemplateFileName, dataFile );
     ParamList *already = this->Parameters;
@@ -409,7 +409,7 @@ FilePlaybackADC::Process( const GenericSignal&, GenericSignal& Output )
   if (mSpeedup == 0)
     return;
   // Wait for the amount of time that corresponds to the length of a data block.
-  OSThread::PrecisionSleepUntil( mLasttime + mBlockDuration );
+  ThreadUtils::SleepUntil( mLasttime + mBlockDuration );
   mLasttime = PrecisionTime::Now();
 
 }

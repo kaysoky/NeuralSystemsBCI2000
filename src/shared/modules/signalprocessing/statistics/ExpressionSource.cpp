@@ -47,7 +47,7 @@ ExpressionSource::ExpressionSource( const std::string& s )
 void
 ExpressionSource::OnDepends( const Context& inContext )
 {
-  if( CompilationState() == none )
+  if( CompilationState() == ArithmeticExpression::none )
   {
     mpContext = &inContext;
     Expression::Compile( inContext.variables );

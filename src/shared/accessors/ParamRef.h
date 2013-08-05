@@ -232,6 +232,8 @@ class ParamRef
     { return In( "Hz" ); }
   double InVolts() const
     { return In( "V" ); }
+  double InMicrovolts() const
+    { return In( "muV" ); }
 
   double InSeconds() const
     { return In( "s" ); }

@@ -53,16 +53,18 @@ const T& Inf( const T& = 0 )
 template<typename T>
 const T& Eps( const T& = 0 )
 {
-  static const T Eps = std::numeric_limits<T>::epsilon();
-  return Eps;
+  static const T eps = std::numeric_limits<T>::epsilon();
+  return eps;
 }
 
+#ifndef Pi
 template<typename T>
 const T& Pi( const T& = 0 )
 {
-  static const T Pi = ::atan( T( 1 ) ) * 4;
-  return Pi;
+  static const T pi = ::atan( T( 1 ) ) * 4;
+  return pi;
 }
+#endif
 
 template<typename T>
 int Floor( T t )
