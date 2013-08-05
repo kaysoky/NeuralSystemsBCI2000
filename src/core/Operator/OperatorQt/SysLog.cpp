@@ -26,11 +26,13 @@
 #include "SysLog.h"
 #include "OperatorUtils.h"
 #include <QLayout>
+#include <QScrollBar>
 #include <QDateTime>
 
 SysLog::SysLog( QWidget* inParent )
 : QDialog( inParent, Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint ),
   mpLog( new QTextBrowser ),
+  mAttachToParent( true ),
   mEmpty( true ),
   mDontClose( false ),
   mURLMatcher( "://" )
@@ -40,8 +42,7 @@ SysLog::SysLog( QWidget* inParent )
   pLayout->addWidget( mpLog );
   this->setLayout( pLayout );
   this->setWindowTitle( "System Log" );
-  this->resize( 600, 250 );
-  OperatorUtils::RestoreWidget( this );
+  mAttachToParent = !OperatorUtils::RestoreWidget( this );
 
   mpLog->setOpenExternalLinks( true );
   mDefaultFormat = mpLog->currentCharFormat();
@@ -62,6 +63,25 @@ SysLog::Close( bool inForce )
 
   this->close();
   return true;
+}
+
+void
+SysLog::Show( bool inForce )
+{
+  QWidget* pParent = this->parentWidget();
+  if( mAttachToParent && pParent && !this->isVisible() )
+  {
+	  QSize s = pParent->size();
+	  s.setHeight( 2 * s.height() );
+	  this->resize( s );
+	  QPoint p = pParent->frameGeometry().bottomLeft();
+	  this->move( p );
+    mAttachToParent = true;
+  }
+	if( inForce || pParent && pParent->isVisible() )
+    this->show();
+  if( inForce && pParent )
+	  pParent->show();
 }
 
 void
@@ -96,10 +116,15 @@ SysLog::AddEntry( const QString& inText, int inMode )
   }
   QString line = ( mEmpty ? "" : "\n" ) + QDateTime::currentDateTime().toString( Qt::ISODate ) + sep + kind + inText;
   mEmpty = false;
-  mpLog->moveCursor( QTextCursor::End );
-  mpLog->setCurrentCharFormat( format );
-  mpLog->insertPlainText( line );
+
+  bool wasAtEnd = true;
+  QScrollBar* pScrollBar = mpLog->verticalScrollBar();
+  if( pScrollBar && pScrollBar->isVisible() && pScrollBar->isEnabled() )
+    wasAtEnd = ( pScrollBar->value() + pScrollBar->singleStep() > pScrollBar->maximum() );
+
   QTextCursor c = mpLog->textCursor();
+  c.movePosition( QTextCursor::End );
+  c.insertText( line, format );
   int begin = 0, end = begin;
   while( MatchURL( inText, begin, end ) )
   {
@@ -117,18 +142,19 @@ SysLog::AddEntry( const QString& inText, int inMode )
   switch( inMode )
   {
     case logEntryError:
-      this->parentWidget()->show();
-      this->show();
+      Show( true );
       break;
     case logEntryWarning:
-      if( this->parentWidget()->isVisible() )
-        this->show();
+      Show( false );
       break;
     default:
       break;
   }
-  mpLog->moveCursor( QTextCursor::End );
-  mpLog->ensureCursorVisible();
+  if( wasAtEnd )
+  {
+    mpLog->moveCursor( QTextCursor::End );
+    mpLog->ensureCursorVisible();
+  }
 }
 
 bool
@@ -143,5 +169,11 @@ SysLog::MatchURL( const QString& s, int& begin, int& end )
   while( end < s.length() && !s[end].isSpace() )
     ++end;
   return true;
+}
+
+void
+SysLog::moveEvent( QMoveEvent* )
+{
+  mAttachToParent = false;
 }
 

@@ -51,7 +51,7 @@ namespace OperatorUtils
 // Parameters: A pointer to a QWidget object.
 // Returns:    n/a
 // **************************************************************************
-  void RestoreWidget( QWidget* );
+  bool RestoreWidget( QWidget* );
 
 // **************************************************************************
 // Function:   AppRelativeToAbsolutePath

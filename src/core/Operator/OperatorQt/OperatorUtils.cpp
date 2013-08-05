@@ -60,7 +60,7 @@ OperatorUtils::SaveWidget( const QWidget* inWidget )
   settings.setValue( "Pos", inWidget->pos() );
 }
 
-void
+bool
 OperatorUtils::RestoreWidget( QWidget* inWidget )
 {
   Settings settings;
@@ -73,11 +73,13 @@ OperatorUtils::RestoreWidget( QWidget* inWidget )
   int width = qApp->desktop()->width(),
       height = qApp->desktop()->height();
   QRect intersection = QRect( pos, size ).intersected( QRect( 0, 0, width, height ) );
-  if( intersection.width() > minDist && intersection.height() > minDist )
+  bool ok = ( intersection.width() > minDist && intersection.height() > minDist );
+  if( ok )
   {
     inWidget->move( pos );
     inWidget->resize( size );
   }
+  return ok;
 }
 
 

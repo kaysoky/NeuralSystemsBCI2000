@@ -120,6 +120,7 @@ MainWindow::MainWindow( QWidget* parent )
   }
 
   OperatorUtils::RestoreWidget( this );
+
   BCI_Initialize();
 
   BCI_SetCallback( BCI_OnSetConfig, BCI_Function( SetStartTime ), this );
@@ -364,8 +365,10 @@ MainWindow::UpdateDisplay()
       quitEnabled = true;
       break;
     case BCI_StateBusy:
+#if 0
       runSystemCaption = "Resume";
       configEnabled = true;
+#endif
       quitEnabled = true;
       break;
     case BCI_StateRunning:

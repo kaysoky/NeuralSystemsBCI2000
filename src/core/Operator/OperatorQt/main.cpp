@@ -90,12 +90,12 @@ MainLoop( QApplication& a, MainWindow& w )
     // but this leads to high CPU usage.
     a.sendPostedEvents();
     a.processEvents();
-    OSThread::Sleep( 1 ); // avoid hogging the CPU
+    ThreadUtils::SleepFor( 1 ); // avoid hogging the CPU
     BCI_CheckPendingCallback();
   }
   while( !w.Terminated() )
   {
-    OSThread::Sleep( 1 );
+    ThreadUtils::SleepFor( 1 );
     BCI_CheckPendingCallback();
   }
   // QWidget destructors assume a valid application object,

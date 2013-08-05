@@ -50,13 +50,18 @@ class SysLog : public QDialog
   bool Close( bool force = false );
   void AddEntry( const QString& text, int = logEntryNormal );
 
+ protected:
+  void moveEvent( QMoveEvent* );
+
  private:
   bool MatchURL( const QString&, int&, int& );
+  void Show( bool force );
   
   QTextBrowser* mpLog;
   QTextCharFormat mDefaultFormat;
   QMutex mCritsec;
   bool mEmpty,
+       mAttachToParent,
        mDontClose;
   QString mLastLine;
   QStringMatcher mURLMatcher;
