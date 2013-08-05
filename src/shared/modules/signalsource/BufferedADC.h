@@ -64,8 +64,7 @@
 #include "GenericADC.h"
 #include "OSThread.h"
 #include "OSEvent.h"
-#include "OSMutex.h"
-#include "PrecisionTime.h"
+#include "Lockable.h"
 #include <vector>
 
 class BufferedADC : public GenericADC, private OSThread
@@ -106,28 +105,33 @@ class BufferedADC : public GenericADC, private OSThread
   // 1) Don't implement DoAcquire().
   // 2) Override UseAcquisitionThread() to return false.
   virtual bool UseAcquisitionThread() const { return true; }
-  // 3) In your callback function, call GetBuffer() before writing data.
-  GenericSignal* GetBuffer();
-  // 4) Call ReleaseBuffer() to indicate that you are done writing to a
-  //    buffer.
-  void ReleaseBuffer( GenericSignal* );
+  // 3) Make sure to add a GenericSignal* buffer pointer to your callback data structure.
+  // 4) In OnStartAcquisition(), call NextWriteBuffer() to initialize that buffer pointer.
+  // 5) In your callback function, write to the buffer pointer, and replace it using NextWriteBuffer()
+  //    each time you are finished with the current buffer.
+  GenericSignal* NextWriteBuffer( GenericSignal* = 0 );
 
  private:
+  void ReleaseBuffer( const GenericSignal* );
   void StartAcquisition();
   void StopAcquisition();
+  void StartAcquisitionInternal();
+  void StopAcquisitionInternal();
   bool IsAcquiring() const;
-
   virtual int OnExecute();
 
-  std::vector<GenericSignal> mBuffer;
-  std::vector<PrecisionTime> mTimeStamps;
-  std::string                mError;
-  size_t                     mReadCursor,
-                             mWriteCursor;
-  OSMutex                    mMutex;
-  OSEvent                    mAcquisitionDone;
+  struct AcquisitionBuffer : Lockable
+  {
+    int TimeStamp;
+    GenericSignal Signal;
+  }* mpBuffers;
+  size_t mSourceBufferSize,
+         mReadCursor,
+         mWriteCursor;
   mutable SignalProperties   mAcquisitionProperties;
-  bool                       mAcquiring;
+  volatile bool              mAcquiring;
+  std::string                mError;
+  OSEvent                    mStarted;
 };
 
 #endif // BUFFERED_ADC_H
