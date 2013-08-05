@@ -2,7 +2,6 @@ System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 2.x 
 System:State%20Vector int StateVectorLength= 11 16 1 30 // length of the state vector in bytes
 Visualize:Timing int VisualizeTiming= 1 1 0 1 // visualize system timing (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
-Visualize:Source%20Signal int VisualizeSourceDecimation= 1 1 0 % // decimation factor for raw brain signal
 Visualize:Source%20Signal int VisualizeSourceTime= 2s 2 0 % // how much time in Source visualization
 Visualize:Source%20Signal int SourceMin= -100muV -100muV % % // raw signal vis Min Value
 Visualize:Source%20Signal int SourceMax= 100muV 100muV % % // raw signal vis Max Value
