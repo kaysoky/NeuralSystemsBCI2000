@@ -33,6 +33,12 @@
 
 using namespace std;
 
+bool
+BCIStream::CompressMessages()
+{
+  return false;
+}
+
 void
 BCIStream::PlainMessage( const string& s )
 {

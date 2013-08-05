@@ -8,23 +8,23 @@
 //               bciout << "My info message" << endl;
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef BCI_STREAM_H
@@ -82,6 +82,7 @@ class ParamList;
 namespace BCIStream
 {
   // Stream message handling actions for bcierr/bciout/bciwarn/bcidebug
+  bool CompressMessages();
   typedef void (*Action)( const std::string& );
   void DebugMessage( const std::string& );
   void PlainMessage( const std::string& );
@@ -92,8 +93,8 @@ namespace BCIStream
 
   // Stream configuration
   void Apply( const ParamList& );
-  void SetOperatorStream( std::ostream*, const OSMutex* = NULL );
-  
+  void SetOperatorStream( std::ostream*, const Lockable* = NULL );
+
 
   class ContextFrame;
   class Dispatcher;
@@ -107,7 +108,7 @@ namespace BCIStream
    public:
     static const int AlwaysDisplayMessage = INT_MIN;
     static const int NeverDisplayMessage = INT_MAX;
-    
+
     static const int DisplayAllMessages = INT_MAX - 1;
     static const int SuppressAllMessages = INT_MIN;
 
@@ -130,7 +131,7 @@ namespace BCIStream
       { std::ostream::clear(); mBuf.Clear(); }
     void Reset()
       { std::ostream::clear(); mBuf.Reset(); }
-      
+
    private:
     static void SetContext( const std::string& );
     void SetVerbosity( int level )
@@ -173,11 +174,11 @@ namespace BCIStream
 
     static std::list<std::string> sContext;
   };
-  
-  class FlushingLock : public Lock<OutStream>
+
+  class FlushingLock : public Lock_<OutStream>
   {
    public:
-    FlushingLock( OutStream& s ) : Lock<OutStream>( s ), mrStream( s ) {}
+    FlushingLock( OutStream& s ) : Lock_<OutStream>( s ), mrStream( s ) {}
     ~FlushingLock() { mrStream.flush(); }
    private:
     OutStream& mrStream;
@@ -213,8 +214,10 @@ namespace BCIStream
       { return Null(); }
     void SetVerbosity( int )
       {}
+    void SetAction( Action )
+      {}
   };
-  
+
   class Dispatcher
   {
    public:
@@ -227,12 +230,15 @@ namespace BCIStream
     void SetAction( BCIStream::Action a )
       { mAction = a; }
     void Dispatch( const std::string& context, const std::string& message );
+    void Idle()
+      { OnIdle(); }
 
    protected:
-    virtual void OnFilter( BCIStream::Action&, std::string& )
-      {}
+    virtual void OnFilter( BCIStream::Action&, std::string& );
     virtual void OnCompress( BCIStream::Action a, const std::string& s )
       { a( s ); }
+    virtual void OnIdle()
+      {}
 
    private:
     BCIStream::Action mAction;

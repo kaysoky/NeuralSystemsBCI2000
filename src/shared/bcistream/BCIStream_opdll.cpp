@@ -71,6 +71,12 @@ Handle( const string& inMessage, int inCallback )
   }
 }
 
+bool
+BCIStream::CompressMessages()
+{
+  return false;
+}
+
 void
 BCIStream::PlainMessage( const string& s )
 {

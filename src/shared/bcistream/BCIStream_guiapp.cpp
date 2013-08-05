@@ -42,6 +42,12 @@
 
 using namespace std;
 
+bool
+BCIStream::CompressMessages()
+{
+  return false;
+}
+
 enum
 {
   plain,

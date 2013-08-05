@@ -41,6 +41,12 @@ static ostream& out = cout;
 static ostream& err = cerr;
 #endif // BCI_DLL
 
+bool
+BCIStream::CompressMessages()
+{
+  return false;
+}
+
 void
 BCIStream::PlainMessage( const string& s )
 {

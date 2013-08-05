@@ -32,7 +32,6 @@
 
 #include "BCIStream.h"
 #include "ThreadUtils.h"
-#include "OSThread.h"
 #include "ParamList.h"
 #include "ParamRef.h"
 #include <set>
@@ -43,7 +42,7 @@ using namespace BCIStream;
 
 namespace BCIStream {
 
-class MessageDispatcher : public Dispatcher, private OSThread
+class MessageDispatcher : public Dispatcher
 {
   static const int cMaxTimeDiff = 1; // s
 
@@ -52,9 +51,8 @@ class MessageDispatcher : public Dispatcher, private OSThread
   ~MessageDispatcher();
 
  protected:
-  void OnFilter( BCIStream::Action&, string& );
   void OnCompress( BCIStream::Action, const string& );
-
+  void OnCheck();
   int OnExecute();
 
  private:
@@ -101,7 +99,7 @@ OutStream::OutStream( Action f, int level )
 : std::ostream( 0 ),
   mVerbosityLevel( level ),
   mVerbosityLocked( false ),
-  mpDispatcher( new MessageDispatcher )
+  mpDispatcher( 0 )
 {
   this->init( &mBuf );
   SetAction( f );
@@ -116,11 +114,19 @@ OutStream::~OutStream()
 void
 OutStream::SetAction( Action inAction )
 {
-  if( mpDispatcher->Action() != inAction )
+  if( mpDispatcher && mpDispatcher->Action() != inAction )
   {
     mBuf.SetDispatcher( 0 );
     delete mpDispatcher;
-    mpDispatcher = new MessageDispatcher;
+    mpDispatcher = 0;
+  }
+  if( mpDispatcher )
+  {
+    mpDispatcher->Idle();
+  }
+  else
+  {
+    mpDispatcher = CompressMessages() ? new MessageDispatcher : new Dispatcher;
     mpDispatcher->SetAction( inAction );
     mBuf.SetDispatcher( mpDispatcher );
   }
@@ -224,7 +230,7 @@ OutStream::StringBuf::Flush()
 
   string s = str();
   str( "" );
-  
+
   if( s.empty() || s == "\n" )
     s = "<empty message>";
   else for( size_t pos = s.find( '\0' ); pos != string::npos; pos = s.find( '\0', pos ) )
@@ -239,7 +245,7 @@ OutStream::StringBuf::sync()
 {
   if( pptr() == pbase() )
     return 0;
-    
+
   int r = stringbuf::sync();
   Flush();
   return r;
@@ -255,30 +261,8 @@ Dispatcher::Dispatch( const string& inContext, const string& inMessage )
   OnCompress( action, inContext + message );
 }
 
-// MessageDispatcher
-MessageDispatcher::MessageDispatcher()
-: mPrevAction( LogicError ),
-  mLastTime( ::time( 0 ) ),
-  mCount( 0 )
-{
-  {
-    OSMutex::Lock lock( GlobalMutex() );
-    Instances().insert( this );
-  }
-}
-
-MessageDispatcher::~MessageDispatcher()
-{
-  {
-    OSMutex::Lock lock( GlobalMutex() );
-    Instances().erase( this );
-  }
-  ReportRepetitions();
-  OSThread::TerminateWait();
-}
-
 void
-MessageDispatcher::OnFilter( BCIStream::Action& ioAction, string& ioMessage )
+Dispatcher::OnFilter( BCIStream::Action& ioAction, string& ioMessage )
 {
   if( !ioMessage.empty() && *ioMessage.rbegin() == '\n' )
     ioMessage.erase( ioMessage.length() - 1 );
@@ -299,6 +283,23 @@ MessageDispatcher::OnFilter( BCIStream::Action& ioAction, string& ioMessage )
   }
 }
 
+// MessageDispatcher
+MessageDispatcher::MessageDispatcher()
+: mPrevAction( LogicError ),
+  mLastTime( ::time( 0 ) ),
+  mCount( 0 )
+{
+  OSMutex::Lock lock( GlobalMutex() );
+  Instances().insert( this );
+}
+
+MessageDispatcher::~MessageDispatcher()
+{
+  ReportRepetitions();
+  OSMutex::Lock lock( GlobalMutex() );
+  Instances().erase( this );
+}
+
 void
 MessageDispatcher::OnCompress( BCIStream::Action inAction, const string& inMessage )
 {
@@ -314,8 +315,6 @@ MessageDispatcher::OnCompress( BCIStream::Action inAction, const string& inMessa
     inAction( inMessage );
     mPrevMessage = inMessage;
     mPrevAction = inAction;
-    if( OSThread::IsTerminated() )
-      OSThread::Start();
   }
   else
   {
@@ -353,18 +352,10 @@ MessageDispatcher::ReportRepetitions()
   mLastTime = ::time( 0 );
 }
 
-int
-MessageDispatcher::OnExecute()
+void
+MessageDispatcher::OnCheck()
 {
-  while( !IsTerminating() )
-  {
-    ReportRepetitions();
-    static const int resolution = 100,
-                     total = cMaxTimeDiff * 1100;
-    for( int i = 0; i < total / resolution && !IsTerminating(); ++i )
-      SleepFor( resolution );
-  }
-  return 0;
+  ReportRepetitions();
 }
 
 set<MessageDispatcher*>&

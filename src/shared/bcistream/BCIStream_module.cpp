@@ -40,7 +40,13 @@
 using namespace std;
 
 static ostream* spOutputStream = NULL;
-static const OSMutex* spOutputLock = NULL;
+static const Lockable* spOutputLock = NULL;
+
+bool
+BCIStream::CompressMessages()
+{
+  return true;
+}
 
 #if _WIN32
 static void
@@ -62,7 +68,7 @@ StatusMessage( const string& inText, int inCode )
   // error display.
   if( spOutputStream != NULL )
   {
-    OSMutex::Lock lock( spOutputLock );
+    ::Lock lock( spOutputLock );
     MessageHandler::PutMessage( *spOutputStream, Status( inText, inCode ) );
     spOutputStream->flush();
   }
@@ -126,9 +132,8 @@ BCIStream::LogicError( const string& s )
 }
 
 void
-BCIStream::SetOperatorStream( ostream* pStream, const OSMutex* pLock )
+BCIStream::SetOperatorStream( ostream* pStream, const Lockable* pLock )
 {
   spOutputStream = pStream;
   spOutputLock = pLock;
 }
-
