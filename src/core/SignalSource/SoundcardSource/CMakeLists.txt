@@ -7,7 +7,9 @@
 ###########################################################################
 
 UTILS_INCLUDE( extlib/PortAudio )
+
 BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
   SoundcardSource
-  SoundcardADC.cpp
+  PortAudioADC.cpp
+  PortAudioStream.cpp
 )
