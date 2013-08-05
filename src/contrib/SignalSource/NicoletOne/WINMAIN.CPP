@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: WINMAIN.CPP 2656 2010-02-03 16:55:53Z mellinger $
+// $Id$
 // Author:  juergen.mellinger@uni-tuebingen.de
 // Description: A modified WinMain.cpp for MFC projects that implement a BCI2000
 //   application module.

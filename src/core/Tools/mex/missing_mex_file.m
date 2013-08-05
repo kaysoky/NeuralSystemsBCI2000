@@ -26,7 +26,7 @@ function missing_mex_file()
 
 %  This is a help file documenting the functionality contained in
 %  load_bcimat.mex.
-%  $Id: load_bcidat.m 3099 2011-02-10 16:08:47Z mellinger $
+%  $Id$
 %
 stack = dbstack(1);
 error( [ ...

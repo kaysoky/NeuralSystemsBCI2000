@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id:  $
+## $Id$
 ## Authors:
 ## Description: Build information for the CoherenceSignalProcessing project
 ##              

@@ -1,6 +1,6 @@
 ###########################################################################
 
-## $Id: BAlertADC.cpp, 2011-12-12 v0.1 $
+## $Id$
 
 ## Authors: Dr.Giby Raphael (graphael@b-alert.com)
 

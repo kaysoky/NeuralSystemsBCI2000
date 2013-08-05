@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: CMakeLists.txt 3289 2011-05-18 22:13:10Z mellinger $
+## $Id$
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for the MSAutoConnectWiimote program
 

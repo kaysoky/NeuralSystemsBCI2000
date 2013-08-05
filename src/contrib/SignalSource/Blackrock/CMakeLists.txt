@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id:  $
+## $Id$
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for the Blackrock source module
 ###########################################################################

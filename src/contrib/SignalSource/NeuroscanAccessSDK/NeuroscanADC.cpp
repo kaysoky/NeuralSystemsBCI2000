@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: NeuroscanADC.cpp 2279 2009-02-12 21:40:22Z mellinger $
+// $Id$
 // Author: griffin.milsap@gmail.com
 // Description: Neuroscan ADC Module
 //

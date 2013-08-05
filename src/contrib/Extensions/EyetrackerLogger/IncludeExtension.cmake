@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: IncludeExtension.cmake 3069 2011-01-19 23:27:37Z jhill $
+## $Id$
 ## Authors: jezhill@gmail.com, griffin.milsap@gmail.com
 
 IF( NOT WIN32 )

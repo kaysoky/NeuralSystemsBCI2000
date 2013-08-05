@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: Lock.h 2279 2009-02-12 21:40:22Z gmilsap $
+// $Id$
 // Author: telemacher - griffin.milsap@gmail.com
 // Description: A Simple MFC Mutex Class - Modified from
 //              http://www.codeproject.com/KP/threads/threadex.aspx

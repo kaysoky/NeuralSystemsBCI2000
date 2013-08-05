@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: IncludeExtension.cmake 3348 2011-06-24 15:41:55Z mellinger $
+## $Id$
 ## Authors: griffin.milsap@gmail.com
 
 SET( BCI2000_SIGSRCLIBS

@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Id: NIDAQLogger.cpp 2118 2008-09-04 15:36:18Z mellinger $              //
+// $Id$              //
 // Author: justin.renga@gmail.com                                          //
 // Description: A logger for National Instruments Data Acquisition Boards  //
 //                                                                         //

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////////
-// $Id: NIDAQFilter.h 2708 2010-07-14 16:34:14Z mellinger $                       //
+// $Id$                       //
 // Author: justin.renga@gmail.com                                                 //
 // Description: A filter that performs output for National Instruments DAQ boards //
 //                                                                                //

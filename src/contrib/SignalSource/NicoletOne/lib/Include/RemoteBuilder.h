@@ -1,9 +1,9 @@
 // *************************************************************************************** //
 //  Copyright (C) 2005 by VIASYS Healthcare, Inc. All Rights Reserved.
-//  Last changed by: $Author:   $
+//  Last changed by: $Author$
 //  Last changed on: $Modtime:  $
 //  File reference:  $Archive:  $
-//  File version:    $Revision: $
+//  File version:    $Revision$
 //                            THIS CODE IS COMPANY CONFIDENTIAL
 // *************************************************************************************** //
 // RemoteBuilder.h: interface for the CRemoteBuilder class.

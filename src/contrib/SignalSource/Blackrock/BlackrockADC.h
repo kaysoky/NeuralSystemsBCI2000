@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: $
+// $Id$
 // Authors: griffin.milsap@gmail.com
 // Description: Implementation of a source module for Blackrock systems
 //

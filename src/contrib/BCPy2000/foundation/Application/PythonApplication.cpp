@@ -1,4 +1,4 @@
-//   $Id: PythonApplication.cpp 3467 2011-08-17 13:19:59Z mellinger $
+//   $Id$
 //  
 //   This file is part of the BCPy2000 foundation, a set of modules for
 //   the BCI2000 <http://bci2000.org/> that allow communication with a

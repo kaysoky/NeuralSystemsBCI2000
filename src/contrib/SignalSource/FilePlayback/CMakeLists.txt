@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: CMakeLists.txt 2624 2009-12-02 02:06:03Z gmilsap $
+## $Id$
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for FilePlayback in Qt
 

@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: CMakeLists.txt 3547 2011-09-15 12:54:10Z mellinger $
+## $Id$
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for MessageBox
 

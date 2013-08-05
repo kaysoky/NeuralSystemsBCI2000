@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: IncludeExtension.cmake 3069 2011-01-19 23:27:37Z jhill $
+## $Id$
 ## Authors: jezhill@gmail.com
 
 IF( CMAKE_SIZEOF_VOID_P EQUAL 4 )

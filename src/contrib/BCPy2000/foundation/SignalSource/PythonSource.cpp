@@ -1,4 +1,4 @@
-//   $Id: PythonSource.cpp 3326 2011-06-17 23:56:38Z jhill $
+//   $Id$
 //  
 //   This file is part of the BCPy2000 foundation, a set of modules for
 //   the BCI2000 <http://bci2000.org/> that allow communication with a

@@ -6,9 +6,9 @@
 //
 // $Workfile: cbhwlib.h $
 // $Archive: /Cerebus/Human/LinuxApps/player/cbhwlib.h $
-// $Revision: 50 $
-// $Date: 5/17/05 10:07a $
-// $Author: Dsebald $
+// $Revision$
+// $Date$
+// $Author$
 //
 // $NoKeywords: $
 //

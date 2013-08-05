@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: CMakeLists.txt 3497 2011-08-30 16:50:58Z mellinger $
+## $Id$
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for ObserverTest
 

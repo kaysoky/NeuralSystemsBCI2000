@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: CMakeLists.txt 3608 2011-10-20 13:24:22Z mellinger $
+## $Id$
 ## Authors: masayo.haneda@starlab.es
 ## Description: Build information for ENOBIO
 

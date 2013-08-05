@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Id: WebcamLogger.cpp 2118 2008-09-04 15:36:18Z mellinger $
+// $Id$
 // Authors: adam.wilson@uc.edu
 // Description: The WebcamLogger records webcam video to an AVI file
 // and sets the frame number as a state value

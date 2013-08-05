@@ -5,9 +5,9 @@
 //
 // $Workfile: cbsdk.h $
 // $Archive: /Cerebus/Human/WindowsApps/cbmex/cbsdk.h $
-// $Revision: 1 $
-// $Date: 2/17/11 3:15p $
-// $Author: Ehsan $
+// $Revision$
+// $Date$
+// $Author$
 //
 // $NoKeywords: $
 //

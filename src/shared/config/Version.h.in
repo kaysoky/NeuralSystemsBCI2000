@@ -34,7 +34,7 @@
 #endif
 
 #define BCI2000_VERSION  "$Version: " BCI2000_VERSION_STRING " $ " \
-                         "$Revision: $WCRANGE$ $ " \
+                         "$Revision$WCRANGE$ $ " \
                          "$Source Date: $WCDATE$ $ " \
                          "$Build Date: $WCNOW$ $ " \
                          "$Compiler: " COMPILER_NAME " $ "

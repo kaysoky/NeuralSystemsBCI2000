@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: CMakeLists.txt 3497 2011-08-30 16:50:58Z mellinger $
+## $Id$
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for SpectralSignalProcessing in Qt
 

@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Id: EyetrackerLogger.cpp 2118 2008-09-04 15:36:18Z mellinger $
+// $Id$
 // Authors: griffin.milsap@gmail.com
 // Description: The Eyetracker Logger logs incoming data from a Tobii
 // Eyetracker and changes states

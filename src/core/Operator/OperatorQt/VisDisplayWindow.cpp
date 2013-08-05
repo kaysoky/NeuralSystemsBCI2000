@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: VisDisplayWindow.cpp 3307 2011-06-03 18:30:49Z mellinger $
+// $Id$
 // Authors: griffin.milsap@gmail.com, juergen.mellinger@uni-tuebingen.de
 // Description: Root window class for visualization displays.
 //

@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: CMakeLists.txt 3117 2011-02-17 13:39:56Z mellinger $
+## $Id$
 ## Authors: masayo.haneda@starlab.es / javier.acedo@starlab.es
 ## Description: Build information for ENOBIO3G
 

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: NIDAQLogger.h 2118 2008-09-04 15:36:18Z mellinger $                   //
+// $Id$                   //
 // Authors: justin.renga@gmail.com                                            //
 // Description: The NIDAQ filter implements National Instruments Loggers      //
 //              into the BCI2000 Project.                                     //

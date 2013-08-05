@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Id: NIDAQLogger.cpp 2118 2008-09-04 15:36:18Z renga $                  //
+// $Id$                  //
 // Author: justin.renga@gmail.com                                          //
 // Description: An output filter for National Instruments Data Acquisition //
 //              Boards                                                     //

@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: CMakeLists.txt 2879 2010-07-01 14:02:00Z mellinger $
+## $Id$
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for a Dummy signal processing module
 

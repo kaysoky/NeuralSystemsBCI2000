@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: NeuroSkyADC.h 2279 2009-02-12 21:40:22Z gmilsap $
+// $Id$
 // Author: griffin.milsap@gmail.com
 // Description: BCI2000 Source Module for NeuroSky devices.
 //

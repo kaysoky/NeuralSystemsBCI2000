@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// $Id: WiimoteLogger.h 3073 2011-01-21 20:15:43Z jhill $
+// $Id$
 // Authors: griffin.milsap@gmail.com
 // Description: The wiimote filter supports wiimotes that are interfaced
 // with windows via bluetooth.  This class has no support for extensions atm.

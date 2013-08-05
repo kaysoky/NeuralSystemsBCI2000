@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: ENOBIOADC.h  2010-03-11 $
+// $Id$
 // Author:masayo.haneda@starlab.es
 // Description: BCI2000 Source Module for ENOBIO devices.
 //

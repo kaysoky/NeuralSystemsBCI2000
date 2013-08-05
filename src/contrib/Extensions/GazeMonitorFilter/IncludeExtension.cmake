@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id: IncludeExtension.cmake 3069 2011-01-19 23:27:37Z jhill $
+## $Id$
 ## Authors: griffin.milsap@gmail.com
 
 # Add the GazeMonitorFilter to all application modules

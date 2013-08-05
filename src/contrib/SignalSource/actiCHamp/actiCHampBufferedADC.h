@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: $
+// $Id$
 // Authors: Paul Ignatenko <paul dot ignatenko at gmail dot com
 // Description: actiCHampBufferedADC header
 //   

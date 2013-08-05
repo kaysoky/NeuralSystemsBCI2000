@@ -1,6 +1,6 @@
 #define report(x) #x<<"="<<(x)<<"; "
 /////////////////////////////////////////////////////////////////////////////
-// $Id: WiimoteLogger.cpp 3279 2011-05-11 01:00:23Z jhill $
+// $Id$
 // Authors: griffin.milsap@gmail.com, jezhill@gmail.com
 // Description: The wiimote filter supports wiimotes that are interfaced
 // with windows via bluetooth.  This class has no support for extensions atm.
