@@ -242,7 +242,7 @@ ConnectorOutput::Process( const GenericSignal& Input, GenericSignal& Output )
   for( vector<Connection*>::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
   {
     {
-      Lock<Connection> lock( **i );
+      Lock lock( **i );
       ( **i ).Clear();
       for( int state = 0; state < States->Size(); ++state )
       {
@@ -284,7 +284,7 @@ ConnectorOutput::Connection::OnExecute()
       {
         string message;
         {
-          ::Lock<Connection> lock( *this );
+          ::Lock lock( *this );
           result = std::getline( *this, message );
         }
         if( result && !IsTerminating() )

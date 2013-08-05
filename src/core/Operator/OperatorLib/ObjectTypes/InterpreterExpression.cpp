@@ -101,7 +101,7 @@ InterpreterExpression::StateAssignment( const std::string& inName, Node* inRhs )
 double
 InterpreterExpression::StateNode::OnEvaluate()
 {
-  Lock<StateMachine> lock( mrInterpreter.StateMachine() );
+  Lock lock( mrInterpreter.StateMachine() );
   AssertState( mrInterpreter, mName );
   return mrInterpreter.StateMachine().GetStateValue( mName.c_str() );
 }
@@ -110,7 +110,7 @@ double
 InterpreterExpression::StateAssignmentNode::OnEvaluate()
 {
   double rhs = mChildren[0]->Evaluate();
-  Lock<StateMachine> lock( mrInterpreter.StateMachine() );
+  Lock lock( mrInterpreter.StateMachine() );
   AssertState( mrInterpreter, mName );
   if( !mrInterpreter.StateMachine().SetStateValue( mName.c_str(), static_cast<State::ValueType>( rhs ) ) )
     throw bciexception( "Could not set value of state " << mName );

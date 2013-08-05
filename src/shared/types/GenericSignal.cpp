@@ -40,6 +40,8 @@
 
 using namespace std;
 
+const GenericSignal::ValueType GenericSignal::NaN = numeric_limits<ValueType>::quiet_NaN();
+
 GenericSignal::GenericSignal()
 : mpValues( NULL ),
   mNumValues( 0 )

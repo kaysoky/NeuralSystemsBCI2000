@@ -171,10 +171,10 @@ class CoreModule : private MessageHandler, private OSThread
   client_tcpsocket mOperatorSocket,
                    mNextModuleSocket;
   server_tcpsocket mPreviousModuleSocket;
-  sockstream       mOperator,
+  struct : sockstream, Lockable {}
+                   mOperator,
                    mNextModule,
                    mPreviousModule;
-  OSMutex          mConnectionLock;
   bool             mFiltersInitialized,
                    mResting,
                    mStartRunPending,

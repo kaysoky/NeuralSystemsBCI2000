@@ -56,7 +56,7 @@ EventType::Set( CommandInterpreter& inInterpreter )
   string name;
   State::ValueType value = 0;
   {
-    Lock<StateMachine> lock( inInterpreter.StateMachine() );
+    Lock lock( inInterpreter.StateMachine() );
     State& event = GetEvent( inInterpreter );
     name = event.Name();
     value = ::atoi( inInterpreter.GetToken().c_str() );
@@ -86,7 +86,7 @@ EventType::Insert( CommandInterpreter& inInterpreter )
   if( !( iss >> event ) )
     throw bciexception( "Invalid event definition: " << eventline );
   {
-    Lock<StateMachine> lock( inInterpreter.StateMachine() );
+    Lock lock( inInterpreter.StateMachine() );
     if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )
       throw bciexception( "Could not add event " << name << " to list outside idle state" );
     inInterpreter.StateMachine().Events().Add( event );
@@ -97,7 +97,7 @@ EventType::Insert( CommandInterpreter& inInterpreter )
 bool
 EventType::List( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   inInterpreter.Out() << GetEvent( inInterpreter );
   return true;
 }
@@ -105,7 +105,7 @@ EventType::List( CommandInterpreter& inInterpreter )
 bool
 EventType::Exists( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   bool exists = inInterpreter.StateMachine().Events().Exists( inInterpreter.GetToken() );
   inInterpreter.Out() << ( exists ? "true" : "false" );
   return true;
@@ -135,7 +135,7 @@ const ObjectType::MethodEntry EventsType::sMethodTable[] =
 bool
 EventsType::List( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   string pattern = inInterpreter.GetRemainingTokens();
   if( pattern.empty() )
     pattern = "*";
@@ -149,7 +149,7 @@ EventsType::List( CommandInterpreter& inInterpreter )
 bool
 EventsType::Clear( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )
     throw bciexception( "Must be in idle state to clear events" );
   inInterpreter.StateMachine().Events().Clear();

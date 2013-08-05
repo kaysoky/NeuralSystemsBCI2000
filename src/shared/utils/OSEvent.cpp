@@ -47,7 +47,10 @@ OSEvent::~OSEvent()
 {
 #if _WIN32
   if( mHandle != NULL )
+  {
+	::SetEvent( mHandle );
     ::CloseHandle( mHandle );
+  }
 #else // _WIN32
   ::pthread_cond_destroy( &mCond );
   ::pthread_mutex_destroy( &mMutex );

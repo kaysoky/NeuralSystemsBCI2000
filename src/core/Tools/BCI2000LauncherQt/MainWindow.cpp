@@ -667,7 +667,7 @@ void MainWindow::on_launchButton_clicked()
   if( !ExecuteCommand( command.str().c_str(), progdir.c_str() ) )
     return;
 
-  OSThread::Sleep( 500 );
+  ThreadUtils::SleepFor( 500 );
 
   command.str( "" );
   if( ui->sourceList->selectedItems().empty() )

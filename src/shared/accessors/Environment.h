@@ -395,6 +395,8 @@ class EnvironmentBase
   static void EnterRestingPhase(        ParamList*,
                                         StateList*,
                                         StateVector* );
+  // Called before module exit.
+  static void OnExit();
 
  protected:
   void RegisterExtension__( EnvironmentExtension* p ) { Extensions().insert( p ); }

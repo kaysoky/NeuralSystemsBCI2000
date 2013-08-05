@@ -27,11 +27,9 @@
 #pragma hdrstop
 
 #include "ThreadUtils.h"
-#include "OSMutex.h"
 
 #if _WIN32
-# include <MMSystem.h>
-# include <Process.h>
+# include <Windows.h>
 #else // _WIN32
 # include <unistd.h>
 #endif // !_WIN32
@@ -44,8 +42,6 @@ using namespace ThreadUtils;
 #if _WIN32
 
 static unsigned int sMainThreadID = ::GetCurrentThreadId();
-static bool sInitialized = false;
-static OSMutex sMutex;
 
 #undef Yield
 void
@@ -54,58 +50,11 @@ ThreadUtils::Yield()
   ::Sleep( 0 );
 }
 
-#ifdef __BORLANDC__
-# pragma option push
-# pragma warn -8104 // local static with constructor warning
-#endif // __BORLANDC__
-void
-ThreadUtils::PrecisionSleepFor( double inMs )
-{
-  if( inMs < 0 )
-    return;
-
-  // MSDN warns against frequent calls to timeBeginPeriod(), so we use a static RAAI object to set
-  // timing precision once, and clear it on application exit.
-  // We also don't want to call timeBeginPeriod() unless PrecisionSleepFor() is actually used,
-  // so we use RAAI object that's local to the function.
-  static class SetHighestPrecision
-  {
-   public:
-    SetHighestPrecision()
-    : mPrecision( 0 )
-    {
-      OSMutex::Lock lock( sMutex );
-      if( !sInitialized )
-      {
-        TIMECAPS tc = { 0, 0 };
-        ::timeGetDevCaps( &tc, sizeof( tc ) );
-        mPrecision = tc.wPeriodMin;
-        ::timeBeginPeriod( mPrecision );
-        sInitialized = true;
-      }
-    }
-    ~SetHighestPrecision()
-    {
-      ::timeEndPeriod( mPrecision );
-    }
-   private:
-    UINT mPrecision;
-    bool mInitialized;
-    OSMutex mMutex;
-  } setHighestPrecision;
-
-  // Use "dithering" to achieve sub-millisecond accuracy of mean sleeping time.
-  int sleepTime = static_cast<int>( ::floor( inMs ) ) + static_cast<int>( ::rand() < ( RAND_MAX + 1 ) * ::fmod( inMs, 1 ) );
-  ::Sleep( sleepTime );
-}
-#ifdef __BORLANDC__
-# pragma option pop
-#endif // __BORLANDC__
-
 void
 ThreadUtils::SleepFor( int inMs )
 {
-  ::Sleep( inMs );
+  if( inMs >= 0 )
+    ::Sleep( inMs );
 }
 
 bool
@@ -133,16 +82,10 @@ ThreadUtils::Yield()
 }
 
 void
-ThreadUtils::PrecisionSleepFor( double inMs )
+ThreadUtils::SleepFor( double inMs )
 {
   if( inMs >= 0 )
     ::usleep( inMs * 1000 );
-}
-
-void
-ThreadUtils::SleepFor( int inMs )
-{
-  PrecisionSleepFor( inMs );
 }
 
 bool
@@ -162,8 +105,7 @@ ThreadUtils::NumberOfProcessors()
 #endif // _WIN32
 
 void
-ThreadUtils::PrecisionSleepUntil( PrecisionTime inWakeupTime )
+ThreadUtils::SleepUntil( PrecisionTime inWakeupTime )
 {
-  PrecisionSleepFor( PrecisionTime::SignedDiff( inWakeupTime, PrecisionTime::Now() ) );
+  SleepFor( PrecisionTime::SignedDiff( inWakeupTime, PrecisionTime::Now() ) );
 }
-

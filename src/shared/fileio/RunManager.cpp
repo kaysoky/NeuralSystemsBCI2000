@@ -163,15 +163,16 @@ RunManager::CurrentSession( ParamList& inParams )
 string
 RunManager::ConstructRun()
 {
-  string path = DataDirectory( *Parameters ),
+  ParamList& parameters = *Parameters;
+  string path = DataDirectory( parameters ),
          first, file, result;
-  int run = Parameter( "SubjectRun" );
+  int run = ::atoi( parameters["SubjectRun"].Value().c_str() );
   if( --run < 0 )
     run = 0;
   do
   {
-    Parameter( "SubjectRun" ) = IntToString( ++run, 2 );
-    file = SubstituteParameters( Parameter( "DataFile" ), *Parameters );
+    parameters["SubjectRun"].Value() = IntToString( ++run, 2 );
+    file = SubstituteParameters( parameters["DataFile"].Value(), *Parameters );
     if( first.empty() )
       first = file;
     else if( file == first )

@@ -121,7 +121,7 @@ STDCALL BCI_PutParameter( const char* inParameterLine )
     return 0;
 
   {
-    ::Lock<StateMachine> lock( *gpStateMachine );
+    ::Lock_<StateMachine> lock( *gpStateMachine );
     gpStateMachine->Parameters()[ param.Name() ] = param;
   }
   gpStateMachine->ParameterChange();
@@ -145,7 +145,7 @@ STDCALL BCI_GetParameter( long inIndex )
     return NULL;
 
   const char* result = NULL;
-  ::Lock<StateMachine> lock( *gpStateMachine );
+  ::Lock_<StateMachine> lock( *gpStateMachine );
   if( inIndex >= 0 && inIndex < gpStateMachine->Parameters().Size() )
   {
     ostringstream oss;
@@ -173,7 +173,7 @@ STDCALL BCI_PutState( const char* inStateLine )
   if( !state.ReadFromStream( iss ) )
     return 0;
   {
-    ::Lock<StateMachine> lock( *gpStateMachine );
+    ::Lock_<StateMachine> lock( *gpStateMachine );
     gpStateMachine->States().Add( state );
   }
   gpStateMachine->ExecuteCallback( BCI_OnState, inStateLine );
@@ -254,7 +254,7 @@ STDCALL BCI_PutEvent( const char* inEventLine )
   if( !event.ReadFromStream( iss ) )
     return 0;
   {
-    ::Lock<StateMachine> lock( *gpStateMachine );
+    ::Lock_<StateMachine> lock( *gpStateMachine );
     gpStateMachine->Events().Add( event );
   }
   return 1;
@@ -359,7 +359,7 @@ STDCALL BCI_PutVisProperty( const char* inVisID, int inCfgID, const char* inValu
   if( !gpStateMachine )
     return 0;
   {
-    ::Lock<StateMachine> lock( *gpStateMachine );
+    ::Lock_<StateMachine> lock( *gpStateMachine );
     gpStateMachine->Visualizations()[ inVisID ][ inCfgID ] = inValue;
   }
   gpStateMachine->ExecuteCallback( BCI_OnVisProperty, inVisID, inCfgID, inValue );
@@ -383,7 +383,7 @@ STDCALL BCI_GetVisProperty( const char* inVisID, int inCfgID )
     return NULL;
 
   const char* result = NULL;
-  ::Lock<StateMachine> lock( *gpStateMachine );
+  ::Lock_<StateMachine> lock( *gpStateMachine );
   VisTable::iterator i = gpStateMachine->Visualizations().find( inVisID );
   if( i != gpStateMachine->Visualizations().end() )
   {
@@ -848,7 +848,7 @@ STDCALL BCI_RemoveWatch( long inID )
   if( !gpStateMachine )
     return 0;
 
-  ::Lock<Watch::List> lock( gpStateMachine->Watches() );
+  ::Lock_<Watch::List> lock( gpStateMachine->Watches() );
   Watch* pWatch = gpStateMachine->Watches().FindByID( inID );
   if( pWatch )
   {

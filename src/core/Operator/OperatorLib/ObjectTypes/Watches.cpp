@@ -48,7 +48,7 @@ Watch::Watch( CommandInterpreter& inInterpreter, const string& inAddress, long i
   mrList( inInterpreter.StateMachine().Watches() ),
   mSendMessages( &Watch::SendMessages, this )
 {
-  ::Lock<Watch::List> lock( mrList );
+  ::Lock lock( mrList );
   if( mID == BCI_None )
   {
     if( inAddress.empty() )

@@ -163,13 +163,12 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
   {
     double oldSampleUnit
      = NominalUnitsPerSample() * FilterUnitToValue( mDisplay.SampleUnit() );
-    iss.clear();
-    iss.str( unit );
-    float unitsPerSample = 1;
-    string sampleUnit = "";
-    iss >> unitsPerSample >> sampleUnit;
+    PhysicalUnit u;
+    u.SetGainWithSymbol( unit );
+    float unitsPerSample = u.Gain();
+    string sampleUnit = u.Symbol();
     SetNominalUnitsPerSample( unitsPerSample );
-    mDisplay.SetSampleUnit( sampleUnit );
+    mDisplay.SetSampleUnit( u.Symbol() );
     if( oldSampleUnit != unitsPerSample * FilterUnitToValue( sampleUnit ) )
     {
       mDisplayFilter.HPCorner( 0 );
@@ -191,24 +190,10 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
     mScaleObserver.TimeConstant( timeConstant );
 
   if( inConfig.Get( CfgID::ChannelUnit, unit ) )
-  {
-    iss.clear();
-    iss.str( unit );
-    float unitsPerChannel = 1;
-    string channelUnit = "";
-    iss >> unitsPerChannel >> channelUnit;
-    mDisplay.SetUnitsPerChannel( unitsPerChannel ).SetChannelUnit( channelUnit );
-  }
+    mDisplay.SetChannelUnit( unit );
 
   if( inConfig.Get( CfgID::ValueUnit, unit ) )
-  {
-    iss.clear();
-    iss.str( unit );
-    float unitsPerValue = 1;
-    string valueUnit = "";
-    iss >> unitsPerValue >> valueUnit;
-    mDisplay.SetUnitsPerValue( unitsPerValue ).SetValueUnit( valueUnit );
-  }
+    mDisplay.SetValueUnit( unit );
   bool showValueUnit = mDisplay.ValueUnitVisible();
   if( inConfig.Get( CfgID::ShowValueUnit, showValueUnit ) )
     mDisplay.SetValueUnitVisible( showValueUnit );
@@ -297,8 +282,11 @@ VisDisplayGraph::HandleSignal( const GenericSignal& s )
       sigMax = absMax;
       sigMin = -absMax;
     }
-    mDisplay.SetMaxValue( sigMax );
-    mDisplay.SetMinValue( sigMin );
+    if( sigMax != sigMin )
+    {
+      mDisplay.SetMaxValue( sigMax );
+      mDisplay.SetMinValue( sigMin );
+    }
   }
 
   mNumChannels = filteredSignal.Channels();

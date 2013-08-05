@@ -45,13 +45,13 @@ class EventQueue : public Lockable
   ~EventQueue()
     { Clear(); }
   void AllowEvents()
-    { ::Lock<EventQueue> lock( *this ); mEventsAllowed = true; }
+    { ::Lock lock( this ); mEventsAllowed = true; }
   void DenyEvents()
-    { ::Lock<EventQueue> lock( *this ); mEventsAllowed = false; }
+    { ::Lock lock( this ); mEventsAllowed = false; }
   bool IsEmpty()
     { return mpFront == NULL; }
   void Clear()
-    { ::Lock<EventQueue> lock( *this ); while( !IsEmpty() ) PopFront(); }
+    { ::Lock lock( this ); while( !IsEmpty() ) PopFront(); }
   void PushBack( const char* inDescriptor, PrecisionTime );
   void PopFront();
   const char* FrontDescriptor() const

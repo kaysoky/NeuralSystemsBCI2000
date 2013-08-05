@@ -46,7 +46,7 @@ EventQueue::PushBack( const char* inDescriptor, PrecisionTime inTimeStamp )
   ::memcpy( pEntry->mpDescriptor, inDescriptor, descLen );
   pEntry->mTimeStamp = inTimeStamp;
   pEntry->mpNext = NULL;
-  ::Lock<EventQueue> lock( *this );
+  ::Lock lock( this );
   if( mpBack != NULL )
     mpBack->mpNext = pEntry;
   mpBack = pEntry;
@@ -64,7 +64,7 @@ EventQueue::PopFront()
 {
   Entry* pEntry = NULL;
   {
-    ::Lock<EventQueue> lock( *this );
+    ::Lock lock( this );
     pEntry = mpFront;
     mpFront = pEntry->mpNext;
     if( mpFront == NULL )

@@ -37,6 +37,7 @@
 
 #include "OSMutex.h"
 #include "BCIAssert.h"
+#include "Uncopyable.h"
 
 class Lockable
 {
@@ -53,38 +54,38 @@ class Lockable
   OSMutex mMutex;
 };
 
-template<typename T> class Lock;
+template<typename T> class Lock_;
 
 template<typename T>
-class Lock
+class Lock_
 {
  private:
-  Lock();
-  Lock& operator=( const Lock& );
+  Lock_();
+  Lock_& operator=( const Lock_& );
 
  public:
-  Lock( T& t )
+  Lock_( T& t )
     : mpT( &t ), mcpT( 0 )
     { t.Lock(); }
-  Lock( const T& t )
+  Lock_( const T& t )
     : mpT( 0 ), mcpT( &t )
     { t.Lock(); }
-  Lock( T* pT )
+  Lock_( T* pT )
     : mpT( pT ), mcpT( 0 )
     { pT->Lock(); }
-  Lock( const T* cpT )
+  Lock_( const T* cpT )
     : mpT( 0 ), mcpT( cpT )
     { cpT->Lock(); }
   // A copy constructor is required by some compilers that need it to implement
-  //   return Lock( x );
+  //   return Lock_( x );
   // An object of type T must allow recursive locking, otherwise the copy
   // constructor will block.
-  Lock( const Lock& other )
+  Lock_( const Lock_& other )
     : mpT( other.mpT ), mcpT( other.mcpT )
     { if( mpT ) mpT->Lock(); else if( mcpT ) mcpT->Lock(); }
-  ~Lock()
+  ~Lock_()
     { if( mpT ) mpT->Unlock(); else if( mcpT ) mcpT->Unlock(); }
-    
+
   const T& ConstRef() const
     { return mpT ? *mpT : *mcpT; }
   T& MutableRef() const
@@ -98,21 +99,41 @@ class Lock
 };
 
 template<typename T>
-class Lock<const T> : public Lock<T>
+class Lock_<const T> : public Lock_<T>
 {
   public:
-   Lock( const T* t ) : Lock<T>( t ) {}
-   Lock( const T& t ) : Lock<T>( t ) {}
+   Lock_( const T* t ) : Lock_<T>( t ) {}
+   Lock_( const T& t ) : Lock_<T>( t ) {}
    const T& operator()() const
-    { return Lock<T>::ConstRef(); }
+    { return Lock_<T>::ConstRef(); }
 };
 
 template<typename T>
-Lock<T>
+Lock_<T>
 TemporaryLock( T& t )
 { // Some compilers require a copy constructor here.
-  return Lock<T>( t );
+  return Lock_<T>( t );
 }
+
+class Lock : Uncopyable
+{
+ public:
+  Lock( const Lockable& lockable ) : mpLockable( &lockable ), mpProxy( 0 ) { mpLockable->Lock(); }
+  Lock( const Lockable* pLockable ) : mpLockable( pLockable ), mpProxy( 0 ) { mpLockable->Lock(); }
+  template<class T> Lock( T& t ) : mpLockable( 0 ), mpProxy( new LockProxy_<T>( t ) ) {}
+  template<class T> Lock( T* t ) : mpLockable( 0 ), mpProxy( new LockProxy_<T>( *t ) ) {}
+  ~Lock() { if( mpLockable ) mpLockable->Unlock(); else delete mpProxy; }
+ private:
+  struct LockProxy { virtual ~LockProxy() {} };
+  template<class T> struct LockProxy_ : LockProxy
+  {
+    LockProxy_( T& t ) : t( t ) { t.Lock(); }
+    ~LockProxy_() { t.Unlock(); }
+    T& t;
+  };
+  const LockProxy* mpProxy;
+  const Lockable* mpLockable;
+};
 
 #endif // LOCKABLE_H
 

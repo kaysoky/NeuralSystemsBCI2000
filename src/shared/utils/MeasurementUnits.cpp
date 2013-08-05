@@ -35,34 +35,43 @@ using namespace std;
 double MeasurementUnits::sSamplingRate = 1.0;
 double MeasurementUnits::sSampleBlockSize = 1.0;
 PhysicalUnit MeasurementUnits::sTimeUnit;
-PhysicalUnit MeasurementUnits::sFreqUnit;
-PhysicalUnit MeasurementUnits::sVoltageUnit;
+PhysicalUnit MeasurementUnits::sIdUnit;
 
 typedef vector< SharedPointer<Runnable> > CallbackList;
 static CallbackList sCallbacks;
 
-bool ignored = MeasurementUnits::PreInitialize();
-
-bool
-MeasurementUnits::PreInitialize()
+double
+MeasurementUnits::TimeInSampleBlocks( const std::string& value )
 {
-  // Set the unit for raw numbers representing frequencies to 1Hz.
-  sFreqUnit.SetOffset( 0 ).SetGain( 1.0 ).SetSymbol( "Hz" );
-  // Set the unit for raw numbers representing voltages to Microvolts.
-  sVoltageUnit.SetOffset( 0 ).SetGain( 1e-6 ).SetSymbol( "V" );
-  return true;
+  if( sTimeUnit.IsPhysical( value ) )
+    return sTimeUnit.PhysicalToRaw( value );
+  return sIdUnit.PhysicalToRaw( value );
+}
+
+double
+MeasurementUnits::ValueIn( const std::string& unitsOf, const std::string& value )
+{
+  string unit = "1" + unitsOf;
+  if( sTimeUnit.IsPhysical( unit ) )
+    return TimeInSeconds( value ) / TimeInSeconds( unit );
+  PhysicalUnit u;
+  u.SetGainWithSymbol( unit );
+  if( u.IsPhysical( value ) )
+    return u.PhysicalToRaw( value );
+  return sIdUnit.PhysicalToRaw( value ) / u.Gain();
 }
 
 void
-MeasurementUnits::Initialize( const ParamList& inParams )
+MeasurementUnits::Initialize( ParamList& inParams )
 {
   if( inParams.Exists( "SamplingRate" ) )
   {
-    sSamplingRate = PhysicalUnit()
-                   .SetGain( 1.0 )
-                   .SetOffset( 0.0 )
-                   .SetSymbol( "Hz" )
-                   .PhysicalToRaw( inParams[ "SamplingRate" ].Value() );
+    Param& p = inParams["SamplingRate"];
+    PhysicalUnit u;
+    u.SetSymbol( "Hz" );
+    if( !u.IsPhysical( p.Value() ) )
+      p.Value() = string( p.Value() ) + "Hz";
+    sSamplingRate = u.PhysicalToRaw( p.Value() );
     if( sSamplingRate <= 0.0 )
       bcierr << "Parameter SamplingRate needs to be greater zero";
   }
@@ -91,19 +100,3 @@ MeasurementUnits::AddInitializeCallback( const SharedPointer<Runnable>& r )
   sCallbacks.push_back( r );
 }
 
-#if MEASUREMENT_UNITS_BACK_COMPAT
-// These functions are deprecated, as their names are ambiguous:
-double 
-MeasurementUnits::ReadAsTime( const std::string& value )
-{
-  bciwarn << "MeasurementUnits::ReadAsTime() is deprecated. Please call MeasurementUnits::TimeInSampleBlocks() instead.";
-  return TimeInSampleBlocks( value );
-}
-
-double 
-MeasurementUnits::ReadAsFreq( const std::string& value )
-{
-  bciwarn << "MeasurementUnits::ReadAsFreq() is deprecated. Please use MeasurementUnits::FreqInHertz() / Input.SamplingRate() instead.";
-  return FreqInHertz( value ) / SamplingRate();
-}
-#endif // MEASUREMENT_UNITS_BACK_COMPAT

@@ -59,6 +59,16 @@ class ParamList
                 { return mNameIndex.find( name ) != mNameIndex.end(); }
         int     Index( const std::string& name ) const
                 { return Exists( name ) ? mNameIndex.find( name )->second : Size(); };
+
+  const Param&  ByName( const std::string& name ) const
+                { return operator[]( name ); }
+        Param&  ByName( const std::string& name )
+                { return operator[]( name ); }
+  const Param&  ByIndex( size_t index ) const
+                { return operator[]( index ); }
+        Param&  ByIndex( size_t index )
+                { return operator[]( index ); }
+
         void    Add( const Param& p, float sortingHint = 0.0 );
         void    Add( const Param& p, int sortingHint )
                 { Add( p, static_cast<float>( sortingHint ) ); }

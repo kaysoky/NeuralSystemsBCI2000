@@ -41,10 +41,8 @@ bool InMainThread();
 void Yield();
  // sleep for milliseconds
 void SleepFor( int ms );
- // sleep for milliseconds, with maximum precision
-void PrecisionSleepFor( double ms );
 // sleep until absolute wakeup time
-void PrecisionSleepUntil( PrecisionTime wakeup );
+void SleepUntil( PrecisionTime wakeup );
 
 int NumberOfProcessors();
 

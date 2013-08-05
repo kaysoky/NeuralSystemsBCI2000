@@ -107,6 +107,8 @@ CoreModule::Terminate()
   OSThread::Terminate();
   if( mNeedStopRun )
     StopRunFilters();
+  GenericFilter::HaltFilters();
+  Environment::OnExit();
 }
 
 // Internal functions.
@@ -228,18 +230,24 @@ CoreModule::OnExecute()
   {
     streamsock::set_of_instances inputSockets;
     {
-      OSMutex::Lock lock( mConnectionLock );
+      Lock lock( mOperator );
       if( mOperator.is_open() )
         inputSockets.insert( &mOperatorSocket );
+    }
+    {
+      Lock lock( mPreviousModule );
       if( mPreviousModule.is_open() )
         inputSockets.insert( &mPreviousModuleSocket );
     }
     if( !inputSockets.empty() )
       streamsock::wait_for_read( inputSockets, cSocketTimeout );
     {
-      OSMutex::Lock lock( mConnectionLock );
+      Lock lock( mOperator );
       while( mOperator && mOperator.is_open() && mOperator.rdbuf()->in_avail() )
         mMessageQueue.QueueMessage( mOperator );
+    }
+    {
+      Lock lock( mPreviousModule );
       while( mPreviousModule && mPreviousModule.is_open() && mPreviousModule.rdbuf()->in_avail() )
         mMessageQueue.QueueMessage( mPreviousModule );
     }
@@ -261,7 +269,7 @@ CoreModule::MainMessageLoop()
     mMessageEvent.Wait( bciMessageTimeout );
     mMessageEvent.Reset();
     ProcessBCIAndGUIMessages();
-    OSMutex::Lock lock( mConnectionLock );
+    Lock lock( mOperator );
     if( !mOperator.is_open() )
       Terminate();
   }
@@ -284,7 +292,7 @@ CoreModule::ProcessBCIAndGUIMessages()
     if( mResting )
       HandleResting();
     {
-      OSMutex::Lock lock( mConnectionLock );
+      Lock lock( mOperator );
       mResting &= mOperator.is_open();
     }
     // Last of all, allow for the GUI to process messages from its message queue if there are any.
@@ -296,7 +304,7 @@ CoreModule::ProcessBCIAndGUIMessages()
 void
 CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
 {
-  OSMutex::Lock lock( mConnectionLock );
+  Lock lock( mOperator );
   // creating connection to the operator
   mOperatorSocket.open( inOperatorAddress.c_str() );
   if( !mOperatorSocket.is_open() )
@@ -312,8 +320,8 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
     BCIERR << "Could not connect to operator module" << endl;
     return;
   }
-  BCIError::SetOperatorStream( &mOperator, &mConnectionLock );
-  GenericVisualization::SetOutputStream( &mOperator, &mConnectionLock );
+  BCIStream::SetOperatorStream( &mOperator, &mOperator );
+  GenericVisualization::SetOutputStream( &mOperator, &mOperator );
   mParamlist.Add(
     "System:Core%20Connections string OperatorIP= x"
     " 127.0.0.1 % % // the Operator module's IP" );
@@ -393,8 +401,6 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
 void
 CoreModule::InitializeCoreConnections()
 {
-  OSMutex::Lock lock( mConnectionLock );
-
   const char* ipParam = NEXTMODULE "IP",
             * portParam = NEXTMODULE "Port";
 
@@ -406,28 +412,34 @@ CoreModule::InitializeCoreConnections()
   }
   string ip = mParamlist[ ipParam ].Value(),
          port = mParamlist[ portParam ].Value();
-  mNextModuleSocket.open( ( ip + ":" + port ).c_str() );
-  mNextModule.open( mNextModuleSocket );
-  if( !mNextModule.is_open() )
   {
-    BCIERR << "Could not make a connection to the " NEXTMODULE " module"
-           << endl;
-    return;
+    Lock lock( mNextModule );
+    mNextModuleSocket.open( ( ip + ":" + port ).c_str() );
+    mNextModule.open( mNextModuleSocket );
+    if( !mNextModule.is_open() )
+    {
+      BCIERR << "Could not make a connection to the " NEXTMODULE " module"
+             << endl;
+      return;
+    }
   }
   OSThread::Sleep( 0 ); // This prevents mysterious closing of the mNextModuleSocket.
 
-  mPreviousModule.close();
-  mPreviousModule.clear();
-  bool waitForConnection = mPreviousModuleSocket.is_open() && !mPreviousModuleSocket.connected();
-  if( waitForConnection )
-    mPreviousModuleSocket.wait_for_read( cInitialConnectionTimeout, true );
-  mPreviousModule.open( mPreviousModuleSocket );
-  if( waitForConnection && !mPreviousModule.is_open() )
   {
-    BCIERR << "Connection to previous module timed out after "
-           << float( cInitialConnectionTimeout ) / 1e3 << "s"
-           << endl;
-    return;
+    Lock lock( mPreviousModule );
+    mPreviousModule.close();
+    mPreviousModule.clear();
+    bool waitForConnection = mPreviousModuleSocket.is_open() && !mPreviousModuleSocket.connected();
+    if( waitForConnection )
+      mPreviousModuleSocket.wait_for_read( cInitialConnectionTimeout, true );
+    mPreviousModule.open( mPreviousModuleSocket );
+    if( waitForConnection && !mPreviousModule.is_open() )
+    {
+      BCIERR << "Connection to previous module timed out after "
+             << float( cInitialConnectionTimeout ) / 1e3 << "s"
+             << endl;
+      return;
+    }
   }
 }
 
@@ -460,12 +472,16 @@ CoreModule::InitializeStatevector()
 void
 CoreModule::ResetStatevector()
 {
+  State::ValueType sourceTime = mStatevector.StateValue( "SourceTime" );
   mStatevector = mInitialStatevector;
+  mStatevector.SetStateValue( "SourceTime", sourceTime );
+  mStatevector.CommitStateChanges();
 }
 
 void
 CoreModule::InitializeFilterChain( const SignalProperties& Input )
 {
+  mResting = false;
   bcierr__.Clear();
   mStartRunPending = true;
   GenericFilter::HaltFilters();
@@ -537,7 +553,7 @@ CoreModule::AutoConfigFilters()
   if( mAutoConfig && bcierr__.Empty() )
   {
     BroadcastParameterChanges();
-    OSMutex::Lock lock( mConnectionLock );
+    Lock lock( mOperator );
     if( !MessageHandler::PutMessage( mOperator, Output ) )
       BCIERR << "Could not send output properties to Operator module" << endl;
   }
@@ -546,7 +562,6 @@ CoreModule::AutoConfigFilters()
 void
 CoreModule::InitializeFilters()
 {
-  OSMutex::Lock lock( mConnectionLock );
   if( bcierr__.Empty() )
   {
     if( mParamlist.Exists( "OperatorBackLink" ) )
@@ -554,22 +569,31 @@ CoreModule::InitializeFilters()
     if( !mAutoConfig )
     {
 #if IS_LAST_MODULE
-      if( mOperatorBackLink && !MessageHandler::PutMessage( mOperator, mOutputSignal.Properties() ) )
-        BCIERR << "Could not send output properties to Operator module" << endl;
+      {
+        Lock lock( mOperator );
+        if( mOperatorBackLink && !MessageHandler::PutMessage( mOperator, mOutputSignal.Properties() ) )
+          BCIERR << "Could not send output properties to Operator module" << endl;
+      }
 #else // IS_LAST_MODULE
-      if( !MessageHandler::PutMessage( mNextModule, mOutputSignal.Properties() ) )
-        BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
+      {
+        Lock lock( mNextModule );
+        if( !MessageHandler::PutMessage( mNextModule, mOutputSignal.Properties() ) )
+          BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
+      }
 #endif // IS_LAST_MODULE
     }
     EnvironmentBase::EnterInitializationPhase( &mParamlist, &mStatelist, &mStatevector );
     GenericFilter::InitializeFilters();
     EnvironmentBase::EnterNonaccessPhase();
   }
-  if( !mPreviousModule.is_open() )
-    BCIERR << PREVMODULE " dropped connection unexpectedly" << endl;
-
+  {
+    Lock lock( mPreviousModule );
+    if( !mPreviousModule.is_open() )
+      BCIERR << PREVMODULE " dropped connection unexpectedly" << endl;
+  }
   if( bcierr__.Empty() )
   {
+    Lock lock( mOperator );
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " initialized", Status::firstInitializedMessage + MODTYPE - 1 ) );
     mFiltersInitialized = true;
   }
@@ -587,7 +611,7 @@ CoreModule::StartRunFilters()
   mNeedStopRun = true;
   if( bcierr__.Flushes() == 0 )
   {
-    OSMutex::Lock lock( mConnectionLock );
+    Lock lock( mOperator );
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " running", Status::firstRunningMessage + 2 * ( MODTYPE - 1 ) ) );
     mResting = false;
   }
@@ -608,7 +632,7 @@ CoreModule::StopRunFilters()
   {
     BroadcastParameterChanges();
 
-    OSMutex::Lock lock( mConnectionLock );
+    Lock lock( mOperator );
 #if IS_FIRST_MODULE // The operator wants an extra invitation from the source module.
     MessageHandler::PutMessage( mOperator, SysCommand::Suspend );
 #endif
@@ -627,7 +651,7 @@ CoreModule::BroadcastParameterChanges()
 
   if( !changedParameters.Empty() )
   {
-    OSMutex::Lock lock( mConnectionLock );
+    Lock lock( mOperator );
     bool success = MessageHandler::PutMessage( mOperator, changedParameters )
                 && MessageHandler::PutMessage( mOperator, SysCommand::EndOfParameter );
     if( !success )
@@ -651,17 +675,21 @@ CoreModule::ProcessFilters( const GenericSignal& input )
   if( running || !mStopSent )
   {
     mStopSent = !running;
-    OSMutex::Lock lock( mConnectionLock );
-    MessageHandler::PutMessage( mNextModule, mStatevector );
 #if IS_LAST_MODULE
     if( mOperatorBackLink )
     {
+      Lock lock( mOperator );
       MessageHandler::PutMessage( mOperator, mStatevector );
       MessageHandler::PutMessage( mOperator, mOutputSignal );
     }
-#else // IS_LAST_MODULE
-    MessageHandler::PutMessage( mNextModule, mOutputSignal );
-#endif // IS_LAST_MODULE
+#endif
+    {
+      Lock lock( mNextModule );
+      MessageHandler::PutMessage( mNextModule, mStatevector );
+#if !IS_LAST_MODULE
+      MessageHandler::PutMessage( mNextModule, mOutputSignal );
+#endif
+    }
   }
 }
 
@@ -673,7 +701,7 @@ CoreModule::RestingFilters()
   GenericFilter::RestingFilters();
   EnvironmentBase::EnterNonaccessPhase();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );
-  OSMutex::Lock lock( mConnectionLock );
+  Lock lock( mOperator );
   if( errorOccurred || !mOperator.is_open() )
   {
     mResting = false;

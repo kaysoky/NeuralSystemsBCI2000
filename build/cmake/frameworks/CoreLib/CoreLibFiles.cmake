@@ -23,6 +23,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/utils/VersionInfo.cpp
   ${PROJECT_SRC_DIR}/shared/utils/OSError.cpp
   ${PROJECT_SRC_DIR}/shared/utils/OSMutex.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/OSSemaphore.cpp
   ${PROJECT_SRC_DIR}/shared/utils/OSEvent.cpp
   ${PROJECT_SRC_DIR}/shared/utils/OSThread.cpp
   ${PROJECT_SRC_DIR}/shared/utils/ThreadUtils.cpp
@@ -37,6 +38,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/utils/DylibImports.cpp
   ${PROJECT_SRC_DIR}/shared/utils/IndexList.cpp
   ${PROJECT_SRC_DIR}/shared/utils/Debugging.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/Clock.cpp
 
   ${PROJECT_SRC_DIR}/shared/utils/FPExceptMask.h
   ${PROJECT_SRC_DIR}/shared/utils/Lockable.h
@@ -47,6 +49,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/utils/Uuid.h
   ${PROJECT_SRC_DIR}/shared/utils/BinaryData.h
   ${PROJECT_SRC_DIR}/shared/utils/Resource.h
+  ${PROJECT_SRC_DIR}/shared/utils/NumericConstants.h
 
   ${PROJECT_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp
   ${PROJECT_SRC_DIR}/shared/utils/Expression/Expression.cpp
@@ -91,6 +94,8 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/fileio/RunManager.cpp
 
   ${PROJECT_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.cpp
+
+  ${PROJECT_SRC_DIR}/extlib/math/FastConv.h
 )
 
 IF( WIN32 )

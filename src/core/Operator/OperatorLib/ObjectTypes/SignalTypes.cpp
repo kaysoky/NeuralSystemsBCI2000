@@ -48,7 +48,7 @@ const ObjectType::MethodEntry Interpreter::SignalType::sMethodTable[] =
 bool
 Interpreter::SignalType::Get( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   const GenericSignal& signal = inInterpreter.StateMachine().ControlSignal();
   string name = inInterpreter.GetToken();
   if( !::stricmp( name.c_str(), "Channels" ) )

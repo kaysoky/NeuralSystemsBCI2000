@@ -33,35 +33,20 @@
 #include "SharedPointer.h"
 #include <string>
 
-#define MEASUREMENT_UNITS_BACK_COMPAT 1
-
 // This class converts strings such as "123.3" or "12ms" to plain numbers that
 // represent values in global units.
 class MeasurementUnits
 {
   public:
     // Use these functions to convert values forth and back into "natural" BCI2000 units:
-    static double TimeInSampleBlocks( const std::string& value )
-    { return sTimeUnit.PhysicalToRaw( value ); }
+    static double TimeInSampleBlocks( const std::string& );
     static double TimeInSeconds( const std::string& value )
     { return TimeInSampleBlocks( value ) * sSampleBlockSize / sSamplingRate; }
     static double TimeInMilliseconds( const std::string& value )
     { return TimeInSeconds( value ) * 1e3; }
 
-    static double FreqInHertz( const std::string& value )
-    { return sFreqUnit.PhysicalToRaw( value ); }
-
-    static double VoltageInMicrovolts( const std::string& value )
-    { return sVoltageUnit.PhysicalToRaw( value ); }
-    static double VoltageInVolts( const std::string& value )
-    { return VoltageInMicrovolts( value ) * 1e-6; }
-
     static std::string TimeUnit()
     { return sTimeUnit.RawToPhysical( 1 ); }
-    static std::string FreqUnit()
-    { return sFreqUnit.RawToPhysical( 1 ); }
-    static std::string VoltageUnit()
-    { return sVoltageUnit.RawToPhysical( 1 ); }
 
     static double SamplingRate()
     { return sSamplingRate; }
@@ -70,22 +55,15 @@ class MeasurementUnits
     static double SampleBlockDuration()
     { return sSampleBlockSize / sSamplingRate; }
 
-    static bool PreInitialize();
-    static void Initialize( const ParamList& );
-    static void AddInitializeCallback( const SharedPointer<Runnable>& );
+    static double ValueIn( const std::string& unitsOf, const std::string& );
 
-#if MEASUREMENT_UNITS_BACK_COMPAT
-    // These functions are deprecated, as their names are ambiguous:
-    static double ReadAsTime( const std::string& value );
-    static double ReadAsFreq( const std::string& value );
-#endif // MEASUREMENT_UNITS_BACK_COMPAT
+    static void Initialize( ParamList& );
+    static void AddInitializeCallback( const SharedPointer<Runnable>& );
 
   private:
     static double sSamplingRate;
     static double sSampleBlockSize;
-    static PhysicalUnit sTimeUnit;
-    static PhysicalUnit sFreqUnit;
-    static PhysicalUnit sVoltageUnit;
+    static PhysicalUnit sTimeUnit, sIdUnit;
 };
 
 #endif // MEASUREMENT_UNITS_H

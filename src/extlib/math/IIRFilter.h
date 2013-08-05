@@ -50,17 +50,7 @@
 
 #include "FilterDesign.h"
 #include "BCIAssert.h"
-#include <limits>
-#include <string.h>
-
-namespace bci {
-  template<typename T>
-  bool IsNan( T t )
-  {
-    static const T nan = std::numeric_limits<T>::quiet_NaN();
-    return ::memcmp( &t, &nan, sizeof( T ) ) == 0;
-  }
-} // namespace
+#include "NumericConstants.h"
 
 template<typename Real>
 class IIRFilter
@@ -112,7 +102,7 @@ inline bool
 IIRFilter<Real>::NanStalled() const
 {
   for( size_t ch = 0; ch < mDelays.size(); ++ch )
-    if( !mDelays[ch].empty() && bci::IsNan( mDelays[ch][0].real() ) )
+    if( !mDelays[ch].empty() && IsNaN( mDelays[ch][0].real() ) )
       return true;
   return false;
 }

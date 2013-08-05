@@ -60,7 +60,7 @@ CRoundToInt( double val )
 {
   union { const double* d; const char* c; const int32_t* i; } ptr = { &val };
   val += MAGIC_;
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
   ++ptr.c;
 #endif
   return *ptr.i;

@@ -29,6 +29,7 @@
 
 #include "Color.h"
 #include "BCIAssert.h"
+#include "FastConv.h"
 
 #include <cmath>
 #include <iostream>
@@ -38,11 +39,11 @@
 using namespace std;
 
 RGBColor
-RGBColor::operator*( float f ) const
+RGBColor::operator*( double f ) const
 {
-  int r = static_cast<int>( f * R() ),
-      g = static_cast<int>( f * G() ),
-      b = static_cast<int>( f * B() );
+  int r = ToInt( f * R() ),
+      g = ToInt( f * G() ),
+      b = ToInt( f * B() );
   return RGBColor( min( r, 0xff ), min( g, 0xff ), min( b, 0xff ) );
 }
 
@@ -95,22 +96,22 @@ RGBColor::ToGray() const
 }
 
 RGBColor
-RGBColor::FromHSV( float H, float S, float V )
+RGBColor::FromHSV( double H, double S, double V )
 {
   // According to Foley and VanDam.
   // All input components range from 0 to 1 - EPS.
-  float h = 6.0f * ::fmod( H, 1.0f );
+  double h = 6.0f * ::fmod( H, 1.0 );
   if( h < 0.0 )
     h += 6.0;
-  int i = static_cast<int>( ::floor( h ) );
+  int i = FloorToInt( h );
   if( i < 0 || i >= 6 ) // E.g., h == NaN.
     return RGBColor::NullColor;
-  float f = h - i;
+  double f = h - i;
   if( !( i % 2 ) )
-    f = 1.0f - f;
-  int m = static_cast<int>( ( V * ( 1.0 - S ) ) * 0x100 ),
-      n = static_cast<int>( ( V * ( 1.0 - S * f ) ) * 0x100 ),
-      v = static_cast<int>( V * 0x100 );
+    f = 1.0 - f;
+  int m = ToInt( ( V * ( 1.0 - S ) ) * 0x100 ),
+      n = ToInt( ( V * ( 1.0 - S * f ) ) * 0x100 ),
+      v = ToInt( V * 0x100 );
   if( m > 0xff )
     m = 0xff;
   if( n > 0xff )

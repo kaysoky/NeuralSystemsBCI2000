@@ -162,53 +162,9 @@ VisSignalProperties::ToVisCfg() const
 
   int numSamples = static_cast<int>( s.ElementUnit().RawMax() - s.ElementUnit().RawMin() + 1 );
   result.push_back( VisCfg( SourceID(), CfgID::NumSamples, numSamples ) );
-
   if( numSamples > 0 )
   {
-    string symbol;
-    double value = s.ElementUnit().Gain() * numSamples;
-    int magnitude = static_cast<int>( ::log10( ::fabs( value ) ) );
-    if( magnitude > 0 )
-      --magnitude;
-    else if( magnitude < 0 )
-      ++magnitude;
-    magnitude /= 3;
-    if( magnitude < -3 )
-      magnitude = -3;
-    if( magnitude > 3 )
-      magnitude = 3;
-    switch( magnitude )
-    {
-      case -3:
-        symbol = "n";
-        value /= 1e-9;
-        break;
-      case -2:
-        symbol = "mu";
-        value /= 1e-6;
-        break;
-      case -1:
-        symbol = "m";
-        value /= 1e-3;
-        break;
-      case 0:
-        break;
-      case 1:
-        symbol = "k";
-        value /= 1e3;
-        break;
-      case 2:
-        symbol = "M";
-        value /= 1e6;
-        break;
-      case 3:
-        symbol = "G";
-        value /= 1e9;
-        break;
-    }
-    ostringstream oss;
-    oss << setprecision( 10 ) << value / numSamples << symbol << s.ElementUnit().Symbol();
-    result.push_back( VisCfg( SourceID(), CfgID::SampleUnit, oss.str() ) );
+    result.push_back( VisCfg( SourceID(), CfgID::SampleUnit, s.ElementUnit().RawToPhysical( s.ElementUnit().Offset() + 1 ) ) );
     result.push_back( VisCfg( SourceID(), CfgID::SampleOffset, s.ElementUnit().Offset() ) );
   }
 
@@ -284,7 +240,7 @@ VisBitmap::WriteBinarySelf( ostream& os ) const
 }
 
 std::ostream* GenericVisualization::spOutputStream = NULL;
-const OSMutex* GenericVisualization::spOutputLock = NULL;
+const Lockable* GenericVisualization::spOutputLock = NULL;
 
 GenericVisualization&
 GenericVisualization::SendCfgString( CfgID inCfgID, const std::string& inCfgString )
@@ -322,7 +278,7 @@ GenericVisualization::SendObject( const T& inObject )
 {
   if( spOutputStream )
   {
-    OSMutex::Lock lock( spOutputLock );
+    Lock lock( spOutputLock );
     MessageHandler::PutMessage<T>( *spOutputStream, inObject );
     spOutputStream->flush();
     this->flags( spOutputStream->flags() );

@@ -121,7 +121,7 @@ ThreadedFilter<T>::Initialize( const SignalProperties& Input, const SignalProper
   Cleanup();
   int numberOfThreads = OptionalParameter( "NumberOfThreads", -1 );
   if( numberOfThreads <= 0 )
-    numberOfThreads = OSThread::NumberOfProcessors();
+    numberOfThreads = ThreadUtils::NumberOfProcessors();
   mThreads.resize( std::min( Input.Channels(), numberOfThreads ) );
   for( size_t i = 0; i < mThreads.size(); ++i )
     mThreads[i] = new T;

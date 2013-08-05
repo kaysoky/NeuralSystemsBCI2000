@@ -49,12 +49,17 @@ bci::SuggestDebugging( const string& inReason, const string& inDetails )
 
 #if _WIN32
 
-  string text = inDetails;
-  if( !text.empty() )
-    text += "\n\n";
-  text += "This dialog window gives you the opportunity to attach a debugger."
-          "\nIf you don't want to debug, or if you don't know what this is all about, press OK to continue.";
-  ::MessageBoxA( 0, text.c_str(), title.c_str(), MB_OK );
+  if( !::IsDebuggerPresent() )
+  {
+    string text = inDetails;
+    if( !text.empty() )
+      text += "\n\n";
+    text += "This dialog window gives you the opportunity to attach a debugger. When done, press OK to debug."
+            "\nIf you don't want to debug, or if you don't know what this is all about, press OK to continue.";
+    ::MessageBoxA( 0, text.c_str(), title.c_str(), MB_OK );
+  }
+  if( ::IsDebuggerPresent() )
+    ::DebugBreak(); // Use the call stack to determine the cause of the problem that took you here.
 
 #else  // _WIN32
 

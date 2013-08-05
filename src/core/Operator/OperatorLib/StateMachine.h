@@ -120,7 +120,7 @@ class StateMachine : public CallbackBase, private OSThread
     { mDataMutex.Acquire(); }
   void Unlock() const
     { mDataMutex.Release(); }
-  typedef ::Lock<StateMachine> DataLock;
+  typedef ::Lock_<StateMachine> DataLock;
   struct WatchDataLock : DataLock
   {
     WatchDataLock( StateMachine* s ) : DataLock( s ) {}
@@ -184,9 +184,9 @@ class StateMachine : public CallbackBase, private OSThread
   // Interface to CommandInterpreter class.
  public:
   void AddListener( CommandInterpreter& listener )
-    { ::Lock<Listeners> lock( mListeners ); mListeners.insert( &listener ); }
+    { ::Lock lock( mListeners ); mListeners.insert( &listener ); }
   void RemoveListener( CommandInterpreter& listener )
-    { ::Lock<Listeners> lock( mListeners ); mListeners.erase( &listener ); }
+    { ::Lock lock( mListeners ); mListeners.erase( &listener ); }
 
  private:
   virtual int OnExecute();
@@ -199,6 +199,7 @@ class StateMachine : public CallbackBase, private OSThread
 
   void BroadcastParameters();
   void BroadcastEndOfParameter();
+  void BroadcastParameterChanges();
   void BroadcastStates();
   void BroadcastEndOfState();
   void InitializeStateVector();
@@ -270,7 +271,7 @@ class StateMachine : public CallbackBase, private OSThread
       { return mTag; }
     SysState State() const
       { return mState_; }
-    ::Lock<const ConnectionInfo> Info() const
+    ::Lock_<const ConnectionInfo> Info() const
       { return mInfo_; }
     streamsock* Socket()
       { return &mSocket; }
@@ -297,7 +298,7 @@ class StateMachine : public CallbackBase, private OSThread
     void OnDisconnect();
     bool OnPutMessage( bool inSuccess )
       { if( inSuccess ) ++Info()().MessagesSent; return inSuccess; }
-    ::Lock<ConnectionInfo> Info()
+    ::Lock_<ConnectionInfo> Info()
       { return mInfo_; }
  
     StateMachine&    mrParent;

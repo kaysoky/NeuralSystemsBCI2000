@@ -285,12 +285,15 @@ EnvironmentBase::ParamAccess( const string& inName, int inFlags ) const
     if( !mayWrite && !mTemporaryParams.Exists( inName ) )
     {
       static const char* autoTypes[] = { "blob", },
-                       * autoTags[] = { "auto", "AutoConfig", };
+                       * autoTags[] = { "auto", "AutoConfig", },
+                       * autoKinds[] = { "(enumeration)", };
       for( size_t i = 0; i < sizeof( autoTypes ) / sizeof( *autoTypes ); ++i )
         if( !::stricmp( pParam->Type().c_str(), autoTypes[i] ) )
           mayWrite = true;
       for( size_t i = 0; i < sizeof( autoTags ) / sizeof( *autoTags ); ++i )
         mayWrite = mayWrite || ( pParam->NumValues() == 1 && !::stricmp( pParam->Value().c_str(), autoTags[i] ) );
+      for( size_t i = 0; i < sizeof( autoKinds ) / sizeof( *autoKinds ); ++i )
+        mayWrite = mayWrite || ( pParam->NumValues() && !::atoi( pParam->Value().c_str() ) && pParam->Comment().find( autoKinds[i] ) != string::npos );
       if( mayWrite )
         mAutoConfigParams.insert( inName );
       else
@@ -403,7 +406,6 @@ EnvironmentBase::StateAccess( const string& inName ) const
 // Called to prevent access.
 void EnvironmentBase::EnterNonaccessPhase()
 {
-  bcierr__.SetAction( BCIStream::LogicError );
   switch( phase_ )
   {
     case nonaccess:
@@ -443,6 +445,10 @@ void EnvironmentBase::EnterNonaccessPhase()
     default:
       bcierr << "Unknown execution phase";
   }
+  bcierr__.SetAction( BCIStream::LogicError );
+  bciwarn__.SetAction( BCIStream::Warning );
+  bciout__.SetAction( BCIStream::PlainMessage );
+  bciout__.SetAction( BCIStream::DebugMessage );
   phase_ = nonaccess;
   Accessor_<ParamList>::spGlobal = NULL;
   Accessor_<StateList>::spGlobal = NULL;
@@ -455,7 +461,6 @@ void EnvironmentBase::EnterConstructionPhase( ParamList*   inParamList,
                                               StateVector* inStateVector )
 {
   bcierr__.SetAction( BCIStream::LogicError );
-  bciwarn__.SetAction( BCIStream::Warning );
   phase_ = construction;
   Accessor_<ParamList>::spGlobal = inParamList;
   Accessor_<StateList>::spGlobal = inStateList;
@@ -478,7 +483,6 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
                                            StateVector* /*inStateVector*/ )
 {
   bcierr__.SetAction( BCIStream::ConfigurationError );
-  bciwarn__.SetAction( BCIStream::Warning );
   phase_ = preflight;
   Accessor_<ParamList>::spGlobal = inParamList;
   Accessor_<StateList>::spGlobal = inStateList;
@@ -539,7 +543,6 @@ void EnvironmentBase::EnterInitializationPhase( ParamList*   inParamList,
                                                 StateVector* inStateVector )
 {
   bcierr__.SetAction( BCIStream::RuntimeError );
-  bciwarn__.SetAction( BCIStream::Warning );
   phase_ = initialization;
   Accessor_<ParamList>::spGlobal = inParamList;
   Accessor_<StateList>::spGlobal = inStateList;
@@ -554,7 +557,6 @@ void EnvironmentBase::EnterStartRunPhase( ParamList*   inParamList,
                                           StateVector* inStateVector )
 {
   bcierr__.SetAction( BCIStream::RuntimeError );
-  bciwarn__.SetAction( BCIStream::Warning );
   BCIEvent::AllowEvents();
   phase_ = startRun;
   Accessor_<ParamList>::spGlobal = inParamList;
@@ -608,6 +610,14 @@ void EnvironmentBase::EnterRestingPhase( ParamList*   inParamList,
     ( *inParamList )[ i ].Unchanged();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->CallResting();
+}
+
+void EnvironmentBase::OnExit()
+{
+  bcierr__.SetAction( 0 );
+  bciwarn__.SetAction( 0 );
+  bciout__.SetAction( 0 );
+  bcidbg__.SetAction( 0 );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -685,31 +695,25 @@ EnvironmentExtension::AutoDelete( EnvironmentExtension* p )
   return p;
 }
 
-#define CALL( x )                    \
-void EnvironmentExtension::Call##x() \
-{                                    \
-  ErrorContext( #x, this );          \
-  this->x();                         \
-  ErrorContext( "" );                \
-}                                    \
+#define CALL( x, y )                   \
+void EnvironmentExtension::Call##x() y \
+{                                      \
+  ErrorContext( #x, this );            \
+  try { this->x(); }                   \
+  catch( const BCIException& e )       \
+  { bcierr_ << e.What(); }             \
+  ErrorContext( "" );                  \
+}
 
-#define CONST_CALL( x )                    \
-void EnvironmentExtension::Call##x() const \
-{                                          \
-  ErrorContext( #x, this );                \
-  this->x();                               \
-  ErrorContext( "" );                      \
-}                                          \
-
-CALL( Publish )
-CONST_CALL( Preflight )
-CALL( Initialize )
-CALL( PostInitialize )
-CALL( StartRun );
-CALL( PostStartRun )
-CALL( Process );
-CALL( PostProcess )
-CALL( StopRun );
-CALL( PostStopRun )
-CALL( Resting );
+CALL( Publish, )
+CALL( Preflight, const )
+CALL( Initialize, )
+CALL( PostInitialize, )
+CALL( StartRun, );
+CALL( PostStartRun, )
+CALL( Process, );
+CALL( PostProcess, )
+CALL( StopRun, );
+CALL( PostStopRun, )
+CALL( Resting, );
 

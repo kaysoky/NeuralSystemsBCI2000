@@ -36,7 +36,6 @@
 
 #include "PhysicalUnit.h"
 #include "ArithmeticExpression.h"
-#include "BCIError.h"
 #include "BCIException.h"
 #include <limits>
 #include <cmath>
@@ -45,37 +44,39 @@
 
 using namespace std;
 
-static const string sSexagesimalSeparators = ":";
-
-PhysicalUnit&
-PhysicalUnit::SetSymbol( const std::string& inSymbol, double inPower )
+namespace {
+const struct Prefix
 {
-  mSymbolPowers.clear();
-  mSymbolPowers[inSymbol] = inPower;
-  mSymbol = mSymbolPowers.SingleSymbol();
-  return *this;
-}
-
-int
-PhysicalUnit::Size() const
+  const char* name;
+  PhysicalUnit::ValueType value;
+  int log10value;
+} Prefixes[] =
 {
-  return static_cast<int>( ::fabs( mRawMax - mRawMin ) + 1 );
-}
+  { "f", 1e-15, -15 },
+  { "p", 1e-12, -12 },
+  { "n", 1e-9, -9 },
+  { "mu", 1e-6, -6 }, { "u", 1e-6, -6 },
+  { "m", 1e-3, -3 },
+  { "",  1.0, 0 },
+  { "k", 1e3, 3 },
+  { "M", 1e6, 6 },
+  { "G", 1e9, 9 },
+  { "T", 1e12, 12 },
+},
+*PrefixesEnd = Prefixes + sizeof( Prefixes ) / sizeof( *Prefixes );
+
+} // namespace
 
 bool
-PhysicalUnit::IsPhysical( const string& inValue ) const
-{ // IsPhysical will always return false when the Symbol property is empty.
-  bool result = false;
-  size_t pos = string::npos;
-  if( !mSymbol.empty() )
-  {
-    pos = inValue.rfind( mSymbol );
-    if( pos != string::npos )
-      result = ( pos == inValue.length() - mSymbol.length() );
-    else
-      result = ( SexagesimalAllowed() && inValue.find_first_of( sSexagesimalSeparators ) != string::npos );
-  }
-  return result;
+PhysicalUnit::TokenizePhysical( const string& inPhysical, size_t& outPrefixPos, size_t& outSymbolPos ) const
+{
+  outPrefixPos = inPhysical.find_first_not_of( "0123456789.:Ee+-*/^() " );
+  if( outPrefixPos == string::npos )
+    outPrefixPos = inPhysical.length();
+  int symbolPos = inPhysical.length() - Symbol().length();
+  bool ok = symbolPos > 0 && inPhysical.substr( symbolPos ) == Symbol();
+  outSymbolPos = ok ? symbolPos : inPhysical.length();
+  return ok;
 }
 
 bool
@@ -89,156 +90,192 @@ PhysicalUnit::SexagesimalAllowed() const
   return i < count;
 }
 
-PhysicalUnit::ValueType
-PhysicalUnit::ExtractUnit( string& ioValue ) const
+bool
+PhysicalUnit::ParseNumber( const string& inNumber, PhysicalUnit::ValueType& outValue ) const
 {
-  ValueType unit = 1.0;
-  size_t pos = ioValue.find_first_not_of( "0123456789.Ee+-*/^() " + sSexagesimalSeparators );
-  if( pos != string::npos )
+  outValue = 0;
+  bool valid = true;
+  int count = 0;
+  for( size_t beginPos = 0; beginPos < inNumber.length(); )
   {
-    string unitFromValue = ioValue.substr( pos );
-    if( unitFromValue.length() >= mSymbol.length()
-        && unitFromValue.substr( unitFromValue.length() - mSymbol.length() ) == mSymbol )
+    ++count;
+    size_t endPos = inNumber.find( ':', beginPos );
+    if( endPos == string::npos )
+      endPos = inNumber.length();
+    else if( !SexagesimalAllowed() )
+      return false;
+    size_t length = endPos - beginPos;
+    valid &= ( length > 0 );
+    ValueType value = ArithmeticExpression( inNumber.substr( beginPos, length ) ).Evaluate();
+    if( beginPos != 0 )
     {
-      unit *= mGain;
-      unitFromValue.erase( unitFromValue.length() - mSymbol.length(), mSymbol.length() );
+      valid &= ( value >= 0 && value < 60 );
+      outValue *= 60;
     }
-    const struct
-    {
-      const char* name;
-      ValueType value;
-    } prefixes[] =
-    {
-      { "p", 1e-12 },
-      { "n", 1e-9 },
-      { "u", 1e-6 }, { "mu", 1e-6 },
-      { "m", 1e-3 },
-      { "",  1.0 },
-      { "k", 1e3 },
-      { "M", 1e6 },
-      { "G", 1e9 },
-      { "T", 1e12 },
-    };
-    const int numPrefixes = sizeof( prefixes ) / sizeof( *prefixes );
-    int i = 0;
-    while( i < numPrefixes && unitFromValue != prefixes[ i ].name )
-      ++i;
-    if( i < numPrefixes )
-    {
-      unit /= prefixes[ i ].value;
-      ioValue.erase( pos );
-    }
-    else
-    {
-      unit = 0.0;
-    }
+    outValue += value;
+    beginPos = endPos;
   }
-  if( ioValue.find_first_of( sSexagesimalSeparators ) != string::npos )
-  {
-    if( !SexagesimalAllowed() )
+  valid &= ( count > 0 && count <= 3 );
+  return valid;
+}
+
+bool
+PhysicalUnit::ApplyPrefix( const string& inPrefix, PhysicalUnit::ValueType& ioValue ) const
+{
+  for( const Prefix* p = Prefixes; p < PrefixesEnd; ++p )
+    if( inPrefix == p->name )
     {
-      bcierr << "Sexagesimal format not allowed for values of this type" << endl;
-      ioValue = "1";
+      ioValue *= p->value;
+      return true;
     }
-    else if( unit == 1.0 )
+  return false;
+}
+
+bool
+PhysicalUnit::ExtractPrefix( PhysicalUnit::ValueType inRange, PhysicalUnit::ValueType& ioValue, string& outPrefix ) const
+{
+  int orderOfMagnitude = Floor( ::log10( inRange ) );
+  for( const Prefix* p = Prefixes; p != PrefixesEnd; ++p )
+    if( p->log10value >= orderOfMagnitude - 2 )
     {
-      unit = Gain();
+      ioValue /= p->value;
+      outPrefix = p->name;
+      return true;
     }
-  }
-  return unit;
-#ifdef TODO
-# error Issue an error when a unit is present but the string returned in ioValue is empty.
-#endif
+  return true;
 }
 
 PhysicalUnit::ValueType
-PhysicalUnit::PhysicalToRaw( const string& inPhysicalValue ) const
+PhysicalUnit::RawToPhysicalValue( ValueType inRawValue ) const
 {
-  string physValue( inPhysicalValue );
-  ValueType unit = ExtractUnit( physValue ),
-            result = 0;
+  return ( inRawValue - mOffset ) * mGain;
+}
 
-  if( ::fabs( unit ) > numeric_limits<ValueType>::epsilon() )
+PhysicalUnit::ValueType
+PhysicalUnit::PhysicalToRawValue( ValueType inPhysicalValue ) const
+{
+  return ( inPhysicalValue / mGain ) + mOffset;
+}
+
+PhysicalUnit&
+PhysicalUnit::SetOffset( ValueType inOffset )
+{
+  mOffset = inOffset;
+  return *this;
+}
+
+PhysicalUnit&
+PhysicalUnit::SetGain( ValueType inGain )
+{
+  mGain = inGain;
+  return *this;
+}
+
+PhysicalUnit&
+PhysicalUnit::SetGainWithSymbol( const std::string& inGain )
+{
+  mSymbol.clear();
+  size_t pos = 0, ignored = 0;
+  TokenizePhysical( inGain, pos, ignored );
+  ValueType gain = 0;
+  if( !ParseNumber( inGain.substr( 0, pos ), gain ) )
+    throw bciexception( "Invalid number format: " << inGain );
+  string prefix = inGain.substr( pos );
+  while( !prefix.empty() && !ApplyPrefix( prefix, gain ) )
+    prefix.erase( prefix.length() - 1 );
+  if( gain == 0 )
+    throw bciexception( "Zero gain specification: " << inGain );
+  SetGain( gain );
+  SetSymbol( inGain.substr( pos + prefix.length() ) );
+  return *this;
+}
+
+PhysicalUnit&
+PhysicalUnit::SetSymbol( const std::string& inSymbol, double inPower )
+{
+  mSymbolPowers.clear();
+  mSymbolPowers[inSymbol] = inPower;
+  mSymbol = mSymbolPowers.SingleSymbol();
+  return *this;
+}
+
+int
+PhysicalUnit::Size() const
+{
+  return Floor( ::fabs( mRawMax - mRawMin ) + 1 );
+}
+
+bool
+PhysicalUnit::IsPhysical( const string& inValue ) const
+{
+  if( Symbol().empty() )
+    return false;
+
+  size_t prefixPos = 0, symbolPos = 0;
+  if( !TokenizePhysical( inValue, prefixPos, symbolPos ) )
+    return false;
+
+  ValueType value = 0;
+  if( !ParseNumber( inValue.substr( 0, prefixPos ), value ) )
+    return false;
+
+  if( !ApplyPrefix( inValue.substr( prefixPos, symbolPos - prefixPos ), value ) )
+    return false;
+
+  return true;
+}
+
+PhysicalUnit::ValueType
+PhysicalUnit::PhysicalToRaw( const string& s ) const
+{
+  ValueType value = 0;
+  size_t beginPos = 0,
+         prefixPos = 0,
+         symbolPos = 0;
+  bool unitOK = TokenizePhysical( s, prefixPos, symbolPos );
+  string number = s.substr( beginPos, prefixPos );
+  if( !ParseNumber( number, value ) )
+    throw bciexception( "Invalid number format \"" << number << "\" in " << s );
+  if( value != 0 ) // zero times whatever is identical to zero
   {
-    if( !physValue.empty() )
+    string prefix = s.substr( prefixPos, symbolPos - prefixPos );
+    if( !ApplyPrefix( prefix, value ) )
+      throw bciexception( "Invalid unit prefix \"" << prefix << "\" in " << s );
+    if( !unitOK )
     {
-      bool valid = true;
-      int count = 0;
-      size_t beginPos = 0;
-      while( beginPos <= physValue.length() )
+      string symbol = s.substr( symbolPos ),
+             message;
+      if( symbol.empty() )
+        message += "Missing measurement unit";
+      else
+        message += "Unexpected measurement unit \"" + symbol + "\"";
+      message += " in \"" + s + "\"";
+      if( !Symbol().empty() )
       {
-        ++count;
-        size_t endPos = physValue.find_first_of( sSexagesimalSeparators, beginPos );
-        if( endPos == string::npos )
-          endPos = physValue.length();
-        size_t length = endPos - beginPos;
-        valid &= ( length > 0 );
-        ValueType value = ArithmeticExpression( physValue.substr( beginPos, length ) ).Evaluate();
-        if( beginPos != 0 )
-        {
-          valid &= ( value >= 0 && value < 60 );
-          result *= 60;
-        }
-        result += value;
-        beginPos = endPos + 1;
+        message += " , expected \"" + Symbol() + "\"";
+        if( !symbol.empty() )
+          message += " instead";
       }
-      valid &= ( count <= 3 );
-      if( !valid )
-        bcierr << "Invalid sexagesimal number format: " << inPhysicalValue << endl;
-      result = result / unit + mOffset;
+      throw bciexception( message );
     }
   }
-  else
-  {
-    bcierr << "Unexpected measurement unit in expression "
-           << "\"" << inPhysicalValue << "\""
-           << (
-                mSymbol.empty()
-                ? string( mSymbol )
-                : string( " , expected \"" ) + mSymbol.c_str() + "\""
-              )
-           << endl;
-  }
-  return result;
+  return PhysicalToRawValue( value );
 }
 
-string
-PhysicalUnit::RawToPhysical( ValueType inRawValue ) const
+PhysicalUnit::Pair
+PhysicalUnit::RawToPhysical( ValueType inRawValue, ValueType inRangeMax ) const
 {
-  ostringstream oss;
-  ValueType value = ( inRawValue - mOffset ) * mGain;
-  if( ::fabs( value ) > 0 )
-  {
-    int orderOfMagnitude = static_cast<int>( ::floor( ::log10( ::fabs( value ) ) ) );
-    const struct
-    {
-      const char* name;
-      int         order;
-    } prefixes[] =
-    {
-      { "p",  -12 },
-      { "n",  -9 },
-      { "mu", -6 },
-      { "m",  -3 },
-      { "",   0 },
-      { "k",  3 },
-      { "M",  6 },
-      { "G",  9 },
-      { "T",  12 },
-    };
-    const int numPrefixes = sizeof( prefixes ) / sizeof( *prefixes );
-    int i = 0;
-    while( i < numPrefixes && prefixes[ i ].order < orderOfMagnitude - 2 )
-      ++i;
-    value /= ::pow( 10.0f, prefixes[ i ].order );
-
-    oss << value << prefixes[ i ].name << mSymbol.c_str();
-  }
-  else
-  {
-    oss << '0';
-  }
-  return oss.str();
+  Pair result = { RawToPhysicalValue( inRawValue ), "" };
+  ValueType range = 0;
+  if( !IsNaN( inRangeMax ) )
+    range = ( inRangeMax - mOffset ) * mGain;
+  if( range == 0 )
+    range = ::fabs( result.value );
+  if( range <= Eps( range ) )
+    return result;
+  ExtractPrefix( range, result.value, result.unit );
+  result.unit += Symbol();
+  return result;
 }
 
 bool
@@ -320,6 +357,18 @@ PhysicalUnit::SymbolPowers::SingleSymbol() const
       if( i->second != 1 )
         oss << '^' << i->second;
     }
+  return oss.str();
+}
+
+PhysicalUnit::Pair::operator EncodedString() const
+{
+  return operator string();
+}
+
+PhysicalUnit::Pair::operator string() const
+{
+  ostringstream oss;
+  oss << *this;
   return oss.str();
 }
 

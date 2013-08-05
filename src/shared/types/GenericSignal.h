@@ -45,6 +45,7 @@ class GenericSignal
 {
   public:
     typedef double ValueType;
+    static const ValueType NaN;
 
     GenericSignal();
     ~GenericSignal();

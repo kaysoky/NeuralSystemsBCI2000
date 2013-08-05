@@ -180,7 +180,7 @@ StateMachine::~StateMachine()
   // The StateMachine destructor must be called from the same (main) thread that
   // called its constructor.
   {
-    ::Lock<Listeners> lock( mListeners );
+    ::Lock_<Listeners> lock( mListeners );
     for( Listeners::iterator i = mListeners.begin(); i != mListeners.end(); ++i )
       ( *i )->Abort();
   }
@@ -251,7 +251,7 @@ StateMachine::SetEvent( const char* inName, State::ValueType inValue )
     return false;
   if( mSystemState != StateMachine::Running )
     return false;
-  ::Lock<EventLink> lock( mEventLink );
+  ::Lock_<EventLink> lock( mEventLink );
   if( !mEventLink.Connected() )
     return false;
   mEventLink << inName << ' ' << inValue << " 0" << endl;
@@ -413,6 +413,8 @@ StateMachine::BroadcastParameters()
   for( size_t i = 0; i < mConnections.size(); ++i )
     if( mConnections[i]->PutMessage( mParameters ) )
       ThreadUtils::Yield();
+  for( int i = 0; i < mParameters.Size(); ++i )
+    mParameters[i].Unchanged();
 }
 
 void
@@ -420,6 +422,26 @@ StateMachine::BroadcastEndOfParameter()
 {
   for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
     ( *i )->PutMessage( SysCommand::EndOfParameter );
+}
+
+void
+StateMachine::BroadcastParameterChanges()
+{
+  ParamList changedParams;
+  for( int i = 0; i < mParameters.Size(); ++i )
+  {
+    if( mParameters[i].Changed() )
+    {
+      mParameters[i].Unchanged();
+      changedParams.Add( mParameters[i] );
+    }
+  }
+  if( !changedParams.Empty() )
+  {
+    for( size_t i = 0; i < mConnections.size(); ++i )
+      if( mConnections[i]->PutMessage( changedParams ) )
+        ThreadUtils::Yield();
+  }
 }
 
 void
@@ -540,7 +562,7 @@ StateMachine::PerformTransition( int inTransition )
 
     case TRANSITION( SuspendInitiated, Suspended ):
       Randomize();
-      BroadcastParameters(); // no EndOfParameter
+      BroadcastParameterChanges();
       break;
 
     case TRANSITION( WaitingForConnection, Idle ):
@@ -729,7 +751,7 @@ StateMachine::LogMessage( int inCallbackID, const string& inMessage )
   ExecuteCallback( inCallbackID, inMessage.c_str() );
   time_t t = ::time( NULL );
   mDebugLog << ::ctime( &t ) << separator << inMessage << endl;
-  ::Lock<Listeners> lock( mListeners );
+  ::Lock_<Listeners> lock( mListeners );
   for( Listeners::iterator i = mListeners.begin(); i != mListeners.end(); ++i )
     ( *i )->HandleLogMessage( inCallbackID, inMessage );
 }
@@ -916,7 +938,8 @@ StateMachine::Handle( const CoreConnection& inConnection, const Param& inParam )
       break;
     
     default:
-    { ostringstream oss;
+    {
+      ostringstream oss;
       {
         DataLock lock( this );
         mParameters.Add( inParam, static_cast<int>( inConnection.Tag() ) );
@@ -1305,11 +1328,11 @@ StateMachine::EventLink::OnExecute()
       istringstream iss( p->Info()().Address );
       string sourceIP;
       std::getline( iss, sourceIP, ':' );
-      ::Lock<EventLink> lock1( *this );
+      ::Lock_<EventLink> lock1( *this );
       mSocket.open( sourceIP.c_str(), mPort + 1 );
       this->clear();
       this->open( mSocket );
-      ::Lock<StateMachine> lock2( mrParent );
+      ::Lock_<StateMachine> lock2( mrParent );
       StateList& events = mrParent.Events();
       for( int i = 0; i < events.Size(); ++i )
         *this << events[i] << endl;

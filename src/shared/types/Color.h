@@ -78,9 +78,9 @@ class RGBColor
     operator int() const
       { return mValue; }
 
-    const RGBColor& operator*=( float f )
+    const RGBColor& operator*=( double f )
       { *this = *this * f; return *this; }
-    RGBColor operator*( float ) const;
+    RGBColor operator*( double ) const;
 
     int R() const
       { return ( mValue >> 16 ) & 0xff; }
@@ -99,13 +99,13 @@ class RGBColor
     // Return luminance as a greyscale color value.
     RGBColor ToGray() const;
     // Create a RGB color from Hue, Saturation, and Value.
-    static RGBColor FromHSV( float h, float s, float v );
+    static RGBColor FromHSV( double h, double s, double v );
 
   private:
     int mValue;
 };
 
-RGBColor operator*( float, RGBColor );
+RGBColor operator*( double, RGBColor );
 
 std::ostream& operator<<( std::ostream&, const RGBColor& );
 std::istream& operator>>( std::istream&, RGBColor& );
@@ -123,6 +123,7 @@ class ColorList: public ValueList<RGBColor>
     // Create a color list from a RGBColor array. The last entry in the array
     // must be Colorlist::End.
     ColorList( const RGBColor* );
+    ColorList( size_t n ) : ValueList<RGBColor>( n ) {}
 };
 
 std::ostream& operator<<( std::ostream&, const ColorList& );
@@ -134,6 +135,13 @@ std::istream& operator>>( std::istream&, ColorList& );
 inline
 RGBColor
 operator*( float f, RGBColor c )
+{
+  return c * double( f );
+}
+
+inline
+RGBColor
+operator*( double f, RGBColor c )
 {
   return c * f;
 }

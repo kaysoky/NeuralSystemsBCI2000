@@ -30,6 +30,8 @@
 #include "SignalDisplay.h"
 #include "BCIAssert.h"
 #include "BCIException.h"
+#include "FastConv.h"
+#include "IIRFilter.h"
 
 #include <cmath>
 #include <sstream>
@@ -81,10 +83,6 @@ SignalDisplay::SignalDisplay()
   mNumericValueWidth( 0 ),
   mMinValue( cMinValueDefault ),
   mMaxValue( cMaxValueDefault ),
-  mSampleOffset( 0 ),
-  mUnitsPerSample( 1 ),
-  mUnitsPerValue( 1 ),
-  mUnitsPerChannel( 1 ),
   mAxisColor( cAxisColorDefault ),
   mChannelColors( cChannelColorsDefault ),
   mTargetDC( NULL ),
@@ -97,14 +95,48 @@ SignalDisplay::~SignalDisplay()
   delete[] mpSignalPoints;
 }
 
+namespace {
+
+void SetUnitFromString( const std::string& s, PhysicalUnit& u )
+{
+  if( ::atof( s.c_str() ) )
+    u.SetGainWithSymbol( s );
+  else
+    u.SetSymbol( s );
+}
+
+}
+
+SignalDisplay&
+SignalDisplay::SetChannelUnit( const std::string& s )
+{
+  SetUnitFromString( s, mChannelUnit );
+  return Invalidate();
+}
+
+SignalDisplay&
+SignalDisplay::SetSampleUnit( const std::string& s )
+{
+  SetUnitFromString( s, mSampleUnit );
+  mTimeLabels = ( mSampleUnit.Symbol() == ":s" );
+  return Invalidate();
+}
+
+SignalDisplay&
+SignalDisplay::SetValueUnit( const std::string& s )
+{
+  SetUnitFromString( s, mValueUnit );
+  return Invalidate();
+}
+
 SignalDisplay&
 SignalDisplay::SetContext( const GUI::DrawContext& dc )
 {
   mDisplayRect = QRect(
-    static_cast<int>( dc.rect.left ),
-    static_cast<int>( dc.rect.top ),
-    static_cast<int>( dc.rect.right - dc.rect.left ),
-    static_cast<int>( dc.rect.bottom - dc.rect.top )
+    ToInt( dc.rect.left ),
+    ToInt( dc.rect.top ),
+    ToInt( dc.rect.right - dc.rect.left ),
+    ToInt( dc.rect.bottom - dc.rect.top )
   );
   mDisplayRgn = mDisplayRect;
   mTargetDC = dc.handle.device;
@@ -350,11 +382,10 @@ SignalDisplay::SyncLabelWidth()
       if( mChannelNameCache[ i ].empty() )
       {
         ostringstream oss;
-        if( mChannelUnit.empty() )
+        if( mChannelUnit.Symbol().empty() )
           oss << i + cChannelBase;
         else
-          oss << fixed << setprecision( 1 )
-              << i * mUnitsPerChannel << mChannelUnit;
+          oss << fixed << setprecision( 1 ) << mChannelUnit.RawToPhysical( i );
         mChannelNameCache[ i ] = oss.str();
       }
       const string& label = mChannelNameCache[i];
@@ -563,11 +594,9 @@ SignalDisplay::DrawSignalPolyline( const PaintInfo& p )
     for( int i = 0; i < mNumDisplayGroups; ++i )
     {
       baselinePoints[ 0 ].setY(
-        static_cast<int>( ChannelBottom( i ) + ( baseInterval * mMinValue ) / ( mMaxValue - mMinValue ) )
+        ToInt( ChannelBottom( i ) + ( baseInterval * mMinValue ) / ( mMaxValue - mMinValue ) )
       );
-      baselinePoints[ 1 ].setY(
-        static_cast<int>( baselinePoints[ 0 ].y() )
-      );
+      baselinePoints[ 1 ].setY( baselinePoints[ 0 ].y() );
       p.painter->drawPolyline( baselinePoints, 2 );
     }
   }
@@ -585,7 +614,7 @@ SignalDisplay::DrawSignalPolyline( const PaintInfo& p )
   delete[] mpSignalPoints;
   try
   {
-    mpSignalPoints = new QPoint[ mNumSamples ];
+    mpSignalPoints = new QPoint[mNumSamples];
   }
   catch( const bad_alloc& )
   {
@@ -594,26 +623,32 @@ SignalDisplay::DrawSignalPolyline( const PaintInfo& p )
   int numPens = static_cast<int>( p.signalPens.size() );
 
   for( int j = sampleBegin; j < sampleEnd; ++j )
-    mpSignalPoints[ j ].setX( SampleLeft( j ) );
+    mpSignalPoints[j].setX( SampleLeft( j ) );
   for( int i = 0; i < mNumDisplayChannels; ++i )
   {
     int channelBottom = ChannelBottom( i ),
         channel = i + mTopGroup * mChannelGroupSize;
-    for( int j = sampleBegin; j < sampleEnd; ++j )
-      mpSignalPoints[ j ].setY(
-        static_cast<int>( channelBottom - 1 - baseInterval * NormData( channel, j ) )
-      );
     p.painter->setPen( p.signalPens[ channel % numPens ] );
-    if( sampleBegin <= mSampleCursor && mSampleCursor < sampleEnd )
+    int runEnd = sampleBegin;
+    while( runEnd < sampleEnd )
     {
-      p.painter->drawPolyline( mpSignalPoints + sampleBegin, mSampleCursor - sampleBegin );
-      p.painter->drawPolyline( mpSignalPoints + mSampleCursor, sampleEnd - mSampleCursor );
+      int runBegin = runEnd;
+      while( IsNaN( NormData( channel, runBegin ) ) && runBegin < sampleEnd )
+        ++runBegin;
+      double value;
+      runEnd = runBegin;
+      while( !IsNaN( value = NormData( channel, runEnd ) ) && runEnd < sampleEnd )
+        mpSignalPoints[runEnd++].setY( ToInt( channelBottom - 1 - baseInterval * value ) );
+      if( runBegin <= mSampleCursor && mSampleCursor < runEnd )
+      {
+        p.painter->drawPolyline( mpSignalPoints + runBegin, mSampleCursor - runBegin );
+        p.painter->drawPolyline( mpSignalPoints + mSampleCursor, runEnd - mSampleCursor );
+      }
+      else
+      {
+        p.painter->drawPolyline( mpSignalPoints + runBegin, runEnd - runBegin );
+      }
     }
-    else
-    {
-      p.painter->drawPolyline( mpSignalPoints + sampleBegin, sampleEnd - sampleBegin );
-    }
-
 #if 0
     // We actually need this strange distinction of cases.
     if( mShowCursor && mSampleCursor != 0 && mNumSamples > 1 )
@@ -651,18 +686,21 @@ SignalDisplay::DrawSignalField2d( const PaintInfo& p )
   {
     for( int j = sampleBegin; j < sampleEnd; ++j )
     {
+      bool draw = true;
+      double dataValue = NormData( i + mTopGroup * mChannelGroupSize, j );
+      if( dataValue < 0.0 )
+        dataValue = 0.0;
+      else if( dataValue > 1.0 )
+        dataValue = 1.0;
+      else if( IsNaN( dataValue ) )
+        dataValue = 0.0;
+
       QRect dotRect(
           SampleLeft( j ),
           ChannelTop( i ),
           SampleRight( j ) - SampleLeft( j ),
           ChannelBottom( i ) - ChannelTop( i )
       );
-      float dataValue = NormData( i + mTopGroup * mChannelGroupSize, j );
-      if( dataValue < 0.0 )
-        dataValue = 0.0;
-      else if( dataValue > 1.0 )
-        dataValue = 1.0;
-
       RGBColor rgb;
       if( mDisplayColors )
         rgb = RGBColor::FromHSV( dataValue - 1.0 / 3.0, 1.0, dataValue );
@@ -688,10 +726,10 @@ SignalDisplay::DrawMarkerChannels( const PaintInfo& p )
     size_t channelNumber = mData.Channels() - mMarkerChannels + markerCh;
     if( mData.Elements() > 0 )
     {
-      int prevVal = static_cast<int>( mData( channelNumber, 0 ) );
+      int prevVal = ToInt( mData( channelNumber, 0 ) );
       for( int sample = 0; sample < mData.Elements(); ++sample )
       {
-        int curVal = static_cast<int>( mData( channelNumber, sample ) );
+        int curVal = ToInt( mData( channelNumber, sample ) );
         if( curVal != prevVal )
         {
           QRect posRect;
@@ -759,10 +797,10 @@ SignalDisplay::DrawXTicks( const PaintInfo& p )
     float pixelsPerSample = ( SampleLeft( mNumSamples - 1 ) - SampleLeft( 0 ) ) / mNumSamples;
     if( pixelsPerSample < 10 )
     { // Samples are dense
-      float displayLength = ::fabs( mNumSamples * mUnitsPerSample ),
+      float displayLength = ::fabs( mNumSamples * mSampleUnit.Gain() ),
             scale = ::pow( 10.0, ::floor( ::log10( displayLength ) + 0.5 ) );
-      xDivision = scale / mUnitsPerSample / 5,
-      xStart = xDivision - ::fmod( mSampleOffset, xDivision );
+      xDivision = scale / mSampleUnit.Gain() / 5,
+      xStart = xDivision - ::fmod( float( -mSampleUnit.Offset() ), xDivision );
     }
   }
   if( xDivision < 1 )
@@ -775,11 +813,11 @@ SignalDisplay::DrawXTicks( const PaintInfo& p )
     switch( mDisplayMode )
     {
       case field2d:
-        tickX = ( SampleRight( static_cast<int>( j ) ) + SampleLeft( static_cast<int>( j ) ) ) / 2;
+        tickX = ( SampleRight( ToInt( j ) ) + SampleLeft( ToInt( j ) ) ) / 2;
         break;
       case polyline:
       default:
-        tickX = SampleLeft( static_cast<int>( j ) );
+        tickX = SampleLeft( ToInt( j ) );
     }
     QRect tickRect(
         tickX - cTickWidth / 2,
@@ -792,18 +830,20 @@ SignalDisplay::DrawXTicks( const PaintInfo& p )
     {
       tickRect.setTop( tickRect.top() + 2 * cAxisWidth );
       ostringstream label;
-      float val  = ( j + mSampleOffset ) * mUnitsPerSample;
       if( mTimeLabels )
       {
+        float val  = ( j - mSampleUnit.Offset() ) * mSampleUnit.Gain();
         label << ' ' << setfill( '0' )
               << setw( 2 ) << int( val ) / 60 << ':'
               << setw( 2 ) << setprecision( 2 ) << int( val ) % 60;
-        if( ::fmod( xDivision * mUnitsPerSample, 1.0f ) != 0.0 )
+        if( ::fmod( xDivision * mSampleUnit.Gain(), 1.0 ) != 0.0 )
           label << '.' << setw( 2 ) << int( 100 * val + 0.5 ) % 100;
         label << ' ';
       }
       else
-        label << setprecision( 6 ) << ' ' << val << mSampleUnit << ' ';
+      {
+        label << ' ' << setprecision( 6 ) << mSampleUnit.RawToPhysical( j, mNumSamples ) << ' ';
+      }
 
       p.painter->drawText( tickRect,
         Qt::AlignHCenter | Qt::TextSingleLine | Qt::AlignTop | Qt::TextDontClip,
@@ -939,7 +979,7 @@ SignalDisplay::DrawMarkers( const PaintInfo& p )
   // Draw markers.
   for( size_t i = 0; i < mXAxisMarkers.size(); ++i )
   {
-    int markerX = SampleRight( static_cast<int>( mXAxisMarkers[ i ].Address() - mSampleOffset ) );
+    int markerX = SampleRight( ToInt( mXAxisMarkers[ i ].Address() + mSampleUnit.Offset() ) );
     QRect markerBar(
         markerX - cAxisWidth / 2,
         p.axisY - 4 * cAxisWidth,
@@ -986,17 +1026,17 @@ SignalDisplay::DrawValueUnit( const PaintInfo& p )
     p.painter->setPen( p.backgroundColor );
     p.painter->setBackground( p.markerColor );
     p.painter->setBackgroundMode( Qt::OpaqueMode );
-    // Find a round value that is near the display range.
-    float unitsPerPixel = ::fabs( ( mMaxValue - mMinValue ) * mUnitsPerValue / baseInterval ),
-          scale = ::pow( 10.0, ::ceil( ::log10( unitsPerPixel * 0.95 * baseInterval ) ) ),
-          rulerLength = scale;
+    // Find a round value that is close to display range.
+    double unitsPerPixel = ::fabs( ( mMaxValue - mMinValue ) * mValueUnit.Gain() / baseInterval ),
+           scale = ::pow( 10.0, ::ceil( ::log10( unitsPerPixel * 0.95 * baseInterval ) ) ),
+           rulerLength = scale;
     while( rulerLength / unitsPerPixel >= 0.95 * baseInterval
            && rulerLength / unitsPerPixel > mMarkerHeight )
       rulerLength -= scale / 10;
-    int pixelLength = static_cast<int>( rulerLength / unitsPerPixel );
+    int pixelLength = ToInt( rulerLength / unitsPerPixel );
 
     ostringstream label;
-    label << rulerLength << mValueUnit;
+    label << mValueUnit.RawToPhysical( rulerLength / mValueUnit.Gain() );
     if( mMinValue == 0 )
     {
       int left = SampleLeft( 0 ) + cTickLength,

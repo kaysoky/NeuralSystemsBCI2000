@@ -61,7 +61,7 @@ ParameterType::Set( CommandInterpreter& inInterpreter )
   Param param;
   if( iss >> param )
   {
-    Lock<StateMachine> lock( inInterpreter.StateMachine() );
+    Lock lock( inInterpreter.StateMachine() );
     ParamList& list = inInterpreter.StateMachine().Parameters();
     if( !list.Exists( param.Name() ) )
       throw bciexception( "Parameter " << param.Name() << " does not exist" );
@@ -78,7 +78,7 @@ ParameterType::Set( CommandInterpreter& inInterpreter )
     string name, value;
     ostringstream oss;
     {
-      Lock<StateMachine> lock( inInterpreter.StateMachine() );
+      Lock lock( inInterpreter.StateMachine() );
       MutableParamRef param = GetParamRef( inInterpreter );
       if( param->Section() == "System" )
         throw bciexception( "Cannot set system parameter" );
@@ -101,7 +101,7 @@ ParameterType::Set( CommandInterpreter& inInterpreter )
 bool
 ParameterType::Get( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   inInterpreter.Out() << GetParamRef( inInterpreter );
   return true;
 }
@@ -115,7 +115,7 @@ ParameterType::Insert( CommandInterpreter& inInterpreter )
   if( !( iss >> param ) )
     throw bciexception( "Invalid parameter line: " << line );
   {
-    Lock<StateMachine> lock( inInterpreter.StateMachine() );
+    Lock lock( inInterpreter.StateMachine() );
     if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle
         && inInterpreter.StateMachine().SystemState() != StateMachine::Publishing )
       throw bciexception( "Can not add parameter to list after publishing phase" );
@@ -129,7 +129,7 @@ ParameterType::Insert( CommandInterpreter& inInterpreter )
 bool
 ParameterType::List( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   ParamRef param = GetParamRef( inInterpreter );
   inInterpreter.Out() << *param.operator->();
   return true;
@@ -138,7 +138,7 @@ ParameterType::List( CommandInterpreter& inInterpreter )
 bool
 ParameterType::Exists( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   bool exists = inInterpreter.StateMachine().Parameters().Exists( inInterpreter.GetToken() );
   inInterpreter.Out() << ( exists ? "true" : "false" );
   return true;
@@ -248,7 +248,7 @@ ParametersType::Load( CommandInterpreter& inInterpreter )
 bool
 ParametersType::List( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   string pattern = inInterpreter.GetRemainingTokens();
   if( pattern.empty() )
     pattern = "*";
@@ -268,7 +268,7 @@ ParametersType::Apply( CommandInterpreter& inInterpreter )
 bool
 ParametersType::Clear( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )
     throw bciexception( "Must be in idle state to clear parameters" );
   inInterpreter.StateMachine().Parameters().Clear();

@@ -27,10 +27,7 @@
 #pragma hdrstop
 
 #include "ScaleObservationFilter.h"
-#include "IIRFilter.h"
-#include <limits>
-#include <cmath>
-#include <cstring>
+#include "NumericConstants.h"
 
 using namespace std;
 
@@ -47,7 +44,7 @@ ScaleObservationFilter::TimeConstant( double inTimeConstant )
   if( mTimeConstant != inTimeConstant )
   {
     mTimeConstant = inTimeConstant;
-    if( mTimeConstant < numeric_limits<double>::epsilon() )
+    if( mTimeConstant < Eps( mTimeConstant ) )
       mDecayFactor = 0;
     else
       mDecayFactor = ::exp( - 1 / inTimeConstant );
@@ -60,12 +57,12 @@ void
 ScaleObservationFilter::Process( const GenericSignal& Input )
 {
   double rate = Input.Properties().SamplingRate(),
-        duration = 1;
+         duration = 1;
   if( rate > 0 )
     duration = Input.Elements() / rate;
   double decayFactor = ::pow( mDecayFactor, duration ),
          oldMean = Mean();
-  if( bci::IsNan( oldMean ) )
+  if( IsNaN( oldMean ) )
   {
     Reset();
     oldMean = 0;
@@ -73,11 +70,11 @@ ScaleObservationFilter::Process( const GenericSignal& Input )
   double oldMax = ( mMax - oldMean ) * decayFactor,
          oldMin = ( mMin - oldMean ) * decayFactor;
   mCount *= decayFactor;
-  mCount += Input.Channels() * Input.Elements();
   mSum *= decayFactor;
   for( int ch = 0; ch < Input.Channels(); ++ch )
     for( int el = 0; el < Input.Elements(); ++el )
-      mSum += Input( ch, el );
+      if( !IsNaN( Input( ch, el ) ) )
+        ++mCount, mSum += Input( ch, el );
   double mean = Mean();
   mMax = oldMax + mean;
   mMin = oldMin + mean;
@@ -92,7 +89,7 @@ ScaleObservationFilter::Process( const GenericSignal& Input )
 void
 ScaleObservationFilter::Reset()
 {
-  mCount = numeric_limits<double>::epsilon();
+  mCount = Eps( mCount );
   mSum = 0;
   mMax = 0;
   mMin = 0;

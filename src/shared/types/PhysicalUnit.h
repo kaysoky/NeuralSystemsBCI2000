@@ -37,11 +37,20 @@
 #include <map>
 #include <string>
 #include "EncodedString.h"
+#include "NumericConstants.h"
 
 class PhysicalUnit
 {
  public:
   typedef double ValueType;
+
+  struct Pair
+  {
+    ValueType value;
+    std::string unit;
+    operator std::string() const;
+    operator EncodedString() const;
+  };
 
   PhysicalUnit() : mOffset( 0 ), mGain( 1 ), mRawMin( -1 ), mRawMax( 1 ) {}
   ~PhysicalUnit() {}
@@ -51,13 +60,12 @@ class PhysicalUnit
 
   ValueType     Offset() const
                 { return mOffset; }
-  PhysicalUnit& SetOffset( ValueType v )
-                { mOffset = v; return *this; }
+  PhysicalUnit& SetOffset( ValueType );
 
   ValueType     Gain() const
                 { return mGain; }
-  PhysicalUnit& SetGain( ValueType g )
-                { mGain = g; return *this; }
+  PhysicalUnit& SetGain( ValueType );
+  PhysicalUnit& SetGainWithSymbol( const std::string& );
 
   const std::string& Symbol() const
                 { return mSymbol; }
@@ -75,9 +83,12 @@ class PhysicalUnit
 
   int           Size() const;
 
+  ValueType     PhysicalToRawValue( ValueType ) const;
+  ValueType     RawToPhysicalValue( ValueType ) const;
+
   bool          IsPhysical( const std::string& ) const;
   ValueType     PhysicalToRaw( const std::string& ) const;
-  std::string   RawToPhysical( ValueType ) const;
+  Pair RawToPhysical( ValueType, ValueType range = NaN<ValueType>() ) const;
 
   bool          operator==( const PhysicalUnit& ) const;
   bool          operator!=( const PhysicalUnit& u ) const
@@ -90,8 +101,11 @@ class PhysicalUnit
   std::istream& ReadFromStream( std::istream& is );
 
  private:
-  bool          SexagesimalAllowed() const;
-  double        ExtractUnit( std::string& ) const;
+  bool TokenizePhysical( const std::string&, size_t&, size_t& ) const;
+  bool SexagesimalAllowed() const;
+  bool ParseNumber( const std::string&, ValueType& ) const;
+  bool ApplyPrefix( const std::string&, ValueType& ) const;
+  bool ExtractPrefix( ValueType, ValueType&, std::string& ) const;
 
   struct SymbolPowers : std::map<std::string, double>
   {
@@ -114,6 +128,10 @@ std::ostream& operator<<( std::ostream& os, const PhysicalUnit& u )
 inline
 std::istream& operator>>( std::istream& is, PhysicalUnit& u )
 { return u.ReadFromStream( is ); }
+
+inline
+std::ostream& operator<<( std::ostream& os, const PhysicalUnit::Pair& p )
+{ return os << p.value << p.unit; }
 
 #endif // PHYSICAL_UNIT_H
 

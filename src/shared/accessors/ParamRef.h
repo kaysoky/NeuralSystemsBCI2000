@@ -225,21 +225,20 @@ class ParamRef
   // Conversions involving units.
   // The following functions convert the parameter's value into the unit specified,
   // honoring physical units when present.
-  double InSampleBlocks() const
-    { return MeasurementUnits::TimeInSampleBlocks( ToString() ); }
-  double InSeconds() const
-    { return MeasurementUnits::TimeInSeconds( ToString() ); }
-  double InMilliseconds() const
-    { return MeasurementUnits::TimeInMilliseconds( ToString() ); }
+  double In( const std::string& unitsOf ) const
+    { return MeasurementUnits::ValueIn( unitsOf, ToString() ); }
 
   double InHertz() const
-    { return MeasurementUnits::FreqInHertz( ToString() ); }
-
+    { return In( "Hz" ); }
   double InVolts() const
-    { return MeasurementUnits::VoltageInVolts( ToString() ); }
-  double InMicrovolts() const
-    { return MeasurementUnits::VoltageInMicrovolts( ToString() ); }
+    { return In( "V" ); }
 
+  double InSeconds() const
+    { return In( "s" ); }
+  double InMilliseconds() const
+    { return In( "ms" ); }
+  double InSampleBlocks() const
+    { return MeasurementUnits::TimeInSampleBlocks( ToString() ); }
 
   // Dereferencing operators for access to Param members.
   const Param* operator->() const;

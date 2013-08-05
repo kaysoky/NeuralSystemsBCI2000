@@ -67,16 +67,14 @@ class OSThread : private Uncopyable
   virtual int OnExecute() { return Execute(); } // Now named as an event handler.
   virtual void OnFinished() {}
 
- public: // These utility functions are now obsolete.
-         // Use their counterparts from the ThreadUtils.h header instead.
+ protected: // These utility functions are now obsolete.
+            // Use their counterparts from the ThreadUtils.h header instead.
   static void SleepFor( int inMs )
-    { ThreadUtils::SleepFor( inMs ); }// sleep for milliseconds
+    { ThreadUtils::SleepFor( inMs ); }
   static void Sleep( int inMs )
     { SleepFor( inMs ); }
-  static void PrecisionSleepFor( double inMs ) // sleep for milliseconds
-    { ThreadUtils::PrecisionSleepFor( inMs ); }
-  static void PrecisionSleepUntil( PrecisionTime inWakeup ) // sleep until absolute wakeup time
-    { ThreadUtils::PrecisionSleepUntil( inWakeup ); }
+  static void SleepUntil( PrecisionTime inWakeup )
+    { ThreadUtils::SleepUntil( inWakeup ); }
   static bool IsMainThread()
     { return InMainThread(); }
   static bool InMainThread()

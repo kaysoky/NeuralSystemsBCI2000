@@ -54,7 +54,7 @@ VisPropertyType::Set( CommandInterpreter& inInterpreter )
   GetVisPropertyIDs( inInterpreter, visID, cfgID, numCfgID );
   string value = inInterpreter.GetRemainingTokens();
   {
-    Lock<StateMachine> lock( inInterpreter.StateMachine() );
+    Lock lock( inInterpreter.StateMachine() );
     inInterpreter.StateMachine().Visualizations()[visID].Put( numCfgID, value );
   }
   inInterpreter.StateMachine().ExecuteCallback( BCI_OnVisProperty, visID.c_str(), numCfgID, value.c_str() );
@@ -68,7 +68,7 @@ VisPropertyType::Get( CommandInterpreter& inInterpreter )
   string visID, cfgID;
   IDType numCfgID;
   GetVisPropertyIDs( inInterpreter, visID, cfgID, numCfgID );
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   string result;
   inInterpreter.StateMachine().Visualizations()[visID].Get( numCfgID, result );
   inInterpreter.Out() << result;
@@ -116,7 +116,7 @@ VisPropertiesType::Set( CommandInterpreter& inInterpreter )
 {
   Param p;
   {
-    Lock<StateMachine> lock( inInterpreter.StateMachine() );
+    Lock lock( inInterpreter.StateMachine() );
     const string paramName = PROPERTY_SETS_PARAM;
     const ParamList& parameters = inInterpreter.StateMachine().Parameters();
     if( !parameters.Exists( paramName ) )
@@ -143,7 +143,7 @@ VisPropertiesType::Set( CommandInterpreter& inInterpreter )
       {
         string value = p.Value( row, col ).ToString();
         {
-          Lock<StateMachine> lock( inInterpreter.StateMachine() );
+          Lock lock( inInterpreter.StateMachine() );
           inInterpreter.StateMachine().Visualizations()[visID].Put( numCfgID, value );
         }
         inInterpreter.StateMachine().ExecuteCallback( BCI_OnVisProperty, visID.c_str(), numCfgID, value.c_str() );

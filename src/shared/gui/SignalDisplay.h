@@ -121,34 +121,31 @@ class SignalDisplay
                  { return mMaxValue; }
 
   SignalDisplay& SetSampleOffset( float f )
-                 { mSampleOffset = f; return Invalidate(); }
+                 { mSampleUnit.SetOffset( -f ); return Invalidate(); }
   float          SampleOffset() const
-                 { return mSampleOffset; }
-  SignalDisplay& SetSampleUnit( const std::string& s )
-                 { mSampleUnit = s; mTimeLabels = ( s == ":s" ); return Invalidate(); }
+                 { return -mSampleUnit.Offset(); }
+  SignalDisplay& SetSampleUnit( const std::string& );
   const std::string& SampleUnit() const
-                 { return mSampleUnit; }
-  SignalDisplay& SetValueUnit( const std::string& s )
-                 { mValueUnit = s; return Invalidate(); }
+                 { return mSampleUnit.Symbol(); }
+  SignalDisplay& SetValueUnit( const std::string& );
   const std::string& ValueUnit() const
-                 { return mValueUnit; }
-  SignalDisplay& SetChannelUnit( const std::string& s )
-                 { mChannelUnit = s; return Invalidate(); }
+                 { return mValueUnit.Symbol(); }
+  SignalDisplay& SetChannelUnit( const std::string& );
   const std::string& ChannelUnit() const
-                 { return mChannelUnit; }
+                 { return mChannelUnit.Symbol(); }
 
   SignalDisplay& SetUnitsPerSample( float f )
-                 { mUnitsPerSample = f; return Invalidate(); }
+                 { mSampleUnit.SetGain( f ); return Invalidate(); }
   float          UnitsPerSample() const
-                 { return mUnitsPerSample; }
+                 { return mSampleUnit.Gain(); }
   SignalDisplay& SetUnitsPerValue( float f )
-                 { mUnitsPerValue = f; return Invalidate(); }
+                 { mValueUnit.SetGain( f ); return Invalidate(); }
   float          UnitsPerValue() const
-                 { return mUnitsPerValue; }
+                 { return mValueUnit.Gain(); }
   SignalDisplay& SetUnitsPerChannel( float f )
-                 { mUnitsPerChannel = f; return Invalidate(); }
+                 { mChannelUnit.SetGain( f ); return Invalidate(); }
   float          UnitsPerChannel() const
-                 { return mUnitsPerChannel; }
+                 { return mChannelUnit.Gain(); }
 
   SignalDisplay& SetAxisColor( const RGBColor& c )
                  { mAxisColor = c; return Invalidate(); }
@@ -251,7 +248,7 @@ class SignalDisplay
     { return ch / mChannelGroupSize; }
 
   inline
-  float NormData( size_t i, size_t j )
+  double NormData( size_t i, size_t j )
     { return ( mData( i, j ) - mMinValue ) / ( mMaxValue - mMinValue ); }
 
   inline
@@ -278,15 +275,11 @@ class SignalDisplay
                 mChannelGroupSize,
                 mMarkerChannels,
                 mNumericValueWidth;
-  float         mMinValue,
+  double        mMinValue,
                 mMaxValue;
-  std::string   mSampleUnit,
-                mValueUnit,
-                mChannelUnit;
-  float         mSampleOffset,
-                mUnitsPerSample,
-                mUnitsPerValue,
-                mUnitsPerChannel;
+  PhysicalUnit  mChannelUnit,
+                mSampleUnit,
+                mValueUnit;
   RGBColor      mAxisColor;
   ColorList     mChannelColors;
   std::vector<std::string> mChannelNameCache;

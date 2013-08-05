@@ -58,7 +58,7 @@ StateType::Set( CommandInterpreter& inInterpreter )
   State::ValueType value = 0;
   ostringstream oss;
   {
-    Lock<StateMachine> lock( inInterpreter.StateMachine() );
+    Lock lock( inInterpreter.StateMachine() );
     State& state = GetState( inInterpreter );
     name = state.Name();
     value = ::atoi( inInterpreter.GetToken().c_str() );
@@ -76,7 +76,7 @@ StateType::Set( CommandInterpreter& inInterpreter )
 bool
 StateType::Get( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   const State& state = GetState( inInterpreter ); // GetState() tests for existence of the state.
   inInterpreter.Out() <<  inInterpreter.StateMachine().GetStateValue( state.Name().c_str() );
   return true;
@@ -93,7 +93,7 @@ StateType::Insert( CommandInterpreter& inInterpreter )
   if( !( iss >> state ) )
     throw bciexception( "Invalid state definition" );
   {
-    Lock<StateMachine> lock( inInterpreter.StateMachine() );
+    Lock lock( inInterpreter.StateMachine() );
     switch( inInterpreter.StateMachine().SystemState() )
     {
       case StateMachine::Idle:
@@ -114,7 +114,7 @@ StateType::Insert( CommandInterpreter& inInterpreter )
 bool
 StateType::List( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   inInterpreter.Out() << GetState( inInterpreter );
   return true;
 }
@@ -122,7 +122,7 @@ StateType::List( CommandInterpreter& inInterpreter )
 bool
 StateType::Exists( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   bool exists = inInterpreter.StateMachine().States().Exists( inInterpreter.GetToken() );
   inInterpreter.Out() << ( exists ? "true" : "false" );
   return true;
@@ -152,7 +152,7 @@ const ObjectType::MethodEntry StatesType::sMethodTable[] =
 bool
 StatesType::List( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   string pattern = inInterpreter.GetRemainingTokens();
   if( pattern.empty() )
     pattern = "*";
@@ -166,7 +166,7 @@ StatesType::List( CommandInterpreter& inInterpreter )
 bool
 StatesType::Clear( CommandInterpreter& inInterpreter )
 {
-  Lock<StateMachine> lock( inInterpreter.StateMachine() );
+  Lock lock( inInterpreter.StateMachine() );
   if( inInterpreter.StateMachine().SystemState() != StateMachine::Idle )
     throw bciexception( "Must be in idle state to clear states" );
   inInterpreter.StateMachine().States().Clear();

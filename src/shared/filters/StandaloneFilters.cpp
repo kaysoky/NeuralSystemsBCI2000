@@ -50,7 +50,7 @@ StandaloneChain::SetConfig( const SignalProperties& inS )
 {
   if( mFilters.empty() )
     AddFilter<IdentityFilter>();
-  Lock<BCIError::OutStream> lock( bcierr__ );
+  ::Lock lock( bcierr__ );
   bcierr__.Clear();
   if( mChainState == running )
     bcierr << "Still in running state" << endl;

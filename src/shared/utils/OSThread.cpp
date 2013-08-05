@@ -209,4 +209,3 @@ OSThread::FinishThread( int inResult )
   CallFinished();
   pTerminationEvent->Set();
 }
-

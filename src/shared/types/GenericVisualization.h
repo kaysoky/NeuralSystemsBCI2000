@@ -37,7 +37,7 @@
 #include "SignalProperties.h"
 #include "BitmapImage.h"
 
-class OSMutex;
+class Lockable;
 
 #define BACK_COMPAT 1
 #ifdef TODO
@@ -233,8 +233,8 @@ class GenericVisualization : public std::ostream
     GenericVisualization& Send( const SignalProperties& );
     GenericVisualization& Send( const BitmapImage& );
 
-    static void SetOutputStream( std::ostream* pStream, const OSMutex* pLock = NULL )
-                { spOutputStream = pStream; spOutputLock = pLock; }
+    static void SetOutputStream( std::ostream* pStream, const Lockable* pLockable = NULL )
+                { spOutputStream = pStream; spOutputLock = pLockable; }
 
   private:
     GenericVisualization& SendCfgString( CfgID, const std::string& );
@@ -254,7 +254,7 @@ class GenericVisualization : public std::ostream
     } mBuf;
 
     static std::ostream* spOutputStream;
-    static const OSMutex* spOutputLock;
+    static const Lockable* spOutputLock;
 };
 
 class BitmapVisualization : public GenericVisualization

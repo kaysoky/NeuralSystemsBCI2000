@@ -113,7 +113,7 @@ TestLogger::Execute()
     if( mTestLoggerEmitDebug )
       bcidbg( 0 ) << "Logging, counter is " << mTestLoggerCounter << endl;
     ++mTestLoggerCounter;
-    OSThread::PrecisionSleepUntil( wakeupTime );
+    OSThread::SleepUntil( wakeupTime );
   }
 
   if( mTestLoggerEmitDebug )
