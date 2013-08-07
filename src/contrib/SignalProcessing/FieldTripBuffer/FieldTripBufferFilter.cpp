@@ -166,8 +166,8 @@ FieldTripBufferFilter::StartRun()
   mPreviousStateValues.clear();
   for( StateSet::const_iterator i = mFTStatesToBuffer.begin(); i != mFTStatesToBuffer.end(); ++i )
   {
-    PutStateToBuffer( *i );
-    mPreviousStateValues[ *i ] = State( *i );
+    PutStateToBuffer( *i, 0 );
+    mPreviousStateValues[ *i ] = State( *i )( 0 );
   }
 
   if( !mFTOutputEventType.empty() )
@@ -217,14 +217,13 @@ FieldTripBufferFilter::Process( const GenericSignal& Input, GenericSignal& Outpu
   
   // Write state values to buffer
   for( StateSet::const_iterator i = mFTStatesToBuffer.begin(); i != mFTStatesToBuffer.end(); ++i )
-  {
     // Only if they have changed relative to previous value
-    if( State( *i ) != mPreviousStateValues[ *i ] )
-    {
-      PutStateToBuffer( *i );
-      mPreviousStateValues[ *i ] = State( *i );
-    }
-  }
+    for( int s = 0; s < State( *i )->Length(); ++s )
+      if( State( *i )( s ) != mPreviousStateValues[ *i ] )
+      {
+        PutStateToBuffer( *i, s );
+        mPreviousStateValues[ *i ] = State( *i )( s );
+      }
 
   ++mBlockCount;
   if( mSignalBuffer.Properties().IsEmpty() )
@@ -349,7 +348,7 @@ FieldTripBufferFilter::ProcessEvent( const event_t& inEvent )
 }
 
 void
-FieldTripBufferFilter::PutStateToBuffer( const std::string& inName )
+FieldTripBufferFilter::PutStateToBuffer( const std::string& inName, int inSample )
 {
   // this creates an event from a state and write the event to the buffer
   // the event type is always represented as CHAR and the event value is always represented as INT32
@@ -359,11 +358,11 @@ FieldTripBufferFilter::PutStateToBuffer( const std::string& inName )
   eventdef.value_type  = DATATYPE_INT32;
   eventdef.value_numel = 1;
   eventdef.offset      = 0;
-  eventdef.sample      = mBlockCount * mHeaderdef.nsamples;
+  eventdef.sample      = mBlockCount * mHeaderdef.nsamples + inSample;
   eventdef.bufsize     = eventdef.type_numel + WORDSIZE_INT32;
   ::memcpy( mpEventBuffer, inName.data(), eventdef.type_numel );
   INT32_T& value = *reinterpret_cast<INT32_T*>( mpEventBuffer + eventdef.type_numel );
-  value = State( inName );
+  value = State( inName )( inSample );
   bcidbg( 2 ) << "Put state " << inName << "==" << value << " into buffer" << endl;
   DeleteMessage( SendRequest( PUT_EVT, &eventdef, mpEventBuffer ) );
 }

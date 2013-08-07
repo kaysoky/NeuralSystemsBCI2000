@@ -52,7 +52,7 @@ class FieldTripBufferFilter : public GenericFilter
   typedef std::map<std::string, int> StateValueMap;
   void ConfigureStateSets( StateSet& ioToBufferSet, StateSet& ioFromBufferSet ) const;
   void ProcessEvent( const event_t& );
-  void PutStateToBuffer( const std::string& );
+  void PutStateToBuffer( const std::string&, int );
   template<typename T> void EventToSignal( const event_t&, GenericSignal& ) const;
   template<typename T> message_t* SendRequest( int, T*, void* = NULL ) const;
   message_t* SendRequest( int type ) const
