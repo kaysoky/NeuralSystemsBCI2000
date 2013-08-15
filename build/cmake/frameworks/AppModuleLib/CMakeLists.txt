@@ -72,7 +72,7 @@ IF( WIN32 )
   BCI2000_INCLUDE( "SAPI" )
 ENDIF( WIN32 )
 BCI2000_INCLUDE( "3DAPI" )
-UTILS_INCLUDE( extlib/PortAudio )
+UTILS_INCLUDE( extlib/PORTAUDIO )
 
 # Create the library project
 UTILS_INCLUDE( frameworks/AppModule )

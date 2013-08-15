@@ -16,4 +16,4 @@ SET( REGISTRY_NAME SigProcRegistry )
 FORCE_INCLUDE_OBJECT( ${REGISTRY_NAME} )
 
 SET( LIBS ${LIBS} BCI2000FrameworkSigProcModule )
-
+
