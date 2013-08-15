@@ -21,12 +21,6 @@ SET( HDR_PROJECT
   Converters/BrainVisionConverter.h
 )
 
-# Wrap the Qt files
-QT4_WRAP_CPP( GENERATED_MOC MainWindow.h )
-SET( GENERATED
-  ${GENERATED_MOC}
-)
-
 # Create the tool
 BCI2000_ADD_TOOLS_GUIAPP( 
   "${EXECUTABLE_NAME}" 

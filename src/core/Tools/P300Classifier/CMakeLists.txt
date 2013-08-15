@@ -52,22 +52,6 @@ SET( HDR_PROJECT
   WritePRM.h
 )
 
-# Wrap the Qt files
-QT4_WRAP_CPP( GENERATED_MOC 
-  configdialog.h
-  pages.h
-)
-SET( GENERATED
-  ${GENERATED_MOC}
-)
-QT4_ADD_RESOURCES( GENERATED_RCC
-  configdialog.qrc
-)
-SET( GENERATED
-  ${GENERATED}
-  ${GENERATED_RCC}
-)
-
 BCI2000_INCLUDE( ALGLIB )
 
 # Create the signal processing module
