@@ -176,6 +176,56 @@ EnvironmentBase::IsGlobalEnvironment() const
   return result;
 }
 
+void
+EnvironmentBase::RangeCheckParams( const ParamList* inParamList, const NameSet& inCheck )
+{
+  for( NameSetMap::const_iterator i = OwnedParams().begin(); i != OwnedParams().end(); ++i )
+  {
+    vector<string> inters( inCheck.size() );
+    vector<string>::iterator inters_end = set_intersection(
+      inCheck.begin(), inCheck.end(),
+      i->second.begin(), i->second.end(),
+      inters.begin(), Param::NameCmp()
+    );
+    for( vector<string>::const_iterator j = inters.begin(); j != inters_end; ++j )
+    {
+      const Param& p = ( *inParamList )[ *j ];
+      const string& lowRangeStr = p.LowRange(),
+                  & highRangeStr = p.HighRange();
+      bool checkLowRange = ( !lowRangeStr.empty() ),
+           checkHighRange = ( !highRangeStr.empty() );
+      if( checkLowRange )
+      {
+        double lowRange = ::atof( lowRangeStr.c_str() );
+        for( int j = 0; j < p.NumRows(); ++j )
+          for( int k = 0; k < p.NumColumns(); ++k )
+          {
+            double value = ::atof( p.Value( j, k ).ToString().c_str() );
+            if( value < lowRange )
+              bcierr__ << DescribeValue( p, j, k )
+                       << " is "
+                       << value << ", exceeds lower range (" << lowRange << ")";
+          }
+      }
+      if( checkHighRange )
+      {
+        double highRange = ::atof( highRangeStr.c_str() );
+        for( int j = 0; j < p.NumRows(); ++j )
+          for( int k = 0; k < p.NumColumns(); ++k )
+          {
+            double value = ::atof( p.Value( j, k ).ToString().c_str() );
+            if( value > highRange )
+              bcierr__ << DescribeValue( p, j, k )
+                       << " is "
+                       << value << ", exceeds high range (" << highRange << ")";
+          }
+      }
+      if( checkLowRange || checkHighRange )
+        ParamsRangeChecked().insert( p.Name() );
+    }
+  }
+}
+
 // Convenient accessor functions.
 
 // Read/write access to a parameter by its name.
@@ -193,13 +243,11 @@ EnvironmentBase::Parameter( const string& inName ) const
   return ParamRef( ParamAccess( inName ) );
 }
 
-#if 1
 ParamRef
 EnvironmentBase::ActualParameter( const string& inName ) const
 {
   return ParamRef( ParamAccess( inName, actual ) );
 }
-#endif
 
 MutableParamRef
 EnvironmentBase::OptionalParameter( const string& inName, const string& inDefaultValue )
@@ -284,16 +332,7 @@ EnvironmentBase::ParamAccess( const string& inName, int inFlags ) const
     }
     if( !mayWrite && !mTemporaryParams.Exists( inName ) )
     {
-      static const char* autoTypes[] = { "blob", },
-                       * autoTags[] = { "auto", "AutoConfig", },
-                       * autoKinds[] = { "(enumeration)", };
-      for( size_t i = 0; i < sizeof( autoTypes ) / sizeof( *autoTypes ); ++i )
-        if( !::stricmp( pParam->Type().c_str(), autoTypes[i] ) )
-          mayWrite = true;
-      for( size_t i = 0; i < sizeof( autoTags ) / sizeof( *autoTags ); ++i )
-        mayWrite = mayWrite || ( pParam->NumValues() == 1 && !::stricmp( pParam->Value().c_str(), autoTags[i] ) );
-      for( size_t i = 0; i < sizeof( autoKinds ) / sizeof( *autoKinds ); ++i )
-        mayWrite = mayWrite || ( pParam->NumValues() && !::atoi( pParam->Value().c_str() ) && pParam->Comment().find( autoKinds[i] ) != string::npos );
+      mayWrite = IsAutoConfigParam( *pParam );
       if( mayWrite )
         mAutoConfigParams.insert( inName );
       else
@@ -306,9 +345,49 @@ EnvironmentBase::ParamAccess( const string& inName, int inFlags ) const
 }
 
 bool
+EnvironmentBase::IsAutoConfigParam( const Param& p )
+{
+  enum { autoType = 0, autoTag, autoKind, count };
+  static const char* s[][count] =
+  {
+    { "blob", 0 },
+    { "auto", "AutoConfig", 0 },
+    { "(enumeration)", 0 },
+  };
+  struct
+  {
+    bool Is( int type, const char* str )
+    { 
+      const char** p = s[type];
+      while( *p )
+        if( !::stricmp( *p++, str ) )
+          return true;
+      return false;
+    }
+    bool Contains( int type, const char* str )
+    { 
+      while( *str )
+        if( Is( type, str++ ) )
+          return true;
+      return false;
+    }
+  } strings;
+
+  bool result = strings.Is( autoType, p.Type().c_str() );
+  if( p.NumValues() == 1 )
+    result = result || strings.Is( autoTag, p.Value().c_str() );
+  if( p.NumValues() > 0 && !::atoi( p.Value().c_str() ) )
+    result = result || strings.Contains( autoKind, p.Comment().c_str() )
+                       && strings.Contains( autoTag, p.Comment().c_str() );
+  return result;
+}
+
+bool
 EnvironmentBase::AutoConfig_( bool inAutoConfig )
 {
   bool result = mAutoConfig;
+  if( mAutoConfig && !inAutoConfig )
+    RangeCheckParams( Parameters, mAutoConfigParams );
   mAutoConfigParams.clear();
   mTemporaryParams.Clear();
   mAutoConfig = inAutoConfig;
@@ -490,45 +569,16 @@ void EnvironmentBase::EnterPreflightPhase( ParamList*   inParamList,
   BCIStream::Apply( *inParamList );
 
   ParamsRangeChecked().clear();
-  if( inParamList != NULL )
+  if( inParamList )
   {
-    for( NameSetMap::const_iterator i = OwnedParams().begin(); i != OwnedParams().end(); ++i )
-      for( NameSet::const_iterator j = i->second.begin(); j != i->second.end(); ++j )
-      {
-        const Param& p = ( *inParamList )[ *j ];
-        const string& lowRangeStr = p.LowRange(),
-                    & highRangeStr = p.HighRange();
-        bool checkLowRange = ( !lowRangeStr.empty() ),
-             checkHighRange = ( !highRangeStr.empty() );
-        if( checkLowRange )
-        {
-          double lowRange = ::atof( lowRangeStr.c_str() );
-          for( int j = 0; j < p.NumRows(); ++j )
-            for( int k = 0; k < p.NumColumns(); ++k )
-            {
-              double value = ::atof( p.Value( j, k ).ToString().c_str() );
-              if( value < lowRange )
-                bcierr__ << DescribeValue( p, j, k )
-                         << " is "
-                         << value << ", exceeds lower range (" << lowRange << ")";
-            }
-        }
-        if( checkHighRange )
-        {
-          double highRange = ::atof( highRangeStr.c_str() );
-          for( int j = 0; j < p.NumRows(); ++j )
-            for( int k = 0; k < p.NumColumns(); ++k )
-            {
-              double value = ::atof( p.Value( j, k ).ToString().c_str() );
-              if( value > highRange )
-                bcierr__ << DescribeValue( p, j, k )
-                         << " is "
-                         << value << ", exceeds high range (" << highRange << ")";
-            }
-        }
-        if( checkLowRange || checkHighRange )
-          ParamsRangeChecked().insert( p.Name() );
-      }
+    NameSet notAutoConfig;
+    for( int i = 0; i < inParamList->Size(); ++i )
+    {
+      const Param& p = inParamList->ByIndex( i );
+      if( !IsAutoConfigParam( p ) )
+        notAutoConfig.insert( p.Name() );
+    }
+    RangeCheckParams( inParamList, notAutoConfig );
   }
   ParamsAccessedDuringPreflight().clear();
   StatesAccessedDuringPreflight().clear();
@@ -619,6 +669,78 @@ void EnvironmentBase::OnExit()
   bciout__.SetAction( 0 );
   bcidbg__.SetAction( 0 );
 }
+
+// Publish() helper functions
+void EnvironmentBase::AddParameters( const char** inParams, size_t inCount ) const
+{
+  ::EncodedString className( bci::ClassName( typeid( *this ) ) );       
+  ostringstream oss;                                               
+  className.WriteToStream( oss, ":" );                                 
+  for( size_t i = 0; i < inCount; ++i )   
+  {                                                                      
+    Param p;                                                             
+    istringstream iss( inParams[i] );                              
+    if( !( iss >> p ) )                                                  
+      bcierr << "error in parameter definition:\n"                       
+             << inParams[ i ];                                               
+    else                                                                 
+    {                                                                    
+      p.Sections().push_back( oss.str() );                              
+      if( Parameters->Exists( p.Name() ) )                               
+          p.AssignValues( ( *Parameters )[ p.Name() ] );                 
+      Parameters->Add( p, -Instance() );                                 
+      bcidbg( 10 ) << "Registered parameter " << p.Name() << ", "        
+                   << "sorting by (" << -Instance() << ","               
+                   << p.Sections() << ")" ;                                         
+      OwnedParams()[ObjectContext()].insert( p.Name() );                 
+    }                                                                    
+  }                                                                      
+};
+
+void EnvironmentBase::AddStates( const char** inStates, size_t inCount, int inKind ) const
+{
+  struct
+  {
+    const char* operator()( int k )
+    {
+      switch( k )
+      {
+        case State::StateKind:
+          return "state";
+        case State::EventKind:
+          return "event";
+      }
+      return "unknown state kind";
+    }
+  } KindString;
+
+  for( size_t i = 0; i < inCount; ++i )
+  {                                                                   
+    class State s;                                                    
+    istringstream iss( inStates[i] );                           
+    if( !( iss >> s ) )                                               
+      bcierr << "error in " << KindString( inKind ) << " definition:\n"                        
+             << inStates[i];                                            
+    else                                                              
+    {                                                                 
+      s.SetKind( inKind );                                  
+      if( States->Exists( s.Name() ) )                                
+      {                                                               
+        int k = ( *States )[s.Name()].Kind();
+        if( k != inKind )      
+          bcierr << "trying to define " << KindString( inKind ) << " "                         
+                 << s.Name()                                          
+                 << ", has been previously defined as " << KindString( k );           
+        else                                                          
+          ( *States )[s.Name()].AssignValue( s );                   
+      }                                                               
+      else                                                            
+        States->Add( s );                                             
+      OwnedStates()[ObjectContext()].insert( s.Name() );              
+    }                                                                 
+  }                                                                   
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Environment definitions

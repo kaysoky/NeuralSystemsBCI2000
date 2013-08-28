@@ -51,8 +51,6 @@
 #include <iostream>
 #include <sstream>
 
-#define IS_SRC_MODULE ( MODTYPE == 1 )
-
 class RunManager;
 class SignalProperties;
 class EnvironmentExtension;
@@ -62,120 +60,26 @@ class FilterWrapper;
 
 class ApplicationWindowClient;
 
-// Some utility macros for better readable code in filter constructors.
-#define BEGIN_PARAMETER_DEFINITIONS                                      \
-{                                                                        \
-  const char* params_[] =                                                \
-  {
+// Some macros to improve code readability.
+#define BEGIN_PARAMETER_DEFINITIONS \
+{ const char* p_[] = {
+#define END_PARAMETER_DEFINITIONS \
+}; AddParameters( p_, sizeof( p_ ) / sizeof( *p_ ) ); }
 
-#define END_PARAMETER_DEFINITIONS                                        \
-  };                                                                     \
-  ::EncodedString className_( bci::ClassName( typeid( *this ) ) );       \
-  std::ostringstream oss_;                                               \
-  className_.WriteToStream( oss_, ":" );                                 \
-  for( size_t i = 0; i < sizeof( params_ ) / sizeof( *params_ ); ++i )   \
-  {                                                                      \
-    Param p;                                                             \
-    std::istringstream iss( params_[ i ] );                              \
-    if( !( iss >> p ) )                                                  \
-      bcierr << "error in parameter definition:\n"                       \
-             << params_[ i ]                                             \
-             << std::endl;                                               \
-    else                                                                 \
-    {                                                                    \
-      p.Sections().push_back( oss_.str() );                              \
-      if( Parameters->Exists( p.Name() ) )                               \
-          p.AssignValues( ( *Parameters )[ p.Name() ] );                 \
-      Parameters->Add( p, -Instance() );                                 \
-      bcidbg( 10 ) << "Registered parameter " << p.Name() << ", "        \
-                   << "sorting by (" << -Instance() << ","               \
-                   << p.Sections() << ")"                                \
-                   << std::endl;                                         \
-      OwnedParams()[ObjectContext()].insert( p.Name() );                 \
-    }                                                                    \
-  }                                                                      \
-};
+#define BEGIN_STATE_DEFINITIONS \
+{ const char* s_[] = {
+#define END_STATE_DEFINITIONS \
+}; AddStates( s_, sizeof( s_ ) / sizeof( *s_ ), State::StateKind ); }
 
-#define BEGIN_STATE_DEFINITIONS                                        \
-{                                                                      \
-  const char* states_[] =                                              \
-  {
-
-#define END_STATE_DEFINITIONS                                          \
-  };                                                                   \
-  for( size_t i = 0; i < sizeof( states_ ) / sizeof( *states_ ); ++i ) \
-  {                                                                    \
-    class State s;                                                     \
-    std::istringstream iss( states_[ i ] );                            \
-    if( !( iss >> s ) )                                                \
-      bcierr << "error in state definition:\n"                         \
-             << states_[ i ]                                           \
-             << std::endl;                                             \
-    else                                                               \
-    {                                                                  \
-      s.SetKind( State::StateKind );                                   \
-      if( States->Exists( s.Name() ) )                                 \
-      {                                                                \
-        if( ( *States )[ s.Name() ].Kind() == State::EventKind )       \
-          bcierr << "trying to define state "                          \
-                 << s.Name()                                           \
-                 << ", has been previously defined as an event"        \
-                 << std::endl;                                         \
-        else                                                           \
-          ( *States )[ s.Name() ].AssignValue( s );                    \
-      }                                                                \
-      else                                                             \
-        States->Add( s );                                              \
-      OwnedStates()[ObjectContext()].insert( s.Name() );               \
-    }                                                                  \
-  }                                                                    \
-};
-
-#define BEGIN_EVENT_DEFINITIONS                                        \
-{                                                                      \
-  const char* events_[] =                                              \
-  {
-
-#if IS_SRC_MODULE
-
-#define END_EVENT_DEFINITIONS                                          \
-  };                                                                   \
-  for( size_t i = 0; i < sizeof( events_ ) / sizeof( *events_ ); ++i ) \
-  {                                                                    \
-    class State s;                                                     \
-    std::istringstream iss( events_[ i ] );                            \
-    if( !( iss >> s ) )                                                \
-      bcierr << "error in state definition:\n"                         \
-             << events_[ i ]                                           \
-             << std::endl;                                             \
-    else                                                               \
-    {                                                                  \
-      s.SetKind( State::EventKind );                                   \
-      if( States->Exists( s.Name() ) )                                 \
-      {                                                                \
-        if( ( *States )[ s.Name() ].Kind() == State::StateKind )       \
-          bcierr << "trying to define event "                          \
-                 << s.Name()                                           \
-                 << ", has been previously defined as a state"         \
-                 << std::endl;                                         \
-        else                                                           \
-          ( *States )[ s.Name() ].AssignValue( s );                    \
-      }                                                                \
-      else                                                             \
-        States->Add( s );                                              \
-      OwnedStates()[ObjectContext()].insert( s.Name() );               \
-    }                                                                  \
-  }                                                                    \
-};
-
-#else // IS_SRC_MODULE
-
-#define END_EVENT_DEFINITIONS                                           \
-  };                                                                    \
-  bcierr << "Trying to define events outside a source module." << endl; \
-};
-
-#endif // IS_SRC_MODULE
+#define BEGIN_EVENT_DEFINITIONS \
+{ const char* e_[] = {
+#if IS_FIRST_MODULE
+# define END_EVENT_DEFINITIONS \
+}; AddStates( e_, sizeof( e_ ) / sizeof( *e_ ), State::EventKind ); }
+#else // IS_FIRST_MODULE
+# define END_EVENT_DEFINITIONS \
+}; bcierr << "Trying to define events outside a source module." };
+#endif // IS_FIRST_MODULE
 
 // This base class channels access to Parameter, State, and Communication
 // related objects that used to be arguments of member functions.
@@ -293,9 +197,7 @@ class EnvironmentBase
   // The Parameter()/OptionalParameter() functions allow access to parameters by name.
   MutableParamRef Parameter( const std::string& name );
   ParamRef Parameter( const std::string& name ) const;
-#if 1
   ParamRef ActualParameter( const std::string& name ) const;
-#endif
   MutableParamRef OptionalParameter( const std::string& name,
                                      const std::string& defaultValue = "" );
   ParamRef OptionalParameter( const std::string& name,
@@ -312,6 +214,8 @@ class EnvironmentBase
   #define AutoConfig_
 
  private:
+  static bool IsAutoConfigParam( const Param& );
+  static void RangeCheckParams( const ParamList*, const NameSet& );
   enum ParamAccessFlags { none = 0, optional = 1, actual = 2 };
   Param* ParamAccess( const std::string& name, int flags = none ) const;
   virtual void OnParamAccess( const std::string& name ) const {}
@@ -408,6 +312,8 @@ class EnvironmentBase
   static ExtensionsContainer& ExtensionsPublished();
 
  protected:
+  void AddParameters( const char**, size_t ) const;
+  void AddStates( const char**, size_t, int ) const;
   static NameSet& ParamsRangeChecked();
 
   typedef std::map<const EnvironmentBase*, NameSet> NameSetMap;
