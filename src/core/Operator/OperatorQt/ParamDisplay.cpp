@@ -231,9 +231,11 @@ DisplayBase::DisplayBase( const ParsedComment& inParam, QWidget* inParent )
   mLeft( 0 ),
   mpUserLevel( NULL )
 {
+  if( !*Measures )
+    InitMeasures();
   // render the parameter's name
   ParamLabel* pLabel = new ParamLabel( inParent, inParam );
-  pLabel->move( labelsOffsetX, labelsOffsetY );
+  pLabel->move( Measures[labelsOffsetX_], Measures[labelsOffsetY_] );
   pLabel->setText( QString::fromLocal8Bit( inParam.Name().c_str() ) );
   QFont font = pLabel->font();
   font.setWeight( QFont::Bold );
@@ -247,8 +249,8 @@ DisplayBase::DisplayBase( const ParsedComment& inParam, QWidget* inParent )
   {
     mpUserLevel = new QSlider( inParent );
     mpUserLevel->setOrientation( Qt::Horizontal );
-    mpUserLevel->move( userlevelOffsetX, userlevelOffsetY );
-    mpUserLevel->resize( userlevelWidth, userlevelHeight );
+    mpUserLevel->move( Measures[userlevelOffsetX_], Measures[userlevelOffsetY_] );
+    mpUserLevel->resize( Measures[userlevelWidth_], Measures[userlevelHeight_] );
     mpUserLevel->setRange( 1, 3 );
     mpUserLevel->setSingleStep( 1 );
     mpUserLevel->setPageStep( 1 );
@@ -331,6 +333,39 @@ DisplayBase::ReadValuesFrom( const Param& inParam )
   mModified = false;
 }
 
+int DisplayBase::Measures[DisplayBase::measuresCount] = { 0 };
+static bool ignored = DisplayBase::InitMeasures();
+
+bool
+DisplayBase::InitMeasures( float inDpi )
+{
+  Measures[leftMargin_] =       30;
+  Measures[topMargin_] =        50;
+
+  Measures[labelsOffsetX_] =    0;
+  Measures[labelsOffsetY_] =    18;
+  Measures[commentOffsetX_] =   140;
+  Measures[commentOffsetY_] =   0;
+  Measures[valueOffsetX_] =     Measures[commentOffsetX_];
+  Measures[valueOffsetY_] =     14;
+  Measures[valueWidth_] =       220;
+  Measures[valueHeight_] =      22;
+  Measures[buttonWidth_] =      ( Measures[valueWidth_] - 20 ) / 3;
+  Measures[buttonHeight_] =     Measures[valueHeight_];
+  Measures[buttonSpacingX_] =   ( Measures[valueWidth_] - 3 * Measures[buttonWidth_] ) / 2;
+  Measures[userlevelOffsetX_] = Measures[valueOffsetX_] + 260;
+  Measures[userlevelWidth_] =   70;
+  Measures[userlevelOffsetY_] = 17;
+  Measures[userlevelHeight_] =  26;
+  Measures[totalWidth_] =       Measures[userlevelOffsetX_] + Measures[userlevelWidth_];
+
+  if( inDpi )
+    for( size_t i = 0; i < sizeof( Measures ) / sizeof( *Measures ); ++i )
+      Measures[i] *= inDpi / 96.0 /* design DPI */;
+
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SeparateComment definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -339,7 +374,7 @@ SeparateComment::SeparateComment( const ParsedComment& inParam, QWidget* inParen
 {
   // render the parameter's comment
   QLabel* pComment = new QLabel( inParent );
-  pComment->move( commentOffsetX, commentOffsetY );
+  pComment->move( Measures[commentOffsetX_], Measures[commentOffsetY_] );
   pComment->setText( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
   QFont font = pComment->font();
   font.setItalic( true );
@@ -348,7 +383,7 @@ SeparateComment::SeparateComment( const ParsedComment& inParam, QWidget* inParen
 
   static const QString ellipsis = "...";
   while( pComment->text() != ellipsis
-          && pComment->x() + pComment->minimumSizeHint().width() > userlevelOffsetX + userlevelWidth )
+    && pComment->x() + pComment->minimumSizeHint().width() > Measures[userlevelOffsetX_] + Measures[userlevelWidth_] )
   {
     QString s = pComment->text();
     s.truncate( pComment->text().lastIndexOf( " " ) );
@@ -367,8 +402,8 @@ SingleEntryEdit::SingleEntryEdit( const ParsedComment& inParam, QWidget* inParen
   mpEdit( NULL )
 {
   mpEdit = new QLineEdit( inParent );
-  mpEdit->move( valueOffsetX, valueOffsetY );
-  mpEdit->resize( valueWidth, valueHeight );
+  mpEdit->move( Measures[valueOffsetX_], Measures[valueOffsetY_] );
+  mpEdit->resize( Measures[valueWidth_], Measures[valueHeight_] );
   mpEdit->setReadOnly( false );
   mpEdit->setToolTip( "" );
   connect( mpEdit, SIGNAL(textChanged(QString)), this, SLOT(OnEditChange()) );
@@ -444,22 +479,22 @@ Matrix::Matrix( const ParsedComment& inParam, QWidget* inParent )
 {
   QPushButton* pEditButton = new QPushButton( inParent );
   pEditButton->setText( tr("Edit Matrix") );
-  pEditButton->move( valueOffsetX, valueOffsetY );
-  pEditButton->resize( buttonWidth, buttonHeight );
+  pEditButton->move( Measures[valueOffsetX_], Measures[valueOffsetY_] );
+  pEditButton->resize( Measures[buttonWidth_], Measures[buttonHeight_] );
   connect( pEditButton, SIGNAL(clicked()), this, SLOT(OnEditButtonClick()) );
   AddWidget( pEditButton );
 
   QPushButton* pLoadButton = new QPushButton( inParent );
   pLoadButton->setText( tr("Load Matrix") );
-  pLoadButton->move( valueOffsetX + buttonWidth + buttonSpacingX, valueOffsetY );
-  pLoadButton->resize( buttonWidth, buttonHeight );
+  pLoadButton->move( Measures[valueOffsetX_] + Measures[buttonWidth_] + Measures[buttonSpacingX_], Measures[valueOffsetY_] );
+  pLoadButton->resize( Measures[buttonWidth_], Measures[buttonHeight_] );
   connect( pLoadButton, SIGNAL(clicked()), this, SLOT(OnLoadButtonClick()) );
   AddWidget( pLoadButton );
 
   QPushButton* pSaveButton = new QPushButton( inParent );
   pSaveButton->setText( tr("Save Matrix") );
-  pSaveButton->move( valueOffsetX + 2 * ( buttonWidth + buttonSpacingX ), valueOffsetY );
-  pSaveButton->resize( buttonWidth, buttonHeight );
+  pSaveButton->move( Measures[valueOffsetX_] + 2 * ( Measures[buttonWidth_] + Measures[buttonSpacingX_] ), Measures[valueOffsetY_] );
+  pSaveButton->resize( Measures[buttonWidth_], Measures[buttonHeight_] );
   connect( pSaveButton, SIGNAL(clicked()), this, SLOT(OnSaveButtonClick()) );
   AddWidget( pSaveButton );
 }
@@ -552,8 +587,8 @@ SingleEntryButton::SingleEntryButton( const ParsedComment& inParam, QWidget* inP
 {
   QPushButton* pButton = new QPushButton( inParent );
   pButton->setText( "..." );
-  pButton->move( valueOffsetX + valueWidth + buttonHeight / 2, valueOffsetY );
-  pButton->resize( buttonHeight, buttonHeight );
+  pButton->move( Measures[valueOffsetX_] + Measures[valueWidth_] + Measures[buttonHeight_] / 2, Measures[valueOffsetY_] );
+  pButton->resize( Measures[buttonHeight_], Measures[buttonHeight_] );
   connect( pButton, SIGNAL(clicked()), this, SLOT(OnButtonClick()) );
   AddWidget( pButton );
   mComment = inParam.Comment();
@@ -663,8 +698,8 @@ SingleEntryEnum::SingleEntryEnum( const ParsedComment& inParam,
   mIndexBase( inParam.IndexBase() )
 {
   mpComboBox = new QComboBox( inParent );
-  mpComboBox->move( valueOffsetX, valueOffsetY );
-  mpComboBox->resize( valueWidth, valueHeight );
+  mpComboBox->move( Measures[valueOffsetX_], Measures[valueOffsetY_] );
+  mpComboBox->resize( Measures[valueWidth_], Measures[valueHeight_] );
   for( size_t i = 0; i < inParam.Values().size(); ++i )
     mpComboBox->addItem( QString::fromLocal8Bit( inParam.Values()[ i ].c_str() ) );
   mpComboBox->setToolTip( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
@@ -697,8 +732,8 @@ SingleEntryBoolean::SingleEntryBoolean( const ParsedComment& inParam,
   mpCheckBox( NULL )
 {
   mpCheckBox = new QCheckBox( inParent );
-  mpCheckBox->move( valueOffsetX, valueOffsetY );
-  mpCheckBox->resize( valueWidth, valueHeight );
+  mpCheckBox->move( Measures[valueOffsetX_], Measures[valueOffsetY_] );
+  mpCheckBox->resize( Measures[valueWidth_], Measures[valueHeight_] );
   mpCheckBox->setToolTip( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
   mpCheckBox->setText( QString::fromLocal8Bit( inParam.Comment().c_str() ) );
   connect( mpCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnContentChange()) );

@@ -99,26 +99,30 @@ class DisplayBase : public QObject
  public:
   enum
   {
-    leftMargin =       30,
-    topMargin =        50,
+    leftMargin_ = 0,
+    topMargin_,
 
-    labelsOffsetX =    0,
-    labelsOffsetY =    18,
-    commentOffsetX =   140,
-    commentOffsetY =   0,
-    valueOffsetX =     commentOffsetX,
-    valueOffsetY =     14,
-    valueWidth =       220,
-    valueHeight =      22,
-    buttonWidth =      ( valueWidth - 20 ) / 3,
-    buttonHeight =     valueHeight,
-    buttonSpacingX =   ( valueWidth - 3 * buttonWidth ) / 2,
-    userlevelOffsetX = valueOffsetX + 260,
-    userlevelWidth =   70,
-    userlevelOffsetY = 17,
-    userlevelHeight =  26,
-    totalWidth =       userlevelOffsetX + userlevelWidth,
+    labelsOffsetX_,
+    labelsOffsetY_,
+    commentOffsetX_,
+    commentOffsetY_,
+    valueOffsetX_,
+    valueOffsetY_,
+    valueWidth_,
+    valueHeight_,
+    buttonWidth_,
+    buttonHeight_,
+    buttonSpacingX_,
+    userlevelOffsetX_,
+    userlevelWidth_,
+    userlevelOffsetY_,
+    userlevelHeight_,
+    totalWidth_,
+
+    measuresCount,
   };
+  static int Measures[];
+  static bool InitMeasures( float inDpi = 0 );
 
  protected:
   DisplayBase( const ParsedComment&, QWidget* );

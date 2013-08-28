@@ -116,6 +116,8 @@ ConfigWindow::Initialize( ParamList* inParameters, Preferences* inPreferences )
   mpParameters->Sort();
   DeleteAllTabs();
 
+  DisplayBase::InitMeasures( this->logicalDpiX() );
+
   vector<string> tabNames;
   for( int i = 0; i < mpParameters->Size(); ++i )
     if( OperatorUtils::GetUserLevel( ( *mpParameters )[ i ].Name().c_str() ) <= mpPreferences->mUserLevel )
@@ -129,9 +131,10 @@ ConfigWindow::Initialize( ParamList* inParameters, Preferences* inPreferences )
   mUserSwitchedTabs = false;
   for( vector<string>::const_iterator i = tabNames.begin(); i != tabNames.end(); ++i )
   {
-    QScrollArea* pScrollArea = new QScrollArea( m_ui->cfgTabControl );
+    QScrollArea* pScrollArea = new QScrollArea;
     pScrollArea->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     m_ui->cfgTabControl->addTab( pScrollArea, i->c_str() );
+    pScrollArea->setWidget( new QLabel );
   }
   mUserSwitchedTabs = true;
 
@@ -177,7 +180,7 @@ ConfigWindow::RenderParameters( const string& inSection )
   DisposeWidgets();
   mParamDisplays.clear();
 
-  int currentTop = DisplayBase::buttonHeight / 2;
+  int currentTop = DisplayBase::Measures[DisplayBase::buttonHeight_] / 2;
   string lastSubsection = "";
   QFrame* pLastBevel = NULL;
   QWidget* pTabWidget = m_ui->cfgTabControl->currentWidget();
@@ -186,7 +189,7 @@ ConfigWindow::RenderParameters( const string& inSection )
     return;
   QWidget* pScrollingPane = new QWidget( mpScrollArea );
   delete mpScrollArea->widget();
-  pScrollingPane->resize( DisplayBase::totalWidth + 2 * DisplayBase::leftMargin, 1 );
+  pScrollingPane->resize( DisplayBase::Measures[DisplayBase::totalWidth_] + 2 * DisplayBase::Measures[DisplayBase::leftMargin_], 1 );
 
   map<string, int>      subsectionIndex;
   vector<string>        subsectionTable;
@@ -218,10 +221,10 @@ ConfigWindow::RenderParameters( const string& inSection )
     { // A bevel for each subsection.
       if( pLastBevel != NULL )
       {
-        pLastBevel->resize( pLastBevel->size().width(), DisplayBase::buttonHeight / 2 + currentTop - pLastBevel->y() );
+        pLastBevel->resize( pLastBevel->size().width(), DisplayBase::Measures[DisplayBase::buttonHeight_] / 2 + currentTop - pLastBevel->y() );
         pLastBevel->show();
         pLastBevel = NULL;
-        currentTop += DisplayBase::buttonHeight;
+        currentTop += DisplayBase::Measures[DisplayBase::buttonHeight_];
       }
       if( subsection != "" )
       {
@@ -229,8 +232,8 @@ ConfigWindow::RenderParameters( const string& inSection )
         mWidgets.insert( pBevel );
         pBevel->setFrameShadow( QFrame::Sunken );
         pBevel->setFrameShape( QFrame::StyledPanel );
-        pBevel->move( DisplayBase::leftMargin / 2, currentTop );
-        pBevel->resize( pScrollingPane->width() - DisplayBase::leftMargin, pBevel->height() );
+        pBevel->move( DisplayBase::Measures[DisplayBase::leftMargin_] / 2, currentTop );
+        pBevel->resize( pScrollingPane->width() - DisplayBase::Measures[DisplayBase::leftMargin_], pBevel->height() );
         pLastBevel = pBevel;
 
         QLabel* pLabel = new QLabel( pScrollingPane );
@@ -239,7 +242,7 @@ ConfigWindow::RenderParameters( const string& inSection )
         QFont font = pLabel->font();
         font.setItalic( true );
         pLabel->setFont( font );
-        pLabel->move( DisplayBase::leftMargin / 2 + 4, currentTop + 2 );
+        pLabel->move( DisplayBase::Measures[DisplayBase::leftMargin_] / 2 + 4, currentTop + 2 );
         pLabel->show();
 
         currentTop += pLabel->height();
@@ -251,7 +254,7 @@ ConfigWindow::RenderParameters( const string& inSection )
       int paramIndex = subsectionGroups[ groupIndex ][ j ];
       const Param& p = ( *mpParameters )[ paramIndex ];
       ParamDisplay paramDisplay( p, pScrollingPane );
-      paramDisplay.SetLeft( DisplayBase::leftMargin );
+      paramDisplay.SetLeft( DisplayBase::Measures[DisplayBase::leftMargin_] );
       paramDisplay.SetTop( currentTop );
       paramDisplay.ReadValuesFrom( p );
       mParamDisplays[ p.Name() ] = paramDisplay;
@@ -260,14 +263,14 @@ ConfigWindow::RenderParameters( const string& inSection )
   }
   if( pLastBevel != NULL )
   {
-    pLastBevel->resize( pLastBevel->width(), DisplayBase::buttonHeight / 2 + currentTop - pLastBevel->y() );
+    pLastBevel->resize( pLastBevel->width(), DisplayBase::Measures[DisplayBase::buttonHeight_] / 2 + currentTop - pLastBevel->y() );
     pLastBevel->show();
   }
 
   for( DisplayContainer::iterator i = mParamDisplays.begin(); i != mParamDisplays.end(); ++i )
     i->second.Show();
 
-  pScrollingPane->resize( pScrollingPane->width(), currentTop + DisplayBase::buttonHeight );
+  pScrollingPane->resize( pScrollingPane->width(), currentTop + DisplayBase::Measures[DisplayBase::buttonHeight_] );
   mpScrollArea->setWidget( pScrollingPane );
 }
 
