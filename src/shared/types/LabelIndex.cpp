@@ -74,7 +74,11 @@ LabelIndex::AddressToIndex( const string& inAddress,
     istringstream is( inAddress );
     double number;
     if( is >> number && is.eof() )
-      result = number - 1;
+    {
+      number -= 1;
+      if( number >= 0 && number < Size() )
+        result = number;
+    }
   }
   return result;
 }
