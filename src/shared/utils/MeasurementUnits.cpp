@@ -45,7 +45,7 @@ MeasurementUnits::TimeInSampleBlocks( const std::string& value )
 {
   if( sTimeUnit.IsPhysical( value ) )
     return sTimeUnit.PhysicalToRaw( value );
-  return sIdUnit.PhysicalToRaw( value );
+  return value.empty() ? 0 : sIdUnit.PhysicalToRaw( value );
 }
 
 double
@@ -58,7 +58,7 @@ MeasurementUnits::ValueIn( const std::string& unitsOf, const std::string& value 
   u.SetGainWithSymbol( unit );
   if( u.IsPhysical( value ) )
     return u.PhysicalToRaw( value );
-  return sIdUnit.PhysicalToRaw( value ) / u.Gain();
+  return value.empty() ? 0 : sIdUnit.PhysicalToRaw( value ) / u.Gain();
 }
 
 void
