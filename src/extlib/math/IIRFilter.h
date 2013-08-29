@@ -131,7 +131,8 @@ IIRFilter<Real>::Process( const T& Input, T& Output )
 {
   bciassert( mZeros.size() == mPoles.size() );
   size_t numStages = mZeros.size();
-  if( numStages == 0 && mGain == 1 )
+  int decimation = Input.Elements() / Output.Elements();
+  if( numStages == 0 && mGain == 1 && decimation == 1 )
   {
     Output = Input;
   }
@@ -140,26 +141,32 @@ IIRFilter<Real>::Process( const T& Input, T& Output )
     for( int ch = 0; ch < Input.Channels(); ++ch )
     {
       bciassert( mDelays[ch].size() == numStages + 1 );
-      for( int sample = 0; sample < Input.Elements(); ++sample )
+      int inSample = 0;
+      for( int outSample = 0; outSample < Output.Elements(); ++outSample )
       {
-        // Implementing the filter as a sequence of complex-valued order 1
-        // stages in DF I form will give us higher numerical stability and
-        // lower code complexity than a sequence of real-valued order 2 stages.
-        // - Numerical stability: Greatest for lowest order stages.
-        // - Code complexity: Poles and zeros immediately translate into complex
-        //    coefficients, and need not be grouped into complex conjugate pairs
-        //    as would be the case for real-valued order 2 stages.
-        FilterDesign::Complex stageOutput = Input( ch, sample ) * mGain;
-        for( size_t stage = 0; stage < numStages; ++stage )
+        Real value = 0;
+        for( int i = 0; i < decimation; ++i )
         {
-          FilterDesign::Complex stageInput = stageOutput;
-          stageOutput = stageInput
-            - mZeros[stage] * mDelays[ch][stage]
-            + mPoles[stage] * mDelays[ch][stage+1];
-          mDelays[ch][stage] = stageInput;
+          // Implementing the filter as a sequence of complex-valued order 1
+          // stages in DF I form will give us higher numerical stability and
+          // lower code complexity than a sequence of real-valued order 2 stages.
+          // - Numerical stability: Greatest for lowest order stages.
+          // - Code complexity: Poles and zeros immediately translate into complex
+          //    coefficients, and need not be grouped into complex conjugate pairs
+          //    as would be the case for real-valued order 2 stages.
+          FilterDesign::Complex stageOutput = Input( ch, inSample++ ) * mGain;
+          for( size_t stage = 0; stage < numStages; ++stage )
+          {
+            FilterDesign::Complex stageInput = stageOutput;
+            stageOutput = stageInput
+              - mZeros[stage] * mDelays[ch][stage]
+              + mPoles[stage] * mDelays[ch][stage+1];
+            mDelays[ch][stage] = stageInput;
+          }
+          mDelays[ch][numStages] = stageOutput;
+          value += real( stageOutput );
         }
-        mDelays[ch][numStages] = stageOutput;
-        Output( ch, sample ) = real( stageOutput );
+        Output( ch, outSample ) = value / decimation;
       }
     }
   }

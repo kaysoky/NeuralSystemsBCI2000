@@ -46,12 +46,12 @@ SourceFilter::SourceFilter()
 }
 
 void
-SourceFilter::DesignFilter( const SignalProperties& inSignalProperties,
+SourceFilter::DesignFilter( SignalProperties& ioSignal,
                             Real& outGain,
                             ComplexVector& outZeros,
                             ComplexVector& outPoles ) const
 {
-  Real samplingRate = inSignalProperties.SamplingRate();
+  Real samplingRate = ioSignal.SamplingRate();
 
   outGain = 1.0;
   outZeros.clear();

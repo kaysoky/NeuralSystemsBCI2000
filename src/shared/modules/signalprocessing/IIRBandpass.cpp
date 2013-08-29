@@ -44,11 +44,12 @@ IIRBandpass::Publish()
   "Filtering:IIR%20Bandpass float NotchCenter=     0Hz    60Hz % % // Notch center frequency",
   "Filtering:IIR%20Bandpass int   NotchOrder=      4      4    0 % // Notch order",
   "Filtering:IIR%20Bandpass float FilterGain=      1.0    1.0  0 % // Overall filter gain",
+  "Filtering:IIR%20Bandpass int   Downsample=      1      1    0 1 // Downsample to >= 4*LowPassCorner (boolean)",
  END_PARAMETER_DEFINITIONS
 }
 
 void
-IIRBandpass::DesignFilter( const SignalProperties& Input,
+IIRBandpass::DesignFilter( SignalProperties& Signal,
                            Real& outGain,
                            ComplexVector& outZeros,
                            ComplexVector& outPoles ) const
@@ -58,7 +59,7 @@ IIRBandpass::DesignFilter( const SignalProperties& Input,
   Real gain = 1.0;
 
   // High pass
-	Real hpCorner = Parameter( "HighPassCorner" ).InHertz() / Input.SamplingRate();
+  Real hpCorner = Parameter( "HighPassCorner" ).InHertz() / Signal.SamplingRate();
   if( hpCorner > 0.5 )
     bcierr << "HighPassCorner parameter exceeds Nyquist frequency" << endl;
   if( hpCorner < 0 )
@@ -75,26 +76,8 @@ IIRBandpass::DesignFilter( const SignalProperties& Input,
     gain *= abs( hp.Evaluate( -1.0 ) ); // HF gain
   }
 
-  // Low pass
-	Real lpCorner = Parameter( "LowPassCorner" ).InHertz() / Input.SamplingRate();
-  if( lpCorner > 0.5 )
-    bcierr << "LowPassCorner parameter exceeds Nyquist frequency" << endl;
-  if( lpCorner < 0 )
-    bcierr << "LowPassCorner must be >= 0" << endl;
-  int lpOrder = Parameter( "LowPassOrder" );
-  if( lpCorner > 0 && lpCorner < 0.5 && lpOrder )
-  {
-    TransferFunction lp =
-      FilterDesign::Butterworth()
-      .Order( lpOrder )
-      .Lowpass( lpCorner )
-      .TransferFunction();
-    tf *= lp;
-    gain *= abs( lp.Evaluate( 1.0 ) ); // LF gain
-  }
-
   // Notch
-	Real notchCenter = Parameter( "NotchCenter" ).InHertz() / Input.SamplingRate(),
+  Real notchCenter = Parameter( "NotchCenter" ).InHertz() / Signal.SamplingRate(),
        corner1 = 0.9 * notchCenter,
        corner2 = 1.1 * notchCenter;
   if( corner2 > 0.5 )
@@ -112,6 +95,37 @@ IIRBandpass::DesignFilter( const SignalProperties& Input,
       .TransferFunction();
     tf *= notch;
     gain *= abs( notch.Evaluate( 1.0 ) ); // LF gain
+  }
+
+  // Low pass
+  Real lpCorner = Parameter( "LowPassCorner" ).InHertz() / Signal.SamplingRate();
+  if( lpCorner > 0.5 )
+    bcierr << "LowPassCorner parameter exceeds Nyquist frequency" << endl;
+  if( lpCorner < 0 )
+    bcierr << "LowPassCorner must be >= 0" << endl;
+  int lpOrder = Parameter( "LowPassOrder" );
+  if( lpCorner > 0 && lpCorner < 0.5 && lpOrder )
+  {
+    TransferFunction lp =
+      FilterDesign::Butterworth()
+      .Order( lpOrder )
+      .Lowpass( lpCorner )
+      .TransferFunction();
+    tf *= lp;
+    gain *= abs( lp.Evaluate( 1.0 ) ); // LF gain
+    if( Parameter( "Downsample" ) != 0 )
+    {
+      int f = Floor( 1 / ( 4 * lpCorner ) );
+      while( f > 1 && Signal.Elements() % f )
+        --f;
+      if( f > 1 )
+      {
+        Signal.SetElements( Signal.Elements() / f );
+        PhysicalUnit& u = Signal.ElementUnit();
+        u.SetGain( u.Gain() * f );
+        u.SetRawMax( u.RawMax() / f );
+      }
+    }
   }
 
   // User gain

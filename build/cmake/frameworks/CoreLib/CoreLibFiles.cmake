@@ -9,6 +9,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/filters/StandaloneFilters.cpp
   ${PROJECT_SRC_DIR}/shared/filters/IdentityFilter.h
   ${PROJECT_SRC_DIR}/shared/filters/FilterCombination.h
+  ${PROJECT_SRC_DIR}/shared/filters/SignalStream.h
 
   ${PROJECT_SRC_DIR}/shared/modules/MessageHandler.cpp
   ${PROJECT_SRC_DIR}/shared/modules/MessageQueue.cpp
@@ -24,6 +25,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/utils/OSError.cpp
   ${PROJECT_SRC_DIR}/shared/utils/OSMutex.cpp
   ${PROJECT_SRC_DIR}/shared/utils/OSSemaphore.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/OSSharedMemory.cpp
   ${PROJECT_SRC_DIR}/shared/utils/OSEvent.cpp
   ${PROJECT_SRC_DIR}/shared/utils/OSThread.cpp
   ${PROJECT_SRC_DIR}/shared/utils/ThreadUtils.cpp
@@ -45,6 +47,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/utils/Uncopyable.h
   ${PROJECT_SRC_DIR}/shared/utils/Runnable.h
   ${PROJECT_SRC_DIR}/shared/utils/SharedPointer.h
+  ${PROJECT_SRC_DIR}/shared/utils/LazyArray.h
   ${PROJECT_SRC_DIR}/shared/utils/OSThreadLocal.h
   ${PROJECT_SRC_DIR}/shared/utils/Uuid.h
   ${PROJECT_SRC_DIR}/shared/utils/BinaryData.h

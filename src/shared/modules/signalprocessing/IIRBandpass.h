@@ -34,7 +34,7 @@ class IIRBandpass : public IIRFilterBase
   void Publish();
 
  private:
-  void DesignFilter( const SignalProperties& input,
+  void DesignFilter( SignalProperties&,
                      Real& gain,
                      ComplexVector& zeros,
                      ComplexVector& poles ) const;

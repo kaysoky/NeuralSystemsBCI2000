@@ -31,6 +31,7 @@
 
 #include "GenericFilter.h"
 #include "IIRFilter.h"
+#include "ReusableThread.h"
 
 class IIRFilterBase : public GenericFilter
 {
@@ -53,12 +54,43 @@ class IIRFilterBase : public GenericFilter
   // - overall gain,
   // - complex roots of the numerator polynomial ("zeros"),
   // - complex roots of the denominator polynomial ("poles").
-  virtual void DesignFilter( const SignalProperties& input,
+  virtual void DesignFilter( SignalProperties& signal,
                              Real& gain,
                              ComplexVector& zeros,
                              ComplexVector& poles ) const = 0;
 
-  IIRFilter<Real> mFilter;
+  struct ChannelSet
+  {
+    int Channels() const
+      { return end - begin; }
+    // Input
+    const GenericSignal::ValueType& operator()( int ch, int el ) const
+      { return (*pInput)( begin + ch, el ); }
+    int Elements() const
+      { return pInput->Elements(); }
+    // Output
+    GenericSignal::ValueType& operator()( int ch, int el )
+      { return (*pOutput)( begin + ch, el ); }
+    int Elements()
+      { return pOutput->Elements(); }
+    // Assignment
+    void operator=( const ChannelSet& );
+
+    const GenericSignal* pInput;
+    GenericSignal* pOutput;
+    int begin, end;
+  };
+  struct Filter : Runnable, IIRFilter<Real>
+  {
+    ChannelSet channels;
+    void OnRun() { IIRFilter<Real>::Process( channels, channels ); }
+  } mFilter;
+  struct FilterThread : ReusableThread
+  {
+    Filter filter;
+  } *mpThreads;
+  int mAdditionalThreads;
+
 };
 
 #endif // IIR_FILTER_BASE_H

@@ -40,7 +40,7 @@ class SourceFilter : public IIRFilterBase
   // - overall gain,
   // - complex roots of the numerator polynomial ("zeros"),
   // - complex roots of the denominator polynomial ("poles").
-  virtual void DesignFilter( const SignalProperties& input,
+  virtual void DesignFilter( SignalProperties& signal,
                              Real& gain,
                              ComplexVector& zeros,
                              ComplexVector& poles ) const;
