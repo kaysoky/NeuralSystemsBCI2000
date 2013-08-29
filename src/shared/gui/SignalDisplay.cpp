@@ -633,11 +633,11 @@ SignalDisplay::DrawSignalPolyline( const PaintInfo& p )
     while( runEnd < sampleEnd )
     {
       int runBegin = runEnd;
-      while( IsNaN( NormData( channel, runBegin ) ) && runBegin < sampleEnd )
+      while( runBegin < sampleEnd && IsNaN( NormData( channel, runBegin ) ) )
         ++runBegin;
       double value;
       runEnd = runBegin;
-      while( !IsNaN( value = NormData( channel, runEnd ) ) && runEnd < sampleEnd )
+      while( runEnd < sampleEnd && !IsNaN( value = NormData( channel, runEnd ) ) )
         mpSignalPoints[runEnd++].setY( ToInt( channelBottom - 1 - baseInterval * value ) );
       if( runBegin <= mSampleCursor && mSampleCursor < runEnd )
       {
@@ -917,7 +917,7 @@ SignalDisplay::DrawNumericValues( const PaintInfo& p )
       ss.precision( 10 );
       int sampleNumber = mSampleCursor - 1;
       if( sampleNumber < 0 ) sampleNumber += mData.Elements();
-      ss << mData( channelNumber, sampleNumber ) << " ";
+      ss << Pretty( mData( channelNumber, sampleNumber ) ) << " ";
       string s = ss.str();
       const char* labelText = s.c_str();
       QFontMetrics metrics( p.monoFont );

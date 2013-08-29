@@ -29,6 +29,7 @@
 #include <limits>
 #include <cmath>
 #include <cstring>
+#include <iostream>
 
 template<typename T>
 const T& NaN( const T& = 0 )
@@ -64,6 +65,12 @@ const T& Pi( const T& = 0 )
   static const T pi = ::atan( T( 1 ) ) * 4;
   return pi;
 }
+
+inline const double& Pi()
+{
+  static const double pi = ::atan( double( 1 ) ) * 4;
+  return pi;
+}
 #endif
 
 template<typename T>
@@ -76,6 +83,31 @@ template<typename T>
 int Ceil( T t )
 {
   return static_cast<int>( ::ceil( t ) );
+}
+
+template<typename T>
+struct pretty_ { T t; };
+
+template<typename T>
+pretty_<T> Pretty( T t )
+{
+  pretty_<T> p = { t };
+  return p;
+};
+
+template<typename T>
+std::ostream&
+operator<<( std::ostream& os, pretty_<T> p )
+{
+  if( IsNaN( p.t ) )
+    os << "nan";
+  else if( p.t == Inf<T>() )
+    os << "+inf";
+  else if( p.t == -Inf<T>() )
+    os << "-inf";
+  else
+    os << p.t;
+  return os;
 }
 
 #endif // NUMERIC_CONSTANTS_H
