@@ -173,14 +173,17 @@ bool
 ExceptionCatcher::Run2( Runnable& inRunnable )
 {
   // This function handles C++ exceptions.
+  bool result = false;
   string message;
   try
   {
     inRunnable.Run();
+    result = true;
   }
   catch( const bci::Exception& e )
   {
-    message = e.What() + e.Where() + UserMessage();
+    if( !e.AlreadyShown() )
+      message = e.What() + e.Where() + UserMessage();
   }
   catch( const std::exception& e )
   {
@@ -208,7 +211,7 @@ ExceptionCatcher::Run2( Runnable& inRunnable )
 #endif // _MSC_VER
   if( !message.empty() )
     OnReportException( message );
-  return message.empty();
+  return result;
 }
 
 #if _MSC_VER

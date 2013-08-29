@@ -42,7 +42,7 @@ Exception::ToString( ostream& os )
 }
 
 Exception::Exception( const string& inWhat, const string& inWhere, const type_info& inType )
-: mWhat( inWhat ), mWhere( inWhere )
+: mWhat( inWhat ), mWhere( inWhere ), mAlreadyShown( false )
 {
 #if BCIDEBUG
   bool doDebug = true;
@@ -55,5 +55,6 @@ Exception::Exception( const string& inWhat, const string& inWhere, const type_in
     doDebug = doDebug && ( &inType != dontDebug[i] );
   if( doDebug )
     SuggestDebugging( "Exception of type " + ClassName( inType ), inWhat + "\n\n" + inWhere );
+  mAlreadyShown = doDebug;
 #endif // BCIDEBUG
 }

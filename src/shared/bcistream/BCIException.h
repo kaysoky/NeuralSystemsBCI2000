@@ -85,11 +85,13 @@ namespace bci {
 
     virtual const std::string& Where() const throw() { return mWhere; }
     virtual const std::string& What() const throw() { return mWhat; }
+    bool AlreadyShown() const throw() { return mAlreadyShown; }
 
     static std::string ToString( std::ostream& );
 
     private:
      std::string mWhat, mWhere;
+     bool mAlreadyShown;
   };
 
   template<typename T>
