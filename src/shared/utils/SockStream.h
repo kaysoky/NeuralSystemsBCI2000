@@ -253,6 +253,10 @@ class sockbuf : public std::streambuf
 
 class sockstream : public std::iostream
 {
+  private:
+    sockstream( const sockstream& );
+    sockstream& operator=( const sockstream& );
+
   public:
     sockstream();
     explicit sockstream( streamsock& );
