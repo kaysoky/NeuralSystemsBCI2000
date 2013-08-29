@@ -297,6 +297,9 @@ class MutableParamRef : public ParamRef
     : ParamRef( param, row, column ) {}
 
   // Assignment operators for write access.
+  MutableParamRef& operator=( const ParamRef& );
+  MutableParamRef& operator=( const MutableParamRef& p )
+    { return *this = static_cast<const ParamRef&>( p ); }
   MutableParamRef& operator=( const std::string& );
   MutableParamRef& operator=( double );
   MutableParamRef& operator=( const Param& );
@@ -512,6 +515,12 @@ MutableParamRef::operator->()
   return const_cast<Param*>( ParamRef::operator->() );
 }
 
+inline
+MutableParamRef&
+MutableParamRef::operator=( const ParamRef& p )
+{
+  return (*this) = *p.operator->();
+}
 
 inline
 MutableParamRef&
