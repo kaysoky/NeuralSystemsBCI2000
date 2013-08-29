@@ -45,7 +45,8 @@ class TransmissionFilter: public GenericFilter
    std::string FlatParameter( const std::string& ) const;
 
    typedef std::vector<size_t> mChannelList_type;
-   mChannelList_type           mChannelList;
+   mChannelList_type mChannelList;
+   bool mCopy;
 };
 
 #endif // TRANSMISSION_FILTER_H

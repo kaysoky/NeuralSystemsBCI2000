@@ -38,11 +38,12 @@ using namespace std;
 RegisterFilter( TransmissionFilter, 1.2 );
 
 TransmissionFilter::TransmissionFilter()
+: mCopy( false )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Online%20Processing list TransmitChList= 1 * % % % "
     "// list of transmitted channels: Channel names may contain * and ? wildcards, "
-    " and character ranges enclosed in []; wildcard patterns may be negated by an exclamation mark. "
+    " and character ranges enclosed in []; wildcard patterns may be negated by prepending an exclamation mark. "
     " Ranges of channels may be specified using : or - to separate begin from end.",
   END_PARAMETER_DEFINITIONS
 }
@@ -65,20 +66,27 @@ void TransmissionFilter::Preflight( const SignalProperties& Input,
 }
 
 void TransmissionFilter::Initialize( const SignalProperties& Input,
-                                     const SignalProperties& /*Output*/ )
+                                     const SignalProperties& Output )
 {
   mChannelList.clear();
   IndexList idx( FlatParameter( "TransmitChList" ), Input.ChannelLabels() );
+  mCopy = ( Input.Channels() == Output.Channels() );
   for( int i = 0; i < idx.Size(); ++i )
+  {
+    mCopy = mCopy && idx[i] == i;
     mChannelList.push_back( static_cast<size_t>( idx[i] ) );
+  }
 }
 
 void TransmissionFilter::Process( const GenericSignal& Input,
                                         GenericSignal& Output )
 {
-  for( size_t i = 0; i < mChannelList.size(); ++i )
-    for( int j = 0; j < Input.Elements(); ++j )
-      Output( i, j ) = Input( mChannelList[ i ], j );
+  if( mCopy )
+    Output = Input;
+  else
+    for( size_t i = 0; i < mChannelList.size(); ++i )
+      for( int j = 0; j < Input.Elements(); ++j )
+        Output( i, j ) = Input( mChannelList[ i ], j );
 }
 
 string
