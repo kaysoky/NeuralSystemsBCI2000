@@ -36,6 +36,7 @@ class NeuroscanADC : public GenericADC
   NeuroscanADC();
   ~NeuroscanADC();
 
+  void Publish();
   void AutoConfig( const SignalProperties& );
   void Preflight( const SignalProperties&, SignalProperties& ) const;
   void Initialize( const SignalProperties&, const SignalProperties& );

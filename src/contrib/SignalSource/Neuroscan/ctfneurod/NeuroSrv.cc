@@ -44,7 +44,7 @@ NeuroSrv::SendEDFHeader( std::ostream& os )
   mEDFHeader.BlockDuration = ( 1.0 * mBasicInfo.SamplesInBlock() ) / mBasicInfo.SamplingRate();
   for( EDFHeader::ChannelList::iterator i = mChannelInfo.begin(); i != mChannelInfo.end(); ++i )
   {
-#if 0 
+#if 0
     if( i->PhysicalMaximum == i->PhysicalMinimum )
       cerr << i->Label << ": PhysicalMaximum == PhysicalMinimum == "
            << i->PhysicalMaximum << endl;
@@ -52,6 +52,17 @@ NeuroSrv::SendEDFHeader( std::ostream& os )
     i->DigitalMaximum = i->PhysicalMaximum / mBasicInfo.Resolution();
     i->DigitalMinimum = i->PhysicalMinimum / mBasicInfo.Resolution();
     i->SamplesPerRecord = mBasicInfo.SamplesInBlock();
+    if( i->Filtering.empty() )
+    {
+      ostringstream oss;
+      if( i->HighPass )
+        oss << "HP:" << i->HighPass << "Hz ";
+      if( i->LowPass )
+        oss << "LP:" << i->LowPass << "Hz ";
+      if( i->Notch )
+        oss << "N:" << i->Notch << "Hz ";
+      i->Filtering = oss.str();
+    }
   }
   ostringstream oss;
   mEDFHeader.WriteBinary( oss );
@@ -126,7 +137,7 @@ NeuroSrv::Run( int argc, const char* argv[] )
       {
         int timeout = SendData( client );
         serverSocket.wait_for_read( timeout );
-	mTerminatingConnection = !serverSocket.is_open();
+        mTerminatingConnection = !serverSocket.is_open();
       }
     }
     cout << "Connection closed." << endl;

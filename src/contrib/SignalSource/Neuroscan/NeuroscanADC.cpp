@@ -43,6 +43,16 @@ RegisterFilter( NeuroscanADC, 1 );
 NeuroscanADC::NeuroscanADC()
 : mEventChannels( 0 )
 {
+}
+
+NeuroscanADC::~NeuroscanADC()
+{
+  Halt();
+}
+
+void
+NeuroscanADC::Publish()
+{
  BEGIN_PARAMETER_DEFINITIONS
    "Source string ServerAddress= localhost:3998 % % % "
        "// IP address and port of the Neuroscan Acquire server",
@@ -61,11 +71,6 @@ NeuroscanADC::NeuroscanADC()
  BEGIN_STATE_DEFINITIONS
    "NeuroscanEvent1 8 0 0 0",
  END_STATE_DEFINITIONS
-}
-
-NeuroscanADC::~NeuroscanADC()
-{
-  Halt();
 }
 
 void

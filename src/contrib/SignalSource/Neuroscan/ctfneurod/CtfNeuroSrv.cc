@@ -29,8 +29,8 @@
 
 using namespace std;
 
-CtfNeuroSrv::CtfNeuroSrv( 
-  const regex_t* inChannelNameRegex, 
+CtfNeuroSrv::CtfNeuroSrv(
+  const regex_t* inChannelNameRegex,
   double         inFreqCorrectionFactor,
   int            inDataOutputFormat,
   bool           inDoHPFiltering,
@@ -54,7 +54,7 @@ CtfNeuroSrv::CtfNeuroSrv(
   {
     cerr << "Could not create shared memory block of size "
          << shmSize / ( 1 << 10 ) << "kB"
-         << " (" << ::strerror( errno ) << ")" 
+         << " (" << ::strerror( errno ) << ")"
          << endl;
     return;
   }
@@ -103,7 +103,7 @@ CtfNeuroSrv::CtfNeuroSrv(
       const Channel& ch = ds.getChannel( i );
       bool useChannel = false;
       if( mpChannelNameRegex )
-	useChannel = !::regexec( mpChannelNameRegex, ch.getName(), 0, NULL, 0 );
+      useChannel = !::regexec( mpChannelNameRegex, ch.getName(), 0, NULL, 0 );
       else switch( ch.getSensorClass() )
       {
         case MEGSensor:
@@ -115,20 +115,20 @@ CtfNeuroSrv::CtfNeuroSrv(
       {
         mChannelIndices.push_back( i );
         channelTypes.push_back( ch.getSensorClass() );
-	switch( ch.getSensorClass() )
-	{
-	  case EEGSensor:
-	  case badEEGSensor:
-	    mChannelGains.push_back( cEEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
-	    break;
-	  case MEGSensor:
-	  case badMEGSensor:
-            mChannelGains.push_back( cMEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
-	    break;
-	  default:
-	    mChannelGains.push_back( 1.0 );
-	}
-	mHPChannelOffsets.push_back( 0.0 );
+        switch( ch.getSensorClass() )
+        {
+          case EEGSensor:
+          case badEEGSensor:
+            mChannelGains.push_back( cEEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
+            break;
+          case MEGSensor:
+          case badMEGSensor:
+                  mChannelGains.push_back( cMEGRoughGain / ch.getProperGain() / ch.getQGain() * bitIgnoringFactor );
+            break;
+          default:
+            mChannelGains.push_back( 1.0 );
+        }
+        mHPChannelOffsets.push_back( 0.0 );
         channelNames.push_back( string( ch.getName() ) );
         switch( ch.getSensorClass() )
         {
@@ -196,17 +196,17 @@ CtfNeuroSrv::CtfNeuroSrv(
       {
         case EEGSensor:
           mChannelInfo[i].TransducerType = "EEG";
-	  break;
+          break;
         case MEGSensor:
         case badMEGSensor:
-          mChannelInfo[i].TransducerType = "MEG";  
-          mChannelInfo[i].PhysicalDimension = "fT";  
+          mChannelInfo[i].TransducerType = "MEG";
+          mChannelInfo[i].PhysicalDimension = "fT";
           elocName = channelNames[ i ].substr( 0, 4 );
           elocRadius = megRadii[ megIdx ] / 2 / maxRadius;
           elocAngle = - megAngles[ megIdx++ ] * 180 / pi + 45;
           break;
-      default:
-         ;
+        default:
+          ;
       }
       for( size_t j = elocName.length(); j < 4; ++j )
         elocName += '.';
@@ -214,7 +214,7 @@ CtfNeuroSrv::CtfNeuroSrv(
 
       parmChannelNames << ' ' << channelNames[ i ];
       parmSourceChGain << ' ' << resolution;
-      parmSourceChOffset << ' ' << int( 0 ); 
+      parmSourceChOffset << ' ' << int( 0 );
     }
     mrElocFile.flush();
     time_t t = ::time( NULL );
@@ -228,8 +228,8 @@ CtfNeuroSrv::CtfNeuroSrv(
                       << parmSamplingRate.str() << comment << "\r\n"
                       << parmSampleBlockSize.str() << comment << "\r\n"
                       << flush;
- 
-    mBasicInfo = NscBasicInfo( 
+
+    mBasicInfo = NscBasicInfo(
       mChannelIndices.size(), // signal channels
       0,                      // event channels
       firstPacket.numSamples, // samples per block
@@ -252,11 +252,11 @@ CtfNeuroSrv::~CtfNeuroSrv()
 {
   if( ::shmdt( mpMessageQueue ) == -1 )
     cerr << "Could not detach from shared memory block"
-         << " (" << ::strerror( errno ) << ")" 
+         << " (" << ::strerror( errno ) << ")"
          << endl;
   if( ::shmctl( mShmHandle, IPC_RMID, 0 ) == -1 )
     cerr << "Could not mark shared memory block for removal"
-         << " (" << ::strerror( errno ) << ")" 
+         << " (" << ::strerror( errno ) << ")"
          << endl;
 }
 
@@ -335,52 +335,52 @@ CtfNeuroSrv::SendData( ostream& os )
         size_t dataLength = mChannelIndices.size() * curPacket->numSamples * mBytesPerSample;
         NscPacketHeader( 'DATA', DataType_EegData, mDataOutputFormat, dataLength ).WriteBinary( os );
 
-	for( size_t sample = 0; sample < curPacket->numSamples; ++sample )
-	  for( size_t i = 0; i < mChannelIndices.size(); ++i )
-	{
-#ifdef BIG_ENDIAN_INPUT // The old system provided data in big endian format:
-	  // We get the data in 32 bit big endian format -- convert it to machine format.
-	  const unsigned char* inBytes = reinterpret_cast<const unsigned char*>( 
-        	   &curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ] );
-        	signed int intValue = 0;
-	  for( int j = 0; j < 4; ++j )
-	  {
-            intValue <<= 8;
-            intValue |= inBytes[ j ];
-	  }
-#else // BIG_ENDIAN_INPUT The new system provides data in little endian format:
-	  signed int intValue = curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ];
-#endif // BIG_ENDIAN_INPUT
-	  // Apply the individual gain factor for the channel (should be in the order of 1.0).
-	  double floatValue = intValue * mChannelGains[ i ];
-	  if( mDoHPFiltering )
-            ApplyHP( i, floatValue );
+        for( size_t sample = 0; sample < curPacket->numSamples; ++sample )
+          for( size_t i = 0; i < mChannelIndices.size(); ++i )
+        {
+      #ifdef BIG_ENDIAN_INPUT // The old system provided data in big endian format:
+          // We get the data in 32 bit big endian format -- convert it to machine format.
+          const unsigned char* inBytes = reinterpret_cast<const unsigned char*>(
+                   &curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ] );
+                signed int intValue = 0;
+          for( int j = 0; j < 4; ++j )
+          {
+                  intValue <<= 8;
+                  intValue |= inBytes[ j ];
+          }
+      #else // BIG_ENDIAN_INPUT The new system provides data in little endian format:
+          signed int intValue = curPacket->data[ sample * curPacket->numChannels + mChannelIndices[ i ] ];
+      #endif // BIG_ENDIAN_INPUT
+          // Apply the individual gain factor for the channel (should be in the order of 1.0).
+          double floatValue = intValue * mChannelGains[ i ];
+          if( mDoHPFiltering )
+                  ApplyHP( i, floatValue );
 
-	  switch( mDataOutputFormat )
-	  {
-            case DataTypeRaw16bit:
-            {
-              const double maxShort = 1 << 15 - 1;
-              if( floatValue > maxShort )
-        	floatValue = maxShort;
-              else if( floatValue < -maxShort )
-        	floatValue = -maxShort;
-              signed short shortValue = floatValue;
-              os.write( reinterpret_cast<const char*>( &shortValue ), 2 );
-            } break;
+          switch( mDataOutputFormat )
+          {
+                  case DataTypeRaw16bit:
+                  {
+                    const double maxShort = 1 << 15 - 1;
+                    if( floatValue > maxShort )
+                floatValue = maxShort;
+                    else if( floatValue < -maxShort )
+                floatValue = -maxShort;
+                    signed short shortValue = floatValue;
+                    os.write( reinterpret_cast<const char*>( &shortValue ), 2 );
+                  } break;
 
-            case DataTypeRaw32bit:
-              // Write the scaled data value into the output stream. 
-              intValue = ::floor( floatValue );
-              os.write( reinterpret_cast<const char*>( &intValue ), 4 );
-              break;
+                  case DataTypeRaw32bit:
+                    // Write the scaled data value into the output stream.
+                    intValue = ::floor( floatValue );
+                    os.write( reinterpret_cast<const char*>( &intValue ), 4 );
+                    break;
 
-            default:
-              cerr << "Unknown data output format: " << mDataOutputFormat << endl;
-              TerminateConnection();
-	  }
-	}
-	os.flush();
+                  default:
+                    cerr << "Unknown data output format: " << mDataOutputFormat << endl;
+                    TerminateConnection();
+          }
+        }
+        os.flush();
       } break;
       case ACQ_MSGQ_CLOSE_COLLECTION: // We don't know how to correctly handle this message because
                                       // we can't notify a neuroscan client of a changing hardware setup.
