@@ -261,6 +261,25 @@ Param::BoundsCheck( size_t row, size_t col ) const
     throw std_range_error( "Column index " << col << " out of range when accessing parameter " << Name() );
 }
 
+Param&
+Param::Unchanged()
+{
+  mChanged = false;
+  for( size_t i = 0; i < mValues.size(); ++i )
+    if( mValues[i].mpParam )
+      mValues[i].mpParam->Unchanged();
+  return *this;
+}
+
+bool
+Param::Changed() const
+{
+  for( size_t i = 0; !mChanged && i < mValues.size(); ++i )
+    if( mValues[i].mpParam )
+      mChanged = mChanged || mValues[i].mpParam->Changed();
+  return mChanged;
+}
+
 // **************************************************************************
 // Function:   ReadFromStream
 // Purpose:    Member function for formatted stream input of a single

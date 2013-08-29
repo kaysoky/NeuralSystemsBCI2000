@@ -42,6 +42,8 @@ class Param
   public:
    class ParamValue
    {
+     friend class Param;
+
     public:
      enum
      {
@@ -177,10 +179,8 @@ class Param
                      { return mComment; }
 
   // Changed flag
-  Param&             Unchanged()
-                     { mChanged = false; return *this; }
-  bool               Changed() const
-                     { return mChanged; }
+  Param&             Unchanged();
+  bool               Changed() const;
 
   // Dimensions
   Param&             SetNumValues( size_t n );
@@ -262,8 +262,8 @@ class Param
   LabelIndex          mDim1Index,
                       mDim2Index;
   typedef std::vector<ParamValue> ValueContainer;
-  bool                mReadonly,
-                      mChanged;
+  bool                mReadonly;
+  mutable bool        mChanged;
   ValueContainer      mValues;
   const EncodedString cEmptyString;
 
