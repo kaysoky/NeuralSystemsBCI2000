@@ -50,12 +50,15 @@ class SignalGeneratorADC : public GenericADC
 
  private:
   // Configuration
-  double mSineFrequency,
-         mSineAmplitude,
-         mNoiseAmplitude,
+  double mNoiseAmplitude,
          mDCOffset;
   Expression mOffsetMultiplier,
              mAmplitudeMultiplier;
+  std::vector<double> mSourceFrequencies,
+                      mSourceAmplitudes,
+                      mSourcePhases;
+  std::vector< std::vector<double> > mMixingMatrix;
+
   int    mSineChannelX,
          mSineChannelY,
          mSineChannelZ;
@@ -63,8 +66,7 @@ class SignalGeneratorADC : public GenericADC
   // Internal State
   double mAmplitudeX,
          mAmplitudeY,
-         mAmplitudeZ,
-         mSinePhase;
+         mAmplitudeZ;
   Clock mClock;
   RandomGenerator mRandomGenerator;
 };

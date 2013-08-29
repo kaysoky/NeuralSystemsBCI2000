@@ -45,8 +45,6 @@ RegisterFilter( SignalGeneratorADC, 1 );
 
 SignalGeneratorADC::SignalGeneratorADC()
 : mRandomGenerator( this ),
-  mSineFrequency( 0 ),
-  mSineAmplitude( 0 ),
   mNoiseAmplitude( 0 ),
   mDCOffset( 0 ),
   mSineChannelX( 0 ),
@@ -55,8 +53,7 @@ SignalGeneratorADC::SignalGeneratorADC()
   mModulateAmplitude( 1 ),
   mAmplitudeX( 1 ),
   mAmplitudeY( 1 ),
-  mAmplitudeZ( 1 ),
-  mSinePhase( 0 )
+  mAmplitudeZ( 1 )
 {
 }
 
@@ -106,6 +103,9 @@ SignalGeneratorADC::Publish()
         " 1: float32,"
         " 2: int32 "
         "(enumeration)",
+        
+    "Source matrix SourceProperties= 0 [ Frequency Amplitude ] // Source properties",
+    "Source matrix MixingMatrix= 0 1 // Source-to-sensor projection, rows are sensors, columns are sources",
   END_PARAMETER_DEFINITIONS
 }
 
@@ -139,14 +139,11 @@ SignalGeneratorADC::Preflight( const SignalProperties&,
     Expression( Parameter( "OffsetMultiplier" ) ).Evaluate();
   Expression( Parameter( "AmplitudeMultiplier" ) ).Evaluate();
   Parameter( "RandomSeed" );
+  
+  if( Parameter( "MixingMatrix" )->NumValues() )
+    PreflightCondition( Parameter( "SourceCh" ) == Parameter( "MixingMatrix" )->NumRows() );
+  Parameter( "SourceProperties" );
 
-  // Resource availability checks.
-  /* The random source does not depend on external resources. */
-
-  // Input signal checks.
-  /* The input signal will be ignored. */
-
-  // Requested output signal properties.
   SignalType signalType;
   switch( int( Parameter( "SignalType" ) ) )
   {
@@ -169,11 +166,10 @@ SignalGeneratorADC::Preflight( const SignalProperties&,
 void
 SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties& Output )
 {
-  mSineFrequency = Parameter( "SineFrequency" ).InHertz() / Parameter( "SamplingRate" ).InHertz();
-  mSineAmplitude = Parameter( "SineAmplitude" ).In( "muV" ) * 1e-6;
-  mSinePhase = Pi( mSinePhase ) / 2;
-  mNoiseAmplitude = Parameter( "NoiseAmplitude" ).In( "muV" ) * 1e-6;
-  mDCOffset = Parameter( "DCOffset" ).In( "muV" ) * 1e-6;
+  double SineFrequency = Parameter( "SineFrequency" ).InHertz() / Parameter( "SamplingRate" ).InHertz(),
+         SineAmplitude = Parameter( "SineAmplitude" ).InMicrovolts() * 1e-6;
+  mNoiseAmplitude = Parameter( "NoiseAmplitude" ).InMicrovolts() * 1e-6;
+  mDCOffset = Parameter( "DCOffset" ).InMicrovolts() * 1e-6;
   if( mDCOffset == 0 )
     mOffsetMultiplier = Expression( "" );
   else
@@ -190,6 +186,38 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
   mModulateAmplitude = ( Parameter( "ModulateAmplitude" ) != 0 );
 #endif // _WIN32 || USE_QT
 
+  mMixingMatrix.clear();
+  if( Parameter( "SourceProperties" )->NumValues() > 0 )
+  {
+    ParamRef MixingMatrix = Parameter( "MixingMatrix" );
+    mMixingMatrix.resize( MixingMatrix->NumRows(), vector<double>( MixingMatrix->NumColumns() ) );
+    for( int i = 0; i < MixingMatrix->NumRows(); ++i )
+      for( int j = 0; j < MixingMatrix->NumColumns(); ++j )
+        mMixingMatrix[i][j] = MixingMatrix( i, j );
+    
+    ParamRef SourceProperties = Parameter( "SourceProperties" );
+    mSourceFrequencies.resize( SourceProperties->NumRows() );
+    mSourceAmplitudes.resize( SourceProperties->NumRows() );
+    mSourcePhases.resize( SourceProperties->NumRows() );
+    for( int i = 0; i < SourceProperties->NumRows(); ++i )
+    {
+      mSourceFrequencies[i] = SourceProperties( i, "Frequency" ).InHertz() / Parameter( "SamplingRate" ).InHertz();
+      mSourceAmplitudes[i] = SourceProperties( i, "Amplitude" ).InMicrovolts() * 1e-6;
+    }
+  }
+  else
+  {
+    int numCh = Parameter( "SourceCh" );
+    mMixingMatrix.resize( numCh, vector<double>( numCh, 0 ) );
+    for( int i = 0; i < numCh; ++i )
+      mMixingMatrix[i][i] = 1;
+    mSourceFrequencies.clear();
+    mSourceFrequencies.resize( numCh, SineFrequency );
+    mSourceAmplitudes.clear();
+    mSourceAmplitudes.resize( numCh, SineAmplitude );
+    mSourcePhases.resize( numCh );
+  }
+
   mClock.SetInterval( 1e3 * MeasurementUnits::SampleBlockDuration() );
   mClock.Reset();
   mClock.Start();
@@ -200,7 +228,8 @@ void
 SignalGeneratorADC::StartRun()
 {
   if( Parameter( "RandomSeed" ) != 0 )
-    mSinePhase = 0;
+    for( size_t i = 0; i < mSourcePhases.size(); ++i )
+      mSourcePhases[i] = 0;
 }
 
 
@@ -236,35 +265,46 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
   }
 #endif // !_WIN32, !USE_QT
 
-  double maxVal = Output.Type().Max(),
-         minVal = Output.Type().Min();
+  double offset = mDCOffset;
+  if( offset != 0 )
+    offset *= mOffsetMultiplier.Evaluate();
+
+  for( int ch = 0; ch < Output.Channels(); ++ch )
+    for( int sample = 0; sample < Output.Elements(); ++sample )
+        Output( ch, sample ) = offset;
 
   for( int sample = 0; sample < Output.Elements(); ++sample )
   {
-    mSinePhase += 2 * Pi( mSinePhase ) * mSineFrequency;
-    mSinePhase = ::fmod( mSinePhase, 2 * Pi( mSinePhase ) );
-    double sineValue = ::sin( mSinePhase ) * mSineAmplitude * mAmplitudeMultiplier.Evaluate();
-
-    double offset = mDCOffset;
-    if( offset != 0 )
-      offset *= mOffsetMultiplier.Evaluate();
-    for( int ch = 0; ch < Output.Channels(); ++ch )
+    for( size_t source = 0; source < mSourceFrequencies.size(); ++source )
     {
-      double value = offset;
-      value += ( mRandomGenerator.Random() * mNoiseAmplitude / mRandomGenerator.RandMax() - mNoiseAmplitude / 2 );
-      if( mSineChannelX == ch + 1 )
-        value += sineValue * mAmplitudeX;
-      if( mSineChannelY == 0 || mSineChannelY == ch + 1 )
-        value += sineValue * mAmplitudeY;
-      if( mSineChannelZ == ch + 1 )
-        value += sineValue * mAmplitudeZ;
-
-      value = Output.Properties().ValueUnit( ch ).PhysicalToRawValue( value );
-      value = max( value, minVal );
-      value = min( value, maxVal );
-      Output( ch, sample ) = value;
+      double sineValue = 0;
+      if( mSourceFrequencies[source] )
+      {
+        mSourcePhases[source] += 2 * Pi() * mSourceFrequencies[source];
+        mSourcePhases[source] = ::fmod( mSourcePhases[source], 2 * Pi() );
+        sineValue = ::sin( mSourcePhases[source] ) * mSourceAmplitudes[source] * mAmplitudeMultiplier.Evaluate();
+        if( mSineChannelX == source + 1 )
+          sineValue *= mAmplitudeX;
+        if( mSineChannelY == 0 || mSineChannelY == source + 1 )
+          sineValue *= mAmplitudeY;
+        if( mSineChannelZ == source + 1 )
+          sineValue *= mAmplitudeZ;
+      }
+      for( int ch = 0; ch < Output.Channels(); ++ch )
+        Output( ch, sample ) += mMixingMatrix[ch][source] * sineValue;
     }
+    for( int ch = 0; ch < Output.Channels(); ++ch )
+      Output( ch, sample ) += ( mRandomGenerator.Random() * mNoiseAmplitude / mRandomGenerator.RandMax() - mNoiseAmplitude / 2 );
   }
+  
+  for( int ch = 0; ch < Output.Channels(); ++ ch )
+    for( int sample = 0; sample < Output.Elements(); ++sample )
+    {
+      GenericSignal::ValueType& value = Output( ch, sample );
+      value = Output.Properties().ValueUnit( ch ).PhysicalToRawValue( value );
+      value = max( value, Output.Type().Min() );
+      value = min( value, Output.Type().Max() );
+    }
 }
 
 
