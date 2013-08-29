@@ -35,6 +35,8 @@
 
 class SignalProperties
 {
+  class ValueUnitsProxy;
+
   public:
     SignalProperties()
       : mType( SignalType::defaultType ),
@@ -110,7 +112,8 @@ class SignalProperties
     double            ElementIndex( const std::string& address ) const
                       { return ElementLabels().AddressToIndex( address, ElementUnit() ); }
 
-    PhysicalUnit&     ValueUnit( size_t ch = 0 );
+    ValueUnitsProxy   ValueUnit();
+    PhysicalUnit&     ValueUnit( size_t ch );
     const PhysicalUnit& ValueUnit( size_t ch = 0 ) const
                       { return mValueUnits.size() <= ch
                         ? *mValueUnits.rbegin() : mValueUnits[ ch ]; }
@@ -135,20 +138,35 @@ class SignalProperties
                       { mIsStream = b ? true_ : false_; return *this; }
 
     bool IsEmpty() const
-                      { return Channels() == 0 || Elements() == 0; }
+         { return Channels() == 0 || Elements() == 0; }
 
     bool operator==( const SignalProperties& sp ) const
-                      { return Type() == sp.Type() && Elements() == sp.Elements() && Channels() == sp.Channels(); }
+         { return Type() == sp.Type() && Elements() == sp.Elements() && Channels() == sp.Channels(); }
     bool operator!=( const SignalProperties& sp ) const
-                      { return !( *this == sp ); }
+         { return !( *this == sp ); }
     bool Accommodates( const SignalProperties& ) const;
+
+    size_t LinearIndex( size_t ch, size_t el ) const;
 
     // Stream i/o
     std::ostream& WriteToStream( std::ostream& ) const;
     std::istream& ReadFromStream( std::istream& );
 
   private:
-    void   InitMembers( size_t numChannels, size_t numElements );
+    void InitMembers( size_t numChannels, size_t numElements );
+
+    class ValueUnitsProxy : public PhysicalUnit
+    {
+     public:
+      PhysicalUnit& operator=( const PhysicalUnit& u )
+        { return PhysicalUnit::operator=( u ); }
+      ~ValueUnitsProxy();
+     private:
+      friend class SignalProperties;
+      ValueUnitsProxy( SignalProperties* );
+      ValueUnitsProxy( ValueUnitsProxy& );
+      SignalProperties* p;
+    };
 
     EncodedString                      mName;
     LabelIndex                         mChannelLabels,

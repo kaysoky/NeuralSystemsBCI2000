@@ -28,9 +28,16 @@
 
 #include "SignalProperties.h"
 #include "LengthField.h"
+#include "BCIAssert.h"
 #include <sstream>
 
 using namespace std;
+
+SignalProperties::ValueUnitsProxy
+SignalProperties::ValueUnit()
+{
+  return ValueUnitsProxy( this );
+}
 
 PhysicalUnit&
 SignalProperties::ValueUnit( size_t inCh )
@@ -80,6 +87,16 @@ SignalProperties::Accommodates( const SignalProperties& sp ) const
   return true;
 }
 
+size_t
+SignalProperties::LinearIndex( size_t ch, size_t el ) const
+{
+  if( ch >= size_t( Channels() ) )
+    bcidebug( "Channel index out of bounds" );
+  if( el >= size_t( Elements() ) )
+    bcidebug( "Element index out of bounds" );
+  return ch * Elements() + el;
+}
+
 void
 SignalProperties::InitMembers( size_t inChannels, size_t inElements )
 {
@@ -110,7 +127,6 @@ SignalProperties::SamplingRate() const
   return 0.0;
 }
 
-
 bool
 SignalProperties::IsStream() const
 {
@@ -121,3 +137,23 @@ SignalProperties::IsStream() const
   return Elements() == 1 || ElementUnit().Symbol() == "s";
 }
 
+// ValueUnitsProxy
+SignalProperties::ValueUnitsProxy::ValueUnitsProxy( SignalProperties* p )
+: PhysicalUnit( p->ValueUnit( 0 ) ),
+  p( p )
+{
+}
+
+SignalProperties::ValueUnitsProxy::ValueUnitsProxy( ValueUnitsProxy& v )
+: PhysicalUnit( v ),
+  p( v.p )
+{
+  v.p = 0;
+}
+
+SignalProperties::ValueUnitsProxy::~ValueUnitsProxy()
+{
+  if( p )
+    for( int ch = 0; ch < p->Channels(); ++ch )
+      p->ValueUnit( ch ) = *this;
+}

@@ -30,96 +30,48 @@
 #include "GenericSignal.h"
 
 #include "LengthField.h"
-#include "BCIAssert.h"
-#include "defines.h"
+#include "BinaryData.h"
 #include <iostream>
 #include <iomanip>
 #include <limits>
-#include <cmath>
 #include <cstring>
+#include <inttypes.h>
 
 using namespace std;
+using namespace bci;
 
 const GenericSignal::ValueType GenericSignal::NaN = numeric_limits<ValueType>::quiet_NaN();
 
 GenericSignal::GenericSignal()
-: mpValues( NULL ),
-  mNumValues( 0 )
 {
   SetProperties( mProperties );
 }
 
 GenericSignal::~GenericSignal()
 {
-  delete[] mpValues;
-}
-
-GenericSignal::GenericSignal( const GenericSignal& inSignal )
-: mpValues( NULL ),
-  mNumValues( 0 ),
-  mProperties( inSignal.mProperties )
-{
-  AssignValues( inSignal );
-}
-
-GenericSignal&
-GenericSignal::operator=( const GenericSignal& inSignal )
-{
-  mProperties = inSignal.Properties();
-  return AssignValues( inSignal );
 }
 
 GenericSignal::GenericSignal( size_t inChannels, size_t inElements, SignalType::Type inType )
-: mpValues( NULL ),
-  mNumValues( 0 )
 {
   SetProperties( SignalProperties( inChannels, inElements, inType ) );
 }
 
 GenericSignal::GenericSignal( size_t inChannels, size_t inElements, SignalType inType )
-: mpValues( NULL ),
-  mNumValues( 0 )
 {
   SetProperties( SignalProperties( inChannels, inElements, inType ) );
 }
 
 GenericSignal::GenericSignal( const SignalProperties& inProperties )
-: mpValues( NULL ),
-  mNumValues( 0 )
 {
   SetProperties( inProperties );
 }
 
 GenericSignal::GenericSignal( const SignalProperties& inProperties, ValueType inValue )
-: mpValues( NULL ),
-  mNumValues( 0 )
 {
   SetProperties( inProperties );
   for( int ch = 0; ch < Channels(); ++ch )
     for( int el = 0; el < Elements(); ++el )
-      ( *this )( ch, el ) = inValue;
-}
-
-GenericSignal&
-GenericSignal::AssignValues( const GenericSignal& s )
-{
-  if( s.Channels() != mProperties.Channels() )
-    mProperties.SetChannels( s.Channels() );
-  if( s.Elements() != mProperties.Elements() )
-    mProperties.SetElements( s.Elements() );
-  size_t newSize = mProperties.Channels() * mProperties.Elements();
-  if( mNumValues != newSize )
-  {
-    mNumValues = newSize;
-    delete[] mpValues;
-    if( mNumValues == 0 )
-      mpValues = NULL;
-    else
-      mpValues = new ValueType[mNumValues];
-  }
-  if( mpValues )
-    ::memcpy( mpValues, s.mpValues, mNumValues * sizeof( ValueType ) );
-  return *this;
+      SetValue( ch, el, inValue );
 }
 
 GenericSignal&
@@ -127,19 +79,23 @@ GenericSignal::SetProperties( const SignalProperties& inSp )
 {
   if( inSp.Channels() != mProperties.Channels() || inSp.Elements() != mProperties.Elements() )
   {
-    ValueType* pPrevious = mpValues;
-    mNumValues = inSp.Channels() * inSp.Elements();
-    if( mNumValues == 0 )
-      mpValues = NULL;
-    else
-    {
-      mpValues = new ValueType[mNumValues];
-      ::memset( mpValues, 0, mNumValues * sizeof( ValueType ) );
-    }
+    size_t newSize = inSp.Channels() * inSp.Elements();
+    ValueType* pNewData = 0;
+    if( SharedMemory() )
+      pNewData = NewSharedServerMemory( newSize );
+
+    LazyArray<ValueType> newValues( pNewData, newSize );
     for( int ch = 0; ch < min( mProperties.Channels(), inSp.Channels() ); ++ch )
+    {
       for( int el = 0; el < min( mProperties.Elements(), inSp.Elements() ); ++el )
-        mpValues[ch * inSp.Elements() + el] = pPrevious[ch * mProperties.Elements() + el];
-    delete[] pPrevious;
+        newValues[inSp.LinearIndex( ch, el )] = mValues[mProperties.LinearIndex( ch, el )];
+      for( int el = mProperties.Elements(); el < inSp.Elements(); ++el )
+        newValues[inSp.LinearIndex( ch, el )] = 0;
+    }
+    for( int ch = mProperties.Channels(); ch < inSp.Channels(); ++ch )
+      for( int el = 0; el < inSp.Elements(); ++el )
+        newValues[inSp.LinearIndex( ch, el )] = 0;
+    mValues = newValues;
   }
   mProperties = inSp;
   return *this;
@@ -154,6 +110,8 @@ GenericSignal::WriteToStream( ostream& os ) const
   mProperties.WriteToStream( os );
   os << '\n' << setw( indent ) << ""
      << "}";
+  if( SharedMemory() )
+    os << "SharedMemory { " << mSharedMemory->Name() << " }\n";
   os << setprecision( 7 );
   for( int j = 0; j < Elements(); ++j )
   {
@@ -171,40 +129,19 @@ GenericSignal::WriteToStream( ostream& os ) const
 ostream&
 GenericSignal::WriteBinary( ostream& os ) const
 {
-  Type().WriteBinary( os );
+  SignalType type = Type();
+  type.SetShared( SharedMemory() );
+  type.WriteBinary( os );
   LengthField<2> channelsField( Channels() ),
                  elementsField( Elements() );
   channelsField.WriteBinary( os );
   elementsField.WriteBinary( os );
-  switch( Type() )
-  {
-    case SignalType::int16:
-      for( int i = 0; i < Channels(); ++i )
-        for( int j = 0; j < Elements(); ++j )
-          PutValueBinary<SignalType::int16>( os, i, j );
-      break;
-
-    case SignalType::float24:
-      for( int i = 0; i < Channels(); ++i )
-        for( int j = 0; j < Elements(); ++j )
-          PutValueBinary<SignalType::float24>( os, i, j );
-      break;
-
-    case SignalType::float32:
-      for( int i = 0; i < Channels(); ++i )
-        for( int j = 0; j < Elements(); ++j )
-          PutValueBinary<SignalType::float32>( os, i, j );
-      break;
-
-    case SignalType::int32:
-      for( int i = 0; i < Channels(); ++i )
-        for( int j = 0; j < Elements(); ++j )
-          PutValueBinary<SignalType::int32>( os, i, j );
-      break;
-
-    default:
-      os.setstate( os.failbit );
-  }
+  if( SharedMemory() )
+    os.write( mSharedMemory->Name().c_str(), mSharedMemory->Name().length() + 1 );
+  else
+    for( int i = 0; i < Channels(); ++i )
+      for( int j = 0; j < Elements(); ++j )
+        WriteValueBinary( os, i, j );
   return os;
 }
 
@@ -217,58 +154,42 @@ GenericSignal::ReadBinary( istream& is )
   type.ReadBinary( is );
   channels.ReadBinary( is );
   elements.ReadBinary( is );
-  SetProperties( SignalProperties( channels, elements, type ) );
-  switch( Type() )
+  if( type.Shared() )
   {
-    case SignalType::int16:
-      for( int i = 0; i < Channels(); ++i )
-        for( int j = 0; j < Elements(); ++j )
-          GetValueBinary<SignalType::int16>( is, i, j );
-      break;
-
-    case SignalType::float24:
-      for( int i = 0; i < Channels(); ++i )
-        for( int j = 0; j < Elements(); ++j )
-          GetValueBinary<SignalType::float24>( is, i, j );
-      break;
-
-    case SignalType::float32:
-      for( int i = 0; i < Channels(); ++i )
-        for( int j = 0; j < Elements(); ++j )
-          GetValueBinary<SignalType::float32>( is, i, j );
-      break;
-
-    case SignalType::int32:
-      for( int i = 0; i < Channels(); ++i )
-        for( int j = 0; j < Elements(); ++j )
-          GetValueBinary<SignalType::int32>( is, i, j );
-      break;
-
-    default:
-      is.setstate( is.failbit );
+    string name;
+    getline( is, name, '\0' );
+    mValues = LazyArray<ValueType>( GetSharedClientMemory( name ), channels * elements );
+    mProperties = SignalProperties( channels, elements, type );
+  }
+  else
+  {
+    SetProperties( SignalProperties( channels, elements, type ) );
+    for( int i = 0; i < Channels(); ++i )
+      for( int j = 0; j < Elements(); ++j )
+        ReadValueBinary( is, i, j );
   }
   return is;
 }
 
 ostream&
-GenericSignal::WriteValueBinary( ostream& os, size_t inChannel, size_t inElement ) const
+GenericSignal::WriteValueBinary( ostream& os, size_t i, size_t j ) const
 {
   switch( Type() )
   {
     case SignalType::int16:
-      PutValueBinary<SignalType::int16>( os, inChannel, inElement );
+      BinaryData<int16_t, LittleEndian>( Value( i, j ) ).Put( os );
       break;
 
     case SignalType::float24:
-      PutValueBinary<SignalType::float24>( os, inChannel, inElement );
+      PutValue_float24( os, Value( i, j ) );
       break;
 
     case SignalType::float32:
-      PutValueBinary<SignalType::float32>( os, inChannel, inElement );
+      BinaryData<float, LittleEndian>( Value( i, j ) ).Put( os );
       break;
 
     case SignalType::int32:
-      PutValueBinary<SignalType::int32>( os, inChannel, inElement );
+      BinaryData<int32_t, LittleEndian>( Value( i, j ) ).Put( os );
       break;
 
     default:
@@ -278,24 +199,24 @@ GenericSignal::WriteValueBinary( ostream& os, size_t inChannel, size_t inElement
 }
 
 istream&
-GenericSignal::ReadValueBinary( istream& is, size_t inChannel, size_t inElement )
+GenericSignal::ReadValueBinary( istream& is, size_t i, size_t j )
 {
   switch( Type() )
   {
     case SignalType::int16:
-      GetValueBinary<SignalType::int16>( is, inChannel, inElement );
+      Value( i, j ) = BinaryData<int16_t, LittleEndian>( is );
       break;
 
     case SignalType::float24:
-      GetValueBinary<SignalType::float24>( is, inChannel, inElement );
+      Value( i, j ) = GetValue_float24( is );
       break;
 
     case SignalType::float32:
-      GetValueBinary<SignalType::float32>( is, inChannel, inElement );
+      Value( i, j ) = BinaryData<float, LittleEndian>( is );
       break;
 
     case SignalType::int32:
-      GetValueBinary<SignalType::int32>( is, inChannel, inElement );
+      Value( i, j ) = BinaryData<int32_t, LittleEndian>( is );
       break;
 
     default:
@@ -320,45 +241,9 @@ GenericElement::operator=( const GenericElement& inElement )
   return ( *this );
 }
 
-template<>
 void
-GenericSignal::PutValueBinary<SignalType::int16>( std::ostream& os, size_t inChannel, size_t inElement ) const
+GenericSignal::PutValue_float24( std::ostream& os, ValueType value )
 {
-  int value = static_cast<int>( Value( inChannel, inElement ) );
-  os.put( value & 0xff ).put( value >> 8 );
-}
-
-template<>
-void
-GenericSignal::GetValueBinary<SignalType::int16>( std::istream& is, size_t inChannel, size_t inElement )
-{
-  signed short value = is.get();
-  value |= is.get() << 8;
-  SetValue( inChannel, inElement, value );
-}
-
-template<>
-void
-GenericSignal::PutValueBinary<SignalType::int32>( std::ostream& os, size_t inChannel, size_t inElement ) const
-{
-  signed int value = static_cast<signed int>( Value( inChannel, inElement ) );
-  PutLittleEndian( os, value );
-}
-
-template<>
-void
-GenericSignal::GetValueBinary<SignalType::int32>( std::istream& is, size_t inChannel, size_t inElement )
-{
-  signed int value = 0;
-  GetLittleEndian( is, value );
-  SetValue( inChannel, inElement, value );
-}
-
-template<>
-void
-GenericSignal::PutValueBinary<SignalType::float24>( std::ostream& os, size_t inChannel, size_t inElement ) const
-{
-  GenericSignal::ValueType value = Value( inChannel, inElement );
   int mantissa,
       exponent;
   if( value == 0.0 )
@@ -376,60 +261,50 @@ GenericSignal::PutValueBinary<SignalType::float24>( std::ostream& os, size_t inC
   os.put( exponent & 0xff );
 }
 
-template<>
-void
-GenericSignal::GetValueBinary<SignalType::float24>( std::istream& is, size_t inChannel, size_t inElement )
+GenericSignal::ValueType
+GenericSignal::GetValue_float24( std::istream& is )
 {
   signed short mantissa = is.get();
   mantissa |= is.get() << 8;
   signed char exponent = is.get();
-  SetValue( inChannel, inElement, mantissa * ::pow( 10.0, exponent ) );
+  return mantissa * ::pow( 10.0, exponent );
 }
 
-template<>
-void
-GenericSignal::PutValueBinary<SignalType::float32>( std::ostream& os, size_t inChannel, size_t inElement ) const
+bool
+GenericSignal::ShareAcrossModules()
 {
-  bciassert( numeric_limits<float>::is_iec559 && sizeof( uint32_t ) == sizeof( float ) );
-  union { float f; uint32_t i; } value;
-  value.f = static_cast<float>( Value( inChannel, inElement ) );
-  PutLittleEndian( os, value.i );
-}
-
-template<>
-void
-GenericSignal::GetValueBinary<SignalType::float32>( std::istream& is, size_t inChannel, size_t inElement )
-{
-  bciassert( numeric_limits<float>::is_iec559 && sizeof( uint32_t ) == sizeof( float ) );
-  union { float f; uint32_t i; } value;
-  GetLittleEndian( is, value.i );
-  try
+  if( !SharedMemory() && mValues.Size() != 0 )
   {
-    SetValue( inChannel, inElement, value.f );
+    ValueType* p = NewSharedServerMemory( mValues.Size() );
+    mValues = ( LazyArray<ValueType>( p, mValues.Size() ) = mValues );
   }
-  catch( ... )
-  {
-    is.setstate( is.failbit );
-  }
+  return SharedMemory();
 }
 
-template<typename T>
-void
-GenericSignal::PutLittleEndian( std::ostream& os, const T& inValue )
+GenericSignal::ValueType*
+GenericSignal::SharedMemory() const
 {
-  T value = inValue;
-  for( size_t i = 0; i < sizeof( T ); ++i )
-  {
-    os.put( value & 0xff );
-    value >>= 8;
-  }
+  const OSSharedMemory* p = mSharedMemory.operator->();
+  void* pMemory = p ? p->Memory() : 0;
+  return reinterpret_cast<ValueType*>( pMemory );
 }
 
-template<typename T>
-void
-GenericSignal::GetLittleEndian( std::istream& is, T& outValue )
+GenericSignal::ValueType*
+GenericSignal::GetSharedClientMemory( const string& inName )
 {
-  outValue = 0;
-  for( size_t i = 0; i < sizeof( T ); ++i )
-    outValue |= is.get() << ( i * 8 );
+  if( !SharedMemory() || mSharedMemory->Name() != inName )
+  {
+    static map< string, SharedPointer<OSSharedMemory> > pool;
+    if( pool.find( inName ) == pool.end() )
+      pool[inName] = SharedPointer<OSSharedMemory>( new OSSharedMemory( inName ) );
+    mSharedMemory = pool[inName];
+  }
+  return SharedMemory();
+}
+
+GenericSignal::ValueType*
+GenericSignal::NewSharedServerMemory( size_t inSize )
+{
+  mSharedMemory = SharedPointer<OSSharedMemory>( new OSSharedMemory( inSize * sizeof( ValueType ) ) );
+  return reinterpret_cast<ValueType*>( mSharedMemory->Memory() );
 }

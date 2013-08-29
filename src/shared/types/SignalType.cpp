@@ -143,12 +143,21 @@ SignalType::ReadFromStream( istream& is )
 ostream&
 SignalType::WriteBinary( ostream& os ) const
 {
-  return os.put( mType );
+  char c = mType;
+  if( mShared )
+    c |= SharedFlag;
+  return os.put( c );
 }
 
 istream&
 SignalType::ReadBinary( istream& is )
 {
-  mType = Type( is.get() );
+  int c = is.get();
+  if( c != none )
+  {
+    mShared = c & SharedFlag;
+    c &= ~SharedFlag;
+  }
+  mType = Type( c );
   return is;
 }

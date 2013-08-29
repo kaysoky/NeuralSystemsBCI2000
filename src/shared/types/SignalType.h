@@ -41,13 +41,16 @@ class SignalType
     int32,
 
     numTypes,
-    defaultType = float32
+    defaultType = float32,
 
+    SharedFlag = 1 << 6
   } Type;
 
   SignalType() : mType( none )      {}
   SignalType( Type t ) : mType( t ) {}
   operator SignalType::Type() const { return mType; }
+  bool Shared() const { return mShared; }
+  void SetShared( bool b ) { mShared = b; }
 
   const char* Name() const;
   int         Size() const;
@@ -62,6 +65,7 @@ class SignalType
 
  private:
   Type mType;
+  bool mShared;
 };
 
 inline

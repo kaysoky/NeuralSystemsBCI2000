@@ -28,15 +28,12 @@
 #define GENERIC_SIGNAL_H
 
 #include <vector>
+#include <string>
 #include <iostream>
 #include "SignalType.h"
 #include "SignalProperties.h"
-
-#ifdef __GNUC__
-# define NOINLINE  __attribute__ ((noinline))
-#else
-# define NOINLINE
-#endif // __GNUC__
+#include "LazyArray.h"
+#include "OSSharedMemory.h"
 
 class GenericChannel;
 class GenericElement;
@@ -49,8 +46,6 @@ class GenericSignal
 
     GenericSignal();
     ~GenericSignal();
-    GenericSignal( const GenericSignal& );
-    GenericSignal& operator=( const GenericSignal& );
 
     GenericSignal(
       size_t inChannels,
@@ -66,6 +61,8 @@ class GenericSignal
     GenericSignal&          SetProperties( const SignalProperties& );
     const SignalProperties& Properties() const
                             { return mProperties; }
+    GenericSignal& AssignValues( const GenericSignal& s )
+                            { mValues = s.mValues; mSharedMemory = s.mSharedMemory; return *this; }
 
     // Read access to properties
     int               Channels() const
@@ -76,35 +73,38 @@ class GenericSignal
                       { return mProperties.Type(); }
 
     // Value Accessors
-    const ValueType&  Value( size_t inChannel, size_t inElement ) const;
-    GenericSignal&    SetValue( size_t inChannel, size_t inElement, ValueType inValue );
-    GenericSignal&    AssignValues( const GenericSignal& );
-    // Read access
-    const ValueType&  operator() ( size_t inChannel, size_t inElement ) const;
-    // Write access
-    ValueType&        operator() ( size_t inChannel, size_t inElement );
+    const ValueType&  Value( size_t ch, size_t el ) const
+                      { return mValues[mProperties.LinearIndex( ch, el )]; }
+    ValueType&        Value( size_t ch, size_t el )
+                      { return mValues[mProperties.LinearIndex( ch, el )]; }
+    GenericSignal&    SetValue( size_t ch, size_t el, ValueType value )
+                      { Value( ch, el ) = value; return *this; }
+    const ValueType&  operator() ( size_t ch, size_t el ) const
+                      { return Value( ch, el ); }
+    ValueType&        operator() ( size_t ch, size_t el )
+                      { return Value( ch, el ); }
+
+    bool ShareAcrossModules();
 
     // Stream i/o
-    std::ostream&     WriteToStream( std::ostream& ) const;
-    std::istream&     ReadFromStream( std::istream& );
-    std::ostream&     WriteValueBinary( std::ostream&, size_t inChannel, size_t inElement ) const;
-    std::istream&     ReadValueBinary( std::istream&, size_t inChannel, size_t inElement );
-    std::ostream&     WriteBinary( std::ostream& ) const;
-    std::istream&     ReadBinary( std::istream& );
-
-    template<SignalType::Type>
-      void PutValueBinary( std::ostream&, size_t inChannel, size_t inElement ) const;
-    template<SignalType::Type>
-      void GetValueBinary( std::istream&, size_t inChannel, size_t inElement );
+    std::ostream& WriteToStream( std::ostream& ) const;
+    std::istream& ReadFromStream( std::istream& );
+    std::ostream& WriteValueBinary( std::ostream&, size_t ch, size_t el ) const;
+    std::istream& ReadValueBinary( std::istream&, size_t ch, size_t el );
+    std::ostream& WriteBinary( std::ostream& ) const;
+    std::istream& ReadBinary( std::istream& );
 
   private:
-    template<typename T> static void PutLittleEndian( std::ostream&, const T& );
-    template<typename T> static void GetLittleEndian( std::istream&, T& );
+    static void PutValue_float24( std::ostream&, ValueType );
+    static ValueType GetValue_float24( std::istream& );
 
-  private:
+    ValueType* SharedMemory() const;
+    ValueType* NewSharedServerMemory( size_t );
+    ValueType* GetSharedClientMemory( const std::string& );
+
     SignalProperties mProperties;
-    ValueType* mpValues;
-    size_t     mNumValues;
+    LazyArray<ValueType> mValues;
+    SharedPointer<OSSharedMemory> mSharedMemory;
 };
 
 class GenericChannel
@@ -141,64 +141,13 @@ class GenericElement
     int mEl;
 };
 
-template<> void
-GenericSignal::PutValueBinary<SignalType::int16>( std::ostream&, size_t, size_t ) const;
-template<> void
-GenericSignal::PutValueBinary<SignalType::int32>( std::ostream&, size_t, size_t ) const;
-template<> void
-GenericSignal::PutValueBinary<SignalType::float24>( std::ostream&, size_t, size_t ) const;
-template<> void
-GenericSignal::PutValueBinary<SignalType::float32>( std::ostream&, size_t, size_t ) const;
-
-template<> void
-GenericSignal::GetValueBinary<SignalType::int16>( std::istream&, size_t, size_t );
-template<> void
-GenericSignal::GetValueBinary<SignalType::int32>( std::istream&, size_t, size_t );
-template<> void
-GenericSignal::GetValueBinary<SignalType::float24>( std::istream&, size_t, size_t );
-template<> void
-GenericSignal::GetValueBinary<SignalType::float32>( std::istream&, size_t, size_t );
-
-inline
-const GenericSignal::ValueType&
-GenericSignal::Value( size_t inChannel, size_t inElement ) const
-{
-  return operator()( inChannel, inElement );
-}
-
-inline
-GenericSignal&
-GenericSignal::SetValue( size_t inChannel, size_t inElement, ValueType inValue )
-{
-  operator()( inChannel, inElement ) = inValue;
-  return *this;
-}
-
-inline
-const GenericSignal::ValueType&
-GenericSignal::operator() ( size_t inChannel, size_t inElement ) const
-{
-  return mpValues[inChannel * mProperties.Elements() + inElement];
-}
-
-inline
-GenericSignal::ValueType&
-GenericSignal::operator() ( size_t inChannel, size_t inElement )
-{
-  return mpValues[inChannel * mProperties.Elements() + inElement];
-}
-
 inline
 std::ostream& operator<<( std::ostream& os, const GenericSignal& s )
-{
-  return s.WriteToStream( os );
-}
+{ return s.WriteToStream( os ); }
 
 inline
 std::istream& operator>>( std::istream& is, GenericSignal& s )
-{
-  return s.ReadFromStream( is );
-}
+{ return s.ReadFromStream( is ); }
 
 #endif // GENERIC_SIGNAL_H
 

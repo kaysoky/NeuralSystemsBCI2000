@@ -27,43 +27,64 @@
 #ifndef SHARED_POINTER_H
 #define SHARED_POINTER_H
 
-#include "OSMutex.h"
+#include "Lockable.h"
 
-template<typename T>
+template<class T>
+struct ArrayAllocator
+{
+  static T* New( size_t n ) { return new T[n]; }
+  static void Delete( T* t ) { delete[] t; }
+};
+
+template<class T>
+struct InstanceAllocator
+{
+  static void Delete( T* t ) { delete t; }
+};
+
+template<typename T>void DeleteInstance( T* t ) { delete t; }
+
+template<typename T, class A = InstanceAllocator<T> >
 class SharedPointer
 {
   class Owner;
 
  public:
-  explicit SharedPointer( T* p = NULL ) : mpOwner( new Owner( p ) ) { mpOwner->Inc(); }
+  explicit SharedPointer( T* p = 0 ) : mpOwner( new Owner( p ) ) { mpOwner->Inc(); }
   SharedPointer( const SharedPointer& s ) : mpOwner( s.mpOwner ) { mpOwner->Inc(); }
   SharedPointer& operator=( const SharedPointer& s ) { mpOwner->Dec(); mpOwner = s.mpOwner; mpOwner->Inc(); return *this; }
   ~SharedPointer() { mpOwner->Dec(); }
 
   const T* operator->() const { return mpOwner->Object(); }
   T* operator->() { return mpOwner->Object(); }
+  operator bool() const { return operator->(); }
+
+  void Lock() const { mpOwner->Lock(); }
+  void Unlock() const { mpOwner->Unlock(); }
+  bool IsShared() const { return mpOwner->Count() > 1; }
 
  private:
   Owner* mpOwner;
 
  private:
-  class Owner
+   class Owner : public Lockable
   {
    public:
     Owner( T* pObject )
     : mpObject( pObject ), mCount( 0 ) {}
-    ~Owner() { delete mpObject; }
-    T* Object() { return mpObject; }
+    ~Owner() { A::Delete( mpObject ); }
+    T* Object() const { return mpObject; }
+    int Count() const { return mCount; }
     void Inc()
     {
-      OSMutex::Lock lock( mMutex );
+      ::Lock lock( *this );
       ++mCount;
     }
     void Dec()
     {
       bool doDelete = false;
       {
-        OSMutex::Lock lock( mMutex );
+        ::Lock lock( *this );
         doDelete = ( --mCount == 0 );
       }
       if( doDelete )
@@ -72,7 +93,6 @@ class SharedPointer
    private:
     T* mpObject;
     int mCount;
-    OSMutex mMutex;
   };
 
 };
