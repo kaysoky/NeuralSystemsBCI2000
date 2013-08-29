@@ -130,10 +130,11 @@ StateMachine::Startup( const char* inArguments )
   string modules;
   getline( argstream, modules, '\0' );
   if( modules.empty() )
-    modules = "Source:4000 SignalProcessing:4001 Application:4002";
+    modules = "SignalSource:4000 SignalProcessing:4001 Application:4002";
   istringstream iss( modules );
   while( !iss.eof() )
   {
+    ::Lock lock( mConnections );
     string name;
     std::getline( iss >> ws, name, ':' );
     string port;
@@ -166,6 +167,7 @@ StateMachine::CloseConnections()
 {
   mLocalAddress = "";
   mpSourceModule = NULL;
+  ::Lock lock( mConnections );
   for( size_t i = 0; i < mConnections.size(); ++i )
   {
     mSockets.erase( mConnections[i]->Socket() );
@@ -399,12 +401,44 @@ StateMachine::ParameterChange()
 StateMachine::ConnectionInfo
 StateMachine::Info( size_t i ) const
 {
+  ::Lock lock( mConnections );
   if( i < mConnections.size() )
   {
     const CoreConnection* p = mConnections[i];
     return p->Info()();
   }
   return ConnectionInfo();
+}
+
+void
+StateMachine::SendNextModuleInfo()
+{
+  for( size_t i = 0; i < mConnections.size(); ++i )
+  {
+    ConnectionInfo receiver = Info( i ),
+                   next = Info( ( i + 1 ) % mConnections.size() );
+    if( receiver.Version.Provides( ProtocolVersion::NextModuleInfo ) )
+    {
+      ParamList p;
+      p.Add( "system string NextModuleAddress= % // (readonly)" );
+
+      string ip = next.Name + "IP";
+      if( mParameters.Exists( ip ) )
+      {
+        ip = mParameters[ip].Value();
+        string port = next.Name + "Port";
+        if( mParameters.Exists( port ) )
+        {
+          port = mParameters[port].Value();
+          p["NextModuleAddress"].Value() = ip + ":" + port;
+        }
+      }
+      CoreConnection& c = *mConnections[i];
+      c.PutMessage( next.Version );
+      c.PutMessage( p );
+      c.PutMessage( SysCommand::EndOfParameter );
+    }
+  }
 }
 
 void
@@ -529,6 +563,7 @@ StateMachine::PerformTransition( int inTransition )
     case TRANSITION( Information, SetConfigIssued ):
       MaintainDebugLog();
       InitializeStateVector();
+      SendNextModuleInfo();
       BroadcastParameters();
       BroadcastEndOfParameter();
       BroadcastStates();
@@ -1149,6 +1184,12 @@ StateMachine::CoreConnection::OnAccept()
     mStream.open( mSocket );
     if( mStream.is_open() )
     {
+      // By immediately sending a message, indicate willingness to negotiate the protocol.
+      // Older core modules will silently handle the message.
+      ::State s;
+      istringstream( "Running 1 0 0 0" ) >> s;
+      MessageHandler::PutMessage( mStream, s );
+
       ostringstream oss;
       oss << mSocket.ip() << ":" << mSocket.port();
       Info()().Address = oss.str();
@@ -1176,7 +1217,11 @@ StateMachine::CoreConnection::HandleProtocolVersion( istream& is )
 {
   ProtocolVersion version;
   if( version.ReadBinary( is ) )
+  {
     Info()().Version = version;
+    if( version.Provides( ProtocolVersion::Negotiation ) )
+      MessageHandler::PutMessage( mStream, ProtocolVersion::Current() );
+  }
   return true;
 }
 

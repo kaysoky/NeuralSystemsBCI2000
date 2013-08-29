@@ -64,6 +64,7 @@
 #include "StateList.h"
 #include "StateVector.h"
 #include "GenericSignal.h"
+#include "ProtocolVersion.h"
 
 #include "OSThread.h"
 #include "OSMutex.h"
@@ -129,6 +130,9 @@ class CoreModule : private MessageHandler, private OSThread
   void MainMessageLoop();
   void ProcessBCIAndGUIMessages();
 
+  bool IsLastModule() const;
+  bool IsLocalConnection( const client_tcpsocket& ) const;
+
   void InitializeOperatorConnection( const std::string& operatorAddress );
   void InitializeCoreConnections();
   void ShutdownSystem();
@@ -154,6 +158,7 @@ class CoreModule : private MessageHandler, private OSThread
   bool HandleVisSignalProperties( std::istream& );
   bool HandleStateVector( std::istream& );
   bool HandleSysCommand( std::istream& );
+  bool HandleProtocolVersion( std::istream& );
 
   // OSThread interface
   int OnExecute();
@@ -162,7 +167,8 @@ class CoreModule : private MessageHandler, private OSThread
   MessageQueue     mMessageQueue;
   OSEvent          mMessageEvent;
 
-  ParamList        mParamlist;
+  ParamList        mParamlist,
+                   mNextModuleInfo;
   StateList        mStatelist;
   StateVector      mStatevector,
                    mInitialStatevector;
@@ -180,10 +186,14 @@ class CoreModule : private MessageHandler, private OSThread
                    mStartRunPending,
                    mStopRunPending,
                    mStopSent,
-                   mNeedStopRun;
+                   mNeedStopRun,
+                   mReceivingNextModuleInfo;
   void*            mGlobalID;
   bool             mOperatorBackLink,
                    mAutoConfig;
+  ProtocolVersion  mOperatorProtocol,
+                   mNextModuleProtocol;
+  std::string      mThisModuleIP;
 };
 
 #endif // CORE_MODULE_H

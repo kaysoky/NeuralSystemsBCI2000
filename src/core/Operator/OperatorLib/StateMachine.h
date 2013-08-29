@@ -197,6 +197,7 @@ class StateMachine : public CallbackBase, private OSThread
   void PerformTransition( int transition );
   void ExecuteTransitionCallbacks( int transition );
 
+  void SendNextModuleInfo();
   void BroadcastParameters();
   void BroadcastEndOfParameter();
   void BroadcastParameterChanges();
@@ -310,7 +311,7 @@ class StateMachine : public CallbackBase, private OSThread
     SysState         mState_;
     ConnectionInfo   mInfo_;
   };
-  typedef std::vector<CoreConnection*> ConnectionList;
+  struct ConnectionList : std::vector<CoreConnection*>, Lockable {};
 
  public:
   ConnectionInfo Info( size_t i ) const;

@@ -52,11 +52,12 @@
 # include <sys/sem.h>
 #endif
 
-#define BCIERR (bcierr__ << THISMODULE ": ")
+#define BCIERR (bcierr__ << sModuleName << ": ")
 
 using namespace std;
 
 static const GenericSignal sNullSignal( 0, 0 );
+static const string sModuleName = FileUtils::ExtractBase( FileUtils::ExecutablePath() );
 
 CoreModule::CoreModule()
 : mFiltersInitialized( false ),
@@ -65,6 +66,7 @@ CoreModule::CoreModule()
   mStopRunPending( false ),
   mStopSent( false ),
   mNeedStopRun( false ),
+  mReceivingNextModuleInfo( false ),
   mGlobalID( NULL ),
   mOperatorBackLink( false ),
   mAutoConfig( false )
@@ -94,7 +96,7 @@ CoreModule::Run( int& ioArgc, char** ioArgv )
   MemberCall< void( CoreModule*, int&, char** ) >
     call( &CoreModule::DoRun, this, ioArgc, ioArgv );
   ExceptionCatcher()
-    .SetMessage( "Terminating " THISMODULE " module" )
+    .SetMessage( "Terminating " + sModuleName + " module" )
     .Run( call );
   TerminateWait();
   ShutdownSystem();
@@ -112,6 +114,23 @@ CoreModule::Terminate()
 }
 
 // Internal functions.
+bool
+CoreModule::IsLastModule() const
+{
+#if IS_LAST_MODULE
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool
+CoreModule::IsLocalConnection( const client_tcpsocket& s ) const
+{
+  return s.ip() == mThisModuleIP;
+}
+
+
 bool
 CoreModule::Initialize( int& ioArgc, char** ioArgv )
 {
@@ -183,7 +202,7 @@ CoreModule::Initialize( int& ioArgc, char** ioArgv )
   if( printVersion )
   {
     const VersionInfo& info = VersionInfo::Current;
-    bciout__ << "BCI2000 " THISMODULE " \n\n"
+    bciout__ << "BCI2000 " << sModuleName << " \n\n"
              << " Framework: " << info[VersionInfo::VersionID] << " \n";
     if( !info[VersionInfo::Revision].empty() )
       bciout__ << " Revision: " << info[VersionInfo::Revision]
@@ -320,6 +339,16 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
     BCIERR << "Could not connect to operator module" << endl;
     return;
   }
+  if( mOperatorSocket.wait_for_read( 500 ) )
+  { // By immediately sending a neutral message, the operator module indicates that it
+    // is able to deal with more recent versions of the protocol.
+    MessageHandler::HandleMessage( mOperator );
+    MessageHandler::PutMessage( mOperator, ProtocolVersion::Current() );
+  }
+  else
+  {
+    MessageHandler::PutMessage( mOperator, ProtocolVersion::Current().Major() );
+  }
   BCIStream::SetOperatorStream( &mOperator, &mOperator );
   GenericVisualization::SetOutputStream( &mOperator, &mOperator );
   mParamlist.Add(
@@ -334,6 +363,7 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
     streamsock::set_of_addresses addr = streamsock::local_addresses();
     mPreviousModuleSocket.open( addr.rbegin()->c_str() );
   }
+  mThisModuleIP = mPreviousModuleSocket.ip();
   mPreviousModule.clear();
   mPreviousModule.open( mPreviousModuleSocket );
 
@@ -384,8 +414,6 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
       p.Value( row, "Position String" ) = chain[ row ].position;
     }
   }
-  // First, send a protocol version message
-  MessageHandler::PutMessage( mOperator, ProtocolVersion::Current() );
   // Now, publish parameters ...
   mParamlist.Sort();
   MessageHandler::PutMessage( mOperator, mParamlist );
@@ -401,25 +429,35 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
 void
 CoreModule::InitializeCoreConnections()
 {
-  const char* ipParam = NEXTMODULE "IP",
-            * portParam = NEXTMODULE "Port";
-
-  if( !mParamlist.Exists( ipParam ) || !mParamlist.Exists( portParam ) )
+  string nextModuleAddress, address = "NextModuleAddress";
+  if( mNextModuleInfo.Exists( address ) )
+    nextModuleAddress = mNextModuleInfo[address].Value();
+  else
   {
-    BCIERR << NEXTMODULE "IP/Port parameters not available"
-           << endl;
+    string ip = NEXTMODULE "IP";
+    if( mParamlist.Exists( ip ) )
+    {
+      ip = mParamlist[ip].Value();
+      string port = NEXTMODULE "Port";
+      if( mParamlist.Exists( port ) )
+      {
+        port = mParamlist[port].Value();
+        nextModuleAddress = ip + ":" + port;
+      }
+    }
+  }
+  if( nextModuleAddress.empty() )
+  {
+    BCIERR << "Next module's IP/Port parameters not available";
     return;
   }
-  string ip = mParamlist[ ipParam ].Value(),
-         port = mParamlist[ portParam ].Value();
   {
     Lock lock( mNextModule );
-    mNextModuleSocket.open( ( ip + ":" + port ).c_str() );
+    mNextModuleSocket.open( nextModuleAddress.c_str() );
     mNextModule.open( mNextModuleSocket );
     if( !mNextModule.is_open() )
     {
-      BCIERR << "Could not make a connection to the " NEXTMODULE " module"
-             << endl;
+      BCIERR << "Could not make a connection to the next module at " << nextModuleAddress;
       return;
     }
   }
@@ -534,6 +572,11 @@ CoreModule::AutoConfigFilters()
   EnvironmentBase::EnterNonaccessPhase();
   mOutputSignal = GenericSignal( Output );
 
+  client_tcpsocket& outputSocket = IsLastModule() ? mOperatorSocket : mNextModuleSocket;
+  ProtocolVersion& outputProtocol = IsLastModule() ? mOperatorProtocol : mNextModuleProtocol;
+  if( IsLocalConnection( outputSocket ) && outputProtocol.Provides( ProtocolVersion::SharedSignalStorage ) )
+    mOutputSignal.ShareAcrossModules();
+
   for( int i = 0; i < restoreParams.Size(); ++i )
   {
     const Param& r = restoreParams[i];
@@ -568,19 +611,18 @@ CoreModule::InitializeFilters()
       mOperatorBackLink = ::atoi( mParamlist["OperatorBackLink"].Value().c_str() );
     if( !mAutoConfig )
     {
-#if IS_LAST_MODULE
+      if( IsLastModule() )
       {
         Lock lock( mOperator );
         if( mOperatorBackLink && !MessageHandler::PutMessage( mOperator, mOutputSignal.Properties() ) )
           BCIERR << "Could not send output properties to Operator module" << endl;
       }
-#else // IS_LAST_MODULE
+      else
       {
         Lock lock( mNextModule );
         if( !MessageHandler::PutMessage( mNextModule, mOutputSignal.Properties() ) )
           BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
       }
-#endif // IS_LAST_MODULE
     }
     EnvironmentBase::EnterInitializationPhase( &mParamlist, &mStatelist, &mStatevector );
     GenericFilter::InitializeFilters();
@@ -675,20 +717,17 @@ CoreModule::ProcessFilters( const GenericSignal& input )
   if( running || !mStopSent )
   {
     mStopSent = !running;
-#if IS_LAST_MODULE
-    if( mOperatorBackLink )
+    if( IsLastModule() && mOperatorBackLink )
     {
       Lock lock( mOperator );
       MessageHandler::PutMessage( mOperator, mStatevector );
       MessageHandler::PutMessage( mOperator, mOutputSignal );
     }
-#endif
     {
       Lock lock( mNextModule );
       MessageHandler::PutMessage( mNextModule, mStatevector );
-#if !IS_LAST_MODULE
-      MessageHandler::PutMessage( mNextModule, mOutputSignal );
-#endif
+      if( !IsLastModule() )
+        MessageHandler::PutMessage( mNextModule, mOutputSignal );
     }
   }
 }
@@ -728,9 +767,10 @@ CoreModule::HandleParam( istream& is )
   if( mStatevector.StateValue( "Running" ) )
     BCIERR << "Unexpected Param message" << endl;
 
+  ParamList& list = mReceivingNextModuleInfo ? mNextModuleInfo : mParamlist;
   Param p;
   if( p.ReadBinary( is ) )
-    mParamlist[ p.Name() ] = p;
+    list[p.Name()] = p;
   return is ? true : false;
 }
 
@@ -859,6 +899,7 @@ CoreModule::HandleSysCommand( istream& is )
     }
     else if( s == SysCommand::EndOfParameter )
     {
+      mReceivingNextModuleInfo = false;
       mFiltersInitialized = false;
     }
     else if( s == SysCommand::Start )
@@ -876,3 +917,17 @@ CoreModule::HandleSysCommand( istream& is )
   }
   return is ? true : false;
 }
+
+bool
+CoreModule::HandleProtocolVersion( istream& is )
+{
+  if( mOperatorProtocol.Provides( ProtocolVersion::NextModuleInfo ) )
+  {
+    mReceivingNextModuleInfo = true;
+    mNextModuleProtocol.ReadBinary( is );
+  }
+  else
+    mOperatorProtocol.ReadBinary( is );
+  return is;
+}
+

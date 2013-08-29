@@ -34,43 +34,87 @@
 
 class ProtocolVersion
 {
-   //static const unsigned int CurrentVersionID = 1; // 2.0 Release
-   static const unsigned int CurrentVersionID = 2;   // Multi-sample state vector
+   //static const unsigned int CurrentMajor = 1; // 2.0 Release
+   static const int CurrentMajor = 2; // Multi-sample state vector
+   static const int CurrentMinor = 1; // NextModuleInfo from Operator
 
   public:
+   enum
+   {
+     MultiSampleStateVector = 1,
+     Negotiation,
+     NextModuleInfo,
+     SharedSignalStorage,
+   };
+
    ProtocolVersion()
-     : mVersionID( 0 )
+     : mMajor( 0 ), mMinor( 0 )
      {}
    ~ProtocolVersion()
      {}
+   ProtocolVersion Major() const
+     { return ProtocolVersion( mMajor, 0 ); }
 
   private:
-   ProtocolVersion( unsigned int inVersionID ) : mVersionID( inVersionID ) {}
+   ProtocolVersion( int maj, int min ) : mMajor( maj ), mMinor( min ) {}
 
   public:
-   bool          Matches( const ProtocolVersion& p ) const
-     { return mVersionID == p.mVersionID; }
-   bool          MoreRecentThan( const ProtocolVersion& p ) const
-     { return mVersionID > p.mVersionID; }
+   bool Matches( const ProtocolVersion& p ) const
+     { return mMajor == p.mMajor; }
+   bool MoreRecentThan( const ProtocolVersion& p ) const
+     { if( mMajor > p.mMajor ) return true; return mMinor > p.mMinor; }
+   bool AtLeast( const ProtocolVersion& p ) const
+     { if( mMajor > p.mMajor ) return true; return mMajor == p.mMajor && mMinor >= p.mMinor; }
+   bool Provides( int ) const;
 
    std::ostream& WriteToStream( std::ostream& os ) const
-     { return os << mVersionID; }
-   std::istream& ReadFromStream( std::istream& is )
-     { return is >> mVersionID; }
-   std::ostream& WriteBinary( std::ostream& os ) const
-     { return ( os << mVersionID ).put( '\0' ); }
+     { return os << mMajor << "." << mMinor; }
+   std::istream& ReadFromStream( std::istream& is );
+   std::ostream& WriteBinary( std::ostream& os ) const;
    std::istream& ReadBinary( std::istream& is )
-     { return ( is >> mVersionID ).ignore(); }
+     { return ReadFromStream( is ).ignore(); }
 
    static ProtocolVersion None()
-     { return ProtocolVersion( 0 ); }
+     { return ProtocolVersion( 0, 0 ); }
    static ProtocolVersion Current()
-     { return ProtocolVersion( CurrentVersionID ); }
+     { return ProtocolVersion( CurrentMajor, CurrentMinor ); }
 
   private:
-   unsigned int mVersionID;
+   int mMajor, mMinor;
 };
 
+inline
+bool ProtocolVersion::Provides( int feature ) const
+{
+  switch( feature )
+  {
+    case MultiSampleStateVector:
+      return AtLeast( ProtocolVersion( 2, 0 ) );
+    case Negotiation:
+    case NextModuleInfo:
+      return AtLeast( ProtocolVersion( 2, 1 ) );
+  }
+  return false;
+}
+
+inline
+std::ostream& ProtocolVersion::WriteBinary( std::ostream& os ) const
+{
+  os << mMajor;
+  if( mMinor )
+    os << "." << mMinor;
+  return os.put( '\0' );
+}
+
+inline
+std::istream& ProtocolVersion::ReadFromStream( std::istream& is )
+{
+  mMinor = 0;
+  is >> mMajor;
+  if( is.peek() == '.' )
+    is.ignore() >> mMinor;
+  return is;
+}
 
 inline
 std::ostream& operator<<( std::ostream& os, const ProtocolVersion& s )
