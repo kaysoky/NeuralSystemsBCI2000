@@ -166,7 +166,8 @@ Connection::ReadDataPacket( size_t inSampleOffset, GenericSignal& Output )
   {
     for( ULong::Type ch = 0; ch < mInfo.numChannels; ++ch )
     {
-      DataType value( mStream );
+      DataType value;
+      value.Get( mStream );
       Output( ch, point + inSampleOffset ) = value;
     }
     Output( mInfo.numChannels, point + inSampleOffset ) = 0;
