@@ -299,30 +299,21 @@ DataIOFilter::Preflight( const SignalProperties& Input,
     Parameter( "VisualizeSourceBufferSize" );
   }
 
-  // Sub-filter preflight/signal properties.
-  // The ADC and file writer filters must have a position string greater than
-  // that of the DataIOFilter.
-  SignalProperties adcOutput;
-  AdjustProperties( adcOutput );
-  // Channel labels.
+  // Channel names unique?
   set<string> names;
-  LabelIndex& outputLabels = adcOutput.ChannelLabels();
-  int namesFromParam = min( adcOutput.Channels(), Parameter( "ChannelNames" )->NumValues() );
-  for( int i = 0; i < namesFromParam; ++i )
+  for( int i = 0; i < Parameter( "ChannelNames" )->NumValues(); ++i )
   {
     string name = Parameter( "ChannelNames" )( i );
     if( names.find( name ) == names.end() )
       names.insert( name );
     else
       bcierr << "Duplicate name: \"" << name << "\" in ChannelNames parameter" << endl;
-    outputLabels[i] = name;
   }
-  for( int i = namesFromParam; i < adcOutput.Channels(); ++i )
-  {
-    ostringstream oss;
-    oss << "Ch" << i + 1;
-    outputLabels[i] = oss.str();
-  }
+  // Sub-filter preflight/signal properties.
+  // The ADC and file writer filters must have a position string greater than
+  // that of the DataIOFilter.
+  SignalProperties adcOutput;
+  AdjustProperties( adcOutput );
   // Calibration
   bool unitsPresent = false;
   for( int ch = 0; ch < adcOutput.Channels(); ++ch )
@@ -341,6 +332,16 @@ DataIOFilter::Preflight( const SignalProperties& Input,
     }
   }
   Output = adcOutput;
+  for( int ch = 0; ch < adcOutput.Channels(); ++ch )
+  {
+    PhysicalUnit& a = adcOutput.ValueUnit( ch );
+    a.SetRawMin( a.PhysicalToRawValue( -100 * CalibrateTo ) )
+     .SetRawMax( a.PhysicalToRawValue( 100 * CalibrateTo ) );
+    PhysicalUnit& u = Output.ValueUnit( ch );
+    u.SetRawMin( NaN( u.RawMin() ) )
+     .SetRawMax( NaN( u.RawMax() ) );
+  }
+
   if( mpADC )
     mpADC->CallPreflight( adcOutput, Output );
   // Fixup Output properties without destroying changes made by the ADC filter.
@@ -352,6 +353,10 @@ DataIOFilter::Preflight( const SignalProperties& Input,
     u.SetOffset( a.Offset() )
      .SetGain( a.Gain() )
      .SetSymbol( a.Symbol() );
+    if( IsNaN( u.RawMin() ) )
+      u.SetRawMin( a.RawMin() );
+    if( IsNaN( u.RawMax() ) )
+      u.SetRawMax( a.RawMax() );
   }
   adcOutput = Output;
   mADCOutput.SetProperties( adcOutput );
@@ -624,6 +629,17 @@ DataIOFilter::AdjustProperties( SignalProperties& p ) const
   p.ElementUnit().SetOffset( 0 )
                  .SetGain( 1.0 / Parameter( "SamplingRate" ).InHertz() )
                  .SetSymbol( "s" );
+  // Channel labels.
+  LabelIndex& outputLabels = p.ChannelLabels();
+  int namesFromParam = min( p.Channels(), Parameter( "ChannelNames" )->NumValues() );
+  for( int i = 0; i < namesFromParam; ++i )
+    outputLabels[i] = Parameter( "ChannelNames" )( i );
+  for( int i = namesFromParam; i < p.Channels(); ++i )
+  {
+    ostringstream oss;
+    oss << "Ch" << i + 1;
+    outputLabels[i] = oss.str();
+  }
 }
 
 void
