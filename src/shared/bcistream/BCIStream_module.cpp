@@ -77,7 +77,6 @@ StatusMessage( const string& inText, int inCode )
   {
     if( inCode >= 400 )
     {
-      bcidebug( inText );
 # if !defined( _WIN32 ) || defined( __CONSOLE__ )
       cerr << inText << endl;
 # else
