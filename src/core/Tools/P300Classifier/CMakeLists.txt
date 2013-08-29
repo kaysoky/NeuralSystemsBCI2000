@@ -3,17 +3,16 @@
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for P300Classifier
 
-# Set the executable name
-SET( EXECUTABLE_NAME P300Classifier )
-
-# Set the project specific sources
-SET( SRC_PROJECT
+BCI2000_INCLUDE( ALGLIB )
+BCI2000_ADD_TOOLS_GUIAPP( 
+  P300Classifier
   main.cpp 
   CARfilter.cpp
   CDataFile.cpp
   Check_Consistency_Files.cpp
   CmdLine.cpp
   configdialog.cpp
+  configdialog.qrc
   downsampling.cpp
   filter.cpp
   GetP3Responses.cpp
@@ -28,37 +27,5 @@ SET( SRC_PROJECT
   StimulusPresentation_Classify.cpp
   SWLDA.cpp
   WritePRM.cpp
-)
-SET( HDR_PROJECT
-  CARfilter.h
-  CDataFile.h
-  Check_Consistency_Files.h
-  CmdLine.h
-  configdialog.h
-  downsampling.h
-  filter.h
-  GetP3Responses.h
-  GetScore.h
-  in_out_variable.h
-  load_BCIdat.h
-  nrerror.h
-  P300_Classify.h
-  pages.h
-  ReadIniParameters.h
   resource.h
-  solve_linear_equation.h
-  StimulusPresentation_Classify.h
-  SWLDA.h
-  WritePRM.h
 )
-
-BCI2000_INCLUDE( ALGLIB )
-
-# Create the signal processing module
-BCI2000_ADD_TOOLS_GUIAPP( 
-  "${EXECUTABLE_NAME}" 
-  "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${GENERATED}"
-)
-
-
