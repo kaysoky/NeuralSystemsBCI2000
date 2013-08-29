@@ -70,7 +70,7 @@ class MessageHandler
 
   private:
     template<typename content_type> struct Header;
-    void CheckForError( std::istream&, const char* );
+    void CheckForError( std::istream&, int, const char* ) const;
 };
 
 class ProtocolVersion;

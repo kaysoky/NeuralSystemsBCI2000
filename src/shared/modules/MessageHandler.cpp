@@ -39,7 +39,7 @@
 #include "SysCommand.h"
 #include "GenericVisualization.h"
 #include "LengthField.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 
 #include <sstream>
 #include <iomanip>
@@ -52,8 +52,30 @@ using namespace std;
 #define CONSIDER(x)                                                      \
   case Header<x>::descSupp:                                              \
     Handle##x( iss );                                                    \
-    CheckForError( iss, #x );                                            \
+    CheckForError( iss, entry.descSupp, #x );                                            \
     break;
+
+void
+MessageHandler::CheckForError( istream& inStream, int inDescSupp, const char* inMessageType ) const
+{
+  if( inStream.fail() )
+  {
+    istringstream* pSstream = dynamic_cast<istringstream*>( &inStream );
+    if( pSstream )
+      switch( inDescSupp )
+      {
+        case Header<StateVector>::descSupp:
+        case Header<VisSignal>::descSupp:
+        case Header<VisBitmap>::descSupp:
+          pSstream = 0;
+          break;
+        default:
+          ;
+      }
+    bcierr_ << "Error reading " << inMessageType << " message"
+            << ( pSstream ? ": " + pSstream->str() : "" );
+  }
+}
 
 // Main message handling functions.
 void
@@ -80,16 +102,9 @@ MessageHandler::HandleMessage( MessageQueue& ioQueue )
     CONSIDER( VisBitmap );
     CONSIDER( VisCfg );
     default:
-      bcierr_ << ": Unknown message descriptor/supplement 0x"
-             << hex << entry.descSupp << endl;
+      bcierr_ << "Unknown message descriptor/supplement 0x"
+             << hex << entry.descSupp;
   }
-}
-
-void
-MessageHandler::CheckForError( istream& inStream, const char* inMessageType )
-{
-  if( inStream.fail() || inStream.peek() != EOF )
-    bcierr_ << ": Error reading " << inMessageType << " message" << endl;
 }
 
 void
