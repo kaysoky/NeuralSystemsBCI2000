@@ -128,38 +128,25 @@ BCI2000OutputFormat::StopRun( ostream& )
 }
 
 
-template<SignalType::Type T>
-void
-BCI2000OutputFormat::PutBlock( ostream& os, const GenericSignal& inSignal, const StateVector& inStatevector )
-{
-  // Note that the order of Elements and Channels differs from the one in the
-  // socket protocol.
-  for( int j = 0; j < inSignal.Elements(); ++j )
-  {
-    for( int i = 0; i < inSignal.Channels(); ++i )
-      inSignal.PutValueBinary<T>( os, i, j );
-    os.write(
-      reinterpret_cast<const char*>( inStatevector( min( j, inStatevector.Samples() - 1 ) ).Data() ),
-      inStatevector.Length()
-    );
-  }
-}
-
 void
 BCI2000OutputFormat::Write( ostream& os, const GenericSignal& inSignal, const StateVector& inStatevector )
 {
   switch( mInputProperties.Type() )
   {
     case SignalType::int16:
-      PutBlock<SignalType::int16>( os, inSignal, inStatevector );
-      break;
-
     case SignalType::float32:
-      PutBlock<SignalType::float32>( os, inSignal, inStatevector );
-      break;
-
     case SignalType::int32:
-      PutBlock<SignalType::int32>( os, inSignal, inStatevector );
+      // Note that the order of Elements and Channels differs from the one in the
+      // socket protocol.
+      for( int j = 0; j < inSignal.Elements(); ++j )
+      {
+        for( int i = 0; i < inSignal.Channels(); ++i )
+          inSignal.WriteValueBinary( os, i, j );
+        os.write(
+          reinterpret_cast<const char*>( inStatevector( min( j, inStatevector.Samples() - 1 ) ).Data() ),
+          inStatevector.Length()
+        );
+      }
       break;
 
     default:

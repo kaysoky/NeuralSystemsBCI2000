@@ -45,9 +45,6 @@ class BCI2000OutputFormat : public GenericOutputFormat
   virtual const char* DataFileExtension() const { return ".dat"; }
 
  private:
-  template<SignalType::Type T> void PutBlock( std::ostream&,
-                                              const GenericSignal&,
-                                              const StateVector& );
   SignalProperties mInputProperties;
   int              mStatevectorLength;
 };
