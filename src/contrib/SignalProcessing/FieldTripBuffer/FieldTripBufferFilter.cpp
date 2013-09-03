@@ -218,11 +218,11 @@ FieldTripBufferFilter::Process( const GenericSignal& Input, GenericSignal& Outpu
   // Write state values to buffer
   for( StateSet::const_iterator i = mFTStatesToBuffer.begin(); i != mFTStatesToBuffer.end(); ++i )
     // Only if they have changed relative to previous value
-    for( int s = 0; s < State( *i )->Length(); ++s )
-      if( State( *i )( s ) != mPreviousStateValues[ *i ] )
+    for( int s = 0; s < Statevector->Samples(); ++s )
+      if( State( *i )( s ) != mPreviousStateValues[*i] )
       {
         PutStateToBuffer( *i, s );
-        mPreviousStateValues[ *i ] = State( *i )( s );
+        mPreviousStateValues[*i] = State( *i )( s );
       }
 
   ++mBlockCount;
