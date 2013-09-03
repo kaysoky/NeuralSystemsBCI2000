@@ -264,9 +264,16 @@ void
 StateMachine::MaintainDebugLog()
 {
   // Enable debug logging if requested.
-  // The method to obtain the debugging file's name is rather crude but difficult
-  // to get right in the presence of auto-incrementing run numbers.
-  if( mParameters.Exists( "DebugLog" ) && ::atoi( mParameters[ "DebugLog" ].Value().c_str() ) != 0 )
+  bool writeLog = false;
+  if( mParameters.Exists( "DebugLevel" ) && ::atoi( mParameters["DebugLevel"].Value().c_str() ) != 0 )
+    writeLog = true;
+  if( writeLog && mParameters.Exists( "DebugLog" ) )
+  {
+    string value = mParameters["DebugLog"].Value();
+    if( !value.empty() && ::atoi( value.c_str() ) == 0 )
+      writeLog = false;
+  }
+  if( writeLog )
   {
     string filePath = RunManager::CurrentSession( mParameters ) + ".dbg",
            dir = FileUtils::ExtractDirectory( filePath );
