@@ -31,6 +31,7 @@ BCI2000_ADD_TARGET( EXECUTABLE create_resource
   ${PROJECT_SRC_DIR}/shared/bcistream/BCIException.cpp
   ${PROJECT_SRC_DIR}/shared/utils/FileUtils.cpp
   ${PROJECT_SRC_DIR}/shared/utils/StringUtils.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/LCRandomGenerator.cpp
   ${PROJECT_SRC_DIR}/shared/utils/OSMutex.cpp
   ${PROJECT_SRC_DIR}/shared/utils/Debugging.cpp
   ${PROJECT_SRC_DIR}/shared/utils/ClassName.cpp

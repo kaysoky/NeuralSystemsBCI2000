@@ -30,18 +30,170 @@
 
 #include "MatlabWrapper.h"
 #include "OSError.h"
+#include "FileUtils.h"
 #include "BCIStream.h"
 
 #include <sstream>
 
 #ifdef _WIN32
 # include <Windows.h>
+# define PROC(x)   { (void**)&(x##_), 0, #x },
+#else
+# define PROC(x)   { (void**)&(x##_), (void*)&(x), 0 },
 #endif // _WIN32
 
 using namespace std;
 
-static const string cErrorVariable = "bci_Error";
-static const string cAnsVariable = "bci_Ans";
+namespace {
+const string cErrorVariable = "bci_Error";
+const string cAnsVariable = "bci_Ans";
+
+// Matlab Engine imports
+const char* sLibEngName = "libeng";
+Engine*     ( *engOpen_ )( const char* ) = 0;
+int         ( *engClose_ )( Engine* ) = 0;
+int         ( *engEvalString_ )( Engine*, const char* ) = 0;
+mxArray*    ( *engGetVariable_ )( Engine*, const char* ) = 0;
+int         ( *engPutVariable_ )( Engine*, const char*, const mxArray* ) = 0;
+// Matlab MX imports
+const char* sLibMxName = "libmx";
+mxArray*    ( *mxCreateString_ )( const char* ) = 0;
+char*       ( *mxArrayToString_ )( const mxArray* ) = 0;
+mxArray*    ( *mxCreateCellMatrix_ )( int, int ) = 0;
+mxArray*    ( *mxGetCell_ )( const mxArray*, int ) = 0;
+void        ( *mxSetCell_ )( mxArray*, int, mxArray* ) = 0;
+
+mxArray*    ( *mxCreateNumericMatrix_ )( int, int, mxClassID, int ) = 0;
+double*     ( *mxGetPr_ )( const mxArray* ) = 0;
+void        ( *mxSetPr_ )( mxArray*, double* ) = 0;
+
+int         ( *mxGetNumberOfDimensions_ )( const mxArray* ) = 0;
+const int*  ( *mxGetDimensions_ )( const mxArray* ) = 0;
+int         ( *mxCalcSingleSubscript_ )( const mxArray*, int, const int* ) = 0;
+
+void        ( *mxDestroyArray_ )( mxArray* ) = 0;
+void        ( *mxFree_ )( void* ) = 0;
+
+struct ProcEntry { void** mProc, *mProc2; const char* mName; };
+ProcEntry sEngProcNames[] =
+{
+  // Matlab Engine
+  PROC( engOpen )
+  PROC( engClose )
+  PROC( engEvalString )
+  PROC( engGetVariable )
+  PROC( engPutVariable )
+};
+
+ProcEntry sMxProcNames[] =
+{
+  // Matlab MX
+  PROC( mxCreateString )
+  PROC( mxArrayToString )
+  PROC( mxCreateCellMatrix )
+  PROC( mxGetCell )
+  PROC( mxSetCell )
+  PROC( mxCreateNumericMatrix )
+  PROC( mxGetPr )
+  PROC( mxSetPr )
+  PROC( mxGetNumberOfDimensions )
+  PROC( mxGetDimensions )
+  PROC( mxCalcSingleSubscript )
+  PROC( mxDestroyArray )
+  PROC( mxFree )
+};
+
+bool LoadLibraries();
+
+#if _WIN32
+string
+FindMatlab()
+{
+  const char* exefile = "matlab.exe";
+  string result;
+  DWORD count = ::SearchPathA( 0, exefile, 0, 0, 0, 0 );
+  if( count )
+  {
+    char* pBuf = new char[count],
+        * pFile = 0;
+    ::SearchPathA( 0, exefile, 0, count, pBuf, &pFile );
+    if( pFile )
+      *pFile = 0;
+    result = pBuf;
+  }
+  return result;    
+}
+
+string
+LoadDLL( const char* inName, int inNumProcs, ProcEntry* inProcNames )
+{
+  string outErrors;
+  void* dllHandle = ::LoadLibraryA( inName );
+  if( !dllHandle )
+    outErrors = outErrors + "Could not load library \"" + inName + "\": " + OSError().Message() + "\n";
+  else
+  {
+    for( int i = 0; i < inNumProcs; ++i )
+    {
+      void* address = ( void* )::GetProcAddress( ( HMODULE )dllHandle, inProcNames[i].mName );
+      if( !address )
+        outErrors = outErrors + "Could not get address of \"" + inProcNames[i].mName + "\": " + OSError().Message() + "\n";
+      *reinterpret_cast<void**>( inProcNames[i].mProc ) = address;
+    }
+  }
+  return outErrors;
+}
+
+bool
+LoadLibraries()
+{
+  string dllPath = FindMatlab(),
+         errors;
+  if( dllPath.empty() )
+    errors = "Could not find a Matlab executable. Please make sure that Matlab is installed, and is in your %PATH% environment variable.";
+  if( errors.empty() )
+  {
+    ::SetDllDirectoryA( dllPath.c_str() );
+    errors = LoadDLL( ( dllPath + sLibEngName ).c_str(), sizeof( sEngProcNames ) / sizeof( *sEngProcNames ), sEngProcNames );
+    if( !errors.empty() )
+    {
+      errors.clear();
+      ostringstream oss;
+      oss << sizeof( void* ) * 8;
+      string bits = oss.str();
+
+      dllPath = dllPath + "win" + bits + "\\";
+      if( !FileUtils::IsDirectory( dllPath ) )
+        errors = errors + "A " + bits + "-bit Matlab installation is required for use with this executable. "
+                  "In case of multiple Matlab installations, make sure the " + bits + "-bit one is first in your %PATH%.\n";
+      if( errors.empty() )
+      {
+        ::SetDllDirectoryA( dllPath.c_str() );
+        errors = LoadDLL( ( dllPath + sLibEngName ).c_str(), sizeof( sEngProcNames ) / sizeof( *sEngProcNames ), sEngProcNames );
+      }
+    }
+  }
+  if( errors.empty() )
+    errors += LoadDLL( ( dllPath + sLibMxName ).c_str(), sizeof( sMxProcNames ) / sizeof( *sMxProcNames ), sMxProcNames );
+  ::SetDllDirectoryA( "" );
+  if( !errors.empty() )
+    bcierr << errors;
+  return errors.empty();
+}
+
+#else // _WIN32
+bool
+LoadLibraries()
+{
+  for( size_t i = 0; i < sizeof( sEngProcNames ) / sizeof( *sEngProcNames ); ++i )
+    *sEngProcNames[i].mProc = sEngProcNames[i].mProc2;
+  for( size_t i = 0; i < sizeof( sMxProcNames ) / sizeof( *sMxProcNames ); ++i )
+    *sMxProcNames[i].mProc = sMxProcNames[i].mProc2;
+  return true;
+}
+#endif // _WIN32
+
+} // anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // MatlabEngine::DoubleMatrix definitions                                     //
@@ -101,65 +253,6 @@ MatlabEngine::StringMatrix::StringMatrix( const Param& p )
 int MatlabEngine::sNumInstances = 0;
 Engine* MatlabEngine::spEngineRef = NULL;
 
-#ifdef _WIN32
-// Matlab Engine DLL imports
-const char* MatlabEngine::sLibEngName = "libeng";
-Engine*  ( *MatlabEngine::engOpen )( const char* ) = NULL;
-int      ( *MatlabEngine::engClose )( Engine* ) = NULL;
-int      ( *MatlabEngine::engEvalString )( Engine*, const char* ) = NULL;
-mxArray* ( *MatlabEngine::engGetVariable )( Engine*, const char* ) = NULL;
-int      ( *MatlabEngine::engPutVariable )( Engine*, const char*, const mxArray* ) = NULL;
-
-// Matlab MX DLL imports
-const char* MatlabEngine::sLibMxName = "libmx";
-mxArray* ( *MatlabEngine::mxCreateString )( const char* ) = NULL;
-char*    ( *MatlabEngine::mxArrayToString )( const mxArray* ) = NULL;
-mxArray* ( *MatlabEngine::mxCreateCellMatrix )( int, int ) = NULL;
-mxArray* ( *MatlabEngine::mxGetCell )( const mxArray*, int ) = NULL;
-void     ( *MatlabEngine::mxSetCell )( mxArray*, int, mxArray* ) = NULL;
-
-mxArray* ( *MatlabEngine::mxCreateNumericMatrix )( int, int, mxClassID, int ) = NULL;
-double*  ( *MatlabEngine::mxGetPr )( const mxArray* ) = NULL;
-void     ( *MatlabEngine::mxSetPr )( mxArray*, double* ) = NULL;
-
-int      ( *MatlabEngine::mxGetNumberOfDimensions )( const mxArray* ) = NULL;
-const int* ( *MatlabEngine::mxGetDimensions )( const mxArray* ) = NULL;
-int      ( *MatlabEngine::mxCalcSingleSubscript )( const mxArray*, int, const int* ) = NULL;
-
-void     ( *MatlabEngine::mxDestroyArray )( mxArray* ) = NULL;
-void     ( *MatlabEngine::mxFree )( void* ) = NULL;
-
-// Imports name table
-#define PROC( x )   { ( void* )&(x), #x },
-MatlabEngine::ProcNameEntry MatlabEngine::sEngProcNames[] =
-{
-  // Matlab Engine
-  PROC( engOpen )
-  PROC( engClose )
-  PROC( engEvalString )
-  PROC( engGetVariable )
-  PROC( engPutVariable )
-};
-
-MatlabEngine::ProcNameEntry MatlabEngine::sMxProcNames[] =
-{
-  // Matlab MX
-  PROC( mxCreateString )
-  PROC( mxArrayToString )
-  PROC( mxCreateCellMatrix )
-  PROC( mxGetCell )
-  PROC( mxSetCell )
-  PROC( mxCreateNumericMatrix )
-  PROC( mxGetPr )
-  PROC( mxSetPr )
-  PROC( mxGetNumberOfDimensions )
-  PROC( mxGetDimensions )
-  PROC( mxCalcSingleSubscript )
-  PROC( mxDestroyArray )
-  PROC( mxFree )
-};
-#endif // _WIN32
-
 MatlabEngine::MatlabEngine()
 {
   sNumInstances++;
@@ -177,17 +270,11 @@ MatlabEngine::Open()
 {
   if( !IsOpen() )
   {
-    // Load libraries.
-    bool loaded = true;
-#ifdef _WIN32
-    loaded = LoadDLL( sLibEngName, sizeof( sEngProcNames ) / sizeof( *sEngProcNames ), sEngProcNames )
-          && LoadDLL( sLibMxName, sizeof( sMxProcNames ) / sizeof( *sMxProcNames ), sMxProcNames );
-#endif // _WIN32
-    if( loaded )
+    if( LoadLibraries() )
     { // Open the Matlab engine.
-      spEngineRef = engOpen( NULL );
+      spEngineRef = engOpen_( NULL );
       if( !spEngineRef )
-        bcierr << "Could not open Matlab engine (maybe you need to run 'matlab /regserver'?)" << endl;
+        bcierr << "Could not open Matlab engine";
       else
         PutString( cErrorVariable, "" );
     }
@@ -204,25 +291,49 @@ MatlabEngine::Close()
   else if( spEngineRef )
   {
     ClearVariable( cErrorVariable );
-    engClose( spEngineRef );
+    engClose_( spEngineRef );
     spEngineRef = NULL;
   }
 }
 
 bool
+MatlabEngine::Execute( const string& inCommands )
+{
+  return ( spEngineRef && ( 0 == engEvalString_( spEngineRef, inCommands.c_str() ) ) );
+}
+
+bool
+MatlabEngine::Execute( const string& inCommands, string& outError )
+{
+    outError.clear();
+    string command = cErrorVariable + "=''; try " + inCommands + "; catch " + cErrorVariable + "=lasterr; end;";
+    if( !MatlabEngine::Execute( command ) )
+      outError = "Could not execute Matlab command:\n" + command;
+    else
+    {
+      outError = MatlabEngine::GetString( cErrorVariable );
+      MatlabEngine::PutString( cErrorVariable, "" );
+    }
+    return outError.empty();
+}
+
+bool
 MatlabEngine::CreateGlobal( const string& inName )
 {
-  string command;
-  command += "global " + inName + ";";
-  return ( spEngineRef && ( 0 == engEvalString( spEngineRef, command.c_str() ) ) );
+  return Execute( "global " + inName + ";" );
 }
 
 bool
 MatlabEngine::ClearVariable( const string& inName )
 {
-  string command;
-  command += "clear " + inName + "; clear global " + inName + ";";
-  return ( spEngineRef && ( 0 == engEvalString( spEngineRef, command.c_str() ) ) );
+  return Execute( "clear " + inName + "; clear global " + inName + ";" );
+}
+
+bool
+MatlabEngine::ClearObject( const string& inName )
+{
+  return Execute( "if( exist('" + inName + "', 'var') ); delete(" + inName + "); end;" )
+    && ClearVariable( inName );
 }
 
 string
@@ -232,13 +343,13 @@ MatlabEngine::GetString( const string& inExp )
   mxArray* ans = GetMxArray( inExp );
   if( ans )
   {
-    const char* s = mxArrayToString( ans );
+    const char* s = mxArrayToString_( ans );
     if( s == NULL )
       bcierr << "Could not read \"" << inExp << "\" from Matlab workspace" << endl;
     else
       result = s;
-    mxFree( ( void* )s );
-    mxDestroyArray( ans );
+    mxFree_( ( void* )s );
+    mxDestroyArray_( ans );
   }
   return result;
 }
@@ -246,9 +357,9 @@ MatlabEngine::GetString( const string& inExp )
 bool
 MatlabEngine::PutString( const string& inExp, const string& inValue )
 {
-  mxArray* val = mxCreateString( inValue.c_str() );
+  mxArray* val = mxCreateString_( inValue.c_str() );
   bool success = PutMxArray( inExp, val );
-  mxDestroyArray( val );
+  mxDestroyArray_( val );
   return success;
 }
 
@@ -277,12 +388,12 @@ MatlabEngine::GetMatrix( const string& inExp )
   mxArray* ans = GetMxArray( inExp );
   if( ans )
   {
-    int numDims = mxGetNumberOfDimensions( ans );
-    const mwSize* dims = mxGetDimensions( ans );
+    int numDims = mxGetNumberOfDimensions_( ans );
+    const mwSize* dims = mxGetDimensions_( ans );
     if( numDims != 2 )
       bcierr << "Can only handle two dimensions" << endl;
     result.resize( dims[ 0 ], vector<double>( dims[ 1 ] ) );
-    double* value = mxGetPr( ans );
+    double* value = mxGetPr_( ans );
     if( value )
     {
       mwIndex indices[] = { 0, 0 };
@@ -292,11 +403,11 @@ MatlabEngine::GetMatrix( const string& inExp )
         for( mwIndex j = 0; j < static_cast<mwIndex>( result[ i ].size() ); ++j )
         {
           indices[ 1 ] = j;
-          result[ i ][ j ] = value[ mxCalcSingleSubscript( ans, 2, indices ) ];
+          result[ i ][ j ] = value[ mxCalcSingleSubscript_( ans, 2, indices ) ];
         }
       }
     }
-    mxDestroyArray( ans );
+    mxDestroyArray_( ans );
   }
   return result;
 }
@@ -305,8 +416,8 @@ bool
 MatlabEngine::PutMatrix( const string& inExp, const DoubleMatrix& inValue )
 {
   mwSize sizeDim2 = static_cast<mwSize>( inValue.empty() ? 0 : inValue[ 0 ].size() );
-  mxArray* val = mxCreateNumericMatrix( static_cast<mwSize>( inValue.size() ), sizeDim2, mxDOUBLE_CLASS, mxREAL );
-  double* data = mxGetPr( val );
+  mxArray* val = mxCreateNumericMatrix_( static_cast<mwSize>( inValue.size() ), sizeDim2, mxDOUBLE_CLASS, mxREAL );
+  double* data = mxGetPr_( val );
   if( data )
   {
     mwIndex indices[] = { 0, 0 };
@@ -316,12 +427,12 @@ MatlabEngine::PutMatrix( const string& inExp, const DoubleMatrix& inValue )
       for( mwIndex j = 0; j < static_cast<mwIndex>( inValue[ i ].size() ); ++j )
       {
         indices[ 1 ] = j;
-        data[ mxCalcSingleSubscript( val, 2, indices ) ] = inValue[ i ][ j ];
+        data[ mxCalcSingleSubscript_( val, 2, indices ) ] = inValue[ i ][ j ];
       }
     }
   }
   bool success = PutMxArray( inExp, val );
-  mxDestroyArray( val );
+  mxDestroyArray_( val );
   return success;
 }
 
@@ -332,8 +443,8 @@ MatlabEngine::GetCells( const string& inExp )
   mxArray* ans = GetMxArray( inExp );
   if( ans )
   {
-    int numDims = mxGetNumberOfDimensions( ans );
-    const mwSize* dims = mxGetDimensions( ans );
+    int numDims = mxGetNumberOfDimensions_( ans );
+    const mwSize* dims = mxGetDimensions_( ans );
     if( numDims != 2 )
       bcierr << "Can only handle two dimensions" << endl;
     result.resize( dims[ 0 ], vector<string>( dims[ 1 ] ) );
@@ -344,22 +455,22 @@ MatlabEngine::GetCells( const string& inExp )
       for( mwIndex j = 0; j < static_cast<mwIndex>( result[ i ].size() ); ++j )
       {
         indices[ 1 ] = j;
-        int idx = mxCalcSingleSubscript( ans, 2, indices );
-        mxArray* cell = mxGetCell( ans, idx );
+        int idx = mxCalcSingleSubscript_( ans, 2, indices );
+        mxArray* cell = mxGetCell_( ans, idx );
         if( cell )
         {
-          const char* s = mxArrayToString( cell );
+          const char* s = mxArrayToString_( cell );
           if( s == NULL )
             bcierr << "Could not read string value \"" << inExp << "\"" << endl;
           else
           {
             result[ i ][ j ] = s;
-            mxFree( ( void* )s );
+            mxFree_( ( void* )s );
           }
         }
       }
     }
-    mxDestroyArray( ans );
+    mxDestroyArray_( ans );
   }
   return result;
 }
@@ -368,7 +479,7 @@ bool
 MatlabEngine::PutCells( const string& inExp, const StringMatrix& inValue )
 {
   mwSize sizeDim2 = static_cast<mwSize>( inValue.empty() ? 0 : inValue[ 0 ].size() );
-  mxArray* mat = mxCreateCellMatrix( static_cast<mwSize>( inValue.size() ), sizeDim2 );
+  mxArray* mat = mxCreateCellMatrix_( static_cast<mwSize>( inValue.size() ), sizeDim2 );
   mwIndex indices[] = { 0, 0 };
   for( mwIndex i = 0; i < static_cast<mwIndex>( inValue.size() ); ++i )
   {
@@ -376,14 +487,14 @@ MatlabEngine::PutCells( const string& inExp, const StringMatrix& inValue )
     for( mwIndex j = 0; j < static_cast<mwIndex>( inValue[ i ].size() ); ++j )
     {
       indices[ 1 ] = j;
-      int idx = mxCalcSingleSubscript( mat, 2, indices );
-      mxDestroyArray( mxGetCell( mat, idx ) );
-      mxArray* val = mxCreateString( inValue[ i ][ j ].c_str() );
-      mxSetCell( mat, idx, val );
+      int idx = mxCalcSingleSubscript_( mat, 2, indices );
+      mxDestroyArray_( mxGetCell_( mat, idx ) );
+      mxArray* val = mxCreateString_( inValue[ i ][ j ].c_str() );
+      mxSetCell_( mat, idx, val );
     }
   }
   bool success = PutMxArray( inExp, mat );
-  mxDestroyArray( mat );
+  mxDestroyArray_( mat );
   return success;
 }
 
@@ -391,8 +502,8 @@ MatlabEngine::PutCells( const string& inExp, const StringMatrix& inValue )
 MatlabEngine::GetMxArray( const string& inExp )
 {
   mxArray* ans = NULL;
-  if( 0 == engEvalString( spEngineRef, ( cAnsVariable + "=" + inExp + ";" ).c_str() ) )
-    ans = engGetVariable( spEngineRef, cAnsVariable.c_str() );
+  if( Execute( cAnsVariable + "=" + inExp + ";" ) )
+    ans = engGetVariable_( spEngineRef, cAnsVariable.c_str() );
   if( !ans )
     bcierr << "Could not read \"" << inExp << "\" from Matlab workspace" << endl;
   ClearVariable( cAnsVariable );
@@ -402,42 +513,14 @@ MatlabEngine::GetMxArray( const string& inExp )
 bool
 MatlabEngine::PutMxArray( const string& inExp, const mxArray* inArray )
 {
-  bool success = ( 0 == engPutVariable( spEngineRef, cAnsVariable.c_str(), inArray ) );
+  bool success = ( 0 == engPutVariable_( spEngineRef, cAnsVariable.c_str(), inArray ) );
   if( success )
-    success = ( 0 == engEvalString( spEngineRef, ( inExp + "=" + cAnsVariable + ";" ).c_str() ) );
+    success = Execute( inExp + "=" + cAnsVariable + ";" );
   if( !success )
     bcierr << "Could not put value into \"" << inExp << "\"" << endl;
   ClearVariable( cAnsVariable );
   return success;
 }
-
-#ifdef _WIN32
-bool
-MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProcNames )
-{
-  bool success = false;
-  void* dllHandle = ::LoadLibraryA( inName );
-  if( !dllHandle )
-  {
-    string msg = OSError().Message();
-    bcierr << "Could not load library \"" << inName << "\": " << msg;
-  }
-  else
-  {
-    for( int i = 0; i < inNumProcs; ++i )
-    {
-      void* address = ( void* )::GetProcAddress( ( HMODULE )dllHandle, inProcNames[ i ].mName );
-      if( !address )
-      {
-        string msg = OSError().Message();
-        bcierr << "Could not get address of \"" << inProcNames[ i ].mName << "\": " << msg;
-      }
-      *reinterpret_cast<void**>( inProcNames[ i ].mProc ) = address;
-    }
-  }
-  return bcierr__.Empty();
-}
-#endif // _WIN32
 
 ////////////////////////////////////////////////////////////////////////////////
 // MatlabFunction definitions                                                 //
@@ -450,14 +533,14 @@ MatlabFunction::MatlabFunction( const string& inName )
   {
     // Check whether there exists a function with the required name in
     // the Matlab search path.
-    string command;
-    command += cAnsVariable + " = exist('" + inName + "');";
-    if( engEvalString( spEngineRef, command.c_str() ) == 0 )
+    string command = "rehash;";
+    command += cAnsVariable + "=exist('" + inName + "');";
+    if( MatlabEngine::Execute( command ) )
     {
-      mxArray* ans = engGetVariable( spEngineRef, cAnsVariable.c_str() );
+      mxArray* ans = engGetVariable_( spEngineRef, cAnsVariable.c_str() );
       if( ans )
       {
-        int result = static_cast<int>( mxGetPr( ans )[ 0 ] );
+        int result = static_cast<int>( mxGetPr_( ans )[ 0 ] );
         enum
         {
           mfile = 2,
@@ -476,7 +559,7 @@ MatlabFunction::MatlabFunction( const string& inName )
           default:
             mExists = false;
         }
-        mxDestroyArray( ans );
+        mxDestroyArray_( ans );
       }
       ClearVariable( cAnsVariable );
     }
@@ -501,25 +584,30 @@ MatlabFunction::OutputArgument( const string& inArg )
   return *this;
 }
 
+MatlabFunction&
+MatlabFunction::CodePre( const string& inCode )
+{
+  mCodePre = inCode;
+  return *this;
+}
+
+MatlabFunction&
+MatlabFunction::CodePost( const string& inCode )
+{
+  mCodePost = inCode;
+  return *this;
+}
+
 string
 MatlabFunction::Execute() const
 {
-  // Execute the following commands and return the content of errorvar:
-  //
-  // errorvar = '';
-  // try
-  //   [out1,...]=function(in1,...);
-  // catch
-  //   errorvar=lasterr;
-  // end;
-
   string result;
   if( !mExists )
     result = "Function " + mName + " does not exist in the Matlab search path.";
   else
   {
     ostringstream command;
-    command << cErrorVariable << "=''; try ";
+    command << mCodePre;
     if( !mOutputArguments.empty() )
     {
       command << "[" << mOutputArguments[ 0 ];
@@ -533,18 +621,10 @@ MatlabFunction::Execute() const
       command << "(" << mInputArguments[ 0 ];
       for( size_t i = 1; i < mInputArguments.size(); ++i )
         command << "," << mInputArguments[ i ];
-      command << ")";
+      command << ")\n";
     }
-    command << "; catch " << cErrorVariable << "=lasterr; end;";
-    if( 0 != engEvalString( spEngineRef, command.str().c_str() ) )
-      result = "Could not execute Matlab command:\n" + command.str();
-    else
-    {
-      result = MatlabEngine::GetString( cErrorVariable );
-      MatlabEngine::PutString( cErrorVariable, "" );
-    }
+    command << mCodePost;
+    MatlabEngine::Execute( command.str(), result );
   }
   return result;
 }
-
-

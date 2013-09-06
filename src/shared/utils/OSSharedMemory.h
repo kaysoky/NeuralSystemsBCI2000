@@ -38,11 +38,14 @@ class OSSharedMemory : public Uncopyable
 
   const std::string& Name() const
     { return mName; }
+  const std::string& Protocol() const
+    { return mProtocolString; }
   void* Memory() const
     { return mpMemory; }
 
  private:
   void Initialize();
+  void ParseProtocol();
   void NormalizeName();
   void Create();
   void Destroy();
@@ -51,11 +54,12 @@ class OSSharedMemory : public Uncopyable
   void MapMemory();
   void UnmapMemory();
 
-  std::string mName;
+  std::string mName, mProtocolString;
   bool mServer;
   size_t mSize;
   void* mpMemory;
   union { int fd; void* h; } mHandle;
+  int mProtocol;
 };
 
 #endif // OS_SHARED_MEMORY_H

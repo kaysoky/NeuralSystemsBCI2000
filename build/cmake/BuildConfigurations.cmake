@@ -128,6 +128,9 @@ IF( MSVC )
     "${CMAKE_CXX_FLAGS} /EHsc"
   )
   IF( USE_SSE2 )
+    SET( CMAKE_C_FLAGS
+      "${CMAKE_C_FLAGS} /arch:SSE2"
+    )
     SET( CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} /arch:SSE2"
     )
@@ -142,6 +145,7 @@ IF( MSVC )
     /D_CRT_SECURE_NO_DEPRECATE
     /D_CRT_NONSTDC_NO_WARNINGS
     /D_SCL_SECURE_NO_WARNINGS
+    /J # use unsigned chars by default
     /W3
     /wd4355
     /wd4800

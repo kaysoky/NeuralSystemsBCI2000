@@ -39,4 +39,4 @@ for( i = 1:size( out_signal, 2 ) )
 end
 
 % For demonstration purposes, set the demo state:
-bci_States.MyDemoState = 12 * rand;
+bci_States.MyDemoState = randi(12);

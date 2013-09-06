@@ -82,8 +82,11 @@ GenericSignal::SetProperties( const SignalProperties& inSp )
     size_t newSize = inSp.Channels() * inSp.Elements();
     ValueType* pNewData = 0;
     if( SharedMemory() )
+    {
+      if( mSharedMemory->Name().find( "file://" ) == 0 )
+        throw std_runtime_error( "Cannot resize shared memory if tied to a file" );
       pNewData = NewSharedServerMemory( newSize );
-
+    }
     LazyArray<ValueType> newValues( pNewData, newSize );
     for( int ch = 0; ch < min( mProperties.Channels(), inSp.Channels() ); ++ch )
     {
@@ -277,7 +280,7 @@ GenericSignal::ShareAcrossModules()
   {
     ValueType* p = NewSharedServerMemory( mValues.Size() );
     mValues = ( LazyArray<ValueType>( p, mValues.Size() ) = mValues );
-  }
+  }  
   return SharedMemory();
 }
 
@@ -303,8 +306,9 @@ GenericSignal::GetSharedClientMemory( const string& inName )
 }
 
 GenericSignal::ValueType*
-GenericSignal::NewSharedServerMemory( size_t inSize )
+GenericSignal::NewSharedServerMemory( size_t inSize, const string& inName )
 {
-  mSharedMemory = SharedPointer<OSSharedMemory>( new OSSharedMemory( inSize * sizeof( ValueType ) ) );
+  bciassert( inSize != 0 );
+  mSharedMemory = SharedPointer<OSSharedMemory>( new OSSharedMemory( inName, inSize * sizeof( ValueType ) ) );
   return reinterpret_cast<ValueType*>( mSharedMemory->Memory() );
 }

@@ -312,9 +312,10 @@ MessageDispatcher::OnCompress( BCIStream::Action inAction, const string& inMessa
   if( inMessage != mPrevMessage )
   {
     ReportRepetitions();
-    inAction( inMessage );
-    mPrevMessage = inMessage;
+    if( inAction )
+      inAction( inMessage );
     mPrevAction = inAction;
+    mPrevMessage = inMessage;
   }
   else
   {
@@ -346,7 +347,8 @@ MessageDispatcher::ReportRepetitions()
       oss << ")";
       message += oss.str();
     }
-    mPrevAction( message );
+    if( mPrevAction )
+      mPrevAction( message );
   }
   mCount = 0;
   mLastTime = ::time( 0 );

@@ -98,14 +98,17 @@ namespace FileUtils
   bool RemoveDirectory( const std::string&, bool force = false );
   bool RemoveFile( const std::string& );
   
+  const std::string& TemporaryDirectory();
   class TemporaryFile : public std::fstream
   {
    public:
-    TemporaryFile();
+    TemporaryFile( const std::string& = "" );
     ~TemporaryFile() { Close(); }
     const std::string& Name() const { return mpFile->name; }
     bool Open();
     void Close() { std::fstream::close(); }
+
+    static std::string GenerateName();
     
    private:
     struct File

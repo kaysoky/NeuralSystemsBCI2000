@@ -86,6 +86,7 @@ class MatlabFilter : public GenericFilter
  public:
           MatlabFilter();
   virtual ~MatlabFilter();
+  virtual void Publish();
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize( const SignalProperties&, const SignalProperties& );
   virtual void Process( const GenericSignal&, GenericSignal& );
@@ -95,6 +96,7 @@ class MatlabFilter : public GenericFilter
   virtual void Halt();
 
  private:
+  void InitializeMatlabWS() const;
   void StatesToMatlabWS() const;
   void MatlabWSToStates();
   void ParamsToMatlabWS() const;
@@ -107,9 +109,10 @@ class MatlabFilter : public GenericFilter
     clearVariables = 1,
     dontClear = 2,
   };
-  int                    mMatlabStayOpen;
-  MatlabFunction*        mpBci_Process;
-
+  int mMatlabStayOpen, mSampleBlockSize;
+  MatlabFunction* mpBci_Process;
+  class OSSharedMemory *mpData;
+  int mStatesOffset;
 };
 
 #endif // MATLAB_FILTER_H

@@ -42,7 +42,7 @@ class LazyArray
     : mSize( size ), mpData( Allocator::New( size ) ), mPointer( mpData ), mShared( false )
     {}
   LazyArray( T* data, size_t size )
-    : mSize( size ), mpData( data ? data : Allocator::New( size ) ), mPointer( mpData ), mShared( false )
+    : mSize( size ), mpData( data ? data : Allocator::New( size ) ), mPointer( data ? 0 : mpData ), mShared( false )
     {}
   LazyArray( const LazyArray& a )
     : mSize( 0 ), mpData( 0 ), mPointer( 0 ), mShared( false )

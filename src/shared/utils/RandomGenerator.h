@@ -30,43 +30,26 @@
 #define RANDOM_GENERATOR_H
 
 #include "Environment.h"
-#include <stdint.h>
+#include "LCRandomGenerator.h"
 
-class RandomGenerator : private EnvironmentExtension
+class RandomGenerator : public LCRandomGenerator, private EnvironmentExtension
 {
  public:
-  typedef uint32_t SeedType;
-  typedef uint32_t NumberType;
-
 #ifdef TODO
 # error Modify ID determination to use a filter´s unique ID once multiple filter instances are possible.
 #endif
   template<typename T>
   explicit RandomGenerator( const T* t )
-    : mSeed( 0 ),
+    : LCRandomGenerator( 0 ),
       mID( bci::ClassName( typeid( T ) ) )
     {}
   explicit RandomGenerator( const std::string& s )
-    : mSeed( 0 ),
+    : LCRandomGenerator( 0 ),
       mID( s )
     {}
   RandomGenerator();
-  virtual ~RandomGenerator()
+  ~RandomGenerator()
     {}
-  // Properties
-  SeedType Seed() const
-    { return mSeed; }
-  RandomGenerator& SetSeed( SeedType s )
-    { mSeed = s; return *this; }
-
-  virtual NumberType RandMax() const;
-
-  // This returns a random integer between 0 and including RandMax().
-  virtual NumberType Random();
-
-  // STL functor interface: operator() returns a random integer between 0 and (N-1).
-  template<typename Int> Int operator()( Int inN )
-    { return ( Random() * inN ) / ( RandMax() + 1 ); }
 
   // EnvironmentExtension interface.
   void Publish()
@@ -78,9 +61,6 @@ class RandomGenerator : private EnvironmentExtension
     {}
 
  private:
-  static NumberType NumberFromSeed( SeedType );
-
-  SeedType mSeed;
   std::string mID;
   static int NextUnnamedInstance();
 };

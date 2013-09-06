@@ -518,6 +518,10 @@ void EnvironmentBase::EnterNonaccessPhase()
       for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
         ( *i )->CallPostStopRun();
       BCIEvent::DenyEvents();
+      bcierr__.SetAction( BCIStream::LogicError );
+      bciwarn__.SetAction( BCIStream::LogicError );
+      bciout__.SetAction( BCIStream::LogicError );
+      bciout__.SetAction( BCIStream::LogicError );
       break;
     case resting:
       break;

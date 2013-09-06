@@ -81,8 +81,12 @@ class MatlabEngine
   static bool         IsOpen() { return spEngineRef != NULL; }
   static void         Close();
 
+  static bool         Execute( const std::string& commands );
+  static bool         Execute( const std::string& commands, std::string& error );
+
   static bool         CreateGlobal( const std::string& name );
   static bool         ClearVariable( const std::string& name );
+  static bool         ClearObject( const std::string& name );
 
   static std::string  GetString( const std::string& expr );
   static bool         PutString( const std::string& expr, const std::string& value );
@@ -102,42 +106,8 @@ class MatlabEngine
   static bool     PutMxArray( const std::string& expr, const mxArray* value );
 
  protected:
-  static Engine*  spEngineRef;
-  static int      sNumInstances;
-
-#ifdef _WIN32
-  typedef struct { void* mProc; const char* mName; } ProcNameEntry;
-  static bool  LoadDLL( const char* name, int numProcs, ProcNameEntry* );
-
-  // Matlab Engine DLL imports
-  static const char* sLibEngName;
-  static Engine*     ( *engOpen )( const char* );
-  static int         ( *engClose )( Engine* );
-  static int         ( *engEvalString )( Engine*, const char* );
-  static mxArray*    ( *engGetVariable )( Engine*, const char* );
-  static int         ( *engPutVariable )( Engine*, const char*, const mxArray* );
-  static ProcNameEntry sEngProcNames[];
-
-  // Matlab MX DLL imports
-  static const char* sLibMxName;
-  static mxArray*    ( *mxCreateString )( const char* );
-  static char*       ( *mxArrayToString )( const mxArray* );
-  static mxArray*    ( *mxCreateCellMatrix )( int, int );
-  static mxArray*    ( *mxGetCell )( const mxArray*, int );
-  static void        ( *mxSetCell )( mxArray*, int, mxArray* );
-
-  static mxArray*    ( *mxCreateNumericMatrix )( int, int, mxClassID, int );
-  static double*     ( *mxGetPr )( const mxArray* );
-  static void        ( *mxSetPr )( mxArray*, double* );
-
-  static int         ( *mxGetNumberOfDimensions )( const mxArray* );
-  static const int*  ( *mxGetDimensions )( const mxArray* );
-  static int         ( *mxCalcSingleSubscript )( const mxArray*, int, const int* );
-
-  static void        ( *mxDestroyArray )( mxArray* );
-  static void        ( *mxFree )( void* );
-  static ProcNameEntry sMxProcNames[];
-#endif // _WIN32
+  static Engine* spEngineRef;
+  static int sNumInstances;
 };
 
 class MatlabFunction : private MatlabEngine
@@ -153,6 +123,8 @@ class MatlabFunction : private MatlabEngine
  public:
   MatlabFunction& InputArgument( const std::string& );
   MatlabFunction& OutputArgument( const std::string& );
+  MatlabFunction& CodePre( const std::string& );
+  MatlabFunction& CodePost( const std::string& );
   const std::string& Name() const { return mName; }
   bool Exists() const             { return mExists; }
   std::string Execute() const;
@@ -160,10 +132,8 @@ class MatlabFunction : private MatlabEngine
  private:
   std::vector<std::string> mInputArguments,
                            mOutputArguments;
-  std::string mName;
+  std::string mName, mCodePre, mCodePost;
   bool mExists;
 };
 
 #endif // MatlabWrapperH
-
-

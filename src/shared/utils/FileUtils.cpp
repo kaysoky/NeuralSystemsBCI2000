@@ -59,6 +59,7 @@
 
 #include "StringUtils.h"
 #include "OSMutex.h"
+#include "RandomGenerator.h"
 #include "FileUtils.h"
 #include "BCIException.h"
 
@@ -424,23 +425,44 @@ FileUtils::ListDirectory( const string& inPath, List& outList )
   return success;
 }
 
-FileUtils::TemporaryFile::TemporaryFile()
+FileUtils::TemporaryFile::TemporaryFile( const string& inExt )
 : mpFile( new File )
 {
-  string prefix = ExtractBase( ExecutablePath() );
   for( int trial = 0; trial < 20 && !is_open(); ++trial )
   {
-    char* p = ::tempnam( 0, prefix.c_str() );
-    if( p )
-    {
-      mpFile->name = p;
-      ::free( p );
-      mpFile->name = CanonicalPath( ExtractDirectory( mpFile->name ) ) + ExtractFile( mpFile->name );
-      open( mpFile->name.c_str(), ios::in | ios::out | ios::binary | ios::trunc );
-    }
+    mpFile->name = GenerateName() + inExt;
+    open( mpFile->name.c_str(), ios::in | ios::out | ios::binary | ios::trunc );
   }
   if( !is_open() )
     throw std_runtime_error( "Could not create temporary file: " << mpFile->name );
+}
+
+const string&
+FileUtils::TemporaryDirectory()
+{
+  static struct Td : string
+  {
+    Td()
+    {
+      char* p = ::tempnam( 0, 0 );
+      if( p )
+      {
+        this->assign( CanonicalPath( ExtractDirectory( p ) ) );
+        ::free( p );
+      }
+      if( this->empty() )
+        throw std_runtime_error( "Could not get temporary directory" );
+    }
+  } instance;
+  return instance;
+}
+
+string
+FileUtils::TemporaryFile::GenerateName()
+{
+  static string prefix = ExtractBase( ExecutablePath() ) + "~";
+  static LCRandomGenerator r;
+  return TemporaryDirectory() + prefix + r.RandomName( 6 );
 }
 
 bool

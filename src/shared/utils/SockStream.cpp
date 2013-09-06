@@ -466,14 +466,12 @@ server_tcpsocket::do_open()
   close();
   m_handle = ::socket( PF_INET, SOCK_STREAM, IPPROTO_TCP );
   bool success = ( m_handle != INVALID_SOCKET );
-#if 1 //ndef _WIN32
   if( success )
   {
     int val = 1;
     success = SOCKET_ERROR != ::setsockopt( m_handle, SOL_SOCKET, SO_REUSEADDR,
                                             reinterpret_cast<const char*>( &val ), sizeof( val ) );
   }
-#endif // _WIN32
   if( success )
     success = SOCKET_ERROR != ::bind( m_handle, (const sockaddr*)&m_address, sizeof( m_address ) );
   if( success )

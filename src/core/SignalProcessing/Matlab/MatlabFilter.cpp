@@ -30,8 +30,9 @@
 #pragma hdrstop
 
 #include "MatlabFilter.h"
-#include "defines.h"
 #include "FileUtils.h"
+#include "OSSharedMemory.h"
+#include "BCIStream.h"
 
 using namespace std;
 
@@ -51,29 +52,40 @@ RegisterFilter( MatlabFilter, 2.C );
 #define HALT        MATLAB_NAME( Halt )
 
 // Matlab variable names
+#define DATA_HANDLE     MATLAB_NAME( Data )
+#define DATA_STRUCT     DATA_HANDLE ".Data(1)."
 #define PARAM_DEFS      MATLAB_NAME( ParamDefs )
 #define STATE_DEFS      MATLAB_NAME( StateDefs )
-#define IN_SIGNAL       MATLAB_NAME( InSignal )
+#define IN_SIGNAL       "InSignal"
 #define IN_SIGNAL_DIMS  MATLAB_NAME( InSignalDims )
-#define OUT_SIGNAL      MATLAB_NAME( OutSignal )
+#define OUT_SIGNAL      "OutSignal"
 #define OUT_SIGNAL_DIMS MATLAB_NAME( OutSignalDims )
 #define PARAMETERS      MATLAB_NAME( Parameters )
 #define STATES          MATLAB_NAME( States )
+#define STATE_DATA      MATLAB_NAME( StateData )
+
+#define VAR_F           MATLAB_NAME( f )
+#define VAR_N           MATLAB_NAME( n )
+#define VAR_I           MATLAB_NAME( i )
 
 MatlabFilter::MatlabFilter()
-: mpBci_Process( NULL )
+: mpBci_Process( 0 ),
+  mpData( 0 ),
+  mStatesOffset( 0 ),
+  mSampleBlockSize( 0 )
 {
+}
+
+void
+MatlabFilter::Publish()
+{
+  bciout__ << "Waiting for Matlab engine to start up ...";
   MatlabEngine::Open();
   if( !MatlabEngine::IsOpen() )
-  {
-    bcierr << "Could not connect to Matlab engine. "
-           << "Please make sure that Matlab is available on your machine.\n"
-           << "On Windows, Matlab's bin/win32 directory must be on your system's %PATH% variable, "
-           << "and \"Matlab /regserver\" must have been executed with administrative privileges."
-           << endl;
-  }
+    bcierr << "Could not connect to Matlab engine.";
   else
   {
+    bciout__ << "Connected to Matlab engine";
     // Configure matlab engine behavior as specified by --MatlabStayOpen.
     mMatlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
     // Change matlab's working directory to the directory specified by --MatlabWD.
@@ -96,7 +108,7 @@ MatlabFilter::MatlabFilter()
         expr << PARAM_DEFS << "{" << i << "}";
         string paramDef = MatlabEngine::GetString( expr.str() );
         if( !Parameters->Add( paramDef ) )
-          bcierr << "Error in parameter definition: " << paramDef << endl;
+          bcierr << "Error in parameter definition: " << paramDef;
       }
       int numStateDefs = static_cast<int>( MatlabEngine::GetScalar( "max(size(" STATE_DEFS "))" ) );
       for( int i = 1; i <= numStateDefs; ++i )
@@ -105,7 +117,7 @@ MatlabFilter::MatlabFilter()
         expr << STATE_DEFS << "{" << i << "}";
         string stateDef = MatlabEngine::GetString( expr.str() );
         if( !States->Add( stateDef ) )
-          bcierr << "Error in state definition: " << stateDef << endl;
+          bcierr << "Error in state definition: " << stateDef;
       }
     }
     MatlabEngine::ClearVariable( PARAM_DEFS );
@@ -124,23 +136,18 @@ MatlabFilter::MatlabFilter()
       if( !MatlabFunction( essentialFunctions[ i ] ).Exists() )
         oss << ", " << essentialFunctions[ i ];
     if( !oss.str().empty() )
-      bciout << "The following functions could not be found in the Matlab path:\n"
-             << oss.str().substr( 2 ) << ".\n"
-             << "Make sure that the m-files exist within path or working directory, "
-             << "and contain appropriate function definitions.\n"
-             << "Consider using the --MatlabWD command line option to set Matlab's "
-             << "working directory at startup"
-             << endl;
-
-    // Initialize the bci_Process function for more efficient calling during Process().
-    mpBci_Process = new MatlabFunction( PROCESS );
-    mpBci_Process->InputArgument( IN_SIGNAL )
-                  .OutputArgument( OUT_SIGNAL );
+      bciwarn << "The following functions could not be found in the Matlab path:\n"
+              << oss.str().substr( 2 ) << ".\n"
+              << "Make sure that the m-files exist within path or working directory, "
+              << "and contain appropriate function definitions.\n"
+              << "Consider using the --MatlabWD command line option to set Matlab's "
+              << "working directory at startup";
   }
 }
 
 MatlabFilter::~MatlabFilter()
 {
+  delete mpBci_Process;
   if( MatlabEngine::IsOpen() )
   {
     { // Make sure bci_Destruct is out of scope when calling MatlabEngine::Close().
@@ -148,24 +155,23 @@ MatlabFilter::~MatlabFilter()
       CallMatlab( bci_Destruct );
     }
 
-    delete mpBci_Process;
-
     if( mMatlabStayOpen != dontClear )
     {
-      MatlabEngine::ClearVariable( IN_SIGNAL );
-      MatlabEngine::ClearVariable( OUT_SIGNAL );
+      MatlabEngine::ClearObject( DATA_HANDLE );
       MatlabEngine::ClearVariable( PARAMETERS );
       MatlabEngine::ClearVariable( STATES );
     }
     if( mMatlabStayOpen == closeEngine )
       MatlabEngine::Close();
   }
+  delete mpData;
 }
 
 void
 MatlabFilter::Preflight( const SignalProperties& Input,
                                SignalProperties& Output ) const
 {
+  Parameter( "SampleBlockSize" );
   int matlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
   switch( matlabStayOpen )
   {
@@ -178,24 +184,22 @@ MatlabFilter::Preflight( const SignalProperties& Input,
              << "Possible values are:\n"
              << " 0: close engine;\n"
              << " 1: keep engine open, clear variables;\n"
-             << " 2: keep engine open, keep variables."
-             << endl;
+             << " 2: keep engine open, keep variables.";
   }
 
-  MatlabEngine::ClearVariable( PARAMETERS );
-  MatlabEngine::CreateGlobal( PARAMETERS );
-  ParamsToMatlabWS();
-  MatlabEngine::ClearVariable( STATES );
-  MatlabEngine::CreateGlobal( STATES );
-  StatesToMatlabWS();
-
+  InitializeMatlabWS();
   Output = Input;
   MatlabEngine::PutMatrix( IN_SIGNAL_DIMS, Input );
   MatlabFunction bci_Preflight( PREFLIGHT );
   bci_Preflight.InputArgument( IN_SIGNAL_DIMS )
                .OutputArgument( OUT_SIGNAL_DIMS );
   if( CallMatlab( bci_Preflight ) )
+  {
     Output = MatlabEngine::GetMatrix( OUT_SIGNAL_DIMS );
+    Output.ElementUnit().SetOffset( 0 ).SetGain( 1.0 / Output.Elements() / Input.UpdateRate() ).SetSymbol( "s" );
+    if( !Input.IsStream() && Output.Elements() > 1 )
+      Output.SetIsStream( false );
+  }
   MatlabEngine::ClearVariable( IN_SIGNAL_DIMS );
   MatlabEngine::ClearVariable( OUT_SIGNAL_DIMS );
 }
@@ -204,6 +208,7 @@ void
 MatlabFilter::Initialize( const SignalProperties& Input,
                           const SignalProperties& Output )
 {
+  mSampleBlockSize = Parameter( "SampleBlockSize" );
   // Re-configure matlab engine behavior as specified by the MatlabStayOpen parameter.
   mMatlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
 
@@ -215,20 +220,70 @@ MatlabFilter::Initialize( const SignalProperties& Input,
   CallMatlab( bci_Initialize );
   MatlabEngine::ClearVariable( IN_SIGNAL_DIMS );
   MatlabEngine::ClearVariable( OUT_SIGNAL_DIMS );
-  MatlabEngine::PutMatrix( IN_SIGNAL, GenericSignal( Input ) );
-  MatlabEngine::PutMatrix( OUT_SIGNAL, GenericSignal( Output ) );
+
+  MatlabEngine::ClearObject( DATA_HANDLE );
+  delete mpData;
+  mStatesOffset = Input.Channels() * Input.Elements()
+                + Output.Channels() * Output.Elements();
+  mpData = new OSSharedMemory( "file://",  ( mStatesOffset + States->Size() * mSampleBlockSize ) * sizeof( double ) );
+
+  ostringstream oss;
+  oss << DATA_HANDLE << " = memmapfile('" << mpData->Name() << "', 'Format', { "
+                     << "'double' [" << Input.Channels() << " " << Input.Elements() << "] '" IN_SIGNAL "';"
+                     << "'double' [" << Output.Channels() << " " << Output.Elements() << "] '" OUT_SIGNAL "';"
+                     << "'double' [" << mSampleBlockSize << " " << States->Size() << "] 'States';"
+                     << " }, 'Writable', true);";
+  string error;
+  if( !MatlabEngine::Execute( oss.str(), error ) )
+    bcierr << "Could not create memmapfile object in Matlab workspace:\n" << error;
+
+  delete mpBci_Process;
+  mpBci_Process = new MatlabFunction( PROCESS );
+  mpBci_Process->InputArgument( DATA_STRUCT IN_SIGNAL )
+                .OutputArgument( DATA_STRUCT OUT_SIGNAL );
+  mpBci_Process->CodePre(
+    STATE_DATA "=" DATA_STRUCT "States.';"
+    VAR_F"=fieldnames(" STATES ");"
+    VAR_N"=length("VAR_F");"
+    "if("VAR_N"~=size(" DATA_STRUCT "States,2)) error('Unexpected number of fields in " STATES "'); end;"
+    "for "VAR_I"=1:"VAR_N";"
+      STATES ".("VAR_F"{"VAR_I"})=" STATE_DATA "("VAR_I",1);"
+    "end;"
+  );
+  mpBci_Process->CodePost(
+    VAR_F"=fieldnames(" STATES ");"
+    VAR_N"=length("VAR_F");"
+    "if("VAR_N"~=size(" DATA_STRUCT "States,2)) error('Unexpected number of fields in " STATES "'); end;"
+    "for "VAR_I"=1:"VAR_N";"
+       STATE_DATA "("VAR_I",1)=" STATES ".("VAR_F"{"VAR_I"});"
+    "end;"
+    DATA_STRUCT "States=" STATE_DATA ".';"
+  );
+  InitializeMatlabWS();
 }
 
 void
 MatlabFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   StatesToMatlabWS();
-  MatlabEngine::PutMatrix( IN_SIGNAL, Input );
-  if( CallMatlab( *mpBci_Process ) )
-    Output = MatlabEngine::GetMatrix( OUT_SIGNAL );
-  else
-    Output = Input;
-  MatlabWSToStates();
+  double* p = reinterpret_cast<double*>( mpData->Memory() );
+  for( int el = 0; el < Input.Elements(); ++el )
+    for( int ch = 0; ch < Input.Channels(); ++ch )
+      *p++ = Input( ch, el );
+
+  if( State( "Running" ) && mpBci_Process->Exists() )
+  {
+    string err = mpBci_Process->Execute();
+    for( int el = 0; el < Output.Elements(); ++el )
+      for( int ch = 0; ch < Output.Channels(); ++ch )
+        Output( ch, el ) = *p++;
+    MatlabWSToStates();
+    if( !err.empty() )
+    {
+      bciwarn << err << "\nAborting current run";
+      State( "Running" ) = 0;
+    }
+  }
 }
 
 void
@@ -264,9 +319,17 @@ MatlabFilter::Halt()
   CallMatlab( bci_Halt );
 }
 
+// Internal functions
 void
-MatlabFilter::StatesToMatlabWS() const
+MatlabFilter::InitializeMatlabWS() const
 {
+  MatlabEngine::ClearVariable( PARAMETERS );
+  MatlabEngine::CreateGlobal( PARAMETERS );
+  ParamsToMatlabWS();
+  MatlabEngine::ClearVariable( STATES );
+  MatlabEngine::CreateGlobal( STATES );
+  MatlabEngine::ClearVariable( STATE_DATA );
+  MatlabEngine::CreateGlobal( STATE_DATA );
   for( int i = 0; i < States->Size(); ++i )
   {
     const string& name = ( *States )[ i ].Name();
@@ -275,12 +338,37 @@ MatlabFilter::StatesToMatlabWS() const
 }
 
 void
+MatlabFilter::StatesToMatlabWS() const
+{
+  double* p = reinterpret_cast<double*>( mpData->Memory() ) + mStatesOffset;
+  for( int i = 0; i != Statevector->StateList().Size(); ++i )
+  {
+    const class State& s = Statevector->StateList()[i];
+    for( int j = 0; j < mSampleBlockSize; ++j )
+      *p++ = Statevector->StateValue( s.Location(), s.Length(), j );
+  }
+}
+
+void
 MatlabFilter::MatlabWSToStates()
 {
-  for( int i = 0; i < States->Size(); ++i )
+  // To ensure backward compatibility, Matlab code is not allowed to change states
+  // that vary during a single block of data.
+  // Changes to such states are silently ignored.
+  const double* p = reinterpret_cast<const double*>( mpData->Memory() ) + mStatesOffset;
+  for( int i = 0; i != Statevector->StateList().Size(); ++i )
   {
-    const string& name = ( *States )[ i ].Name();
-    State( name ) = static_cast<int>( MatlabEngine::GetScalar( string( STATES "." ) + name ) );
+    const class State& s = Statevector->StateList()[i];
+    double val = Statevector->StateValue( s.Location(), s.Length(), 0 );
+    if( *p != val )
+    {
+      bool isConst = true;
+      for( int j = 1; j < Statevector->Samples() && isConst; ++j )
+        isConst = ( Statevector->StateValue( s.Location(), s.Length(), j ) == val );
+      if( isConst )
+        State( s.Name() ) = static_cast<State::ValueType>( *p );
+    }
+    p += mSampleBlockSize;
   }
 }
 
@@ -321,8 +409,7 @@ MatlabFilter::CallMatlab( MatlabFunction& inFunction ) const
   if( !err.empty() )
   {
     bcierr__ << "Matlab function \"" << inFunction.Name() << "\": "
-             << err
-             << endl;
+             << err;
     return false;
   }
   return true;

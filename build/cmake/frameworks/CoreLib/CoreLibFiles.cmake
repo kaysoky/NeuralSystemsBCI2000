@@ -16,43 +16,11 @@ SET( SRC_BCI2000_FRAMEWORK
 
   ${PROJECT_SRC_DIR}/shared/utils/LogFile.cpp
   ${PROJECT_SRC_DIR}/shared/utils/RandomGenerator.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/ClassName.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/EventQueue.cpp
   ${PROJECT_SRC_DIR}/shared/utils/MeasurementUnits.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/PrecisionTime.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/SockStream.cpp
   ${PROJECT_SRC_DIR}/shared/utils/VersionInfo.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/OSError.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/OSMutex.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/OSSemaphore.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/OSSharedMemory.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/OSEvent.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/OSThread.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/ThreadUtils.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/ProcessUtils.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/FileUtils.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/StringUtils.cpp  
-  ${PROJECT_SRC_DIR}/shared/utils/ExceptionCatcher.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/ReusableThread.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/WildcardMatch.cpp
   ${PROJECT_SRC_DIR}/shared/utils/EscapedString.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/EnvVariable.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/DylibImports.cpp
   ${PROJECT_SRC_DIR}/shared/utils/IndexList.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/Debugging.cpp
-  ${PROJECT_SRC_DIR}/shared/utils/Clock.cpp
-
-  ${PROJECT_SRC_DIR}/shared/utils/FPExceptMask.h
-  ${PROJECT_SRC_DIR}/shared/utils/Lockable.h
-  ${PROJECT_SRC_DIR}/shared/utils/Uncopyable.h
-  ${PROJECT_SRC_DIR}/shared/utils/Runnable.h
-  ${PROJECT_SRC_DIR}/shared/utils/SharedPointer.h
-  ${PROJECT_SRC_DIR}/shared/utils/LazyArray.h
-  ${PROJECT_SRC_DIR}/shared/utils/OSThreadLocal.h
-  ${PROJECT_SRC_DIR}/shared/utils/Uuid.h
-  ${PROJECT_SRC_DIR}/shared/utils/BinaryData.h
-  ${PROJECT_SRC_DIR}/shared/utils/Resource.h
-  ${PROJECT_SRC_DIR}/shared/utils/NumericConstants.h
+  ${PROJECT_SRC_DIR}/shared/utils/EventQueue.cpp
 
   ${PROJECT_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp
   ${PROJECT_SRC_DIR}/shared/utils/Expression/Expression.cpp
@@ -99,6 +67,40 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/fileio/dat/BCI2000FileReader.cpp
 
   ${PROJECT_SRC_DIR}/extlib/math/FastConv.h
+
+  ${PROJECT_SRC_DIR}/shared/utils/Clock.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/ClassName.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/PrecisionTime.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/LCRandomGenerator.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/SockStream.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/OSError.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/OSMutex.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/OSSemaphore.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/OSSharedMemory.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/OSEvent.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/OSThread.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/ThreadUtils.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/ProcessUtils.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/FileUtils.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/StringUtils.cpp  
+  ${PROJECT_SRC_DIR}/shared/utils/ExceptionCatcher.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/ReusableThread.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/WildcardMatch.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/EnvVariable.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/DylibImports.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/Debugging.cpp
+
+  ${PROJECT_SRC_DIR}/shared/utils/FPExceptMask.h
+  ${PROJECT_SRC_DIR}/shared/utils/Lockable.h
+  ${PROJECT_SRC_DIR}/shared/utils/Uncopyable.h
+  ${PROJECT_SRC_DIR}/shared/utils/Runnable.h
+  ${PROJECT_SRC_DIR}/shared/utils/SharedPointer.h
+  ${PROJECT_SRC_DIR}/shared/utils/LazyArray.h
+  ${PROJECT_SRC_DIR}/shared/utils/OSThreadLocal.h
+  ${PROJECT_SRC_DIR}/shared/utils/Uuid.h
+  ${PROJECT_SRC_DIR}/shared/utils/BinaryData.h
+  ${PROJECT_SRC_DIR}/shared/utils/Resource.h
+  ${PROJECT_SRC_DIR}/shared/utils/NumericConstants.h
 )
 
 IF( WIN32 )

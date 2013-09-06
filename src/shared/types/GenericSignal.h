@@ -99,7 +99,7 @@ class GenericSignal
     static ValueType GetValue_float24( std::istream& );
 
     ValueType* SharedMemory() const;
-    ValueType* NewSharedServerMemory( size_t );
+    ValueType* NewSharedServerMemory( size_t, const std::string& = "" );
     ValueType* GetSharedClientMemory( const std::string& );
 
     SignalProperties mProperties;

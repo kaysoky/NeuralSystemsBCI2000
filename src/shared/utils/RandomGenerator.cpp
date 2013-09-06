@@ -31,9 +31,6 @@
 
 #include "RandomGenerator.h"
 #include "FileUtils.h"
-#include "BCIError.h"
-#include "BCIAssert.h"
-#include <cstdlib>
 
 using namespace std;
 
@@ -46,7 +43,6 @@ RandomGenerator::NextUnnamedInstance()
 }
 
 RandomGenerator::RandomGenerator()
-: mSeed( 0 )
 {
   int count = NextUnnamedInstance();
   mID.resize( 1 );
@@ -57,32 +53,6 @@ RandomGenerator::RandomGenerator()
     );
   mID[0] = static_cast<string::value_type>( count );
   mID += FileUtils::ApplicationTitle();
-}
-
-RandomGenerator::NumberType
-RandomGenerator::RandMax() const
-{
-  return NumberFromSeed( ~SeedType( 0 ) );
-}
-
-RandomGenerator::NumberType
-RandomGenerator::Random()
-{ // x_i = ( x_{i-1} * a + c ) mod m
-  // The a parameter is chosen to be optimal for m = 2^32 according to:
-  // P. L'Ecuyer. A table of linear congruential generators of different sizes
-  // and good lattice structure. Mathematics of Computation, 68(225), 1999.
-  // Using uint32_t for x, mod m is computed implicitly.
-  const uint32_t a = 2891336453UL,
-                 c = 1;
-  mSeed *= a;
-  mSeed += c;
-  return NumberFromSeed( mSeed );
-}
-
-RandomGenerator::NumberType
-RandomGenerator::NumberFromSeed( RandomGenerator::SeedType inSeed )
-{
-  return inSeed >> 16; // Ignore lower bits which have bad periodicity.
 }
 
 void
@@ -96,9 +66,9 @@ RandomGenerator::Initialize()
 {
   SeedType seed = OptionalParameter( "RandomSeed", 0 );
   if( seed == 0 )
-    mSeed = static_cast<SeedType>( ::time( NULL ) );
+    SetSeed( DefaultSeed() );
   else
-    mSeed = seed;
+    SetSeed( seed );
   // Use the ID string to modify the seed in a way that is both unique
   // and robust against configuration changes such as addition of filters,
   // or change of endianness.
@@ -112,9 +82,9 @@ RandomGenerator::Initialize()
       SeedType c = static_cast<uint8_t>( mID[i * sizeof( SeedType ) + j] );
       value |= c << ( 8 * j );
     }
-    mSeed ^= value;
+    SetSeed( Seed() ^ value );
   }
-  bcidbg( 1 ) << "RandomGenerator ID: " << mID << ", Seed: " << hex << mSeed << endl;
+  bcidbg( 1 ) << "RandomGenerator ID: " << mID << ", Seed: " << hex << Seed() << endl;
 }
 
 void
