@@ -29,7 +29,7 @@
 Change directory $BCI2000LAUNCHDIR
 Show window; Set title ${Extract file base $0}
 Startup system localhost
-Start executable SignalGenerator --local
+Start executable SignalGenerator --local --LogMouse=1
 Start executable MatlabSignalProcessing  --local --MatlabWD=./matlab
 Start executable FeedbackDemo --local
 Wait for Connected

@@ -101,6 +101,7 @@ class MatlabFilter : public GenericFilter
   void MatlabWSToStates();
   void ParamsToMatlabWS() const;
   void MatlabWSToParams();
+  void InitializeMatlabProcessing( const SignalProperties&, const SignalProperties& );
   bool CallMatlab( MatlabFunction& ) const;
 
   enum

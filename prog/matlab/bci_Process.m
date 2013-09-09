@@ -29,6 +29,8 @@ function out_signal = bci_Process( in_signal )
 
 % Parameters and states are global variables.
 global bci_Parameters bci_States;
+% Access to multi-sample states is read-only -- use bci_States to set per-block states.
+global bci_StateSamples;
 
 % We use a global variable to store our filter's configuration.
 global myFilterMatrix myFilterOffsets;
@@ -36,6 +38,16 @@ global myFilterMatrix myFilterOffsets;
 out_signal = myFilterMatrix * in_signal;
 for( i = 1:size( out_signal, 2 ) )
   out_signal( :, i ) = out_signal( :, i ) + myFilterOffsets;
+end
+
+% Run the source module with --LogMouse=1 in order to see mouse movements.
+global myMouseY;
+if( isfield( bci_StateSamples, 'MousePosY' ) )
+  myMouseY = [myMouseY bci_StateSamples.MousePosY];
+  if( length( myMouseY ) > 500 )
+    myMouseY = myMouseY( end-500:end );
+  end;
+  plot( myMouseY );
 end
 
 % For demonstration purposes, set the demo state:

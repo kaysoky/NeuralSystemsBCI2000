@@ -62,6 +62,7 @@ RegisterFilter( MatlabFilter, 2.C );
 #define OUT_SIGNAL_DIMS MATLAB_NAME( OutSignalDims )
 #define PARAMETERS      MATLAB_NAME( Parameters )
 #define STATES          MATLAB_NAME( States )
+#define STATE_SAMPLES   MATLAB_NAME( StateSamples )
 #define STATE_DATA      MATLAB_NAME( StateData )
 
 #define VAR_F           MATLAB_NAME( f )
@@ -208,7 +209,6 @@ void
 MatlabFilter::Initialize( const SignalProperties& Input,
                           const SignalProperties& Output )
 {
-  mSampleBlockSize = Parameter( "SampleBlockSize" );
   // Re-configure matlab engine behavior as specified by the MatlabStayOpen parameter.
   mMatlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
 
@@ -221,45 +221,8 @@ MatlabFilter::Initialize( const SignalProperties& Input,
   MatlabEngine::ClearVariable( IN_SIGNAL_DIMS );
   MatlabEngine::ClearVariable( OUT_SIGNAL_DIMS );
 
-  MatlabEngine::ClearObject( DATA_HANDLE );
-  delete mpData;
-  mStatesOffset = Input.Channels() * Input.Elements()
-                + Output.Channels() * Output.Elements();
-  mpData = new OSSharedMemory( "file://",  ( mStatesOffset + States->Size() * mSampleBlockSize ) * sizeof( double ) );
-
-  ostringstream oss;
-  oss << DATA_HANDLE << " = memmapfile('" << mpData->Name() << "', 'Format', { "
-                     << "'double' [" << Input.Channels() << " " << Input.Elements() << "] '" IN_SIGNAL "';"
-                     << "'double' [" << Output.Channels() << " " << Output.Elements() << "] '" OUT_SIGNAL "';"
-                     << "'double' [" << mSampleBlockSize << " " << States->Size() << "] 'States';"
-                     << " }, 'Writable', true);";
-  string error;
-  if( !MatlabEngine::Execute( oss.str(), error ) )
-    bcierr << "Could not create memmapfile object in Matlab workspace:\n" << error;
-
-  delete mpBci_Process;
-  mpBci_Process = new MatlabFunction( PROCESS );
-  mpBci_Process->InputArgument( DATA_STRUCT IN_SIGNAL )
-                .OutputArgument( DATA_STRUCT OUT_SIGNAL );
-  mpBci_Process->CodePre(
-    STATE_DATA "=" DATA_STRUCT "States.';"
-    VAR_F"=fieldnames(" STATES ");"
-    VAR_N"=length("VAR_F");"
-    "if("VAR_N"~=size(" DATA_STRUCT "States,2)) error('Unexpected number of fields in " STATES "'); end;"
-    "for "VAR_I"=1:"VAR_N";"
-      STATES ".("VAR_F"{"VAR_I"})=" STATE_DATA "("VAR_I",1);"
-    "end;"
-  );
-  mpBci_Process->CodePost(
-    VAR_F"=fieldnames(" STATES ");"
-    VAR_N"=length("VAR_F");"
-    "if("VAR_N"~=size(" DATA_STRUCT "States,2)) error('Unexpected number of fields in " STATES "'); end;"
-    "for "VAR_I"=1:"VAR_N";"
-       STATE_DATA "("VAR_I",1)=" STATES ".("VAR_F"{"VAR_I"});"
-    "end;"
-    DATA_STRUCT "States=" STATE_DATA ".';"
-  );
   InitializeMatlabWS();
+  InitializeMatlabProcessing( Input, Output );
 }
 
 void
@@ -328,6 +291,8 @@ MatlabFilter::InitializeMatlabWS() const
   ParamsToMatlabWS();
   MatlabEngine::ClearVariable( STATES );
   MatlabEngine::CreateGlobal( STATES );
+  MatlabEngine::ClearVariable( STATE_SAMPLES );
+  MatlabEngine::CreateGlobal( STATE_SAMPLES );
   MatlabEngine::ClearVariable( STATE_DATA );
   MatlabEngine::CreateGlobal( STATE_DATA );
   for( int i = 0; i < States->Size(); ++i )
@@ -398,6 +363,51 @@ MatlabFilter::MatlabWSToParams()
         if( string( p.Value( row, col ) ) != values.at( row ).at( col ) )
           p.Value( row, col ) = values.at( row ).at( col );
   }
+}
+
+void
+MatlabFilter::InitializeMatlabProcessing( const SignalProperties& Input, const SignalProperties& Output )
+{
+  mSampleBlockSize = Parameter( "SampleBlockSize" );
+  MatlabEngine::ClearObject( DATA_HANDLE );
+  delete mpData;
+  mStatesOffset = Input.Channels() * Input.Elements()
+                + Output.Channels() * Output.Elements();
+  mpData = new OSSharedMemory( "file://",  ( mStatesOffset + States->Size() * mSampleBlockSize ) * sizeof( double ) );
+
+  ostringstream oss;
+  oss << DATA_HANDLE << " = memmapfile('" << mpData->Name() << "', 'Format', { "
+                     << "'double' [" << Input.Channels() << " " << Input.Elements() << "] '" IN_SIGNAL "';"
+                     << "'double' [" << Output.Channels() << " " << Output.Elements() << "] '" OUT_SIGNAL "';"
+                     << "'double' [" << mSampleBlockSize << " " << States->Size() << "] 'States';"
+                     << " }, 'Writable', true);";
+  string error;
+  if( !MatlabEngine::Execute( oss.str(), error ) )
+    bcierr << "Could not create memmapfile object in Matlab workspace:\n" << error;
+
+  delete mpBci_Process;
+  mpBci_Process = new MatlabFunction( PROCESS );
+  mpBci_Process->InputArgument( DATA_STRUCT IN_SIGNAL )
+                .OutputArgument( DATA_STRUCT OUT_SIGNAL );
+  mpBci_Process->CodePre(
+    STATE_DATA "=" DATA_STRUCT "States.';"
+    VAR_F"=fieldnames(" STATES ");"
+    VAR_N"=length("VAR_F");"
+    "if("VAR_N"~=size(" DATA_STRUCT "States,2)) error('Unexpected number of fields in " STATES "'); end;"
+    "for "VAR_I"=1:"VAR_N";"
+      STATES ".("VAR_F"{"VAR_I"})=" STATE_DATA "("VAR_I",1);"
+      STATE_SAMPLES ".("VAR_F"{"VAR_I"})=" STATE_DATA "("VAR_I",:);"
+    "end;"
+  );
+  mpBci_Process->CodePost(
+    VAR_F"=fieldnames(" STATES ");"
+    VAR_N"=length("VAR_F");"
+    "if("VAR_N"~=size(" DATA_STRUCT "States,2)) error('Unexpected number of fields in " STATES "'); end;"
+    "for "VAR_I"=1:"VAR_N";"
+       STATE_DATA "("VAR_I",1)=" STATES ".("VAR_F"{"VAR_I"});"
+    "end;"
+    DATA_STRUCT "States=" STATE_DATA ".';"
+  );
 }
 
 bool
