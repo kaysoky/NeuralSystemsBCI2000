@@ -203,9 +203,9 @@ OSSharedMemory::Create()
   }
   else if( mProtocol == file )
   {
-    fstream f( mName, ios::binary | ios::out | ios::trunc );
+    fstream f( mName.c_str(), ios::binary | ios::out | ios::trunc );
     f.fill( '%' );
-    f << setw( mSize ) << f.fill() << flush;
+    f << setw( mSize ) << f.fill();
     f.close();
     Open();
   }

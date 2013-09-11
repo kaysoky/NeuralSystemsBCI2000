@@ -25,6 +25,7 @@ BCI2000_ADD_TARGET( WINDLL BCI2000PresentationLink
   ${BCI2000_SRC_DIR}/shared/utils/Debugging.cpp
   ${BCI2000_SRC_DIR}/shared/utils/ClassName.cpp
   ${BCI2000_SRC_DIR}/shared/utils/FileUtils.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/LCRandomGenerator.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
   ${BCI2000_SRC_DIR}/shared/utils/StringUtils.cpp
 

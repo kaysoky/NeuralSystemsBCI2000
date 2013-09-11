@@ -59,7 +59,7 @@
 
 #include "StringUtils.h"
 #include "OSMutex.h"
-#include "RandomGenerator.h"
+#include "LCRandomGenerator.h"
 #include "FileUtils.h"
 #include "BCIException.h"
 
