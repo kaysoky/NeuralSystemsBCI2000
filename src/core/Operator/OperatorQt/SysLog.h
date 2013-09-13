@@ -47,7 +47,8 @@ class SysLog : public QDialog
   virtual ~SysLog();
 
  public slots:
-  bool Close( bool force = false );
+  void AllowClose();
+  bool Close();
   void AddEntry( const QString& text, int = logEntryNormal );
 
  protected:

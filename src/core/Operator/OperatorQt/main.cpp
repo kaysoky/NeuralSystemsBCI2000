@@ -41,7 +41,7 @@
 
 using namespace std;
 
-void MainLoop( QApplication&, MainWindow& );
+void MainLoop();
 
 #ifdef _WIN32
 # include <Windows.h>
@@ -70,10 +70,7 @@ main( int argc, char *argv[] )
   qRegisterMetaType< GenericSignal >();
   qRegisterMetaType< BitmapImage >();
   Settings::SetFile();
-  MainWindow w;
-  VisDisplay::SetParentWindow( &w );
-  FunctionCall< void( QApplication&, MainWindow& ) >
-    call( MainLoop, a, w );
+  FunctionCall<void()> call( MainLoop );
   bool finished = ExceptionCatcher()
     .SetMessage( "Terminating Operator module" )
     .Run( call );
@@ -81,15 +78,17 @@ main( int argc, char *argv[] )
 }
 
 void
-MainLoop( QApplication& a, MainWindow& w )
+MainLoop()
 {
+  MainWindow w;
+  VisDisplay::SetParentWindow( &w );
   while( !w.Terminating() )
   { // We use our own event loop to allow for processing pending
     // callbacks from the BCI operator library.
     // Qt docs suggest using a zero ms timer for doing idle processing,
     // but this leads to high CPU usage.
-    a.sendPostedEvents();
-    a.processEvents();
+    qApp->sendPostedEvents();
+    qApp->processEvents();
     ThreadUtils::SleepFor( 1 ); // avoid hogging the CPU
     BCI_CheckPendingCallback();
   }

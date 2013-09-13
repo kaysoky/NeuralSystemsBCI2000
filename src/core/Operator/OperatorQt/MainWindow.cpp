@@ -179,6 +179,8 @@ MainWindow::~MainWindow()
   delete gpPreferences;
   gpPreferences = NULL;
   BCI_Dispose();
+  if( !mSyslog.Close() )
+    mSyslog.exec();
 }
 
 void
@@ -193,13 +195,32 @@ MainWindow::Terminate()
   if( doExecute )
   {
     BCI_Shutdown();
+    int timeout = 2000, resolution = 100;
+    bool done = false;
+    while( !done && timeout > 0 )
+    {
+      switch( BCI_GetStateOfOperation() )
+      {
+        case BCI_StateIdle:
+          done = true;
+          break;
+        case BCI_StateUnavailable:
+          timeout = 0;
+          break;
+        default:
+          ThreadUtils::SleepFor( resolution );
+          timeout -= resolution;
+      }
+    }
+    mSyslog.AllowClose();
     // Execute the on-exit script ...
-    if( !mExitScript.empty() )
+    if( done && !mExitScript.empty() )
     {
       mSyslog.AddEntry( "Executing OnExit script ..." );
-      BCI_ExecuteScript( mExitScript.c_str() );
+      EncodedString exitScript;
+      istringstream( mExitScript ) >> exitScript;
+      BCI_ExecuteScript( exitScript.c_str() );
     }
-    mSyslog.Close( true );
     mTerminated = true;
   }
 }

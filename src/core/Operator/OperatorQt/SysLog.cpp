@@ -54,11 +54,18 @@ SysLog::~SysLog()
   OperatorUtils::SaveWidget( this );
 }
 
+
+void
+SysLog::AllowClose()
+{
+  mDontClose = false;
+}
+
 // The user must close the syslog manually if there are errors/warnings.
 bool
-SysLog::Close( bool inForce )
+SysLog::Close()
 {
-  if( !inForce && mDontClose && this->isVisible() )
+  if( mDontClose && this->isVisible() )
     return false;
 
   this->close();

@@ -301,7 +301,7 @@ BCI2000Remote::EscapeSpecialChars( const string& inString, const string& inExcep
     bool doEscape = *i <= 0x20 || *i >= 0x80 || escapeThese.find( *i ) != string::npos;
     doEscape = doEscape && inExcept.find( *i ) == string::npos;
     if( doEscape )
-      oss << "%" << hex << ( *i >> 8 ) << ( *i & 0xf );
+      oss << "%" << hex << ( *i >> 4 ) << ( *i & 0xf );
     else
       oss.put( *i );
   }

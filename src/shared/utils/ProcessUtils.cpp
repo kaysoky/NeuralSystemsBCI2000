@@ -26,9 +26,6 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "ProcessUtils.h"
-#include "ThreadUtils.h"
-#include "FileUtils.h"
 #include <string>
 #include <iostream>
 
@@ -55,6 +52,10 @@
 extern char** environ;
 # endif // __APPLE__
 #endif // _WIN32
+
+#include "ProcessUtils.h"
+#include "ThreadUtils.h"
+#include "FileUtils.h"
 
 using namespace std;
 
@@ -105,14 +106,33 @@ ProcessUtils::ExecuteSynchronously( const string& inExecutable, const string& in
   ::CloseHandle( pipeWrite2 );
   ::CloseHandle( nulRead );
 
-  DWORD dwExitCode;
-  while( ( result &= ::GetExitCodeProcess( procInfo.hProcess, &dwExitCode ) ) && dwExitCode == STILL_ACTIVE )
+  struct Reader
   {
-    DWORD bytesRead;
-    while( ::ReadFile( pipeRead, buffer, bufferSize, &bytesRead, NULL ) && bytesRead > 0 )
-      outStream << string( buffer, bytesRead );
-  }
+    static DWORD WINAPI Run( void* data )
+    {
+      Reader& r = *reinterpret_cast<Reader*>( data );
+      DWORD bytesRead;
+      while( ::ReadFile( r.pipeRead, r.buffer, r.bufferSize, &bytesRead, NULL ) && bytesRead > 0 )
+        r.outStream << string( r.buffer, bytesRead );
+      return 0;
+    }
+    ostream& outStream;
+    HANDLE& pipeRead;
+    char* buffer;
+    const int& bufferSize;
+    HANDLE thread;
+  } reader = { outStream, pipeRead, buffer, bufferSize, 0 };
+  reader.thread = ::CreateThread( 0, 0, &Reader::Run, &reader, 0, 0 );
+  result &= ( reader.thread != 0 );
+  result &= ( WAIT_OBJECT_0 == ::WaitForSingleObject( procInfo.hProcess, INFINITE ) );
+  if( WAIT_OBJECT_0 != ::WaitForSingleObject( reader.thread, 150 ) )
+    ::CancelIo( pipeRead );
+  if( WAIT_OBJECT_0 != ::WaitForSingleObject( reader.thread, 150 ) )
+    ::TerminateThread( reader.thread, 0 );
+  DWORD dwExitCode;
+  result &= ::GetExitCodeProcess( procInfo.hProcess, &dwExitCode );
   outExitCode = dwExitCode;
+  ::CloseHandle( reader.thread );
   ::CloseHandle( pipeRead );
   ::CloseHandle( procInfo.hProcess );
   ::CloseHandle( procInfo.hThread );
