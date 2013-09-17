@@ -47,7 +47,7 @@ class BciSource(BciGenericSource):
 	#############################################################
 	
 	def Process(self, sig):
-		return 10000.0 * numpy.sin(2.0 * 5.0 * numpy.pi * sig)
+		return numpy.sin(2.0 * 5.0 * numpy.pi * sig)
 		
 	#############################################################
 	

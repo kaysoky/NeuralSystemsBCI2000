@@ -1,9 +1,20 @@
-cd ..\prog
+#! ../prog/BCI2000Shell
+@cls & ..\prog\BCI2000Shell %0 %* #! && exit /b 0 || exit /b 1\n
 
-call portable.bat
-:: this is necessary so that BCI2000 can find Python:  see the comments in portable.bat
 
-start Operator               --Telnet localhost:3999 --OnConnect "-LOAD PARAMETERFILE ..\parms\PythonDemo1_Triangle.prm"
-start PythonSource           --PythonSrcClassFile=TrefoilSource.py
-start PythonSignalProcessing --PythonSigClassFile=
-start PythonApplication      --PythonAppClassFile=TriangleApplication.py
+execute script FindPortablePython.bat  # this is necessary so that BCI2000 can find Python
+
+
+change directory $BCI2000LAUNCHDIR
+show window; set title ${Extract file base $0}
+reset system
+startup system localhost
+
+start executable PythonSource           --local --PythonSrcClassFile=TrefoilSource.py
+start executable PythonSignalProcessing --local --PythonSigClassFile=
+start executable PythonApplication      --local --PythonAppClassFile=TriangleApplication.py
+
+wait for connected 600
+
+load parameterfile "../parms/PythonDemo1_Triangle.prm"
+
