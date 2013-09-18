@@ -167,6 +167,7 @@ gUSBampADC::~gUSBampADC()
 void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
                                   SignalProperties& outSignalProperties ) const
 {
+  Parameter( "SamplingRate" );
   // Requested output signal properties.
   FLOAT driVer = GT_GetDriverVersion();
   bcidbg( 0 ) << "g.USBamp driver version = " << driVer <<endl;
@@ -288,9 +289,9 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
             tmpChList.push_back(curCh);
         }
         //sourceChListOffset += devChs;
-		// yes this fix is logically necessary, but other corrections to the
-		// logic are also necessary.  the module *only* works with multiple
-		// amps because of this "mistake"
+    // yes this fix is logically necessary, but other corrections to the
+    // logic are also necessary.  the module *only* works with multiple
+    // amps because of this "mistake"
     }
 
 
@@ -515,10 +516,10 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
     mBufferSize = 0;
 
     for (int dev=0; dev<m_numdevices; dev++)
-	{
-		m_numchans.at(dev)=Parameter("SourceChDevices")(dev);
-		// set the channel list for sampling
-		UCHAR *channels=new UCHAR[m_numchans.at(dev)];
+  {
+    m_numchans.at(dev)=Parameter("SourceChDevices")(dev);
+    // set the channel list for sampling
+    UCHAR *channels=new UCHAR[m_numchans.at(dev)];
         if (Parameter("SourceChList")->NumValues() == 0)
         {
             for (int ch=0; ch<m_numchans.at(dev); ch++)
@@ -534,7 +535,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
 
 
         m_iBytesperScan.at(dev)=m_numchans.at(dev)*sizeof(float);
-		int pointsinbuffer=mSampleBlockSize*m_numchans.at(dev);
+    int pointsinbuffer=mSampleBlockSize*m_numchans.at(dev);
         m_buffersize.at(dev)=pointsinbuffer*sizeof(float)+HEADER_SIZE;    // buffer size in bytes
 
         mBufferSize += NUM_BUFS*pointsinbuffer;
@@ -569,8 +570,8 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         // this precedes normal configuration
         if (m_acqmode == 2) {
             double impedance;
-			bool reportNames = ( OptionalParameter( "ChannelNames", "" )->NumValues() == Parameter( "SourceCh" ) );
-			for (int cur_ch=0; cur_ch < m_numchans.at(dev); cur_ch++)
+      bool reportNames = ( OptionalParameter( "ChannelNames", "" )->NumValues() == Parameter( "SourceCh" ) );
+      for (int cur_ch=0; cur_ch < m_numchans.at(dev); cur_ch++)
             {
               int global_ch = channelsFromPreviousAmps + cur_ch;
               mVis.Send( CfgID::WindowTitle, "g.USBamp Impedance Values" );
@@ -579,11 +580,11 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
               stringstream memostream;
               memostream << "Amp " << dev;
               memostream << " Ch " << right << setw( 2 ) << (int)(channels[cur_ch]); // ...although you might have expected (cur_ch+1) here, this is the way it was
-			  memostream << " (" << m_DeviceIDs.at(dev) << "/" << setw(2) << setfill('0') << right << (int)(channels[cur_ch]) << setfill(' ') << ")";
+        memostream << " (" << m_DeviceIDs.at(dev) << "/" << setw(2) << setfill('0') << right << (int)(channels[cur_ch]) << setfill(' ') << ")";
               memostream << " " << right << setw(3) << (global_ch+1);
               if( reportNames )
                 memostream << left << setw(7) << ( " (" + (string)Parameter( "ChannelNames" )( global_ch ) + ")" );
-			  memostream << ": " << right << setw(7) << fixed << setprecision(1) << (impedance/1000.0) << " kOhm\r";
+        memostream << ": " << right << setw(7) << fixed << setprecision(1) << (impedance/1000.0) << " kOhm\r";
               string memostring = memostream.str();
               mVis.Send(memostring.c_str());
             }
@@ -617,25 +618,25 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         for (int ch=0; ch < m_numchans.at(dev); ch++)
         {
             // if we are in calibration mode (acqmode == 2), set the filters every time even if not changed
-			if ((oldfilternumber != filternumber) || (m_acqmode == 2))
-				GT_SetBandPass(m_hdev.at(dev), channels[ch], filternumber);
-			if ((oldnotchnumber != notchnumber) || (m_acqmode == 2))
-				GT_SetNotch(m_hdev.at(dev), channels[ch], notchnumber);
+      if ((oldfilternumber != filternumber) || (m_acqmode == 2))
+        GT_SetBandPass(m_hdev.at(dev), channels[ch], filternumber);
+      if ((oldnotchnumber != notchnumber) || (m_acqmode == 2))
+        GT_SetNotch(m_hdev.at(dev), channels[ch], notchnumber);
         }
 
         // if we have the digital input enabled, only provide a list of 1..(numchans.at(dev)-1)
         // (the last channel will be the digital input and transferred automatically
-		if (m_digitalinput){
-			if (m_numchans.at(dev) > 1)
-				GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev)-1);
-			else
-				GT_SetChannels(m_hdev.at(dev), NULL, 0);
-		}
+    if (m_digitalinput){
+      if (m_numchans.at(dev) > 1)
+        GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev)-1);
+      else
+        GT_SetChannels(m_hdev.at(dev), NULL, 0);
+    }
         else
             GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev));
 
         delete [] channels;
-        
+
         channelsFromPreviousAmps += m_numchans.at(dev);
     } //END device init loop
 
@@ -889,37 +890,37 @@ gUSBampADC::AcquireThread::Execute()
         delete [] mBuffer;
     } */
 
-	for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
-	{
-		if ((amp->m_hdev.at(dev)) && (amp->m_DeviceIDs.at(dev) != amp->mMasterDeviceID))
-		{
-			GT_Stop(amp->m_hdev.at(dev));
-			GT_ResetTransfer(amp->m_hdev.at(dev));
-			GT_CloseDevice(&(amp->m_hdev.at(dev)));
-			::CloseHandle( amp->m_hdev.at(dev) );
+  for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
+  {
+    if ((amp->m_hdev.at(dev)) && (amp->m_DeviceIDs.at(dev) != amp->mMasterDeviceID))
+    {
+      GT_Stop(amp->m_hdev.at(dev));
+      GT_ResetTransfer(amp->m_hdev.at(dev));
+      GT_CloseDevice(&(amp->m_hdev.at(dev)));
+      ::CloseHandle( amp->m_hdev.at(dev) );
 
-			for (int buf = 0; buf < amp->NUM_BUFS; buf++)   {
-				CloseHandle(m_hEvent[dev][buf]);
-				delete [] buffers[dev][buf];
-			}
-		}
-	}
-	for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
-	{
-		if ((amp->m_hdev.at(dev)) && (amp->m_DeviceIDs.at(dev) == amp->mMasterDeviceID))
-		{
-			GT_Stop(amp->m_hdev.at(dev));
-			GT_ResetTransfer(amp->m_hdev.at(dev));
-			GT_CloseDevice(&(amp->m_hdev.at(dev)));
-			::CloseHandle( amp->m_hdev.at(dev) );
+      for (int buf = 0; buf < amp->NUM_BUFS; buf++)   {
+        CloseHandle(m_hEvent[dev][buf]);
+        delete [] buffers[dev][buf];
+      }
+    }
+  }
+  for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
+  {
+    if ((amp->m_hdev.at(dev)) && (amp->m_DeviceIDs.at(dev) == amp->mMasterDeviceID))
+    {
+      GT_Stop(amp->m_hdev.at(dev));
+      GT_ResetTransfer(amp->m_hdev.at(dev));
+      GT_CloseDevice(&(amp->m_hdev.at(dev)));
+      ::CloseHandle( amp->m_hdev.at(dev) );
 
-			for (int buf = 0; buf < amp->NUM_BUFS; buf++){
-				CloseHandle(m_hEvent[dev][buf]);
-				delete [] buffers[dev][buf];
-			}
-		}
-		delete [] buffers[dev];
-	}
+      for (int buf = 0; buf < amp->NUM_BUFS; buf++){
+        CloseHandle(m_hEvent[dev][buf]);
+        delete [] buffers[dev][buf];
+      }
+    }
+    delete [] buffers[dev];
+  }
   return 0;
 }
 
