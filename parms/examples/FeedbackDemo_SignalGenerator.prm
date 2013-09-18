@@ -32,7 +32,7 @@ Source:Source%20Filter int NotchFilter= 0 0 0 2 // Power line notch filter: 0: d
 Source:Source%20Filter int HighPassFilter= 0 0 0 1 // Source high pass filter: 0: disabled, 1: at 0.1Hz (enumeration)
 Source:Alignment int AlignChannels= 1 0 0 1 // align channels in time (0=no, 1=yes)
 Source:Alignment floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
-Source:Online%20Processing stringlist TransmitChList= 1 1:4 1 1 128 // list of transmitted channels
+Source:Online%20Processing stringlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels
 Visualize:Processing%20Stages int VisualizeAlignmentFilter= 0 0 0 1 // Visualize AlignmentFilter output (boolean)
 Visualize:Processing%20Stages int VisualizeTransmissionFilter= 0 0 0 1 // Visualize TransmissionFilter output (boolean)
 Filtering:SpatialFilter matrix SpatialFilter= { Sf1 Sf2 Sf3 Sf4 } 4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 % % // columns represent input channels, rows represent output channels

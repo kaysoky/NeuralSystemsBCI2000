@@ -31,7 +31,7 @@ Source:Notch%20Filter int NotchFilter= 0 0 0 2 // Power line notch filter: 0: di
 Source:Alignment int AlignChannels= 1 0 0 1 // align channels in time (0=no, 1=yes)
 Source:Alignment floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
 Visualize:AlignmentFilter int VisualizeAlignment= 0 0 0 1 // visualize aligned channels (0=no, 1=yes) (boolean)
-Source:Online%20Processing stringlist TransmitChList= 1 1:4 1 1 128 // list of transmitted channels
+Source:Online%20Processing stringlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels
 System string EEGSourcePort= 2224 4200 1024 65535 // the EEGSource module's listening port
 System string EEGSourceIP= 134.2.123.129 127.0.0.1 % % // the EEGSource module's listening IP
 System matrix EEGSourceVersion= { Framework Revision Build } 1 2.0%20pre 1347,%202007-05-22%2019:30:25%20+0200%20(Di,%2022%20Mai%202007) May%2030%202007,%2011:33:19 // EEGSource version information
