@@ -75,7 +75,7 @@ class progress(object):
 		# comment it out, and a finished timer will display remaining: --:--:--
 		if len(self.timings) < 2: return None
 		if asof == None: asof = time.time()
-		# NB: the algorithm below may seem to simple/naive to work well or be adaptive,
+		# NB: the algorithm below may seem too simple/naive to work well or be adaptive,
 		#     but it works beautifully in tandem with the SPWorley trick in update() below
 		t0,p0 = self.timings[0]
 		t1,p1 = self.timings[-1]
@@ -105,7 +105,7 @@ class progress(object):
 		self.silent = False
 				
 		if self.estimate:
-			# the trick implemented by the next two lines is owes its existence to the mysterious genius SPWorley at http://stackoverflow.com/a/962772
+			# the trick implemented by the next two lines owes its existence to the mysterious genius SPWorley at http://stackoverflow.com/a/962772
 			lookfor = 2.0 * proportion_done - 1.0
 			while len(self.timings) > 1 and self.timings[0][1] < lookfor: self.timings.pop(0) 
 		
