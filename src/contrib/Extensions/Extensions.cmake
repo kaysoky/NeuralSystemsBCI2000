@@ -9,3 +9,4 @@ INCLUDE_EXTENSION( EyetrackerLogger  "${BCI2000_SRC_DIR}/contrib/Extensions/Eyet
 INCLUDE_EXTENSION( WiimoteLogger     "${BCI2000_SRC_DIR}/contrib/Extensions/WiimoteLogger" )
 INCLUDE_EXTENSION( GazeMonitorFilter "${BCI2000_SRC_DIR}/contrib/Extensions/GazeMonitorFilter" )
 INCLUDE_EXTENSION( AudioExtension    "${BCI2000_SRC_DIR}/contrib/Extensions/AudioExtension" ) 
+INCLUDE_EXTENSION( StimBoxFilter     "${BCI2000_SRC_DIR}/contrib/Extensions/StimBoxFilter" )

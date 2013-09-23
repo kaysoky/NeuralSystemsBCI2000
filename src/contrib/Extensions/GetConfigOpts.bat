@@ -23,3 +23,7 @@
 @set OPT=%optpfx%GAZEMONITORFILTER
 @set /p "ANS=  Include GazeMonitorFilter in Application framework (y/n)? "
 @if /i %ANS%==y ( set CMAKEOPTS=%CMAKEOPTS% -D%OPT%:BOOL=TRUE )
+
+@set OPT=%optpfx%STIMBOXFILTER
+@set /p "ANS=  Include StimBoxFilter in Application framework (y/n)? "
+@if /i %ANS%==y ( set CMAKEOPTS=%CMAKEOPTS% -D%OPT%:BOOL=TRUE )
