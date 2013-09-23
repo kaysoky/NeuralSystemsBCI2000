@@ -233,6 +233,19 @@ StimBoxFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     if( stimBoxError( gSTIMboxgetConnStatus( mStimBox, state ) ) || state == 0 )
       bcierr << "Error communicating with g.STIMbox -- Connection Interrupted." << endl;
 
+    // Set the input states according to the data vector
+    if( mpStimBoxThread && mpStimBoxThread->GetLock().Acquire() )
+    {
+      // Set the state
+      for( int i = 0; i < NUM_INPUT_PORTS; i++ )
+      {
+        ostringstream ss;
+        ss << "StimBoxInput" << i + 1;
+        State( ss.str() ) = ( bool )mInputPorts[ i ];
+      }
+      mpStimBoxThread->GetLock().Release();
+    }
+
     // Determine the output port states/frequencies
     vector< int > portUpdate;
     vector< double > portFreqUpdate;
@@ -266,20 +279,6 @@ StimBoxFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     if( !portUpdate.empty() )
       if( stimBoxError( gSTIMboxsetFrequency( mStimBox, mOutputPorts.size(), &mOutputPorts[0], &mOutputPortFreqs[0] ) ) )
         bcierr << "Error communicating with g.STIMbox -- setFrequency failed." << endl;
-
-    // Set the input states according to the data vector
-    if( mpStimBoxThread && mpStimBoxThread->GetLock().Acquire() )
-    {
-      // Set the state
-      for( int i = 0; i < NUM_INPUT_PORTS; i++ )
-      {
-        ostringstream ss;
-        ss << "StimBoxInput" << i + 1;
-        State( ss.str() ) = ( bool )mInputPorts[ i ];
-      }
-      mpStimBoxThread->GetLock().Release();
-    }
-
   }
 }
 
