@@ -103,7 +103,7 @@ SysLog::AddEntry( const QString& inText, int inMode )
   {
     case logEntryWarning:
       format.setFontPointSize( 10 );
-      format.setForeground( QBrush( Qt::darkGreen ) );
+      format.setForeground( QBrush( "darkorange" ) );
       format.setFontWeight( QFont::Bold );
       kind = "[Warning]";
       sep = " ";
@@ -112,7 +112,7 @@ SysLog::AddEntry( const QString& inText, int inMode )
 
     case logEntryError:
       format.setFontPointSize( 10 );
-      format.setForeground( QBrush( Qt::darkRed ) );
+      format.setForeground( QBrush( "darkred" ) );
       format.setFontWeight( QFont::Bold );
       mDontClose = true;
       break;
