@@ -165,21 +165,23 @@ streamsock::set_address( const std::string& address )
 bool
 streamsock::set_address( const std::string& inIP, unsigned short inPort )
 {
+  string ip = inIP;
+  if( ip == "localhost" )
+    ip = "127.0.0.1"; // Avoid INADDR_LOOPBACK due to ambiguity
+
   bool result = true;
   ::memset( &m_address, 0, sizeof( m_address ) );
   m_address.sin_family = AF_INET;
   m_address.sin_port = htons( inPort );
   in_addr& addr = m_address.sin_addr;
-  if( inIP == "*" ) // A "*" as IP address means "any local address" (for bind() ).
+  if( ip == "*" ) // A "*" as IP address means "any local address" (for bind() ).
     addr.s_addr = htonl( INADDR_ANY );
-  else if( inIP == "localhost" ) // Make sure we don't get an external address from gethostbyname().
-    addr.s_addr = htonl( INADDR_LOOPBACK );
   else
   {
-    addr.s_addr = ::inet_addr( inIP.c_str() );
+    addr.s_addr = ::inet_addr( ip.c_str() );
     if( addr.s_addr == htonl( INADDR_NONE ) )
     {
-      ::hostent* host = ::gethostbyname( inIP.c_str() );
+      ::hostent* host = ::gethostbyname( ip.c_str() );
       result = ( host && host->h_addrtype == AF_INET && host->h_addr_list && *host->h_addr_list );
       if( result )
         addr.s_addr = *reinterpret_cast<unsigned long*>( *host->h_addr_list );
