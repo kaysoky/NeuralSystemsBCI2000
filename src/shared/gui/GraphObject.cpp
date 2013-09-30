@@ -53,7 +53,7 @@ GraphObject::GraphObject( GraphDisplay& display, float zOrder )
   mVisible( true ),
   mRectSet( false ),
   mZOrder( zOrder ),
-  mAspectRatioMode( AspectRatioModes::AdjustNone )
+  mScalingMode( ScalingModes::AdjustNone )
 {
   mObjectRect = sNullRect;
   mBoundingRect = sNullRect;
@@ -94,6 +94,46 @@ GraphObject::SetObjectRect( const GUI::Rect& inRect )
     Change( changedFlags );
   }
   return *this;
+}
+
+GraphObject&
+GraphObject::SetCenterX( float f )
+{
+  float delta = f - CenterX();
+  GUI::Rect r = ObjectRect();
+  r.left += delta;
+  r.right += delta;
+  return SetObjectRect( r );
+}
+
+GraphObject&
+GraphObject::SetCenterY( float f )
+{
+  float delta = f - CenterY();
+  GUI::Rect r = ObjectRect();
+  r.top += delta;
+  r.bottom += delta;
+  return SetObjectRect( r );
+}
+
+GraphObject&
+GraphObject::SetWidth( float f )
+{
+  float delta = ( f - Width() ) / 2;
+  GUI::Rect r = ObjectRect();
+  r.left -= delta;
+  r.right += delta;
+  return SetObjectRect( r );
+}
+
+GraphObject&
+GraphObject::SetHeight( float f )
+{
+  float delta = ( f - Height() ) / 2;
+  GUI::Rect r = ObjectRect();
+  r.top -= delta;
+  r.bottom += delta;
+  return SetObjectRect( r );
 }
 
 GUI::Rect

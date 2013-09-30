@@ -73,6 +73,8 @@ struct Rect
 {
   float left, top, right, bottom;
 
+  float CenterX() const { return ( right + left ) / 2; }
+  float CenterY() const { return ( top + bottom ) / 2; }
   float Width() const { return right - left; }
   float Height() const { return bottom - top; }
 

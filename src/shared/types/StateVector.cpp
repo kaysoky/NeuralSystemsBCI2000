@@ -115,6 +115,16 @@ StateVector::SetStateValue( const string& inName, size_t inSample, State::ValueT
   }
 }
 
+void
+StateVector::SetStateValue( const string& inName, State::ValueType inValue )
+{
+  if( mpStateList && mpStateList->Exists( inName ) )
+  {
+    const State& s = ( *mpStateList )[ inName ];
+    SetStateValue( s.Location(), s.Length(), inValue );
+  }
+}
+
 // **************************************************************************
 // Function:   SetStateValue
 // Purpose:    sets a state's value in the state vector
@@ -131,6 +141,11 @@ StateVector::SetStateValue( size_t inLocation, size_t inLength, size_t inSample,
     mSamples[ i ].SetStateValue( inLocation, inLength, inValue );
 }
 
+void
+StateVector::SetStateValue( size_t inLocation, size_t inLength, State::ValueType inValue )
+{
+  SetStateValue( inLocation, inLength, 0, inValue );
+}
 // **************************************************************************
 // Function:   PostStateChange
 // Purpose:    Have a state changed upon the next call to CommitStateChanges().

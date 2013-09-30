@@ -149,7 +149,8 @@ Param::Param( const string& inName, const string& inSection,
 // Returns:    N/A
 // **************************************************************************
 Param::Param( const string& line )
-: mChanged( false )
+: mChanged( false ),
+  mReadonly( false )
 {
   istringstream iss( line );
   if( !( iss >> *this ) )

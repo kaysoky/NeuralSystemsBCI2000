@@ -43,16 +43,17 @@
 namespace GUI
 {
 
- namespace AspectRatioModes
+ namespace ScalingModes
  {
    enum
    {
-     AdjustNone,
-     AdjustWidth,
-     AdjustHeight,
-     AdjustBoth,
+     AdjustNone = 0,
+     AdjustWidth = 1,
+     AdjustHeight = 2,
+     AdjustBoth = AdjustWidth | AdjustHeight,
    };
  }
+ namespace AspectRatioModes = ScalingModes;
 
 // Forward declarations
 class GraphDisplay;
@@ -90,19 +91,27 @@ class GraphObject
   const GraphDisplay& Display() const
     { return mDisplay; }
   GraphObject& Hide()
-    { if( mVisible ) Invalidate(); mVisible = false; return *this; }
+    { return SetVisible( false ); }
   GraphObject& Show()
-    { if( !mVisible ) Invalidate(); mVisible = true; return *this; }
+    { return SetVisible( true ); }
+  GraphObject& SetVisible( bool b )
+   { if( mVisible != b ) Invalidate(); mVisible = b; return *this; }
   bool Visible() const
     { return mVisible; }
   GraphObject& SetZOrder( float z )
     { Invalidate(); mZOrder = z; return *this; }
   float ZOrder() const
     { return mZOrder; }
+  GraphObject& SetScalingMode( int m )
+    { Invalidate(); mScalingMode = m; Change(); return *this; }
+  int ScalingMode() const
+    { return mScalingMode; }
+
+  // Deprecated property name, use ScalingMode instead
   GraphObject& SetAspectRatioMode( int m )
-    { Invalidate(); mAspectRatioMode = m; Change(); return *this; }
+    { return SetScalingMode( m ); }
   int AspectRatioMode() const
-    { return mAspectRatioMode; }
+    { return ScalingMode(); }
 
   // Properties that describe the object's position/extension on screen.
   // All rectangles are given in normalized coordinates.
@@ -111,6 +120,19 @@ class GraphObject
   GraphObject& SetObjectRect( const GUI::Rect& );
   const GUI::Rect& ObjectRect() const
     { return mObjectRect; }
+  // Some convenience functions to set individual properties.
+  GraphObject& SetCenterX( float );
+  float CenterX() const
+    { return mObjectRect.CenterX(); }
+  GraphObject& SetCenterY( float );
+  float CenterY() const
+    { return mObjectRect.CenterY(); }
+  GraphObject& SetWidth( float );
+  float Width() const
+    { return mObjectRect.Width(); }
+  GraphObject& SetHeight( float );
+  float Height() const
+    { return mObjectRect.Height(); }
   //  The read-only BoundingRect property describes the object's actual extent on screen.
   GUI::Rect BoundingRect() const;
 
@@ -175,7 +197,7 @@ class GraphObject
   bool          mVisible,
                 mRectSet;
   float         mZOrder;
-  int           mAspectRatioMode;
+  int           mScalingMode;
   GUI::Rect     mObjectRect, // stored in normalized coordinates
                 mBoundingRect; // stored in pixel coordinates
 };

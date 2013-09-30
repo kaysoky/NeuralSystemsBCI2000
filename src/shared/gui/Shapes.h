@@ -33,7 +33,7 @@
 class Shape : public GUI::GraphObject
 {
  public:
-  Shape( GUI::GraphDisplay& display, int zOrder = ShapeZOrder );
+  Shape( GUI::GraphDisplay& display, int kind, int zOrder = ShapeZOrder );
   virtual ~Shape();
   // Properties
   Shape&     SetCenter( const GUI::Point& );
@@ -62,21 +62,43 @@ class Shape : public GUI::GraphObject
   static bool AreaIntersection( const Shape&, const Shape& );
 
  protected:
+  int Kind() const;
+  Shape& SetKind( int );
+
+  const GUI::Rect& Rect() const
+    { return mRect; }
+
+  enum { None, Rectangle, Ellipse, Pie };
+  struct ShapeDef
+  {
+    int kind;
+    RGBColor color, fillColor;
+    float lineWidth, startAngle, endAngle;
+
+    ShapeDef( int inKind = None )
+     : kind( inKind ),
+       color( RGBColor::White ),
+       fillColor( RGBColor::NullColor ),
+       lineWidth( 0 ),
+       startAngle( 0 ),
+       endAngle( 360 )
+     {}
+  };
+  static void Draw( const GUI::DrawContext&, const ShapeDef& );
+
   // GraphObject event handlers
-  virtual void OnPaint( const GUI::DrawContext& ) = 0;
-  GUI::Rect   mRect;
+  virtual void OnPaint( const GUI::DrawContext& );
 
  private:
-  float       mLineWidth;
-  RGBColor    mColor,
-              mFillColor;
+  GUI::Rect mRect;
+  ShapeDef mDef;
 };
 
 class RectangularShape : public Shape
 {
  public:
   RectangularShape( GUI::GraphDisplay& display, int zOrder = ShapeZOrder )
-    : Shape( display, zOrder )
+    : Shape( display, Rectangle, zOrder )
     {}
   virtual ~RectangularShape()
     {}
@@ -84,17 +106,13 @@ class RectangularShape : public Shape
 
  protected:
   virtual TestResult IntersectsArea( const Shape& ) const;
-
- protected:
-  // GraphObject event handlers
-  virtual void OnPaint( const GUI::DrawContext& );
 };
 
 class EllipticShape : public Shape
 {
  public:
   EllipticShape( GUI::GraphDisplay& display, int zOrder = ShapeZOrder )
-    : Shape( display, zOrder )
+    : Shape( display, Ellipse, zOrder )
     {}
   virtual ~EllipticShape()
     {}
@@ -102,10 +120,6 @@ class EllipticShape : public Shape
 
  protected:
   virtual TestResult IntersectsArea( const Shape& ) const;
-
- protected:
-  // GraphObject event handlers
-  virtual void OnPaint( const GUI::DrawContext& );
 };
 
 #endif // SHAPES_H

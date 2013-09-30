@@ -81,6 +81,19 @@ ConstPropagatingNode::OnSimplify()
 
 
 // ExpressionNodes::AddressNode
+AddressNode::AddressNode( Node* inNode, const string* inpString )
+: mpString( 0 )
+{
+  if( inpString )
+    mpString = new string( *inpString );
+  Add( inNode );
+}
+
+AddressNode::~AddressNode()
+{
+  delete mpString;
+}
+
 string
 AddressNode::EvaluateToString() const
 {
@@ -105,4 +118,3 @@ AddressNode::OnEvaluate()
   throw std_logic_error( "This function should never be called" );
   return 0;
 }
-

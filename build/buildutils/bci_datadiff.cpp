@@ -108,8 +108,11 @@ int main( int argc, char *argv[] )
   cout << "Comparing test: " << argv[1] << " vs ref: " << argv[2] << " ..." << endl
        << "------------------------------------------" << endl;
   if( output )
+  {
+    out_file << "TortoiseMerge \"" << argv[2] << "\" \"" << argv[1] << "\"\n\n"; 
     out_file << "Comparing test: " << argv[1] << " vs ref: " << argv[2] << " ..." << endl
              << "------------------------------------------" << endl;
+  }
   while( !in_test.eof() || !in_ref.eof() )
   {
     // Get the input from the test and the ref

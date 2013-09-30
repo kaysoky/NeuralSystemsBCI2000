@@ -38,12 +38,10 @@ using namespace GUI;
 
 static const float eps = numeric_limits<float>::epsilon();
 
-Shape::Shape( GraphDisplay& display, int zOrder )
-: GraphObject( display, zOrder ),
-  mLineWidth( 0.0 ),
-  mColor( RGBColor::White ),
-  mFillColor( RGBColor::NullColor )
+Shape::Shape( GraphDisplay& display, int kind, int zOrder )
+: GraphObject( display, zOrder )
 {
+  mDef.kind = kind;
 }
 
 Shape::~Shape()
@@ -82,7 +80,7 @@ Shape::Center() const
 Shape&
 Shape::SetLineWidth( float f )
 {
-  mLineWidth = f;
+  mDef.lineWidth = f;
   Change();
   return *this;
 }
@@ -90,13 +88,13 @@ Shape::SetLineWidth( float f )
 float
 Shape::LineWidth() const
 {
-  return mLineWidth;
+  return mDef.lineWidth;
 }
 
 Shape&
 Shape::SetFillColor( RGBColor c )
 {
-  mFillColor = c;
+  mDef.fillColor = c;
   Change();
   return *this;
 }
@@ -104,13 +102,13 @@ Shape::SetFillColor( RGBColor c )
 RGBColor
 Shape::FillColor() const
 {
-  return mFillColor;
+  return mDef.fillColor;
 }
 
 Shape&
 Shape::SetColor( RGBColor c )
 {
-  mColor = c;
+  mDef.color = c;
   Change();
   return *this;
 }
@@ -118,7 +116,7 @@ Shape::SetColor( RGBColor c )
 RGBColor
 Shape::Color() const
 {
-  return mColor;
+  return mDef.color;
 }
 
 void
@@ -134,6 +132,14 @@ Shape::OnMove( GUI::DrawContext& ioDC )
 
   mRect = ioDC.rect;
   ioDC.rect = corrected;
+}
+
+void
+Shape::OnPaint( const GUI::DrawContext& inDC )
+{
+  GUI::DrawContext dc = inDC;
+  dc.rect = mRect;
+  Draw( dc, mDef );
 }
 
 bool
@@ -169,48 +175,6 @@ RectangularShape::IntersectsArea( const Shape& s ) const
     result = EmptyRect( ov ) ? false_ : true_;
   }
   return result;
-}
-
-void
-RectangularShape::OnPaint( const GUI::DrawContext& inDC )
-{
-#if USE_QT
-  QPainter* p = inDC.handle.painter;
-  QRect drawRect(
-    static_cast<int>( mRect.left ),
-    static_cast<int>( mRect.top ),
-    static_cast<int>( mRect.right - mRect.left ),
-    static_cast<int>( mRect.bottom - mRect.top )
-  );
-
-  // Prepare the brush
-  QBrush fillBrush;
-  if( this->FillColor() == RGBColor( RGBColor::NullColor ) )
-    fillBrush.setStyle( Qt::NoBrush );
-  else
-  {
-    QColor fillColor( this->FillColor().R(), this->FillColor().G(), this->FillColor().B() );
-    fillBrush.setStyle( Qt::SolidPattern );
-    fillBrush.setColor( fillColor );
-  }
-  p->setBrush( fillBrush );
-
-  // Prepare the pen
-  QPen outlinePen;
-  if( this->Color() == RGBColor( RGBColor::NullColor ) )
-    outlinePen.setStyle( Qt::NoPen );
-  else
-  {
-    QColor outlineColor( this->Color().R(), this->Color().G(), this->Color().B() );
-    outlinePen.setStyle( Qt::SolidLine );
-    outlinePen.setColor( outlineColor );
-    outlinePen.setWidth( static_cast<int>( this->LineWidth() ) );
-  }
-  p->setPen( outlinePen );
-
-  // Draw the rectangle
-  p->drawRect( drawRect );
-#endif // USE_QT
 }
 
 // EllipticShape
@@ -315,44 +279,58 @@ EllipticShape::IntersectsArea( const Shape& s ) const
 }
 
 void
-EllipticShape::OnPaint( const GUI::DrawContext& inDC )
+Shape::Draw( const GUI::DrawContext& inDC, const ShapeDef& inDef )
 {
+  const RGBColor &color = inDef.color,
+                 &fillColor = inDef.fillColor;
+
 #if USE_QT
   QPainter* p = inDC.handle.painter;
   QRect drawRect(
-    static_cast<int>( mRect.left ),
-    static_cast<int>( mRect.top ),
-    static_cast<int>( mRect.right - mRect.left ),
-    static_cast<int>( mRect.bottom - mRect.top )
+    static_cast<int>( inDC.rect.left ),
+    static_cast<int>( inDC.rect.top ),
+    static_cast<int>( inDC.rect.Width() ),
+    static_cast<int>( inDC.rect.Height() )
   );
 
-  // Prepare the Brush
-  QBrush fillBrush;
-  if( this->FillColor() == RGBColor( RGBColor::NullColor ) )
-    fillBrush.setStyle( Qt::NoBrush );
+  // Prepare the brush
+  QBrush fillBrush_q;
+  if( fillColor == RGBColor( RGBColor::NullColor ) )
+    fillBrush_q.setStyle( Qt::NoBrush );
   else
   {
-    QColor fillColor( this->FillColor().R(), this->FillColor().G(), this->FillColor().B() );
-    fillBrush.setStyle( Qt::SolidPattern );
-    fillBrush.setColor( fillColor );
+    QColor fillColor_q( fillColor.R(), fillColor.G(), fillColor.B() );
+    fillBrush_q.setStyle( Qt::SolidPattern );
+    fillBrush_q.setColor( fillColor_q );
   }
-  p->setBrush( fillBrush );
+  p->setBrush( fillBrush_q );
 
-  // Prepare the Pen
-  QPen outlinePen;
-  if( this->Color() == RGBColor( RGBColor::NullColor ) )
-    outlinePen.setStyle( Qt::NoPen );
+  // Prepare the pen
+  QPen outlinePen_q;
+  if( color == RGBColor::NullColor )
+    outlinePen_q.setStyle( Qt::NoPen );
   else
   {
-    QColor outlineColor( this->Color().R(), this->Color().G(), this->Color().B() );
-    outlinePen.setStyle( Qt::SolidLine );
-    outlinePen.setColor( outlineColor );
-    outlinePen.setWidth( static_cast<int>( this->LineWidth() ) );
+    QColor outlineColor_q( color.R(), color.G(), color.B() );
+    outlinePen_q.setStyle( Qt::SolidLine );
+    outlinePen_q.setColor( outlineColor_q );
   }
-  p->setPen( outlinePen );
+  outlinePen_q.setWidth( static_cast<int>( inDef.lineWidth ) );
+  p->setPen( outlinePen_q );
 
-  // Draw the rectangle
-  p->drawEllipse( drawRect );
+  switch( inDef.kind )
+  {
+    case Rectangle:
+      p->drawRect( drawRect );
+      break;
+    case Ellipse:
+      p->drawEllipse( drawRect );
+      break;
+    case Pie:
+      p->drawPie( drawRect, 16*::fmod( inDef.startAngle, 360 ), 16*(inDef.endAngle - inDef.startAngle) );
+      break;
+    default:
+      throw std_logic_error( "Unknown Shape kind: " << inDef.kind );
+  }
 #endif // USE_QT
 }
-

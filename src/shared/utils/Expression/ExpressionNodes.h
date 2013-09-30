@@ -165,7 +165,8 @@ class FunctionNode<3> : public ConstPropagatingNode
 class AddressNode : public Node
 {
  public:
-  AddressNode( Node* inNode, const std::string* inString ) : mpString( inString ) { Add( inNode ); }
+  AddressNode( Node*, const std::string* );
+  ~AddressNode();
   std::string EvaluateToString() const;
 
  protected:

@@ -721,8 +721,7 @@ void EnvironmentBase::AddStates( const char** inStates, size_t inCount, int inKi
   for( size_t i = 0; i < inCount; ++i )
   {                                                                   
     class State s;                                                    
-    istringstream iss( inStates[i] );                           
-    if( !( iss >> s ) )                                               
+    if( !s.FromDefinition( inStates[i] ) )                                               
       bcierr << "error in " << KindString( inKind ) << " definition:\n"                        
              << inStates[i];                                            
     else                                                              

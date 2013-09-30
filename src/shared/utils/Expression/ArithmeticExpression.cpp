@@ -105,6 +105,8 @@ ArithmeticExpression::Compile( const Context& inContext )
 bool
 ArithmeticExpression::IsValid( const Context& inContext )
 {
+  if( mCompilationState != none )
+    throw std_logic_error( "IsValid() called on compiled expression" );
   mErrors.clear();
   mErrors.str( "" );
   mContext = inContext;
@@ -186,9 +188,9 @@ Node*
 ArithmeticExpression::VariableAssignment( const std::string& inName, Node* inRHS )
 {
   Node* result = NULL;
-  if( mContext.constants &&  mContext.constants->find( inName ) !=  mContext.constants->end() )
+  if( mContext.constants &&  mContext.constants->find( inName ) != mContext.constants->end() )
     Errors() << inName << ": Not assignable" << endl;
-  else if( ! mContext.variables )
+  else if( !mContext.variables )
     Errors() << inName << ": Cannot create variables" << endl;
   else
     result = new AssignmentNode( ( *mContext.variables )[inName], inRHS );
@@ -405,3 +407,12 @@ _matherrl( struct _exceptionl* e )
   return true;
 }
 #endif // VCL_EXCEPTIONS
+
+// VariableContainer
+ostream&
+operator<<( ostream& os, const ArithmeticExpression::VariableContainer& inVars )
+{
+  for( ArithmeticExpression::VariableContainer::const_iterator i = inVars.begin(); i != inVars.end(); ++i )
+    os << i->first << ": " << i->second << '\n';
+  return os;
+}

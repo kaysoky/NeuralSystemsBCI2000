@@ -13,6 +13,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SRC_DIR}/shared/types
   ${PROJECT_SRC_DIR}/shared/utils
   ${PROJECT_SRC_DIR}/shared/utils/Expression
+  ${PROJECT_SRC_DIR}/shared/utils/Scripting
   ${PROJECT_SRC_DIR}/shared/fileio
   ${PROJECT_SRC_DIR}/shared/fileio/dat
 )

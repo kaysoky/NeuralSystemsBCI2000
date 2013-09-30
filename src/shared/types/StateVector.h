@@ -53,11 +53,9 @@ class StateVector
 
   State::ValueType StateValue( const std::string& name, size_t sample = 0 ) const;
   State::ValueType StateValue( size_t location, size_t length, size_t sample = 0 ) const;
-  void             SetStateValue( const std::string& name, State::ValueType value )
-                   { SetStateValue( name, 0, value ); }
+  void             SetStateValue( const std::string& name, State::ValueType value );
   void             SetStateValue( const std::string& name, size_t sample, State::ValueType value );
-  void             SetStateValue( size_t location, size_t length, State::ValueType value )
-                   { SetStateValue( location, length, 0, value ); }
+  void             SetStateValue( size_t location, size_t length, State::ValueType value );
   void             SetStateValue( size_t location, size_t length, size_t sample, State::ValueType value );
   void             PostStateChange( const std::string& name, State::ValueType value );
   void             CommitStateChanges();

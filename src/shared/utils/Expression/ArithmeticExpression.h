@@ -194,5 +194,7 @@ class ArithmeticExpression
   PointerContainer mAllocations;
 };
 
+std::ostream& operator<<( std::ostream&, const ArithmeticExpression::VariableContainer& );
+
 #endif // ARITHMETIC_EXPRESSION_H
 

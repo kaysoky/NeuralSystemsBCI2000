@@ -138,12 +138,15 @@ TextField::OnChange( GUI::DrawContext& ioDC )
       break;
 
     case AspectRatioModes::AdjustHeight:
-      height = ( height * width ) / size.width();
+      if( size.width() && height )
+        height = ( height * width ) / size.width();
+      else
+        height = size.height();
       break;
 
     case AspectRatioModes::AdjustBoth:
-      height = size.width();
-      width = size.height();
+      width = size.width();
+      height = size.height();
       break;
 
     case AspectRatioModes::AdjustNone:

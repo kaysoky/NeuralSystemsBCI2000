@@ -45,6 +45,7 @@ class RGBColor
   { //                R G B
     InvalidColor = 0xffffffff,
     NullColor    = 0xff000000,
+    None         = NullColor,
     Black        = 0x00000000,
     Maroon       = 0x00800000,
     Green        = 0x00008000,
