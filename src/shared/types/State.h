@@ -27,6 +27,7 @@
 #define STATE_H
 
 #include <iostream>
+#include <string>
 #include <cstring>
 
 class StateVector;
@@ -57,6 +58,8 @@ class State
   bool operator==( const State& ) const;
   bool operator!=( const State& s ) const
                  { return !operator==( s ); }
+
+  bool FromDefinition( const std::string& );
 
   const std::string& Name() const
       { return mName; }

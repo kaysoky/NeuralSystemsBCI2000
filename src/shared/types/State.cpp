@@ -79,6 +79,15 @@ State::operator==( const State& s ) const
       && this->Kind() == s.Kind();
 }
 
+bool
+State::FromDefinition( const string& inDefinition )
+{
+  if( ReadFromStream( istringstream( inDefinition ) ) )
+    return true;
+  string s = inDefinition + " 0 0";
+  return ReadFromStream( istringstream( s ) );
+}
+
 // **************************************************************************
 // Function:   ReadFromStream
 // Purpose:    Member function for formatted stream input of a single
