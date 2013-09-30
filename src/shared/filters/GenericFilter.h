@@ -39,7 +39,55 @@
 #include "BCIError.h"
 #include "BCIRegistry.h"
 
-class GenericFilter : protected Environment, private Uncopyable
+namespace Directory
+{
+  class Node
+  {
+   public:
+    typedef std::list<Node*> Container;
+
+    Node() : mpParent( 0 )
+      {}
+    virtual ~Node();
+    Node* Parent() const
+      { return mpParent; }
+    const Container& Children() const
+      { return mChildren; }
+
+    const std::string& Name() const;
+    std::string Path() const;
+
+   protected:
+    void SetParent( Node* );
+    Container& Children()
+      { return mChildren; }
+
+   protected:
+    virtual std::string OnName() const;
+    virtual void OnSetParent( Node* ) {}
+
+   private:
+    Node* mpParent;
+    Container mChildren;
+    mutable std::string mName;
+  };
+  class RootNode : public Node
+  {
+    std::string OnName() const
+      { return ""; }
+  };
+  template<class F> bool Traverse( const Node* pNode, F& f )
+  {
+    if( !pNode->Name().empty() && !f( pNode ) )
+      return false;
+    for( Node::Container::const_iterator i = pNode->Children().begin(); i != pNode->Children().end(); ++i )
+      if( !Traverse( *i, f ) )
+        return false;
+    return true;
+  }
+} // namespace
+
+class GenericFilter : public Directory::Node, protected Environment, private Uncopyable
 {
  protected:
           GenericFilter();
@@ -73,6 +121,8 @@ class GenericFilter : protected Environment, private Uncopyable
 
   virtual void Process( const GenericSignal& Input,
                               GenericSignal& Output ) = 0;
+  virtual void Resting( const GenericSignal& Input,
+                              GenericSignal& Output ) {}
   virtual void Resting() {}
   virtual void Halt() {}
 
@@ -94,8 +144,12 @@ class GenericFilter : protected Environment, private Uncopyable
   void CallStopRun();
   void CallProcess( const GenericSignal& Input,
                           GenericSignal& Output );
+  void CallResting( const GenericSignal& Input,
+                          GenericSignal& Output );
   void CallResting();
   void CallHalt();
+
+  std::string VisParamName() const;
 
  // The following elements provide means to make the existence of a filter
  // class known to the framework at runtime, without the need to make changes
@@ -114,10 +168,11 @@ class GenericFilter : protected Environment, private Uncopyable
  // somewhere in the filter's cpp file where FilterPosition is a
  // symbol that, by string comparison, will determine the filter's
  // position in the filter sequence.
- private:
+ protected:
   class Registrar
   {
    public:
+    Registrar();
     Registrar( const char* inPos, int inPriority, bool inAutoDelete );
     virtual ~Registrar();
     const std::string& Position() const { return mPos; }
@@ -141,9 +196,7 @@ class GenericFilter : protected Environment, private Uncopyable
     static size_t sCreatedInstances;
 
     struct AutoDeleteSet : public std::set<Registrar*>
-    {
-      ~AutoDeleteSet();
-    };
+    { ~AutoDeleteSet(); };
     static AutoDeleteSet& AutoDeleteInstance();
   };
   typedef Registrar::RegistrarSet_ RegistrarSet;
@@ -154,20 +207,27 @@ class GenericFilter : protected Environment, private Uncopyable
   template<typename T> class FilterRegistrar : public Registrar
   {
    public:
+    FilterRegistrar( Directory::Node* pNode )
+    : mpNode( pNode ) {}
     FilterRegistrar( const char* inPos, int inPriority, bool inAutoDelete = false )
-    : Registrar( inPos, inPriority, inAutoDelete )
-    {}
+      : Registrar( inPos, inPriority, inAutoDelete ), mpNode( GenericFilter::Directory() ) {}
     virtual const std::type_info& Typeid() const
     { return typeid( T ); }
     virtual GenericFilter* NewInstance() const
-    { return new T; }
+    { GenericFilter* p = new T; p->SetParent( mpNode ); return p; }
+   private:
+    Directory::Node* mpNode;
   };
 
   // Get available filters' position strings.
   static const std::string& GetFirstFilterPosition();
   static const std::string& GetLastFilterPosition();
 
-  // Get info about the filter chain.
+  // This container holds all instantiated filters.
+  typedef std::list<GenericFilter*> FiltersType;
+  static FiltersType& AllFilters();
+
+  // Get info about a filter chain.
   struct ChainEntry
   { EncodedString position, name; };
   class ChainInfo : public std::vector<ChainEntry>
@@ -176,81 +236,120 @@ class GenericFilter : protected Environment, private Uncopyable
     std::ostream& WriteToStream( std::ostream& );
     std::istream& ReadFromStream( std::istream& );
   };
-  static ChainInfo GetChainInfo();
+  class Chain
+  {
+   public:
+    Chain() {}
+    Chain( const Registrar::RegistrarSet_& );
+    void Add( Registrar* );
+
+    ChainInfo Info();
+    // Instantiate all registered filters once.
+    void Instantiate();
+    // Dispose of all filter instances not passed to another filter with PassFilter<>().
+    void Dispose();
+    // Apply the single filter functions to all filters instantiated and not passed
+    // to another filter with PassFilter<>().
+    void OnPreflight( const SignalProperties& Input,
+                            SignalProperties& Output );
+    void OnInitialize();
+    void OnStartRun();
+    void OnProcess( const GenericSignal& Input,
+                          GenericSignal& Output, bool inResting = false );
+    void OnStopRun();
+    void OnResting();
+    void OnHalt();
+
+    // Get the first filter instance of a given type, e.g.:
+    // MyFilter* myFilter = GenericFilter::GetFilter<MyFilter>();
+    template<typename T> T* GetFilter()
+    {
+      T* filterFound = NULL;
+      FiltersType::iterator i = mOwnedFilters.begin();
+      while( i != mOwnedFilters.end() && filterFound == NULL )
+      {
+        filterFound = dynamic_cast<T*>( *i );
+        ++i;
+      }
+      return filterFound;
+    }
+    // Get the first filter instance of a given type, and remove it
+    // from the owned filters list. This is meant for building a hierarchy of
+    // GenericFilter instances.
+    template<typename T> T* PassFilter()
+    {
+      T* filter = GetFilter<T>();
+      mOwnedFilters.remove( filter );
+      return filter;
+    }
+   private:
+    // These are filters managed by the GenericFilter class:
+    // Instantiation, Disposal, and application of filter functions.
+    FiltersType mOwnedFilters;
+
+    typedef std::map<GenericFilter*,GenericSignal> SignalsType;
+    SignalsType mOwnedSignals;
+
+    // Classes and functions related to default visualization.
+    class FilterVis : public GenericVisualization
+    {
+     public:
+      FilterVis()
+           : mEnabled( false ) {}
+      FilterVis( const FilterVis& f )
+           : GenericVisualization( f ), mEnabled( f.mEnabled ) {}
+      FilterVis& SetEnabled( bool b )
+           { mEnabled = b; return *this; }
+      bool Enabled() const
+           { return mEnabled; }
+
+     private:
+      bool mEnabled;
+    };
+    typedef std::map<GenericFilter*, FilterVis> VisualizationsType;
+    VisualizationsType mVisualizations;
+    Registrar::RegistrarSet_ mRegistrars;
+  };
+  static Chain& RootChain();
+  static Directory::Node* Directory();
+
+  static ChainInfo GetChainInfo()
+    { return RootChain().Info(); }
 
   // Instantiate all registered filters once.
-  static void InstantiateFilters();
+  static void InstantiateFilters()
+    { RootChain().Instantiate(); }
   // Dispose of all filter instances not passed to another filter with PassFilter<>().
-  static void DisposeFilters();
+  static void DisposeFilters()
+    { RootChain().Dispose(); }
   // Apply the single filter functions to all filters instantiated and not passed
   // to another filter with PassFilter<>().
   static void PreflightFilters( const SignalProperties& Input,
-                                      SignalProperties& Output );
-  static void InitializeFilters();
-  static void StartRunFilters();
+                                      SignalProperties& Output )
+    { RootChain().OnPreflight( Input, Output ); }
+  static void InitializeFilters()
+    { RootChain().OnInitialize(); }
+  static void StartRunFilters()
+    { RootChain().OnStartRun(); }
   static void ProcessFilters( const GenericSignal& Input,
-                                    GenericSignal& Output );
-  static void StopRunFilters();
-  static void RestingFilters();
-  static void HaltFilters();
+                                    GenericSignal& Output, bool resting = false )
+    { RootChain().OnProcess( Input, Output, resting ); }
+  static void StopRunFilters()
+    { RootChain().OnStopRun(); }
+  static void RestingFilters()
+    { RootChain().OnResting(); }
+  static void HaltFilters()
+    { RootChain().OnHalt(); }
 
   // Create a new instance of the same type as the argument pointer.
   static GenericFilter* NewInstance( const GenericFilter* );
-  // Get the first filter instance of a given type, e.g.:
-  // MyFilter* myFilter = GenericFilter::GetFilter<MyFilter>();
   template<typename T> static T* GetFilter()
-  {
-    T* filterFound = NULL;
-    FiltersType::iterator i = OwnedFilters().begin();
-    while( i != OwnedFilters().end() && filterFound == NULL )
-    {
-      filterFound = dynamic_cast<T*>( *i );
-      ++i;
-    }
-    return filterFound;
-  }
+  { return RootChain().GetFilter<T>(); }
   // Get the first filter instance of a given type, and remove it
   // from the owned filters list. This is meant for building a hierarchy of
   // GenericFilter instances.
   template<typename T> static T* PassFilter()
-  {
-    T* filter = GetFilter<T>();
-    OwnedFilters().remove( filter );
-    return filter;
-  }
-
- private:
-  typedef std::list<GenericFilter*> FiltersType;
-  // This container holds all instantiated filters.
-  static FiltersType& AllFilters();
-  // These are filters managed by the GenericFilter class:
-  // Instantiation, Disposal, and application of filter functions.
-  static FiltersType& OwnedFilters();
-  typedef std::map<GenericFilter*,GenericSignal> SignalsType;
-  static SignalsType& OwnedSignals();
-
-  // Classes and functions related to default visualization.
-  class FilterVis : public GenericVisualization
-  {
-   public:
-    FilterVis()
-         : mEnabled( false ) {}
-    FilterVis( const FilterVis& f )
-         : GenericVisualization( f ), mEnabled( f.mEnabled ) {}
-    FilterVis& SetEnabled( bool b )
-         { mEnabled = b; return *this; }
-    bool Enabled() const
-         { return mEnabled; }
-
-   private:
-    bool mEnabled;
-  };
-  typedef std::map<GenericFilter*, FilterVis> VisualizationsType;
-  static VisualizationsType& Visualizations();
-  std::string VisParamName() const;
+  { return RootChain().PassFilter<T>(); }
 };
 
 #endif // GENERIC_FILTER_H
-
-
-

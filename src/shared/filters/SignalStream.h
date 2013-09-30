@@ -42,6 +42,7 @@ class SignalStream : public GenericFilter
   void Initialize( const SignalProperties&, const SignalProperties& ) {}
   void StartRun();
   void Process( const GenericSignal&, GenericSignal& );
+  bool AllowsVisualization() const { return false; }
  private:
   std::vector<std::string> mChannels;
 };

@@ -331,6 +331,7 @@ class StateMachine : public CallbackBase, private OSThread
   void Handle( const CoreConnection&, SysState );
 
  private:
+  bool SpecialParameter( const CoreConnection&, const Param& );
   bool IsConsistentState( SysState ) const;
   void SetConnectionState( SysState );
   void CloseConnections();

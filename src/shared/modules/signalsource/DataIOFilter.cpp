@@ -571,12 +571,25 @@ DataIOFilter::StopRun()
     mTimingSignal( Stimulus, 0 ) = GenericSignal::NaN;
 }
 
-
 void
 DataIOFilter::Process( const GenericSignal& /*Input*/,
                              GenericSignal& Output )
 {
+  DoProcess( Output, false );
+}
+
+void
+DataIOFilter::Resting( const GenericSignal& /*Input*/,
+                             GenericSignal& Output )
+{
+  DoProcess( Output, true );
+}
+
+void
+DataIOFilter::DoProcess( GenericSignal& Output, bool inResting )
+{
   PrecisionTime functionEntry = PrecisionTime::Now();
+  bool recording = inResting ? false : mStatevectorBuffer.StateValue( "Recording" );
   // Moving the save-to-file code to the beginning of Process() implies
   // that the time spent on i/o operations will only reduce the
   // time spent waiting for A/D data, and thus not enter into the
@@ -585,9 +598,10 @@ DataIOFilter::Process( const GenericSignal& /*Input*/,
   // The BCI2000 standard requires that the state vector saved with a data block
   // is the one that existed when the data came out of the ADC.
   // So we also need to buffer the state vector between calls to Process().
-  if( mStatevectorBuffer.StateValue( "Recording" ) )
-  {
+  if( recording )
     mpFileWriter->CallWrite( *mpFileWriterInput, mStatevectorBuffer );
+  if( !inResting )
+  {
     PrecisionTime prevSourceTime = static_cast<PrecisionTime::NumType>( State( "SourceTime" ) ),
                   stimulusTime = static_cast<PrecisionTime::NumType>( State( "StimulusTime" ) );
     mTimingSignal( Roundtrip, 0 ) = PrecisionTime::SignedDiff( functionEntry, prevSourceTime );
@@ -601,12 +615,6 @@ DataIOFilter::Process( const GenericSignal& /*Input*/,
   ProcessBCIEvents();
   mStatevectorBuffer = *Statevector;
   ResetStates( State::StateKind );
-}
-
-void
-DataIOFilter::Resting()
-{
-  AcquireData();
 }
 
 void

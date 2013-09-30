@@ -29,6 +29,8 @@
 #include "GenericFilter.h"
 #include "ClassName.h"
 #include <limits>
+#include <sstream>
+#include <iomanip>
 
 #undef AutoConfig_
 
@@ -38,6 +40,13 @@ using namespace bci;
 // GenericFilter class definitions.
 size_t GenericFilter::Registrar::sCreatedInstances = 0;
 static const string sEmptyPos = "";
+
+GenericFilter::Chain&
+GenericFilter::RootChain()
+{
+  static GenericFilter::Chain rootChain( Registrar::Registrars() );
+  return rootChain;
+}
 
 GenericFilter::GenericFilter()
 {
@@ -49,9 +58,11 @@ GenericFilter::~GenericFilter()
   AllFilters().remove( this );
 }
 
-#ifdef __BORLANDC__
-# pragma warn -8104 // No warning about local statics.
-#endif // __BORLANDC__
+string
+GenericFilter::VisParamName() const
+{
+  return string( "Visualize" ) + ClassName( typeid( *this ) );
+}
 
 // Static members
 GenericFilter::FiltersType&
@@ -61,34 +72,23 @@ GenericFilter::AllFilters()
   return allFilters;
 }
 
-GenericFilter::FiltersType&
-GenericFilter::OwnedFilters()
+Directory::Node*
+GenericFilter::Directory()
 {
-  static FiltersType ownedFilters;
-  return ownedFilters;
-}
-
-GenericFilter::SignalsType&
-GenericFilter::OwnedSignals()
-{
-  static SignalsType ownedSignals;
-  return ownedSignals;
-}
-
-GenericFilter::VisualizationsType&
-GenericFilter::Visualizations()
-{
-  static VisualizationsType visualizations;
-  return visualizations;
-}
-
-string
-GenericFilter::VisParamName() const
-{
-  return string( "Visualize" ) + ClassName( typeid( *this ) );
+  static Directory::RootNode root;
+  return &root;
 }
 
 // GenericFilter::Registrar definitions
+GenericFilter::Registrar::Registrar()
+: mInstance( sCreatedInstances++ )
+{
+  ostringstream oss;
+  oss << hex << setfill( '0' ) << setw( 8 ) << mInstance;
+  mPos = oss.str();
+  AutoDeleteInstance().insert( this );
+}
+
 GenericFilter::Registrar::Registrar( const char* inPos, int inPriority, bool inAutoDelete )
 : mPos( inPos ),
   mPriority( inPriority ),
@@ -168,12 +168,17 @@ GenericFilter::GetLastFilterPosition()
   return ( *Registrar::Registrars().rbegin() )->Position();
 }
 
+// GenericFilter::Chain definitions
+GenericFilter::Chain::Chain( const Registrar::RegistrarSet_& r )
+: mRegistrars( r )
+{
+}
+
 GenericFilter::ChainInfo
-GenericFilter::GetChainInfo()
+GenericFilter::Chain::Info()
 {
   ChainInfo result;
-  for( RegistrarSet::const_iterator i = Registrar::Registrars().begin();
-       i != Registrar::Registrars().end(); ++i )
+  for( Registrar::RegistrarSet_::const_iterator i = mRegistrars.begin(); i != mRegistrars.end(); ++i )
   {
     ChainEntry entry;
     entry.position = ( *i )->Position();
@@ -216,8 +221,15 @@ CALL_2( Initialize, const SignalProperties&, const SignalProperties& )
 CALL_0( StartRun )
 CALL_0( StopRun )
 CALL_2( Process, const GenericSignal&, GenericSignal& )
+CALL_2( Resting, const GenericSignal&, GenericSignal& )
 CALL_0( Resting )
 CALL_0( Halt )
+
+void
+GenericFilter::Chain::Add( GenericFilter::Registrar* pReg )
+{
+  mRegistrars.insert( pReg );
+}
 
 // Instantiate all registered filters once.
 // We iterate through the registrars in reverse order. This implies that
@@ -226,19 +238,19 @@ CALL_0( Halt )
 // sub-filters may then share the first part of their position
 // strings with their master filters.
 void
-GenericFilter::InstantiateFilters()
+GenericFilter::Chain::Instantiate()
 {
-  for( RegistrarSet::reverse_iterator i = Registrar::Registrars().rbegin();
-                                       i != Registrar::Registrars().rend(); ++i )
+  for( RegistrarSet::reverse_iterator i = mRegistrars.rbegin();
+                                       i != mRegistrars.rend(); ++i )
   {
     string filterName = ClassName( ( *i )->Typeid() );
     const string& posString = ( *i )->Position();
     ErrorContext( filterName + "::Constructor" );
     GenericFilter* pFilter = ( *i )->NewInstance();
-    OwnedFilters().push_front( pFilter );
+    mOwnedFilters.push_front( pFilter );
     if( pFilter->AllowsVisualization() )
     {
-      Visualizations()[ pFilter ].SetSourceID( posString );
+      mVisualizations[ pFilter ].SetSourceID( posString );
       // Convert the position string to a float value with identical sort order.
       float placeValue = 1,
             sortingHint = 0;
@@ -262,31 +274,31 @@ GenericFilter::InstantiateFilters()
     }
     ErrorContext( "" );
   }
-  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+  for( FiltersType::iterator i = mOwnedFilters.begin(); i != mOwnedFilters.end(); ++i )
     ( *i )->CallPublish();
 }
 
 void
-GenericFilter::DisposeFilters()
+GenericFilter::Chain::Dispose()
 {
-  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+  for( FiltersType::iterator i = mOwnedFilters.begin(); i != mOwnedFilters.end(); ++i )
   {
     ErrorContext( "Destructor", *i );
     delete *i;
     ErrorContext( "" );
   }
-  OwnedFilters().clear();
-  Visualizations().clear();
+  mOwnedFilters.clear();
+  mVisualizations.clear();
 }
 
 void
-GenericFilter::PreflightFilters( const SignalProperties& Input,
-                                       SignalProperties& Output )
+GenericFilter::Chain::OnPreflight( const SignalProperties& Input,
+                                         SignalProperties& Output )
 {
-  OwnedSignals()[ NULL ].SetProperties( Input );
+  mOwnedSignals[ NULL ].SetProperties( Input );
   GenericFilter* currentFilter = NULL;
   const SignalProperties* currentInput = &Input;
-  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+  for( FiltersType::iterator i = mOwnedFilters.begin(); i != mOwnedFilters.end(); ++i )
   {
     currentFilter = *i;
     int f = bcierr__.Flushes();
@@ -298,23 +310,23 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
     if( currentOutput.Name() == currentInput->Name() || currentOutput.Name().empty() )
       currentOutput.SetName( ClassName( typeid( *currentFilter ) ) );
     // The output signal will be created here if it does not exist.
-    OwnedSignals()[ currentFilter ].SetProperties( currentOutput );
+    mOwnedSignals[ currentFilter ].SetProperties( currentOutput );
     currentFilter->OptionalParameter( currentFilter->VisParamName() );
-    currentInput = &OwnedSignals()[ currentFilter ].Properties();
+    currentInput = &mOwnedSignals[ currentFilter ].Properties();
   }
-  Output = OwnedSignals()[ currentFilter ].Properties();
+  Output = mOwnedSignals[ currentFilter ].Properties();
 }
 
 void
-GenericFilter::InitializeFilters()
+GenericFilter::Chain::OnInitialize()
 {
   const GenericSignal::ValueType NaN = numeric_limits<GenericSignal::ValueType>::quiet_NaN();
-  const SignalProperties* currentInput = &OwnedSignals()[ NULL ].Properties();
+  const SignalProperties* currentInput = &mOwnedSignals[ NULL ].Properties();
   GenericFilter* currentFilter = NULL;
-  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+  for( FiltersType::iterator i = mOwnedFilters.begin(); i != mOwnedFilters.end(); ++i )
   {
     currentFilter = *i;
-    const SignalProperties& currentOutput = OwnedSignals()[ currentFilter ].Properties();
+    const SignalProperties& currentOutput = mOwnedSignals[ currentFilter ].Properties();
     // This will implicitly create the output signal if it does not exist.
     currentFilter->CallInitialize( *currentInput, currentOutput );
     // Output signal visualization.
@@ -323,64 +335,67 @@ GenericFilter::InitializeFilters()
     {
       visEnabled = int( currentFilter->Parameter( currentFilter->VisParamName() ) ) != 0;
       if( visEnabled )
-        Visualizations()[ currentFilter ].Send( currentOutput )
+        mVisualizations[ currentFilter ].Send( currentOutput )
                                          .Send( GenericSignal( currentOutput, NaN ) );
-      Visualizations()[ currentFilter ].Send( CfgID::Visible, visEnabled );
+      mVisualizations[ currentFilter ].Send( CfgID::Visible, visEnabled );
     }
-    Visualizations()[ currentFilter ].SetEnabled( visEnabled );
+    mVisualizations[ currentFilter ].SetEnabled( visEnabled );
 
-    currentInput = &OwnedSignals()[ currentFilter ].Properties();
+    currentInput = &mOwnedSignals[ currentFilter ].Properties();
   }
 }
 
 void
-GenericFilter::StartRunFilters()
+GenericFilter::Chain::OnStartRun()
 {
-  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+  for( FiltersType::iterator i = mOwnedFilters.begin(); i != mOwnedFilters.end(); ++i )
     ( *i )->CallStartRun();
 }
 
 void
-GenericFilter::ProcessFilters( const GenericSignal& Input,
-                                     GenericSignal& Output )
+GenericFilter::Chain::OnProcess( const GenericSignal& Input,
+                                       GenericSignal& Output, bool inResting )
 {
   const GenericSignal* currentInput = &Input;
   GenericFilter* currentFilter = NULL;
-  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+  for( FiltersType::iterator i = mOwnedFilters.begin(); i != mOwnedFilters.end(); ++i )
   {
     currentFilter = *i;
     // This will implicitly create the output signal if it does not exist.
-    GenericSignal& currentOutput = OwnedSignals()[ currentFilter ];
-    currentFilter->CallProcess( *currentInput, currentOutput );
-    if( Visualizations()[ currentFilter ].Enabled() )
-      Visualizations()[ currentFilter ].Send( currentOutput );
+    GenericSignal& currentOutput = mOwnedSignals[ currentFilter ];
+    if( inResting )
+      currentFilter->CallResting( *currentInput, currentOutput );
+    else
+      currentFilter->CallProcess( *currentInput, currentOutput );
+    if( mVisualizations[ currentFilter ].Enabled() )
+      mVisualizations[ currentFilter ].Send( currentOutput );
 
-    currentInput = &OwnedSignals()[ currentFilter ];
+    currentInput = &mOwnedSignals[ currentFilter ];
   }
   if( currentFilter )
-    Output = OwnedSignals()[ currentFilter ];
+    Output = mOwnedSignals[ currentFilter ];
   else
     Output = Input;
 }
 
 void
-GenericFilter::StopRunFilters()
+GenericFilter::Chain::OnStopRun()
 {
-  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+  for( FiltersType::iterator i = mOwnedFilters.begin(); i != mOwnedFilters.end(); ++i )
     ( *i )->CallStopRun();
 }
 
 void
-GenericFilter::RestingFilters()
+GenericFilter::Chain::OnResting()
 {
-  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+  for( FiltersType::iterator i = mOwnedFilters.begin(); i != mOwnedFilters.end(); ++i )
     ( *i )->CallResting();
 }
 
 void
-GenericFilter::HaltFilters()
+GenericFilter::Chain::OnHalt()
 {
-  for( FiltersType::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+  for( FiltersType::iterator i = mOwnedFilters.begin(); i != mOwnedFilters.end(); ++i )
     ( *i )->CallHalt();
 }
 
@@ -401,3 +416,72 @@ GenericFilter::NewInstance( const GenericFilter* existingInstance )
     newInstance = registrarFound->NewInstance();
   return newInstance;
 }
+
+// Directory
+Directory::Node::~Node()
+{
+  SetParent( 0 );
+  for( Container::iterator i = mChildren.begin(); i != mChildren.end(); ++i )
+    ( *i )->SetParent( 0 );
+}
+
+void 
+Directory::Node::SetParent( Node* p )
+{
+  OnSetParent( p );
+  if( mpParent )
+    mpParent->Children().remove( this );
+  mpParent = p;
+  if( p )
+    p->Children().push_front( this );
+}
+
+string
+Directory::Node::OnName() const
+{
+  return ClassName( typeid( *this ) );
+}
+
+const string&
+Directory::Node::Name() const
+{
+  if( mName.empty() )
+  {
+    int idx = 1;
+    mName = OnName();
+    Node* pParent = mpParent;
+    while( pParent )
+    {
+      bool found = false;
+      Container::const_iterator i = pParent->Children().begin();
+      while( !found && i != pParent->Children().end() )
+      {
+        if( *i != this )
+          found = ( mName == ( *i )->Name() );
+        ++i;
+      }
+      if( found )
+      {
+        ostringstream oss;
+        oss << OnName() << ':' << ++idx;
+        mName = oss.str();
+      }
+      else
+        pParent = 0;
+    }
+  }
+  return mName;
+}
+
+string
+Directory::Node::Path() const
+{
+  const char sep = '/';
+  string path;
+  if( mpParent )
+    path = mpParent->Path();
+  if( path.empty() || *path.rbegin() != sep )
+    path += sep;
+  return path + Name();
+}
+

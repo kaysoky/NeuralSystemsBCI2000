@@ -973,6 +973,9 @@ StateMachine::Handle( const CoreConnection& c, const SysCommand& s )
 void
 StateMachine::Handle( const CoreConnection& inConnection, const Param& inParam )
 {
+  if( SpecialParameter( inConnection, inParam ) )
+    return;
+
   switch( SystemState() & ~StateFlags )
   {
     case SetConfigIssued:
@@ -993,6 +996,38 @@ StateMachine::Handle( const CoreConnection& inConnection, const Param& inParam )
   }
 }
 
+bool
+StateMachine::SpecialParameter( const CoreConnection& inConnection, const Param& inParam )
+{
+  if( inParam.Name() == "Filters" )
+  {
+    typedef vector<string> Lines;
+    Lines lines;
+
+    bool doInit = !mParameters.Exists( inParam.Name() );
+    Param& p = mParameters[inParam.Name()];
+    if( doInit )
+    {
+      p = inParam;
+      p.SetNumRows( 0 );
+    }
+    for( int i = 0; i < p.NumRows(); ++i )
+      lines.push_back( p.Value( i, 0 ) );
+
+    ostringstream oss;
+    oss << "/" << inConnection.Tag();
+    for( int i = 0; i < inParam.NumRows(); ++i )
+      lines.push_back( oss.str() + inParam.Value( i, 0 ).ToString() );
+
+    p.SetNumRows( lines.size() );
+    for( int i = 0; i < p.NumRows(); ++i )
+      p.Value( i, 0 ) = lines[i];
+
+    return true;
+  }
+  return false;
+}
+  
 void
 StateMachine::Handle( const CoreConnection&, const State& inState )
 {

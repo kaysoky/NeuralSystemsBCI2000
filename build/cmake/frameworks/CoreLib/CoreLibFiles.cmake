@@ -6,9 +6,10 @@
 SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/filters/GenericFilter.cpp
   ${PROJECT_SRC_DIR}/shared/filters/ChoiceCombination.cpp
+  ${PROJECT_SRC_DIR}/shared/filters/FilterCombination.cpp
   ${PROJECT_SRC_DIR}/shared/filters/StandaloneFilters.cpp
   ${PROJECT_SRC_DIR}/shared/filters/IdentityFilter.h
-  ${PROJECT_SRC_DIR}/shared/filters/FilterCombination.h
+  ${PROJECT_SRC_DIR}/shared/filters/SubchainFilter.h
   ${PROJECT_SRC_DIR}/shared/filters/SignalStream.h
 
   ${PROJECT_SRC_DIR}/shared/modules/MessageHandler.cpp
@@ -27,6 +28,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/utils/Expression/ExpressionNodes.cpp
   ${PROJECT_SRC_DIR}/shared/utils/Expression/ExpressionParser.cpp
   ${PROJECT_SRC_DIR}/shared/utils/Expression/ExpressionParser.hpp
+  ${PROJECT_SRC_DIR}/shared/utils/Scripting/ScriptingClass.cpp
 
   ${PROJECT_SRC_DIR}/shared/types/BitmapImage.cpp
   ${PROJECT_SRC_DIR}/shared/types/Blob.cpp

@@ -38,188 +38,78 @@
 #define FILTER_COMBINATION_H
 
 #include "GenericFilter.h"
-#include <algorithm>
+#include "BCIStream.h"
+#include "IndexList.h"
+#include <string>
 
-template<class F1, class F2>
 class FilterCombination : public GenericFilter
 {
- private:
+ protected:
+   virtual ~FilterCombination();
+   template<class F> void Add( GenericSignal* input, GenericSignal* output )
+     { Add( new FilterRegistrar<F>( this ), input, output ); }
+   void Add( GenericFilter::Registrar*, GenericSignal*, GenericSignal* );
+   static std::string FilterName( const GenericFilter* );
+
    virtual void Publish();
-   virtual void Preflight( const SignalProperties&, SignalProperties& ) const = 0;
-   virtual void Initialize( const SignalProperties&, const SignalProperties& ) = 0;
-   virtual void Process( const GenericSignal&, GenericSignal& ) = 0;
+   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+   virtual void Initialize( const SignalProperties&, const SignalProperties& );
+   virtual void Process( const GenericSignal&, GenericSignal& );
    virtual void StartRun();
    virtual void StopRun();
    virtual void Resting();
    virtual void Halt();
 
  protected:
-   mutable F1 mFilter1;
-   mutable F2 mFilter2;
-   mutable SignalProperties mProperties1,
-                            mProperties2;
-   GenericSignal mOutput1,
-                 mOutput2;
+   struct IndexVector : std::vector<int> { IndexVector( const IndexList& = IndexList() ); };
+   void ApplySubset( const IndexVector&, const GenericSignal&, GenericSignal& ) const;
+
+   struct FilterEntry
+   {
+     GenericFilter::Registrar* Registrar;
+     GenericFilter* Filter;
+     GenericSignal* Input, *Output;
+   };
+   std::vector<FilterEntry> mFilters;
 };
 
-template<class F1, class F2>
-class ParallelCombination : public FilterCombination<F1, F2>
+class ParallelCombinationBase : public FilterCombination
 {
- private:
+ protected:
+   virtual void Publish();
    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
    virtual void Initialize( const SignalProperties&, const SignalProperties& );
    virtual void Process( const GenericSignal&, GenericSignal& );
 
-   typedef FilterCombination<F1, F2> Parent;
-   using Parent::mFilter1;
-   using Parent::mFilter2;
-   using Parent::mProperties1;
-   using Parent::mProperties2;
-   using Parent::mOutput1;
-   using Parent::mOutput2;
-};
-
-template<class F1, class F2>
-class LinearCombination : public FilterCombination<F1, F2>
-{
  private:
-   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
-   virtual void Initialize( const SignalProperties&, const SignalProperties& );
-   virtual void Process( const GenericSignal&, GenericSignal& );
+   std::string Subset( int ) const;
+   SignalProperties SubsetProperties( int, const SignalProperties& ) const;
 
-   typedef FilterCombination<F1, F2> Parent;
-   using Parent::mFilter1;
-   using Parent::mFilter2;
-   using Parent::mProperties1;
-   using Parent::mOutput1;
+ private:
+   IndexVector mIdx1, mIdx2;
+   std::string mParameterName;
+
+ protected:
+   mutable GenericSignal mInput1, mInput2, mOutput1, mOutput2;
 };
 
-// FilterCombination implementation
+template<class F1, class F2>
+class ParallelCombination : public ParallelCombinationBase
+{
+ public:
+   ParallelCombination()
+   { Add<F1>( &mInput1, &mOutput1 ); Add<F2>( &mInput2, &mOutput2 ); }
+};
 
 template<class F1, class F2>
-void
-FilterCombination<F1, F2>::Publish()
+class LinearCombination : public FilterCombination
 {
-  // reverse order of publication matters
-  mFilter2.CallPublish();
-  mFilter1.CallPublish();
-}
+ public:
+   LinearCombination()
+     { Add<F1>( 0, &mOutput1 ); Add<F2>( &mOutput1, 0 ); }
 
-template<class F1, class F2>
-void
-FilterCombination<F1, F2>::StartRun()
-{
-  mFilter1.CallStartRun();
-  mFilter2.CallStartRun();
-}
-
-template<class F1, class F2>
-void
-FilterCombination<F1, F2>::StopRun()
-{
-  mFilter1.CallStopRun();
-  mFilter2.CallStopRun();
-}
-
-template<class F1, class F2>
-void
-FilterCombination<F1, F2>::Resting()
-{
-  mFilter1.CallResting();
-  mFilter2.CallResting();
-}
-
-template<class F1, class F2>
-void
-FilterCombination<F1, F2>::Halt()
-{
-  mFilter1.CallHalt();
-  mFilter2.CallHalt();
-}
-
-// ParallelCombination implementation
-
-template<class F1, class F2>
-void
-ParallelCombination<F1, F2>::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
-{
-  mFilter1.CallAutoConfig( Input );
-  mFilter1.CallPreflight( Input, mProperties1 );
-  mFilter2.CallAutoConfig( Input );
-  mFilter2.CallPreflight( Input, mProperties2 );
-
-  Output = Input;
-  Output.SetChannels( mProperties1.Channels() + mProperties2.Channels() );
-  Output.SetElements( std::max( mProperties1.Elements(), mProperties2.Elements() ) );
-
-  Output.ChannelUnit() = PhysicalUnit();
-  Output.ElementUnit() = PhysicalUnit().SetRawMax( Output.Elements() - 1 );
-  Output.ValueUnit() = PhysicalUnit();
-  double min = std::min( mProperties1.ValueUnit().RawMin(), mProperties2.ValueUnit().RawMin() ),
-         max = std::max( mProperties1.ValueUnit().RawMax(), mProperties2.ValueUnit().RawMax() );
-  Output.ValueUnit().SetRawMin( min ).SetRawMax( max );
-
-  if( !mProperties1.ChannelLabels().IsTrivial() )
-    for( int ch = 0; ch < mProperties1.Channels(); ++ch )
-      Output.ChannelLabels()[ch] = mProperties1.ChannelLabels()[ch];
-  if( !mProperties2.ChannelLabels().IsTrivial() )
-    for( int ch = 0; ch < mProperties2.Channels(); ++ch )
-      Output.ChannelLabels()[ch + mProperties1.Channels()] = mProperties2.ChannelLabels()[ch];
-}
-
-template<class F1, class F2>
-void
-ParallelCombination<F1, F2>::Initialize( const SignalProperties& Input, const SignalProperties& Output )
-{
-  mFilter1.CallInitialize( Input, mProperties1 );
-  mFilter2.CallInitialize( Input, mProperties2 );
-  mOutput1 = GenericSignal( mProperties1 );
-  mOutput2 = GenericSignal( mProperties2 );
-}
-
-template<class F1, class F2>
-void
-ParallelCombination<F1, F2>::Process( const GenericSignal& Input, GenericSignal& Output )
-{
-  mFilter1.CallProcess( Input, mOutput1 );
-  mFilter2.CallProcess( Input, mOutput2 );
-
-  for( int ch = 0; ch < mOutput1.Channels(); ++ch )
-    for( int el = 0; el < mOutput1.Elements(); ++el )
-      Output( ch, el ) = mOutput1( ch, el );
-
-  for( int ch = 0; ch < mOutput2.Channels(); ++ch )
-    for( int el = 0; el < mOutput2.Elements(); ++el )
-      Output( ch + mOutput1.Channels(), el ) = mOutput2( ch, el );
-}
-
-// LinearCombination implementation
-
-template<class F1, class F2>
-void
-LinearCombination<F1, F2>::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
-{
-  mFilter1.CallAutoConfig( Input );
-  mFilter1.CallPreflight( Input, mProperties1 );
-  mFilter2.CallAutoConfig( mProperties1 );
-  mFilter2.CallPreflight( mProperties1, Output );
-}
-
-template<class F1, class F2>
-void
-LinearCombination<F1, F2>::Initialize( const SignalProperties& Input, const SignalProperties& Output )
-{
-  mFilter1.CallInitialize( Input, mProperties1 );
-  mFilter2.CallInitialize( mProperties1, Output );
-  mOutput1 = GenericSignal( mProperties1 );
-}
-
-template<class F1, class F2>
-void
-LinearCombination<F1, F2>::Process( const GenericSignal& Input, GenericSignal& Output )
-{
-  mFilter1.CallProcess( Input, mOutput1 );
-  mFilter2.CallProcess( mOutput1, Output );
-}
+ private:
+   mutable GenericSignal mOutput1;
+};
 
 #endif // FILTER_COMBINATION_H

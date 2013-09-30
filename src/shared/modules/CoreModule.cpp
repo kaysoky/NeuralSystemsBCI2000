@@ -56,15 +56,14 @@
 
 using namespace std;
 
-static const GenericSignal sNullSignal( 0, 0 );
 static const string sModuleName = FileUtils::ExtractBase( FileUtils::ExecutablePath() );
 
 CoreModule::CoreModule()
 : mFiltersInitialized( false ),
-  mResting( false ),
+  mRunning( false ),
+  mActiveResting( false ),
   mStartRunPending( false ),
   mStopRunPending( false ),
-  mStopSent( false ),
   mNeedStopRun( false ),
   mReceivingNextModuleInfo( false ),
   mGlobalID( NULL ),
@@ -129,7 +128,6 @@ CoreModule::IsLocalConnection( const client_tcpsocket& s ) const
 {
   return s.ip() == mThisModuleIP;
 }
-
 
 bool
 CoreModule::Initialize( int& ioArgc, char** ioArgv )
@@ -294,29 +292,23 @@ CoreModule::MainMessageLoop()
   }
 }
 
-
 void
 CoreModule::ProcessBCIAndGUIMessages()
 {
-  while( !mMessageQueue.Empty()
-        || mResting
-        || OnGUIMessagesPending() )
+  bool repeat = true;
+  do
   {
     while( !mMessageQueue.Empty() )
       MessageHandler::HandleMessage( mMessageQueue );
-    // The mResting flag is treated as a pending message from the module to itself.
-    // For non-source modules, it is cleared from the HandleResting() function
-    // much as pending messages are cleared from the stream by the HandleMessage()
-    // function.
-    if( mResting )
-      HandleResting();
-    {
-      Lock lock( mOperator );
-      mResting &= mOperator.is_open();
-    }
-    // Last of all, allow for the GUI to process messages from its message queue if there are any.
+    repeat = false;
+    if( mActiveResting )
+      ProcessFilters();
+    repeat |= mActiveResting;
+    // Allow for the GUI to process messages from its message queue if there are any.
     OnProcessGUIMessages();
-  }
+    repeat |= OnGUIMessagesPending();
+    repeat &= mOperator.is_open();
+  } while( repeat );
 }
 
 
@@ -413,6 +405,10 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
       p.Value( row, "Filter Name" ) = chain[ row ].name;
       p.Value( row, "Position String" ) = chain[ row ].position;
     }
+  }
+  { // Filter directory documentation
+    mParamlist.Add( "System:Configuration matrix Filters= 0 1 % % % // Filter Directory" );
+    AppendFilterDirectory( mParamlist["Filters"] );
   }
   // Now, publish parameters ...
   mParamlist.Sort();
@@ -517,11 +513,29 @@ CoreModule::ResetStatevector()
 }
 
 void
+CoreModule::AppendFilterDirectory( Param& p ) const
+{
+  struct AppendFilter
+  {
+    bool operator()( const Directory::Node* pNode )
+    {
+      if( pNode->Children().empty() )
+      {
+        int idx = param.NumRows();
+        param.SetNumRows( idx + 1 );
+        param.Value( idx, 0 ) = pNode->Path();
+      }
+      return true;
+    }
+    Param& param;
+  } append = { p };
+  Directory::Traverse( GenericFilter::Directory(), append );
+}
+
+void
 CoreModule::InitializeFilterChain( const SignalProperties& Input )
 {
-  mResting = false;
   bcierr__.Clear();
-  mStartRunPending = true;
   GenericFilter::HaltFilters();
   InitializeInputSignal( Input );
 
@@ -532,10 +546,6 @@ CoreModule::InitializeFilterChain( const SignalProperties& Input )
   AutoConfigFilters();
   if( bcierr__.Empty() )
     InitializeFilters();
-
-#if IS_FIRST_MODULE
-  mResting = bcierr__.Empty();
-#endif
 }
 
 void
@@ -545,11 +555,13 @@ CoreModule::InitializeInputSignal( const SignalProperties& Input )
 # error The inputPropertiesFixed variable may be removed once property messages contain an UpdateRate field.
 #endif // TODO
   SignalProperties inputFixed( Input );
-#if !IS_FIRST_MODULE
-  MeasurementUnits::Initialize( mParamlist );
-  inputFixed.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
-#endif
+  if( !Input.IsEmpty() )
+  {
+    MeasurementUnits::Initialize( mParamlist );
+    inputFixed.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
+  }
   mInputSignal = GenericSignal( inputFixed );
+  mActiveResting = Input.IsEmpty();
 }
 
 void
@@ -646,16 +658,15 @@ void
 CoreModule::StartRunFilters()
 {
   mStartRunPending = false;
-  mStopSent = false;
+  mActiveResting = false;
   EnvironmentBase::EnterStartRunPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::StartRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
   mNeedStopRun = true;
-  if( bcierr__.Flushes() == 0 )
+  if( bcierr__.Empty() )
   {
     Lock lock( mOperator );
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " running", Status::firstRunningMessage + 2 * ( MODTYPE - 1 ) ) );
-    mResting = false;
   }
 }
 
@@ -664,23 +675,24 @@ void
 CoreModule::StopRunFilters()
 {
   mStopRunPending = false;
-  mStartRunPending = true;
   EnvironmentBase::EnterStopRunPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::StopRunFilters();
   EnvironmentBase::EnterNonaccessPhase();
   mNeedStopRun = false;
   ResetStatevector();
-  if( bcierr__.Flushes() == 0 && !OSThread::IsTerminating() )
+  if( bcierr__.Empty() && !OSThread::IsTerminating() )
   {
     BroadcastParameterChanges();
 
     Lock lock( mOperator );
-#if IS_FIRST_MODULE // The operator wants an extra invitation from the source module.
-    MessageHandler::PutMessage( mOperator, SysCommand::Suspend );
-#endif
+    if( mInputSignal.Properties().IsEmpty() )
+      MessageHandler::PutMessage( mOperator, SysCommand::Suspend );
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " suspended", Status::firstSuspendedMessage + 2 * ( MODTYPE - 1 ) ) );
-    mResting = true;
   }
+  EnvironmentBase::EnterRestingPhase( &mParamlist, &mStatelist, &mStatevector );
+  GenericFilter::RestingFilters();
+  EnvironmentBase::EnterNonaccessPhase();
+  mActiveResting = mInputSignal.Properties().IsEmpty();
 }
 
 void
@@ -702,69 +714,54 @@ CoreModule::BroadcastParameterChanges()
 }
 
 void
-CoreModule::ProcessFilters( const GenericSignal& input )
+CoreModule::ProcessFilters()
 {
+  bool wasRunning = mRunning;
+  StateUpdate();
+  if( mStartRunPending )
+    StartRunFilters();
   EnvironmentBase::EnterProcessingPhase( &mParamlist, &mStatelist, &mStatevector );
-  GenericFilter::ProcessFilters( input, mOutputSignal );
+  GenericFilter::ProcessFilters( mInputSignal, mOutputSignal, !( mRunning || wasRunning ) );
   EnvironmentBase::EnterNonaccessPhase();
-  bool errorOccurred = ( bcierr__.Flushes() > 0 );
-  if( errorOccurred )
-  {
+  if( bcierr__.Empty() && ( mRunning || wasRunning ) )
+    SendOutput();
+  if( bcierr__.Empty() && mStopRunPending )
+    StopRunFilters();
+  if( !bcierr__.Empty() )
     Terminate();
-    return;
+}
+
+void
+CoreModule::SendOutput()
+{
+  if( IsLastModule() && mOperatorBackLink )
+  {
+    Lock lock( mOperator );
+    MessageHandler::PutMessage( mOperator, mStatevector );
+    MessageHandler::PutMessage( mOperator, mOutputSignal );
   }
+  {
+    Lock lock( mNextModule );
+    MessageHandler::PutMessage( mNextModule, mStatevector );
+    if( !IsLastModule() )
+      MessageHandler::PutMessage( mNextModule, mOutputSignal );
+  }
+}
+
+void
+CoreModule::StateUpdate()
+{
+  mStatevector.CommitStateChanges();
   bool running = mStatevector.StateValue( "Running" );
-  if( running || !mStopSent )
-  {
-    mStopSent = !running;
-    if( IsLastModule() && mOperatorBackLink )
-    {
-      Lock lock( mOperator );
-      MessageHandler::PutMessage( mOperator, mStatevector );
-      MessageHandler::PutMessage( mOperator, mOutputSignal );
-    }
-    {
-      Lock lock( mNextModule );
-      MessageHandler::PutMessage( mNextModule, mStatevector );
-      if( !IsLastModule() )
-        MessageHandler::PutMessage( mNextModule, mOutputSignal );
-    }
-  }
+  mStopRunPending |= mRunning && !running;
+  mStartRunPending |= running && !mRunning;
+  mRunning = running;
 }
-
-
-void
-CoreModule::RestingFilters()
-{
-  EnvironmentBase::EnterRestingPhase( &mParamlist, &mStatelist, &mStatevector );
-  GenericFilter::RestingFilters();
-  EnvironmentBase::EnterNonaccessPhase();
-  bool errorOccurred = ( bcierr__.Flushes() > 0 );
-  Lock lock( mOperator );
-  if( errorOccurred || !mOperator.is_open() )
-  {
-    mResting = false;
-    Terminate();
-  }
-}
-
-
-void
-CoreModule::HandleResting()
-{
-  RestingFilters();
-#ifndef IS_FIRST_MODULE  // For non-source modules, Resting() is called once
-                         // after the Running state drops to 0.
-  mResting = false;      // For source modules, Resting() is called repeatedly
-                         // while the Running state is 0.
-#endif
-}
-
 
 bool
 CoreModule::HandleParam( istream& is )
 {
-  if( mStatevector.StateValue( "Running" ) )
+  if( mRunning )
     BCIERR << "Unexpected Param message" << endl;
 
   ParamList& list = mReceivingNextModuleInfo ? mNextModuleInfo : mParamlist;
@@ -783,29 +780,13 @@ CoreModule::HandleState( istream& is )
   {
     if( mStatevector.Length() > 0 )
     {
-#if IS_FIRST_MODULE
       // Changing a state's value via mStatevector.PostStateChange()
       // will buffer the change, and postpone it until the next call to
       // mStatevector.CommitStateChanges(). That call happens
       // after arrival of a StateVector message to make sure that
       // changes are not overwritten with the content of the previous
       // state vector when it arrives from the application module.
-       mStatevector.PostStateChange( s.Name(), s.Value() );
-
-      // For the "Running" state, the module will undergo a more complex
-      // state transition than for other states.
-      if( s.Name() == "Running" )
-      {
-        if( s.Value() && mStartRunPending )
-        {
-          mStatevector.CommitStateChanges();
-          StartRunFilters();
-          ProcessFilters( sNullSignal );
-        }
-      }
-#else // IS_FIRST_MODULE
-      bcierr << "Unexpectedly received a State message" << endl;
-#endif // IS_FIRST_MODULE
+      mStatevector.PostStateChange( s.Name(), s.Value() );
     }
     else
     {
@@ -823,7 +804,6 @@ CoreModule::HandleState( istream& is )
   return is ? true : false;
 }
 
-
 bool
 CoreModule::HandleVisSignal( istream& is )
 {
@@ -831,17 +811,10 @@ CoreModule::HandleVisSignal( istream& is )
   if( s.ReadBinary( is ) && s.SourceID() == "" )
   {
     mInputSignal.AssignValues( s );
-
     if( !mFiltersInitialized )
-      bcierr << "Unexpected VisSignal message" << endl;
+      bcierr << "Unexpected VisSignal message";
     else
-    {
-      if( mStartRunPending )
-        StartRunFilters();
-      ProcessFilters( mInputSignal );
-      if( mStopRunPending )
-        StopRunFilters();
-    }
+      ProcessFilters();
   }
   return is ? true : false;
 }
@@ -863,29 +836,11 @@ CoreModule::HandleVisSignalProperties( istream& is )
 bool
 CoreModule::HandleStateVector( istream& is )
 {
-  if( mStatevector.ReadBinary( is ) )
-  {
-#if IS_FIRST_MODULE
-    mStatevector.CommitStateChanges();
-    // The source module does not receive a signal, so handling must take place
-    // on arrival of a StateVector message.
-    if( mStartRunPending )
-    {
-      mStatevector.SetStateValue( "Running", false );
-    }
-    else
-    {
-      ProcessFilters( sNullSignal );
-      if( !mStatevector.StateValue( "Running" ) )
-        StopRunFilters();
-    }
-#else // IS_FIRST_MODULE
-    mStopRunPending = !mStatevector.StateValue( "Running" );
-#endif // IS_FIRST_MODULE
-  }
+  mStatevector.ReadBinary( is );
+  if( mInputSignal.Properties().IsEmpty() )
+    ProcessFilters();
   return is ? true : false;
 }
-
 
 bool
 CoreModule::HandleSysCommand( istream& is )

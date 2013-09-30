@@ -285,11 +285,17 @@ StimulusTask::EarlyOffset(  const GenericSignal& Input, const Association& inAss
 }
 
 void
+StimulusTask::Resting( const GenericSignal& Input, GenericSignal& Output )
+{
+  Output = Input;
+}
+
+void
 StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   if( State( "PauseApplication" ) )
   {
-    Output = Input;
+    Resting( Input, Output );
     return;
   }
   // Dispatch the Process() call to StimulusTask's handler functions.

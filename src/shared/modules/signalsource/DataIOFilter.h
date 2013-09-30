@@ -54,12 +54,14 @@ class DataIOFilter: public GenericFilter
 
   virtual void Process( const GenericSignal& Input,
                               GenericSignal& Output );
-  virtual void Resting();
+  virtual void Resting( const GenericSignal& Input,
+                              GenericSignal& Output );
   virtual void Halt();
 
   virtual bool AllowsVisualization() const { return false; }
 
  private:
+  void DoProcess( GenericSignal&, bool );
   void AdjustProperties( SignalProperties& ) const;
   void AcquireData();
   static void Downsample( const GenericSignal& Input,

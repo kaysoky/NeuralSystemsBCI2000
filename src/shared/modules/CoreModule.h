@@ -138,6 +138,7 @@ class CoreModule : private MessageHandler, private OSThread
   void ShutdownSystem();
   void InitializeStatevector();
   void ResetStatevector();
+  void AppendFilterDirectory( Param& ) const;
 
   void InitializeFilterChain( const class SignalProperties& );
   void InitializeInputSignal( const class SignalProperties& );
@@ -146,10 +147,10 @@ class CoreModule : private MessageHandler, private OSThread
   void StartRunFilters();
   void StopRunFilters();
   void BroadcastParameterChanges();
-  void ProcessFilters( const class GenericSignal& );
-  void RestingFilters();
+  void ProcessFilters();
+  void SendOutput();
 
-  void HandleResting();
+  void StateUpdate();
 
   // BCI message handling functions.
   bool HandleParam( std::istream& );
@@ -181,11 +182,10 @@ class CoreModule : private MessageHandler, private OSThread
                    mOperator,
                    mNextModule,
                    mPreviousModule;
-  bool             mFiltersInitialized,
-                   mResting,
+  bool             mRunning,
+                   mFiltersInitialized,
                    mStartRunPending,
                    mStopRunPending,
-                   mStopSent,
                    mNeedStopRun,
                    mReceivingNextModuleInfo;
   void*            mGlobalID;
@@ -194,6 +194,7 @@ class CoreModule : private MessageHandler, private OSThread
   ProtocolVersion  mOperatorProtocol,
                    mNextModuleProtocol;
   std::string      mThisModuleIP;
+  bool             mActiveResting;
 };
 
 #endif // CORE_MODULE_H

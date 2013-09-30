@@ -180,11 +180,17 @@ FeedbackTask::Halt()
 }
 
 void
+FeedbackTask::Resting( const GenericSignal& Input, GenericSignal& Output )
+{
+  Output = Input;
+}
+
+void
 FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   if( State( "PauseApplication" ) )
   {
-    Output = Input;
+    Resting( Input, Output );
     return;
   }
 

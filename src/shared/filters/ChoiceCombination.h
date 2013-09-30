@@ -43,7 +43,7 @@ class ChoiceCombination : public GenericFilter
    {
      if( mFilters.size() <= inChoiceIdx )
        mFilters.resize( inChoiceIdx + 1 );
-     mFilters[inChoiceIdx] = new T;
+     mFilters[inChoiceIdx] = ( new GenericFilter::FilterRegistrar<T>( this ) )->NewInstance();
    }
 
    void Publish();

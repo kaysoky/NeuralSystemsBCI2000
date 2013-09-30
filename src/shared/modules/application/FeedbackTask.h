@@ -110,7 +110,8 @@ class FeedbackTask : public ApplicationBase
   // Implementation of the GenericFilter interface.
   virtual void Preflight(  const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize( const SignalProperties&, const SignalProperties& );
-  virtual void Process(    const GenericSignal&,    GenericSignal& );
+  virtual void Process( const GenericSignal&, GenericSignal& );
+  virtual void Resting( const GenericSignal&, GenericSignal& );
   virtual void StartRun();
   virtual void StopRun();
   virtual void Halt();
