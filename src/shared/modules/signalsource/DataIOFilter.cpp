@@ -222,10 +222,13 @@ DataIOFilter::AutoConfig( const SignalProperties& Input )
   else
     mpADC->CallAutoConfig( Input );
 
-  Parameter( "SamplingRate" ) = 1;
-  Parameter( "SampleBlockSize" ) = 1;
   Parameter( "ChannelNames" )->SetNumValues( 0 );
 
+  ParamList p = *Parameters;
+  static const char* fixparams[] = { "SamplingRate", "SampleBlockSize" };
+  for( size_t i = 0; i < sizeof( fixparams ) / sizeof( *fixparams ); ++i )
+    if( !::atof( p[fixparams[i]].Value().c_str() ) )
+      p[fixparams[i]].Value() = "1";
   MeasurementUnits::Initialize( *Parameters );
 }
 

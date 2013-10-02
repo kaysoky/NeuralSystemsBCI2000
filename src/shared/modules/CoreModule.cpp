@@ -302,8 +302,11 @@ CoreModule::ProcessBCIAndGUIMessages()
       MessageHandler::HandleMessage( mMessageQueue );
     repeat = false;
     if( mActiveResting )
+    {
       ProcessFilters();
-    repeat |= mActiveResting;
+      mActiveResting &= bcierr__.Empty();
+      repeat |= mActiveResting;
+    }
     // Allow for the GUI to process messages from its message queue if there are any.
     OnProcessGUIMessages();
     repeat |= OnGUIMessagesPending();
@@ -561,7 +564,6 @@ CoreModule::InitializeInputSignal( const SignalProperties& Input )
     inputFixed.SetUpdateRate( 1.0 / MeasurementUnits::SampleBlockDuration() );
   }
   mInputSignal = GenericSignal( inputFixed );
-  mActiveResting = Input.IsEmpty();
 }
 
 void
@@ -650,6 +652,7 @@ CoreModule::InitializeFilters()
     Lock lock( mOperator );
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " initialized", Status::firstInitializedMessage + MODTYPE - 1 ) );
     mFiltersInitialized = true;
+    mActiveResting = mInputSignal.Properties().IsEmpty();
   }
 }
 
