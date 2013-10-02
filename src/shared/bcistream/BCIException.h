@@ -98,8 +98,21 @@ namespace bci {
   struct Exception_ : Exception, T
   {
     explicit Exception_( const std::string& what, const std::string& where = "" )
-      : T( ( what + where ).c_str() ), Exception( what, where, typeid( T ) ) {}
+      : T( 0 ), Exception( what, where, typeid( T ) ) {} 
     virtual ~Exception_() throw() {}
+    virtual const char* what() const
+      { m_what = What() + Where(); return m_what.c_str(); }
+    private: mutable std::string m_what;
+  };
+
+  template<>
+  struct Exception_<std::bad_alloc> : Exception, std::bad_alloc
+  {
+    explicit Exception_( const std::string& what, const std::string& where = "" )
+      : Exception( what, where, typeid( std::bad_alloc ) ) {}
+    virtual ~Exception_() throw() {}
+    virtual const char* what() const
+      { return What().c_str(); }
   };
 } // namespace bci
 
