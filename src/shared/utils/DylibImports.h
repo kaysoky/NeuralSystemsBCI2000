@@ -40,6 +40,7 @@
 
 #include <string>
 #include <vector>
+#include <list>
 
 #if _WIN32
 # define CDECL__ __cdecl
@@ -48,22 +49,23 @@
 #endif
 
 #if DYNAMIC_IMPORTS
-#define RegisterDylib( name, imports, msg, url ) \
+#define RegisterDylibWithAliases( name, aliases, imports, msg, url ) \
 namespace Dylib { \
   void CDECL__ name##_ErrorStub_(); \
-  StartupLoader name( #name, imports, msg, url, &name##_ErrorStub_ ); \
+  StartupLoader name( #name, aliases, imports, msg, url, &name##_ErrorStub_ ); \
   void CDECL__ name##_ErrorStub_() \
   { name.ThrowError(); } \
   bool name##_Loaded() \
   { return name.State() == Library::resolvedAll; } \
 }
 #else // DYNAMIC_IMPORTS
-#define RegisterDylib( name, imports, msg, url ) \
+#define RegisterDylibWithAliases( name, aliases, imports, msg, url ) \
 namespace Dylib { \
   bool name##_Loaded() \
   { return true; } \
 }
 #endif // DYNAMIC_IMPORTS
+#define RegisterDylib( name, imports, msg, url ) RegisterDylibWithAliases( name, 0, imports, msg, url )
 
 namespace Dylib
 {
@@ -85,14 +87,17 @@ namespace Dylib
     void* address;
   };
   typedef std::vector<Export> Exports;
+  typedef std::list<std::string> Names;
 
   class Library
   {
    public:
     Library( const std::string& lib );
+    Library( const std::string& lib, const Names& names );
     ~Library();
-    const std::string& Name() const
-      { return mName; }
+    std::string Name() const;
+    const Names& Names() const
+      { return mNames; }
     const Dylib::Exports& Exports() const
       { return mExports; }
     const std::string& Error() const
@@ -103,10 +108,13 @@ namespace Dylib
     bool Resolve( const Import*, int count = 1 );
 
    private:
+    void Init();
+
     void* mHandle;
     int mState;
     Dylib::Exports mExports;
-    std::string mName, mError;
+    Dylib::Names mNames;
+    std::string mError;
   };
 
   class StartupLoader : public Library
@@ -120,10 +128,11 @@ namespace Dylib
     typedef void ( CDECL__ *ThrowFunc )();
 
    public:
-    StartupLoader( const char* lib, const Import*, const char* msg, const char* url, ThrowFunc );
+    StartupLoader( const char* lib, const char* aliases, const Import*, const char* msg, const char* url, ThrowFunc );
     void ThrowError() const;
 
    private:
+    static Dylib::Names ParseAliases( const char* );
     void BuildMessage( const std::string&, const std::string& );
     std::string mMessage;
   };

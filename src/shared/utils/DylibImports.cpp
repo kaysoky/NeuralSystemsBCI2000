@@ -150,19 +150,47 @@ GetDylibExports( void* inHandle, Exports& outExports )
 
 // Library class
 Library::Library( const std::string& lib )
-: mHandle( 0 ), mName( lib ), mState( none )
+: mHandle( 0 ), mState( none )
 {
-  mHandle = LoadDylib( lib );
-  if( mHandle )
-    GetDylibExports( mHandle, mExports );
-  else if( mError.empty() )
-    mError = "Library \"" + lib + "\" could not be found";
-  mState = ( mHandle ? found : notFound );
+  mNames.push_front( lib );
+  Init();
+}
+
+Library::Library( const std::string& lib, const Dylib::Names& names )
+: mHandle( 0 ), mState( none ), mNames( names )
+{
+  mNames.push_front( lib );
+  Init();
 }
 
 Library::~Library()
 {
   UnloadDylib( mHandle );
+}
+
+void
+Library::Init()
+{
+  for( Names::const_iterator i = mNames.begin(); !mHandle && i != mNames.end(); ++i )
+    mHandle = LoadDylib( *i );
+  if( mHandle )
+    GetDylibExports( mHandle, mExports );
+  else if( mError.empty() )
+    mError = "Library " + Name() + " could not be found";
+  mState = ( mHandle ? found : notFound );
+}
+
+string
+Library::Name() const
+{
+  string name = "<n/a>";
+  if( !mNames.empty() )
+  {
+    name = "\"" + *mNames.begin() + "\"";
+    for( Dylib::Names::const_iterator i = ++mNames.begin(); i != mNames.end(); ++i )
+      name += " alias \"" + *i + "\"";
+  }
+  return name;
 }
 
 bool
@@ -225,8 +253,8 @@ Library::Resolve( const Import* inImports, int inCount )
 }
 
 // StartupLoader class
-StartupLoader::StartupLoader( const char* inLib, const Import* inImports, const char* inMsg, const char* inUrl, ThrowFunc inF )
-: Library( inLib )
+StartupLoader::StartupLoader( const char* inLib, const char* inAliases, const Import* inImports, const char* inMsg, const char* inUrl, ThrowFunc inF )
+: Library( inLib, ParseAliases( inAliases ) )
 {
   if( !Library::Error().empty() )
   {
@@ -236,9 +264,9 @@ StartupLoader::StartupLoader( const char* inLib, const Import* inImports, const 
     if( msg.empty() )
     {
       ostringstream oss;
-      oss << sArchBits << "-bit Library \"" 
+      oss << sArchBits << "-bit Library "
           << Library::Name()
-          << "\" is not available, but is necessary for "
+          << " is not available, but is necessary for "
           << exe
           << " to run.";
       bool isWow = false;
@@ -265,8 +293,8 @@ StartupLoader::StartupLoader( const char* inLib, const Import* inImports, const 
   }
   else if( !Library::Resolve( inImports, 0 ) )
   {
-    string msg = "Could not load functions from dynamic library \"" + Library::Name()
-               + "\" due to an error: " + Library::Error();
+    string msg = "Could not load functions from dynamic library " + Library::Name()
+               + " due to an error: " + Library::Error();
     if( Library::State() == resolvedSome )
       msg += "An update to that library/driver may be necessary.";
     BuildMessage( msg, "" );
@@ -276,13 +304,34 @@ StartupLoader::StartupLoader( const char* inLib, const Import* inImports, const 
       *p->pointer = reinterpret_cast<void*>( inF );
 }
 
+list<string>
+StartupLoader::ParseAliases( const char* inAliases )
+{
+  list<string> names;
+  const char* p = inAliases;
+  do
+  {
+    string name;
+    while( *p && *p != '|' )
+      name += *p++;
+    names.push_back( name );
+  } while( *p++ );
+  return names;
+}
+
 void
 StartupLoader::BuildMessage( const string& inMsg, const string& inUrl )
 {
   mMessage = inMsg;
   string url = inUrl;
-  if( url.empty() )
-    url = FileUtils::SearchURL( Library::Name() );
+  if( url.empty() && !Library::Names().empty() )
+  {
+    Dylib::Names::const_iterator i = Library::Names().begin();
+    string names = *i++;
+    for( ; i != Library::Names().end(); ++i )
+      names += "%20OR%20" + *i;
+    url = FileUtils::SearchURL( names );
+  }
   if( !url.empty() )
     mMessage += " More information may be available at:\n" + url;
 }

@@ -3906,6 +3906,6 @@ static const Dylib::Import imports[] =
 static const char* notFoundMsg = "";
 // Here you may specify an URL to some local or remote help resource.
 static const char* notFoundURL = "";
-RegisterDylib( NIDAQmx, imports, notFoundMsg, notFoundURL );
+RegisterDylibWithAliases( nicaiu, "NIDAQmx", imports, notFoundMsg, notFoundURL );
 
 #endif // DYNAMIC_IMPORTS

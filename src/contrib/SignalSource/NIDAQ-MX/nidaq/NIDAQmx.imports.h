@@ -5844,6 +5844,6 @@ extern int32 (__stdcall *DAQmxResetSampClkTimingResponseMode)(TaskHandle taskHan
 }
 #endif // DYNAMIC_IMPORTS
 
-namespace Dylib { bool NIDAQmx_Loaded(); }
+namespace Dylib { bool nicaiu_Loaded(); }
 
 #endif // NIDAQmx_IMPORTS_H
