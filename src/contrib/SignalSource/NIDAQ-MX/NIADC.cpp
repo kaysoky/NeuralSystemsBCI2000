@@ -74,20 +74,6 @@ NIADC::NIADC()
 : taskHandle( 0 ),
   iDevice( 0 )
 {
- // change all the parameters according to your ADC specification
- // the parameters are in the format value - default value
- // minimum value - maximum value
- BEGIN_PARAMETER_DEFINITIONS
-   "Source float SamplingRate= 256 256 1 200000 "
-       "// The signal's sampling rate in Hz",
-   "Source int   SampleBlockSize= 16 16 2 2048 "
-       "// The number of samples in one block",
-   "Source int   SourceCh= 8 8 1 16 "
-	   "// The number of channels",
-   "Source int   BoardNumber= 1 1 1 16 "
-       "// The NI-ADC board's device number",
- END_PARAMETER_DEFINITIONS
-
  data_mutex = ::CreateMutex( NULL, false, NULL );
  bufferdone = ::CreateEvent( NULL, false, false, NULL );
  piBuffer=NULL;
@@ -97,6 +83,22 @@ NIADC::NIADC()
  cur_adc = this;
 }
 
+void
+NIADC::Publish()
+{
+ BEGIN_PARAMETER_DEFINITIONS
+   "Source float SamplingRate= 256 256 1 200000 "
+       "// The signal's sampling rate in Hz",
+   "Source int   SampleBlockSize= 16 16 2 2048 "
+       "// The number of samples in one block",
+   "Source int   SourceCh= 8 8 1 16 "
+	   "// The number of channels",
+   "Source int   BoardNumber= 1 1 1 16 "
+       "// The NI-ADC board's device number",
+   "Source list SourceChGain= 1 auto //",
+   "Source list SourceChOffset= 1 auto //",
+ END_PARAMETER_DEFINITIONS
+}
 
 
 // **************************************************************************
@@ -123,6 +125,20 @@ NIADC::~NIADC()
  }
  bufferdone = NULL;
  piBuffer = NULL;
+}
+
+void NIADC::AutoConfig( const SignalProperties& )
+{
+  MutableParamRef SourceChGain = Parameter( "SourceChGain" ),
+                  SourceChOffset = Parameter( "SourceChOffset" );
+  int SourceCh = Parameter( "SourceCh" );
+  SourceChGain->SetNumValues( SourceCh );
+  SourceChOffset->SetNumValues( SourceCh );
+  for( int i = 0; i < SourceCh; ++i )
+  {
+    SourceChGain( i ) = 1;
+    SourceChOffset( i ) = 0;
+  }
 }
 
 // **************************************************************************
@@ -504,7 +520,7 @@ int NIADC::Stop()
  taskHandle=0;
 
  Error:
-	if( Dylib::NIDAQmx_Loaded() && DAQmxFailed(error) )
+	if( Dylib::nicaiu_Loaded() && DAQmxFailed(error) )
 	{
 		DAQmxGetExtendedErrorInfo(errBuff,2048);
 	        bcierr << errBuff << endl;

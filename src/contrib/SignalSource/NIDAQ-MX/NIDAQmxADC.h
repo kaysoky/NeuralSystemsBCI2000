@@ -90,6 +90,8 @@ private:
 public:
         NIADC();
         ~NIADC();
+        virtual void     Publish();
+        virtual void     AutoConfig(const SignalProperties&);
         virtual void     Preflight(const SignalProperties&, SignalProperties&) const;
         virtual void     Initialize(const SignalProperties&, const SignalProperties&);
         virtual void     Process(const GenericSignal&, GenericSignal&);
