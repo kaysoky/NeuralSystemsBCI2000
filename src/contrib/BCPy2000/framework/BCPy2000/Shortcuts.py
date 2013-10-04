@@ -34,10 +34,44 @@ try:
 except AttributeError:
 	__IPYTHON__ = get_ipython()
 	exec 'import os,sys' in __IPYTHON__.user_ns # in case this is being run via import rather than execute
+	__OLDER_IPYTHON__ = False
 else:
 	exec 'import os,sys' in __IPYTHON__.shell.user_ns # in case this is being run via import rather than execute
 	__OLDER_IPYTHON__ = True
 
+
+################################################################################
+################################################################################
+
+def makemagic(f):
+	name = f.__name__
+	if __OLDER_IPYTHON__:
+		if not name.startswith('magic_'): name = 'magic_' + name
+		setattr(__IPYTHON__, name, f)
+	else:
+		if name.startswith('magic_'): name = name[6:]
+		def wrapped(throwaway, *pargs, **kwargs): return f(*pargs,**kwargs)
+		if hasattr(f, '__doc__'): wrapped.__doc__ = f.__doc__
+		__IPYTHON__.define_magic(name, wrapped)
+	return f
+	
+############################################################################
+
+def getmagic(name):
+	if __OLDER_IPYTHON__:
+		if not name.startswith('magic_'): name = 'magic_' + name
+		return getattr(__IPYTHON__, name)
+	else:
+		if name.startswith('magic_'): name = name[6:]
+		return __IPYTHON__.find_magic(name)
+
+############################################################################
+
+def getworkspace():
+	if __OLDER_IPYTHON__:
+		return __IPYTHON__.shell.user_ns
+	else:
+		return __IPYTHON__.user_ns
 
 ################################################################################
 ################################################################################
@@ -47,20 +81,6 @@ class mymagic:
 	if sys.platform.lower().startswith('win'):
 		if hasattr(__IPYTHON__, 'rc'): __IPYTHON__.rc.editor = 'scite'
 		else: __IPYTHON__.editor = 'scite'
-
-	############################################################################
-
-	def makemagic(f):
-		name = f.__name__
-		if __OLDER_IPYTHON__:
-			if not name.startswith('magic_'): name = 'magic_' + name
-			setattr(__IPYTHON__, name, f)
-		else:
-			if name.startswith('magic_'): name = name[6:]
-			def wrapped(throwaway, *pargs, **kwargs): return f(*pargs,**kwargs)
-			if hasattr(f, '__doc__'): wrapped.__doc__ = f.__doc__
-			__IPYTHON__.define_magic(name, wrapped)
-		return f
 		
 	############################################################################
 
@@ -206,6 +226,23 @@ Undo a previous call to %desk
 	
 	############################################################################
 	@makemagic
+	def magic_pip(d=''):
+		try: import pip
+		except ImportError: import sys; sys.stderr.write("""
+The pip module is not installed. See the instructions
+at http://www.pip-installer.org/en/latest/installing.html
+In short:
+(1) Ensure setuptools (i.e. easy_install) is installed first
+    (download and run ez_setup.py if not).
+(2) Download and run get-pip.py
+(3) Quit and relaunch Python
+(4) Then the first thing you should do with pip is:
+    pip install --upgrade setuptools
+""")
+		else: return pip.main(d.split())
+		
+	############################################################################
+	@makemagic
 	def magic_easy_install(d=None):
 		"""\
 Run the easy_install command from IPython, invoking the setuptools script
@@ -228,12 +265,12 @@ you have.
 		if pth != None: oldpaths = readpth(pth)
 		
 		############ This is the part that actually runs easy_install.
-		############ The rest, before and after, is to attempt to keep the session going with intelligently updates to
+		############ The rest, before and after, is to attempt to keep the session going with intelligent updates to
 		############ sys.path and sys.modules (still won't work for upgrades to IPython and some messy others like simplejson).
 		home = os.environ.get('PYTHONHOME')
 		if sys.platform.lower().startswith('win'):
 			if home == None: home = os.path.dirname(sys.executable)
-			__IPYTHON__.magic_run('"' + os.path.join(home, 'Scripts', 'easy_install-script.py') + '" ' + d)
+			getmagic('run')('"' + os.path.join(home, 'Scripts', 'easy_install-script.py') + '" ' + d)
 		else:
 			# TODO: need to set $PYTHONHOME for system call using env?  If so, how to fill it in if home==None?
 			os.system('"' + sys.executable + '" "`which easy_install`" ' + d)
@@ -281,10 +318,7 @@ is a shortcut for the following:
     import foo; foo = reload(foo)
     import bar; bar = reload(bar); from bar import *
 """###
-		if __OLDER_IPYTHON__:
-			ipython = __IPYTHON__.shell.user_ns
-		else:
-			ipython = __IPYTHON__.user_ns
+		ipython = getworkspace()
 		for d in dd.replace(',', ' ').split(' '):
 			if len(d):
 				bare = d.endswith('.*')
@@ -312,19 +346,16 @@ the workspace.
 
 """###
 		import sys
-		if __OLDER_IPYTHON__:
-			ipython = __IPYTHON__.shell.user_ns
-		else:
-			ipython = __IPYTHON__.user_ns
-		
+		ipython = getworkspace()
 		try: import matplotlib
 		except ImportError: print "WARNING: failed to import matplotlib"
 		else:
 			if not 'matplotlib.backends' in sys.modules: matplotlib.interactive(True)
 			try: exec 'import matplotlib, pylab' in ipython
 			except ImportError: print "WARNING: failed to import pylab"
-			if __OLDER_IPYTHON__:
-				if len(d): exec ('from pylab import '+d) in ipython
+			#if __OLDER_IPYTHON__:
+			if len(d): exec ('from pylab import '+d) in ipython
+			
 ############################################################################
 	@makemagic
 	def magic_njh(*pargs):
@@ -335,10 +366,7 @@ SigTools, but also copy, struct, ctypes, numpy, scipy and matplotlib and pylab
 shortcut to SigTools.summarize, to give a quick look at object attributes---
 especially useful for numpy arrays.
 """###
-		if __OLDER_IPYTHON__:
-			ipython = __IPYTHON__.shell.user_ns
-		else:
-			ipython = __IPYTHON__.user_ns
+		ipython = getworkspace()
 		exec 'import copy,struct,ctypes,time,numpy,scipy' in ipython
 		try:
 			exec 'import WavTools,SigTools' in ipython
@@ -349,17 +377,14 @@ especially useful for numpy arrays.
 		def magic_pp(name=''):
 			if name == None: return
 			exec 'print SigTools.summarize(' + name + ')' in ipython
-			
-		if __OLDER_IPYTHON__:
-			__IPYTHON__.magic_loadpylab()
-			__IPYTHON__.magic_pp = magic_pp
-		else:
-			__IPYTHON__.magics_manager.user_magics.loadpylab()
-			def wrapped(throwaway, *pargs, **kwargs): return magic_pp(*pargs,**kwargs)
-			__IPYTHON__.define_magic('pp', wrapped)
+		
+		makemagic(magic_pp)
+		getmagic('loadpylab')()
 			
 ################################################################################
 ################################################################################
 
+
 del mymagic # Remove class definition from namespace again:  side-effects of the @makemagic decorator
             # will have already done the work (shortlisted for the Sneaky Hack Of The Year award 2009)
+if __name__ == '__main__': del makemagic, getmagic, getworkspace
