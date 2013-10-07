@@ -732,8 +732,6 @@ VisDisplayGraph::SetNominalDisplaySamples( int inSamples )
 {
   if( inSamples != NominalDisplaySamples() )
   {
-    mDisplay.WrapForward( GenericSignal( 0, 0 ) );
-    
     double nominalUnitsPerSample = NominalUnitsPerSample();
     int actualSamples = inSamples,
         decimation = 1;

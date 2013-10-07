@@ -461,7 +461,18 @@ SignalDisplay::SetNumSamples( int inNumSamples )
   if( newNumSamples != mNumSamples )
   {
     OSMutex::Lock lock( mDataLock );
-    mData = GenericSignal( mData.Channels(), newNumSamples );
+    GenericSignal newData( mData.Channels(), newNumSamples );
+    int count = ::min( newNumSamples, mNumSamples ),
+        newOffset = newNumSamples - count,
+        oldOffset = mNumSamples - count;
+    for( int ch = 0; ch < newData.Channels(); ++ch )
+    {
+      for( int i = 0; i < newOffset; ++i )
+        newData( ch, i ) = NaN( newData( ch, i ) );
+      for( int i = 0; i < count; ++i )
+        newData( ch, newOffset + i ) = mData( ch, oldOffset + i );
+    }
+    mData = newData;
     mSampleCursor = 0;
     Invalidate();
     mNumSamples = newNumSamples;
