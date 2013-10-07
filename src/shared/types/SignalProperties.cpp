@@ -87,6 +87,21 @@ SignalProperties::Accommodates( const SignalProperties& sp ) const
   return true;
 }
 
+double 
+SignalProperties::ChannelIndex( const std::string& address ) const
+{
+  double idx = ChannelLabels().AddressToIndex( address, ChannelUnit() );
+  return idx >= Channels() ? -1 : idx;
+
+}
+
+double 
+SignalProperties::ElementIndex( const std::string& address ) const
+{
+  double idx = ElementLabels().AddressToIndex( address, ElementUnit() );
+  return idx >= Elements() ? -1 : idx;
+}
+
 size_t
 SignalProperties::LinearIndex( size_t ch, size_t el ) const
 {

@@ -96,8 +96,7 @@ class SignalProperties
                       { return mChannelUnit; }
     // Convert a string-valued channel address into a numeric index.
     // The address may be a label or a value in physical units.
-    double            ChannelIndex( const std::string& address ) const
-                      { return ChannelLabels().AddressToIndex( address, ChannelUnit() ); }
+    double            ChannelIndex( const std::string& address ) const;
 
     LabelIndex&       ElementLabels()
                       { return mElementLabels; }
@@ -109,8 +108,7 @@ class SignalProperties
                       { return mElementUnit; }
     // Convert a string-valued element address into a numeric index.
     // The address may be a label or a value in physical units.
-    double            ElementIndex( const std::string& address ) const
-                      { return ElementLabels().AddressToIndex( address, ElementUnit() ); }
+    double            ElementIndex( const std::string& address ) const;
 
     ValueUnitsProxy   ValueUnit();
     PhysicalUnit&     ValueUnit( size_t ch );
