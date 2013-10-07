@@ -34,6 +34,7 @@
 
 #include "OSThread.h"
 #include "OSEvent.h"
+#include "OSMutex.h"
 #include "Runnable.h"
 
 class ReusableThread : private OSThread
@@ -53,8 +54,9 @@ class ReusableThread : private OSThread
 
   OSEvent mStartEvent,
           mFinishedEvent;
-  volatile bool mAlive;
-  Runnable* volatile mpRunnable;
+  OSMutex mMutex;
+  bool mAlive;
+  Runnable* mpRunnable;
 };
 
 #endif // REUSABLE_THREAD_H

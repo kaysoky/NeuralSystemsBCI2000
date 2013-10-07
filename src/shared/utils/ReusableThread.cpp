@@ -54,6 +54,8 @@ ReusableThread::~ReusableThread()
 bool
 ReusableThread::Run( Runnable& inRunnable )
 {
+  OSMutex::Lock lock( mMutex );
+
   if( !mAlive )
     throw std_runtime_error( "Thread is no longer available for execution" );
 
@@ -69,6 +71,7 @@ ReusableThread::Run( Runnable& inRunnable )
 bool
 ReusableThread::Busy() const
 {
+  OSMutex::Lock lock( mMutex );
   return mpRunnable != NULL;
 }
 
@@ -96,6 +99,7 @@ ReusableThread::OnExecute()
 void
 ReusableThread::OnFinished()
 {
+  OSMutex::Lock lock( mMutex );
   if( mpRunnable )
   {
     mFinishedEvent.Set();
