@@ -241,6 +241,9 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   OptionalParameter( "ApplicationIP" );
   PreflightCondition( Parameter( "SamplingRate" ).InHertz() > 0 );
 
+  int SampleBlockSize = Parameter( "SampleBlockSize" );
+  PreflightCondition( SampleBlockSize > 0 );
+
   bool sourceChOffsetConsistent = ( Parameter( "SourceChOffset" )->NumValues() >= Parameter( "SourceCh" ) );
   if( !sourceChOffsetConsistent )
   {
@@ -264,10 +267,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   }
 
   if( Parameter( "VisualizeSource" ) == 1 )
-  {
-    int SampleBlockSize = Parameter( "SampleBlockSize" );
-    PreflightCondition( SampleBlockSize > 0 );
-    
+  {    
     if( Parameter( "VisualizeSourceDecimation" ) != string( "auto" ) )
     {
       int VisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
