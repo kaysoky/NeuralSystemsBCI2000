@@ -304,12 +304,12 @@ StartupLoader::StartupLoader( const char* inLib, const char* inAliases, const Im
       *p->pointer = reinterpret_cast<void*>( inF );
 }
 
-list<string>
+Dylib::Names
 StartupLoader::ParseAliases( const char* inAliases )
 {
-  list<string> names;
+  Dylib::Names names;
   const char* p = inAliases;
-  do
+  if( p ) do
   {
     string name;
     while( *p && *p != '|' )
