@@ -37,7 +37,7 @@
 
 ReusableThread::ReusableThread()
 : mAlive( true ),
-  mpRunnable( NULL )
+  mpRunnable( 0 )
 {
   mFinishedEvent.Set();
   OSThread::Start();
@@ -72,7 +72,7 @@ bool
 ReusableThread::Busy() const
 {
   OSMutex::Lock lock( mMutex );
-  return mpRunnable != NULL;
+  return mpRunnable != 0;
 }
 
 bool
@@ -90,7 +90,8 @@ ReusableThread::OnExecute()
     mStartEvent.Reset();
     if( !OSThread::IsTerminating() )
       mpRunnable->Run();
-    mpRunnable = NULL;
+    OSMutex::Lock lock( mMutex );
+    mpRunnable = 0;
     mFinishedEvent.Set();
   }
   return 0;
@@ -103,7 +104,7 @@ ReusableThread::OnFinished()
   if( mpRunnable )
   {
     mFinishedEvent.Set();
-    mpRunnable = NULL;
+    mpRunnable = 0;
   }
   mAlive = false;
 }
