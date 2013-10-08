@@ -26,13 +26,6 @@
 #ifndef IMAGE_STIMULUS_H
 #define IMAGE_STIMULUS_H
 
-#ifdef __BORLANDC__
-#include "VCL.h"
-#else // __BORLANDC
-#include <QPixmap>
-#include <QImage>
-#endif // __BORLANDC__
-
 #include "VisualStimulus.h"
 #include "GraphObject.h"
 
@@ -47,6 +40,9 @@ class ImageStimulus : public VisualStimulus, public GUI::GraphObject
   ImageStimulus& SetRenderingMode( int );
   int RenderingMode() const;
 
+  int OriginalWidth() const;
+  int OriginalHeight() const;
+
  protected:
   // GraphObject event handlers
   virtual void OnPaint( const GUI::DrawContext& );
@@ -59,17 +55,8 @@ class ImageStimulus : public VisualStimulus, public GUI::GraphObject
 
  private:
   std::string mFile;
-  int         mRenderingMode;
-#ifdef __BORLANDC__
-  TPicture* mpImage;
-  Graphics::TBitmap*  mpImageBufferNormal,
-                   *  mpImageBufferHighlighted;
-#else // __BORLANDC__
-  QPixmap*  NewBufferFromImage( QImage& ) const;
-  QImage* mpImage;
-  QPixmap*  mpImageBufferNormal,
-         *  mpImageBufferHighlighted;
-#endif // __BORLANDC__
+  int mRenderingMode;
+  struct ImageStimulusPrivateData* mpData;
 };
 
 #endif // IMAGE_STIMULUS_H

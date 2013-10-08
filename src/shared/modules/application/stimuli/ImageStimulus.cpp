@@ -29,32 +29,64 @@
 #include "ImageStimulus.h"
 
 #include "FileUtils.h"
-#include "BCIError.h"
+#include "BCIStream.h"
+#include "NumericConstants.h"
 
-#ifdef __BORLANDC__
-# include <VCL.h>
-#else // __BORLANDC__
+#if USE_QT
+# include <QPixmap>
+# include <QImage>
 # include <QPainter>
 # include <QBitmap>
-#endif // __BORLANDC__
+#endif
 
 using namespace std;
 using namespace GUI;
 
+#if USE_QT
+struct ImageStimulusPrivateData
+{
+  QImage* mpImage;
+  QPixmap* mpImageBufferNormal,
+         * mpImageBufferHighlighted;
+
+  ImageStimulusPrivateData()
+  : mpImage( 0 ),
+    mpImageBufferNormal( 0 ),
+    mpImageBufferHighlighted( 0 )
+  {}
+  ~ImageStimulusPrivateData()
+  {
+    delete mpImage;
+    delete mpImageBufferNormal;
+    delete mpImageBufferHighlighted;
+  }
+};
+
+static QPixmap*
+NewBufferFromImage( QImage& inImage, bool inTransparent )
+{
+  QPixmap* pBuffer = new QPixmap( QPixmap::fromImage( inImage ) );
+  if( inTransparent && !inImage.hasAlphaChannel() )
+  {
+    QRgb c = inImage.pixel( 0, 0 );
+    QImage mask = inImage.createMaskFromColor( c, Qt::MaskInColor );
+    pBuffer->setMask( QBitmap::fromImage( mask ) );
+  }
+  return pBuffer;
+}
+
+#endif // USE_QT
+
 ImageStimulus::ImageStimulus( GraphDisplay& display )
 : GraphObject( display, ImageStimulusZOrder ),
   mRenderingMode( RenderingMode::Opaque ),
-  mpImage( NULL ),
-  mpImageBufferNormal( NULL ),
-  mpImageBufferHighlighted( NULL )
+  mpData( new ImageStimulusPrivateData )
 {
 }
 
 ImageStimulus::~ImageStimulus()
 {
-  delete mpImage;
-  delete mpImageBufferNormal;
-  delete mpImageBufferHighlighted;
+  delete mpData;
 }
 
 ImageStimulus&
@@ -63,41 +95,18 @@ ImageStimulus::SetFile( const string& inName )
   bool errorOccurred = false;
 
   // Attempt to load the image
-#ifdef __BORLANDC__
-
-  delete mpImage;
-  mpImage = new TPicture;
-  try
-  {
-    mpImage->LoadFromFile( FileUtils::AbsolutePath( inName ).c_str() );
-  }
-  catch( EInOutError& )
-  {
-    errorOccurred = true;
-  }
-  catch( EFOpenError& )
-  {
-    errorOccurred = true;
-  }
-  catch( EInvalidGraphic& )
-  {
-    errorOccurred = true;
-  }
-
-#else // __BORLANDC__
-
-  delete mpImage;
-  mpImage = new QImage();
-  errorOccurred = !mpImage->load( QString( FileUtils::AbsolutePath( inName ).c_str() ) );
-
-#endif // __BORLANDC__
+#if USE_QT
+  delete mpData->mpImage;
+  mpData->mpImage = new QImage();
+  errorOccurred = !mpData->mpImage->load( QString( FileUtils::AbsolutePath( inName ).c_str() ) );
+#endif
 
   // An error occurred while loading the image
   if( errorOccurred )
   {
     bcierr << "Could not load image from file \"" << inName << "\"" << endl;
-    delete mpImage;
-    mpImage = NULL;
+    delete mpData->mpImage;
+    mpData->mpImage = NULL;
     mFile = "";
   }
   else
@@ -130,43 +139,44 @@ ImageStimulus::RenderingMode() const
   return mRenderingMode;
 }
 
+#if USE_QT
+int
+ImageStimulus::OriginalWidth() const
+{
+  return mpData->mpImage ? mpData->mpImage->width() : 0;
+}
+
+int
+ImageStimulus::OriginalHeight() const
+{
+  return mpData->mpImage ? mpData->mpImage->height() : 0;
+}
+
 void
 ImageStimulus::OnPaint( const DrawContext& inDC )
 {
   // Draw the proper buffered image using the given DrawContext
-#ifdef __BORLANDC__
-
-  Graphics::TBitmap* pBuffer = BeingPresented() ?
-                               mpImageBufferHighlighted :
-                               mpImageBufferNormal;
-  if( pBuffer != NULL )
-  {
-    TCanvas* pCanvas = new TCanvas;
-    try
-    {
-      pBuffer->Transparent = ( mRenderingMode == GUI::RenderingMode::Transparent );
-      pBuffer->TransparentMode = tmAuto;
-      pCanvas->Handle = ( HDC )inDC.handle;
-      pCanvas->Draw( inDC.rect.left, inDC.rect.top, pBuffer );
-    }
-    __finally
-    {
-      delete pCanvas;
-    }
-  }
-
-#else // __BORLANDC__
-
   QPixmap* pBuffer = BeingPresented() ?
-                     mpImageBufferHighlighted :
-                     mpImageBufferNormal;
+                     mpData->mpImageBufferHighlighted :
+                     mpData->mpImageBufferNormal;
   if( pBuffer != NULL )
   {
-    inDC.handle.painter->drawPixmap( int( inDC.rect.left ), int( inDC.rect.top ), *pBuffer );
+    int width = ::Floor( inDC.rect.Width() ),
+        height = ::Floor( inDC.rect.Height() );
+    if( width == pBuffer->width() && height == pBuffer->height() )
+      inDC.handle.painter->drawPixmap(
+        ::Floor( inDC.rect.left ),
+        ::Floor( inDC.rect.top ), 
+        *pBuffer );
+    else
+      inDC.handle.painter->drawPixmap(
+        ::Floor( inDC.rect.left ),
+        ::Floor( inDC.rect.top ),
+        width, height,
+        *pBuffer );
   }
-
-#endif // __BORLANDC__
 }
+#endif
 
 void
 ImageStimulus::OnResize( DrawContext& ioDC )
@@ -186,82 +196,32 @@ ImageStimulus::OnMove( DrawContext& ioDC )
 void
 ImageStimulus::OnChange( DrawContext& ioDC )
 {
-  delete mpImageBufferNormal;
-  mpImageBufferNormal = NULL;
-  delete mpImageBufferHighlighted;
-  mpImageBufferHighlighted = NULL;
+  delete mpData->mpImageBufferNormal;
+  mpData->mpImageBufferNormal = NULL;
+  delete mpData->mpImageBufferHighlighted;
+  mpData->mpImageBufferHighlighted = NULL;
 
   AdjustRect( ioDC.rect );
   int width = ioDC.rect.Width(),
       height = ioDC.rect.Height();
 
-#ifdef __BORLANDC__
+#if USE_QT
 
-  if( mpImage != NULL )
+  if( mpData->mpImage != NULL )
   {
-    TRect bufRect( 0, 0, width, height );
-    mpImageBufferNormal = new Graphics::TBitmap;
-    mpImageBufferNormal->Width = width;
-    mpImageBufferNormal->Height = height;
-    mpImageBufferNormal->Canvas->StretchDraw( bufRect, mpImage->Graphic );
-
-    mpImageBufferHighlighted = new Graphics::TBitmap;
-    mpImageBufferHighlighted->Assign( mpImageBufferNormal );
-
-    TCanvas* pCanvas = mpImageBufferHighlighted->Canvas;
-    switch( PresentationMode() )
-    {
-      case ShowHide:
-        delete mpImageBufferNormal;
-        mpImageBufferNormal = NULL;
-        break;
-
-      case Intensify:
-        for( int i = 0; i < bufRect.Width(); ++i )
-          for( int j = 0; j < bufRect.Height(); ++j )
-          {
-            RGBColor c = RGBColor::FromWinColor( pCanvas->Pixels[ i ][ j ] );
-            c *= 1 / DimFactor();
-            pCanvas->Pixels[ i ][ j ] = TColor( c.ToWinColor() );
-          }
-        break;
-
-      case Grayscale:
-        mpImageBufferHighlighted->Monochrome = true;
-        break;
-
-      case Invert:
-        for( int i = 0; i < bufRect.Width(); ++i )
-          for( int j = 0; j < bufRect.Height(); ++j )
-            pCanvas->Pixels[ i ][ j ] = TColor( ~pCanvas->Pixels[ i ][ j ] );
-        break;
-
-      case Dim:
-        for( int i = 0; i < bufRect.Width(); ++i )
-          for( int j = 0; j < bufRect.Height(); ++j )
-          {
-            RGBColor c = RGBColor::FromWinColor( pCanvas->Pixels[ i ][ j ] );
-            c *= DimFactor();
-            pCanvas->Pixels[ i ][ j ] = TColor( c.ToWinColor() );
-          }
-        break;
-    }
-  }
-
-#else // __BORLANDC__
-
-  if( mpImage != NULL )
-  {
-    QImage img = mpImage->scaled( width, height );
+    bool storeScaled = width * height < 2 * OriginalWidth() * OriginalHeight();
+    storeScaled |= width < OriginalWidth();
+    storeScaled |= height < OriginalHeight();
+    QImage img = storeScaled ? mpData->mpImage->scaled( width, height ) : *mpData->mpImage;
     // Create the normal pixmap
     if( PresentationMode() != ShowHide )
-      mpImageBufferNormal = NewBufferFromImage( img );
+      mpData->mpImageBufferNormal = NewBufferFromImage( img, mRenderingMode == GUI::RenderingMode::Transparent );
     // Create the highlighted pixmap by modifying img
     switch( PresentationMode() )
     {
       case ShowHide:
-        delete mpImageBufferNormal;
-        mpImageBufferNormal = NULL;
+        delete mpData->mpImageBufferNormal;
+        mpData->mpImageBufferNormal = NULL;
         break;
 
       case Intensify:
@@ -275,7 +235,6 @@ ImageStimulus::OnChange( DrawContext& ioDC )
         for( int i = 0; i < img.colorCount(); ++i )
           img.setColor( i, QColor( img.color( i ) ).value() );
         break;
-        break;
 
       case Invert:
         img.invertPixels();
@@ -287,29 +246,24 @@ ImageStimulus::OnChange( DrawContext& ioDC )
           img.setColor( i, QColor( img.color( i ) ).darker( static_cast<int>( 100 * DimFactor() ) ).rgb() );
         break;
     }
-    mpImageBufferHighlighted = NewBufferFromImage( img );
+    mpData->mpImageBufferHighlighted = NewBufferFromImage( img, mRenderingMode == GUI::RenderingMode::Transparent );
   }
 
-#endif // __BORLANDC__
+#endif // USE_QT
 
 }
 
 void
 ImageStimulus::AdjustRect( GUI::Rect& ioRect ) const
 {
-  if( mpImage != NULL )
+  if( mpData->mpImage != NULL )
   {
     int width = ioRect.Width(),
         height = ioRect.Height(),
         hCenter = ( ioRect.left + ioRect.right ) / 2,
-        vCenter = ( ioRect.bottom + ioRect.top ) / 2;
-#ifdef __BORLANDC__
-    int imageWidth = mpImage->Width,
-        imageHeight = mpImage->Height;
-#else // __BORLANDC__
-    int imageWidth = mpImage->width(),
-        imageHeight = mpImage->height();
-#endif // __BORLANDC__
+        vCenter = ( ioRect.bottom + ioRect.top ) / 2,
+        imageWidth = OriginalWidth(),
+        imageHeight = OriginalHeight();
 
     switch( AspectRatioMode() )
     {
@@ -340,20 +294,4 @@ ImageStimulus::AdjustRect( GUI::Rect& ioRect ) const
     }
   }
 }
-
-
-#ifndef __BORLANDC__
-QPixmap*
-ImageStimulus::NewBufferFromImage( QImage& inImage ) const
-{
-  QPixmap* pBuffer = new QPixmap( QPixmap::fromImage( inImage ) );
-  if( mRenderingMode == GUI::RenderingMode::Transparent && !inImage.hasAlphaChannel() )
-  {
-    QRgb c = inImage.pixel( 0, 0 );
-    QImage mask = inImage.createMaskFromColor( c, Qt::MaskInColor );
-    pBuffer->setMask( QBitmap::fromImage( mask ) );
-  }
-  return pBuffer;
-}
-#endif // __BORLANDC__
 
