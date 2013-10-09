@@ -365,11 +365,13 @@ BCI2000FileReader::ReadHeader()
   mpStatevector = new ( class StateVector )( mStatelist );
   if( !mParamlist.Exists( "SamplingRate" ) )
     return;
-  mSamplingRate = PhysicalUnit()
-                 .SetGain( 1.0 )
-                 .SetOffset( 0.0 )
-                 .SetSymbol( "Hz" )
-                 .PhysicalToRaw( mParamlist[ "SamplingRate" ].Value() );
+  string samplingRate = mParamlist["SamplingRate"].Value();
+  PhysicalUnit hz;
+  hz.SetGain( 1.0 ).SetOffset( 0.0 ).SetSymbol( "Hz" );
+  if( hz.IsPhysical( samplingRate ) )
+    mSamplingRate = hz.PhysicalToRaw( samplingRate );
+  else
+    mSamplingRate = ::atof( samplingRate.c_str() );
 
   // Read information about signal dimensions.
   int sampleBlockSize = 1;
