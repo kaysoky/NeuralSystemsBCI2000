@@ -38,32 +38,31 @@
 using namespace std;
 
 // **************************************************************************
-// Function:   operator[]
+// Function:   ByName
 // Purpose:    Access a parameter by its name.
 // Parameters: Parameter name.
 // Returns:    Returns a reference to a parameter with a given name.
 // **************************************************************************
 Param&
-ParamList::operator[]( const std::string& inName )
+ParamList::ByName( const std::string& inName )
 {
-  NameIndex::const_iterator i = mNameIndex.find( inName );
-  if( i == mNameIndex.end() )
+  ParamContainer::iterator i = mParams.find( inName );
+  if( i == mParams.end() )
   {
-    mNameIndex[ inName ] = static_cast<int>( mParams.size() );
-    mParams.resize( mParams.size() + 1 );
-    i = mNameIndex.find( inName );
+    mIndex.push_back( &mParams[inName] );
+    i = mParams.find( inName );
   }
-  return mParams[ i->second ].Param;
+  return i->second.Param;
 }
 
 const Param&
-ParamList::operator[]( const std::string& inName ) const
+ParamList::ByName( const std::string& inName ) const
 {
   static Param defaultParam = Param().SetName( "" ).SetSection( "Default" ).SetType( "int" );
   const Param* result = &defaultParam;
-  NameIndex::const_iterator i = mNameIndex.find( inName );
-  if( i != mNameIndex.end() )
-    result = &mParams[ i->second ].Param;
+  ParamContainer::const_iterator i = mParams.find( inName );
+  if( i != mParams.end() )
+    result = &i->second.Param;
   return *result;
 }
 
@@ -89,8 +88,8 @@ ParamList::operator()( const std::string& inName ) const
 void
 ParamList::Clear()
 {
+  mIndex.clear();
   mParams.clear();
-  mNameIndex.clear();
 }
 
 // **************************************************************************
@@ -107,18 +106,10 @@ ParamList::Clear()
 void
 ParamList::Add( const Param& inParam, float inSortingHint )
 {
-  ParamEntry* entry = NULL;
-  NameIndex::const_iterator i = mNameIndex.find( inParam.mName );
-  if( i != mNameIndex.end() )
-    entry = &mParams[ i->second ];
-  else
-  {
-    mNameIndex[ inParam.mName ] = static_cast<int>( mParams.size() );
-    mParams.resize( mParams.size() + 1 );
-    entry = &mParams[ mParams.size() - 1 ];
-  }
-  entry->Param = inParam;
-  entry->SortingHint = inSortingHint;
+  ByName( inParam.Name() );
+  ParamEntry& entry = mParams[inParam.Name()];
+  entry.Param = inParam;
+  entry.SortingHint = inSortingHint;
 }
 
 // **************************************************************************
@@ -136,7 +127,7 @@ ParamList::Add( const string& inLine )
   istringstream linestream( inLine );
   Param param;
   if( linestream >> param )
-    ( *this )[ param.mName ] = param;
+    ByName( param.Name() ) = param;
   return linestream;
 }
 
@@ -151,10 +142,15 @@ ParamList::Add( const string& inLine )
 void
 ParamList::Delete( const std::string& inName )
 {
-  if( mNameIndex.find( inName ) != mNameIndex.end() )
+  ParamContainer::iterator i = mParams.find( inName );
+  if( i != mParams.end() )
   {
-    mParams.erase( mParams.begin() + mNameIndex[ inName ] );
-    RebuildIndex();
+    Index::iterator j = mIndex.begin();
+    while( j != mIndex.end() && *j != &i->second )
+      ++j;
+    bciassert( j != mIndex.end() );
+    mIndex.erase( j );
+    mParams.erase( i );
   }
 }
 
@@ -172,9 +168,8 @@ ParamList::Delete( const std::string& inName )
 ostream&
 ParamList::WriteToStream( ostream& os ) const
 {
-  for( ParamContainer::const_iterator i = mParams.begin();
-                               os && i != mParams.end(); ++i )
-    os << i->Param << '\n';
+  for( int i = 0; i < Size(); ++i )
+    os << ByIndex( i ) << '\n';
   return os;
 }
 
@@ -196,7 +191,7 @@ ParamList::ReadFromStream( istream& is )
   Param param;
   is >> ws;
   while( !is.eof() && is >> param >> ws )
-    ( *this )[ param.mName ] = param;
+    ByName( param.Name() ) = param;
   return is;
 }
 
@@ -212,9 +207,8 @@ ParamList::ReadFromStream( istream& is )
 ostream&
 ParamList::WriteBinary( ostream& os ) const
 {
-  for( ParamContainer::const_iterator i = mParams.begin();
-                                       i != mParams.end(); ++i )
-    i->Param.WriteBinary( os );
+  for( int i = 0; i < Size(); ++i )
+    ByIndex( i ).WriteBinary( os );
   return os;
 }
 
@@ -279,20 +273,18 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
   typedef set<string> NameSet;
   NameSet unwantedParams;
   if( !inImportNonexisting )
-    for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
-                                         i != paramsFromFile.mParams.end(); ++i )
-      if( mNameIndex.find( i->Param.mName ) == mNameIndex.end() )
-        unwantedParams.insert( i->Param.mName );
+    for( int i = 0; i < paramsFromFile.Size(); ++i )
+      if( !Exists( paramsFromFile[i].Name() ) )
+        unwantedParams.insert( paramsFromFile[i].Name() );
 
   for( NameSet::const_iterator i = unwantedParams.begin(); i != unwantedParams.end(); ++i )
     paramsFromFile.Delete( *i );
 
-  for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
-                                       i != paramsFromFile.mParams.end(); ++i )
+  for( int i = 0; i < paramsFromFile.Size(); ++i )
   {
-    Param& p = ( *this )[ i->Param.mName ];
-    if( !p.Readonly() )
-      p.AssignValues( i->Param );
+    Param &p = paramsFromFile[i], &q = ByName( p.Name() );
+    if( !q.Readonly() )
+      q.AssignValues( p );
   }
   return true;
 }
@@ -308,21 +300,5 @@ ParamList::Sort()
 {
   // stable_sort will retain the relative order of parameters with identical
   // sections.
-  stable_sort( mParams.begin(), mParams.end(), ParamEntry::Compare );
-  RebuildIndex();
-}
-
-// **************************************************************************
-// Function:   RebuildIndex
-// Purpose:    Rebuilds the Name-to-Position
-//             index maintained for parameter access by name.
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-void
-ParamList::RebuildIndex()
-{
-  mNameIndex.clear();
-  for( size_t i = 0; i < mParams.size(); ++i )
-    mNameIndex[ mParams[ i ].Param.mName ] = static_cast<int>( i );
+  stable_sort( mIndex.begin(), mIndex.end(), ParamEntry::Compare );
 }
