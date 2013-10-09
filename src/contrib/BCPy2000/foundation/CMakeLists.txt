@@ -43,6 +43,7 @@ ELSE()
 ENDIF()
 
 # Recurse down into all project subdirectories
+SET_OUTPUT_DIRECTORY( ../demo/prog )
 ADD_SUBDIRECTORY( Application )
 ADD_SUBDIRECTORY( SignalProcessing )
 ADD_SUBDIRECTORY( SignalSource )

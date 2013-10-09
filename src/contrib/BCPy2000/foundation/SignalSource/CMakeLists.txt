@@ -11,17 +11,12 @@ SET( EXECUTABLE_NAME PythonSource )
 # Python due to interrupted os.popen(some_system_command).read() calls:  a known issue
 # with Python not playing nice with QT.  This main file ensures a non-QT executable.
 SET( SRC_PROJECT
-	${SRC_PROJECT}
-	PythonSource.cpp
+  ${SRC_PROJECT}
+  PythonSource.cpp
 )
 
 # Create the signal processing module
 BCI2000_ADD_SIGNAL_SOURCE_MODULE( 
   "${EXECUTABLE_NAME}" 
   "${SRC_PROJECT}" "${HDR_PROJECT}" 
-)
-
-ADD_CUSTOM_COMMAND(
-  TARGET "${EXECUTABLE_NAME}"
-  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${EXECUTABLE_NAME}${CMAKE_EXECUTABLE_SUFFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/../../demo/prog"
 )

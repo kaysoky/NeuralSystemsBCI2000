@@ -42,12 +42,6 @@ ADD_SUBDIRECTORY( ${PROJECT_SRC_DIR}/shared/utils/Expression/test "${PROJECT_BUI
 
 # Recurse down into all project subdirectories
 
-# Set output for all build types to the prog folder.
-# This comes after static libraries have been created, so these 
-# maintain build-type specific output directories
-# (to avoid errors from linking to libraries with different build type)
-SET_OUTPUT_DIRECTORY( "${PROJECT_OUTPUT_DIR}" )
-
 # src/private : stuff we use that is not released yet
 IF( EXISTS ${BCI2000_SRC_DIR}/private AND BUILD_PRIVATE )
   ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/private "${BCI2000_BINARY_DIR}/private" )

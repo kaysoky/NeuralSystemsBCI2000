@@ -85,6 +85,9 @@ FUNCTION( BCI2000_ADD_TARGET )
     IF( NOT needqt_ )
       UTILS_IS_DEFINITION( USE_QT needqt_ )
     ENDIF()
+    IF( NOT DEFINED outputDir )
+      SET( outputDir ${PROJECT_OUTPUT_DIR} )
+    ENDIF()
     
     IF( debug )
       dump_debug_info_()
@@ -123,6 +126,7 @@ FUNCTION( BCI2000_ADD_TARGET )
 
     ELSEIF( kind_ STREQUAL STATIC_LIBRARY )
       ADD_LIBRARY( ${name_} STATIC ${sources_} )
+      SET( outputDir )
 
     ELSEIF( kind_ STREQUAL MODULE OR kind_ STREQUAL WINDLL )
       ADD_LIBRARY( ${name_} MODULE ${sources_} )
@@ -154,8 +158,13 @@ FUNCTION( BCI2000_ADD_TARGET )
     TARGET_LINK_LIBRARIES( ${name_} ${LIBS} )
     SET_PROPERTY( TARGET ${name_} PROPERTY FOLDER ${DIR_NAME} )
 
-    IF( DEFINED outputDir )
-      SET_OUTPUT_DIRECTORY( ${outputDir} ${name_} )
+    IF( outputDir )
+      ADD_CUSTOM_COMMAND(
+        TARGET ${name_}
+        POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:${name_}>" "${outputDir}"
+        COMMENT "Copy to destination"
+      )
     ENDIF()
     
     # Handle companion files
@@ -169,7 +178,7 @@ FUNCTION( BCI2000_ADD_TARGET )
       ADD_CUSTOM_COMMAND(
         TARGET ${name_}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "${companion}" "${copyto}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${companion}" "${copyto}"
       )
     ENDFOREACH()
   ENDIF()
