@@ -182,7 +182,12 @@ void
 FileWriterBase::Halt()
 {
   SharedPointer<OSEvent> pTerminationEvent = OSThread::Terminate();
-  mEvent.Set(); // Trigger a last execution of the thread's while loop.
+  {
+    OSMutex::Lock lock( mMutex );
+    mSignalQueue = queue<GenericSignal>();
+    mStateVectorQueue = queue<StateVector>();
+    mEvent.Set(); // Trigger a last execution of the thread's while loop.
+  }
   pTerminationEvent->Wait();
 }
 
@@ -210,6 +215,7 @@ int FileWriterBase::Execute()
     while( !mSignalQueue.empty() )
     {
       GenericSignal signal = mSignalQueue.front();
+      bciassert( !mStateVectorQueue.empty() );
       StateVector stateVector = mStateVectorQueue.front();
       mSignalQueue.pop();
       mStateVectorQueue.pop();
