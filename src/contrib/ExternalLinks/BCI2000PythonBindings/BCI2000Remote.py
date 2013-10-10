@@ -163,7 +163,7 @@ class BCI2000Remote(object):
 
         This function appends the last command's execution status to the optional list argument.
         """
-        i = c_int()
+        i = ctypes.c_int()
         result = self._lib.BCI2000Remote_Execute( self._instance, ctypes.c_char_p( command ), ctypes.byref( i ) )
         exitCode.append( i )
         return result
