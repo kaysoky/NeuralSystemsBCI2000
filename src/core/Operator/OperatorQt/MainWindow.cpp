@@ -429,7 +429,7 @@ MainWindow::SetFunctionButtons()
 }
 
 void
-MainWindow::SetFunctionButton( size_t inIdx, const QString& inTitle, const QString& inScript )
+MainWindow::SetFunctionButton( int inIdx, const QString& inTitle, const QString& inScript )
 {
   QPushButton* pButton = mButtons[inIdx];
   pButton->setEnabled( inTitle != "" && inScript != "" );
@@ -573,7 +573,7 @@ MainWindow::OnDebugMessage( void* inData, const char* s )
   QMetaObject::invokeMethod(
     &this_->mSyslog,
     "AddEntry",
-    Qt::QueuedConnection,
+    Qt::AutoConnection,
     Q_ARG(QString, s),
     Q_ARG(int, SysLog::logEntryNormal));
 }
@@ -585,7 +585,7 @@ MainWindow::OnLogMessage( void* inData, const char* s )
   QMetaObject::invokeMethod(
     &this_->mSyslog,
     "AddEntry",
-    Qt::QueuedConnection,
+    Qt::AutoConnection,
     Q_ARG(QString, s),
     Q_ARG(int, SysLog::logEntryNormal));
 }
@@ -598,7 +598,7 @@ MainWindow::OnWarningMessage( void* inData, const char* s )
   QMetaObject::invokeMethod(
     &this_->mSyslog,
     "AddEntry",
-    Qt::QueuedConnection,
+    Qt::AutoConnection,
     Q_ARG(QString, s),
     Q_ARG(int, SysLog::logEntryWarning));
 }
@@ -611,7 +611,7 @@ MainWindow::OnErrorMessage( void* inData, const char* s )
   QMetaObject::invokeMethod(
     &this_->mSyslog,
     "AddEntry",
-    Qt::QueuedConnection,
+    Qt::AutoConnection,
     Q_ARG(QString, s),
     Q_ARG(int, SysLog::logEntryError));
 }
@@ -625,7 +625,7 @@ MainWindow::OnScriptError( void* inData, const char* s )
   QMetaObject::invokeMethod(
     &this_->mSyslog,
     "AddEntry",
-    Qt::QueuedConnection,
+    Qt::AutoConnection,
     Q_ARG(QString, message),
     Q_ARG(int, SysLog::logEntryError));
 }
@@ -675,14 +675,14 @@ MainWindow::OnUnknownCommand( void* inData, const char* inCommand )
         QMetaObject::invokeMethod(
           this_,
           "setVisible",
-          Qt::QueuedConnection,
+          Qt::AutoConnection,
           Q_ARG(bool, action == show ));
         break;
       case log:
         QMetaObject::invokeMethod(
           &this_->mSyslog,
           "setVisible",
-          Qt::QueuedConnection,
+          Qt::AutoConnection,
           Q_ARG(bool, action == show ));
         break;
       case config:
@@ -693,13 +693,13 @@ MainWindow::OnUnknownCommand( void* inData, const char* inCommand )
             QMetaObject::invokeMethod(
               this_,
               "on_pushButton_Config_clicked",
-              Qt::QueuedConnection);
+              Qt::AutoConnection);
             break;
           case hide:
             QMetaObject::invokeMethod(
               gpConfig,
               "close",
-              Qt::QueuedConnection);
+              Qt::AutoConnection);
             break;
             break;
           default:
@@ -724,12 +724,11 @@ MainWindow::OnUnknownCommand( void* inData, const char* inCommand )
       QMetaObject::invokeMethod(
         this_,
         "SetFunctionButton",
-        Qt::QueuedConnection,
-        Q_ARG(int, idx),
+        Qt::AutoConnection,
+        Q_ARG(int, idx), // cannot use typedefs here (eg, size_t)
         Q_ARG(QString, QString::fromLocal8Bit( caption.c_str() )),
         Q_ARG(QString, QString::fromLocal8Bit( script.c_str() ))
       );
-      this_->mButtonScripts[idx] = script;
     }
   }
   return result;
@@ -739,6 +738,7 @@ void
 MainWindow::OnScriptHelp( void*, const char** outHelp )
 {
   *outHelp = "Show Window <name>, Hide Window <name>, Set Title <window title>, "
+             "Set Button <idx> <title> <script>, "
              "names are: Main, Log, Configuration";
 }
 

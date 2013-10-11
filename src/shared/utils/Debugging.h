@@ -33,7 +33,7 @@ namespace bci {
 // When SuggestDebugging() is called in debug mode, it displays a user
 // dialog to allow for attaching a debugger.
 // In release builds, this function does nothing.
-void SuggestDebugging( const std::string& why, const std::string& where );
+void SuggestDebugging( const std::string& why, const std::string& where = "" );
 
 } // namespace
 

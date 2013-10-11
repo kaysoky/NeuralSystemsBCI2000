@@ -93,7 +93,7 @@ class MainWindow : public QMainWindow
   void GetParameters();
 
  public slots:
-  void SetFunctionButton( size_t idx, const QString& title, const QString& script );
+  void SetFunctionButton( int idx, const QString& title, const QString& script );
   void PutParameters();
 
  private:
