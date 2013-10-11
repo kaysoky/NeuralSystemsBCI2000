@@ -98,7 +98,7 @@ namespace bci {
   struct Exception_ : Exception, T
   {
     explicit Exception_( const std::string& what, const std::string& where = "" )
-      : T( 0 ), Exception( what, where, typeid( T ) ) {} 
+      : T( "" ), Exception( what, where, typeid( T ) ) {} 
     virtual ~Exception_() throw() {}
     virtual const char* what() const
       { m_what = What() + Where(); return m_what.c_str(); }
