@@ -424,7 +424,7 @@ GraphDisplay::BitmapData( int inWidth, int inHeight ) const
   {
 #if _WIN32
     RECT rect = { 0, 0, originalWidth, originalHeight };
-    HWND wnd = mpWidget->winId();
+    HWND wnd = HWND( mpWidget->winId() );
     HDC dc = ::GetDC( wnd );
     BitmapImageFromHDC( image, dc, rect );
     ::ReleaseDC( wnd, dc );

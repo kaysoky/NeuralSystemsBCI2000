@@ -23,7 +23,7 @@
 //
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "Settings.h"
 #include "MetaTypes.h"
 #include "MainWindow.h"

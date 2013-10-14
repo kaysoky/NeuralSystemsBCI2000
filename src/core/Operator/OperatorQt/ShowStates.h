@@ -26,7 +26,7 @@
 #ifndef SHOWSTATES_H
 #define SHOWSTATES_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 namespace Ui
 {

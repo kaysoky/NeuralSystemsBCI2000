@@ -1,4 +1,4 @@
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "Settings.h"
 #include "bci2000fileinfo.h"
 #include "ExceptionCatcher.h"

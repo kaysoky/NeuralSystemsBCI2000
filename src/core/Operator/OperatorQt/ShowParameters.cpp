@@ -28,7 +28,7 @@
 
 #include "ParamList.h"
 #include "OperatorUtils.h"
-#include <QtGui>
+#include <QtWidgets>
 
 static const int cTextMargin = 2;
 static const size_t cMaxTreeDepth = 3;
@@ -133,7 +133,7 @@ void
 ShowParameters::OnAccepted()
 {
   for( QTreeWidgetItemIterator i( m_ui->treeWidget, QTreeWidgetItemIterator::NoChildren ); *i != NULL; ++i )
-    OperatorUtils::SetFilterStatus( (*i)->text( 0 ).toAscii(), mFilterType, (*i)->checkState( 0 ) == Qt::Unchecked );
+    OperatorUtils::SetFilterStatus( (*i)->text( 0 ).toLocal8Bit(), mFilterType, (*i)->checkState( 0 ) == Qt::Unchecked );
 }
 
 void

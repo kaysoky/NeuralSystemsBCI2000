@@ -26,7 +26,7 @@
 #ifndef CONFIGWINDOW_H
 #define CONFIGWINDOW_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 #include <set>
 #include <map>
 #include <string>

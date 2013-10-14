@@ -23,7 +23,7 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "ExceptionCatcher.h"
 #include "Settings.h"
 #include "BCI2000Viewer.h"

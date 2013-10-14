@@ -23,10 +23,8 @@
 
 #if _WIN32
 # include <windows.h> 
+# define GLdouble GLdouble
 #endif // _WIN32
-#ifndef __BORLANDC__
-# include <QGLWidget>
-#endif // __BORLANDC__
 #if __APPLE__
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
@@ -34,6 +32,9 @@
 # include <GL/gl.h> 
 # include <GL/glu.h>
 #endif
+#ifndef __BORLANDC__
+# include <QGLWidget>
+#endif // __BORLANDC__
 
 #include <string>
 #include <vector>

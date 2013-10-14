@@ -28,12 +28,6 @@
 
 #include <string>
 
-#if __BORLANDC__
-# include <VCL.h>
-#else // __BORLANDC__
-# include <QtGui>
-#endif // __BORLANDC__
-
 class TextWindow
 {
  public:
@@ -63,13 +57,8 @@ class TextWindow
 
  private:
   mutable std::string mTextBuf;
-#if __BORLANDC__
-  TForm* mpForm;
-  TEdit* mpEditField;
-#else // __BORLANDC__
-  QWidget*   mpForm;
-  QTextEdit* mpEditField;
-#endif // __BORLANDC__
+  class QWidget*   mpForm;
+  class QTextEdit* mpEditField;
 };
 
 #endif // TEXT_WINDOW_H

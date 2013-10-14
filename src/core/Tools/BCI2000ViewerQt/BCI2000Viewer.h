@@ -26,8 +26,8 @@
 #ifndef BCI2000VIEWER_H
 #define BCI2000VIEWER_H
 
-#include <QtGui/QMainWindow>
-#include <QtGui>
+#include <QMainWindow>
+#include <QtWidgets>
 
 #include "Color.h"
 #include "GenericSignal.h"

@@ -26,7 +26,7 @@
 #ifndef CONNECTIONINFO_H
 #define CONNECTIONINFO_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 namespace Ui
 {

@@ -1,8 +1,8 @@
 #ifndef CONFIGDIALOG_H
 #define CONFIGDIALOG_H
 
-#include <QtGui/QDialog>
-#include <QtCore/QString>
+#include <QDialog>
+#include <QString>
 #include "pages.h"
 
 QT_BEGIN_NAMESPACE

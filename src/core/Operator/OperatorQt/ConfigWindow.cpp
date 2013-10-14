@@ -330,7 +330,7 @@ ConfigWindow::OnSaveParametersClick()
       if( 0 == OperatorUtils::GetFilterStatus( (*mpParameters)[ i ].Name().c_str(), OperatorUtils::saveFilter ) )
         paramsToSave.Add( ( *mpParameters )[ i ] );
 
-    bool result = paramsToSave.Save( fileName.toAscii().data() );
+    bool result = paramsToSave.Save( fileName.toLocal8Bit().data() );
     if( result )
       this->setWindowTitle( mOriginalTitle + tr(" - wrote %1").arg( fileName ) );
     else

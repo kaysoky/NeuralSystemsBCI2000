@@ -24,7 +24,7 @@
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "MainDialog.h"
-#include <QtGui>
+#include <QtWidgets>
 
 MainDialog::MainDialog()
 : mpLineEdit1( new QLineEdit( "512" ) ),

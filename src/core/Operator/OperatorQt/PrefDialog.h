@@ -26,7 +26,7 @@
 #ifndef PREFDIALOG_H
 #define PREFDIALOG_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 #include "Preferences.h"
 
 namespace Ui

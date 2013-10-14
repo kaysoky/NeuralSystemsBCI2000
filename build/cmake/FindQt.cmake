@@ -8,6 +8,12 @@ SET( TRY_PRECOMP_QT
   "4.7.0"
 )
 
+SET( QT5_MODULES
+  Core
+  Widgets
+  GUI
+)
+
 SET( precompqt_ QT_${PROJECT_NAME} )
 
 FUNCTION( CLEAR_QT_VARIABLES )
@@ -137,6 +143,31 @@ FUNCTION( GET_QT_VERSION outVer )
 ENDFUNCTION()
 
 
+MACRO( QT_WRAP_CPP )
+  IF( QT_IS4 )
+    QT4_WRAP_CPP( ${ARGN} )
+  ELSE()
+    QT5_WRAP_CPP( ${ARGN} )
+  ENDIF()
+ENDMACRO()
+
+MACRO( QT_WRAP_UI )
+  IF( QT_IS4 )
+    QT4_WRAP_UI( ${ARGN} )
+  ELSE()
+    QT5_WRAP_UI( ${ARGN} )
+  ENDIF()
+ENDMACRO()
+
+MACRO( QT_ADD_RESOURCES )
+  IF( QT_IS4 )
+    QT4_ADD_RESOURCES( ${ARGN} )
+  ELSE()
+    QT5_ADD_RESOURCES( ${ARGN} )
+  ENDIF()
+ENDMACRO()
+
+
 ## Main
 
 SET( result_ )
@@ -147,8 +178,34 @@ IF( NOT USE_EXTERNAL_QT )
   FIND_PRECOMP_QT( result_ )
 ENDIF()
 LIST( GET TRY_PRECOMP_QT -1 qtmin_ )
-FIND_PACKAGE( Qt4 ${qtmin_} )
+
+# Try to find Qt4 or 5
+IF( USE_EXTERNAL_QT AND NOT Qt5_DIR )
+  FIND_PROGRAM( QT_QMAKE_EXECUTABLE qmake )
+ENDIF()
+IF( NOT USE_EXTERNAL_QT OR NOT QT_QMAKE_EXECUTABLE )
+  FIND_PACKAGE( Qt4 ${qtmin} QUIET )
+ENDIF()
+
+# Determine version
 GET_QT_VERSION( qtver_ )
+IF( qtver_ VERSION_LESS 5.0 )
+  SET( QT_IS4 TRUE )
+  SET( compdir_ "${PROJECT_BUILD_DIR}/extlib/qt/compat" )
+  FILE( MAKE_DIRECTORY ${compdir_} )
+  FILE( WRITE "${compdir_}/QtWidgets" "#include <QtGui>\n" )
+  INCLUDE_DIRECTORIES( ${compdir_} )
+ELSE()
+  IF( QT_QMAKE_EXECUTABLE AND NOT Qt5_DIR )
+    GET_FILENAME_COMPONENT( Qt5_DIR ${QT_QMAKE_EXECUTABLE} PATH )
+  ENDIF()
+  IF( Qt5_DIR )
+    FIND_PACKAGE( Qt5 COMPONENTS ${QT5_MODULES} OpenGL )
+    IF( Qt5_FOUND )
+      SET( QT_VERSION ${Qt5_VERSION} )
+    ENDIF()
+  ENDIF()
+ENDIF()
 
 IF( NOT qtver_ OR qtver_ VERSION_LESS qtmin_ )
   IF( "${result_}" STREQUAL CANTCONNECT-NOTFOUND )

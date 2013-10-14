@@ -29,10 +29,15 @@
 #include <QCoreApplication>
 #include <QDir>
 
-QString Settings::sFilePath;
+static
+QString& FilePath()
+{
+  static QString instance;
+  return instance;
+}
 
 Settings::Settings()
-: QSettings( sFilePath, QSettings::IniFormat )
+: QSettings( FilePath(), QSettings::IniFormat )
 {
 }
 
@@ -40,10 +45,10 @@ void
 Settings::SetFile( const QString& inFilePath )
 {
   if( inFilePath == "" )
-    sFilePath = QCoreApplication::applicationDirPath() 
-              + QDir::separator() 
-              + QCoreApplication::applicationName() 
-              + ".ini";
+    FilePath() = QCoreApplication::applicationDirPath() 
+               + QDir::separator() 
+               + QCoreApplication::applicationName() 
+               + ".ini";
   else
-    sFilePath = inFilePath;
+    FilePath() = inFilePath;
 }

@@ -33,7 +33,7 @@
 #include "strings/BCI2000_credits.h"
 #include <sstream>
 
-#include <QtGui>
+#include <QtWidgets>
 #include <ctype.h>
 
 using namespace std;

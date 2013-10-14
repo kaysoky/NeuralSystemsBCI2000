@@ -9,11 +9,19 @@
 ##       LIBS_EXTLIB - Required libraries for the 3DAPI (OpenGL)
 
 # Let CMake know we plan to link against the Qt OPENGL libraries
-SET( QT_USE_QTOPENGL TRUE )
-INCLUDE(${QT_USE_FILE})
-SET( LIBS_EXTLIB
-  ${QT_LIBRARIES}
-)
+IF( QT_IS4 )
+  SET( QT_USE_QTOPENGL TRUE )
+  INCLUDE(${QT_USE_FILE})
+  SET( LIBS_EXTLIB
+    ${QT_LIBRARIES}
+  )
+ELSE()
+  SET( QT5_MODULES
+    ${QT5_MODULES}
+    OpenGL
+  )
+ENDIF()
+
 FIND_PACKAGE( OpenGL REQUIRED )
 IF( OPENGL_FOUND )
   SET( LIBS_EXTLIB

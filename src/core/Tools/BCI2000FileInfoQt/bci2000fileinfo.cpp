@@ -27,7 +27,7 @@
 #include "bci2000fileinfo.h"
 #include "ui_bci2000fileinfo.h"
 #include <QFileDialog>
-#include <QtGui>
+#include <QtWidgets>
 #include "Preferences.h"
 #include "ConfigWindow.h"
 #include "ShowStates.h"

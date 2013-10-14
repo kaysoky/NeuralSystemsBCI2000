@@ -36,9 +36,9 @@ const ColorListChooser&
 ColorListChooser::Display( ColorList& ioColors ) const
 {
   for( int i = 0; i < min( static_cast<int>( ioColors.size() ), QColorDialog::customCount() ); ++i )
-    QColorDialog::setCustomColor( i, ioColors[ i ] );
+    QColorDialog::setCustomColor( i, ioColors[i].ToQRgb() );
   for( int i = static_cast<int>( ioColors.size() ); i < QColorDialog::customCount(); ++i )
-    QColorDialog::setCustomColor( i, RGBColor( RGBColor::Black ) );
+    QColorDialog::setCustomColor( i, RGBColor( RGBColor::Black ).ToQRgb() );
   if( QColorDialog::getColor( Qt::white, NULL, mPrompt.c_str(), QColorDialog::DontUseNativeDialog ).isValid() )
   {
     int numUserColors = 0;
@@ -51,7 +51,7 @@ ColorListChooser::Display( ColorList& ioColors ) const
     {
       ioColors.resize( numUserColors );
       for( int i = 0; i < numUserColors; ++i )
-        ioColors[ i ] = QColorDialog::customColor( i );
+        ioColors[i] = RGBColor::FromQRgb( QColorDialog::customColor( i ) );
     }
   }
   return *this;

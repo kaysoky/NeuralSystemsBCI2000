@@ -1,4 +1,4 @@
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "Settings.h"
 #include "MainWindow.h"
 #include "ExceptionCatcher.h"

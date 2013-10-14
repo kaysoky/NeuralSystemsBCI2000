@@ -26,7 +26,7 @@
 #ifndef SHOWPARAMETERS_H
 #define SHOWPARAMETERS_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 class Param;
 class ParamList;

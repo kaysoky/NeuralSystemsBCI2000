@@ -123,14 +123,14 @@ FeedbackDemoTask::FeedbackDemoTask()
   mpSceneView->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
   mpSceneView->show();
 
-  mpLabel = new QGraphicsSimpleTextItem( NULL, mpScene );
+  mpLabel = new QGraphicsSimpleTextItem( mpScene->activePanel() );
   mpLabel->show();
 
-  mpTarget = new QGraphicsRectItem( NULL, mpScene );
+  mpTarget = new QGraphicsRectItem( mpScene->activePanel() );
   mpTarget->setPen( Qt::NoPen );
   mpTarget->hide();
 
-  mpCursor = new QGraphicsEllipseItem( NULL, mpScene );
+  mpCursor = new QGraphicsEllipseItem( mpScene->activePanel() );
   mpCursor->setPen( Qt::NoPen );
   mpCursor->hide();
 

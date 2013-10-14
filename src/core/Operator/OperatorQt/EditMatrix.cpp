@@ -31,7 +31,7 @@
 #include "ParsedComment.h"
 #include "ExecutableHelp.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 using namespace std;
 
@@ -62,8 +62,13 @@ EditMatrix::EditMatrix( QWidget* parent )
   m_ui->rowsSpinBox->setMaximum( cSpinBoxMax );
   m_ui->colsSpinBox->setMaximum( cSpinBoxMax );
 
+#if QT_IS4
   m_ui->tableWidget->verticalHeader()->setClickable( false );
   m_ui->tableWidget->horizontalHeader()->setClickable( false );
+#else
+  m_ui->tableWidget->verticalHeader()->setSectionsClickable( false );
+  m_ui->tableWidget->horizontalHeader()->setSectionsClickable( false );
+#endif
   connect( m_ui->tableWidget->verticalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(EditVLabel(int)) );
   connect( m_ui->tableWidget->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(EditHLabel(int)) );
   connect( m_ui->tableWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(EditItem(QTableWidgetItem*)) );

@@ -26,7 +26,7 @@
 #ifndef BCI2000FILEINFO_H
 #define BCI2000FILEINFO_H
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include "BCI2000FileReader.h"
 
 namespace Ui

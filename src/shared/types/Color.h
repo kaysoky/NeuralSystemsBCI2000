@@ -97,6 +97,12 @@ class RGBColor
     int             ToWinColor() const;
     static RGBColor FromWinColor( int );
 
+    // Convert to a Qt encoded RGB value and back.
+    unsigned int    ToQRgb() const
+      { return unsigned int( mValue ); }
+    static RGBColor FromQRgb( unsigned int i )
+      { return RGBColor( int(i) ); }
+
     // Return luminance as a greyscale color value.
     RGBColor ToGray() const;
     // Create a RGB color from Hue, Saturation, and Value.

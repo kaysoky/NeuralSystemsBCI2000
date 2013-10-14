@@ -56,6 +56,7 @@ class VisDisplayBase : public QWidget
  public:
   virtual ~VisDisplayBase();
 
+  static bool Init();
   static void Clear() { Visuals().Clear(); }
   static void HandleSignal( const VisID&, const GenericSignal& );
   static void HandleMemo( const VisID&, const char* );

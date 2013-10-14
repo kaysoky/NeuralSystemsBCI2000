@@ -34,7 +34,7 @@
 #include "Settings.h"
 #include "defines.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #include <string>
 #include <sstream>
 #include <signal.h>

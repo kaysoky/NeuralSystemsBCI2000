@@ -36,9 +36,6 @@ class Settings : public QSettings
   Settings();
 
   static void SetFile( const QString& = "" );
-
- private:
-  static QString sFilePath;
 };
 
 #endif // SETTINGS_H

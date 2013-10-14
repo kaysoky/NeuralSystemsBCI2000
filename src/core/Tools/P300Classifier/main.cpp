@@ -1,4 +1,4 @@
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "CmdLine.h"
 #include "configdialog.h"
 #include "ExceptionCatcher.h"

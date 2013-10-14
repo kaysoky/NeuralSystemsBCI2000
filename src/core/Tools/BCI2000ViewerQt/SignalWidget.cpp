@@ -1,5 +1,5 @@
 #include "SignalWidget.h"
-#include <QtGui>
+#include <QtWidgets>
 
 SignalWidget::SignalWidget( QWidget* inParent )
 : QWidget( inParent ),

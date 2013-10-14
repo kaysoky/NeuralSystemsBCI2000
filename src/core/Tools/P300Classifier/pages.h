@@ -1,11 +1,9 @@
 #ifndef PAGES_H
 #define PAGES_H
 
-#include <QtGui/QWidget>
-#include <QtCore/QString>
-#include <QtCore/QTextStream>
-#include <QtGui/QtGui>
-#include <QtCore/QThread>
+#include <QtWidgets>
+#include <QTextStream>
+#include <QThread>
 #include <vector>
 #include <string>
 #include <iomanip>

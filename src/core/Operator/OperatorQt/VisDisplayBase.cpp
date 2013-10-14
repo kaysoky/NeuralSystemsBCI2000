@@ -35,9 +35,17 @@
 #include "Settings.h"
 #include "CfgID.h"
 
-#include <QtGui>
-
 using namespace std;
+
+static bool init = VisDisplayBase::Init();
+
+bool
+VisDisplayBase::Init()
+{
+  VisDisplayBase::Visuals();
+  VisDisplayBase::Visconfigs();
+  return true;
+}
 
 VisDisplayBase::VisContainer&
 VisDisplayBase::Visuals()

@@ -555,7 +555,7 @@ void BCI2000Viewer::dragEnterEvent( QDragEnterEvent* iopEvent )
   if( urlList.size() == 1 )
   {
     QString file = urlList[0].toLocalFile();
-    if( QFileInfo( file ).isFile() && BCI2000FileReader( file.toAscii() ).IsOpen() )
+    if( QFileInfo( file ).isFile() && BCI2000FileReader( file.toLocal8Bit() ).IsOpen() )
       iopEvent->acceptProposedAction();
   }
 }
