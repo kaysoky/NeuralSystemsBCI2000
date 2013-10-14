@@ -51,7 +51,11 @@ ColorListChooser::Display( ColorList& ioColors ) const
     {
       ioColors.resize( numUserColors );
       for( int i = 0; i < numUserColors; ++i )
-        ioColors[i] = RGBColor::FromQRgb( QColorDialog::customColor( i ) );
+#if QT_IS4
+        ioColors[i] = QColorDialog::customColor( i );
+#else
+        ioColors[i] = RGBColor::FromQRgb( QColorDialog::customColor( i ).rgba() );
+#endif
     }
   }
   return *this;
