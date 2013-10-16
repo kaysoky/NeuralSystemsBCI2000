@@ -27,9 +27,7 @@
 #define SIGNAL_GENERATOR_ADC_H
 
 #include "GenericADC.h"
-#include "PrecisionTime.h"
-#include "Expression.h"
-#include "RandomGenerator.h"
+#include "Clock.h"
 #include "BCI2000FileReader.h"
 #include <string>
 #include <vector>
@@ -88,8 +86,7 @@ class FilePlaybackADC : public GenericADC
 				State::ValueType mPrevVal;
 		};
 		std::vector<StateMapping> mStateMappings;
-
-		PrecisionTime   mLasttime;
+    Clock mClock;
 };
 
 #endif // SIGNAL_GENERATOR_ADC_H

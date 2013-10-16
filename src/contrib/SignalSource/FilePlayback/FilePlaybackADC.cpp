@@ -27,7 +27,7 @@
 #pragma hdrstop
 
 #include "FilePlaybackADC.h"
-#include "BCIError.h"
+#include "BCIStream.h"
 #include "GenericSignal.h"
 #include "MeasurementUnits.h"
 #include "OSThread.h"
@@ -42,7 +42,6 @@ RegisterFilter( FilePlaybackADC, 1 );
 
 FilePlaybackADC::FilePlaybackADC()
 : mSamplingRate( 1 ),
-mLasttime( 0 ),
 mBlockDuration( 0 ),
 mBlockSize(1),
 mFileName(""),
@@ -220,7 +219,7 @@ FilePlaybackADC::Preflight( const SignalProperties&,
     return;
   }
   if( mTemplateFileName.length() && fname != mTemplateFileName )
-    bciout << "file " << fname << " is now being played back. Be aware that the playback module was launched with a different file, " << mTemplateFileName << " as the template for parameter and state definitions." << endl;
+    bciwarn << "file " << fname << " is now being played back. Be aware that the playback module was launched with a different file, " << mTemplateFileName << " as the template for parameter and state definitions." << endl;
 
   BCI2000FileReader dataFile(fname.c_str());
   CheckFile( fname, dataFile );
@@ -229,7 +228,7 @@ FilePlaybackADC::Preflight( const SignalProperties&,
     bcierr << "The SamplingRate in the data file ("<<dataFile.Parameter("SamplingRate")<<") should equal the configured SamplingRate."<<endl;
 
   if (int(dataFile.Parameter("SampleBlockSize")) != int(Parameter("SampleBlockSize")) && int(Parameter("PlaybackStates")) != 0)
-    bciout << "The configured SampleBlockSize parameter (currently " << int(Parameter("SampleBlockSize")) << ") does not match the SampleBlockSize in the data file ("<<dataFile.Parameter("SampleBlockSize")<<") . This may lead to problems when accessing played-back state variables. "<<endl;
+    bciwarn << "The configured SampleBlockSize parameter (currently " << int(Parameter("SampleBlockSize")) << ") does not match the SampleBlockSize in the data file ("<<dataFile.Parameter("SampleBlockSize")<<") . This may lead to problems when accessing played-back state variables. "<<endl;
     
   if (Parameter("SourceCh") > dataFile.Parameter("SourceCh"))
     bcierr << "The SourceCh value must be less than or equal to the SourceCh value in the data file ("<<dataFile.Parameter("SourceCh")<<")"<<endl;
@@ -335,7 +334,7 @@ FilePlaybackADC::Initialize( const SignalProperties&, const SignalProperties& )
   mMaxBlock = (int)floor( double(mNumSamples)/double(mBlockSize) );
   double startTime = Parameter("PlaybackStartTime").InSampleBlocks();
   mStartTime = (int)floor( startTime );
-  if( startTime != (float)mStartTime ) bciout << "PlaybackStartTime " << (string)Parameter( "PlaybackStartTime" ) << " has been rounded down to a whole number of SampleBlocks (" << mStartTime << ")" << endl;
+  if( startTime != (float)mStartTime ) bciwarn << "PlaybackStartTime " << (string)Parameter( "PlaybackStartTime" ) << " has been rounded down to a whole number of SampleBlocks (" << mStartTime << ")" << endl;
   mCurBlock = mStartTime;
   mSuspendAtEnd = (Parameter("PlaybackLooped") == 0);
 
@@ -357,7 +356,9 @@ FilePlaybackADC::Initialize( const SignalProperties&, const SignalProperties& )
       }
     }
   }
-  mLasttime = PrecisionTime::Now();
+  mClock.SetInterval( mBlockDuration );
+  mClock.Reset();
+  mClock.Start();
 }
 
 
@@ -372,6 +373,12 @@ FilePlaybackADC::StartRun()
 void
 FilePlaybackADC::Process( const GenericSignal&, GenericSignal& Output )
 {
+  if (mSpeedup > 0)
+  {
+    mClock.Wait();
+    mClock.Reset();
+  }
+
   int curCh;
   long long curSample, curDataSample;
   long long nSamples = mDataFile->NumSamples();
@@ -404,20 +411,13 @@ FilePlaybackADC::Process( const GenericSignal&, GenericSignal& Output )
     bciout <<"Wrapping data around"<<endl;
     mCurBlock = 0;
   }
-
-
-  if (mSpeedup == 0)
-    return;
-  // Wait for the amount of time that corresponds to the length of a data block.
-  ThreadUtils::SleepUntil( mLasttime + mBlockDuration );
-  mLasttime = PrecisionTime::Now();
-
 }
 
 
 void
 FilePlaybackADC::Halt()
 {
+  mClock.Stop();
   delete mDataFile;
   mDataFile = NULL;
 }
