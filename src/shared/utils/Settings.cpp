@@ -26,13 +26,21 @@
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "Settings.h"
-#include <QCoreApplication>
-#include <QDir>
+#include "FileUtils.h"
+
+using namespace std;
+
+static
+QString DefaultFilePath()
+{
+  string path = FileUtils::InstallationDirectory() + FileUtils::ExtractBase( FileUtils::ExecutablePath() ) + ".ini";
+  return QString::fromLocal8Bit( path.c_str() );
+}
 
 static
 QString& FilePath()
 {
-  static QString instance;
+  static QString instance = DefaultFilePath();
   return instance;
 }
 
@@ -45,10 +53,7 @@ void
 Settings::SetFile( const QString& inFilePath )
 {
   if( inFilePath == "" )
-    FilePath() = QCoreApplication::applicationDirPath() 
-               + QDir::separator() 
-               + QCoreApplication::applicationName() 
-               + ".ini";
+    FilePath() = DefaultFilePath();
   else
     FilePath() = inFilePath;
 }
