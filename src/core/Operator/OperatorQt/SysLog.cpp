@@ -91,29 +91,108 @@ SysLog::Show( bool inForce )
 	  pParent->show();
 }
 
+static void
+ParseEntry( const QString& inEntry, QStringList& outParts, QStringList& outContext )
+{
+  outParts.clear();
+  outContext.clear();
+
+  QString text = inEntry,
+          text2;
+  int idx = -1;
+  while( text.size() && text[0] == '[' && ( idx = text.indexOf( ']' ) ) > 0 )
+  {
+    outContext.push_back( text.left( idx + 1 ) );
+    text = text.mid( idx + 1 );
+  }
+
+  idx = text.indexOf( '\n' );
+  if( idx > 0 )
+  {
+    text2 = text.mid( idx + 1 );
+    text = text.left( idx + 1 );
+  }
+
+  QString context;
+  while( text.size() && ( idx = text.indexOf( "::" ) ) >= 0 )
+  {
+    while( idx < text.size() && !text[idx].isSpace() )
+      ++idx;
+    context += text.left( idx ) + " ";
+    text = text.mid( idx + 1 );
+  }
+  if( !context.isEmpty() )
+    outContext.push_front( context );
+
+  outParts.push_back( text );
+  outParts.push_back( text2 );
+}
+
+static QString
+FormatEntry( QStringList& ioParts, const QStringList& inContext )
+{
+  QString context1, context2;
+  for( int i = 0; i < inContext.size(); ++i )
+  {
+    const QString& s = inContext[i];
+    if( !s.isEmpty() && s[0] == '[' )
+      context1 += s.mid( 1, s.length() - 2 ).trimmed() + " ";
+    else
+      context2 += s.trimmed() + " ";
+  }
+  QString context = context1.trimmed();
+  context2 = context2.trimmed();
+  if( !context2.isEmpty() )
+    context += " in " + context2.trimmed();
+  context = context.trimmed();
+  if( !context.isEmpty() )
+  {
+    if( !context[0].isUpper() )
+      context[0] = context[0].toUpper();
+    if( context[context.length()-1].isPunct() )
+      context.truncate( context.length() - 1 );
+    context = context.trimmed() + ":\n";
+  }
+  ioParts.push_front( context );
+  ioParts.push_front( QDateTime::currentDateTime().toString( Qt::ISODate ) + " - " );
+
+  QString& text1 = ioParts[2], &text2 = ioParts[3];
+  if( text2.trimmed().isEmpty() )
+  {
+    text2 = "";
+    text1 = text1.trimmed();
+    if( !text1.isEmpty() && !text1[text1.length()-1].isMark() )
+      text1 += '.';
+  }
+  return ioParts.join( "" );
+}
+
 void
 SysLog::AddEntry( const QString& inText, int inMode )
 {
+  QStringList parts, context;
+  ParseEntry( inText, parts, context );
+
   QMutexLocker lock( &mCritsec );
-  QTextCharFormat format = mDefaultFormat;
-  QString kind = "", sep = " - ";
-  if( inText.size() && inText[0] == '[' )
-    sep = " ";
+  QTextCharFormat format1 = mDefaultFormat, format2 = format1;
+
   switch( inMode )
   {
     case logEntryWarning:
-      format.setFontPointSize( 10 );
-      format.setForeground( QBrush( "darkorange" ) );
-      format.setFontWeight( QFont::Bold );
-      kind = "[Warning]";
-      sep = " ";
+      format1.setFontPointSize( 10 );
+      format1.setFontWeight( QFont::Bold );
+      format2 = format1;
+      context.push_back( "[warning]" );
       mDontClose = true;
       break;
 
     case logEntryError:
-      format.setFontPointSize( 10 );
-      format.setForeground( QBrush( "darkred" ) );
-      format.setFontWeight( QFont::Bold );
+      format1.setFontPointSize( 10 );
+      format1.setForeground( QBrush( "darkred" ) );
+      format1.setFontWeight( QFont::Bold );
+      format2 = format1;
+      format2.setForeground( mDefaultFormat.foreground() );
+      context.push_back( "[error]" );
       mDontClose = true;
       break;
 
@@ -121,22 +200,25 @@ SysLog::AddEntry( const QString& inText, int inMode )
     default:
       break;
   }
-  QString line = ( mEmpty ? "" : "\n" ) + QDateTime::currentDateTime().toString( Qt::ISODate ) + sep + kind + inText;
-  mEmpty = false;
 
-  bool wasAtEnd = true;
+  bool moveToEnd = true;
   QScrollBar* pScrollBar = mpLog->verticalScrollBar();
   if( pScrollBar && pScrollBar->isVisible() && pScrollBar->isEnabled() )
-    wasAtEnd = ( pScrollBar->value() + pScrollBar->singleStep() > pScrollBar->maximum() );
+    moveToEnd = ( pScrollBar->value() + pScrollBar->singleStep() > pScrollBar->maximum() );
 
+  QString text = FormatEntry( parts, context );
   QTextCursor c = mpLog->textCursor();
   c.movePosition( QTextCursor::End );
-  c.insertText( line, format );
+  c.insertText( ( mEmpty ? "" : "\n" ) + parts[0], mDefaultFormat );
+  c.insertText( parts[1], mDefaultFormat );
+  c.insertText( parts[2], format1 );
+  c.insertText( parts[3], format2 );
+
   int begin = 0, end = begin;
-  while( MatchURL( inText, begin, end ) )
+  while( MatchURL( text, begin, end ) )
   {
     c.movePosition( QTextCursor::End, QTextCursor::MoveAnchor );
-    c.movePosition( QTextCursor::Left, QTextCursor::MoveAnchor, inText.length() - begin );
+    c.movePosition( QTextCursor::Left, QTextCursor::MoveAnchor, text.length() - begin );
     c.movePosition( QTextCursor::Right, QTextCursor::KeepAnchor, end - begin );
     QTextCharFormat f;
     f.setFontUnderline( true );
@@ -149,6 +231,7 @@ SysLog::AddEntry( const QString& inText, int inMode )
   switch( inMode )
   {
     case logEntryError:
+      moveToEnd = true;
       Show( true );
       break;
     case logEntryWarning:
@@ -157,11 +240,12 @@ SysLog::AddEntry( const QString& inText, int inMode )
     default:
       break;
   }
-  if( wasAtEnd )
+  if( moveToEnd )
   {
     mpLog->moveCursor( QTextCursor::End );
     mpLog->ensureCursorVisible();
   }
+  mEmpty = false;
 }
 
 bool
