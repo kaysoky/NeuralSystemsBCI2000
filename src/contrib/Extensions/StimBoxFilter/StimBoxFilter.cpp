@@ -204,21 +204,24 @@ StimBoxFilter::StopRun()
 void
 StimBoxFilter::Halt()
 {
-  int state = 0;
-  if( !stimBoxError( gSTIMboxgetConnStatus( mStimBox, state ) ) )
+  if( mPortNumber )
   {
-    // Kill Input Logging Thread
-    if( mpStimBoxThread ) mpStimBoxThread->TerminateWait();
-    delete mpStimBoxThread;
-    mpStimBoxThread = NULL;
+    int state = 0;
+    if( !stimBoxError( gSTIMboxgetConnStatus( mStimBox, state ) ) )
+    {
+      // Kill Input Logging Thread
+      if( mpStimBoxThread ) mpStimBoxThread->TerminateWait();
+      delete mpStimBoxThread;
+      mpStimBoxThread = NULL;
 
-    // Shut down output ports and connection to device
-    if( state ) DisablePorts();
-    if( state && stimBoxError( gSTIMboxclose( mStimBox ) ) )
-      bcierr << "Could not close g.STIMbox." << endl;
+      // Shut down output ports and connection to device
+      if( state ) DisablePorts();
+      if( state && stimBoxError( gSTIMboxclose( mStimBox ) ) )
+        bcierr << "Could not close g.STIMbox." << endl;
+    }
+    else
+      bcierr << "Could not determine if g.STIMbox is still running." << endl;
   }
-  else
-    bcierr << "Could not determine if g.STIMbox is still running." << endl;
 }
 
 void
