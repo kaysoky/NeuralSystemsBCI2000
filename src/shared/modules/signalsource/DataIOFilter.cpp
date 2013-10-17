@@ -251,8 +251,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
            << Parameter( "SourceChOffset" )->NumValues()
            << ") must match the SourceCh parameter (currently "
            << Parameter( "SourceCh" )
-           << ")"
-           << endl;
+           << ")";
   }
 
   bool sourceChGainConsistent = ( Parameter( "SourceChGain" )->NumValues() >= Parameter( "SourceCh" ) );
@@ -262,8 +261,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
            << Parameter( "SourceChGain" )->NumValues()
            << ") must match the SourceCh parameter (currently "
            << Parameter( "SourceCh" )
-           << ")"
-           << endl;
+           << ")";
   }
 
   if( Parameter( "VisualizeSource" ) == 1 )
@@ -318,6 +316,8 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   SignalProperties adcOutput;
   AdjustProperties( adcOutput );
   // Calibration
+  if( !sourceChOffsetConsistent || !sourceChGainConsistent )
+    return;
   bool unitsPresent = false;
   for( int ch = 0; ch < adcOutput.Channels(); ++ch )
   {
@@ -836,9 +836,11 @@ void DataIOFilter::TimingObserver::Observe( GenericSignal& ioSignal )
   };
   if( ioSignal( Block, 0 ) < 0 )
   {
+#if !BCIDEBUG
     bciwarn << "Time measurement appears to be unreliable on your system. "
             << "You cannot use BCI2000 time stamps for timing evaluation."
             << endl;
+#endif
     mState = 0;
   }
 
