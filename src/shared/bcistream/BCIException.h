@@ -42,7 +42,7 @@
 
 #define FILE_CONTEXT_ \
      "\nFile: " << __FILE__ \
-  << "\nLine: " << STR_( __LINE__ )
+  << "\nLine: " << __LINE__
 
 #ifdef FUNCTION_
 # define EXCEPTION_CONTEXT_ \
@@ -58,7 +58,7 @@
 // std::ostream::operator<<( void* ), and the address of the string literal inserted into the stream
 // rather than the string itself.
 #define EXCEPTION_ARG_(x)       bci::Exception::ToString( std::ostringstream() << std::flush << x )
-#define stdexception(type,x)    bci::Exception_<std::type>( EXCEPTION_ARG_(x), EXCEPTION_ARG_( EXCEPTION_CONTEXT_ ) )
+#define stdexception(type,x)    (bci::Exception_<std::type>(EXCEPTION_ARG_(x), EXCEPTION_ARG_(EXCEPTION_CONTEXT_)))
 #define std_logic_error(x)      stdexception(logic_error,x)
 #define std_domain_error(x)     stdexception(domain_error,x)
 #define std_invalid_argument(x) stdexception(invalid_argument,x)

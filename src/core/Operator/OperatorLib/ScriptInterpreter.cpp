@@ -76,7 +76,11 @@ ScriptInterpreter::Execute( const string& inScript, const string& inName )
   }
   catch( const exception& e )
   {
-    OnScriptError( e.what() );
+    const bci::Exception* p = dynamic_cast<const bci::Exception*>( &e );
+    if( p )
+      OnScriptError( p->What() );
+    else
+      OnScriptError( e.what() );
   }
   return success;
 }
