@@ -3,9 +3,8 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for BCI2000 and CMake
 
-cmake_minimum_required( VERSION 2.8.2 )
+cmake_minimum_required( VERSION 2.8.10 )
 cmake_policy( VERSION 2.8 )
-cmake_policy( SET CMP0020 OLD ) # don't link to qtmain.lib automatically
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 # Define the project name and version

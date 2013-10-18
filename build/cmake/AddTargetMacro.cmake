@@ -169,7 +169,7 @@ FUNCTION( BCI2000_ADD_TARGET )
       ADD_CUSTOM_COMMAND(
         TARGET ${name_}
         POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:${name_}>" "${outputDir}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:${name_}>" "${outputDir}" || "${CMAKE_COMMAND}" -E remove "$<TARGET_FILE:${name_}>"
         COMMENT "Copy to destination"
       )
     ENDIF()

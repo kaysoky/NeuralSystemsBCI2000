@@ -81,6 +81,18 @@ FUNCTION( UTILS_FATAL_ERROR )
   MESSAGE( FATAL_ERROR ${ARGV} "\n" )
 ENDFUNCTION()
 
+# Deal with CMake policy warnings
+SET( PROJECT_CMAKE_POLICIES
+  0020 # don't link to qtmain.lib automatically
+  0022 # INTERFACE_LINK_LIBRARIES
+)
+FOREACH( policy_ ${PROJECT_CMAKE_POLICIES} )
+  IF( POLICY CMP${policy_} )
+    UTILS_CONFIG_STATUS( "Silencing CMP${policy_} policy warning" )
+    CMAKE_POLICY( SET CMP${policy_} OLD )
+  ENDIF()
+ENDFOREACH()
+
 ### Functions
 
 # Include a file from the utils directory
