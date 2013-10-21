@@ -312,10 +312,17 @@ class bcistream(object):
 		pylab.draw()
 		return h
 	
-	def plotsig(self, sig, fac=3.0): # TODO: plot subsets of channels which don't necessarily correspond to ChannelNames param		
+	def plotsig(self, sig, fac=3.0, ch=None):
 		ntraces,nsamp = sig.shape
 		labels = self.params.get('ChannelNames', '')
 		if len(labels)==0: labels = [str(x) for x in range(1,ntraces+1)]
+
+		# Plotting of subsets of channels (GM)
+		if ch!=None:
+			ch = [c if isinstance(c, int) else labels.index(c) for c in ch]
+			sig = sig[ch, :]
+			ntraces,nsamp = sig.shape
+			labels = numpy.array( labels )[ch]
 
 		v = numpy.asmatrix(sig).T
 		v = v - numpy.median(v, axis=0)
