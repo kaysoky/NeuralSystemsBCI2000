@@ -161,7 +161,8 @@ FormatEntry( QStringList& ioParts, const QStringList& inContext )
   {
     text2 = "";
     text1 = text1.trimmed();
-    if( !text1.isEmpty() && !text1[text1.length()-1].isMark() )
+    static const QString punct = ".!?";
+    if( !text1.isEmpty() && punct.indexOf( text1[text1.length()-1] ) < 0 )
       text1 += '.';
   }
   return ioParts.join( "" );
