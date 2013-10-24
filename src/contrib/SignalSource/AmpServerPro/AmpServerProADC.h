@@ -80,6 +80,7 @@ class AmpServerProADC : public BufferedADC
     bool ReadData( GenericSignal& );
 
   private:
+    std::string BuildCommand( const std::string& ) const;
     bool DoRead( GenericSignal& );
     int64_t mSamplesInStream;
     int mSamplesInOutput;

@@ -209,7 +209,7 @@ BufferedADC::StartAcquisition()
   else
     StartAcquisitionInternal();
   mAcquiring = mError.empty();
-  if( !mStarted.Wait( 1000 ) )
+  if( !mStarted.Wait( 2000 ) )
     bcierr << "Could not start acquisition";
 }
 

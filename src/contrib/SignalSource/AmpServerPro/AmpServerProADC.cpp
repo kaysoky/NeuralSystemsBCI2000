@@ -29,10 +29,81 @@
 
 #include "AmpServerProADC.h"
 #include "BinaryData.h"
+#include "BCIStream.h"
 
 using namespace std;
 
 RegisterFilter( AmpServerProADC, 1 );
+
+namespace {
+
+class ResponseNode
+{
+ public:
+  typedef list<ResponseNode> List;
+
+  ResponseNode()
+    {}
+  explicit ResponseNode( istream& is )
+    { Parse( is ); }
+  const string& Name() const
+    { return mName; }
+  const string& Value() const
+    { return mValue; }
+  List Leaves() const;
+  istream& Parse( istream& );
+  ostream& Print( ostream& ) const;
+ private:
+  string mName, mValue;
+  List mChildren;
+};
+
+ResponseNode::List
+ResponseNode::Leaves() const
+{
+  List result;
+  if( mChildren.empty() )
+    result.push_back( *this );
+  else for( List::const_iterator i = mChildren.begin(); i != mChildren.end(); ++i )
+  {
+    List leaves = i->Leaves();
+    result.insert( result.end(), leaves.begin(), leaves.end() );
+  }
+  return result;
+}
+
+istream&
+ResponseNode::Parse( istream& is )
+{
+  if( (is >> ws).peek() != '(' )
+    is.setstate( ios::failbit );
+  is.ignore();
+  is >> mName;
+  while( (is >> ws).peek() == '(' )
+    mChildren.push_back( ResponseNode( is ) );
+  if( mChildren.empty() )
+    getline( is, mValue, ')' );
+  else
+  {
+    if( (is >> ws).peek() != ')' )
+      is.setstate( ios::failbit );
+    is.ignore();
+  }
+  return is;
+}
+
+ostream&
+ResponseNode::Print( ostream& os ) const
+{
+  os << "( " << mName;
+  if( !mValue.empty() )
+    os << "=" << mValue;
+  for( List::const_iterator i = mChildren.begin(); i != mChildren.end(); ++i )
+    i->Print( os << " " );
+  return os << " )";
+}
+
+} // namespace
 
 AmpServerProADC::AmpServerProADC()
 {
@@ -75,7 +146,9 @@ AmpServerProADC::OnAutoConfig()
   );
   if( mConnection.IsOpen() )
   {
-    if( ampID >= mConnection.Amps() || ampID < 0 )
+    if( mConnection.Amps() < 1 )
+      bcierr << "No amplifiers available";
+    else if( ampID >= mConnection.Amps() || ampID < 0 )
       bcierr << "Invalid amplifier ID: " << ampID;
 
     Parameter( "NotificationPort" ) = mConnection.NotificationPort();
@@ -86,14 +159,20 @@ AmpServerProADC::OnAutoConfig()
     Parameter( "SourceChGain" )->SetNumValues( mConnection.Channels() );
     for( int ch = 0; ch < mConnection.Channels(); ++ch )
     {
-  	  Parameter( "SourceChOffset" )( ch ) = 0;
-	    Parameter( "SourceChGain" )( ch ) << mConnection.Gain_muV() << "muV";
+      Parameter( "SourceChOffset" )( ch ) = 0;
+      Parameter( "SourceChGain" )( ch ) << mConnection.Gain_muV() << "muV";
     }
     Parameter( "SamplingRate" ) << mConnection.SamplingRate() << "Hz";
     Parameter( "SampleBlockSize" ) = mConnection.SampleBlockSize();
   }
   else
-    bcierr << "Could not connect to AmpServerPro at " << mConnection.Address();
+  {
+    bcierr << "Could not connect to AmpServerPro at " << mConnection.Address()
+           << ", " << mConnection.NotificationPort()
+           << ", or " << mConnection.StreamPort();
+    Parameter( "SamplingRate" ) = 1;
+    Parameter( "SampleBlockSize" ) = 1;
+  }
 }
 
 void
@@ -104,7 +183,7 @@ AmpServerProADC::OnPreflight( SignalProperties& Output ) const
   PreflightCondition( Parameter( "SamplingRate" ).InHertz() == AmpServer.SamplingRate() );
   for( int ch = 0; ch < Parameter( "SourceCh" ); ++ch )
   {
-  	PreflightCondition( Parameter( "SourceChOffset" )( ch ) == 0 );
+    PreflightCondition( Parameter( "SourceChOffset" )( ch ) == 0 );
     double diff = Parameter( "SourceChGain" )( ch ).InMicrovolts() - AmpServer.Gain_muV();
     if( ::fabs( diff ) > 1e-3 )
       bcierr << "Wrong SourceChGain: differs by more than 1/1000";
@@ -192,6 +271,8 @@ AmpServerProADC::Connection::Open( const std::string& inIP, int inPort, int inAm
   mCommands.open( mCommandSocket );
 
   mNotificationPort = 9878;
+  mNotificationSocket.open( inIP, mNotificationPort );
+
   mStreamPort = 9879;
   mStreamSocket.open( inIP, mStreamPort );
   mStream.open( mStreamSocket );
@@ -220,6 +301,9 @@ AmpServerProADC::Connection::Close()
   mStreamSocket.close();
   mStream.close();
   mStream.clear();
+  mNotificationSocket.close();
+  mNotifications.close();
+  mNotifications.clear();
   mCommandSocket.close();
   mCommands.close();
   mCommands.clear();
@@ -231,40 +315,49 @@ AmpServerProADC::Connection::IsOpen() const
   return mCommands.is_open() && mStream.is_open();
 }
 
-bool
-AmpServerProADC::Connection::SendCommand( const string& inCommand, string& outResultName, string& outResultValue )
+#define bcidbgOn
+
+string
+AmpServerProADC::Connection::BuildCommand( const string& inCommand ) const
 {
-  string name;
-  int val1 = 0, val2 = 0;
+  string name, val1, val2;
   istringstream iss( inCommand );
   if( !(iss >> name) )
     return false;
   if( !(iss >> val1) )
-    val1 = 0;
+    val1 = "0";
   if( !(iss >> val2) )
-    val2 = 0;
-  mCommands << "(sendCommand cmd_" << name << " " << mAmpId << " " << val1 << " " << val2 << ")" << endl;
+    val2 = "0";
+  ostringstream ampId;
+  ampId << mAmpId;
+  string result = "(sendCommand cmd_" + name + " " + ampId.str() + " " + val1 + " " + val2 + ")";
+  bcidbg << result;
+  return result;
+}
+
+bool
+AmpServerProADC::Connection::SendCommand( const string& inCommand, string& outResultName, string& outResultValue )
+{
+  if( !( mCommands << BuildCommand( inCommand ) << endl ) )
+    return false;
   if( !mCommandSocket.wait_for_read( mTimeout ) )
     return false;
-  string result;
-  char c = 0;
-  while( mCommands.rdbuf()->in_avail() && mCommands.get( c ) && c != '\n' && c != '\r' )
-    result += c;
-  while( mCommands.rdbuf()->in_avail() && mCommands.get( c ) && isspace( c ) )
-    ;
-  static const string expectedBegin = "(sendCommand_return";
-  if( result.find( expectedBegin ) != 0 )
-    return false;
-  size_t begin = result.find_first_not_of( " (", expectedBegin.length() ),
-         end = result.find_first_of( ")", begin );
-  if( begin == string::npos || end == string::npos )
-    return false;
-  iss.clear();
-  iss.str( result.substr( begin, end ) );
-  if( !( iss >> ws >> outResultName ) )
-    return false;
-  std::getline( iss >> ws, outResultValue );
-  return true;
+  bool success = false;
+  ResponseNode parsedResponse( mCommands );
+  parsedResponse.Print( bcidbg );
+  if( parsedResponse.Name() == "sendCommand_return" )
+  {
+    ResponseNode::List leaves = parsedResponse.Leaves();
+    ResponseNode::List::const_iterator i = leaves.begin();
+    const ResponseNode& status = *i;
+    success = ( status.Name() == "status" && status.Value() == "complete" );
+    if( ++i != leaves.end() )
+    {
+      outResultName = i->Name();
+      outResultValue = i->Value();
+    }
+  }
+  return success;
 }
 
 bool
@@ -272,13 +365,23 @@ AmpServerProADC::Connection::StartStreaming()
 {
   mSamplesInStream = 0;
   mSamplesInOutput = 0;
-  return SendCommand( "ListenToAmp" );
+  bool result = mStream << BuildCommand( "ListenToAmp" ) << endl;
+  if( result )
+  {
+    result = mStreamSocket.wait_for_read( 2000 );
+    if( !result )
+      bcierr << "AmpServer is available, but does not stream live EEG data. "
+             << "To enable this feature, you need to obtain an AmpServerPro SDK license from EGI, "
+             << "and update EGI's HASP key.\n"
+             << "For more information, see http://www.egi.com.";
+  }
+  return result;
 }
 
 bool
 AmpServerProADC::Connection::StopStreaming()
 {
-  bool result = SendCommand( "StopListeningToAmp" );
+  bool result = mStream << BuildCommand( "StopListeningToAmp" ) << endl;
   while( mStream.rdbuf()->in_avail() )
     mStream.ignore();
   return result;
