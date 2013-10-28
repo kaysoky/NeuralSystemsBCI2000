@@ -33,7 +33,7 @@
 #if BCIDEBUG
 
 #define bciassert(x) { if( !bci::id_(x) ) throw std_logic_error( "Assertion failed: " << #x << "\n" ); }
-#define bcidebug(x) { bci::SuggestDebugging( "bciDebugBreak statement", EXCEPTION_ARG_( x << "\n" << EXCEPTION_CONTEXT_ ) ); }
+#define bcidebug(x) { bci::SuggestDebugging( "bciDebugBreak statement", EXCEPTION_ARG_( x ) ); }
 #define bciDebugBreak() { bci::SuggestDebugging( "bciDebugBreak statement", EXCEPTION_ARG_( "bciDebugBreak()\n" << EXCEPTION_CONTEXT_ ) ); }
 
 namespace bci

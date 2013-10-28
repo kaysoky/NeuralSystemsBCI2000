@@ -224,7 +224,7 @@ IF( NOT qtver_ OR qtver_ VERSION_LESS qtmin_ )
   ENDIF()
 ELSE()
   GET_FILENAME_COMPONENT( qtdir_ ${QT_QMAKE_EXECUTABLE} PATH )
-  UTILS_CONFIG_STATUS( "Using Qt ${qtver_} at ${qtdir_}" )
+  UTILS_CONFIG_STATUS( "Using Qt ${qtver_} (${qtdir_})" )
 ENDIF()
 
 SET( doc_ 
