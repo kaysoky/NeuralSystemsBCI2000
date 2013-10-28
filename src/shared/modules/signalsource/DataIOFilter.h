@@ -94,6 +94,7 @@ class DataIOFilter: public GenericFilter
   bool                   mIsFirstBlock;
   double                 mBlockDuration;
   int                    mSampleBlockSize;
+  int                    mPrevStimulusTime;
   EventQueue             mBCIEvents;
 
   class TimingObserver

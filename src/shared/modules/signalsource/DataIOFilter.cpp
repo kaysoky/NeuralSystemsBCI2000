@@ -79,7 +79,8 @@ DataIOFilter::DataIOFilter()
   mBlockCount( 0 ),
   mIsFirstBlock( false ),
   mBlockDuration( 0 ),
-  mSampleBlockSize( 0 )
+  mSampleBlockSize( 0 ),
+  mPrevStimulusTime( 0 )
 {
   BCIEvent::SetEventQueue( &mBCIEvents );
 
@@ -556,6 +557,7 @@ DataIOFilter::StartRun()
 
   mStatevectorBuffer = *Statevector;
   mStatevectorBuffer.SetStateValue( "Recording", 0 );
+  mPrevStimulusTime = PrecisionTime::Now();
 
   State( "Recording" ) = 1;
 }
@@ -609,7 +611,12 @@ DataIOFilter::DoProcess( GenericSignal& Output, bool inResting )
                   stimulusTime = static_cast<PrecisionTime::NumType>( State( "StimulusTime" ) );
     mTimingSignal( Roundtrip, 0 ) = PrecisionTime::SignedDiff( functionEntry, prevSourceTime );
     if( mTimingSignal.Channels() > Stimulus )
-      mTimingSignal( Stimulus, 0 ) = PrecisionTime::SignedDiff( stimulusTime, prevSourceTime );
+    {
+      GenericSignal::ValueType value = NaN( value );
+      if( stimulusTime != mPrevStimulusTime ) // ignore if application does not set StimulusTime
+        mTimingSignal( Stimulus, 0 ) = PrecisionTime::SignedDiff( stimulusTime, prevSourceTime );
+      mPrevStimulusTime = stimulusTime;
+    }
   }
 
   AcquireData();
