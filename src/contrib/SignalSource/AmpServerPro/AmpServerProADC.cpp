@@ -103,6 +103,9 @@ ResponseNode::Print( ostream& os ) const
   return os << " )";
 }
 
+ostream& operator<<( ostream& os, const ResponseNode& r )
+{ return r.Print( os ); }
+
 } // namespace
 
 AmpServerProADC::AmpServerProADC()
@@ -344,7 +347,7 @@ AmpServerProADC::Connection::SendCommand( const string& inCommand, string& outRe
     return false;
   bool success = false;
   ResponseNode parsedResponse( mCommands );
-  parsedResponse.Print( bcidbg );
+  bcidbg << parsedResponse;
   if( parsedResponse.Name() == "sendCommand_return" )
   {
     ResponseNode::List leaves = parsedResponse.Leaves();
