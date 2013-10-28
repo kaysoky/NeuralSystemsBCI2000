@@ -207,15 +207,34 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
   }
   else
   {
-    int numCh = Parameter( "SourceCh" );
-    mMixingMatrix.resize( numCh, vector<double>( numCh, 0 ) );
-    for( int i = 0; i < numCh; ++i )
-      mMixingMatrix[i][i] = 1;
+    int numCh = Parameter( "SourceCh" ),
+        numSrc = 4;
+    vector<double> normalChannel( numSrc, 0 );
+    normalChannel[0] = 1;
+    mMixingMatrix.resize( numCh, normalChannel );
+    if( mSineChannelX )
+    {
+      mMixingMatrix[mSineChannelX-1][0] = 0;
+      mMixingMatrix[mSineChannelX-1][1] = 1;
+      mSineChannelX = 2;
+    }
+    if( mSineChannelY )
+    {
+      mMixingMatrix[mSineChannelY-1][0] = 0;
+      mMixingMatrix[mSineChannelY-1][2] = 1;
+      mSineChannelY = 3;
+    }
+    if( mSineChannelZ )
+    {
+      mMixingMatrix[mSineChannelZ-1][0] = 0;
+      mMixingMatrix[mSineChannelZ-1][3] = 1;
+      mSineChannelZ = 4;
+    }
     mSourceFrequencies.clear();
-    mSourceFrequencies.resize( numCh, SineFrequency );
+    mSourceFrequencies.resize( numSrc, SineFrequency );
     mSourceAmplitudes.clear();
-    mSourceAmplitudes.resize( numCh, SineAmplitude );
-    mSourcePhases.resize( numCh );
+    mSourceAmplitudes.resize( numSrc, SineAmplitude );
+    mSourcePhases.resize( numSrc );
   }
 
   mClock.SetInterval( 1e3 * MeasurementUnits::SampleBlockDuration() );
@@ -296,7 +315,6 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
     for( int ch = 0; ch < Output.Channels(); ++ch )
       Output( ch, sample ) += ( mRandomGenerator.Random() * mNoiseAmplitude / mRandomGenerator.RandMax() - mNoiseAmplitude / 2 );
   }
-  
   for( int ch = 0; ch < Output.Channels(); ++ ch )
     for( int sample = 0; sample < Output.Elements(); ++sample )
     {
@@ -313,3 +331,4 @@ SignalGeneratorADC::Halt()
 {
   mClock.Stop();
 }
+
