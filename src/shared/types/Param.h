@@ -129,7 +129,7 @@ class Param
             explicit Param( const std::string& parameterDefinition );
                     ~Param() {}
   Param&             operator=( const Param& );
-  Param&             AssignValues( const Param& );
+  Param&             AssignValues( const Param&, bool setChanged = false );
 
   bool               Readonly() const
                      { return mReadonly; }

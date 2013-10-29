@@ -342,6 +342,7 @@ bool
 ConfigWindow::LoadParameters( const QString& inName )
 {
   ParamList paramsFromFile = *mpParameters;
+  paramsFromFile.Unchanged();
   bool result = false;
   QString fileExtension = QFileInfo( inName ).suffix();
   if( fileExtension == "dat" )
@@ -359,10 +360,10 @@ ConfigWindow::LoadParameters( const QString& inName )
 
   for( int i = 0; i < paramsFromFile.Size(); ++i )
   {
-    Param& p = ( *mpParameters )[paramsFromFile[i].Name()];
-    if( !p.Readonly() &&
-         0 == OperatorUtils::GetFilterStatus( p.Name().c_str(), OperatorUtils::loadFilter ) )
-      p.AssignValues( paramsFromFile[i] );
+    const Param& p = paramsFromFile[i];
+    Param& q = (*mpParameters)[p.Name()];
+    if( p.Changed() && 0 == OperatorUtils::GetFilterStatus( q.Name().c_str(), OperatorUtils::loadFilter ) )
+      q.AssignValues( p, true );
   }
   return  result;
 }

@@ -490,7 +490,7 @@ Param::operator=( const Param& p )
 // Returns:    *this.
 // **************************************************************************
 Param&
-Param::AssignValues( const Param& p )
+Param::AssignValues( const Param& p, bool inSetChanged )
 {
   if( this != &p )
   {
@@ -501,7 +501,7 @@ Param::AssignValues( const Param& p )
     mDim2Index = p.mDim2Index;
     mValues = p.mValues;
 
-    mChanged = p.mChanged;
+    mChanged = p.mChanged | inSetChanged;
   }
   return *this;
 }

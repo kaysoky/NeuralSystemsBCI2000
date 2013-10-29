@@ -39,14 +39,19 @@ class MutableParamRef;
 class ParamList
 {
  public:
+  ParamList() {}
+  ParamList( const ParamList& p )
+    : mParams( p.mParams ) { BuildIndex(); }
+  ParamList& operator=( const ParamList& p )
+    { mParams = p.mParams; BuildIndex(); return *this; }
   const Param&  operator[]( const std::string& name ) const
-                { return ByName( name ); }
-        Param&  operator[]( const std::string& name )
-                { return ByName( name ); }
+    { return ByName( name ); }
+  Param&  operator[]( const std::string& name )
+    { return ByName( name ); }
   const Param&  operator[]( size_t index ) const
-                { return ByIndex( index ); }
-        Param&  operator[]( size_t index )
-                { return ByIndex( index ); }
+    { return ByIndex( index ); }
+  Param&  operator[]( size_t index )
+    { return ByIndex( index ); }
 
   MutableParamRef operator()( const std::string& name );
   ParamRef        operator()( const std::string& name ) const;
@@ -78,6 +83,7 @@ class ParamList
                       bool importNonexisting = true );
 
         void    Sort();
+        void    Unchanged();
 
   // These contain all formatted I/O functionality.
         std::ostream& WriteToStream( std::ostream& ) const;
@@ -88,6 +94,8 @@ class ParamList
         std::istream& ReadBinary( std::istream& );
 
  private:
+  void BuildIndex();
+
   struct ParamEntry
   {
     ParamEntry()
@@ -98,7 +106,6 @@ class ParamList
     static bool Compare( const ParamEntry* p, const ParamEntry* q )
       { return p->SortingHint < q->SortingHint; }
   };
-
   typedef std::map<std::string, ParamEntry, Param::NameCmp> ParamContainer;
   ParamContainer mParams;
   typedef std::vector<ParamEntry*> Index;

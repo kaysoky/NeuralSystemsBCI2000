@@ -29,6 +29,7 @@
 
 #include "ParamList.h"
 #include "ParamRef.h"
+#include "BCIAssert.h"
 
 #include <sstream>
 #include <fstream>
@@ -284,7 +285,7 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
   {
     Param &p = paramsFromFile[i], &q = ByName( p.Name() );
     if( !q.Readonly() )
-      q.AssignValues( p );
+      q.AssignValues( p, true );
   }
   return true;
 }
@@ -302,3 +303,19 @@ ParamList::Sort()
   // sections.
   stable_sort( mIndex.begin(), mIndex.end(), ParamEntry::Compare );
 }
+
+void
+ParamList::Unchanged()
+{
+  for( Index::const_iterator i = mIndex.begin(); i != mIndex.end(); ++i )
+    (*i)->Param.Unchanged();
+}
+
+void
+ParamList::BuildIndex()
+{
+  mIndex.clear();
+  for( ParamContainer::iterator i = mParams.begin(); i != mParams.end(); ++i )
+    mIndex.push_back( &i->second );
+}
+
