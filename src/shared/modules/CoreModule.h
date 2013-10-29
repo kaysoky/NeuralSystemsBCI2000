@@ -178,7 +178,7 @@ class CoreModule : private MessageHandler, private OSThread
   client_tcpsocket mOperatorSocket,
                    mNextModuleSocket;
   server_tcpsocket mPreviousModuleSocket;
-  struct : sockstream, Lockable {}
+  struct : sockstream, Lockable<OSMutex> {}
                    mOperator,
                    mNextModule,
                    mPreviousModule;

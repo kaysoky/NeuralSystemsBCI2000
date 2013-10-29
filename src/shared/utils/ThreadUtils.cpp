@@ -41,8 +41,6 @@ using namespace ThreadUtils;
 
 #if _WIN32
 
-static unsigned int sMainThreadID = ::GetCurrentThreadId();
-
 #undef Yield
 void
 ThreadUtils::Yield()
@@ -57,12 +55,6 @@ ThreadUtils::SleepFor( int inMs )
     ::Sleep( inMs );
 }
 
-bool
-ThreadUtils::InMainThread()
-{
-  return ::GetCurrentThreadId() == sMainThreadID;
-}
-
 int
 ThreadUtils::NumberOfProcessors()
 {
@@ -71,9 +63,23 @@ ThreadUtils::NumberOfProcessors()
   return info.dwNumberOfProcessors;
 }
 
-#else // _WIN32
+ThreadID::ThreadID( bool initFromCurrentThread )
+: mData( initFromCurrentThread ? reinterpret_cast<void*>( ::GetCurrentThreadId() ) : 0 ),
+  mValid( initFromCurrentThread )
+{
+}
 
-static pthread_t sMainThread = ::pthread_self();
+ThreadID::~ThreadID()
+{
+}
+
+bool
+ThreadID::operator==( const ThreadID& inOther ) const
+{
+  return mValid && inOther.mValid && mData == inOther.mData;
+}
+
+#else // _WIN32
 
 void
 ThreadUtils::Yield()
@@ -88,12 +94,6 @@ ThreadUtils::SleepFor( double inMs )
     ::usleep( inMs * 1000 );
 }
 
-bool
-ThreadUtils::InMainThread()
-{
-  return ::pthread_equal( pthread_self(), sMainThread );
-}
-
 int
 ThreadUtils::NumberOfProcessors()
 {
@@ -102,7 +102,32 @@ ThreadUtils::NumberOfProcessors()
   return result;
 }
 
+ThreadID::ThreadID()
+: mData( reinterpret_cast<void*>( ::pthread_self() ) )
+{
+}
+
+ThreadID::~ThreadID()
+{
+}
+
+bool
+ThreadID::operator==( const ThreadID& inOther ) const
+{
+  pthread_t self = reinterpret_cast<const pthread_t>( mData ),
+            other = reinterpret_cast<const pthread_t>( inOther.mData );
+  return mValid && inOther.mValid && ::pthread_equal( self, other );
+}
+
 #endif // _WIN32
+
+static ThreadID sMainThreadID;
+
+bool
+ThreadUtils::InMainThread()
+{
+  return ThreadID() == sMainThreadID;
+}
 
 void
 ThreadUtils::SleepUntil( PrecisionTime inWakeupTime )

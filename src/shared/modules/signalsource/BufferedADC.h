@@ -64,6 +64,7 @@
 #include "GenericADC.h"
 #include "OSThread.h"
 #include "OSEvent.h"
+#include "OSMutex.h"
 #include "Lockable.h"
 #include <vector>
 
@@ -120,7 +121,7 @@ class BufferedADC : public GenericADC, private OSThread
   bool IsAcquiring() const;
   virtual int OnExecute();
 
-  struct AcquisitionBuffer : Lockable
+  struct AcquisitionBuffer : Lockable<OSMutex>
   {
     int TimeStamp;
     GenericSignal Signal;

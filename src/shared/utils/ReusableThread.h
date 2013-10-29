@@ -34,8 +34,8 @@
 
 #include "OSThread.h"
 #include "OSEvent.h"
-#include "OSMutex.h"
 #include "Runnable.h"
+#include "SpinLock.h"
 
 class ReusableThread : private OSThread
 {
@@ -44,9 +44,8 @@ class ReusableThread : private OSThread
   ~ReusableThread();
 
   bool Run( Runnable& );
-  bool Busy() const;
-  bool Alive() const;
   bool Wait( int timeout = OSEvent::cInfiniteTimeout );
+  bool Alive() const;
 
  private:
   int OnExecute();
@@ -54,9 +53,9 @@ class ReusableThread : private OSThread
 
   OSEvent mStartEvent,
           mFinishedEvent;
-  OSMutex mMutex;
-  bool mAlive;
+  Synchronized<bool> mAlive;
   Runnable* mpRunnable;
+  SpinLock mLock;
 };
 
 #endif // REUSABLE_THREAD_H

@@ -27,7 +27,7 @@
 #ifndef SHARED_POINTER_H
 #define SHARED_POINTER_H
 
-#include "Lockable.h"
+#include "Synchronized.h"
 
 template<class T>
 struct ArrayAllocator
@@ -59,40 +59,24 @@ class SharedPointer
   T* operator->() { return mpOwner->Object(); }
   operator bool() const { return operator->(); }
 
-  void Lock() const { mpOwner->Lock(); }
-  void Unlock() const { mpOwner->Unlock(); }
   bool IsShared() const { return mpOwner->Count() > 1; }
 
  private:
   Owner* mpOwner;
 
  private:
-   class Owner : public Lockable
+  class Owner
   {
    public:
-    Owner( T* pObject )
-    : mpObject( pObject ), mCount( 0 ) {}
+    Owner( T* pObject ) : mpObject( pObject ), mCount( 0 ) {}
     ~Owner() { A::Delete( mpObject ); }
     T* Object() const { return mpObject; }
     int Count() const { return mCount; }
-    void Inc()
-    {
-      ::Lock lock( *this );
-      ++mCount;
-    }
-    void Dec()
-    {
-      bool doDelete = false;
-      {
-        ::Lock lock( *this );
-        doDelete = ( --mCount == 0 );
-      }
-      if( doDelete )
-        delete this;
-     }
+    void Inc() { ++mCount; }
+    void Dec() { if( --mCount == 0 ) delete this; }
    private:
-    T* mpObject;
-    int mCount;
+    Synchronized<T*> mpObject;
+    Synchronized<int> mCount;
   };
 
 };

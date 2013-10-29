@@ -103,6 +103,9 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/utils/BinaryData.h
   ${PROJECT_SRC_DIR}/shared/utils/Resource.h
   ${PROJECT_SRC_DIR}/shared/utils/NumericConstants.h
+  ${PROJECT_SRC_DIR}/shared/utils/Atomic.h
+  ${PROJECT_SRC_DIR}/shared/utils/Synchronized.h
+  ${PROJECT_SRC_DIR}/shared/utils/SpinLock.h
 )
 
 IF( WIN32 )

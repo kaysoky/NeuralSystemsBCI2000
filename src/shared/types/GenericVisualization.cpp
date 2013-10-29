@@ -240,7 +240,7 @@ VisBitmap::WriteBinarySelf( ostream& os ) const
 }
 
 std::ostream* GenericVisualization::spOutputStream = NULL;
-const Lockable* GenericVisualization::spOutputLock = NULL;
+const LockableObject* GenericVisualization::spOutputLock = NULL;
 
 GenericVisualization&
 GenericVisualization::SendCfgString( CfgID inCfgID, const std::string& inCfgString )

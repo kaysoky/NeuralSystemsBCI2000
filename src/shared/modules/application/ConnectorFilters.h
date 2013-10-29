@@ -84,7 +84,7 @@ class ConnectorOutput : public GenericFilter
  private:
   void DeleteConnections();
 
-  class Connection : public std::stringstream, public Lockable, public OSThread, public OSEvent
+  class Connection : public std::stringstream, public Lockable<>, public OSThread, public OSEvent
   {
    public:
     Connection( const std::string& inAddress ) : mSocket( inAddress.c_str() ) {}

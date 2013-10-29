@@ -37,12 +37,12 @@
 #include "SignalProperties.h"
 #include "BitmapImage.h"
 
-class Lockable;
-
 #define BACK_COMPAT 1
 #ifdef TODO
 # error Remove BACK_COMPAT condition when VisID/SourceID duplicity has been resolved
 #endif // TODO
+
+class LockableObject;
 
 class VisBase
 {
@@ -233,7 +233,7 @@ class GenericVisualization : public std::ostream
     GenericVisualization& Send( const SignalProperties& );
     GenericVisualization& Send( const BitmapImage& );
 
-    static void SetOutputStream( std::ostream* pStream, const Lockable* pLockable = NULL )
+    static void SetOutputStream( std::ostream* pStream, const LockableObject* pLockable = NULL )
                 { spOutputStream = pStream; spOutputLock = pLockable; }
 
   private:
@@ -254,7 +254,7 @@ class GenericVisualization : public std::ostream
     } mBuf;
 
     static std::ostream* spOutputStream;
-    static const Lockable* spOutputLock;
+    static const LockableObject* spOutputLock;
 };
 
 class BitmapVisualization : public GenericVisualization

@@ -90,7 +90,7 @@ class Watch
     const List* mpList;
   };
 
-  class List : public Set, public Lockable
+  class List : public Set, public Lockable<>
   {
    public:
     List();
@@ -123,7 +123,7 @@ class Watch
   CommandInterpreter mInterpreter;
   List& mrList;
 
-  struct Queue : std::queue<std::string>, Lockable
+  struct Queue : std::queue<std::string>, Lockable<>
   {} mQueue;
   int mCount;
   OSMutex mCountMutex;

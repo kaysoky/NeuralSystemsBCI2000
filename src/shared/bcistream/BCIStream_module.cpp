@@ -40,7 +40,7 @@
 using namespace std;
 
 static ostream* spOutputStream = NULL;
-static const Lockable* spOutputLock = NULL;
+static const LockableObject* spOutputLock = NULL;
 
 bool
 BCIStream::CompressMessages()
@@ -131,7 +131,7 @@ BCIStream::LogicError( const string& s )
 }
 
 void
-BCIStream::SetOperatorStream( ostream* pStream, const Lockable* pLock )
+BCIStream::SetOperatorStream( ostream* pStream, const LockableObject* pLock )
 {
   spOutputStream = pStream;
   spOutputLock = pLock;

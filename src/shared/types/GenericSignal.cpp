@@ -140,7 +140,10 @@ GenericSignal::WriteBinary( ostream& os ) const
   channelsField.WriteBinary( os );
   elementsField.WriteBinary( os );
   if( SharedMemory() )
+  {
+    MemoryFence();
     os.write( mSharedMemory->Name().c_str(), mSharedMemory->Name().length() + 1 );
+  }
   else
     for( int i = 0; i < Channels(); ++i )
       for( int j = 0; j < Elements(); ++j )
@@ -163,6 +166,7 @@ GenericSignal::ReadBinary( istream& is )
     getline( is, name, '\0' );
     mValues = LazyArray<ValueType>( GetSharedClientMemory( name ), channels * elements );
     mProperties = SignalProperties( channels, elements, type );
+    MemoryFence();
   }
   else
   {

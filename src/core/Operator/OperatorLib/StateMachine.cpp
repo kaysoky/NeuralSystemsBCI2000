@@ -527,12 +527,15 @@ StateMachine::InitializeModules()
 void
 StateMachine::EnterState( SysState inState )
 {
-  int curState = mSystemState & ~StateFlags;
-  if( curState != Fatal || inState == Fatal )
+  bool execute = false;
+  int transition = 0;
   {
-    int transition = TRANSITION( curState, inState );
+    ::Lock _( mTransitionLock );
+    int curState = mSystemState & ~StateFlags;
+    if( curState != Fatal || inState == Fatal )
     {
-      OSMutex::Lock lock( mStateMutex );
+      execute = true;
+      transition = TRANSITION( curState, inState );
       mSystemState = Transition;
       PerformTransition( transition );
       switch( inState )
@@ -545,8 +548,9 @@ StateMachine::EnterState( SysState inState )
       }
       mSystemState = inState;
     }
-    ExecuteTransitionCallbacks( transition );
   }
+  if( execute )
+    ExecuteTransitionCallbacks( transition );
 }
 
 void
@@ -1198,7 +1202,7 @@ StateMachine::CoreConnection::ProcessBCIMessages()
     OnAccept();
   while( mStream && mStream.rdbuf() && mStream.rdbuf()->in_avail() && !mrParent.IsTerminating() )
   {
-    OSMutex::Lock lock( mrParent.mBCIMessageMutex ); // Serialize messages
+    ::Lock _( mrParent.mBCIMessageLock ); // Serialize messages
     HandleMessage( mStream );
     ++Info()().MessagesRecv;
   }
@@ -1221,7 +1225,7 @@ void
 StateMachine::CoreConnection::OnAccept()
 {
   {
-    OSMutex::Lock lock( mrParent.mBCIMessageMutex );
+    ::Lock _( mrParent.mBCIMessageLock );
     mStream.clear();
     mStream.open( mSocket );
     if( mStream.is_open() )
@@ -1246,7 +1250,7 @@ void
 StateMachine::CoreConnection::OnDisconnect()
 { 
   {
-    OSMutex::Lock lock( mrParent.mBCIMessageMutex );
+    ::Lock _( mrParent.mBCIMessageLock );
     mStream.close();
     Info()().Address = "";
   }

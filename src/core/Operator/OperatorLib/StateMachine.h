@@ -54,7 +54,7 @@
 
 class CommandInterpreter;
 
-class StateMachine : public CallbackBase, private OSThread
+class StateMachine : public CallbackBase, public Lockable<>, private OSThread
 {
  public:
   enum
@@ -110,16 +110,12 @@ class StateMachine : public CallbackBase, private OSThread
   };
 
   int SystemState() const
-    { OSMutex::Lock lock( mStateMutex ); return mSystemState; }
+    { return mSystemState; }
 
   int NumConnections() const
     { return static_cast<int>( mConnections.size() ); }
 
   //  Locking.
-  void Lock() const
-    { mDataMutex.Acquire(); }
-  void Unlock() const
-    { mDataMutex.Release(); }
   typedef ::Lock_<StateMachine> DataLock;
   struct WatchDataLock : DataLock
   {
@@ -213,14 +209,9 @@ class StateMachine : public CallbackBase, private OSThread
   void TriggerEvent( int eventCallbackID );
   
  private:
-  int mSystemState;
-  // A mutex protecting access to the SystemState property:
-  OSMutex           mStateMutex;
-  // A mutex to be acquired while manipulating StateMachine data members.
-  OSMutex           mDataMutex;
-  #define mDataMutex (void) // use Lock()/Unlock() rather than accessing this member directly
-  // A mutex to serialize incoming BCI messages:
-  OSMutex           mBCIMessageMutex;
+  Synchronized<int> mSystemState;
+  Lockable<OSMutex> mTransitionLock;
+  Lockable<OSMutex> mBCIMessageLock;
 
   bool              mIntroducedRandomSeed;
   std::string       mPreviousRandomSeed;
@@ -235,12 +226,12 @@ class StateMachine : public CallbackBase, private OSThread
 
   std::ofstream     mDebugLog;
 
-  struct Listeners : std::set<CommandInterpreter*>, Lockable {} mListeners;
+  struct Listeners : std::set<CommandInterpreter*>, Lockable<OSMutex> {} mListeners;
   ScriptEvents      mScriptEvents;
   Watch::List       mWatches;
 
  public:
-   struct ConnectionInfo : Lockable
+  struct ConnectionInfo : Lockable<>
   {
     ConnectionInfo()
     : Version( ProtocolVersion::None() ),
@@ -311,7 +302,7 @@ class StateMachine : public CallbackBase, private OSThread
     SysState         mState_;
     ConnectionInfo   mInfo_;
   };
-  struct ConnectionList : std::vector<CoreConnection*>, Lockable {};
+  struct ConnectionList : std::vector<CoreConnection*>, Lockable<OSMutex> {};
 
  public:
   ConnectionInfo Info( size_t i ) const;
@@ -345,7 +336,7 @@ class StateMachine : public CallbackBase, private OSThread
 
   class EventLink;
   friend class EventLink;
-  class EventLink : public sockstream, public Lockable, private OSThread
+  class EventLink : public sockstream, public Lockable<>, private OSThread
   {
    public:
     EventLink( StateMachine& s ) : mrParent( s ), mConnected( false ), mPort( 0 ) {}

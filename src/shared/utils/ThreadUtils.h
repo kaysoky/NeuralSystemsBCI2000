@@ -46,6 +46,19 @@ void SleepUntil( PrecisionTime wakeup );
 
 int NumberOfProcessors();
 
+class ThreadID
+{
+ public:
+  ThreadID( bool initFromCurrentThread = true );
+  ~ThreadID();
+  bool operator==( const ThreadID& ) const;
+  bool operator!=( const ThreadID& id ) const
+    { return !( *this == id ); }
+ private:
+  void* mData;
+  bool mValid;
+};
+
 } // namespace ThreadUtils
 
 #endif // THREAD_UTILS_H

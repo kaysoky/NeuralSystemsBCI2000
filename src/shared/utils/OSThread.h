@@ -29,19 +29,13 @@
 #ifndef OS_THREAD_H
 #define OS_THREAD_H
 
-#ifdef _WIN32
-# include <Windows.h>
-#else
-# include <pthread.h>
-#endif // _WIN32
-
 #include "Uncopyable.h"
 #include "ThreadUtils.h"
 #include "OSEvent.h"
-#include "OSMutex.h"
+#include "Synchronized.h"
+#include "SpinLock.h"
 #include "PrecisionTime.h"
 #include "SharedPointer.h"
-#include <vector>
 
 class OSThread : private Uncopyable
 {
@@ -55,7 +49,7 @@ class OSThread : private Uncopyable
   bool IsTerminating() const
     { return mTerminating; }
   bool IsTerminated() const
-    { OSMutex::Lock lock( mMutex ); return mTerminated; }
+    { return mTerminated; }
 
   bool InOwnThread() const;
 
@@ -83,27 +77,16 @@ class OSThread : private Uncopyable
     { return ThreadUtils::NumberOfProcessors(); }
 
  private:
+  int RunThread();
   int CallExecute();
   void CallFinished();
+  friend struct ThreadStarter_;
 
-#ifdef _WIN32
-  static unsigned int WINAPI StartThread( void* inInstance );
-  void FinishThread( int );
-
-  unsigned int mThreadID;
-  static unsigned int sMainThreadID;
-#else // _WIN32
-  static void* StartThread( void* inInstance );
-  void FinishThread( int );
-
-  pthread_t mThread;
-  static pthread_t sMainThread;
-#endif // _WIN32
+  ThreadUtils::ThreadID mThreadID;
   int mResult;
-  OSMutex mMutex;
+  SpinLock mLock;
   SharedPointer<OSEvent> mpTerminationEvent;
-  bool mTerminating,
-       mTerminated;
+  Synchronized<bool> mTerminating, mTerminated;
 };
 
 #endif // OS_THREAD_H

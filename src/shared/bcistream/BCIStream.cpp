@@ -59,7 +59,7 @@ class MessageDispatcher : public Dispatcher
   void ReportRepetitions();
 
   static set<MessageDispatcher*>& Instances();
-  static OSMutex& GlobalMutex();
+  static LockableObject& GlobalMutex();
 
   int mCount;
   time_t mLastTime;
@@ -289,14 +289,14 @@ MessageDispatcher::MessageDispatcher()
   mLastTime( ::time( 0 ) ),
   mCount( 0 )
 {
-  OSMutex::Lock lock( GlobalMutex() );
+  Lock _( GlobalMutex() );
   Instances().insert( this );
 }
 
 MessageDispatcher::~MessageDispatcher()
 {
   ReportRepetitions();
-  OSMutex::Lock lock( GlobalMutex() );
+  Lock _( GlobalMutex() );
   Instances().erase( this );
 }
 
@@ -304,7 +304,7 @@ void
 MessageDispatcher::OnCompress( BCIStream::Action inAction, const string& inMessage )
 {
   {
-    OSMutex::Lock lock( GlobalMutex() );
+    Lock _( GlobalMutex() );
     for( set<MessageDispatcher*>::const_iterator i = Instances().begin(); i != Instances().end(); ++i )
       if( *i != this )
         (*i)->ReportRepetitions();
@@ -328,7 +328,7 @@ MessageDispatcher::OnCompress( BCIStream::Action inAction, const string& inMessa
 void
 MessageDispatcher::ReportRepetitions()
 {
-  OSMutex::Lock lock( GlobalMutex() );
+  Lock _( GlobalMutex() );
   if( mCount > 0 )
   {
     string message = mPrevMessage;
@@ -367,9 +367,9 @@ MessageDispatcher::Instances()
   return s;
 }
 
-OSMutex&
+LockableObject&
 MessageDispatcher::GlobalMutex()
 {
-  static OSMutex m;
-  return m;
+  static Lockable<> mLock;
+  return mLock;
 }

@@ -37,7 +37,7 @@ struct MessageQueueEntry
   char*  message;
 };
 
-class MessageQueue : public Lockable, private std::queue<MessageQueueEntry>
+class MessageQueue : public Lockable<>, private std::queue<MessageQueueEntry>
 {
  public:
   void QueueMessage( std::istream& );

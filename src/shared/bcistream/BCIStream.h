@@ -93,12 +93,12 @@ namespace BCIStream
 
   // Stream configuration
   void Apply( const ParamList& );
-  void SetOperatorStream( std::ostream*, const Lockable* = NULL );
+  void SetOperatorStream( std::ostream*, const LockableObject* = NULL );
 
 
   class ContextFrame;
   class Dispatcher;
-  class OutStream : public Lockable, public std::ostream
+  class OutStream : public Lockable<>, public std::ostream
   {
    friend class ::EnvironmentBase;
    friend class ::CoreModule;

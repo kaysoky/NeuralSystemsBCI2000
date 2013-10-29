@@ -27,6 +27,8 @@
 #pragma hdrstop
 
 #include "OSEvent.h"
+#include "OSError.h"
+#include "BCIException.h"
 #if !_WIN32
 # include <sys/time.h>
 #endif // _WIN32
@@ -48,7 +50,7 @@ OSEvent::~OSEvent()
 #if _WIN32
   if( mHandle != NULL )
   {
-	::SetEvent( mHandle );
+    ::SetEvent( mHandle );
     ::CloseHandle( mHandle );
   }
 #else // _WIN32
@@ -75,7 +77,9 @@ bool
 OSEvent::Reset()
 {
 #if _WIN32
-  return ::ResetEvent( mHandle );
+  if( !::ResetEvent( mHandle ) )
+    throw std_runtime_error( OSError().Message() );
+  return true;
 #else // _WIN32
   ::pthread_mutex_lock( &mMutex );
   mSignaled = false;
@@ -89,7 +93,20 @@ OSEvent::Wait( int inTimeoutMs )
 {
 #if _WIN32
   DWORD timeout = inTimeoutMs >= 0 ? inTimeoutMs : INFINITE;
-  return ( WAIT_OBJECT_0 == ::WaitForSingleObject( mHandle, timeout ) );
+  bool result = false;
+  switch( ::WaitForSingleObject( mHandle, timeout ) )
+  {
+    case WAIT_OBJECT_0:
+    case WAIT_ABANDONED:
+      result = true;
+      break;
+    case WAIT_TIMEOUT:
+      result = false;
+      break;
+    default:
+      throw std_runtime_error( OSError().Message() );
+  }
+  return result;
 #else // _WIN32
   int result = 0;
   ::pthread_mutex_lock( &mMutex );

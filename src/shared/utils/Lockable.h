@@ -35,23 +35,33 @@
 #ifndef LOCKABLE_H
 #define LOCKABLE_H
 
-#include "OSMutex.h"
+#include "SpinLock.h"
 #include "BCIAssert.h"
 #include "Uncopyable.h"
 
-class Lockable
+class LockableObject
+{
+ public:
+  bool Lock() const   { return OnLock(); }
+  bool Unlock() const { return OnUnlock(); }
+
+ protected:
+  virtual ~LockableObject() {}
+  virtual bool OnLock() const = 0;
+  virtual bool OnUnlock() const = 0;
+};
+
+template<class T = SpinLock> class Lockable : public LockableObject
 {
  public:
   Lockable() {}
   Lockable( const Lockable& ) {}
-  virtual ~Lockable() {}
   Lockable& operator=( const Lockable& ) { return *this; }
-
-  bool Lock() const   { return mMutex.Acquire(); }
-  bool Unlock() const { return mMutex.Release(); }
-
+ protected:
+  bool OnLock() const { return mLock.Acquire(); }
+  bool OnUnlock() const { return mLock.Release(); }
  private:
-  OSMutex mMutex;
+  mutable T mLock;
 };
 
 template<typename T> class Lock_;
@@ -118,8 +128,8 @@ TemporaryLock( T& t )
 class Lock : Uncopyable
 {
  public:
-  Lock( const Lockable& lockable ) : mpLockable( &lockable ), mpProxy( 0 ) { mpLockable->Lock(); }
-  Lock( const Lockable* pLockable ) : mpLockable( pLockable ), mpProxy( 0 ) { mpLockable->Lock(); }
+  Lock( const LockableObject& lockable ) : mpLockable( &lockable ), mpProxy( 0 ) { mpLockable->Lock(); }
+  Lock( const LockableObject* pLockable ) : mpLockable( pLockable ), mpProxy( 0 ) { mpLockable->Lock(); }
   template<class T> Lock( T& t ) : mpLockable( 0 ), mpProxy( new LockProxy_<T>( t ) ) {}
   template<class T> Lock( T* t ) : mpLockable( 0 ), mpProxy( new LockProxy_<T>( *t ) ) {}
   ~Lock() { if( mpLockable ) mpLockable->Unlock(); else delete mpProxy; }
@@ -132,7 +142,7 @@ class Lock : Uncopyable
     T& t;
   };
   const LockProxy* mpProxy;
-  const Lockable* mpLockable;
+  const LockableObject* mpLockable;
 };
 
 #endif // LOCKABLE_H

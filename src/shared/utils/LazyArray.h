@@ -27,12 +27,39 @@
 #define LAZY_ARRAY_H
 
 #include "SharedPointer.h"
+#include "Lockable.h"
+#include "BCIException.h"
 
 template<class T>
 class LazyArray
 {
-  typedef ArrayAllocator<T> Allocator;
-  typedef SharedPointer< T, Allocator > SharedPointer;
+  struct Allocator
+  {
+    struct Data : Lockable<> {};
+    static Data& Data( T* t )
+      { return *reinterpret_cast<struct Data*>( reinterpret_cast<char*>( t ) - sizeof( struct Data ) ); }
+    static T* New( size_t n )
+    {
+      char* raw = new char[n*sizeof( T ) + sizeof( struct Data )];
+      new (raw) struct Data;
+      return reinterpret_cast<T*>( raw + sizeof( struct Data ) );
+    }
+    static void Delete( T* t )
+    {
+      if( t )
+      {
+        Data( t ).~Data();
+        char* raw = reinterpret_cast<char*>( &Data( t ) );
+        delete[] raw;
+      }
+    }
+  };
+  struct Pointer : SharedPointer<T, Allocator>
+  {
+    Pointer( T* t ) : SharedPointer<T, Allocator>( t ) {}
+    void Lock() { Allocator::Data( operator->() ).Lock(); }
+    void Unlock() { Allocator::Data( operator->() ).Unlock(); }
+  };
 
  public:
   LazyArray()
@@ -90,11 +117,11 @@ class LazyArray
         mShared = false;
         if( mPointer.IsShared() )
         {
-          SharedPointer lockedPointer = mPointer;
+          Pointer lockedPointer = mPointer;
           T* newData = Allocator::New( mSize );
           ::memcpy( newData, mpData, mSize * sizeof( T ) );
           mpData = newData;
-          mPointer = SharedPointer( newData );
+          mPointer = Pointer( newData );
           lockedPointer.Unlock();
         }
         else
@@ -105,7 +132,7 @@ class LazyArray
  private:
   size_t mSize;
   T* mpData;
-  SharedPointer mPointer;
+  Pointer mPointer;
   mutable bool mShared;
 };
 

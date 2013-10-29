@@ -34,7 +34,7 @@
 #include "Lockable.h"
 #include "PrecisionTime.h"
 
-class EventQueue : public Lockable
+class EventQueue : public Lockable<>
 {
  public:
   EventQueue()

@@ -30,17 +30,17 @@
 #pragma hdrstop
 
 #include "OSThread.h"
-#include "OSEvent.h"
 #include "BCIException.h"
-#include "OSError.h"
 #include "ClassName.h"
 #include "ExceptionCatcher.h"
 
-#if _WIN32
+#ifdef _WIN32
+# include <Windows.h>
 # include <Process.h>
-#else // _WIN32
+#else
+# include <pthread.h>
 # include <unistd.h>
-#endif // !_WIN32
+#endif // _WIN32
 
 #include <cstdlib>
 #include <cstring>
@@ -48,10 +48,46 @@
 
 using namespace std;
 
-#if _WIN32
+struct ThreadStarter_
+{
+#ifdef _WIN32
+  static unsigned int WINAPI ThreadProc( void* inData )
+  { return reinterpret_cast<OSThread*>( inData )->RunThread(); }
+  static bool StartThread( void* data )
+  {
+    uintptr_t handle = ::_beginthreadex( 0, 0, &ThreadStarter_::ThreadProc, data, 0, 0 );
+    if( handle )
+      ::CloseHandle( HANDLE( handle ) );
+    return handle != 0;
+  }
+#else // _WIN32
+  static void* ThreadProc( void* inData )
+  {
+    // Set the cancel state to asynchronous, so pthread_cancel() will
+    // immediately cancel thread execution.
+    ::pthread_setcancelstate( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
+    return reinterpret_cast<void*>( reinterpret_cast<OSThread*>( inData )->RunThread() );
+  }
+  static bool StartThread( void* data )
+  {
+    ::pthread_attr_t attributes;
+    errno = ::pthread_attr_init( &attributes );
+    if( !errno )
+    {
+      // Create a thread in detached mode, i.e. thread resources are
+      // auto-released when the thread terminates.
+      ::pthread_attr_setdetachstate( &attributes, PTHREAD_CREATE_DETACHED );
+      pthread_t thread;
+      errno = ::pthread_create( &thread, &attributes, &ThreadStarter_::ThreadProc, data );
+      ::pthread_attr_destroy( &attributes );
+    }
+    return errno == 0;
+  }
+#endif // !_WIN32
+};
 
 OSThread::OSThread()
-: mThreadID( 0 ),
+: mThreadID( false ),
   mResult( 0 ),
   mTerminating( false ),
   mTerminated( true ),
@@ -59,69 +95,6 @@ OSThread::OSThread()
 {
   mpTerminationEvent->Set();
 }
-
-void
-OSThread::Start()
-{
-  TerminateWait();
-  OSMutex::Lock lock( mMutex );
-  mTerminating = false;
-  uintptr_t handle = ::_beginthreadex( NULL, 0, OSThread::StartThread, this, 0, &mThreadID );
-  if( handle )
-  {
-    ::CloseHandle( HANDLE( handle ) );
-    mTerminated = false;
-    mpTerminationEvent->Reset();
-  }
-  else
-    throw std_runtime_error( ::strerror( errno ) );
-}
-
-bool
-OSThread::InOwnThread() const
-{
-  return ::GetCurrentThreadId() == mThreadID;
-}
-
-#else // _WIN32
-
-OSThread::OSThread()
-: mTerminated( true ),
-  mResult( 0 ),
-  mTerminating( false ),
-  mpTerminationEvent( new OSEvent )
-{
-  mpTerminationEvent->Set();
-}
-
-void
-OSThread::Start()
-{
-  TerminateWait();
-  OSMutex::Lock lock( mMutex );
-  mTerminating = false;
-  ::pthread_attr_t attributes;
-  if( !::pthread_attr_init( &attributes ) )
-  {
-    // Create a thread in detached mode, i.e. thread resources are
-    // auto-released when the thread terminates.
-    ::pthread_attr_setdetachstate( &attributes, PTHREAD_CREATE_DETACHED );
-    if( !::pthread_create( &mThread, &attributes, OSThread::StartThread, this ) )
-    {
-      mTerminated = false;
-      mpTerminationEvent->Reset();
-    }
-    ::pthread_attr_destroy( &attributes );
-  }
-}
-
-bool
-OSThread::InOwnThread() const
-{
-  return ::pthread_equal( pthread_self(), mThread );
-}
-
-#endif // _WIN32
 
 OSThread::~OSThread()
 {
@@ -135,7 +108,7 @@ OSThread::~OSThread()
 SharedPointer<OSEvent>
 OSThread::Terminate()
 {
-  OSMutex::Lock lock( mMutex );
+  SpinLock::Lock _( mLock );
   mTerminating = true;
   return mpTerminationEvent;
 }
@@ -167,45 +140,44 @@ OSThread::CallFinished()
   .Run( call );
 }
 
-#if _WIN32
-
-unsigned int WINAPI
-OSThread::StartThread( void* inInstance )
-{
-  OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
-  int result = this_->CallExecute();
-  this_->FinishThread( result );
-  return result;
-}
-
-#else // _WIN32
-
-void*
-OSThread::StartThread( void* inInstance )
-{
-  OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
-  // Set the cancel state to asynchronous, so pthread_cancel() will
-  // immediately cancel thread execution.
-  ::pthread_setcancelstate( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
-  int result = this_->CallExecute();
-  this_->FinishThread( result );
-  return reinterpret_cast<void*>( result );
-}
-
-#endif // _WIN32
-
 void
-OSThread::FinishThread( int inResult )
+OSThread::Start()
 {
+  TerminateWait();
+  SpinLock::Lock _( mLock );
+  mTerminating = false;
+  if( ThreadStarter_::StartThread( this ) )
+  {
+    mTerminated = false;
+    mpTerminationEvent->Reset();
+  }
+  else
+    throw std_runtime_error( ::strerror( errno ) );
+}
+
+int
+OSThread::RunThread()
+{
+  mThreadID = ThreadUtils::ThreadID( true );
+  int result = CallExecute();
   // The OnFinished() handler may delete the OSThread object, so we
   // use a temporary shared pointer to the termination event.
   SharedPointer<OSEvent> pTerminationEvent;
   {
-    OSMutex::Lock lock( mMutex );
-    mResult = inResult;
+    SpinLock::Lock _( mLock );
+    mResult = result;
     mTerminated = true;
     pTerminationEvent = mpTerminationEvent;
   }
   CallFinished();
   pTerminationEvent->Set();
+  mThreadID = ThreadUtils::ThreadID( false );
+  return result;
 }
+
+bool
+OSThread::InOwnThread() const
+{
+  return ThreadUtils::ThreadID() == mThreadID;
+}
+
