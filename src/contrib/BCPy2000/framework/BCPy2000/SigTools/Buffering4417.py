@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # 
-#   $Id$
+#   $Id: Buffering.py 4417 2013-04-25 07:40:12Z jhill $
 #   
 #   This file is part of the BCPy2000 framework, a Python framework for
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
@@ -151,7 +151,7 @@ class trap(object):
 	In either case, t.full() queries whether the target number of samples
 	has yet been reached.		
 	"""###
-	def __init__(self, nsamples, nchannels, trigger_channel=None, trigger_threshold=0.0, trigger_processing=numpy.abs, leaky=False, trigger_samplenumber=None, nseen=0):
+	def __init__(self, nsamples, nchannels, trigger_channel=None, trigger_threshold=0.0, trigger_processing=numpy.abs, leaky=False, trigger_samplenumber=None, nseen=0, offset_samples=0):
 		"""
 		Initializes self.nsamples, self.trigger_channel,
 		self.trigger_threshold, self.trigger_processing and self.leaky with
@@ -165,9 +165,17 @@ class trap(object):
 		self.trigger_samplenumber = trigger_samplenumber
 		self.trigger_processing = trigger_processing
 		self.nsamples = nsamples
-		self.nseen = nseen
 		self.leaky = leaky
+		self.nseen = nseen
+		self.nleaked = 0
+		self.noverflowed = 0
+		self.npadded = 0
 		self.trailingsample = None
+		self.lookback = None
+		self.offset_samples = offset_samples
+		if self.offset_samples < 0:
+			self.lookback = trap(nsamples=-self.offset_samples+1, nchannels=nchannels, leaky=True)
+		self.reset()
 		
 	def __iadd__(self, x):
 		self.process(x)
@@ -198,7 +206,8 @@ class trap(object):
 		if not isinstance(x, numpy.ndarray):
 			x = numpy.array(x)
 			while len(x.shape) < 2: x.shape = tuple(x.shape) + (1,)
-		startx,stopx = 0,x.shape[1]
+		nsamples_x = x.shape[1]
+		startx,stopx = 0,nsamples_x
 		sprung_before = self.sprung
 		if arm and not self.sprung:
 			if self.trigger_samplenumber != None:
@@ -206,7 +215,7 @@ class trap(object):
 				if 0 <= off < stopx:
 					startx = off
 					self.sprung = True
-					output = 1
+					output = off + 1
 			elif self.trigger_channel == None:  # in this case, the trap springs
 				self.sprung = True              # as soon as it is used
 				output = 1
@@ -221,16 +230,43 @@ class trap(object):
 				tr = numpy.argwhere(numpy.diff(tr) > 0)
 				if len(tr):
 					self.sprung = True
-					startx = tr[0,0]
+					startx = tr[0,0] + self.offset_samples
 					output = tr[0,0] + 1
+					
+		if self.sprung and not sprung_before:
+			self.sprung_at = self.nseen + startx - self.offset_samples
+			if self.offset_samples < 0:
+				prev = self.lookback.read()
+				x = numpy.concatenate((prev, x), axis=1)
+				startx += prev.shape[1]
+				stopx += prev.shape[1]
+				if startx < 0:
+					npad = -startx
+					z = numpy.zeros((x.shape[0],npad), dtype=x.dtype)
+					x = numpy.concatenate((z,x), axis=1)
+					startx += npad
+					stopx += npad
+					self.npadded += npad			
+			if startx >= x.shape[1]:
+				self.trigger_samplenumber = self.nseen + startx
+				self.sprung = False
 		if self.sprung:
 			excess = self.collected() + (stopx-startx) - self.nsamples
 			if excess > 0:
-				if self.leaky: self.ring.forget(excess) # excess leaks out the bottom
-				else: stopx -= excess  # excess spills over the top
-			if stopx > startx: self.ring.write(x[:, startx:stopx])
-			if not sprung_before: self.sprung_at = self.nseen + startx
-		self.nseen += x.shape[1]
+				if self.leaky:
+					self.ring.forget(excess) # excess leaks out the bottom
+					self.nleaked += excess
+					still_excess = (stopx - startx) - self.nsamples
+					if still_excess > 0: startx += still_excess
+				else:
+					stopx -= excess  # excess spills over the top
+					self.noverflowed += excess
+			if stopx > startx:
+				self.ring.write(x[:, startx:stopx])
+		elif self.lookback:
+			self.lookback.process(x)
+		self.nseen += nsamples_x
+
 		return output
 
 	__call__ = process
@@ -256,11 +292,15 @@ class trap(object):
 		Return the contents of the trap after removing it and re-arming
 		(un-springing) the trap.
 		"""###
-		b = self.ring.read(self.nsamples)
+		b = self.ring.read(min(self.nsamples, self.collected()))
 		self.trailingsample = None
 		self.sprung = False
 		self.sprung_at = None
 		self.nseen = nseen
+		self.nleaked = 0
+		self.noverflowed = 0
+		self.npadded = 0
+		if self.lookback: self.lookback.reset()
 		return b
 
 	flush = reset
