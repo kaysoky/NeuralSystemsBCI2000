@@ -26,47 +26,84 @@
 #
 #!/usr/bin/python
 
-import sys
-args = sys.argv[1:]
-if args == []: args = ['install']
-if args == ['installer']:
-	args = [
-		'bdist_wininst',
-		'--bitmap', 'installer.bmp',
-		#'--install-script', 'BCPy2000_postinstall.py',
-	]
-sys.argv = sys.argv[:1] + args
 
-try: import setuptools
-except ImportError: print "WARNING: failed to import setuptools"
-from distutils.core import setup, Extension
-import BCPy2000
 
-dependencies = {
-	    'numpy': '>=1.3',
-	  'IPython': '>=0.8.1',
-	#'VisionEgg': '>=1.1',
-}
-setup(
-	name = 'BCPy2000',
-	version = BCPy2000.__version__,
-	packages = [
-		'BCPy2000',
-		'BCPy2000.AppTools',
-		'BCPy2000.LangTools',
-		'BCPy2000.SigTools',
-		'BCPy2000.WavTools',
-		'BCPy2000.BCI2000Tools',
-		'BCPy2000.Documentation',
-	],
-	package_data = {
-		'BCPy2000.AppTools': ['*.dll'],
-		'BCPy2000.Documentation': ['*.*', 'styles/gears/*.*'],
-	},
-	scripts = [
-		#'BCPy2000_postinstall.py',
-	],
-	requires = [('%s (%s)' % (p,v)).replace(' ()','') for p,v in dependencies.items()],  # available in distutils from Python 2.5 onwards
-	install_requires = ['%s%s' % (p,v) for p,v in dependencies.items()], # available if using setuptools,  acted on by easy_install
-)
+# run from the command line in the normal way, or, to make a win32.exe and then %easy_install it:
+# import setup; setup.runsetup(easy_install=1) 
+
+import os,sys
+def runsetup(*args, **kwargs):
+	
+	oldwd = os.getcwd()
+	oldsysargv = getattr(sys, 'argv', [])
+	thiswd, thisfile = os.path.split(__file__)
+	if len(thiswd) == 0: thiswd = oldwd
+	os.chdir(thiswd)
+
+	easy_install = kwargs.pop('easy_install', False)
+	if len(kwargs): raise ValueError('unrecognized keyword arguments')
+		
+	args = list(args)
+	if args == []: args = ['installer']
+	if args == ['installer']:
+		args = [
+			'bdist_wininst',
+			'--bitmap', 'installer.bmp',
+			#'--install-script', 'BCPy2000_postinstall.py',
+		]
+	sys.argv = [thisfile] + args 
+	print sys.argv
+	
+	try: import setuptools
+	except ImportError: print "WARNING: failed to import setuptools"
+	from distutils.core import setup, Extension
+	import BCPy2000
+
+	dependencies = {
+			'numpy': '>=1.3',
+		  'IPython': '>=0.8.1',
+		#'VisionEgg': '>=1.1',
+	}
+	setup(
+		name = 'BCPy2000',
+		version = BCPy2000.__version__,
+		packages = [
+			'BCPy2000',
+			'BCPy2000.AppTools',
+			'BCPy2000.LangTools',
+			'BCPy2000.SigTools',
+			'BCPy2000.WavTools',
+			'BCPy2000.BCI2000Tools',
+			'BCPy2000.Documentation',
+		],
+		package_data = {
+			'BCPy2000.AppTools': ['*.dll'],
+			'BCPy2000.Documentation': ['*.*', 'styles/gears/*.*'],
+		},
+		scripts = [
+			#'BCPy2000_postinstall.py',
+		],
+		requires = [('%s (%s)' % (p,v)).replace(' ()','') for p,v in dependencies.items()],  # available in distutils from Python 2.5 onwards
+		install_requires = ['%s%s' % (p,v) for p,v in dependencies.items()], # available if using setuptools,  acted on by easy_install
+	)
+
+	if easy_install:
+		os.chdir('dist')
+		from BCPy2000.Shortcuts import getmagic
+		getmagic('easy_install')('-Z BCPy2000-%s.%s.exe' % (str(BCPy2000.__version__), sys.platform))
+		sys.argv = oldsysargv
+		os.chdir(oldwd)
+		print """
+		
+remember:
+	in %s , remove directories BCPy2000.egg-info, build and dist
+	in site-packages, remove or comment out BCPy2000.pth
+"""	% (thiswd,)
+
+if __name__ == '__main__':
+	args = sys.argv[1:]
+	runsetup(*args)
+	
+
+
 
