@@ -227,8 +227,10 @@ Undo a previous call to %desk
 	############################################################################
 	@makemagic
 	def magic_pip(d=''):
-		try: import pip
-		except ImportError: import sys; sys.stderr.write("""
+		try:
+			import pip
+		except ImportError:
+			import sys; sys.stderr.write("""
 The pip module is not installed. See the instructions
 at http://www.pip-installer.org/en/latest/installing.html
 In short:
@@ -239,7 +241,11 @@ In short:
 (4) Then the first thing you should do with pip is:
     pip install --upgrade setuptools
 """)
-		else: return pip.main(d.split())
+			return
+		try:
+			return pip.main(d.split())
+		except SystemExit:
+			pass
 		
 	############################################################################
 	@makemagic

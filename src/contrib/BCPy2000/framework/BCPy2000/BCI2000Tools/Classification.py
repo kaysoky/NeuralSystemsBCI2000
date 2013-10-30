@@ -50,6 +50,7 @@ def ClassifyERPs (
 		maxcount=None,
 		classes=None,
 		folds=None,
+		time_window=None,
 	):
 
 	file_inventory = []
@@ -66,6 +67,13 @@ def ClassifyERPs (
 
 	x = d['x']
 	y = numpy.array(d['y'].flat)
+	if time_window != None:
+		fs = d['fs']
+		t = SigTools.samples2msec(numpy.arange(x.shape[2]), fs)
+		x[:, :, t<min(time_window)] = 0
+		x[:, :, t>max(time_window)] = 0
+		
+		
 	if classes != None:
 		for cl in classes:
 			if cl not in y: raise ValueError("class %s is not in the dataset" % str(cl))

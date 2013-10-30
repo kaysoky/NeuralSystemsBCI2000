@@ -66,14 +66,23 @@ def FixupDistribution(p, minprob=None, exponent=1.0):
 	
 ##############################################################################################
 
+def stringify(k):
+	if isinstance(k, (basestring, int, float, bool)): return str(k)
+	if isinstance(k, list): return '[' + ','.join([stringify(x) for x in k]) + ']' 
+	if isinstance(k, tuple): return '(' + ','.join([stringify(x) for x in k]) + {1:','}.get(len(k), '') + ')' 
+	return "<%s.%s instance at 0x%08X>" % (k.__class__.__module__,k.__class__.__name__,id(k))
+
+##############################################################################################
+
 class pdict(dict):
 	def __repr__(self):
 		w = 50
 		s = ''
-		sn = max([len(k) for k in self.keys()] + [5])
-		vals = self.values()
+		kv = sorted([(stringify(k),v) for k,v in self.items()])
+		sn = max([len(k) for k,v in kv] + [5])
+		vals = [v for k,v in kv]
 		vmin, vmax, vsum = float(min(vals)),float(max(vals)),float(sum(vals))
-		for k,v in sorted(self.items()):
+		for k,v in kv:
 			if vmax == 0: n = 0
 			else: n = int(round(w * v / vmax))
 			s += '%s : %s \n' % (k.rjust(sn), '*' * n)
@@ -151,6 +160,13 @@ class Decoder(object):
 		return pdict(zip(self.labels, numpy.exp(self.loglikelihood).flat))
 	
 	##########################################################################################
+	
+	def posterior(self):
+		posterior = numpy.exp(self.loglikelihood + self.logprior)
+		posterior /= posterior.sum()
+		return pdict(zip(self.labels, numpy.exp(posterior).flat))
+
+	##########################################################################################
 
 	def new_column(self, col):
 		if col.size != self.N: raise RuntimeError('wrong-sized codebook passed to Decoder (expected %d, got %d)' % (self.N, col.size))
@@ -168,6 +184,12 @@ class Decoder(object):
 			self.loglikelihood += loglike
 			#self.eachcol = getattr(self, 'eachcol', []); self.eachloglike = getattr(self, 'eachloglike', []) # &&&
 			#self.eachcol.append(C_j); self.eachloglike.append(loglike) # &&&
+		if self.verbose:
+			print 'got probability', p
+			print 'likelihood:'
+			print self.likelihood()
+			print 'posterior:'
+			print self.posterior()
 		posterior = numpy.exp(self.loglikelihood + self.logprior)
 		posterior /= posterior.sum()
 		if self.done: return
@@ -184,6 +206,8 @@ class Decoder(object):
 					posterior = self.logprior * atMAP                # ...otherwise judge among the winners according to their prior probabilities
 					answer = numpy.argmax(posterior)                 # ...and if there's one winner of *that*, choose it, otherwise choose an arbitrary one of the winners
 			self.done = True
+			if self.verbose:
+				print "chosen", stringify(self.choices[answer])
 			return self.choices[answer]
 
 	##########################################################################################

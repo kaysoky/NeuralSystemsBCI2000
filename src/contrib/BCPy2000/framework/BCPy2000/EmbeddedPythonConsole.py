@@ -42,6 +42,8 @@ except: pass              # IPython has loaded some sort of readline of its own
 
 import IPython
 
+#IPython.__version__ might be "0.10.2" or "0.13"
+__IPYTHON_IS_NEWER_THAN_DOT_10__ = int(IPython.__version__.split('.')[0]) > 0 or int(IPython.__version__.split('.')[1]) > 10
 import platform
 win32 = (platform.system().lower() == 'windows')
 
@@ -51,10 +53,15 @@ win32 = (platform.system().lower() == 'windows')
 # might be different from the user who uses. The following trick (lifted from Laurent
 # Dufrechou's IPython/gui/wx/ipshell_nonblocking.py) just replaces the console input
 # function called by user_setup(). Hopefully there will be no side effects...
-IPython.iplib.raw_input = lambda x:None
+if not __IPYTHON_IS_NEWER_THAN_DOT_10__:
+	IPython.iplib.raw_input = lambda x:None
 
 def Shell(): # call the returned instance to start the shell
-	return IPython.Shell.IPShellEmbed(rc_override={})
+	if __IPYTHON_IS_NEWER_THAN_DOT_10__:
+		#return IPython.frontend.terminal.embed.InteractiveShellEmbed()
+		return IPython.embed
+	else:
+		return IPython.Shell.IPShellEmbed(rc_override={})
 	
 def ReplaceStreams():
 	# save previous stream objects
@@ -74,11 +81,15 @@ def ReplaceStreams():
 			# for the first time. If sys.stdout changes, the codepage setting doesn't get
 			# updated and this causes a bug. So we have to set it explictly. In earlier
 			# versions, pyreadline.unicode_helper doesn't exist, so we have to just try:
-			import pyreadline.unicode_helper
-			pyreadline.unicode_helper.pyreadline_codepage = enc
+			if not __IPYTHON_IS_NEWER_THAN_DOT_10__:
+				import pyreadline.unicode_helper
+				pyreadline.unicode_helper.pyreadline_codepage = enc
 		except:
 			pass
-		sys.stdout = IPython.genutils.Term.cout.stream
+		if __IPYTHON_IS_NEWER_THAN_DOT_10__:
+			sys.stdout = IPython.utils.io.stdout
+		else:
+			sys.stdout = IPython.genutils.Term.cout.stream
 	else:
 		sys.stdout = original['stdout']
 		# TODO: On linux, something else in IPython obviously needs to be reset here too.
@@ -92,7 +103,14 @@ def ReplaceStreams():
 	# replace stdin
 	############################################################################
 	if win32:
-		sys.stdin = IPython.rlineimpl._rl.rl
+		if __IPYTHON_IS_NEWER_THAN_DOT_10__:
+			#from IPython.utils import rlineimpl 
+			#sys.stdin = rlineimpl._rl.rl
+			#import pyreadline
+			#sys.stdin = pyreadline.rlmain.Readline()
+			sys.stdin = IPython.utils.io.stdin
+		else:
+			sys.stdin = IPython.rlineimpl._rl.rl
 		sys.stdin.encoding = enc
 	
 	############################################################################
@@ -100,8 +118,10 @@ def ReplaceStreams():
 	# starts, this replacement would happen anyway, but it's required now in
 	# case of syntax errors)
 	############################################################################
-	
-	sys.excepthook = IPython.ultraTB.ColorTB()
+	if __IPYTHON_IS_NEWER_THAN_DOT_10__:
+		sys.excepthook = IPython.core.ultratb.ColorTB()
+	else:
+		sys.excepthook = IPython.ultraTB.ColorTB()
 	
 	############################################################################
 	# replace stderr (make this the last thing, in case errors occur above)
@@ -112,9 +132,13 @@ def ReplaceStreams():
 		sys.stderr = original['stderr']
 		if previous['stderr'].fileno() > 0  and not previous['stderr'].isatty():
 			sys.stderr = tee((sys.stderr, previous['stderr']))
-			
-	IPython.ultraTB.Term.cout = sys.stdout
-	IPython.ultraTB.Term.cerr = sys.stderr
+	
+	if __IPYTHON_IS_NEWER_THAN_DOT_10__:
+		IPython.core.ultratb.io.stdout = sys.stdout
+		IPython.core.ultratb.io.stderr = sys.stderr
+	else:
+		IPython.ultraTB.Term.cout = sys.stdout
+		IPython.ultraTB.Term.cerr = sys.stderr
 
 
 ############################################################################
@@ -134,8 +158,12 @@ class tee:
 		s_clean = re.sub(ansi_escape, '', s)
 		for x in self.streamlist:
 			if not hasattr(x, 'write'): continue
-			if isinstance(x, IPython.genutils.IOStream): x.write(s)
-			elif callername != 'raw_input':   x.write(s_clean)
+			if __IPYTHON_IS_NEWER_THAN_DOT_10__:
+				if isinstance(x, IPython.utils.io.IOStream): x.write(s)			
+				elif callername != 'raw_input':   x.write(s_clean)
+			else:
+				if isinstance(x, IPython.genutils.IOStream): x.write(s)			
+				elif callername != 'raw_input':   x.write(s_clean)
 			# We can't capture the user's In [*]:  commands, so don't bother to output the
 			# (non-newline-terminated) prompt. Note that IPython has its own mechanisms
 			# for logging In and Out traffic.
@@ -162,17 +190,21 @@ def IPythonGiveWayToPDB(*pargs,**kwargs):
 def SuspendIPython():
 	global __IPYTHON__
 	if hasattr(__IPYTHON__, suspend_attrname): return
-	previous_chain = list(__IPYTHON__.hooks.generate_prompt.chain)
+	if __IPYTHON_IS_NEWER_THAN_DOT_10__:
+		previous_chain = list(__IPYTHON__.core.hooks.generate_prompt.chain)
+	else:
+		previous_chain = list(__IPYTHON__.hooks.generate_prompt.chain)
 	setattr(__IPYTHON__, suspend_attrname, previous_chain)
 	__IPYTHON__.set_hook('generate_prompt', IPythonGiveWayToPDB)
 
 def ReleaseIPython():
 	global __IPYTHON__
 	if hasattr(__IPYTHON__, suspend_attrname): delattr(__IPYTHON__, suspend_attrname)
-	
-class Tracer (IPython.Debugger.Tracer):
+
+ITracer = IPython.core.debugger.Tracer if __IPYTHON_IS_NEWER_THAN_DOT_10__ else IPython.Debugger.Tracer
+class Tracer (ITracer):
 	def __init__(self, *pargs, **kwargs):
-		IPython.Debugger.Tracer.__init__(self, *pargs, **kwargs)
+		ITracer.__init__(self, *pargs, **kwargs)
 		global __IPYTHON__
 		setattr(__IPYTHON__, debugger_attrname, self.debugger)
 		
