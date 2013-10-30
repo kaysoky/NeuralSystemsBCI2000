@@ -56,8 +56,8 @@ class BCI2000Remote(object):
     def __init__(self):
         pyfile = inspect.getfile(inspect.currentframe())
         bcidir = os.path.dirname(os.path.realpath(pyfile))
-        bcilib = bcidir + "/BCI2000RemoteLib"
-        bcioperator = bcidir + "/Operator"
+        bcilib = os.path.join(bcidir, "BCI2000RemoteLib")
+        bcioperator = os.path.join(bcidir, "Operator")
         if sys.platform.startswith( 'win' ):
             bcilib = bcilib + ".dll"
             bcioperator = bcioperator + ".exe"
