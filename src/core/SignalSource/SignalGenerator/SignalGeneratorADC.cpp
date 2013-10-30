@@ -105,13 +105,25 @@ SignalGeneratorADC::Publish()
         "(enumeration)",
         
     "Source matrix SourceProperties= 0 [ Frequency Amplitude ] // Source properties",
-    "Source matrix MixingMatrix= 0 1 // Source-to-sensor projection, rows are sensors, columns are sources",
+    "Source matrix MixingMatrix= 0 1 // Source-to-sensor projection, rows are sources, columns are sensors",
   END_PARAMETER_DEFINITIONS
 }
 
 void
 SignalGeneratorADC::AutoConfig( const SignalProperties& )
 {
+  ParamRef MixingMatrix = Parameter( "MixingMatrix" );
+  if( MixingMatrix->NumValues() > 0 )
+  {
+    int numChannels = MixingMatrix->NumColumns();
+    Parameter( "SourceCh" ) = numChannels;
+    if( !MixingMatrix->ColumnLabels().IsTrivial() )
+    {
+      Parameter( "ChannelNames" )->SetNumValues( numChannels );
+      for( int i = 0; i < numChannels; ++i )
+        Parameter( "ChannelNames" )( i ) = MixingMatrix->ColumnLabels()[i];
+    }
+  }
   int numChannels = Parameter( "SourceCh" );
   Parameter( "SourceChOffset" )->SetNumValues( numChannels );
   Parameter( "SourceChGain" )->SetNumValues( numChannels );
@@ -190,10 +202,10 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
   if( Parameter( "SourceProperties" )->NumValues() > 0 )
   {
     ParamRef MixingMatrix = Parameter( "MixingMatrix" );
-    mMixingMatrix.resize( MixingMatrix->NumRows(), vector<double>( MixingMatrix->NumColumns() ) );
+    mMixingMatrix.resize( MixingMatrix->NumColumns(), Vector( MixingMatrix->NumRows() ) );
     for( int i = 0; i < MixingMatrix->NumRows(); ++i )
       for( int j = 0; j < MixingMatrix->NumColumns(); ++j )
-        mMixingMatrix[i][j] = MixingMatrix( i, j );
+        mMixingMatrix[j][i] = MixingMatrix( i, j );
     
     ParamRef SourceProperties = Parameter( "SourceProperties" );
     mSourceFrequencies.resize( SourceProperties->NumRows() );
@@ -209,7 +221,7 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
   {
     int numCh = Parameter( "SourceCh" ),
         numSrc = 4;
-    vector<double> normalChannel( numSrc, 0 );
+    Vector normalChannel( numSrc );
     normalChannel[0] = 1;
     mMixingMatrix.resize( numCh, normalChannel );
     if( mSineChannelX )
@@ -230,11 +242,9 @@ SignalGeneratorADC::Initialize( const SignalProperties&, const SignalProperties&
       mMixingMatrix[mSineChannelZ-1][3] = 1;
       mSineChannelZ = 4;
     }
-    mSourceFrequencies.clear();
     mSourceFrequencies.resize( numSrc, SineFrequency );
-    mSourceAmplitudes.clear();
     mSourceAmplitudes.resize( numSrc, SineAmplitude );
-    mSourcePhases.resize( numSrc );
+    mSourcePhases.resize( numSrc, 0 );
   }
 
   mClock.SetInterval( 1e3 * MeasurementUnits::SampleBlockDuration() );
@@ -294,26 +304,21 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
 
   for( int sample = 0; sample < Output.Elements(); ++sample )
   {
-    for( size_t source = 0; source < mSourceFrequencies.size(); ++source )
-    {
-      double sineValue = 0;
-      if( mSourceFrequencies[source] )
-      {
-        mSourcePhases[source] += 2 * Pi() * mSourceFrequencies[source];
-        mSourcePhases[source] = ::fmod( mSourcePhases[source], 2 * Pi() );
-        sineValue = ::sin( mSourcePhases[source] ) * mSourceAmplitudes[source] * mAmplitudeMultiplier.Evaluate();
-        if( mSineChannelX == source + 1 )
-          sineValue *= mAmplitudeX;
-        if( mSineChannelY == 0 || mSineChannelY == source + 1 )
-          sineValue *= mAmplitudeY;
-        if( mSineChannelZ == source + 1 )
-          sineValue *= mAmplitudeZ;
-      }
-      for( int ch = 0; ch < Output.Channels(); ++ch )
-        Output( ch, sample ) += mMixingMatrix[ch][source] * sineValue;
-    }
+    mSourcePhases += mSourceFrequencies;
+    mSourcePhases.apply( floor );
+    mSourceValues = sin( mSourcePhases * (2*Pi()) ) * mSourceAmplitudes * mAmplitudeMultiplier.Evaluate();
+    if( mSineChannelX > 0 )
+      mSourceValues[mSineChannelX - 1] *= mAmplitudeX;
+    if( mSineChannelY > 0 )
+      mSourceValues[mSineChannelY - 1] *= mAmplitudeY;
+    else if( mSineChannelY == 0 )
+      mSourceValues *= mAmplitudeY;
+    if( mSineChannelZ > 0 )
+      mSourceValues[mSineChannelZ - 1] *= mAmplitudeZ;
     for( int ch = 0; ch < Output.Channels(); ++ch )
-      Output( ch, sample ) += ( mRandomGenerator.Random() * mNoiseAmplitude / mRandomGenerator.RandMax() - mNoiseAmplitude / 2 );
+      Output( ch, sample ) += 
+        ( mMixingMatrix[ch] * mSourceValues ).sum()
+        + ( mRandomGenerator.Random() * mNoiseAmplitude / mRandomGenerator.RandMax() - mNoiseAmplitude / 2 );
   }
   for( int ch = 0; ch < Output.Channels(); ++ ch )
     for( int sample = 0; sample < Output.Elements(); ++sample )

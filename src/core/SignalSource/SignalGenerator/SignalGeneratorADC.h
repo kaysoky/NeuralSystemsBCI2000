@@ -31,6 +31,7 @@
 #include "Expression.h"
 #include "RandomGenerator.h"
 #include <vector>
+#include <valarray>
 
 class SignalGeneratorADC : public GenericADC
 {
@@ -54,10 +55,13 @@ class SignalGeneratorADC : public GenericADC
          mDCOffset;
   Expression mOffsetMultiplier,
              mAmplitudeMultiplier;
-  std::vector<double> mSourceFrequencies,
-                      mSourceAmplitudes,
-                      mSourcePhases;
-  std::vector< std::vector<double> > mMixingMatrix;
+  typedef std::valarray<double> Vector;
+  typedef std::vector<Vector> Matrix;
+  Vector mSourceFrequencies,
+         mSourceAmplitudes,
+         mSourcePhases,
+         mSourceValues;
+  Matrix mMixingMatrix;
 
   int    mSineChannelX,
          mSineChannelY,
