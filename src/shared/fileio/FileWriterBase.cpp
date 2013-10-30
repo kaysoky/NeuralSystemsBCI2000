@@ -174,7 +174,7 @@ FileWriterBase::StopRun()
   mOutputFile.close();
   mOutputFile.clear();
 
-  if( !mSignalQueue.empty() )
+  if( !mQueue.Empty() )
     bcierr << "Nonempty buffering queue" << endl;
 }
 
@@ -182,12 +182,8 @@ void
 FileWriterBase::Halt()
 {
   SharedPointer<OSEvent> pTerminationEvent = OSThread::Terminate();
-  {
-    OSMutex::Lock lock( mMutex );
-    mSignalQueue = queue<GenericSignal>();
-    mStateVectorQueue = queue<StateVector>();
-    mEvent.Set(); // Trigger a last execution of the thread's while loop.
-  }
+  mQueue.Clear();
+  mQueue.WakeConsumer();
   pTerminationEvent->Wait();
 }
 
@@ -195,32 +191,17 @@ void
 FileWriterBase::Write( const GenericSignal& Signal,
                        const StateVector&   Statevector )
 {
-  OSMutex::Lock lock( mMutex );
-  mSignalQueue.push( Signal );
-  mStateVectorQueue.push( Statevector );
-  mEvent.Set();
+  mQueue.Produce( make_pair( Signal, Statevector ) );
 }
 
-int FileWriterBase::Execute()
+int FileWriterBase::OnExecute()
 {
-  OSMutex::Lock lock( mMutex );
-  while( !IsTerminating() || !mSignalQueue.empty() )
+  while( !IsTerminating() )
   {
-    if( !IsTerminating() && mSignalQueue.empty() )
+    while( mQueue.AwaitConsumption() )
     {
-      OSMutex::Unlock unlock( mMutex );
-      mEvent.Wait();
-      mEvent.Reset();
-    }
-    while( !mSignalQueue.empty() )
-    {
-      GenericSignal signal = mSignalQueue.front();
-      bciassert( !mStateVectorQueue.empty() );
-      StateVector stateVector = mStateVectorQueue.front();
-      mSignalQueue.pop();
-      mStateVectorQueue.pop();
-      OSMutex::Unlock unlock( mMutex );// Allow queue buffering during file writes (which may block).
-      mrOutputFormat.Write( mOutputFile, signal, stateVector );
+      mrOutputFormat.Write( mOutputFile, mQueue.Consumable().first, mQueue.Consumable().second );
+      mQueue.Consume();
     }
     if( !mOutputFile )
     {

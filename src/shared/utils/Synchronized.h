@@ -71,14 +71,14 @@ template<class T> class Synchronized<T*>
   operator T*() const { return Get(); }
   T* operator->() { return Get(); }
   const T* operator->() const { return Get(); }
+  Atomic_::Pointer<T> Atomic() { return Atomic_::Pointer<T>( mPointer ); }
  private:
   T* Get() const { MemoryFence(); return const_cast<T*>( mPointer ); }
   T* Set( T* t ) { mPointer = t; MemoryFence(); return t; }
   T* volatile mPointer;
 };
 
-} // namespace bci
-
+} // namespace
 using bci::Synchronized;
 
 #endif // SYNCHRONIZED_H

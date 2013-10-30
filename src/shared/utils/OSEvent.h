@@ -33,6 +33,7 @@
 #endif // _WIN32
 
 #include "Uncopyable.h"
+#include "Synchronized.h"
 
 class OSEvent : private Uncopyable
 {
@@ -44,7 +45,7 @@ class OSEvent : private Uncopyable
 
   bool Set();
   bool Reset();
-  bool Wait( int timeout_ms = cInfiniteTimeout );
+  bool Wait( int timeout_ms = cInfiniteTimeout ) const;
 
  private:
 #if _WIN32
@@ -52,7 +53,7 @@ class OSEvent : private Uncopyable
 #else // _WIN32
   pthread_cond_t  mCond;
   pthread_mutex_t mMutex;
-  bool            mSignaled;
+  Synchronized<bool> mSignaled;
 #endif // _WIN32
 };
 

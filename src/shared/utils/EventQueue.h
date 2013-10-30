@@ -1,12 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A thread-safe event queue, implemented as a linked
-//   list.
+// Description: A thread-safe event queue.
 //   An event is defined by a string description, and a time stamp.
-//   Any thread may insert/remove events at any time.
-//   We assume new/delete to be thread-safe for structs without
-//   constructors.
 //
 // $BEGIN_BCI2000_LICENSE$
 // 
@@ -31,45 +27,30 @@
 #ifndef EVENT_QUEUE_H
 #define EVENT_QUEUE_H
 
-#include "Lockable.h"
+#include "SynchronizedQueue.h"
 #include "PrecisionTime.h"
 
-class EventQueue : public Lockable<>
+class EventQueue : private SynchronizedQueue< std::pair<char*, PrecisionTime> >
 {
  public:
   EventQueue()
-    : mpFront( NULL ),
-      mpBack( NULL ),
-      mEventsAllowed( false )
+    : mEventsAllowed( false )
     {}
-  ~EventQueue()
-    { Clear(); }
   void AllowEvents()
-    { ::Lock lock( this ); mEventsAllowed = true; }
+    { mEventsAllowed = true; }
   void DenyEvents()
-    { ::Lock lock( this ); mEventsAllowed = false; }
+    { mEventsAllowed = false; }
   bool IsEmpty()
-    { return mpFront == NULL; }
-  void Clear()
-    { ::Lock lock( this ); while( !IsEmpty() ) PopFront(); }
+    { return empty(); }
   void PushBack( const char* inDescriptor, PrecisionTime );
   void PopFront();
   const char* FrontDescriptor() const
-    { return mpFront->mpDescriptor; }
+    { return front().first; }
   PrecisionTime FrontTimeStamp() const
-    { return mpFront->mTimeStamp; }
+    { return front().second; }
 
  private:
-  struct Entry
-  {
-    char*         mpDescriptor;
-    PrecisionTime mTimeStamp;
-    Entry*        mpNext;
-  };
-
-  Entry* mpFront,
-       * mpBack;
-  bool mEventsAllowed;
+  Synchronized<bool> mEventsAllowed;
 };
 
 #endif // EVENT_QUEUE_H

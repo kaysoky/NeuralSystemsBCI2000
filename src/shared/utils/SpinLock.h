@@ -31,6 +31,7 @@
 #include "Synchronized.h"
 #include "ThreadUtils.h"
 #include "Uncopyable.h"
+#include "BCIException.h"
 
 namespace bci
 {
@@ -39,21 +40,30 @@ class SpinLock : Uncopyable
 {
  public:
   SpinLock()
-    : mLocked( false )
+  : mLocked( 0 )
   {}
+  ~SpinLock()
+  {
+    if( mLocked )
+      throw std_logic_error( "Deleting a lock while it is being held" );
+  }
   bool Acquire() const
   {
     if( mLocked && ThreadUtils::ThreadID() == mHolder )
-      return true;
+      return ++mLocked;
     while( mLocked ) {};
     mHolder = ThreadUtils::ThreadID();
-    mLocked = true;
+    mLocked = 1;
     return true;
   }
   bool Release() const
   {
-    mLocked = false;
-    return true;
+    if( mLocked && ThreadUtils::ThreadID() == mHolder )
+    {
+      --mLocked;
+      return true;
+    }
+    return false;
   }
 
   class Lock
@@ -66,7 +76,7 @@ class SpinLock : Uncopyable
   };
 
  private:
-  mutable Synchronized<bool> mLocked;
+  mutable Synchronized<int> mLocked;
   mutable ThreadUtils::ThreadID mHolder;
 };
 

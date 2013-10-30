@@ -1,12 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A thread-safe event queue, implemented as a linked
-//   list.
+// Description: A thread-safe event queue.
 //   An event is defined by a string description, and a time stamp.
-//   Any thread may insert/remove events at any time.
-//   We assume new/delete to be thread-safe for structs without
-//   constructors.
 //
 // $BEGIN_BCI2000_LICENSE$
 //
@@ -41,17 +37,10 @@ void
 EventQueue::PushBack( const char* inDescriptor, PrecisionTime inTimeStamp )
 {
   size_t descLen = ::strlen( inDescriptor ) + 1;
-  Entry* pEntry = new Entry;
-  pEntry->mpDescriptor = new char[descLen];
-  ::memcpy( pEntry->mpDescriptor, inDescriptor, descLen );
-  pEntry->mTimeStamp = inTimeStamp;
-  pEntry->mpNext = NULL;
-  ::Lock lock( this );
-  if( mpBack != NULL )
-    mpBack->mpNext = pEntry;
-  mpBack = pEntry;
-  if( mpFront == NULL )
-    mpFront = mpBack;
+  char* pDesc = new char[descLen];
+  ::memcpy( pDesc, inDescriptor, descLen );
+  push( make_pair( pDesc, inTimeStamp ) );
+
   if( !mEventsAllowed ) // Defer test to avoid loss of memory references.
     throw std_runtime_error(
       "No events allowed when receiving \"" << inDescriptor << "\" event "
@@ -62,15 +51,7 @@ EventQueue::PushBack( const char* inDescriptor, PrecisionTime inTimeStamp )
 void
 EventQueue::PopFront()
 {
-  Entry* pEntry = NULL;
-  {
-    ::Lock lock( this );
-    pEntry = mpFront;
-    mpFront = pEntry->mpNext;
-    if( mpFront == NULL )
-      mpBack = NULL;
-  }
-  delete[] pEntry->mpDescriptor;
-  delete pEntry;
+  delete[] front().first;
+  pop();
 }
 

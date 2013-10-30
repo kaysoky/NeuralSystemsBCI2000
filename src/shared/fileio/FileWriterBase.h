@@ -29,13 +29,12 @@
 
 #include "GenericFileWriter.h"
 #include "GenericOutputFormat.h"
+#include "SynchronizedQueue.h"
 
 #include <string>
 #include <fstream>
 #include <queue>
 #include "OSThread.h"
-#include "OSMutex.h"
-#include "OSEvent.h"
 
 class FileWriterBase: public GenericFileWriter, OSThread
 {
@@ -55,16 +54,13 @@ class FileWriterBase: public GenericFileWriter, OSThread
                       const StateVector&   Statevector );
 
  private:
-  virtual int Execute();
+  virtual int OnExecute();
 
   GenericOutputFormat&     mrOutputFormat;
   std::string              mFileName;
   std::ofstream            mOutputFile;
+  SynchronizedQueue< std::pair<GenericSignal, StateVector> > mQueue;
 
-  std::queue<GenericSignal> mSignalQueue;
-  std::queue<StateVector>   mStateVectorQueue;
-  OSMutex mMutex;
-  OSEvent mEvent;
 };
 
 #endif // FILE_WRITER_BASE_H

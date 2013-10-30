@@ -60,7 +60,6 @@ MessageQueue::QueueMessage( std::istream& is )
     }
     if( is )
     {
-      ::Lock lock( this );
       this->push( entry );
     }
     else
@@ -78,14 +77,12 @@ MessageQueue::QueueMessage( std::istream& is )
 bool
 MessageQueue::Empty() const
 {
-  ::Lock lock( this );
   return this->empty();
 }
 
 MessageQueueEntry
 MessageQueue::Next()
 {
-  ::Lock lock( this );
   MessageQueueEntry result = this->front();
   this->pop();
   return result;

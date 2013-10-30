@@ -27,8 +27,7 @@
 #define MESSAGE_QUEUE_H
 
 #include <iostream>
-#include <queue>
-#include "Lockable.h"
+#include "SynchronizedQueue.h"
 
 struct MessageQueueEntry
 {
@@ -37,7 +36,7 @@ struct MessageQueueEntry
   char*  message;
 };
 
-class MessageQueue : public Lockable<>, private std::queue<MessageQueueEntry>
+class MessageQueue : private SynchronizedQueue<MessageQueueEntry>
 {
  public:
   void QueueMessage( std::istream& );

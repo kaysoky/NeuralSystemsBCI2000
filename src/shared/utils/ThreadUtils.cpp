@@ -41,9 +41,8 @@ using namespace ThreadUtils;
 
 #if _WIN32
 
-#undef Yield
 void
-ThreadUtils::Yield()
+ThreadUtils::Yield_()
 {
   ::Sleep( 0 );
 }
@@ -82,7 +81,7 @@ ThreadID::operator==( const ThreadID& inOther ) const
 #else // _WIN32
 
 void
-ThreadUtils::Yield()
+ThreadUtils::Yield_()
 {
   ::pthread_yield();
 }
@@ -134,3 +133,10 @@ ThreadUtils::SleepUntil( PrecisionTime inWakeupTime )
 {
   SleepFor( PrecisionTime::SignedDiff( inWakeupTime, PrecisionTime::Now() ) );
 }
+
+bool
+ThreadID::operator!=( const ThreadID& inOther ) const
+{
+  return mValid && inOther.mValid && !operator==( inOther );
+}
+

@@ -28,17 +28,15 @@
 
 #include "PrecisionTime.h"
 
-#ifdef Yield
-# undef Yield
-#endif
-
 namespace ThreadUtils
 {
 
 bool InMainThread();
 
  // yield to other threads
-void Yield();
+void Yield_();
+#undef Yield
+inline void Yield() { Yield_(); }
  // sleep for milliseconds
 void SleepFor( int ms );
 // sleep until absolute wakeup time
@@ -52,8 +50,7 @@ class ThreadID
   ThreadID( bool initFromCurrentThread = true );
   ~ThreadID();
   bool operator==( const ThreadID& ) const;
-  bool operator!=( const ThreadID& id ) const
-    { return !( *this == id ); }
+  bool operator!=( const ThreadID& ) const;
  private:
   void* mData;
   bool mValid;

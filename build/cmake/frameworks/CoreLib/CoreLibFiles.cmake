@@ -105,6 +105,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/utils/NumericConstants.h
   ${PROJECT_SRC_DIR}/shared/utils/Atomic.h
   ${PROJECT_SRC_DIR}/shared/utils/Synchronized.h
+  ${PROJECT_SRC_DIR}/shared/utils/SynchronizedQueue.h
   ${PROJECT_SRC_DIR}/shared/utils/SpinLock.h
 )
 

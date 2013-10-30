@@ -56,11 +56,13 @@ ReusableThread::Run( Runnable& inRunnable )
 {
   if( !mAlive )
     throw std_runtime_error( "Thread is no longer available for execution" );
-  SpinLock::Lock _( mLock );
-  if( mpRunnable )
-    return false;
-  mpRunnable = &inRunnable;
-  mFinishedEvent.Reset();
+  {
+    SpinLock::Lock _( mLock );
+    if( mpRunnable )
+      return false;
+    mpRunnable = &inRunnable;
+    mFinishedEvent.Reset();
+  }
   mStartEvent.Set();
   return true;
 }

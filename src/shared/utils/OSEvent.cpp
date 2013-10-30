@@ -63,7 +63,9 @@ bool
 OSEvent::Set()
 {
 #if _WIN32
-  return ::SetEvent( mHandle );
+  if( !::SetEvent( mHandle ) )
+    throw std_runtime_error( OSError().Message() );
+  return true;
 #else // _WIN32
   ::pthread_mutex_lock( &mMutex );
   mSignaled = true;
@@ -89,7 +91,7 @@ OSEvent::Reset()
 }
 
 bool
-OSEvent::Wait( int inTimeoutMs )
+OSEvent::Wait( int inTimeoutMs ) const
 {
 #if _WIN32
   DWORD timeout = inTimeoutMs >= 0 ? inTimeoutMs : INFINITE;
@@ -109,11 +111,14 @@ OSEvent::Wait( int inTimeoutMs )
   return result;
 #else // _WIN32
   int result = 0;
-  ::pthread_mutex_lock( &mMutex );
   if( inTimeoutMs < 0 )
   {
     while( !mSignaled )
+    {
+     ::pthread_mutex_lock( &mMutex );
       result = ::pthread_cond_wait( &mCond, &mMutex );
+     ::pthread_mutex_unlock( &mMutex );
+    }
   }
   else
   {
@@ -123,9 +128,12 @@ OSEvent::Wait( int inTimeoutMs )
     timeout.tv_sec = now.tv_sec + inTimeoutMs / 1000;
     timeout.tv_nsec = now.tv_usec * 1000 + ( inTimeoutMs % 1000 ) * 1000000;
     while( result == 0 && !mSignaled )
+    {
+     ::pthread_mutex_lock( &mMutex );
       result = ::pthread_cond_timedwait( &mCond, &mMutex, &timeout );
+     ::pthread_mutex_unlock( &mMutex );
+    }
   }
-  ::pthread_mutex_unlock( &mMutex );
   return result == 0;
 #endif // _WIN32
 }
