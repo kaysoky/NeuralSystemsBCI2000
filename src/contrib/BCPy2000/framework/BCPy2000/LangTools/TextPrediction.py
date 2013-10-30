@@ -101,7 +101,7 @@ class Decoder(object):
 	def __init__(self, choices,    mapping=None, labels=None,
 	                   context='', model=None, verbose=None,
 	                   threshold=1.0, min_epochs=1, max_epochs=None, 
-	                   minprob=None, exponent=1.0):
+	                   minprob=None, exponent=1.0, cromwell=0.01):
 		"""
 		<choices> is a list of N possible choices. The element values are
 		arbitrary here, having meaning only to the interface which calls this.
@@ -126,6 +126,7 @@ class Decoder(object):
 		self.L = 0
 		self.minprob = minprob
 		self.exponent = exponent
+		self.cromwell = cromwell
 		self.verbose = verbose
 		if self.verbose == None: self.verbose = getattr(self.model, 'verbose', 0)
 
@@ -175,6 +176,7 @@ class Decoder(object):
 	##########################################################################################
 
 	def new_transmission(self, p, force_answer=False):
+		p = max(self.cromwell, min(1.0 - self.cromwell, p))
 		self.probs.append(p)
 		while len(self.cols) and len(self.probs) and (self.max_epochs == None or self.L < self.max_epochs):
 			pj = self.probs.pop(0)
