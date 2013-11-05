@@ -51,6 +51,7 @@ def ClassifyERPs (
 		classes=None,
 		folds=None,
 		time_window=None,
+		keeptrials=None,
 	):
 
 	file_inventory = []
@@ -67,6 +68,10 @@ def ClassifyERPs (
 
 	x = d['x']
 	y = numpy.array(d['y'].flat)
+	if keeptrials != None:
+		x = x[numpy.asarray(keeptrials), :, :]
+		y = y[numpy.asarray(keeptrials)]
+		
 	if time_window != None:
 		fs = d['fs']
 		t = SigTools.samples2msec(numpy.arange(x.shape[2]), fs)
