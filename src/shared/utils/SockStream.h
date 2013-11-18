@@ -48,20 +48,14 @@
 #else
 # include <netinet/in.h>
 # define SOCKET int
-# ifdef __GNUC__
-#  if __GNUC__ < 3
-#   define IN_AVAIL_BROKEN
-//  In the STL shipped with older gcc versions, streambuf::in_avail() does not call
-//  streambuf::showmanyc() as it should.
-//  Replacing in_avail() with showmanyc() should be logically correct for all streambufs
-//  (though it might adversely affect performance).
-#  endif
-# endif  // __GNUC__
 #endif // _WIN32
 
 #include <string>
 #include <iostream>
+#include <vector>
 #include <set>
+#include <list>
+#include <cassert>
 
 class streamsock
 {
@@ -98,17 +92,27 @@ class streamsock
                 { return wait_for_write( 0 ); }
     bool        wait_for_write( int timeout = defaultTimeout, bool return_on_accept = false );
 
+    size_t      max_msg_size() const { return m_max_msg_size; }
     size_t      read( char* buffer, size_t count );
     size_t      write( const char* buffer, size_t count );
 
-    typedef std::set<streamsock*> set_of_instances;
+    enum { ok, retry, fatal };
+    static int check_result( int );
+
+    struct set_of_instances : std::vector<streamsock*>
+    {
+      iterator find( streamsock* s ) { for( iterator i = begin(); i != end(); ++i ) if( *i == s ) return i; return end(); }
+      void insert( streamsock* s ) { if( find(s) == end() ) push_back( s ); }
+      void erase( streamsock* s ) { for( iterator i = find(s); i != end(); i = find(s) ) std::vector<streamsock*>::erase(i); }
+    };
     // These functions block until the given sockets are prepared to read or write.
-    static bool wait_for_read( const set_of_instances&,
+    static bool wait_for_read( set_of_instances&,
                                int timeout = defaultTimeout,
                                bool return_on_accept = false );
-    static bool wait_for_write( const set_of_instances&,
+    static bool wait_for_write( set_of_instances&,
                                 int timeout = defaultTimeout,
                                 bool return_on_accept = false );
+    static void sleep( int );
 
     struct ip_compare
     { bool operator()( const std::string&, const std::string& ); };
@@ -121,21 +125,25 @@ class streamsock
   private:
     virtual void do_open() = 0;
     virtual void do_accept() {}
-    bool         set_address( const std::string& address );
-    bool         set_address( const std::string& ip, unsigned short port );
+    void init();
+    bool set_address( const std::string& address );
+    bool set_address( const std::string& ip, unsigned short port );
+
+    static bool select( streamsock**, size_t,
+                        streamsock**, size_t,
+                        int timeout,
+                        bool return_on_accept = false );
 
   protected:
     virtual void set_socket_options();
     void         update_address();
 
   protected:
-    SOCKET  m_handle;
-    bool    m_listening;
+    SOCKET      m_handle;
+    bool        m_listening;
     sockaddr_in m_address;
-
-  // static members
-  private:
-    static int s_instance_count;
+    size_t      m_max_msg_size;
+    bool        m_ready_to_read, m_ready_to_write, m_conn_reset;
 };
 
 class tcpsocket : public streamsock
@@ -213,13 +221,6 @@ class sending_udpsocket : public streamsock
 
 class sockbuf : public std::streambuf
 {
-    enum
-    {
-      // Use 512 as a small buffer size to trigger bugs with messages that exceed it.
-      // For efficient operation, use something like 64k.
-      c_buf_size = 64 * 1024,
-    };
-
   public:
     sockbuf();
     virtual ~sockbuf();
@@ -227,28 +228,104 @@ class sockbuf : public std::streambuf
              { m_timeout = t; }
     int      get_timeout() const
              { return m_timeout; }
-    bool     is_open() const
-             { return m_socket && m_socket->connected(); }
+    void     set_allocation_limit( size_t limit )
+             { m_allocation_limit = limit; }
+    size_t   get_allocation_limit() const
+             { return m_allocation_limit; }
+    bool     is_open()
+             { return socket_connected(); }
     sockbuf* open( streamsock& s )
              { m_socket = &s; return this; }
     sockbuf* close()
              { m_socket = NULL; return this; }
 
-#ifdef IN_AVAIL_BROKEN
-  public:
-#else
+    std::ostream& debug_print( std::ostream& );
+
   protected:
-#endif // IN_AVAIL_BROKEN
     virtual std::streamsize showmanyc();           // Called from streambuf::in_avail().
-
-  protected:
     virtual std::ios::int_type underflow();        // Called from read operations if empty.
+    virtual std::streamsize xsgetn( char*, std::streamsize );
     virtual std::ios::int_type overflow( int c );  // Called if write buffer is filled.
+    virtual std::streamsize xsputn( const char*, std::streamsize );
     virtual int sync();                            // Called from iostream::flush().
+    virtual std::streampos seekoff( std::streamoff, std::ios_base::seekdir, std::ios_base::openmode );
 
   protected:
+    virtual size_t send_bufsize() const;
+    virtual size_t recv_bufsize() const;
+
+    virtual void socket_sync( bool ) {}
+    virtual void pbuf_lock( bool ) {}
+    virtual void pbuf_sync( bool ) {}
+    virtual void gbuf_lock( bool ) {}
+    virtual void gbuf_sync( bool ) {}
+
+    virtual int write_to_socket( int );
+    virtual int read_from_socket( int );
+
+  private:
+    bool socket_connected();
+    bool socket_can_read();
+    bool socket_can_write();
+
+    bool ensure_write_buffer();
+    std::streamsize check_read_buffer();
+    std::streamsize check_for_data( int );
+
+    typedef void (sockbuf::*lockfun)(bool);
+    template<lockfun F> class lock
+    {
+     public:
+      lock( sockbuf* s ) : mp_s( s ) { (mp_s->*F)(true); }
+      ~lock() { (mp_s->*F)(false); }
+     private:
+      sockbuf* mp_s;
+    };
+    template<lockfun> friend class lock;
+    typedef lock<&sockbuf::socket_sync> sync_socket;
+    typedef lock<&sockbuf::pbuf_sync> sync_pbuf;
+    typedef lock<&sockbuf::pbuf_lock> lock_pbuf;
+    typedef lock<&sockbuf::gbuf_sync> sync_gbuf;
+    typedef lock<&sockbuf::gbuf_lock> lock_gbuf;
+
+    struct buffer
+    {
+      buffer* next;
+      char* data;
+      size_t write_count, read_count;
+      bool done;
+      buffer()
+        : m_size( 0 ), next( 0 ), data( 0 ), write_count( 0 ), read_count( 0 ), done( false ) {}
+      ~buffer()
+        { next = 0; allocate( 0 ); }
+      size_t size() const
+        { return m_size; }
+      void allocate( size_t s )
+        { delete[] data; data = 0; m_size = s; if( m_size ) data = new char[m_size]; }
+     private:
+      buffer& operator=( buffer& );
+      size_t m_size;
+    };
+    struct buffers
+    {
+      buffers();
+      ~buffers();
+      buffer* advance_read();
+      buffer* advance_write( size_t );
+      buffer* read, *write;
+      size_t bytes_used() const;
+      size_t bytes_allocated() const;
+      buffers& gc();
+    };
+    int send( buffer* );
+    int recv( buffer* );
+
     streamsock* m_socket;
-    int         m_timeout;
+    int m_timeout;
+    size_t m_allocation_limit;
+    buffers m_pbufs, m_gbufs;
+    std::streampos m_pbase_pos, m_eback_pos;
+    int m_short_reads, m_short_writes;
 };
 
 class sockstream : public std::iostream
@@ -258,27 +335,23 @@ class sockstream : public std::iostream
     sockstream& operator=( const sockstream& );
 
   public:
-    sockstream();
+    explicit sockstream( sockbuf* = 0 );
     explicit sockstream( streamsock& );
     virtual ~sockstream()
-             {}
+             { delete owned_buf; }
     operator void*()
              { return std::iostream::operator void*(); }
     void     set_timeout( int t )
-             { buf.set_timeout( t ); }
+             { buf->set_timeout( t ); }
     int      get_timeout() const
-             { return buf.get_timeout(); }
+             { return buf->get_timeout(); }
     bool     is_open() const
-             { return buf.is_open(); }
+             { return buf->is_open(); }
     void     open( streamsock& );
     void     close();
 
   private:
-    sockbuf buf;
+    sockbuf* owned_buf, *buf;
 };
-
-#ifdef IN_AVAIL_BROKEN
-# define in_avail showmanyc
-#endif // IN_AVAIL_BROKEN
 
 #endif // SOCK_STREAM_H

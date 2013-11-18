@@ -44,6 +44,9 @@
 
 #ifdef _WIN32
 # define socklen_t int
+# undef errno
+# define errno WSAGetLastError()
+# define EINTR WSAEINTR
 #else
 # include <unistd.h>
 # include <sys/socket.h>
@@ -54,11 +57,6 @@
 # define INVALID_SOCKET   (SOCKET)( ~0 )
 # define SOCKET_ERROR     ( -1 )
 # define closesocket( s ) close( s )
-# ifdef __GNUC__
-#  if __GNUC__ < 3
-#   define EMULATE_TRAITS_TYPE
-#  endif
-# endif  // __GNUC__
 #endif   // _WIN32
 
 #ifndef IPPROTO_TCP
@@ -69,20 +67,16 @@
 # define IPPROTO_UDP 0
 #endif
 
+#if defined(NDEBUG)
+# define SOCKCALL(x) (x);
+#else
+# define SOCKCALL(x) assert(!(x<0));
+#endif
+
 #include <string>
 #include <sstream>
 #include <algorithm>
 #include <cstring>
-
-#ifdef EMULATE_TRAITS_TYPE
-# define traits_type char_traits
-struct char_traits
-{
-  static int  eof()                        { return EOF; }
-  static char not_eof( const int& i )      { return i == EOF ? 0 : i; }
-  static int  to_int_type( const char& c ) { return *reinterpret_cast<const unsigned char*>( &c ); }
-};
-#endif // EMULATE_TRAITS_TYPE
 
 namespace {
 
@@ -101,51 +95,83 @@ class Timeout
   ::timeval mTimeout, *mpTimeout;
 };
 
+int GlobalInit()
+{
+  static struct Init
+  {
+    Init() : error( 0 )
+    {
+#if _WIN32
+      ::WSADATA ignored;
+      if( ::WSAStartup( 2, &ignored ) )
+        error = -1;
+#endif
+    }
+    ~Init()
+    {
+#if _WIN32
+      ::WSACleanup();
+#endif
+    }
+    int error;
+  } init;
+  return init.error;
+}
+
 } // namespace
 
 using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 // streamsock definitions
 ////////////////////////////////////////////////////////////////////////////////
-int streamsock::s_instance_count = 0;
+static int init = GlobalInit();
 
 streamsock::streamsock()
 : m_handle( INVALID_SOCKET ),
-  m_listening( false )
+  m_listening( false ),
+  m_max_msg_size( 0 ),
+  m_ready_to_read( false ),
+  m_ready_to_write( false ),
+  m_conn_reset( false )
 {
-#ifdef _WIN32
-  if( s_instance_count < 1 )
-  {
-    ::WSADATA ignored;
-    ::WSAStartup( 2, &ignored );
-  }
-#endif // _WIN32
-  ++s_instance_count;
+  init();
+  SOCKCALL( GlobalInit() );
 }
 
 streamsock::~streamsock()
 {
   close();
-
-  --s_instance_count;
-#ifdef _WIN32
-  if( s_instance_count < 1 )
-    ::WSACleanup();
-#endif // _WIN32
 }
 
 void
 streamsock::open( const std::string& address )
 {
   if( set_address( address ) )
+  {
+    init();
     do_open();
+  }
 }
 
 void
 streamsock::open( const std::string& ip, unsigned short port )
 {
   if( set_address( ip, port ) )
+  {
+    init();
     do_open();
+  }
+}
+
+void
+streamsock::init()
+{
+  m_handle = INVALID_SOCKET;
+  m_listening = false;
+  m_max_msg_size = 0;
+  m_ready_to_read = false;
+  m_ready_to_write = false;
+  m_conn_reset = false;
 }
 
 bool
@@ -268,6 +294,8 @@ streamsock::is_open() const
 {
   if( m_handle == INVALID_SOCKET )
     return false;
+  if( m_conn_reset )
+    return false;
   int err = 0;
   socklen_t err_size = sizeof( err );
   if( ::getsockopt( m_handle, SOL_SOCKET, SO_ERROR, ( char* )&err, &err_size ) || err )
@@ -278,15 +306,7 @@ streamsock::is_open() const
 bool
 streamsock::connected()
 {
-  bool connected = !m_listening;
-  if( connected && is_open() && can_read() )
-  {
-    // Check for a connection reset by the peer.
-    char c;
-    int result = ::recv( m_handle, &c, sizeof( c ), MSG_PEEK );
-    connected = ( result > 0 && result != SOCKET_ERROR );
-  }
-  return connected && is_open();
+  return !m_listening && is_open();
 }
 
 void
@@ -300,145 +320,220 @@ streamsock::close()
 bool
 streamsock::wait_for_read( int timeout, bool return_on_accept )
 {
-  set_of_instances sockets;
-  sockets.insert( this );
-  return wait_for_read( sockets, timeout, return_on_accept );
+  streamsock* p = this;
+  return m_ready_to_read || select( &p, 1, 0, 0 ,timeout, return_on_accept );
 }
 
 bool
 streamsock::wait_for_write( int timeout, bool return_on_accept )
 {
-  set_of_instances sockets;
-  sockets.insert( this );
-  return wait_for_write( sockets, timeout, return_on_accept );
+  streamsock* p = this;
+  return m_ready_to_write || select( 0, 0, &p, 1, timeout, return_on_accept );
 }
 
 bool
-streamsock::wait_for_read( const streamsock::set_of_instances& inSockets,
-                           int   inTimeout,
+streamsock::select( streamsock** in_readers, size_t in_nreaders,
+                    streamsock** in_writers, size_t in_nwriters,
+                           int   in_timeout,
                            bool  return_on_accept )
 {
-  Timeout timeout( inTimeout );
-  int max_fd = -1;
-  ::fd_set readfds;
-  FD_ZERO( &readfds );
-  for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
-    if( ( *i )->m_handle != INVALID_SOCKET )
-    {
-      max_fd = max( max_fd, int( ( *i )->m_handle ) );
-      FD_SET( ( *i )->m_handle, &readfds );
-    }
-  if( max_fd < 0 )
-  {
-    if( inTimeout >= 0 )
-    {
-#ifdef  _WIN32  // Achieve similar behavior for empty sets/invalid sockets across platforms.
-      ::Sleep( inTimeout );
-#else
-      ::select( 0, NULL, NULL, NULL, timeout );
-#endif
-    }
-    return false;
-  }
-  int result = ::select( max_fd + 1, &readfds, NULL, NULL, timeout );
-  if( result > 0 )
-  {
-    for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
-      if( ( *i )->m_listening && FD_ISSET( ( *i )->m_handle, &readfds ) )
-      {
-        ( *i )->do_accept();
-        if( !return_on_accept )
-          --result;
-      }
-    if( result < 1 )
-      result = wait_for_read( inSockets, inTimeout );
-  }
-  return result > 0;
-}
-
-bool
-streamsock::wait_for_write( const streamsock::set_of_instances& inSockets,
-                            int inTimeout,
-                            bool return_on_accept )
-{
-  Timeout timeout( inTimeout );
   int max_fd = -1;
   ::fd_set writefds,
            readfds;
   FD_ZERO( &writefds );
   FD_ZERO( &readfds );
-  for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
-    if( ( *i )->m_handle != INVALID_SOCKET )
-    {
-      max_fd = max( max_fd, int( ( *i )->m_handle ) );
-      FD_SET( ( *i )->m_handle, &writefds );
-      if( ( *i )->m_listening )
-        FD_SET( ( *i )->m_handle, &readfds );
-    }
-  if( max_fd < 0 )
+  for( size_t i = 0; i < in_nreaders; ++i )
   {
-    if( inTimeout >= 0 )
+    const streamsock* s = in_readers[i];
+    if( s->m_handle != INVALID_SOCKET )
     {
-#ifdef  _WIN32  // Achieve similar behavior for empty sets/invalid sockets across platforms.
-      ::Sleep( inTimeout );
-#else
-      ::select( 0, NULL, NULL, NULL, timeout );
-#endif
+      max_fd = max( max_fd, int( s->m_handle ) );
+      FD_SET( s->m_handle, &readfds );
     }
-    return false;
   }
-  int result = ::select( max_fd + 1, &readfds, &writefds, NULL, timeout );
+  for( size_t i = 0; i < in_nwriters; ++i )
+  {
+    const streamsock* s = in_writers[i];
+    if( s->m_handle != INVALID_SOCKET )
+    {
+      max_fd = max( max_fd, int( s->m_handle ) );
+      FD_SET( s->m_handle, &writefds );
+      if( s->m_listening )
+        FD_SET( s->m_handle, &readfds );
+    }
+  }
+  int result = 0;
+  bool keep_trying = true;
+  if( max_fd < 0 )
+    streamsock::sleep( in_timeout );
+  else
+  {
+    Timeout t( in_timeout );
+    while( keep_trying )
+    {
+      result = ::select( max_fd + 1, &readfds, &writefds, NULL, t );
+      keep_trying = ( check_result( result ) == retry );
+    }
+  }
   if( result > 0 )
   {
-    for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
-      if( ( *i )->m_listening && FD_ISSET( ( *i )->m_handle, &readfds ) )
+    streamsock** sets[] = { in_readers, in_writers };
+    size_t counts[] = { in_nreaders, in_nwriters };
+    for( size_t i = 0; i < sizeof( sets ) / sizeof( *sets ); ++i )
+    {
+      for( streamsock** p = sets[i]; p < sets[i] + counts[i]; ++p )
       {
-        ( *i )->do_accept();
-        if( !return_on_accept )
-          --result;
+        streamsock* s = *p;
+        if( FD_ISSET( s->m_handle, &readfds ) )
+        {
+          if( s->m_listening )
+          {
+            s->do_accept();
+            if( !return_on_accept )
+              --result;
+          }
+          else
+            s->m_ready_to_read = true;
+        }
+        if( FD_ISSET( s->m_handle, &writefds ) )
+          s->m_ready_to_write = true;
       }
+    }
     if( result < 1 )
-      result = wait_for_write( inSockets, inTimeout );
+      result = streamsock::select( in_readers, in_nreaders, in_writers, in_nwriters, in_timeout );
   }
   return result > 0;
+}
+
+void
+streamsock::sleep( int in_timeout )
+{
+  if( in_timeout < 0 )
+    return;
+
+#if  _WIN32  // Achieve similar behavior for empty sets/invalid sockets across platforms.
+      ::Sleep( in_timeout );
+#else
+      ::select( 0, NULL, NULL, NULL, Timeout( in_timeout ) );
+#endif
+}
+
+int
+streamsock::check_result( int result )
+{
+  if( result >= 0 )
+    return ok;
+
+  switch( errno )
+  {
+#if _WIN32
+    case WSAEINPROGRESS:
+#endif
+    case EINTR:
+      return retry;
+  }
+  return fatal;
+}
+
+bool
+streamsock::wait_for_read( streamsock::set_of_instances& sockets,
+                           int   timeout,
+                           bool  return_on_accept )
+{
+  streamsock** s = sockets.empty() ? 0 : &sockets[0];
+  return select( s, sockets.size(), 0, 0, timeout, return_on_accept );
+}
+
+bool
+streamsock::wait_for_write( streamsock::set_of_instances& sockets,
+                           int   timeout,
+                           bool  return_on_accept )
+{
+  streamsock** s = sockets.empty() ? 0 : &sockets[0];
+  return select( 0, 0, s, sockets.size(), timeout, return_on_accept );
 }
 
 size_t
 streamsock::read( char* buffer, size_t count )
 {
-  int result = ::recv( m_handle, buffer, static_cast<int>( count ), 0 );
-  if( result == SOCKET_ERROR || result < 1 && count > 0 ) // Connection has been reset or closed.
+  assert( m_max_msg_size == 0 || count >= m_max_msg_size );
+  assert( buffer != 0 || count == 0 );
+  bool keep_trying = true;
+  int result = 0;
+  while( keep_trying )
   {
-    result = 0;
-    close();
+    result = ::recv( m_handle, buffer, static_cast<int>( count ), 0 );
+    int kind = check_result( result );
+    if( kind == ok && result == 0 && count > 0 )
+      kind = fatal;
+    switch( kind )
+    {
+      case ok:
+        keep_trying = false;
+        break;
+      case retry:
+        keep_trying = true;
+        break;
+      default:
+        keep_trying = false;
+        m_conn_reset = true;
+        result = 0;
+        close();
+    }
   }
+  m_ready_to_read = false;
   return result;
 }
 
 size_t
 streamsock::write( const char* buffer, size_t count )
 {
-  int result = ::send( m_handle, buffer, static_cast<int>( count ), 0 );
-  if( result == SOCKET_ERROR || result < 1 && count > 0 )
+  if( m_max_msg_size && m_max_msg_size < count )
+    count = m_max_msg_size;
+  bool keep_trying = true;
+  int result = 0;
+  while( keep_trying )
   {
-    result = 0;
-    close();
+    result = ::send( m_handle, buffer, static_cast<int>( count ), 0 );
+    switch( check_result( result ) )
+    {
+      case ok:
+        keep_trying = false;
+        break;
+      case retry:
+        keep_trying = true;
+        break;
+      default:
+        keep_trying = false;
+        m_conn_reset = true;
+        result = 0;
+        close();
+    }
   }
+  m_ready_to_write = false;
   return result;
 }
 
 void
 streamsock::set_socket_options()
 {
-#if 1 //ndef _WIN32
   if( m_handle != INVALID_SOCKET )
   {
-    struct linger val = { 0 };
-    val.l_onoff = 1;
-    val.l_linger = 0;
-    ::setsockopt( m_handle, SOL_SOCKET, SO_LINGER, reinterpret_cast<const char*>( &val ), sizeof( val ) );
+    int type = 0,
+        len = sizeof( type );
+    SOCKCALL( ::getsockopt( 
+      m_handle, SOL_SOCKET, SO_TYPE,
+      reinterpret_cast<char*>( &type ), &len )
+    );
+    switch( type )
+    {
+      case SOCK_DGRAM:
+        m_max_msg_size = 64 * 1024;
+        break;
+      default:
+        m_max_msg_size = 0;
+    }
   }
-#endif // _WIN32
 }
 
 void
@@ -447,9 +542,18 @@ tcpsocket::set_socket_options()
   streamsock::set_socket_options();
   if( m_handle != INVALID_SOCKET )
   {
+    struct linger linger_ = { 0 };
+    linger_.l_onoff = 1;
+    linger_.l_linger = 1;
+    SOCKCALL( ::setsockopt(
+      m_handle, SOL_SOCKET, SO_LINGER, 
+      reinterpret_cast<const char*>( &linger_ ), sizeof( linger_ ) )
+    );
     int val = m_tcpnodelay;
-    ::setsockopt( m_handle, IPPROTO_TCP, TCP_NODELAY,
-                        reinterpret_cast<const char*>( &val ), sizeof( val ) );
+    SOCKCALL( ::setsockopt(
+      m_handle, IPPROTO_TCP, TCP_NODELAY,
+      reinterpret_cast<const char*>( &val ), sizeof( val ) )
+     );
   }
 }
 
@@ -564,8 +668,10 @@ sending_udpsocket::set_socket_options()
   if( m_handle != INVALID_SOCKET )
   {
     int val = !::strcmp( ::inet_ntoa( m_address.sin_addr ), "255.255.255.255" ); // Broadcast address
-    ::setsockopt( m_handle, SOL_SOCKET, SO_BROADCAST,
-                        reinterpret_cast<const char*>( &val ), sizeof( val ) );
+    SOCKCALL( ::setsockopt(
+      m_handle, SOL_SOCKET, SO_BROADCAST,
+      reinterpret_cast<const char*>( &val ), sizeof( val ) )
+    );
   }
 }
 
@@ -593,44 +699,208 @@ sending_udpsocket::do_open()
 // sockbuf definitions
 ////////////////////////////////////////////////////////////////////////////////
 sockbuf::sockbuf()
-: m_socket( NULL ),
-  m_timeout( streamsock::infiniteTimeout )
+: m_socket( 0 ),
+  m_timeout( streamsock::infiniteTimeout ),
+  m_short_reads( 0 ),
+  m_short_writes( 0 ),
+  m_pbase_pos( 0 ),
+  m_eback_pos( 0 ),
+  m_allocation_limit( 0 )
 {
+  // The allocation limit should exceed the
+  // expected maximum size of a single
+  // message by a safe amount.
+  //
+  // Under normal circumstances, the exact
+  // value of the allocation limit does not
+  // have any influence on memory usage.
+  // Rather, it limits the amount of allocated
+  // memory in worst-case scenarios, to avoid
+  // worsening the situation by running into
+  // out-of-physical-memory problems.
+  m_allocation_limit = 16*1024*1024;
+  sync_gbuf _(this);
+  streambuf::setg( 0, 0, 0 );
+  sync_pbuf __(this);
+  streambuf::setp( 0, 0 );
 }
 
 sockbuf::~sockbuf()
 {
-  delete[] eback();
-  delete[] pbase();
+}
+
+bool
+sockbuf::socket_connected()
+{
+  sync_socket _(this);
+  return m_socket && m_socket->connected();
+}
+
+bool
+sockbuf::socket_can_read()
+{
+  sync_socket _(this);
+  return m_socket && m_socket->can_read();
+}
+
+bool
+sockbuf::socket_can_write()
+{
+  sync_socket _(this);
+  return m_socket && m_socket->can_write();
 }
 
 streamsize
 sockbuf::showmanyc()
 {
-  // Are there any data available in the streambuffer?
-  streamsize result = egptr() - gptr();
-  // Are there data waiting in the streamsock buffer?
-  if( result < 1 && m_socket && m_socket->can_read() && underflow() != traits_type::eof() )
-    result = egptr() - gptr();
-  return result;
+  read_from_socket( 0 );
+  streamsize count = check_read_buffer();
+  if( count < 1 )
+    count = socket_can_read() ? 1 : 0;
+  // In theory, we should return -1 to indicate failure if m_socket == 0,
+  // but that might break some existing code that checks for (in_avail() != 0).
+  return count;
 }
 
 ios::int_type
 sockbuf::underflow()
 {
-  if( sync() == traits_type::eof() )
-    return traits_type::eof();
-
-  if( !eback() )
+  if( !check_for_data( m_timeout ) )
   {
-    char* buf = new char[ c_buf_size ];
-    if( !buf )
-      return traits_type::eof();
-    setg( buf, buf, buf );
+    ++m_short_reads;
+    return traits_type::eof();
   }
+  sync_gbuf _(this);
+  return traits_type::to_int_type( *gptr() );
+}
 
-  ios::int_type result = traits_type::eof();
-  setg( eback(), eback(), eback() );
+ios::int_type
+sockbuf::overflow( int c )
+{
+  ios::int_type fail = traits_type::eof();
+  if( !is_open() )
+    throw "Not connected";
+  if( !ensure_write_buffer() )
+    throw "Could not allocate";
+
+  if( c != traits_type::eof() )
+  {
+    sync_pbuf _(this);
+    *pptr() = c;
+    pbump( 1 );
+  }
+  return traits_type::to_int_type( c );
+}
+
+streamsize
+sockbuf::xsgetn( char* p, streamsize n )
+{
+  streamsize count = 0;
+  while( count < n )
+  {
+    sync_gbuf _(this);
+    streamsize avail = check_for_data( m_timeout );
+    avail = min( n - count, avail );
+    if( avail <= 0 )
+    {
+      ++m_short_reads;
+      return count;
+    }
+    ::memcpy( p + count, gptr(), avail );
+    gbump( avail );
+    count += avail;
+  }
+  return count;
+}
+
+streamsize
+sockbuf::xsputn( const char* p, streamsize n )
+{
+  streamsize count = 0;
+  while( count < n )
+  {
+    overflow( traits_type::eof() );
+    sync_pbuf _(this);
+    size_t avail = min( n - count, epptr() - pptr() );
+    if( !avail )
+    {
+      ++m_short_writes;
+      return count;
+    }
+    ::memcpy( pptr(), p + count, avail );
+    pbump( avail );
+    count += avail;
+  }
+  return count;
+}
+
+int
+sockbuf::sync()
+{
+  if( !is_open() )
+    return traits_type::eof();
+  if( write_to_socket( m_timeout ) >= 0 )
+    return 0;
+  return traits_type::eof();
+}
+
+streampos
+sockbuf::seekoff( streamoff off, ios_base::seekdir way, ios_base::openmode which )
+{
+  const streampos fail = streamoff( -1 );
+  if( way != ios_base::cur || off != 0 )
+    return fail;
+  if( which & ios_base::out )
+  {
+    if( which & ios_base::in )
+      return fail;
+    if( m_pbase_pos < 0 )
+      return fail;
+    sync_pbuf _(this);
+    return m_pbase_pos + streamoff( pptr() - pbase() );
+  }
+  if( which & ios_base::in )
+  {
+    if( m_eback_pos < 0 )
+      return fail;
+    sync_gbuf _(this);
+    return m_eback_pos + streamoff( gptr() - eback() );
+  }
+  return fail;
+}
+
+size_t
+sockbuf::send_bufsize() const
+{
+  return 8 * 1024;
+}
+
+size_t
+sockbuf::recv_bufsize() const
+{
+  size_t s = send_bufsize();
+  if( m_socket && m_socket->max_msg_size() )
+    s = max( s, m_socket->max_msg_size() );
+  return s;
+}
+
+int
+sockbuf::send( buffer* pBuf )
+{
+  int sent = 0;
+  while( pBuf->read_count < pBuf->write_count && is_open() )
+  {
+    sync_pbuf _(this);
+    size_t count = m_socket->write( pBuf->data + pBuf->read_count, pBuf->write_count - pBuf->read_count );
+    sent += count;
+    pBuf->read_count += count;
+  }
+  return sent;
+}
+
+int
+sockbuf::recv( buffer* pBuf )
+{
   // If your program blocks here, changing the timeout value will not help.
   // Quite likely, this is due to a situation where all transmitted data has been read
   // but underflow() is called from the stream via snextc() to examine whether
@@ -640,85 +910,288 @@ sockbuf::underflow()
   // 2) read the last byte of a message with get() rather than read().
   // The reason for this problem is fundamental because there is no "maybe eof"
   // alternative to returning eof().
-  if( m_socket->wait_for_read( m_timeout ) )
+  int received = 0;
+  size_t avail = pBuf->size() - pBuf->write_count;
+  while( avail && avail >= m_socket->max_msg_size() && socket_can_read() )
   {
-    size_t remaining_buf_size = c_buf_size;
-    while( remaining_buf_size > 0 && m_socket->can_read() )
+    sync_gbuf _(this);
+    size_t count = m_socket->read( pBuf->data + pBuf->write_count, avail );
+    received += count;
+    pBuf->write_count += count;
+    avail = pBuf->size() - pBuf->write_count;
+  }
+  if( avail == 0 || avail < m_socket->max_msg_size() )
+    pBuf->done = true;
+  return received;
+}
+
+streamsize
+sockbuf::check_read_buffer()
+{
+  sync_gbuf _(this);
+  if( gptr() == egptr() )
+  {
+    lock_gbuf _(this);
+    buffer* r = m_gbufs.read;
+    r->read_count = gptr() - eback();
+    while( r->write_count == r->read_count && r != m_gbufs.write )
     {
-      setg( eback(), gptr(), egptr() + m_socket->read( egptr(), remaining_buf_size ) );
-      remaining_buf_size = c_buf_size - ( egptr() - eback() );
+      m_eback_pos += r->read_count;
+      r = m_gbufs.advance_read();
     }
-    if( gptr() != egptr() )
-      result = traits_type::to_int_type( *gptr() );
+    streambuf::setg( r->data, r->data + r->read_count, r->data + r->write_count );
+  }
+  return egptr() - gptr();
+}
+
+streamsize
+sockbuf::check_for_data( int timeout )
+{
+  read_from_socket( 0 );
+  streamsize result = check_read_buffer();
+  if( !result && read_from_socket( timeout ) > 0 )
+  {
+    result = check_read_buffer();
+    while( !result && socket_connected() )
+    {
+      streamsock::sleep( 10 );
+      result = check_read_buffer();
+    }
   }
   return result;
 }
 
-ios::int_type
-sockbuf::overflow( int c )
+bool
+sockbuf::ensure_write_buffer()
 {
-  if( sync() == traits_type::eof() )
-    return traits_type::eof();
-  if( c != traits_type::eof() )
+  sync_pbuf _(this);
+  m_pbufs.write->write_count = pptr() - pbase();
+  if( epptr() == pptr() )
   {
-    *pptr() = c;
-    pbump( 1 );
+    lock_pbuf _(this);
+    size_t allocated = m_pbufs.bytes_allocated();
+    if( allocated > m_allocation_limit )
+      allocated = m_pbufs.gc().bytes_allocated();
+    if( allocated < m_allocation_limit )
+    {
+      m_pbase_pos += m_pbufs.write->write_count;
+      buffer& buf = *m_pbufs.advance_write( send_bufsize() );
+      setp( buf.data, buf.data + buf.size() );
+    }
   }
-  return traits_type::not_eof( c );
+  return pptr() < epptr();
 }
 
 int
-sockbuf::sync()
+sockbuf::read_from_socket( int timeout )
 {
-  if( !m_socket )
-    return traits_type::eof();
+  if( !socket_connected() )
+    return -1;
+  if( !socket_can_read() && !m_socket->wait_for_read( timeout ) )
+    return 0;
 
-  char* write_ptr = pbase();
-  if( !write_ptr )
+  int received = 0;
+  while( socket_can_read() )
   {
-    char* buf = new char[ c_buf_size ];
-    if( !buf )
-      return traits_type::eof();
-    setp( buf, buf + c_buf_size );
-    write_ptr = pbase();
+    if( m_gbufs.write->done )
+    {
+      lock_gbuf _(this);
+      size_t allocated = m_gbufs.bytes_allocated();
+      if( allocated > m_allocation_limit )
+        allocated = m_gbufs.gc().bytes_allocated();
+      if( allocated < m_allocation_limit )
+        m_gbufs.advance_write( recv_bufsize() );
+      else
+        return received;
+    }
+    received += recv( m_gbufs.write );
   }
-  while( m_socket->wait_for_write( m_timeout ) && write_ptr < pptr() )
-    write_ptr += m_socket->write( write_ptr, pptr() - write_ptr );
-  if( !m_socket->is_open() )
-    return traits_type::eof();
-  setp( pbase(), epptr() );
-  return 0;
+  return received;
+}
+
+int
+sockbuf::write_to_socket( int timeout )
+{
+  if( !socket_connected() )
+    return -1;
+  if( socket_can_write() || m_socket->wait_for_write( timeout ) )
+  {
+    buffer* write, *read;
+    {
+      lock_pbuf _(this);
+      write = m_pbufs.write;
+      read = m_pbufs.read;
+      write->write_count = pptr() - pbase();
+    }
+    while( read != write )
+    {
+      send( read );
+      if( !is_open() )
+        return -1;
+      lock_pbuf _(this);
+      read = m_pbufs.advance_read();
+    };
+    send( write );
+  }
+  lock_pbuf _(this);
+  m_pbufs.write->write_count = pptr() - pbase();
+  return m_pbufs.bytes_used();
+}
+
+sockbuf::buffers::buffers()
+{
+  write = new buffer;
+  write->next = write;
+  read = write;
+}
+
+sockbuf::buffers::~buffers()
+{
+  buffer* p = read;
+  while( p->next != read )
+  {
+    buffer* q = p;
+    p = p->next;
+    delete q;
+  }
+  delete p;
+}
+
+sockbuf::buffer*
+sockbuf::buffers::advance_read()
+{
+  return read = read->next;
+}
+
+sockbuf::buffer*
+sockbuf::buffers::advance_write( size_t size )
+{
+  if( write->next == read && read->data )
+  {
+    write->next = new buffer;
+    write->next->next = read;
+  }
+  buffer* p = write->next;
+  p->write_count = 0;
+  p->read_count = 0;
+  p->done = false;
+  if( !p->data )
+    p->allocate( size );
+  return write = p;
+}
+
+size_t
+sockbuf::buffers::bytes_used() const
+{
+  size_t used = read->write_count - read->read_count;
+  for( buffer* p = read; p != write; p = p->next )
+    used += p->next->write_count - p->next->read_count;
+  return used;
+}
+
+size_t
+sockbuf::buffers::bytes_allocated() const
+{
+  size_t allocated = read->size();
+  for( buffer* p = read; p->next != read; p = p->next )
+    allocated += p->next->size();
+  return allocated;
+}
+
+sockbuf::buffers&
+sockbuf::buffers::gc()
+{
+  buffer* p = write;
+  while( p->next != read )
+  {
+    buffer* q = p->next;
+    p->next = p->next->next;
+    delete q;
+  }
+  return *this;
+}
+
+ostream&
+sockbuf::debug_print( ostream& os )
+{
+  os << "streambuf: short reads: " << m_short_reads
+     << ", short writes: " << m_short_writes
+     << endl;
+  os << "socket: " << ( socket_connected() ? "connected" : "closed" )
+     << ", can read: " << ( socket_can_read() ? "yes" : "no" )
+     << ", can write: " << ( socket_can_write() ? "yes" : "no" )
+     << endl;
+  {
+    lock_gbuf _(this);
+    os << "gbufs bytes allocated: " << dec << m_gbufs.bytes_allocated() << endl;
+    os << hex
+       << "eback: " << (void*)eback()
+       << ", gptr: " << (void*)gptr()
+       << ", egptr: " << (void*)egptr()
+       << ", gbufs.read: " << (void*)m_gbufs.read->data
+       << ", gbufs.write: " << (void*)m_gbufs.write->data
+       << endl;
+    os << "write: ";
+    buffer* p = m_gbufs.write;
+    while( p->next != m_gbufs.write )
+    {
+      os << p << ":" << p->read_count << ":" << p->write_count << " -> ";
+      p = p->next;
+    }
+    os << p << ":" << p->read_count << ":" << p->write_count
+       << "-> write\nread: " << m_gbufs.read << endl;
+  }
+  {
+    lock_pbuf _(this);
+    os << "pbufs bytes allocated: " << dec << m_pbufs.bytes_allocated() << endl;
+    os << hex
+       << "pbase: " << (void*)pbase()
+       << ", pptr: " << (void*)pptr()
+       << ", epptr: " << (void*)epptr()
+       << ", pbufs.read: " << (void*)m_pbufs.read->data
+       << ", pbufs.write: " << (void*)m_pbufs.write->data
+       << dec << "|" << m_pbufs.write->size() << "|" << m_pbufs.write->write_count
+       << endl;
+  }
+  return os;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // sockstream definitions
 ////////////////////////////////////////////////////////////////////////////////
-sockstream::sockstream()
+sockstream::sockstream( sockbuf* s )
 : iostream( 0 ),
-  buf()
+  owned_buf( 0 ),
+  buf( s )
 {
-  init( &buf );
+  if( !buf )
+  {
+    owned_buf = new sockbuf;
+    buf = owned_buf;
+  }
+  init( buf );
 }
 
 sockstream::sockstream( streamsock& s )
 : iostream( 0 ),
-  buf()
+  owned_buf( new sockbuf ),
+  buf( owned_buf )
 {
-  init( &buf );
+  init( buf );
   open( s );
 }
 
 void
 sockstream::open( streamsock& s )
 {
-  if( !buf.open( s ) )
+  if( !buf->open( s ) )
     setstate( ios::failbit );
 }
 
 void
 sockstream::close()
 {
-  if( !buf.close() )
+  if( !buf->close() )
     setstate( ios::failbit );
 }
 
