@@ -138,3 +138,29 @@ OSEvent::Wait( int inTimeoutMs ) const
 #endif // _WIN32
 }
 
+const OSEvent*
+Waitables::Wait( const OSEvent* const* inEvents, size_t inCount, int inTimeout )
+{
+#if _WIN32
+  HANDLE handles[8];
+  bool many = ( inCount > sizeof( handles ) / sizeof( *handles ) );
+  HANDLE* pHandles = ( many ? new HANDLE[inCount] : handles );
+  for( size_t i = 0; i < inCount; ++i )
+    pHandles[i] = inEvents[i]->mHandle;
+  DWORD count = static_cast<DWORD>( inCount );
+  DWORD result = ::WaitForMultipleObjects( count, pHandles, false, inTimeout );
+  if( many )
+    delete[] pHandles;
+  if( result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0 + inCount )
+    return inEvents[result - WAIT_OBJECT_0];
+  if( result == WAIT_TIMEOUT )
+    return 0;
+  if( result == WAIT_FAILED )
+    throw std_runtime_error( OSError().Message() );
+  throw std_runtime_error( "Unexpected result" );
+  return 0;
+#else
+# error
+#endif
+}
+

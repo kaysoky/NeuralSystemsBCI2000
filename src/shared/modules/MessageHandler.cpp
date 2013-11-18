@@ -39,56 +39,49 @@
 #include "SysCommand.h"
 #include "GenericVisualization.h"
 #include "LengthField.h"
-#include "BCIStream.h"
+#include "SockStream.h"
+#include "BCIException.h"
 
 #include <sstream>
 #include <iomanip>
 #include <cstdio>
 
+#ifndef STREAM_DEBUG
+# if BCIDEBUG
+#  define STREAM_DEBUG 1
+# endif
+#endif
+
 using namespace std;
+
+namespace
+{
+  void SaveDebugInfo( istream& );
+  string GetDebugHistory( istream& );
+}
 
 // A macro that contains the structure of a single case statement in the
 // main message handling function.
-#define CONSIDER(x)                                                      \
-  case Header<x>::descSupp:                                              \
-    Handle##x( iss );                                                    \
-    CheckForError( iss, entry.descSupp, #x );                                            \
+#define CONSIDER(x)                         \
+  case Header<x>::descSupp:                 \
+    pType = #x;                             \
+    Handle##x( is ) || is.ignore( length ); \
     break;
-
-void
-MessageHandler::CheckForError( istream& inStream, int inDescSupp, const char* inMessageType ) const
-{
-  if( inStream.fail() )
-  {
-    istringstream* pSstream = dynamic_cast<istringstream*>( &inStream );
-    if( pSstream )
-      switch( inDescSupp )
-      {
-        case Header<StateVector>::descSupp:
-        case Header<VisSignal>::descSupp:
-        case Header<VisBitmap>::descSupp:
-          pSstream = 0;
-          break;
-        default:
-          ;
-      }
-    bcierr_ << "Error reading " << inMessageType << " message"
-            << ( pSstream ? ": " + pSstream->str() : "" );
-  }
-}
 
 // Main message handling functions.
 void
-MessageHandler::HandleMessage( MessageQueue& ioQueue )
+MessageHandler::HandleMessage( istream& is )
 {
-  if( ioQueue.Empty() )
-    return;
+  SaveDebugInfo( is );
 
-  MessageQueueEntry entry = ioQueue.Next();
-
-  istringstream iss( string( entry.message, entry.length ) );
-  delete[] entry.message;
-  switch( entry.descSupp )
+  streamoff start = is.tellg();
+  int descSupp = is.get() << 8;
+  descSupp |= is.get();
+  LengthField<2> length;
+  length.ReadBinary( is );
+  streamoff msgStart = is.tellg();
+  const char* pType = 0;
+  switch( descSupp )
   {
     CONSIDER( ProtocolVersion );
     CONSIDER( StateVector );
@@ -102,17 +95,32 @@ MessageHandler::HandleMessage( MessageQueue& ioQueue )
     CONSIDER( VisBitmap );
     CONSIDER( VisCfg );
     default:
-      bcierr_ << "Unknown message descriptor/supplement 0x"
-             << hex << entry.descSupp;
+      ;
   }
-}
 
-void
-MessageHandler::HandleMessage( istream& is )
-{
-  MessageQueue queue;
-  queue.QueueMessage( is );
-  HandleMessage( queue );
+  SaveDebugInfo( is );
+  streamoff end = is.tellg();
+  if( is.fail() )
+  {
+    is.clear();
+    end = is.tellg();
+    is.setstate( ios::failbit );
+  }
+  streamoff diff = ( msgStart < 0 || end < 0 ) ? -1 : end - msgStart;
+  if( is.fail() || !pType || diff >= 0 && diff != length )
+    throw std_runtime_error(
+      "Error reading message of type 0x" << hex << descSupp
+       << " (" << ( pType ? pType : "unknown" ) << "), "
+       << "nominal length: " << dec << length
+       << ", read: " << diff
+       << GetDebugHistory( is )
+    );
+
+  ++mMessagesReceived;
+  if( end >= 0 && start >= 0 && mBytesReceived >= 0 )
+    mBytesReceived += ( end - start );
+  else
+    mBytesReceived = -1;
 }
 
 // Functions that construct messages.
@@ -122,15 +130,43 @@ template<typename content_type>
 ostream&
 MessageHandler::PutMessage( ostream& os, const content_type& content )
 {
-  os.put( char( Header<content_type>::descSupp >> 8 ) ); // the old-style cast will silence MSVC's irrelevant C4309 warning
-  os.put( char( Header<content_type>::descSupp & 0xff ) );
+  os.put( static_cast<unsigned char>( Header<content_type>::descSupp >> 8 ) );
+  os.put( static_cast<unsigned char>( Header<content_type>::descSupp & 0xff ) );
   ostringstream buffer;
   content.WriteBinary( buffer );
+  buffer.flush();
   string str = buffer.str();
   LengthField<2> length = str.length();
   length.WriteBinary( os );
   os.write( str.data(), length );
+  return os.flush();
+}
+
+#undef SendMessage
+template<typename content_type>
+ostream&
+MessageHandler::SendMessage( ostream& os, const content_type& content )
+{
+  streamoff start = os.tellp();
+  if( PutMessage( os, content ) )
+  {
+    ++mMessagesSent;
+    streamoff end = os.tellp();
+    if( start >= 0 && end >= 0 && mBytesSent >= 0 )
+      mBytesSent += ( end - start );
+    else
+      mBytesSent = -1;
+  }
   return os;
+}
+
+void
+MessageHandler::ResetStatistics()
+{
+  mMessagesSent = 0;
+  mMessagesReceived = 0;
+  mBytesSent = 0;
+  mBytesReceived = 0;
 }
 
 // Specializations.
@@ -138,7 +174,7 @@ template<>
 ostream&
 MessageHandler::PutMessage( ostream& os, const GenericSignal& signal )
 {
-  return PutMessage( os, VisSignal( signal ) );
+  return PutMessage( os, VisSignalConst( signal ) );
 }
 
 template<>
@@ -175,10 +211,82 @@ MessageHandler::PutMessage( ostream& os, const StateList& states )
 
 // Enforce instantiation of all message construction functions here,
 // i.e. in this compilation unit.
-template ostream& MessageHandler::PutMessage( std::ostream&, const ProtocolVersion& );
-template ostream& MessageHandler::PutMessage( std::ostream&, const StateVector& );
-template ostream& MessageHandler::PutMessage( std::ostream&, const Status& );
-template ostream& MessageHandler::PutMessage( std::ostream&, const SysCommand& );
-template ostream& MessageHandler::PutMessage( std::ostream&, const VisMemo& );
-template ostream& MessageHandler::PutMessage( std::ostream&, const VisCfg& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const ProtocolVersion& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const Status& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const SysCommand& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const ParamList& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const State& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const StateList& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const StateVector& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const VisSignal& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const VisMemo& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const VisCfg& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const SignalProperties& );
+template ostream& MessageHandler::SendMessage( std::ostream&, const VisSignalProperties& );
+
+
+namespace
+{
+const size_t BackHistory = 4;
+
+#if STREAM_DEBUG
+typedef map< streambuf*, list<string> > DebugInfoContainer;
+DebugInfoContainer& DebugInfoInstance()
+{
+  static DebugInfoContainer instance;
+  return instance;
+}
+#endif
+
+void SaveDebugInfo( istream& is )
+{
+#if STREAM_DEBUG
+  ostringstream oss;
+  oss << "stream state: ";
+  if( is.good() )
+    oss << "good";
+  else
+  {
+    if( is.fail() )
+      oss << "fail ";
+    if( is.bad() )
+      oss << "bad ";
+    if( is.eof() )
+      oss << "eof ";
+  }
+  oss << endl;
+
+  streambuf* pS = is.rdbuf();
+# if STREAM_DEBUG > 1
+  sockbuf* pSock = dynamic_cast<sockbuf*>( pS );
+  if( pSock )
+    pSock->debug_print( oss );
+# endif
+  list<string>& state = DebugInfoInstance()[pS];
+  state.push_front( oss.str() );
+  if( state.size() > BackHistory )
+    state.pop_back();
+#endif
+}
+
+string GetDebugHistory( istream& is )
+{
+#if STREAM_DEBUG
+  ostringstream oss;
+  const list<string>& info = DebugInfoInstance()[is.rdbuf()];
+  if( !info.empty() )
+  {
+    oss << "\nBuffer history:\n\n";
+    for( list<string>::const_iterator i = info.begin(); i != info.end(); ++i )
+      oss << *i << endl;
+    oss.flush();
+  }
+  return oss.str();
+#else
+  return "";
+#endif
+}
+
+}
+
 

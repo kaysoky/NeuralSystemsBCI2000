@@ -48,6 +48,7 @@
 #include "BCIAssert.h"
 #include "BCIStream.h"
 
+#include <algorithm>
 #include <cstdlib>
 
 using namespace std;

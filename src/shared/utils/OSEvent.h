@@ -55,6 +55,18 @@ class OSEvent : private Uncopyable
   pthread_mutex_t mMutex;
   Synchronized<bool> mSignaled;
 #endif // _WIN32
+  friend class Waitables;
+};
+
+class Waitables : std::vector<const OSEvent*>
+{
+ public:
+  Waitables& Add( const OSEvent& inEvent )
+  { push_back( &inEvent ); return *this; }
+  const OSEvent* Wait( int timeout_ms = OSEvent::cInfiniteTimeout ) const
+  { return Wait( empty() ? 0 : &*begin(), size(), timeout_ms ); }
+
+  static const OSEvent* Wait( const OSEvent* const*, size_t, int timeout_ms = OSEvent::cInfiniteTimeout );
 };
 
 #endif // OS_EVENT_H

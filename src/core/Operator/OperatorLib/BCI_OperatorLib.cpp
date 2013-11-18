@@ -469,6 +469,17 @@ STDCALL BCI_GetConnectionInfo( int inIndex )
       << "Address: " << info.Address << "\n"
       << "Messages received: " << info.MessagesRecv << "\n"
       << "Messages sent: " << info.MessagesSent << "\n";
+  if( info.BytesRecv >= 0 && info.BytesSent >= 0 )
+  {
+    double r = info.MessagesRecv ? info.BytesRecv * 1.0 / info.MessagesRecv : 0,
+           s = info.MessagesSent ? info.BytesSent * 1.0 / info.MessagesSent : 0,
+           t = ( r + s > 0 ) ? ( info.BytesRecv + info.BytesSent ) * 1.0 / ( info.MessagesRecv + info.MessagesSent ) : 0;
+    oss.precision( 1 );
+    oss << fixed
+        << "Bytes per message: " << t << "\n"
+        << "- Received only: " << r << "\n"
+        << "- Sent only: " << s << "\n";
+  }
   return AllocateCopy( oss.str().c_str() );
 }
 

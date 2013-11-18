@@ -65,10 +65,9 @@
 #include "StateVector.h"
 #include "GenericSignal.h"
 #include "ProtocolVersion.h"
-
-#include "OSThread.h"
+#include "ThreadedSockbuf.h"
+#include "GenericVisualization.h"
 #include "OSMutex.h"
-#include "OSEvent.h"
 
 #if MODTYPE
 
@@ -108,7 +107,7 @@
 
 #endif // MODTYPE
 
-class CoreModule : private MessageHandler, private OSThread
+class CoreModule : public GenericVisualization::NotificationClient, private MessageHandler
 {
   static const int cInitialConnectionTimeout = 20000; // ms
 
@@ -129,6 +128,7 @@ class CoreModule : private MessageHandler, private OSThread
   bool Initialize( int& argc, char** argv );
   void MainMessageLoop();
   void ProcessBCIAndGUIMessages();
+  void ProcessBCIMessages( sockstream& );
 
   bool IsLastModule() const;
   bool IsLocalConnection( const client_tcpsocket& ) const;
@@ -161,13 +161,10 @@ class CoreModule : private MessageHandler, private OSThread
   bool HandleSysCommand( std::istream& );
   bool HandleProtocolVersion( std::istream& );
 
-  // OSThread interface
-  int OnExecute();
+  // Notification interface
+  bool OnNotify( const GenericSignal* );
 
  private:
-  MessageQueue     mMessageQueue;
-  OSEvent          mMessageEvent;
-
   ParamList        mParamlist,
                    mNextModuleInfo;
   StateList        mStatelist;
@@ -178,11 +175,16 @@ class CoreModule : private MessageHandler, private OSThread
   client_tcpsocket mOperatorSocket,
                    mNextModuleSocket;
   server_tcpsocket mPreviousModuleSocket;
-  struct : sockstream, Lockable<OSMutex> {}
+  ThreadedSockbuf  mOperatorBuffer,
+                   mPreviousModuleBuffer,
+                   mNextModuleBuffer;
+  struct LockableSockstream : sockstream, Lockable<OSMutex>
+  { LockableSockstream( sockbuf* s = 0 ) : sockstream( s ) {} }
                    mOperator,
                    mNextModule,
                    mPreviousModule;
-  bool             mRunning,
+  bool             mTerminating,
+                   mRunning,
                    mFiltersInitialized,
                    mStartRunPending,
                    mStopRunPending,
@@ -195,7 +197,7 @@ class CoreModule : private MessageHandler, private OSThread
                    mNextModuleProtocol;
   std::string      mThisModuleIP;
   bool             mActiveResting;
+  std::map<const GenericSignal*, int> mLargeSignals;
 };
 
 #endif // CORE_MODULE_H
-

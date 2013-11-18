@@ -130,7 +130,7 @@ ConnectorInput::Process( const GenericSignal& Input, GenericSignal& Output )
   {
     Output = Input;
     string buffer;
-    while( mConnection.rdbuf()->in_avail() )
+    while( mConnection && mConnection.rdbuf()->in_avail() > 0 )
       buffer += mConnection.get();
     istringstream iss( buffer );
     string name;

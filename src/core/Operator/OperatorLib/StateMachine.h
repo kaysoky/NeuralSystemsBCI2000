@@ -239,7 +239,9 @@ class StateMachine : public CallbackBase, public Lockable<>, private OSThread
       Address( "" ),
       Status( "no status available" ),
       MessagesSent( 0 ),
-      MessagesRecv( 0 )
+      MessagesRecv( 0 ),
+      BytesSent( 0 ),
+      BytesRecv( 0 )
     {}
 
     ProtocolVersion Version;
@@ -248,6 +250,8 @@ class StateMachine : public CallbackBase, public Lockable<>, private OSThread
                     Status;
     long MessagesSent,
          MessagesRecv;
+    std::streamsize BytesSent,
+                    BytesRecv;
   };
 
  private:
@@ -270,8 +274,9 @@ class StateMachine : public CallbackBase, public Lockable<>, private OSThread
 
     void ProcessBCIMessages();
     void EnterState( SysState );
+#undef SendMessage
     template<typename T> bool PutMessage( const T& t )
-      { return OnPutMessage( MessageHandler::PutMessage<T>( mStream, t ).flush() ); }
+      { return MessageHandler::SendMessage<T>( mStream, t ); }
 
    private:
     virtual bool HandleProtocolVersion( std::istream& );
@@ -288,8 +293,6 @@ class StateMachine : public CallbackBase, public Lockable<>, private OSThread
 
     void OnAccept();
     void OnDisconnect();
-    bool OnPutMessage( bool inSuccess )
-      { if( inSuccess ) ++Info()().MessagesSent; return inSuccess; }
     ::Lock_<ConnectionInfo> Info()
       { return mInfo_; }
  

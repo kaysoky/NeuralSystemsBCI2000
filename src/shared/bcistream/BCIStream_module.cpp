@@ -69,6 +69,7 @@ StatusMessage( const string& inText, int inCode )
   if( spOutputStream != NULL )
   {
     ::Lock lock( spOutputLock );
+    spOutputStream->clear();
     MessageHandler::PutMessage( *spOutputStream, Status( inText, inCode ) );
     spOutputStream->flush();
   }

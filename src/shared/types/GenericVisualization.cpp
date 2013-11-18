@@ -123,15 +123,21 @@ VisMemo::WriteBinarySelf( ostream& os ) const
 
 // Signal message.
 void
-VisSignal::ReadBinarySelf( istream& is )
+VisSignalConst::ReadBinarySelf( istream& is )
 {
-  mSignal.ReadBinary( is );
+  is.setstate( ios::failbit );
 }
 
 void
-VisSignal::WriteBinarySelf( ostream& os ) const
+VisSignalConst::WriteBinarySelf( ostream& os ) const
 {
-  mSignal.WriteBinary( os );
+  mrSignal.WriteBinary( os );
+}
+
+void
+VisSignal::ReadBinarySelf( istream& is )
+{
+  mSignal.ReadBinary( is );
 }
 
 // Signal properties message.
@@ -239,8 +245,18 @@ VisBitmap::WriteBinarySelf( ostream& os ) const
   mBitmap.WriteBinary( os );
 }
 
-std::ostream* GenericVisualization::spOutputStream = NULL;
-const LockableObject* GenericVisualization::spOutputLock = NULL;
+
+static std::ostream* spOutputStream = 0;
+static const LockableObject* spOutputLock = 0;
+static GenericVisualization::NotificationClient* spNotify = 0;
+
+void
+GenericVisualization::SetOutputStream( std::ostream* pStream, NotificationClient* pNotify )
+{
+  spOutputStream = pStream;
+  spOutputLock = dynamic_cast<LockableObject*>( spOutputStream );
+  spNotify = pNotify;
+}
 
 GenericVisualization&
 GenericVisualization::SendCfgString( CfgID inCfgID, const std::string& inCfgString )
@@ -257,7 +273,9 @@ GenericVisualization::Send( const string& s )
 GenericVisualization&
 GenericVisualization::Send( const GenericSignal& s )
 {
-  return SendObject( VisSignal( mVisID, s ) );
+  if( spNotify )
+    spNotify->Notify( &s );
+  return SendObject( VisSignalConst( mVisID, s ) );
 }
 
 GenericVisualization&
@@ -279,8 +297,7 @@ GenericVisualization::SendObject( const T& inObject )
   if( spOutputStream )
   {
     Lock lock( spOutputLock );
-    MessageHandler::PutMessage<T>( *spOutputStream, inObject );
-    spOutputStream->flush();
+    MessageHandler::PutMessage<T>( *spOutputStream, inObject ).flush();
     this->flags( spOutputStream->flags() );
   }
   else

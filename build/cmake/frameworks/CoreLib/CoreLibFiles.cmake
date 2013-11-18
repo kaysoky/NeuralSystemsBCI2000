@@ -13,7 +13,6 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/filters/SignalStream.h
 
   ${PROJECT_SRC_DIR}/shared/modules/MessageHandler.cpp
-  ${PROJECT_SRC_DIR}/shared/modules/MessageQueue.cpp
 
   ${PROJECT_SRC_DIR}/shared/utils/LogFile.cpp
   ${PROJECT_SRC_DIR}/shared/utils/RandomGenerator.cpp
@@ -71,6 +70,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/extlib/math/FastConv.h
 
   ${PROJECT_SRC_DIR}/shared/utils/Clock.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/StopWatch.h
   ${PROJECT_SRC_DIR}/shared/utils/ClassName.cpp
   ${PROJECT_SRC_DIR}/shared/utils/PrecisionTime.cpp
   ${PROJECT_SRC_DIR}/shared/utils/LCRandomGenerator.cpp
@@ -91,6 +91,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/utils/EnvVariable.cpp
   ${PROJECT_SRC_DIR}/shared/utils/DylibImports.cpp
   ${PROJECT_SRC_DIR}/shared/utils/Debugging.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/ThreadedSockbuf.cpp
 
   ${PROJECT_SRC_DIR}/shared/utils/FPExceptMask.h
   ${PROJECT_SRC_DIR}/shared/utils/Lockable.h

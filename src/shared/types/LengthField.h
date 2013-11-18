@@ -44,10 +44,7 @@
 template<int NumBytes> class LengthField
 {
   public:
-    enum
-    {
-      EscapeValue = ( 1 << ( 8 * NumBytes ) ) - 1, // NumBytes bytes filled with 0xff.
-    };
+    static const size_t EscapeValue = ( 1 << ( 8 * NumBytes ) ) - 1; // NumBytes bytes filled with 0xff.
     LengthField() : mValue( 0 ) {}
     LengthField( size_t value ) : mValue( value ) {}
 
@@ -95,7 +92,7 @@ LengthField<NumBytes>::WriteBinary( std::ostream& os ) const
   {
     // Extended protocol: Write a null-terminated ASCII representation of the
     // value after the escape value.
-    os << mValue;
+    os << dec << mValue;
     os.put( '\0' );
   }
   return os;
@@ -112,7 +109,7 @@ LengthField<NumBytes>::ReadBinary( std::istream& is )
   // ASCII representation.
   if( mValue == EscapeValue )
   {
-    is >> mValue;
+    is >> dec >> mValue;
     if( is.get() != '\0' )
       is.setstate( is.failbit );
   }

@@ -27,27 +27,33 @@
 #define MESSAGE_HANDLER_H
 
 #include <iostream>
-#include "MessageQueue.h"
-#include "SockStream.h"
+#undef SendMessage
 
 class MessageHandler
 {
   protected:
-    MessageHandler() {}
-    virtual ~MessageHandler() {}
+    MessageHandler()
+      { ResetStatistics(); }
+    virtual ~MessageHandler()
+      {}
 
   public:
     // Calling interface to the outside world.
-    void HandleMessage( MessageQueue& );
     void HandleMessage( std::istream& );
+    template<typename content_type>
+      static std::ostream& PutMessage( std::ostream&, const content_type& );
+    template<typename content_type>
+      std::ostream& SendMessage( std::ostream&, const content_type& );
 
-    // Message composing functions.
-    template<typename content_type>
-    static std::ostream& PutMessage( std::ostream&, const content_type& );
-    // A specialization that accounts for a sockstream's flushing needs.
-    template<typename content_type>
-    static std::ostream& PutMessage( sockstream& s, const content_type& c )
-    { PutMessage( static_cast<std::ostream&>( s ), c ); s.flush(); return s; }
+    void ResetStatistics();
+    int MessagesSent() const
+      { return mMessagesSent; }
+    int MessagesReceived() const
+      { return mMessagesReceived; }
+    std::streamsize BytesSent() const
+      { return mBytesSent; }
+    std::streamsize BytesReceived() const
+      { return mBytesReceived; }
 
   protected:
     // Callback interface for inheritants to hook in. The return value indicates
@@ -69,8 +75,9 @@ class MessageHandler
     virtual bool HandleVisBitmap(           std::istream& ) { return false; }
 
   private:
-    template<typename content_type> struct Header;
-    void CheckForError( std::istream&, int, const char* ) const;
+    template<class content_type> struct Header;
+    int mMessagesSent, mMessagesReceived;
+    std::streamsize mBytesSent, mBytesReceived;
 };
 
 class ProtocolVersion;
@@ -89,6 +96,9 @@ class State;
 template<> struct MessageHandler::Header<State>
 { enum { descSupp = 0x0300 }; };
 
+class VisSignalConst;
+template<> struct MessageHandler::Header<VisSignalConst>
+{ enum { descSupp = 0x0401 }; };
 class VisSignal;
 template<> struct MessageHandler::Header<VisSignal>
 { enum { descSupp = 0x0401 }; };

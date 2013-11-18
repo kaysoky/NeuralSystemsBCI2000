@@ -101,13 +101,16 @@ StateMachine::Startup( const char* inArguments )
 
   const VersionInfo& info = VersionInfo::Current;
   mParameters.Add(
-    "System:Configuration matrix OperatorVersion= { Framework Revision Build Config } 1 Operator % %"
+    "System:Configuration matrix OperatorVersion= { Framework Revision Build Config Protocol } 1 Operator % %"
     " % % % // operator module version information" );
   Param& p = mParameters["OperatorVersion"];
   p.Value( "Framework" ) = info[VersionInfo::VersionID];
   p.Value( "Revision" ) = info[VersionInfo::Revision] + ", " +  info[VersionInfo::SourceDate];
   p.Value( "Build" ) = info[VersionInfo::Build];
   p.Value( "Config" ) = info[VersionInfo::Config];
+  ostringstream oss;
+  oss << ProtocolVersion::Current;
+  p.Value( "Protocol" ) = oss.str();
 
   mParameters.Add(
     "System:Protocol int OperatorBackLink= 1"
@@ -412,7 +415,13 @@ StateMachine::Info( size_t i ) const
   if( i < mConnections.size() )
   {
     const CoreConnection* p = mConnections[i];
-    return p->Info()();
+    ConnectionInfo info = p->Info()();
+    MemoryFence();
+    info.MessagesRecv = p->MessagesReceived();
+    info.MessagesSent = p->MessagesSent();
+    info.BytesRecv = p->BytesReceived();
+    info.BytesSent = p->BytesSent();
+    return info;
   }
   return ConnectionInfo();
 }
@@ -1204,7 +1213,6 @@ StateMachine::CoreConnection::ProcessBCIMessages()
   {
     ::Lock _( mrParent.mBCIMessageLock ); // Serialize messages
     HandleMessage( mStream );
-    ++Info()().MessagesRecv;
   }
   if( !mSocket.connected() && State() != WaitingForConnection )
     OnDisconnect();
@@ -1234,7 +1242,7 @@ StateMachine::CoreConnection::OnAccept()
       // Older core modules will silently handle the message.
       ::State s;
       istringstream( "Running 1 0 0 0" ) >> s;
-      MessageHandler::PutMessage( mStream, s );
+      MessageHandler::PutMessage( mStream, s ).flush();
 
       ostringstream oss;
       oss << mSocket.ip() << ":" << mSocket.port();

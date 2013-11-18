@@ -115,21 +115,37 @@ class VisMemo : public VisBase
     std::string mMemo;
 };
 
-class VisSignal : public VisBase
+class VisSignalConst : public VisBase
 {
   public:
-    VisSignal() {}
-    VisSignal( const ::VisID& inVisID, const GenericSignal& inSignal )
-    : VisBase( inVisID ), mSignal( inSignal ) {}
-    VisSignal( const GenericSignal& inSignal )
-    : mSignal( inSignal ) {}
+    VisSignalConst( const ::VisID& inVisID, const GenericSignal& inSignal )
+    : VisBase( inVisID ), mrSignal( inSignal ) {}
+    VisSignalConst( const GenericSignal& inSignal )
+    : mrSignal( inSignal ) {}
 
-    const GenericSignal& Signal() const   { return mSignal; }
-    operator const GenericSignal&() const { return mSignal; }
+    const GenericSignal& Signal() const   { return mrSignal; }
+    operator const GenericSignal&() const { return mrSignal; }
 
-  private:
+  protected:
     virtual void ReadBinarySelf( std::istream& );
     virtual void WriteBinarySelf( std::ostream& ) const;
+
+  private:
+    const GenericSignal& mrSignal;
+};
+
+class VisSignal : public VisSignalConst
+{
+  public:
+    VisSignal()
+    : VisSignalConst( mSignal ) {}
+    VisSignal( const ::VisID& inVisID, const GenericSignal& inSignal )
+    : VisSignalConst( mSignal ), mSignal( inSignal ) {}
+    VisSignal( const GenericSignal& inSignal )
+    : VisSignalConst( mSignal ), mSignal( inSignal ) {}
+
+  protected:
+    virtual void ReadBinarySelf( std::istream& );
 
   private:
     GenericSignal mSignal;
@@ -233,8 +249,14 @@ class GenericVisualization : public std::ostream
     GenericVisualization& Send( const SignalProperties& );
     GenericVisualization& Send( const BitmapImage& );
 
-    static void SetOutputStream( std::ostream* pStream, const LockableObject* pLockable = NULL )
-                { spOutputStream = pStream; spOutputLock = pLockable; }
+    class NotificationClient
+    {
+     public:
+      template<class T> bool Notify( T* t ) { return OnNotify( t ); }
+     protected:
+      virtual bool OnNotify( const GenericSignal* ) = 0;
+    };
+    static void SetOutputStream( std::ostream*, NotificationClient* = 0 );
 
   private:
     GenericVisualization& SendCfgString( CfgID, const std::string& );
@@ -252,9 +274,6 @@ class GenericVisualization : public std::ostream
         virtual int sync();
         GenericVisualization* mpParent;
     } mBuf;
-
-    static std::ostream* spOutputStream;
-    static const LockableObject* spOutputLock;
 };
 
 class BitmapVisualization : public GenericVisualization
