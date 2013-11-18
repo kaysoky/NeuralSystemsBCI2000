@@ -34,14 +34,10 @@
 using namespace std;
 
 void
-EventQueue::PushBack( const char* inDescriptor, PrecisionTime inTimeStamp )
+EventQueue::PushBack( const string& inDescriptor, PrecisionTime inTimeStamp )
 {
-  size_t descLen = ::strlen( inDescriptor ) + 1;
-  char* pDesc = new char[descLen];
-  ::memcpy( pDesc, inDescriptor, descLen );
-  push( make_pair( pDesc, inTimeStamp ) );
-
-  if( !mEventsAllowed ) // Defer test to avoid loss of memory references.
+  mQueue.Produce( make_pair( inDescriptor, inTimeStamp ) );
+  if( !mEventsAllowed )
     throw std_runtime_error(
       "No events allowed when receiving \"" << inDescriptor << "\" event "
       "-- trying to record events outside the \"running\" state?"
@@ -51,7 +47,26 @@ EventQueue::PushBack( const char* inDescriptor, PrecisionTime inTimeStamp )
 void
 EventQueue::PopFront()
 {
-  delete[] front().first;
-  pop();
+  mFront = mQueue.AwaitConsumption( 0 );
+}
+
+bool
+EventQueue::IsEmpty()
+{
+  if( !mFront && !mQueue.Empty() )
+    PopFront();
+  return !mFront;
+}
+
+const std::string&
+EventQueue::FrontDescriptor() const
+{
+  return mFront->first;
+}
+
+PrecisionTime
+EventQueue::FrontTimeStamp() const
+{
+  return mFront->second;
 }
 

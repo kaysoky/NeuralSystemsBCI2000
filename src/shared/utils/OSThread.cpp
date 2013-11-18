@@ -169,9 +169,9 @@ OSThread::RunThread()
     mTerminated = true;
     pTerminationEvent = mpTerminationEvent;
   }
+  mThreadID = ThreadUtils::ThreadID( false );
   CallFinished();
   pTerminationEvent->Set();
-  mThreadID = ThreadUtils::ThreadID( false );
   return result;
 }
 

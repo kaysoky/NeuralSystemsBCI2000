@@ -59,8 +59,8 @@ class FileWriterBase: public GenericFileWriter, OSThread
   GenericOutputFormat&     mrOutputFormat;
   std::string              mFileName;
   std::ofstream            mOutputFile;
-  SynchronizedQueue< std::pair<GenericSignal, StateVector> > mQueue;
-
+  typedef SynchronizedQueue< std::pair<GenericSignal, StateVector> > Queue;
+  Queue mQueue;
 };
 
 #endif // FILE_WRITER_BASE_H

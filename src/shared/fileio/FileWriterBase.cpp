@@ -162,6 +162,7 @@ FileWriterBase::StartRun()
   }
 
   mrOutputFormat.StartRun( mOutputFile, mFileName );
+  mQueue.Clear();
   OSThread::Start();
 }
 
@@ -182,7 +183,6 @@ void
 FileWriterBase::Halt()
 {
   SharedPointer<OSEvent> pTerminationEvent = OSThread::Terminate();
-  mQueue.Clear();
   mQueue.WakeConsumer();
   pTerminationEvent->Wait();
 }
@@ -196,18 +196,21 @@ FileWriterBase::Write( const GenericSignal& Signal,
 
 int FileWriterBase::OnExecute()
 {
-  while( !IsTerminating() )
+  Queue::Consumable c;
+  while( mOutputFile && !IsTerminating() && ( c = mQueue.AwaitConsumption() ) )
   {
-    while( mQueue.AwaitConsumption() )
-    {
-      mrOutputFormat.Write( mOutputFile, mQueue.Consumable().first, mQueue.Consumable().second );
-      mQueue.Consume();
-    }
+    mrOutputFormat.Write( mOutputFile, c->first, c->second );
     if( !mOutputFile )
     {
       bcierr << "Error writing to file \"" << mFileName << "\"" << endl;
       State( "Recording" ) = 0;
     }
   }
+  while( !mQueue.Empty() )
+  {
+    c = mQueue.Consume();
+    mrOutputFormat.Write( mOutputFile, c->first, c->second );
+  }
+
   return 0;
 }

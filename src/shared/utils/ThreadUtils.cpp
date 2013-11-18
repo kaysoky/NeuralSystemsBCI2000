@@ -27,6 +27,7 @@
 #pragma hdrstop
 
 #include "ThreadUtils.h"
+#include "Atomic.h"
 
 #if _WIN32
 # include <Windows.h>
@@ -75,6 +76,7 @@ ThreadID::~ThreadID()
 bool
 ThreadID::operator==( const ThreadID& inOther ) const
 {
+  MemoryFence();
   return mValid && inOther.mValid && mData == inOther.mData;
 }
 
@@ -137,6 +139,6 @@ ThreadUtils::SleepUntil( PrecisionTime inWakeupTime )
 bool
 ThreadID::operator!=( const ThreadID& inOther ) const
 {
-  return mValid && inOther.mValid && !operator==( inOther );
+  return !operator==( inOther ) && mValid && inOther.mValid;
 }
 

@@ -41,40 +41,64 @@ template<class T> class SynchronizedQueue : Uncopyable
   SynchronizedQueue();
   ~SynchronizedQueue();
 
-  void Produce( const T& );
-  void Consume();
-  T& Consumable()
-    { return Front(); }
-  bool AwaitConsumption( int timeout = -1 ) const;
-  void WakeConsumer();
   bool Empty() const;
   void Clear();
 
-  void push( const T& t )
-    { Produce( t ); }
-  void pop()
-    { Consume(); }
-  T& front()
-    { return Front(); }
-  const T& front() const
-    { return Front(); }
-  bool empty() const
-    { return Empty(); }
-  void clear()
-    { Clear(); }
+  void Produce( const T& t )
+    { Push( t ); }
+  struct Ref_;
+  Ref_ Consume();
+  Ref_ AwaitConsumption( int timeout = -1 );
+  void WakeConsumer();
 
  private:
-  T& Front() const;
   struct Element
   { Element(const T& t) : data(t), pNext(0) {}
     Element* pNext;
     T data;
-  } *mpHead, *mpTail;
+  };
+  void Push( const T& );
+  Element* Pop();
+
+  Element* mpHead, *mpTail;
   Lockable<> mHeadAccess, mTailAccess;
   OSEvent mEvent;
 #if BCIDEBUG
   ThreadUtils::ThreadID mConsumer;
 #endif
+
+  struct Ref_
+  {
+    Ref_( SynchronizedQueue& q ) : q( q ) {}
+    SynchronizedQueue& q;
+  };
+
+ public:
+  friend class Consumable;
+  class Consumable : Uncopyable
+  {
+   public:
+    Consumable()
+      : mp( 0 ) {}
+    Consumable( const Ref_& r )
+      : mp( r.q.Pop() ) {}
+    Consumable& operator=( const Ref_& r )
+      { delete mp; mp = r.q.Pop(); return *this; }
+    ~Consumable()
+      { delete mp; }
+    T* operator->()
+      { return Data(); }
+    const T* operator->() const
+      { return Data(); }
+    operator T*()
+      { return Data(); }
+    operator const T*() const
+      { return Data(); }
+   private:
+    T* Data() const
+      { return mp ? &mp->data : 0; }
+    typename SynchronizedQueue<T>::Element* mp;
+  };
 };
 
 // SynchronizedQueue Implementation
@@ -85,7 +109,7 @@ SynchronizedQueue<T>::SynchronizedQueue()
 , mConsumer( false )
 #endif
 {
-  mEvent.Reset();
+  Clear();
 }
 
 template<class T>
@@ -97,12 +121,23 @@ SynchronizedQueue<T>::~SynchronizedQueue()
 template<class T> void
 SynchronizedQueue<T>::Clear()
 {
-  while( !Empty() )
-    Consume();
+#if BCIDEBUG
+  mConsumer = ThreadUtils::ThreadID( false );
+#endif
+  Lock _(mHeadAccess);
+  Lock __(mTailAccess);
+  mEvent.Reset();
+  Element* p = 0;
+  while( p = mpHead )
+  {
+    mpHead = mpHead->pNext;
+    delete p;
+  }
+  mpTail = 0;
 }
 
 template<class T> void
-SynchronizedQueue<T>::Produce( const T& t )
+SynchronizedQueue<T>::Push( const T& t )
 {
   Lock _(mTailAccess);
   Element* p = mpTail;
@@ -117,38 +152,27 @@ SynchronizedQueue<T>::Produce( const T& t )
   WakeConsumer();
 }
 
-template<class T> void
-SynchronizedQueue<T>::Consume()
+template<class T> typename SynchronizedQueue<T>::Element*
+SynchronizedQueue<T>::Pop()
 {
 #if BCIDEBUG
   if( ThreadUtils::ThreadID() != mConsumer )
-    bcidebug( "Multiple consumer threads detected" );
+    throw std_logic_error( "Multiple consumer threads detected" );
   mConsumer = ThreadUtils::ThreadID();
 #endif
-  Element* p = 0;
+  Lock _(mHeadAccess);
+  Element* p = mpHead;
+  if( p )
   {
-    Lock _(mHeadAccess);
-    bciassert( mpHead );
+    mpHead = p->pNext;
+    if( mpHead == 0 )
     {
       Lock _(mTailAccess);
-      if( mpHead == mpTail )
-      {
-        mpTail = 0;
-        mEvent.Reset();
-      }
+      mEvent.Reset();
+      mpTail = 0;
     }
-    p = mpHead;
-    mpHead = mpHead->pNext;
   }
-  delete p;
-}
-
-template<class T> T&
-SynchronizedQueue<T>::Front() const
-{
-  Lock _(mHeadAccess);
-  bciassert( mpHead );
-  return const_cast<Element*>( mpHead )->data;
+  return p;
 }
 
 template<class T> bool
@@ -158,11 +182,17 @@ SynchronizedQueue<T>::Empty() const
   return mpHead == 0;
 }
 
-template<class T> bool
-SynchronizedQueue<T>::AwaitConsumption( int timeout ) const
+template<class T> typename SynchronizedQueue<T>::Ref_
+SynchronizedQueue<T>::Consume()
+{
+  return *this;
+}
+
+template<class T> typename SynchronizedQueue<T>::Ref_
+SynchronizedQueue<T>::AwaitConsumption( int timeout )
 {
   mEvent.Wait( timeout );
-  return !Empty();
+  return Consume();
 }
 
 template<class T> void

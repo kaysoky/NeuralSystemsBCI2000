@@ -64,8 +64,6 @@ template<class T = SpinLock> class Lockable : public LockableObject
   mutable T mLock;
 };
 
-template<typename T> class Lock_;
-
 template<typename T>
 class Lock_
 {
@@ -128,21 +126,11 @@ TemporaryLock( T& t )
 class Lock : Uncopyable
 {
  public:
-  Lock( const LockableObject& lockable ) : mpLockable( &lockable ), mpProxy( 0 ) { mpLockable->Lock(); }
-  Lock( const LockableObject* pLockable ) : mpLockable( pLockable ), mpProxy( 0 ) { mpLockable->Lock(); }
-  template<class T> Lock( T& t ) : mpLockable( 0 ), mpProxy( new LockProxy_<T>( t ) ) {}
-  template<class T> Lock( T* t ) : mpLockable( 0 ), mpProxy( new LockProxy_<T>( *t ) ) {}
-  ~Lock() { if( mpLockable ) mpLockable->Unlock(); else delete mpProxy; }
+  Lock( const LockableObject& obj ) : mp( &obj ) { obj.Lock(); }
+  Lock( const LockableObject* p ) : mp( p ) { if( p ) p->Lock(); }
+  ~Lock() { if( mp ) mp->Unlock(); }
  private:
-  struct LockProxy { virtual ~LockProxy() {} };
-  template<class T> struct LockProxy_ : LockProxy
-  {
-    LockProxy_( T& t ) : t( t ) { t.Lock(); }
-    ~LockProxy_() { t.Unlock(); }
-    T& t;
-  };
-  const LockProxy* mpProxy;
-  const LockableObject* mpLockable;
+  const LockableObject* mp;
 };
 
 #endif // LOCKABLE_H

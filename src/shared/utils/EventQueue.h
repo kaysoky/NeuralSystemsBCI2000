@@ -30,8 +30,10 @@
 #include "SynchronizedQueue.h"
 #include "PrecisionTime.h"
 
-class EventQueue : private SynchronizedQueue< std::pair<char*, PrecisionTime> >
+class EventQueue
 {
+  typedef SynchronizedQueue< std::pair<std::string, PrecisionTime> > Queue;
+
  public:
   EventQueue()
     : mEventsAllowed( false )
@@ -40,16 +42,15 @@ class EventQueue : private SynchronizedQueue< std::pair<char*, PrecisionTime> >
     { mEventsAllowed = true; }
   void DenyEvents()
     { mEventsAllowed = false; }
-  bool IsEmpty()
-    { return empty(); }
-  void PushBack( const char* inDescriptor, PrecisionTime );
+  bool IsEmpty();
+  void PushBack( const std::string& inDescriptor, PrecisionTime );
   void PopFront();
-  const char* FrontDescriptor() const
-    { return front().first; }
-  PrecisionTime FrontTimeStamp() const
-    { return front().second; }
+  const std::string& FrontDescriptor() const;
+  PrecisionTime FrontTimeStamp() const;
 
  private:
+  Queue mQueue;
+  mutable Queue::Consumable mFront;
   Synchronized<bool> mEventsAllowed;
 };
 
