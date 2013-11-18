@@ -29,6 +29,7 @@
 #include "GenericFilter.h"
 #include "Expression/Expression.h"
 #include "OSThread.h"
+#include "OSMutex.h"
 
 #include "gSTIMbox.imports.h"
 
