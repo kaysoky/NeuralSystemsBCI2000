@@ -40,6 +40,53 @@
 using namespace std;
 using namespace bci;
 
+template<class T> class StaticObject : Uncopyable
+{
+ public:
+  T& operator()() { return Access(); }
+  const T& operator()() const { return Access(); }
+ private:
+  static T& Access()
+  {
+    static T t;
+    return t;
+  }
+};
+
+namespace
+{
+
+typedef LazyArray<GenericSignal::ValueType> Array;
+struct SharedMemory : Array::Memory
+{
+  SharedMemory( const SharedPointer<OSSharedMemory>& p, size_t count )
+    : Memory( reinterpret_cast<ValueType*>( p->Memory() ), count ),
+      mpShm( p )
+    {}
+  SharedPointer<OSSharedMemory> mpShm;
+};
+
+typedef SharedPointer<OSSharedMemory> ShmPtr;
+struct ShmPool_ : private map<string, ShmPtr>
+{
+  ShmPtr& New( size_t count )
+  {
+    OSSharedMemory* p = new OSSharedMemory( count * sizeof( GenericSignal::ValueType ) );
+    return (*this)[p->Name()] = ShmPtr( p );
+  }
+  ShmPtr& Get( const string& name )
+  {
+    ShmPtr& s = (*this)[name];
+    if( !s )
+      s = ShmPtr( new OSSharedMemory( name ) );
+    return s;
+  }
+};
+
+StaticObject<ShmPool_> ShmPool;
+
+}
+
 const GenericSignal::ValueType GenericSignal::NaN = numeric_limits<ValueType>::quiet_NaN();
 
 GenericSignal::GenericSignal()
@@ -80,14 +127,18 @@ GenericSignal::SetProperties( const SignalProperties& inSp )
   if( inSp.Channels() != mProperties.Channels() || inSp.Elements() != mProperties.Elements() )
   {
     size_t newSize = inSp.Channels() * inSp.Elements();
-    ValueType* pNewData = 0;
-    if( SharedMemory() )
+    Array newValues;
+    if( mSharedMemory )
     {
-      if( mSharedMemory->Name().find( "file://" ) == 0 )
+      if( mSharedMemory->Protocol() == "file://" )
         throw std_runtime_error( "Cannot resize shared memory if tied to a file" );
-      pNewData = NewSharedServerMemory( newSize );
+      mSharedMemory = ShmPool().New( newSize );
+      SharedPointer<Array::Memory> pShm( new SharedMemory( mSharedMemory, newSize ) );
+      newValues = Array( pShm );
     }
-    LazyArray<ValueType> newValues( pNewData, newSize );
+    else
+      newValues = Array( newSize );
+
     for( int ch = 0; ch < min( mProperties.Channels(), inSp.Channels() ); ++ch )
     {
       for( int el = 0; el < min( mProperties.Elements(), inSp.Elements() ); ++el )
@@ -107,18 +158,19 @@ GenericSignal::SetProperties( const SignalProperties& inSp )
 ostream&
 GenericSignal::WriteToStream( ostream& os ) const
 {
-  streamsize indent = os.width();
-  os << '\n' << setw( indent ) << ""
-     << "SignalProperties { ";
+  string indent( os.width(), ' ' );
+
+  os << '\n' << indent << "SignalProperties { ";
   mProperties.WriteToStream( os );
-  os << '\n' << setw( indent ) << ""
-     << "}";
-  if( SharedMemory() )
-    os << "SharedMemory { " << mSharedMemory->Name() << " }\n";
+  os << '\n' << indent << "}";
+  if( mSharedMemory )
+    os << '\n' << indent << "SharedMemory { "
+       << mSharedMemory->Name()
+       << '\n' << indent << "}";
   os << setprecision( 7 );
   for( int j = 0; j < Elements(); ++j )
   {
-    os << '\n' << setw( indent ) << "";
+    os << '\n' << indent;
     for( int i = 0; i < Channels(); ++i )
     {
       os << setw( 14 )
@@ -133,13 +185,13 @@ ostream&
 GenericSignal::WriteBinary( ostream& os ) const
 {
   SignalType type = Type();
-  type.SetShared( SharedMemory() );
+  type.SetShared( mSharedMemory );
   type.WriteBinary( os );
   LengthField<2> channelsField( Channels() ),
                  elementsField( Elements() );
   channelsField.WriteBinary( os );
   elementsField.WriteBinary( os );
-  if( SharedMemory() )
+  if( type.Shared() )
   {
     MemoryFence();
     os.write( mSharedMemory->Name().c_str(), mSharedMemory->Name().length() + 1 );
@@ -164,8 +216,8 @@ GenericSignal::ReadBinary( istream& is )
   {
     string name;
     getline( is, name, '\0' );
-    mValues = LazyArray<ValueType>( GetSharedClientMemory( name ), channels * elements );
-    mProperties = SignalProperties( channels, elements, type );
+    SetProperties( SignalProperties( channels, elements, type ) );
+    AttachToSharedMemory( name );
     MemoryFence();
   }
   else
@@ -232,22 +284,6 @@ GenericSignal::ReadValueBinary( istream& is, size_t i, size_t j )
   return is;
 }
 
-GenericChannel& 
-GenericChannel::operator=( const GenericChannel& inChannel )
-{
-  for( size_t i = 0; i < size(); i++ )
-    ( *this )[i] = inChannel[i];
-  return ( *this );
-}
-
-GenericElement&
-GenericElement::operator=( const GenericElement& inElement )
-{
-  for( size_t i = 0; i < size(); i++ )
-    ( *this )[i] = inElement[i];
-  return ( *this );
-}
-
 void
 GenericSignal::PutValue_float24( std::ostream& os, ValueType value )
 {
@@ -277,42 +313,68 @@ GenericSignal::GetValue_float24( std::istream& is )
   return mantissa * ::pow( 10.0, exponent );
 }
 
+GenericSignal&
+GenericSignal::AssignFrom( const GenericSignal& s )
+{
+  SetProperties( s.Properties() );
+  AssignValues( s );
+  return *this;
+}
+
+GenericSignal&
+GenericSignal::AssignValues( const GenericSignal& s )
+{
+  bool mismatch = s.Channels() != Channels() || s.Elements() != Elements();
+  if( mismatch )
+    SetProperties( SignalProperties( s.Channels(), s.Elements() ) );
+
+  if( !mSharedMemory && !s.mSharedMemory )
+    mValues.ShallowAssignFrom( s.mValues );
+  else
+    mValues.DeepAssignFrom( s.mValues );
+  return *this;
+}
+
 bool
 GenericSignal::ShareAcrossModules()
 {
-  if( !SharedMemory() && mValues.Size() != 0 )
+  if( !mSharedMemory && mValues.Count() != 0 )
   {
-    ValueType* p = NewSharedServerMemory( mValues.Size() );
-    mValues = ( LazyArray<ValueType>( p, mValues.Size() ) = mValues );
-  }  
-  return SharedMemory();
-}
-
-GenericSignal::ValueType*
-GenericSignal::SharedMemory() const
-{
-  const OSSharedMemory* p = mSharedMemory.operator->();
-  void* pMemory = p ? p->Memory() : 0;
-  return reinterpret_cast<ValueType*>( pMemory );
-}
-
-GenericSignal::ValueType*
-GenericSignal::GetSharedClientMemory( const string& inName )
-{
-  if( !SharedMemory() || mSharedMemory->Name() != inName )
-  {
-    static map< string, SharedPointer<OSSharedMemory> > pool;
-    if( pool.find( inName ) == pool.end() )
-      pool[inName] = SharedPointer<OSSharedMemory>( new OSSharedMemory( inName ) );
-    mSharedMemory = pool[inName];
+    mSharedMemory = ShmPool().New( mValues.Count() );
+    SharedPointer<Array::Memory> pShm( new SharedMemory( mSharedMemory, mValues.Count() ) );
+    Array newValues( pShm );
+    newValues.DeepAssignFrom( mValues );
+    mValues.ShallowAssignFrom( newValues );
   }
-  return SharedMemory();
+  return mSharedMemory;
 }
 
-GenericSignal::ValueType*
-GenericSignal::NewSharedServerMemory( size_t inSize, const string& inName )
+void
+GenericSignal::AttachToSharedMemory( const string& inName )
 {
-  bciassert( inSize != 0 );
-  mSharedMemory = SharedPointer<OSSharedMemory>( new OSSharedMemory( inName, inSize * sizeof( ValueType ) ) );
-  return reinterpret_cast<ValueType*>( mSharedMemory->Memory() );
+  if( !mSharedMemory || mSharedMemory->Name() != inName )
+  {
+    mSharedMemory = ShmPool().Get( inName );
+    SharedPointer<Array::Memory> pShm( new SharedMemory( mSharedMemory, mValues.Count() ) );
+    mValues = Array( pShm );
+  }
 }
+
+// GenericChannel
+GenericChannel& 
+GenericChannel::operator=( const GenericChannel& inChannel )
+{
+  for( size_t i = 0; i < size(); i++ )
+    ( *this )[i] = inChannel[i];
+  return ( *this );
+}
+
+// GenericElement
+GenericElement&
+GenericElement::operator=( const GenericElement& inElement )
+{
+  for( size_t i = 0; i < size(); i++ )
+    ( *this )[i] = inElement[i];
+  return ( *this );
+}
+

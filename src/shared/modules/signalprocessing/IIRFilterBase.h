@@ -64,7 +64,7 @@ class IIRFilterBase : public GenericFilter
     int Channels() const
       { return end - begin; }
     // Input
-    const GenericSignal::ValueType& operator()( int ch, int el ) const
+    GenericSignal::ValueType operator()( int ch, int el ) const
       { return (*pInput)( begin + ch, el ); }
     int Elements() const
       { return pInput->Elements(); }

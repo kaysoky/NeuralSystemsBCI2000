@@ -34,11 +34,20 @@
 
 class ProtocolVersion
 {
-   //static const unsigned int CurrentMajor = 1; // 2.0 Release
-   static const int CurrentMajor = 2; // Multi-sample state vector
-   static const int CurrentMinor = 1; // NextModuleInfo from Operator
+  struct Version { int major, minor; const char* desc; };
+  static const Version* History()
+  {
+    static const Version v[] =
+    {
+      { 2, 2, "Shared signal storage" },
+      { 2, 1, "NextModuleInfo from Operator" },
+      { 2, 0, "Multi-sample state vector" },
+      { 1, 0, "2.0 Release" },
+    };
+    return v;
+  }
 
-  public:
+ public:
    enum
    {
      MultiSampleStateVector = 1,
@@ -77,7 +86,7 @@ class ProtocolVersion
    static ProtocolVersion None()
      { return ProtocolVersion( 0, 0 ); }
    static ProtocolVersion Current()
-     { return ProtocolVersion( CurrentMajor, CurrentMinor ); }
+     { return ProtocolVersion( History()[0].major, History()[0].minor ); }
 
   private:
    int mMajor, mMinor;
@@ -93,6 +102,8 @@ bool ProtocolVersion::Provides( int feature ) const
     case Negotiation:
     case NextModuleInfo:
       return AtLeast( ProtocolVersion( 2, 1 ) );
+    case SharedSignalStorage:
+      return AtLeast( ProtocolVersion( 2, 2 ) );
   }
   return false;
 }

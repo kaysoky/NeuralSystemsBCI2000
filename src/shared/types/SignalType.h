@@ -46,8 +46,7 @@ class SignalType
     SharedFlag = 1 << 6
   } Type;
 
-  SignalType() : mType( none )      {}
-  SignalType( Type t ) : mType( t ) {}
+  SignalType( Type t = none ) : mType( t ), mShared( false ) {}
   operator SignalType::Type() const { return mType; }
   bool Shared() const { return mShared; }
   void SetShared( bool b ) { mShared = b; }

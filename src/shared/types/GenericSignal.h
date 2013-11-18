@@ -45,6 +45,10 @@ class GenericSignal
     static const ValueType NaN;
 
     GenericSignal();
+    GenericSignal( const GenericSignal& other )
+      { AssignFrom( other ); }
+    GenericSignal& operator=( const GenericSignal& other )
+      { return AssignFrom( other ); }
     ~GenericSignal();
 
     GenericSignal(
@@ -58,31 +62,30 @@ class GenericSignal
     explicit GenericSignal( const SignalProperties& );
     GenericSignal( const SignalProperties&, ValueType );
 
-    GenericSignal&          SetProperties( const SignalProperties& );
+    GenericSignal& SetProperties( const SignalProperties& );
     const SignalProperties& Properties() const
                             { return mProperties; }
-    GenericSignal& AssignValues( const GenericSignal& s )
-                            { mValues = s.mValues; mSharedMemory = s.mSharedMemory; return *this; }
+    GenericSignal& AssignValues( const GenericSignal& );
 
     // Read access to properties
-    int               Channels() const
-                      { return mProperties.Channels(); }
-    int               Elements() const
-                      { return mProperties.Elements(); }
+    int Channels() const
+      { return mProperties.Channels(); }
+    int Elements() const
+      { return mProperties.Elements(); }
     const SignalType& Type() const
-                      { return mProperties.Type(); }
+      { return mProperties.Type(); }
 
     // Value Accessors
-    const ValueType&  Value( size_t ch, size_t el ) const
-                      { return mValues[mProperties.LinearIndex( ch, el )]; }
-    ValueType&        Value( size_t ch, size_t el )
-                      { return mValues[mProperties.LinearIndex( ch, el )]; }
-    GenericSignal&    SetValue( size_t ch, size_t el, ValueType value )
-                      { Value( ch, el ) = value; return *this; }
-    const ValueType&  operator() ( size_t ch, size_t el ) const
-                      { return Value( ch, el ); }
-    ValueType&        operator() ( size_t ch, size_t el )
-                      { return Value( ch, el ); }
+    ValueType Value( size_t ch, size_t el ) const
+      { return mValues[mProperties.LinearIndex( ch, el )]; }
+    ValueType& Value( size_t ch, size_t el )
+      { return mValues[mProperties.LinearIndex( ch, el )]; }
+    GenericSignal& SetValue( size_t ch, size_t el, ValueType value )
+      { Value( ch, el ) = value; return *this; }
+    ValueType operator() ( size_t ch, size_t el ) const
+      { return Value( ch, el ); }
+    ValueType& operator() ( size_t ch, size_t el )
+      { return Value( ch, el ); }
 
     bool ShareAcrossModules();
 
@@ -98,9 +101,8 @@ class GenericSignal
     static void PutValue_float24( std::ostream&, ValueType );
     static ValueType GetValue_float24( std::istream& );
 
-    ValueType* SharedMemory() const;
-    ValueType* NewSharedServerMemory( size_t, const std::string& = "" );
-    ValueType* GetSharedClientMemory( const std::string& );
+    GenericSignal& AssignFrom( const GenericSignal& );
+    void AttachToSharedMemory( const std::string& );
 
     SignalProperties mProperties;
     LazyArray<ValueType> mValues;
@@ -117,8 +119,8 @@ class GenericChannel
     size_t size() const { return Elements(); }
     GenericSignal::ValueType& operator[]( size_t el ) { return mrSignal( mCh, el ); }
     GenericSignal::ValueType& operator()( int ch, int el ) { return ( *this )[el]; }
-    const GenericSignal::ValueType& operator[]( size_t el ) const { return mrSignal( mCh, el ); }
-    const GenericSignal::ValueType& operator()( int ch, int el ) const { return ( *this )[el]; }
+    const GenericSignal::ValueType operator[]( size_t el ) const { return mrSignal( mCh, el ); }
+    const GenericSignal::ValueType operator()( int ch, int el ) const { return ( *this )[el]; }
   private:
     GenericSignal& mrSignal;
     int mCh;
@@ -134,8 +136,8 @@ class GenericElement
     size_t size() const { return Channels(); }
     GenericSignal::ValueType& operator[]( size_t ch ) { return mrSignal( ch, mEl ); }
     GenericSignal::ValueType& operator()( int ch, int el ) { return ( *this )[ch]; }
-    const GenericSignal::ValueType& operator[]( size_t ch ) const { return mrSignal( ch, mEl ); }
-    const GenericSignal::ValueType& operator()( int ch, int el ) const { return ( *this )[ch]; }
+    const GenericSignal::ValueType operator[]( size_t ch ) const { return mrSignal( ch, mEl ); }
+    const GenericSignal::ValueType operator()( int ch, int el ) const { return ( *this )[ch]; }
   private:
     GenericSignal& mrSignal;
     int mEl;

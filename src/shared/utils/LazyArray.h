@@ -33,106 +33,88 @@
 template<class T>
 class LazyArray
 {
-  struct Allocator
+ public:
+  class Memory
   {
-    struct Data : Lockable<> {};
-    static Data& Data( T* t )
-      { return *reinterpret_cast<struct Data*>( reinterpret_cast<char*>( t ) - sizeof( struct Data ) ); }
-    static T* New( size_t n )
-    {
-      char* raw = new char[n*sizeof( T ) + sizeof( struct Data )];
-      new (raw) struct Data;
-      return reinterpret_cast<T*>( raw + sizeof( struct Data ) );
-    }
-    static void Delete( T* t )
-    {
-      if( t )
-      {
-        Data( t ).~Data();
-        char* raw = reinterpret_cast<char*>( &Data( t ) );
-        delete[] raw;
-      }
-    }
+   public:
+    typedef T ValueType;
+    Memory( T* t, size_t c ) : ptr( t ), count( c ) {}
+    virtual ~Memory() {}
+    T* Ptr() { return ptr; }
+    const T* Ptr() const { return ptr; }
+    size_t Count() const { return count; }
+    void CopyFrom( const T* t ) { if( ptr != t ) ::memcpy( ptr, t, count * sizeof( T ) ); }
+   private:
+    T* ptr;
+    size_t count;
   };
-  struct Pointer : SharedPointer<T, Allocator>
+  typedef SharedPointer<Memory> MemoryObj;
+
+ private:
+  struct DefaultMemory : Memory
   {
-    Pointer( T* t ) : SharedPointer<T, Allocator>( t ) {}
-    void Lock() { Allocator::Data( operator->() ).Lock(); }
-    void Unlock() { Allocator::Data( operator->() ).Unlock(); }
+    DefaultMemory( size_t count )
+      : Memory( new T[count], count ) {}
+    DefaultMemory( const T* t, size_t count )
+      : Memory( new T[count], count ) { CopyFrom( t ); }
+    ~DefaultMemory() { delete Ptr(); }
   };
 
  public:
   LazyArray()
-    : mSize( 0 ), mpData( 0 ), mPointer( 0 ), mShared( false )
+    : mMemory( 0 ), mShared( false )
     {}
-  LazyArray( size_t size )
-    : mSize( size ), mpData( Allocator::New( size ) ), mPointer( mpData ), mShared( false )
+  LazyArray( size_t count )
+    : mMemory( new DefaultMemory( count ) ), mShared( false )
     {}
-  LazyArray( T* data, size_t size )
-    : mSize( size ), mpData( data ? data : Allocator::New( size ) ), mPointer( data ? 0 : mpData ), mShared( false )
+  LazyArray( MemoryObj memory )
+    : mMemory( memory ), mShared( false )
     {}
   LazyArray( const LazyArray& a )
-    : mSize( 0 ), mpData( 0 ), mPointer( 0 ), mShared( false )
-    { AssignFrom( a ); }
+    : mMemory( 0 ), mShared( false )
+    { ShallowAssignFrom( a ); }
   LazyArray& operator=( const LazyArray& a )
-    { AssignFrom( a ); return *this; }
-  size_t Size() const
-    { return mSize; }
+    { return ShallowAssignFrom( a ); }
+  size_t Count() const
+    { return mMemory ? mMemory->Count() : 0; }
   const T& operator[]( size_t idx ) const
-    { return At( idx ); }
+    { return mMemory->Ptr()[idx]; }
   T& operator[]( size_t idx )
-    { OnWrite(); return At( idx ); }
+    { OnWrite(); return mMemory->Ptr()[idx]; }
+
+  LazyArray& ShallowAssignFrom( const LazyArray& a )
+  {
+    if( &a == this )
+      return *this;
+    mShared = true;
+    a.mShared = true;
+    mMemory = a.mMemory;
+    return *this;
+  }
+  LazyArray& DeepAssignFrom( const LazyArray& a )
+  {
+    if( a.mMemory )
+    {
+      if( !mMemory || mShared && mMemory.IsShared() )
+        mMemory = MemoryObj( new DefaultMemory( a.Count() ) );
+      mMemory->CopyFrom( a.mMemory->Ptr() );
+    }
+    else
+      mMemory = MemoryObj( 0 );
+    mShared = false;
+    return *this;
+  }
 
  private:
-  T& At( size_t idx ) const
-    { return const_cast<T&>( mpData[idx] ); }
-  bool LazyAssignmentAllowed() const
-    { return mpData == mPointer.operator->(); }
-  void AssignFrom( const LazyArray& a )
-    {
-      if( &a == this )
-        return;
-
-      if( this->LazyAssignmentAllowed() )
-      {
-        mSize = a.mSize;
-        mpData = a.mpData;
-        mPointer = a.mPointer;
-        mShared = true;
-        a.mShared = true;
-      }
-      else
-      {
-        if( mSize != a.mSize )
-          throw std_runtime_error( "Cannot assign from array with different size" );
-        ::memcpy( mpData, a.mpData, mSize * sizeof( T ) );
-        mShared = false;
-      }
-    }
   void OnWrite()
-    {
-      if( mShared )
-      {
-        mPointer.Lock();
-        mShared = false;
-        if( mPointer.IsShared() )
-        {
-          Pointer lockedPointer = mPointer;
-          T* newData = Allocator::New( mSize );
-          ::memcpy( newData, mpData, mSize * sizeof( T ) );
-          mpData = newData;
-          mPointer = Pointer( newData );
-          lockedPointer.Unlock();
-        }
-        else
-          mPointer.Unlock();
-      }
-    }
+  {
+    if( mShared && mMemory.IsShared() && mMemory )
+      mMemory = MemoryObj( new DefaultMemory( mMemory->Ptr(), Count() ) );
+    mShared = false;
+  }
 
  private:
-  size_t mSize;
-  T* mpData;
-  Pointer mPointer;
+  MemoryObj mMemory;
   mutable bool mShared;
 };
 
