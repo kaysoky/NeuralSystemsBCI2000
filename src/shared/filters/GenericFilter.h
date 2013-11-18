@@ -132,6 +132,10 @@ class GenericFilter : public Directory::Node, protected Environment, private Unc
   //  independently of the visualization parameter's value.
   //  (The filter itself may still maintain its own visualization object.)
   virtual bool AllowsVisualization() const { return true; }
+  // Override this to always enable/disable timing measurement for Process() calls.
+  virtual bool TimedCalls() const { return mTimedCalls; }
+ private:
+  bool mTimedCalls;
 
  public: // Calling interface to virtual functions -- allows for setting up context.
   void CallPublish();
@@ -151,6 +155,7 @@ class GenericFilter : public Directory::Node, protected Environment, private Unc
 
   std::string VisParamName() const;
 
+ public:
  // The following elements provide means to make the existence of a filter
  // class known to the framework at runtime, without the need to make changes
  // in framework code.

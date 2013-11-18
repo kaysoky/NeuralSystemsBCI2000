@@ -28,6 +28,8 @@
 
 #include "GenericFilter.h"
 #include "ClassName.h"
+#include "StopWatch.h"
+#include "BCIStream.h"
 #include <limits>
 #include <sstream>
 #include <iomanip>
@@ -49,6 +51,7 @@ GenericFilter::RootChain()
 }
 
 GenericFilter::GenericFilter()
+: mTimedCalls( false )
 {
   AllFilters().push_back( this );
 }
@@ -202,6 +205,16 @@ GenericFilter::ChainInfo::WriteToStream( ostream& os )
   try { this->x b; } \
   catch( const BCIException& e ) { bcierr_ << e.What(); } \
   ErrorContext( "" );
+
+#define TIMED_CALL_BODY_( x, b ) \
+  StopWatch watch_; \
+  { CALL_BODY_( x, b ) } \
+  if( TimedCalls() \
+      && watch_.Lapse() > MeasurementUnits::SampleBlockDuration() * 1e3 \
+      && bcierr__.Empty() ) \
+        bciwarn_ << bci::ClassName( typeid( *this ) ) << "::" #x ": " \
+                 << "Execution required more than a sample block duration";
+
 #define CALL_DEF_( x, a, b ) void GenericFilter::Call##x a { CALL_BODY_( x, b ) }
 
 #define CALL_0( x ) CALL_DEF_( x, (), () )
@@ -216,12 +229,37 @@ GenericFilter::CallAutoConfig( const SignalProperties& Input )
   CALL_BODY_( AutoConfig, (Input) );
   AutoConfig_( prev );
 }
-CALL_DEF_( Preflight, (const SignalProperties& Input, SignalProperties& Output) const, (Input, Output) )
-CALL_2( Initialize, const SignalProperties&, const SignalProperties& )
+
+void
+GenericFilter::CallPreflight( const SignalProperties& Input, SignalProperties& Output ) const
+{
+  OptionalParameter( "EvaluateTiming" );
+  CALL_BODY_( Preflight, (Input, Output) );
+}
+
+void
+GenericFilter::CallInitialize( const SignalProperties& Input, const SignalProperties& Output )
+{
+#if !BCIDEBUG
+  mTimedCalls = ( OptionalParameter( "EvaluateTiming", 1 ) != 0 );
+#endif
+  CALL_BODY_( Initialize, (Input, Output) );
+}
+
+void
+GenericFilter::CallProcess( const GenericSignal& Input, GenericSignal& Output )
+{
+  TIMED_CALL_BODY_( Process, (Input, Output) );
+}
+
+void
+GenericFilter::CallResting( const GenericSignal& Input, GenericSignal& Output )
+{
+  TIMED_CALL_BODY_( Resting, (Input, Output) );
+}
+
 CALL_0( StartRun )
 CALL_0( StopRun )
-CALL_2( Process, const GenericSignal&, GenericSignal& )
-CALL_2( Resting, const GenericSignal&, GenericSignal& )
 CALL_0( Resting )
 CALL_0( Halt )
 
@@ -373,9 +411,9 @@ GenericFilter::Chain::OnProcess( const GenericSignal& Input,
     currentInput = &mOwnedSignals[ currentFilter ];
   }
   if( currentFilter )
-    Output = mOwnedSignals[ currentFilter ];
+    Output.AssignValues( mOwnedSignals[currentFilter] );
   else
-    Output = Input;
+    Output.AssignValues( Input );
 }
 
 void

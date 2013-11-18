@@ -48,6 +48,7 @@ class GenericADC : public GenericFilter
   virtual void Halt() = 0;
 
   virtual bool AllowsVisualization() const { return false; }
+  virtual bool TimedCalls() const { return false; }
   // A function to specify whether data is generated in real time.
   // Should return false when data is replayed from a file, or otherwise
   // released faster/slower than prescribed by the SamplingRate parameter.

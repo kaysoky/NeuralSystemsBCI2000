@@ -59,6 +59,7 @@ class DataIOFilter: public GenericFilter
   virtual void Halt();
 
   virtual bool AllowsVisualization() const { return false; }
+  virtual bool TimedCalls() const { return false; }
 
  private:
   void DoProcess( GenericSignal&, bool );
