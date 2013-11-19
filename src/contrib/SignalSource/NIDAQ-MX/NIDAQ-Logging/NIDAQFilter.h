@@ -85,8 +85,9 @@ class NIDAQFilter : public GenericFilter
     bool              mRan;                          //  has the filter been run at least once?
     bool              mLogging;                      //  is there going to be logging?
     float             mSampleRate;                   //  the speed of the sampling rate of the logger
-    std::vector<float>       mRanges;                //  the voltage ranges for analog input
-    std::vector<std::string> mLNames;                //  the names of all physical channels on the device(s)
-    std::vector<Expression>  mExpressions;           //  the Expressions being used by the filter
+    std::vector<float>        mRanges;               //  the voltage ranges for analog input
+    std::vector<std::string>  mDigitalChannelNames;  //  the names of all physical digital channels on the device(s)
+    std::vector<std::string>  mAnalogChannelNames;   //  the names of all physical analog channels on the device(s)
+    std::vector<Expression>   mExpressions;          //  the Expressions being used by the filter
 };
 #endif    // NIDAQ_FILTER_H

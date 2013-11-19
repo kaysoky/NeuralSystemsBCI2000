@@ -28,6 +28,7 @@
 #pragma hdrstop
 #include "NIDAQFilter.h"
 #include "BCIEvent.h"
+#include "StringUtils.h"
 #include <sstream>
 using namespace std;
 
@@ -59,7 +60,7 @@ NIDAQFilter::NIDAQFilter()
     // Collect Device Names //
     vector<string>     lDevices;
     unsigned long int  lSerial = 0;  // the serial number of the device (to test DAQmx compatibility)
-    string             lParam;       // specification of channel active/inactive state
+    string             lChannelSwitches;       // specification of channel active/inactive state
     string             lExpress = "Filtering:NIFilter matrix FilterExpressions= { ";  // the expression matrix string
 
     if( ( lDevices = CollectDeviceNames() ).empty() ) return; // error message already dealt with
@@ -67,7 +68,8 @@ NIDAQFilter::NIDAQFilter()
     {
       stringstream ss( (string)OptionalParameter( "LogDigiOut" ) );
       getline( ss, mDigitalDeviceName, '-' ); 
-      getline( ss, lParam, '-' );
+      getline( ss, lChannelSwitches, '-' );
+      
       // Check to see if the device is connected -> If not, throw an error and quit //
       if( !find( mDigitalDeviceName, lDevices ) )
       {
@@ -87,15 +89,15 @@ NIDAQFilter::NIDAQFilter()
         return;
       }
       // Check port length -> does it match number of physical ports? If not, throw an error and quit //
-      if( lParam.size() != mNumberOfDigitalChannelsFound )
+      if( lChannelSwitches.size() != mNumberOfDigitalChannelsFound )
       {
-        bcierr  << "Command-line parameter LogDigiOut contains " << lParam.size() << " characters after the '-', which "
+        bcierr  << "Command-line parameter LogDigiOut contains " << lChannelSwitches.size() << " characters after the '-', which "
                 << "does not match number of physical digital channels (" << mNumberOfDigitalChannelsFound << ")" << endl;
       }
       // Go through each item in the port list -> are all of the characters valid? If one isn't, throw an error and quit //
-      for( int i = 0; i < (int)lParam.size(); i++ )
+      for( int i = 0; i < (int)lChannelSwitches.size(); i++ )
       {
-        int charVal = lParam.at( i ) - 48;
+        int charVal = lChannelSwitches.at( i ) - 48;
         if( charVal < 0 || charVal > 1 )
         {
           bcierr << "Invalid character detected in the second part of the LogDigiOut parameter (position " << i << "). Valid characters and functions are: "
@@ -107,8 +109,8 @@ NIDAQFilter::NIDAQFilter()
         {
           if( !mDigitalChannelSpec.empty() )
             mDigitalChannelSpec.append( ", " );
-          mDigitalChannelSpec.append( mLNames[ i ] );
-          lExpress.append( mLNames[ i ] ).append( " " );
+          mDigitalChannelSpec.append( mDigitalChannelNames[ i ] );
+          lExpress.append( mDigitalChannelNames[ i ] ).append( " " );
           mNumberOfDigitalChannelsUsed++;
         }
       }
@@ -117,7 +119,7 @@ NIDAQFilter::NIDAQFilter()
     {
       stringstream ss( (string)OptionalParameter( "LogAnaOut" ) );
       getline( ss, mAnalogDeviceName, '-' ); 
-      getline( ss, lParam, '-' );
+      getline( ss, lChannelSwitches, '-' );
       if( !find( mAnalogDeviceName, lDevices ) )  // is the device connected to the computer?
       {
         bcierr << mAnalogDeviceName << " is not connected to the computer. Please check connections and try again" << endl;
@@ -134,16 +136,16 @@ NIDAQFilter::NIDAQFilter()
         bcierr << "No analog input lines were detected on " << mAnalogDeviceName << endl;
         return;
       }
-      if( lParam.size() != mNumberOfAnalogChannelsFound )  // if the number of ports the user specified does not match the number of ports actually found...
+      if( lChannelSwitches.size() != mNumberOfAnalogChannelsFound )  // if the number of ports the user specified does not match the number of ports actually found...
       {
-        bcierr  << "Command-line parameter LogAnaOut contains " << lParam.size() << " characters after the '-', which "
+        bcierr  << "Command-line parameter LogAnaOut contains " << lChannelSwitches.size() << " characters after the '-', which "
                 << "does not match number of physical analog channels (" << mNumberOfAnalogChannelsFound << ")" << endl;
         return;
       }
       // Go through each item in the port list -> are all of the characters valid? If one isn't, throw an error and quit //
-      for( int i = 0; i < (int)lParam.size(); i++ )
+      for( int i = 0; i < (int)lChannelSwitches.size(); i++ )
       {
-        int charVal = lParam.at( i ) - 48;
+        int charVal = lChannelSwitches.at( i ) - 48;
         if( charVal < 0 || charVal > 1 )
         {
           bcierr << "Invalid character detected in the second part of the LogAnaOut parameter (position " << i << "). Valid characters and functions are: "
@@ -155,8 +157,8 @@ NIDAQFilter::NIDAQFilter()
         {
           if( !mAnalogChannelSpec.empty() )  // add lines to mAnalogChannelSpec (which will be used for the task handle
             mAnalogChannelSpec.append( ", " );
-          mAnalogChannelSpec.append( mLNames[ i + mNumberOfDigitalChannelsFound ] );
-          lExpress.append( mLNames[ i + mNumberOfDigitalChannelsFound ] ).append( " " );  // add the line name into lExpress (the string for making the expressions matrix)
+          mAnalogChannelSpec.append( mAnalogChannelNames[ i ] );
+          lExpress.append( mAnalogChannelNames[ i ] ).append( " " );  // add the line name into lExpress (the string for making the expressions matrix)
           mNumberOfAnalogChannelsUsed++;
         }
       }
@@ -237,7 +239,8 @@ NIDAQFilter::~NIDAQFilter()
   mAnalogChannelUsage.clear();
   mRanges.clear();
   mExpressions.clear();
-  mLNames.clear();
+  mDigitalChannelNames.clear();
+  mAnalogChannelNames.clear();
 }
 // Make sure that everything is alright //
 void
@@ -249,12 +252,12 @@ NIDAQFilter::Preflight( const SignalProperties& Input, SignalProperties& Output 
 
   if( mNumberOfDigitalChannelsUsed )
   {
-        TaskHandle task;
-        if( ReportError( DAQmxCreateTask( "Digital_Output", &task ) ) < 0 )
+    TaskHandle task;
+    if( ReportError( DAQmxCreateTask( "Digital_Output", &task ) ) < 0 )
       bcierr << "Unable to create task \"Digital_Output\" " << endl;
-        if( ReportError( DAQmxCreateDIChan( task, mDigitalChannelSpec.c_str(), "", DAQmx_Val_ChanForAllLines ) ) < 0 )
+    if( ReportError( DAQmxCreateDOChan( task, mDigitalChannelSpec.c_str(), "", DAQmx_Val_ChanForAllLines ) ) < 0 )
       bcierr << "Unable to create channel operating on the following lines: " << mDigitalChannelSpec << endl;
-        if( ReportError( DAQmxClearTask( task ) ) < 0 )
+    if( ReportError( DAQmxClearTask( task ) ) < 0 )
       bcierr << "Failed to clear task \"Digital_Output\" " << endl;
   }
   if( mNumberOfAnalogChannelsUsed )
@@ -283,12 +286,12 @@ NIDAQFilter::Preflight( const SignalProperties& Input, SignalProperties& Output 
       lMax = mRanges[ 1 ];
     }
 
-        TaskHandle task;
-        if( ReportError( DAQmxCreateTask( "Analog_Output", &task ) ) < 0 )
+    TaskHandle task;
+    if( ReportError( DAQmxCreateTask( "Analog_Output", &task ) ) < 0 )
       bcierr << "Unable to create task \"Analog_Output\" " << endl;
-        if( ReportError( DAQmxCreateAOVoltageChan( task, mAnalogChannelSpec.c_str(), "", lMin, lMax, DAQmx_Val_Volts, NULL ) ) < 0 )
+    if( ReportError( DAQmxCreateAOVoltageChan( task, mAnalogChannelSpec.c_str(), "", lMin, lMax, DAQmx_Val_Volts, NULL ) ) < 0 )
       bcierr << "Failed to create channel operating on the following lines: " << mAnalogChannelSpec << endl;
-        if( ReportError( DAQmxClearTask( task ) ) < 0 )
+    if( ReportError( DAQmxClearTask( task ) ) < 0 )
       bcierr << "Failed to clear task \"Analog_Output\" " << endl;
   }
 
@@ -323,7 +326,7 @@ NIDAQFilter::Initialize( const SignalProperties& Input, const SignalProperties& 
   {
     if( ReportError( DAQmxCreateTask( "Digital_Output", &mDigitalTaskHandle ) ) < 0 )
       bcierr << "Unable to create task \"Digital_Output\" " << endl;
-    if( ReportError( DAQmxCreateDIChan( mDigitalTaskHandle, mDigitalChannelSpec.c_str(), "", DAQmx_Val_ChanForAllLines ) ) < 0 )
+    if( ReportError( DAQmxCreateDOChan( mDigitalTaskHandle, mDigitalChannelSpec.c_str(), "", DAQmx_Val_ChanForAllLines ) ) < 0 )
       bcierr << "Failed to create channel operating on the following lines: " << mDigitalChannelSpec << endl;
   }
 
@@ -371,12 +374,6 @@ NIDAQFilter::Initialize( const SignalProperties& Input, const SignalProperties& 
     mAnalogBuffer = new float64[ mNumberOfAnalogChannelsFound ];
 
   mRan = true;
-
-  // TODO: also test NIADC with Juergen's autoconfig code reinstated
-  bciout << "Digital(" << mNumberOfDigitalChannelsUsed << "/" << mNumberOfDigitalChannelsFound << "): " << mDigitalChannelSpec << endl;
-  bciout << "Analog(" << mNumberOfAnalogChannelsUsed << "/" << mNumberOfAnalogChannelsFound << "): " << mAnalogChannelSpec << endl;
-  for( unsigned int i = 0; i < mDigitalChannelUsage.size(); i++ ) bciout << "D" << mDigitalChannelUsage[ i ] << endl;
-  for( unsigned int i = 0; i < mAnalogChannelUsage.size(); i++ ) bciout << "A" << mAnalogChannelUsage[ i ] << endl;
 }
 // Run the main loop //
 void
@@ -384,7 +381,7 @@ NIDAQFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   Output = Input;
 
-  int localCounter  = 0;
+  int expressionRowCounter  = 0;
   int32 lWritten;
 
   /*
@@ -402,7 +399,7 @@ NIDAQFilter::Process( const GenericSignal& Input, GenericSignal& Output )
       and --LogAnaOut parameters. This has been replaced by two separate vectors, mDigitalChannelUsage and mAnalogChannelUsage.
 
     mLNames was a vector of strings of length mFound[0]+mFound[1], encoding the API names of the strings (used to compose mActive[0] and mActive[1]).
-    TODO:  not yet replaced this
+      This has been replaced by two lists: mDigitalChannelNames and mAnalogChannelNames
 
     The number of rows in the FilterExpressions matrix was expected to be mCounter[0] + mCounter[1], or
       mNumberOfDigitalChannels + mNumberOfAnalogChannels.
@@ -412,18 +409,17 @@ NIDAQFilter::Process( const GenericSignal& Input, GenericSignal& Output )
       uInt8 *lWrite = new uInt8[mNumberOfDigitalChannelsUsed*2];         // destined to be the 6th input arg to DAQmxWriteDigitalLines
       float64 *lFloatWrite = new float64[mNumberOfAnalogChannelsUsed*2]; // destined to be the 6th input arg to DAQmxWriteAnalogF64
 
-    As far as I can tell this is (and always has been, even in previous NIDAQ API versions) abjectly, blitheringly, cross-eyed wrong.
+    This has been changed to member-level buffer [mNumberof*ChannelsFound] in length, although mNumberOf*ChannelsUsed may be correct given that
+    the tasks are initialized with only the active channel names.  The need for the factor *2 in the original is a mystery.
 
     DAQmxWriteDigitalLines and DAQmxWriteAnalogF64 take (and seemed to have taken, in the 2003 version of the NI header file) an argument called
-    nSamplesPerChannel, and had/has no way of knowing which channels we consider "in use" and which not.  In violation of both these features,
-    the previous implementation always gave it the total number of samples (= number of channels *used*), and only composed the array of
-    samples using values that corresponded to the in-use channels (no zero padding in between). Presumably the factor *2 in the above
-    declarations was necessary in order to make the system work-by-accident. The unnecessary use of an API call that set up a scale to
-    remap voltages (with an arbitrary and inexplicable shift of 20mV) was presumably also part of the redneck fix required to simulate
-    success. 
+    nSamplesPerChannel. In violation of the usage implied by this name, the previous implementation passed the total number of samples (= number
+    of channels used). Maybe the factor *2 in the above declarations was necessary in order to make the system work-by-accident? The unnecessary
+    use of an API call that set up a scale to remap voltages (with an arbitrary and inexplicable shift of 20mV) might also have been part of the
+    redneck fix required to simulate success...?
 
 	Other bugs:
-    	Querying the analog ranges didn't work properly in Release mode (array not zeroed) resulting in a huge long list of junk ranges in the parameter dialog
+    Querying the analog ranges didn't work properly in Release mode (array not zeroed) resulting in a huge long list of junk ranges in the parameter dialog
     
 		Output was locked to 1Hz only. Member variable mSampleRate was intialized to 1.0, and used, but never updated according to parameters. Now it goes at SamplingRate.
 
@@ -434,12 +430,14 @@ NIDAQFilter::Process( const GenericSignal& Input, GenericSignal& Output )
   {
     for( int i = 0; i < mNumberOfDigitalChannelsFound; i++ )
     {
+      int slot = 0; // task slots will have been created for the "used" channels only
       if( mDigitalChannelUsage[ i ] )
       {
-        uInt8 val = (uInt8)mExpressions[ localCounter++ ].Evaluate( &Input );
-        mDigitalBuffer[ i ] = val;
+        float64 floatVal = (float64)mExpressions[ expressionRowCounter++ ].Evaluate( &Input );
+        uInt8 val = (uInt8)floatVal;
+        mDigitalBuffer[ slot++ ] = val;
         if( mLogging )
-          bcievent << "NI" << mDigitalDeviceName << "DOUTPUT" << i << " " << val;
+          bcievent << "NI" << mDigitalDeviceName << "DOUTPUT" << i << " " << (int)val;
       }
     }
     if( ReportError( DAQmxWriteDigitalLines( mDigitalTaskHandle, 1, false, 1.0, DAQmx_Val_GroupByScanNumber, mDigitalBuffer, &lWritten, NULL ) ) < 0 )
@@ -450,12 +448,13 @@ NIDAQFilter::Process( const GenericSignal& Input, GenericSignal& Output )
   }
   if( mNumberOfAnalogChannelsUsed )
   {
+    int slot = 0; // task slots will have been created for the "used" channels only
     for( int i = 0; i < mNumberOfAnalogChannelsFound; i++ )
     {
-      if( mAnalogChannelUsage[ i ] ) // TODO: --LogAnaOut=Dev1-01 seems to fail to produce any output
+      if( mAnalogChannelUsage[ i ] )
       {
-        float64 val = (float64)mExpressions[ localCounter++ ].Evaluate( &Input ) / 1.0e6; // expressions will read Signal() values in microvolts: the factor of 1e-6 allows them to write them in microvolts too
-        mAnalogBuffer[ i ] = val;
+        float64 val = (float64)mExpressions[ expressionRowCounter++ ].Evaluate( &Input ) / 1.0e6; // expressions will read Signal() values in microvolts: the factor of 1e-6 allows them to write them in microvolts too
+        mAnalogBuffer[ slot++ ] = val;
         if( mLogging ) // TODO: this will tend to overflow if val < 0.0 or val > 65535.0
           bcievent << "NI" << mAnalogDeviceName << "AOUTPUT" << i << " " << val;
       }
@@ -518,11 +517,21 @@ NIDAQFilter::ReportError( int errCode ) const
   return 1; // EVERYTHING IS OKAY
 }
 
+void Tokenize( std::string whole, std::vector<std::string>& parts, char delim, bool stripParts, bool discardEmpties )
+{
+  stringstream ss( whole );
+  string part;
+  while( getline( ss, part, delim ) )
+  {
+    if( stripParts ) part = StringUtils::Strip( part );
+    if( part.size() || !discardEmpties ) parts.push_back( part );
+  }
+}
+
 // Collect the device names (display them in operator log as well) //
 vector<string>
 NIDAQFilter::CollectDeviceNames()
 {
-  char *localToken;
   char localDevices[ 32 ];
   vector<string>  localDeviceList;
   if( ReportError( DAQmxGetSysDevNames( localDevices, 32 ) ) < 0 )
@@ -530,20 +539,14 @@ NIDAQFilter::CollectDeviceNames()
     bcierr << "Unable to detect any devices. Please make sure devices are properly connected to system and try again." << endl;
     return localDeviceList;
   }
-  do
+  Tokenize( localDevices, localDeviceList, ',', true, true );
+  for( std::vector<std::string>::iterator i = localDeviceList.begin(); i != localDeviceList.end(); ++i )
   {
-    if( localDeviceList.size() == 0 )
-      localToken = strtok( localDevices, ", " ); // TODO: reimplement without strtok
-    else
-      localToken = strtok( NULL, ", " );
-    if( localToken != '\0' )
-    {
-      char localInformation[ 32 ];
-      localDeviceList.push_back( string( localToken ) );
-      DAQmxGetDevProductType( string( localToken ).c_str(), localInformation, 32 );
-      bcidbg( 0 ) << string( localToken ) << " Product Type " << localInformation << endl;
-    }
-  } while ( localToken != '\0' );
+    char localInformation[ 32 ];
+    string localToken = *i;
+    DAQmxGetDevProductType( localToken.c_str(), localInformation, 32 );
+    bcidbg( 0 ) << localToken << " Product Type " << localInformation << endl;
+  }
   return localDeviceList;
 }
 // Get the number of digital lines on the specified device //
@@ -551,52 +554,30 @@ int
 NIDAQFilter::GetNumDigitalLines( string device )
 {
   int    lNumLines = 0;
-  char   lLines[ 256 ];
-  char*  lDeliminated;
-  if( ReportError( DAQmxGetDevDILines( device.c_str(), lLines, 256) ) < 0 ) // if there is an error getting the available digital lines
+  char   lLines[ 1024 ];
+  if( ReportError( DAQmxGetDevDOLines( device.c_str(), lLines, 1024) ) < 0 ) // if there is an error getting the available digital lines
   {
     bcierr << "Unable to detect digital lines. Make sure " << device << " is connected properly and try again." << endl;
     return -1;
   }
-  do // do this... (tokenize recieved lines)
-  {
-    if( lNumLines == 0 )
-      lDeliminated = strtok( lLines, ", " ); // TODO: reimplement without strtok
-    else
-      lDeliminated = strtok( NULL, ", " );
-    if( lDeliminated != '\0' ) // if we have not reached the end
-    {
-      lNumLines++;
-      mLNames.push_back( lDeliminated );
-    }
-  } while( lDeliminated != '\0' ); // ...until we reach the end
-  return lNumLines;
+  mDigitalChannelNames.clear();
+  Tokenize( lLines, mDigitalChannelNames, ',', true, true );
+  return mDigitalChannelNames.size();
 }
 // Get the number of analog output lines on the specified device //
 int
 NIDAQFilter::GetNumAnalogOutputLines( string device )
 {
   int    lNumLines = 0;
-  char   lLines[ 256 ];
-  char*  lDeliminated;
-  if( ReportError( DAQmxGetDevAOPhysicalChans( device.c_str(), lLines, 256 ) ) < 0 )
+  char   lLines[ 1024 ];
+  if( ReportError( DAQmxGetDevAOPhysicalChans( device.c_str(), lLines, 1024 ) ) < 0 )
   {
     bcierr << "Unable to detect analog output lines. Make sure " << device << " is connected properly and try again" << endl;
     return -1;
   }
-  do
-  {
-    if( lNumLines == 0 )
-      lDeliminated = strtok( lLines, ", " ); // TODO: reimplement without strtok
-    else
-      lDeliminated = strtok( NULL, ", " );
-    if( lDeliminated != '\0' )
-    {
-      lNumLines++;
-      mLNames.push_back( lDeliminated );
-    }
-  } while( lDeliminated != '\0' );
-  return lNumLines;
+  mAnalogChannelNames.clear();
+  Tokenize( lLines, mAnalogChannelNames, ',', true, true );
+  return mAnalogChannelNames.size();
 }
 // Convert an integer into a string //
 string
