@@ -39,5 +39,7 @@ std::string ClassName( const std::type_info& inTypeid );
 
 } // namespace bci
 
+using bci::ClassName;
+
 #endif // CLASS_NAME_H
 

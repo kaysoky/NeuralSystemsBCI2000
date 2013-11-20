@@ -204,7 +204,7 @@ FilePlaybackADC::CheckFile( string& fname, BCI2000FileReader& dataFile ) const
 }
 
 void
-FilePlaybackADC::Preflight( const SignalProperties&,
+FilePlaybackADC::Preflight( const SignalProperties& Input,
                SignalProperties& Output ) const
 {
   PreflightCondition( Parameter( "SamplingRate" ) > 0 );
@@ -243,10 +243,9 @@ FilePlaybackADC::Preflight( const SignalProperties&,
       State( (*sl)[i].Name() );
 
   }
-  Output = SignalProperties(
-    Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), dataFile.SignalProperties().Type() );
-
-
+  Output = Input;
+  Output.SetChannels( Parameter( "SourceCh" ) );
+  Output.SetElements( Parameter( "SampleBlockSize" ) );
 }
 
 

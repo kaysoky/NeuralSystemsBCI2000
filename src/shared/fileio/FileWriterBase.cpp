@@ -30,6 +30,7 @@
 #include "FileWriterBase.h"
 #include "BCIStream.h"
 #include "FileUtils.h"
+#include "ClassName.h"
 
 #include <fstream>
 #include <iostream>
@@ -62,11 +63,23 @@ void
 FileWriterBase::Publish()
 {
   mrOutputFormat.Publish();
-  string ext = mrOutputFormat.DataFileExtension();
-  size_t i = 0;
-  while( i < ext.length() && ::ispunct( ext[i] ) )
-    ++i;
-  string def = "Storage string FileFormat= " + ext.substr( i )  + " % % % // format of data file (readonly)";
+
+  string formatName = ClassName( typeid( *this ) );
+  size_t offset = formatName.find( "FileWriter" );
+  if( offset == string::npos || offset == 0 )
+  {
+    string ext = mrOutputFormat.DataFileExtension();
+    size_t i = 0;
+    while( i < ext.length() && ::ispunct( ext[i] ) )
+      ++i;
+    formatName = ext.substr( i );
+  }
+  else
+    formatName = formatName.substr( 0, offset );
+
+  if( Parameters->Exists( "FileFormat" ) )
+    Parameters->Delete( "FileFormat" );
+  string def = "Storage string FileFormat= " + formatName + " % % % // format of data file (readonly)";
   BEGIN_PARAMETER_DEFINITIONS
     def.c_str(),
   END_PARAMETER_DEFINITIONS

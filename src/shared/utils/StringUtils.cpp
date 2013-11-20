@@ -108,6 +108,24 @@ StringUtils::Strip( const string& s, const string& chars )
   return RStrip( LStrip( s, chars ), chars );
 }
 
+wstring
+StringUtils::ToUpper( const wstring& s )
+{
+  wstring result = s;
+  for( wstring::iterator i = result.begin(); i != result.end(); ++i )
+    *i = ::towupper( *i );
+  return result;
+}
+
+wstring
+StringUtils::ToLower( const wstring& s )
+{
+  wstring result = s;
+  for( wstring::iterator i = result.begin(); i != result.end(); ++i )
+    *i = ::towlower( *i );
+  return result;
+}
+
 static const char cBase64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 static const uint8_t cBase64Fill = 64;
 static uint8_t cInvBase64[256] = "";

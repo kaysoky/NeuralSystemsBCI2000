@@ -46,6 +46,11 @@ namespace StringUtils
   std::string RStrip( const std::string&, const std::string& = WhiteSpace );
   std::string Strip( const std::string&, const std::string& = WhiteSpace );
 
+  std::wstring ToUpper( const std::wstring& );
+  std::wstring ToLower( const std::wstring& );
+  inline std::string ToUpper( const std::string& s ) { return ToNarrow( ToUpper( ToWide( s ) ) ); }
+  inline std::string ToLower( const std::string& s ) { return ToNarrow( ToLower( ToWide( s ) ) ); }
+
   std::ostream& WriteAsBase64( std::ostream&, const std::string& );
   std::istream& ReadAsBase64( std::istream&, std::string&, int stopAtChar );
   std::istream& ReadAsBase64( std::istream&, std::string&, int (*stopIf)( int ) = 0 );

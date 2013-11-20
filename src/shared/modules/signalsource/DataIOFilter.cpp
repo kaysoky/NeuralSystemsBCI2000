@@ -38,6 +38,7 @@
 #include "PrecisionTime.h"
 #include "ClassName.h"
 #include "MeasurementUnits.h"
+#include "StringUtils.h"
 
 #include <fstream>
 #include <iostream>
@@ -94,10 +95,10 @@ DataIOFilter::DataIOFilter()
 
   if( !availableFileWriters.empty() )
   {
-    string fileFormat = "BCI2000";
-    if( Parameters->Exists( "FileFormat" ) ) {
-      fileFormat = string( Parameter( "FileFormat" ) );
-    }
+    string fileFormat = OptionalParameter( "FileFormat", "BCI2000" );
+    fileFormat = StringUtils::ToUpper( fileFormat );
+    if( fileFormat == "DAT" )
+      fileFormat = "BCI2000";
 
     string writerName = fileFormat + "FileWriter";
     for( writerSet::const_iterator i = availableFileWriters.begin();
