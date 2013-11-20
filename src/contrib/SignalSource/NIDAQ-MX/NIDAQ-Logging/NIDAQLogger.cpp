@@ -34,33 +34,36 @@ Extension( NIDAQLogger );
 // The constructor for the NIDAQLogger //
 NIDAQLogger::NIDAQLogger()
 : mUsed( false ),
-  mSampleRate( 1.0 ),
-  mAnalog( NULL ),
-  mDigital( NULL ),
-  mDigiBuff( NULL ),
-  mAnaBuff( NULL )
+  mDigitalSampleRate( 1.0 ),
+  mAnalogSampleRate( 1.0 ),
+  mDigitalTaskHandle( NULL ),
+  mAnalogTaskHandle( NULL ),
+  mDigitalBuffer( NULL ),
+  mAnalogBuffer( NULL )
 {
-	mFound[0] = mFound[1] = 0;
-	mCounter[0] = mCounter[1] = 0;
-	mDevs[0] = mDevs[1] = "NULL";
-	mActive[0] = mActive[1] = "";
+	mNumberOfDigitalChannelsFound = mNumberOfAnalogChannelsFound = 0;
+	mNumberOfDigitalChannelsUsed = mNumberOfAnalogChannelsUsed = 0;
+	mDigitalDeviceName = mAnalogDeviceName = "NULL";
+	mDigitalChannelSpec = mAnalogChannelSpec = "";
 }
 // the destructor for the NIDAQLogger //
 NIDAQLogger::~NIDAQLogger()
 {
-	if (mAnalog)
-		if (ReportError(DAQmxClearTask(mAnalog)) < 0)
+	if (mAnalogTaskHandle)
+		if (ReportError(DAQmxClearTask(mAnalogTaskHandle)) < 0)
 			bcierr << "Unable to clear analog task" << endl;
-	if (mDigital)
-		if (ReportError(DAQmxClearTask(mDigital)) < 0)
+	if (mDigitalTaskHandle)
+		if (ReportError(DAQmxClearTask(mDigitalTaskHandle)) < 0)
 			bcierr << "Unable to clear digital task" << endl;
-	mLines.clear();
+	mDigitalChannelUsage.clear();
+	mAnalogChannelUsage.clear();
 	mRanges.clear();
-	mLNames.clear();
-	if (mDigiBuff)
-		delete mDigiBuff;
-	if (mAnaBuff)
-		delete mAnaBuff;
+  mDigitalChannelNames.clear();
+  mAnalogChannelNames.clear();
+	if (mDigitalBuffer)
+		delete mDigitalBuffer;
+	if (mAnalogBuffer)
+		delete mAnalogBuffer;
 }
 // Report any NIDAQmx errors that may occur //
 int
@@ -79,12 +82,12 @@ NIDAQLogger::ReportError(int error) const
 bool
 NIDAQLogger::AcquireAIVRanges()
 {
-	float64	lAVRange[MAX_RANGES];
-	if (mDevs[1] != "NULL")
+	float64	lAVRange[MAX_RANGES]; // TODO: zero the content, otherwise may return garbage in release mode
+	if (mAnalogDeviceName != "NULL")
 	{
-		if (ReportError(DAQmxGetDevAIVoltageRngs(mDevs[1].c_str(),lAVRange,MAX_RANGES)) < 0)
+		if (ReportError(DAQmxGetDevAIVoltageRngs(mAnalogDeviceName.c_str(),lAVRange,MAX_RANGES)) < 0)
 		{
-			bcierr << "Unable to obtain acceptable voltage ranges from specified device (" << mDevs[1] << ") " << endl;
+			bcierr << "Unable to obtain acceptable voltage ranges from specified device (" << mAnalogDeviceName << ") " << endl;
 			return false;
 		}
 		for (int i = 0; i < MAX_RANGES; i += 2)
@@ -108,9 +111,9 @@ int
 NIDAQLogger::GetNumDigitalLines(std::string dev_name)
 {
 	int		lNumLines = 0;
-	char	lLines[256];
+	char	lLines[1024];
 	char*	lDeliminated;
-	if (ReportError(DAQmxGetDevDILines(dev_name.c_str(),lLines,256)) < 0) // if there is an error getting the available digital lines
+	if (ReportError(DAQmxGetDevDILines(dev_name.c_str(),lLines,1024)) < 0) // if there is an error getting the available digital lines
 	{
 		bcierr << dev_name << " is not a valid device name. Please make sure device is typed in correctly and try again" << endl; // report it
 		return -1;
@@ -123,7 +126,7 @@ NIDAQLogger::GetNumDigitalLines(std::string dev_name)
 			lDeliminated = strtok(NULL,", ");
 		if (lDeliminated != '\0') // if we have not reached the end
 		{
-			mLNames.push_back(lDeliminated);
+			mDigitalChannelNames.push_back(lDeliminated);
 			lNumLines++;
 		}
 	} while (lDeliminated != '\0'); // ...until we reach the end
@@ -134,9 +137,9 @@ int
 NIDAQLogger::GetNumAnalogInputLines(string dev_name)
 {
 	int		lNumLines = 0;
-	char	lLines[256];
+	char	lLines[1024];
 	char*	lDeliminated;
-	if (ReportError(DAQmxGetDevAIPhysicalChans(dev_name.c_str(),lLines,256)) < 0) // if we have encountered an error when attempting to get the names of the lines, say something about it
+	if (ReportError(DAQmxGetDevAIPhysicalChans(dev_name.c_str(),lLines,1024)) < 0) // if we have encountered an error when attempting to get the names of the lines, say something about it
 	{
 		bcierr << dev_name << " is not a valid device name. Please make sure device is typed in correctly and try again" << endl;
 		return -1;
@@ -149,7 +152,7 @@ NIDAQLogger::GetNumAnalogInputLines(string dev_name)
 			lDeliminated = strtok(NULL,", ");
 		if (lDeliminated != '\0') // if we have not yet reached the end of the string, we will add one to our count
 		{
-			mLNames.push_back(lDeliminated);
+			mAnalogChannelNames.push_back(lDeliminated);
 			lNumLines++;
 		}
 	} while (lDeliminated != '\0'); // we will continue this loop until we have reached the end of the string
@@ -216,9 +219,9 @@ NIDAQLogger::DigitalCallback(TaskHandle handle, int32 everyNSamplesEventType, uI
 	NIDAQLogger* pLogger = static_cast<NIDAQLogger*>(callbackData);
 	int lCounter = 0;
 	pLogger->GetDigitalData();
-	for (int lLoop = 0; lLoop < pLogger->mFound[0]; lLoop++)
-		if (pLogger->mLines[lLoop])
-			bcievent << "NI" << pLogger->mDevs[0] << "DINPUT" << lLoop << " " << pLogger->mAnaBuff[lCounter++];
+	for (int lLoop = 0; lLoop < pLogger->mNumberOfDigitalChannelsFound; lLoop++)
+		if (pLogger->mDigitalChannelUsage[lLoop])
+			bcievent << "NI" << pLogger->mDigitalDeviceName << "DINPUT" << lLoop << " " << pLogger->mDigitalBuffer[lCounter++];
 	return DAQmxSuccess;
 }
 // Grab data for digital lines //
@@ -227,7 +230,7 @@ NIDAQLogger::GetDigitalData()
 {
 	int32 lSamplesPerChannelRead;
 	int32 lNumBytesPerSample;
-	if (ReportError(DAQmxReadDigitalLines(mDigital,mCounter[0],DAQmx_Val_WaitInfinitely,DAQmx_Val_GroupByScanNumber,mDigiBuff,mCounter[0],&lSamplesPerChannelRead,&lNumBytesPerSample,NULL)) < 0)
+	if (ReportError(DAQmxReadDigitalLines(mDigitalTaskHandle,mNumberOfDigitalChannelsUsed,DAQmx_Val_WaitInfinitely,DAQmx_Val_GroupByScanNumber,mDigitalBuffer,mNumberOfDigitalChannelsUsed,&lSamplesPerChannelRead,&lNumBytesPerSample,NULL)) < 0)
 		bcierr << "Failed to read digital lines" << endl;
 }
 // Callback for analog task //
@@ -237,9 +240,9 @@ NIDAQLogger::AnalogCallback(TaskHandle handle, int32 everyNSamplesEventType, uIn
 	NIDAQLogger* pLogger = static_cast<NIDAQLogger*>(callbackData);
 	int lCounter = 0;
 	pLogger->GetAnalogData();
-	for (int lLoop = 0; lLoop < pLogger->mFound[1]; lLoop++)
-		if (pLogger->mLines[lLoop+pLogger->mFound[0]])
-  			bcievent << "NI" << pLogger->mDevs[1] << "AINPUT" << lLoop << " " << pLogger->mAnaBuff[lCounter++];
+	for (int lLoop = 0; lLoop < pLogger->mNumberOfAnalogChannelsFound; lLoop++)
+		if (pLogger->mAnalogChannelUsage[lLoop])
+  			bcievent << "NI" << pLogger->mAnalogDeviceName << "AINPUT" << lLoop << " " << pLogger->mAnalogBuffer[lCounter++];
 	return DAQmxSuccess;
 }
 // Grab data for analog lines //
@@ -247,7 +250,7 @@ void
 NIDAQLogger::GetAnalogData()
 {
 	int32 lSamplesPerChanRead;
-	if (ReportError(DAQmxReadAnalogF64(mAnalog,mCounter[1],DAQmx_Val_WaitInfinitely,DAQmx_Val_GroupByScanNumber,mAnaBuff,mCounter[1],&lSamplesPerChanRead,NULL)) < 0)
+	if (ReportError(DAQmxReadAnalogF64(mAnalogTaskHandle,mNumberOfAnalogChannelsUsed,DAQmx_Val_WaitInfinitely,DAQmx_Val_GroupByScanNumber,mAnalogBuffer,mNumberOfAnalogChannelsUsed,&lSamplesPerChanRead,NULL)) < 0)
 		bcierr << "Failed to read analog lines" << endl;
 }
 // Parses Commands and creates states/parameters //
@@ -266,31 +269,31 @@ NIDAQLogger::Publish()
 		if (OptionalParameter("LogDigiIn") != "")
 		{
 			strncpy(lPValue,((string)OptionalParameter("LogDigiIn")).c_str(),((string)OptionalParameter("LogDigiIn")).size()+1);
-			mDevs[0]	=	strtok(lPValue,"-");
+			lDevice = mDigitalDeviceName	=	strtok(lPValue,"-");
 			lParam	=	strtok(NULL,"-");
 			DAQmxGetDevSerialNum(lDevice.c_str(),&lSerial);
 			if (lSerial == 0)
 			{
-				bcierr << mDevs[0] << " is either not connected properly or does not support DAQmx 8.x . Check connections and try again" << endl;
+				bcierr << mDigitalDeviceName << " is either not connected properly or does not support DAQmx 8.x . Check connections and try again" << endl;
 				return;
 			}
 			// Check to see if the device is connected -> If not, throw an error and quit //
 			if (!find(lDevice,lDevices))
 			{
-				bcierr << mDevs[0] << " is not connected to the computer. Please check connections and try again" << endl;
+				bcierr << mDigitalDeviceName << " is not connected to the computer. Please check connections and try again" << endl;
 				return;
 			}
 			// Get Number of physical ports on device //
-			if ((mFound[0] = GetNumDigitalLines(mDevs[0])) < 0)
+			if ((mNumberOfDigitalChannelsFound = GetNumDigitalLines(mDigitalDeviceName)) < 0)
 			{
 				bcierr << "No digital lines were detected on " << lDevice << endl;
 				return;
 			}
 			// Check port length -> does it match number of physical ports? If not, throw an error and quit //
-			if (lParam.size() != mFound[0])
+			if (lParam.size() != mNumberOfDigitalChannelsFound)
 			{
 				bcierr	<< "Unequal lengths detected. Parameter length (" << lParam.size() << ") does not match number of physical channels (" <<
-						mFound[0] << ")" << endl;
+						mNumberOfDigitalChannelsFound << ")" << endl;
 			}
 			// Go through each item in the port list -> are all of the characters valid? If one isn't, throw an error and quit //
 			for (int i = 0; i < (int)lParam.size(); i++)
@@ -302,42 +305,42 @@ NIDAQLogger::Publish()
 						"0: Port is not being used.\n1: Port is being used for input purposes.\nPlease correct parameter list and try again" << endl;
 					return;
 				}
-				mLines.push_back(charVal);
+				mDigitalChannelUsage.push_back(charVal);
 				if (charVal)
 				{
-					if (!mActive[0].empty())
-						mActive[0].append(", ");
-					mActive[0].append(mLNames[i]);
-					mCounter[0]++;
+					if (!mDigitalChannelSpec.empty())
+						mDigitalChannelSpec.append(", ");
+					mDigitalChannelSpec.append(mDigitalChannelNames[i]);
+					mNumberOfDigitalChannelsUsed++;
 				}
 			}
 		}
 		if ((OptionalParameter("LogAnaIn") != ""))
 		{
 			strncpy(lPValue,((string)OptionalParameter("LogAnaIn")).c_str(),((string)OptionalParameter("LogAnaIn")).size()+1);
-			mDevs[1] = strtok(lPValue,"-");
+			mAnalogDeviceName = strtok(lPValue,"-");
 			lParam = strtok(NULL,"-");
-			bcidbg(0) << mDevs[1] << endl;
-			DAQmxGetDevSerialNum(mDevs[1].c_str(),&lSerial);
+			bcidbg(0) << mAnalogDeviceName << endl;
+			DAQmxGetDevSerialNum(mAnalogDeviceName.c_str(),&lSerial);
 			if (lSerial == 0)
 			{
-				bcierr << mDevs[1] << " is either not connected properly or does not support DAQmx 8.x . Check connections and try again" << endl;
+				bcierr << mAnalogDeviceName << " is either not connected properly or does not support DAQmx 8.x . Check connections and try again" << endl;
 				return;
 			}
-			if (!find(mDevs[1],lDevices))
+			if (!find(mAnalogDeviceName,lDevices))
 			{
-				bcierr << mDevs[1] << " is not connected to the computer. Please check connections and try again" << endl;
+				bcierr << mAnalogDeviceName << " is not connected to the computer. Please check connections and try again" << endl;
 				return;
 			}
-			if ((mFound[1] = GetNumAnalogInputLines(mDevs[1])) < 0)
+			if ((mNumberOfAnalogChannelsFound = GetNumAnalogInputLines(mAnalogDeviceName)) < 0)
 			{
-				bcierr << "No analog input lines were detected on " << mDevs[1] << endl;
+				bcierr << "No analog input lines were detected on " << mAnalogDeviceName << endl;
 				return;
 			}
-			if (lParam.size() != mFound[1])
+			if (lParam.size() != mNumberOfAnalogChannelsFound)
 			{
 				bcierr	<< "Unequal lengths detected. Parameter length (" << lParam.size() << ") does not match number of physical channels (" <<
-						mFound[1] << ")" << endl;
+						mNumberOfAnalogChannelsFound << ")" << endl;
 				return;
 			}
 			// Go through each item in the port list -> are all of the characters valid? If one isn't, throw an error and quit //
@@ -350,19 +353,19 @@ NIDAQLogger::Publish()
 						"0: Port is not being used.\n1: Port is being used for input purposes.\nPlease correct parameter list and try again" << endl;
 					return;
 				}
-				mLines.push_back(lCharVal);
+				mAnalogChannelUsage.push_back(lCharVal);
 				if (lCharVal)
 				{
-					if (!mActive[1].empty())
-						mActive[1].append(", ");
-					mActive[1].append(mLNames[i]);
+					if (!mAnalogChannelSpec.empty())
+						mAnalogChannelSpec.append(", ");
+					mAnalogChannelSpec.append(mAnalogChannelNames[i]);
 				}
 			}
 			if (!AcquireAIVRanges()) return;		// error message already taken care of inside function
 			if (!mRanges.empty() && mRanges.size() > 2)
 			{
 				string lParameter = "Source:NILogger int ";
-				lParameter.append(mDevs[1]);
+				lParameter.append(mAnalogDeviceName);
 				lParameter.append("IVRanges= 0 0 0 ");
 				lParameter.append(IntToString(int((mRanges.size()/2)-1)));
 				lParameter.append(" // Support Input Voltage Ranges ");
@@ -381,26 +384,51 @@ NIDAQLogger::Publish()
 				END_PARAMETER_DEFINITIONS
 			}
 		}
-		if (mDevs[1] != "NULL")
+		if (mDigitalDeviceName != "NULL") // TODO: is there actually any good reason to yoke sampling rate for digital and analog even if they're on the same device? (see @@@)
 		{
 			string lParameter = "Source:NILogger float ";
-			lParameter.append(mDevs[1].c_str());
+			lParameter.append(mDigitalDeviceName.c_str());
 			lParameter.append("InSamplingRate= 256.0 256.0 1.0 16384.0 // input sampling rate of ");
-			lParameter.append(mDevs[1].c_str());
+			lParameter.append(mDigitalDeviceName.c_str());
 			lParameter.append(" (ranges between 1Hz and 16384Hz)");
 			BEGIN_PARAMETER_DEFINITIONS
 				lParameter.c_str(),
 			END_PARAMETER_DEFINITIONS
 		}
-		for (int i = 0; i < (int)mLines.size(); i++)
+		if (mAnalogDeviceName != "NULL" && mAnalogDeviceName != mDigitalDeviceName) // TODO: Justin never included the digital version of this (see @@@)
 		{
-			if (mLines[i])
+			string lParameter = "Source:NILogger float ";
+			lParameter.append(mAnalogDeviceName.c_str());
+			lParameter.append("InSamplingRate= 256.0 256.0 1.0 16384.0 // input sampling rate of ");
+			lParameter.append(mAnalogDeviceName.c_str());
+			lParameter.append(" (ranges between 1Hz and 16384Hz)");
+			BEGIN_PARAMETER_DEFINITIONS
+				lParameter.c_str(),
+			END_PARAMETER_DEFINITIONS
+		}
+		for (int i = 0; i < mNumberOfDigitalChannelsFound; i++)
+		{
+			if (mDigitalChannelUsage[i])
 			{
 				string lStates = "NI";
-				lStates.append((i < mFound[0] ? mDevs[0].c_str() : mDevs[1].c_str()));
-				lStates.append((i < mFound[0] ? "DINPUT" : "AINPUT"));
-				lStates.append(IntToString((i < mFound[0] ? i : i-mFound[0])));
-				lStates.append((i < mFound[0] ? " 1 0 0 0" : " 16 0 0 0"));
+				lStates.append(mDigitalDeviceName.c_str());
+        lStates.append("DINPUT");
+				lStates.append(IntToString(i));
+				lStates.append(" 1 0 0 0");
+				BEGIN_EVENT_DEFINITIONS
+					lStates.c_str(),
+				END_EVENT_DEFINITIONS
+			}
+		}
+		for (int i = 0; i < mNumberOfAnalogChannelsFound; i++)
+		{
+			if (mAnalogChannelUsage[i])
+			{
+				string lStates = "NI";
+				lStates.append(mAnalogDeviceName.c_str());
+        lStates.append("AINPUT");
+				lStates.append(IntToString(i));
+				lStates.append(" 16 0 0 0");
 				BEGIN_EVENT_DEFINITIONS
 					lStates.c_str(),
 				END_EVENT_DEFINITIONS
@@ -414,43 +442,45 @@ NIDAQLogger::Preflight() const
 {
 	if (OptionalParameter("LogNIDAQin") > 0) // is the device being used?
 	{
-		if (!mLines.empty()) // is mLines empty()?
+		if (mNumberOfDigitalChannelsUsed + mNumberOfAnalogChannelsUsed)
 		{
-			for (int i = 0; i < 2; i++)
-				if (mDevs[i] != "NULL")
-					if ((float)Parameter(string(mDevs[i]).append("InSamplingRate").c_str()) > 256.0)
-						bciout << "Device sample rate is above 256. Some lag may occur" << endl;
+      // TODO: At this point, Justin checked the value of the parameter mDigitalDeviceName + "InSamplingRate", without having created it,
+      //       thereby causing an error if --LogDigiIn was specified without --LogAnaIn. @@@
+      // TODO: Note that Justin's code only uses sampling rate in configuring the analog task handle, not the digital task handle
+      //       ---doesn't the digital task need it?
+			if (mAnalogDeviceName != "NULL")
+				if ((float)Parameter(string(mAnalogDeviceName).append("InSamplingRate").c_str()) > 256.0)
+					bciout << "Sample rate for device " << mAnalogDeviceName << " is above 256. Some lag may occur" << endl;
 			if (OptionalParameter("LogDigiIn") != "")
 			{
-                TaskHandle task;
-                if (ReportError(DAQmxCreateTask("Digital_Input",&task)) < 0)
+        TaskHandle task;
+        if (ReportError(DAQmxCreateTask("Digital_Input",&task)) < 0)
 					bcierr << "Unable to create task \"Digital_Input\" " << endl;
-                if (ReportError(DAQmxCreateDIChan(task,mActive[0].c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
-					bcierr << "Unable to create channel operating on the following lines: \n" << mActive[0] << endl;
-                if (ReportError(DAQmxClearTask(task)) < 0)
+        if (ReportError(DAQmxCreateDIChan(task,mDigitalChannelSpec.c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
+					bcierr << "Unable to create channel operating on the following lines: \n" << mDigitalChannelSpec << endl;
+        if (ReportError(DAQmxClearTask(task)) < 0)
 					bcierr << "Failed to clear task \"Digital_Input\" " << endl;
 			}
 			if (OptionalParameter("LogAnaIn") != "")
 			{
 				float lMin = 0.0;
 				if (mRanges.size() > 2)
-					lMin = mRanges[(int)OptionalParameter(string(mDevs[1]).append("IVRanges").c_str())*2];
+					lMin = mRanges[(int)OptionalParameter(string(mAnalogDeviceName).append("IVRanges").c_str())*2];
 				else
 					lMin = mRanges[0];
-				if (ReportError(DAQmxCreateLinScale("MilliVolts",1000.0,lMin*-2000.0,DAQmx_Val_Volts,"mV")) < 0)
+				if (ReportError(DAQmxCreateLinScale("MilliVolts",1000.0,lMin*-2000.0,DAQmx_Val_Volts,"mV")) < 0) // TODO: get rid of this nonsense, as in NIDAQFilter
 					bcierr << "Failed to construct linear scale (MilliVolts)" << endl;
                 TaskHandle task;
                 if (ReportError(DAQmxCreateTask("Analog_Input",&task)) < 0)
 					bcierr << "Unable to create task \"Analog_Input\" " << endl;
-                if (ReportError(DAQmxCreateAIVoltageChan(task,mActive[1].c_str(),"",DAQmx_Val_RSE,-lMin*1000,-lMin*3000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
-					bcierr << "Failed to create channel operating on the following lines: \n" << mActive[1] << endl;
+                if (ReportError(DAQmxCreateAIVoltageChan(task,mAnalogChannelSpec.c_str(),"",DAQmx_Val_RSE,-lMin*1000,-lMin*3000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
+					bcierr << "Failed to create channel operating on the following lines: \n" << mAnalogChannelSpec << endl;
                 if (ReportError(DAQmxClearTask(task)) < 0)
 					bcierr << "Failed to clear task \"Analog_Input\" " << endl;
 			}
 		}
 		else // if no parameters were specified, tell the user that there is a problem
 		{
-			bcidbg(0) << mLines.size() << endl;
 			bcierr << "No parameters specified. Please read documentation on parameter specifications and try again" << endl;
 		}
 	}
@@ -463,41 +493,56 @@ NIDAQLogger::Initialize()
     if (mUsed) // if the device is being used (and setting mDeviceEnable to true or false)
 	{
 		// Reset Some Minor Things (We want to have a nice clean start whenever Initialize() is called) //
-		mCounter[0] = mCounter[1] = 0;
-		if (mDigiBuff)
-			delete mDigiBuff;
-		if (mAnaBuff)
-			delete mAnaBuff;
-		mSampleRate = (float)Parameter(string(mDevs[1]).append("InSamplingRate"));
-		for (int lLoop = 0; lLoop < mFound[0]; lLoop++)
-			if (mLines[lLoop])
-				mCounter[0]++;
-		if (mFound[0])
+		mNumberOfDigitalChannelsUsed = mNumberOfAnalogChannelsUsed = 0;
+		if (mDigitalBuffer)
+			delete mDigitalBuffer;
+		if (mAnalogBuffer)
+			delete mAnalogBuffer;
+		if( mDigitalDeviceName != "NULL" ) // @@@
+      mDigitalSampleRate = (float)Parameter(string(mDigitalDeviceName).append("InSamplingRate"));
+		if( mAnalogDeviceName != "NULL" ) // @@@
+      mAnalogSampleRate = (float)Parameter(string(mAnalogDeviceName).append("InSamplingRate"));
+		for (int lLoop = 0; lLoop < mNumberOfDigitalChannelsFound; lLoop++)
+			if (mDigitalChannelUsage[lLoop])
+				mNumberOfDigitalChannelsUsed++;
+		if (mNumberOfDigitalChannelsUsed)
 		{
-            if (ReportError(DAQmxCreateTask("Digital_Input",&mDigital)) < 0)
+      if (ReportError(DAQmxCreateTask("Digital_Input",&mDigitalTaskHandle)) < 0)
 				bcierr << "Unable to create task \"Digital_Input\" " << endl;
-			if (ReportError(DAQmxCreateDIChan(mDigital,mActive[0].c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
-				bcierr << "Failed to create channel operating on the following lines:\n" << mActive[0] << endl;
-			if (ReportError(DAQmxRegisterEveryNSamplesEvent(mDigital,DAQmx_Val_Acquired_Into_Buffer,mCounter[0],0,(DAQmxEveryNSamplesEventCallbackPtr) &DigitalCallback,this)) < 0)
+			if (ReportError(DAQmxCreateDIChan(mDigitalTaskHandle,mDigitalChannelSpec.c_str(),"",DAQmx_Val_ChanForAllLines)) < 0)
+				bcierr << "Failed to create channel operating on the following lines:\n" << mDigitalChannelSpec << endl;
+      // TODO (@@@): without configuring clock timing for the digital input, (a) how will it know how frequently to deliver samples?
+      //             and (b) there's an error that says something like "cannot use every N sample callbacks unless the task is buffered"
+      //             Now, apparently DAQmxCfgSampClkTiming is one of the functions that implicitly/automatically configures buffering for you.
+      //             Unfortunately there's some hardware-specific black magic involved here in selecting the name of the timebase so that
+      //             a "route" can be made between "terminals", whatever that is meant to mean. di/SampleClockTimebase was absent on the
+      //             board I'm using. di/SampleClock says the source is the same as the destination. ai/SampleClockTimebase (which Justin
+      //             used for the analog input) says a route cannot be made. Others (accessible through NI MAX -> Devices and Interfaces -> Dev1
+      //             -> Device Routes tab at bottom) say "use OnboardClock instead" but that doesn't exist....  RTSI0 seems to work but I have
+      //             no idea why
+			if (ReportError(DAQmxCfgSampClkTiming(mDigitalTaskHandle, "RTSI0", mDigitalSampleRate, DAQmx_Val_Rising ,DAQmx_Val_ContSamps,16384)) < 0)
+				bcierr << "Failed to set sampling rate on device " << mDigitalDeviceName << endl;
+			if (ReportError(DAQmxRegisterEveryNSamplesEvent(mDigitalTaskHandle,DAQmx_Val_Acquired_Into_Buffer,mNumberOfDigitalChannelsUsed,0,(DAQmxEveryNSamplesEventCallbackPtr) &DigitalCallback,this)) < 0)
 					bcierr << "Failed to associate \"Digital_Input\" task with callback function DigitalCallback() " << endl;
-		}
-		for (int lLoop = mFound[0]; lLoop < (int)mLines.size(); lLoop++)
-			if (mLines[lLoop])
-				mCounter[1]++;
-		if (mFound[1])
+      // TODO:  is it correct to set the "number of samples" to mNumberOfDigitalChannelsUsed, or is this the same mistake Justin made in NIDAQFilter??
+    }
+		for (int lLoop = 0; lLoop < (int)mAnalogChannelUsage.size(); lLoop++)
+			if (mAnalogChannelUsage[lLoop])
+				mNumberOfAnalogChannelsUsed++;
+		if (mNumberOfAnalogChannelsUsed)
 		{
 			float lMin = 0.0;
 			if (mRanges.size() > 2)
-				lMin = mRanges[(int)OptionalParameter(string(mDevs[1]).append("IVRanges").c_str())*2];
+				lMin = mRanges[(int)OptionalParameter(string(mAnalogDeviceName).append("IVRanges").c_str())*2];
 			else
 				lMin = mRanges[0];
-            if (ReportError(DAQmxCreateTask("Analog_Input",&mAnalog)) < 0)
+            if (ReportError(DAQmxCreateTask("Analog_Input",&mAnalogTaskHandle)) < 0)
 				bcierr << "Unable to create task \"Analog_Input\" " << endl;
-			if (ReportError(DAQmxCreateAIVoltageChan(mAnalog,mActive[1].c_str(),"",DAQmx_Val_RSE,-lMin*1000,-lMin*3000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
-				bcierr << "Failed to create channel operating on the following lines:\n" << mActive[1] << endl;
-			if (ReportError(DAQmxCfgSampClkTiming(mAnalog,"ai/SampleClockTimebase",mSampleRate,DAQmx_Val_Rising,DAQmx_Val_ContSamps,16384)) < 0)
-				bcierr << "Failed to set sampling rate on device " << mDevs[1] << endl;
-			if (ReportError(DAQmxRegisterEveryNSamplesEvent(mAnalog,DAQmx_Val_Acquired_Into_Buffer,mCounter[1],0,(DAQmxEveryNSamplesEventCallbackPtr) &AnalogCallback,this)) < 0)
+			if (ReportError(DAQmxCreateAIVoltageChan(mAnalogTaskHandle,mAnalogChannelSpec.c_str(),"",DAQmx_Val_RSE,-lMin*1000,-lMin*3000,DAQmx_Val_FromCustomScale,"MilliVolts")) < 0)
+				bcierr << "Failed to create channel operating on the following lines:\n" << mAnalogChannelSpec << endl;
+			if (ReportError(DAQmxCfgSampClkTiming(mAnalogTaskHandle,"ai/SampleClockTimebase",mAnalogSampleRate,DAQmx_Val_Rising,DAQmx_Val_ContSamps,16384)) < 0)
+				bcierr << "Failed to set sampling rate on device " << mAnalogDeviceName << endl;
+			if (ReportError(DAQmxRegisterEveryNSamplesEvent(mAnalogTaskHandle,DAQmx_Val_Acquired_Into_Buffer,mNumberOfAnalogChannelsUsed,0,(DAQmxEveryNSamplesEventCallbackPtr) &AnalogCallback,this)) < 0)
 					bcierr << "Failed to associate \"Analog_Input\" task with callback function AnalogCallback() " << endl;
 		}
 	}
@@ -506,16 +551,16 @@ NIDAQLogger::Initialize()
 void
 NIDAQLogger::StartRun()
 {
-	if (mAnalog)
-		if (ReportError(DAQmxStartTask(mAnalog)) < 0)
+	if (mAnalogTaskHandle)
+		if (ReportError(DAQmxStartTask(mAnalogTaskHandle)) < 0)
 			bcierr << "Failed to start \"Analog_Input\" task" << endl;
-	if (mDigital)
-		if (ReportError(DAQmxStartTask(mDigital)) < 0)
+	if (mDigitalTaskHandle)
+		if (ReportError(DAQmxStartTask(mDigitalTaskHandle)) < 0)
 			bcierr << "Failed to start \"Digital_Input\" task" << endl;
-	if (mCounter[0])
-		mDigiBuff = new uInt8[mCounter[0]*2];
-	if (mCounter[1])
-		mAnaBuff = new float64[mCounter[1]*2];
+	if (mNumberOfDigitalChannelsUsed)
+		mDigitalBuffer = new uInt8[mNumberOfDigitalChannelsUsed*2]; // TODO: why *2??
+	if (mNumberOfAnalogChannelsUsed)
+		mAnalogBuffer = new float64[mNumberOfAnalogChannelsUsed*2]; // TODO: why *2??
 }
 // Processes the main event loop //
 void
@@ -527,25 +572,25 @@ NIDAQLogger::Process()
 void
 NIDAQLogger::StopRun()
 {
-	if (mAnalog)
-		if (ReportError(DAQmxStopTask(mAnalog)) < 0)
+	if (mAnalogTaskHandle)
+		if (ReportError(DAQmxStopTask(mAnalogTaskHandle)) < 0)
 			bcierr << "Failed to stop \"Analog_Input\" task" << endl;
-	if (mDigital)
-		if (ReportError(DAQmxStopTask(mDigital)) < 0)
+	if (mDigitalTaskHandle)
+		if (ReportError(DAQmxStopTask(mDigitalTaskHandle)) < 0)
 			bcierr << "Failed to stop \"Digital_Input\" task" << endl;
-	if (mDigiBuff)
-		delete mDigiBuff;
-	if (mAnaBuff)
-		delete mAnaBuff;
-	mDigiBuff = NULL;
-	mAnaBuff = NULL;
+	if (mDigitalBuffer)
+		delete mDigitalBuffer;
+	if (mAnalogBuffer)
+		delete mAnalogBuffer;
+	mDigitalBuffer = NULL;
+	mAnalogBuffer = NULL;
 }
 // If the task is halted... //
 void
 NIDAQLogger::Halt()
 {
-    if( mAnalog )
-        DAQmxClearTask( mAnalog );
-    if( mDigital )
-        DAQmxClearTask( mDigital );
+    if( mAnalogTaskHandle )
+        DAQmxClearTask( mAnalogTaskHandle );
+    if( mDigitalTaskHandle )
+        DAQmxClearTask( mDigitalTaskHandle );
 }

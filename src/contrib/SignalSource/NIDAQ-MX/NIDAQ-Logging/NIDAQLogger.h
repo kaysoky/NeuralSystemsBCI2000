@@ -66,19 +66,27 @@ class NIDAQLogger : public EnvironmentExtension
 		static	int32	CVICALLBACK AnalogCallback(TaskHandle, int32, uInt32, void *);
 		static	int32	CVICALLBACK DigitalCallback(TaskHandle, int32, uInt32, void *);
 		// Member Variables //
-		int							mFound[2];		//	array of number of channels found
-		int							mCounter[2];	//	array of number of channels actually used
-		bool						mUsed;			//	is there going to be logging?
-		float						mSampleRate;	//	the speed of the sampling rate of the logger
-		TaskHandle					mAnalog;		//	analog task handle
-		TaskHandle					mDigital;		//	digital task handle
-		std::string					mDevs[2];		//	array of the device names
-		std::string					mActive[2];		//	array of active channel names
-		std::vector<bool>			mLines;			//	the port usage distribution
+    std::string       mDigitalDeviceName;
+    std::string       mAnalogDeviceName;
+    int               mNumberOfDigitalChannelsFound;
+    int               mNumberOfAnalogChannelsFound;
+    int               mNumberOfDigitalChannelsUsed;
+    int               mNumberOfAnalogChannelsUsed;
+    std::vector<bool> mDigitalChannelUsage;          //  which digital channels are used and which unused
+    std::vector<bool> mAnalogChannelUsage;           //  which analog channels are used and which unused
+    std::string       mDigitalChannelSpec;           // [comma+space]-delimited string containing names of the digital channels that are used
+    std::string       mAnalogChannelSpec;            // [comma+space]-delimited string containing names of the analog channels that are used
+    TaskHandle        mDigitalTaskHandle;
+    TaskHandle        mAnalogTaskHandle;
+		uInt8		         *mDigitalBuffer;						//	buffer for digital input
+		float64		       *mAnalogBuffer;						//	buffer for analog input (scaled)
+    std::vector<std::string>  mDigitalChannelNames;  //  the names of all physical digital channels on the device(s)
+    std::vector<std::string>  mAnalogChannelNames;   //  the names of all physical analog channels on the device(s)
+
+    bool						mUsed;			//	is there going to be logging?
+		float						mDigitalSampleRate;	//	the speed of the sampling rate of the logger
+		float						mAnalogSampleRate;	//	the speed of the sampling rate of the logger
 		std::vector<float>			mRanges;		//	the voltage ranges for analog input
-		std::vector<std::string>	mLNames;		//	the names of the physical channels on the device(s)
 		// Buffer Variables //
-		uInt8		*mDigiBuff;						//	buffer for digital input
-		float64		*mAnaBuff;						//	buffer for analog input (scaled)
 };
 #endif // NIDAQ_LOGGER_H

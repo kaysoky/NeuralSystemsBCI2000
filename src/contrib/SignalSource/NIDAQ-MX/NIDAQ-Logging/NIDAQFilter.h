@@ -68,8 +68,8 @@ class NIDAQFilter : public GenericFilter
 
     // Member Variables [Private] //
     
-    std::string       mAnalogDeviceName;
     std::string       mDigitalDeviceName;
+    std::string       mAnalogDeviceName;
     int               mNumberOfDigitalChannelsFound;
     int               mNumberOfAnalogChannelsFound;
     int               mNumberOfDigitalChannelsUsed;

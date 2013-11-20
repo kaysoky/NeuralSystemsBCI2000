@@ -54,7 +54,7 @@ NIDAQFilter::NIDAQFilter()
   bool lUsingDigital = ( OptionalParameter( "LogDigiOut" ) != "" );
   bool lUsingAnalog = ( OptionalParameter( "LogAnaOut" ) != "" );
   mLogging = ( OptionalParameter( "LogNIDAQout" ) != 0 );
-  // TODO: note that digital channels can also be configured to be *inputs*.  It would be nice if in future this could be added as a third optional set of loggers.
+
   if( lUsingDigital || lUsingAnalog )
   {
     // Collect Device Names //
