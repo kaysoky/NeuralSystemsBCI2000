@@ -54,7 +54,7 @@ NIDAQFilter::NIDAQFilter()
   bool lUsingDigital = ( OptionalParameter( "LogDigiOut" ) != "" );
   bool lUsingAnalog = ( OptionalParameter( "LogAnaOut" ) != "" );
   mLogging = ( OptionalParameter( "LogNIDAQout" ) != 0 );
-
+  // TODO: note that digital channels can also be configured to be *inputs*.  It would be nice if in future this could be added as a third optional set of loggers.
   if( lUsingDigital || lUsingAnalog )
   {
     // Collect Device Names //
@@ -306,6 +306,12 @@ NIDAQFilter::Preflight( const SignalProperties& Input, SignalProperties& Output 
     }
     if( expressions->NumColumns() != 1 )
       bcierr << "The FilterExpressions parameter must have one and only one column." << endl;
+    // TODO: in future it would be nice if the FilterExpressions matrix could optionally have
+    //       *two* columns, one for the expression and one for the NI-API name of the output channel (e.g. Dev1/ao0 for the first analog output,
+    //       Dev1/port0/line0 for the first digital output).  The index and type of each channel used, and the count of used channels of each type,
+    //       could be picked up from here, and the user would not have to follow the invisible digital-first-followed-by-analog convention of the
+    //       FilterExpressions parameter.  This would be a separate issue from setting up states for logging (which would still have to use the
+    //       command-line flags.
 
     GenericSignal signal( Input );
     for( int i = 0; i < nExpressions; i++ )
@@ -428,9 +434,9 @@ NIDAQFilter::Process( const GenericSignal& Input, GenericSignal& Output )
   */
   if( mNumberOfDigitalChannelsUsed )
   {
+    int slot = 0; // task slots will have been created for the "used" channels only
     for( int i = 0; i < mNumberOfDigitalChannelsFound; i++ )
     {
-      int slot = 0; // task slots will have been created for the "used" channels only
       if( mDigitalChannelUsage[ i ] )
       {
         float64 floatVal = (float64)mExpressions[ expressionRowCounter++ ].Evaluate( &Input );
