@@ -65,7 +65,7 @@ class NIDAQFilter : public GenericFilter
     static std::string FloatToString(float n);                 //  Returns a string version of float argument
     std::vector<std::string>   CollectDeviceNames();           //  collects the device names
     static bool find(std::string, std::vector<std::string>);   // determines if the specified device is connected to the computer
-
+    static void Tokenize( std::string whole, std::vector<std::string>& parts, char delim, bool stripParts = true, bool discardEmpties = true );
     // Member Variables [Private] //
     
     std::string       mDigitalDeviceName;

@@ -33,39 +33,40 @@
 #include <vector>
 #include <string>
 
-#define MAX_RANGES 32						//	maximum number of range values to find (MAX_RANGES / 2 low:high pairs)
+#define MAX_RANGES 32            //  maximum number of range values to find (MAX_RANGES / 2 low:high pairs)
 
 class NIDAQLogger : public EnvironmentExtension
 {
-	public:
-		// Very Important Methods //
-		NIDAQLogger();						//	initialize any veriables (member) that can be initialized without data
-		virtual ~NIDAQLogger();				//	clear all large data structures, and clear all remaining tasks that are being used
-		virtual void Publish();				//	check the command line parameters, and setup any additional parameters
-		virtual void Preflight() const;		//	check everything is okay
-		virtual void Initialize();			//	initialize everything
-		virtual void Process();				//	runs the event loop
-		virtual void StartRun();			//	create the thread that performs the data acquisition
-		virtual void StopRun();				//	stop the thread that performs the data acquisition
-		virtual void Halt();				//	stop the thread that performs the data acquisition
-		// "Get" Methods //
-		bool		AcquireAIVRanges();									// gets the available voltage ranges for analog input
-		int			GetNumAnalogInputLines(std::string dev_name);		// gets the number of analog input lines based on the device name
-		int			GetNumDigitalLines(std::string dev_name);			// gets the number of digital lines based on the device name
-		// Error Checking Method //
-		int			ReportError(int error) const;						// reports an error if something goes wrong with a DAQmx function
-	private:
-		// Member Methods //
-		static std::string IntToString(int n);								// converts argument to a string
-		static std::string FloatToString(float n);							// converts argument to a string
-		std::vector<std::string> CollectDeviceNames();
-		static bool find(std::string, std::vector<std::string>);	// determines if the specified device is connected to the computer
-		// Member Callback Methods //
-		void			GetAnalogData();
-		void			GetDigitalData();
-		static	int32	CVICALLBACK AnalogCallback(TaskHandle, int32, uInt32, void *);
-		static	int32	CVICALLBACK DigitalCallback(TaskHandle, int32, uInt32, void *);
-		// Member Variables //
+  public:
+    // Very Important Methods //
+    NIDAQLogger();                   //  initialize any veriables (member) that can be initialized without data
+    virtual ~NIDAQLogger();          //  clear all large data structures, and clear all remaining tasks that are being used
+    virtual void Publish();          //  check the command line parameters, and setup any additional parameters
+    virtual void Preflight() const;  //  check everything is okay
+    virtual void Initialize();       //  initialize everything
+    virtual void Process();          //  runs the event loop
+    virtual void StartRun();         //  create the thread that performs the data acquisition
+    virtual void StopRun();          //  stop the thread that performs the data acquisition
+    virtual void Halt();             //  stop the thread that performs the data acquisition
+    // "Get" Methods //
+    bool    AcquireAIVRanges();                               // gets the available voltage ranges for analog input
+    int      GetNumAnalogInputLines(std::string dev_name);    // gets the number of analog input lines based on the device name
+    int      GetNumDigitalLines(std::string dev_name);        // gets the number of digital lines based on the device name
+    // Error Checking Method //
+    int      ReportError(int error) const;                    // reports an error if something goes wrong with a DAQmx function
+  private:
+    // Member Methods //
+    static std::string IntToString(int n);                    // converts argument to a string
+    static std::string FloatToString(float n);                // converts argument to a string
+    std::vector<std::string> CollectDeviceNames();
+    static bool find(std::string, std::vector<std::string>);  // determines if the specified device is connected to the computer
+    static void Tokenize( std::string whole, std::vector<std::string>& parts, char delim, bool stripParts = true, bool discardEmpties = true );
+    // Member Callback Methods //
+    void          GetAnalogData();
+    void          GetDigitalData();
+    static int32  CVICALLBACK AnalogCallback(TaskHandle, int32, uInt32, void *);
+    static int32  CVICALLBACK DigitalCallback(TaskHandle, int32, uInt32, void *);
+    // Member Variables //
     std::string       mDigitalDeviceName;
     std::string       mAnalogDeviceName;
     int               mNumberOfDigitalChannelsFound;
@@ -78,15 +79,15 @@ class NIDAQLogger : public EnvironmentExtension
     std::string       mAnalogChannelSpec;            // [comma+space]-delimited string containing names of the analog channels that are used
     TaskHandle        mDigitalTaskHandle;
     TaskHandle        mAnalogTaskHandle;
-		uInt8		         *mDigitalBuffer;						//	buffer for digital input
-		float64		       *mAnalogBuffer;						//	buffer for analog input (scaled)
+    uInt8             *mDigitalBuffer;               //  buffer for digital input
+    float64           *mAnalogBuffer;                //  buffer for analog input (scaled)
     std::vector<std::string>  mDigitalChannelNames;  //  the names of all physical digital channels on the device(s)
     std::vector<std::string>  mAnalogChannelNames;   //  the names of all physical analog channels on the device(s)
 
-    bool						mUsed;			//	is there going to be logging?
-		float						mDigitalSampleRate;	//	the speed of the sampling rate of the logger
-		float						mAnalogSampleRate;	//	the speed of the sampling rate of the logger
-		std::vector<float>			mRanges;		//	the voltage ranges for analog input
-		// Buffer Variables //
+    bool                mLogging;            //  is there going to be logging?
+    float               mDigitalSampleRate;  //  the speed of the sampling rate of the logger
+    float               mAnalogSampleRate;   //  the speed of the sampling rate of the logger
+    std::vector<float>  mRanges;             //  the voltage ranges for analog input
+    // Buffer Variables //
 };
 #endif // NIDAQ_LOGGER_H

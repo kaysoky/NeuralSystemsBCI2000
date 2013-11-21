@@ -501,12 +501,13 @@ NIDAQFilter::StopRun()
 void
 NIDAQFilter::Halt()
 {
-  delete [] mDigitalBuffer;
-  delete [] mAnalogBuffer;
   if( mAnalogTaskHandle )
     DAQmxClearTask( mAnalogTaskHandle );
   if( mDigitalTaskHandle )
     DAQmxClearTask( mDigitalTaskHandle );
+  mAnalogTaskHandle = mDigitalTaskHandle = NULL;
+  delete [] mDigitalBuffer; mDigitalBuffer = NULL;
+  delete [] mAnalogBuffer; mAnalogBuffer = NULL;
 }
 
 // Report any NIDAQmx Errors that may occur //
@@ -523,7 +524,8 @@ NIDAQFilter::ReportError( int errCode ) const
   return 1; // EVERYTHING IS OKAY
 }
 
-void Tokenize( std::string whole, std::vector<std::string>& parts, char delim, bool stripParts, bool discardEmpties )
+void
+NIDAQFilter::Tokenize( std::string whole, std::vector<std::string>& parts, char delim, bool stripParts, bool discardEmpties )
 {
   stringstream ss( whole );
   string part;
