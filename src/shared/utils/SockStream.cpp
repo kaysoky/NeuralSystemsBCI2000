@@ -46,6 +46,7 @@
 # define socklen_t int
 # undef errno
 # define errno WSAGetLastError()
+# undef EINTR
 # define EINTR WSAEINTR
 #else
 # include <unistd.h>
@@ -806,8 +807,8 @@ sockbuf::xsgetn( char* p, streamsize n )
       ++m_short_reads;
       return count;
     }
-    ::memcpy( p + count, gptr(), avail );
-    gbump( avail );
+    ::memcpy( p + count, gptr(), (size_t)avail );
+    gbump( (int)avail );
     count += avail;
   }
   return count;
@@ -821,7 +822,7 @@ sockbuf::xsputn( const char* p, streamsize n )
   {
     overflow( traits_type::eof() );
     sync_pbuf _(this);
-    size_t avail = min( n - count, epptr() - pptr() );
+    size_t avail = min( (size_t)(n - count), (size_t)(epptr() - pptr()) );
     if( !avail )
     {
       ++m_short_writes;
