@@ -32,7 +32,6 @@
 #include "ClassName.h"
 
 using namespace std;
-using namespace bci;
 using namespace StatisticalObserver;
 
 // Independent function definitions

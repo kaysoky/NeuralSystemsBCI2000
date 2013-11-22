@@ -97,7 +97,7 @@ HilbertFilter::Initialize( const SignalProperties& Input, const SignalProperties
 	
 	mFilter.resize( mFilterLength, 0.0 );
 	for( int sample = 1; sample < mFilterLength; sample+=2 )
-		mFilter[sample] = ( sample==offset ? 0.0 : 2.0/(Pi*double(sample-offset)) ); 
+		mFilter[sample] = ( sample==offset ? 0.0 : 2.0/(Pi()*double(sample-offset)) ); 
 	
 	int bufferLength = mFilterLength + Input.Elements() - 1;
 	mBuffer.resize( numChannels, DataVector( 0.0, bufferLength ) );

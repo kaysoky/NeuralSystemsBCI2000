@@ -41,7 +41,7 @@ class RandomGenerator : public LCRandomGenerator, private EnvironmentExtension
   template<typename T>
   explicit RandomGenerator( const T* t )
     : LCRandomGenerator( 0 ),
-      mID( bci::ClassName( typeid( T ) ) )
+      mID( ClassName( typeid( T ) ) )
     {}
   explicit RandomGenerator( const std::string& s )
     : LCRandomGenerator( 0 ),

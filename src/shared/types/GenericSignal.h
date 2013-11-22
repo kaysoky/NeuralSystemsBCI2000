@@ -33,7 +33,7 @@
 #include "SignalType.h"
 #include "SignalProperties.h"
 #include "LazyArray.h"
-#include "OSSharedMemory.h"
+#include "SharedMemory.h"
 
 class GenericChannel;
 class GenericElement;
@@ -106,7 +106,7 @@ class GenericSignal
 
     SignalProperties mProperties;
     LazyArray<ValueType> mValues;
-    SharedPointer<OSSharedMemory> mSharedMemory;
+    SharedPointer<SharedMemory> mSharedMemory;
 };
 
 class GenericChannel

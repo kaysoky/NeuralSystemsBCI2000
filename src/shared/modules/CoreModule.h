@@ -59,7 +59,7 @@
 #define CORE_MODULE_H
 
 #include "Uncopyable.h"
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "ParamList.h"
 #include "StateList.h"
 #include "StateVector.h"
@@ -107,7 +107,55 @@
 
 #endif // MODTYPE
 
-class CoreModule : public GenericVisualization::NotificationClient, private MessageHandler
+class ModuleConnection
+: public MessageChannel,
+  public std::iostream
+{
+ public:
+  ModuleConnection( CoreModule& );
+  ~ModuleConnection();
+  bool Open( streamsock& );
+  void Close()
+    { mBuffer.close(); }
+  bool IsOpen()
+    { return mBuffer.is_open(); }
+  bool IsLocal() const
+    { return mIsLocal; }
+
+  ModuleConnection& AsyncSend( bool b )
+    { mBuffer.AsyncSend( b ); return *this; }
+  ModuleConnection& AsyncReceive( bool b )
+    { mBuffer.AsyncReceive( b ); return *this; }
+  const Waitable& CanRead() const
+    { return mBuffer.NotifyReceived(); }
+
+  const ProtocolVersion& Protocol() const
+    { return MessageChannel::Protocol(); }
+  ProtocolVersion& Protocol()
+    { return MessageChannel::Protocol(); }
+
+  bool ProcessMessages();
+
+ protected:
+  bool OnProtocolVersion( std::istream& );
+  bool OnParam( std::istream& );
+  bool OnState( std::istream& );
+  bool OnVisSignal( std::istream& );
+  bool OnVisSignalProperties( std::istream& );
+  bool OnStateVector( std::istream& );
+  bool OnSysCommand( std::istream& );
+
+  bool OnSend( const VisSignal& );
+  bool OnSend( const VisSignalConst& );
+
+ private:
+  CoreModule& mrParent;
+  bool mIsLocal;
+  ThreadedSockbuf mBuffer;
+  Lockable<OSMutex> mOutputLock;
+};
+
+class CoreModule
 {
   static const int cInitialConnectionTimeout = 20000; // ms
 
@@ -128,10 +176,8 @@ class CoreModule : public GenericVisualization::NotificationClient, private Mess
   bool Initialize( int& argc, char** argv );
   void MainMessageLoop();
   void ProcessBCIAndGUIMessages();
-  void ProcessBCIMessages( sockstream& );
 
   bool IsLastModule() const;
-  bool IsLocalConnection( const client_tcpsocket& ) const;
 
   void InitializeOperatorConnection( const std::string& operatorAddress );
   void InitializeCoreConnections();
@@ -153,6 +199,7 @@ class CoreModule : public GenericVisualization::NotificationClient, private Mess
   void StateUpdate();
 
   // BCI message handling functions.
+  friend class ModuleConnection;
   bool HandleParam( std::istream& );
   bool HandleState( std::istream& );
   bool HandleVisSignal( std::istream& );
@@ -161,8 +208,7 @@ class CoreModule : public GenericVisualization::NotificationClient, private Mess
   bool HandleSysCommand( std::istream& );
   bool HandleProtocolVersion( std::istream& );
 
-  // Notification interface
-  bool OnNotify( const GenericSignal* );
+  bool OnSendSignal( const GenericSignal*, const ModuleConnection& );
 
  private:
   ParamList        mParamlist,
@@ -175,12 +221,7 @@ class CoreModule : public GenericVisualization::NotificationClient, private Mess
   client_tcpsocket mOperatorSocket,
                    mNextModuleSocket;
   server_tcpsocket mPreviousModuleSocket;
-  ThreadedSockbuf  mOperatorBuffer,
-                   mPreviousModuleBuffer,
-                   mNextModuleBuffer;
-  struct LockableSockstream : sockstream, Lockable<OSMutex>
-  { LockableSockstream( sockbuf* s = 0 ) : sockstream( s ) {} }
-                   mOperator,
+  ModuleConnection mOperator,
                    mNextModule,
                    mPreviousModule;
   bool             mTerminating,
@@ -193,8 +234,6 @@ class CoreModule : public GenericVisualization::NotificationClient, private Mess
   void*            mGlobalID;
   bool             mOperatorBackLink,
                    mAutoConfig;
-  ProtocolVersion  mOperatorProtocol,
-                   mNextModuleProtocol;
   std::string      mThisModuleIP;
   bool             mActiveResting;
   std::map<const GenericSignal*, int> mLargeSignals;

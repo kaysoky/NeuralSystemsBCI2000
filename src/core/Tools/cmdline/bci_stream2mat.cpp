@@ -34,7 +34,7 @@
 #include "StateList.h"
 #include "StateVector.h"
 #include "GenericVisualization.h"
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "BCIError.h"
 #include "Version.h"
 #include "defines.h"
@@ -52,7 +52,7 @@ string ToolInfo[] =
   ""
 };
 
-class StreamToMat : public MessageHandler
+class StreamToMat : public MessageChannel
 {
   // Matlab file format related constants.
   enum
@@ -79,15 +79,14 @@ class StreamToMat : public MessageHandler
   };
 
  public:
-  StreamToMat( ostream& arOut )
-  : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0 ),
+  StreamToMat( istream& is, ostream& os )
+  : MessageChannel( is, os ), mpStatevector( NULL ), mSignalProperties( 0, 0 ),
     mDataElementSizePos( 0 ), mDataColsPos( 0 ), mDataSizePos( 0 ), mDataCols( 0 ),
     mParamsDumped( false ) {}
   ~StreamToMat() { delete mpStatevector; }
-  void FinishHeader() const;
+  void FinishHeader();
 
  private:
-  ostream&            mrOut;
   stringstream        mParamsOut;
   bool                mParamsDumped;
   StateList           mStatelist;
@@ -100,27 +99,27 @@ class StreamToMat : public MessageHandler
                       mDataColsPos,
                       mDataSizePos;
 
-  streamoff BeginVar(uint32_t flags) const;
-  void FinishVar(streamoff sizePos) const;
-  void WriteDims(uint32_t nRows, uint32_t nCols) const;
-  void WriteName(string name) const;
-  void WriteString(string name, string str) const;
+  streamoff BeginVar(uint32_t flags);
+  void FinishVar(streamoff sizePos);
+  void WriteDims(uint32_t nRows, uint32_t nCols);
+  void WriteName(const string& name);
+  void WriteString(const string& name, const string& str);
 
   void WriteHeader();
   void WriteData( const GenericSignal& );
-  void Write16( uint16_t value ) const
-  { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
-  void Write32( uint32_t value ) const
-  { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
-  void WriteFloat32( float32_t value ) const
-  { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
-  void Pad() const;
+  void Write16( uint16_t value )
+  { Output().write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
+  void Write32( uint32_t value )
+  { Output().write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
+  void WriteFloat32( float32_t value )
+  { Output().write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
+  void Pad();
 
-  virtual bool HandleState(                 istream& );
-  virtual bool HandleVisSignal(             istream& );
-  virtual bool HandleVisSignalProperties(   istream& );
-  virtual bool HandleStateVector(           istream& );
-  virtual bool HandleParam(                 istream& );
+  virtual bool OnState(                 istream& );
+  virtual bool OnVisSignal(             istream& );
+  virtual bool OnVisSignalProperties(   istream& );
+  virtual bool OnStateVector(           istream& );
+  virtual bool OnParam(                 istream& );
 };
 
 ToolResult
@@ -134,9 +133,9 @@ ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
   if( arOptions.size() > 1 )
     return illegalOption;
-  StreamToMat converter( arOut );
+  StreamToMat converter( arIn, arOut );
   while( arIn && arIn.peek() != EOF )
-    converter.HandleMessage( arIn );
+    converter.HandleMessage();
   converter.FinishHeader();
   if( !arIn )
     return illegalInput;
@@ -144,18 +143,18 @@ ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 }
 
 void
-StreamToMat::Pad() const
+StreamToMat::Pad()
 {
-  for( streamoff i = mrOut.tellp(); i % matPadding; ++i )
-    mrOut.put( 0 );
+  for( streamoff i = Output().tellp(); i % matPadding; ++i )
+    Output().put( 0 );
 }
 
 
 streamoff
-StreamToMat::BeginVar(uint32_t flags) const
+StreamToMat::BeginVar(uint32_t flags)
 {
   Write32( miMATRIX );
-  streamoff sizePos = mrOut.tellp();
+  streamoff sizePos = Output().tellp();
   Write32( 0 ); // placeholder for size
   Write32( miUINT32 ); Write32( 8 ); // flags are coming
   Write32( flags ); Write32( 0 ); // here are the flags
@@ -163,34 +162,34 @@ StreamToMat::BeginVar(uint32_t flags) const
 }
 
 void
-StreamToMat::FinishVar(streamoff sizePos) const
+StreamToMat::FinishVar(streamoff sizePos)
 { // bounce back to sizePos, write the number of bytes between here and where you just came from - 4, bounce back to where you came from
-  streamoff endPos = mrOut.tellp();
-  mrOut.seekp( sizePos );
+  streamoff endPos = Output().tellp();
+  Output().seekp( sizePos );
   Write32( static_cast<uint32_t>( endPos - sizePos - 4 ) );
-  mrOut.seekp( endPos );
+  Output().seekp( endPos );
 }
 
 void
-StreamToMat::WriteDims(uint32_t nRows, uint32_t nCols) const
+StreamToMat::WriteDims(uint32_t nRows, uint32_t nCols)
 {
   Write32( miINT32 ); Write32( 8 );
   Write32( nRows ); Write32( nCols );
 }
 
 void
-StreamToMat::WriteName(string name) const
+StreamToMat::WriteName(const string& name)
 {
   Write32( static_cast<uint32_t>( miINT8 ) ); Write32( static_cast<uint32_t>( name.size() ) );
   if( name.size() )
   {
-    mrOut << name;
+    Output() << name;
     Pad();
   }
 }
 
 void
-StreamToMat::WriteString(string name, string str) const
+StreamToMat::WriteString(const string& name, const string& str)
 {
   streamoff sizePos = BeginVar( mxCHAR_CLASS );
   WriteDims( 1, static_cast<int>( str.size() ) );
@@ -206,16 +205,16 @@ void
 StreamToMat::WriteHeader()
 {
   time_t timer = ::time( NULL );
-  mrOut << "MATLAB 5.0 MAT-file created "
+  Output() << "MATLAB 5.0 MAT-file created "
         << ::ctime( &timer )
         << " by "
         << ToolInfo[ name ] << ", "
         << ToolInfo[ version ];
-  for( streamoff i = mrOut.tellp(); i < matTextHeaderLength; ++i )
-    mrOut << ' ';
-  mrOut.seekp( matTextHeaderLength );
-  for( streamoff i = mrOut.tellp(); i < matVersionInfoOffset; ++i )
-    mrOut << ' ';
+  for( streamoff i = Output().tellp(); i < matTextHeaderLength; ++i )
+    Output() << ' ';
+  Output().seekp( matTextHeaderLength );
+  for( streamoff i = Output().tellp(); i < matVersionInfoOffset; ++i )
+    Output() << ' ';
   Write16( 0x0100 ); Write16( 'MI' );
   // Write a matlab structure containing arrays with state names
   // pointing to the associated columns.
@@ -237,13 +236,13 @@ StreamToMat::WriteHeader()
   Write32( static_cast<uint32_t>( fieldNameLength * ( mStateNames.size() + 1 ) ) );
   for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
   {
-    mrOut << *i;
+    Output() << *i;
     for( size_t j = i->length(); j < fieldNameLength; ++j )
-      mrOut.put( '\0' );
+      Output().put( '\0' );
   }
-  mrOut << signalName;
+  Output() << signalName;
   for( size_t j = sizeof( signalName ) - 1; j < fieldNameLength; ++j )
-    mrOut.put( '\0' );
+    Output().put( '\0' );
   // Fields
   // 1x1 arrays holding the states' column indices
   for( size_t i = 1; i <= mStateNames.size(); ++i )
@@ -312,10 +311,10 @@ StreamToMat::WriteHeader()
   // A single-precision numeric array that holds the signal.
   mDataElementSizePos = BeginVar( mxSINGLE_CLASS );
   WriteDims( static_cast<uint32_t>( mStateNames.size() + numSignalEntries ), 0 );
-  mDataColsPos = mrOut.tellp(); mDataColsPos -= 4;
+  mDataColsPos = Output().tellp(); mDataColsPos -= 4;
   WriteName( "Data" );
   Write32( miSINGLE );
-  mDataSizePos = mrOut.tellp();
+  mDataSizePos = Output().tellp();
   Write32( 0 );
 }
 
@@ -336,20 +335,20 @@ StreamToMat::WriteData( const GenericSignal& s )
 }
 
 void
-StreamToMat::FinishHeader() const
+StreamToMat::FinishHeader()
 {
   FinishVar( mDataSizePos );
   Pad();
   FinishVar( mDataElementSizePos );
 
-  streamoff endPos = mrOut.tellp();
-  mrOut.seekp( mDataColsPos );
+  streamoff endPos = Output().tellp();
+  Output().seekp( mDataColsPos );
   Write32( static_cast<unsigned int>( mDataCols ) );
-  mrOut.seekp( endPos );
+  Output().seekp( endPos );
 }
 
 bool
-StreamToMat::HandleState( istream& arIn )
+StreamToMat::OnState( istream& arIn )
 {
   State s;
   s.ReadBinary( arIn );
@@ -367,7 +366,7 @@ StreamToMat::HandleState( istream& arIn )
 }
 
 bool
-StreamToMat::HandleVisSignal( istream& arIn )
+StreamToMat::OnVisSignal( istream& arIn )
 {
   VisSignal v;
   v.ReadBinary( arIn );
@@ -383,7 +382,7 @@ StreamToMat::HandleVisSignal( istream& arIn )
 
 
 bool
-StreamToMat::HandleVisSignalProperties( istream& arIn )
+StreamToMat::OnVisSignalProperties( istream& arIn )
 {
   VisSignalProperties vsp;
   vsp.ReadBinary( arIn );
@@ -400,7 +399,7 @@ StreamToMat::HandleVisSignalProperties( istream& arIn )
 
 
 bool
-StreamToMat::HandleStateVector( istream& arIn )
+StreamToMat::OnStateVector( istream& arIn )
 {
   if( mpStatevector == NULL )
     mpStatevector = new StateVector( mStatelist );
@@ -409,7 +408,7 @@ StreamToMat::HandleStateVector( istream& arIn )
 }
 
 bool
-StreamToMat::HandleParam( istream& arIn )
+StreamToMat::OnParam( istream& arIn )
 {
   Param p;
   if( p.ReadBinary( arIn ) )

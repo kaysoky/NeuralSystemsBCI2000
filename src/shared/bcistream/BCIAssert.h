@@ -27,27 +27,13 @@
 #ifndef BCI_ASSERT_H
 #define BCI_ASSERT_H
 
-#include "BCIException.h"
 #include "Debugging.h"
 
 #if BCIDEBUG
 
-#define bciassert(x) { if( !bci::id_(x) ) throw std_logic_error( "Assertion failed: " << #x << "\n" ); }
-#define bcidebug(x) { bci::SuggestDebugging( "bciDebugBreak statement", EXCEPTION_ARG_( x ) ); }
-#define bciDebugBreak() { bci::SuggestDebugging( "bciDebugBreak statement", EXCEPTION_ARG_( "bciDebugBreak()\n" << EXCEPTION_CONTEXT_ ) ); }
-
-namespace bci
-{ // The id_() function is there to avoid "condition is always false" and
-  // "unreachable code" compiler warnings.
-  inline bool id_( bool x )
-    { return x; }
-}
-
-// The function trick does not work with BCB.
-#ifdef __BORLANDC__
-# pragma warn -8008
-# pragma warn -8066
-#endif // __BORLANDC__
+#define bciassert(x)    Assert(x)
+#define bcidebug(x)     SuggestDebugging(x)
+#define bciDebugBreak() DebugBreak()
 
 #else // BCIDEBUG
 

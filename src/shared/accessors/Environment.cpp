@@ -40,7 +40,6 @@
 
 #include "ParamList.h"
 #include "StateList.h"
-#include "MessageHandler.h"
 #include "PhysicalUnit.h"
 #include "MeasurementUnits.h"
 #include "RunManager.h"
@@ -52,7 +51,7 @@
 #include <cstdlib>
 
 using namespace std;
-using namespace bci;
+using namespace Tiny;
 
 ////////////////////////////////////////////////////////////////////////////////
 // EnvironmentBase definitions
@@ -65,8 +64,8 @@ template<> StateVector* EnvironmentBase::Accessor_<StateVector>::spGlobal = NULL
 #undef phase_
 EnvironmentBase::ExecutionPhase EnvironmentBase::phase_ = EnvironmentBase::nonaccess;
 int EnvironmentBase::sMaxInstanceID = 0;
-OSThreadLocal<const EnvironmentBase*> EnvironmentBase::stObjectContext;
-OSThreadLocal<const EnvironmentBase*> EnvironmentBase::stWrapperContext;
+ThreadLocal<const EnvironmentBase*> EnvironmentBase::stObjectContext;
+ThreadLocal<const EnvironmentBase*> EnvironmentBase::stWrapperContext;
 
 #ifdef __BORLANDC__
 # pragma warn -8104 // No warning about local statics.
@@ -153,7 +152,7 @@ EnvironmentBase::ErrorContext( const std::string& inQualifier, const Environment
   string context;
   if( inpObject != NULL )
   {
-    context += bci::ClassName( typeid( *inpObject ) );
+    context += ClassName( typeid( *inpObject ) );
     context += "::";
   }
   context += inQualifier;
@@ -678,7 +677,7 @@ void EnvironmentBase::OnExit()
 // Publish() helper functions
 void EnvironmentBase::AddParameters( const char** inParams, size_t inCount ) const
 {
-  ::EncodedString className( bci::ClassName( typeid( *this ) ) );       
+  ::EncodedString className( ClassName( typeid( *this ) ) );       
   ostringstream oss;                                               
   className.WriteToStream( oss, ":" );                                 
   for( size_t i = 0; i < inCount; ++i )   

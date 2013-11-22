@@ -24,9 +24,6 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"
-#pragma hdrstop
-
 #include "BCI2000FileReader.h"
 #include "BCIException.h"
 #include "defines.h"
@@ -462,5 +459,4 @@ BCI2000FileReader::BufferSample( long long inSample )
   }
   return mpBuffer + ( filepos - mBufferBegin );
 }
-
 

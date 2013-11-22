@@ -35,7 +35,6 @@
 #include "ProtocolVersion.h"
 #include "SysCommand.h"
 #include "Status.h"
-#include "MessageHandler.h"
 #include "MeasurementUnits.h"
 #include "SockStream.h"
 #include "BCIStream.h"
@@ -59,6 +58,75 @@ using namespace std;
 
 static const string sModuleName = FileUtils::ExtractBase( FileUtils::ExecutablePath() );
 
+// ModuleConnection class
+ModuleConnection::ModuleConnection( CoreModule& parent )
+: MessageChannel( static_cast<iostream&>( *this ) ),
+  iostream( &mBuffer ),
+  mrParent( parent ),
+  mIsLocal( false )
+{
+  SetOutputLock( &mOutputLock );
+}
+
+ModuleConnection::~ModuleConnection()
+{
+}
+
+bool
+ModuleConnection::Open( streamsock& s )
+{
+  switch( s.connected() )
+  {
+    case streamsock::locally:
+      mIsLocal = true;
+      break;
+    case streamsock::remote:
+      mIsLocal = false;
+      break;
+    default:
+      return false;
+  }
+  iostream::clear();
+  mBuffer.open( s );
+  return true;
+}
+
+bool
+ModuleConnection::ProcessMessages()
+{
+  if( !CanRead().Wait( 0 ) )
+    return false;
+  while( mBuffer.is_open() && mBuffer.in_avail() > 0 )
+  {
+    if( mBuffer.is_open() && istream::peek() == EOF )
+      istream::clear();
+    if( istream::good() && mBuffer.is_open() )
+      MessageChannel::HandleMessage();
+  }
+  istream::clear();
+  return true;
+}
+
+bool ModuleConnection::OnProtocolVersion( istream& s )
+{ return mrParent.HandleProtocolVersion( s ); }
+bool ModuleConnection::OnParam( std::istream& s )
+{ return mrParent.HandleParam( s ); }
+bool ModuleConnection::OnState( std::istream& s )
+{ return mrParent.HandleState( s ); }
+bool ModuleConnection::OnVisSignal( std::istream& s )
+{ return mrParent.HandleVisSignal( s ); }
+bool ModuleConnection::OnVisSignalProperties( std::istream& s )
+{ return mrParent.HandleVisSignalProperties( s ); }
+bool ModuleConnection::OnStateVector( std::istream& s )
+{ return mrParent.HandleStateVector( s ); }
+bool ModuleConnection::OnSysCommand( std::istream& s )
+{ return mrParent.HandleSysCommand( s ); }
+bool ModuleConnection::OnSend( const VisSignalConst& s )
+{ return mrParent.OnSendSignal( &s.Signal(), *this ); }
+bool ModuleConnection::OnSend( const VisSignal& s )
+{ return OnSend( static_cast<const VisSignalConst&>( s ) ); }
+
+// CoreModule class
 CoreModule::CoreModule()
 : mFiltersInitialized( false ),
   mTerminating( false ),
@@ -71,9 +139,9 @@ CoreModule::CoreModule()
   mGlobalID( NULL ),
   mOperatorBackLink( false ),
   mAutoConfig( false ),
-  mOperator( &mOperatorBuffer ),
-  mPreviousModule( &mPreviousModuleBuffer ),
-  mNextModule( &mNextModuleBuffer )
+  mOperator( *this ),
+  mPreviousModule( *this ),
+  mNextModule( *this )
 {
   mOperatorSocket.set_tcpnodelay( true );
   mNextModuleSocket.set_tcpnodelay( true );
@@ -125,12 +193,6 @@ CoreModule::IsLastModule() const
 #else
   return false;
 #endif
-}
-
-bool
-CoreModule::IsLocalConnection( const client_tcpsocket& s ) const
-{
-  return s.ip() == mThisModuleIP;
 }
 
 bool
@@ -248,14 +310,14 @@ CoreModule::MainMessageLoop()
   const int bciMessageTimeout = 100; // ms, is max time a GUI event needs to wait
                                      // before it gets processed
   Waitables inputs;
-  inputs.Add( mOperatorBuffer.NotifyReceived() )
-        .Add( mPreviousModuleBuffer.NotifyReceived() );
+  inputs.Add( mOperator.CanRead() )
+        .Add( mPreviousModule.CanRead() );
 
   while( !mTerminating )
   {
     inputs.Wait( bciMessageTimeout );
     ProcessBCIAndGUIMessages();
-    if( !mOperator.is_open() )
+    if( !mOperator.IsOpen() )
       Terminate();
   }
 }
@@ -266,10 +328,8 @@ CoreModule::ProcessBCIAndGUIMessages()
   bool repeat = true;
   while( repeat )
   {
-    if( mOperatorBuffer.NotifyReceived().Wait( 0 ) )
-      ProcessBCIMessages( mOperator );
-    if( mPreviousModuleBuffer.NotifyReceived().Wait( 0 ) )
-      ProcessBCIMessages( mPreviousModule );
+    mOperator.ProcessMessages();
+    mPreviousModule.ProcessMessages();
 
     repeat = false;
     if( mActiveResting && !mTerminating )
@@ -281,27 +341,13 @@ CoreModule::ProcessBCIAndGUIMessages()
     // Allow for the GUI to process messages from its message queue if there are any.
     OnProcessGUIMessages();
     repeat |= OnGUIMessagesPending();
-    repeat &= mOperator.is_open();
+    repeat &= mOperator.IsOpen();
   }
-}
-
-void
-CoreModule::ProcessBCIMessages( sockstream& is )
-{
-  while( is.is_open() && is.rdbuf()->in_avail() > 0 )
-  {
-    if( is.is_open() && is.peek() == EOF )
-      is.clear();
-    if( is && is.is_open() )
-      MessageHandler::HandleMessage( is );
-  }
-  is.clear();
 }
 
 void
 CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
 {
-  Lock lock( mOperator );
   // creating connection to the operator
   mOperatorSocket.open( inOperatorAddress.c_str() );
   if( !mOperatorSocket.is_open() )
@@ -310,9 +356,8 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
     ThreadUtils::SleepFor( operatorWaitInterval );
     mOperatorSocket.open( inOperatorAddress.c_str() );
   }
-  mOperator.clear();
-  mOperator.open( mOperatorSocket );
-  if( !mOperator.is_open() )
+  mOperator.Open( mOperatorSocket );
+  if( !mOperator.IsOpen() )
   {
     bcierr << "Could not connect to operator module" << endl;
     return;
@@ -320,16 +365,15 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   if( mOperatorSocket.wait_for_read( 500 ) )
   { // By immediately sending a neutral message, the operator module indicates that it
     // is able to deal with more recent versions of the protocol.
-    MessageHandler::HandleMessage( mOperator );
-    MessageHandler::PutMessage( mOperator, ProtocolVersion::Current() );
+    mOperator.ProcessMessages();
+    mOperator.Send( ProtocolVersion::Current() );
   }
   else
   {
-    MessageHandler::PutMessage( mOperator, ProtocolVersion::Current().Major() );
+    mOperator.Send( ProtocolVersion::Current().Major() );
   }
-  mOperator.flush();
-  BCIStream::SetOperatorStream( &mOperator, &mOperator );
-  GenericVisualization::SetOutputStream( &mOperator, this );
+  BCIStream::SetOutputChannel( &mOperator );
+  GenericVisualization::SetOutputChannel( &mOperator );
   mParamlist.Add(
     "System:Core%20Connections string OperatorIP= x"
     " 127.0.0.1 % % // the Operator module's IP" );
@@ -343,8 +387,7 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
     mPreviousModuleSocket.open( addr.rbegin()->c_str() );
   }
   mThisModuleIP = mPreviousModuleSocket.ip();
-  mPreviousModule.clear();
-  mPreviousModule.open( mPreviousModuleSocket );
+  mPreviousModule.Open( mPreviousModuleSocket );
 
   EnvironmentBase::EnterConstructionPhase( &mParamlist, &mStatelist, NULL );
   GenericFilter::InstantiateFilters();
@@ -399,15 +442,14 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   }
   // Now, publish parameters ...
   mParamlist.Sort();
-  MessageHandler::PutMessage( mOperator, mParamlist );
-  MessageHandler::PutMessage( mOperator, SysCommand::EndOfParameter );
+  mOperator.Send( mParamlist );
+  mOperator.Send( SysCommand::EndOfParameter );
   // ... and states.
-  MessageHandler::PutMessage( mOperator, mStatelist );
-  MessageHandler::PutMessage( mOperator, SysCommand::EndOfState );
+  mOperator.Send( mStatelist );
+  mOperator.Send( SysCommand::EndOfState );
 
-  MessageHandler::PutMessage( mOperator, Status( "Waiting for configuration ...", Status::plainMessage ) );
-  mOperator.flush();
-  mOperatorBuffer.AsyncSend().AsyncReceive();
+  mOperator.Send( Status( "Waiting for configuration ...", Status::plainMessage ) );
+  mOperator.AsyncSend( true ).AsyncReceive( true );
 }
 
 
@@ -436,43 +478,36 @@ CoreModule::InitializeCoreConnections()
     bcierr << "Next module's IP/Port parameters not available";
     return;
   }
+  mNextModuleSocket.open( nextModuleAddress.c_str() );
+  mNextModule.Open( mNextModuleSocket );
+  if( !mNextModule.IsOpen() )
   {
-    Lock lock( mNextModule );
-    mNextModuleSocket.open( nextModuleAddress.c_str() );
-    mNextModule.open( mNextModuleSocket );
-    if( !mNextModule.is_open() )
-    {
-      bcierr << "Could not make a connection to the next module at " << nextModuleAddress;
-      return;
-    }
+    bcierr << "Could not make a connection to the next module at " << nextModuleAddress;
+    return;
   }
-  mNextModuleBuffer.AsyncSend( false );
+  mNextModule.AsyncSend( false );
 
+  mPreviousModule.Close();
+  bool waitForConnection = mPreviousModuleSocket.is_open() && !mPreviousModuleSocket.connected();
+  if( waitForConnection )
+    mPreviousModuleSocket.wait_for_read( cInitialConnectionTimeout, true );
+  mPreviousModule.Open( mPreviousModuleSocket );
+  if( waitForConnection && !mPreviousModule.IsOpen() )
   {
-    Lock lock( mPreviousModule );
-    mPreviousModule.close();
-    mPreviousModule.clear();
-    bool waitForConnection = mPreviousModuleSocket.is_open() && !mPreviousModuleSocket.connected();
-    if( waitForConnection )
-      mPreviousModuleSocket.wait_for_read( cInitialConnectionTimeout, true );
-    mPreviousModule.open( mPreviousModuleSocket );
-    if( waitForConnection && !mPreviousModule.is_open() )
-    {
-      bcierr << "Connection to previous module timed out after "
-             << float( cInitialConnectionTimeout ) / 1e3 << "s"
-             << endl;
-      return;
-    }
-    mPreviousModuleBuffer.AsyncReceive();
+    bcierr << "Connection to previous module timed out after "
+           << float( cInitialConnectionTimeout ) / 1e3 << "s"
+           << endl;
+    return;
   }
+  mPreviousModule.AsyncReceive( true );
 }
 
 
 void
 CoreModule::ShutdownSystem()
 {
-  BCIError::SetOperatorStream( NULL, NULL );
-  GenericVisualization::SetOutputStream( NULL, NULL );
+  BCIStream::SetOutputChannel( 0 );
+  GenericVisualization::SetOutputChannel( 0 );
   mOperatorSocket.close();
   mPreviousModuleSocket.close();
   mNextModuleSocket.close();
@@ -573,9 +608,8 @@ CoreModule::AutoConfigFilters()
   EnvironmentBase::EnterNonaccessPhase();
   mOutputSignal = GenericSignal( Output );
 
-  client_tcpsocket& outputSocket = IsLastModule() ? mOperatorSocket : mNextModuleSocket;
-  ProtocolVersion& outputProtocol = IsLastModule() ? mOperatorProtocol : mNextModuleProtocol;
-  if( IsLocalConnection( outputSocket ) && outputProtocol.Provides( ProtocolVersion::SharedSignalStorage ) )
+  ModuleConnection& conn = IsLastModule() ? mOperator : mNextModule;
+  if( conn.IsLocal() && conn.Protocol().Provides( ProtocolVersion::SharedSignalStorage ) )
     mOutputSignal.ShareAcrossModules();
 
   for( int i = 0; i < restoreParams.Size(); ++i )
@@ -597,8 +631,7 @@ CoreModule::AutoConfigFilters()
   if( mAutoConfig && bcierr__.Empty() )
   {
     BroadcastParameterChanges();
-    Lock lock( mOperator );
-    if( !MessageHandler::PutMessage( mOperator, Output ).flush() )
+    if( !mOperator.Send( Output ) )
       bcierr << "Could not send output properties to Operator module" << endl;
   }
 }
@@ -614,14 +647,12 @@ CoreModule::InitializeFilters()
     {
       if( IsLastModule() )
       {
-        Lock lock( mOperator );
-        if( mOperatorBackLink && !MessageHandler::PutMessage( mOperator, mOutputSignal.Properties() ).flush() )
+        if( mOperatorBackLink && !mOperator.Send( mOutputSignal.Properties() ) )
           bcierr << "Could not send output properties to Operator module" << endl;
       }
       else
       {
-        Lock lock( mNextModule );
-        if( !MessageHandler::PutMessage( mNextModule, mOutputSignal.Properties() ).flush() )
+        if( !mNextModule.Send( mOutputSignal.Properties() ) )
           bcierr << "Could not send output properties to " NEXTMODULE " module" << endl;
       }
     }
@@ -629,16 +660,11 @@ CoreModule::InitializeFilters()
     GenericFilter::InitializeFilters();
     EnvironmentBase::EnterNonaccessPhase();
   }
-  {
-    Lock lock( mPreviousModule );
-    if( !mPreviousModule.is_open() )
-      bcierr << PREVMODULE " dropped connection unexpectedly" << endl;
-  }
+  if( !mPreviousModule.IsOpen() )
+    bcierr << PREVMODULE " dropped connection unexpectedly" << endl;
   if( bcierr__.Empty() )
   {
-    Lock lock( mOperator );
-    MessageHandler::PutMessage( mOperator, Status( THISMODULE " initialized", Status::firstInitializedMessage + MODTYPE - 1 ) );
-    mOperator.flush();
+    mOperator.Send( Status( THISMODULE " initialized", Status::firstInitializedMessage + MODTYPE - 1 ) );
     mFiltersInitialized = true;
     mActiveResting = mInputSignal.Properties().IsEmpty();
   }
@@ -655,11 +681,7 @@ CoreModule::StartRunFilters()
   EnvironmentBase::EnterNonaccessPhase();
   mNeedStopRun = true;
   if( bcierr__.Empty() )
-  {
-    Lock lock( mOperator );
-    MessageHandler::PutMessage( mOperator, Status( THISMODULE " running", Status::firstRunningMessage + 2 * ( MODTYPE - 1 ) ) );
-    mOperator.flush();
-  }
+    mOperator.Send( Status( THISMODULE " running", Status::firstRunningMessage + 2 * ( MODTYPE - 1 ) ) );
 }
 
 
@@ -675,12 +697,9 @@ CoreModule::StopRunFilters()
   if( bcierr__.Empty() && !mTerminating )
   {
     BroadcastParameterChanges();
-
-    Lock lock( mOperator );
     if( mInputSignal.Properties().IsEmpty() )
-      MessageHandler::PutMessage( mOperator, SysCommand::Suspend );
-    MessageHandler::PutMessage( mOperator, Status( THISMODULE " suspended", Status::firstSuspendedMessage + 2 * ( MODTYPE - 1 ) ) );
-    mOperator.flush();
+      mOperator.Send( SysCommand::Suspend );
+    mOperator.Send( Status( THISMODULE " suspended", Status::firstSuspendedMessage + 2 * ( MODTYPE - 1 ) ) );
   }
   EnvironmentBase::EnterRestingPhase( &mParamlist, &mStatelist, &mStatevector );
   GenericFilter::RestingFilters();
@@ -698,10 +717,8 @@ CoreModule::BroadcastParameterChanges()
 
   if( !changedParameters.Empty() )
   {
-    Lock lock( mOperator );
-    bool success = MessageHandler::PutMessage( mOperator, changedParameters )
-                && MessageHandler::PutMessage( mOperator, SysCommand::EndOfParameter ).flush();
-    if( !success )
+    mOperator.Send( changedParameters );
+    if( !mOperator.Send( SysCommand::EndOfParameter ) )
       bcierr << "Could not publish changed parameters" << endl;
   }
 }
@@ -729,17 +746,12 @@ CoreModule::SendOutput()
 {
   if( IsLastModule() && mOperatorBackLink )
   {
-    Lock lock( mOperator );
-    MessageHandler::PutMessage( mOperator, mStatevector );
-    MessageHandler::PutMessage( mOperator, mOutputSignal ).flush();
+    mOperator.Send( mStatevector );
+    mOperator.Send( mOutputSignal );
   }
-  {
-    Lock lock( mNextModule );
-    MessageHandler::PutMessage( mNextModule, mStatevector );
-    if( !IsLastModule() )
-      MessageHandler::PutMessage( mNextModule, mOutputSignal );
-    mNextModule.flush();
-  }
+  mNextModule.Send( mStatevector );
+  if( !IsLastModule() )
+    mNextModule.Send( mOutputSignal );
 }
 
 void
@@ -870,25 +882,25 @@ CoreModule::HandleSysCommand( istream& is )
 bool
 CoreModule::HandleProtocolVersion( istream& is )
 {
-  if( mOperatorProtocol.Provides( ProtocolVersion::NextModuleInfo ) )
+  if( mOperator.Protocol().Provides( ProtocolVersion::NextModuleInfo ) )
   {
     mReceivingNextModuleInfo = true;
-    mNextModuleProtocol.ReadBinary( is );
+    mNextModule.Protocol().ReadBinary( is );
   }
   else
-    mOperatorProtocol.ReadBinary( is );
+    mOperator.Protocol().ReadBinary( is );
   return is;
 }
 
 bool
-CoreModule::OnNotify( const GenericSignal* pSignal )
+CoreModule::OnSendSignal( const GenericSignal* pSignal, const ModuleConnection& inConnection )
 {
   if( pSignal->Channels() * pSignal->Elements() * sizeof(float) > 2048 )
   {
-    if( ++mLargeSignals[pSignal] == 3 )
+    if( ++mLargeSignals[pSignal] == 2 )
     {
-      bool share = IsLocalConnection( mOperatorSocket );
-      share &= mOperatorProtocol.Provides( ProtocolVersion::SharedSignalStorage );
+      bool share = inConnection.IsLocal();
+      share &= inConnection.Protocol().Provides( ProtocolVersion::SharedSignalStorage );
       if( share )
         const_cast<GenericSignal*>( pSignal )->ShareAcrossModules();
     }

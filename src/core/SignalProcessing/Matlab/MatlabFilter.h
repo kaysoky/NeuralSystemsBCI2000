@@ -80,6 +80,7 @@
 
 #include "GenericFilter.h"
 #include "MatlabWrapper.h"
+#include "SharedMemory.h"
 
 class MatlabFilter : public GenericFilter
 {
@@ -112,7 +113,7 @@ class MatlabFilter : public GenericFilter
   };
   int mMatlabStayOpen, mSampleBlockSize;
   MatlabFunction* mpBci_Process;
-  class OSSharedMemory *mpData;
+  SharedMemory* mpData;
   int mStatesOffset;
 };
 

@@ -48,7 +48,7 @@ string
 FilterCombination::FilterName( const GenericFilter* p )
 {
   string result;
-  std::string name = bci::ClassName( typeid( *p ) );
+  std::string name = ClassName( typeid( *p ) );
   for( size_t i = 0; i < name.length(); ++i )
     if( ::isalnum( name[i] ) )
       result += name[i];
@@ -253,7 +253,7 @@ ParallelCombinationBase::SubsetProperties( int idx, const SignalProperties& Inpu
 
   const GenericFilter* p = mFilters[idx].Filter;
   SignalProperties result = Input;
-  result.SetName( bci::ClassName( typeid( *p ) ) + " Subset" );
+  result.SetName( ClassName( typeid( *p ) ) + " Subset" );
   result.SetChannels( list.Size() );
   for( int idxOut = 0; idxOut < list.Size(); ++idxOut )
     result.ChannelLabels()[idxOut] = Input.ChannelLabels()[Floor( list[idxOut] )];

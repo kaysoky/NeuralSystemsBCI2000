@@ -46,7 +46,6 @@
 #include <QtGlobal>
 
 using namespace std;
-using namespace bci;
 
 extern Preferences* gpPreferences;
 

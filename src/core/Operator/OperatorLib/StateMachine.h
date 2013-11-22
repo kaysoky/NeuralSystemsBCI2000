@@ -33,7 +33,7 @@
 #ifndef STATE_MACHINE_H
 #define STATE_MACHINE_H
 
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "CallbackBase.h"
 #include "SockStream.h"
 #include "ParamList.h"
@@ -231,7 +231,7 @@ class StateMachine : public CallbackBase, public Lockable<>, private OSThread
   Watch::List       mWatches;
 
  public:
-  struct ConnectionInfo : Lockable<>
+  struct ConnectionInfo
   {
     ConnectionInfo()
     : Version( ProtocolVersion::None() ),
@@ -255,7 +255,7 @@ class StateMachine : public CallbackBase, public Lockable<>, private OSThread
   };
 
  private:
-  class CoreConnection : public MessageHandler
+  class CoreConnection : public MessageChannel
   {
     typedef StateMachine::SysState SysState;
 
@@ -267,43 +267,37 @@ class StateMachine : public CallbackBase, public Lockable<>, private OSThread
       { return mTag; }
     SysState State() const
       { return mState_; }
-    ::Lock_<const ConnectionInfo> Info() const
-      { return mInfo_; }
+    ConnectionInfo Info() const;
     streamsock* Socket()
       { return &mSocket; }
 
     void ProcessBCIMessages();
     void EnterState( SysState );
-#undef SendMessage
-    template<typename T> bool PutMessage( const T& t )
-      { return MessageHandler::SendMessage<T>( mStream, t ); }
+
+   protected:
+    bool OnStatus( std::istream& );
+    bool OnSysCommand( std::istream& );
+    bool OnParam( std::istream& );
+    bool OnState( std::istream& );
+    bool OnStateVector( std::istream& );
+    bool OnVisSignal( std::istream& );
+    bool OnVisSignalProperties( std::istream& );
+    bool OnVisMemo( std::istream& );
+    bool OnVisBitmap( std::istream& );
+    bool OnVisCfg( std::istream& );
 
    private:
-    virtual bool HandleProtocolVersion( std::istream& );
-    virtual bool HandleStatus( std::istream& );
-    virtual bool HandleSysCommand( std::istream& );
-    virtual bool HandleParam( std::istream& );
-    virtual bool HandleState( std::istream& );
-    virtual bool HandleStateVector( std::istream& );
-    virtual bool HandleVisSignal( std::istream& );
-    virtual bool HandleVisSignalProperties( std::istream& );
-    virtual bool HandleVisMemo( std::istream& );
-    virtual bool HandleVisBitmap( std::istream& );
-    virtual bool HandleVisCfg( std::istream& );
-
     void OnAccept();
     void OnDisconnect();
-    ::Lock_<ConnectionInfo> Info()
-      { return mInfo_; }
  
     StateMachine&    mrParent;
     std::string      mAddress;
     ptrdiff_t        mTag;
     server_tcpsocket mSocket;
     sockstream       mStream;
+    ConnectionInfo   mInfo;
     // Members that should not be accessed directly.
     SysState         mState_;
-    ConnectionInfo   mInfo_;
   };
   struct ConnectionList : std::vector<CoreConnection*>, Lockable<OSMutex> {};
 

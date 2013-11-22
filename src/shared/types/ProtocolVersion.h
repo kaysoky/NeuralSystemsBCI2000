@@ -39,6 +39,7 @@ class ProtocolVersion
   {
     static const Version v[] =
     {
+      { 2, 3, "Zero message length fields" },
       { 2, 2, "Shared signal storage" },
       { 2, 1, "NextModuleInfo from Operator" },
       { 2, 0, "Multi-sample state vector" },
@@ -54,6 +55,7 @@ class ProtocolVersion
      Negotiation,
      NextModuleInfo,
      SharedSignalStorage,
+     ZeroMessageLengthFields,
    };
 
    ProtocolVersion()
@@ -104,6 +106,8 @@ bool ProtocolVersion::Provides( int feature ) const
       return AtLeast( ProtocolVersion( 2, 1 ) );
     case SharedSignalStorage:
       return AtLeast( ProtocolVersion( 2, 2 ) );
+    case ZeroMessageLengthFields:
+      return AtLeast( ProtocolVersion( 2, 3 ) );
   }
   return false;
 }

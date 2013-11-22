@@ -27,7 +27,8 @@
 #ifndef BCI_RESOURCE_H
 #define BCI_RESOURCE_H
 
-namespace bci {
+namespace bci
+{
 
 struct Resource
 {
@@ -36,6 +37,6 @@ struct Resource
   const char* data;
 };
 
-} // namespace bci
+} // namespace
 
 #endif // BCI_RESOURCE_H

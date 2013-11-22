@@ -212,7 +212,7 @@ GenericFilter::ChainInfo::WriteToStream( ostream& os )
   if( TimedCalls() \
       && watch_.Lapse() > MeasurementUnits::SampleBlockDuration() * 1e3 \
       && bcierr__.Empty() ) \
-        bciwarn_ << bci::ClassName( typeid( *this ) ) << "::" #x ": " \
+        bciwarn_ << ClassName( typeid( *this ) ) << "::" #x ": " \
                  << "Execution required more than a sample block duration";
 
 #define CALL_DEF_( x, a, b ) void GenericFilter::Call##x a { CALL_BODY_( x, b ) }

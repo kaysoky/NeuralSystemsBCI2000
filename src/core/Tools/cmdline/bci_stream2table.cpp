@@ -34,7 +34,7 @@
 #include "StateList.h"
 #include "StateVector.h"
 #include "GenericVisualization.h"
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "BCIError.h"
 #include "Version.h"
 
@@ -52,17 +52,16 @@ string ToolInfo[] =
   "",
 };
 
-class StreamToTable : public MessageHandler
+class StreamToTable : public MessageChannel
 {
  public:
-  StreamToTable( ostream& arOut )
-  : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0 ),
+  StreamToTable( istream& is, ostream& os )
+  : MessageChannel( is, os ), mpStatevector( NULL ), mSignalProperties( 0, 0 ),
     mInitialized( false ), mWriteoutPending( false ) {}
   ~StreamToTable() { delete mpStatevector; }
   void Finish();
 
  private:
-  ostream&            mrOut;
   StateList           mStatelist;
   StateVector*        mpStatevector;
   SignalProperties    mSignalProperties;
@@ -71,11 +70,11 @@ class StreamToTable : public MessageHandler
   bool                mInitialized,
                       mWriteoutPending;
 
-  virtual bool HandleParam( istream& );
-  virtual bool HandleState( istream& );
-  virtual bool HandleVisSignalProperties( istream& );
-  virtual bool HandleVisSignal( istream& );
-  virtual bool HandleStateVector( istream& );
+  virtual bool OnParam( istream& );
+  virtual bool OnState( istream& );
+  virtual bool OnVisSignalProperties( istream& );
+  virtual bool OnVisSignal( istream& );
+  virtual bool OnStateVector( istream& );
 
   void WriteOut( const GenericSignal& );
 };
@@ -91,9 +90,9 @@ ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
   if( arOptions.size() > 0 )
     return illegalOption;
-  StreamToTable converter( arOut );
+  StreamToTable converter( arIn, arOut );
   while( arIn && arIn.peek() != EOF )
-    converter.HandleMessage( arIn );
+    converter.HandleMessage();
   converter.Finish();
   if( !arIn )
     return illegalInput;
@@ -108,13 +107,13 @@ StreamToTable::Finish()
 }
 
 bool
-StreamToTable::HandleParam( istream& arIn )
+StreamToTable::OnParam( istream& arIn )
 {
   return Param().ReadBinary( arIn );
 }
 
 bool
-StreamToTable::HandleState( istream& arIn )
+StreamToTable::OnState( istream& arIn )
 {
   State s;
   s.ReadBinary( arIn );
@@ -132,7 +131,7 @@ StreamToTable::HandleState( istream& arIn )
 }
 
 bool
-StreamToTable::HandleVisSignalProperties( istream& arIn )
+StreamToTable::OnVisSignalProperties( istream& arIn )
 {
   VisSignalProperties v;
   v.ReadBinary( arIn );
@@ -141,7 +140,7 @@ StreamToTable::HandleVisSignalProperties( istream& arIn )
 }
 
 bool
-StreamToTable::HandleVisSignal( istream& arIn )
+StreamToTable::OnVisSignal( istream& arIn )
 {
   VisSignal v;
   v.ReadBinary( arIn );
@@ -150,7 +149,7 @@ StreamToTable::HandleVisSignal( istream& arIn )
 }
 
 bool
-StreamToTable::HandleStateVector( istream& arIn )
+StreamToTable::OnStateVector( istream& arIn )
 {
   static GenericSignal nullSignal;
   if( mWriteoutPending )
@@ -169,16 +168,16 @@ StreamToTable::WriteOut( const GenericSignal& inSignal )
   if( !mInitialized )
   {
     mSignalProperties = inSignal.Properties();
-    mrOut << "#";
+    Output() << "#";
     mStateNames.clear();
     for( int i = 0; i < mStatelist.Size(); ++i )
       mStateNames.insert( mStatelist[ i ].Name() );
     for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
-      mrOut << "\t" << *i;
+      Output() << "\t" << *i;
     for( int i = 0; i < inSignal.Channels(); ++i )
       for( int j = 0; j < inSignal.Elements(); ++j )
-        mrOut << "\tSignal(" << mSignalProperties.ChannelLabels()[i] << "," << mSignalProperties.ElementLabels()[i] << ")";
-    mrOut << endl;
+        Output() << "\tSignal(" << mSignalProperties.ChannelLabels()[i] << "," << mSignalProperties.ElementLabels()[i] << ")";
+    Output() << endl;
     mInitialized = true;
   }
   if( inSignal.Properties() != mSignalProperties )
@@ -187,15 +186,15 @@ StreamToTable::WriteOut( const GenericSignal& inSignal )
   {
     if( mpStatevector != NULL )
       for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
-        mrOut << "\t" << mpStatevector->StateValue( i->c_str() );
+        Output() << "\t" << mpStatevector->StateValue( i->c_str() );
     else
       for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
-        mrOut << "\t0";
+        Output() << "\t0";
 
     for( int i = 0; i < inSignal.Channels(); ++i )
       for( int j = 0; j < inSignal.Elements(); ++j )
-        mrOut << "\t" << inSignal( i, j );
-    mrOut << endl;
+        Output() << "\t" << inSignal( i, j );
+    Output() << endl;
   }
   mWriteoutPending = false;
 }

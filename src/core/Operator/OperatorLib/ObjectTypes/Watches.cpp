@@ -253,7 +253,7 @@ Watch::Set::SelectByAddress( const string& inAddress, options inOpt ) const
     static bool Eq( const string& a, const string& b )
       { return a == b; }
     static bool Wild( const string& a, const string& b )
-      { return bci::WildcardMatch( a, b ); }
+      { return WildcardMatch( a, b ); }
   };
   bool (*match)( const string&, const string& ) = ( inOpt & WildcardYes ) ? &Comp::Wild : &Comp::Eq;
 

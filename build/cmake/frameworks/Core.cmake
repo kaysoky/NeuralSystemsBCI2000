@@ -3,6 +3,8 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Usage header for BCI2000FrameworkCore library
 
+UTILS_INCLUDE( frameworks/LibTiny )
+
 INCLUDE_DIRECTORIES(
   ${PROJECT_SRC_DIR}/shared
   ${PROJECT_SRC_DIR}/shared/accessors
@@ -12,6 +14,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SRC_DIR}/shared/filters
   ${PROJECT_SRC_DIR}/shared/types
   ${PROJECT_SRC_DIR}/shared/utils
+  ${PROJECT_SRC_DIR}/shared/utils/Lib
   ${PROJECT_SRC_DIR}/shared/utils/Expression
   ${PROJECT_SRC_DIR}/shared/utils/Scripting
   ${PROJECT_SRC_DIR}/shared/fileio

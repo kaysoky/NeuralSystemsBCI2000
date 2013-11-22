@@ -24,23 +24,23 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"
-#pragma hdrstop
-
 #include "BCIStream.h"
-#include "BCIAssert.h"
-#include "Environment.h"
-#include "MessageHandler.h"
-#include "OSMutex.h"
+#include "MessageChannel.h"
 #include "Status.h"
-#include "SockStream.h"
-#include "ProcessUtils.h"
 #include "FileUtils.h"
+#include "EncodedString.h"
+#include "ProcessUtils.h"
+#include "RedirectIO.h"
 
 using namespace std;
 
-static ostream* spOutputStream = NULL;
-static const LockableObject* spOutputLock = NULL;
+static MessageChannel* spChannel = NULL;
+
+void
+BCIStream::SetOutputChannel( MessageChannel* pChannel )
+{
+  spChannel = pChannel;
+}
 
 bool
 BCIStream::CompressMessages()
@@ -66,20 +66,17 @@ StatusMessage( const string& inText, int inCode )
 {
   // If the connection to the operator does not work, fall back to a local
   // error display.
-  if( spOutputStream != NULL )
+  if( spChannel )
   {
-    ::Lock lock( spOutputLock );
-    spOutputStream->clear();
-    MessageHandler::PutMessage( *spOutputStream, Status( inText, inCode ) );
-    spOutputStream->flush();
+    spChannel->Output().clear();
+    spChannel->Send( Status( inText, inCode ) );
   }
-  sockstream* pSockStream = dynamic_cast<sockstream*>( spOutputStream );
-  if( !spOutputStream || !*spOutputStream || ( pSockStream && !pSockStream->is_open() ) )
+  if( !spChannel || !spChannel->Output() )
   {
     if( inCode >= 400 )
     {
 # if !defined( _WIN32 ) || defined( __CONSOLE__ )
-      cerr << inText << endl;
+      Tiny::Cerr() << inText << endl;
 # else
       ShowMessageBox( inText, "BCI2000 Error", MB_OK | MB_ICONHAND | MB_SYSTEMMODAL | MB_SETFOREGROUND );
 # endif
@@ -87,7 +84,7 @@ StatusMessage( const string& inText, int inCode )
     else
     {
 #if !defined( _WIN32 ) || defined( __CONSOLE__ )
-      cout << inText << endl;
+      Tiny::Cout() << inText << endl;
 #else
       ShowMessageBox( inText, "BCI2000", MB_OK | MB_ICONINFORMATION | MB_SYSTEMMODAL | MB_SETFOREGROUND );
 #endif
@@ -131,9 +128,3 @@ BCIStream::LogicError( const string& s )
   StatusMessage( s, Status::logicError );
 }
 
-void
-BCIStream::SetOperatorStream( ostream* pStream, const LockableObject* pLock )
-{
-  spOutputStream = pStream;
-  spOutputLock = pLock;
-}

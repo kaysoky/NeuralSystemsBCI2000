@@ -365,7 +365,7 @@ CommandInterpreter::GetMatchingTokens( const string& inPattern )
   if( mInputStream >> token >> ws )
     s = token;
   bool match = false;
-  while( !( match = bci::WildcardMatch( inPattern, s, false ) )
+  while( !( match = WildcardMatch( inPattern, s, false ) )
     && mInputStream >> token >> ws )
     s.append( " " ).append( token );
   if( !match )
@@ -383,7 +383,7 @@ CommandInterpreter::GetMatchingTokens( const string& inPattern, vector<string>& 
 bool
 CommandInterpreter::GetMatches( const string& inPattern, const string& inString, vector<string>& outMatches )
 {
-  bci::Matches matches = bci::ExtWildcardMatch( inPattern, inString, false );
+  WildcardMatches matches = ExtWildcardMatch( inPattern, inString, false );
   outMatches.clear();
   for( size_t i = 0; i < matches.size(); ++i )
     outMatches.push_back( inString.substr( matches[i].begin, matches[i].length ) );
@@ -426,7 +426,7 @@ CommandInterpreter::MatchRemainingTokens( const string& inPattern )
 {
   string s = GetRemainingTokens();
   Unget();
-  return bci::WildcardMatch( inPattern, s, false );
+  return WildcardMatch( inPattern, s, false );
 }
 
 bool
@@ -434,7 +434,7 @@ CommandInterpreter::MatchRemainder( const string& inPattern )
 {
   string s = GetOptionalRemainder();
   Unget();
-  return bci::WildcardMatch( inPattern, s, false );
+  return WildcardMatch( inPattern, s, false );
 }
 
 void

@@ -28,7 +28,6 @@
 #ifndef GENERIC_VISUALIZATION_H
 #define GENERIC_VISUALIZATION_H
 
-#include <iostream>
 #include <string>
 #include <sstream>
 #include "CfgID.h"
@@ -42,7 +41,7 @@
 # error Remove BACK_COMPAT condition when VisID/SourceID duplicity has been resolved
 #endif // TODO
 
-class LockableObject;
+namespace bci { class MessageChannel; }
 
 class VisBase
 {
@@ -249,14 +248,7 @@ class GenericVisualization : public std::ostream
     GenericVisualization& Send( const SignalProperties& );
     GenericVisualization& Send( const BitmapImage& );
 
-    class NotificationClient
-    {
-     public:
-      template<class T> bool Notify( T* t ) { return OnNotify( t ); }
-     protected:
-      virtual bool OnNotify( const GenericSignal* ) = 0;
-    };
-    static void SetOutputStream( std::ostream*, NotificationClient* = 0 );
+    static void SetOutputChannel( bci::MessageChannel* );
 
   private:
     GenericVisualization& SendCfgString( CfgID, const std::string& );

@@ -44,7 +44,7 @@
 #include "ClassName.h"
 
 using namespace std;
-using namespace bci;
+using namespace Tiny;
 using namespace ExpressionParser;
 
 static const pair<string, double> sConstants[] =
@@ -143,7 +143,7 @@ ArithmeticExpression::DoEvaluate()
     for( size_t i = 0; i < mStatements.size(); ++i )
       result = mStatements[i]->Evaluate();
   }
-  catch( const bci::Exception& e )
+  catch( const Tiny::Exception& e )
   {
     Errors() << e.What() << endl;
   }
@@ -313,7 +313,7 @@ ArithmeticExpression::Parse()
   {
     ExpressionParser::yyparse( this );
   }
-  catch( const bci::Exception& e )
+  catch( const Tiny::Exception& e )
   {
     Errors() << e.What() << endl;
   }

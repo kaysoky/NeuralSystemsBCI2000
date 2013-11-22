@@ -42,7 +42,7 @@
 #include "StateVector.h"
 #include "SysCommand.h"
 #include "GenericVisualization.h"
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "Version.h"
 
 using namespace std;
@@ -61,31 +61,31 @@ string ToolInfo[] =
   ""
 };
 
-class Decimate : public MessageHandler
+class Decimate : public MessageChannel
 {
  public:
-  Decimate( int factor, ostream& arOut )
-  : mFactor( factor ), mCount( 0 ), mrOut( arOut ), mpStatevector( NULL ) {}
+  Decimate( int factor, istream& arIn, ostream& arOut )
+  : MessageChannel( arIn, arOut ), mFactor( factor ), mCount( 0 ), mpStatevector( NULL ) {}
   ~Decimate() { delete mpStatevector; }
 
  private:
   int mFactor,
       mCount;
-  ostream& mrOut;
   StateList mStatelist;
   StateVector* mpStatevector;
 
-  virtual bool HandleProtocolVersion(     istream& );
-  virtual bool HandleStatus(              istream& );
-  virtual bool HandleParam(               istream& );
-  virtual bool HandleState(               istream& );
-  virtual bool HandleVisSignalProperties( istream& );
-  virtual bool HandleVisSignal(           istream& );
-  virtual bool HandleStateVector(         istream& );
-  virtual bool HandleSysCommand(          istream& );
+  virtual bool OnProtocolVersion(     istream& );
+  virtual bool OnStatus(              istream& );
+  virtual bool OnParam(               istream& );
+  virtual bool OnState(               istream& );
+  virtual bool OnVisSignalProperties( istream& );
+  virtual bool OnVisSignal(           istream& );
+  virtual bool OnStateVector(         istream& );
+  virtual bool OnSysCommand(          istream& );
+  template<typename T> void Forward( istream& );
+  template<typename T> void Absorb( istream& );
 };
 
-template<typename T> void Forward( istream&, ostream& );
 
 ToolResult
 ToolInit()
@@ -97,9 +97,9 @@ ToolResult
 ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
   int decimation = ::atoi( arOptions.getopt( "-d|-D|--decimation", "1" ).c_str() );
-  Decimate decimator( decimation, arOut );
+  Decimate decimator( decimation, arIn, arOut );
   while( arIn && arIn.peek() != EOF )
-    decimator.HandleMessage( arIn );
+    decimator.HandleMessage();
   if( !arIn )
     return illegalInput;
   return noError;
@@ -107,44 +107,44 @@ ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 
 template<typename T>
 void
-Forward( istream& arIn, ostream& arOut )
+Decimate::Forward( istream& arIn )
 {
   T t;
   t.ReadBinary( arIn );
-  MessageHandler::PutMessage( arOut, t );
+  Send( t );
 }
 
 template<typename T>
 void
-Absorb( istream& arIn )
+Decimate::Absorb( istream& arIn )
 {
   T t;
   t.ReadBinary( arIn );
 }
 
 bool
-Decimate::HandleProtocolVersion( istream& arIn )
+Decimate::OnProtocolVersion( istream& arIn )
 {
-  Forward<ProtocolVersion>( arIn, mrOut );
+  Forward<ProtocolVersion>( arIn );
   return true;
 }
 
 bool
-Decimate::HandleStatus( istream& arIn )
+Decimate::OnStatus( istream& arIn )
 {
-  Forward<Status>( arIn, mrOut );
+  Forward<Status>( arIn );
   return true;
 }
 
 bool
-Decimate::HandleParam( istream& arIn )
+Decimate::OnParam( istream& arIn )
 {
-  Forward<Param>( arIn, mrOut );
+  Forward<Param>( arIn );
   return true;
 }
 
 bool
-Decimate::HandleState( istream& arIn )
+Decimate::OnState( istream& arIn )
 {
   State s;
   s.ReadBinary( arIn );
@@ -157,30 +157,30 @@ Decimate::HandleState( istream& arIn )
       delete mpStatevector;
       mpStatevector = new StateVector( mStatelist );
     }
-    MessageHandler::PutMessage( mrOut, s );
+    Send( s );
   }
   return true;
 }
 
 bool
-Decimate::HandleVisSignalProperties( istream& arIn )
+Decimate::OnVisSignalProperties( istream& arIn )
 {
-  Forward<VisSignalProperties>( arIn, mrOut );
+  Forward<VisSignalProperties>( arIn );
   return true;
 }
 
 bool
-Decimate::HandleVisSignal( istream& arIn )
+Decimate::OnVisSignal( istream& arIn )
 {
   if( mCount % mFactor == 0 )
-    Forward<VisSignal>( arIn, mrOut );
+    Forward<VisSignal>( arIn );
   else
     Absorb<VisSignal>( arIn );
   return true;
 }
 
 bool
-Decimate::HandleStateVector( istream& arIn )
+Decimate::OnStateVector( istream& arIn )
 {
   if( mpStatevector == NULL )
     mpStatevector = new StateVector( mStatelist );
@@ -188,13 +188,13 @@ Decimate::HandleStateVector( istream& arIn )
   // state vectors are sent first, so we increase
   // the count here rather than in the signal handler
   if( ( ++mCount %= mFactor ) == 0 )
-    MessageHandler::PutMessage( mrOut, *mpStatevector );
+    Send( *mpStatevector );
   return true;
 }
 
 bool
-Decimate::HandleSysCommand( istream& arIn )
+Decimate::OnSysCommand( istream& arIn )
 {
-  Forward<SysCommand>( arIn, mrOut );
+  Forward<SysCommand>( arIn );
   return true;
 }

@@ -24,11 +24,8 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"
-#pragma hdrstop
-
 #include "BCIStream.h"
-#include <iostream>
+#include "RedirectIO.h"
 
 using namespace std;
 
@@ -37,8 +34,8 @@ extern ostream sErr;
 static ostream& err = sErr;
 static ostream& out = sErr;
 #else
-static ostream& out = cout;
-static ostream& err = cerr;
+static ostream& out = Tiny::Cout();
+static ostream& err = Tiny::Cerr();
 #endif // BCI_DLL
 
 bool

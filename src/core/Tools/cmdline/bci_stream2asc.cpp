@@ -41,7 +41,7 @@
 #include "StateVector.h"
 #include "SysCommand.h"
 #include "GenericVisualization.h"
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "Version.h"
 
 using namespace std;
@@ -59,30 +59,30 @@ string ToolInfo[] =
   "",
 };
 
-class StreamToAsc : public MessageHandler
+class StreamToAsc : public MessageChannel
 {
  public:
-  StreamToAsc( ostream& arOut )
-  : mrOut( arOut ), mpStatevector( NULL ) {}
+  StreamToAsc( istream& is, ostream& os )
+  : MessageChannel( is, os ), mpStatevector( NULL ) {}
   ~StreamToAsc() { delete mpStatevector; }
 
  private:
-  ostream& mrOut;
   StateList mStatelist;
   StateVector* mpStatevector;
 
-  virtual bool HandleProtocolVersion(     istream& );
-  virtual bool HandleStatus(              istream& );
-  virtual bool HandleParam(               istream& );
-  virtual bool HandleState(               istream& );
-  virtual bool HandleVisSignalProperties( istream& );
-  virtual bool HandleVisSignal(           istream& );
-  virtual bool HandleStateVector(         istream& );
-  virtual bool HandleSysCommand(          istream& );
-};
+  virtual bool OnProtocolVersion(     istream& );
+  virtual bool OnStatus(              istream& );
+  virtual bool OnParam(               istream& );
+  virtual bool OnState(               istream& );
+  virtual bool OnVisSignalProperties( istream& );
+  virtual bool OnVisSignal(           istream& );
+  virtual bool OnStateVector(         istream& );
+  virtual bool OnSysCommand(          istream& );
 
-template<typename T> void Convert( istream&, ostream& );
-template<typename T> void Print( ostream&, const T& );
+  template<typename T> void Convert();
+  template<typename T> void Print( const T& );
+
+};
 
 ToolResult
 ToolInit()
@@ -95,9 +95,9 @@ ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
   if( arOptions.size() > 0 )
     return illegalOption;
-  StreamToAsc converter( arOut );
+  StreamToAsc converter( arIn, arOut );
   while( arIn && arIn.peek() != EOF )
-    converter.HandleMessage( arIn );
+    converter.HandleMessage();
   if( !arIn )
     return illegalInput;
   return noError;
@@ -105,44 +105,44 @@ ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 
 template<typename T>
 void
-Convert( istream& arIn, ostream& arOut )
+StreamToAsc::Convert()
 {
   T t;
-  t.ReadBinary( arIn );
-  Print( arOut, t );
+  t.ReadBinary( Input() );
+  Print( t );
 }
 
 template<typename T>
 void
-Print( ostream& arOut, const T& arObj )
+StreamToAsc::Print( const T& arObj )
 {
-  arOut << ClassName( typeid( T ) ) << " { "
-        << setw( 2 ) << arObj << "\n}\n";
+  Output() << ClassName( typeid( T ) ) << " { "
+           << setw( 2 ) << arObj << "\n}\n";
 }
 
 bool
-StreamToAsc::HandleProtocolVersion( istream& arIn )
+StreamToAsc::OnProtocolVersion( istream& )
 {
-  Convert<ProtocolVersion>( arIn, mrOut );
+  Convert<ProtocolVersion>();
   return true;
 }
 
 bool
-StreamToAsc::HandleStatus( istream& arIn )
+StreamToAsc::OnStatus( istream& )
 {
-  Convert<Status>( arIn, mrOut );
+  Convert<Status>();
   return true;
 }
 
 bool
-StreamToAsc::HandleParam( istream& arIn )
+StreamToAsc::OnParam( istream& )
 {
-  Convert<Param>( arIn, mrOut );
+  Convert<Param>();
   return true;
 }
 
 bool
-StreamToAsc::HandleState( istream& arIn )
+StreamToAsc::OnState( istream& arIn )
 {
   State s;
   s.ReadBinary( arIn );
@@ -155,38 +155,38 @@ StreamToAsc::HandleState( istream& arIn )
       delete mpStatevector;
       mpStatevector = new StateVector( mStatelist );
     }
-    Print( mrOut, s );
+    Print( s );
   }
   return true;
 }
 
 bool
-StreamToAsc::HandleVisSignalProperties( istream& arIn )
+StreamToAsc::OnVisSignalProperties( istream& )
 {
-  Convert<VisSignalProperties>( arIn, mrOut );
+  Convert<VisSignalProperties>();
   return true;
 }
 
 bool
-StreamToAsc::HandleVisSignal( istream& arIn )
+StreamToAsc::OnVisSignal( istream& )
 {
-  Convert<VisSignal>( arIn, mrOut );
+  Convert<VisSignal>();
   return true;
 }
 
 bool
-StreamToAsc::HandleStateVector( istream& arIn )
+StreamToAsc::OnStateVector( istream& arIn )
 {
   if( mpStatevector == NULL )
     mpStatevector = new StateVector( mStatelist );
   mpStatevector->ReadBinary( arIn );
-  Print( mrOut, *mpStatevector );
+  Print( *mpStatevector );
   return true;
 }
 
 bool
-StreamToAsc::HandleSysCommand( istream& arIn )
+StreamToAsc::OnSysCommand( istream& )
 {
-  Convert<SysCommand>( arIn, mrOut );
+  Convert<SysCommand>();
   return true;
 }

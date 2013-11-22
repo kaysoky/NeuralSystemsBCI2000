@@ -27,25 +27,29 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "Settings.h"
 #include "FileUtils.h"
+#include "StaticObject.h"
 
 using namespace std;
 
-static
-QString DefaultFilePath()
+namespace
 {
-  string path = FileUtils::InstallationDirectory() + FileUtils::ExtractBase( FileUtils::ExecutablePath() ) + ".ini";
-  return QString::fromLocal8Bit( path.c_str() );
+
+string
+DefaultFilePath()
+{
+  return FileUtils::InstallationDirectory()
+         + FileUtils::ExtractBase( FileUtils::ExecutablePath() )
+         + ".ini";
 }
 
-static
-QString& FilePath()
-{
-  static QString instance = DefaultFilePath();
-  return instance;
-}
+struct FilePath_ : string
+{ FilePath_() : string( DefaultFilePath() ) {} };
+StaticObject<FilePath_, string> FilePath;
+
+} // namespace
 
 Settings::Settings()
-: QSettings( FilePath(), QSettings::IniFormat )
+: QSettings( QString::fromLocal8Bit( FilePath().c_str() ), QSettings::IniFormat )
 {
 }
 
@@ -55,5 +59,5 @@ Settings::SetFile( const QString& inFilePath )
   if( inFilePath == "" )
     FilePath() = DefaultFilePath();
   else
-    FilePath() = inFilePath;
+    FilePath() = inFilePath.toLocal8Bit();
 }

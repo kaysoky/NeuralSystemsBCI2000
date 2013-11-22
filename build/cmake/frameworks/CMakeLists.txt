@@ -5,6 +5,7 @@
 
 SET( DIR_NAME "Core/Libraries/" )
 
+ADD_SUBDIRECTORY( LibTiny )
 ADD_SUBDIRECTORY( CoreLib )
 ADD_SUBDIRECTORY( SigSrcModuleLib )
 ADD_SUBDIRECTORY( SigProcModuleLib )

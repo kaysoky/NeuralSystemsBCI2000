@@ -31,6 +31,7 @@
 
 #include "LengthField.h"
 #include "BinaryData.h"
+#include "StaticObject.h"
 #include <iostream>
 #include <iomanip>
 #include <limits>
@@ -38,47 +39,33 @@
 #include <inttypes.h>
 
 using namespace std;
-using namespace bci;
-
-template<class T> class StaticObject : Uncopyable
-{
- public:
-  T& operator()() { return Access(); }
-  const T& operator()() const { return Access(); }
- private:
-  static T& Access()
-  {
-    static T t;
-    return t;
-  }
-};
 
 namespace
 {
 
 typedef LazyArray<GenericSignal::ValueType> Array;
-struct SharedMemory : Array::Memory
+struct ArrayMemory : Array::Memory
 {
-  SharedMemory( const SharedPointer<OSSharedMemory>& p, size_t count )
+  ArrayMemory( const SharedPointer<SharedMemory>& p, size_t count )
     : Memory( reinterpret_cast<ValueType*>( p->Memory() ), count ),
       mpShm( p )
     {}
-  SharedPointer<OSSharedMemory> mpShm;
+  SharedPointer<SharedMemory> mpShm;
 };
 
-typedef SharedPointer<OSSharedMemory> ShmPtr;
+typedef SharedPointer<SharedMemory> ShmPtr;
 struct ShmPool_ : private map<string, ShmPtr>
 {
   ShmPtr& New( size_t count )
   {
-    OSSharedMemory* p = new OSSharedMemory( count * sizeof( GenericSignal::ValueType ) );
+    SharedMemory* p = new SharedMemory( count * sizeof( GenericSignal::ValueType ) );
     return (*this)[p->Name()] = ShmPtr( p );
   }
   ShmPtr& Get( const string& name )
   {
     ShmPtr& s = (*this)[name];
     if( !s )
-      s = ShmPtr( new OSSharedMemory( name ) );
+      s = ShmPtr( new SharedMemory( name ) );
     return s;
   }
 };
@@ -133,8 +120,8 @@ GenericSignal::SetProperties( const SignalProperties& inSp )
       if( mSharedMemory->Protocol() == "file://" )
         throw std_runtime_error( "Cannot resize shared memory if tied to a file" );
       mSharedMemory = ShmPool().New( newSize );
-      SharedPointer<Array::Memory> pShm( new SharedMemory( mSharedMemory, newSize ) );
-      newValues = Array( pShm );
+      SharedPointer<Array::Memory> p( new ArrayMemory( mSharedMemory, newSize ) );
+      newValues = Array( p );
     }
     else
       newValues = Array( newSize );
@@ -341,8 +328,8 @@ GenericSignal::ShareAcrossModules()
   if( !mSharedMemory && mValues.Count() != 0 )
   {
     mSharedMemory = ShmPool().New( mValues.Count() );
-    SharedPointer<Array::Memory> pShm( new SharedMemory( mSharedMemory, mValues.Count() ) );
-    Array newValues( pShm );
+    SharedPointer<Array::Memory> p( new ArrayMemory( mSharedMemory, mValues.Count() ) );
+    Array newValues( p );
     newValues.DeepAssignFrom( mValues );
     mValues.ShallowAssignFrom( newValues );
   }
@@ -355,13 +342,13 @@ GenericSignal::AttachToSharedMemory( const string& inName )
   if( !mSharedMemory || mSharedMemory->Name() != inName )
   {
     mSharedMemory = ShmPool().Get( inName );
-    SharedPointer<Array::Memory> pShm( new SharedMemory( mSharedMemory, mValues.Count() ) );
-    mValues = Array( pShm );
+    SharedPointer<Array::Memory> p( new ArrayMemory( mSharedMemory, mValues.Count() ) );
+    mValues = Array( p );
   }
 }
 
 // GenericChannel
-GenericChannel& 
+GenericChannel&
 GenericChannel::operator=( const GenericChannel& inChannel )
 {
   for( size_t i = 0; i < size(); i++ )

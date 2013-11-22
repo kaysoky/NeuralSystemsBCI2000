@@ -47,6 +47,7 @@
 #include "SockStream.h"
 #include "Lockable.h"
 #include "OSThread.h"
+#include "OSEvent.h"
 #include <sstream>
 #include <vector>
 

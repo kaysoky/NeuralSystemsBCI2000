@@ -39,7 +39,7 @@
 #include "StateVector.h"
 #include "GenericVisualization.h"
 #include "GenericFilter.h"
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "ClassName.h"
 #include "Version.h"
 #include "SysCommand.h"
@@ -64,7 +64,7 @@ string ToolInfo[] =
 };
 
 
-class FilterWrapper : public MessageHandler, private Uncopyable
+class FilterWrapper : public MessageChannel
 {
  public:
   FilterWrapper( istream& in, ostream& out, ostream& op );
@@ -74,11 +74,11 @@ class FilterWrapper : public MessageHandler, private Uncopyable
   void Run();
 
  private:
-  virtual bool HandleParam( istream& );
-  virtual bool HandleState( istream& );
-  virtual bool HandleVisSignalProperties( istream& );
-  virtual bool HandleVisSignal( istream& );
-  virtual bool HandleStateVector( istream& );
+  virtual bool OnParam( istream& );
+  virtual bool OnState( istream& );
+  virtual bool OnVisSignalProperties( istream& );
+  virtual bool OnVisSignal( istream& );
+  virtual bool OnStateVector( istream& );
 
   void FinishProcessing();
   void StopRun();
@@ -89,9 +89,7 @@ class FilterWrapper : public MessageHandler, private Uncopyable
   void SynchronizeStatevectors();
 
  private:
-  istream& mrIn;
-  ostream& mrOut,
-         & mrOperator;
+  MessageChannel mOperator;
   SignalProperties* mpInputProperties;
   GenericSignal mOutputSignal;
   ParamList mParamlist;
@@ -138,15 +136,14 @@ ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 }
 
 FilterWrapper::FilterWrapper( istream& arIn, ostream& arOut, ostream& arOp )
-: mrIn( arIn ),
-  mrOut( arOut ),
-  mrOperator( arOp ),
+: MessageChannel( arIn, arOut ),
+  mOperator( arOp ),
   mpInputProperties( NULL ),
   mpInputStatevector( NULL ),
   mpOutputStatevector( NULL ),
   mSingleStatevector( true )
 {
-  GenericVisualization::SetOutputStream( &mrOperator );
+  GenericVisualization::SetOutputChannel( &mOperator );
 }
 
 FilterWrapper::~FilterWrapper()
@@ -187,13 +184,13 @@ FilterWrapper::FinishProcessing()
 void
 FilterWrapper::Run()
 {
-  while( mrIn && mrIn.peek() != EOF )
-    HandleMessage( mrIn );
+  while( Input() && Input().peek() != EOF )
+    HandleMessage();
   FinishProcessing();
 }
 
 bool
-FilterWrapper::HandleParam( istream& arIn )
+FilterWrapper::OnParam( istream& arIn )
 {
   FinishProcessing();
 
@@ -205,7 +202,7 @@ FilterWrapper::HandleParam( istream& arIn )
 }
 
 bool
-FilterWrapper::HandleState( istream& arIn )
+FilterWrapper::OnState( istream& arIn )
 {
   if( Environment::Phase() == Environment::processing )
     StopRun();
@@ -224,13 +221,13 @@ FilterWrapper::HandleState( istream& arIn )
 }
 
 bool
-FilterWrapper::HandleStateVector( istream& arIn )
+FilterWrapper::OnStateVector( istream& arIn )
 {
   if( mpInputStatevector == NULL )
   {
     InitializeInputStatevector();
     for( int i = 0; i < mInputStatelist.Size(); ++i )
-      PutMessage( mrOut, mInputStatelist[ i ] );
+      Send( mInputStatelist[ i ] );
   }
   mpInputStatevector->ReadBinary( arIn );
   SynchronizeStatevectors();
@@ -241,7 +238,7 @@ FilterWrapper::HandleStateVector( istream& arIn )
 }
 
 bool
-FilterWrapper::HandleVisSignalProperties( istream& arIn )
+FilterWrapper::OnVisSignalProperties( istream& arIn )
 {
   delete mpInputProperties;
   mpInputProperties = NULL;
@@ -252,7 +249,7 @@ FilterWrapper::HandleVisSignalProperties( istream& arIn )
 }
 
 bool
-FilterWrapper::HandleVisSignal( istream& arIn )
+FilterWrapper::OnVisSignal( istream& arIn )
 {
   VisSignal s;
   if( s.ReadBinary( arIn ) && s.SourceID().empty() )
@@ -290,7 +287,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
           InitializeInputStatevector();
         InitializeOutputStatevector();
         for( int i = 0; i < mOutputStatelist.Size(); ++i )
-          PutMessage( mrOut, mOutputStatelist[ i ] );
+          Send( mOutputStatelist[ i ] );
         EnvironmentBase::EnterPreflightPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector );
         if( mpInputProperties != NULL
             && inputSignal.Channels() == mpInputProperties->Channels()
@@ -318,8 +315,8 @@ FilterWrapper::HandleVisSignal( istream& arIn )
         EnvironmentBase::EnterInitializationPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector );
         GenericFilter::InitializeFilters();
         for( int i = 0; i < mParamlist.Size(); ++i )
-          PutMessage( mrOut, mParamlist[ i ] );
-        PutMessage( mrOut, outputProperties );
+          Send( mParamlist[ i ] );
+        Send( outputProperties );
         if( bcierr__.Flushes() > 0 )
         {
           arIn.setstate( ios::failbit );
@@ -342,8 +339,8 @@ FilterWrapper::HandleVisSignal( istream& arIn )
             arIn.setstate( ios::failbit );
             break;
           }
-          PutMessage( mrOut, *mpOutputStatevector );
-          PutMessage( mrOut, mOutputSignal );
+          Send( *mpOutputStatevector );
+          Send( mOutputSignal );
         }
         break;
       default:
@@ -378,8 +375,8 @@ FilterWrapper::OutputParameterChanges()
 
   if( !changedParameters.Empty() )
   {
-    bool success = MessageHandler::PutMessage( mrOut, changedParameters )
-                && MessageHandler::PutMessage( mrOut, SysCommand::EndOfParameter );
+    bool success = Send( changedParameters )
+                && Send( SysCommand::EndOfParameter );
     if( !success )
       bcierr << "Could not publish changed parameters" << endl;
   }
@@ -415,7 +412,7 @@ FilterWrapper::InitializeOutputStatevector()
   }
   SynchronizeStatevectors();
   for( int i = 0; i < mOutputStatelist.Size(); ++i )
-    PutMessage( mrOut, mOutputStatelist[ i ] );
+    Send( mOutputStatelist[ i ] );
 }
 
 void

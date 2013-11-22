@@ -10,7 +10,7 @@ SET( SRC_PROJECT
   BCI2000RemoteLib.cpp
   BCI2000Connection.cpp
   BCI2000Remote.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Lib/SockStream.cpp
 )
 
 ADD_DEFINITIONS(

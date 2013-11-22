@@ -27,9 +27,9 @@
 #pragma hdrstop
 
 #include "GenericVisualization.h"
-#include "MessageHandler.h"
 #include "Label.h"
 #include "HierarchicalLabel.h"
+#include "MessageChannel.h"
 #include "BCIStream.h"
 
 #include <iostream>
@@ -246,16 +246,12 @@ VisBitmap::WriteBinarySelf( ostream& os ) const
 }
 
 
-static std::ostream* spOutputStream = 0;
-static const LockableObject* spOutputLock = 0;
-static GenericVisualization::NotificationClient* spNotify = 0;
+static bci::MessageChannel* spOutputChannel = 0;
 
 void
-GenericVisualization::SetOutputStream( std::ostream* pStream, NotificationClient* pNotify )
+GenericVisualization::SetOutputChannel( bci::MessageChannel* pChannel )
 {
-  spOutputStream = pStream;
-  spOutputLock = dynamic_cast<LockableObject*>( spOutputStream );
-  spNotify = pNotify;
+  spOutputChannel = pChannel;
 }
 
 GenericVisualization&
@@ -273,8 +269,6 @@ GenericVisualization::Send( const string& s )
 GenericVisualization&
 GenericVisualization::Send( const GenericSignal& s )
 {
-  if( spNotify )
-    spNotify->Notify( &s );
   return SendObject( VisSignalConst( mVisID, s ) );
 }
 
@@ -294,11 +288,10 @@ template<typename T>
 GenericVisualization&
 GenericVisualization::SendObject( const T& inObject )
 {
-  if( spOutputStream )
+  if( spOutputChannel )
   {
-    Lock lock( spOutputLock );
-    MessageHandler::PutMessage<T>( *spOutputStream, inObject ).flush();
-    this->flags( spOutputStream->flags() );
+    spOutputChannel->Send( inObject );
+    this->flags( spOutputChannel->Output().flags() );
   }
   else
   {

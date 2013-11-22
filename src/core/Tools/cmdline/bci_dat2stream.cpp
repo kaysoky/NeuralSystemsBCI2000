@@ -31,7 +31,7 @@
 #include "StateList.h"
 #include "StateVector.h"
 #include "GenericSignal.h"
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "Version.h"
 #include <iostream>
 #include <fstream>
@@ -133,6 +133,7 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
     legalInput = legalInput && is;
   }
 
+  MessageChannel output( out );
   if( transmitStates )
   { // Transmit states ordered by name, i.e. independently of their order in the file.
     vector<string> stateNames;
@@ -140,7 +141,7 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
       stateNames.push_back( states[ i ].Name() );
     sort( stateNames.begin(), stateNames.end(), State::NameCmp() );
     for( size_t i = 0; i < stateNames.size(); ++i )
-      MessageHandler::PutMessage( out, states[ stateNames[ i ] ] );
+      output.Send( states[ stateNames[ i ] ] );
   }
 
   legalInput &=
@@ -155,7 +156,7 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
       parameters[ param.Name() ] = param;
     legalInput = legalInput && is;
     if( transmitParameters )
-      MessageHandler::PutMessage( out, param );
+      output.Send( param );
   }
   if( paramFileName.size() )
   {
@@ -167,7 +168,7 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
       if( is >> param )
         parameters[ param.Name() ] = param;
       if( transmitParameters )
-        MessageHandler::PutMessage( out, param );
+        output.Send( param );
     }
   }
   MeasurementUnits::Initialize( parameters );
@@ -238,10 +239,10 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
       {
         SignalProperties outputProperties( inputProperties );
         outputProperties.SetType( SignalType::float32 );
-        MessageHandler::PutMessage( out, outputProperties );
+        output.Send( outputProperties );
       }
       else
-        MessageHandler::PutMessage( out, inputProperties );
+        output.Send( inputProperties );
     }
 
     int curSample = 0;
@@ -260,7 +261,7 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
         {
           if( transmitStates )
           {
-            MessageHandler::PutMessage( out, statevector );
+            output.Send( statevector );
           }
           if( transmitData )
           {
@@ -274,10 +275,10 @@ ToolResult ToolMain( OptionSet& options, istream& in, ostream& out )
                   outputSignal( i, j )
                     = ( inputSignal( i, j ) - offsets[ i ] ) * gains[ i ];
               // Send the data.
-              MessageHandler::PutMessage( out, outputSignal );
+              output.Send( outputSignal );
             }
             else
-              MessageHandler::PutMessage( out, inputSignal );
+              output.Send( inputSignal );
           }
           nBlocksTransmitted++;
         }

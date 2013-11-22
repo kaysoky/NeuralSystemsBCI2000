@@ -30,7 +30,7 @@
 #include "bci_tool.h"
 #include "Param.h"
 #include "ParamList.h"
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "Version.h"
 
 using namespace std;
@@ -47,15 +47,14 @@ string ToolInfo[] =
   ""
 };
 
-class StreamToPrm : public MessageHandler
+class StreamToPrm : public MessageChannel
 {
  public:
-  StreamToPrm( ostream& arOut )
-  : mrOut( arOut ) {}
+  StreamToPrm( istream& arIn, ostream& arOut )
+  : MessageChannel( arIn, arOut ) {}
 
  private:
-  ostream& mrOut;
-  virtual bool HandleParam( istream& );
+  virtual bool OnParam( istream& );
 };
 
 ToolResult ToolInit()
@@ -67,19 +66,19 @@ ToolResult ToolMain( OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
   if( arOptions.size() > 0 )
     return illegalOption;
-  StreamToPrm converter( arOut );
+  StreamToPrm converter( arIn, arOut );
   while( arIn && arIn.peek() != EOF )
-    converter.HandleMessage( arIn );
+    converter.HandleMessage();
   if( !arIn )
     return illegalInput;
   return noError;
 }
 
 bool
-StreamToPrm::HandleParam( istream& is )
+StreamToPrm::OnParam( istream& is )
 {
   Param p;
   if( p.ReadBinary( is ) )
-    mrOut << p << "\r\n";
+    Output() << p << "\r\n";
   return true;
 }

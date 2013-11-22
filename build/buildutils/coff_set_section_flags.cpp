@@ -114,7 +114,7 @@ int main( int argc, char** argv )
       name = name.substr( 0, ::strlen( name.c_str() ) );
       if( find( sections.begin(), sections.end(), name ) != sections.end() )
       {
-        bci::BinaryData<uint32_t, bci::LittleEndian> flags;
+        BinaryData<uint32_t, LittleEndian> flags;
         streamoff pos = file.tellg();
         file.seekg( -flags.Size(), ios_base::cur );
         flags.Get( file );

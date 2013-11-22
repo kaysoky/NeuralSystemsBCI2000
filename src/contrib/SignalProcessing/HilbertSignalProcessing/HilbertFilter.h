@@ -28,7 +28,6 @@
 #ifndef INCLUDED_HilbertFilter_H  // makes sure this header is not included more than once
 #define INCLUDED_HilbertFilter_H
 
-#define Pi 3.1415926535897932
 #include <valarray>
 #include <vector>
 #include "GenericFilter.h"

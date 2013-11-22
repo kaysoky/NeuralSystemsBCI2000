@@ -34,6 +34,7 @@
 #include "ThreadUtils.h"
 #include "ParamList.h"
 #include "ParamRef.h"
+#include "RedirectIO.h"
 #include <set>
 #include <ctime>
 
@@ -80,6 +81,14 @@ OutStream bciout___( &PlainMessage, 0 );
 OutStream bcidbg___( &DebugMessage, 0 );
 
 list<string> OutStream::sContext;
+
+static struct Init { Init(); } init;
+Init::Init()
+{
+  Tiny::Redirect( cerr, bcierr___ );
+  Tiny::Redirect( cout, bciout___ );
+  Tiny::Redirect( clog, bcidbg___ );
+}
 
 void
 BCIStream::Apply( const ParamList& p )

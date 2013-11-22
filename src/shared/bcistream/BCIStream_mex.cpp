@@ -24,9 +24,6 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"
-#pragma hdrstop
-
 #include "BCIStream.h"
 #include "BCIException.h"
 #include "mex.h"

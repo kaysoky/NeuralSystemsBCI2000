@@ -234,7 +234,7 @@ StateMachine::SetStateValue( const char* inName, State::ValueType inValue )
   {
     class State& s = mStates[ inName ];
     s.SetValue( inValue );
-    if( !mpSourceModule || !mpSourceModule->PutMessage( s ) )
+    if( !mpSourceModule || !mpSourceModule->Send( s ) )
       return false;
   }
   return true;
@@ -306,7 +306,7 @@ StateMachine::DebugWarning()
     if( pos > 0 && p.Name().substr( pos ) == suffix )
     {
       string module = p.Name().substr( 0, pos );
-      if( p.RowLabels().Exists( row ) && bci::WildcardMatch( pattern, p.Value( row, 0 ), false ) )
+      if( p.RowLabels().Exists( row ) && WildcardMatch( pattern, p.Value( row, 0 ), false ) )
         debugList += sep + module;
     }
   }
@@ -415,13 +415,7 @@ StateMachine::Info( size_t i ) const
   if( i < mConnections.size() )
   {
     const CoreConnection* p = mConnections[i];
-    ConnectionInfo info = p->Info()();
-    MemoryFence();
-    info.MessagesRecv = p->MessagesReceived();
-    info.MessagesSent = p->MessagesSent();
-    info.BytesRecv = p->BytesReceived();
-    info.BytesSent = p->BytesSent();
-    return info;
+    return p->Info();
   }
   return ConnectionInfo();
 }
@@ -450,9 +444,9 @@ StateMachine::SendNextModuleInfo()
         }
       }
       CoreConnection& c = *mConnections[i];
-      c.PutMessage( next.Version );
-      c.PutMessage( p );
-      c.PutMessage( SysCommand::EndOfParameter );
+      c.Send( next.Version );
+      c.Send( p );
+      c.Send( SysCommand::EndOfParameter );
     }
   }
 }
@@ -461,7 +455,7 @@ void
 StateMachine::BroadcastParameters()
 {
   for( size_t i = 0; i < mConnections.size(); ++i )
-    if( mConnections[i]->PutMessage( mParameters ) )
+    if( mConnections[i]->Send( mParameters ) )
       ThreadUtils::Yield();
   for( int i = 0; i < mParameters.Size(); ++i )
     mParameters[i].Unchanged();
@@ -471,7 +465,7 @@ void
 StateMachine::BroadcastEndOfParameter()
 {
   for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
-    ( *i )->PutMessage( SysCommand::EndOfParameter );
+    ( *i )->Send( SysCommand::EndOfParameter );
 }
 
 void
@@ -489,7 +483,7 @@ StateMachine::BroadcastParameterChanges()
   if( !changedParams.Empty() )
   {
     for( size_t i = 0; i < mConnections.size(); ++i )
-      if( mConnections[i]->PutMessage( changedParams ) )
+      if( mConnections[i]->Send( changedParams ) )
         ThreadUtils::Yield();
   }
 }
@@ -499,7 +493,7 @@ StateMachine::BroadcastStates()
 {
   int numStates = mStates.Size();
   for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
-    if( ( *i )->PutMessage( mStates ) )
+    if( ( *i )->Send( mStates ) )
       ThreadUtils::Yield();
 }
 
@@ -507,7 +501,7 @@ void
 StateMachine::BroadcastEndOfState()
 {
   for( ConnectionList::iterator i = mConnections.begin(); i != mConnections.end(); ++i )
-    ( *i )->PutMessage( SysCommand::EndOfState );
+    ( *i )->Send( SysCommand::EndOfState );
 }
 
 void
@@ -528,7 +522,7 @@ void
 StateMachine::InitializeModules()
 {
   mAutoParameters.Clear();
-  mpSourceModule->PutMessage( SignalProperties( 0, 0 ) );
+  mpSourceModule->Send( SignalProperties( 0, 0 ) );
 }
 
 // Here we list allowed state transitions, and associated actions.
@@ -631,7 +625,7 @@ StateMachine::PerformTransition( int inTransition )
     case TRANSITION( SuspendInitiated, Idle ):
     case TRANSITION( Suspended, Idle ):
       // Send a system command 'Reset' to the SignalSource module.
-      mpSourceModule->PutMessage( SysCommand::Reset );
+      mpSourceModule->Send( SysCommand::Reset );
       mDebugLog.close();
       CloseConnections();
       break;
@@ -901,7 +895,7 @@ StateMachine::Handle( const CoreConnection& c, const Status& s )
     default:
       kind = BCI_OnLogMessage;
   }
-  string name = c.Info()().Name,
+  string name = c.Info().Name,
          msg = s.Message();
   if( kind == BCI_OnLogMessage )
   {
@@ -959,7 +953,7 @@ StateMachine::Handle( const CoreConnection& c, const SysCommand& s )
   }
   else if( s == SysCommand::EndOfState )
   {
-    ConnectionInfo info = c.Info()();
+    ConnectionInfo info = c.Info();
     if( !info.Version.Matches( ProtocolVersion::Current() ) )
     {
       string older = info.Name,
@@ -1096,10 +1090,10 @@ StateMachine::Handle( const CoreConnection& c, const VisSignalProperties& v )
     {
       size_t idx = c.Tag();
       for( size_t i = idx; i < mConnections.size(); ++i )
-        if( mConnections[i]->PutMessage( mAutoParameters ) )
+        if( mConnections[i]->Send( mAutoParameters ) )
           ThreadUtils::Yield();
       if( idx < mConnections.size() )
-        mConnections[idx]->PutMessage( v );
+        mConnections[idx]->Send( v );
       else
         mControlSignal.SetProperties( v );
     }
@@ -1179,12 +1173,13 @@ StateMachine::CoreConnection::CoreConnection( StateMachine& inParent,
                                               const std::string& inName,
                                               const std::string& inAddress,
                                               ptrdiff_t inTag )
-: mrParent( inParent ),
+: MessageChannel( mStream ),
+  mrParent( inParent ),
   mAddress( inAddress ),
   mTag( inTag ),
   mState_( Idle )
 {
-  Info()().Name = inName;
+  mInfo.Name = inName;
   mSocket.set_tcpnodelay( true );
   const int timeout = 1000, // ms
             resolution = 20;
@@ -1204,6 +1199,19 @@ StateMachine::CoreConnection::CoreConnection( StateMachine& inParent,
     bcierr__ << "Operator: Could not open socket for listening on " << mAddress;
 }
 
+StateMachine::ConnectionInfo
+StateMachine::CoreConnection::Info() const
+{
+  MemoryFence();
+  ConnectionInfo info = mInfo;
+  info.Version = Protocol();
+  info.BytesRecv = BytesReceived();
+  info.BytesSent = BytesSent();
+  info.MessagesRecv = MessagesReceived();
+  info.MessagesSent = MessagesSent();
+  return info;
+}
+
 void
 StateMachine::CoreConnection::ProcessBCIMessages()
 {
@@ -1212,7 +1220,7 @@ StateMachine::CoreConnection::ProcessBCIMessages()
   while( mStream && mStream.rdbuf() && mStream.rdbuf()->in_avail() && !mrParent.IsTerminating() )
   {
     ::Lock _( mrParent.mBCIMessageLock ); // Serialize messages
-    HandleMessage( mStream );
+    HandleMessage();
   }
   if( !mSocket.connected() && State() != WaitingForConnection )
     OnDisconnect();
@@ -1242,11 +1250,9 @@ StateMachine::CoreConnection::OnAccept()
       // Older core modules will silently handle the message.
       ::State s;
       istringstream( "Running 1 0 0 0" ) >> s;
-      MessageHandler::PutMessage( mStream, s ).flush();
+      Send( s );
 
-      ostringstream oss;
-      oss << mSocket.ip() << ":" << mSocket.port();
-      Info()().Address = oss.str();
+      mInfo.Address = mSocket.address();
       EnterState( Publishing );
     }
   }
@@ -1260,32 +1266,19 @@ StateMachine::CoreConnection::OnDisconnect()
   {
     ::Lock _( mrParent.mBCIMessageLock );
     mStream.close();
-    Info()().Address = "";
+    mInfo.Address = "";
   }
   EnterState( Idle );
 }
 
 //--------------------- Handlers for BCI messages ------------------------------
 bool
-StateMachine::CoreConnection::HandleProtocolVersion( istream& is )
-{
-  ProtocolVersion version;
-  if( version.ReadBinary( is ) )
-  {
-    Info()().Version = version;
-    if( version.Provides( ProtocolVersion::Negotiation ) )
-      MessageHandler::PutMessage( mStream, ProtocolVersion::Current() );
-  }
-  return true;
-}
-
-bool
-StateMachine::CoreConnection::HandleStatus( istream& is )
+StateMachine::CoreConnection::OnStatus( istream& is )
 {
   Status status;
   if( status.ReadBinary( is ) )
   {
-    Info()().Status = status.Message().c_str();
+    mInfo.Status = status.Message().c_str();
     mrParent.Handle( *this, status );
     switch( status.Content() )
     {
@@ -1304,7 +1297,7 @@ StateMachine::CoreConnection::HandleStatus( istream& is )
 }
 
 bool
-StateMachine::CoreConnection::HandleSysCommand( istream& is )
+StateMachine::CoreConnection::OnSysCommand( istream& is )
 {
   SysCommand syscmd;
   if( syscmd.ReadBinary( is ) )
@@ -1317,7 +1310,7 @@ StateMachine::CoreConnection::HandleSysCommand( istream& is )
 }
 
 bool
-StateMachine::CoreConnection::HandleParam( istream& is )
+StateMachine::CoreConnection::OnParam( istream& is )
 {
   Param param;
   if( param.ReadBinary( is ) )
@@ -1326,7 +1319,7 @@ StateMachine::CoreConnection::HandleParam( istream& is )
 }
 
 bool
-StateMachine::CoreConnection::HandleState( istream& is )
+StateMachine::CoreConnection::OnState( istream& is )
 {
   class State state;
   if( state.ReadBinary( is ) )
@@ -1335,13 +1328,13 @@ StateMachine::CoreConnection::HandleState( istream& is )
 }
 
 bool
-StateMachine::CoreConnection::HandleStateVector( istream& is )
+StateMachine::CoreConnection::OnStateVector( istream& is )
 {
   return mrParent.HandleStateVector( *this, is );
 }
 
 bool
-StateMachine::CoreConnection::HandleVisSignal( istream& is )
+StateMachine::CoreConnection::OnVisSignal( istream& is )
 {
   VisSignal v;
   if( v.ReadBinary( is ) )
@@ -1350,7 +1343,7 @@ StateMachine::CoreConnection::HandleVisSignal( istream& is )
 }
 
 bool
-StateMachine::CoreConnection::HandleVisSignalProperties( istream& is )
+StateMachine::CoreConnection::OnVisSignalProperties( istream& is )
 {
   VisSignalProperties v;
   if( v.ReadBinary( is ) )
@@ -1359,7 +1352,7 @@ StateMachine::CoreConnection::HandleVisSignalProperties( istream& is )
 }
 
 bool
-StateMachine::CoreConnection::HandleVisMemo( istream& is )
+StateMachine::CoreConnection::OnVisMemo( istream& is )
 {
   VisMemo v;
   if( v.ReadBinary( is ) )
@@ -1368,7 +1361,7 @@ StateMachine::CoreConnection::HandleVisMemo( istream& is )
 }
 
 bool
-StateMachine::CoreConnection::HandleVisBitmap( istream& is )
+StateMachine::CoreConnection::OnVisBitmap( istream& is )
 {
   VisBitmap v;
   if( v.ReadBinary( is ) )
@@ -1377,7 +1370,7 @@ StateMachine::CoreConnection::HandleVisBitmap( istream& is )
 }
 
 bool
-StateMachine::CoreConnection::HandleVisCfg( istream& is )
+StateMachine::CoreConnection::OnVisCfg( istream& is )
 {
   VisCfg v;
   if( v.ReadBinary( is ) )
@@ -1424,14 +1417,14 @@ StateMachine::EventLink::OnExecute()
     if( !IsTerminating() )
     {
       const CoreConnection* p = *mrParent.mConnections.begin();
-      istringstream iss( p->Info()().Address );
+      istringstream iss( p->Info().Address );
       string sourceIP;
       std::getline( iss, sourceIP, ':' );
-      ::Lock_<EventLink> lock1( *this );
+      ::Lock _(this);
       mSocket.open( sourceIP.c_str(), mPort + 1 );
       this->clear();
       this->open( mSocket );
-      ::Lock_<StateMachine> lock2( mrParent );
+      ::Lock __(mrParent);
       StateList& events = mrParent.Events();
       for( int i = 0; i < events.Size(); ++i )
         *this << events[i] << endl;

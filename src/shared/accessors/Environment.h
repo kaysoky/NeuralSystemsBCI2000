@@ -45,7 +45,7 @@
 #include "BCIError.h" // no "BCIStream.h" here to avoid breaking existing filters
 #include "BCIException.h"
 #include "ClassName.h"
-#include "OSThreadLocal.h"
+#include "ThreadLocal.h"
 #include "BCIRegistry.h"
 #include <set>
 #include <iostream>
@@ -188,8 +188,8 @@ class EnvironmentBase
   const EnvironmentBase* Base() const { return this; }
 
  private:
-  static OSThreadLocal<const EnvironmentBase*> stObjectContext,
-                                               stWrapperContext;
+  static ThreadLocal<const EnvironmentBase*> stObjectContext,
+                                             stWrapperContext;
 
  // Convenient accessor functions. These are not static, so we can identify
  // the caller as an object.

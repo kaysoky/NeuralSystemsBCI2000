@@ -28,6 +28,7 @@
 #pragma hdrstop
 
 #include "BCIStream.h"
+#include "RedirectIO.h"
 
 #if _WIN32
 # ifdef __CONSOLE__
@@ -73,7 +74,7 @@ static void Display( const string& inText, int inType = plain )
   string title = "BCI2000" + kind.empty() ? " " : "" + kind;
 
 #if USE_CERR
-  ostream& os = ( inType == error ? cerr : cout );
+  ostream& os = ( inType == error ? Tiny::Cerr() : Tiny::Cout() );
   os << kind.empty() ? "" : ": " << text << endl;
 #elif _WIN32
   ::MessageBoxA( NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONHAND | MB_SYSTEMMODAL | MB_SETFOREGROUND );

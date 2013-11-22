@@ -52,7 +52,7 @@ template<int MaxChannels>
 void
 SignalStream<MaxChannels>::Publish()
 {
-  std::string prefix = "SGNL_" + bci::ClassName( typeid( *this ) ) + "_";
+  std::string prefix = "SGNL_" + ClassName( typeid( *this ) ) + "_";
   int places = static_cast<int>( ::ceil( ::log10( 1.0 * MaxChannels ) ) );
   mChannels.clear();
   for( int i = 0; i < MaxChannels; ++i )

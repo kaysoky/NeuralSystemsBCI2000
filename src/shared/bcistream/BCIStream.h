@@ -35,6 +35,7 @@
 #include <climits>
 #include "ClassName.h"
 #include "Lockable.h"
+#include "NullStream.h"
 
 // Context info added to output.
 // This is overridden with the context information
@@ -50,8 +51,8 @@
 // Declaration of user symbols with stream syntax (must be macros to include debug info):
 #define bcierr      bcierr__( CONTEXT_ )
 #define bciout      bciout__( CONTEXT_ )( 0 )
-#define bcierr_     bcierr__( bci::ClassName( typeid( *this ) ) )
-#define bciout_     bciout__( bci::ClassName( typeid( *this ) ) )
+#define bcierr_     bcierr__( Tiny::ClassName( typeid( *this ) ) )
+#define bciout_     bciout__( Tiny::ClassName( typeid( *this ) ) )
 #define bcierr__    BCISTREAM_( bcierr___ )
 #define bciout__    BCISTREAM_( bciout___ )
 #define bciout___   bciwarn___
@@ -78,6 +79,7 @@
 class EnvironmentBase;
 class CoreModule;
 class ParamList;
+namespace bci { class MessageChannel; }
 
 namespace BCIStream
 {
@@ -93,8 +95,7 @@ namespace BCIStream
 
   // Stream configuration
   void Apply( const ParamList& );
-  void SetOperatorStream( std::ostream*, const LockableObject* = NULL );
-
+  void SetOutputChannel( bci::MessageChannel* );
 
   class ContextFrame;
   class Dispatcher;
@@ -200,18 +201,8 @@ namespace BCIStream
     bool mCopied;
   };
 
-  struct NullStream
+  struct NullStream : Tiny::NullStream
   {
-    static NullStream& Null()
-      { return *static_cast<NullStream*>( 0 ); }
-    NullStream& operator()()
-      { return Null(); }
-    template<typename T> NullStream& operator()( const T& )
-      { return Null(); }
-    template<typename T> NullStream& operator<<( const T& )
-      { return Null(); }
-    NullStream& operator<<( std::ostream&( std::ostream& ) )
-      { return Null(); }
     void SetVerbosity( int )
       {}
     void SetAction( Action )
@@ -259,7 +250,7 @@ namespace BCIStream
 # undef bciout___
 
 # define bciwarn     bciwarn__( CONTEXT_ )
-# define bciwarn_    bciwarn__( bci::ClassName( typeid( *this ) ) )
+# define bciwarn_    bciwarn__( Tiny::ClassName( typeid( *this ) ) )
 # define bciwarn__   BCISTREAM_( bciwarn___ )
 
 # endif // BCIWARN_DECLARED

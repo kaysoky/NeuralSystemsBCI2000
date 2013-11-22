@@ -29,7 +29,7 @@
 #include "bci_tool.h"
 #include "Param.h"
 #include "ParamList.h"
-#include "MessageHandler.h"
+#include "MessageChannel.h"
 #include "Version.h"
 
 using namespace std;
@@ -54,8 +54,9 @@ ToolResult ToolInit()
 ToolResult ToolMain( OptionSet&, istream& in, ostream& out )
 {
   ToolResult result = noError;
+  MessageChannel ch( out );
   Param p;
   while( in >> p >> ws )
-    MessageHandler::PutMessage( out, p );
+    ch.Send( p );
   return result;
 }

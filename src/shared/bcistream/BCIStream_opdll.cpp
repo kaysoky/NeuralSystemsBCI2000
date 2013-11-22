@@ -30,7 +30,7 @@
 #include "BCIStream.h"
 #include "StateMachine.h"
 #include "BCI_OperatorLib.h"
-#include <iostream>
+#include "RedirectIO.h"
 
 #ifdef _WIN32
 # include <windows.h>
@@ -50,17 +50,17 @@ Handle( const string& inMessage, int inCallback )
     gpStateMachine->LogMessage( inCallback, message.c_str() );
   else
   {
-    std::ostream* pOut = &cout;
+    std::ostream* pOut = &Tiny::Cout();
     string title = "BCI2000 Operator";
     switch( inCallback )
     {
       case BCI_OnErrorMessage:
         title += " Error";
-        pOut = &cerr;
+        pOut = &Tiny::Cerr();
         break;
       case BCI_OnWarningMessage:
         title += " Warning";
-        pOut = &cerr;
+        pOut = &Tiny::Cerr();
         break;
     }
 #ifdef _WIN32

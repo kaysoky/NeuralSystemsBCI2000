@@ -31,7 +31,7 @@
 
 #include "MatlabFilter.h"
 #include "FileUtils.h"
-#include "OSSharedMemory.h"
+#include "SharedMemory.h"
 #include "BCIStream.h"
 
 using namespace std;
@@ -373,7 +373,7 @@ MatlabFilter::InitializeMatlabProcessing( const SignalProperties& Input, const S
   delete mpData;
   mStatesOffset = Input.Channels() * Input.Elements()
                 + Output.Channels() * Output.Elements();
-  mpData = new OSSharedMemory( "file://",  ( mStatesOffset + States->Size() * mSampleBlockSize ) * sizeof( double ) );
+  mpData = new SharedMemory( "file://",  ( mStatesOffset + States->Size() * mSampleBlockSize ) * sizeof( double ) );
 
   ostringstream oss;
   oss << DATA_HANDLE << " = memmapfile('" << mpData->Name() << "', 'Format', { "
