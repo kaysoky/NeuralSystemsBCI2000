@@ -28,7 +28,7 @@
 #define AmpServerProADCH
 
 #include "BufferedADC.h"
-#include "Sockstream.h"
+#include "SockStream.h"
 
 class AmpServerProADC : public BufferedADC
 {
@@ -52,6 +52,8 @@ class AmpServerProADC : public BufferedADC
     Connection();
     ~Connection();
 
+    const std::string& Error() const
+    { return mError; }
     bool Open( const std::string& inIP, int inPort, int inAmpId );
     void Close();
 
@@ -81,11 +83,16 @@ class AmpServerProADC : public BufferedADC
 
   private:
     std::string BuildCommand( const std::string& ) const;
+    bool DoRead2( GenericSignal& );
     bool DoRead( GenericSignal& );
+
+    std::string mError;
+
     int64_t mSamplesInStream;
     int mSamplesInOutput;
+    bool mFirstRead;
 
-    int mTimeout;
+    int mTimeout, mInitialTimeout;
 
     std::string mAddress;
     int mNotificationPort, mStreamPort, mAmpId;

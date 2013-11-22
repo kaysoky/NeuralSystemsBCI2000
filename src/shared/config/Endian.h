@@ -25,19 +25,6 @@
 #ifndef ENDIAN_H
 #define ENDIAN_H
 
-#include <sys/param.h>
-
-#ifndef BYTE_ORDER
-# define LITTLE_ENDIAN __LITTLE_ENDIAN
-# define BIG_ENDIAN __BIG_ENDIAN
-# define BYTE_ORDER __BYTE_ORDER
-#endif
-
-enum
-{
-  LittleEndian = LITTLE_ENDIAN,
-  BigEndian = BIG_ENDIAN,
-  HostOrder = BYTE_ORDER,
-};
+#include "BinaryData.h"
 
 #endif // ENDIAN_H

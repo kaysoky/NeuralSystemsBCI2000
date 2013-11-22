@@ -50,17 +50,9 @@
  * $END_BCI2000_LICENSE$
  */
 
-#include "PCHIncludes.h"
-#pragma hdrstop
-
 //#define DEBUG
-#ifdef DEBUG
-#include <string>
-#endif
 
 #include "TMSiADC.h"
-#include "BCIError.h"
-#include "GenericSignal.h"
 
 #include <tchar.h>
 

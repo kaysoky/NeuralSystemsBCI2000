@@ -61,6 +61,7 @@
 #include <windows.h>
 #include <vector>
 
+#define ClassName ClassName_
 #include "RTDevice.h"     // from TMSi driver
 #include "Feature.h"      // from TMSi driver
 

@@ -145,7 +145,7 @@ GenericSignal::SetProperties( const SignalProperties& inSp )
 ostream&
 GenericSignal::WriteToStream( ostream& os ) const
 {
-  string indent( os.width(), ' ' );
+  string indent( static_cast<size_t>( os.width() ), ' ' );
 
   os << '\n' << indent << "SignalProperties { ";
   mProperties.WriteToStream( os );

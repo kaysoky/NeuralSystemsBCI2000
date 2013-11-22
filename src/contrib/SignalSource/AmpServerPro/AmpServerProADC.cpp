@@ -24,10 +24,8 @@
 //
 // $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"
-#pragma hdrstop
-
 #include "AmpServerProADC.h"
+
 #include "BinaryData.h"
 #include "BCIStream.h"
 
@@ -237,15 +235,17 @@ void
 AmpServerProADC::DoAcquire( GenericSignal& Output )
 {
   if( !mConnection.ReadData( Output ) )
-    Error( "Lost connection to AmpServerPro" );
+    Error( mConnection.Error() );
 }
 
 AmpServerProADC::Connection::Connection()
 : mSamplesInStream( 0 ),
   mSamplesInOutput( 0 ),
+  mFirstRead( false ),
   mNotificationPort( 0 ),
   mStreamPort( 0 ),
   mTimeout( 0 ),
+  mInitialTimeout( 0 ),
   mAmpId( 0 ),
   mAmps( 0 ),
   mChannels( 0 ),
@@ -265,7 +265,8 @@ AmpServerProADC::Connection::Open( const std::string& inIP, int inPort, int inAm
 {
   Close();
 
-  mTimeout = 2000;
+  mInitialTimeout = 3000;
+  mTimeout = 1000;
 
   ostringstream oss;
   oss << inIP << ":" << inPort;
@@ -291,7 +292,7 @@ AmpServerProADC::Connection::Open( const std::string& inIP, int inPort, int inAm
   mSampleBlockSize = 40;
   mSamplingRate = 1000;
   // EGI NA300 amps have a range of +/- 200,000uV that is digitized into
-  // a 24bit signed value. The values received in BCI 2000 are in float,
+  // a 24bit signed value. The values received in BCI2000 are in float,
   // but use these values when converting back to uV.ss
   mGain_muV = 2e5 / ( 1 << 23 );
 
@@ -318,8 +319,6 @@ AmpServerProADC::Connection::IsOpen() const
   return mCommands.is_open() && mStream.is_open();
 }
 
-#define bcidbgOn
-
 string
 AmpServerProADC::Connection::BuildCommand( const string& inCommand ) const
 {
@@ -328,9 +327,17 @@ AmpServerProADC::Connection::BuildCommand( const string& inCommand ) const
   if( !(iss >> name) )
     return false;
   if( !(iss >> val1) )
-    val1 = "0";
+    val1 = "";
   if( !(iss >> val2) )
+  {
+    val2 = val1;
+    val1 = "";
+  }
+  if( val1.empty() )
+    val1 = "0";
+  if( val2.empty() )
     val2 = "0";
+
   ostringstream ampId;
   ampId << mAmpId;
   string result = "(sendCommand cmd_" + name + " " + ampId.str() + " " + val1 + " " + val2 + ")";
@@ -366,19 +373,10 @@ AmpServerProADC::Connection::SendCommand( const string& inCommand, string& outRe
 bool
 AmpServerProADC::Connection::StartStreaming()
 {
+  mFirstRead = true;
   mSamplesInStream = 0;
   mSamplesInOutput = 0;
-  bool result = mStream << BuildCommand( "ListenToAmp" ) << endl;
-  if( result )
-  {
-    result = mStreamSocket.wait_for_read( 2000 );
-    if( !result )
-      bcierr << "AmpServer is available, but does not stream live EEG data. "
-             << "To enable this feature, you need to obtain an AmpServerPro SDK license from EGI, "
-             << "and update EGI's HASP key.\n"
-             << "For more information, see http://www.egi.com.";
-  }
-  return result;
+  return mStream << BuildCommand( "ListenToAmp" ) << endl;
 }
 
 bool
@@ -393,7 +391,24 @@ AmpServerProADC::Connection::StopStreaming()
 bool
 AmpServerProADC::Connection::ReadData( GenericSignal& Output )
 {
-  while( !DoRead( Output ) )
+  if( mFirstRead )
+  {
+    mFirstRead = false;
+    if( !mStreamSocket.wait_for_read( mInitialTimeout ) )
+      mError = "AmpServer is available, but does not stream live EEG data. "
+               "To enable this feature, you need to obtain an AmpServerPro SDK license from EGI, "
+               "and update EGI's HASP key.\n"
+               "For more information, see http://www.egi.com.";
+  }
+  else if( !DoRead( Output ) )
+    mError = "Lost connection to AmpServerPro";
+  return mError.empty();
+}
+
+bool
+AmpServerProADC::Connection::DoRead( GenericSignal& Output )
+{
+  while( !DoRead2( Output ) )
   {
     if( !mStreamSocket.wait_for_read( mTimeout ) )
       return false;
@@ -409,7 +424,7 @@ AmpServerProADC::Connection::ReadData( GenericSignal& Output )
 }
 
 bool
-AmpServerProADC::Connection::DoRead( GenericSignal& Output )
+AmpServerProADC::Connection::DoRead2( GenericSignal& Output )
 {
   BinaryData<float32_t, BigEndian> data;
   while( mSamplesInOutput < Output.Elements() && mSamplesInStream > 0 )

@@ -30,17 +30,11 @@
 #include <iostream>
 #include <limits>
 
-#if _WIN32
-# define LITTLE_ENDIAN 1
-# define BIG_ENDIAN 2
-# define BYTE_ORDER LITTLE_ENDIAN
-#else
-# include <sys/param.h>
-# ifndef BYTE_ORDER
-#  define BYTE_ORDER __BYTE_ORDER
-#  define LITTLE_ENDIAN __LITTLE_ENDIAN
-#  define BIG_ENDIAN __BIG_ENDIAN
-# endif
+#include <sys/param.h>
+#ifndef BYTE_ORDER
+# define BYTE_ORDER __BYTE_ORDER
+# define LITTLE_ENDIAN __LITTLE_ENDIAN
+# define BIG_ENDIAN __BIG_ENDIAN
 #endif
 
 namespace Tiny {

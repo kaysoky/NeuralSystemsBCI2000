@@ -401,7 +401,7 @@ FieldTripBufferFilter::SendRequest( int inCommand, T* inDef, void* inData ) cons
   }
   
   if( 0 != dmarequest( &request, &response ) )
-    bcierr << "Could not send request of type " << bci::ClassName( typeid( *inDef ) ) << endl;
+    bcierr << "Could not send request of type " << ClassName( typeid( *inDef ) ) << endl;
 
   if( request.buf != NULL )
     ::free( request.buf );

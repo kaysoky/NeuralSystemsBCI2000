@@ -817,8 +817,8 @@ sockbuf::xsgetn( char* p, streamsize n )
       ++m_short_reads;
       return count;
     }
-    ::memcpy( p + count, gptr(), (size_t)avail );
-    gbump( (int)avail );
+    ::memcpy( p + count, gptr(), static_cast<size_t>( avail ) );
+    gbump( static_cast<int>( avail ) );
     count += avail;
   }
   return count;
@@ -832,14 +832,14 @@ sockbuf::xsputn( const char* p, streamsize n )
   {
     overflow( traits_type::eof() );
     sync_pbuf _(this);
-    size_t avail = min( (size_t)(n - count), (size_t)(epptr() - pptr()) );
+    streamsize avail = min<streamsize>( n - count, epptr() - pptr() );
     if( !avail )
     {
       ++m_short_writes;
       return count;
     }
-    ::memcpy( pptr(), p + count, avail );
-    pbump( avail );
+    ::memcpy( pptr(), p + count, static_cast<size_t>( avail ) );
+    pbump( static_cast<int>( avail ) );
     count += avail;
   }
   return count;
