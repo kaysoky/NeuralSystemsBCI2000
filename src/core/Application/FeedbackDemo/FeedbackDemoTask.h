@@ -60,9 +60,7 @@ class FeedbackDemoTask : public FeedbackTask
   virtual void DoPostFeedback( const GenericSignal&, bool& doProgress );
   virtual void DoITI(          const GenericSignal&, bool& doProgress );
 
-#ifndef __BORLANDC__
   void SetLabel( const char* text, RGBColor &color );
-#endif // __BORLANDC__
 
  private:
   int   mRunCount,
@@ -74,19 +72,12 @@ class FeedbackDemoTask : public FeedbackTask
 
   TrialStatistics mTrialStatistics;
 
-#ifdef __BORLANDC__
-  class TForm*  mpForm;
-  class TLabel* mpLabel;
-  class TShape* mpCursor,
-              * mpTarget;
-#else // __BORLANDC__
-  class QWidget* mpForm;
+  class QWidget* mpWindow;
   class QGraphicsScene* mpScene;
   class QGraphicsView* mpSceneView;
   class QGraphicsSimpleTextItem* mpLabel;
   class QGraphicsRectItem* mpTarget;
   class QGraphicsEllipseItem* mpCursor;
-#endif // __BORLANDC__
 };
 
 #endif // FEEDBACK_DEMO_TASK_H
