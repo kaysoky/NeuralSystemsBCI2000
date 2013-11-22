@@ -12,7 +12,7 @@ SET( NAME AppConnectorExample )
 SET( SRC_PROJECT
   main.cpp
   mainUI.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Lib/SockStream.cpp
 )
 
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/src/contrib/AppConnectorApplications/AppConnectorExample )

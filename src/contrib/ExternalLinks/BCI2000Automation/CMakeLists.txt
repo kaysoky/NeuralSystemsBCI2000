@@ -13,7 +13,7 @@ BCI2000_ADD_TARGET(
   BCI2000Automation.rc
   CBCI2000Remote.cpp
   Resource.h
-  ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Lib/SockStream.cpp
   ${BCI2000_SRC_DIR}/core/Operator/BCI2000Remote/BCI2000Remote.cpp  
   ${BCI2000_SRC_DIR}/core/Operator/BCI2000Remote/BCI2000Connection.cpp
   

@@ -14,7 +14,7 @@ ADD_DEFINITIONS(
 # Set the project specific sources
 SET( SRC_PROJECT
   BCI2000Command.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Lib/SockStream.cpp
   ${BCI2000_SRC_DIR}/core/Operator/BCI2000Remote/BCI2000Remote.cpp  
   ${BCI2000_SRC_DIR}/core/Operator/BCI2000Remote/BCI2000Connection.cpp  
 )

@@ -11,7 +11,7 @@ SET( NAME SimpleExample )
 # Set the project specific sources
 SET( SRC_PROJECT
   SimpleExample.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Lib/SockStream.cpp
 )
 
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/src/contrib/AppConnectorApplications/SimpleExample )

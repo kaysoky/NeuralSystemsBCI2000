@@ -13,10 +13,9 @@ SET( NAME ParallelSwitch )
 # Set the project specific sources
 SET( SRC_PROJECT
   ParallelSwitch.cpp
-  ${BCI2000_SRC_DIR}/shared/utils/SockStream.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Lib/SockStream.cpp
 )
 
-INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/utils )
 SET_OUTPUT_DIRECTORY( ${BCI2000_ROOT_DIR}/src/contrib/AppConnectorApplications/ParallelSwitch )
 BCI2000_ADD_TARGET( INFO "AppConnector example" EXECUTABLE ${NAME} ${SRC_PROJECT} )
 
