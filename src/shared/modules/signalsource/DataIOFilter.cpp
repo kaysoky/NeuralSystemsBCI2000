@@ -527,7 +527,7 @@ DataIOFilter::Initialize( const SignalProperties& /*Input*/,
   mTimingSignal = GenericSignal( p, GenericSignal::NaN );
   mTimingSignal( BlockNom, 0 ) = mBlockDuration;
 
-  mTimingObserver.Observer().SetWindowLength( static_cast<size_t>( MeasurementUnits::TimeInSampleBlocks( "10s" ) ) );
+  mTimingObserver.Observer().SetWindowLength( MeasurementUnits::TimeInSampleBlocks( "10s" ) );
   mTimingObserver.SetEnabled( mpADC->IsRealTimeSource() || ( OptionalParameter( "EvaluateTiming", 1 ) != 0 ) );
 
   if( mVisualizeTiming )

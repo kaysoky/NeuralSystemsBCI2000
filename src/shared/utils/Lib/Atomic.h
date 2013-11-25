@@ -38,6 +38,7 @@
 
 namespace Tiny
 {
+  #undef MemoryFence
   void MemoryFence();
 
   namespace Atomic_
@@ -147,6 +148,7 @@ namespace Tiny
 #if _MSC_VER
 #include <Windows.h>
 #include <intrin.h>
+#undef MemoryFence
 #define ATOMIC_PTR_(v) reinterpret_cast<volatile long*>(&v)
 
 inline int32_t

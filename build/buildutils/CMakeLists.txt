@@ -40,5 +40,7 @@ ENDIF()
 UTILS_INCLUDE( frameworks/LibTiny )
 BCI2000_ADD_TARGET( EXECUTABLE create_resource
   create_resource.cpp
+  ${PROJECT_SRC_DIR}/shared/types/Blob.cpp
+  ${PROJECT_SRC_DIR}/shared/utils/Resource.h
 )
 

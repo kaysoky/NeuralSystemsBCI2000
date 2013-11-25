@@ -65,11 +65,14 @@ class StimBoxFilter : public GenericFilter
   int mPortNumber;
   HANDLE mStimBox;
   std::map< int, Expression > mDigitalOutputExpMap;
-  std::vector< int >    mOutputPorts,
-                        mInputPorts,
-                        mModeselektor,
-                        mOutputPortStates;
-  std::vector< double > mOutputPortFreqs;
+
+  template<class T> struct Vector : std::vector<T>
+  { int Size() const { return static_cast<int>( size() ); } };
+  Vector< int >    mOutputPorts,
+                   mInputPorts,
+                   mModeselektor,
+                   mOutputPortStates;
+  Vector< double > mOutputPortFreqs;
 
   class StimBoxThread : public OSThread
   {

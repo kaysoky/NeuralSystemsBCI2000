@@ -903,7 +903,7 @@ sockbuf::send( buffer* pBuf )
   {
     sync_pbuf _(this);
     size_t count = m_socket->write( pBuf->data + pBuf->read_count, pBuf->write_count - pBuf->read_count );
-    sent += count;
+    sent += static_cast<int>( count );
     pBuf->read_count += count;
   }
   return sent;
@@ -927,7 +927,7 @@ sockbuf::recv( buffer* pBuf )
   {
     sync_gbuf _(this);
     size_t count = m_socket->read( pBuf->data + pBuf->write_count, avail );
-    received += count;
+    received += static_cast<int>( count );
     pBuf->write_count += count;
     avail = pBuf->size() - pBuf->write_count;
   }
@@ -1013,7 +1013,7 @@ sockbuf::read_from_socket( int timeout )
       if( allocated < m_allocation_limit )
         m_gbufs.advance_write( recv_bufsize() );
       else
-        return received;
+        return static_cast<int>( received );
     }
     received += recv( m_gbufs.write );
   }
@@ -1046,7 +1046,7 @@ sockbuf::write_to_socket( int timeout )
   }
   lock_pbuf _(this);
   m_pbufs.write->write_count = pptr() - pbase();
-  return m_pbufs.bytes_used();
+  return static_cast<int>( m_pbufs.bytes_used() );
 }
 
 sockbuf::buffers::buffers()

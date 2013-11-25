@@ -173,7 +173,13 @@ SharedMemory::Create()
     mHandle.h = 0;
     while( mHandle.h == 0 )
     {
-      mHandle.h = ::CreateFileMappingA( INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, mSize, mName.c_str() + 1 );
+      LARGE_INTEGER size;
+      size.QuadPart = mSize;
+      mHandle.h = ::CreateFileMappingA(
+        INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
+        size.HighPart, size.LowPart,
+        mName.c_str() + 1
+      );
       if( ::GetLastError() == ERROR_ALREADY_EXISTS )
       {
         mHandle.h = 0;

@@ -73,7 +73,7 @@ PhysicalUnit::TokenizePhysical( const string& inPhysical, size_t& outPrefixPos, 
   outPrefixPos = inPhysical.find_first_not_of( "0123456789.:Ee+-*/^() " );
   if( outPrefixPos == string::npos )
     outPrefixPos = inPhysical.length();
-  int symbolPos = inPhysical.length() - Symbol().length();
+  ptrdiff_t symbolPos = inPhysical.length() - Symbol().length();
   bool ok = symbolPos > 0 && inPhysical.substr( symbolPos ) == Symbol();
   outSymbolPos = ok ? symbolPos : inPhysical.length();
   return ok;

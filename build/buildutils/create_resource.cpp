@@ -28,7 +28,7 @@
 #include <iomanip>
 #include <string>
 
-#include "Blob.h"
+#include "types/Blob.h"
 #include "FileUtils.h"
 
 using namespace std;

@@ -179,7 +179,7 @@ StimBoxFilter::Initialize( const SignalProperties &Input, const SignalProperties
     }
 
     // Set gSTIMbox Port Modes
-    if( stimBoxError( gSTIMboxsetMode( mStimBox, mOutputPorts.size(), &mOutputPorts[0], &mModeselektor[0] ) ) )
+    if( stimBoxError( gSTIMboxsetMode( mStimBox, mOutputPorts.Size(), &mOutputPorts[0], &mModeselektor[0] ) ) )
       bcierr << "Could not set port modes on g.STIMbox" << endl;
 
     // Create the input acquisition thread
@@ -277,10 +277,10 @@ StimBoxFilter::Process( const GenericSignal &Input, GenericSignal &Output )
     }
 
     // Communicate the current port states/frequencies to the g.STIMbox
-    if( stimBoxError( gSTIMboxsetPortState( mStimBox, mOutputPorts.size(), &mOutputPorts[0], &mOutputPortStates[0] ) ) )
+    if( stimBoxError( gSTIMboxsetPortState( mStimBox, mOutputPorts.Size(), &mOutputPorts[0], &mOutputPortStates[0] ) ) )
       bcierr << "Error communicating with g.STIMbox -- setPortState failed." << endl;
     if( !portUpdate.empty() )
-      if( stimBoxError( gSTIMboxsetFrequency( mStimBox, mOutputPorts.size(), &mOutputPorts[0], &mOutputPortFreqs[0] ) ) )
+      if( stimBoxError( gSTIMboxsetFrequency( mStimBox, mOutputPorts.Size(), &mOutputPorts[0], &mOutputPortFreqs[0] ) ) )
         bcierr << "Error communicating with g.STIMbox -- setFrequency failed." << endl;
   }
 }
@@ -289,10 +289,11 @@ void
 StimBoxFilter::DisablePorts()
 {
   // Disable all output ports
-  vector< int > states = vector< int >( NUM_OUTPUT_PORTS, 0 ), ports;
+  vector< int > states = vector< int >( NUM_OUTPUT_PORTS, 0 );
+  Vector< int > ports;
   for( unsigned int p = 0; p < states.size(); p++ )
     ports.push_back( p );
-  if( stimBoxError( gSTIMboxsetPortState( mStimBox, ports.size(), &ports[0], &states[0] ) ) )
+  if( stimBoxError( gSTIMboxsetPortState( mStimBox, ports.Size(), &ports[0], &states[0] ) ) )
       bcierr << "Error communicating with g.STIMbox -- setPortState failed." << endl;
 }
 

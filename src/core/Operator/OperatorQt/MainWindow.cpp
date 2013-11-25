@@ -420,7 +420,7 @@ MainWindow::UpdateDisplay()
 void
 MainWindow::SetFunctionButtons()
 {
-  for( size_t i = 0; i < Preferences::numButtons; ++i )
+  for( int i = 0; i < Preferences::numButtons; ++i )
   {
     QString name = gpPreferences->mButtons[i].Name,
             script = gpPreferences->mButtons[i].Cmd;
