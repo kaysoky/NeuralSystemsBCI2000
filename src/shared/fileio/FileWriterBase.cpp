@@ -64,18 +64,11 @@ FileWriterBase::Publish()
 {
   mrOutputFormat.Publish();
 
-  string formatName = ClassName( typeid( *this ) );
-  size_t offset = formatName.find( "FileWriter" );
-  if( offset == string::npos || offset == 0 )
-  {
-    string ext = mrOutputFormat.DataFileExtension();
-    size_t i = 0;
-    while( i < ext.length() && ::ispunct( ext[i] ) )
-      ++i;
-    formatName = ext.substr( i );
-  }
-  else
-    formatName = formatName.substr( 0, offset );
+  string ext = mrOutputFormat.DataFileExtension();
+  size_t i = 0;
+  while( i < ext.length() && ::ispunct( ext[i] ) )
+    ++i;
+  string formatName = ext.substr( i );
 
   if( Parameters->Exists( "FileFormat" ) )
     Parameters->Delete( "FileFormat" );
