@@ -28,6 +28,7 @@
 #define EXPRESSION_FILTER_H
 
 #include "GenericFilter.h"
+#include "RandomGenerator.h"
 #include "Expression/Expression.h"
 #include <vector>
 
@@ -44,15 +45,23 @@ class ExpressionFilter : public GenericFilter
    void Process( const GenericSignal&, GenericSignal& );
 
  private:
+   struct Expr : public Expression
+   {
+     Expr() : mpRandom( 0 ) {}
+     Expr( LCRandomGenerator& r, const std::string& s = "" ) : Expression( s ), mpRandom( &r ) {}
+     Node* Function( const std::string& name, const NodeList& );
+     LCRandomGenerator* mpRandom;
+   };
    typedef Expression::VariableContainer VariableContainer;
-   typedef std::vector< std::vector<Expression> > ExpressionMatrix;
+   typedef std::vector< std::vector<Expr> > ExpressionMatrix;
 
-   static void LoadExpressions( const ParamRef&, ExpressionMatrix& );
+   static void LoadExpressions( const ParamRef&, ExpressionMatrix&, LCRandomGenerator& );
    static void CompileExpressions( ExpressionMatrix&, VariableContainer& );
    static void EvaluateExpressions( ExpressionMatrix&, const GenericSignal* = NULL, GenericSignal* = NULL );
 
-   Expression mStartRunExpression,
-              mStopRunExpression;
+   RandomGenerator mRandom;
+   Expr mStartRunExpression,
+        mStopRunExpression;
    ExpressionMatrix mExpressions;
    VariableContainer mVariables;
 };

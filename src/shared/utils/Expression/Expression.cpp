@@ -141,24 +141,24 @@ Expression::SignalNode::OnEvaluate()
   int channel = mChannelIdx;
   if( channel < 0 )
   {
-    string address = mpChannelAddress->EvaluateToString();
+    string address = mpChannelAddress->Evaluate();
     channel = static_cast<int>( mrpSignal->Properties().ChannelIndex( address ) );
     if( mpChannelAddress->IsConst() )
       mChannelIdx = channel;
   }
   if( channel < 0 || channel >= mrpSignal->Channels() )
-    throw bciexception( "Channel index or address (" << mpChannelAddress->EvaluateToString() << ") out of range" );
+    throw bciexception( "Channel index or address (" << mpChannelAddress->Evaluate() << ") out of range" );
 
   int element = mElementIdx;
   if( element < 0 )
   {
-    string address = mpElementAddress->EvaluateToString();
+    string address = mpElementAddress->Evaluate();
     element = static_cast<int>( mrpSignal->Properties().ElementIndex( address ) );
     if( mpElementAddress->IsConst() )
       mElementIdx = element;
   }
   if( element < 0 || element >= mrpSignal->Elements() )
-    throw bciexception( "Element index or address (" << mpElementAddress->EvaluateToString() << ") out of range" );
+    throw bciexception( "Element index or address (" << mpElementAddress->Evaluate() << ") out of range" );
 
   return ( *mrpSignal )( channel, element );
 }

@@ -53,6 +53,14 @@ class LCRandomGenerator
   // STL functor interface: operator() returns a random integer between 0 and (N-1).
   template<typename Int> Int operator()( Int inN )
     { return ( Random() * inN ) / ( RandMax() + 1 ); }
+
+  struct Uniform01
+  { static double InverseCPDF( double x ) { return x; } };
+  struct Normal
+  { static double InverseCPDF( double ); };
+  template<class Dist> double RandomValue()
+  { return Dist::InverseCPDF( Random() * 1.0 / RandMax() ); }
+
   std::string RandomName( size_t inLength );
   char RandomCharacter( int (*)( int ) = &::isalpha );
 

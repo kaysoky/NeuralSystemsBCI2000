@@ -124,6 +124,29 @@ StringUtils::ToLower( const wstring& s )
   return result;
 }
 
+bool
+StringUtils::CiLess( const std::wstring& a, const std::wstring& b )
+{
+  for( size_t i = 0; ; ++i )
+    if( i == a.length() || i == b.length() )
+      return a.length() < b.length();
+    else
+    {
+      wchar_t a_ = ::towlower( a[i] ),
+              b_ = ::towlower( b[i] );
+      if( a_ != b_ )
+        return a_ < b_;
+    }
+  return false;
+}
+
+bool
+StringUtils::CiLess( const std::string& a, const std::string& b )
+{
+  return CiLess( ToWide( a ), ToWide( b ) );
+}
+
+
 static const char cBase64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 static const uint8_t cBase64Fill = 64;
 static uint8_t cInvBase64[256] = "";

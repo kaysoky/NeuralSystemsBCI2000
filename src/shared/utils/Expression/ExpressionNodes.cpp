@@ -28,12 +28,37 @@
 
 #include "ExpressionNodes.h"
 #include "BCIException.h"
+#include "Debugging.h"
+#include "Numeric.h"
 #include <sstream>
 
 using namespace std;
 using namespace ExpressionParser;
 
-// ExpressionNodes::Node
+RefObj::~RefObj()
+{
+  if( mRefs )
+    throw std_logic_error( "Deleting object with " << mRefs << " references" );
+}
+
+// NodeList
+NodeList& 
+NodeList::Add( Node* node )
+{
+  if( node )
+    mList.push_back( node );
+  return *this;
+}
+
+Node*
+NodeList::operator[]( size_t idx ) const
+{
+  const Node* p = mList[idx];
+  return const_cast<Node*>( p );
+}
+
+
+// Node
 Node::Node( bool isConst )
 : mIsConst( isConst )
 {
@@ -41,8 +66,6 @@ Node::Node( bool isConst )
 
 Node::~Node()
 {
-  for( size_t i = 0; i < mChildren.size(); ++i )
-    delete mChildren[i];
 }
 
 Node*
@@ -64,57 +87,66 @@ Node::Add( Node* p )
 Node*
 ConstPropagatingNode::OnSimplify()
 {
-  Node* result = this;
   if( mPropagate )
   {
     bool allChildrenConst = true;
     for( size_t i = 0; i < mChildren.size(); ++i )
       allChildrenConst &= mChildren[i]->IsConst();
     if( allChildrenConst )
-    {
-      result = new ConstantNode( this->Evaluate() );
-      delete this;
-    }
+      return new ConstantNode( this->Evaluate() );
   }
-  return result;
+  return this;
 }
 
+// ExpressionNodes::StringNode
+double
+StringNode::OnEvaluate()
+{
+  return NaN<double>();
+}
 
 // ExpressionNodes::AddressNode
-AddressNode::AddressNode( Node* inNode, const string* inpString )
-: mpString( 0 )
+AddressNode::AddressNode( Node* n1, Node* n2 )
+: StringNode( "" )
 {
-  if( inpString )
-    mpString = new string( *inpString );
-  Add( inNode );
-}
-
-AddressNode::~AddressNode()
-{
-  delete mpString;
-}
-
-string
-AddressNode::EvaluateToString() const
-{
-  ostringstream oss;
-  if( !mChildren.empty() )
-    oss << mChildren[0]->Evaluate();
-  if( mpString )
-    oss << *mpString;
-  return oss.str();
-}
-
-Node*
-AddressNode::OnSimplify()
-{
-  mIsConst = ( mChildren.empty() || mChildren[0]->IsConst() );
-  return this;
+  Add( n1 );
+  Add( n2 );
 }
 
 double
 AddressNode::OnEvaluate()
 {
-  throw std_logic_error( "This function should never be called" );
-  return 0;
+  if( !mChildren.empty() )
+  {
+    mString.clear();
+    for( size_t i = 0; i < mChildren.size(); ++i )
+    {
+      Node* p = mChildren[i];
+      StringNode* s = dynamic_cast<StringNode*>( p );
+      if( s )
+        mString += s->Evaluate();
+      else
+      {
+        ostringstream oss;
+        oss << p->Evaluate();
+        mString += oss.str();
+      }
+    }
+  }
+  return NaN<double>();
 }
+
+Node*
+AddressNode::OnSimplify()
+{
+  mIsConst = true;
+  for( size_t i = 0; i < mChildren.size(); ++i )
+    mIsConst &= mChildren[i]->IsConst();
+  if( mIsConst )
+  {
+    Evaluate();
+    mChildren.clear();
+  }
+  return this;
+}
+

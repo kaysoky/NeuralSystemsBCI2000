@@ -36,11 +36,11 @@ Filter( CoherenceFilter, 2.C );
 #include "LinearClassifier.h"
 Filter( LinearClassifier, 2.D );
 
-#include "LPFilter.h"
-Filter( LPFilter, 2.D1 );
-
 #include "ExpressionFilter.h"
-Filter( ExpressionFilter, 2.D2 );
+Filter( ExpressionFilter, 2.D1 );
+
+#include "LPFilter.h"
+Filter( LPFilter, 2.D2 );
 
 #include "Normalizer.h"
 Filter( Normalizer, 2.E );

@@ -74,8 +74,6 @@ ArithmeticExpression::ArithmeticExpression( const ArithmeticExpression& e )
 
 ArithmeticExpression::~ArithmeticExpression()
 {
-  Cleanup();
-  ClearStatements();
 }
 
 const ArithmeticExpression&
@@ -88,8 +86,8 @@ ArithmeticExpression::operator=( const ArithmeticExpression& e )
   mErrors.clear();
   mContext = Context();
   mCompilationState = none;
-  Cleanup();
-  ClearStatements();
+  CollectGarbage();
+  mStatements.Clear();
   return *this;
 }
 
@@ -159,8 +157,7 @@ ArithmeticExpression::DoEvaluate()
 void
 ArithmeticExpression::Add( Node* inpNode )
 {
-  if( inpNode )
-    mStatements.push_back( inpNode );
+  mStatements.Add( inpNode );
 }
 
 Node*
@@ -306,7 +303,7 @@ ArithmeticExpression::StateAssignment( const string& inName, Node* )
 bool
 ArithmeticExpression::Parse()
 {
-  ClearStatements();
+  mStatements.Clear();
   mInput.clear();
   mInput.str( mExpression );
   try
@@ -327,13 +324,13 @@ ArithmeticExpression::Parse()
   {
     Errors() << "Unknown exception caught" << endl;
   }
-  Cleanup();
+  CollectGarbage();
   bool success = mErrors.str().empty();
   if( success )
     for( size_t i = 0; i < mStatements.size(); ++i )
       mStatements[i] = mStatements[i]->Simplify();
   else
-    ClearStatements();
+    mStatements.Clear();
   return success;
 }
 
@@ -368,22 +365,83 @@ ArithmeticExpression::ReportErrors()
 }
 
 void
-ArithmeticExpression::Cleanup()
+ArithmeticExpression::CollectGarbage()
 {
-  while( !mAllocations.empty() )
-  {
-    mAllocations.begin()->Delete();
-    mAllocations.erase( mAllocations.begin() );
-  }
+  mParserObjects.clear();
 }
 
-void
-ArithmeticExpression::ClearStatements()
+Node*
+ArithmeticExpression::Track( Node* p )
 {
-  for( NodeList::reverse_iterator i = mStatements.rbegin(); i != mStatements.rend(); ++i )
-    delete *i;
-  mStatements.clear();
+  mParserObjects.push_back( p );
+  return p;
 }
+
+NodeList*
+ArithmeticExpression::MakeList( Node* node )
+{
+  NodeList* p = new NodeList( node );
+  mParserObjects.push_back( p );
+  return p;
+}
+
+Node*
+ArithmeticExpression::MakeConstant( double inValue )
+{ return Track( new ConstantNode( inValue ) ); }
+
+Node*
+ArithmeticExpression::MakeVariable( StringNode* pName )
+{ return Track( Variable( pName->Evaluate() ) ); }
+
+Node*
+ArithmeticExpression::MakeVariableAssignment( StringNode* pName, Node* pNode )
+{ return Track( VariableAssignment( pName->Evaluate(), pNode ) ); }
+
+Node*
+ArithmeticExpression::MakeFunction( double (*f)() )
+{ return Track( new FunctionNode<0>( false, f ) ); }
+
+Node*
+ArithmeticExpression::MakeFunction( double (*f)( double ), Node* n1 )
+{ return Track( new FunctionNode<1>( true, f, n1 ) ); }
+
+Node*
+ArithmeticExpression::MakeFunction( double (*f)( double, double ), Node* n1, Node* n2 )
+{ return Track( new FunctionNode<2>( true, f, n1, n2 ) ); }
+
+Node*
+ArithmeticExpression::MakeFunction( double (*f)( double, double, double ), Node* n1, Node* n2, Node* n3 )
+{ return Track( new FunctionNode<3>( true, f, n1, n2, n3 ) ); }
+
+Node*
+ArithmeticExpression::MakeFunction( StringNode* pName, const NodeList& args )
+{ return Track( Function( pName->Evaluate(), args ) ); }
+
+Node*
+ArithmeticExpression::MakeMemberFunction( StringNode* pObject, StringNode* pName, const NodeList& args )
+{ return Track( MemberFunction( pObject->Evaluate(), pName->Evaluate(), args ) ); }
+
+Node*
+ArithmeticExpression::MakeAddress( Node* n1, Node* n2 )
+{ return Track( new AddressNode( n1, n2 ) ); }
+
+Node*
+ArithmeticExpression::MakeSignal( Node* n1, Node* n2 )
+{
+  AddressNode* p1 = dynamic_cast<AddressNode*>( n1 );
+  AddressNode* p2 = dynamic_cast<AddressNode*>( n2 );
+  if( !p1 || !p2 )
+    return 0;
+  return Track( Signal( p1, p2 ) ); }
+
+Node*
+ArithmeticExpression::MakeState( StringNode* pName )
+{ return Track( State( pName->Evaluate() ) ); }
+
+Node*
+ArithmeticExpression::MakeStateAssignment( StringNode* pName, Node* pValue )
+{ return Track( StateAssignment( pName->Evaluate(), pValue ) ); }
+
 
 #ifdef VCL_EXCEPTIONS
 // _matherr() error handling interface.

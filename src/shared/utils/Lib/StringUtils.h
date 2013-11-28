@@ -54,6 +54,22 @@ namespace StringUtils
   inline std::string ToUpper( const std::string& s ) { return ToNarrow( ToUpper( ToWide( s ) ) ); }
   inline std::string ToLower( const std::string& s ) { return ToNarrow( ToLower( ToWide( s ) ) ); }
 
+  bool CiLess( const std::wstring&, const std::wstring& );
+  bool CiLess( const std::string&, const std::string& );
+  template<class T> struct CiRef
+  {
+    const T& a;
+    operator const T&() { return a; }
+    bool operator==( const T& b ) const { return !CiLess( a, b ) && !CiLess( b, a ); }
+    bool operator!=( const T& b ) const { return CiLess( a, b ) || CiLess( b, a ); }
+    bool operator<( const T& b ) const { return CiLess( a, b ); }
+    bool operator>=( const T& b ) const { return !CiLess( a, b ); }
+    bool operator>( const T& b ) const { return CiLess( b, a ); }
+    bool operator<=( const T& b ) const { return !CiLess( b, a ); }
+  };
+  template<class T> CiRef<T> Ci( const T& t )
+  { CiRef<T> r = { t }; return r; }
+
   std::ostream& WriteAsBase64( std::ostream&, const std::string& );
   std::istream& ReadAsBase64( std::istream&, std::string&, int stopAtChar );
   std::istream& ReadAsBase64( std::istream&, std::string&, int (*stopIf)( int ) = 0 );
@@ -61,7 +77,28 @@ namespace StringUtils
 
 } // namespace
 
+template<class T>
+bool operator==( const T& a, Tiny::StringUtils::CiRef<T> b )
+{ return b == a; }
+template<class T>
+bool operator!=( const T& a, Tiny::StringUtils::CiRef<T> b )
+{ return b != a; }
+template<class T>
+bool operator<( const T& a, Tiny::StringUtils::CiRef<T> b )
+{ return b >= a; }
+template<class T>
+bool operator<=( const T& a, Tiny::StringUtils::CiRef<T> b )
+{ return b > a; }
+template<class T>
+bool operator>( const T& a, Tiny::StringUtils::CiRef<T> b )
+{ return b <= a; }
+template<class T>
+bool operator>=( const T& a, Tiny::StringUtils::CiRef<T> b )
+{ return b < a; }
+
 namespace StringUtils = Tiny::StringUtils;
+using StringUtils::Ci;
+
 
 #endif // TINY_STRING_UTILS_H
 

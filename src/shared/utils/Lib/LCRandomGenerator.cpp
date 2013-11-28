@@ -33,9 +33,41 @@
 #endif
 
 #include <ctime>
+#include "Numeric.h"
 
 using namespace std;
 using namespace Tiny;
+
+namespace
+{
+
+template<typename T>
+T inverf( T x )
+{ // Inverse Error Function
+  // Approximation from Winitzki, S., 2008
+  if( x >= 1 - Eps(x) )
+    return 1 / Eps(x);
+  if( x <= -1 + Eps(x) )
+    return -1 / Eps(x);
+  const T a = 8 * ( Pi(x) - 3 ) / 3 / Pi(x) / ( 4 - Pi(x) );
+  T signx = ( x > 0 ) - ( x < 0 ),
+        b = log( 1 - x * x ),
+        c = 2 / Pi(x) / a + b / 2,
+        r = 0;
+  r = c * c - b / a;
+  r = ::sqrt( r );
+  r -= c;
+  r = signx * ::sqrt( r );
+  return r;
+}
+
+}
+
+double
+LCRandomGenerator::Normal::InverseCPDF( double x )
+{
+  return inverf( 2*x - 1 );
+}
 
 LCRandomGenerator::SeedType
 LCRandomGenerator::DefaultSeed()
@@ -98,3 +130,4 @@ LCRandomGenerator::RandomCharacter( int (*inClass)( int ) )
   while( !inClass( c ) );
   return c;
 }
+

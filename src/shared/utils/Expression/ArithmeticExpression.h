@@ -7,23 +7,23 @@
 //   For details about expression syntax, see Expression.h.
 //
 // $BEGIN_BCI2000_LICENSE$
-// 
+//
 // This file is part of BCI2000, a platform for real-time bio-signal research.
 // [ Copyright (C) 2000-2012: BCI2000 team and many external contributors ]
-// 
+//
 // BCI2000 is free software: you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
-// 
+//
 // BCI2000 is distributed in the hope that it will be useful, but
 //                         WITHOUT ANY WARRANTY
 // - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // $END_BCI2000_LICENSE$
 //////////////////////////////////////////////////////////////////////////////////////
 #ifndef ARITHMETIC_EXPRESSION_H
@@ -111,87 +111,43 @@ class ArithmeticExpression
     { return mErrors; }
 
  private:
-  bool Parse();
+  typedef ExpressionParser::StringNode StringNode;
+  typedef ExpressionParser::ObjPtr ObjPtr;
+
+  NodeList* MakeList( Node* = 0 );
+
+  Node* MakeConstant( double );
+  Node* MakeVariable( StringNode* );
+  Node* MakeVariableAssignment( StringNode*, Node* );
+
+  Node* MakeFunction( double (*)() );
+  Node* MakeFunction( double (*)( double ), Node* );
+  Node* MakeFunction( double (*)( double, double ), Node*, Node* );
+  Node* MakeFunction( double (*)( double, double, double ), Node*, Node*, Node* );
+  Node* MakeFunction( StringNode*, const NodeList& );
+  Node* MakeMemberFunction( StringNode*, StringNode*, const NodeList& );
+
+  Node* MakeAddress( Node*, Node* = 0 );
+  Node* MakeSignal( Node*, Node* );
+  Node* MakeState( StringNode* );
+  Node* MakeStateAssignment( StringNode*, Node* );
+
   double DoEvaluate();
   void ReportErrors();
-  void Cleanup();
-  void ClearStatements();
+
+  bool Parse();
+  void CollectGarbage();
+
+  Node* Track( Node* );
+  std::list<ObjPtr> mParserObjects;
 
   std::string        mExpression;
   std::istringstream mInput;
   std::ostringstream mErrors;
-  NodeList           mStatements;
   Context            mContext;
   bool               mThrowOnError;
   int                mCompilationState;
-
-  // Memory management.
-  template<typename T>
-  T*
-  Track( T* inNew, Node* inOld1 = NULL, Node* inOld2 = NULL, Node* inOld3 = NULL )
-  {
-    if( inNew )
-      mAllocations.insert( inNew );
-    if( inOld1 )
-      mAllocations.erase( inOld1 );
-    if( inOld2 )
-      mAllocations.erase( inOld2 );
-    if( inOld3 )
-      mAllocations.erase( inOld3 );
-    return inNew;
-  }
-
-  template<typename T>
-  T*
-  Track( T* inNew, NodeList* inNodes )
-  {
-    if( inNew )
-    {
-      for( NodeList::iterator i = inNodes->begin(); i != inNodes->end(); ++i )
-        mAllocations.erase( *i );
-      mAllocations.erase( inNodes );
-      delete inNodes;
-      mAllocations.insert( inNew );
-    }
-    return inNew;
-  }
-
-  class DeleterBase
-  {
-   public:
-    virtual ~DeleterBase() {}
-    virtual DeleterBase* Copy() const = 0;
-    virtual void Delete() = 0;
-  };
-
-  template<typename T> class Deleter : public DeleterBase
-  {
-   private:
-    Deleter( Deleter& );
-   public:
-    Deleter( T* p ) : mp( p ) {}
-    Deleter* Copy() const { return new Deleter( mp ); }
-    void Delete() { delete mp; }
-   private:
-    T* mp;
-  };
-
-  class Pointer
-  {
-   public:
-    Pointer() : mp( NULL ) {}
-    Pointer( const Pointer& inP ) : mp( inP.mp ), mpDeleter( inP.mpDeleter->Copy() ) {}
-    template<typename T> Pointer( T* p ) : mp( p ), mpDeleter( new Deleter<T>( p ) ) {}
-    ~Pointer() { delete mpDeleter; }
-    bool operator<( const Pointer& p ) const { return mp < p.mp; }
-    void Delete() const { mpDeleter->Delete(); };
-   private:
-    void* mp;
-    DeleterBase* mpDeleter;
-  };
-
-  typedef std::set<Pointer> PointerContainer;
-  PointerContainer mAllocations;
+  NodeList           mStatements;
 };
 
 std::ostream& operator<<( std::ostream&, const ArithmeticExpression::VariableContainer& );

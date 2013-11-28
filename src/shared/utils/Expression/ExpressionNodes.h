@@ -32,9 +32,55 @@
 namespace ExpressionParser
 {
 
-typedef std::vector<class Node*> NodeList;
+class RefObj
+{
+ public:
+  RefObj() : mRefs( 0 ) {}
+  RefObj( const RefObj& other ) : mRefs( 0 ) {}
+  RefObj& operator=( const RefObj& ) { return *this; }
+  virtual ~RefObj();
+  void AddRef() { ++mRefs; }
+  void Release() { if( !--mRefs ) delete this; }
+  int Refs() const { return mRefs; }
+ private:
+  int mRefs;
+};
 
-class Node
+class ObjPtr
+{
+ public:
+  ObjPtr( RefObj* p = 0 ) : mp( p ) { Inc(); }
+  ObjPtr( const ObjPtr& p ) : mp( p.mp ) { Inc(); }
+  ObjPtr& operator=( const ObjPtr& p ) { p.Inc(); this->Dec(); mp = p.mp; return *this; }
+  ~ObjPtr() { Dec(); }
+  RefObj* operator->() { return mp; }
+  const RefObj* operator->() const { return mp; }
+  operator bool() const { return mp; }
+ private:
+  void Inc() const { if( mp ) mp->AddRef(); }
+  void Dec() const { if( mp ) mp->Release(); }
+  RefObj* mp;
+};
+
+class Node;
+class NodePtr;
+class NodeList : public RefObj
+{
+ public:
+  NodeList() {}
+  NodeList( Node* p ) { Add( p ); }
+  NodeList& Add( Node* );
+  int Size() const { return static_cast<int>( mList.size() ); }
+  size_t size() const { return mList.size(); }
+  void Clear() { mList.clear(); }
+  Node* operator[]( size_t idx ) const;
+  NodePtr& operator[]( size_t idx ) { return mList[idx]; }
+
+ private:
+  std::vector<NodePtr> mList;
+};
+
+class Node : public RefObj
 {
  public:
   Node( bool isConst = false );
@@ -53,8 +99,21 @@ class Node
   virtual double OnEvaluate() = 0;
 
  protected:
-  NodeList mChildren;
+  std::vector<NodePtr> mChildren;
   bool mIsConst;
+};
+
+class NodePtr
+{
+ public:
+  NodePtr( Node* p = 0 ) : mPtr( p ), mp( p ) {}
+  Node* operator->() { return mp; }
+  const Node* operator->() const { return mp; }
+  operator Node*() { return mp; }
+  operator const Node*() const { return mp; }
+ private:
+  Node* mp;
+  ObjPtr mPtr;
 };
 
 class ConstantNode : public Node
@@ -162,19 +221,25 @@ class FunctionNode<3> : public ConstPropagatingNode
   Pointer p;
 };
 
-class AddressNode : public Node
+class StringNode : public Node
 {
  public:
-  AddressNode( Node*, const std::string* );
-  ~AddressNode();
-  std::string EvaluateToString() const;
+  StringNode( const std::string& s ) : mString( s ) { mIsConst = true; }
+  const std::string& Evaluate() { OnEvaluate(); return mString; }
 
  protected:
-  Node* OnSimplify();
   double OnEvaluate();
+  std::string mString;
+};
 
- private:
-  const std::string* mpString;
+class AddressNode : public StringNode
+{
+ public:
+  AddressNode( Node*, Node* );
+
+ protected:
+  double OnEvaluate();
+  Node* OnSimplify();
 };
 
 } // namespace ExpressionNodes

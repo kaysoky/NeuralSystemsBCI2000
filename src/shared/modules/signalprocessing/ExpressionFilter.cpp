@@ -28,12 +28,15 @@
 #pragma hdrstop
 
 #include "ExpressionFilter.h"
+#include "StringUtils.h"
 
 using namespace std;
 
 RegisterFilter( ExpressionFilter, 2.D2 );
 
 ExpressionFilter::ExpressionFilter()
+: mStartRunExpression( mRandom ),
+  mStopRunExpression( mRandom )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Filtering string StartRunExpression= % "
@@ -57,10 +60,11 @@ ExpressionFilter::Preflight( const SignalProperties& Input,
                                    SignalProperties& Output ) const
 {
   // Test whether configuration can be loaded.
-  Expression startRunExpression( Parameter( "StartRunExpression" ) ),
-             stopRunExpression( Parameter( "StopRunExpression" ) );
+  LCRandomGenerator rg;
+  Expr startRunExpression( rg, Parameter( "StartRunExpression" ) ),
+       stopRunExpression( rg, Parameter( "StopRunExpression" ) );
   ExpressionMatrix expressions;
-  LoadExpressions( Parameter( "Expressions" ), expressions );
+  LoadExpressions( Parameter( "Expressions" ), expressions, rg );
   VariableContainer variables;
   // Request output signal properties:
   Output = Input;
@@ -85,9 +89,9 @@ void
 ExpressionFilter::Initialize( const SignalProperties&,
                               const SignalProperties& )
 {
-  mStartRunExpression = Expression( Parameter( "StartRunExpression" ) );
-  mStopRunExpression = Expression( Parameter( "StopRunExpression" ) );
-  LoadExpressions( Parameter( "Expressions" ), mExpressions );
+  mStartRunExpression = Expr( mRandom, Parameter( "StartRunExpression" ) );
+  mStopRunExpression = Expr( mRandom, Parameter( "StopRunExpression" ) );
+  LoadExpressions( Parameter( "Expressions" ), mExpressions, mRandom );
   mVariables.clear();
   mStartRunExpression.Compile( mVariables );
   CompileExpressions( mExpressions, mVariables );
@@ -117,7 +121,7 @@ ExpressionFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 }
 
 void
-ExpressionFilter::LoadExpressions( const ParamRef& inParam, ExpressionMatrix& outMatrix )
+ExpressionFilter::LoadExpressions( const ParamRef& inParam, ExpressionMatrix& outMatrix, LCRandomGenerator& rg )
 {
   // Read an expression parameter into an expression matrix.
   outMatrix.clear();
@@ -125,10 +129,10 @@ ExpressionFilter::LoadExpressions( const ParamRef& inParam, ExpressionMatrix& ou
       numCols = inParam->NumColumns();
   if( numRows != 0 && numCols != 0 )
   {
-    outMatrix.resize( numRows, vector<Expression>( numCols ) );
+    outMatrix.resize( numRows, vector<Expr>( numCols ) );
     for( int row = 0; row < numRows; ++row )
       for( int col = 0; col < numCols; ++col )
-        outMatrix[ row ][ col ] = Expression( inParam( row, col ) );
+        outMatrix[ row ][ col ] = Expr( rg, inParam( row, col ) );
   }
 }
 
@@ -159,3 +163,64 @@ ExpressionFilter::EvaluateExpressions(
     }
   }
 }
+
+namespace
+{
+  struct RandomValueNode : ExpressionParser::Node
+  {
+    typedef double (LCRandomGenerator::*Func)();
+    RandomValueNode( LCRandomGenerator* r, Func f ) : mpRandom( r ), mpFunc( f ) {}
+    double OnEvaluate() { return (mpRandom->*mpFunc)(); }
+    LCRandomGenerator* mpRandom;
+    Func mpFunc;
+  };
+  struct RandomIntNode : ExpressionParser::Node
+  {
+    RandomIntNode( LCRandomGenerator* r, Node* arg ) : mpRandom( r ) { Add( arg ); }
+    double OnEvaluate()
+    { return (*mpRandom)( static_cast<int>( mChildren[0]->Evaluate() ) ) + 1; }
+    LCRandomGenerator* mpRandom;
+  };
+} // namespace
+
+
+ExpressionParser::Node*
+ExpressionFilter::Expr::Function( const std::string& inName, const NodeList& inArgs )
+{
+  using ExpressionParser::StringNode;
+  if( Ci( inName ) == "random" )
+  {
+    if( inArgs.Size() != 1 )
+      throw bciexception( "The random() function takes exactly one argument" );
+    StringNode* pArg = dynamic_cast<StringNode*>( inArgs[0] );
+    if( !pArg )
+      return new RandomIntNode( mpRandom, inArgs[0] );
+    else
+    {
+      static const struct { const char* name; RandomValueNode::Func func; }
+      dists[] =
+      {
+        { "uniform01", &LCRandomGenerator::RandomValue<LCRandomGenerator::Uniform01> },
+        { "normal", &LCRandomGenerator::RandomValue<LCRandomGenerator::Normal> },
+      };
+      string name = pArg->Evaluate();
+      RandomValueNode::Func f = 0;
+      for( size_t i = 0; !f && i < sizeof( dists ) / sizeof( *dists ); ++i )
+        if( Ci( name ) == dists[i].name )
+          f = dists[i].func;
+      if( f )
+        return new RandomValueNode( mpRandom, f );
+      ostringstream oss;
+      for( size_t i = 0; i < sizeof( dists ) / sizeof( *dists ); ++i )
+        oss << ", " << dists[i].name;
+      throw bciexception(
+        "Unknown distribution name: " << name
+        << ", known distributions are: " << oss.str().substr( 2 )
+      );
+      return 0;
+    }
+  }
+  return Expression::Function( inName, inArgs );
+}
+
+

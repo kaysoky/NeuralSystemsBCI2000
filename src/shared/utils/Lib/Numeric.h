@@ -23,8 +23,8 @@
 //
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
-#ifndef TINY_NUMERIC_CONSTANTS_H
-#define TINY_NUMERIC_CONSTANTS_H
+#ifndef TINY_NUMERIC_H
+#define TINY_NUMERIC_H
 
 #include <limits>
 #include <cmath>
@@ -123,4 +123,4 @@ using Tiny::Floor;
 using Tiny::Ceil;
 using Tiny::Pretty;
 
-#endif // TINY_NUMERIC_CONSTANTS_H
+#endif // TINY_NUMERIC_H
