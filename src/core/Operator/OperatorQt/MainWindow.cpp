@@ -218,7 +218,8 @@ MainWindow::Terminate()
     {
       mSyslog.AddEntry( "Executing OnExit script ..." );
       EncodedString exitScript;
-      istringstream( mExitScript ) >> exitScript;
+      istringstream iss( mExitScript );
+      iss >> exitScript;
       BCI_ExecuteScript( exitScript.c_str() );
     }
     mTerminated = true;

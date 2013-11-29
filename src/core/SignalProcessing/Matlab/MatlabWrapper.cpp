@@ -68,8 +68,8 @@ double*     ( *mxGetPr_ )( const mxArray* ) = 0;
 void        ( *mxSetPr_ )( mxArray*, double* ) = 0;
 
 int         ( *mxGetNumberOfDimensions_ )( const mxArray* ) = 0;
-const int*  ( *mxGetDimensions_ )( const mxArray* ) = 0;
-int         ( *mxCalcSingleSubscript_ )( const mxArray*, int, const int* ) = 0;
+const mwSize*( *mxGetDimensions_ )( const mxArray* ) = 0;
+int         ( *mxCalcSingleSubscript_ )( const mxArray*, int, const mwIndex* ) = 0;
 
 void        ( *mxDestroyArray_ )( mxArray* ) = 0;
 void        ( *mxFree_ )( void* ) = 0;

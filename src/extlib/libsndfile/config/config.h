@@ -232,7 +232,7 @@
 #undef SIZEOF_INT
 
 /* The size of `int64_t', as computed by sizeof. */
-#undef SIZEOF_INT64_T
+#define SIZEOF_INT64_T 8
 
 /* The size of `loff_t', as computed by sizeof. */
 #undef SIZEOF_LOFF_T

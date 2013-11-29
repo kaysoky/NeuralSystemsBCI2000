@@ -92,7 +92,7 @@ LengthField<NumBytes>::WriteBinary( std::ostream& os ) const
   {
     // Extended protocol: Write a null-terminated ASCII representation of the
     // value after the escape value.
-    os << dec << mValue;
+    os << std::dec << mValue;
     os.put( '\0' );
   }
   return os;
@@ -109,7 +109,7 @@ LengthField<NumBytes>::ReadBinary( std::istream& is )
   // ASCII representation.
   if( mValue == EscapeValue )
   {
-    is >> dec >> mValue;
+    is >> std::dec >> mValue;
     if( is.get() != '\0' )
       is.setstate( is.failbit );
   }

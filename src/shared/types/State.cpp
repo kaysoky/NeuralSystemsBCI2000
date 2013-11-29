@@ -82,10 +82,13 @@ State::operator==( const State& s ) const
 bool
 State::FromDefinition( const string& inDefinition )
 {
-  if( ReadFromStream( istringstream( inDefinition ) ) )
+  istringstream iss( inDefinition );
+  if( ReadFromStream( iss ) )
     return true;
-  string s = inDefinition + " 0 0";
-  return ReadFromStream( istringstream( s ) );
+  iss.clear();
+  iss.str( inDefinition + " 0 0" );
+  iss.seekg( 0 );
+  return ReadFromStream( iss );
 }
 
 // **************************************************************************

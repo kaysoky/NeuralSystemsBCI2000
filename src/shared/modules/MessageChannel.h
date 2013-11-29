@@ -129,32 +129,33 @@ class MessageChannel : Uncopyable
 
 };
 
+template<> struct MessageChannel::Header<ProtocolVersion>
+{ enum { descSupp = 0x0000 }; };
+template<> struct MessageChannel::Header<Status>
+{ enum { descSupp = 0x0100 }; };
+template<> struct MessageChannel::Header<Param>
+{ enum { descSupp = 0x0200 }; };
+template<> struct MessageChannel::Header<State>
+{ enum { descSupp = 0x0300 }; };
+template<> struct MessageChannel::Header<VisSignalConst>
+{ enum { descSupp = 0x0401 }; };
+template<> struct MessageChannel::Header<VisSignal>
+{ enum { descSupp = 0x0401 }; };
+template<> struct MessageChannel::Header<VisMemo>
+{ enum { descSupp = 0x0402 }; };
+template<> struct MessageChannel::Header<VisSignalProperties>
+{ enum { descSupp = 0x0403 }; };
+template<> struct MessageChannel::Header<VisBitmap>
+{ enum { descSupp = 0x0404 }; };
+template<> struct MessageChannel::Header<VisCfg>
+{ enum { descSupp = 0x04ff }; };
+template<> struct MessageChannel::Header<StateVector>
+{ enum { descSupp = 0x0500 }; };
+template<> struct MessageChannel::Header<SysCommand>
+{ enum { descSupp = 0x0600 }; };
+
 } // namespace bci
 
-template<> struct bci::MessageChannel::Header<ProtocolVersion>
-{ enum { descSupp = 0x0000 }; };
-template<> struct bci::MessageChannel::Header<Status>
-{ enum { descSupp = 0x0100 }; };
-template<> struct bci::MessageChannel::Header<Param>
-{ enum { descSupp = 0x0200 }; };
-template<> struct bci::MessageChannel::Header<State>
-{ enum { descSupp = 0x0300 }; };
-template<> struct bci::MessageChannel::Header<VisSignalConst>
-{ enum { descSupp = 0x0401 }; };
-template<> struct bci::MessageChannel::Header<VisSignal>
-{ enum { descSupp = 0x0401 }; };
-template<> struct bci::MessageChannel::Header<VisMemo>
-{ enum { descSupp = 0x0402 }; };
-template<> struct bci::MessageChannel::Header<VisSignalProperties>
-{ enum { descSupp = 0x0403 }; };
-template<> struct bci::MessageChannel::Header<VisBitmap>
-{ enum { descSupp = 0x0404 }; };
-template<> struct bci::MessageChannel::Header<VisCfg>
-{ enum { descSupp = 0x04ff }; };
-template<> struct bci::MessageChannel::Header<StateVector>
-{ enum { descSupp = 0x0500 }; };
-template<> struct bci::MessageChannel::Header<SysCommand>
-{ enum { descSupp = 0x0600 }; };
 
 using bci::MessageChannel;
 

@@ -76,6 +76,9 @@ namespace {
   { OriginalWD_() : string( WorkingDirectory() ) {} };
   StaticObject<OriginalWD_, string> sOriginalWD;
 
+  struct InstallationDirectory_ : string
+  { InstallationDirectory_() : string( ParentDirectoryS( ExecutablePath() ) ) {} };
+
   string GetTemporaryDirectory()
   {
     string dir;
@@ -89,23 +92,21 @@ namespace {
       throw std_runtime_error( "Could not get temporary directory" );
     return dir;
   };
+  struct TemporaryDirectory_ : string
+  { TemporaryDirectory_() : string( GetTemporaryDirectory() ) {} };
 }
 
 const string&
 FileUtils::InstallationDirectoryS()
 {
-  struct s : string
-  { s() : string( ParentDirectoryS( ExecutablePath() ) ) {} };
-  static StaticObject<s> installationDirectory;
+  static StaticObject<InstallationDirectory_> installationDirectory;
   return installationDirectory();
 }
 
 const string&
 FileUtils::TemporaryDirectory()
 { 
-  struct s : string
-  { s() : string( GetTemporaryDirectory() ) {} };
-  static StaticObject<s> temporaryDirectory;
+  static StaticObject<TemporaryDirectory_> temporaryDirectory;
   return temporaryDirectory();
 }
 
@@ -153,10 +154,10 @@ FileUtils::ExecutablePath()
   ::_NSGetExecutablePath( buf, &size );
   path = buf;
 # else
-#  error Don´t know how to obtain the executable´s path on this platform.
+#  error Don't know how to obtain the executable's path on this platform.
 # endif
   if( !IsAbsolutePath( path ) )
-    path = OriginalWD() + path;
+    path = OriginalWD_() + path;
   path = CanonicalPath( path );
 #endif // _WIN32
   if( path.empty() )
@@ -452,12 +453,16 @@ FileUtils::TemporaryFile::TemporaryFile( const string& inExt )
     throw std_runtime_error( "Could not create temporary file: " << mpFile->name );
 }
 
+namespace
+{
+  struct TempPrefix : string
+  { TempPrefix() : string( ExtractBase( ExecutablePath() ) + "~" ) {} };
+}
+
 string
 FileUtils::TemporaryFile::GenerateName()
 {
-  struct Prefix : string
-  { Prefix() : string( ExtractBase( ExecutablePath() ) + "~" ) {} };
-  static StaticObject<Prefix, string> prefix;
+  static StaticObject<TempPrefix, string> prefix;
   static StaticObject<LCRandomGenerator> rg;
   return TemporaryDirectory() + prefix() + rg().RandomName( 6 );
 }

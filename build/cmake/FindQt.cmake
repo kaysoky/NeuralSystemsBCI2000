@@ -182,14 +182,15 @@ LIST( GET TRY_PRECOMP_QT -1 qtmin_ )
 # Try to find Qt4 or 5
 IF( USE_EXTERNAL_QT AND NOT Qt5_DIR )
   FIND_PROGRAM( QT_QMAKE_EXECUTABLE qmake )
-ENDIF()
-IF( NOT USE_EXTERNAL_QT OR NOT QT_QMAKE_EXECUTABLE )
-  FIND_PACKAGE( Qt4 ${qtmin} QUIET )
+  IF( NOT QT_QMAKE_EXECUTABLE )
+    FIND_PACKAGE( Qt4 ${qtmin} QUIET )
+  ENDIF()
 ENDIF()
 
 # Determine version
 GET_QT_VERSION( qtver_ )
 IF( qtver_ VERSION_LESS 5.0 )
+  FIND_PACKAGE( Qt4 ${qtmin} QUIET )
   SET( QT_IS4 TRUE )
   SET( compdir_ "${PROJECT_BUILD_DIR}/extlib/qt/compat" )
   FILE( MAKE_DIRECTORY ${compdir_} )

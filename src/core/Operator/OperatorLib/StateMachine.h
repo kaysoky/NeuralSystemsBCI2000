@@ -49,6 +49,7 @@
 #include "OSMutex.h"
 #include "Lockable.h"
 
+#include <cstddef>
 #include <set>
 #include <fstream>
 

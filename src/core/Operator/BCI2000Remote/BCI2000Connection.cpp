@@ -29,6 +29,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <ctime>
+#include <cstdio>
 
 #if _WIN32
 #include <Windows.h>

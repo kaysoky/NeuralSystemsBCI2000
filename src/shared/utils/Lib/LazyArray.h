@@ -59,8 +59,8 @@ class LazyArray
     DefaultMemory( size_t count )
       : Memory( new T[count], count ) {}
     DefaultMemory( const T* t, size_t count )
-      : Memory( new T[count], count ) { CopyFrom( t ); }
-    ~DefaultMemory() { delete Ptr(); }
+      : Memory( new T[count], count ) { this->CopyFrom( t ); }
+    ~DefaultMemory() { delete this->Ptr(); }
   };
 
  public:

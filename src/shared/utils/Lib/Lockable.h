@@ -38,6 +38,7 @@
 #include "SpinLock.h"
 #include "Debugging.h"
 #include "Uncopyable.h"
+#include "Mutex.h"
 
 namespace Tiny
 {

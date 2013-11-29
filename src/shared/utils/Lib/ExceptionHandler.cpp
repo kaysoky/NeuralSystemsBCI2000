@@ -36,6 +36,7 @@
 #if HANDLE_SIGNALS
 # include <signal.h>
 # include <setjmp.h>
+# include "Synchronized.h"
 #endif // HANDLE_SIGNALS
 
 #define HANDLE_WIN32_EXCEPTIONS defined( _MSC_VER )
@@ -136,29 +137,21 @@ bool
 ExceptionHandler::Run1( Runnable& inRunnable )
 {
   bool result = false;
-  static bool signalHandlingInstalled = false;
-  if( signalHandlingInstalled )
+  static Synchronized<int> signalHandlingInstalled = 0;
+  if( !signalHandlingInstalled.Atomic().Exchange( 1 ) )
   {
-    result = Run2( inRunnable );
-  }
-  else
-  {
-    static OSMutex mutex;
-    {
-      OSMutex::Lock lock( mutex );
-      signalHandlingInstalled = true;
-      InstallSignalHandlers();
-    }
+    InstallSignalHandlers();
     int signal = ::setjmp( sCatchSignals );
     if( signal == 0 )
       result = Run2( inRunnable );
     else
       ReportSignal( signal );
-    {
-      OSMutex::Lock lock( mutex );
-      UninstallSignalHandlers();
-      signalHandlingInstalled = false;
-    }
+    UninstallSignalHandlers();
+    signalHandlingInstalled = 0;
+  }
+  else
+  {
+    result = Run2( inRunnable );
   }
   return result;
 }

@@ -42,6 +42,7 @@
 #include "Debugging.h"
 #include <vector>
 #include <stack>
+#include <cstring>
 
 using namespace std;
 using namespace Tiny;

@@ -30,7 +30,7 @@
 #include "Synchronized.h"
 #include "Lockable.h"
 #include "ThreadUtils.h"
-#include "OSEvent.h"
+#include "Waitable.h"
 
 namespace Tiny
 {
@@ -46,7 +46,9 @@ template<class T> class SynchronizedQueue : Uncopyable
 
   void Produce( const T& t )
     { Push( t ); }
+ private:
   struct Ref_;
+ public:
   Ref_ Consume();
   Ref_ AwaitConsumption( int timeout = -1 );
   void WakeConsumer();
@@ -62,7 +64,7 @@ template<class T> class SynchronizedQueue : Uncopyable
 
   Element* mpHead, *mpTail;
   Lockable<> mHeadAccess, mTailAccess;
-  OSEvent mEvent;
+  Waitable mEvent;
 #if BCIDEBUG
   ThreadUtils::ThreadID mConsumer;
 #endif
@@ -178,7 +180,7 @@ SynchronizedQueue<T>::Pop()
 template<class T> bool
 SynchronizedQueue<T>::Empty() const
 {
-  MemoryBarrier();
+  Tiny::MemoryFence();
   return mpHead == 0;
 }
 

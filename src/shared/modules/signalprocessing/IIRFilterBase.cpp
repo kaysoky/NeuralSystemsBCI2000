@@ -68,7 +68,8 @@ IIRFilterBase::Initialize( const SignalProperties& Input, const SignalProperties
 
   Real gain;
   ComplexVector zeros, poles;
-  DesignFilter( SignalProperties( Input ), gain, zeros, poles );
+  SignalProperties sp( Input );
+  DesignFilter( sp, gain, zeros, poles );
 
   delete[] mpThreads;
   mpThreads = 0;

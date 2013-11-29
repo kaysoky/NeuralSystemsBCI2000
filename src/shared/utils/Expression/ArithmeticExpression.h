@@ -31,8 +31,8 @@
 
 #include <sstream>
 #include <string>
+#include <list>
 #include <map>
-#include <set>
 
 #include "ExpressionNodes.h"
 #include "ExpressionParser.hpp"

@@ -1249,7 +1249,8 @@ StateMachine::CoreConnection::OnAccept()
       // By immediately sending a message, indicate willingness to negotiate the protocol.
       // Older core modules will silently handle the message.
       ::State s;
-      istringstream( "Running 1 0 0 0" ) >> s;
+      istringstream iss( "Running 1 0 0 0" );
+      iss >> s;
       Send( s );
 
       mInfo.Address = mSocket.address();

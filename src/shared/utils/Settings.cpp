@@ -59,5 +59,5 @@ Settings::SetFile( const QString& inFilePath )
   if( inFilePath == "" )
     FilePath() = DefaultFilePath();
   else
-    FilePath() = inFilePath.toLocal8Bit();
+    FilePath() = string( inFilePath.toLocal8Bit() );
 }

@@ -36,11 +36,12 @@
 
 using namespace std;
 
+int WavePlayer::sNumInstances = 0;
+
 #if USE_DSOUND
 
 LPDIRECTSOUND       WavePlayer::sPDS = NULL;
 LPDIRECTSOUNDBUFFER WavePlayer::sPrimarySoundBuffer = NULL;
-int                 WavePlayer::sNumInstances = 0;
 
 
 WavePlayer::WavePlayer()

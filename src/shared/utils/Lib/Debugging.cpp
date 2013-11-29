@@ -63,8 +63,9 @@ Tiny::SuggestDebugging_( const string& inReason, const string& inDetails )
 
   Tiny::Cout() << title << "\n"
                << "Execution is now halted, so you may attach a debugger to the process.\n"
-               << "If you don't want to debug, or if you don't know what this is all about, press Enter to continue.\n";
-  getline( name, Tiny::Cin().flush() );
+               << "If you don't want to debug, or if you don't know what this is all about, press Enter to continue."
+               << endl;
+  getline( Tiny::Cin(), name );
 
 #endif // _WIN32
 

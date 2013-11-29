@@ -33,10 +33,9 @@
 
 #include <string>
 #include <fstream>
-#include <queue>
-#include "OSThread.h"
+#include "Thread.h"
 
-class FileWriterBase: public GenericFileWriter, OSThread
+class FileWriterBase: public GenericFileWriter, Thread
 {
  protected:
           FileWriterBase( GenericOutputFormat& );

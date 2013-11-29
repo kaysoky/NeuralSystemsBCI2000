@@ -90,7 +90,7 @@ Yield_()
 }
 
 void
-SleepFor( double inMs )
+SleepFor( int inMs )
 {
   if( inMs >= 0 )
     ::usleep( inMs * 1000 );
@@ -104,8 +104,9 @@ NumberOfProcessors()
   return result;
 }
 
-ThreadID::ThreadID()
-: mData( reinterpret_cast<void*>( ::pthread_self() ) )
+ThreadID::ThreadID( bool initFromCurrentThread )
+: mData( initFromCurrentThread ? reinterpret_cast<void*>( ::pthread_self() ) : 0 ),
+  mValid( initFromCurrentThread )
 {
 }
 

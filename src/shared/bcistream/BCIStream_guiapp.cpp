@@ -43,11 +43,8 @@
 
 using namespace std;
 
-bool
-BCIStream::CompressMessages()
+namespace
 {
-  return false;
-}
 
 enum
 {
@@ -56,7 +53,7 @@ enum
   error
 };
 
-static void Display( const string& inText, int inType = plain )
+void DisplayMessage( const string& inText, int inType = plain )
 {
   string text = inText;
   if( text.find_last_of( ".!?" ) != text.length() - 1 )
@@ -83,39 +80,47 @@ static void Display( const string& inText, int inType = plain )
 #endif
 }
 
+} // namespace
+
+bool
+BCIStream::CompressMessages()
+{
+  return false;
+}
+
 void
 BCIStream::PlainMessage( const string& message )
 {
-  Display( message );
+  DisplayMessage( message );
 }
 
 void
 BCIStream::DebugMessage( const string& message )
 {
-  Display( message );
+  DisplayMessage( message );
 }
 
 void
 BCIStream::Warning( const string& message )
 {
-  Display( message, warning );
+  DisplayMessage( message, warning );
 }
 
 void
 BCIStream::ConfigurationError( const string& message )
 {
-  Display( message, error );
+  DisplayMessage( message, error );
 }
 
 void
 BCIStream::RuntimeError( const string& message )
 {
-  Display( message, error );
+  DisplayMessage( message, error );
 }
 
 void
 BCIStream::LogicError( const string& message )
 {
-  Display( message, error );
+  DisplayMessage( message, error );
 }
 

@@ -27,6 +27,8 @@
 
 #if _WIN32
 # include <windows.h>
+#else
+# include <cerrno>
 #endif // _WIN32
 
 #if _WIN32
@@ -70,14 +72,14 @@ Semaphore::Acquire() const
 {
   int err = EINTR;
   while( err == EINTR )
-    err = ::sem_wait( &mSemaphore ) ? ::errno : 0;
+    err = ::sem_wait( const_cast<sem_t*>( &mSemaphore ) ) ? errno : 0;
   return 0 == err;
 }
 
 bool
 Semaphore::Release() const
 {
-  return 0 == ::sem_post( &mSemaphore );
+  return 0 == ::sem_post( const_cast<sem_t*>( &mSemaphore ) );
 }
 
 #endif // _WIN32

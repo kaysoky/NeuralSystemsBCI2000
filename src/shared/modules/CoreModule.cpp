@@ -537,8 +537,7 @@ CoreModule::ResetStatevector()
   mStatevector.CommitStateChanges();
 }
 
-void
-CoreModule::AppendFilterDirectory( Param& p ) const
+namespace
 {
   struct AppendFilter
   {
@@ -553,7 +552,13 @@ CoreModule::AppendFilterDirectory( Param& p ) const
       return true;
     }
     Param& param;
-  } append = { p };
+  };
+}
+
+void
+CoreModule::AppendFilterDirectory( Param& p ) const
+{
+  AppendFilter append = { p };
   Directory::Traverse( GenericFilter::Directory(), append );
 }
 

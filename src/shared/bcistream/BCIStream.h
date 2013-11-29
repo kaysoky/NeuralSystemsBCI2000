@@ -212,11 +212,11 @@ namespace BCIStream
   class Dispatcher
   {
    public:
-    Dispatcher( Action a = LogicError )
+    Dispatcher( BCIStream::Action a = LogicError )
       : mAction( a ) {}
     virtual ~Dispatcher()
       {}
-    Action Action() const
+    BCIStream::Action Action() const
       { return mAction; }
     void SetAction( BCIStream::Action a )
       { mAction = a; }

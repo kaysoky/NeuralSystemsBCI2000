@@ -54,7 +54,6 @@
 #endif
 
 using namespace std;
-using namespace bci;
 
 namespace
 {
@@ -62,6 +61,9 @@ namespace
   string GetDebugHistory( istream& );
   iostream sDummy( 0 );
 }
+
+namespace bci
+{
 
 MessageChannel::MessageChannel( iostream& ios )
 : mrInput( ios ),
@@ -284,6 +286,7 @@ template bool MessageChannel::Send( const VisMemo& );
 template bool MessageChannel::Send( const VisCfg& );
 template bool MessageChannel::Send( const VisSignalProperties& );
 
+} // namespace bci
 
 namespace
 {
@@ -347,6 +350,6 @@ string GetDebugHistory( istream& is )
 #endif
 }
 
-}
+} // namespace
 
 

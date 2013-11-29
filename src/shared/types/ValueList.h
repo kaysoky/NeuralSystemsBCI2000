@@ -34,8 +34,8 @@ template<typename T> class ValueList: public std::vector<T>
 {
   public:
     ValueList( size_t inSize = 0 ) : std::vector<T>( inSize ) {}
-    int Size() const { return static_cast<int>( size() ); }
-    bool Empty() const { return empty(); }
+    int Size() const { return static_cast<int>( this->size() ); }
+    bool Empty() const { return this->empty(); }
 
     std::ostream& WriteToStream( std::ostream& ) const;
     std::istream& ReadFromStream( std::istream& );

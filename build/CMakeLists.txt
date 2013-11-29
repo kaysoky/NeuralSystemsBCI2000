@@ -3,7 +3,7 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Build information for BCI2000 and CMake
 
-cmake_minimum_required( VERSION 2.8.10 )
+cmake_minimum_required( VERSION 2.8.9 )
 cmake_policy( VERSION 2.8 )
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 

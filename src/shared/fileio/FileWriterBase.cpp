@@ -169,7 +169,7 @@ FileWriterBase::StartRun()
 
   mrOutputFormat.StartRun( mOutputFile, mFileName );
   mQueue.Clear();
-  OSThread::Start();
+  Thread::Start();
 }
 
 
@@ -188,7 +188,7 @@ FileWriterBase::StopRun()
 void
 FileWriterBase::Halt()
 {
-  SharedPointer<OSEvent> pTerminationEvent = OSThread::Terminate();
+  SharedPointer<Waitable> pTerminationEvent = Thread::Terminate();
   mQueue.WakeConsumer();
   pTerminationEvent->Wait();
 }

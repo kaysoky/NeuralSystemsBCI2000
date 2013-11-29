@@ -5,14 +5,15 @@ cd . && echo \
 
 # posix shell code
 dir=$(dirname "$0")
-if [ %1 ]; then
-  cmake $* "$dir"
-  echo
-  echo Running $(basename "$0") will allow you to fine-tune configuration options.
-elif which ccmake; then
-  ccmake "$dir"
+if [ $1 ]; then
+  if cmake "$@" "$dir"; then
+    echo
+    echo Running $(basename "$0") will allow you to fine-tune configuration options.
+  fi
 elif which cmake-gui; then
   cmake-gui "$dir"
+elif which ccmake; then
+  ccmake "$dir"
 else
   cmake -i "$dir"
 fi

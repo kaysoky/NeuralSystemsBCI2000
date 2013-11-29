@@ -99,7 +99,7 @@ class RGBColor
 
     // Convert to a Qt encoded RGB value and back.
     unsigned int    ToQRgb() const
-      { return unsigned int( mValue ); }
+      { return static_cast<unsigned int>( mValue ); }
     static RGBColor FromQRgb( unsigned int i )
       { return RGBColor( int(i) ); }
 

@@ -159,11 +159,11 @@ SignalProperties::ValueUnitsProxy::ValueUnitsProxy( SignalProperties* p )
 {
 }
 
-SignalProperties::ValueUnitsProxy::ValueUnitsProxy( ValueUnitsProxy& v )
+SignalProperties::ValueUnitsProxy::ValueUnitsProxy( const ValueUnitsProxy& v )
 : PhysicalUnit( v ),
   p( v.p )
 {
-  v.p = 0;
+  const_cast<ValueUnitsProxy&>( v ).p = 0;
 }
 
 SignalProperties::ValueUnitsProxy::~ValueUnitsProxy()

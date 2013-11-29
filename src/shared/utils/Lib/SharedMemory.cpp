@@ -37,10 +37,12 @@
 # include <sys/stat.h>
 # include <fcntl.h>
 # include <unistd.h>
+# include <cerrno>
 #endif // _WIN32
 
 #include <ctime>
 #include <cstdlib>
+#include <cstring>
 #include <sstream>
 #include <iomanip>
 
@@ -192,7 +194,7 @@ SharedMemory::Create()
     mHandle.fd = -1;
     while( mHandle.fd < 0 && errno == 0 )
     {
-      mHandle.fd = ::shm_open( mName.c_str(), O_RDRW | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR );
+      mHandle.fd = ::shm_open( mName.c_str(), O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR );
       if( mHandle.fd < 0 && errno == EEXIST )
       {
         errno = 0;
@@ -258,10 +260,10 @@ SharedMemory::Open()
   switch( mProtocol )
   {
     case shm:
-      mHandle.fd = ::shm_open( mName.c_str(), O_RDRW, S_IRUSR | S_IWUSR );
+      mHandle.fd = ::shm_open( mName.c_str(), O_RDWR, S_IRUSR | S_IWUSR );
       break;
     case file:
-      mHandle.fd = ::open( mName.c_str(), O_RDRW, S_IRUSR | S_IWUSR );
+      mHandle.fd = ::open( mName.c_str(), O_RDWR, S_IRUSR | S_IWUSR );
       break;
   }
   if( mHandle.fd >= 0 )

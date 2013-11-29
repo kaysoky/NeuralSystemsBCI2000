@@ -96,7 +96,7 @@ namespace Dylib
     Library( const std::string& lib, const Names& names );
     ~Library();
     std::string Name() const;
-    const Names& Names() const
+    const Dylib::Names& Names() const
       { return mNames; }
     const Dylib::Exports& Exports() const
       { return mExports; }

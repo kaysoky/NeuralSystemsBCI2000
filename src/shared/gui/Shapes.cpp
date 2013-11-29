@@ -28,6 +28,7 @@
 
 #include "Shapes.h"
 #include <limits>
+#include <cmath>
 
 #if USE_QT
 # include <QPainter>

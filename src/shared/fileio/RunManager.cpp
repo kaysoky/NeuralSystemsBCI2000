@@ -36,6 +36,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <cstdlib>
 
 using namespace std;
 using namespace FileUtils;

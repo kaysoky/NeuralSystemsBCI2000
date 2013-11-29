@@ -55,7 +55,7 @@ extern char** environ;
 #include "FileUtils.h"
 
 using namespace std;
-using namespace Tiny;
+using namespace Tiny::ProcessUtils;
 
 bool
 ProcessUtils::ExecuteSynchronously( const string& inExecutable, const string& inArguments, ostream& outStream, int& outExitCode  )

@@ -652,7 +652,7 @@ DataIOFilter::AdjustProperties( SignalProperties& p ) const
   LabelIndex& outputLabels = p.ChannelLabels();
   int namesFromParam = min( p.Channels(), Parameter( "ChannelNames" )->NumValues() );
   for( int i = 0; i < namesFromParam; ++i )
-    outputLabels[i] = Parameter( "ChannelNames" )( i );
+    outputLabels[i] = Parameter( "ChannelNames" )( i ).ToString();
   for( int i = namesFromParam; i < p.Channels(); ++i )
   {
     ostringstream oss;

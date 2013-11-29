@@ -55,6 +55,7 @@
 # include <netinet/in.h>
 # include <netinet/tcp.h>
 # include <netdb.h>
+# include <cerrno>
 # define INVALID_SOCKET   (SOCKET)( ~0 )
 # define SOCKET_ERROR     ( -1 )
 # define closesocket( s ) close( s )
@@ -530,8 +531,8 @@ streamsock::set_socket_options()
 {
   if( m_handle != INVALID_SOCKET )
   {
-    int type = 0,
-        len = sizeof( type );
+    int type = 0;
+    socklen_t len = sizeof( type );
     SOCKCALL( ::getsockopt( 
       m_handle, SOL_SOCKET, SO_TYPE,
       reinterpret_cast<char*>( &type ), &len )

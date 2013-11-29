@@ -162,7 +162,7 @@ class SignalProperties
      private:
       friend class SignalProperties;
       ValueUnitsProxy( SignalProperties* );
-      ValueUnitsProxy( ValueUnitsProxy& );
+      ValueUnitsProxy( const ValueUnitsProxy& );
       SignalProperties* p;
     };
 

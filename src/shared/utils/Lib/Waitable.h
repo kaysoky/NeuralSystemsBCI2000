@@ -26,13 +26,6 @@
 #ifndef TINY_WAITABLE_H
 #define TINY_WAITABLE_H
 
-#if _WIN32
-# include <windows.h>
-#else // _WIN32
-# include <pthread.h>
-# include "Synchronized.h"
-#endif // _WIN32
-
 #include <vector>
 #include "Uncopyable.h"
 #include "Constants.h"
@@ -51,13 +44,7 @@ class Waitable : private Uncopyable
   bool Wait( int timeout_ms = InfiniteTimeout ) const;
 
  private:
-#if _WIN32
-  HANDLE mHandle;
-#else // _WIN32
-  pthread_cond_t  mCond;
-  pthread_mutex_t mMutex;
-  Synchronized<bool> mSignaled;
-#endif // _WIN32
+  void* mData;
   friend class Waitables;
 };
 

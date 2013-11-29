@@ -40,7 +40,7 @@
 #include <functional>
 
 using namespace std;
-using namespace Tiny;
+using namespace Tiny::StringUtils;
 
 wstring
 StringUtils::ToWide( const char* inString )
@@ -243,13 +243,16 @@ ReadAsBase64_( istream& is, string& s, T stopIf )
   }
   return is;
 }
+struct ConstFalse
+{
+  bool operator()( int ) { return false; }
+};
 } // namespace
 
 istream&
 StringUtils::ReadAsBase64( std::istream& is, std::string& s, int (*stopIf)( int ) )
 {
-  static struct { bool operator()( int ) { return false; } } constFalse;
-  return stopIf ? ReadAsBase64_( is, s, stopIf ) : ReadAsBase64_( is, s, constFalse );
+  return stopIf ? ReadAsBase64_( is, s, stopIf ) : ReadAsBase64_( is, s, ConstFalse() );
 }
 
 istream&
@@ -265,7 +268,7 @@ UnitTest( Base64Test )
   for( int i = 0; i < 100; ++i )
   {
     string s;
-    while( rand() < ( 99 * RAND_MAX / 100 ) )
+    while( rand() >= RAND_MAX / 100 )
       s += static_cast<char>( rand() % 256 );
     stringstream stream;
     StringUtils::WriteAsBase64( stream, s );
