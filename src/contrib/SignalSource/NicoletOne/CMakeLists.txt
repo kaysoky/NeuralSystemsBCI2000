@@ -21,13 +21,11 @@ SET( SRC_PROJECT
   StdAfx.cpp
   NicoletThread.cpp
   Lock.cpp
+  resource.h
+  ${BCI2000_SRC_DIR}/shared/modules/signalsource/GenericADC.h
   ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
   ${BCI2000_SRC_DIR}/shared/fileio/GenericFileWriter.cpp
   ${BCI2000_SRC_DIR}/shared/bcistream/BCIStream_module.cpp
-)
-SET( HDR_PROJECT
-  resource.h
-  ${BCI2000_SRC_DIR}/shared/modules/signalsource/GenericADC.h
 )
 
 # Define the library
@@ -48,13 +46,15 @@ ADD_DEFINITIONS( -D_AFXDLL )
 SET( CMAKE_MFC_FLAG 2 )
 
 SET( LIBS_ ${LIBS} )
+UTILS_INCLUDE( frameworks/LibTiny )
 UTILS_INCLUDE( frameworks/Core )
 SET( LIBS ${LIBS_} )
+UTILS_INCLUDE( frameworks/LibTiny/Files )
 UTILS_INCLUDE( frameworks/CoreLib/CoreLibFiles )
 UTILS_INCLUDE( SignalSourceCommons )
 
 LINK_DIRECTORIES( ${BCI2000_SIGSRCLIBDIRS} )
-BCI2000_ADD_TARGET( INFO "Signal source module" WINAPP ${EXECUTABLE_NAME} ${SRC_PROJECT} ${HDR_PROJECT} )
+BCI2000_ADD_TARGET( INFO "Signal source module" WINAPP ${EXECUTABLE_NAME} ${SRC_PROJECT} ${SRC_LIBTINY} )
 
 IF( NOT FAILED )
   BCI2000_ADD_TO_INVENTORY( SignalSource ${EXECUTABLE_NAME} )

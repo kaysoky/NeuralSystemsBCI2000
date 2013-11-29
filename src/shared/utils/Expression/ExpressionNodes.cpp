@@ -50,6 +50,14 @@ NodeList::Add( Node* node )
   return *this;
 }
 
+NodeList& 
+NodeList::Add( Node* node, size_t idx )
+{
+  if( node )
+    mList.insert( mList.begin() + idx, node );
+  return *this;
+}
+
 Node*
 NodeList::operator[]( size_t idx ) const
 {

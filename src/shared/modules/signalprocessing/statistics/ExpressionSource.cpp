@@ -138,7 +138,7 @@ ExpressionSource::MemberFunction( const std::string& inObject, const std::string
     try
     {
       NodeList args = inArgs;
-      args.insert( args.begin(), pObserverNode );
+      args.Add( pObserverNode, 0 );
       pFunction = FunctionSource::NewFunctionSource( inName, args, mDataIndex );
     }
     catch( const bci::Exception& e )

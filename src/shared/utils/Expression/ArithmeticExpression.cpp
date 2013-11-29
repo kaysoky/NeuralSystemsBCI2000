@@ -138,7 +138,7 @@ ArithmeticExpression::DoEvaluate()
   double result = 0;
   try
   {
-    for( size_t i = 0; i < mStatements.size(); ++i )
+    for( int i = 0; i < mStatements.Size(); ++i )
       result = mStatements[i]->Evaluate();
   }
   catch( const Tiny::Exception& e )
@@ -208,7 +208,7 @@ ArithmeticExpression::Function( const std::string& inName, const NodeList& inArg
   {
     const char* name;
     bool        isConst; // same arguments give always the same result (e.g., for rand() this would be false)
-    size_t      numArgs;
+    int         numArgs;
     void*       function;
   }
   functions[] =
@@ -239,11 +239,11 @@ ArithmeticExpression::Function( const std::string& inName, const NodeList& inArg
   {
     Errors() << inName << "(): Unknown function" << endl;
   }
-  else if( functions[i].numArgs != inArguments.size() )
+  else if( functions[i].numArgs != inArguments.Size() )
   {
     Errors() << inName << "(): Wrong number of arguments, expected "
              << functions[i].numArgs << ", got "
-             << inArguments.size()
+             << inArguments.Size()
              << endl;
   }
   else
@@ -327,7 +327,7 @@ ArithmeticExpression::Parse()
   CollectGarbage();
   bool success = mErrors.str().empty();
   if( success )
-    for( size_t i = 0; i < mStatements.size(); ++i )
+    for( int i = 0; i < mStatements.Size(); ++i )
       mStatements[i] = mStatements[i]->Simplify();
   else
     mStatements.Clear();

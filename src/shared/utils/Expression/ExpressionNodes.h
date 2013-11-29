@@ -70,9 +70,11 @@ class NodeList : public RefObj
   NodeList() {}
   NodeList( Node* p ) { Add( p ); }
   NodeList& Add( Node* );
+  NodeList& Add( Node*, size_t idx );
   int Size() const { return static_cast<int>( mList.size() ); }
-  size_t size() const { return mList.size(); }
   void Clear() { mList.clear(); }
+
+  size_t size() const { return mList.size(); }
   Node* operator[]( size_t idx ) const;
   NodePtr& operator[]( size_t idx ) { return mList[idx]; }
 

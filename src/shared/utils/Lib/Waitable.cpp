@@ -196,7 +196,7 @@ Waitable::Wait( int inTimeoutMs ) const
 #if _WIN32
   DWORD timeout = inTimeoutMs >= 0 ? inTimeoutMs : INFINITE;
   bool result = false;
-  switch( ::WaitForSingleObject( mHandle, timeout ) )
+  switch( ::WaitForSingleObject( GetData( mData ), timeout ) )
   {
     case WAIT_OBJECT_0:
     case WAIT_ABANDONED:
