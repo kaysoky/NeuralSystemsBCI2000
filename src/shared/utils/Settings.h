@@ -34,8 +34,6 @@ class Settings : public QSettings
 {
  public:
   Settings();
-
-  static void SetFile( const QString& = "" );
 };
 
 #endif // SETTINGS_H

@@ -35,16 +35,14 @@ namespace
 {
 
 string
-DefaultFilePath()
+GetFilePath()
 {
   return FileUtils::InstallationDirectory()
          + FileUtils::ExtractBase( FileUtils::ExecutablePath() )
          + ".ini";
 }
 
-struct FilePath_ : string
-{ FilePath_() : string( DefaultFilePath() ) {} };
-StaticObject<FilePath_, string> FilePath;
+StaticBuffer<string, &GetFilePath> FilePath;
 
 } // namespace
 
@@ -53,11 +51,3 @@ Settings::Settings()
 {
 }
 
-void
-Settings::SetFile( const QString& inFilePath )
-{
-  if( inFilePath == "" )
-    FilePath() = DefaultFilePath();
-  else
-    FilePath() = string( inFilePath.toLocal8Bit() );
-}

@@ -30,6 +30,7 @@
 #include "VisDisplay.h"
 
 #include "VisID.h"
+#include "StaticObject.h"
 #include <QWidget>
 #include <map>
 #include <string>
@@ -56,7 +57,6 @@ class VisDisplayBase : public QWidget
  public:
   virtual ~VisDisplayBase();
 
-  static bool Init();
   static void Clear() { Visuals().Clear(); }
   static void HandleSignal( const VisID&, const GenericSignal& );
   static void HandleMemo( const VisID&, const char* );
@@ -74,11 +74,11 @@ class VisDisplayBase : public QWidget
   typedef std::map< VisID, VisDisplayBase* > VisContainerBase;
   class VisContainer : public VisContainerBase
   {
-     public:
+   public:
     ~VisContainer() { Clear(); }
     void Clear();
   };
-  static VisContainer& Visuals();
+  static StaticObject<VisContainer> Visuals;
 
  protected:
   // configID->value
@@ -103,7 +103,7 @@ class VisDisplayBase : public QWidget
     void Save();
     void Restore();
   };
-  static ConfigContainer& Visconfigs();
+  static StaticObject<ConfigContainer> Visconfigs;
   virtual void SetConfig( ConfigSettings& );
 };
 

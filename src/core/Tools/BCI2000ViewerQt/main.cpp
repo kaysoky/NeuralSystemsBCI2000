@@ -46,7 +46,6 @@ int main(int argc, char *argv[])
   a.setOrganizationName( "BCI2000" );
   a.setOrganizationDomain( "bci2000.org" );
   a.setApplicationName( "BCI2000Viewer" );
-  Settings::SetFile();
   BCI2000Viewer w;
   w.show();
 

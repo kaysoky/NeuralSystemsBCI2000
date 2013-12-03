@@ -67,17 +67,60 @@ using namespace Tiny::FileUtils;
 
 namespace {
 
-  struct Separators_ : string { Separators_() : string( SeparatorSet() ) {} };
-  StaticObject<Separators_, string> Separators;
-
   StaticObject< Lockable<Mutex> > WorkingDirAccess;
 
   struct OriginalWD_ : string
   { OriginalWD_() : string( WorkingDirectory() ) {} };
-  StaticObject<OriginalWD_, string> sOriginalWD;
+  StaticObject<OriginalWD_, string> OriginalWD;
 
-  struct InstallationDirectory_ : string
-  { InstallationDirectory_() : string( ParentDirectoryS( ExecutablePath() ) ) {} };
+  string
+  GetExecutablePath()
+  {
+    string path;
+#if _WIN32
+    char* pFileName = NULL;
+    DWORD size = 1024; // Must be large enough to hold path in WinXP.
+    DWORD result = 0;
+    do {
+      delete[] pFileName;
+      pFileName = new char[size];
+      result = ::GetModuleFileNameA( NULL, pFileName, size );
+      size *= 2;
+    } while( result != 0 && ::GetLastError() == ERROR_INSUFFICIENT_BUFFER );
+    if( result != 0 )
+      path = pFileName;
+    delete[] pFileName;
+#else // _WIN32
+# if _GNU_SOURCE
+    path = program_invocation_name;
+# elif __APPLE__
+    uint32_t size = 0;
+    ::_NSGetExecutablePath( NULL, &size );
+    char buf[size];
+    buf[0] = '\0';
+    ::_NSGetExecutablePath( buf, &size );
+    path = buf;
+# else
+#  error Don't know how to obtain the executable's path on this platform.
+# endif
+    if( !IsAbsolutePath( path ) )
+    {
+      if( OriginalWD.Destructed() )
+        path = "";
+      else
+        path = OriginalWD() + path;
+    }
+    path = CanonicalPath( path );
+#endif // _WIN32
+    if( path.empty() )
+      throw std_runtime_error( "Could not determine executable path" );
+    return path;
+  }
+
+  string GetInstallationDirectory()
+  {
+    return ParentDirectoryS( ExecutablePath() );
+  }
 
   string GetTemporaryDirectory()
   {
@@ -92,28 +135,44 @@ namespace {
       throw std_runtime_error( "Could not get temporary directory" );
     return dir;
   };
-  struct TemporaryDirectory_ : string
-  { TemporaryDirectory_() : string( GetTemporaryDirectory() ) {} };
+
+  bool IsSeparator( char c )
+  {
+    for( const char* p = SeparatorSet(); *p; ++p )
+      if( *p == c )
+        return true;
+    return false;
+  }
+  string& RemoveSeparator( string& s )
+  {
+    if( !s.empty() && IsSeparator( *s.rbegin() ) )
+      s.erase( s.length() - 1 );
+    return s;
+  }
 }
 
-const string&
+string
+FileUtils::ExecutablePath()
+{
+  return StaticBuffer<string, &GetExecutablePath>();
+}
+
+string
 FileUtils::InstallationDirectoryS()
 {
-  static StaticObject<InstallationDirectory_> installationDirectory;
-  return installationDirectory();
+  return StaticBuffer<string, &GetInstallationDirectory>();
 }
 
-const string&
+string
 FileUtils::TemporaryDirectory()
-{ 
-  static StaticObject<TemporaryDirectory_> temporaryDirectory;
-  return temporaryDirectory();
+{
+  return StaticBuffer<string, &GetTemporaryDirectory>();
 }
 
 string
 FileUtils::EnsureSeparator( const string& inDir )
 {
-  if( inDir.empty() || Separators().find( *inDir.rbegin() ) != string::npos )
+  if( inDir.empty() || IsSeparator( *inDir.rbegin() ) )
     return inDir;
   return inDir + DirSeparator;
 }
@@ -121,48 +180,8 @@ FileUtils::EnsureSeparator( const string& inDir )
 string
 FileUtils::ClearSeparator( const string& inDir )
 {
-  if( inDir.empty() || Separators().find( *inDir.rbegin() ) == string::npos )
-    return inDir;
-  return inDir.substr( 0, inDir.length() - 1 );
-}
-
-string
-FileUtils::ExecutablePath()
-{
-  string path;
-#if _WIN32
-  char* pFileName = NULL;
-  DWORD size = 1024; // Must be large enough to hold path in WinXP.
-  DWORD result = 0;
-  do {
-    delete[] pFileName;
-    pFileName = new char[size];
-    result = ::GetModuleFileNameA( NULL, pFileName, size );
-    size *= 2;
-  } while( result != 0 && ::GetLastError() == ERROR_INSUFFICIENT_BUFFER );
-  if( result != 0 )
-    path = pFileName;
-  delete[] pFileName;
-#else // _WIN32
-# if _GNU_SOURCE
-  path = program_invocation_name;
-# elif __APPLE__
-  uint32_t size = 0;
-  ::_NSGetExecutablePath( NULL, &size );
-  char buf[size];
-  buf[0] = '\0';
-  ::_NSGetExecutablePath( buf, &size );
-  path = buf;
-# else
-#  error Don't know how to obtain the executable's path on this platform.
-# endif
-  if( !IsAbsolutePath( path ) )
-    path = OriginalWD_() + path;
-  path = CanonicalPath( path );
-#endif // _WIN32
-  if( path.empty() )
-    throw std_runtime_error( "Could not obtain executable path" );
-  return path;
+  string s = inDir;
+  return RemoveSeparator( s );
 }
 
 string
@@ -212,9 +231,7 @@ FileUtils::WorkingDirectoryS()
   if( cwd != NULL )
     result = cwd;
   delete[] buf;
-  if( !result.empty() && Separators().find( *result.rbegin() ) != string::npos )
-    result = result.substr( result.length() - 1 );
-  return result;
+  return RemoveSeparator( result );
 }
 
 bool
@@ -238,7 +255,7 @@ FileUtils::CanonicalPath( const std::string& inPath )
   Lock _(WorkingDirAccess());
   string path = inPath,
          sep;
-  if( !path.empty() && Separators().find( *path.rbegin() ) != string::npos )
+  if( !path.empty() && IsSeparator( *path.rbegin() ) )
   {
     sep = *path.rbegin();
     path = path.substr( 0, path.length() - 1 );
@@ -295,7 +312,7 @@ FileUtils::ParentDirectoryS( const std::string& inPath )
 string
 FileUtils::ExtractDirectoryS( const std::string& inPath )
 {
-  size_t pos = inPath.find_last_of( Separators() );
+  size_t pos = inPath.find_last_of( SeparatorSet() );
   if( pos == string::npos )
     return "";
   return inPath.substr( 0, pos );
@@ -304,7 +321,7 @@ FileUtils::ExtractDirectoryS( const std::string& inPath )
 string
 FileUtils::ExtractFile( const std::string& inPath )
 {
-  size_t pos = inPath.find_last_of( Separators() );
+  size_t pos = inPath.find_last_of( SeparatorSet() );
   if( pos == string::npos )
     return inPath;
   return inPath.substr( pos + 1 );

@@ -41,7 +41,8 @@ template<class T, class U = T> class StaticObject : Uncopyable
 {
  public:
   StaticObject() { Get(); }
-  ~StaticObject() { Get()->~T(); }
+  ~StaticObject() { Get()->~T(); mpInstance = 0; mpThis = Invalid(); }
+  bool Destructed() const { return mpThis == Invalid(); }
   U& operator()() { return *Get(); }
   const U& operator()() const { return *Get(); }
   U* operator->() { return Get(); }
@@ -54,6 +55,8 @@ template<class T, class U = T> class StaticObject : Uncopyable
   { return const_cast<StaticObject*>( this )->Get(); }
   T* Get()
   {
+    if( Destructed() )
+      throw std_logic_error( "StaticObject<> instance used after being destructed" );
 #if TINY_DEBUG
     if( ( mpThis || mpInstance ) && mpThis != this )
       throw std_logic_error( "StaticObject<> instance appears to be on stack or in heap -- declare as \"static\" to fix" );
@@ -64,14 +67,27 @@ template<class T, class U = T> class StaticObject : Uncopyable
       MemoryFence();
     return mpInstance;
   }
+  static StaticObject* Invalid() { return reinterpret_cast<StaticObject*>( -1 ); }
   StaticObject* mpThis;
   T* mpInstance;
   char mMemory[sizeof(T)];
 };
 
+template<typename T, T (*F)()> class StaticBuffer
+{
+ private:
+  struct Buffer : T
+  { Buffer() : T( F() ) {} };
+ public:
+  operator T() const
+  { static StaticObject<Buffer, T> buffer; return buffer.Destructed() ? F() : buffer(); }
+  T operator()() const
+  { return *this; }
+};
 
 } // namespace
 
 using Tiny::StaticObject;
+using Tiny::StaticBuffer;
 
 #endif // TINY_STATIC_OBJECT_H

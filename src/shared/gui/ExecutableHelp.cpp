@@ -30,6 +30,7 @@
 #pragma hdrstop
 
 #include "ExecutableHelp.h"
+#include "FileUtils.h"
 #if _WIN32
 # include <windows.h>
 #else
@@ -40,25 +41,15 @@
 
 using namespace std;
 
-const class ExecutableHelp& ExecutableHelp()
-{
-  static class ExecutableHelp instance( 0 );
-  return instance;
-}
+StaticObject<class ExecutableHelp> ExecutableHelp;
 
-static const string& HelpExtension()
-{
-  static string helpExtension = ".html";
-  return helpExtension;
-}
+static const char* HelpExtension()
+{ return ".html"; }
 
-static const string& TocFileName()
-{
-  static string tocFileName = "htmlhelp.toc";
-  return tocFileName;
-}
+static const char* TocFileName()
+{ return "htmlhelp.toc"; }
 
-ExecutableHelp::ExecutableHelp( int )
+ExecutableHelp::ExecutableHelp()
 {
   Initialize();
   InitializeContextHelp();
@@ -106,33 +97,9 @@ ExecutableHelp::Display() const
 void
 ExecutableHelp::Initialize()
 {
-  string helpFile;
-#if _WIN32
-  const int increment = 512;
-  char* buf = NULL;
-  int bufSize = 0,
-      bytesCopied = bufSize;
-  while( bytesCopied == bufSize )
-  {
-    bufSize += increment;
-    delete[] buf;
-    buf = new char[ bufSize ];
-    bytesCopied = ::GetModuleFileNameA( NULL, buf, bufSize );
-  }
-  helpFile = buf;
-  delete[] buf;
-#else // _WIN32
-  helpFile = QApplication::applicationFilePath().toLocal8Bit().constData();
-#endif // _WIN32
-
-  size_t pos = helpFile.find_last_of( ".\\/" );
-  if( pos != string::npos && helpFile[ pos ] != '.' )
-    pos = string::npos;
-  mHelpFile = helpFile.substr( 0, pos ) + HelpExtension();
-  pos = mHelpFile.find_last_of( "\\/" );
-  if( pos != string::npos )
-    ++pos;
-  mHelpFileDir = mHelpFile.substr( 0, pos );
+  mHelpFileDir = FileUtils::InstallationDirectory();
+  mHelpFile = mHelpFileDir + FileUtils::ExtractBase( FileUtils::ExecutablePath() )
+            + HelpExtension();
 }
 
 void
@@ -163,21 +130,7 @@ ExecutableHelp::InitializeContextHelp()
       }
     }
   }
-  htmlPath = mHelpFileDir + htmlPath;
-#if _WIN32
-  for( string::iterator i = htmlPath.begin(); i != htmlPath.end(); ++i )
-    if( *i == '/' )
-      *i = '\\';
-  DWORD bufLen = static_cast<DWORD>( htmlPath.length() + 1 );
-  char* pathBuffer = new char[bufLen];
-  if( ::GetFullPathNameA( htmlPath.c_str(), bufLen, pathBuffer, NULL ) )
-    htmlPath = string( pathBuffer );
-  delete[] pathBuffer;
-  for( string::iterator i = htmlPath.begin(); i != htmlPath.end(); ++i )
-    if( *i == '\\' )
-      *i = '/';
-#endif // _WIN32
-
+  htmlPath = FileUtils::AbsolutePath( mHelpFileDir + htmlPath );
   // Build help maps from the TOC file.
   mParamHelp.Clear();
   mParamHelp.SetPath( htmlPath );
@@ -336,11 +289,7 @@ ExecutableHelp::HelpMap::Open( const string& inKey, const string& inContext ) co
 #if _WIN32
     // ShellExecute doesn't treat anchors properly, so we create a
     // temporary file containing a redirect.
-    int bufLen = ::GetTempPath( 0, NULL );
-    char* pathBuf = new char[ bufLen ];
-    ::GetTempPathA( bufLen, pathBuf );
-    string tempFileName = string( pathBuf ) + "BCI2000Help" + HelpExtension();
-    delete[] pathBuf;
+    string tempFileName = FileUtils::TemporaryDirectory() + "BCI2000Help" + HelpExtension();
     {
       ofstream tempFile( tempFileName.c_str() );
       tempFile << "<meta http-equiv=\"refresh\" content=\"0;url="

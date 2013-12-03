@@ -173,14 +173,15 @@ MainWindow::MainWindow( QWidget* parent )
 
 MainWindow::~MainWindow()
 {
-  OperatorUtils::SaveWidget( this );
-  delete ui;
-  ui = NULL;
-  delete gpPreferences;
-  gpPreferences = NULL;
+  this->killTimer( mUpdateTimerID );
   BCI_Dispose();
   if( !mSyslog.Close() )
     mSyslog.exec();
+  OperatorUtils::SaveWidget( this );
+  delete gpPreferences;
+  gpPreferences = 0;
+  delete ui;
+  ui = 0;
 }
 
 void

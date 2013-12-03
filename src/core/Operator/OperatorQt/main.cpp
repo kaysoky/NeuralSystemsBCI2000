@@ -69,7 +69,6 @@ main( int argc, char *argv[] )
   a.setApplicationName( FileUtils::ApplicationTitle().c_str() );
   qRegisterMetaType< GenericSignal >();
   qRegisterMetaType< BitmapImage >();
-  Settings::SetFile();
   FunctionCall<void()> call( MainLoop );
   bool finished = ExceptionCatcher()
     .SetMessage( "Terminating Operator module" )

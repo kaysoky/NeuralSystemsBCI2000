@@ -53,6 +53,7 @@ BCI2000FileInfo::BCI2000FileInfo(QWidget *parent)
         gpPreferences = new Preferences;
     ui->setupUi(this);
     ui->filename->setText( tr( EMPTY_FILENAME ) );
+    setAcceptDrops( true );
     ReadSettings();
     if( qApp->arguments().size() > 1 )
       OpenFile( qApp->arguments().at( 1 ) );

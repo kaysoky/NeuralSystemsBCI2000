@@ -175,10 +175,7 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
       mDisplayFilter.LPCorner( 0 );
       mDisplayFilter.NotchCenter( 0 );
     }
-    if( sampleUnit.find( 's' ) == string::npos )
-      mElementGain = 0;
-    else
-      mElementGain = unitsPerSample * FilterUnitToValue( sampleUnit );
+    mElementGain = unitsPerSample * FilterUnitToValue( sampleUnit );
   }
   float sampleOffset;
   if( inConfig.Get( CfgID::SampleOffset, sampleOffset ) )
@@ -714,11 +711,9 @@ VisDisplayGraph::FilterCaptionToValue( const char* inCaption ) const
 double
 VisDisplayGraph::FilterUnitToValue( const string& inUnit ) const
 {
-  if( inUnit.length() < 1 || *inUnit.rbegin() != 's' )
-    return 0;
-
-  return PhysicalUnit().SetOffset( 0 ).SetGain( 1 ).SetSymbol( "s" )
-                       .PhysicalToRaw( string( "1" ) + inUnit );
+  PhysicalUnit u;
+  u.SetGainWithSymbol( "1" + inUnit );
+  return u.Symbol() == "s" ? u.Gain() : 0;
 }
 
 int

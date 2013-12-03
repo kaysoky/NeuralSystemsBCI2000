@@ -55,7 +55,7 @@ namespace FileUtils
   std::string ExecutablePath();
   std::string ApplicationTitle();
 
-  const std::string& InstallationDirectoryS();
+  std::string InstallationDirectoryS();
   inline std::string InstallationDirectory() { return InstallationDirectoryS() + DirSeparator; }
 
   // This returns the current working directory.
@@ -99,7 +99,7 @@ namespace FileUtils
   bool RemoveDirectory( const std::string&, bool force = false );
   bool RemoveFile( const std::string& );
 
-  const std::string& TemporaryDirectory();
+  std::string TemporaryDirectory();
   class TemporaryFile : public std::fstream
   {
    public:

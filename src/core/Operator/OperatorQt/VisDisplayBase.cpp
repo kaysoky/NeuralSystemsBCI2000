@@ -37,29 +37,8 @@
 
 using namespace std;
 
-static bool init = VisDisplayBase::Init();
-
-bool
-VisDisplayBase::Init()
-{
-  VisDisplayBase::Visuals();
-  VisDisplayBase::Visconfigs();
-  return true;
-}
-
-VisDisplayBase::VisContainer&
-VisDisplayBase::Visuals()
-{
-  static VisDisplayBase::VisContainer visuals;
-  return visuals;
-}
-
-VisDisplayBase::ConfigContainer&
-VisDisplayBase::Visconfigs()
-{
-  static VisDisplayBase::ConfigContainer visconfigs;
-  return visconfigs;
-}
+StaticObject<VisDisplayBase::VisContainer> VisDisplayBase::Visuals;
+StaticObject<VisDisplayBase::ConfigContainer> VisDisplayBase::Visconfigs;
 
 ////////////////////////////////////////////////////////////////////////////////
 void

@@ -31,11 +31,12 @@
 
 #include <string>
 #include <map>
+#include "StaticObject.h"
 
 class ExecutableHelp
 {
  public:
-  ExecutableHelp( int );
+  ExecutableHelp();
   bool Display() const;
 
   class HelpMap : public std::multimap<std::string, std::string>
@@ -72,6 +73,6 @@ class ExecutableHelp
               mHelpFileDir;
 };
 
-const class ExecutableHelp& ExecutableHelp();
+extern StaticObject<ExecutableHelp> ExecutableHelp;
 
 #endif // EXECUTABLE_HELP_H

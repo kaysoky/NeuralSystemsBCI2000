@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
   a.setOrganizationName( "BCI2000" );
   a.setOrganizationDomain( "bci2000.org" );
   a.setApplicationName( cProgramName );
-  Settings::SetFile();
   MainWindow w;
   w.show();
 
