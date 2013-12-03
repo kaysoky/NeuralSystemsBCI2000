@@ -26,6 +26,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/modules/signalprocessing/LPFilter.cpp
   ${PROJECT_SRC_DIR}/shared/modules/signalprocessing/ExpressionFilter.cpp
   ${PROJECT_SRC_DIR}/shared/modules/signalprocessing/Normalizer.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/signalprocessing/FrequencyEstimator.cpp
 
   ${PROJECT_SRC_DIR}/shared/modules/signalprocessing/AverageDisplay.cpp 
 #  ${PROJECT_SRC_DIR}/shared/modules/signalprocessing/ComplexDemodulator.cpp 
