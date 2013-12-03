@@ -203,12 +203,13 @@ FUNCTION( BCI2000_AUTOSOURCEGROUPS ioList outCompanions outTargetDir )
   SET( companions )
 
   LIST( FIND list_ "OUTPUT_DIRECTORY" idx )
-  IF( NOT idx EQUAL -1 )
+  WHILE( NOT idx EQUAL -1 )
     LIST( REMOVE_AT list_ ${idx} )
     LIST( GET list_ ${idx} outDir )
     LIST( REMOVE_AT list_ ${idx} )
     SET( ${outTargetDir} "${outDir}" PARENT_SCOPE )
-  ENDIF()  
+    LIST( FIND list_ "OUTPUT_DIRECTORY" idx )
+  ENDWHILE()
 
   UTILS_FIXUP_FILES( list_ )
   

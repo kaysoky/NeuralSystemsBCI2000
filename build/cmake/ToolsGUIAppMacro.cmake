@@ -14,13 +14,19 @@ MACRO( BCI2000_ADD_TOOLS_GUIAPP )
     ${PROJECT_SRC_DIR}/shared/utils/Settings.cpp
     ${PROJECT_SRC_DIR}/shared/gui/ColorListChooser.cpp
   )
+  LIST( FIND SOURCES "OUTPUT_DIRECTORY" idx )
+  IF( idx EQUAL -1 )
+    SET( SOURCES
+      ${SOURCES}
+      OUTPUT_DIRECTORY ${PROJECT_ROOT_DIR}/tools/${NAME}
+    )
+  ENDIF()
 
   UTILS_INCLUDE( frameworks/Core )
   BCI2000_ADD_TARGET(
     INFO Tool
     GUIAPP ${NAME}
     ${SOURCES}
-    OUTPUT_DIRECTORY ${PROJECT_ROOT_DIR}/tools/${NAME}
   )
   BCI2000_ADD_TO_INVENTORY( Tool ${NAME} )
 
