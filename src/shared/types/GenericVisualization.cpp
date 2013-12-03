@@ -167,6 +167,8 @@ VisSignalProperties::ToVisCfg() const
   result.push_back( VisCfg( SourceID(), CfgID::ChannelUnit, channelUnit ) );
 
   int numSamples = static_cast<int>( s.ElementUnit().RawMax() - s.ElementUnit().RawMin() + 1 );
+  if( s.ElementUnit().RawMin() < 0 )
+    numSamples = s.Elements();
   result.push_back( VisCfg( SourceID(), CfgID::NumSamples, numSamples ) );
   if( numSamples > 0 )
   {

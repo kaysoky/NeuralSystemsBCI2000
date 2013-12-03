@@ -94,6 +94,7 @@ class PhysicalUnit
   bool          operator!=( const PhysicalUnit& u ) const
                 { return !( *this == u ); }
   PhysicalUnit& operator*=( const PhysicalUnit& );
+  PhysicalUnit operator*( const PhysicalUnit& u ) const;
 
   PhysicalUnit& Combine( const PhysicalUnit& );
 

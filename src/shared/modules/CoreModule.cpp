@@ -644,6 +644,7 @@ CoreModule::AutoConfigFilters()
 void
 CoreModule::InitializeFilters()
 {
+  mLargeSignals.clear();
   if( bcierr__.Empty() )
   {
     if( mParamlist.Exists( "OperatorBackLink" ) )

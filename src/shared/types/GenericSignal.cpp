@@ -199,21 +199,20 @@ GenericSignal::ReadBinary( istream& is )
   type.ReadBinary( is );
   channels.ReadBinary( is );
   elements.ReadBinary( is );
-  if( type.Shared() )
+  bool shared = type.Shared();
+  type.SetShared( false );
+  SetProperties( SignalProperties( channels, elements, type ) );
+  if( shared )
   {
     string name;
     getline( is, name, '\0' );
-    SetProperties( SignalProperties( channels, elements, type ) );
     AttachToSharedMemory( name );
     MemoryFence();
   }
   else
-  {
-    SetProperties( SignalProperties( channels, elements, type ) );
     for( int i = 0; i < Channels(); ++i )
       for( int j = 0; j < Elements(); ++j )
         ReadValueBinary( is, i, j );
-  }
   return is;
 }
 

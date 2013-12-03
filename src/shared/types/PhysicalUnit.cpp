@@ -303,6 +303,12 @@ PhysicalUnit::operator*=( const PhysicalUnit& inUnit )
   return *this;
 }
 
+PhysicalUnit
+PhysicalUnit::operator*( const PhysicalUnit& inOther ) const
+{
+  return PhysicalUnit( *this ) *= inOther;
+}
+
 PhysicalUnit&
 PhysicalUnit::Combine( const PhysicalUnit& inUnit )
 {
@@ -331,11 +337,14 @@ PhysicalUnit::WriteToStream( ostream& os ) const
 istream&
 PhysicalUnit::ReadFromStream( istream& is )
 {
-  return is >> mOffset
-            >> mGain
-            >> mSymbol
-            >> mRawMin
-            >> mRawMax;
+  string symbol;
+  is >> mOffset
+     >> mGain
+     >> symbol
+     >> mRawMin
+     >> mRawMax;
+  SetSymbol( symbol );
+  return is;
 }
 
 PhysicalUnit::SymbolPowers&
