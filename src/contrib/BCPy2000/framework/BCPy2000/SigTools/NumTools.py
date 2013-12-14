@@ -28,8 +28,8 @@ __all__ = [
 	'whoami', 
 	'isnumpyarray', 
 	'disp', 'cat', 'mad', 
-	'project', 'trimtrailingdims', 'isequal', 'unwrapdiff', 'diffx',
-	'summarize', 'sdict', 'reportstruct', 'sstruct',
+	'flip', 'project', 'trimtrailingdims', 'isequal', 'unwrapdiff', 'diffx',
+	'summarize', 'sdict', 'reportstruct', 'sstruct', 'ssdiff', 'sscommon',
 	'loadmat', 'savemat', 'pickle', 'unpickle', 
 ]
 
@@ -138,6 +138,12 @@ def mad(a,b=None,axis=None):
 	a = numpy.abs(a)
 	if axis!=None: a = project(a, axis)
 	return numpy.max(a,axis=axis)
+
+def flip(x, axis=0):
+	if not isnumpyarray(x): x = numpy.array(x)
+	subs = [slice(None, None) for s in x.shape]
+	subs[axis] = slice(None, None, -1)
+	return x[subs]
 
 def project(a, maxdim):
 	"""
@@ -473,10 +479,7 @@ class sstruct(object):
 		if '.' in f: self._setfield(f, v); return
 		if not f.startswith('_') and f not in self._fields: self._fields.append(f)
 		self.__dict__[f] = v
-	def __delattr__(self, f):
-		if f in self._fields: self._fields.remove(f)
-		del self.__dict__[f]
-		return self
+	def __delattr__(self, f): return self._rmfield(f)
 	def _getAttributeNames(self):
 		return tuple(self._fields)
 	def __repr__(self):
@@ -564,7 +567,13 @@ class sstruct(object):
 		for k,v in other._allitems(): self._setfield(k,v)
 	def __iadd__(self, other): self._update(other); return self
 	def __add__(self, other): return self.copy().__iadd__(other)
-	def __getitem__(self, i): return self._getfield(i)
+	def __getitem__(self, i):
+		if isinstance(i, int): return self._fields[i]
+		else: return self._getfield(i)
+	def __setitem__(self, i, val): return self._setfield(i, val)
+	def __delitem__(self, i): return self._rmfield(i)
+	def __contains__(self, f): return f in self._fields
+	def __len__(self): return len(self._fields)
 	def _allitems(self):
 		"""
 		Returns [(key, value)] for all (sub)fields.
@@ -622,6 +631,88 @@ class sstruct(object):
 				raise AttributeError("field '%s' has no subfields" % field[0])
 			val = val._getfield('.'.join(field[1:]), *pargs)
 		return val
+	def _rmfield(self, field):
+		"""
+		Remove one field/subfield
+		"""###
+		parts = field.split('.', 1)
+		if len(parts) == 1:
+			allowed = self.__dict__.get('_allowedfields', None)
+			if allowed == None: allowed = True
+			else: allowed = (field not in allowed)
+			if not allowed: raise AttributeError('the "%s" field cannot be removed' % field)
+			if field in self._fields: self._fields.remove(field)
+			if field in self.__dict__: del self.__dict__[field]
+		else:
+			self.__dict__[parts[0]]._rmfield(parts[1])
+		return self
+	def _lock(self, recursive=True):
+		self._allowedfields = []
+		for field in self._fields:
+			self._allowedfields.append(field)
+			v = getattr(self, field)
+			if isinstance(v, sstruct): v._lock()
+		
+def ssdiff( obj, *objs ):
+	"""
+	Find differences between sstruct objects.
+	Both syntaxes are equivalent:  ssdiff(s1, s2, s3)
+	                         and:  ssdiff( [s1, s2, s3] )
+	In either case, s1 and friends are sstruct instances.
+	A tuple of sstruct objects is returned: each one contains only the fields
+	that distinguished the corresponding input object from the other objects.
+	
+	See also sscommon()
+	"""###
+	return_common = False
+	if obj is 'inverse':
+		return_common = True
+		obj, objs = objs[ 0 ], objs[ 1: ]
+	if not isinstance( obj, ( tuple, list ) ): obj = [ obj ]
+	objs = list( obj ) + list( objs )
+	objs = [ sstruct( obj ) for obj in objs ]
+	fields = []
+	rm = []
+	for obj in objs: fields += [ field for field in obj._allfields() if field not in fields ]
+	for field in fields:
+		for obj in objs[ 1: ]:
+			if obj[ field ] != objs[ 0 ][ field ]:
+				if return_common: rm.append( field )
+				else: break
+		else:
+			if not return_common: rm.append( field )
+				
+	def prune( s ):
+		rm = []
+		for field in s._fields:
+			sub = s.__dict__[ field ]
+			if isinstance( sub, sstruct ):
+				if len( prune( sub )._fields ) == 0:
+					rm.append( field )
+		for field in rm:
+			s._rmfield( field )
+		return s
+
+	for field in rm:
+		for obj in objs:
+			if hasattr( obj, field ): delattr( obj, field )
+	for obj in objs:
+		prune( obj )
+	return tuple( objs )
+				
+
+def sscommon( obj, *objs ):
+	"""
+	Find commonalities between sstruct objects.
+	Both syntaxes are equivalent:  sscommon(s1, s2, s3)
+	                         and:  sscommon( [s1, s2, s3] )
+	In either case, s1 and friends are sstruct instances.
+	An sstruct object is returned containing only those fields whose values identical
+	across all input objects.
+	
+	See also ssdiff()
+	"""###
+	return ssdiff( 'inverse', obj, *objs )[ 0 ]
 	
 def loadmat(filename, **kwargs):
 	"""

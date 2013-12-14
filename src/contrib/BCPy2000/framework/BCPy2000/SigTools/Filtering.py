@@ -29,7 +29,7 @@ __all__ = [
 ]
 
 from Basic import getfs
-from NumTools import project,isnumpyarray
+from NumTools import project,isnumpyarray,flip
 from scipy.signal import lfilter
 import scipy.signal.filter_design
 import numpy
@@ -120,7 +120,7 @@ class causalfilter(object):
 		s = "%s\n    %s filter of order %d made with %s.%s:\n    freq = %sHz for data sampled at %gHz\n       b = [%s]\n       a = [%s]" % (basestr, self.type, self.order, self.method.__module__, self.method.__name__, fstr, self.samplingfreq_hz, bstr, astr)
 		return s
 		
-	def filter(self, x, axis=None, reset=False):
+	def filter(self, x, axis=None, reset=False, filtfilt=False):
 		"""
 		Filter the signal or signal packet <x> along the specified <axis>.
 		By default, <axis> is the highest dimension of <x>, so a channels-
@@ -138,10 +138,17 @@ class causalfilter(object):
 			obj = None;
 			if axis == None: axis = -1
 
-		if reset: self.reset()
+		if reset or filtfilt: self.reset()
 		
 		if not isinstance(x, numpy.ndarray): x = numpy.array(x, dtype=numpy.float64, ndmin=1)
 		y, self.state = applyfilter(x=x, b=self.b, a=self.a, axis=axis, zi=self.state)
+		
+		if filtfilt:
+			self.reset()
+			y, self.state = applyfilter(x=flip(y,axis), b=self.b, a=self.a, axis=axis, zi=self.state)
+			y = flip(y,axis)
+			
+		
 		self.samples_filtered += x.shape[axis]
 		if obj != None: obj.y = y; y = obj
 		return y
@@ -156,8 +163,7 @@ class causalfilter(object):
 		"""###
 		self.samples_filtered = 0
 		self.state = None
-		
-		
+				
 class fader(object):
 	"""
 	An object in which the time series of a temporal window can
