@@ -673,10 +673,12 @@ def ssdiff( obj, *objs ):
 	objs = [ sstruct( obj ) for obj in objs ]
 	fields = []
 	rm = []
-	for obj in objs: fields += [ field for field in obj._allfields() if field not in fields ]
+	allfields_eachobj = [ obj._allfields() for obj in objs ]
+	for allfields_thisobj in allfields_eachobj:
+		fields += [ field for field in allfields_thisobj if field not in fields ]
 	for field in fields:
-		for obj in objs[ 1: ]:
-			if obj[ field ] != objs[ 0 ][ field ]:
+		for obj, allfields_thisobj in zip( objs[ 1: ], allfields_eachobj[ 1: ] ):
+			if field not in allfields_thisobj or field not in allfields_eachobj[ 0 ] or obj[ field ] != objs[ 0 ][ field ]:
 				if return_common: rm.append( field )
 				else: break
 		else:
@@ -707,7 +709,7 @@ def sscommon( obj, *objs ):
 	Both syntaxes are equivalent:  sscommon(s1, s2, s3)
 	                         and:  sscommon( [s1, s2, s3] )
 	In either case, s1 and friends are sstruct instances.
-	An sstruct object is returned containing only those fields whose values identical
+	An sstruct object is returned containing only those fields whose values are identical
 	across all input objects.
 	
 	See also ssdiff()

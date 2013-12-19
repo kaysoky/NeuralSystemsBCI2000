@@ -26,9 +26,10 @@
 #
 __all__ = [
 	'applyfilter', 'causalfilter', 'fader', 'firdesign',
+	'filt', 'fftfilt',
 ]
 
-from Basic import getfs
+from Basic import getfs,fftfreqs,fft,ifft,shoulder
 from NumTools import project,isnumpyarray,flip
 from scipy.signal import lfilter
 import scipy.signal.filter_design
@@ -163,7 +164,58 @@ class causalfilter(object):
 		"""###
 		self.samples_filtered = 0
 		self.state = None
-				
+		
+	def filtfilt(x, axis=None):
+		x = numpy.asarray(x).view()
+
+def fftfilt( d, fs, band=(58,62), mode='bandstop', axis=0, dB=20 ):
+	"""
+	Filter brutally by weighting the fft and inverse-transforming.
+	"""###
+	if not isinstance( mode, ( tuple, list ) ): mode = [ mode ]
+	if not isinstance( band[ 0 ], ( tuple, list ) ): band = [ band ]
+	if not isinstance( dB, ( tuple, list ) ): dB = [ dB ]
+	if len( mode ) == 1: mode = mode * len( band )
+	if len( dB ) == 1: dB = dB * len( band )
+	
+	D = fft( d, axis=axis )
+	f = numpy.abs( fftfreqs( d.shape[ axis ], fs ) )
+	shape = [ 1 for x in d.shape ]
+	shape[ axis ] = len( f )
+	f.shape = shape
+	w = f * 0 + 1
+	for mode, band, dB in zip( mode, band, dB ):
+		band = list( band )
+		depth = 10.0 ** ( -abs( dB ) / 20.0 )
+		if   mode == 'highpass': w = w * ( depth + ( 1.0 - depth ) * shoulder( f, band + [ fs, fs ] ) )
+		elif mode == 'lowpass':  w = w * ( depth + ( 1.0 - depth ) * shoulder( f, [ -fs, -fs ] + band ) )
+		elif mode == 'bandpass': w = w * ( depth + ( 1.0 - depth ) * shoulder( f, band ) )
+		elif mode == 'bandstop': w = w * (  1.0  - ( 1.0 - depth ) * shoulder( f, band ) )
+		else: raise ValueError( 'unrecognized filtering mode "%s"' % mode )
+	d = numpy.real( ifft( D * w, axis=axis ) )
+	return d
+
+def filt( d, fs, band=(58,62), mode='bandstop', axis=0, order=3, reverse=True, filtfilt=True ):
+	"""
+	Filter using one or more designed causalfilter objects.
+	   reverse=True:  start at the end and work backwards
+	   filtfilt=True: work in both directions (backwards first if reverse=True) 
+	
+	"""###
+	if not isinstance( mode, ( tuple, list ) ): mode = [ mode ]
+	if not isinstance( band[ 0 ], ( tuple, list ) ): band = [ band ]
+	if not isinstance( order, ( tuple, list ) ): order = [ order ]
+	if len( mode ) == 1: mode = mode * len( band )
+	if len( order ) == 1: order = order * len( band )
+	for mode, band, order in zip( mode, band, order ):
+		f = causalfilter( band, fs, order=order, type=mode )
+		if reverse: d = flip( d, axis )
+		d = f.apply( d, axis=axis, filtfilt=filtfilt, reset=True )
+		if reverse: d = flip( d, axis )
+	return d
+
+
+
 class fader(object):
 	"""
 	An object in which the time series of a temporal window can

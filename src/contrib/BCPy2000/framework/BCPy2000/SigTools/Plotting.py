@@ -31,6 +31,7 @@ __all__ = [
 	'make_cmap', 'complement_cmap', 'reverse_cmap', 'show_cmaps',
 	'subplots',
 	'curve',
+	'superimpose', 'look', 'hotfig',
 ]
 
 import numpy
@@ -447,3 +448,40 @@ def curve(x,y=None, hold=False, drawnow=True, **kwargs):
 	pylab.gca().add_patch(patch)
 	if drawnow: pylab.draw()
 
+def superimpose( figs='all' ):
+	import pylab
+	if figs == 'all': figs = pylab.get_fignums()
+	if not isinstance( figs, ( tuple, list ) ): figs = [ figs ]
+	figs = list( figs )
+	for i, f in enumerate( figs ):
+		if isinstance( f, int ): figs[ i ] = pylab.figure( f )
+	geom = figs[ 0 ].canvas.manager.window.geometry()
+	for fig in figs[ 1: ]: fig.canvas.manager.window.geometry( geom )
+
+def look( fig=None ):
+	import pylab
+	if fig == None and len( pylab.get_fignums() ): fig = pylab.gcf()
+	if isinstance( fig, int ): fig = pylab.figure( fig )
+	fig.canvas._tkcanvas.focus_force()
+	#fig.canvas.manager.window.focus_force() # works but then removes focus from whichever part of the figure is listening to keystrokes :-(
+	
+def hotfig( figs='all', align=False ):
+	import pylab
+	if figs == 'all': figs = pylab.get_fignums()
+	if not isinstance( figs, ( tuple, list ) ): figs = [ figs ]
+	figs = list( figs )
+	for i, f in enumerate( figs ):
+		if isinstance( f, int ): figs[ i ] = pylab.figure( f )
+	if align == True: align = figs
+	if align: superimpose( align )
+	def kp(event):
+		key = event.key.lower()
+		codes = list( '1234567890QWERTYUIOP'.lower() )
+		if key in codes: target = int( codes.index( key ) ) + 1
+		elif key == '[': target = event.canvas.figure.number - 1
+		elif key == ']': target = event.canvas.figure.number + 1
+		else: target = None
+		if target != None and pylab.fignum_exists( target ): look( target )
+		
+	for fig in figs: fig.canvas.mpl_connect( 'key_press_event', kp )
+	look()
