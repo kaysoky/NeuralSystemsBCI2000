@@ -12,6 +12,7 @@ SET( QT5_MODULES
   Core
   Widgets
   GUI
+  Multimedia
 )
 
 SET( precompqt_ QT_${PROJECT_NAME} )
