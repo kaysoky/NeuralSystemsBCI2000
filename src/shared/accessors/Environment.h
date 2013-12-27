@@ -78,7 +78,7 @@ class ApplicationWindowClient;
 }; AddStates( e_, sizeof( e_ ) / sizeof( *e_ ), State::EventKind ); }
 #else // IS_FIRST_MODULE
 # define END_EVENT_DEFINITIONS \
-}; bcierr << "Trying to define events outside a source module." };
+}; bcierr << "Trying to define events outside a source module."; }
 #endif // IS_FIRST_MODULE
 
 // This base class channels access to Parameter, State, and Communication
