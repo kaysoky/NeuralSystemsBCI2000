@@ -86,7 +86,7 @@ if ischar(p)
 		p = cellstr(p);
 	elseif exist(p, 'file')
 		if ~isempty(which(p)), p = which(p); end
-		if strncmp(lower(fliplr(p)), fliplr('.dat'), 4)
+		if strncmp(lower(fliplr(p)), fliplr('.dat'), 4) | strncmp(lower(fliplr(p)), fliplr('.bci2000'), 7)
 			[ans ans p] = load_bcidat(p, [0 0]);
 			return
 		end

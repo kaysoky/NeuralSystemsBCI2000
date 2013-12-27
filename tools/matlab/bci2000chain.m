@@ -257,6 +257,8 @@ output = tidytext(output);
 failsig = 'Configuration Error: ';
 failmatch = findstr([failsig output], failsig);
 if length(failmatch) > 1, failed = 1; end % TODO: really SYSTEM should have caught this. Is this Windoze-specific?
+global BCI2000CHAIN_LASTOUTPUT
+BCI2000CHAIN_LASTOUTPUT = output;
 printable_output = output;
 maxlines = 10;
 newlines = find(printable_output==char(10));
