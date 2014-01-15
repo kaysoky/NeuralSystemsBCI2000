@@ -1,5 +1,5 @@
 ###########################################################################
-## $Id$
+## $Id: CMakeLists.txt 3900 2012-03-30 21:30:33Z gmilsap $
 ## Authors: juergen.mellinger@uni-tuebingen.de
 ## Description: Build information for BCI2000 and CMake
 
@@ -15,6 +15,7 @@ UTILS_MATCH_SUBDIR( BUILD_MODULES Coherence )
 UTILS_MATCH_SUBDIR( BUILD_MODULES CoherenceFFT )
 UTILS_MATCH_SUBDIR( BUILD_MODULES Statistics )
 UTILS_MATCH_SUBDIR( BUILD_MODULES HilbertSignalProcessing )
+UTILS_MATCH_SUBDIR( BUILD_MODULES EMD )
 
 # Command line filters cannot be defined in their associated signal processing 
 # modules' CMakeLists.txt, so they are defined here:

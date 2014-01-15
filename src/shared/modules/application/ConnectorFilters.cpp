@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id$
+// $Id: ConnectorFilters.cpp 3854 2012-03-03 16:08:47Z mellinger $
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A pair of filters that send/receive states and signals over a
 //         UDP connection.
@@ -180,6 +180,8 @@ ConnectorOutput::ConnectorOutput()
   BEGIN_PARAMETER_DEFINITIONS
     SECTION " string ConnectorOutputAddress= % "
       "localhost:20321 % % // one or more IP:Port combinations, e.g. localhost:20321",
+    SECTION " string ConnectorOutputFormat= Verbose "
+      "Verbose % % // Either \"Verbose\" or \"JSON\"",
   END_PARAMETER_DEFINITIONS
 }
 
@@ -197,10 +199,16 @@ ConnectorOutput::Preflight( const SignalProperties& inSignalProperties,
   string address;
   while( iss >> address )
   {
-    sending_udpsocket preflightSocket( address.c_str() );
+    client_tcpsocket preflightSocket( address.c_str() );
     if( !preflightSocket.is_open() )
       bcierr << "Could not connect to " << address << endl;
   }
+  
+  string outputFormat = string( Parameter( "ConnectorOutputFormat" ) );
+  if (outputFormat.compare("Verbose") != 0 && outputFormat.compare("JSON") != 0) {
+    bcierr << "Unknown output format: \"" << outputFormat << "\"" << endl;
+  }
+  
   // Pre-flight access each state in the list.
   for( int state = 0; state < States->Size(); ++state )
     State( ( *States )[ state ].Name() );
@@ -212,6 +220,7 @@ void
 ConnectorOutput::Initialize( const SignalProperties&, const SignalProperties& )
 {
   mConnectorOutputAddresses = string( Parameter( "ConnectorOutputAddress" ) );
+  mOutputFormat = string( Parameter( "ConnectorOutputFormat" ) );
 }
 
 void
@@ -244,18 +253,50 @@ ConnectorOutput::Process( const GenericSignal& Input, GenericSignal& Output )
     {
       Lock lock( **i );
       ( **i ).Clear();
-      for( int state = 0; state < States->Size(); ++state )
-      {
-        const string& stateName = ( *States )[ state ].Name();
-        **i << stateName << ' '
-            << State( stateName.c_str() )
-            << '\n';
-      }
-      for( int channel = 0; channel < Input.Channels(); ++channel )
-        for( int element = 0; element < Input.Elements(); ++element )
-          **i << "Signal(" << channel << "," << element << ") "
-              << Input( channel, element )
+      
+      if (mOutputFormat.compare("JSON") == 0) {
+        // Output a JSON dictionary with two root elements, "States" and "Channels"
+        // States is a dictionary of { State name : State value, ... }
+        **i << "{\"States\":{";
+        for( int state = 0; state < States->Size(); ++state )
+        {
+          if (state > 0) **i << ","; 
+          const string& stateName = ( *States )[ state ].Name();
+          **i << "\"" << stateName << "\":\""
+              << State( stateName.c_str() )
+              << "\"";
+        }
+        
+        // Channels is a dictionary of { Channel index : [Array of signal values], ... }
+        **i << "},\"Channels\":{";
+        for( int channel = 0; channel < Input.Channels(); ++channel ) {
+          if (channel > 0) **i << ",";
+          **i << "\"" << channel << "\":[";
+          if (Input.Elements() > 0) **i << Input(channel, 0);
+          
+          for( int element = 0; element < Input.Elements(); ++element ) {
+            **i << "," << Input( channel, element );
+          }
+          **i << "]";
+        }
+        **i << "}}\n";
+                
+      } else {
+        // The old, really bad way of outputing data
+        for( int state = 0; state < States->Size(); ++state )
+        {
+          const string& stateName = ( *States )[ state ].Name();
+          **i << stateName << ' '
+              << State( stateName.c_str() )
               << '\n';
+        }
+        for( int channel = 0; channel < Input.Channels(); ++channel )
+          for( int element = 0; element < Input.Elements(); ++element )
+            **i << "Signal(" << channel << "," << element << ") "
+                << Input( channel, element )
+                << '\n';
+      }
+      
       ( **i ).flush();
     }
     ( **i ).Set();
