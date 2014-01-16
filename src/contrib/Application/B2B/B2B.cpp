@@ -17,10 +17,6 @@
 #include <sstream>
 #include <algorithm>
 
-//#include "TactorManager.h"
-//#include "TactorBoard.h"
-
-
 #ifndef __BORLANDC__
 #include <QImage>
 #endif // __BORLANDC__
@@ -45,6 +41,8 @@ const int CursorRadiusBits = ::atoi( CURSOR_RADIUS_BITS );
 
 #define PRIMARY_AXIS_BITS "12"  
 const int PrimaryAxisBits = ::atoi( PRIMARY_AXIS_BITS );
+
+#define DEFAULT_LINE_BUFFER 50
 
 RegisterFilter( DynamicFeedbackTask, 3 );
 
@@ -395,8 +393,10 @@ DynamicFeedbackTask::DoPreRun( const GenericSignal&, bool& doProgress ) {
   // Wait for the start signal
   doProgress = false;
   if (mSocket.can_read()) {
-    std::string line = mSocket.readline();
-
+	char buffer[DEFAULT_LINE_BUFFER];
+    mSocket.read(buffer, DEFAULT_LINE_BUFFER);
+	
+	std::string line(buffer);
     if (line.compare("t_start") != 0) {
       bciout << "DoPreRun: Unexpected input = \"" << line << "\"" << endl;
       return;
@@ -483,8 +483,10 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
   }
 
   if (mSocket.can_read()) {
-    std::string line = mSocket.readline();
-
+	char buffer[DEFAULT_LINE_BUFFER];
+    mSocket.read(buffer, DEFAULT_LINE_BUFFER);
+	
+	std::string line(buffer);
     if (line.compare("t_stop") != 0) {
       bciout << "DoFeedback: Unexpected input = \"" << line << "\"" << endl;
       return;
@@ -537,8 +539,10 @@ DynamicFeedbackTask::DoITI( const GenericSignal&, bool& doProgress ) {
   // Wait for the start signal
   doProgress = false;
   if (mSocket.can_read()) {
-    std::string line = mSocket.readline();
-
+	char buffer[DEFAULT_LINE_BUFFER];
+    mSocket.read(buffer, DEFAULT_LINE_BUFFER);
+	
+	std::string line(buffer);
     if (line.compare("t_stop") == 0) {
       bciout << "DoITI: Already waiting for t_start" << endl;
     }
