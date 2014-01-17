@@ -55,8 +55,7 @@ private:
 
   // Graphic objects
   ApplicationWindow& mrWindow;
-  DFBuildScene*     mpFeedbackScene;
-  int                mRenderingQuality;
+  DFBuildScene*      mpFeedbackScene;
   TextField*         mpMessage;
   TextField*         mpMessage2;
 

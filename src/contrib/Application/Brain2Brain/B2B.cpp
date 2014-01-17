@@ -7,9 +7,7 @@
 
 #include "B2B.h"
 #include "Localization.h"
-//#include "FileUtils.h"
 #include "DFBuildScene2D.h"
-//#include "FeedbackScene3D.h"
 
 #include "buffers.h"
 #include <stdio.h>
@@ -17,31 +15,20 @@
 #include <sstream>
 #include <algorithm>
 
-#ifndef __BORLANDC__
 #include <QImage>
-#endif // __BORLANDC__
 
+// State variable for initialization and other usage(s)
 #define CURSOR_POS_BITS "12"
-const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
 
+// Initial values of several state variables
 #define SCORE_BITS "16"
-const int ScoreBits = ::atoi( SCORE_BITS );
-
 #define TASK_DIFF_BITS "12"
-const int TDiffBits = ::atoi( TASK_DIFF_BITS );
+#define TARGET_XWIDTH_BITS "12"
+#define TARGET_YWIDTH_BITS "12"
+#define CURSOR_RADIUS_BITS "12"
+#define PRIMARY_AXIS_BITS "12"
 
-#define TARGET_XWIDTH_BITS "12"  
-const int TargetXWidthBits = ::atoi( TARGET_XWIDTH_BITS );
-
-#define TARGET_YWIDTH_BITS "12"  
-const int TargetYWidthBits = ::atoi( TARGET_YWIDTH_BITS );
-
-#define CURSOR_RADIUS_BITS "12"  
-const int CursorRadiusBits = ::atoi( CURSOR_RADIUS_BITS );
-
-#define PRIMARY_AXIS_BITS "12"  
-const int PrimaryAxisBits = ::atoi( PRIMARY_AXIS_BITS );
-
+// Used for reading from socket(s)
 #define DEFAULT_LINE_BUFFER 50
 
 RegisterFilter( DynamicFeedbackTask, 3 );
@@ -53,7 +40,6 @@ DynamicFeedbackTask::DynamicFeedbackTask()
   mRenderingQuality( 0 ),
   mpMessage( NULL ),
   mpMessage2( NULL ),
-  //mpBackground( NULL ),
   mCursorColorFront( RGBColor::White ),
   mCursorColorBack( RGBColor::White ),
   mRunCount( 0 ),
@@ -63,22 +49,12 @@ DynamicFeedbackTask::DynamicFeedbackTask()
   mCursorSpeedX( 1.0 ),
   mCursorSpeedY( 1.0 ),
   mCursorSpeedZ( 1.0 ),
-  mScore(0.0),//new score variable?
-  mScoreCount(0.0),//score counter
+  mScore(0.0),
+  mScoreCount(0.0),
   mTaskDiff(1.0),
   mrWindow( Window() ),
-  //mFeedbackModulationType ( 0 ),
-  //mTactorBoard( NULL ),
-  //mTactileFeedback( false ),
   mVisualFeedback( false),
-  //mIsTactileCatchTrial( false ),
   mIsVisualCatchTrial( false )
-  //mTactorVar( 0.0 ),
-  //mTactorVarDelta( 0.0 ),
-  //mMaxValue( 0 ),
-  //mMinValue( 0 ),
-  //mHeldGain( 0 ),
-  //mHeldFrequency( 0 )
 
 {
   BEGIN_PARAMETER_DEFINITIONS
@@ -92,11 +68,6 @@ DynamicFeedbackTask::DynamicFeedbackTask()
       "  50  25  50 8 8 8 "
       "  50  10  50 8 8 8 "
       "   0   0   4 8 8 8 "
-	  /*"  35  35  50 8 8 8 "
-      "  65  35  50 8 8 8 "
-      "  35  65  50 8 8 8 "
-      "  65  65  50 8 8 8 "
-      "   0   0   4 8 8 8 "*/
       " // target positions and widths in percentage coordinates",
     "Application:Targets int TargetColor= 0x0000FF % % % " //0x808080
        " // target color (color)",
@@ -140,41 +111,10 @@ DynamicFeedbackTask::DynamicFeedbackTask()
     "Application:Sequencing float MaxFeedbackDuration= 3s % 0 % "
       " // abort a trial after this amount of feedback time has expired",
 
-    "Application:3DEnvironment floatlist CameraPos= 3 50 50 150 % % "
-      " // camera position vector in percent coordinates of 3D area",
-    "Application:3DEnvironment floatlist CameraAim= 3 50 50 50 % % "
-      " // camera aim point in percent coordinates",
-    "Application:3DEnvironment int CameraProjection= 0 0 0 2 "
-      " // projection type: 0: flat, 1: wide angle perspective, 2: narrow angle perspective (enumeration)",
-    "Application:3DEnvironment floatlist LightSourcePos= 3 50 50 100 % % "
-      " // light source position in percent coordinates",
-    "Application:3DEnvironment int LightSourceColor= 0x808080 % % "
-      " // light source RGB color (color)",
-    "Application:3DEnvironment int WorkspaceBoundaryColor= 0xffffff 0 % % "
-      " // workspace boundary color (0xff000000 for invisible) (color)",
-    "Application:3DEnvironment string WorkspaceBoundaryTexture= images/grid.bmp % % % "
-      " // path of workspace boundary texture (inputfile)",
-
     "Application:Feedback int VisualFeedback= 1 1 0 1 "
       "// provide visual stimulus (boolean)",
-    //"Application:Feedback int TactileFeedback= 1 1 0 1 "
-    //  "// provide tactile stimulus (boolean)",
     "Application:Feedback intlist VisualCatchTrials= 4 1 3 4 2 % % % // "
 	  "// list of visual catch trials, leave empty for none",
- //   "Application:Feedback intlist TactileCatchTrials= 4 1 3 4 2 % % % // "
-	//  "// list of tactile catch trials, leave empty for none",
- //   "Application:Stimuli string TactorBoardComPort= % % % % // "
- //     "COM Port for target tactor control board",
-	//"Application:Stimuli int TactileFeedbackModulationType= 0 0 0 1 // "
-	//  "Tactile feedback modulation type 0 intensity, 1 frequency (enumeration)",
-	//"Application:Stimuli int MaxValue= 320 0 % % // "
-	//  "// max value for stimulus feedback",
-	//"Application:Stimuli int MinValue= 30 0 % % // "
-	//  "// min value for stimulus feedback",
-	//"Application:Stimuli int HeldGain= 90 0 % % // "
-	//  "// gain during frequency modulation",
-	//"Application:Stimuli int HeldFrequency= 150 0 % % // "
-	//  "// frequency during gain modulatin",
 
 	"Application:Connector string ConnectorAddress= % "
     "localhost:20320 % % // IP address/port to read from, e.g. localhost:20320",
@@ -192,7 +132,7 @@ DynamicFeedbackTask::DynamicFeedbackTask()
 	"PrimaryAxis " PRIMARY_AXIS_BITS " 0 0 0", //cursor radius
   END_STATE_DEFINITIONS
 
-  //Title Screen Messages
+  // Title screen message
   GUI::Rect rect = { 0.5f, 0.4f, 0.5f, 0.6f };
   mpMessage = new TextField( mrWindow );
   mpMessage->SetTextColor( RGBColor::Lime ) //Lime
@@ -201,18 +141,7 @@ DynamicFeedbackTask::DynamicFeedbackTask()
             .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
             .SetObjectRect( rect );
 
- 
-  /*
-  GUI::Rect rect2 = { 0.8f, 0.00f, 1.0f, 0.1f };
-  //rect2->SetColor(RGBColor::Lime);
-  TextField mpBackground = TextField( mrWindow );
-  mpBackground->setTextColor(RGBColor::Black);
-			.SetColor(RGBColor::Lime)
-			.SetObjectRect(rect2)
-			.SetAspectRatioMode(GUI::AspectRatioModes::AdjustNone);
-  */
-
-  //Score Message in top right corner
+  // Score message in top right corner
   GUI::Rect rect3 = { 0.89f, 0.01f, .99f, 0.09f };
   mpMessage2 = new TextField( mrWindow );
   mpMessage2->SetTextColor( RGBColor::Black )
@@ -228,59 +157,38 @@ DynamicFeedbackTask::~DynamicFeedbackTask() {
 
 void
 DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
-  const char* vectorParams[] = {
-    "CameraPos",
-    "CameraAim",
-    "LightSourcePos",
-    "CursorPos",
-  };
-  for( size_t i = 0; i < sizeof( vectorParams ) / sizeof( *vectorParams ); ++i )
-    if( Parameter( vectorParams[ i ] )->NumValues() != 3 )
-      bcierr << "Parameter \"" << vectorParams[ i ] << "\" must have 3 entries" << endl;
+  if( Parameter( "CursorPos" )->NumValues() != 3 ) {
+      bcierr << "Parameter \"CursorPos\" must have 3 entries" << endl;
+  }
 
-  Parameter( "WorkspaceBoundaryColor" );
   const char* colorParams[] = {
     "CursorColorBack",
     "CursorColorFront",
     "TargetColor",
-    "LightSourceColor",
-    // WorkspaceBoundaryColor may be NullColor to indicate invisibility
   };
-  for( size_t i = 0; i < sizeof( colorParams ) / sizeof( *colorParams ); ++i )
-    if( RGBColor( Parameter( colorParams[ i ] ) )  == RGBColor( RGBColor::NullColor ) )
+  for( size_t i = 0; i < sizeof( colorParams ) / sizeof( *colorParams ); ++i ) {
+    if( RGBColor( Parameter( colorParams[ i ] ) ) == RGBColor( RGBColor::NullColor ) ) {
       bcierr << "Invalid RGB value in " << colorParams[ i ] << endl;
+    }
+  }
 
-  bool showTextures = ( Parameter( "RenderingQuality" ) > 0 );
   const char* texParams[] = {
     "CursorTexture",
     "TargetTexture",
-    "WorkspaceBoundaryTexture",
   };
   for( size_t i = 0; i < sizeof( texParams ) / sizeof( *texParams ); ++i ) {
     string filename = Parameter( texParams[ i ] );
-    if( showTextures && !filename.empty() )
-    {
-//      filename = FileUtils::AbsolutePath( filename );
+    if( !filename.empty() ) {
       bool err = !ifstream( filename.c_str() ).is_open();
-      if( !err )
-      {
-#ifdef __BORLANDC__
-        AUX_RGBImageRec* pImg = buffers::loadWindowsBitmap( filename );
-        if( pImg != NULL )
-        {
-          ::free( pImg->data );
-          ::free( pImg );
-        }
-        err = ( pImg == NULL );
-#else // __BORLANDC__
+      if( !err ) {
         QImage img;
         err = !img.load( QString( filename.c_str() ) );
-#endif // __BORLANDC__
       }
-      if( err )
+      if( err ) {
         bcierr << "Invalid texture file \"" << filename << "\""
                << " given in parameter " << texParams[ i ]
                << endl;
+      }
     }
   }
 
@@ -348,11 +256,6 @@ DynamicFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ ) {
   mCursorColorBack = RGBColor( Parameter( "CursorColorBack" ) );
   mCursorAxis = static_cast<int>( Parameter( "cPrimaryAxis" )); //Primary control axis
 
-  int renderingQuality = Parameter( "RenderingQuality" );
-  if( renderingQuality != mRenderingQuality ) {
-    mrWindow.Hide();
-    mRenderingQuality = renderingQuality;
-  }
   delete mpFeedbackScene;
   mpFeedbackScene = new DFBuildScene2D( mrWindow );
   mpFeedbackScene->Initialize();
@@ -465,12 +368,10 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
 	z = max( r, min( 100 - r, z ) );
 	mpFeedbackScene->SetCursorPosition( x, y, z );
 
-	const float coordToState = ( ( 1 << cCursorPosBits ) - 1 ) / 100.0;
+	const float coordToState = ( ( 1 << CURSOR_POS_BITS ) - 1 ) / 100.0;
 	State( "CursorPosX" ) = static_cast<int>( x * coordToState );
 	State( "CursorPosY" ) = static_cast<int>( y * coordToState );
 	State( "CursorPosZ" ) = static_cast<int>( z * coordToState );
-
-  // AppLog.Screen << "Cursor distance: " << mpFeedbackScene->CursorTargetDistance( State( "TargetCode" ) - 1 ) << endl;
 
   if( mpFeedbackScene->TargetHit( State( "TargetCode" ) - 1 ) ) {
     State( "ResultCode" ) = State( "TargetCode" );
