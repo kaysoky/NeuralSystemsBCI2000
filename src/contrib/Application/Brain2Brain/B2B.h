@@ -51,8 +51,6 @@ private:
   void DisplayMessage( const std::string& );
   void DisplayScore( const std::string& );
 
- /* void IntToString( int number );*/
-
   // Graphic objects
   ApplicationWindow& mrWindow;
   DFBuildScene*      mpFeedbackScene;
@@ -64,16 +62,15 @@ private:
 
   int mRunCount,
       mTrialCount,
-		  mTaskDiff, //task difficulty
-		  mCursorAxis, //cursor control axis
+      mCursorAxis, //cursor control axis
       mCurFeedbackDuration,
       mMaxFeedbackDuration;
 
   float mCursorSpeedX,
         mCursorSpeedY,
         mCursorSpeedZ,
-		    mScore, //Score
-		    mScoreCount; //Score counter
+        mScore, //Score
+        mScoreCount; //Score counter
   
  
   std::vector<int> mVisualCatchTrials;
