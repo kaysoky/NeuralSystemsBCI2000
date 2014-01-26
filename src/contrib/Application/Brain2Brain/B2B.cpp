@@ -14,6 +14,8 @@
 #include <math.h>
 #include <sstream>
 #include <algorithm>
+#include <csignal>
+#include <cerrno>
 
 #include <QImage>
 
@@ -38,8 +40,7 @@ DynamicFeedbackTask::DynamicFeedbackTask()
 : mpFeedbackScene( NULL ),
   mpMessage( NULL ),
   mpMessage2( NULL ),
-  mCursorColorFront( RGBColor::White ),
-  mCursorColorBack( RGBColor::White ),
+  mCursorColor( RGBColor::White ),
   mRunCount( 0 ),
   mTrialCount( 0 ),
   mCurFeedbackDuration( 0 ),
@@ -62,33 +63,15 @@ DynamicFeedbackTask::DynamicFeedbackTask()
       " // Number of targets and their positions/dimensions in percentage coordinates",
     "Application:Targets int TargetColor= 0x0000FF % % % " // Blue
        " // target color (color)",
-    "Application:Targets int TestAllTargets= 0 0 0 1 "
-      " // test all targets for cursor collision? "
-          "0: test only the visible current target, "
-          "1: test all targets "
-          "(enumeration)",
 	
     "Application:Cursor float CursorWidth= 10 10 0.0 % "
       " // feedback cursor width in percent of screen width",
-	"Application:Cursor int KeyboardControl= 1 1 0 1 "
-      "// use Keyboard Control (boolean)",
-	"Application:Cursor int cPrimaryAxis= 1"
-	 " // set cursor movement axis: "
-		"1 X: Keyboard (L/R); Y: Control Signal,"
-		"    2 X: Control Signal; Y: Keyboard (U/D)",
-	"Application:Cursor int CursorControlMode= 0 0 0 1 "
-      " // Select cursor control mode "
-          "0: centering gravity mode, "
-          "1: velocity dependent mode "
-          "(enumeration)",
 	"Application:Cursor float CursorSpeedMult= 3"
        " // Cursor speed from to 1(slowest) to 10(fastest) ",
 	"Application:Cursor float CursorGravity= 1"
        " // Centering cursor gravity from to 0 (weakest) to 10 (strongest) ",
-    "Application:Cursor int CursorColorFront= 0xff0000 % % % "
-       " // cursor color when it is at the front of the workspace (color)",
-    "Application:Cursor int CursorColorBack= 0xFF0000 % % % " //0xffff00
-       " // cursor color when it is in the back of the workspace (color)",
+    "Application:Cursor int CursorColor= 0xff0000 % % % " // Red
+       " // Cursor color (color)",
     "Application:Cursor floatlist CursorPos= 3 50 50 50 % % "
       " // cursor starting position",
 
@@ -111,7 +94,6 @@ DynamicFeedbackTask::DynamicFeedbackTask()
 	"TargetXWidth " TARGET_XWIDTH_BITS " 0 0 0", //target width in x
 	"TargetYWidth " TARGET_YWIDTH_BITS " 0 0 0", //target width in y
 	"CursorRadius " CURSOR_RADIUS_BITS " 0 0 0", //cursor radius
-	"PrimaryAxis " PRIMARY_AXIS_BITS " 0 0 0", //cursor radius
   END_STATE_DEFINITIONS
 
   // Title screen message
@@ -144,8 +126,7 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
   }
 
   const char* colorParams[] = {
-    "CursorColorBack",
-    "CursorColorFront",
+    "CursorColor",
     "TargetColor",
   };
   for( size_t i = 0; i < sizeof( colorParams ) / sizeof( *colorParams ); ++i ) {
@@ -153,9 +134,6 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
       bcierr << "Invalid RGB value in " << colorParams[ i ] << endl;
     }
   }
-
-  if( (Parameter( "cPrimaryAxis" ) < 1) || (Parameter( "cPrimaryAxis" ) > 2))
-    bcierr << "Axis must be either 1 or 2" << endl;
 
   if( Parameter( "FeedbackDuration" ).InSampleBlocks() <= 0 )
     bcierr << "FeedbackDuration must be greater 0" << endl;
@@ -166,11 +144,6 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
   if( (Parameter( "CursorGravity" ) > 10) ||  (Parameter( "CursorGravity" ) < 0))
     bcierr << "Cursor gravity must be between 1 and 10" << endl;
 
-  // Check state KeyUp exists
-  if( Parameter( "KeyboardControl" ) == 1) {
-    State("KeyUp");
-    State("KeyDown");
-  }
   Parameter( "SampleBlockSize" );
 
   if( Parameter( "VisualFeedback" ) == 1) {
@@ -200,14 +173,12 @@ DynamicFeedbackTask::OnInitialize( const SignalProperties& Input ) {
   
   mMaxFeedbackDuration = static_cast<int>( Parameter( "MaxFeedbackDuration" ).InSampleBlocks() );
   
-  mCursorColorFront = RGBColor( Parameter( "CursorColorFront" ) );
-  mCursorColorBack = RGBColor( Parameter( "CursorColorBack" ) );
-  mCursorAxis = static_cast<int>( Parameter( "cPrimaryAxis" )); //Primary control axis
+  mCursorColor = RGBColor( Parameter( "CursorColor" ) );
 
   delete mpFeedbackScene;
   mpFeedbackScene = new DFBuildScene2D( mrWindow );
   mpFeedbackScene->Initialize();
-  mpFeedbackScene->SetCursorColor( mCursorColorFront );
+  mpFeedbackScene->SetCursorColor( mCursorColor );
 
   mrWindow.Show();
   DisplayMessage( "Timeout" );
@@ -230,18 +201,32 @@ DynamicFeedbackTask::OnStartRun() {
   mScore = 0;
   State("GameScore") = mScore;
   State("CursorRadius") = Parameter( "CursorWidth" );
-  State("PrimaryAxis") = mCursorAxis;
 
   AppLog << "Run #" << mRunCount << " started" << endl;
   DisplayMessage( ">> Get Ready! <<" );
-
-  mSocket.open( mConnectorAddress );
 }
 
 void
 DynamicFeedbackTask::DoPreRun( const GenericSignal&, bool& doProgress ) {
-  // Wait for the start signal
   doProgress = false;
+
+  // If the socket has not been established, try to connect
+  if ( !mSocket.connected() ) {
+    // Interrupt the open() call after 1 second
+    // This is to give the operator time to start up the Countdown game
+    signal( SIGALRM, SIG_DFL );
+    alarm( 1 );
+    mSocket.open( mConnectorAddress );
+    alarm( 0 );
+    
+    // Did the socket connect or get interrupted?
+    if ( errno == EINTR ) {
+      bciout << "Waiting for Countdown game..." << endl;
+      return;
+    }
+  }
+  
+  // Wait for the start signal
   if (mSocket.can_read()) {
 	char buffer[DEFAULT_LINE_BUFFER];
     mSocket.read(buffer, DEFAULT_LINE_BUFFER);
@@ -409,10 +394,6 @@ DynamicFeedbackTask::OnStopRun() {
 void
 DynamicFeedbackTask::MoveCursorTo( float inX, float inY, float inZ )
 {
-  // Adjust the cursor's color according to its z position:
-  float z = inZ / 100;
-  RGBColor color = z * mCursorColorFront + ( 1 - z ) * mCursorColorBack;
-  mpFeedbackScene->SetCursorColor( color );
   mpFeedbackScene->SetCursorPosition( inX, inY, inZ );
 }
 

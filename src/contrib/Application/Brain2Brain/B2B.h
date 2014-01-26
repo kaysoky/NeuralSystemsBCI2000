@@ -57,12 +57,10 @@ private:
   TextField*         mpMessage;
   TextField*         mpMessage2;
 
-  RGBColor mCursorColorFront,
-           mCursorColorBack;
+  RGBColor mCursorColor;
 
   int mRunCount,
       mTrialCount,
-      mCursorAxis, //cursor control axis
       mCurFeedbackDuration,
       mMaxFeedbackDuration;
 
