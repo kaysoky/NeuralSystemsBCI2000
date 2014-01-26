@@ -14,13 +14,12 @@
 #include <math.h>
 #include <sstream>
 #include <algorithm>
-#include <csignal>
-#include <cerrno>
 
 #include <QImage>
 
 // State variable for initialization and other usage(s)
 #define CURSOR_POS_BITS "12"
+const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
 
 // Initial values of several state variables
 #define SCORE_BITS "16"
@@ -58,9 +57,9 @@ DynamicFeedbackTask::DynamicFeedbackTask()
 	  "Application:Targets matrix Targets= "
       " 2 " // rows
       " [pos%20x pos%20y width%20x width%20y] " // columns
-      " 0  0 100 10 "
-      " 0 90 100 10 "
-      " // Number of targets and their positions/dimensions in percentage coordinates",
+      " 50   0 50 50 "
+      " 50 100 50 50 "
+      " // Number of targets and their position (center) and dimensions in percentage coordinates",
     "Application:Targets int TargetColor= 0x0000FF % % % " // Blue
        " // target color (color)",
 	
@@ -78,6 +77,8 @@ DynamicFeedbackTask::DynamicFeedbackTask()
     "Application:Sequencing float MaxFeedbackDuration= 3s % 0 % "
       " // abort a trial after this amount of feedback time has expired",
 
+    "Application:3DEnvironment int WorkspaceBoundaryColor= 0xffffff 0 % % "
+      " // workspace boundary color (0xff000000 for invisible) (color)",
     "Application:Feedback int VisualFeedback= 1 1 0 1 "
       "// provide visual stimulus (boolean)",
     "Application:Feedback intlist VisualCatchTrials= 4 1 3 4 2 % % % // "
@@ -121,6 +122,10 @@ DynamicFeedbackTask::~DynamicFeedbackTask() {
 
 void
 DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
+  if( Parameter( "Targets" )->NumValues() <= 0) {
+	  bcierr << "At least one target must be specified" << endl;
+  }
+
   if( Parameter( "CursorPos" )->NumValues() != 3 ) {
       bcierr << "Parameter \"CursorPos\" must have 3 entries" << endl;
   }
@@ -128,6 +133,7 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
   const char* colorParams[] = {
     "CursorColor",
     "TargetColor",
+	"WorkspaceBoundaryColor"
   };
   for( size_t i = 0; i < sizeof( colorParams ) / sizeof( *colorParams ); ++i ) {
     if( RGBColor( Parameter( colorParams[ i ] ) ) == RGBColor( RGBColor::NullColor ) ) {
@@ -204,6 +210,8 @@ DynamicFeedbackTask::OnStartRun() {
 
   AppLog << "Run #" << mRunCount << " started" << endl;
   DisplayMessage( ">> Get Ready! <<" );
+
+  mSocket.set_tcpblocking(false);
 }
 
 void
@@ -211,27 +219,18 @@ DynamicFeedbackTask::DoPreRun( const GenericSignal&, bool& doProgress ) {
   doProgress = false;
 
   // If the socket has not been established, try to connect
-  if ( !mSocket.connected() ) {
-    // Interrupt the open() call after 1 second
-    // This is to give the operator time to start up the Countdown game
-    signal( SIGALRM, SIG_DFL );
-    alarm( 1 );
-    mSocket.open( mConnectorAddress );
-    alarm( 0 );
-    
-    // Did the socket connect or get interrupted?
-    if ( errno == EINTR ) {
-      bciout << "Waiting for Countdown game..." << endl;
-      return;
-    }
+  if ( !mSocket.select() ) {
+      mSocket.open(mConnectorAddress);
+	  bciout << "DoPreRun: Waiting on Countdown game" << endl;
   }
   
   // Wait for the start signal
   if (mSocket.can_read()) {
 	char buffer[DEFAULT_LINE_BUFFER];
-    mSocket.read(buffer, DEFAULT_LINE_BUFFER);
+    size_t res = mSocket.read(buffer, DEFAULT_LINE_BUFFER);
 	
 	std::string line(buffer);
+	line = line.substr(0, res);
     if (line.compare("t_start") != 0) {
       bciout << "DoPreRun: Unexpected input = \"" << line << "\"" << endl;
       return;
@@ -299,7 +298,7 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
 	z = max( r, min( 100 - r, z ) );
 	mpFeedbackScene->SetCursorPosition( x, y, z );
 
-	const float coordToState = ( ( 1 << CURSOR_POS_BITS ) - 1 ) / 100.0;
+	const float coordToState = ( ( 1 << cCursorPosBits ) - 1 ) / 100.0;
 	State( "CursorPosX" ) = static_cast<int>( x * coordToState );
 	State( "CursorPosY" ) = static_cast<int>( y * coordToState );
 
@@ -315,9 +314,10 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
 
   if (mSocket.can_read()) {
 	char buffer[DEFAULT_LINE_BUFFER];
-    mSocket.read(buffer, DEFAULT_LINE_BUFFER);
+    size_t res = mSocket.read(buffer, DEFAULT_LINE_BUFFER);
 	
 	std::string line(buffer);
+	line = line.substr(0, res);
     if (line.compare("t_stop") != 0) {
       bciout << "DoFeedback: Unexpected input = \"" << line << "\"" << endl;
       return;
@@ -352,14 +352,18 @@ DynamicFeedbackTask::OnFeedbackEnd() {
 }
 
 void
+DynamicFeedbackTask::OnTrialEnd(void) { };
+
+void
 DynamicFeedbackTask::DoITI( const GenericSignal&, bool& doProgress ) {
   // Wait for the start signal
   doProgress = false;
   if (mSocket.can_read()) {
 	char buffer[DEFAULT_LINE_BUFFER];
-    mSocket.read(buffer, DEFAULT_LINE_BUFFER);
+    size_t res = mSocket.read(buffer, DEFAULT_LINE_BUFFER);
 	
 	std::string line(buffer);
+	line = line.substr(0, res);
     if (line.compare("t_stop") == 0) {
       bciout << "DoITI: Already waiting for t_start" << endl;
     }

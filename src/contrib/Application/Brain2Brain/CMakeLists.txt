@@ -4,7 +4,7 @@
 ## Description: Build information for DynamicFeedbackTask in Qt
 
 # Set the executable name
-SET( EXECUTABLE_NAME B2B )
+SET( EXECUTABLE_NAME Brain2Brain )
 
 # Set the project specific sources
 SET( SRC_PROJECT

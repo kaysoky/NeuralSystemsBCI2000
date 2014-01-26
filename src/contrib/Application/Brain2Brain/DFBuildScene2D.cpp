@@ -67,17 +67,16 @@ DFBuildScene2D::Initialize()
   mpCursor->SetObjectRect( cursorRect );
   mCursorZ = 0;
 
-  enum { x, y, z, dx, dy, dz };
+  enum { x, y, dx, dy };
   ParamRef CursorPos = Parameter( "CursorPos" );
-  SetCursorPosition( CursorPos( x ), CursorPos( y ), CursorPos( z ) );
+  SetCursorPosition( CursorPos( x ), CursorPos( y ), 0 );
   mpCursor->Hide();
 
   ParamRef Targets = Parameter( "Targets" );
-  ParamRef taskDiff = Parameter( "TaskDifficulty" );
-  for( int i = 0; i < Parameter( "NumberTargets" ); ++i )
+  for( int i = 0; i < Parameter( "Targets" )->NumRows(); ++i )
   {
-    EllipticShape* pTarget = new GradientEllipticShape( mDisplay ); //used to beRectangular
-    GUI::Point targetDiag = { taskDiff*Targets( i, dx ), taskDiff*Targets( i, dy ) };
+    EllipticShape* pTarget = new GradientEllipticShape( mDisplay );
+    GUI::Point targetDiag = { Targets( i, dx ), Targets( i, dy ) };
     SceneToObjectCoords( targetDiag, vector );
     GUI::Rect targetRect = { 0, 0, fabs( targetDiag.x ), fabs( targetDiag.y ) };
     pTarget->SetObjectRect( targetRect );

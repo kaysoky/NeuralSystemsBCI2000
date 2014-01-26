@@ -45,7 +45,7 @@ GradientEllipticShape::OnPaint( const GUI::DrawContext& inDC )
   {
     QColor fillColor( this->FillColor().R(), this->FillColor().G(), this->FillColor().B() );
 	fillGradient.setColorAt(0, fillColor);
-	fillGradient.setColorAt(1, Qt::black); // TODO, this should be set to the background color
+	fillGradient.setColorAt(1, Qt::white); // TODO, this should be set to the background color
   }
 
   QBrush fillBrush(fillGradient);
