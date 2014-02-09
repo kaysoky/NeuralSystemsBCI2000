@@ -40,11 +40,11 @@ DFBuildScene2D::Initialize() {
         mpBoundary = new RectangularShape(mDisplay);
         mpBoundary->SetColor(boundaryColor)
                    .SetFillColor(RGBColor::NullColor);
-        GUI::Point boundaryDiag(100, 100);
+		GUI::Point boundaryDiag = {100, 100};
         SceneToObjectCoords(boundaryDiag, vector);
-        GUI::Rect boundaryRect(0, 0, fabs(boundaryDiag.x), fabs(boundaryDiag.y));
+		GUI::Rect boundaryRect = {0, 0, fabs(boundaryDiag.x), fabs(boundaryDiag.y)};
         mpBoundary->SetObjectRect(boundaryRect);
-        GUI::Point boundaryCenter(50, 50);
+		GUI::Point boundaryCenter = {50, 50};
         SceneToObjectCoords(boundaryCenter, point);
         mpBoundary->SetCenter(boundaryCenter);
     }
@@ -52,9 +52,9 @@ DFBuildScene2D::Initialize() {
     // Draw the cursor
     mpCursor = new EllipticShape(mDisplay, 1);
     float cursorWidth = Parameter("CursorWidth");
-    GUI::Point cursorDiag(cursorWidth, cursorWidth};
+	GUI::Point cursorDiag = {cursorWidth, cursorWidth};
     SceneToObjectCoords(cursorDiag, vector);
-    GUI::Rect cursorRect(0, 0, fabs(cursorDiag.x), fabs(cursorDiag.y));
+	GUI::Rect cursorRect = {0, 0, fabs(cursorDiag.x), fabs(cursorDiag.y)};
     mpCursor->SetObjectRect(cursorRect);
     mCursorZ = 0;
 

@@ -8,7 +8,7 @@
 #include "ApplicationWindow.h"
 
 #include "DFBuildScene.h"
-#include "SockStream.h"
+#include "mongoose.h"
 
 class DynamicFeedbackTask : public FeedbackTask {
 public:
@@ -70,9 +70,8 @@ private:
          mIsVisualCatchTrial;
 
     TrialStatistics mTrialStatistics;
-
-    client_tcpsocket mSocket;
-    std::string mConnectorAddress;
+	
+	struct mg_server *server;
 };
 
 #endif // CURSOR_FEEDBACK_TASK_H

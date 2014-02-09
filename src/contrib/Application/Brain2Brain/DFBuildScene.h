@@ -6,25 +6,26 @@
 #include <string>
 
 class DFBuildScene : protected Environment {
+typedef DFBuildScene self;
 public:
     DFBuildScene() {}
     virtual ~DFBuildScene() {}
 
-    virtual self& Initialize();
+    virtual self& Initialize() = 0;
 
-    virtual float CursorRadius() const;
-    virtual float CursorXPosition() const;
-    virtual float CursorYPosition() const;
-    virtual float CursorZPosition() const;
-    virtual DFBuildScene& SetCursorPosition(float x, float y, float z);
-    virtual DFBuildScene& SetCursorVisible(bool);
-    virtual DFBuildScene& SetCursorColor(RGBColor);
+    virtual float CursorRadius() const = 0;
+    virtual float CursorXPosition() const = 0;
+    virtual float CursorYPosition() const = 0;
+    virtual float CursorZPosition() const = 0;
+    virtual self& SetCursorPosition(float x, float y, float z) = 0;
+    virtual self& SetCursorVisible(bool) = 0;
+    virtual self& SetCursorColor(RGBColor) = 0;
 
-    virtual int NumTargets() const;
-    virtual bool TargetHit(int) const;
-    virtual float CursorTargetDistance(int) const;
-    virtual DFBuildScene& SetTargetVisible(bool, int);
-    virtual DFBuildScene& SetTargetColor(RGBColor, int);
+    virtual int NumTargets() const = 0;
+    virtual bool TargetHit(int) const = 0;
+    virtual float CursorTargetDistance(int) const = 0;
+    virtual self& SetTargetVisible(bool, int) = 0;
+    virtual self& SetTargetColor(RGBColor, int) = 0;
 };
 
 #endif // DFBUILD_SCENE_H

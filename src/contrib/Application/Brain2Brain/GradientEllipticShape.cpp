@@ -36,7 +36,7 @@ GradientEllipticShape::OnPaint(const GUI::DrawContext& inDC) {
     QRadialGradient fillGradient(cx, cy, r, cx, cy);
 
     if (this->FillColor() != RGBColor(RGBColor::NullColor)) {
-        fillGradient.setColorAt(0, this->FillColor());
+        fillGradient.setColorAt(0, QColor(this->FillColor()));
         fillGradient.setColorAt(1, Qt::black);
     }
 

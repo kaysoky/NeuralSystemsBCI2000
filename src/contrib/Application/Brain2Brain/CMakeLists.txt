@@ -11,12 +11,14 @@ SET( SRC_PROJECT
   B2B.cpp
   DFBuildScene2D.cpp
   GradientEllipticShape.cpp 
+  mongoose.c
 )
 SET( HDR_PROJECT
   B2B.h
   DFBuildScene2D.h
   DFBuildScene.h
   GradientEllipticShape.h
+  mongoose.h
 )
 
 # Define extra include directories

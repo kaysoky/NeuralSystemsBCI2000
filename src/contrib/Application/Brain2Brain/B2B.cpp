@@ -79,8 +79,8 @@ DynamicFeedbackTask::DynamicFeedbackTask()
     "Application:Feedback intlist VisualCatchTrials= 4 1 3 4 2 % % % // "
         "// list of visual catch trials, leave empty for none",
 
-    "Application:Connector string ConnectorAddress= % "
-    "localhost:20320 % % // IP address/port to read from, e.g. localhost:20320",
+    "Application:Connector string ListeningPort= % "
+    "20320 % % // Port for the server to listen on",
     END_PARAMETER_DEFINITIONS
 
     BEGIN_STATE_DEFINITIONS
@@ -149,6 +149,7 @@ DynamicFeedbackTask::OnPreflight(const SignalProperties& Input) const {
     }
 
     Parameter("SampleBlockSize");
+    Parameter("ListeningPort");
 
     if (Parameter("VisualFeedback") == 1) {
         ParamRef visualCatch = Parameter("VisualCatchTrials");
@@ -161,13 +162,22 @@ DynamicFeedbackTask::OnPreflight(const SignalProperties& Input) const {
             }
         }
     }
-
-    string connectorAddress = string(Parameter("ConnectorAddress"));
 }
 
 void
 DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
-    mConnectorAddress = string(Parameter("ConnectorAddress"));
+	// Determine where this application is being executed
+	char buffer[MAX_PATH];
+    GetModuleFileName(NULL, buffer, MAX_PATH);
+    string::size_type pos = string(buffer).find_last_of( "\\/" );
+	string gameLocation = string(buffer).substr(0, pos);
+	gameLocation += "/CountdownGame/";
+
+    // Start the server
+	string listeningPort = string(Parameter("ListeningPort"));
+	server = mg_create_server(NULL);
+	mg_set_option(server, "document_root", gameLocation.c_str());
+    mg_set_option(server, "listening_port", listeningPort.c_str());
 
     // Cursor speed in pixels per signal block duration:
     float feedbackDuration = Parameter("FeedbackDuration").InSampleBlocks();
@@ -179,7 +189,7 @@ DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
 
     mMaxFeedbackDuration = static_cast<int>(Parameter("MaxFeedbackDuration").InSampleBlocks());
 
-    mCursorColor = RGBColor( Parameter("CursorColor"));
+    mCursorColor = RGBColor(Parameter("CursorColor"));
 
     delete mpFeedbackScene;
     mpFeedbackScene = new DFBuildScene2D(mrWindow);
@@ -212,32 +222,15 @@ DynamicFeedbackTask::OnStartRun() {
     AppLog << "Run #" << mRunCount << " started" << endl;
     DisplayMessage(">> Get Ready! <<");
 
-    mSocket.set_tcpblocking(false);
+	bciout << "Server listening on port " << mg_get_option(server, "listening_port");
 }
 
 void
 DynamicFeedbackTask::DoPreRun(const GenericSignal&, bool& doProgress) {
     doProgress = false;
 
-    // If the socket has not been established, try to connect
-    if (!mSocket.select()) {
-        mSocket.open(mConnectorAddress);
-        bciout << "DoPreRun: Waiting on Countdown game" << endl;
-    }
-
-    // Wait for the start signal
-    if (mSocket.can_read()) {
-        char buffer[DEFAULT_LINE_BUFFER];
-        size_t res = mSocket.read(buffer, DEFAULT_LINE_BUFFER);
-
-        std::string line(buffer);
-        line = line.substr(0, res);
-        if (line.compare("t_start") != 0) {
-            bciout << "DoPreRun: Unexpected input = \"" << line << "\"" << endl;
-            return;
-        }
-        doProgress = true;
-    }
+    // Wait (non-blocking) for the client to connect and get ready
+    mg_poll_server(server, 1000);
 }
 
 void
@@ -309,21 +302,7 @@ DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProg
         mpFeedbackScene->SetCursorColor(RGBColor::White);
         mpFeedbackScene->SetTargetColor(RGBColor::Red, State("ResultCode") - 1);
 
-        // Send message of hit out to B2B Game
-        mSocket.write("1", 1);
-        doProgress = true;
-    }
-
-    if (mSocket.can_read()) {
-        char buffer[DEFAULT_LINE_BUFFER];
-        size_t res = mSocket.read(buffer, DEFAULT_LINE_BUFFER);
-
-        std::string line(buffer);
-        line = line.substr(0, res);
-        if (line.compare("t_stop") != 0) {
-            bciout << "DoFeedback: Unexpected input = \"" << line << "\"" << endl;
-            return;
-        }
+        //TODO: Send message of hit out to B2B Game
         doProgress = true;
     }
 }
@@ -360,22 +339,6 @@ void
 DynamicFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
-    if (mSocket.can_read()) {
-        char buffer[DEFAULT_LINE_BUFFER];
-        size_t res = mSocket.read(buffer, DEFAULT_LINE_BUFFER);
-
-        std::string line(buffer);
-        line = line.substr(0, res);
-        if (line.compare("t_stop") == 0) {
-            bciout << "DoITI: Already waiting for t_start" << endl;
-        }
-
-        if (line.compare("t_start") != 0) {
-            bciout << "DoITI: Unexpected input = \"" << line << "\"" << endl;
-            return;
-        }
-        doProgress = true;
-    }
 }
 
 void
@@ -392,7 +355,6 @@ DynamicFeedbackTask::OnStopRun() {
            << "====================="  << endl;
 
     DisplayMessage("Timeout");
-    mSocket.close();
 }
 
 

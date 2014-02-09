@@ -6,6 +6,7 @@
 #include "DisplayWindow.h"
 
 class DFBuildScene2D : public DFBuildScene {
+typedef DFBuildScene2D self;
 public:
     DFBuildScene2D(GUI::DisplayWindow&);
     virtual ~DFBuildScene2D();
@@ -16,15 +17,15 @@ public:
     virtual float CursorXPosition() const;
     virtual float CursorYPosition() const;
     virtual float CursorZPosition() const;
-    virtual DFBuildScene2D& SetCursorPosition(float x, float y, float z);
-    virtual DFBuildScene2D& SetCursorVisible(bool);
-    virtual DFBuildScene2D& SetCursorColor(RGBColor);
+    virtual self& SetCursorPosition(float x, float y, float z);
+    virtual self& SetCursorVisible(bool);
+    virtual self& SetCursorColor(RGBColor);
 
     virtual int NumTargets() const;
     virtual bool TargetHit(int) const;
     virtual float CursorTargetDistance(int) const;
-    virtual DFBuildScene2D& SetTargetVisible(bool, int);
-    virtual DFBuildScene2D& SetTargetColor(RGBColor, int);
+    virtual self& SetTargetVisible(bool, int);
+    virtual self& SetTargetColor(RGBColor, int);
 
 private:
     void ClearObjects();
