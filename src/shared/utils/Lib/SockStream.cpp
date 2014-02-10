@@ -419,22 +419,6 @@ streamsock::select( streamsock** in_readers, size_t in_nreaders,
   return result > 0;
 }
 
-bool 
-tcpsocket::select()
-{
-  ::fd_set socket_set;
-  timeval timer;
-  socket_set.fd_array[0] = m_handle;
-  socket_set.fd_count = 1;
-  int ret = ::select(0, &socket_set, &socket_set, &socket_set, &timer);
-  
-  if (!ret || ret == SOCKET_ERROR) {
-    return false;
-  }
-
-  return true;
-}
-
 void
 streamsock::sleep( int in_timeout )
 {
@@ -582,9 +566,6 @@ tcpsocket::set_socket_options()
       m_handle, IPPROTO_TCP, TCP_NODELAY,
       reinterpret_cast<const char*>( &val ), sizeof( val ) )
      );
-	
-	unsigned long iMode = 1 ? m_blocking : 0;
-    ioctlsocket(m_handle, FIONBIO, &iMode);
   }
 }
 

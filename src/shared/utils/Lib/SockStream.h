@@ -157,24 +157,12 @@ class tcpsocket : public streamsock
       { m_tcpnodelay = in_val; set_socket_options(); }
     bool tcpnodelay() const
       { return m_tcpnodelay; }
-
-	// Should the socket block on open(...)
-    void set_tcpblocking( bool in_val )
-      { m_blocking = in_val; set_socket_options(); }
-    bool tcpblocking() const
-      { return m_blocking; }
-
-	// Returns true if the socket has connected
-	bool select();
-
     void set_handle( SOCKET );
   protected:
     virtual void set_socket_options();
   private:
     virtual void do_open() {}
     bool m_tcpnodelay;
-
-	bool m_blocking;
 };
 
 class server_tcpsocket : public tcpsocket
