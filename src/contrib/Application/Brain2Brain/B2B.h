@@ -8,7 +8,10 @@
 #include "ApplicationWindow.h"
 
 #include "DFBuildScene.h"
+
+// For interfacing with the Countdown Game
 #include "mongoose.h"
+#include "OSMutex.h"
 
 class DynamicFeedbackTask : public FeedbackTask {
 public:
@@ -71,7 +74,20 @@ private:
 
     TrialStatistics mTrialStatistics;
 	
+    // Objects and functions associated with the Countdown game
+    void *CountdownServerThread(void *);
+    int CountdownServerHandler(struct mg_connection *);
+    
+    // Any function that touches the following objects must first acquire this lock
+    // Note: Reading does not require locking
+    OSMutex server_lock;
 	struct mg_server *server;
+    enum TrialState {
+        START_TRIAL, 
+        STOP_TRIAL, 
+        CONTINUE
+    };
+    TrialState lastClientPost;
 };
 
 #endif // CURSOR_FEEDBACK_TASK_H

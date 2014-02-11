@@ -109,6 +109,12 @@ DynamicFeedbackTask::DynamicFeedbackTask()
                .SetColor(RGBColor::White)
                .SetAspectRatioMode(GUI::AspectRatioModes::AdjustNone)
                .SetObjectRect(rect3);
+    
+    // Synchronization for the countdown server
+    server_lock = new OSMutex();
+    
+    // A new server instance is created every time the configuration is set
+    server = NULL;
 }
 
 DynamicFeedbackTask::~DynamicFeedbackTask() {
@@ -173,11 +179,22 @@ DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
 	string gameLocation = string(buffer).substr(0, pos);
 	gameLocation += "/CountdownGame/";
 
-    // Start the server
+    // Initialize the server
+    server_lock.Lock();
+    if (server != NULL) {
+        mg_destroy_server(server);
+    }
 	string listeningPort = string(Parameter("ListeningPort"));
 	server = mg_create_server(NULL);
 	mg_set_option(server, "document_root", gameLocation.c_str());
     mg_set_option(server, "listening_port", listeningPort.c_str());
+    mg_set_request_handler(server, CountdownServerHandler);
+
+    // Start the server on a separate thread
+    lastClientPost = CONTINUE;
+    mg_start_thread(countdown_server_thread, server);
+	bciout << "Server listening on port " << mg_get_option(server, "listening_port");
+    server_lock.Unlock();
 
     // Cursor speed in pixels per signal block duration:
     float feedbackDuration = Parameter("FeedbackDuration").InSampleBlocks();
@@ -221,16 +238,19 @@ DynamicFeedbackTask::OnStartRun() {
 
     AppLog << "Run #" << mRunCount << " started" << endl;
     DisplayMessage(">> Get Ready! <<");
-
-	bciout << "Server listening on port " << mg_get_option(server, "listening_port");
 }
 
 void
 DynamicFeedbackTask::DoPreRun(const GenericSignal&, bool& doProgress) {
+    // Wait for the start signal
     doProgress = false;
-
-    // Wait (non-blocking) for the client to connect and get ready
-    mg_poll_server(server, 1000);
+    
+    server_lock.Lock();
+    if (lastClientPost == START_TRIAL) {
+        doProgress = true;
+        lastClientPost = CONTINUE;
+    }
+    server_lock.Unlock();
 }
 
 void
@@ -305,6 +325,17 @@ DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProg
         //TODO: Send message of hit out to B2B Game
         doProgress = true;
     }
+    
+    // Check for the stop signal
+    // Note: This seemingly redundant double-check is necessary to prevent race conditions
+    if (lastClientPost == STOP_TRIAL) {
+        server_lock.Lock();
+        if (lastClientPost == STOP_TRIAL) {
+            doProgress = true;
+            lastClientPost = CONTINUE;
+        }
+        server_lock.Unlock();
+    }
 }
 
 void
@@ -325,7 +356,7 @@ DynamicFeedbackTask::OnFeedbackEnd() {
         }
     }
 
-    //Persistent Score Display
+    // Persistent Score Display
     stringstream ss (stringstream::in | stringstream::out);
     int intScore = mScore >= 0 ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
     ss << intScore;
@@ -339,6 +370,13 @@ void
 DynamicFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
+    
+    server_lock.Lock();
+    if (lastClientPost == START_TRIAL) {
+        doProgress = true;
+        lastClientPost = CONTINUE;
+    }
+    server_lock.Unlock();
 }
 
 void
@@ -381,4 +419,40 @@ DynamicFeedbackTask::DisplayScore(const string&inMessage) {
         mpMessage2->SetText("+" + inMessage + " ");
         mpMessage2->Show();
     }
+}
+
+void 
+*DynamicFeedbackTask::CountdownServerThread(void *arg) {
+    // Keep polling the server
+    // Note: the server can be swapped out at any time (hence the locking)
+    while (true) {
+        server_lock.Lock();
+        mg_poll_server(server, 1000);
+        server_lock.Unlock();
+    }
+
+    return NULL;
+}
+
+int 
+DynamicFeedbackTask::CountdownServerHandler(struct mg_connection *conn) {
+    string method(conn->request_method);
+    string uri(conn->uri);
+    
+    if (method.compare("POST") == 0) {
+        if (uri.compare("/trial/start") == 0) {
+            
+            return MG_REQUEST_PROCESSED;
+        } else if (uri.compare("/trial/stop") == 0) {
+            
+            return MG_REQUEST_PROCESSED;
+        }
+    } else if (method.compare("GET") == 0) {
+        if (uri.compare("/trial/hit") == 0) {
+            
+            return MG_REQUEST_PROCESSED;
+        } 
+    }
+    
+    return MG_REQUEST_NOT_PROCESSED;
 }
