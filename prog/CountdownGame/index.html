@@ -6,6 +6,7 @@
 		<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
         <script type="text/javascript" src="Constants.js"></script>
         <script type="text/javascript" src="Physics.js"></script>
+        <script type="text/javascript" src="TMS.js"></script>
 		<script type="text/javascript">
             /**
              * Used to stop timeout loops
@@ -17,6 +18,7 @@
             
 			window.onload = function() {
                 // Bind the space bar event
+                // This is required to start the countdown for the first time
                 $('body').keypress(function(event) {
                     if (event.which == 32) {
                         RunTrial();
@@ -25,6 +27,9 @@
                         $('body').unbind('keypress');
                     }
                 });
+                
+                // Start polling the server for hits
+                CheckServerForHit();
 			};
             
             /**
@@ -50,7 +55,7 @@
                 // Start the countdown
                 setTimeout(Countdown, 1000);
                 
-                // This ends the trial
+                // This ends the trial when the projectile exits the screen
                 trialTimer = setTimeout(function() {
                     // Update the score
                     var score;
@@ -83,6 +88,9 @@
                     // Update the score
                     var total = $('#TotalTrials');
                     total.text('' + (parseInt(total.text()) + 1));
+                    
+                    // Tell the server that the trial has ended
+                    //TODO
                 }
             }
 
@@ -133,6 +141,9 @@
                             Spacebar();
                         }
                     });
+                    
+                    // Tell the server that the trial is starting
+                    //TODO
                 }
             };
 
