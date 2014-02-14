@@ -82,8 +82,8 @@ class streamsock
 
   public:
     virtual     ~streamsock();
-    void        open( const std::string& address );
-    void        open( const std::string& ip, unsigned short port );
+    bool        open( const std::string& address );
+    bool        open( const std::string& ip, unsigned short port );
     void        close();
     bool        is_open() const; // A streamsock may be open but not connected.
     bool        connected();

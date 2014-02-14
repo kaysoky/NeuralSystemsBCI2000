@@ -131,18 +131,22 @@ streamsock::~streamsock()
 #endif // _WIN32
 }
 
-void
+bool
 streamsock::open( const std::string& address )
 {
-  if( set_address( address ) )
+  bool success = set_address( address);
+  if( success )
     do_open();
+  return success;
 }
 
-void
+bool
 streamsock::open( const std::string& ip, unsigned short port )
 {
+  bool success = set_address( ip, port );
   if( set_address( ip, port ) )
     do_open();
+  return success;
 }
 
 bool

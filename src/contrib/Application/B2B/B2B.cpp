@@ -313,10 +313,10 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
   OptionalParameter( "EnforceFixation" );
 
   //Check state KeyUp exists
-  if (Parameter( "KeyboardControl" ) == 1){
-  State("KeyUp");
-  State("KeyDown");
-  }
+  //if (Parameter( "KeyboardControl" ) == 1){
+  //State("KeyUp");
+  //State("KeyDown");
+  //}
   Parameter( "SampleBlockSize" );
 
   if (Parameter( "VisualFeedback" ) == 1) {
@@ -328,13 +328,26 @@ DynamicFeedbackTask::OnPreflight( const SignalProperties& Input ) const {
 				 << "at visualCatch(" << i << ")"
 				 << endl;
   }
-  
+    //Check state KeyUp exists
+  //State("KeyUp");
+  //State("KeyDown");
+  Parameter( "SampleBlockSize" );
   string connectorAddress = string( Parameter( "ConnectorAddress" ) );
 }
 
 void
 DynamicFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ ) {
   mConnectorAddress = string( Parameter( "ConnectorAddress" ) );
+  int addressLength = mConnectorAddress.length();
+  int slashIndex;
+  for ( int i = addressLength - 1; i >= 0; i-- ) {
+    slashIndex=i;
+    if( mConnectorAddress[i] == '/')      
+      break;
+  }
+  string portString = mConnectorAddress.substr(slashIndex + 1, addressLength-slashIndex-1);
+  mConnectorPort    = (unsigned short)atoi(portString.c_str());
+  mConnectorAddress = mConnectorAddress.substr(0, slashIndex);
 
   // Cursor speed in pixels per signal block duration:
   float feedbackDuration = Parameter( "FeedbackDuration" ).InSampleBlocks();
@@ -362,7 +375,7 @@ DynamicFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ ) {
 
   mrWindow.Show();
   DisplayMessage( "Timeout" );
-  DisplayScore("0");
+  //DisplayScore("0");
 
   mVisualFeedback = ( Parameter( "VisualFeedback" ) == 1);
 
@@ -385,9 +398,13 @@ DynamicFeedbackTask::OnStartRun() {
   State("PrimaryAxis") = mCursorAxis;
 
   AppLog << "Run #" << mRunCount << " started" << endl;
+  bool open = mSocket.open( mConnectorAddress, mConnectorPort );
+  AppLog << "Socket open at " << mConnectorAddress << ": " << open << endl;
+  
   DisplayMessage( ">> Get Ready! <<" );
 
-  mSocket.open( mConnectorAddress );
+  
+  
 }
 
 void
@@ -451,13 +468,124 @@ DynamicFeedbackTask::OnFeedbackBegin() {
 
 void
 DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProgress ) {
-	doProgress = false;
+	doProgress = false;  
+float x = mpFeedbackScene->CursorXPosition(),
+		y = mpFeedbackScene->CursorYPosition(),
+		z = mpFeedbackScene->CursorZPosition();
+
+	//Set Cursor axis number of dimensions
   
-  // Update cursor position
-  float x = mpFeedbackScene->CursorXPosition(),
-        y = mpFeedbackScene->CursorYPosition(),
-        z = mpFeedbackScene->CursorZPosition();
-  
+	//Simultaneous BCI input (control (brain) signal for Y DOF, keyboard for the X DOF)
+	if( mCursorAxis == 1)
+	{
+		if( ControlSignal.Channels() > 0 )
+		{
+			float dy = mCursorSpeedX * ControlSignal( 0, 0 ); //store dy to modulate speed in the x direction
+			
+			//AppLog.Screen<<"X Pos: "<<x<<endl;
+
+			bool rightArrow = false;
+			bool leftArrow = false;
+
+			//State variable is a vector with length SampleBlockSize. Check entire vector for key press
+			/*for(int i = 0;i<Parameter( "SampleBlockSize" );i++)
+			{
+				//check for left key press
+				if(!rightArrow && (State("KeyDown")(i) == VK_RIGHT))
+				{
+					rightArrow = true;
+					//AppLog.Screen<<"RIGHT RIGHT RIGHT RIGHT RIGHT"<<endl;
+					break; //break from loop if we detect an arrow press
+				}
+				//check for left arrow press
+				else if(!leftArrow && (State("KeyDown")(i) == VK_LEFT))
+				{
+					leftArrow = true;
+					//AppLog.Screen<<"LEFT LEFT LEFT LEFT LEFT LEFT"<<endl;
+					break; //break from loop if we detect an arrow press
+				}
+			}*/
+
+			//implement gravity to pull cursor back towards center along keyboard controlled axis
+			if(Parameter( "CursorControlMode" )==0) //Gravity mode
+			{
+				//update y position. Add in gravity term
+				float gravity = mCursorSpeedX*Parameter("CursorGravity")*((x>50) - (x<50));
+				x += Parameter( "CursorSpeedMult" )*mCursorSpeedX*(rightArrow - leftArrow);
+
+				if((x>50.0) && ((x-gravity)<50.0))
+				{
+					x = 50.0;
+				}
+				else if((x<50) && ((x-gravity)>50))
+				{
+					x = 50.0;
+				}
+				else
+					x-=gravity;
+			}
+			else if (Parameter( "CursorControlMode" )==1) // velocity dependent on velocity in brain controlled axis direction
+			{
+				//find the soon to be updated Y position to compute velocity
+				float actualY = max( mpFeedbackScene->CursorRadius(), min( 100 - mpFeedbackScene->CursorRadius(), y+dy ) );
+
+				//move cursor either right or left (only one of the bools will be true). modulate by velocity
+				x += Parameter( "CursorSpeedMult" )*abs(actualY-y+1)*mCursorSpeedX * (rightArrow - leftArrow);
+			}
+			y += dy;
+		}
+	}
+
+	//Simultaneous BCI input (control (brain) signal for Y DOF, keyboard for the X DOF)
+	else if( mCursorAxis == 2)
+	{
+		if( ControlSignal.Channels() > 0 )
+		{
+			float dx = mCursorSpeedX * ControlSignal( 0, 0 ); //store dy to modulate speed in the x direction
+			
+			//AppLog.Screen<<"Position Update"<<endl;
+
+			bool upArrow = false;
+			bool downArrow = false;
+
+			//State variable is a vector with length SampleBlockSize. Check entire vector for key press
+			/*for(int i = 0;i<Parameter( "SampleBlockSize" );i++)
+			{
+				//check for left key press
+				if(!upArrow && (State("KeyDown")(i) == VK_UP))
+				{
+					upArrow = true;
+					//AppLog.Screen<<"UP UP UP UP UP UP"<<endl;
+					break; //break from loop if we detect an arrow press
+				}
+				//check for left arrow press
+				else if(!downArrow && (State("KeyDown")(i) == VK_DOWN))
+				{
+					downArrow = true;
+					//AppLog.Screen<<"DOWN DOWN DOWN DOWN DOWN DOWN"<<endl;
+					break; //break from loop if we detect an arrow press
+				}
+			}*/
+
+			//implement gravity to pull cursor back towards center along keyboard controlled axis
+			if(Parameter( "CursorControlMode" )==0) //Gravity mode
+			{
+				//update y position. Add in gravity term
+				float gravity = mCursorSpeedX*Parameter("CursorGravity")*((y>50) - (y<50));
+				y += Parameter( "CursorSpeedMult" )*mCursorSpeedX * (upArrow - downArrow) + gravity;
+			}
+			else if (Parameter( "CursorControlMode" )==1) // velocity dependent on velocity in brain controlled axis direction
+			{
+				//find the soon to be updated X position to compute velocity
+				float actualX = max( mpFeedbackScene->CursorRadius(), min( 100 - mpFeedbackScene->CursorRadius(), x+dx ) );
+
+				//move cursor either right or left (only one of the bools will be true). modulate by velocity
+				y += Parameter( "CursorSpeedMult" )*abs(actualX-x+1)*mCursorSpeedX * (upArrow - downArrow);
+			}
+			x += dx;
+		}  
+	}
+
 	// Restrict cursor movement to the inside of the bounding box:
 	float r = mpFeedbackScene->CursorRadius();
 	x = max( r, min( 100 - r, x ) ),
@@ -481,7 +609,7 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
     mSocket.write("1", 1);
     doProgress = true;
   }
-
+  
   if (mSocket.can_read()) {
     std::string line = mSocket.readline();
 
@@ -491,6 +619,7 @@ DynamicFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doPro
     }
     doProgress = true;
   }
+  
 }
 
 void
@@ -515,21 +644,21 @@ DynamicFeedbackTask::OnFeedbackEnd() {
   }
 
   //Persistent Score Display
-  stringstream ss (stringstream::in | stringstream::out);
-  int intScore = mScore >= 0 ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
-  ss << intScore;
-  DisplayScore(ss.str());
+  //stringstream ss (stringstream::in | stringstream::out);
+  //int intScore = mScore >= 0 ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
+  //ss << intScore;
+  //DisplayScore(ss.str());
 
-  if (mVisualFeedback == true && mIsVisualCatchTrial == false) {
-    // mpFeedbackScene->SetCursorVisible( false );
-  }
+  //if (mVisualFeedback == true && mIsVisualCatchTrial == false) {
+  //  mpFeedbackScene->SetCursorVisible( false );
+  //}
 }
 
 void
 DynamicFeedbackTask::OnTrialEnd() {
-  for( int i = 0; i < mpFeedbackScene->NumTargets(); ++i ) {
-    // mpFeedbackScene->SetTargetVisible( false, i );
-  }
+  //for( int i = 0; i < mpFeedbackScene->NumTargets(); ++i ) {
+  //  mpFeedbackScene->SetTargetVisible( false, i );
+  //}
 }
 
 void

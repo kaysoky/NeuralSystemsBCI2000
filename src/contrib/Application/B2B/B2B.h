@@ -86,6 +86,7 @@ private:
   
   client_tcpsocket mSocket;
   std::string mConnectorAddress;
+  unsigned short mConnectorPort;
 };
 
 #endif // CURSOR_FEEDBACK_TASK_H
