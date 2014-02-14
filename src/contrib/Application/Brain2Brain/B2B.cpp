@@ -444,7 +444,7 @@ static void *CountdownServerThread(void *arg) {
     // Note: the server can be swapped out at any time (hence the locking)
     while (true) {
         currentTask->server_lock->Acquire();
-        mg_poll_server(currentTask->server, 1000);
+        mg_poll_server(currentTask->server, 10);
         currentTask->server_lock->Release();
     }
 
@@ -463,6 +463,7 @@ static void *CountdownServerThread(void *arg) {
 static int CountdownServerHandler(struct mg_connection *conn) {
     string method(conn->request_method);
     string uri(conn->uri);
+    bciout << method << " " << uri << endl;
     
     if (method.compare("POST") == 0) {
         // These methods set an internal variable for the other threads to monitor
