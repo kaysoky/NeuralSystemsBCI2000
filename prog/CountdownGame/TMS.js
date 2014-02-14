@@ -3,13 +3,20 @@
  * When found, triggers a TMS pulse
  */
 CheckServerForHit = function() {
-    $.get('/trial/hit')
-    .done(
+    $.ajax(
+        type: 'GET', 
+        url: '/trial/hit', 
+        async: false
+    ).done(
         function(data) {
             // If there is a hit, activate the TMS
             var temp = (data).match(/HIT/);
             if (temp && temp.length > 1) {
-                $.post('http://localhost:' + TMS_PORT + '/TMS/fire');
+                $.ajax({
+                        type: 'POST', 
+                        url: 'http://localhost:' + TMS_PORT + '/TMS/fire', 
+                        async: false
+                    });
             }
         }
     ).always(

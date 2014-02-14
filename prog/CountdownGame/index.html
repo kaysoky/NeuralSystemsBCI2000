@@ -90,7 +90,11 @@
                     total.text('' + (parseInt(total.text()) + 1));
                     
                     // Tell the server that the trial has ended
-                    $.post('/trial/stop');
+                    $.ajax({
+                        type: 'POST', 
+                        url: '/trial/stop', 
+                        async: false
+                    });
                 }
             }
 
@@ -143,7 +147,11 @@
                     });
                     
                     // Tell the server that the trial is starting
-                    $.post('/trial/start');
+                    $.ajax({
+                        type: 'POST', 
+                        url: '/trial/start', 
+                        async: false
+                    });
                 }
             };
 
