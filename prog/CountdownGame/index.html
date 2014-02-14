@@ -90,7 +90,7 @@
                     total.text('' + (parseInt(total.text()) + 1));
                     
                     // Tell the server that the trial has ended
-                    //TODO
+                    $.post('/trial/stop');
                 }
             }
 
@@ -143,7 +143,7 @@
                     });
                     
                     // Tell the server that the trial is starting
-                    //TODO
+                    $.post('/trial/start');
                 }
             };
 

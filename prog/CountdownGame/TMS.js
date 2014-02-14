@@ -9,7 +9,7 @@ CheckServerForHit = function() {
             // If there is a hit, activate the TMS
             var temp = (data).match(/HIT/);
             if (temp && temp.length > 1) {
-                $.post('http://localhost:25000/TMS/fire');
+                $.post('http://localhost:' + TMS_PORT + '/TMS/fire');
             }
         }
     ).always(

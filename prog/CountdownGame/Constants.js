@@ -24,3 +24,8 @@ var PAUSE_BETWEEN_TRIALS = 2000; // Milliseconds
 var AIRPLANE = 'AIRPLANE';
 var MISSILE = 'MISSILE';
 var TRIAL_TYPE_ENUM = [AIRPLANE, MISSILE];
+
+/**
+ * TMS port
+ */
+var TMS_PORT = 25000;

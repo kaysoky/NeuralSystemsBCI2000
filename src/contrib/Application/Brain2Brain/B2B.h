@@ -75,7 +75,16 @@ private:
     TrialStatistics mTrialStatistics;
 	
     // Objects and functions associated with the Countdown game
+    
+    /*
+     * Loops infinitely and polls for incoming connections
+     */
     void *CountdownServerThread(void *);
+    
+    /*
+     * Handles the pre-defined set of REST methods
+     * Other methods are passed along to Mongoose for default handling
+     */
     int CountdownServerHandler(struct mg_connection *);
     
     // Any function that touches the following objects must first acquire this lock
@@ -88,6 +97,7 @@ private:
         CONTINUE
     };
     TrialState lastClientPost;
+    bool targetHit;
 };
 
 #endif // CURSOR_FEEDBACK_TASK_H

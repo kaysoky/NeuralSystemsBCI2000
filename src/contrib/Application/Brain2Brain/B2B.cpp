@@ -192,6 +192,7 @@ DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
 
     // Start the server on a separate thread
     lastClientPost = CONTINUE;
+    targetHit = false;
     mg_start_thread(countdown_server_thread, server);
 	bciout << "Server listening on port " << mg_get_option(server, "listening_port");
     server_lock.Unlock();
@@ -283,6 +284,11 @@ DynamicFeedbackTask::OnTrialBegin() {
         mpFeedbackScene->SetTargetColor(targetColor, i);
         mpFeedbackScene->SetTargetVisible(State("TargetCode") == (i + 1), i);
     }
+    
+    // Reset the 'targetHit' value
+    server_lock.Lock();
+    targetHit = false;
+    server_lock.Unlock();
 }
 
 void
@@ -322,8 +328,12 @@ DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProg
         mpFeedbackScene->SetCursorColor(RGBColor::White);
         mpFeedbackScene->SetTargetColor(RGBColor::Red, State("ResultCode") - 1);
 
-        //TODO: Send message of hit out to B2B Game
         doProgress = true;
+        
+        // Send message of hit out to the countdown game
+        server_lock.Lock();
+        targetHit = true;
+        server_lock.Unlock();
     }
     
     // Check for the stop signal
@@ -434,21 +444,40 @@ void
     return NULL;
 }
 
+/* Note: the calling thread already holds the lock when this request handler is called
+ * The call stack is something like:
+ *   CountdownServerThread
+ *     -> mg_poll_server
+ *     -> CountdownServerHandler
+ */
 int 
 DynamicFeedbackTask::CountdownServerHandler(struct mg_connection *conn) {
     string method(conn->request_method);
     string uri(conn->uri);
     
     if (method.compare("POST") == 0) {
+        // These methods set an internal variable for the other threads to monitor
+        // Whenever the value is read at the appropriate stage of the trial, 
+        //   'lastClientPost' is reset to CONTINUE
+        
         if (uri.compare("/trial/start") == 0) {
+            lastClientPost = START_TRIAL;
             
             return MG_REQUEST_PROCESSED;
+            
         } else if (uri.compare("/trial/stop") == 0) {
+            lastClientPost = STOP_TRIAL;
             
             return MG_REQUEST_PROCESSED;
         }
+        
     } else if (method.compare("GET") == 0) {
+        // This allows the Countdown game to poll for a hit
+        // 1 == hit, 0 == no hit
         if (uri.compare("/trial/hit") == 0) {
+            if (targetHit) {
+                mg_printf_data(conn, "HIT");
+            }
             
             return MG_REQUEST_PROCESSED;
         } 
