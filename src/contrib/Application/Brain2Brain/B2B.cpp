@@ -24,8 +24,10 @@ const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
 #define CURSOR_RADIUS_BITS "12"
 #define PRIMARY_AXIS_BITS "12"
 
-// Used for reading from socket(s)
-#define DEFAULT_LINE_BUFFER 50
+// Used to pass state between this class (C++) and Mongoose (C)
+static DynamicFeedbackTask *currentTask;
+static void *CountdownServerThread(void *arg);
+static int CountdownServerHandler(struct mg_connection *conn);
 
 RegisterFilter( DynamicFeedbackTask, 3 );
 
@@ -172,6 +174,9 @@ DynamicFeedbackTask::OnPreflight(const SignalProperties& Input) const {
 
 void
 DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
+  // Give C-functions a reference to this program
+  currentTask = this;
+
 	// Determine where this application is being executed
 	char buffer[MAX_PATH];
     GetModuleFileName(NULL, buffer, MAX_PATH);
@@ -180,9 +185,9 @@ DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
 	gameLocation += "/CountdownGame/";
 
     // Initialize the server
-    server_lock.Lock();
+    server_lock->Acquire();
     if (server != NULL) {
-        mg_destroy_server(server);
+        mg_destroy_server(&server);
     }
 	string listeningPort = string(Parameter("ListeningPort"));
 	server = mg_create_server(NULL);
@@ -193,9 +198,9 @@ DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
     // Start the server on a separate thread
     lastClientPost = CONTINUE;
     targetHit = false;
-    mg_start_thread(countdown_server_thread, server);
+    mg_start_thread(CountdownServerThread, NULL);
 	bciout << "Server listening on port " << mg_get_option(server, "listening_port");
-    server_lock.Unlock();
+  server_lock->Release();
 
     // Cursor speed in pixels per signal block duration:
     float feedbackDuration = Parameter("FeedbackDuration").InSampleBlocks();
@@ -246,12 +251,12 @@ DynamicFeedbackTask::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
     
-    server_lock.Lock();
+    server_lock->Acquire();
     if (lastClientPost == START_TRIAL) {
         doProgress = true;
         lastClientPost = CONTINUE;
     }
-    server_lock.Unlock();
+    server_lock->Release();
 }
 
 void
@@ -286,9 +291,9 @@ DynamicFeedbackTask::OnTrialBegin() {
     }
     
     // Reset the 'targetHit' value
-    server_lock.Lock();
+    server_lock->Acquire();
     targetHit = false;
-    server_lock.Unlock();
+    server_lock->Release();
 }
 
 void
@@ -331,20 +336,20 @@ DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProg
         doProgress = true;
         
         // Send message of hit out to the countdown game
-        server_lock.Lock();
+        server_lock->Acquire();
         targetHit = true;
-        server_lock.Unlock();
+        server_lock->Release();
     }
     
     // Check for the stop signal
     // Note: This seemingly redundant double-check is necessary to prevent race conditions
     if (lastClientPost == STOP_TRIAL) {
-        server_lock.Lock();
+        server_lock->Acquire();
         if (lastClientPost == STOP_TRIAL) {
             doProgress = true;
             lastClientPost = CONTINUE;
         }
-        server_lock.Unlock();
+        server_lock->Release();
     }
 }
 
@@ -381,12 +386,12 @@ DynamicFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
     
-    server_lock.Lock();
+    server_lock->Acquire();
     if (lastClientPost == START_TRIAL) {
         doProgress = true;
         lastClientPost = CONTINUE;
     }
-    server_lock.Unlock();
+    server_lock->Release();
 }
 
 void
@@ -431,27 +436,31 @@ DynamicFeedbackTask::DisplayScore(const string&inMessage) {
     }
 }
 
-void 
-*DynamicFeedbackTask::CountdownServerThread(void *arg) {
+/*
+ * Loops infinitely and polls for incoming connections
+ */
+static void *CountdownServerThread(void *arg) {
     // Keep polling the server
     // Note: the server can be swapped out at any time (hence the locking)
     while (true) {
-        server_lock.Lock();
-        mg_poll_server(server, 1000);
-        server_lock.Unlock();
+        currentTask->server_lock->Acquire();
+        mg_poll_server(currentTask->server, 1000);
+        currentTask->server_lock->Release();
     }
 
     return NULL;
 }
 
-/* Note: the calling thread already holds the lock when this request handler is called
+/* 
+ * Handles the pre-defined set of REST methods
+ * Other methods are passed along to Mongoose for default handling
+ * Note: the calling thread already holds the lock when this request handler is called
  * The call stack is something like:
  *   CountdownServerThread
  *     -> mg_poll_server
  *     -> CountdownServerHandler
  */
-int 
-DynamicFeedbackTask::CountdownServerHandler(struct mg_connection *conn) {
+static int CountdownServerHandler(struct mg_connection *conn) {
     string method(conn->request_method);
     string uri(conn->uri);
     
@@ -461,12 +470,12 @@ DynamicFeedbackTask::CountdownServerHandler(struct mg_connection *conn) {
         //   'lastClientPost' is reset to CONTINUE
         
         if (uri.compare("/trial/start") == 0) {
-            lastClientPost = START_TRIAL;
+            currentTask->lastClientPost = DynamicFeedbackTask::TrialState::START_TRIAL;
             
             return MG_REQUEST_PROCESSED;
             
         } else if (uri.compare("/trial/stop") == 0) {
-            lastClientPost = STOP_TRIAL;
+            currentTask->lastClientPost = DynamicFeedbackTask::TrialState::STOP_TRIAL;
             
             return MG_REQUEST_PROCESSED;
         }
@@ -475,7 +484,7 @@ DynamicFeedbackTask::CountdownServerHandler(struct mg_connection *conn) {
         // This allows the Countdown game to poll for a hit
         // 1 == hit, 0 == no hit
         if (uri.compare("/trial/hit") == 0) {
-            if (targetHit) {
+            if (currentTask->targetHit) {
                 mg_printf_data(conn, "HIT");
             }
             

@@ -868,7 +868,7 @@ static int wait_until_ready(sock_t sock, int for_read) {
 }
 
 static void *push_to_stdin(void *arg) {
-  struct threadparam *tp = arg;
+  struct threadparam *tp = (struct threadparam *)arg;
   int n, sent, stop = 0;
   DWORD k;
   char buf[IOBUF_SIZE];
@@ -888,7 +888,7 @@ static void *push_to_stdin(void *arg) {
 }
 
 static void *pull_from_stdout(void *arg) {
-  struct threadparam *tp = arg;
+  struct threadparam *tp = (struct threadparam *)arg;
   int k, stop = 0;
   DWORD n, sent;
   char buf[IOBUF_SIZE];
@@ -910,7 +910,7 @@ static void *pull_from_stdout(void *arg) {
 
 static void spawn_stdio_thread(sock_t sock, HANDLE hPipe,
                                void *(*func)(void *)) {
-  struct threadparam *tp = malloc(sizeof(*tp));
+  struct threadparam *tp = (struct threadparam *) malloc(sizeof(*tp));
   if (tp != NULL) {
     tp->s = sock;
     tp->hPipe = hPipe;
@@ -1190,7 +1190,7 @@ static void open_cgi_endpoint(struct connection *conn, const char *prog) {
   // CGI must be executed in its own directory. 'dir' must point to the
   // directory containing executable program, 'p' must point to the
   // executable program name relative to 'dir'.
-  if ((p = strrchr(prog, '/')) == NULL) {
+  if ((p = (char *) strrchr(prog, '/')) == NULL) {
     mg_snprintf(dir, sizeof(dir), "%s", ".");
   } else {
     mg_snprintf(dir, sizeof(dir), "%.*s", (int) (p - prog), prog);
@@ -1267,7 +1267,7 @@ static sock_t open_listening_socket(union socket_address *sa) {
   sock_t on = 1, sock = INVALID_SOCKET;
 
   if ((sock = socket(sa->sa.sa_family, SOCK_STREAM, 6)) != INVALID_SOCKET &&
-      !setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *) &on, sizeof(on)) &&
+      !setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *) &on, sizeof(on)) &&
       !bind(sock, &sa->sa, sa->sa.sa_family == AF_INET ?
             sizeof(sa->sin) : sizeof(sa->sa)) &&
       !listen(sock, SOMAXCONN)) {
