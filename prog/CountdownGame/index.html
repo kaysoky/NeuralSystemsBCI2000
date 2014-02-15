@@ -80,7 +80,6 @@
                 if (!trialComplete) {
                     trialComplete = true;
                     clearTimeout(trialTimer);
-                    setTimeout(RunTrial, PAUSE_BETWEEN_TRIALS);
                     
                     // Unbind the spacebar
                     $('body').unbind('keypress');
@@ -93,7 +92,10 @@
                     $.ajax({
                         type: 'POST', 
                         url: '/trial/stop', 
-                        async: false
+                        async: false, 
+                        success: function() {
+                            setTimeout(RunTrial, PAUSE_BETWEEN_TRIALS);
+                        }
                     });
                 }
             }
@@ -122,22 +124,19 @@
              * Decrements the countdown and starts the game loop afterwards
              */
             Countdown = function() {
-                if (!trialComplete) {
-                    // Continue looping
-                    setTimeout(Countdown, 1000);
-                }
-                
                 // Decrement the countdown
                 var counter = $('#OverlayCountdown');
                 var count = parseInt(counter.text()) - 1;
                 counter.text('' + count);
                 
+                if (!trialComplete && count > 0) {
+                    // Continue looping
+                    setTimeout(Countdown, 1000);
+                }
+                
                 // Hide the overlay once the counter reaches 0
                 if (count <= 0) {
                     $('#Overlay').hide();
-                    
-                    // And start the game loop
-                    setTimeout(Tick, FRAME_DELAY);
                     
                     // Activate the cannon
                     $('body').keypress(function(event) {
@@ -150,7 +149,11 @@
                     $.ajax({
                         type: 'POST', 
                         url: '/trial/start', 
-                        async: false
+                        async: false, 
+                        success: function() {
+                            // And start the game loop
+                            setTimeout(Tick, FRAME_DELAY);
+                        }
                     });
                 }
             };

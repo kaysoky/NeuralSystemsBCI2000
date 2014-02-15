@@ -471,11 +471,15 @@ static int CountdownServerHandler(struct mg_connection *conn) {
         //   'lastClientPost' is reset to CONTINUE
         
         if (uri.compare("/trial/start") == 0) {
+            mg_send_status(conn, 204);
+            mg_send_data(conn, "", 0);
             currentTask->lastClientPost = DynamicFeedbackTask::TrialState::START_TRIAL;
             
             return MG_REQUEST_PROCESSED;
             
         } else if (uri.compare("/trial/stop") == 0) {
+            mg_send_status(conn, 204);
+            mg_send_data(conn, "", 0);
             currentTask->lastClientPost = DynamicFeedbackTask::TrialState::STOP_TRIAL;
             
             return MG_REQUEST_PROCESSED;
@@ -486,7 +490,12 @@ static int CountdownServerHandler(struct mg_connection *conn) {
         // 1 == hit, 0 == no hit
         if (uri.compare("/trial/hit") == 0) {
             if (currentTask->targetHit) {
+                mg_send_status(conn, 200);
+                mg_send_header(conn, "Content-Type", "text/plain");
                 mg_printf_data(conn, "HIT");
+            } else {
+              mg_send_status(conn, 204);
+              mg_send_data(conn, "", 0);
             }
             
             return MG_REQUEST_PROCESSED;
