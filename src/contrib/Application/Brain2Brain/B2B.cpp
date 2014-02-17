@@ -54,8 +54,8 @@ DynamicFeedbackTask::DynamicFeedbackTask()
         "Application:Targets matrix Targets= "
         " 2 " // rows
         " [pos%20x pos%20y width%20x width%20y] " // columns
-        " 50   0 50 50 "
-        " 50 100 50 50 "
+        " 50 90 8 8 "
+        " 50 10 8 8 "
         " // Number of targets and their position (center) and dimensions in percentage coordinates",
     "Application:Targets int TargetColor= 0x0000FF % % % " // Blue
         " // target color (color)",
@@ -316,6 +316,11 @@ DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProg
     float x = mpFeedbackScene->CursorXPosition(),
     y = mpFeedbackScene->CursorYPosition(),
     z = mpFeedbackScene->CursorZPosition();
+	
+	// Use the control signal to move up and down
+	if (ControlSignal.Channels() > 0) {
+		y += mCursorSpeedX * ControlSignal( 0, 0 );
+	}
 
     // Restrict cursor movement to the inside of the bounding box:
     float r = mpFeedbackScene->CursorRadius();
