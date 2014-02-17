@@ -2,7 +2,7 @@ var missileAnimation = null;
 
 ResetProjectiles = function() {
     // Stop any animations
-    $('#Aeroplane, #Missile').stop();
+    $('#Aeroplane, #Missile, #CannonOrigin').stop();
     $(missileAnimation).stop();
     
     // Display the correct picture
@@ -22,7 +22,7 @@ ResetProjectiles = function() {
         'left': '85%',
         'top': '100%',
         'transform': 'rotate(0rad)'
-    }).attr('radians', '0.0');
+    });
 };
 
 /**
@@ -44,6 +44,29 @@ MoveProjectiles = function() {
                 'top': (100 - Math.sin(now) * 85) + "%",
                 'transform': 'rotate(-' + now + 'rad)'
             });
+        }
+    });
+    
+    // Determine which projectile the cannon should follow
+    var projectile = null;
+    if ($('#Aeroplane').css('display') != 'none') {
+        projectile = $('#Aeroplane');
+    } else if ($('#Missile').css('display') != 'none') {
+        projectile = $('#Missile');
+    } else {
+        alert("No projectile visible");
+    }
+    
+    // Have the cannon follow the projectile
+    var cannon = $('#CannonOrigin');
+    var cPos = cannon.position();
+    cannon.animate({'rad': '0'}, {
+        duration: TRIAL_TIME,
+        step: function() {
+            var pPos = projectile.position();
+            cannon.css({
+                'transform': 'rotate(' + (3.14 - Math.atan2(pPos.left - cPos.left, pPos.top - cPos.top)) + 'rad)'
+            })
         }
     });
 }
