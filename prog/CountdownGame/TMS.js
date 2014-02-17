@@ -6,7 +6,7 @@ CheckServerForHit = function() {
     $.ajax({
         type: 'GET', 
         url: '/trial/hit', 
-        async: false, 
+        async: true, 
         success: function(data) {
             // If there is a hit, activate the TMS
             if (data && data.match) {

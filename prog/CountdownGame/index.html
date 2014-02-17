@@ -151,31 +151,21 @@
                         url: '/trial/start', 
                         async: false, 
                         success: function() {
-                            // And start the game loop
-                            setTimeout(Tick, FRAME_DELAY);
+                            // And start the animations
+                            // Defined in Physics.js
+                            MoveProjectiles();
                         }
                     });
                 }
-            };
-
-            /**
-             * Game loop
-             * Handles motion of projectiles
-             */
-            Tick = function() {
-                if (!trialComplete) {
-                    // Continue looping
-                    setTimeout(Tick, FRAME_DELAY);
-                }
-
-                // Defined in Physics.js
-                MoveProjectiles();
             };
             
             /**
              * Fires the cannon
              */
             Spacebar = function() {
+                // Explode!
+                $('#Missile > img, #Aeroplane > img').toggleClass('hidden');
+            
                 if (!trialComplete) {
                     // Update the score
                     var score;
@@ -202,14 +192,13 @@
             <div id="OverlayCity">
                 <img src="City.png" alt="" />
             </div>
-            <div id="Explosion">
-                <img src="Explosion.png" alt="" />
-            </div>
             <div id="Aeroplane">
-                <img src="Airplane.png" alt="" />
+                <img src="Explosion.png" alt="" class="explosion hidden" />
+                <img src="Airplane.png" alt="" class="projectile" />
             </div>
-            <div id="Missile" radians="0.0">
-                <img src="Missile.png" alt="" />
+            <div id="Missile">
+                <img src="Explosion.png" alt="" class="explosion hidden" />
+                <img src="Missile.png" alt="" class="projectile" />
             </div>
             <div id="Scoreboard">
                 <div>Score: 

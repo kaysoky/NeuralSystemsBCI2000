@@ -62,3 +62,10 @@ div, img {
     color: #6D0F00;
     font-size: 25px;
 }
+.hidden {
+    display: none;
+}
+.explosion {
+    left: -125px;
+     top: -125px;
+}
