@@ -11,7 +11,7 @@ SET( SRC_PROJECT
   B2B.cpp
   DFBuildScene2D.cpp
   GradientEllipticShape.cpp 
-  mongoose.c
+  mongoose.cpp
 )
 SET( HDR_PROJECT
   B2B.h
