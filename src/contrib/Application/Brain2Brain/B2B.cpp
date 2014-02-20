@@ -13,17 +13,6 @@
 
 #include <QImage>
 
-// State variable for initialization and other usage(s)
-#define CURSOR_POS_BITS "12"
-const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
-
-// Initial values of several state variables
-#define SCORE_BITS "16"
-#define TARGET_XWIDTH_BITS "12"
-#define TARGET_YWIDTH_BITS "12"
-#define CURSOR_RADIUS_BITS "12"
-#define PRIMARY_AXIS_BITS "12"
-
 // Used to pass state between this class (C++) and Mongoose (C)
 static DynamicFeedbackTask *currentTask;
 static void *CountdownServerThread(void *arg);
@@ -46,12 +35,11 @@ DynamicFeedbackTask::DynamicFeedbackTask()
       mCursorSpeedY( 1.0 ),
       mCursorSpeedZ( 1.0 ),
       mScore(0.0),
-      mScoreCount(0.0),
       mrWindow( Window() ),
-      mVisualFeedback( false),
-      mIsVisualCatchTrial( false ) {
+      mVisualFeedback(false),
+      mIsVisualCatchTrial(false) {
     BEGIN_PARAMETER_DEFINITIONS
-        "Application:Targets matrix Targets= "
+    "Application:Targets matrix Targets= "
         " 2 " // rows
         " [pos%20x pos%20y width%20x width%20y] " // columns
         " 50 90 8 8 "
@@ -62,10 +50,6 @@ DynamicFeedbackTask::DynamicFeedbackTask()
 
     "Application:Cursor float CursorWidth= 10 10 0.0 % "
         " // feedback cursor width in percent of screen width",
-    "Application:Cursor float CursorSpeedMult= 3"
-        " // Cursor speed from to 1(slowest) to 10(fastest) ",
-    "Application:Cursor float CursorGravity= 1"
-        " // Centering cursor gravity from to 0 (weakest) to 10 (strongest) ",
     "Application:Cursor int CursorColor= 0xff0000 % % % " // Red
         " // Cursor color (color)",
     "Application:Cursor floatlist CursorPos= 3 50 50 50 % % "
@@ -82,17 +66,16 @@ DynamicFeedbackTask::DynamicFeedbackTask()
         "// list of visual catch trials, leave empty for none",
 
     "Application:Connector string ListeningPort= % "
-    "20320 % % // Port for the server to listen on",
+        "20320 % % // Port for the server to listen on",
     END_PARAMETER_DEFINITIONS
 
     BEGIN_STATE_DEFINITIONS
-        "CursorPosX " CURSOR_POS_BITS " 0 0 0",
-        "CursorPosY " CURSOR_POS_BITS " 0 0 0",
-        "GameScore " SCORE_BITS " 0 0 0", //score bits
-        "TargetXWidth " TARGET_XWIDTH_BITS " 0 0 0", //target width in x
-        "TargetYWidth " TARGET_YWIDTH_BITS " 0 0 0", //target width in y
-        "CursorRadius " CURSOR_RADIUS_BITS " 0 0 0", //cursor radius
+        "CursorPosX 12 0 0 0",
+        "CursorPosY 12 0 0 0",
+        "GameScore 16 0 0 0",
+        "TrialType 8 0 0 0",
     END_STATE_DEFINITIONS
+    // Note: ResultCode and TargetCode are defined by FeedbackTask.cpp
 
     // Title screen message
     GUI::Rect rect = {0.5f, 0.4f, 0.5f, 0.6f};
@@ -111,10 +94,10 @@ DynamicFeedbackTask::DynamicFeedbackTask()
                .SetColor(RGBColor::White)
                .SetAspectRatioMode(GUI::AspectRatioModes::AdjustNone)
                .SetObjectRect(rect3);
-    
+
     // Synchronization for the countdown server
     server_lock = new OSMutex();
-    
+
     // A new server instance is created every time the configuration is set
     server = NULL;
 }
@@ -148,14 +131,6 @@ DynamicFeedbackTask::OnPreflight(const SignalProperties& Input) const {
         bcierr << "FeedbackDuration must be greater 0" << endl;
     }
 
-    if (Parameter("CursorSpeedMult") > 10 || Parameter("CursorSpeedMult") < 1) {
-        bcierr << "Cursor speed must be between 1 and 10" << endl;
-    }
-
-    if (Parameter("CursorGravity") > 10 ||  Parameter("CursorGravity") < 0) {
-        bcierr << "Cursor gravity must be between 1 and 10" << endl;
-    }
-
     Parameter("SampleBlockSize");
     Parameter("ListeningPort");
 
@@ -174,24 +149,24 @@ DynamicFeedbackTask::OnPreflight(const SignalProperties& Input) const {
 
 void
 DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
-  // Give C-functions a reference to this program
-  currentTask = this;
+    // Give C-functions a reference to this program
+    currentTask = this;
 
-	// Determine where this application is being executed
-	char buffer[MAX_PATH];
+    // Determine where this application is being executed
+    char buffer[MAX_PATH];
     GetModuleFileName(NULL, buffer, MAX_PATH);
     string::size_type pos = string(buffer).find_last_of( "\\/" );
-	string gameLocation = string(buffer).substr(0, pos);
-	gameLocation += "/CountdownGame/";
+    string gameLocation = string(buffer).substr(0, pos);
+    gameLocation += "/CountdownGame/";
 
     // Initialize the server
     server_lock->Acquire();
     if (server != NULL) {
         mg_destroy_server(&server);
     }
-	string listeningPort = string(Parameter("ListeningPort"));
-	server = mg_create_server(NULL);
-	mg_set_option(server, "document_root", gameLocation.c_str());
+    string listeningPort = string(Parameter("ListeningPort"));
+    server = mg_create_server(NULL);
+    mg_set_option(server, "document_root", gameLocation.c_str());
     mg_set_option(server, "listening_port", listeningPort.c_str());
     mg_set_request_handler(server, CountdownServerHandler);
 
@@ -199,8 +174,8 @@ DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
     lastClientPost = CONTINUE;
     targetHit = false;
     mg_start_thread(CountdownServerThread, NULL);
-	bciout << "Server listening on port " << mg_get_option(server, "listening_port");
-  server_lock->Release();
+    bciout << "Server listening on port " << mg_get_option(server, "listening_port");
+    server_lock->Release();
 
     // Cursor speed in pixels per signal block duration:
     float feedbackDuration = Parameter("FeedbackDuration").InSampleBlocks();
@@ -235,12 +210,37 @@ DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
 
 void
 DynamicFeedbackTask::OnStartRun() {
+    // Reset various counters
     ++mRunCount;
     mTrialCount = 0;
     mTrialStatistics.Reset();
     mScore = 0;
     State("GameScore") = mScore;
-    State("CursorRadius") = Parameter("CursorWidth");
+
+    // Determine the trial types
+    if (nextTrialType != NULL) {
+        delete nextTrialType;
+        nextTrialType = new queue<TrialType>();
+    }
+    // Note: This parameter is defined in FeedbackTask.cpp
+    if (!string(Parameter("NumberOfTrials")).empty()) {
+        // We know the number of trials,
+        // so we can enforce an equal number of each trial type
+        int numTrials = Parameter("NumberOfTrials");
+        int typesPerTrial = numTrials / TrialType::LAST;
+        vector<TrialType> trialVector(numTrials, TrialType::AIRPLANE);
+        for (int i = TrialType::AIRPLANE + 1; i < TrialType::LAST; i++) {
+            for (int j = 0; j < typesPerTrial; j++) {
+                trialVector[i * typesPerTrial + j] = static_cast<TrialType>(i);
+            }
+        }
+
+        // Shuffle and store the ordering
+        random_shuffle(trialVector.begin(), trialVector.end());
+        for (int i = 0; i < trialVector.size(); i++) {
+            nextTrialType.push(trialVector[i]);
+        }
+    }
 
     AppLog << "Run #" << mRunCount << " started" << endl;
     DisplayMessage(">> Get Ready! <<");
@@ -250,11 +250,14 @@ void
 DynamicFeedbackTask::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
-    
+
     server_lock->Acquire();
     if (lastClientPost == START_TRIAL) {
         doProgress = true;
         lastClientPost = CONTINUE;
+        
+        // Update the trial type state
+        State("TrialType") = currentTrialType;
     }
     server_lock->Release();
 }
@@ -277,19 +280,13 @@ DynamicFeedbackTask::OnTrialBegin() {
         }
     }
 
-
-    enum {x, y, dx, dy};
-    ParamRef Targets = Parameter("Targets");
-    State("TargetXWidth") = Targets(State("TargetCode") - 1, dx);
-    State("TargetYWidth") = Targets(State("TargetCode") - 1, dy);
-
     DisplayMessage("");
     RGBColor targetColor = RGBColor(Parameter("TargetColor"));
     for (int i = 0; i < mpFeedbackScene->NumTargets(); ++i) {
         mpFeedbackScene->SetTargetColor(targetColor, i);
         mpFeedbackScene->SetTargetVisible(State("TargetCode") == (i + 1), i);
     }
-    
+
     // Reset the 'targetHit' value
     server_lock->Acquire();
     targetHit = false;
@@ -310,17 +307,17 @@ DynamicFeedbackTask::OnFeedbackBegin() {
 
 void
 DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProgress) {
-	doProgress = false;
+    doProgress = false;
 
     // Update cursor position
     float x = mpFeedbackScene->CursorXPosition(),
     y = mpFeedbackScene->CursorYPosition(),
     z = mpFeedbackScene->CursorZPosition();
-	
-	// Use the control signal to move up and down
-	if (ControlSignal.Channels() > 0) {
-		y += mCursorSpeedX * ControlSignal( 0, 0 );
-	}
+
+    // Use the control signal to move up and down
+    if (ControlSignal.Channels() > 0) {
+        y += mCursorSpeedX * ControlSignal( 0, 0 );
+    }
 
     // Restrict cursor movement to the inside of the bounding box:
     float r = mpFeedbackScene->CursorRadius();
@@ -339,13 +336,13 @@ DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProg
         mpFeedbackScene->SetTargetColor(RGBColor::Red, State("ResultCode") - 1);
 
         doProgress = true;
-        
+
         // Send message of hit out to the countdown game
         server_lock->Acquire();
         targetHit = true;
         server_lock->Release();
     }
-    
+
     // Check for the stop signal
     // Note: This seemingly redundant double-check is necessary to prevent race conditions
     if (lastClientPost == STOP_TRIAL) {
@@ -390,7 +387,7 @@ void
 DynamicFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
-    
+
     server_lock->Acquire();
     if (lastClientPost == START_TRIAL) {
         doProgress = true;
@@ -456,7 +453,7 @@ static void *CountdownServerThread(void *arg) {
     return NULL;
 }
 
-/* 
+/*
  * Handles the pre-defined set of REST methods
  * Other methods are passed along to Mongoose for default handling
  * Note: the calling thread already holds the lock when this request handler is called
@@ -469,27 +466,34 @@ static int CountdownServerHandler(struct mg_connection *conn) {
     string method(conn->request_method);
     string uri(conn->uri);
     bciout << method << " " << uri << endl;
-    
+
     if (method.compare("POST") == 0) {
         // These methods set an internal variable for the other threads to monitor
-        // Whenever the value is read at the appropriate stage of the trial, 
+        // Whenever the value is read at the appropriate stage of the trial,
         //   'lastClientPost' is reset to CONTINUE
-        
+
         if (uri.compare("/trial/start") == 0) {
-            mg_send_status(conn, 204);
-            mg_send_data(conn, "", 0);
+            if (nextTrialType.empty()) {
+                currentTask->currentTrialType = random(DynamicFeedbackTask::TrialType::LAST);
+            } else {
+                currentTask->currentTrialType = nextTrialType.pop();
+            }
+            
+            mg_send_status(conn, 200);
+            mg_send_header(conn, "Content-Type", "text/plain");
+            mg_printf_data(conn, "%d", currentTask->currentTrialType);
             currentTask->lastClientPost = DynamicFeedbackTask::TrialState::START_TRIAL;
-            
+
             return MG_REQUEST_PROCESSED;
-            
+
         } else if (uri.compare("/trial/stop") == 0) {
             mg_send_status(conn, 204);
             mg_send_data(conn, "", 0);
             currentTask->lastClientPost = DynamicFeedbackTask::TrialState::STOP_TRIAL;
-            
+
             return MG_REQUEST_PROCESSED;
         }
-        
+
     } else if (method.compare("GET") == 0) {
         // This allows the Countdown game to poll for a hit
         // 1 == hit, 0 == no hit
@@ -499,13 +503,13 @@ static int CountdownServerHandler(struct mg_connection *conn) {
                 mg_send_header(conn, "Content-Type", "text/plain");
                 mg_printf_data(conn, "HIT");
             } else {
-              mg_send_status(conn, 204);
-              mg_send_data(conn, "", 0);
+                mg_send_status(conn, 204);
+                mg_send_data(conn, "", 0);
             }
-            
+
             return MG_REQUEST_PROCESSED;
-        } 
+        }
     }
-    
+
     return MG_REQUEST_NOT_PROCESSED;
 }

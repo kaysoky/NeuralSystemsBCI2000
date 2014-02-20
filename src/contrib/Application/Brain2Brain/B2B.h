@@ -1,6 +1,9 @@
 #ifndef B2B_H
 #define B2B_H
 
+#include <queue>
+#include <vector>
+
 #include "FeedbackTask.h"
 #include "TrialStatistics.h"
 #include "Color.h"
@@ -23,18 +26,68 @@ public:
     /* Objects associated with the Countdown game */
     // Note: since Mongoose is written in C, and needs to access these variables
     //       I've set them up as public variables.
-
-    // Any function that touches the following objects must first acquire this lock
-    // Note: Reading does not require locking
-    OSMutex *server_lock;
-	struct mg_server *server;
+    
+    /*
+     * Which projectile should be flying across the Countdown game screen on this trial?
+     */
+    enum TrialType {
+        AIRPLANE, 
+        MISSILE, 
+        LAST
+    };
+    
+    /*
+     * Should a trial start, stop, or continue?
+     */
     enum TrialState {
         START_TRIAL, 
         STOP_TRIAL, 
         CONTINUE
     };
+
+    /* 
+     * Any function that touches the following objects must first acquire this lock
+     * Note: Reading does not require locking
+     */
+    OSMutex *server_lock;
+    
+    /*
+     * Mongoose server
+     * Serves up the Countdown Game files
+     *   and handles the various communication REST functions
+     */
+	struct mg_server *server;
+    
+    /*
+     * The current trial type
+     * Note: This is necessary since the C code should not access BCI2000 states directly
+     */
+    TrialType currentTrialType;
+    
+    /*
+     * Holds a random list of trials to pass onto the Countdown game
+     * If empty, then just choose a random trial type instead
+     */
+    std::queue<TrialType> nextTrialType;
+    
+    /*
+     * Holds the most recent trial-state command issued by the Countdown game
+     * A state of CONTINUE means that this value has been processed
+     *   and is awaiting a new command from the game.  
+     */
     TrialState lastClientPost;
+    
+    /*
+     * Holds whether the YES target has been hit
+     * The Countdown game is expected to poll for this value regularly
+     * When it is sent to the game, the value is reset to false.  
+     * 
+     * Note: This is different from checking:
+     *   State("ResultCode") == State("TargetCode");
+     */
     bool targetHit;
+    
+    /* End of Countdown game objects */
 
 private:
     // See: http://www.bci2000.org/wiki/index.php/Programming_Reference:FeedbackTask_Class#Events_Summary
@@ -81,9 +134,7 @@ private:
     float mCursorSpeedX,
           mCursorSpeedY,
           mCursorSpeedZ,
-          mScore, //Score
-          mScoreCount; //Score counter
-
+          mScore;
 
     std::vector<int> mVisualCatchTrials;
 
