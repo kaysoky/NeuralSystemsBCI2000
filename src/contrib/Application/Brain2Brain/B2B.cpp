@@ -78,8 +78,8 @@ DynamicFeedbackTask::DynamicFeedbackTask()
         "GameScore 16 0 0 0",
         "TrialType 2 0 0 0", // 0 for Airplane, 1 for Missile
         "CountdownHitReported 1 0 0 0", // Spacebar was pressed in the Countdown game
-        "CountdownGoodScore 8 0 0 0", // Number of planes not shot + number of missiles shot
-        "CountdownBadScore 8 0 0 0", // Number of planes shot + number of missiles not shot
+        "CountdownMissileScore 8 0 0 0", // Number of missiles shot
+        "CountdownAirplaneScore 8 0 0 0", // Number of airplanes shot
     END_STATE_DEFINITIONS
 
     // Title screen message
@@ -154,7 +154,7 @@ DynamicFeedbackTask::OnPreflight(const SignalProperties& Input) const {
 
 void
 DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
-    // Give C-functions a reference to this program
+    // Give the static C-functions a reference to this program
     currentTask = this;
 
     // Determine where this application is being executed
@@ -546,10 +546,10 @@ static int CountdownServerHandler(struct mg_connection *conn) {
                 
                 if (parts[0].compare("spacebar") == 0) {
                     currentTask->countdownSpacebarPressed = stoi(parts[1]);
-                } else if (parts[0].compare("good_score") == 0) {
-                    currentTask->countdownGoodScore = stoi(parts[1]);
-                } else if (parts[0].compare("bad_score") == 0) {
-                    currentTask->countdownBadScore = stoi(parts[1]);
+                } else if (parts[0].compare("missile") == 0) {
+                    currentTask->countdownMissileScore = stoi(parts[1]);
+                } else if (parts[0].compare("airplane") == 0) {
+                    currentTask->countdownAirplaneScore = stoi(parts[1]);
                 }
             }
 

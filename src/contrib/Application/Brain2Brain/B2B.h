@@ -94,7 +94,7 @@ public:
      * State from the Countdown game reported when issuing the stop command
      */
     bool countdownSpacebarPressed;
-    int countdownGoodScore, countdownBadScore;
+    int countdownMissileScore, countdownAirplaneScore;
     
     /*
      * Holds whether the YES target has been hit
