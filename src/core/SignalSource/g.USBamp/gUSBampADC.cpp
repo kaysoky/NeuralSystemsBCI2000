@@ -671,15 +671,16 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
 // **************************************************************************
 void gUSBampADC::Process( const GenericSignal& input, GenericSignal& signal )
 {
-    if (m_digitalOutput)
+    if (m_digitalOutput) {
         GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 0);
 
-    if ( mDigExpression.IsValid() )
-    {
-      if( mDigExpression.Evaluate( &input ) )
-        GT_SetDigitalOut( m_hdev.at(0), (UCHAR)2, (UCHAR)1 );
-      else
-        GT_SetDigitalOut( m_hdev.at(0), (UCHAR)2, (UCHAR)0 );
+        if ( mDigExpression.IsValid() )
+        {
+          if( mDigExpression.Evaluate( &input ) )
+            GT_SetDigitalOut( m_hdev.at(0), (UCHAR)2, (UCHAR)1 );
+          else
+            GT_SetDigitalOut( m_hdev.at(0), (UCHAR)2, (UCHAR)0 );
+        }
     }
 
     /*if (WaitForSingleObject(acquireEventRead, m_timeoutms) != WAIT_OBJECT_0)
