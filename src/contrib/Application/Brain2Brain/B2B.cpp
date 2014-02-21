@@ -38,6 +38,9 @@ DynamicFeedbackTask::DynamicFeedbackTask()
       mrWindow( Window() ),
       mVisualFeedback(false),
       mIsVisualCatchTrial(false) {
+      
+    // Note: See FeedbackTask.cpp for more parameters and states
+    
     BEGIN_PARAMETER_DEFINITIONS
     "Application:Targets matrix Targets= "
         " 2 " // rows
@@ -73,9 +76,11 @@ DynamicFeedbackTask::DynamicFeedbackTask()
         "CursorPosX 12 0 0 0",
         "CursorPosY 12 0 0 0",
         "GameScore 16 0 0 0",
-        "TrialType 8 0 0 0",
+        "TrialType 2 0 0 0", // 0 for Airplane, 1 for Missile
+        "CountdownHitReported 1 0 0 0", // Spacebar was pressed in the Countdown game
+        "CountdownGoodScore 8 0 0 0", // Number of planes not shot + number of missiles shot
+        "CountdownBadScore 8 0 0 0", // Number of planes shot + number of missiles not shot
     END_STATE_DEFINITIONS
-    // Note: ResultCode and TargetCode are defined by FeedbackTask.cpp
 
     // Title screen message
     GUI::Rect rect = {0.5f, 0.4f, 0.5f, 0.6f};
@@ -173,6 +178,7 @@ DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
     // Start the server on a separate thread
     lastClientPost = CONTINUE;
     targetHit = false;
+    runEnded = false;
     mg_start_thread(CountdownServerThread, NULL);
     bciout << "Server listening on port " << mg_get_option(server, "listening_port");
     server_lock->Release();
@@ -216,6 +222,11 @@ DynamicFeedbackTask::OnStartRun() {
     mTrialStatistics.Reset();
     mScore = 0;
     State("GameScore") = mScore;
+    
+    // Reset state of the score of the game
+    server_lock->Acquire();
+    countdownGoodScore = 0;
+    countdownBadScore = 0;
 
     // Determine the trial types
     if (nextTrialType != NULL) {
@@ -241,6 +252,7 @@ DynamicFeedbackTask::OnStartRun() {
             nextTrialType.push(trialVector[i]);
         }
     }
+    server_lock->Release();
 
     AppLog << "Run #" << mRunCount << " started" << endl;
     DisplayMessage(">> Get Ready! <<");
@@ -287,9 +299,10 @@ DynamicFeedbackTask::OnTrialBegin() {
         mpFeedbackScene->SetTargetVisible(State("TargetCode") == (i + 1), i);
     }
 
-    // Reset the 'targetHit' value
+    // Reset some states to defaults
     server_lock->Acquire();
     targetHit = false;
+    countdownSpacebarPressed = false;
     server_lock->Release();
 }
 
@@ -344,14 +357,8 @@ DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProg
     }
 
     // Check for the stop signal
-    // Note: This seemingly redundant double-check is necessary to prevent race conditions
     if (lastClientPost == STOP_TRIAL) {
-        server_lock->Acquire();
-        if (lastClientPost == STOP_TRIAL) {
-            doProgress = true;
-            lastClientPost = CONTINUE;
-        }
-        server_lock->Release();
+        doProgress = true;
     }
 }
 
@@ -385,10 +392,16 @@ DynamicFeedbackTask::OnTrialEnd(void) { };
 
 void
 DynamicFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
-    // Wait for the start signal
     doProgress = false;
-
+    
+    // Wait for the stop signal
+    // This includes a status update from the game
     server_lock->Acquire();
+    if (lastClientPost == STOP_TRIAL) {
+        lastClientPost = CONTINUE;
+    }
+
+    // Wait for the start signal
     if (lastClientPost == START_TRIAL) {
         doProgress = true;
         lastClientPost = CONTINUE;
@@ -408,6 +421,10 @@ DynamicFeedbackTask::OnStopRun() {
            << mTrialStatistics.Bits() << " bits transferred.\n, "
            << "Game Score:\n " << mScore
            << "====================="  << endl;
+
+    server_lock->Acquire();
+    runEnded = true;
+    server_lock->Release();
 
     DisplayMessage("Timeout");
 }
@@ -438,6 +455,12 @@ DynamicFeedbackTask::DisplayScore(const string&inMessage) {
     }
 }
 
+bool 
+DynamicFeedbackTask::isRunning() {
+    // Note: defined in FeedbackTask.cpp
+    return !State("PauseApplication") && State("Running")
+}
+
 /*
  * Loops infinitely and polls for incoming connections
  */
@@ -451,6 +474,21 @@ static void *CountdownServerThread(void *arg) {
     }
 
     return NULL;
+}
+
+/*
+ * Splits a string by a delimiter
+ */
+static vector<string> split(const string input, char delimiter) {
+    stringstream splitter(input);
+    string item;
+    vector<string> items;
+    while (getline(ss, item, delimiter)) {
+        if (!item.empty()) {
+            items.push_back(item);
+        }
+    }
+    return items;
 }
 
 /*
@@ -468,10 +506,17 @@ static int CountdownServerHandler(struct mg_connection *conn) {
     bciout << method << " " << uri << endl;
 
     if (method.compare("POST") == 0) {
+        // Check to see if the application is ready
+        // Otherwise, reject the REST call
+        if (!currentTask->isRunning()) {
+            mg_send_status(conn, 418);
+            mg_send_data(conn, "", 0);
+            return MG_REQUEST_PROCESSED;
+        }
+        
         // These methods set an internal variable for the other threads to monitor
         // Whenever the value is read at the appropriate stage of the trial,
         //   'lastClientPost' is reset to CONTINUE
-
         if (uri.compare("/trial/start") == 0) {
             if (nextTrialType.empty()) {
                 currentTask->currentTrialType = random(DynamicFeedbackTask::TrialType::LAST);
@@ -490,18 +535,42 @@ static int CountdownServerHandler(struct mg_connection *conn) {
             mg_send_status(conn, 204);
             mg_send_data(conn, "", 0);
             currentTask->lastClientPost = DynamicFeedbackTask::TrialState::STOP_TRIAL;
+            
+            // Process the query string
+            vector<string> queries = split(string(conn->query_string), '&');
+            for (int i = 0; i < queries.size(); i++) {
+                vector<string> parts = split(queries[i], '=');
+                if (parts.size() != 2) {
+                    continue;
+                }
+                
+                if (parts[0].compare("spacebar") == 0) {
+                    currentTask->countdownSpacebarPressed = stoi(parts[1]);
+                } else if (parts[0].compare("good_score") == 0) {
+                    currentTask->countdownGoodScore = stoi(parts[1]);
+                } else if (parts[0].compare("bad_score") == 0) {
+                    currentTask->countdownBadScore = stoi(parts[1]);
+                }
+            }
 
             return MG_REQUEST_PROCESSED;
         }
 
     } else if (method.compare("GET") == 0) {
-        // This allows the Countdown game to poll for a hit
-        // 1 == hit, 0 == no hit
-        if (uri.compare("/trial/hit") == 0) {
+        // This allows the Countdown game to poll for a status
+        //   HIT means a TMS pulse should be triggerd
+        //   REFRESH means the run has ended and the game should refresh
+        if (uri.compare("/trial/status") == 0) {
             if (currentTask->targetHit) {
                 mg_send_status(conn, 200);
                 mg_send_header(conn, "Content-Type", "text/plain");
                 mg_printf_data(conn, "HIT");
+                currentTask->targetHit = false;
+            } else if (currentTask->runEnded) {
+                mg_send_status(conn, 200);
+                mg_send_header(conn, "Content-Type", "text/plain");
+                mg_printf_data(conn, "REFRESH");
+                currentTask->runEnded = false;
             } else {
                 mg_send_status(conn, 204);
                 mg_send_data(conn, "", 0);

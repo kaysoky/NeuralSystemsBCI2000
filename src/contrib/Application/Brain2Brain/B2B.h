@@ -22,6 +22,14 @@ class DynamicFeedbackTask : public FeedbackTask {
 public:
     DynamicFeedbackTask();
     virtual ~DynamicFeedbackTask();
+    
+    /*
+     * Checks the state of the application
+     * And returns true if a trial is ready to be run
+     *
+     * Note: This gives the Countdown server read access to a State variable
+     */
+    bool isRunning();
 	
     /* Objects associated with the Countdown game */
     // Note: since Mongoose is written in C, and needs to access these variables
@@ -59,14 +67,10 @@ public:
 	struct mg_server *server;
     
     /*
-     * The current trial type
-     * Note: This is necessary since the C code should not access BCI2000 states directly
-     */
-    TrialType currentTrialType;
-    
-    /*
      * Holds a random list of trials to pass onto the Countdown game
      * If empty, then just choose a random trial type instead
+     * 
+     * This should be initialized when a run starts.  
      */
     std::queue<TrialType> nextTrialType;
     
@@ -78,6 +82,21 @@ public:
     TrialState lastClientPost;
     
     /*
+     * Note: This is necessary since the C code should not set the BCI2000 states directly
+     * 
+     * This value is updated when the Countdown game calls POST /trial/start
+     * After lastClientPost is set to START_TRIAL, 
+     *   this value should be copied into BCI2000's state ("TrialType")
+     */
+    TrialType currentTrialType;
+    
+    /*
+     * State from the Countdown game reported when issuing the stop command
+     */
+    bool countdownSpacebarPressed;
+    int countdownGoodScore, countdownBadScore;
+    
+    /*
      * Holds whether the YES target has been hit
      * The Countdown game is expected to poll for this value regularly
      * When it is sent to the game, the value is reset to false.  
@@ -86,6 +105,13 @@ public:
      *   State("ResultCode") == State("TargetCode");
      */
     bool targetHit;
+    
+    /*
+     * Holds whether the set of trials has ended
+     * The Countdown game is expected to poll for this value regularly
+     * When it is sent to the game, the value is reset to false.  
+     */
+    bool runEnded;
     
     /* End of Countdown game objects */
 
