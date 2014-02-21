@@ -10,8 +10,12 @@
 #include <math.h>
 #include <sstream>
 #include <algorithm>
+#include <cstdlib>
 
 #include <QImage>
+
+#define CURSOR_POS_BITS "12"
+const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
 
 // Used to pass state between this class (C++) and Mongoose (C)
 static DynamicFeedbackTask *currentTask;
@@ -225,8 +229,8 @@ DynamicFeedbackTask::OnStartRun() {
     
     // Reset state of the score of the game
     server_lock->Acquire();
-    countdownGoodScore = 0;
-    countdownBadScore = 0;
+    countdownMissileScore = 0;
+    countdownAirplaneScore = 0;
 
     // Determine the trial types
     if (nextTrialType != NULL) {
@@ -249,7 +253,7 @@ DynamicFeedbackTask::OnStartRun() {
         // Shuffle and store the ordering
         random_shuffle(trialVector.begin(), trialVector.end());
         for (int i = 0; i < trialVector.size(); i++) {
-            nextTrialType.push(trialVector[i]);
+            nextTrialType->push(trialVector[i]);
         }
     }
     server_lock->Release();
@@ -399,6 +403,11 @@ DynamicFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
     server_lock->Acquire();
     if (lastClientPost == STOP_TRIAL) {
         lastClientPost = CONTINUE;
+
+        // Now store the status update into B2B's state
+        State("CountdownHitReported") = countdownSpacebarPressed;
+        State("CountdownMissileScore") = countdownMissileScore;
+        State("CountdownAirplaneScore") = countdownAirplaneScore;
     }
 
     // Wait for the start signal
@@ -458,7 +467,7 @@ DynamicFeedbackTask::DisplayScore(const string&inMessage) {
 bool 
 DynamicFeedbackTask::isRunning() {
     // Note: defined in FeedbackTask.cpp
-    return !State("PauseApplication") && State("Running")
+    return !State("PauseApplication") && State("Running");
 }
 
 /*
@@ -483,7 +492,7 @@ static vector<string> split(const string input, char delimiter) {
     stringstream splitter(input);
     string item;
     vector<string> items;
-    while (getline(ss, item, delimiter)) {
+    while (getline(splitter, item, delimiter)) {
         if (!item.empty()) {
             items.push_back(item);
         }
@@ -518,10 +527,11 @@ static int CountdownServerHandler(struct mg_connection *conn) {
         // Whenever the value is read at the appropriate stage of the trial,
         //   'lastClientPost' is reset to CONTINUE
         if (uri.compare("/trial/start") == 0) {
-            if (nextTrialType.empty()) {
-                currentTask->currentTrialType = random(DynamicFeedbackTask::TrialType::LAST);
+            if (currentTask->nextTrialType->empty()) {
+                currentTask->currentTrialType = static_cast<DynamicFeedbackTask::TrialType>(rand() % DynamicFeedbackTask::TrialType::LAST);
             } else {
-                currentTask->currentTrialType = nextTrialType.pop();
+                currentTask->currentTrialType = currentTask->nextTrialType->front();
+                currentTask->nextTrialType->pop();
             }
             
             mg_send_status(conn, 200);
@@ -547,9 +557,9 @@ static int CountdownServerHandler(struct mg_connection *conn) {
                 if (parts[0].compare("spacebar") == 0) {
                     currentTask->countdownSpacebarPressed = stoi(parts[1]);
                 } else if (parts[0].compare("missile") == 0) {
-                    currentTask->countdownMissileScore = stoi(parts[1]);
+                    currentTask->countdownMissileScore += stoi(parts[1]);
                 } else if (parts[0].compare("airplane") == 0) {
-                    currentTask->countdownAirplaneScore = stoi(parts[1]);
+                    currentTask->countdownAirplaneScore += stoi(parts[1]);
                 }
             }
 

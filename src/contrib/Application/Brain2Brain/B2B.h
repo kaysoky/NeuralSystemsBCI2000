@@ -72,7 +72,7 @@ public:
      * 
      * This should be initialized when a run starts.  
      */
-    std::queue<TrialType> nextTrialType;
+    std::queue<TrialType> *nextTrialType;
     
     /*
      * Holds the most recent trial-state command issued by the Countdown game
