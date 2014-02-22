@@ -32,7 +32,7 @@ public:
     bool isRunning();
 	
     /* Objects associated with the Countdown game */
-    // Note: since Mongoose is written in C, and needs to access these variables
+    // Note: Since Mongoose is written in C, and needs to access these variables
     //       I've set them up as public variables.
     
     /*
@@ -71,6 +71,8 @@ public:
      * If empty, then just choose a random trial type instead
      * 
      * This should be initialized when a run starts.  
+     * 
+     * When the Countdown game starts a trial, it should fetch the trial type from here.
      */
     std::queue<TrialType> *nextTrialType;
     
@@ -92,6 +94,11 @@ public:
     
     /*
      * State from the Countdown game reported when issuing the stop command
+     * The two scores should be derivable via the spacebar boolean
+     *   but are included for ease of analysis.
+     * 
+     * Note: Treat these values as semaphores, 
+     *         locked by lastClientPost == STOP_TRIAL
      */
     bool countdownSpacebarPressed;
     int countdownMissileScore, countdownAirplaneScore;

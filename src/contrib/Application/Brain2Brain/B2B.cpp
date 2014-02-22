@@ -515,18 +515,19 @@ static int CountdownServerHandler(struct mg_connection *conn) {
     bciout << method << " " << uri << endl;
 
     if (method.compare("POST") == 0) {
-        // Check to see if the application is ready
-        // Otherwise, reject the REST call
-        if (!currentTask->isRunning()) {
-            mg_send_status(conn, 418);
-            mg_send_data(conn, "", 0);
-            return MG_REQUEST_PROCESSED;
-        }
-        
         // These methods set an internal variable for the other threads to monitor
         // Whenever the value is read at the appropriate stage of the trial,
         //   'lastClientPost' is reset to CONTINUE
         if (uri.compare("/trial/start") == 0) {
+            // Check to see if the application is ready
+            // Otherwise, reject the REST call
+            if (!currentTask->isRunning()) {
+                mg_send_status(conn, 418);
+                mg_send_data(conn, "", 0);
+                return MG_REQUEST_PROCESSED;
+            }
+            
+            // Fetch the next trial type
             if (currentTask->nextTrialType->empty()) {
                 currentTask->currentTrialType = static_cast<DynamicFeedbackTask::TrialType>(rand() % DynamicFeedbackTask::TrialType::LAST);
             } else {
@@ -554,12 +555,13 @@ static int CountdownServerHandler(struct mg_connection *conn) {
                     continue;
                 }
                 
+                // We expect integers
                 if (parts[0].compare("spacebar") == 0) {
                     currentTask->countdownSpacebarPressed = stoi(parts[1]);
                 } else if (parts[0].compare("missile") == 0) {
-                    currentTask->countdownMissileScore += stoi(parts[1]);
+                    currentTask->countdownMissileScore = stoi(parts[1]);
                 } else if (parts[0].compare("airplane") == 0) {
-                    currentTask->countdownAirplaneScore += stoi(parts[1]);
+                    currentTask->countdownAirplaneScore = stoi(parts[1]);
                 }
             }
 

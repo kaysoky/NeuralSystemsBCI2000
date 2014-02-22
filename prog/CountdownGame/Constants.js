@@ -21,7 +21,7 @@ var PAUSE_BETWEEN_TRIALS = 2000; // Milliseconds
 /**
  * How frequently should the game poll the server for a status update?
  */
-var HIT_POLL_INTERVAL = 250; // Milliseconds
+var POLL_INTERVAL = 250; // Milliseconds
 
 /**
  * Trial types
