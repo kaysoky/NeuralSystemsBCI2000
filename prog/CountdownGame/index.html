@@ -158,6 +158,9 @@
                         async: false, 
                         success: function() {
                             setTimeout(RunTrial, PAUSE_BETWEEN_TRIALS);
+                        }, 
+                        error: function(jqXHR) {
+                            alert("POST /trial/stop -> " + jqXHR.status + " " + jqXHR.statusText);
                         }
                     });
                 }
@@ -210,11 +213,11 @@
                 <img src="Missile.png" alt="" class="projectile" />
             </div>
             <div id="Scoreboard">
-                <div>Score: 
-                    <span id="GoodScore">0</span>
-                    -
-                    <span id="BadScore">0</span>
-                    /
+                <div>Missiles Hit: 
+                    <span id="GoodScore">0</span><br />
+                    Airplanes Hit: 
+                    <span id="BadScore">0</span><br />
+                    Total Trials: 
                     <span id="TotalTrials">0</span>
                 </div>
             </div>

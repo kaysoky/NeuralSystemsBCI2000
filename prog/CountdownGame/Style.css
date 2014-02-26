@@ -81,7 +81,7 @@ div, img {
     text-align: center;
     top: calc(50% - 25px);
     color: #6D0F00;
-    font-size: 25px;
+    font-size: 12px;
 }
 .hidden {
     display: none;

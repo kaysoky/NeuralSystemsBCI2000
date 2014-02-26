@@ -41,7 +41,8 @@ DynamicFeedbackTask::DynamicFeedbackTask()
       mScore(0.0),
       mrWindow( Window() ),
       mVisualFeedback(false),
-      mIsVisualCatchTrial(false) {
+      mIsVisualCatchTrial(false), 
+      nextTrialType(NULL) {
       
     // Note: See FeedbackTask.cpp for more parameters and states
     
@@ -49,8 +50,8 @@ DynamicFeedbackTask::DynamicFeedbackTask()
     "Application:Targets matrix Targets= "
         " 2 " // rows
         " [pos%20x pos%20y width%20x width%20y] " // columns
-        " 50 90 8 8 "
-        " 50 10 8 8 "
+        " 50 90 20 20 "
+        " 50 10 20 20 "
         " // Number of targets and their position (center) and dimensions in percentage coordinates",
     "Application:Targets int TargetColor= 0x0000FF % % % " // Blue
         " // target color (color)",
@@ -231,12 +232,13 @@ DynamicFeedbackTask::OnStartRun() {
     server_lock->Acquire();
     countdownMissileScore = 0;
     countdownAirplaneScore = 0;
+    isRunning = true;
 
     // Determine the trial types
     if (nextTrialType != NULL) {
         delete nextTrialType;
-        nextTrialType = new queue<TrialType>();
     }
+    nextTrialType = new queue<TrialType>();
     // Note: This parameter is defined in FeedbackTask.cpp
     if (!string(Parameter("NumberOfTrials")).empty()) {
         // We know the number of trials,
@@ -384,6 +386,8 @@ DynamicFeedbackTask::OnFeedbackEnd() {
         }
     }
 
+    mpFeedbackScene->SetCursorVisible(false);
+
     // Persistent Score Display
     stringstream ss (stringstream::in | stringstream::out);
     int intScore = mScore >= 0 ? (int)(mScore + 0.5) : (int)(mScore - 0.5);
@@ -433,6 +437,7 @@ DynamicFeedbackTask::OnStopRun() {
 
     server_lock->Acquire();
     runEnded = true;
+    isRunning = false;
     server_lock->Release();
 
     DisplayMessage("Timeout");
@@ -462,12 +467,6 @@ DynamicFeedbackTask::DisplayScore(const string&inMessage) {
         mpMessage2->SetText("+" + inMessage + " ");
         mpMessage2->Show();
     }
-}
-
-bool 
-DynamicFeedbackTask::isRunning() {
-    // Note: defined in FeedbackTask.cpp
-    return !State("PauseApplication") && State("Running");
 }
 
 /*
@@ -521,7 +520,7 @@ static int CountdownServerHandler(struct mg_connection *conn) {
         if (uri.compare("/trial/start") == 0) {
             // Check to see if the application is ready
             // Otherwise, reject the REST call
-            if (!currentTask->isRunning()) {
+            if (!currentTask->isRunning) {
                 mg_send_status(conn, 418);
                 mg_send_data(conn, "", 0);
                 return MG_REQUEST_PROCESSED;

@@ -22,14 +22,6 @@ class DynamicFeedbackTask : public FeedbackTask {
 public:
     DynamicFeedbackTask();
     virtual ~DynamicFeedbackTask();
-    
-    /*
-     * Checks the state of the application
-     * And returns true if a trial is ready to be run
-     *
-     * Note: This gives the Countdown server read access to a State variable
-     */
-    bool isRunning();
 	
     /* Objects associated with the Countdown game */
     // Note: Since Mongoose is written in C, and needs to access these variables
@@ -119,6 +111,14 @@ public:
      * When it is sent to the game, the value is reset to false.  
      */
     bool runEnded;
+    
+    /*
+     * Checks the state of the application
+     * And returns true if a trial is ready to be run
+     *
+     * Note: This gives the Countdown server read access to a State variable
+     */
+    bool isRunning;
     
     /* End of Countdown game objects */
 
