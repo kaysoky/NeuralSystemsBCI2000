@@ -1,191 +1,82 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "B2B.h"
-#include "Localization.h"
-#include "DFBuildScene2D.h"
+#include "MongooseTask.h"
 
-#include "buffers.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <sstream>
 #include <algorithm>
 #include <cstdlib>
 
-#include <QImage>
+/*
+ * The currently running task
+ */
+static MongooseTask *currentTask;
+static void *MongooseServerThread(void *arg);
 
-#define CURSOR_POS_BITS "12"
-const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
-
-// Used to pass state between this class (C++) and Mongoose (C)
-static DynamicFeedbackTask *currentTask;
-static void *CountdownServerThread(void *arg);
-static int CountdownServerHandler(struct mg_connection *conn);
-
-RegisterFilter( DynamicFeedbackTask, 3 );
-
-using namespace std;
-
-DynamicFeedbackTask::DynamicFeedbackTask()
-    : mpFeedbackScene( NULL ),
-      mpMessage( NULL ),
-      mpMessage2( NULL ),
-      mCursorColor( RGBColor::White ),
-      mRunCount( 0 ),
-      mTrialCount( 0 ),
-      mCurFeedbackDuration( 0 ),
-      mMaxFeedbackDuration( 0 ),
-      mCursorSpeedX( 1.0 ),
-      mCursorSpeedY( 1.0 ),
-      mCursorSpeedZ( 1.0 ),
-      mScore(0.0),
-      mrWindow( Window() ),
-      mVisualFeedback(false),
-      mIsVisualCatchTrial(false), 
-      nextTrialType(NULL) {
-      
-    // Note: See FeedbackTask.cpp for more parameters and states
+MongooseTask::MongooseTask()
+    : nextTrialType(NULL) {
     
     BEGIN_PARAMETER_DEFINITIONS
-    "Application:Targets matrix Targets= "
-        " 2 " // rows
-        " [pos%20x pos%20y width%20x width%20y] " // columns
-        " 50 90 20 20 "
-        " 50 10 20 20 "
-        " // Number of targets and their position (center) and dimensions in percentage coordinates",
-    "Application:Targets int TargetColor= 0x0000FF % % % " // Blue
-        " // target color (color)",
-
-    "Application:Cursor float CursorWidth= 10 10 0.0 % "
-        " // feedback cursor width in percent of screen width",
-    "Application:Cursor int CursorColor= 0xff0000 % % % " // Red
-        " // Cursor color (color)",
-    "Application:Cursor floatlist CursorPos= 3 50 50 50 % % "
-        " // cursor starting position",
-
-    "Application:Sequencing float MaxFeedbackDuration= 3s % 0 % "
-        " // abort a trial after this amount of feedback time has expired",
-
-    "Application:3DEnvironment int WorkspaceBoundaryColor= 0xffffff 0 % % "
-        " // workspace boundary color (0xff000000 for invisible) (color)",
-    "Application:Feedback int VisualFeedback= 1 1 0 1 "
-        "// provide visual stimulus (boolean)",
-    "Application:Feedback intlist VisualCatchTrials= 4 1 3 4 2 % % % // "
-        "// list of visual catch trials, leave empty for none",
-
-    "Application:Connector string ListeningPort= % "
+    "Application:Mongoose string FileDirectory= % "
+        "CountdownGame/ % % //"
+    "Application:Mongoose string ListeningPort= % "
         "20320 % % // Port for the server to listen on",
     END_PARAMETER_DEFINITIONS
 
     BEGIN_STATE_DEFINITIONS
-        "CursorPosX 12 0 0 0",
-        "CursorPosY 12 0 0 0",
-        "GameScore 16 0 0 0",
-        "TrialType 2 0 0 0", // 0 for Airplane, 1 for Missile
-        "CountdownHitReported 1 0 0 0", // Spacebar was pressed in the Countdown game
-        "CountdownMissileScore 8 0 0 0", // Number of missiles shot
+        "TrialType              2 0 0 0", // 0 for Airplane, 1 for Missile
+        "CountdownHitReported   1 0 0 0", // Spacebar was pressed in the Countdown game
+        "CountdownMissileScore  8 0 0 0", // Number of missiles shot
         "CountdownAirplaneScore 8 0 0 0", // Number of airplanes shot
     END_STATE_DEFINITIONS
 
-    // Title screen message
-    GUI::Rect rect = {0.5f, 0.4f, 0.5f, 0.6f};
-    mpMessage = new TextField(mrWindow);
-    mpMessage->SetTextColor(RGBColor::Lime)
-              .SetTextHeight(0.8f)
-              .SetColor(RGBColor::Gray)
-              .SetAspectRatioMode(GUI::AspectRatioModes::AdjustWidth)
-              .SetObjectRect(rect);
-
-    // Score message in top right corner
-    GUI::Rect rect3 = {0.89f, 0.01f, .99f, 0.09f};
-    mpMessage2 = new TextField(mrWindow);
-    mpMessage2->SetTextColor(RGBColor::Black)
-               .SetTextHeight(0.45f)
-               .SetColor(RGBColor::White)
-               .SetAspectRatioMode(GUI::AspectRatioModes::AdjustNone)
-               .SetObjectRect(rect3);
-
-    // Synchronization for the countdown server
     server_lock = new OSMutex();
-
-    // A new server instance is created every time the configuration is set
     server = NULL;
-}
-
-DynamicFeedbackTask::~DynamicFeedbackTask() {
-    delete mpFeedbackScene;
+    state_lock = new OSMutex();
+    
+    // Give the static C-functions a reference to this program
+    currentTask = this;
+    
+    // Start the server on a separate thread
+    mg_start_thread(MongooseServerThread, NULL);
 }
 
 void
-DynamicFeedbackTask::OnPreflight(const SignalProperties& Input) const {
-    if (Parameter("Targets")->NumValues() <= 0) {
-        bcierr << "At least one target must be specified" << endl;
+MongooseTask::OnPreflight(const SignalProperties& Input) const {
+    if (string(Parameter("FileDirectory")).empty()) {
+        bcierr << "Mongoose FileDirectory must be specified" << endl;
     }
-
-    if (Parameter("CursorPos")->NumValues() != 3) {
-        bcierr << "Parameter \"CursorPos\" must have 3 entries" << endl;
-    }
-
-    const char* colorParams[] = {
-        "CursorColor",
-        "TargetColor",
-        "WorkspaceBoundaryColor"
-    };
-    for (size_t i = 0; i < sizeof(colorParams) / sizeof(*colorParams); ++i) {
-        if (RGBColor(Parameter(colorParams[i])) == RGBColor(RGBColor::NullColor)) {
-            bcierr << "Invalid RGB value in " << colorParams[ i ] << endl;
-        }
-    }
-
-    if (Parameter("FeedbackDuration").InSampleBlocks() <= 0) {
-        bcierr << "FeedbackDuration must be greater 0" << endl;
-    }
-
-    Parameter("SampleBlockSize");
-    Parameter("ListeningPort");
-
-    if (Parameter("VisualFeedback") == 1) {
-        ParamRef visualCatch = Parameter("VisualCatchTrials");
-        for (int i = 0; i < visualCatch->NumValues(); ++i) {
-            if (visualCatch(i) < 1) {
-                bcierr << "Invalid stimulus code "
-                       << "(" << visualCatch(i) << ") "
-                       << "at visualCatch(" << i << ")"
-                       << endl;
-            }
-        }
+    if (string(Parameter("ListeningPort")).empty()) {
+        bcierr << "Mongoose server ListeningPort must be specified" << endl;
     }
 }
 
 void
 DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
-    // Give the static C-functions a reference to this program
-    currentTask = this;
-
-    // Determine where this application is being executed
-    char buffer[MAX_PATH];
-    GetModuleFileName(NULL, buffer, MAX_PATH);
-    string::size_type pos = string(buffer).find_last_of( "\\/" );
-    string gameLocation = string(buffer).substr(0, pos);
-    gameLocation += "/CountdownGame/";
-
+    
     // Initialize the server
     server_lock->Acquire();
     if (server != NULL) {
         mg_destroy_server(&server);
     }
-    string listeningPort = string(Parameter("ListeningPort"));
     server = mg_create_server(NULL);
-    mg_set_option(server, "document_root", gameLocation.c_str());
-    mg_set_option(server, "listening_port", listeningPort.c_str());
-    mg_set_request_handler(server, CountdownServerHandler);
 
-    // Start the server on a separate thread
-    lastClientPost = CONTINUE;
-    targetHit = false;
-    runEnded = false;
-    mg_start_thread(CountdownServerThread, NULL);
+    // Determine and set where the files to be served are
+    char fileDirectory[MAX_PATH];
+    fileDirectory = realpath(string(Parameter("FileDirectory")).c_str(), fileDirectory);
+    mg_set_option(server, "document_root", fileDirectory);
+    
+    // Set the request handler
+    mg_set_request_handler(server, MongooseServerHandler);
+    
+    // Determine and set the listening port
+    string listeningPort = string(Parameter("ListeningPort"));
+    mg_set_option(server, "listening_port", listeningPort.c_str());
     bciout << "Server listening on port " << mg_get_option(server, "listening_port");
+
     server_lock->Release();
 
     // Cursor speed in pixels per signal block duration:
@@ -258,6 +149,9 @@ DynamicFeedbackTask::OnStartRun() {
             nextTrialType->push(trialVector[i]);
         }
     }
+    lastClientPost = CONTINUE;
+    targetHit = false;
+    runEnded = false;
     server_lock->Release();
 
     AppLog << "Run #" << mRunCount << " started" << endl;
@@ -275,7 +169,7 @@ DynamicFeedbackTask::DoPreRun(const GenericSignal&, bool& doProgress) {
         lastClientPost = CONTINUE;
         
         // Update the trial type state
-        State("TrialType") = currentTrialType;
+        State("TrialType") = (int) currentTrialType;
     }
     server_lock->Release();
 }
@@ -285,7 +179,7 @@ DynamicFeedbackTask::OnTrialBegin() {
     ++mTrialCount;
     AppLog.Screen << "Trial #" << mTrialCount
                   << ", target: " << State("TargetCode")
-                  << endl;
+                  << endl << ", TrialType: " << (int) State("TrialType") << ", " << currentTrialType << endl;
 
     if (mVisualFeedback == true) {
         mIsVisualCatchTrial = false;
@@ -327,6 +221,8 @@ DynamicFeedbackTask::OnFeedbackBegin() {
 void
 DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProgress) {
     doProgress = false;
+
+	State("CountdownMissileScore") = State("CountdownMissileScore") + 1;
 
     // Update cursor position
     float x = mpFeedbackScene->CursorXPosition(),
@@ -472,10 +368,14 @@ DynamicFeedbackTask::DisplayScore(const string&inMessage) {
 /*
  * Loops infinitely and polls for incoming connections
  */
-static void *CountdownServerThread(void *arg) {
+static void *MongooseServerThread(void *arg) {
     // Keep polling the server
     // Note: the server can be swapped out at any time (hence the locking)
     while (true) {
+        if (currentTask->server == NULL) {
+            continue;
+        }
+        
         currentTask->server_lock->Acquire();
         mg_poll_server(currentTask->server, 10);
         currentTask->server_lock->Release();

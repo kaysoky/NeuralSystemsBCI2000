@@ -17,7 +17,8 @@ PollServer = function() {
                             async: false, 
                             success: function() {}, 
                             error: function(jqXHR) {
-                                alert("POST /TMS/fire -> " + jqXHR.status + " " + jqXHR.statusText);
+                                // TODO: This code seems to be hit even when successful
+                                // alert("POST /TMS/fire -> " + jqXHR.status + " " + jqXHR.statusText);
                             }
                         });
                 }
