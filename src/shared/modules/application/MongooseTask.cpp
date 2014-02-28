@@ -62,14 +62,14 @@ void MongooseTask::InitializeServer(const SignalProperties& Input) {
 
     // Determine and set where the files to be served are
     char fileDirectory[MAX_PATH];
-    fileDirectory = realpath(string(Parameter("FileDirectory")).c_str(), fileDirectory);
+    fileDirectory = realpath(std::string(Parameter("FileDirectory")).c_str(), fileDirectory);
     mg_set_option(server, "document_root", fileDirectory);
     
     // Set the request handler
     mg_set_request_handler(server, MongooseServerHandler);
     
     // Determine and set the listening port
-    string listeningPort = string(Parameter("ListeningPort"));
+    std::string listeningPort = std::string(Parameter("ListeningPort"));
     mg_set_option(server, "listening_port", listeningPort.c_str());
     bciout << "Server listening on port " << mg_get_option(server, "listening_port");
 
@@ -91,9 +91,9 @@ void MongooseTask::PrepareForRun() {
     if (nextTrialType != NULL) {
         delete nextTrialType;
     }
-    nextTrialType = new queue<TrialType>();
+    nextTrialType = new std::queue<TrialType>();
     // Note: This parameter is defined in FeedbackTask.cpp
-    if (!string(Parameter("NumberOfTrials")).empty()) {
+    if (!std::string(Parameter("NumberOfTrials")).empty()) {
         // We know the number of trials,
         // so we can enforce an equal number of each trial type
         int numTrials = Parameter("NumberOfTrials");
@@ -106,7 +106,7 @@ void MongooseTask::PrepareForRun() {
         }
 
         // Shuffle and store the ordering
-        random_shuffle(trialVector.begin(), trialVector.end());
+        std::random_shuffle(trialVector.begin(), trialVector.end());
         for (unsigned int i = 0; i < trialVector.size(); i++) {
             nextTrialType->push(trialVector[i]);
         }
@@ -167,10 +167,10 @@ void *MongooseServerThread(void *arg) {
 /*
  * Splits a string by a delimiter
  */
-static vector<string> split(const string input, char delimiter) {
-    stringstream splitter(input);
-    string item;
-    vector<string> items;
+static vector<string> split(const std::string input, char delimiter) {
+    std::stringstream splitter(input);
+    std::string item;
+    std::vector<string> items;
     while (getline(splitter, item, delimiter)) {
         if (!item.empty()) {
             items.push_back(item);
@@ -180,8 +180,8 @@ static vector<string> split(const string input, char delimiter) {
 }
 
 int MongooseServerHandler(struct mg_connection *conn) {
-    string method(conn->request_method);
-    string uri(conn->uri);
+    std::string method(conn->request_method);
+    std::string uri(conn->uri);
     bciout << method << " " << uri << endl;
 
     if (method.compare("POST") == 0) {
@@ -218,9 +218,9 @@ int MongooseServerHandler(struct mg_connection *conn) {
             currentTask->lastClientPost = DynamicFeedbackTask::STOP_TRIAL;
             
             // Process the query string
-            vector<string> queries = split(string(conn->query_string), '&');
+            std::vector<string> queries = split(string(conn->query_string), '&');
             for (unsigned int i = 0; i < queries.size(); i++) {
-                vector<string> parts = split(queries[i], '=');
+                std::vector<string> parts = split(queries[i], '=');
                 if (parts.size() != 2) {
                     continue;
                 }
