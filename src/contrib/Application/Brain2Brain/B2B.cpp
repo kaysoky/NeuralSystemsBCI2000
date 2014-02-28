@@ -17,14 +17,7 @@
 #define CURSOR_POS_BITS "12"
 const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
 
-// Used to pass state between this class (C++) and Mongoose (C)
-static DynamicFeedbackTask *currentTask;
-static void *CountdownServerThread(void *arg);
-static int CountdownServerHandler(struct mg_connection *conn);
-
 RegisterFilter( DynamicFeedbackTask, 3 );
-
-using namespace std;
 
 DynamicFeedbackTask::DynamicFeedbackTask()
     : mpFeedbackScene( NULL ),
@@ -77,6 +70,10 @@ DynamicFeedbackTask::DynamicFeedbackTask()
         "CursorPosX 12 0 0 0",
         "CursorPosY 12 0 0 0",
         "GameScore 16 0 0 0",
+        "TrialType              2 0 0 0", // 0 for Airplane, 1 for Missile
+        "CountdownHitReported   1 0 0 0", // Spacebar was pressed in the Countdown game
+        "CountdownMissileScore  8 0 0 0", // Number of missiles shot
+        "CountdownAirplaneScore 8 0 0 0", // Number of airplanes shot
     END_STATE_DEFINITIONS
 
     // Title screen message
@@ -96,6 +93,8 @@ DynamicFeedbackTask::DynamicFeedbackTask()
                .SetColor(RGBColor::White)
                .SetAspectRatioMode(GUI::AspectRatioModes::AdjustNone)
                .SetObjectRect(rect3);
+               
+    state_lock = new OSMutex();
 }
 
 DynamicFeedbackTask::~DynamicFeedbackTask() {
@@ -181,7 +180,40 @@ DynamicFeedbackTask::OnInitialize(const SignalProperties& Input) {
 
 void
 DynamicFeedbackTask::OnStartRun() {
-    PrepareForRun();
+    // Reset state of the game
+    state_lock->Acquire();
+    isRunning = true;
+    countdownMissileScore = 0;
+    countdownAirplaneScore = 0;
+    lastClientPost = CONTINUE;
+    targetHit = false;
+    runEnded = false;
+
+    // Determine the trial types
+    if (nextTrialType != NULL) {
+        delete nextTrialType;
+    }
+    nextTrialType = new std::queue<TrialType>();
+    // Note: This parameter is defined in FeedbackTask.cpp
+    if (!std::string(Parameter("NumberOfTrials")).empty()) {
+        // We know the number of trials,
+        // so we can enforce an equal number of each trial type
+        int numTrials = Parameter("NumberOfTrials");
+        int typesPerTrial = numTrials / LAST;
+        vector<TrialType> trialVector(numTrials, AIRPLANE);
+        for (int i = AIRPLANE + 1; i < LAST; i++) {
+            for (int j = 0; j < typesPerTrial; j++) {
+                trialVector[i * typesPerTrial + j] = static_cast<TrialType>(i);
+            }
+        }
+
+        // Shuffle and store the ordering
+        std::random_shuffle(trialVector.begin(), trialVector.end());
+        for (unsigned int i = 0; i < trialVector.size(); i++) {
+            nextTrialType->push(trialVector[i]);
+        }
+    }
+    state_lock->Release();
     
     // Reset various counters
     ++mRunCount;
@@ -199,7 +231,7 @@ DynamicFeedbackTask::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
 
-    if (IsClientReady()) {
+    if (lastClientPost == START_TRIAL) {
         doProgress = true;
     }
 }
@@ -229,7 +261,11 @@ DynamicFeedbackTask::OnTrialBegin() {
         mpFeedbackScene->SetTargetVisible(State("TargetCode") == (i + 1), i);
     }
 
-    PrepareForTrial();
+    // Reset trial-specific Countdown state
+    state_lock->Acquire();
+    targetHit = false;
+    countdownSpacebarPressed = false;
+    state_lock->Release();
 }
 
 void
@@ -274,14 +310,26 @@ DynamicFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProg
         mpFeedbackScene->SetCursorColor(RGBColor::White);
         mpFeedbackScene->SetTargetColor(RGBColor::Red, State("ResultCode") - 1);
 
-        IndicateTargetHit();
+        // Pass this information onto the Countdown client
+        state_lock->Acquire();
+        targetHit = true;
+        state_lock->Release();
+        
         doProgress = true;
     }
+    
+    // Save whatever state is available to BCI2000
+    state_lock->Acquire();
+    State("TrialType") = currentTrialType;
+    State("CountdownHitReported") = countdownSpacebarPressed;
+    State("CountdownMissileScore") = countdownMissileScore;
+    State("CountdownAirplaneScore") = countdownAirplaneScore;
 
     // Check for the stop signal
-    if (IsClientDone()) {
+    if (lastClientPost == STOP_TRIAL) {
         doProgress = true;
     }
+    state_lock->Release();
 }
 
 void
@@ -319,7 +367,7 @@ DynamicFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
 
     // Wait for the start signal
-    if (IsClientDone()) {
+    if (lastClientPost == START_TRIAL) {
         doProgress = true;
     }
 }
@@ -337,7 +385,11 @@ DynamicFeedbackTask::OnStopRun() {
            << "Game Score:\n " << mScore
            << "====================="  << endl;
 
-    FinishRun();
+    // Indicate that the run has ended
+    state_lock->Acquire();
+    runEnded = true;
+    isRunning = false;
+    state_lock->Release();
 
     DisplayMessage("Timeout");
 }
@@ -367,3 +419,111 @@ DynamicFeedbackTask::DisplayScore(const string&inMessage) {
         mpMessage2->Show();
     }
 }
+
+/*
+ * Splits a string by a delimiter
+ */
+static vector<string> split(const std::string input, char delimiter) {
+    std::stringstream splitter(input);
+    std::string item;
+    std::vector<string> items;
+    while (getline(splitter, item, delimiter)) {
+        if (!item.empty()) {
+            items.push_back(item);
+        }
+    }
+    return items;
+}
+
+void DynamicFeedbackTask::HandleTrialStartRequest(struct mg_connection *conn) {
+    // Fetch the next trial type
+    if (nextTrialType->empty()) {
+        currentTrialType = static_cast<TrialType>(rand() % LAST);
+    } else {
+        currentTrialType = nextTrialType->front();
+        nextTrialType->pop();
+    }
+
+    // Pass along the trial type
+    mg_send_status(conn, 200);
+    mg_send_header(conn, "Content-Type", "text/plain");
+    mg_printf_data(conn, "%d", currentTrialType);
+    lastClientPost = START_TRIAL;
+}
+
+void DynamicFeedbackTask::HandleTrialStopRequest(struct mg_connection *conn) {
+    mg_send_status(conn, 204);
+    mg_send_data(conn, "", 0);
+    lastClientPost = STOP_TRIAL;
+
+    // Process the query string
+    std::vector<string> queries = split(std::string(conn->query_string), '&');
+    for (unsigned int i = 0; i < queries.size(); i++) {
+        std::vector<string> parts = split(queries[i], '=');
+        if (parts.size() != 2) {
+            bciout << "Bad query: " << queries[i] << endl;
+            continue;
+        }
+
+        // We expect integers
+        if (parts[0].compare("spacebar") == 0) {
+            countdownSpacebarPressed = stoi(parts[1]);
+        } else if (parts[0].compare("missile") == 0) {
+            countdownMissileScore = stoi(parts[1]);
+        } else if (parts[0].compare("airplane") == 0) {
+            countdownAirplaneScore = stoi(parts[1]);
+        } else {
+            bciout << "Unknown query: " << parts[0] << "=" << parts[1] << endl;
+        }
+    }
+}
+
+void HandleTrialStatusRequest(struct mg_connection *conn) {
+    if (targetHit) {
+        mg_send_status(conn, 200);
+        mg_send_header(conn, "Content-Type", "text/plain");
+        mg_printf_data(conn, "HIT");
+        targetHit = false;
+    } else if (runEnded) {
+        mg_send_status(conn, 200);
+        mg_send_header(conn, "Content-Type", "text/plain");
+        mg_printf_data(conn, "REFRESH");
+        runEnded = false;
+    } else {
+        mg_send_status(conn, 204);
+        mg_send_data(conn, "", 0);
+    }
+}
+
+int DynamicFeedbackTask::HandleMongooseRequest(struct mg_connection *conn) {
+    std::string method(conn->request_method);
+    std::string uri(conn->uri);
+
+    state_lock->Acquire();
+    if (method.compare("POST") == 0) {
+        if (uri.compare("/trial/start") == 0) {
+            HandleTrialStartRequest(conn);
+            
+            state_lock->Release();
+            return MG_REQUEST_PROCESSED;
+
+        } else if (uri.compare("/trial/stop") == 0) {
+            HandleTrialStopRequest(conn);
+            
+            state_lock->Release();
+            return MG_REQUEST_PROCESSED;
+        }
+
+    } else if (method.compare("GET") == 0) {
+        if (uri.compare("/trial/status") == 0) {
+            HandleTrialStatusRequest(conn);
+            
+            state_lock->Release();
+            return MG_REQUEST_PROCESSED;
+        }
+    }
+    
+    state_lock->Release();
+    return MG_REQUEST_NOT_PROCESSED;
+}
+
