@@ -9,6 +9,7 @@ SET( DIR_NAME "${DIR_NAME}Application/" )
 # Recurse down into all project subdirectories
 ADD_SUBDIRECTORY( SimulBCI )
 ADD_SUBDIRECTORY( Brain2Brain )
+ADD_SUBDIRECTORY( SSVEP )
 IF( BUILD_MFC )
   UTILS_MATCH_SUBDIR( BUILD_MODULES MFCDemo )
 ENDIF()
