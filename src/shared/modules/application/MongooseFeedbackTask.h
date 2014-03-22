@@ -11,7 +11,7 @@
 class MongooseFeedbackTask : public FeedbackTask {
 public:
     MongooseFeedbackTask();
-    virtual ~MongooseFeedbackTask() {};
+    virtual ~MongooseFeedbackTask();
 
     /*
      * Loops infinitely and polls for incoming connections

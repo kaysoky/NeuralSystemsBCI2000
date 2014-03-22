@@ -8,15 +8,12 @@ SET( EXECUTABLE_NAME Brain2Brain )
 
 # Set the project specific sources
 SET( SRC_PROJECT
-  B2B.cpp
-  DFBuildScene2D.cpp
-  GradientEllipticShape.cpp
+  Brain2Brain.cpp
+  Brain2BrainUI.cpp
 )
 SET( HDR_PROJECT
-  B2B.h
-  DFBuildScene2D.h
-  DFBuildScene.h
-  GradientEllipticShape.h
+  Brain2Brain.h
+  Brain2BrainUI.h
 )
 
 # Define extra include directories

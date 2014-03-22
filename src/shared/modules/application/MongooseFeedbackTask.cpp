@@ -27,11 +27,16 @@ MongooseFeedbackTask::MongooseFeedbackTask() : nextTrialType(NULL) {
     server_lock = new OSMutex();
     server = NULL;
 
-    // Give the static C-functions a reference to this program
+    // Give the C-functions a reference to this class
     currentTask = this;
 
     // Start the server on a separate thread
     mg_start_thread(MongooseServerThread, NULL);
+}
+
+MongooseFeedbackTask::~MongooseFeedbackTask() {
+    delete server_lock();
+    mg_destroy_server(&server);
 }
 
 void MongooseFeedbackTask::CheckServerParameters(const SignalProperties& Input) const {

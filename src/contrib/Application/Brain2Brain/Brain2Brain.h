@@ -1,5 +1,5 @@
-#ifndef B2B_H
-#define B2B_H
+#ifndef BRAIN2BRAIN_H
+#define BRAIN2BRAIN_H
 
 #include <queue>
 #include <vector>
@@ -13,10 +13,10 @@
 #include "OSMutex.h"
 #include "mongoose.h"
 
-class DynamicFeedbackTask : public MongooseFeedbackTask {
+class Brain2Brain : public MongooseFeedbackTask {
 public:
-    DynamicFeedbackTask();
-    virtual ~DynamicFeedbackTask();
+    Brain2Brain();
+    virtual ~Brain2Brain();
     
     virtual int HandleMongooseRequest(struct mg_connection *conn);
     
@@ -50,35 +50,13 @@ private:
     /////////////////////////
     // Brain2Brain Objects //
     /////////////////////////
-    
-    void MoveCursorTo(float x, float y, float z);
-    void DisplayMessage(const std::string&);
-    void DisplayScore(const std::string&);
 
-    // Graphic objects
-    ApplicationWindow& mrWindow;
-    DFBuildScene*      mpFeedbackScene;
-    TextField*         mpMessage;
-    TextField*         mpMessage2;
+    // Graphics objects
+    ApplicationWindow* window;
+    Brain2BrainUI* B2BGUI;
 
-    RGBColor mCursorColor;
-
-    int mRunCount,
-        mTrialCount,
-        mCurFeedbackDuration,
-        mMaxFeedbackDuration;
-
-    float mCursorSpeedX,
-          mCursorSpeedY,
-          mCursorSpeedZ,
-          mScore;
-
-    std::vector<int> mVisualCatchTrials;
-
-    bool mVisualFeedback,
-         mIsVisualCatchTrial;
-
-    TrialStatistics mTrialStatistics;
+    int runCount,
+        trialCount;
     
     ////////////////////////////
     // Countdown game objects //
@@ -152,17 +130,6 @@ private:
     TrialType currentTrialType;
 
     /*
-     * State from the Countdown game reported when issuing the stop command
-     * The two scores should be derivable via the spacebar boolean
-     *   but are included for ease of analysis.
-     *
-     * Note: Treat these values as semaphores,
-     *         locked by lastClientPost == STOP_TRIAL
-     */
-    bool countdownSpacebarPressed;
-    int countdownMissileScore, countdownAirplaneScore;
-
-    /*
      * Holds whether the YES target has been hit
      * The Countdown game is expected to poll for this value regularly
      * When it is sent to the game, the value is reset to false.
@@ -177,5 +144,5 @@ private:
     bool runEnded;
 };
 
-#endif // B2B_H
+#endif // BRAIN2BRAIN_H
 
