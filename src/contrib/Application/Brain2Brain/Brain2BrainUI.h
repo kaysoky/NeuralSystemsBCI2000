@@ -2,12 +2,15 @@
 #define BRAIN2BRAINUI_H
 
 #include "Environment.h"
+#include "DisplayWindow.h"
+#include "ApplicationBase.h"
 #include "Color.h"
-#include <string>
+#include "Shapes.h"
+#include "TextField.h"
 
 class Brain2BrainUI : protected Environment {
 public:
-    Brain2BrainUI(GUI::DisplayWindow*);
+    Brain2BrainUI(GUI::DisplayWindow&);
     virtual ~Brain2BrainUI();
     
     void Initialize();
@@ -29,7 +32,7 @@ private:
     /**
      * Provides access to the UI window
      */
-    GUI::DisplayWindow* window;
+    GUI::DisplayWindow& window;
     
     /**
      * Represents the cursor

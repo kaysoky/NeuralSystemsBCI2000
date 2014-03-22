@@ -35,7 +35,7 @@ SSVEPFeedbackTask::~SSVEPFeedbackTask() {}
 void
 SSVEPFeedbackTask::OnPreflight(const SignalProperties& Input) const {
     if (Parameter("Targets")->NumValues() <= 0) {
-        bcierr << "At least one target must be specified" << endl;
+        bcierr << "At least one target must be specified" << std::endl;
     }
     
     const char* colorParams[] = {
@@ -43,16 +43,16 @@ SSVEPFeedbackTask::OnPreflight(const SignalProperties& Input) const {
     };
     for (size_t i = 0; i < sizeof(colorParams) / sizeof(*colorParams); ++i) {
         if (RGBColor(Parameter(colorParams[i])) == RGBColor(RGBColor::NullColor)) {
-            bcierr << "Invalid RGB value in " << colorParams[ i ] << endl;
+            bcierr << "Invalid RGB value in " << colorParams[ i ] << std::endl;
         }
     }
     
-    CheckServerParameters();
+    CheckServerParameters(Input);
 }
 
 void
 SSVEPFeedbackTask::OnInitialize(const SignalProperties& Input) {
-    InitializeServer();
+    InitializeServer(Input);
 }
 
 void

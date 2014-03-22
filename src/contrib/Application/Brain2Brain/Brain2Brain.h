@@ -5,13 +5,10 @@
 #include <vector>
 
 #include "MongooseFeedbackTask.h"
-#include "TrialStatistics.h"
-#include "Color.h"
-#include "TextField.h"
 #include "ApplicationWindow.h"
-#include "DFBuildScene.h"
 #include "OSMutex.h"
 #include "mongoose.h"
+#include "Brain2BrainUI.h"
 
 class Brain2Brain : public MongooseFeedbackTask {
 public:
@@ -52,8 +49,8 @@ private:
     /////////////////////////
 
     // Graphics objects
-    ApplicationWindow* window;
-    Brain2BrainUI* B2BGUI;
+    ApplicationWindow &window;
+    Brain2BrainUI *B2BGUI;
 
     int runCount,
         trialCount;

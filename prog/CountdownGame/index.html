@@ -160,6 +160,12 @@
                             setTimeout(RunTrial, PAUSE_BETWEEN_TRIALS);
                         }, 
                         error: function(jqXHR) {
+                            // Did the BCI-side stop first?
+                            if (jqXHR.status == 418) {
+                                setTimeout(RunTrial, PAUSE_BETWEEN_TRIALS);
+                                return;
+                            }
+                            
                             alert("POST /trial/stop -> " + jqXHR.status + " " + jqXHR.statusText);
                         }
                     });

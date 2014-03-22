@@ -2,12 +2,9 @@
 #pragma hdrstop
 
 #include "Brain2Brain.h"
-#include "Brain2BrainUI.h"
 
 #include "buffers.h"
 #include <stdio.h>
-#include <math.h>
-#include <sstream>
 #include <algorithm>
 #include <cstdlib>
 
@@ -32,7 +29,8 @@ Brain2Brain::Brain2Brain()
 }
 
 Brain2Brain::~Brain2Brain() {
-    delete state_lock;
+	// TODO: Cleanup is not thread-safe yet
+    // delete state_lock;
     delete B2BGUI;
     delete nextTrialType;
 }
@@ -42,11 +40,11 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
     Parameter("CursorWidth");
     Parameter("TargetHeight");
 
-    CheckServerParameters();
+    CheckServerParameters(Input);
 }
 
 void Brain2Brain::OnInitialize(const SignalProperties& Input) {
-    InitializeServer();
+    InitializeServer(Input);
 
     // Reset the GUI
     delete B2BGUI;
@@ -72,7 +70,7 @@ void Brain2Brain::OnStartRun() {
         // so we can enforce an equal number of each trial type
         int numTrials = Parameter("NumberOfTrials");
         int typesPerTrial = numTrials / LAST;
-        vector<TrialType> trialVector(numTrials, AIRPLANE);
+        std::vector<TrialType> trialVector(numTrials, AIRPLANE);
         for (int i = AIRPLANE + 1; i < LAST; i++) {
             for (int j = 0; j < typesPerTrial; j++) {
                 trialVector[i * typesPerTrial + j] = static_cast<TrialType>(i);
@@ -91,17 +89,20 @@ void Brain2Brain::OnStartRun() {
     runCount++;
     trialCount = 0;
 
-    AppLog << "Run #" << runCount << " started" << endl;
+    AppLog << "Run #" << runCount << " started" << std::endl;
     B2BGUI->OnStartRun();
 }
 
 void Brain2Brain::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
-
+	
+	state_lock->Acquire();
     if (lastClientPost == START_TRIAL) {
         doProgress = true;
+		lastClientPost = CONTINUE;
     }
+	state_lock->Release();
 }
 
 void Brain2Brain::OnTrialBegin() {
@@ -113,7 +114,7 @@ void Brain2Brain::OnTrialBegin() {
     // Increment the trial count
     trialCount++;
 
-    AppLog.Screen << "Trial #" << mTrialCount << endl;
+    AppLog.Screen << "Trial #" << trialCount << std::endl;
     B2BGUI->OnTrialBegin();
 }
 
@@ -124,19 +125,20 @@ void Brain2Brain::OnFeedbackBegin() {
 void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgress) {
     doProgress = false;
 
-    Brain2BrainUI::TargetHitType targetHit = B2BGUI->DoFeedback(ControlSignal);
-    if (targetHit == Brain2BrainUI::NOTHING_HIT) {
+    Brain2BrainUI::TargetHitType targetHitType = B2BGUI->DoFeedback(ControlSignal);
+    if (targetHitType == Brain2BrainUI::NOTHING_HIT) {
         // Check for the stop signal
         state_lock->Acquire();
         if (lastClientPost == STOP_TRIAL) {
             doProgress = true;
+			lastClientPost == CONTINUE;
         }
         state_lock->Release();
         
         return;
     }
     
-    if (targetHit == Brain2BrainUI::YES_TARGET) {
+    if (targetHitType == Brain2BrainUI::YES_TARGET) {
         // Pass this information onto the Countdown client
         state_lock->Acquire();
         targetHit = true;
@@ -160,15 +162,18 @@ Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
 
     // Wait for the start signal
+	state_lock->Acquire();
     if (lastClientPost == START_TRIAL) {
         doProgress = true;
+		lastClientPost = CONTINUE;
     }
+	state_lock->Release();
 }
 
 void
 Brain2Brain::OnStopRun() {
     AppLog << "Run " << runCount << " finished: "
-           << trialCount << " trial(s)" << endl;
+           << trialCount << " trial(s)" << std::endl;
 
     // Indicate that the run has ended
     state_lock->Acquire();
@@ -201,7 +206,7 @@ void Brain2Brain::HandleTrialStopRequest(struct mg_connection *conn) {
     lastClientPost = STOP_TRIAL;
 }
 
-void HandleTrialStatusRequest(struct mg_connection *conn) {
+void Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
     if (targetHit) {
         mg_send_status(conn, 200);
         mg_send_header(conn, "Content-Type", "text/plain");

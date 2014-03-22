@@ -8,6 +8,8 @@ SET( EXECUTABLE_NAME Brain2Brain )
 
 # Set the project specific sources
 SET( SRC_PROJECT
+  # This annoyingly does not get included by default for some projects
+  ${PROJECT_SRC_DIR}/shared/modules/CoreMain.cpp
   Brain2Brain.cpp
   Brain2BrainUI.cpp
 )

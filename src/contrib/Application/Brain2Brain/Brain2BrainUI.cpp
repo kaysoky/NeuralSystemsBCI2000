@@ -1,11 +1,13 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
+#include <math.h>
+
 #include "Brain2BrainUI.h"
 #include "BCIException.h"
 #include "Shapes.h"
 
-Brain2BrainUI::Brain2BrainUI(GUI::DisplayWindow* display) 
+Brain2BrainUI::Brain2BrainUI(GUI::DisplayWindow& display) 
     : window(display) {}
 
 Brain2BrainUI::~Brain2BrainUI() {
@@ -19,9 +21,9 @@ void Brain2BrainUI::Initialize() {
     float cursorWidth = Parameter("CursorWidth") / 100.0f;
 	GUI::Rect cursorRect = {0, 0, cursorWidth, cursorWidth * window.Width() / window.Height()};
     cursor = new EllipticShape(window, 1);
-    cursor->SetObjectRect(cursorRect)
-           .SetColor(RGBColor::White)
+    cursor->SetColor(RGBColor::White)
            .SetFillColor(RGBColor::White)
+           .SetObjectRect(cursorRect)
            .Hide();
 
     // On average, we need to cross half the workspace during a trial
@@ -31,61 +33,62 @@ void Brain2BrainUI::Initialize() {
     // Initialize the two targets
     float targetHeight = Parameter("TargetHeight") / 100.0f;
     RGBColor targetBorderColor = RGBColor::Gray;
-    RBGColor targetFillColor = RGBColor::Blue;
     RGBColor targetTextColor = RGBColor::Black;
     float targetTextHeight = 0.5f;
     
         // Initialize the YES target
         GUI::Rect yesTargetRect = {0, 0, 1.0f, targetHeight};
         yesTarget = new RectangularShape(window);
-        yesTarget->SetColor(targetBorderColor);
-                  .SetFillColor(targetFillColor);
-                  .SetObjectRect(yesTargetRect);
+        yesTarget->SetColor(targetBorderColor)
+                  .SetObjectRect(yesTargetRect)
                   .Hide();
         
         yesTargetText = new TextField(window);
-        yesTargetText->SetTextColor(targetTextColor)
+        yesTargetText->SetText("Fire")
+			          .SetTextColor(targetTextColor)
                       .SetTextHeight(targetTextHeight)
                       .SetColor(RGBColor::NullColor)
                       .SetObjectRect(yesTargetRect)
-                      .SetText("Fire")
                       .Hide();
         
         // Initialize the NO target
         GUI::Rect noTargetRect = {0, 1.0f - targetHeight, 1.0f, 1.0f};
         noTarget = new RectangularShape(window);
-        noTarget->SetColor(targetBorderColor);
-                 .SetFillColor(targetFillColor);
-                 .SetObjectRect(noTargetRect);
+        noTarget->SetColor(targetBorderColor)
+                 .SetObjectRect(noTargetRect)
                  .Hide();
         
         noTargetText = new TextField(window);
-        noTargetText->SetTextColor(targetTextColor)
+        noTargetText->SetText("Pass")
+					 .SetTextColor(targetTextColor)
                      .SetTextHeight(targetTextHeight)
                      .SetColor(RGBColor::NullColor)
                      .SetObjectRect(noTargetRect)
-                     .SetText("Pass")
                      .Hide();
 
     // Initialize the title box message
     GUI::Rect titleBoxRect = {0.1f, 0.4f, 0.9f, 0.6f};
     titleBox = new TextField(window);
-    titleBox->SetTextColor(RGBColor::Lime)
+    titleBox->SetText("Timeout")
+		     .SetTextColor(RGBColor::Lime)
              .SetTextHeight(0.8f)
              .SetColor(RGBColor::Gray)
-             .SetObjectRect(titleBoxRect)
-             .SetText("Timeout");
+             .SetObjectRect(titleBoxRect);
 }
 
 void Brain2BrainUI::OnStartRun() {
-    titleBox.SetText(">> Get Ready! <<");
+    titleBox->SetText(">> Get Ready! <<");
 }
 
 void Brain2BrainUI::OnTrialBegin() {
     titleBox->Hide();
-    yesTarget->Show();
+
+    RGBColor targetFillColor = RGBColor::Blue;
+    yesTarget->SetFillColor(targetFillColor)
+		      .Show();
     yesTargetText->Show();
-    noTarget->Show();
+    noTarget->SetFillColor(targetFillColor)
+		     .Show();
     noTargetText->Show();
 }
 
@@ -95,7 +98,7 @@ void Brain2BrainUI::OnFeedbackBegin() {
            .Show();
 }
 
-TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& ControlSignal) {
+Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& ControlSignal) {
     GUI::Point cursorPosition = cursor->Center();
     GUI::Rect cursorRect = cursor->ObjectRect();
 
@@ -105,30 +108,30 @@ TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& ControlSignal) {
     }
 
     // Restrict cursor movement to the screen itself
-    cursorPosition.y = max(cursorRect.Bottom - cursorRect.Top, 
-                           min(1.0f - cursorRect.Bottom + cursorRect.Top, cursorPosition.y));
+    cursorPosition.y = std::max(cursorRect.bottom - cursorRect.top, 
+                           std::min(1.0f - cursorRect.bottom + cursorRect.top, cursorPosition.y));
 
     // Update cursor position
     cursor->SetCenter(cursorPosition);
     
     // Determine if either of the targets were hit
     RGBColor hitColor = RGBColor::Red;
-    if (Shape::AreaIntersection(cursor, yesTarget)) {
-        yesTarget.SetColor(hitColor);
+    if (Shape::AreaIntersection(*cursor, *yesTarget)) {
+        yesTarget->SetFillColor(hitColor);
         return YES_TARGET;
-    } else if (Shape::AreaIntersection(cursor, noTarget)) {
-        noTarget.SetColor(hitColor);
+    } else if (Shape::AreaIntersection(*cursor, *noTarget)) {
+        noTarget->SetFillColor(hitColor);
         return NO_TARGET;
     }
     
     return NOTHING_HIT;
 }
 
-void OnFeedbackEnd() {
+void Brain2BrainUI::OnFeedbackEnd() {
     cursor->Hide();
 }
 
-void OnStopRun() {
+void Brain2BrainUI::OnStopRun() {
     titleBox->SetText("Timeout")
              .Show();
     yesTarget->Hide();

@@ -3,23 +3,21 @@
 
 #include "MongooseFeedbackTask.h"
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <sstream>
-#include <algorithm>
-#include <cstdlib>
+#include <limits.h>
+#include <stdlib.h>
 
 /*
  * The currently running task
  */
 static MongooseFeedbackTask *currentTask;
 
-MongooseFeedbackTask::MongooseFeedbackTask() : nextTrialType(NULL) {
+MongooseFeedbackTask::MongooseFeedbackTask()
+    : isRunning(false) {
     // Note: See FeedbackTask.cpp for more parameters and states
     BEGIN_PARAMETER_DEFINITIONS
     "Application:Mongoose string FileDirectory= % "
-        "/CountdownGame/ % % //"
+        "/CountdownGame/ % % // Directory where the game files are located", 
     "Application:Mongoose string ListeningPort= % "
         "20320 % % // Port for the server to listen on",
     END_PARAMETER_DEFINITIONS
@@ -35,16 +33,17 @@ MongooseFeedbackTask::MongooseFeedbackTask() : nextTrialType(NULL) {
 }
 
 MongooseFeedbackTask::~MongooseFeedbackTask() {
-    delete server_lock();
-    mg_destroy_server(&server);
+	// TODO: Cleanup is not thread-safe yet
+    // delete server_lock;
+    // mg_destroy_server(&server);
 }
 
 void MongooseFeedbackTask::CheckServerParameters(const SignalProperties& Input) const {
-    if (string(Parameter("FileDirectory")).empty()) {
-        bcierr << "Mongoose FileDirectory must be specified" << endl;
+    if (std::string(Parameter("FileDirectory")).empty()) {
+        bcierr << "Mongoose FileDirectory must be specified" << std::endl;
     }
-    if (string(Parameter("ListeningPort")).empty()) {
-        bcierr << "Mongoose server ListeningPort must be specified" << endl;
+    if (std::string(Parameter("ListeningPort")).empty()) {
+        bcierr << "Mongoose server ListeningPort must be specified" << std::endl;
     }
 }
 
@@ -58,7 +57,7 @@ void MongooseFeedbackTask::InitializeServer(const SignalProperties& Input) {
 
     // Determine and set where the files to be served are
     char fileDirectory[MAX_PATH];
-    fileDirectory = realpath(std::string(Parameter("FileDirectory")).c_str(), fileDirectory);
+    int retVal = GetFullPathName(std::string(Parameter("FileDirectory")).c_str(), MAX_PATH, fileDirectory, NULL);
     mg_set_option(server, "document_root", fileDirectory);
 
     // Set the request handler
@@ -89,12 +88,20 @@ void *MongooseServerThread(void *arg) {
 
 int MongooseServerHandler(struct mg_connection *conn) {
     std::string method(conn->request_method);
-    bciout << method << " " << conn->uri << endl;
+	std::string uri(conn->uri);
+    bciout << method << " " << conn->uri << std::endl;
     
     if (method.compare("GET") == 0) {
         // For generic requests, 
         //   don't route anything to the child handler unless it's ready
         if (!currentTask->isRunning) {
+			// Catch this polling command (the only non-static GET request)
+			if (uri.compare("/trial/status") == 0) {
+				mg_send_status(conn, 204);
+				mg_send_data(conn, "", 0);
+				return MG_REQUEST_PROCESSED;
+			}
+
             return MG_REQUEST_NOT_PROCESSED;
         }
     } else {

@@ -28,7 +28,7 @@ public:
     /*
      * Derived classes should extend this function to process specific requests
      */
-    virtual int HandleMongooseRequest(struct mg_connection *conn) {}
+    virtual int HandleMongooseRequest(struct mg_connection *conn) {return MG_REQUEST_NOT_PROCESSED;}
 
 protected:
     /*

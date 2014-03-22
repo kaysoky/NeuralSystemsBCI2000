@@ -21,6 +21,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/modules/application/ApplicationBase.cpp
   ${PROJECT_SRC_DIR}/shared/modules/application/StimulusTask.cpp
   ${PROJECT_SRC_DIR}/shared/modules/application/FeedbackTask.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/MongooseFeedbackTask.cpp
 
   ${PROJECT_SRC_DIR}/shared/modules/application/audio/WavePlayer.cpp
   ${PROJECT_SRC_DIR}/shared/modules/application/audio/TextToSpeech.cpp
@@ -32,6 +33,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${PROJECT_SRC_DIR}/shared/modules/application/utils/TrialStatistics.cpp
   ${PROJECT_SRC_DIR}/shared/modules/application/utils/BlockRandSeq.cpp
   ${PROJECT_SRC_DIR}/shared/modules/application/utils/Localization.cpp
+  ${PROJECT_SRC_DIR}/shared/modules/application/utils/mongoose.cpp
 
   ${PROJECT_SRC_DIR}/shared/modules/application/stimuli/Association.cpp
   ${PROJECT_SRC_DIR}/shared/modules/application/stimuli/AudioStimulus.cpp

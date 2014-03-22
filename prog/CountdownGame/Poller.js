@@ -32,7 +32,7 @@ PollServer = function() {
             setTimeout(PollServer, POLL_INTERVAL);
         }, 
         error: function(jqXHR) {
-            alert("POST /trial/status -> " + jqXHR.status + " " + jqXHR.statusText);
+            alert("GET /trial/status -> " + jqXHR.status + " " + jqXHR.statusText);
         }
     });
 }
