@@ -32,6 +32,7 @@
 
 #if USE_QT
 # include <QPainter>
+# include <QLine>
 #endif
 
 using namespace std;
@@ -279,6 +280,19 @@ EllipticShape::IntersectsArea( const Shape& s ) const
   return result;
 }
 
+// LineShape
+Shape::TestResult
+LineShape::Contains( const GUI::Point& p ) const
+{
+  throw "Line intersection not implemented";
+}
+
+Shape::TestResult
+LineShape::IntersectsArea( const Shape& s ) const
+{
+  throw "Line intersection not implemented";
+}
+
 void
 Shape::Draw( const GUI::DrawContext& inDC, const ShapeDef& inDef )
 {
@@ -330,6 +344,12 @@ Shape::Draw( const GUI::DrawContext& inDC, const ShapeDef& inDef )
     case Pie:
       p->drawPie( drawRect, 16*::fmod( inDef.startAngle, 360 ), 16*(inDef.endAngle - inDef.startAngle) );
       break;
+    case Linear:
+      QLine drawLine(
+        drawRect.topLeft(), 
+        drawRect.bottomRight()
+      );
+      p->drawLine( drawLine );
     default:
       throw std_logic_error( "Unknown Shape kind: " << inDef.kind );
   }

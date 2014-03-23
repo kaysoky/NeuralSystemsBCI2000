@@ -8,129 +8,157 @@
 
 RegisterFilter( SSVEPFeedbackTask, 3 );
 
-SSVEPFeedbackTask::SSVEPFeedbackTask() {
-      
+SSVEPFeedbackTask::SSVEPFeedbackTask() 
+    : SSVEPGUI(NULL),
+      window(Window()),
+      runCount(0) {
+
     // Note: See MongooseTask.cpp for more parameters and states
-    
+
     BEGIN_PARAMETER_DEFINITIONS
-    "Application:Targets matrix Targets= "
+    "Application:SSVEP matrix Arrows= "
         " 2 " // rows
-        " [pos%20x pos%20y] " // columns
-        " 10 50 "
-        " 90 50 "
-        " // Number of targets and their position in percentage coordinates",
-    "Application:Targets int TargetColor= 0x0000FF % % % " // Blue
-        " // target color (color)",
+        " [Frequency X Y] " // columns
+        " 12 10 50 "
+        " 17 90 50 "
+        " // Frequency of input expected for each target and their position in percentage coordinates"
     END_PARAMETER_DEFINITIONS
 
-    BEGIN_STATE_DEFINITIONS
-        "GameScore 16 0 0 0",
-    END_STATE_DEFINITIONS
-               
     state_lock = new OSMutex();
 }
 
-SSVEPFeedbackTask::~SSVEPFeedbackTask() {}
+SSVEPFeedbackTask::~SSVEPFeedbackTask() {
+	// TODO: Cleanup is not thread-safe yet
+    // delete state_lock;
+}
 
 void
 SSVEPFeedbackTask::OnPreflight(const SignalProperties& Input) const {
-    if (Parameter("Targets")->NumValues() <= 0) {
-        bcierr << "At least one target must be specified" << std::endl;
+    if (Parameter("Arrows")->NumRows() <= 1) {
+        bcierr << "At least two target frequencies must be specified" << std::endl;
     }
-    
-    const char* colorParams[] = {
-        "TargetColor"
-    };
-    for (size_t i = 0; i < sizeof(colorParams) / sizeof(*colorParams); ++i) {
-        if (RGBColor(Parameter(colorParams[i])) == RGBColor(RGBColor::NullColor)) {
-            bcierr << "Invalid RGB value in " << colorParams[ i ] << std::endl;
-        }
+    if (Parameter("Arrows")->NumColumns() != 3) {
+        bcierr << "Target matrix must have 3 columns "
+               << "corresponding to the target frequency "
+               << "and (X, Y) positions" << std::endl;
     }
-    
+
     CheckServerParameters(Input);
 }
 
 void
 SSVEPFeedbackTask::OnInitialize(const SignalProperties& Input) {
-    InitializeServer(Input);
+    InitializeServer(Input, Parameter("Arrows")->NumRows());
+
+    // Reset the GUI
+    delete SSVEPGUI;
+    SSVEPGUI = new SSVEPUI(window);
+    SSVEPGUI->Initialize();
+    
+    // ParamRef Targets = Parameter("Targets");
+    // for (int i = 0; i < Parameter("Targets")->NumRows(); ++i) {
+    //     // Determine the target's dimensions
+    //     EllipticShape* pTarget = new GradientEllipticShape(mDisplay);
+    //     GUI::Point targetDiag = {Targets(i, dx), Targets(i, dy)};
+    //     SceneToObjectCoords(targetDiag, vector);
+    //     
+    //     // Set the target's size
+    //     GUI::Rect targetRect = {0, 0, fabs(targetDiag.x), fabs(targetDiag.y)};
+    //     pTarget->SetObjectRect(targetRect);
+    //     
+    //     // Set the target's origin
+    //     GUI::Point targetCenter = {Targets(i, x), Targets(i, y)};
+    //     SceneToObjectCoords(targetCenter, point);
+    //     pTarget->SetCenter(targetCenter);
+    //     
+    //     // Hide and save the target
+    //     pTarget->Hide();
+    //     mTargets.push_back(pTarget);
+    // }
 }
 
 void
 SSVEPFeedbackTask::OnStartRun() {
     // Reset state of the game
-    state_lock->Acquire();
-    state_lock->Release();
-    
-    // Reset various counters
+    MongooseOnStartRun();
+
+    // Reset or increment some counters
+    runCount++;
+    trialCount = 0;
+
+    AppLog << "Run #" << runCount << " started" << std::endl;
+    SSVEPGUI->OnStartRun();
 }
 
 void
 SSVEPFeedbackTask::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
+	
+	state_lock->Acquire();
+    if (lastClientPost == START_TRIAL) {
+        doProgress = true;
+		lastClientPost = CONTINUE;
+    }
+	state_lock->Release();
 }
 
 void
 SSVEPFeedbackTask::OnTrialBegin() {
-    // Reset trial-specific Countdown state
+    // Reset trial-specific 20 questions state
     state_lock->Acquire();
     state_lock->Release();
+
+    // Increment the trial count
+    trialCount++;
+
+    AppLog.Screen << "Trial #" << trialCount << " => ???" << std::endl;
+    SSVEPGUI->OnTrialBegin();
 }
 
 void
 SSVEPFeedbackTask::OnFeedbackBegin() {
+    SSVEPGUI->OnFeedbackBegin();
 }
 
 void
 SSVEPFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProgress) {
     doProgress = false;
-    
-    // Save whatever state is available to BCI2000
-    state_lock->Acquire();
 
-    // Check for the stop signal
+    //TODO: Train or Classify
     
+    // Check for the stop signal
+    state_lock->Acquire();
+    if (lastClientPost == STOP_TRIAL) {
+        doProgress = true;
+        lastClientPost == CONTINUE;
+    }
     state_lock->Release();
 }
 
 void
-SSVEPFeedbackTask::OnFeedbackEnd() {}
-
-void
-SSVEPFeedbackTask::OnTrialEnd(void) { };
+SSVEPFeedbackTask::OnFeedbackEnd() {
+    SSVEPGUI->OnFeedbackEnd();
+}
 
 void
 SSVEPFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
-    // Wait for the start signal
     doProgress = false;
 
+    // Wait for the start signal
+	state_lock->Acquire();
+    if (lastClientPost == START_TRIAL) {
+        doProgress = true;
+		lastClientPost = CONTINUE;
+    }
+	state_lock->Release();
 }
 
 void
 SSVEPFeedbackTask::OnStopRun() {
-    // Indicate that the run has ended
-    state_lock->Acquire();
-    state_lock->Release();
+    AppLog << "Run " << runCount << " finished: "
+           << trialCount << " trial(s)" << std::endl;
+
+    MongooseOnStopRun();
+    SSVEPGUI->OnStopRun();
 }
-
-int SSVEPFeedbackTask::HandleMongooseRequest(struct mg_connection *conn) {
-    std::string method(conn->request_method);
-    std::string uri(conn->uri);
-
-    state_lock->Acquire();
-    if (method.compare("POST") == 0) {
-        if (uri.compare("") == 0) {
-            //TODO
-            
-            state_lock->Release();
-            return MG_REQUEST_PROCESSED;
-
-        }
-
-    } else if (method.compare("GET") == 0) {
-    }
-    
-    state_lock->Release();
-    return MG_REQUEST_NOT_PROCESSED;
-}
-

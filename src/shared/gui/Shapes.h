@@ -68,7 +68,7 @@ class Shape : public GUI::GraphObject
   const GUI::Rect& Rect() const
     { return mRect; }
 
-  enum { None, Rectangle, Ellipse, Pie };
+  enum { None, Rectangle, Ellipse, Pie, Linear };
   struct ShapeDef
   {
     int kind;
@@ -115,6 +115,20 @@ class EllipticShape : public Shape
     : Shape( display, Ellipse, zOrder )
     {}
   virtual ~EllipticShape()
+    {}
+  virtual TestResult Contains( const GUI::Point& ) const;
+
+ protected:
+  virtual TestResult IntersectsArea( const Shape& ) const;
+};
+
+class LineShape : public Shape
+{
+ public:
+  LineShape( GUI::GraphDisplay& display, int zOrder = ShapeZOrder )
+    : Shape( display, Linear, zOrder )
+    {}
+  virtual ~LineShape()
     {}
   virtual TestResult Contains( const GUI::Point& ) const;
 

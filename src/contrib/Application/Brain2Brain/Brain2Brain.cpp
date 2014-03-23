@@ -5,16 +5,13 @@
 
 #include "buffers.h"
 #include <stdio.h>
-#include <algorithm>
-#include <cstdlib>
 
 RegisterFilter( Brain2Brain, 3 );
 
 Brain2Brain::Brain2Brain()
     : B2BGUI(NULL),
       window(Window()),
-      runCount(0),
-      nextTrialType(NULL) {
+      runCount(0) {
 
     // Note: See MongooseTask.cpp for more parameters and states
 
@@ -32,7 +29,6 @@ Brain2Brain::~Brain2Brain() {
 	// TODO: Cleanup is not thread-safe yet
     // delete state_lock;
     delete B2BGUI;
-    delete nextTrialType;
 }
 
 void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
@@ -44,7 +40,7 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
 }
 
 void Brain2Brain::OnInitialize(const SignalProperties& Input) {
-    InitializeServer(Input);
+    InitializeServer(Input, static_cast<int>(LAST));
 
     // Reset the GUI
     delete B2BGUI;
@@ -53,37 +49,7 @@ void Brain2Brain::OnInitialize(const SignalProperties& Input) {
 }
 
 void Brain2Brain::OnStartRun() {
-    // Reset state of the game
-    state_lock->Acquire();
-    lastClientPost = CONTINUE;
-    isRunning = true;
-    runEnded = false;
-
-    // Determine the trial types
-    if (nextTrialType != NULL) {
-        delete nextTrialType;
-    }
-    nextTrialType = new std::queue<TrialType>();
-    // Note: This parameter is defined in FeedbackTask.cpp
-    if (!std::string(Parameter("NumberOfTrials")).empty()) {
-        // We know the number of trials,
-        // so we can enforce an equal number of each trial type
-        int numTrials = Parameter("NumberOfTrials");
-        int typesPerTrial = numTrials / LAST;
-        std::vector<TrialType> trialVector(numTrials, AIRPLANE);
-        for (int i = AIRPLANE + 1; i < LAST; i++) {
-            for (int j = 0; j < typesPerTrial; j++) {
-                trialVector[i * typesPerTrial + j] = static_cast<TrialType>(i);
-            }
-        }
-
-        // Shuffle and store the ordering
-        std::random_shuffle(trialVector.begin(), trialVector.end());
-        for (unsigned int i = 0; i < trialVector.size(); i++) {
-            nextTrialType->push(trialVector[i]);
-        }
-    }
-    state_lock->Release();
+    MongooseOnStartRun();
 
     // Reset or increment some counters
     runCount++;
@@ -155,9 +121,6 @@ Brain2Brain::OnFeedbackEnd() {
 }
 
 void
-Brain2Brain::OnTrialEnd(void) { };
-
-void
 Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
 
@@ -175,83 +138,18 @@ Brain2Brain::OnStopRun() {
     AppLog << "Run " << runCount << " finished: "
            << trialCount << " trial(s)" << std::endl;
 
-    // Indicate that the run has ended
-    state_lock->Acquire();
-    runEnded = true;
-    isRunning = false;
-    state_lock->Release();
-
+    MongooseOnStopRun();
     B2BGUI->OnStopRun();
 }
 
-void Brain2Brain::HandleTrialStartRequest(struct mg_connection *conn) {
-    // Fetch the next trial type
-    if (nextTrialType->empty()) {
-        currentTrialType = static_cast<TrialType>(rand() % LAST);
-    } else {
-        currentTrialType = nextTrialType->front();
-        nextTrialType->pop();
-    }
-
-    // Pass along the trial type
-    mg_send_status(conn, 200);
-    mg_send_header(conn, "Content-Type", "text/plain");
-    mg_printf_data(conn, "%d", currentTrialType);
-    lastClientPost = START_TRIAL;
-}
-
-void Brain2Brain::HandleTrialStopRequest(struct mg_connection *conn) {
-    mg_send_status(conn, 204);
-    mg_send_data(conn, "", 0);
-    lastClientPost = STOP_TRIAL;
-}
-
-void Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
+bool Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
     if (targetHit) {
         mg_send_status(conn, 200);
         mg_send_header(conn, "Content-Type", "text/plain");
         mg_printf_data(conn, "HIT");
         targetHit = false;
-    } else if (runEnded) {
-        mg_send_status(conn, 200);
-        mg_send_header(conn, "Content-Type", "text/plain");
-        mg_printf_data(conn, "REFRESH");
-        runEnded = false;
-    } else {
-        mg_send_status(conn, 204);
-        mg_send_data(conn, "", 0);
-    }
+        return true;
+    } 
+    
+    return false;
 }
-
-int Brain2Brain::HandleMongooseRequest(struct mg_connection *conn) {
-    std::string method(conn->request_method);
-    std::string uri(conn->uri);
-
-    state_lock->Acquire();
-    if (method.compare("POST") == 0) {
-        if (uri.compare("/trial/start") == 0) {
-            HandleTrialStartRequest(conn);
-
-            state_lock->Release();
-            return MG_REQUEST_PROCESSED;
-
-        } else if (uri.compare("/trial/stop") == 0) {
-            HandleTrialStopRequest(conn);
-
-            state_lock->Release();
-            return MG_REQUEST_PROCESSED;
-        }
-
-    } else if (method.compare("GET") == 0) {
-        if (uri.compare("/trial/status") == 0) {
-            HandleTrialStatusRequest(conn);
-
-            state_lock->Release();
-            return MG_REQUEST_PROCESSED;
-        }
-    }
-
-    state_lock->Release();
-    return MG_REQUEST_NOT_PROCESSED;
-}
-

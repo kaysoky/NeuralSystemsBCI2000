@@ -13,7 +13,8 @@
 static MongooseFeedbackTask *currentTask;
 
 MongooseFeedbackTask::MongooseFeedbackTask()
-    : isRunning(false) {
+    : isRunning(false),
+      nextTrialType(RandomNumberGenerator) {
     // Note: See FeedbackTask.cpp for more parameters and states
     BEGIN_PARAMETER_DEFINITIONS
     "Application:Mongoose string FileDirectory= % "
@@ -47,7 +48,7 @@ void MongooseFeedbackTask::CheckServerParameters(const SignalProperties& Input) 
     }
 }
 
-void MongooseFeedbackTask::InitializeServer(const SignalProperties& Input) {
+void MongooseFeedbackTask::InitializeServer(const SignalProperties& Input, int numTrialTypes) {
     // Initialize the server
     server_lock->Acquire();
     if (server != NULL) {
@@ -67,9 +68,34 @@ void MongooseFeedbackTask::InitializeServer(const SignalProperties& Input) {
     std::string listeningPort = std::string(Parameter("ListeningPort"));
     mg_set_option(server, "listening_port", listeningPort.c_str());
     bciout << "Server listening on port " << mg_get_option(server, "listening_port");
+    
+    // Initialize the trial randomizer
+    this->numTrialTypes = numTrialTypes;
+    size_t numTrials = 100; // Arbitrary default
+    if (!std::string(Parameter("NumberOfTrials")).empty()) {
+        numTrials = Parameter("NumberOfTrials");
+    }
+    nextTrialType.SetBlockSize(numTrials);
 
     // Done with server initialization
     server_lock->Release();
+}
+
+void MongooseFeedbackTask::MongooseOnStartRun() {
+    // Reset state of the game
+    state_lock->Acquire();
+    lastClientPost = CONTINUE;
+    isRunning = true;
+    runEnded = false;
+    state_lock->Release();
+}
+
+void MongooseFeedbackTask::MongooseOnStopRun() {
+    // Indicate that the run has ended
+    state_lock->Acquire();
+    runEnded = true;
+    isRunning = false;
+    state_lock->Release();
 }
 
 void *MongooseServerThread(void *arg) {
@@ -93,7 +119,7 @@ int MongooseServerHandler(struct mg_connection *conn) {
     
     if (method.compare("GET") == 0) {
         // For generic requests, 
-        //   don't route anything to the child handler unless it's ready
+        //   don't route anything to the sub-handler unless it's ready
         if (!currentTask->isRunning) {
 			// Catch this polling command (the only non-static GET request)
 			if (uri.compare("/trial/status") == 0) {
@@ -121,6 +147,58 @@ int MongooseServerHandler(struct mg_connection *conn) {
         }
     }
     
-    // Route all other requests to the child
+    // Route other requests to a helper function
     return currentTask->HandleMongooseRequest(conn);
+}
+
+int MongooseFeedbackTask::HandleMongooseRequest(struct mg_connection *conn) {
+    std::string method(conn->request_method);
+    std::string uri(conn->uri);
+
+    state_lock->Acquire();
+    if (method.compare("POST") == 0) {
+        if (uri.compare("/trial/start") == 0) {
+            // Fetch the next trial type
+            currentTrialType = nextTrialType.NextElement() % numTrialTypes;
+
+            // Pass along the trial type
+            mg_send_status(conn, 200);
+            mg_send_header(conn, "Content-Type", "text/plain");
+            mg_printf_data(conn, "%d", currentTrialType);
+            lastClientPost = START_TRIAL;
+            HandleTrialStartRequest(std::string(conn->content));
+
+            state_lock->Release();
+            return MG_REQUEST_PROCESSED;
+
+        } else if (uri.compare("/trial/stop") == 0) {
+            mg_send_status(conn, 204);
+            mg_send_data(conn, "", 0);
+            lastClientPost = STOP_TRIAL;
+            HandleTrialStopRequest();
+
+            state_lock->Release();
+            return MG_REQUEST_PROCESSED;
+        }
+
+    } else if (method.compare("GET") == 0) {
+        if (uri.compare("/trial/status") == 0) {
+            if (runEnded) {
+                mg_send_status(conn, 200);
+                mg_send_header(conn, "Content-Type", "text/plain");
+                mg_printf_data(conn, "REFRESH");
+                runEnded = false;
+                
+            } else if (!HandleTrialStatusRequest(conn)) {
+                mg_send_status(conn, 204);
+                mg_send_data(conn, "", 0);
+            }
+
+            state_lock->Release();
+            return MG_REQUEST_PROCESSED;
+        }
+    }
+
+    state_lock->Release();
+    return MG_REQUEST_NOT_PROCESSED;
 }
