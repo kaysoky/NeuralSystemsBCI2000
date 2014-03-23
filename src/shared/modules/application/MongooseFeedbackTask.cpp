@@ -133,7 +133,7 @@ int MongooseServerHandler(struct mg_connection *conn) {
     } else {
         // Allow the client to log arbitrary info
         if (method.compare("POST") == 0 && uri.compare("/log") == 0) {
-            currentTask->AppLog << conn->content << std::endl;
+            currentTask->AppLog << std::string(conn->content, conn->content_len) << std::endl;
             mg_send_status(conn, 204);
             mg_send_data(conn, "", 0);
             return MG_REQUEST_PROCESSED;

@@ -126,14 +126,20 @@ class LineShape : public Shape
 {
  public:
   LineShape( GUI::GraphDisplay& display, int zOrder = ShapeZOrder )
-    : Shape( display, Linear, zOrder )
+    : Shape( display, Linear, zOrder ), flipped(false)
     {}
   virtual ~LineShape()
     {}
   virtual TestResult Contains( const GUI::Point& ) const;
+  
+  // Intercept these methods so that the line can 
+  // be draw with similar methods to the other shapes
+  GraphObject& SetObjectRect( const GUI::Rect& );
+  virtual void OnPaint( const GUI::DrawContext& );
 
  protected:
   virtual TestResult IntersectsArea( const Shape& ) const;
+  bool flipped;
 };
 
 #endif // SHAPES_H

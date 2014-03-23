@@ -11,7 +11,7 @@
 class Brain2BrainUI : protected Environment {
 public:
     Brain2BrainUI(GUI::DisplayWindow&);
-    virtual ~Brain2BrainUI();
+    ~Brain2BrainUI();
     
     void Initialize();
     

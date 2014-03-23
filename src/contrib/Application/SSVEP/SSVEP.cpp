@@ -21,7 +21,9 @@ SSVEPFeedbackTask::SSVEPFeedbackTask()
         " [Frequency X Y] " // columns
         " 12 10 50 "
         " 17 90 50 "
-        " // Frequency of input expected for each target and their position in percentage coordinates"
+        " // Frequency of input expected for each target and their position in percentage coordinates", 
+    "Application:SSVEP float ArrowLength= 10 % 0 100 " 
+        " // Length of an arrow in percent of screen dimensions"
     END_PARAMETER_DEFINITIONS
 
     state_lock = new OSMutex();
@@ -42,6 +44,8 @@ SSVEPFeedbackTask::OnPreflight(const SignalProperties& Input) const {
                << "corresponding to the target frequency "
                << "and (X, Y) positions" << std::endl;
     }
+    
+    Parameter("ArrowLength");
 
     CheckServerParameters(Input);
 }
@@ -54,27 +58,6 @@ SSVEPFeedbackTask::OnInitialize(const SignalProperties& Input) {
     delete SSVEPGUI;
     SSVEPGUI = new SSVEPUI(window);
     SSVEPGUI->Initialize();
-    
-    // ParamRef Targets = Parameter("Targets");
-    // for (int i = 0; i < Parameter("Targets")->NumRows(); ++i) {
-    //     // Determine the target's dimensions
-    //     EllipticShape* pTarget = new GradientEllipticShape(mDisplay);
-    //     GUI::Point targetDiag = {Targets(i, dx), Targets(i, dy)};
-    //     SceneToObjectCoords(targetDiag, vector);
-    //     
-    //     // Set the target's size
-    //     GUI::Rect targetRect = {0, 0, fabs(targetDiag.x), fabs(targetDiag.y)};
-    //     pTarget->SetObjectRect(targetRect);
-    //     
-    //     // Set the target's origin
-    //     GUI::Point targetCenter = {Targets(i, x), Targets(i, y)};
-    //     SceneToObjectCoords(targetCenter, point);
-    //     pTarget->SetCenter(targetCenter);
-    //     
-    //     // Hide and save the target
-    //     pTarget->Hide();
-    //     mTargets.push_back(pTarget);
-    // }
 }
 
 void
@@ -112,13 +95,9 @@ SSVEPFeedbackTask::OnTrialBegin() {
     // Increment the trial count
     trialCount++;
 
-    AppLog.Screen << "Trial #" << trialCount << " => ???" << std::endl;
+    AppLog.Screen << "Trial #" << trialCount << " => " << Parameter("Arrows")(currentTrialType, 0) << " Hz" << std::endl;
     SSVEPGUI->OnTrialBegin();
-}
-
-void
-SSVEPFeedbackTask::OnFeedbackBegin() {
-    SSVEPGUI->OnFeedbackBegin();
+    SSVEPGUI->ShowArrow(currentTrialType);
 }
 
 void
@@ -131,14 +110,9 @@ SSVEPFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProgre
     state_lock->Acquire();
     if (lastClientPost == STOP_TRIAL) {
         doProgress = true;
-        lastClientPost == CONTINUE;
+        lastClientPost = CONTINUE;
     }
     state_lock->Release();
-}
-
-void
-SSVEPFeedbackTask::OnFeedbackEnd() {
-    SSVEPGUI->OnFeedbackEnd();
 }
 
 void

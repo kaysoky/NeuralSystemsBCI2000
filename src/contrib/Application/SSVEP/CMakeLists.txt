@@ -8,10 +8,16 @@ SET( EXECUTABLE_NAME SSVEP )
 
 # Set the project specific sources
 SET( SRC_PROJECT
+  # This annoyingly does not get included by default for some projects
+  ${PROJECT_SRC_DIR}/shared/modules/CoreMain.cpp
   SSVEP.cpp
+  SSVEPUI.cpp
+  RadialArrow.cpp
 )
 SET( HDR_PROJECT
   SSVEP.h
+  SSVEPUI.h
+  RadialArrow.h
 )
 
 # Define extra include directories

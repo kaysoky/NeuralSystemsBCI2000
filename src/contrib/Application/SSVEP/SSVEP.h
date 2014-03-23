@@ -10,9 +10,7 @@
 class SSVEPFeedbackTask : public MongooseFeedbackTask {
 public:
     SSVEPFeedbackTask();
-    virtual ~SSVEPFeedbackTask();
-    
-    virtual int HandleMongooseRequest(struct mg_connection *conn);
+    ~SSVEPFeedbackTask();
     
 private:
     // Startup events
@@ -24,9 +22,9 @@ private:
     // Trial Loop
     virtual void OnTrialBegin();
     virtual void DoPreFeedback(const GenericSignal&, bool& doProgress) { doProgress = true; };
-    virtual void OnFeedbackBegin();
+    virtual void OnFeedbackBegin() {};
     virtual void DoFeedback(const GenericSignal&, bool& doProgress);
-    virtual void OnFeedbackEnd();
+    virtual void OnFeedbackEnd() {};
     virtual void DoPostFeedback(const GenericSignal&, bool& doProgress) { doProgress = true; };
     virtual void OnTrialEnd() {};
     virtual void DoITI(const GenericSignal&, bool& doProgress);

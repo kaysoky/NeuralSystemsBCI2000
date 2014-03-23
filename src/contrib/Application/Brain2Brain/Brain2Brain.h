@@ -58,7 +58,7 @@ private:
         MISSILE,
         LAST
     };
-    static const char* TrialTypeText[] = { "AIRPLANE", "MISSILE" };
+    static const char* TrialTypeText[];
 
     /*
      * Holds whether the YES target has been hit

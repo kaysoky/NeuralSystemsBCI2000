@@ -287,6 +287,26 @@ LineShape::Contains( const GUI::Point& p ) const
   throw "Line intersection not implemented";
 }
 
+GraphObject& 
+LineShape::SetObjectRect( const GUI::Rect& inRect ) {
+    if (inRect.Height() < 0) {
+        flipped = !flipped;
+    }
+    if (inRect.Width() < 0) {
+        flipped = !flipped;
+    }
+    return GraphObject::SetObjectRect( inRect );
+}
+
+void LineShape::OnPaint( const GUI::DrawContext& inDC ) {
+  GUI::DrawContext dc = inDC;
+  dc.rect = Rect();
+  if (flipped) {
+      std::swap( dc.rect.right, dc.rect.left );
+  }
+  Draw( dc, ShapeDef(Linear) );
+}
+
 Shape::TestResult
 LineShape::IntersectsArea( const Shape& s ) const
 {
@@ -306,6 +326,10 @@ Shape::Draw( const GUI::DrawContext& inDC, const ShapeDef& inDef )
     static_cast<int>( inDC.rect.top ),
     static_cast<int>( inDC.rect.Width() ),
     static_cast<int>( inDC.rect.Height() )
+  );
+  QLine drawLine(
+    drawRect.topLeft(), 
+    drawRect.bottomRight()
   );
 
   // Prepare the brush
@@ -345,11 +369,8 @@ Shape::Draw( const GUI::DrawContext& inDC, const ShapeDef& inDef )
       p->drawPie( drawRect, 16*::fmod( inDef.startAngle, 360 ), 16*(inDef.endAngle - inDef.startAngle) );
       break;
     case Linear:
-      QLine drawLine(
-        drawRect.topLeft(), 
-        drawRect.bottomRight()
-      );
       p->drawLine( drawLine );
+	  break;
     default:
       throw std_logic_error( "Unknown Shape kind: " << inDef.kind );
   }

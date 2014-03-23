@@ -8,10 +8,13 @@
 
 RegisterFilter( Brain2Brain, 3 );
 
+const char* Brain2Brain::TrialTypeText[] = { "AIRPLANE", "MISSILE" };
+
 Brain2Brain::Brain2Brain()
     : B2BGUI(NULL),
       window(Window()),
-      runCount(0) {
+      runCount(0), 
+      targetHit(false) {
 
     // Note: See MongooseTask.cpp for more parameters and states
 
@@ -97,7 +100,7 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
         state_lock->Acquire();
         if (lastClientPost == STOP_TRIAL) {
             doProgress = true;
-			lastClientPost == CONTINUE;
+			lastClientPost = CONTINUE;
         }
         state_lock->Release();
         
