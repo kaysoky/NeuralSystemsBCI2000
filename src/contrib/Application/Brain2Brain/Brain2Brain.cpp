@@ -114,7 +114,7 @@ void Brain2Brain::OnTrialBegin() {
     // Increment the trial count
     trialCount++;
 
-    AppLog.Screen << "Trial #" << trialCount << std::endl;
+    AppLog.Screen << "Trial #" << trialCount << " => " << TrialTypeText[currentTrialType] << std::endl;
     B2BGUI->OnTrialBegin();
 }
 

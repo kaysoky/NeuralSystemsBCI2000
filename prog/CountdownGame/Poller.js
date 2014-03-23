@@ -11,14 +11,14 @@ PollServer = function() {
             // If there is a hit, activate the TMS
             if (data && data.search) {
                 if (data.search("HIT") >= 0) {
+                    LogInfo("Hit detected, triggering TMS");
                     $.ajax({
                             type: 'POST',
                             url: 'http://localhost:' + TMS_PORT + '/TMS/fire',
                             async: false, 
                             success: function() {}, 
                             error: function(jqXHR) {
-                                // TODO: This code seems to be hit even when successful
-                                // alert("POST /TMS/fire -> " + jqXHR.status + " " + jqXHR.statusText);
+                                alert("POST /TMS/fire -> " + jqXHR.status + " " + jqXHR.statusText);
                             }
                         });
                 }

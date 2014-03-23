@@ -93,6 +93,7 @@ private:
         MISSILE,
         LAST
     };
+    static const char* TrialTypeText[] = { "AIRPLANE", "MISSILE" };
 
     /*
      * Should a trial start, stop, or continue?
@@ -122,7 +123,6 @@ private:
 
     /*
      * This value is updated when the Countdown game calls POST /trial/start
-     * This value is also resident in BCI2000's state ("TrialType")
      */
     TrialType currentTrialType;
 

@@ -105,6 +105,14 @@ int MongooseServerHandler(struct mg_connection *conn) {
             return MG_REQUEST_NOT_PROCESSED;
         }
     } else {
+        // Allow the client to log arbitrary info
+        if (method.compare("POST") == 0 && uri.compare("/log") == 0) {
+            currentTask->AppLog << conn->content << std::endl;
+            mg_send_status(conn, 204);
+            mg_send_data(conn, "", 0);
+            return MG_REQUEST_PROCESSED;
+        }
+        
         // Fail all non-generic requests with the special error code
         if (!currentTask->isRunning) {
             mg_send_status(conn, 418);

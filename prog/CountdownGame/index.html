@@ -3,7 +3,7 @@
 	<head>
 		<title>Countdown</title>
         <link rel="stylesheet" type="text/css" href="Style.css" />
-		<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
         <script type="text/javascript" src="Constants.js"></script>
         <script type="text/javascript" src="Physics.js"></script>
         <script type="text/javascript" src="Poller.js"></script>
@@ -15,19 +15,19 @@
             var trialComplete = true;
             var trialTimer;
             var trialType;
-            
+
 			window.onload = function() {
                 // Bind the space bar event
                 // This is required to start the countdown for the first time
                 $('body').keypress(function(event) {
                     if (event.which == 32) {
                         RunTrial();
-                        
+
                         // Unbind the spacebar
                         $('body').unbind('keypress');
                     }
                 });
-                
+
                 // Start polling the server for hits
                 PollServer();
 			};
@@ -40,17 +40,17 @@
              */
             Reset = function() {
                 trialComplete = false;
-                
+
                 $('#Overlay').show();
                 $('#OverlayCountdown').text('' + (COUNTDOWN_TIME / 1000));
-                
+
                 // Defined in Physics.js
                 ResetProjectiles();
                 $('#Aeroplane').hide();
                 $('#Missile').hide();
                 $('#Explosion').hide();
             };
-            
+
             /**
              * Starts the trial with the countdown
              */
@@ -58,18 +58,18 @@
                 if (!trialComplete) {
                     return;
                 }
-                
+
                 Reset();
-                
+
                 // Start the countdown
                 setTimeout(Countdown, 1000);
-                
+
                 // This ends the trial when the projectile exits the screen
                 trialTimer = setTimeout(function() {
                     CompleteTrial(false);
                 }, COUNTDOWN_TIME + TRIAL_TIME);
             };
-            
+
             /**
              * Countdown loop
              * Decrements the countdown and starts the game loop afterwards
@@ -79,19 +79,19 @@
                 var counter = $('#OverlayCountdown');
                 var count = parseInt(counter.text()) - 1;
                 counter.text('' + count);
-                
+
                 if (!trialComplete && count > 0) {
                     // Continue looping
                     setTimeout(Countdown, 1000);
                 }
-                
+
                 // Hide the overlay once the counter reaches 0
                 if (count <= 0) {
                     // Tell the server that the trial is starting
                     $.ajax({
-                        type: 'POST', 
-                        url: '/trial/start', 
-                        async: false, 
+                        type: 'POST',
+                        url: '/trial/start',
+                        async: false,
                         success: function(data) {
                             // Determine the trial type
                             trialType = TRIAL_TYPE_ENUM[parseInt(data)];
@@ -102,21 +102,21 @@
                             } else {
                                 alert('Unknown trial type: ' + data);
                             }
-                            
+
                             // And start the animations
                             // Defined in Physics.js
                             MoveProjectiles();
-                    
+
                             // Hide the countdown
                             $('#Overlay').hide();
-                            
+
                             // Activate the cannon
                             $('body').keypress(function(event) {
                                 if (event.which == 32) {
                                     Spacebar();
                                 }
                             });
-                        }, 
+                        },
                         error: function(jqXHR) {
                             // B2B not ready
                             if (jqXHR.status == 418) {
@@ -130,7 +130,7 @@
                     });
                 }
             };
-            
+
             /**
              * Marks the trial as complete
              * Starts the next trial after some delay
@@ -141,44 +141,46 @@
                 if (!trialComplete) {
                     trialComplete = true;
                     clearTimeout(trialTimer);
-                    
+
                     // Unbind the spacebar
                     $('body').unbind('keypress');
-                    
+
                     // Update the score
                     var total = $('#TotalTrials');
                     total.text('' + (parseInt(total.text()) + 1));
-                    
+
                     // Tell the server that the trial has ended
+                    LogInfo((spacebar ? 'Spacebar pressed\n' : '')
+                            + 'Total num trials = ' + total.text() + '\n'
+                            + 'Total missiles hit = ' + $('#GoodScore').text() + '\n'
+                            + 'Total airplanes hit = ' + $('#BadScore').text());
                     $.ajax({
-                        type: 'POST', 
-                        url: '/trial/stop?spacebar=' + (spacebar ? 1 : 0) 
-                                       + '&missiles=' + $('#GoodScore').text()
-                                       + '&airplanes=' + $('#BadScore').text(), 
-                        async: false, 
+                        type: 'POST',
+                        url: '/trial/stop',
+                        async: false,
                         success: function() {
                             setTimeout(RunTrial, PAUSE_BETWEEN_TRIALS);
-                        }, 
+                        },
                         error: function(jqXHR) {
                             // Did the BCI-side stop first?
                             if (jqXHR.status == 418) {
                                 setTimeout(RunTrial, PAUSE_BETWEEN_TRIALS);
                                 return;
                             }
-                            
+
                             alert("POST /trial/stop -> " + jqXHR.status + " " + jqXHR.statusText);
                         }
                     });
                 }
             }
-            
+
             /**
              * Fires the cannon
              */
             Spacebar = function() {
                 // Explode!
                 $('#Missile > img, #Aeroplane > img').toggleClass('hidden');
-            
+
                 if (!trialComplete) {
                     // Update the score
                     var score;
@@ -191,9 +193,23 @@
                     }
                     score.text('' + (parseInt(score.text()) + 1));
                 }
-                
+
                 CompleteTrial(true);
             };
+
+            /**
+             * Asynchronously POST's some text for the server to log
+             */
+            LogInfo = function(text) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/log',
+                    data: text,
+                    error: function(jqXHR) {
+                        alert("POST /log -> " + jqXHR.status + " " + jqXHR.statusText);
+                    }
+                });
+            }
 		</script>
 	</head>
 	<body tabindex="0">
@@ -219,11 +235,11 @@
                 <img src="Missile.png" alt="" class="projectile" />
             </div>
             <div id="Scoreboard">
-                <div>Missiles Hit: 
+                <div>Missiles Hit:
                     <span id="GoodScore">0</span><br />
-                    Airplanes Hit: 
+                    Airplanes Hit:
                     <span id="BadScore">0</span><br />
-                    Total Trials: 
+                    Total Trials:
                     <span id="TotalTrials">0</span>
                 </div>
             </div>
