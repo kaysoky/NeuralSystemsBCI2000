@@ -25,13 +25,10 @@ SSVEPFeedbackTask::SSVEPFeedbackTask()
     "Application:SSVEP float ArrowLength= 10 % 0 100 " 
         " // Length of an arrow in percent of screen dimensions"
     END_PARAMETER_DEFINITIONS
-
-    state_lock = new OSMutex();
 }
 
 SSVEPFeedbackTask::~SSVEPFeedbackTask() {
-	// TODO: Cleanup is not thread-safe yet
-    // delete state_lock;
+	delete SSVEPGUI;
 }
 
 void

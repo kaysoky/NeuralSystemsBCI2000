@@ -3,7 +3,6 @@
 
 #include "MongooseFeedbackTask.h"
 #include "ApplicationWindow.h"
-#include "OSMutex.h"
 #include "mongoose.h"
 #include "Brain2BrainUI.h"
 
@@ -53,11 +52,6 @@ private:
     /*
      * Which projectile should be flying across the Countdown game screen on this trial?
      */
-    enum TrialType {
-        AIRPLANE,
-        MISSILE,
-        LAST
-    };
     static const char* TrialTypeText[];
 
     /*

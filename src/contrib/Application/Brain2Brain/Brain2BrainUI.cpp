@@ -44,7 +44,7 @@ void Brain2BrainUI::Initialize() {
                   .Hide();
         
         yesTargetText = new TextField(window);
-        yesTargetText->SetText("Fire")
+        yesTargetText->SetText("Yes")
 			          .SetTextColor(targetTextColor)
                       .SetTextHeight(targetTextHeight)
                       .SetColor(RGBColor::NullColor)
@@ -59,7 +59,7 @@ void Brain2BrainUI::Initialize() {
                  .Hide();
         
         noTargetText = new TextField(window);
-        noTargetText->SetText("Pass")
+        noTargetText->SetText("No")
 					 .SetTextColor(targetTextColor)
                      .SetTextHeight(targetTextHeight)
                      .SetColor(RGBColor::NullColor)

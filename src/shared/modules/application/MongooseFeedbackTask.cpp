@@ -26,6 +26,8 @@ MongooseFeedbackTask::MongooseFeedbackTask()
     server_lock = new OSMutex();
     server = NULL;
 
+    state_lock = new OSMutex();
+
     // Give the C-functions a reference to this class
     currentTask = this;
 
@@ -37,6 +39,7 @@ MongooseFeedbackTask::~MongooseFeedbackTask() {
 	// TODO: Cleanup is not thread-safe yet
     // delete server_lock;
     // mg_destroy_server(&server);
+    // delete state_lock;
 }
 
 void MongooseFeedbackTask::CheckServerParameters(const SignalProperties& Input) const {

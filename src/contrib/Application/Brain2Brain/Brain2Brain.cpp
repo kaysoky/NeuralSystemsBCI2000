@@ -24,13 +24,9 @@ Brain2Brain::Brain2Brain()
     "Application:UI float TargetHeight= 10 % 0 100 "
         " // Height of each of the targets as a percent of screen height",
     END_PARAMETER_DEFINITIONS
-
-    state_lock = new OSMutex();
 }
 
 Brain2Brain::~Brain2Brain() {
-	// TODO: Cleanup is not thread-safe yet
-    // delete state_lock;
     delete B2BGUI;
 }
 
@@ -149,7 +145,7 @@ bool Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
     if (targetHit) {
         mg_send_status(conn, 200);
         mg_send_header(conn, "Content-Type", "text/plain");
-        mg_printf_data(conn, "HIT");
+        mg_printf_data(conn, "YES");
         targetHit = false;
         return true;
     } 

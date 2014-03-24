@@ -10,7 +10,7 @@ PollServer = function() {
         success: function(data) {
             // If there is a hit, activate the TMS
             if (data && data.search) {
-                if (data.search("HIT") >= 0) {
+                if (data.search("YES") >= 0) {
                     LogInfo("Hit detected, triggering TMS");
                     $.ajax({
                             type: 'POST',

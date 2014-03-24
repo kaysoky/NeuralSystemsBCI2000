@@ -81,7 +81,7 @@ protected:
     virtual bool HandleTrialStatusRequest(struct mg_connection *conn) { return false; }
     
     /*
-     * Provides synchronization for the Countdown game state
+     * Provides synchronization for the client state
      * Any function that touches private variables of this class must first acquire this lock
      * Note: Reading does not (in most cases) require locking
      */
@@ -103,19 +103,21 @@ protected:
     };
 
     /*
-     * Holds the most recent trial-state command issued by the Countdown game
+     * Holds the most recent trial-state command issued by the client
      * A state of CONTINUE means that this value has been processed
      *   and is awaiting a new command from the game.
      */
     TrialState lastClientPost;
     
     /*
-     * When the Countdown game starts a trial, it should fetch the trial type from here
+     * When the client starts a trial, it should fetch the trial type from here
      */
     BlockRandSeq nextTrialType;
 
     /*
      * This value is updated when the Countdown game calls POST /trial/start
+     * This value is specific to the Countdown game 
+     *   and can be safely ignored by any other client type (i.e. 20 questions)
      */
     int currentTrialType;
 

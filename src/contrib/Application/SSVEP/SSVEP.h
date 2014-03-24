@@ -3,7 +3,6 @@
 
 #include "MongooseFeedbackTask.h"
 #include "ApplicationWindow.h"
-#include "OSMutex.h"
 #include "mongoose.h"
 #include "SSVEPUI.h"
 
