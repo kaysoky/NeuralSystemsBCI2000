@@ -13,7 +13,10 @@ Brain2BrainUI::Brain2BrainUI(GUI::DisplayWindow& display)
 Brain2BrainUI::~Brain2BrainUI() {
     delete cursor;
     delete yesTarget;
+    delete yesTargetText;
     delete noTarget;
+    delete noTargetText;
+    delete titleBox;
 }
 
 void Brain2BrainUI::Initialize() {

@@ -39,7 +39,7 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
 }
 
 void Brain2Brain::OnInitialize(const SignalProperties& Input) {
-    InitializeServer(Input, static_cast<int>(LAST));
+    InitializeServer(Input, 2);
 
     // Reset the GUI
     delete B2BGUI;

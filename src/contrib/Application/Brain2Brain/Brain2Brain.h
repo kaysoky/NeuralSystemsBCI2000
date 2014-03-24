@@ -43,10 +43,6 @@ private:
     int runCount,
         trialCount;
     
-    ////////////////////////////
-    // Countdown game objects //
-    ////////////////////////////
-    
     virtual bool HandleTrialStatusRequest(struct mg_connection *conn);
     
     /*

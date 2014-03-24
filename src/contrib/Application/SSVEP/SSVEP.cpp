@@ -5,7 +5,7 @@
 #include "FileUtils.h"
 
 #include <stdio.h>
-#include <math.h>
+#include <cmath>
 #include <fstream>
 
 RegisterFilter( SSVEPFeedbackTask, 3 );
@@ -53,13 +53,14 @@ void SSVEPFeedbackTask::OnPreflight(const SignalProperties& Input) const {
 
     for (int i = 0; i < Parameter("Arrows")->NumRows(); i++) {
         int frequency = Parameter("Arrows")(i, 0);
-        if (Input.Channels() <= frequency) {
+        if (Input.Elements() <= frequency) {
             bcierr << "Input signal does not contain the target frequency ("
                    << frequency << " Hz)" << std::endl;
         }
     }
 
     int modeParam = Parameter("StimulusMode");
+    Parameter("TrainingFile");
     if (static_cast<StimulusMode>(modeParam) == Classification
             && !FileUtils::Exists(std::string(Parameter("TrainingFile")))) {
         bcierr << "Specified training file (" << Parameter("TrainingFile")
@@ -80,7 +81,7 @@ void SSVEPFeedbackTask::OnInitialize(const SignalProperties& Input) {
 
     // Remove any existing data
     distributions.clear();
-    for (int i = 0; i < Parameter("Arrows")->NumRows(), i++) {
+    for (int i = 0; i < Parameter("Arrows")->NumRows(); i++) {
         NormalData empty;
         empty.frequency = Parameter("Arrows")(i, 0);
         distributions.push_back(empty);
@@ -130,7 +131,7 @@ void SSVEPFeedbackTask::ParseTrainingFile() {
         
         // Parse the frequency
         std::getline(trainingFile, line, '\t');
-        parsed.frequency = std::atoi(line);
+        parsed.frequency = std::atoi(line.c_str());
         if (parsed.frequency != Parameter("Arrows")(i, 0)) {
             bcierr << "Training file does not match configuration: "
                    << "Expected line " << (i + 2) << " of training data to be " 
@@ -140,11 +141,11 @@ void SSVEPFeedbackTask::ParseTrainingFile() {
         
         // Parse the mean
         std::getline(trainingFile, line, '\t');
-        parsed.mean = std::atof(line);
+        parsed.mean = std::atof(line.c_str());
         
         // Parse the standard variance
         std::getline(trainingFile, line);
-        parsed.variance = std::atof(line);
+        parsed.variance = std::atof(line.c_str());
         
         // Save the data
         distributions[i] = parsed;
@@ -192,7 +193,7 @@ void SSVEPFeedbackTask::OnTrialBegin() {
     SSVEPGUI->OnTrialBegin();
     AppLog << "Trial #" << trialCount << " => ";
     
-    int i;
+    unsigned int i;
     switch (mode) {
     case Training:
         currentTrainingType = arrowSequence.NextElement() % distributions.size();
@@ -215,6 +216,36 @@ void SSVEPFeedbackTask::OnTrialBegin() {
     state_lock->Release();
 }
 
+// Before C++ 11, the erf(...) function did not exist
+#if __cplusplus <= 199711L 
+namespace std {
+    /*
+     * Taken from: http://www.johndcook.com/cpp_erf.html
+     */
+    static double erf(double x) {
+        // constants
+        double a1 =  0.254829592;
+        double a2 = -0.284496736;
+        double a3 =  1.421413741;
+        double a4 = -1.453152027;
+        double a5 =  1.061405429;
+        double p  =  0.3275911;
+
+        // Save the sign of x
+        int sign = 1;
+        if (x < 0)
+            sign = -1;
+        x = fabs(x);
+
+        // A&S formula 7.1.26
+        double t = 1.0/(1.0 + p*x);
+        double y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*exp(-x*x);
+
+        return sign*y;
+    }
+}
+#endif
+
 /*
  * Calculates the cumulative probability of the given value 
  *   in the given normal distribution
@@ -222,11 +253,11 @@ void SSVEPFeedbackTask::OnTrialBegin() {
  *       but this step is not necessary due to normalization of results
  */
 static double NormalCDF(double value, double mean, double variance) {
-    return 1.0 + std::erf((value - mean) / std::sqrt(2.0 * variance))
+    return 1.0 + std::erf((value - mean) / std::sqrt(2.0 * variance));
 }
 
 void SSVEPFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doProgress) {
-    int i;
+    unsigned int i;
     double sum;
     switch (mode) {
     case Training:
@@ -266,6 +297,10 @@ void SSVEPFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doP
     }
 }
 
+void SSVEPFeedbackTask::OnTrialEnd() {
+    SSVEPGUI->ShowCross();
+}
+
 void SSVEPFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
     // Let the Feedback task handle the timing for training
     if (mode == Training) {
@@ -301,17 +336,17 @@ void SSVEPFeedbackTask::SaveTrainingFile() {
     std::fstream trainingFile(trainingFilename.c_str(), std::fstream::out | std::fstream::trunc);
     
     trainingFile << "Frequency\tMean\tVariance" << std::endl;
-    for (int i = 0; i < distributions.size(); i++) {
+    for (unsigned int i = 0; i < distributions.size(); i++) {
         // Calculate the mean
         double sum = 0.0;
-        for (int j = 0; j < distributions[i].raw.size(); i++) {
+        for (unsigned int j = 0; j < distributions[i].raw.size(); j++) {
             sum += distributions[i].raw[j];
         }
         distributions[i].mean = sum / distributions[i].raw.size();
         
         // Calculate the variance
         sum = 0.0;
-        for (int j = 0; j < distributions[i].raw.size(); i++) {
+        for (unsigned int j = 0; j < distributions[i].raw.size(); j++) {
             sum += std::pow(distributions[i].mean - distributions[i].raw[j], 2);
         }
         distributions[i].variance = sum / distributions[i].raw.size();
@@ -324,13 +359,13 @@ void SSVEPFeedbackTask::SaveTrainingFile() {
     trainingFile.close();
 }
 
-bool Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
+bool SSVEPFeedbackTask::HandleTrialStatusRequest(struct mg_connection *conn) {
     if (classificationMade) {
         return false;
     }
     
     // Classify!
-    for (i = 0; i < distributions.size(); i++) {
+    for (unsigned int i = 0; i < distributions.size(); i++) {
         if (distributions[i].prior >= classificationThreshold) {
             mg_send_status(conn, 200);
             mg_send_header(conn, "Content-Type", "text/plain");

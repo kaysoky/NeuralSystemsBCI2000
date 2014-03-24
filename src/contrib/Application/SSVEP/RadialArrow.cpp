@@ -29,7 +29,8 @@ RadialArrow::RadialArrow(GUI::DisplayWindow& display,
     GUI::Rect bodyRect = {origin.x, origin.y, terminus.x, terminus.y};
     body = new LineShape(display);
     body->SetObjectRect(bodyRect);
-    body->SetColor(arrowColor);
+    body->SetColor(arrowColor)
+         .SetLineWidth(2.5f);
          
     // Determine the characteristics of arrow flanges
     float angle = std::atan2(origin.y - terminus.y, origin.x - terminus.x);
@@ -77,6 +78,10 @@ void RadialArrow::Show() {
            body->Show();
      leftFlange->Show();
     rightFlange->Show();
+}
+
+void RadialArrow::ShowText() {
+    description->Show();
 }
 
 void RadialArrow::Hide() {

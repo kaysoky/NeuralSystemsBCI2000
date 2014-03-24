@@ -27,7 +27,7 @@ private:
     virtual void DoFeedback(const GenericSignal&, bool& doProgress);
     virtual void OnFeedbackEnd() {};
     virtual void DoPostFeedback(const GenericSignal&, bool& doProgress) { doProgress = true; };
-    virtual void OnTrialEnd() {};
+    virtual void OnTrialEnd();
     virtual void DoITI(const GenericSignal&, bool& doProgress);
 
     // Cleanup events
@@ -44,6 +44,8 @@ private:
 
     int runCount,
         trialCount;
+    
+    virtual bool HandleTrialStatusRequest(struct mg_connection *conn);
         
     /*
      * Toggles specific application code flow depending on which one is active
@@ -87,7 +89,7 @@ private:
          * Holds the prior Bayesian belief
          */
         double prior;
-    }
+    };
     std::vector<NormalData> distributions;
     
     /*

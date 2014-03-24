@@ -25,6 +25,8 @@ public:
     void OnStartRun();
     void OnTrialBegin();
     void ShowArrow(int);
+    void ShowCross();
+    void ShowText();
     void OnStopRun();
     
 private:
@@ -43,6 +45,12 @@ private:
      * Represents the title box
      */
     TextField* titleBox;
+
+    /**
+     * Represents the center of the screen
+     */
+    LineShape *horizontal;
+    LineShape *vertical;
 };
 
 #endif // SSVEPUI_H

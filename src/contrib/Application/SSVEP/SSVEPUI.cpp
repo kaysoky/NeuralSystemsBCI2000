@@ -16,6 +16,8 @@ SSVEPUI::~SSVEPUI() {
     }
     delete arrows;
     delete titleBox;
+    delete horizontal;
+    delete vertical;
 }
 
 void SSVEPUI::Initialize() {
@@ -37,6 +39,21 @@ void SSVEPUI::Initialize() {
              .SetTextHeight(0.8f)
              .SetColor(RGBColor::Gray)
              .SetObjectRect(titleBoxRect);
+
+    // Initialize the center "+" mark
+    RGBColor centerColor = RGBColor::White;
+    float lineWidth = 2.5f;
+    GUI::Rect horizontalLine = {0.4f, 0.5f, 0.6f, 0.5f};
+    horizontal = new LineShape(window);
+    horizontal->SetObjectRect(horizontalLine);
+    horizontal->SetColor(centerColor)
+               .SetLineWidth(lineWidth);
+    
+    GUI::Rect verticalLine = {0.5f, 0.4f, 0.5f, 0.6f};
+    vertical = new LineShape(window);
+    vertical->SetObjectRect(verticalLine);
+    vertical->SetColor(centerColor)
+             .SetLineWidth(lineWidth);
 }
 
 void SSVEPUI::OnStartRun() {
@@ -57,6 +74,32 @@ void SSVEPUI::ShowArrow(int num) {
         arrows[i]->Hide();
     }
     arrows[num]->Show();
+
+    // Hide the cross
+    horizontal->Hide();
+    vertical->Hide();
+}
+
+void SSVEPUI::ShowText() {
+    // Hide the cross
+    horizontal->Hide();
+    vertical->Hide();
+
+    // Show just the text, not the arrows
+    for (int i = 0; i < numArrows; i++) {
+        arrows[i]->Hide();
+        arrows[i]->ShowText();
+    }
+}
+
+void SSVEPUI::ShowCross() {
+    // Hide the arrows
+    for (int i = 0; i < numArrows; i++) {
+        arrows[i]->Hide();
+    }
+
+    horizontal->Show();
+    vertical->Show();
 }
 
 void SSVEPUI::OnStopRun() {

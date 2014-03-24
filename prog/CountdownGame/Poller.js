@@ -18,7 +18,7 @@ PollServer = function() {
                             async: false, 
                             success: function() {}, 
                             error: function(jqXHR) {
-                                alert("POST /TMS/fire -> " + jqXHR.status + " " + jqXHR.statusText);
+                                alert("POST /TMS/fire -> " + jqXHR.status + " " + jqXHR.statusText + " " + JSON.stringify(jqXHR));
                             }
                         });
                 }

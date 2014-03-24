@@ -14,6 +14,7 @@ public:
     ~RadialArrow();
     
     void Show();
+    void ShowText();
     void Hide();
     
 private:
