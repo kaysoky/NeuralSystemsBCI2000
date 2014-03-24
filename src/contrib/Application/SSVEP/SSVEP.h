@@ -3,8 +3,10 @@
 
 #include "MongooseFeedbackTask.h"
 #include "ApplicationWindow.h"
+#include "BlockRandSeq.h"
 #include "mongoose.h"
 #include "SSVEPUI.h"
+#include <vector>
 
 class SSVEPFeedbackTask : public MongooseFeedbackTask {
 public:
@@ -42,12 +44,65 @@ private:
 
     int runCount,
         trialCount;
+        
+    /*
+     * Toggles specific application code flow depending on which one is active
+     */
+    enum StimulusMode {
+        Training, 
+        Classification
+    };
+    StimulusMode mode;
     
-    ///////////////////////////////
-    // 20 Questions game objects //
-    ///////////////////////////////
+    /*
+     * Classification mode only
+     * Read in the training file
+     *   and puts the data into a vector (distributions)
+     */
+    void ParseTrainingFile();
     
+    /*
+     * Training mode only
+     * Calculates the mean and variance of the raw data (distributions)
+     *   and writes it to the training file
+     */
+    void SaveTrainingFile();
     
+    /*
+     * Holds the information necessary for the SSVEP's Naive Bayes classifier
+     */
+    struct NormalData {
+        int frequency;
+        double mean;
+        double variance;
+        
+        /*
+         * Training mode only
+         * Holds raw training data
+         */
+        std::vector<double> raw;
+        
+        /*
+         * Classification mode only
+         * Holds the prior Bayesian belief
+         */
+        double prior;
+    }
+    std::vector<NormalData> distributions;
+    
+    /*
+     * Classification mode only
+     * Holds the classification threshold
+     */
+    double classificationThreshold;
+    bool classificationMade;
+    
+    /*
+     * Training mode only
+     * Randomizes the order of arrows
+     */
+    BlockRandSeq arrowSequence;
+    int currentTrainingType;
 };
 
 #endif // SSVEP_H

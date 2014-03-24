@@ -16,7 +16,8 @@ public:
 
     /*
      * Loops infinitely and polls for incoming connections
-     * Note: The underlying server can be reinitialized and swapped out at any time
+     * Note: The underlying server can be reinitialized 
+     *   and swapped out at any time by re-"Set Config"-ing
      */
     friend void *MongooseServerThread(void *arg);
 

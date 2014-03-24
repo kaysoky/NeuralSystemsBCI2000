@@ -2,9 +2,8 @@
 #pragma hdrstop
 
 #include "MongooseFeedbackTask.h"
+#include "FileUtils.h"
 
-#include <stdio.h>
-#include <limits.h>
 #include <stdlib.h>
 
 /*
@@ -17,8 +16,8 @@ MongooseFeedbackTask::MongooseFeedbackTask()
       nextTrialType(RandomNumberGenerator) {
     // Note: See FeedbackTask.cpp for more parameters and states
     BEGIN_PARAMETER_DEFINITIONS
-    "Application:Mongoose string FileDirectory= % "
-        "/CountdownGame/ % % // Directory where the game files are located", 
+    "Application:Mongoose string FileDirectory= "
+        "/CountdownGame // Directory where the game files are located (directory)", 
     "Application:Mongoose string ListeningPort= % "
         "20320 % % // Port for the server to listen on",
     END_PARAMETER_DEFINITIONS
@@ -60,9 +59,8 @@ void MongooseFeedbackTask::InitializeServer(const SignalProperties& Input, int n
     server = mg_create_server(NULL);
 
     // Determine and set where the files to be served are
-    char fileDirectory[MAX_PATH];
-    int retVal = GetFullPathName(std::string(Parameter("FileDirectory")).c_str(), MAX_PATH, fileDirectory, NULL);
-    mg_set_option(server, "document_root", fileDirectory);
+    std::string fileDirectory = FileUtils::CanonicalPath(std::string(Parameter("FileDirectory")));
+    mg_set_option(server, "document_root", fileDirectory.c_str());
 
     // Set the request handler
     mg_set_request_handler(server, MongooseServerHandler);

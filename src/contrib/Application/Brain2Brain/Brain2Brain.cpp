@@ -79,7 +79,7 @@ void Brain2Brain::OnTrialBegin() {
     // Increment the trial count
     trialCount++;
 
-    AppLog.Screen << "Trial #" << trialCount << " => " << TrialTypeText[currentTrialType] << std::endl;
+    AppLog << "Trial #" << trialCount << " => " << TrialTypeText[currentTrialType] << std::endl;
     B2BGUI->OnTrialBegin();
 }
 
@@ -114,13 +114,11 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
     doProgress = true;
 }
 
-void
-Brain2Brain::OnFeedbackEnd() {
+void Brain2Brain::OnFeedbackEnd() {
     B2BGUI->OnFeedbackEnd();
 }
 
-void
-Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
+void Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
 
     // Wait for the start signal
@@ -132,8 +130,7 @@ Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
 	state_lock->Release();
 }
 
-void
-Brain2Brain::OnStopRun() {
+void Brain2Brain::OnStopRun() {
     AppLog << "Run " << runCount << " finished: "
            << trialCount << " trial(s)" << std::endl;
 
