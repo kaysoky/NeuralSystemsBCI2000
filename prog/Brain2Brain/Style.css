@@ -18,7 +18,7 @@ div, img {
 
 #Gamescreen {
     position: fixed;
-    background-image: url("Backdrop.png"), linear-gradient(to top, #FFF600, #F47705);
+    background-image: url("Countdown/Backdrop.png"), linear-gradient(to top, #FFF600, #F47705);
     background-size: 100% auto;
     background-repeat: no-repeat;
     background-position: 50% 100%;
@@ -97,4 +97,33 @@ div, img {
 
 /* 20 Questions style */
 
-
+#QuestionsBox, #LeavesBox {
+    width: 50%;
+    height: 100%;
+}
+#LeavesBox  {
+    left: 50%;
+}
+#QuestionsLabel, #LeavesLabel {
+    width: 100%;
+    height: 50px;
+    text-align: center;
+    font-size: 50px;
+}
+#QuestionsList, #LeavesList {
+    position: absolute;
+    margin: 10px; 
+    padding: 0px;
+    width: calc(100% - 20px);
+    top: 60px;
+    height: calc(100% - 80px);
+    list-style-type: none; 
+    overflow-y: scroll;
+}
+ul .ui-selecting {
+    background: #FECA40;
+}
+ul .ui-selected {
+    background: #F39814;
+    color: black;
+}

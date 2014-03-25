@@ -1,0 +1,31 @@
+Q:Does it live on land?
+Q:Can it be a farm animal?
+Q:Can it be a pet?
+Q:Does it meow?
+A:Cat
+A:Dog
+Q:Does it lay eggs?
+A:Chicken
+A:Horse
+Q:Is it a big cat?
+Q:Does it have stripes?
+A:Tiger
+A:Lion
+Q:Does it have a husk?
+A:Elephant
+A:Bear
+Q:Is it served as seafood?
+Q:Does it have pincers?
+Q:Does it have a disk shaped body?
+A:Crab
+A:Lobster
+Q:Does it sometimes have pearls?
+A:Oyster
+A:Shrimp
+Q:Does it eat other fish?
+Q:Can you swim with it at SeaWorld?
+A:Dolphin
+A:Shark
+Q:Is it star shaped?
+A:Starfish
+A:Goldfish
