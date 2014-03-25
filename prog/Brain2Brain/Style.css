@@ -2,6 +2,7 @@ html, body, #Gamescreen {
     margin: 0;
     width: 100%;
     height: 100%;
+    color: white;
 }
 html, body {
     background: black;
@@ -12,6 +13,9 @@ div, img {
     left: 0px;
     top: 0px;
 }
+
+/* Countdown style */
+
 #Gamescreen {
     position: fixed;
     background-image: url("Backdrop.png"), linear-gradient(to top, #FFF600, #F47705);
@@ -90,3 +94,7 @@ div, img {
     left: -125px;
      top: -125px;
 }
+
+/* 20 Questions style */
+
+

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Countdown</title>
+        <link rel="stylesheet" type="text/css" href="Style.css" />
+        <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="Constants.js"></script>
+        <script type="text/javascript" src="Poller.js"></script>
+        <script type="text/javascript" src="Logger.js"></script>
+		<script type="text/javascript">
+			window.onload = function() {
+                // Bind the space bar event
+                // This is required to start the countdown for the first time
+                $('body').keypress(function(event) {
+                    if (event.which == 32) {
+                        StartTrial();
+
+                        // Unbind the spacebar
+                        $('body').unbind('keypress');
+                    }
+                });
+
+                // Start polling the server for hits
+                PollServer();
+			};
+
+            /**
+             * Starts the game
+             */
+            StartTrial = function() {
+            
+            };
+		</script>
+	</head>
+	<body tabindex="0">
+        <div id="Gamescreen">
+            
+        </div>
+	</body>
+</html>

@@ -7,6 +7,7 @@
         <script type="text/javascript" src="Constants.js"></script>
         <script type="text/javascript" src="Physics.js"></script>
         <script type="text/javascript" src="Poller.js"></script>
+        <script type="text/javascript" src="Logger.js"></script>
 		<script type="text/javascript">
             /**
              * Used to stop timeout loops
@@ -196,20 +197,6 @@
 
                 CompleteTrial(true);
             };
-
-            /**
-             * Asynchronously POST's some text for the server to log
-             */
-            LogInfo = function(text) {
-                $.ajax({
-                    type: 'POST',
-                    url: '/log',
-                    data: text,
-                    error: function(jqXHR) {
-                        alert("POST /log -> " + jqXHR.status + " " + jqXHR.statusText);
-                    }
-                });
-            }
 		</script>
 	</head>
 	<body tabindex="0">

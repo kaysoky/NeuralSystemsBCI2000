@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Choose a Client Type</title>
+        <link rel="stylesheet" type="text/css" href="Style.css" />
+        <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+		<script type="text/javascript">
+            window.onload = function () {
+                $('#Countdown').button()
+                    .click(function() {
+                        window.location.href = '/Countdown.html';
+                    });
+                $('#20Questions').button()
+                    .click(function() {
+                        window.location.href = '/20Questions.html';
+                    });
+            }
+		</script>
+	</head>
+	<body tabindex="0">
+        <center>
+            <h1>Choose a client type: </h1>
+            <div id="Countdown">Countdown</div>
+            <div id="20Questions">20 Questions</div>
+        </center>
+	</body>
+</html>
