@@ -28,6 +28,9 @@ public:
     void OnFeedbackEnd();
     void OnStopRun();
     
+    void SetQuestion(std::string);
+    void SetAnswer(std::string);
+    
 private:
     /**
      * Provides access to the UI window
@@ -56,6 +59,12 @@ private:
      * Represents the title box
      */
     TextField* titleBox;
+    
+    /**
+     * Represents the optional text fields
+     */
+    TextField *questionBox;
+    TextField *answerBox;
 };
 
 #endif // BRAIN2BRAINUI_H

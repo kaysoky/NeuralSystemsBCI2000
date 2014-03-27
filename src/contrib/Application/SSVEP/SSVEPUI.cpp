@@ -18,6 +18,8 @@ SSVEPUI::~SSVEPUI() {
     delete titleBox;
     delete horizontal;
     delete vertical;
+    delete questionBox;
+    delete answerBox;
 }
 
 void SSVEPUI::Initialize() {
@@ -54,6 +56,20 @@ void SSVEPUI::Initialize() {
     vertical->SetObjectRect(verticalLine);
     vertical->SetColor(centerColor)
              .SetLineWidth(lineWidth);
+             
+    // Initialize the optional text fields
+    RGBColor textColor = RGBColor::White;
+    GUI::Rect questionBoxRect = {0.1f, 0.1f, 0.9f, 0.3f};
+    questionBox = new TextField(window);
+    questionBox->SetText("")
+                .SetColor(textColor)
+                .SetObjectRect(questionBoxRect);
+                
+    GUI::Rect answerBoxRect = {0.1f, 0.7f, 0.9f, 0.9f};
+    answerBox = new TextField(window);
+    answerBox->SetText("")
+              .SetColor(textColor)
+              .SetObjectRect(answerBoxRect);
 }
 
 void SSVEPUI::OnStartRun() {
@@ -90,6 +106,9 @@ void SSVEPUI::ShowText() {
         arrows[i]->Hide();
         arrows[i]->ShowText();
     }
+    
+    questionBox->Show();
+    answerBox->Show();
 }
 
 void SSVEPUI::ShowCross() {
@@ -109,4 +128,15 @@ void SSVEPUI::OnStopRun() {
     for (int i = 0; i < numArrows; i++) {
         arrows[i]->Hide();
     }
+    
+    questionBox->Hide();
+    answerBox->Hide();
+}
+
+void SSVEPUI::SetQuestion(std::string data) {
+    questionBox->SetText(data);
+}
+
+void SSVEPUI::SetAnswer(std::string data) {
+    answerBox->SetText(data);
 }

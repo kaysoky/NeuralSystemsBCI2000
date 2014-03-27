@@ -17,6 +17,8 @@ Brain2BrainUI::~Brain2BrainUI() {
     delete noTarget;
     delete noTargetText;
     delete titleBox;
+    delete questionBox;
+    delete answerBox;
 }
 
 void Brain2BrainUI::Initialize() {
@@ -77,6 +79,20 @@ void Brain2BrainUI::Initialize() {
              .SetTextHeight(0.8f)
              .SetColor(RGBColor::Gray)
              .SetObjectRect(titleBoxRect);
+             
+    // Initialize the optional text fields
+    RGBColor textColor = RGBColor::White;
+    GUI::Rect questionBoxRect = {0.1f, 0.1f, 0.9f, 0.3f};
+    questionBox = new TextField(window);
+    questionBox->SetText("")
+                .SetColor(textColor)
+                .SetObjectRect(questionBoxRect);
+                
+    GUI::Rect answerBoxRect = {0.1f, 0.7f, 0.9f, 0.9f};
+    answerBox = new TextField(window);
+    answerBox->SetText("")
+              .SetColor(textColor)
+              .SetObjectRect(answerBoxRect);
 }
 
 void Brain2BrainUI::OnStartRun() {
@@ -93,6 +109,9 @@ void Brain2BrainUI::OnTrialBegin() {
     noTarget->SetFillColor(targetFillColor)
 		     .Show();
     noTargetText->Show();
+    
+    questionBox->Show();
+    answerBox->Show();
 }
 
 void Brain2BrainUI::OnFeedbackBegin() {
@@ -141,4 +160,14 @@ void Brain2BrainUI::OnStopRun() {
     yesTargetText->Hide();
     noTarget->Hide();
     noTargetText->Hide();
+    questionBox->Hide();
+    answerBox->Hide();
+}
+
+void Brain2BrainUI::SetQuestion(std::string data) {
+    questionBox->SetText(data);
+}
+
+void Brain2BrainUI::SetAnswer(std::string data) {
+    answerBox->SetText(data);
 }

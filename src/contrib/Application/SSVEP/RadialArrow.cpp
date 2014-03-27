@@ -22,6 +22,7 @@ RadialArrow::RadialArrow(GUI::DisplayWindow& display,
         bcierr << "Terminus of arrow may not be the center of the screen" << std::endl;
     }
     lerp = std::min(length / std::sqrt(lerp), 1.0f);
+    length *= lerp;
     origin.x = origin.x * lerp + terminus.x * (1.0f - lerp);
     origin.y = origin.y * lerp + terminus.y * (1.0f - lerp);
     

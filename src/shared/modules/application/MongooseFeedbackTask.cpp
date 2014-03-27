@@ -180,8 +180,27 @@ int MongooseFeedbackTask::HandleMongooseRequest(struct mg_connection *conn) {
 
             state_lock->Release();
             return MG_REQUEST_PROCESSED;
-        }
+            
+        } 
 
+    } else if (method.compare("PUT") == 0) {
+        if (uri.compare("/text/question") == 0) {
+            mg_send_status(conn, 204);
+            mg_send_data(conn, "", 0);
+            HandleQuestionUpdate(std::string(conn->content));
+
+            state_lock->Release();
+            return MG_REQUEST_PROCESSED;
+            
+        } else if (uri.compare("/text/answer") == 0) {
+            mg_send_status(conn, 204);
+            mg_send_data(conn, "", 0);
+            HandleAnswerUpdate(std::string(conn->content));
+
+            state_lock->Release();
+            return MG_REQUEST_PROCESSED;
+        }
+        
     } else if (method.compare("GET") == 0) {
         if (uri.compare("/trial/status") == 0) {
             if (runEnded) {

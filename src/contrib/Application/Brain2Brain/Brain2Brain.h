@@ -13,20 +13,20 @@ public:
     
 private:
     // Startup events
-    virtual void OnPreflight(const SignalProperties& Input) const;
-    virtual void OnInitialize(const SignalProperties& Input);
+    virtual void OnPreflight(const SignalProperties&) const;
+    virtual void OnInitialize(const SignalProperties&);
     virtual void OnStartRun();
-    virtual void DoPreRun(const GenericSignal&, bool& doProgress);
+    virtual void DoPreRun(const GenericSignal&, bool&);
 
     // Trial Loop
     virtual void OnTrialBegin();
     virtual void DoPreFeedback(const GenericSignal&, bool& doProgress) { doProgress = true; };
     virtual void OnFeedbackBegin();
-    virtual void DoFeedback(const GenericSignal&, bool& doProgress);
+    virtual void DoFeedback(const GenericSignal&, bool&);
     virtual void OnFeedbackEnd();
     virtual void DoPostFeedback(const GenericSignal&, bool& doProgress) { doProgress = true; };
     virtual void OnTrialEnd() {};
-    virtual void DoITI(const GenericSignal&, bool& doProgress);
+    virtual void DoITI(const GenericSignal&, bool&);
 
     // Cleanup events
     virtual void OnStopRun();
@@ -43,7 +43,9 @@ private:
     int runCount,
         trialCount;
     
-    virtual bool HandleTrialStatusRequest(struct mg_connection *conn);
+    virtual bool HandleTrialStatusRequest(struct mg_connection *);
+    virtual void HandleQuestionUpdate(std::string);
+    virtual void HandleAnswerUpdate(std::string);
     
     /*
      * Which projectile should be flying across the Countdown game screen on this trial?

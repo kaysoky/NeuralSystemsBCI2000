@@ -13,7 +13,7 @@ RegisterFilter( SSVEPFeedbackTask, 3 );
 SSVEPFeedbackTask::SSVEPFeedbackTask()
     : SSVEPGUI(NULL),
       window(Window()),
-      runCount(0), 
+      runCount(0),
       arrowSequence(RandomNumberGenerator) {
 
     // Note: See MongooseTask.cpp for more parameters and states
@@ -25,12 +25,12 @@ SSVEPFeedbackTask::SSVEPFeedbackTask()
         " 12 10 50 "
         " 17 90 50 "
         " // Frequency of input expected for each target and their position in percentage coordinates",
-    "Application:SSVEP float ArrowLength= 10 % 0 100 "
+    "Application:SSVEP float ArrowLength= 10 % 0 70 "
         " // Length of an arrow in percent of screen dimensions",
     "Application:SSVEP int StimulusMode= 0 0 0 1"
         " // Training or classification: 0 Training, 1 Classification (enumeration)",
     "Application:SSVEP string TrainingFile= ../Data/SSVEP/Training.tsv"
-        " // File to store/read the result of training (inputfile)", 
+        " // File to store/read the result of training (inputfile)",
     "Application:SSVEP float ClassificationThreshold= 0.95 % 0 1 "
         " // Probability threshold at which some particular classification is made"
     END_PARAMETER_DEFINITIONS
@@ -86,13 +86,13 @@ void SSVEPFeedbackTask::OnInitialize(const SignalProperties& Input) {
         empty.frequency = Parameter("Arrows")(i, 0);
         distributions.push_back(empty);
     }
-    
+
     // Read the training data
     if (mode == Classification) {
         ParseTrainingFile();
         classificationThreshold = Parameter("ClassificationThreshold");
     }
-    
+
     // Initialize the arrow randomizer
     size_t numTrials = 100; // Arbitrary default
     if (!std::string(Parameter("NumberOfTrials")).empty()) {
@@ -104,14 +104,14 @@ void SSVEPFeedbackTask::OnInitialize(const SignalProperties& Input) {
     delete SSVEPGUI;
     SSVEPGUI = new SSVEPUI(window);
     SSVEPGUI->Initialize();
-    
+
     state_lock->Release();
 }
 
 void SSVEPFeedbackTask::ParseTrainingFile() {
     std::string trainingFilename(Parameter("TrainingFile"));
     std::fstream trainingFile(trainingFilename.c_str(), std::fstream::in);
-    
+
     // The first line contains header info, so skip it
     std::string line;
     std::getline(trainingFile, line);
@@ -126,27 +126,27 @@ void SSVEPFeedbackTask::ParseTrainingFile() {
         if (trainingFile.fail()) {
             bcierr << "Failed to read training file" << std::endl;
         }
-        
+
         NormalData parsed;
-        
+
         // Parse the frequency
         std::getline(trainingFile, line, '\t');
         parsed.frequency = std::atoi(line.c_str());
         if (parsed.frequency != Parameter("Arrows")(i, 0)) {
             bcierr << "Training file does not match configuration: "
-                   << "Expected line " << (i + 2) << " of training data to be " 
+                   << "Expected line " << (i + 2) << " of training data to be "
                    << Parameter("Arrows")(i, 0) << " Hz, "
                    << "Got " << parsed.frequency << " Hz" << std::endl;
         }
-        
+
         // Parse the mean
         std::getline(trainingFile, line, '\t');
         parsed.mean = std::atof(line.c_str());
-        
+
         // Parse the standard variance
         std::getline(trainingFile, line);
         parsed.variance = std::atof(line.c_str());
-        
+
         // Save the data
         distributions[i] = parsed;
     }
@@ -170,7 +170,7 @@ void SSVEPFeedbackTask::DoPreRun(const GenericSignal&, bool& doProgress) {
     if (mode == Training) {
         return;
     }
-    
+
     // Wait for the start signal
     doProgress = false;
 
@@ -192,7 +192,7 @@ void SSVEPFeedbackTask::OnTrialBegin() {
 
     SSVEPGUI->OnTrialBegin();
     AppLog << "Trial #" << trialCount << " => ";
-    
+
     unsigned int i;
     switch (mode) {
     case Training:
@@ -205,7 +205,7 @@ void SSVEPFeedbackTask::OnTrialBegin() {
         for (i = 0; i < distributions.size(); i++) {
             distributions[i].prior = 1.0 / distributions.size();
         }
-    
+
         AppLog << "Classifying..." << std::endl;
         SSVEPGUI->ShowText();
         break;
@@ -217,7 +217,7 @@ void SSVEPFeedbackTask::OnTrialBegin() {
 }
 
 // Before C++ 11, the erf(...) function did not exist
-#if __cplusplus <= 199711L 
+#if __cplusplus <= 199711L
 namespace std {
     /*
      * Taken from: http://www.johndcook.com/cpp_erf.html
@@ -247,9 +247,9 @@ namespace std {
 #endif
 
 /*
- * Calculates the cumulative probability of the given value 
+ * Calculates the cumulative probability of the given value
  *   in the given normal distribution
- * Note: Should be divided by 2, 
+ * Note: Should be divided by 2,
  *       but this step is not necessary due to normalization of results
  */
 static double NormalCDF(double value, double mean, double variance) {
@@ -272,13 +272,13 @@ void SSVEPFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doP
             // Iterate the Naive Bayes priors
             sum = 0.0;
             for (i = 0; i < distributions.size(); i++) {
-                distributions[i].prior *= 
-                        NormalCDF(ControlSignal(0, distributions[i].frequency), 
-                                  distributions[i].mean, 
+                distributions[i].prior *=
+                        NormalCDF(ControlSignal(0, distributions[i].frequency),
+                                  distributions[i].mean,
                                   distributions[i].variance);
                 sum += distributions[i].prior;
             }
-            
+
             // Normalize the priors
             for (i = 0; i < distributions.size(); i++) {
                 distributions[i].prior /= sum;
@@ -306,7 +306,7 @@ void SSVEPFeedbackTask::DoITI(const GenericSignal&, bool& doProgress) {
     if (mode == Training) {
         return;
     }
-    
+
     doProgress = false;
 
     // Wait for the start signal
@@ -323,7 +323,7 @@ void SSVEPFeedbackTask::OnStopRun() {
     if (mode == Training) {
         SaveTrainingFile();
     }
-    
+
     AppLog << "Run " << runCount << " finished: "
            << trialCount << " trial(s)" << std::endl;
 
@@ -334,7 +334,7 @@ void SSVEPFeedbackTask::OnStopRun() {
 void SSVEPFeedbackTask::SaveTrainingFile() {
     std::string trainingFilename(Parameter("TrainingFile"));
     std::fstream trainingFile(trainingFilename.c_str(), std::fstream::out | std::fstream::trunc);
-    
+
     trainingFile << "Frequency\tMean\tVariance" << std::endl;
     for (unsigned int i = 0; i < distributions.size(); i++) {
         // Calculate the mean
@@ -343,14 +343,14 @@ void SSVEPFeedbackTask::SaveTrainingFile() {
             sum += distributions[i].raw[j];
         }
         distributions[i].mean = sum / distributions[i].raw.size();
-        
+
         // Calculate the variance
         sum = 0.0;
         for (unsigned int j = 0; j < distributions[i].raw.size(); j++) {
             sum += std::pow(distributions[i].mean - distributions[i].raw[j], 2);
         }
         distributions[i].variance = sum / distributions[i].raw.size();
-        
+
         // Write the data to the file
         trainingFile << distributions[i].frequency << "\t"
                      << distributions[i].mean      << "\t"
@@ -363,27 +363,32 @@ bool SSVEPFeedbackTask::HandleTrialStatusRequest(struct mg_connection *conn) {
     if (classificationMade) {
         return false;
     }
-    
+
     // Classify!
     for (unsigned int i = 0; i < distributions.size(); i++) {
         if (distributions[i].prior >= classificationThreshold) {
             mg_send_status(conn, 200);
             mg_send_header(conn, "Content-Type", "text/plain");
-            
+
             // By default, the first arrow will be the yes target
             if (i == 0) {
                 mg_printf_data(conn, "YES");
             } else {
                 mg_printf_data(conn, "NO");
             }
-            
+
             classificationMade = true;
             return true;
         }
     }
-    
+
     return false;
 }
 
+void SSVEPFeedbackTask::HandleQuestionUpdate(std::string data) {
+    SSVEPGUI->SetQuestion(data);
+}
 
-            
+void SSVEPFeedbackTask::HandleAnswerUpdate(std::string data) {
+    SSVEPGUI->SetAnswer(data);
+}

@@ -29,6 +29,9 @@ public:
     void ShowText();
     void OnStopRun();
     
+    void SetQuestion(std::string);
+    void SetAnswer(std::string);
+    
 private:
     /**
      * Provides access to the UI window
@@ -44,13 +47,19 @@ private:
     /**
      * Represents the title box
      */
-    TextField* titleBox;
+    TextField *titleBox;
 
     /**
      * Represents the center of the screen
      */
     LineShape *horizontal;
     LineShape *vertical;
+    
+    /**
+     * Represents the optional text fields
+     */
+    TextField *questionBox;
+    TextField *answerBox;
 };
 
 #endif // SSVEPUI_H

@@ -19,7 +19,7 @@ public:
      * Note: The underlying server can be reinitialized 
      *   and swapped out at any time by re-"Set Config"-ing
      */
-    friend void *MongooseServerThread(void *arg);
+    friend void *MongooseServerThread(void *);
 
     /*
      * Handles all requests when the application is not ready (or not running)
@@ -27,29 +27,31 @@ public:
      *   and the POST /log method
      * Other methods are passed along to HandleMongooseRequest(...)
      */
-    friend int MongooseServerHandler(struct mg_connection *conn);
+    friend int MongooseServerHandler(struct mg_connection *);
     
     /*
      * Handles:
      *    GET /trial/status
      *   POST /trial/start
      *   POST /trial/stop
+     *    PUT /text/question
+     *    PUT /text/answer
      * Additional functionality can be added by extending the appropriate delegate function
      */
-    int HandleMongooseRequest(struct mg_connection *conn);
+    int HandleMongooseRequest(struct mg_connection *);
 
 protected:
     /*
      * Checks MongooseFeedbackTask specific parameter settings
      * This should be called within Preflight
      */
-    void CheckServerParameters(const SignalProperties& Input) const;
+    void CheckServerParameters(const SignalProperties&) const;
 
     /*
      * Creates the Mongoose server
      * This should be called within Initialization
      */
-    void InitializeServer(const SignalProperties& Input, int numTrialTypes);
+    void InitializeServer(const SignalProperties&, int);
     
     /*
      * Resets some state in preparation for a run
@@ -65,7 +67,7 @@ protected:
      * Tells the application to start a trial
      * Child classes can extend this
      */
-    virtual void HandleTrialStartRequest(std::string data) {}
+    virtual void HandleTrialStartRequest(std::string) {}
     
     /*
      * Tells the application to stop a trial
@@ -73,13 +75,24 @@ protected:
      */
     virtual void HandleTrialStopRequest() {}
     
+    /*
+     * Tells the application to display the string as a question for the BCI subject
+     */
+    virtual void HandleQuestionUpdate(std::string) {}
+    
+    /*
+     * Tells the application to display the string as the answer 
+     *   to any questions asked by the TMS subject
+     */
+    virtual void HandleAnswerUpdate(std::string) {}
+    
     /* This allows the game to poll for a status
      *   REFRESH means the run has ended and the game should refresh
      * Child classes can extend this to return other data, such as: 
      *   HIT when a TMS pulse should be triggered
      * Should return true if the connection is consumed
      */   
-    virtual bool HandleTrialStatusRequest(struct mg_connection *conn) { return false; }
+    virtual bool HandleTrialStatusRequest(struct mg_connection *) { return false; }
     
     /*
      * Provides synchronization for the client state
