@@ -167,7 +167,7 @@ int MongooseFeedbackTask::HandleMongooseRequest(struct mg_connection *conn) {
             mg_send_header(conn, "Content-Type", "text/plain");
             mg_printf_data(conn, "%d", currentTrialType);
             lastClientPost = START_TRIAL;
-            HandleTrialStartRequest(std::string(conn->content));
+            HandleTrialStartRequest(std::string(conn->content, conn->content_len));
 
             state_lock->Release();
             return MG_REQUEST_PROCESSED;
@@ -184,18 +184,10 @@ int MongooseFeedbackTask::HandleMongooseRequest(struct mg_connection *conn) {
         } 
 
     } else if (method.compare("PUT") == 0) {
-        if (uri.compare("/text/question") == 0) {
+        if (uri.compare("/text/answer") == 0) {
             mg_send_status(conn, 204);
             mg_send_data(conn, "", 0);
-            HandleQuestionUpdate(std::string(conn->content));
-
-            state_lock->Release();
-            return MG_REQUEST_PROCESSED;
-            
-        } else if (uri.compare("/text/answer") == 0) {
-            mg_send_status(conn, 204);
-            mg_send_data(conn, "", 0);
-            HandleAnswerUpdate(std::string(conn->content));
+            HandleAnswerUpdate(std::string(conn->content, conn->content_len));
 
             state_lock->Release();
             return MG_REQUEST_PROCESSED;

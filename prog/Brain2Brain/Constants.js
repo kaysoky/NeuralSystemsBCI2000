@@ -1,9 +1,4 @@
 /**
- * Determines the frame rate
- */
-var FRAME_DELAY = 20.0; // Milliseconds
-
-/**
  * How long each trial should take
  */
 var TRIAL_TIME = 6000.0; // Milliseconds

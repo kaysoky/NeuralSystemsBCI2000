@@ -150,7 +150,7 @@ bool Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
     return false;
 }
 
-void Brain2Brain::HandleQuestionUpdate(std::string data) {
+void Brain2Brain::HandleTrialStartRequest(std::string data) {
     B2BGUI->SetQuestion(data);
 }
 

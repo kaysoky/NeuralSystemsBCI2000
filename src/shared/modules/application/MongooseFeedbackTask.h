@@ -76,11 +76,6 @@ protected:
     virtual void HandleTrialStopRequest() {}
     
     /*
-     * Tells the application to display the string as a question for the BCI subject
-     */
-    virtual void HandleQuestionUpdate(std::string) {}
-    
-    /*
      * Tells the application to display the string as the answer 
      *   to any questions asked by the TMS subject
      */

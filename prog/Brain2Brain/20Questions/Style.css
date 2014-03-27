@@ -1,0 +1,43 @@
+/* 20 Questions style */
+
+.ui-dialog-titlebar-close {
+    display: none;
+}
+
+#QuestionsBox, #AnswersBox {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+}
+#AnswersBox  {
+    left: 50%;
+}
+#QuestionsLabel, #AnswersLabel {
+    width: 100%;
+    height: 50px;
+    text-align: center;
+    font-size: 50px;
+}
+#QuestionsList, #AnswersList {
+    position: absolute;
+    margin: 10px; 
+    padding: 0px;
+    width: calc(100% - 20px);
+    top: 60px;
+    height: calc(100% - 90px - 2em);
+    list-style-type: none; 
+    overflow-y: auto;
+}
+ul .ui-selecting {
+    background: #FECA40;
+}
+ul .ui-selected {
+    background: #F39814;
+    color: black;
+}
+#QuestionsButton, #AnswersButton {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+}

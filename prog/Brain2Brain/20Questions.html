@@ -2,34 +2,53 @@
 <html lang="en">
 	<head>
 		<title>20 Questions</title>
-        <link rel="stylesheet" type="text/css" href="Style.css" />
         <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+        
+        <link rel="stylesheet" type="text/css" href="Style.css" />
+        <link rel="stylesheet" type="text/css" href="20Questions/Style.css" />
         <script type="text/javascript" src="Constants.js"></script>
         <script type="text/javascript" src="Poller.js"></script>
         <script type="text/javascript" src="Logger.js"></script>
+        <script type="text/javascript" src="20Questions/tree.js"></script>
 		<script type="text/javascript">
 			window.onload = function() {
-                // Temp
-                $.get('/20Questions/simple.txt')
-                    .done(function(data) {
-                        var lines = data.split('\n');
-                        var questions = $('#QuestionsList, #LeavesList');
-                        $.each(lines, function (index, val) {
-                            questions.append('<li class="ui-widget-content">' + val + '</li>')
-                        });
-                        questions.selectable();
-                    });
+                $('#QuestionsButton').button()
+                .click(function() {
+                    //TODO
+                    $('#ConfirmationPrompt').dialog("open");
+                });
+                $('#AnswersButton').button()
+                .click(function() {
+                    //TODO
+                    $('#ConfirmationPrompt').dialog("open");
+                });
 
-                // Bind the space bar event
-                // This is required to start the game for the first time
-                $('body').keypress(function(event) {
-                    if (event.which == 32) {
-                        StartTrial();
+                $('#FileSelectionPrompt').dialog({
+                    autoOpen: true,
+                    modal: true,
+                    buttons: {
+                        "Select" : function() {
+                            InitializeQuestionTree('/20Questions/' + $('#FileSelector').val());
+                            $(this).dialog("close");
+                        }
+                    }
+                });
 
-                        // Unbind the spacebar
-                        $('body').unbind('keypress');
+                $('#ConfirmationPrompt').dialog({
+                    autoOpen: false, 
+                    width: 350, 
+                    modal: true,
+                    buttons: {
+                        "Yes" : function() {
+                            //TODO
+                            $(this).dialog("close");
+                        },
+                        "No" : function() {
+                            //TODO
+                            $(this).dialog("close");
+                        }
                     }
                 });
 
@@ -46,13 +65,23 @@
 		</script>
 	</head>
 	<body tabindex="0">
+        <div id="FileSelectionPrompt" title="Choose a question file">
+            <select id="FileSelector">
+                <option value="question2.txt">Animals (minimal)</option>
+                <option value="animals.txt">Animals</option>
+                <option value="simple.txt">Simple</option>
+            </select>
+        </div>
+        <div id="ConfirmationPrompt" title="Did you see a flash of light?"></div>
         <div id="QuestionsBox">
             <div id="QuestionsLabel">Questions</div>
             <ul id="QuestionsList"></ul>
+            <div id="QuestionsButton">Submit</div>
         </div>
-        <div id="LeavesBox">
-            <div id="LeavesLabel">Answers</div>
-            <ul id="LeavesList"></ul>
+        <div id="AnswersBox">
+            <div id="AnswersLabel">Answers</div>
+            <ul id="AnswersList"></ul>
+            <div id="AnswersButton">Submit</div>
         </div>
 	</body>
 </html>
