@@ -12,7 +12,7 @@
 static MongooseFeedbackTask *currentTask;
 
 MongooseFeedbackTask::MongooseFeedbackTask()
-    : isRunning(false),
+    : isRunning(false), runEnded(false), 
       nextTrialType(RandomNumberGenerator) {
     // Note: See FeedbackTask.cpp for more parameters and states
     BEGIN_PARAMETER_DEFINITIONS
@@ -124,8 +124,15 @@ int MongooseServerHandler(struct mg_connection *conn) {
         if (!currentTask->isRunning) {
 			// Catch this polling command (the only non-static GET request)
 			if (uri.compare("/trial/status") == 0) {
-				mg_send_status(conn, 204);
-				mg_send_data(conn, "", 0);
+                if (runEnded) {
+                    mg_send_status(conn, 200);
+                    mg_send_header(conn, "Content-Type", "text/plain");
+                    mg_printf_data(conn, "REFRESH");
+                    runEnded = false;
+                } else {
+                    mg_send_status(conn, 204);
+                    mg_send_data(conn, "", 0);
+                }
 				return MG_REQUEST_PROCESSED;
 			}
 
@@ -195,13 +202,7 @@ int MongooseFeedbackTask::HandleMongooseRequest(struct mg_connection *conn) {
         
     } else if (method.compare("GET") == 0) {
         if (uri.compare("/trial/status") == 0) {
-            if (runEnded) {
-                mg_send_status(conn, 200);
-                mg_send_header(conn, "Content-Type", "text/plain");
-                mg_printf_data(conn, "REFRESH");
-                runEnded = false;
-                
-            } else if (!HandleTrialStatusRequest(conn)) {
+            if (!HandleTrialStatusRequest(conn)) {
                 mg_send_status(conn, 204);
                 mg_send_data(conn, "", 0);
             }

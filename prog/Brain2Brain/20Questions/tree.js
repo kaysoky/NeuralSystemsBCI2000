@@ -12,8 +12,29 @@ InitializeQuestionTree = function(filename) {
         // Build the tree
         QuestionTree = BuildQuestionTree(lines);
         
-        // Update the UI
-        UpdateSelectors();
+        // Hide the scope of the next operation
+        // Since the client determines the answer to the game that is being played,
+        //   we don't want to accidentally save this information on the client
+        (function() {
+            // Update the UI
+            var answer = UpdateSelectors();
+            
+            // Tell the BCI-side what the client is playing for
+            $.ajax({
+                type: 'PUT',
+                url: '/text/answer',
+                async: true,
+                data: answer, 
+                error: function(jqXHR) {
+                    if (jqXHR.status == 418) {
+                        alert('Application not ready to begin');
+                        location.reload();
+                    } else {
+                        alert("POST /text/answer -> " + JSON.stringify(jqXHR));
+                    }
+                }
+            });
+        })();
         
     }).fail(function() {
         alert("Could not fetch " + filename);
@@ -22,6 +43,7 @@ InitializeQuestionTree = function(filename) {
 
 /**
  * Fills in the Questions/Answers selectables with the current tree
+ * Returns a random element from the array of possible answers
  */
 UpdateSelectors = function() {
     // Clear the existing items
@@ -43,10 +65,16 @@ UpdateSelectors = function() {
 
     // Make the lists pretty and interactive
     $('#QuestionsList, #AnswersList').selectable({
-        stop: function(event, ui){
+        stop: function(event, ui) {
+            // Prevent multi-selection within a single selectable
             $(event.target).children('.ui-selected').not(':first').removeClass('ui-selected');
+            
+            // Prevent multi-selection between the two selectables
+            $('#QuestionsList, #AnswersList').not(event.target).children('.ui-selected').removeClass('ui-selected');
         }
     });
+    
+    return answers[Math.floor(Math.random() * answers.length)];
 };
 
 /**
@@ -92,6 +120,7 @@ BuildQuestionTree = function(elements) {
 
 /**
  * Returns a list of all the questions contained in the tree
+ * Traversal order is: middle -> left -> right
  */
 GetQuestions = function(tree) {
     var questions = [];

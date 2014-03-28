@@ -9,6 +9,7 @@
         <script type="text/javascript" src="Constants.js"></script>
         <script type="text/javascript" src="Poller.js"></script>
         <script type="text/javascript" src="Logger.js"></script>
+        <script type="text/javascript" src="API.js"></script>
         <script type="text/javascript" src="Countdown/Physics.js"></script>
 		<script type="text/javascript">
             /**
@@ -91,11 +92,8 @@
                 // Hide the overlay once the counter reaches 0
                 if (count <= 0) {
                     // Tell the server that the trial is starting
-                    $.ajax({
-                        type: 'POST',
-                        url: '/trial/start',
-                        async: false,
-                        success: function(data) {
+                    POST_TrialStart('', 
+                        function(data) {
                             // Determine the trial type
                             trialType = TRIAL_TYPE_ENUM[parseInt(data)];
                             if (trialType == AIRPLANE) {
@@ -120,17 +118,12 @@
                                 }
                             });
                         },
-                        error: function(jqXHR) {
-                            // B2B not ready
-                            if (jqXHR.status == 418) {
-                                // Restart the countdown
-                                Reset();
-                                setTimeout(Countdown, 1000);
-                            } else {
-                                alert("POST /trial/start -> " + jqXHR.status + " " + jqXHR.statusText);
-                            }
+                        function() {
+                            // Restart the countdown
+                            Reset();
+                            setTimeout(Countdown, 1000);
                         }
-                    });
+                    );
                 }
             };
 
@@ -157,23 +150,10 @@
                             + 'Total num trials = ' + total.text() + '\n'
                             + 'Total missiles hit = ' + $('#GoodScore').text() + '\n'
                             + 'Total airplanes hit = ' + $('#BadScore').text());
-                    $.ajax({
-                        type: 'POST',
-                        url: '/trial/stop',
-                        async: false,
-                        success: function() {
+                    var callback = function() {
                             setTimeout(RunTrial, PAUSE_BETWEEN_TRIALS);
-                        },
-                        error: function(jqXHR) {
-                            // Did the BCI-side stop first?
-                            if (jqXHR.status == 418) {
-                                setTimeout(RunTrial, PAUSE_BETWEEN_TRIALS);
-                                return;
-                            }
-
-                            alert("POST /trial/stop -> " + jqXHR.status + " " + jqXHR.statusText);
-                        }
-                    });
+                        };
+                    POST_TrialStop(callback, callback);
                 }
             }
 

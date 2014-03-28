@@ -18,7 +18,7 @@ PollServer = function() {
                             async: false, 
                             success: function() {}, 
                             error: function(jqXHR) {
-                                alert("POST /TMS/fire -> " + jqXHR.status + " " + jqXHR.statusText + " " + JSON.stringify(jqXHR));
+                                alert("POST /TMS/fire -> " + JSON.stringify(jqXHR));
                             }
                         });
                 }
@@ -32,7 +32,7 @@ PollServer = function() {
             setTimeout(PollServer, POLL_INTERVAL);
         }, 
         error: function(jqXHR) {
-            alert("GET /trial/status -> " + jqXHR.status + " " + jqXHR.statusText);
+            alert("GET /trial/status -> " + JSON.stringify(jqXHR));
         }
     });
 }
