@@ -5,62 +5,90 @@
         <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
-        
+
         <link rel="stylesheet" type="text/css" href="Style.css" />
         <link rel="stylesheet" type="text/css" href="20Questions/Style.css" />
         <script type="text/javascript" src="Constants.js"></script>
         <script type="text/javascript" src="Poller.js"></script>
         <script type="text/javascript" src="Logger.js"></script>
         <script type="text/javascript" src="API.js"></script>
+        <script type="text/javascript" src="20Questions/Constants.js"></script>
         <script type="text/javascript" src="20Questions/Tree.js"></script>
 		<script type="text/javascript">
 			window.onload = function() {
                 // Initialize the trial-starting buttons
-                $('#QuestionsButton').button()
+                $('#SubmitButton').button()
                 .click(function() {
                     SubmitQuestion($('#QuestionsList > li.ui-selected'), true);
-                });
-                $('#AnswersButton').button()
-                .click(function() {
                     SubmitQuestion($('#AnswersList > li.ui-selected'), false);
                 });
 
+                // Initialize the file selection pop-up
                 $('#FileSelectionPrompt').dialog({
                     autoOpen: true,
                     modal: true,
                     buttons: {
                         "Select" : function() {
+                            // Load the file into a tree
                             InitializeQuestionTree('/20Questions/' + $('#FileSelector').val());
-                            $(this).dialog("close");
+                            $(this).dialog('close');
                         }
                     }
                 });
 
+                // Initialize the trial-end pop-up
                 $('#ConfirmationPrompt').dialog({
-                    autoOpen: false, 
-                    width: 350, 
+                    autoOpen: false,
+                    width: 350,
                     modal: true,
                     buttons: {
                         "Yes" : function() {
-                            //TODO
+                            LogInfo('Positive answer received');
+
+                            // Was it a question or answer?
+                            var question = $('#QuestionsList > li.ui-selected');
+                            var answer = $('#AnswersList > li.ui-selected');
+                            if (question.length > 0) {
+                                AnswerQuestion(question.filter(':first').text(), true);
+
+                            // Yay, victory(?)!
+                            } else if (answer.length > 0) {
+                                alert('Game complete!\nClose this alert to refresh the page');
+                                location.reload();
+
+                            } else {
+                                alert('Incorrect client state: ' +
+                                      'One question/answer must be selected for this dialog to appear');
+                            }
                             $(this).dialog("close");
                         },
                         "No" : function() {
-                            //TODO
-                            $(this).dialog("close");
+                            LogInfo('Negative answer received');
+
+                            // Prune the question asked off the tree
+                            var question = $('#QuestionsList > li.ui-selected, #AnswersList > li.ui-selected');
+                            if (question.length > 0) {
+                                AnswerQuestion(question.filter(':first').text(), false);
+
+                            } else {
+                                alert('Incorrect client state: ' +
+                                      'One question/answer must be selected for this dialog to appear');
+                            }
+                            $(this).dialog('close');
                         }
-                    }, 
+                    },
                     open: function(event, ui) {
                         $('#ConfirmationText').show();
+                        $('#ConfirmationEllipses').text('');
                         var buttons = $('#ConfirmationPrompt + .ui-dialog-buttonpane > .ui-dialog-buttonset');
-                        
+
                         // Hide the buttons for a moment
                         buttons.hide();
-                        
+
                         // Prevent the Yes/No prompt from being used until the trial is over
                         var counter = function() {
                             var ellipses = $('#ConfirmationEllipses');
-                            
+
                             if (ellipses.text().length > TRIAL_TIME / 1000) {
                                 $('#ConfirmationText').hide();
                                 buttons.show();
@@ -85,18 +113,19 @@
                 if (selected.length <= 0) {
                     return;
                 }
-                
+
                 // Extract the question to ask
                 var question = selected.filter(':first').text();
                 if (!isQuestion) {
                     question = 'Is it a ' + question + '?';
                 }
-                
+
                 // Ask the BCI for an answer
-                POST_TrialStart(question, 
+                LogInfo('Asking question: ' + question);
+                POST_TrialStart(question,
                     function() {
-                        $('#ConfirmationPrompt').dialog("open");
-                    }, 
+                        $('#ConfirmationPrompt').dialog('open');
+                    },
                     function() {
                         alert('Application suspended, please try again in a moment');
                     });
@@ -119,12 +148,11 @@
         <div id="QuestionsBox">
             <div id="QuestionsLabel">Questions</div>
             <ul id="QuestionsList"></ul>
-            <div id="QuestionsButton">Submit</div>
         </div>
         <div id="AnswersBox">
             <div id="AnswersLabel">Answers</div>
             <ul id="AnswersList"></ul>
-            <div id="AnswersButton">Submit</div>
         </div>
+        <div id="SubmitButton">Submit</div>
 	</body>
 </html>

@@ -35,7 +35,7 @@ ul .ui-selected {
     background: #F39814;
     color: black;
 }
-#QuestionsButton, #AnswersButton {
+#SubmitButton {
     position: absolute;
     bottom: 10px;
     left: 10px;
