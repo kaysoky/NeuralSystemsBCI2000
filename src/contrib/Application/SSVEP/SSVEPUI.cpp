@@ -62,13 +62,17 @@ void SSVEPUI::Initialize() {
     GUI::Rect questionBoxRect = {0.1f, 0.1f, 0.9f, 0.3f};
     questionBox = new TextField(window);
     questionBox->SetText("")
-                .SetColor(textColor)
+                .SetColor(RGBColor::NullColor)
+                .SetTextColor(textColor)
+                .SetAspectRatioMode(GUI::AspectRatioModes::AdjustHeight)
                 .SetObjectRect(questionBoxRect);
                 
     GUI::Rect answerBoxRect = {0.1f, 0.7f, 0.9f, 0.9f};
     answerBox = new TextField(window);
     answerBox->SetText("")
-              .SetColor(textColor)
+              .SetColor(RGBColor::NullColor)
+              .SetTextColor(textColor)
+              .SetAspectRatioMode(GUI::AspectRatioModes::AdjustHeight)
               .SetObjectRect(answerBoxRect);
 }
 

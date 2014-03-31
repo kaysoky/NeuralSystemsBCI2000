@@ -22,7 +22,6 @@ RadialArrow::RadialArrow(GUI::DisplayWindow& display,
         bcierr << "Terminus of arrow may not be the center of the screen" << std::endl;
     }
     lerp = std::min(length / std::sqrt(lerp), 1.0f);
-    length *= lerp;
     origin.x = origin.x * lerp + terminus.x * (1.0f - lerp);
     origin.y = origin.y * lerp + terminus.y * (1.0f - lerp);
     
@@ -36,7 +35,7 @@ RadialArrow::RadialArrow(GUI::DisplayWindow& display,
     // Determine the characteristics of arrow flanges
     float angle = std::atan2(origin.y - terminus.y, origin.x - terminus.x);
     float theta = M_PI / 4.0f;
-    float flangeLength = length / 3.0f;
+    float flangeLength = std::pow(terminus.x - origin.x, 2) + std::pow(terminus.y - origin.y, 2) / 2.0f;
          
     // Draw the left flange
     GUI::Rect leftRect = {flangeLength * std::cos(angle + theta) + terminus.x, 

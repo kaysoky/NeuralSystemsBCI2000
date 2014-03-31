@@ -124,7 +124,7 @@ int MongooseServerHandler(struct mg_connection *conn) {
         if (!currentTask->isRunning) {
 			// Catch this polling command (the only non-static GET request)
 			if (uri.compare("/trial/status") == 0) {
-                if (currentTask->runEnded) {
+                if (currentTask->runEnded && !currentTask->HandleTrialStatusRequest(conn)) {
                     mg_send_status(conn, 200);
                     mg_send_header(conn, "Content-Type", "text/plain");
                     mg_printf_data(conn, "REFRESH");

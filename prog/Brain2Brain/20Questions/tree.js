@@ -20,6 +20,7 @@ InitializeQuestionTree = function(filename) {
             var answer = UpdateSelectors();
 
             // Tell the BCI-side what the client is playing for
+            LogInfo('Answer is: ' + answer);
             $.ajax({
                 type: 'PUT',
                 url: '/text/answer',
