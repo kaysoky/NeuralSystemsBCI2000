@@ -27,6 +27,7 @@
                 $('#FileSelectionPrompt').dialog({
                     autoOpen: true,
                     modal: true,
+                    closeOnEscape: false, 
                     buttons: {
                         "Select" : function() {
                             // Load the file into a tree
@@ -41,6 +42,7 @@
                     autoOpen: false,
                     width: 350,
                     modal: true,
+                    closeOnEscape: false, 
                     buttons: {
                         "Yes" : function() {
                             LogInfo('Positive answer received');

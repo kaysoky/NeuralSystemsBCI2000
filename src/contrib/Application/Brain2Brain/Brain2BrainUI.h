@@ -65,6 +65,13 @@ private:
      */
     TextField *questionBox;
     TextField *answerBox;
+
+
+    /**
+     * Amount of time the cursor has stayed over a target
+     * (In sample blocks)
+     */
+    int dwellTime;
 };
 
 #endif // BRAIN2BRAINUI_H

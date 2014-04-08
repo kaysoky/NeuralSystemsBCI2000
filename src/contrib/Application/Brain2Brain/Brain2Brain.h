@@ -46,15 +46,10 @@ private:
     virtual void HandleTrialStartRequest(std::string);
     virtual bool HandleTrialStatusRequest(struct mg_connection *);
     virtual void HandleAnswerUpdate(std::string);
-    
-    /*
-     * Which projectile should be flying across the Countdown game screen on this trial?
-     */
-    static const char* TrialTypeText[];
 
     /*
      * Holds whether the YES target has been hit
-     * The Countdown game is expected to poll for this value regularly
+     * The game is expected to poll for this value regularly
      * When it is sent to the game, the value is reset to false.
      */
     bool targetHit;

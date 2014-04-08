@@ -5,6 +5,7 @@
 #include "FileUtils.h"
 
 #include <stdlib.h>
+#include <time.h>
 
 /*
  * The currently running task
@@ -141,7 +142,9 @@ int MongooseServerHandler(struct mg_connection *conn) {
     } else {
         // Allow the client to log arbitrary info
         if (method.compare("POST") == 0 && uri.compare("/log") == 0) {
-            currentTask->AppLog << std::string(conn->content, conn->content_len) << std::endl;
+            time_t timestamp;
+            time(&timestamp);
+            currentTask->AppLog << timestamp << " - " << std::string(conn->content, conn->content_len) << std::endl;
             mg_send_status(conn, 204);
             mg_send_data(conn, "", 0);
             return MG_REQUEST_PROCESSED;

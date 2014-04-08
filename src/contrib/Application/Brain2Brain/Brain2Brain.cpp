@@ -8,8 +8,6 @@
 
 RegisterFilter( Brain2Brain, 3 );
 
-const char* Brain2Brain::TrialTypeText[] = { "AIRPLANE", "MISSILE" };
-
 Brain2Brain::Brain2Brain()
     : B2BGUI(NULL),
       window(Window()),
@@ -23,7 +21,13 @@ Brain2Brain::Brain2Brain()
         " // Diameter of the feedback cursor width as a percent of screen width",
     "Application:UI float TargetHeight= 10 % 0 100 "
         " // Height of each of the targets as a percent of screen height",
+    "Application:UI float DwellTime= 0.25s 0.25s 0 % "
+        " // Time that the cursor must dwell over a target to be considered a hit", 
     END_PARAMETER_DEFINITIONS
+
+    BEGIN_STATE_DEFINITIONS
+    "CursorCenter 32 0 0 0" // A (32-bit) integer
+    END_STATE_DEFINITIONS
 }
 
 Brain2Brain::~Brain2Brain() {
@@ -34,6 +38,12 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
     // The values of these parameters are bounded by definition
     Parameter("CursorWidth");
     Parameter("TargetHeight");
+    
+    int feedbackDuration = static_cast<int>(Parameter( "FeedbackDuration" ).InSampleBlocks());
+    int dwellTime = static_cast<int>(Parameter("DwellTime").InSampleBlocks());
+    if (dwellTime > feedbackDuration / 2) {
+        bcierr << "Dwell time must be less than half of the feedback duration" << std::endl;
+    }
 
     CheckServerParameters(Input);
 }
@@ -79,7 +89,7 @@ void Brain2Brain::OnTrialBegin() {
     // Increment the trial count
     trialCount++;
 
-    AppLog << "Trial #" << trialCount << " => " << TrialTypeText[currentTrialType] << std::endl;
+    AppLog << "Trial #" << trialCount << std::endl;
     B2BGUI->OnTrialBegin();
 }
 
@@ -91,6 +101,8 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
     doProgress = false;
 
     Brain2BrainUI::TargetHitType targetHitType = B2BGUI->DoFeedback(ControlSignal);
+    State("ResultCode") = static_cast<long>(targetHitType);
+
     if (targetHitType == Brain2BrainUI::NOTHING_HIT) {
         // Check for the stop signal
         state_lock->Acquire();

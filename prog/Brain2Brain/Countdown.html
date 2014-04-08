@@ -97,6 +97,7 @@
                         function(data) {
                             // Determine the trial type
                             trialType = TRIAL_TYPE_ENUM[parseInt(data)];
+                            LogInfo("Trial type = " + trialType);
                             if (trialType == AIRPLANE) {
                                 $('#Aeroplane').show();
                             } else if (trialType == MISSILE) {

@@ -26,7 +26,10 @@ PollServer = function() {
                     LogInfo("Negative signal detected, TMS standing by");
 
                 } else if (data.search("REFRESH") >= 0) {
-                    location.reload();
+                    setTimeout(function() {
+                        alert("Run ended, close this alert to refresh the page");
+                        location.reload();
+                    }, REFRESH_WAIT);
                 }
             }
 

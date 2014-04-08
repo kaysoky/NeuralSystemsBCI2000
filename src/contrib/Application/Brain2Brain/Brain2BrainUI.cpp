@@ -8,7 +8,7 @@
 #include "Shapes.h"
 
 Brain2BrainUI::Brain2BrainUI(GUI::DisplayWindow& display) 
-    : window(display) {}
+    : window(display), dwellTime(0) {}
 
 Brain2BrainUI::~Brain2BrainUI() {
     delete cursor;
@@ -139,15 +139,36 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
 
     // Update cursor position
     cursor->SetCenter(cursorPosition);
+    State("CursorCenter") = static_cast<int>(window.Height() * cursorPosition.y);
     
     // Determine if either of the targets were hit
+    RGBColor targetColor = RGBColor::Blue;
     RGBColor hitColor = RGBColor::Red;
+    TargetHitType hit = NOTHING_HIT;
     if (Shape::AreaIntersection(*cursor, *yesTarget)) {
         yesTarget->SetFillColor(hitColor);
-        return YES_TARGET;
+        hit = YES_TARGET;
     } else if (Shape::AreaIntersection(*cursor, *noTarget)) {
         noTarget->SetFillColor(hitColor);
-        return NO_TARGET;
+        hit = NO_TARGET;
+    } else {
+        yesTarget->SetFillColor(targetColor);
+        noTarget->SetFillColor(targetColor);
+    }
+
+    // Delay reporting of a hit for a little bit of time
+    if (dwellTime >= static_cast<int>(Parameter("DwellTime").InSampleBlocks())) {
+      return hit;
+    }
+
+    switch (hit) {
+    case YES_TARGET:
+    case NO_TARGET:
+      dwellTime++;
+      break;
+    default:
+      dwellTime = 0;
+      break;
     }
     
     return NOTHING_HIT;
