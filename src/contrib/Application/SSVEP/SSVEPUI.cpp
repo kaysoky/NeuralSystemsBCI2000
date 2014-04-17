@@ -29,7 +29,7 @@ void SSVEPUI::Initialize() {
     arrows = new RadialArrow*[numArrows];
     for (int i = 0; i < matrix->NumRows(); i++) {
         GUI::Point terminus = { matrix(i, 1) / 100.0f, matrix(i, 2) / 100.0f };
-        arrows[i] = new RadialArrow(window, matrix(i, 0), terminus);
+        arrows[i] = new RadialArrow(window, std::string(matrix(i, 3)), terminus);
         arrows[i]->Hide();
     }
 

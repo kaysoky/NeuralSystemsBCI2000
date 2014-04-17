@@ -23,6 +23,10 @@ MongooseFeedbackTask::MongooseFeedbackTask()
         "20320 % % // Port for the server to listen on",
     END_PARAMETER_DEFINITIONS
 
+    BEGIN_STATE_DEFINITIONS
+    "TargetHitCode 8 0 0 0" // Which target (defined by derived class) was hit during a trial?
+    END_STATE_DEFINITIONS
+
     server_lock = new OSMutex();
     server = NULL;
 
@@ -142,9 +146,12 @@ int MongooseServerHandler(struct mg_connection *conn) {
     } else {
         // Allow the client to log arbitrary info
         if (method.compare("POST") == 0 && uri.compare("/log") == 0) {
-            time_t timestamp;
-            time(&timestamp);
-            currentTask->AppLog << timestamp << " - " << std::string(conn->content, conn->content_len) << std::endl;
+            // Add a millisecond precision epoch-time timestamp to each entry
+            struct timeval timestamp;
+            gettimeofday(&timestamp, NULL);
+            currentTask->AppLog << timestamp.tv_sec << "+" << timestamp.tv_usec / 1000
+                                << " - " << std::string(conn->content, conn->content_len) 
+                                << std::endl;
             mg_send_status(conn, 204);
             mg_send_data(conn, "", 0);
             return MG_REQUEST_PROCESSED;

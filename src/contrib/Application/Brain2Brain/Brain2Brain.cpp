@@ -81,10 +81,11 @@ void Brain2Brain::DoPreRun(const GenericSignal&, bool& doProgress) {
 }
 
 void Brain2Brain::OnTrialBegin() {
-    // Reset trial-specific Countdown state
+    // Reset trial-specific state
     state_lock->Acquire();
     targetHit = false;
     state_lock->Release();
+    State("TargetHitCode") = 0;
 
     // Increment the trial count
     trialCount++;
@@ -101,7 +102,7 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
     doProgress = false;
 
     Brain2BrainUI::TargetHitType targetHitType = B2BGUI->DoFeedback(ControlSignal);
-    State("ResultCode") = static_cast<long>(targetHitType);
+    State("TargetHitCode") = static_cast<long>(targetHitType);
 
     if (targetHitType == Brain2BrainUI::NOTHING_HIT) {
         // Check for the stop signal

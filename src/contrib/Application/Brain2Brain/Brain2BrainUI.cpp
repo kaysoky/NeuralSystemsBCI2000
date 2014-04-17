@@ -7,6 +7,9 @@
 #include "BCIException.h"
 #include "Shapes.h"
 
+// Color of targets when idle
+#define TARGET_FILL_COLOR RGBColor::Blue
+
 Brain2BrainUI::Brain2BrainUI(GUI::DisplayWindow& display) 
     : window(display), dwellTime(0) {}
 
@@ -106,11 +109,10 @@ void Brain2BrainUI::OnStartRun() {
 void Brain2BrainUI::OnTrialBegin() {
     titleBox->Hide();
 
-    RGBColor targetFillColor = RGBColor::Blue;
-    yesTarget->SetFillColor(targetFillColor)
+    yesTarget->SetFillColor(TARGET_FILL_COLOR)
 		      .Show();
     yesTargetText->Show();
-    noTarget->SetFillColor(targetFillColor)
+    noTarget->SetFillColor(TARGET_FILL_COLOR)
 		     .Show();
     noTargetText->Show();
     
@@ -142,7 +144,6 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
     State("CursorCenter") = static_cast<int>(window.Height() * cursorPosition.y);
     
     // Determine if either of the targets were hit
-    RGBColor targetColor = RGBColor::Blue;
     RGBColor hitColor = RGBColor::Red;
     TargetHitType hit = NOTHING_HIT;
     if (Shape::AreaIntersection(*cursor, *yesTarget)) {
@@ -152,8 +153,8 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
         noTarget->SetFillColor(hitColor);
         hit = NO_TARGET;
     } else {
-        yesTarget->SetFillColor(targetColor);
-        noTarget->SetFillColor(targetColor);
+        yesTarget->SetFillColor(TARGET_FILL_COLOR);
+        noTarget->SetFillColor(TARGET_FILL_COLOR);
     }
 
     // Delay reporting of a hit for a little bit of time
@@ -175,6 +176,10 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
 }
 
 void Brain2BrainUI::OnFeedbackEnd() {
+    // Reset the target colors
+    yesTarget->SetFillColor(TARGET_FILL_COLOR);
+    noTarget->SetFillColor(TARGET_FILL_COLOR);
+    
     cursor->Hide();
 }
 

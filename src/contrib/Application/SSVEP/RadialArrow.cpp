@@ -9,7 +9,7 @@
 #include "Shapes.h"
 
 RadialArrow::RadialArrow(GUI::DisplayWindow& display,
-                         int frequency,
+                         std::string& label,
                          GUI::Point& terminus) {
     // All arrows emerge radially from the center of the screen
     GUI::Point origin = {0.5f, 0.5f};
@@ -57,10 +57,10 @@ RadialArrow::RadialArrow(GUI::DisplayWindow& display,
     GUI::Point center = {(terminus.x + origin.x) / 2.0f, (terminus.y + origin.y) / 2.0f};
     float textBoxSize = length / 4.0f;
     GUI::Rect textRect = {center.x - textBoxSize, center.y - textBoxSize, center.x + textBoxSize, center.y + textBoxSize};
-    std::string label = std::to_string((long long) frequency);
     description = new TextField(display);
     description->SetText(label)
                 .SetTextColor(RGBColor::Gray)
+                .SetAspectRatioMode(GUI::AspectRatioModes::AdjustHeight)
                 .SetTextHeight(0.5f)
                 .SetColor(RGBColor::NullColor)
                 .SetObjectRect(textRect);

@@ -21,9 +21,9 @@ SSVEPFeedbackTask::SSVEPFeedbackTask()
     BEGIN_PARAMETER_DEFINITIONS
     "Application:SSVEP matrix Arrows= "
         " 2 " // rows
-        " [Frequency X Y] " // columns
-        " 12 10 50 "
-        " 17 90 50 "
+        " [Frequency X Y Label] " // columns
+        " 12 10 50 Yes"
+        " 17 90 50 No"
         " // Frequency of input expected for each target and their position in percentage coordinates",
     "Application:SSVEP float ArrowLength= 10 % 0 70 "
         " // Length of an arrow in percent of screen dimensions",
@@ -44,10 +44,11 @@ void SSVEPFeedbackTask::OnPreflight(const SignalProperties& Input) const {
     if (Parameter("Arrows")->NumRows() <= 1) {
         bcierr << "At least two target frequencies must be specified" << std::endl;
     }
-    if (Parameter("Arrows")->NumColumns() != 3) {
-        bcierr << "Target matrix must have 3 columns "
-               << "corresponding to the target frequency "
-               << "and (X, Y) positions" << std::endl;
+    if (Parameter("Arrows")->NumColumns() != 4) {
+        bcierr << "Target matrix must have 4 columns "
+               << "corresponding to the target frequency, "
+               << "(X, Y) positions, "
+               << "and label" << std::endl;
     }
     Parameter("ArrowLength");
 
@@ -183,19 +184,22 @@ void SSVEPFeedbackTask::DoPreRun(const GenericSignal&, bool& doProgress) {
 }
 
 void SSVEPFeedbackTask::OnTrialBegin() {
-    state_lock->Acquire();
-    // Reset trial-specific 20 questions state
-    classificationMade = false;
-
     // Increment the trial count
     trialCount++;
 
     SSVEPGUI->OnTrialBegin();
     AppLog << "Trial #" << trialCount << " => ";
+    
+    // Reset trial-specific 20 questions state
+    State("TargetHitCode") = 0;
+    state_lock->Acquire();
+    classificationMade = false;
 
+    // Mode-specific initialization
     unsigned int i;
     switch (mode) {
     case Training:
+        // Determine the training frequency
         currentTrainingType = arrowSequence.NextElement() % distributions.size();
         AppLog << Parameter("Arrows")(currentTrainingType, 0) << " Hz" << std::endl;
         SSVEPGUI->ShowArrow(currentTrainingType);
@@ -376,6 +380,7 @@ bool SSVEPFeedbackTask::HandleTrialStatusRequest(struct mg_connection *conn) {
             } else {
                 mg_printf_data(conn, "NO");
             }
+            State("TargetHitCode") = i;
 
             classificationMade = true;
             return true;

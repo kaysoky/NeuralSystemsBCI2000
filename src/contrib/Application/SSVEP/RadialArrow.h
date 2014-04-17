@@ -10,7 +10,7 @@
 
 class RadialArrow : protected Environment {
 public:
-    RadialArrow(GUI::DisplayWindow&, int, GUI::Point&);
+    RadialArrow(GUI::DisplayWindow&, std::string&, GUI::Point&);
     ~RadialArrow();
     
     void Show();
