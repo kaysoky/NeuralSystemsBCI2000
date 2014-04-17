@@ -159,7 +159,8 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
 
     // Delay reporting of a hit for a little bit of time
     if (dwellTime >= static_cast<int>(Parameter("DwellTime").InSampleBlocks())) {
-      return hit;
+        dwellTime = 0;
+        return hit;
     }
 
     switch (hit) {
