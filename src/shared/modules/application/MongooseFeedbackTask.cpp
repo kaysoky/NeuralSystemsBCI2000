@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <iomanip>
 
 /*
  * The currently running task
@@ -146,11 +147,18 @@ int MongooseServerHandler(struct mg_connection *conn) {
     } else {
         // Allow the client to log arbitrary info
         if (method.compare("POST") == 0 && uri.compare("/log") == 0) {
-            // Add a millisecond precision epoch-time timestamp to each entry
-            struct timeval timestamp;
-            gettimeofday(&timestamp, NULL);
-            currentTask->AppLog << timestamp.tv_sec << "+" << timestamp.tv_usec / 1000
-                                << " - " << std::string(conn->content, conn->content_len) 
+            // Add a millisecond precision ISO8601 timestamp to each entry
+            SYSTEMTIME timestamp;
+            GetSystemTime(&timestamp);
+            currentTask->AppLog << std::setfill('0')
+                                << timestamp.wYear << "-" 
+                                << std::setw(2) << timestamp.wMonth << "-"
+                                << std::setw(2) << timestamp.wDay << "T"
+                                << std::setw(2) << timestamp.wHour << ":"
+                                << std::setw(2) << timestamp.wMinute << ":"
+                                << std::setw(2) << timestamp.wSecond << "."
+                                << std::setw(3) << timestamp.wMilliseconds << " - " 
+                                << std::string(conn->content, conn->content_len) 
                                 << std::endl;
             mg_send_status(conn, 204);
             mg_send_data(conn, "", 0);

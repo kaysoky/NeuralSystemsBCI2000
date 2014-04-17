@@ -60,9 +60,9 @@ RadialArrow::RadialArrow(GUI::DisplayWindow& display,
     description = new TextField(display);
     description->SetText(label)
                 .SetTextColor(RGBColor::Gray)
-                .SetAspectRatioMode(GUI::AspectRatioModes::AdjustHeight)
                 .SetTextHeight(0.5f)
                 .SetColor(RGBColor::NullColor)
+                .SetAspectRatioMode(GUI::AspectRatioModes::AdjustHeight)
                 .SetObjectRect(textRect);
 }
 
