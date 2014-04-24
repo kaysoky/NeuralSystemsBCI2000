@@ -24,7 +24,7 @@ SSVEPFeedbackTask::SSVEPFeedbackTask()
         " [Frequency X Y Label] " // columns
         " 12 10 50 Yes"
         " 17 90 50 No"
-        " // Frequency of input expected for each target and their position in percentage coordinates",
+        " // Frequency of input expected for each target and their position in percentage coordinates.  Note: the first row is the YES arrow",
     "Application:SSVEP float ArrowLength= 10 % 0 70 "
         " // Length of an arrow in percent of screen dimensions",
     "Application:SSVEP int StimulusMode= 0 0 0 1"
@@ -286,10 +286,13 @@ void SSVEPFeedbackTask::DoFeedback(const GenericSignal& ControlSignal, bool& doP
             // Normalize the priors
             for (i = 0; i < distributions.size(); i++) {
                 distributions[i].prior /= sum;
+                if (distributions[i].prior >= classificationThreshold) {
+                    State("TargetHitCode") = i;
+                }
             }
 
             // Check for the stop signal
-            if (lastClientPost == STOP_TRIAL) {
+            if (lastClientPost == STOP_TRIAL || classificationMade) {
                 doProgress = true;
                 lastClientPost = CONTINUE;
             }
@@ -364,26 +367,32 @@ void SSVEPFeedbackTask::SaveTrainingFile() {
 }
 
 bool SSVEPFeedbackTask::HandleTrialStatusRequest(struct mg_connection *conn) {
-    if (classificationMade) {
-        return false;
-    }
+    if (mode == Classification) {
+        if (classificationMade) {
+            return false;
+        }
 
-    // Classify!
-    for (unsigned int i = 0; i < distributions.size(); i++) {
-        if (distributions[i].prior >= classificationThreshold) {
-            mg_send_status(conn, 200);
-            mg_send_header(conn, "Content-Type", "text/plain");
+        // Classify!
+        for (unsigned int i = 0; i < distributions.size(); i++) {
+            if (distributions[i].prior >= classificationThreshold) {
+                mg_send_status(conn, 200);
+                mg_send_header(conn, "Content-Type", "text/plain");
 
-            // By default, the first arrow will be the yes target
-            if (i == 0) {
-                mg_printf_data(conn, "YES");
-            } else {
-                mg_printf_data(conn, "NO");
+                // By default, the first arrow will be the yes target
+                // Note: This will likely need to be changed later on
+                AppLog << "Classification made: ";
+                if (i == 0) {
+                    mg_printf_data(conn, "YES");
+                    AppLog << "YES";
+                } else {
+                    mg_printf_data(conn, "NO");
+                    AppLog << "NO (" << i << ")";
+                }
+                AppLog << std::endl;
+
+                classificationMade = true;
+                return true;
             }
-            State("TargetHitCode") = i;
-
-            classificationMade = true;
-            return true;
         }
     }
 

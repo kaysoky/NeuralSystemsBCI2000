@@ -122,7 +122,12 @@ void *MongooseServerThread(void *arg) {
 int MongooseServerHandler(struct mg_connection *conn) {
     std::string method(conn->request_method);
 	std::string uri(conn->uri);
-    bciout << method << " " << conn->uri << std::endl;
+    
+    // Show every request in the operator output 
+    // except for the all-too-frequent status polling
+    if (uri.compare("/trial/status") != 0) {
+        bciout << method << " " << conn->uri << std::endl;
+    }
     
     if (method.compare("GET") == 0) {
         // For generic requests, 
