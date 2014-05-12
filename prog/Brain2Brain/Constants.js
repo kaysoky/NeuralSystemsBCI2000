@@ -1,7 +1,7 @@
 /**
  * How long each trial should take
  */
-var TRIAL_TIME = 6000.0; // Milliseconds
+var TRIAL_TIME = 9000.0; // Milliseconds
 
 /**
  * How frequently should the game poll the server for a status update?

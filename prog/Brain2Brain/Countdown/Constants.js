@@ -6,7 +6,7 @@ var COUNTDOWN_TIME = 20000; // Milliseconds
 /**
  * How long the pause is between a trial ending and the countdown beginning
  */
-var PAUSE_BETWEEN_TRIALS = 1000; // Milliseconds
+var PAUSE_BETWEEN_TRIALS = 2000; // Milliseconds
 
 /**
  * Trial types
