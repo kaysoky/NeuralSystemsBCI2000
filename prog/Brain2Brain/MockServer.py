@@ -6,8 +6,8 @@ import random
 
 urls = (
     '/(\w*\.[^/]+)?', 'files',
-    '/(Countdown/\w*\.[^/]+)?', 'files',
-    '/(20Questions/\w*\.[^/]+)?', 'files',
+    '/(Countdown/[^/]*\.[^/]+)?', 'files',
+    '/(20Questions/[^/]*\.[^/]+)?', 'files',
     '/trial/start', 'trial_start',
     '/trial/stop', 'trial_stop',
     '/trial/status', 'trial_status',

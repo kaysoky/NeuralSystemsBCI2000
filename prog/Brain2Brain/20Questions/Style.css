@@ -28,12 +28,19 @@
     list-style-type: none; 
     overflow-y: auto;
 }
+li.ui-selectee {
+    font-size: 30px;
+    text-align: center;
+}
 ul .ui-selecting {
     background: #FECA40;
 }
 ul .ui-selected {
     background: #F39814;
     color: black;
+}
+li.ruled-out {
+    background: #444;
 }
 #SubmitButton {
     position: absolute;
