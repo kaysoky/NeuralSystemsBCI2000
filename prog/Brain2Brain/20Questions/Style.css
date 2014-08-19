@@ -3,26 +3,41 @@
 .ui-dialog-titlebar-close {
     display: none;
 }
-#QuestionTree {
+
+#QuestionsBox, #AnswersBox {
     position: absolute;
-    width: 100%;
+    width: 50%;
     height: 100%;
-    overflow: hidden;
 }
-foreignObject > div {
-    color: #FFF;
+#AnswersBox  {
+    left: 50%;
+}
+#QuestionsLabel, #AnswersLabel {
+    width: 100%;
+    height: 50px;
     text-align: center;
+    font-size: 50px;
 }
-circle, .link  {
-    stroke: #555;
-    stroke-width: 4.5px;
+#QuestionsList, #AnswersList {
+    position: absolute;
+    margin: 10px; 
+    padding: 0px;
+    width: calc(100% - 20px);
+    top: 60px;
+    height: calc(100% - 90px - 2em);
+    list-style-type: none; 
+    overflow-y: auto;
 }
-div.highlighted {
-    color: #FAA;
+ul .ui-selecting {
+    background: #FECA40;
 }
-.explored {
-    opacity: 0.5;
+ul .ui-selected {
+    background: #F39814;
+    color: black;
 }
-path.selected {
-    stroke: #5F5;
+#SubmitButton {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
 }

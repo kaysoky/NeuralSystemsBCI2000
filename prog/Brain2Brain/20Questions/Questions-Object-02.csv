@@ -1,0 +1,9 @@
+OBJECT,Is it a vehicle?,Does it use power?,Does it float?
+Hammer,No,No,No
+Snorkel,No,No,Yes
+Power drill,No,Yes,No
+Cell phone,No,Yes,Yes
+Bicycle,Yes,No,No
+Kayak,Yes,No,Yes
+Car,Yes,Yes,No
+Cruiseship,Yes,Yes,Yes

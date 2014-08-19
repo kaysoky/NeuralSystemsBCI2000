@@ -5,7 +5,6 @@
         <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
-        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 
         <link rel="stylesheet" type="text/css" href="Style.css" />
         <link rel="stylesheet" type="text/css" href="20Questions/Style.css" />
@@ -17,6 +16,13 @@
         <script type="text/javascript" src="20Questions/Tree.js"></script>
 		<script type="text/javascript">
 			window.onload = function() {
+                // Initialize the trial-starting buttons
+                $('#SubmitButton').button()
+                .click(function() {
+                    SubmitQuestion($('#QuestionsList > li.ui-selected'), true);
+                    SubmitQuestion($('#AnswersList > li.ui-selected'), false);
+                });
+
                 // Initialize the file selection pop-up
                 $('#FileSelectionPrompt').dialog({
                     autoOpen: true,
@@ -40,12 +46,36 @@
                     buttons: {
                         "Yes" : function() {
                             LogInfo('Positive answer received');
-                            AnswerQuestion(true);
+
+                            // Was it a question or answer?
+                            var question = $('#QuestionsList > li.ui-selected');
+                            var answer = $('#AnswersList > li.ui-selected');
+                            if (question.length > 0) {
+                                AnswerQuestion(question.filter(':first').text(), true);
+
+                            // Yay, victory(?)!
+                            } else if (answer.length > 0) {
+                                alert('Game complete!\nClose this alert to refresh the page');
+                                location.reload();
+
+                            } else {
+                                alert('Incorrect client state: ' +
+                                      'One question/answer must be selected for this dialog to appear');
+                            }
                             $(this).dialog("close");
                         },
                         "No" : function() {
                             LogInfo('Negative answer received');
-                            AnswerQuestion(false);
+
+                            // Prune the question asked off the tree
+                            var question = $('#QuestionsList > li.ui-selected, #AnswersList > li.ui-selected');
+                            if (question.length > 0) {
+                                AnswerQuestion(question.filter(':first').text(), false);
+
+                            } else {
+                                alert('Incorrect client state: ' +
+                                      'One question/answer must be selected for this dialog to appear');
+                            }
                             $(this).dialog('close');
                         }
                     },
@@ -83,11 +113,16 @@
             /**
              * Takes the selected question/answer and asks the BCI-side for an answer
              */
-            SubmitQuestion = function(text, isQuestion) {
+            SubmitQuestion = function(selected, isQuestion) {
+                // Anything selected?
+                if (selected.length <= 0) {
+                    return;
+                }
+
                 // Extract the question to ask
-                var question = text;
+                var question = selected.filter(':first').text();
                 if (!isQuestion) {
-                    question = 'Is it a ' + text + '?';
+                    question = 'Is it a ' + question + '?';
                 }
 
                 // Ask the BCI for an answer
@@ -97,8 +132,7 @@
                         $('#ConfirmationPrompt').dialog('open');
                     },
                     function() {
-                        alert('Application suspended, press OK to try again');
-                        SubmitQuestion(text, isQuestion);
+                        alert('Application suspended, please try again in a moment');
                     });
             };
 		</script>
@@ -106,9 +140,13 @@
 	<body tabindex="0">
         <div id="FileSelectionPrompt" title="Choose a question file:">
             <select id="FileSelector">
-                <option value="animals.txt">Animals</option>
-                <option value="question2.txt">Animals (minimal)</option>
-                <option value="simple.txt">Simple</option>
+                <option value="Questions-Animal-01.csv">Animal #1</option>
+                <option value="Questions-Animal-02.csv">Animal #2</option>
+                <option value="Questions-Food-01.csv">Food</option>
+                <option value="Questions-Person-01.csv">People #1</option>
+                <option value="Questions-Person-02.csv">People #2</option>
+                <option value="Questions-Object-01.csv">Object #1</option>
+                <option value="Questions-Object-02.csv">Object #2</option>
             </select>
         </div>
         <div id="ConfirmationPrompt" title="Did you see a flash of light?">
@@ -116,6 +154,14 @@
                 Waiting for answer<span id="ConfirmationEllipses"></span>
             </div>
         </div>
-        <div id="QuestionTree"></div>
+        <div id="QuestionsBox">
+            <div id="QuestionsLabel">Questions</div>
+            <ul id="QuestionsList"></ul>
+        </div>
+        <div id="AnswersBox">
+            <div id="AnswersLabel">Answers</div>
+            <ul id="AnswersList"></ul>
+        </div>
+        <div id="SubmitButton">Submit</div>
 	</body>
 </html>
