@@ -85,7 +85,7 @@ void Brain2BrainUI::Initialize() {
              
     // Initialize the optional text fields
     RGBColor textColor = RGBColor::White;
-    GUI::Rect questionBoxRect = {0.1f, 0.1f, 0.9f, 0.3f};
+    GUI::Rect questionBoxRect = {0.55f, 0.1f, 0.9f, 0.9f};
     questionBox = new TextField(window);
     questionBox->SetText("")
                 .SetColor(RGBColor::NullColor)
@@ -93,7 +93,7 @@ void Brain2BrainUI::Initialize() {
                 .SetAspectRatioMode(GUI::AspectRatioModes::AdjustHeight)
                 .SetObjectRect(questionBoxRect);
                 
-    GUI::Rect answerBoxRect = {0.1f, 0.7f, 0.9f, 0.9f};
+    GUI::Rect answerBoxRect = {0.1f, 0.1f, 0.45f, 0.9f};
     answerBox = new TextField(window);
     answerBox->SetText("")
               .SetColor(RGBColor::NullColor)

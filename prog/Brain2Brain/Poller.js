@@ -11,20 +11,29 @@ PollServer = function() {
             // If there is a hit, activate the TMS
             if (data && data.search) {
                 if (data.search("YES") >= 0) {
-                    LogInfo("Positive signal detected, triggering TMS");
+                    LogInfo("Positive signal detected, triggering TMS (high)");
                     $.ajax({
                             type: 'POST',
-                            url: 'http://localhost:' + TMS_PORT + '/TMS/fire',
+                            url: 'http://localhost:' + TMS_PORT + '/TMS/fire/high',
                             async: false,
                             success: function() {},
                             error: function(jqXHR) {
-                                alert("POST /TMS/fire -> " + JSON.stringify(jqXHR));
+                                alert("POST /TMS/fire/high -> " + JSON.stringify(jqXHR));
                             }
                         });
 
-                } else if (data.search('YES') >= 0) {
-                    LogInfo("Negative signal detected, TMS standing by");
-
+                } else if (data.search('NO') >= 0) {
+                    LogInfo("Negative signal detected, triggering TMS (low)");
+                    $.ajax({
+                            type: 'POST',
+                            url: 'http://localhost:' + TMS_PORT + '/TMS/fire/low',
+                            async: false,
+                            success: function() {},
+                            error: function(jqXHR) {
+                                alert("POST /TMS/fire/low -> " + JSON.stringify(jqXHR));
+                            }
+                        });
+                
                 } else if (data.search("REFRESH") >= 0) {
                     setTimeout(function() {
                         alert("Run ended, close this alert to refresh the page");

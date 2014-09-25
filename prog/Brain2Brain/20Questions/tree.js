@@ -95,10 +95,16 @@ UpdateSelectors = function() {
 
             // Prevent multi-selection between the two selectables
             $('#QuestionsList, #AnswersList').not(event.target).children('.ui-selected').removeClass('ui-selected');
+            
+            $('#SubmitButton > .ui-button-text')
+                .html($('#QuestionsList, #AnswersList').children('.ui-selected').length > 0 ? 
+                    'Submit' : 
+                    '&uarr; Select a question or answer &uarr;');
         }
     });
 
-    return Object.keys(Answers)[Math.floor(Math.random() * answers.length)];
+    var possibleAnswers = Object.keys(Answers);
+    return possibleAnswers[Math.floor(Math.random() * possibleAnswers.length)];
 };
 
 /**

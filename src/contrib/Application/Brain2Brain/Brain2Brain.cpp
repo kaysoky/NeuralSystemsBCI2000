@@ -12,7 +12,8 @@ Brain2Brain::Brain2Brain()
     : B2BGUI(NULL),
       window(Window()),
       runCount(0), 
-      targetHit(false) {
+      targetHit(false), 
+      targetHitType(Brain2BrainUI::NOTHING_HIT) {
 
     // Note: See MongooseTask.cpp for more parameters and states
 
@@ -71,13 +72,13 @@ void Brain2Brain::OnStartRun() {
 void Brain2Brain::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
-	
-	state_lock->Acquire();
+    
+    state_lock->Acquire();
     if (lastClientPost == START_TRIAL) {
         doProgress = true;
-		lastClientPost = CONTINUE;
+        lastClientPost = CONTINUE;
     }
-	state_lock->Release();
+    state_lock->Release();
 }
 
 void Brain2Brain::OnTrialBegin() {
@@ -101,25 +102,24 @@ void Brain2Brain::OnFeedbackBegin() {
 void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgress) {
     doProgress = false;
 
-    Brain2BrainUI::TargetHitType targetHitType = B2BGUI->DoFeedback(ControlSignal);
+    Brain2BrainUI::TargetHitType hitType = B2BGUI->DoFeedback(ControlSignal);
     State("TargetHitCode") = static_cast<long>(targetHitType);
 
-    if (targetHitType == Brain2BrainUI::NOTHING_HIT) {
+    if (hitType == Brain2BrainUI::NOTHING_HIT) {
         // Check for the stop signal
         state_lock->Acquire();
         if (lastClientPost == STOP_TRIAL) {
             doProgress = true;
-			lastClientPost = CONTINUE;
+            lastClientPost = CONTINUE;
         }
         state_lock->Release();
         
         return;
-    }
-    
-    if (targetHitType == Brain2BrainUI::YES_TARGET) {
+    } else {
         // Pass this information onto the Countdown client
         state_lock->Acquire();
         targetHit = true;
+        targetHitType = hitType;
         state_lock->Release();
     }
     
@@ -134,13 +134,16 @@ void Brain2Brain::OnFeedbackEnd() {
 void Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
 
+    // Clear the question box between trials
+    B2BGUI->SetQuestion("");
+
     // Wait for the start signal
-	state_lock->Acquire();
+    state_lock->Acquire();
     if (lastClientPost == START_TRIAL) {
         doProgress = true;
-		lastClientPost = CONTINUE;
+        lastClientPost = CONTINUE;
     }
-	state_lock->Release();
+    state_lock->Release();
 }
 
 void Brain2Brain::OnStopRun() {
@@ -155,7 +158,17 @@ bool Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
     if (targetHit) {
         mg_send_status(conn, 200);
         mg_send_header(conn, "Content-Type", "text/plain");
-        mg_printf_data(conn, "YES");
+        switch (targetHitType) {
+        case Brain2BrainUI::YES_TARGET:
+            mg_printf_data(conn, "YES");
+            break;
+        case Brain2BrainUI::NO_TARGET:
+            mg_printf_data(conn, "NO");
+            break;
+        default:
+            AppLog << "Fatal logic error!  Target hit is not a yes or no.";
+            break;
+        }
         targetHit = false;
         return true;
     } 

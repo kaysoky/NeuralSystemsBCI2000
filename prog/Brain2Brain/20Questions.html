@@ -79,28 +79,6 @@
                             $(this).dialog('close');
                         }
                     },
-                    open: function(event, ui) {
-                        $('#ConfirmationText').show();
-                        $('#ConfirmationEllipses').text('');
-                        var buttons = $('#ConfirmationPrompt + .ui-dialog-buttonpane > .ui-dialog-buttonset');
-
-                        // Hide the buttons for a moment
-                        buttons.hide();
-
-                        // Prevent the Yes/No prompt from being used until the trial is over
-                        var counter = function() {
-                            var ellipses = $('#ConfirmationEllipses');
-
-                            if (ellipses.text().length > TRIAL_TIME / 1000) {
-                                $('#ConfirmationText').hide();
-                                buttons.show();
-                            } else {
-                                ellipses.text(ellipses.text() + '.');
-                                setTimeout(counter, 1000);
-                            }
-                        }
-                        counter();
-                    }, 
                     close: function(event, ui) {
                         POST_TrialStop(function() {}, function() {});
                     }
@@ -110,6 +88,21 @@
                 PollServer();
 			};
 
+            /**
+             * Auto-recursive waiting function for after the "Submit" button is pressed
+             */
+            var secondsRemaining = TRIAL_TIME / 1000;
+            function WaitForTrialEnd() {
+                if (secondsRemaining > 0) {
+                    secondsRemaining--;
+                    setTimeout(WaitForTrialEnd, 1000);
+                } else {
+                    $('#WaitingScreen').hide();
+                    $('#ConfirmationPrompt').dialog('open');
+                    POST_TrialStop(function() {}, function() {});
+                }
+            }
+            
             /**
              * Takes the selected question/answer and asks the BCI-side for an answer
              */
@@ -125,11 +118,15 @@
                     question = 'Is it a ' + question + '?';
                 }
 
+                
                 // Ask the BCI for an answer
                 LogInfo('Asking question: ' + question);
                 POST_TrialStart(question,
                     function() {
-                        $('#ConfirmationPrompt').dialog('open');
+                        $('#WaitingScreen').show();
+                        
+                        // Prevent the Yes/No prompt from being used until the trial is over
+                        WaitForTrialEnd();
                     },
                     function() {
                         alert('Application suspended, please try again in a moment');
@@ -138,6 +135,7 @@
 		</script>
 	</head>
 	<body tabindex="0">
+        <div id="WaitingScreen"><div id="Crosshair">+</div></div>
         <div id="FileSelectionPrompt" title="Choose a question file:">
             <select id="FileSelector">
                 <option value="Questions-Animal-01.csv">Animal #1</option>
@@ -149,11 +147,7 @@
                 <option value="Questions-Object-02.csv">Object #2</option>
             </select>
         </div>
-        <div id="ConfirmationPrompt" title="Did you see a flash of light?">
-            <div id="ConfirmationText">
-                Waiting for answer<span id="ConfirmationEllipses"></span>
-            </div>
-        </div>
+        <div id="ConfirmationPrompt" title="Did you see a flash of light?"></div>
         <div id="QuestionsBox">
             <div id="QuestionsLabel">Questions</div>
             <ul id="QuestionsList"></ul>
@@ -162,6 +156,6 @@
             <div id="AnswersLabel">Answers</div>
             <ul id="AnswersList"></ul>
         </div>
-        <div id="SubmitButton">Submit</div>
+        <div id="SubmitButton">&uarr; Select a question or answer &uarr;</div>
 	</body>
 </html>

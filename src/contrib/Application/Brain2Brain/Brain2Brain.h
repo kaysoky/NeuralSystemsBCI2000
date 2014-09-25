@@ -53,6 +53,7 @@ private:
      * When it is sent to the game, the value is reset to false.
      */
     bool targetHit;
+    Brain2BrainUI::TargetHitType targetHitType;
 };
 
 #endif // BRAIN2BRAIN_H
