@@ -100,6 +100,7 @@
                     $('#WaitingScreen').hide();
                     $('#ConfirmationPrompt').dialog('open');
                     POST_TrialStop(function() {}, function() {});
+                    secondsRemaining = TRIAL_TIME / 1000;
                 }
             }
             
