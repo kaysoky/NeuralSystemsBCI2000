@@ -129,13 +129,13 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
 
 void Brain2Brain::OnFeedbackEnd() {
     B2BGUI->OnFeedbackEnd();
+
+    // Clear the question box between trials
+    B2BGUI->SetQuestion("");
 }
 
 void Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
-
-    // Clear the question box between trials
-    B2BGUI->SetQuestion("");
 
     // Wait for the start signal
     state_lock->Acquire();

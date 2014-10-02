@@ -97,10 +97,14 @@
                     secondsRemaining--;
                     setTimeout(WaitForTrialEnd, 1000);
                 } else {
-                    $('#WaitingScreen').hide();
-                    $('#ConfirmationPrompt').dialog('open');
                     POST_TrialStop(function() {}, function() {});
                     secondsRemaining = TRIAL_TIME / 1000;
+                    
+                    // End the trial first, but give the TMS some extra time to catch up
+                    setTimeout(function() {
+                        $('#WaitingScreen').hide();
+                        $('#ConfirmationPrompt').dialog('open');
+                    }, 2000);
                 }
             }
             
