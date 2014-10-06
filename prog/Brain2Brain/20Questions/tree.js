@@ -1,6 +1,10 @@
 var Questions = [];
 var Answers = {};
 
+// This is the "answer" the client is trying to guess
+// Should not be exposed to the UI
+var TheAnswer = undefined;
+
 /**
  * Fetches the file from the server and parses it into a question/answer tree
  */
@@ -18,23 +22,13 @@ InitializeQuestionMatrix = function(filename) {
         //   we don't want to accidentally save this information on the client
         (function() {
             // Update the UI
-            var answer = UpdateSelectors();
+            TheAnswer = UpdateSelectors();
 
             // Tell the BCI-side what the client is playing for
-            LogInfo('Answer is: ' + answer);
-            $.ajax({
-                type: 'PUT',
-                url: '/text/answer',
-                async: true,
-                data: answer,
-                error: function(jqXHR) {
-                    if (jqXHR.status == 418) {
-                        alert('Application not ready to begin');
-                        location.reload();
-                    } else {
-                        alert("POST /text/answer -> " + JSON.stringify(jqXHR));
-                    }
-                }
+            LogInfo('Answer is: ' + TheAnswer);
+            PUT_TextAnswer(TheAnswer, function () {
+                alert('Application not ready to begin');
+                location.reload();
             });
         })();
 
@@ -44,12 +38,35 @@ InitializeQuestionMatrix = function(filename) {
 };
 
 AnswerQuestion = function(questionAsked, isYes) {
+    // Gray out the question that was asked
+    $('#' + GetSanitizedText(questionAsked)).addClass('ruled-out');
+
     // Gray out answers that have been ruled out and move them to the bottom
     var ruledOut = isYes ? 'no' : 'yes';
     for (key in Answers) {
         if (Answers[key][questionAsked] === ruledOut) {
-            $('#' + key.replace(' ', '-')).addClass('ruled-out');
+            $('#' + GetSanitizedText(key)).addClass('ruled-out');
         }
+    }
+
+    // Check to see if the game is over (only one answer left)
+    var remainingAnswers = $('#AnswersList > li').not('.ruled-out');
+    if (remainingAnswers.length === 1) {
+        var alertText = 'guessed "' + TheAnswer + '" ' 
+            + (remainingAnswers.text() === TheAnswer ? '' : 'in')
+            + 'correctly!';
+            
+        // Show the EEG-side the result text
+        PUT_TextAnswer('Your partner ' + alertText, function () {
+            alert('Application not ready to begin');
+            location.reload();
+        });
+        
+        alert('You ' + alertText + '\nClose this alert to refresh the page');
+        location.reload();
+    } else if (remainingAnswers.length <= 0) {
+        alert('No possibilities remain.  Game over.\nClose this alert to refresh the page');
+        location.reload();
     }
 }
 
@@ -58,6 +75,13 @@ AnswerQuestion = function(questionAsked, isYes) {
  ******************************************************************************/
 // Note: there is a way to make these functions actually private (anonymous functions),
 //       but the added complexity would be unnecessary
+
+/**
+ * Returns a string that can be safely used as part of a jQuery ID selector
+ */
+GetSanitizedText = function(text) {
+    return text.replace(/\W/g, '-');
+};
 
 /**
  * Fills in the Questions/Answers selectables with the current tree
@@ -70,21 +94,15 @@ UpdateSelectors = function() {
     // Fill in the questions
     var qList = $('#QuestionsList');
     for (var i in Questions) {
-        if (i >= MAX_SELECTABLES) {
-            break;
-        }
-        qList.append('<li class="ui-widget-content">' + Questions[i] + '</li>');
+        qList.append('<li id="' + GetSanitizedText(Questions[i]) + '" class="ui-widget-content">' 
+            + Questions[i] + '</li>');
     }
 
     // Fill in the answers
     var aList = $('#AnswersList');
-    var counter = 0;
     for (var key in Answers) {
-        if (counter >= MAX_SELECTABLES) {
-            break;
-        }
-        aList.append('<li id="' + key.replace(' ', '-') + '" class="ui-widget-content">' + key + '</li>');
-        counter++;
+        aList.append('<li id="' + GetSanitizedText(key) + '" class="ui-widget-content">' 
+            + key + '</li>');
     }
 
     // Make the lists pretty and interactive
@@ -97,9 +115,9 @@ UpdateSelectors = function() {
             $('#QuestionsList, #AnswersList').not(event.target).children('.ui-selected').removeClass('ui-selected');
             
             $('#SubmitButton > .ui-button-text')
-                .html($('#QuestionsList, #AnswersList').children('.ui-selected').length > 0 ? 
+                .html($('#QuestionsList').children('.ui-selected').length > 0 ? 
                     'Submit' : 
-                    '&uarr; Select a question or answer &uarr;');
+                    '&uarr; Select a question &uarr;');
         }
     });
 

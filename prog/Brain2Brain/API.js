@@ -40,3 +40,23 @@ POST_TrialStop = function(callback, onFailure) {
         }
     });
 }
+
+/**
+ * Tells the BCI to display some text in the "answer" box
+ * If the application is not ready, onFailure is called
+ */
+PUT_TextAnswer = function(text, onFailure) {
+    $.ajax({
+        type: 'PUT',
+        url: '/text/answer',
+        async: true,
+        data: text,
+        error: function(jqXHR) {
+            if (jqXHR.status == 418) {
+                onFailure();
+            } else {
+                alert("PUT /text/answer -> " + JSON.stringify(jqXHR));
+            }
+        }
+    });
+}

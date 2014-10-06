@@ -19,8 +19,7 @@
                 // Initialize the trial-starting buttons
                 $('#SubmitButton').button()
                 .click(function() {
-                    SubmitQuestion($('#QuestionsList > li.ui-selected'), true);
-                    SubmitQuestion($('#AnswersList > li.ui-selected'), false);
+                    SubmitQuestion($('#QuestionsList > li.ui-selected'));
                 });
 
                 // Initialize the file selection pop-up
@@ -47,17 +46,11 @@
                         "Yes" : function() {
                             LogInfo('Positive answer received');
 
-                            // Was it a question or answer?
+                            // Mark the question as answered
                             var question = $('#QuestionsList > li.ui-selected');
-                            var answer = $('#AnswersList > li.ui-selected');
                             if (question.length > 0) {
                                 AnswerQuestion(question.filter(':first').text(), true);
-
-                            // Yay, victory(?)!
-                            } else if (answer.length > 0) {
-                                alert('Game complete!\nClose this alert to refresh the page');
-                                location.reload();
-
+                                
                             } else {
                                 alert('Incorrect client state: ' +
                                       'One question/answer must be selected for this dialog to appear');
@@ -67,8 +60,8 @@
                         "No" : function() {
                             LogInfo('Negative answer received');
 
-                            // Prune the question asked off the tree
-                            var question = $('#QuestionsList > li.ui-selected, #AnswersList > li.ui-selected');
+                            // Mark the question as answered
+                            var question = $('#QuestionsList > li.ui-selected');
                             if (question.length > 0) {
                                 AnswerQuestion(question.filter(':first').text(), false);
 
@@ -109,9 +102,9 @@
             }
             
             /**
-             * Takes the selected question/answer and asks the BCI-side for an answer
+             * Takes the selected question and asks the BCI-side for an answer
              */
-            SubmitQuestion = function(selected, isQuestion) {
+            SubmitQuestion = function(selected) {
                 // Anything selected?
                 if (selected.length <= 0) {
                     return;
@@ -119,9 +112,6 @@
 
                 // Extract the question to ask
                 var question = selected.filter(':first').text();
-                if (!isQuestion) {
-                    question = 'Is it a ' + question + '?';
-                }
 
                 
                 // Ask the BCI for an answer
@@ -161,6 +151,6 @@
             <div id="AnswersLabel">Answers</div>
             <ul id="AnswersList"></ul>
         </div>
-        <div id="SubmitButton">&uarr; Select a question or answer &uarr;</div>
+        <div id="SubmitButton">&uarr; Select a question &uarr;</div>
 	</body>
 </html>
