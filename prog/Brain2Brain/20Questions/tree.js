@@ -52,8 +52,9 @@ AnswerQuestion = function(questionAsked, isYes) {
     // Check to see if the game is over (only one answer left)
     var remainingAnswers = $('#AnswersList > li').not('.ruled-out');
     if (remainingAnswers.length === 1) {
-        var alertText = 'guessed "' + TheAnswer + '" ' 
-            + (remainingAnswers.text() === TheAnswer ? '' : 'in')
+        var lastAnswer = remainingAnswers.text();
+        var alertText = 'guessed "' + lastAnswer + '" ' 
+            + (lastAnswer === TheAnswer ? '' : 'in')
             + 'correctly!';
             
         // Show the EEG-side the result text
