@@ -25,7 +25,8 @@ InitializeQuestionMatrix = function(filename) {
             TheAnswer = UpdateSelectors();
 
             // Tell the BCI-side what the client is playing for
-            LogInfo('Answer is: ' + TheAnswer);
+            LogInfo('\n The file being used is: ' + filename + "\n" + 
+                    'Answer is ' + TheAnswer);
             PUT_TextAnswer(TheAnswer, function () {
                 alert('Application not ready to begin');
                 location.reload();
