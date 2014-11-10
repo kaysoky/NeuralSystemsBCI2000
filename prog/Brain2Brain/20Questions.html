@@ -97,6 +97,7 @@
                     setTimeout(function() {
                         $('#WaitingScreen').hide();
                         $('#ConfirmationPrompt').dialog('open');
+                        $('#ConfirmationPrompt').dialog('option', 'title', $('#QuestionsList > li.ui-selected').text());
                     }, 2000);
                 }
             }

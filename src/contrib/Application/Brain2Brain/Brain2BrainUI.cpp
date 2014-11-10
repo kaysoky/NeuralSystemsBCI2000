@@ -75,7 +75,7 @@ void Brain2BrainUI::Initialize() {
                      .Hide();
 
     // Initialize the title box message
-    GUI::Rect titleBoxRect = {0.1f, 0.4f, 0.9f, 0.6f};
+    GUI::Rect titleBoxRect = {0.1f, 0.25f, 0.9f, 0.45f};
     titleBox = new TextField(window);
     titleBox->SetText("Timeout")
 		     .SetTextColor(RGBColor::Lime)
