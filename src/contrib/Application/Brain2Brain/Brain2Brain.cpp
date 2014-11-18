@@ -49,8 +49,8 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
     }
     
     int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
-    if (questionDelay > feedbackDuration) {
-        bcierr << "Question Delay must be less than the feedback duration" << std::endl;
+    if (questionDelay >= feedbackDuration / 2) {
+        bcierr << "Question Delay must be less than half of the feedback duration" << std::endl;
     }
 
     CheckServerParameters(Input);
@@ -71,7 +71,7 @@ void Brain2Brain::OnStartRun() {
     // Reset or increment some counters
     runCount++;
     trialCount = 0;
-
+    timeCount = 0;
     AppLog << "Run #" << runCount << " started" << std::endl;
     B2BGUI->OnStartRun();
 }
@@ -79,13 +79,14 @@ void Brain2Brain::OnStartRun() {
 void Brain2Brain::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
-    
+    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
     state_lock->Acquire();
-    if (lastClientPost == START_TRIAL) {
+    if (lastClientPost == START_TRIAL && timeCount >= questionDelay) {
         doProgress = true;
         lastClientPost = CONTINUE;
     }
     state_lock->Release();
+    timeCount++;
 }
 
 void Brain2Brain::OnTrialBegin() {
@@ -103,15 +104,12 @@ void Brain2Brain::OnTrialBegin() {
 }
 
 void Brain2Brain::OnFeedbackBegin() {
+    timeCount = 0;
     B2BGUI->OnFeedbackBegin();
 }
 
 void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgress) {
     doProgress = false;
-    
-    if (feedbackDuration < questionDelay) {
-        break;
-    }
     
     Brain2BrainUI::TargetHitType hitType = B2BGUI->DoFeedback(ControlSignal);
     State("TargetHitCode") = static_cast<long>(targetHitType);
@@ -139,6 +137,7 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
 }
 
 void Brain2Brain::OnFeedbackEnd() {
+    timeCount = 0;
     B2BGUI->OnFeedbackEnd();
 
     // Clear the question box between trials
@@ -147,14 +146,15 @@ void Brain2Brain::OnFeedbackEnd() {
 
 void Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
-
     // Wait for the start signal
+    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
     state_lock->Acquire();
-    if (lastClientPost == START_TRIAL) {
+    if (lastClientPost == START_TRIAL && timeCount >= questionDelay ) {
         doProgress = true;
         lastClientPost = CONTINUE;
     }
     state_lock->Release();
+    timeCount++;
 }
 
 void Brain2Brain::OnStopRun() {

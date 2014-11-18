@@ -41,7 +41,8 @@ private:
     Brain2BrainUI *B2BGUI;
 
     int runCount,
-        trialCount;
+        trialCount,
+        timeCount;
     
     virtual void HandleTrialStartRequest(std::string);
     virtual bool HandleTrialStatusRequest(struct mg_connection *);
