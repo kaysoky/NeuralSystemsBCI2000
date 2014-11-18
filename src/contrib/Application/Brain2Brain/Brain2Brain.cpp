@@ -23,7 +23,9 @@ Brain2Brain::Brain2Brain()
     "Application:UI float TargetHeight= 10 % 0 100 "
         " // Height of each of the targets as a percent of screen height",
     "Application:UI float DwellTime= 0.25s 0.25s 0 % "
-        " // Time that the cursor must dwell over a target to be considered a hit", 
+        " // Time that the cursor must dwell over a target to be considered a hit",
+    "Application:Sequencing float QuestionDelay= 2.0s 2.0s 0 % "
+        " // Time that the question is displayed before data collected and feedback",         
     END_PARAMETER_DEFINITIONS
 
     BEGIN_STATE_DEFINITIONS
@@ -44,6 +46,11 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
     int dwellTime = static_cast<int>(Parameter("DwellTime").InSampleBlocks());
     if (dwellTime > feedbackDuration / 2) {
         bcierr << "Dwell time must be less than half of the feedback duration" << std::endl;
+    }
+    
+    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
+    if (questionDelay > feedbackDuration) {
+        bcierr << "Question Delay must be less than the feedback duration" << std::endl;
     }
 
     CheckServerParameters(Input);
@@ -101,7 +108,11 @@ void Brain2Brain::OnFeedbackBegin() {
 
 void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgress) {
     doProgress = false;
-
+    
+    if (feedbackDuration < questionDelay) {
+        break;
+    }
+    
     Brain2BrainUI::TargetHitType hitType = B2BGUI->DoFeedback(ControlSignal);
     State("TargetHitCode") = static_cast<long>(targetHitType);
 
