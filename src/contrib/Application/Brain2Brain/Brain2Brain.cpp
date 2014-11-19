@@ -24,6 +24,8 @@ Brain2Brain::Brain2Brain()
         " // Height of each of the targets as a percent of screen height",
     "Application:UI float DwellTime= 0.25s 0.25s 0 % "
         " // Time that the cursor must dwell over a target to be considered a hit", 
+     "Application:Sequencing float QuestionDelay= 2.0s 2.0s 0 % "
+        " // Time that the question is displayed before data collected and feedback", 
     END_PARAMETER_DEFINITIONS
 
     BEGIN_STATE_DEFINITIONS
@@ -46,6 +48,11 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
         bcierr << "Dwell time must be less than half of the feedback duration" << std::endl;
     }
 
+    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
+    if (questionDelay >= feedbackDuration / 2) {
+        bcierr << "Question Delay must be less than half of the feedback duration" << std::endl;
+    }   
+
     CheckServerParameters(Input);
 }
 
@@ -64,6 +71,7 @@ void Brain2Brain::OnStartRun() {
     // Reset or increment some counters
     runCount++;
     trialCount = 0;
+    timeCount = 0;
 
     AppLog << "Run #" << runCount << " started" << std::endl;
     B2BGUI->OnStartRun();
@@ -72,11 +80,16 @@ void Brain2Brain::OnStartRun() {
 void Brain2Brain::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
-    
+    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
     state_lock->Acquire();
+    
     if (lastClientPost == START_TRIAL) {
-        doProgress = true;
-        lastClientPost = CONTINUE;
+       if(timeCount >= questionDelay) {
+            doProgress = true;            
+            lastClientPost = CONTINUE;
+        }
+
+        timeCount++;
     }
     state_lock->Release();
 }
