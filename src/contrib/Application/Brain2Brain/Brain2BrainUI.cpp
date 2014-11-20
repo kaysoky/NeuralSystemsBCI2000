@@ -33,10 +33,19 @@ void Brain2BrainUI::Initialize() {
     float cursorWidth = Parameter("CursorWidth") / 100.0f;
  	  GUI::Rect cursorRect = {0, 0, cursorWidth, cursorWidth * window.Width() / window.Height()};
     cursor = new EllipticShape(window, 1);
-    cursor->SetColor(RGBColor::White)
-           .SetFillColor(RGBColor::White)
-           .SetObjectRect(cursorRect)
-           .Hide();
+    if(Parameter("CursorVisible") == 0){
+         cursor->SetColor(RGBColor::NullColor)
+           .SetFillColor(RGBColor::NullColor);
+    }
+    else if (Parameter("CursorVisible") == 1){
+         cursor->SetColor(RGBColor::White)
+           .SetFillColor(RGBColor::White);
+    }
+    else {
+      bcierr << "CursorVisible must equal 0 or 1" << std::endl;
+    }
+    cursor->SetObjectRect(cursorRect)
+        .Hide();
 
     // On average, we need to cross half the workspace during a trial
     float feedbackDuration = Parameter("FeedbackDuration").InSampleBlocks();
@@ -80,8 +89,7 @@ void Brain2BrainUI::Initialize() {
                      .Hide();
 
         // Initialize the YES target HORIZONTAL (left)
-        GUI::Rect yesFakeTargetRect = {0, 0, targetHeight, 1.0f};
-         //GUI::Rect yesFakeTargetRect = {0, 0, 0.1f, 1.0f};
+        GUI::Rect yesFakeTargetRect = {0, 0, targetHeight, 1.0f}; 
         yesFakeTarget = new RectangularShape(window);
         yesFakeTarget->SetColor(targetBorderColor)
                   .SetObjectRect(yesFakeTargetRect)
@@ -96,7 +104,6 @@ void Brain2BrainUI::Initialize() {
                       .Hide();
         
         // Initialize the NO target HORIZONTAL (right)
-      //  GUI::Rect noFakeTargetRect = {0.9f, 0, 1.0f, 1.0f};
         GUI::Rect noFakeTargetRect = {1.0f-targetHeight, 0, 1.0f, 1.0f};
         noFakeTarget = new RectangularShape(window);
         noFakeTarget->SetColor(targetBorderColor)
@@ -141,35 +148,14 @@ void Brain2BrainUI::Initialize() {
 
 void Brain2BrainUI::OnStartRun() {
     titleBox->SetText(">> Get Ready! <<");
-    /*
-    yesFakeTarget->SetFillColor(TARGET_FILL_COLOR)
-		      .Show();
-    yesFakeTargetText->Show();
-    noFakeTarget->SetFillColor(TARGET_FILL_COLOR)
-		     .Show();
-    noFakeTargetText->Show();
-    */
-    //titleBox->Show();
 }
 
 void Brain2BrainUI::DoPreRun_ShowQuestion() {
-   // answerBox->Show();
     questionBox->Show();
-//    titleBox->Hide();
-
 }
 
 void Brain2BrainUI::DoPreRun_DoNotShowQuestion() {
     questionBox->Hide();
-}
-
-void Brain2BrainUI::OnTrialBegin() {
-    //yesTarget->SetFillColor(TARGET_FILL_COLOR)
-	//	      .Show();
-   // yesTargetText->Show();
-   // noTarget->SetFillColor(TARGET_FILL_COLOR)
-	//	     .Show();
-  //  noTargetText->Show();
 }
 
 void Brain2BrainUI::OnFeedbackBegin() {
@@ -199,14 +185,14 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
     RGBColor hitColor = RGBColor::Red;
     TargetHitType hit = NOTHING_HIT;
     if (Shape::AreaIntersection(*cursor, *yesTarget)) {
-        yesTarget->SetFillColor(hitColor);
+        yesFakeTarget->SetFillColor(hitColor);
         hit = YES_TARGET;
     } else if (Shape::AreaIntersection(*cursor, *noTarget)) {
-        noTarget->SetFillColor(hitColor);
+        noFakeTarget->SetFillColor(hitColor);
         hit = NO_TARGET;
     } else {
-        yesTarget->SetFillColor(TARGET_FILL_COLOR);
-        noTarget->SetFillColor(TARGET_FILL_COLOR);
+        yesFakeTarget->SetFillColor(TARGET_FILL_COLOR);
+        noFakeTarget->SetFillColor(TARGET_FILL_COLOR);
     }
 
     // Delay reporting of a hit for a little bit of time
@@ -230,8 +216,8 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
 
 void Brain2BrainUI::OnFeedbackEnd() {
     // Reset the target colors
-    yesTarget->SetFillColor(TARGET_FILL_COLOR);
-    noTarget->SetFillColor(TARGET_FILL_COLOR);
+    yesFakeTarget->SetFillColor(TARGET_FILL_COLOR);
+    noFakeTarget->SetFillColor(TARGET_FILL_COLOR);
     
     cursor->Hide();
 }
@@ -239,27 +225,40 @@ void Brain2BrainUI::OnFeedbackEnd() {
 void Brain2BrainUI::OnStopRun() {
     titleBox->SetText("Timeout")
              .Show();
-    yesTarget->Hide();
-    yesTargetText->Hide();
-    noTarget->Hide();
-    noTargetText->Hide();
+   // yesTarget->Hide();
+   // yesTargetText->Hide();
+   // noTarget->Hide();
+  //  noTargetText->Hide();
+    yesFakeTarget->Hide();
+    yesFakeTargetText->Hide();
+    noFakeTarget->Hide();
+    noFakeTargetText->Hide();
     questionBox->Hide();
     answerBox->Hide();
 }
 
 void Brain2BrainUI::SetQuestion(std::string data) {
     questionBox->SetText(data);
-    //questionBox->Show();
 }
 
 void Brain2BrainUI::SetAnswer(std::string data) {
     answerBox->SetText(data)
            .Show();
     titleBox->Hide();
+   
+    /*
     yesTarget->SetFillColor(TARGET_FILL_COLOR)
 		      .Show();
     yesTargetText->Show();
     noTarget->SetFillColor(TARGET_FILL_COLOR)
 		     .Show();
     noTargetText->Show();
+    */
+
+    yesFakeTarget->SetFillColor(TARGET_FILL_COLOR)
+		      .Show();
+    yesFakeTargetText->Show();
+    noFakeTarget->SetFillColor(TARGET_FILL_COLOR)
+		     .Show();
+    noFakeTargetText->Show();
 }
