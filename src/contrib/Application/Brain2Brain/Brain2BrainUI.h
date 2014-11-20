@@ -22,10 +22,8 @@ public:
     };
     
     void OnStartRun();
-    //void DoPreRun();
     void DoPreRun_ShowQuestion();
     void DoPreRun_DoNotShowQuestion();
-    void OnTrialBegin();
     void OnFeedbackBegin();
     TargetHitType DoFeedback(const GenericSignal&);
     void OnFeedbackEnd();
