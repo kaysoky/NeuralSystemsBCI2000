@@ -22,7 +22,7 @@ public:
     };
     
     void OnStartRun();
-    void OnTrialBegin();
+    void DoPreRun(bool showQuestion);
     void OnFeedbackBegin();
     TargetHitType DoFeedback(const GenericSignal&);
     void OnFeedbackEnd();
@@ -54,7 +54,7 @@ private:
      */
     RectangularShape* noTarget;
     TextField* noTargetText;
-    
+
     /**
      * Represents the title box
      */

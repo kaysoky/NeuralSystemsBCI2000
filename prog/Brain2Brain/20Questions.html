@@ -50,6 +50,7 @@
                             var question = $('#QuestionsList > li.ui-selected');
                             if (question.length > 0) {
                                 AnswerQuestion(question.filter(':first').text(), true);
+                                POST_TrialStop(function() {}, function() {});
                                 
                             } else {
                                 alert('Incorrect client state: ' +
@@ -64,16 +65,18 @@
                             var question = $('#QuestionsList > li.ui-selected');
                             if (question.length > 0) {
                                 AnswerQuestion(question.filter(':first').text(), false);
+                                POST_TrialStop(function() {}, function() {});
 
                             } else {
                                 alert('Incorrect client state: ' +
                                       'One question/answer must be selected for this dialog to appear');
                             }
                             $(this).dialog('close');
+                        }, 
+                        "Re-Ask" : function() {
+                            SubmitQuestion($('#QuestionsList > li.ui-selected'));
+                            $(this).dialog("close");
                         }
-                    },
-                    close: function(event, ui) {
-                        POST_TrialStop(function() {}, function() {});
                     }
                 });
 
