@@ -22,6 +22,9 @@ public:
     };
     
     void OnStartRun();
+    //void DoPreRun();
+    void DoPreRun_ShowQuestion();
+    void DoPreRun_DoNotShowQuestion();
     void OnTrialBegin();
     void OnFeedbackBegin();
     TargetHitType DoFeedback(const GenericSignal&);
@@ -72,6 +75,12 @@ private:
      * (In sample blocks)
      */
     int dwellTime;
+
+    /**
+     * Amount of time that has passed since the 
+     * (In sample blocks)
+     */
+    //int timeCount;
 };
 
 #endif // BRAIN2BRAINUI_H
