@@ -47,8 +47,9 @@ void Brain2BrainUI::Initialize() {
     RGBColor targetBorderColor = RGBColor::Gray;
     RGBColor targetTextColor = RGBColor::Black;
     float targetTextHeight = 0.5f;
+    float fakeTargetTextHeight = 0.1f;
     
-        // Initialize the YES target
+        // Initialize the YES target VERTICAL
         GUI::Rect yesTargetRect = {0, 0, 1.0f, targetHeight};
         yesTarget = new RectangularShape(window);
         yesTarget->SetColor(targetBorderColor)
@@ -63,7 +64,7 @@ void Brain2BrainUI::Initialize() {
                       .SetObjectRect(yesTargetRect)
                       .Hide();
         
-        // Initialize the NO target
+        // Initialize the NO target VERTICAL
         GUI::Rect noTargetRect = {0, 1.0f - targetHeight, 1.0f, 1.0f};
         noTarget = new RectangularShape(window);
         noTarget->SetColor(targetBorderColor)
@@ -77,6 +78,38 @@ void Brain2BrainUI::Initialize() {
                      .SetColor(RGBColor::NullColor)
                      .SetObjectRect(noTargetRect)
                      .Hide();
+
+        // Initialize the YES target HORIZONTAL (left)
+        GUI::Rect yesFakeTargetRect = {0, 0, targetHeight, 1.0f};
+         //GUI::Rect yesFakeTargetRect = {0, 0, 0.1f, 1.0f};
+        yesFakeTarget = new RectangularShape(window);
+        yesFakeTarget->SetColor(targetBorderColor)
+                  .SetObjectRect(yesFakeTargetRect)
+                  .Hide();
+        
+        yesFakeTargetText = new TextField(window);
+        yesFakeTargetText->SetText("Yes")
+			          .SetTextColor(targetTextColor)
+                      .SetTextHeight(fakeTargetTextHeight)
+                      .SetColor(RGBColor::NullColor)
+                      .SetObjectRect(yesFakeTargetRect)
+                      .Hide();
+        
+        // Initialize the NO target HORIZONTAL (right)
+      //  GUI::Rect noFakeTargetRect = {0.9f, 0, 1.0f, 1.0f};
+        GUI::Rect noFakeTargetRect = {1.0f-targetHeight, 0, 1.0f, 1.0f};
+        noFakeTarget = new RectangularShape(window);
+        noFakeTarget->SetColor(targetBorderColor)
+                  .SetObjectRect(noFakeTargetRect)
+                  .Hide();
+        
+        noFakeTargetText = new TextField(window);
+        noFakeTargetText->SetText("No")
+			          .SetTextColor(targetTextColor)
+                      .SetTextHeight(fakeTargetTextHeight)
+                      .SetColor(RGBColor::NullColor)
+                      .SetObjectRect(noFakeTargetRect)
+                      .Hide();
 
     // Initialize the title box message
     GUI::Rect titleBoxRect = {0.1f, 0.25f, 0.9f, 0.45f};
@@ -108,6 +141,14 @@ void Brain2BrainUI::Initialize() {
 
 void Brain2BrainUI::OnStartRun() {
     titleBox->SetText(">> Get Ready! <<");
+    /*
+    yesFakeTarget->SetFillColor(TARGET_FILL_COLOR)
+		      .Show();
+    yesFakeTargetText->Show();
+    noFakeTarget->SetFillColor(TARGET_FILL_COLOR)
+		     .Show();
+    noFakeTargetText->Show();
+    */
     //titleBox->Show();
 }
 
