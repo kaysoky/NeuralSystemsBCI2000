@@ -24,8 +24,10 @@ Brain2Brain::Brain2Brain()
         " // Height of each of the targets as a percent of screen height",
     "Application:UI float DwellTime= 0.25s 0.25s 0 % "
         " // Time that the cursor must dwell over a target to be considered a hit", 
-     "Application:Sequencing float QuestionDelay= 2.0s 2.0s 0 % "
-        " // Time that the question is displayed before data collected and feedback", 
+    "Application:UI float FeedbackDelay_forQuestion= 2.0s 2.0s 0 % "
+        " // Time that the question is displayed before data collected and feedback; both FeedbackDelay's add for total delay time", 
+    "Application:UI float FeedbackDelay_QuestionNotDisplayed= 1.0s 1.0s 0 % "
+        " // Time that the feedback is delayed, but the question is not displayed so subject can look at answer LED; both FeedbackDelay's add for total delay time", 
     END_PARAMETER_DEFINITIONS
 
     BEGIN_STATE_DEFINITIONS
@@ -47,11 +49,12 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
     if (dwellTime > feedbackDuration / 2) {
         bcierr << "Dwell time must be less than half of the feedback duration" << std::endl;
     }
-
-    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
-    if (questionDelay >= feedbackDuration / 2) {
-        bcierr << "Question Delay must be less than half of the feedback duration" << std::endl;
+    int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
+    if (feedbackDelay_forQuestion >= feedbackDuration / 2) {
+        bcierr << "FeedbackDelay_forQuestion must be less than half of the feedback duration" << std::endl;
     }   
+
+    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks()); 
 
     CheckServerParameters(Input);
 }
@@ -79,17 +82,35 @@ void Brain2Brain::OnStartRun() {
 
 void Brain2Brain::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
+  
+    bciout << "This is when DoPreRun starts" << std::endl;
+  
     doProgress = false;
-    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
+
+    int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
+    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks()); 
     state_lock->Acquire();
     
+    //B2BGUI->DoPreRun_ShowQuestion();
     if (lastClientPost == START_TRIAL) {
-       if(timeCount >= questionDelay) {
+       if(timeCount < feedbackDelay_forQuestion) {
+    
+          B2BGUI->DoPreRun_ShowQuestion();
+        }
+        else {
+            B2BGUI->DoPreRun_DoNotShowQuestion();
+        }
+       
+      // bciout << "timeCount (before questionDelay is met) = " << timeCount << std::endl;
+       if(timeCount >= feedbackDelay_forQuestion + feedbackDelay_QuestionNotDisplayed) {
             doProgress = true;            
             lastClientPost = CONTINUE;
+            //bciout << "timeCount (when questionDelay is met) = " << timeCount << std::endl;
+            timeCount = 0;
         }
-
-        timeCount++;
+        else {
+            timeCount++;
+        } 
     }
     state_lock->Release();
 }
@@ -149,15 +170,36 @@ void Brain2Brain::OnFeedbackEnd() {
 
 void Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
-
+    int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
+    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks()); 
     // Wait for the start signal
     state_lock->Acquire();
-    if (lastClientPost == START_TRIAL) {
-        doProgress = true;
-        lastClientPost = CONTINUE;
+    //bciout << "timeCount in DoITI = " << timeCount << std::endl;
+    
+    //B2BGUI->DoPreRun_ShowQuestion();
+     if (lastClientPost == START_TRIAL) {
+       if(timeCount < feedbackDelay_forQuestion) {
+            B2BGUI->DoPreRun_ShowQuestion();
+        }
+        else {
+            B2BGUI->DoPreRun_DoNotShowQuestion();
+        }
+       
+       //bciout << "timeCount (before questionDelay is met) = " << timeCount << std::endl;
+       if(timeCount >= feedbackDelay_forQuestion + feedbackDelay_QuestionNotDisplayed) {
+            doProgress = true;            
+            lastClientPost = CONTINUE;
+            //bciout << "timeCount (when questionDelay is met) = " << timeCount << std::endl;
+            timeCount = 0;
+        }
+        else {
+            timeCount++;
+        } 
     }
     state_lock->Release();
+;
 }
+
 
 void Brain2Brain::OnStopRun() {
     AppLog << "Run " << runCount << " finished: "

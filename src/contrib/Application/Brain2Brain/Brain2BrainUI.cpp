@@ -19,6 +19,10 @@ Brain2BrainUI::~Brain2BrainUI() {
     delete yesTargetText;
     delete noTarget;
     delete noTargetText;
+    delete yesFakeTarget;
+    delete yesFakeTargetText;
+    delete noFakeTarget;
+    delete noFakeTargetText;
     delete titleBox;
     delete questionBox;
     delete answerBox;
@@ -27,7 +31,7 @@ Brain2BrainUI::~Brain2BrainUI() {
 void Brain2BrainUI::Initialize() {
     // Initialize the cursor to be a circle
     float cursorWidth = Parameter("CursorWidth") / 100.0f;
-	GUI::Rect cursorRect = {0, 0, cursorWidth, cursorWidth * window.Width() / window.Height()};
+ 	  GUI::Rect cursorRect = {0, 0, cursorWidth, cursorWidth * window.Width() / window.Height()};
     cursor = new EllipticShape(window, 1);
     cursor->SetColor(RGBColor::White)
            .SetFillColor(RGBColor::White)
@@ -104,20 +108,27 @@ void Brain2BrainUI::Initialize() {
 
 void Brain2BrainUI::OnStartRun() {
     titleBox->SetText(">> Get Ready! <<");
+    //titleBox->Show();
+}
+
+void Brain2BrainUI::DoPreRun_ShowQuestion() {
+   // answerBox->Show();
+    questionBox->Show();
+//    titleBox->Hide();
+
+}
+
+void Brain2BrainUI::DoPreRun_DoNotShowQuestion() {
+    questionBox->Hide();
 }
 
 void Brain2BrainUI::OnTrialBegin() {
-    titleBox->Hide();
-
-    yesTarget->SetFillColor(TARGET_FILL_COLOR)
-		      .Show();
-    yesTargetText->Show();
-    noTarget->SetFillColor(TARGET_FILL_COLOR)
-		     .Show();
-    noTargetText->Show();
-    
-    questionBox->Show();
-    answerBox->Show();
+    //yesTarget->SetFillColor(TARGET_FILL_COLOR)
+	//	      .Show();
+   // yesTargetText->Show();
+   // noTarget->SetFillColor(TARGET_FILL_COLOR)
+	//	     .Show();
+  //  noTargetText->Show();
 }
 
 void Brain2BrainUI::OnFeedbackBegin() {
@@ -197,8 +208,17 @@ void Brain2BrainUI::OnStopRun() {
 
 void Brain2BrainUI::SetQuestion(std::string data) {
     questionBox->SetText(data);
+    //questionBox->Show();
 }
 
 void Brain2BrainUI::SetAnswer(std::string data) {
-    answerBox->SetText(data);
+    answerBox->SetText(data)
+           .Show();
+    titleBox->Hide();
+    yesTarget->SetFillColor(TARGET_FILL_COLOR)
+		      .Show();
+    yesTargetText->Show();
+    noTarget->SetFillColor(TARGET_FILL_COLOR)
+		     .Show();
+    noTargetText->Show();
 }

@@ -58,6 +58,19 @@ private:
     RectangularShape* noTarget;
     TextField* noTargetText;
     
+     /**
+     * Represents the YES fake target
+     */
+    RectangularShape* yesFakeTarget;
+    TextField* yesFakeTargetText;
+    
+    /**
+     * Represents the NO fake target
+     */
+    RectangularShape* noFakeTarget;
+    TextField* noFakeTargetText;
+
+
     /**
      * Represents the title box
      */
