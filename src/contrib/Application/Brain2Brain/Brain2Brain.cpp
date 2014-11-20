@@ -24,6 +24,12 @@ Brain2Brain::Brain2Brain()
         " // Height of each of the targets as a percent of screen height",
     "Application:UI float DwellTime= 0.25s 0.25s 0 % "
         " // Time that the cursor must dwell over a target to be considered a hit", 
+    "Application:UI float FeedbackDelay_forQuestion= 2.0s 2.0s 0 % "
+        " // Time that the question is displayed before data collected and feedback; both FeedbackDelay's add for total delay time", 
+    "Application:UI float FeedbackDelay_QuestionNotDisplayed= 1.0s 1.0s 0 % "
+        " // Time that the feedback is delayed, but the question is not displayed so subject can look at answer LED; both FeedbackDelay's add for total delay time", 
+    "Application:UI int CursorVisible= 0 0 0 1"
+        " // Do you want to see the vertical cursor? 0: No; 1: Yes", 
     END_PARAMETER_DEFINITIONS
 
     BEGIN_STATE_DEFINITIONS
@@ -45,6 +51,12 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
     if (dwellTime > feedbackDuration / 2) {
         bcierr << "Dwell time must be less than half of the feedback duration" << std::endl;
     }
+    int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
+    if (feedbackDelay_forQuestion >= feedbackDuration / 2) {
+        bcierr << "FeedbackDelay_forQuestion must be less than half of the feedback duration" << std::endl;
+    }   
+
+    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks()); 
 
     CheckServerParameters(Input);
 }
@@ -64,6 +76,7 @@ void Brain2Brain::OnStartRun() {
     // Reset or increment some counters
     runCount++;
     trialCount = 0;
+    timeCount = 0;
 
     AppLog << "Run #" << runCount << " started" << std::endl;
     B2BGUI->OnStartRun();
@@ -72,11 +85,28 @@ void Brain2Brain::OnStartRun() {
 void Brain2Brain::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
-    
+
+    int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
+    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks()); 
     state_lock->Acquire();
+    
     if (lastClientPost == START_TRIAL) {
-        doProgress = true;
-        lastClientPost = CONTINUE;
+       if(timeCount < feedbackDelay_forQuestion) {
+    
+          B2BGUI->DoPreRun_ShowQuestion();
+        }
+        else {
+            B2BGUI->DoPreRun_DoNotShowQuestion();
+        }
+       
+       if(timeCount >= feedbackDelay_forQuestion + feedbackDelay_QuestionNotDisplayed) {
+            doProgress = true;            
+            lastClientPost = CONTINUE;
+            timeCount = 0;
+        }
+        else {
+            timeCount++;
+        } 
     }
     state_lock->Release();
 }
@@ -92,7 +122,6 @@ void Brain2Brain::OnTrialBegin() {
     trialCount++;
 
     AppLog << "Trial #" << trialCount << std::endl;
-    B2BGUI->OnTrialBegin();
 }
 
 void Brain2Brain::OnFeedbackBegin() {
@@ -136,15 +165,32 @@ void Brain2Brain::OnFeedbackEnd() {
 
 void Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
-
+    int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
+    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks()); 
     // Wait for the start signal
     state_lock->Acquire();
+    
     if (lastClientPost == START_TRIAL) {
-        doProgress = true;
-        lastClientPost = CONTINUE;
+       if(timeCount < feedbackDelay_forQuestion) {
+            B2BGUI->DoPreRun_ShowQuestion();
+        }
+        else {
+            B2BGUI->DoPreRun_DoNotShowQuestion();
+        }
+       
+       if(timeCount >= feedbackDelay_forQuestion + feedbackDelay_QuestionNotDisplayed) {
+            doProgress = true;            
+            lastClientPost = CONTINUE;
+            timeCount = 0;
+        }
+        else {
+            timeCount++;
+        } 
     }
     state_lock->Release();
+;
 }
+
 
 void Brain2Brain::OnStopRun() {
     AppLog << "Run " << runCount << " finished: "
