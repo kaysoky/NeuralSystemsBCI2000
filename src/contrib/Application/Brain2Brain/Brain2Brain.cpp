@@ -11,8 +11,9 @@ RegisterFilter( Brain2Brain, 3 );
 Brain2Brain::Brain2Brain()
     : B2BGUI(NULL),
       window(Window()),
-      runCount(0), 
-      targetHit(false), 
+      runCount(0),
+      timeCount(0),
+      targetHit(false),
       targetHitType(Brain2BrainUI::NOTHING_HIT) {
 
     // Note: See MongooseTask.cpp for more parameters and states
@@ -23,13 +24,13 @@ Brain2Brain::Brain2Brain()
     "Application:UI float TargetHeight= 10 % 0 100 "
         " // Height of each of the targets as a percent of screen height",
     "Application:UI float DwellTime= 0.25s 0.25s 0 % "
-        " // Time that the cursor must dwell over a target to be considered a hit", 
+        " // Time that the cursor must dwell over a target to be considered a hit",
     "Application:UI float FeedbackDelay_forQuestion= 2.0s 2.0s 0 % "
-        " // Time that the question is displayed before data collected and feedback; both FeedbackDelay's add for total delay time", 
+        " // Time that the question is displayed before data collected and feedback; both FeedbackDelay's add for total delay time",
     "Application:UI float FeedbackDelay_QuestionNotDisplayed= 1.0s 1.0s 0 % "
-        " // Time that the feedback is delayed, but the question is not displayed so subject can look at answer LED; both FeedbackDelay's add for total delay time", 
+        " // Time that the feedback is delayed, but the question is not displayed so subject can look at answer LED; both FeedbackDelay's add for total delay time",
     "Application:UI int CursorVisible= 0 0 0 1"
-        " // Do you want to see the vertical cursor? 0: No; 1: Yes", 
+        " // Do you want to see the vertical cursor? 0: No; 1: Yes",
     END_PARAMETER_DEFINITIONS
 
     BEGIN_STATE_DEFINITIONS
@@ -45,18 +46,25 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
     // The values of these parameters are bounded by definition
     Parameter("CursorWidth");
     Parameter("TargetHeight");
-    
+
     int feedbackDuration = static_cast<int>(Parameter( "FeedbackDuration" ).InSampleBlocks());
     int dwellTime = static_cast<int>(Parameter("DwellTime").InSampleBlocks());
     if (dwellTime > feedbackDuration / 2) {
         bcierr << "Dwell time must be less than half of the feedback duration" << std::endl;
     }
-    int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
-    if (feedbackDelay_forQuestion >= feedbackDuration / 2) {
-        bcierr << "FeedbackDelay_forQuestion must be less than half of the feedback duration" << std::endl;
-    }   
 
-    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks()); 
+    int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
+    if (feedbackDelay_forQuestion > feedbackDuration / 2) {
+        bcierr << "FeedbackDelay_forQuestion must be less than half of the feedback duration" << std::endl;
+    }
+
+    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks());
+    if (feedbackDelay_QuestionNotDisplayed > feedbackDelay_forQuestion / 2) {
+        bcierr << "FeedbackDelay_forQuestion must be less than half of the FeedbackDelay_forQuestion duration" << std::endl;
+    }
+
+    // No check necessary, this is used as a boolean
+    int CursorVisible = static_cast<int>(Parameter("CursorVisible"));
 
     CheckServerParameters(Input);
 }
@@ -87,26 +95,20 @@ void Brain2Brain::DoPreRun(const GenericSignal&, bool& doProgress) {
     doProgress = false;
 
     int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
-    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks()); 
+    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks());
     state_lock->Acquire();
-    
+
     if (lastClientPost == START_TRIAL) {
-       if(timeCount < feedbackDelay_forQuestion) {
-    
-          B2BGUI->DoPreRun_ShowQuestion();
-        }
-        else {
-            B2BGUI->DoPreRun_DoNotShowQuestion();
-        }
-       
-       if(timeCount >= feedbackDelay_forQuestion + feedbackDelay_QuestionNotDisplayed) {
-            doProgress = true;            
+        // TODO: This is called too many times
+        B2BGUI->DoPreRun(timeCount < feedbackDelay_forQuestion);
+        
+        if (timeCount >= feedbackDelay_forQuestion + feedbackDelay_QuestionNotDisplayed) {
+            doProgress = true;
             lastClientPost = CONTINUE;
             timeCount = 0;
-        }
-        else {
+        } else {
             timeCount++;
-        } 
+        }
     }
     state_lock->Release();
 }
@@ -142,7 +144,7 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
             lastClientPost = CONTINUE;
         }
         state_lock->Release();
-        
+
         return;
     } else {
         // Pass this information onto the Countdown client
@@ -151,7 +153,7 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
         targetHitType = hitType;
         state_lock->Release();
     }
-    
+
     // Either the YES or NO target was hit
     doProgress = true;
 }
@@ -166,26 +168,21 @@ void Brain2Brain::OnFeedbackEnd() {
 void Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
     doProgress = false;
     int feedbackDelay_forQuestion = static_cast<int>(Parameter("FeedbackDelay_forQuestion").InSampleBlocks());
-    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks()); 
+    int feedbackDelay_QuestionNotDisplayed = static_cast<int>(Parameter("FeedbackDelay_QuestionNotDisplayed").InSampleBlocks());
     // Wait for the start signal
     state_lock->Acquire();
-    
+
     if (lastClientPost == START_TRIAL) {
-       if(timeCount < feedbackDelay_forQuestion) {
-            B2BGUI->DoPreRun_ShowQuestion();
-        }
-        else {
-            B2BGUI->DoPreRun_DoNotShowQuestion();
-        }
-       
-       if(timeCount >= feedbackDelay_forQuestion + feedbackDelay_QuestionNotDisplayed) {
-            doProgress = true;            
+        // TODO: Ditto for DoPreRun()
+        B2BGUI->DoPreRun(timeCount < feedbackDelay_forQuestion);
+
+        if(timeCount >= feedbackDelay_forQuestion + feedbackDelay_QuestionNotDisplayed) {
+            doProgress = true;
             lastClientPost = CONTINUE;
             timeCount = 0;
-        }
-        else {
+        } else {
             timeCount++;
-        } 
+        }
     }
     state_lock->Release();
 ;
@@ -217,8 +214,8 @@ bool Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
         }
         targetHit = false;
         return true;
-    } 
-    
+    }
+
     return false;
 }
 

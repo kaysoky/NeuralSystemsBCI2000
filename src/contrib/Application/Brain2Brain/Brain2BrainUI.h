@@ -22,8 +22,7 @@ public:
     };
     
     void OnStartRun();
-    void DoPreRun_ShowQuestion();
-    void DoPreRun_DoNotShowQuestion();
+    void DoPreRun(bool showQuestion);
     void OnFeedbackBegin();
     TargetHitType DoFeedback(const GenericSignal&);
     void OnFeedbackEnd();
@@ -55,19 +54,6 @@ private:
      */
     RectangularShape* noTarget;
     TextField* noTargetText;
-    
-     /**
-     * Represents the YES fake target
-     */
-    RectangularShape* yesFakeTarget;
-    TextField* yesFakeTargetText;
-    
-    /**
-     * Represents the NO fake target
-     */
-    RectangularShape* noFakeTarget;
-    TextField* noFakeTargetText;
-
 
     /**
      * Represents the title box
@@ -86,12 +72,6 @@ private:
      * (In sample blocks)
      */
     int dwellTime;
-
-    /**
-     * Amount of time that has passed since the 
-     * (In sample blocks)
-     */
-    //int timeCount;
 };
 
 #endif // BRAIN2BRAINUI_H
