@@ -112,14 +112,6 @@ void Brain2BrainUI::OnStartRun() {
     titleBox->SetText(">> Get Ready! <<");
 }
 
-void Brain2BrainUI::DoPreRun(bool showQuestion) {
-    if (showQuestion) {
-        questionBox->Show();
-    } else {
-        questionBox->Hide();
-    }
-}
-
 void Brain2BrainUI::OnFeedbackBegin() {
     GUI::Point center = {0.5f, 0.5f};
     cursor->SetCenter(center)
@@ -210,4 +202,12 @@ void Brain2BrainUI::SetAnswer(std::string data) {
     noTarget->SetFillColor(TARGET_FILL_COLOR)
 		     .Show();
     noTargetText->Show();
+}
+
+void Brain2BrainUI::ShowQuestion() {
+    questionBox->Show();
+}
+
+void Brain2BrainUI::HideQuestion() {
+    questionBox->Hide();
 }

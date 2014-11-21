@@ -40,9 +40,18 @@ private:
     ApplicationWindow &window;
     Brain2BrainUI *B2BGUI;
 
-    int runCount,
-        timeCount,
-        trialCount;
+    /* 
+     * Counters for logging purposes only
+     * i.e. How many times the "Start" button was pressed
+     *   and how many times the client submits a question
+     */
+    int runCount, trialCount;
+        
+    /*
+     * Used to determine when a trial should begin after the client submits a question
+     */
+    int timeCount;
+    boolean trialDelayActive;
     
     virtual void HandleTrialStartRequest(std::string);
     virtual bool HandleTrialStatusRequest(struct mg_connection *);
