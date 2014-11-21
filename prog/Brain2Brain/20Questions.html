@@ -50,7 +50,6 @@
                             var question = $('#QuestionsList > li.ui-selected');
                             if (question.length > 0) {
                                 AnswerQuestion(question.filter(':first').text(), true);
-                                POST_TrialStop(function() {}, function() {});
                                 
                             } else {
                                 alert('Incorrect client state: ' +
@@ -65,18 +64,16 @@
                             var question = $('#QuestionsList > li.ui-selected');
                             if (question.length > 0) {
                                 AnswerQuestion(question.filter(':first').text(), false);
-                                POST_TrialStop(function() {}, function() {});
 
                             } else {
                                 alert('Incorrect client state: ' +
                                       'One question/answer must be selected for this dialog to appear');
                             }
                             $(this).dialog('close');
-                        }, 
-                        "Re-Ask" : function() {
-                            SubmitQuestion($('#QuestionsList > li.ui-selected'));
-                            $(this).dialog("close");
                         }
+                    },
+                    close: function(event, ui) {
+                        POST_TrialStop(function() {}, function() {});
                     }
                 });
 
@@ -87,21 +84,15 @@
             /**
              * Auto-recursive waiting function for after the "Submit" button is pressed
              */
-            var secondsRemaining = TRIAL_TIME / 1000;
-            function WaitForTrialEnd() {
+            function WaitForTrialEnd(secondsRemaining) {
                 if (secondsRemaining > 0) {
-                    secondsRemaining--;
-                    setTimeout(WaitForTrialEnd, 1000);
+                    setTimeout(function() { WaitForTrialEnd(--secondsRemaining); }, 1000);
                 } else {
                     POST_TrialStop(function() {}, function() {});
-                    secondsRemaining = TRIAL_TIME / 1000;
                     
-                    // End the trial first, but give the TMS some extra time to catch up
-                    setTimeout(function() {
-                        $('#WaitingScreen').hide();
-                        $('#ConfirmationPrompt').dialog('open');
-                        $('#ConfirmationPrompt').dialog('option', 'title', $('#QuestionsList > li.ui-selected').text());
-                    }, 2000);
+                    $('#WaitingScreen').hide();
+                    $('#ConfirmationPrompt').dialog('open');
+                    $('#ConfirmationPrompt').dialog('option', 'title', $('#QuestionsList > li.ui-selected').text());
                 }
             }
             
@@ -125,7 +116,7 @@
                         $('#WaitingScreen').show();
                         
                         // Prevent the Yes/No prompt from being used until the trial is over
-                        WaitForTrialEnd();
+                        WaitForTrialEnd(TRIAL_TIME / 1000);
                     },
                     function() {
                         alert('Application suspended, please try again in a moment');

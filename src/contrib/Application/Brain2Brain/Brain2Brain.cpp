@@ -49,7 +49,7 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
     Parameter("TargetHeight");
     Parameter("CursorVisible");
 
-    int feedbackDuration = static_cast<int>(Parameter( "FeedbackDuration" ).InSampleBlocks());
+    int feedbackDuration = static_cast<int>(Parameter("FeedbackDuration").InSampleBlocks());
     int dwellTime = static_cast<int>(Parameter("DwellTime").InSampleBlocks());
     if (dwellTime > feedbackDuration / 2) {
         bcierr << "Dwell time must be less than half of the feedback duration" << std::endl;
@@ -213,8 +213,14 @@ bool Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
     return false;
 }
 
-void Brain2Brain::HandleTrialStartRequest(std::string data) {
+void Brain2Brain::HandleTrialStartRequest(std::string data, int &trialDuration) {
     B2BGUI->SetQuestion(data);
+    
+    // To the default trial duration, add the pre-trial period
+    //   and the post-trial TMS signal delay (i.e. if the TMS is fired at the very end of the trial)
+    trialDuration += 2000 // Must match the hard-coded delay in the TMS server method "tms_fire"
+        + static_cast<int>(Parameter("QuestionPreviewTime").InMilliseconds())
+        + static_cast<int>(Parameter("TrialStartDelay").InMilliseconds());
 }
 
 void Brain2Brain::HandleAnswerUpdate(std::string data) {

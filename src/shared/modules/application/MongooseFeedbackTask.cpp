@@ -197,7 +197,13 @@ int MongooseFeedbackTask::HandleMongooseRequest(struct mg_connection *conn) {
             mg_send_header(conn, "Content-Type", "text/plain");
             mg_printf_data(conn, "%d", currentTrialType);
             lastClientPost = START_TRIAL;
-            HandleTrialStartRequest(std::string(conn->content, conn->content_len));
+            
+            // Let the inheriting class handle the start signal too
+            int trialTime = static_cast<int>(Parameter("FeedbackDuration").InMilliseconds());
+            HandleTrialStartRequest(std::string(conn->content, conn->content_len), trialTime);
+            
+            // Pass along the trial time info
+            mg_printf_data(conn, "\n%d", trialTime);
 
             state_lock->Release();
             return MG_REQUEST_PROCESSED;

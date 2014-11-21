@@ -45,7 +45,7 @@ private:
     int runCount,
         trialCount;
     
-    virtual void HandleTrialStartRequest(std::string);
+    virtual void HandleTrialStartRequest(std::string, int&);
     virtual bool HandleTrialStatusRequest(struct mg_connection *);
     virtual void HandleAnswerUpdate(std::string);
         

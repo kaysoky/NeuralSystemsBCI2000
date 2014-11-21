@@ -66,8 +66,10 @@ protected:
     /*
      * Tells the application to start a trial
      * Child classes can extend this
+     * Second parameter allows the child to modify a trial time (milliseconds) 
+     *   to be sent to the client
      */
-    virtual void HandleTrialStartRequest(std::string) {}
+    virtual void HandleTrialStartRequest(std::string, int &) {}
     
     /*
      * Tells the application to stop a trial
