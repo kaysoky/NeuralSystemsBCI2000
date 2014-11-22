@@ -29,7 +29,7 @@ Brain2Brain::Brain2Brain()
         " // Time that the question is displayed before data collected and feedback; both FeedbackDelay's add for total delay time",
     "Application:UI float FeedbackDelay_QuestionNotDisplayed= 1.0s 1.0s 0 % "
         " // Time that the feedback is delayed, but the question is not displayed so subject can look at answer LED; both FeedbackDelay's add for total delay time",
-    "Application:UI int CursorVisible= 0 0 0 1"
+    "Application:UI int CursorVisible= 1 1 0 1"
         " // Do you want to see the vertical cursor? 0: No; 1: Yes",
     END_PARAMETER_DEFINITIONS
 
