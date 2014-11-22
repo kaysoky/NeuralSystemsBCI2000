@@ -83,6 +83,10 @@ void MongooseFeedbackTask::InitializeServer(const SignalProperties& Input, int n
         numTrials = Parameter("NumberOfTrials");
     }
     nextTrialType.SetBlockSize(numTrials);
+    
+    // The server thread can't access BCI2000 parameters during runtime
+    // It can only read a primitive copy
+    feedbackDurationCopy = static_cast<int>(Parameter("FeedbackDuration").InMilliseconds());
 
     // Done with server initialization
     server_lock->Release();
@@ -197,7 +201,13 @@ int MongooseFeedbackTask::HandleMongooseRequest(struct mg_connection *conn) {
             mg_send_header(conn, "Content-Type", "text/plain");
             mg_printf_data(conn, "%d", currentTrialType);
             lastClientPost = START_TRIAL;
-            HandleTrialStartRequest(std::string(conn->content, conn->content_len));
+            
+            // Let the inheriting class handle the start signal too
+            int trialTime = feedbackDurationCopy;
+            HandleTrialStartRequest(std::string(conn->content, conn->content_len), trialTime);
+            
+            // Pass along the trial time info
+            mg_printf_data(conn, "\n%d", trialTime);
 
             state_lock->Release();
             return MG_REQUEST_PROCESSED;

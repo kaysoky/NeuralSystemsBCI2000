@@ -112,14 +112,6 @@ void Brain2BrainUI::OnStartRun() {
     titleBox->SetText(">> Get Ready! <<");
 }
 
-void Brain2BrainUI::DoPreRun(bool showQuestion) {
-    if (showQuestion) {
-        questionBox->Show();
-    } else {
-        questionBox->Hide();
-    }
-}
-
 void Brain2BrainUI::OnFeedbackBegin() {
     GUI::Point center = {0.5f, 0.5f};
     cursor->SetCenter(center)
@@ -210,4 +202,24 @@ void Brain2BrainUI::SetAnswer(std::string data) {
     noTarget->SetFillColor(TARGET_FILL_COLOR)
 		     .Show();
     noTargetText->Show();
+}
+
+void Brain2BrainUI::ShowQuestion() {
+    questionBox->Show();
+}
+
+void Brain2BrainUI::HideQuestion() {
+    questionBox->Hide();
+}
+
+Brain2BrainUI::TargetHitType Brain2BrainUI::GetClosestTarget() {
+    GUI::Rect cursorRect = cursor->ObjectRect();
+    GUI::Rect yesRect = yesTarget->ObjectRect();
+    GUI::Rect noRect = noTarget->ObjectRect();
+    
+    float comparison = std::abs(cursorRect.left + cursorRect.right - yesRect.left - yesRect.right)
+        - std::abs(cursorRect.left + cursorRect.right - noRect.left - noRect.right);
+        
+    // Distance to the Yes target (is | is not) less than the distance to the No target
+    return comparison < 0 ? YES_TARGET : NO_TARGET;
 }

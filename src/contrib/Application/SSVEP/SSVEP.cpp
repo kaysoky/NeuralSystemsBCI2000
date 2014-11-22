@@ -399,7 +399,7 @@ bool SSVEPFeedbackTask::HandleTrialStatusRequest(struct mg_connection *conn) {
     return false;
 }
 
-void SSVEPFeedbackTask::HandleTrialStartRequest(std::string data) {
+void SSVEPFeedbackTask::HandleTrialStartRequest(std::string data, int &) {
     SSVEPGUI->SetQuestion(data);
 }
 

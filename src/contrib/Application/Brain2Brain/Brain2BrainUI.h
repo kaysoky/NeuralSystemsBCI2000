@@ -22,7 +22,6 @@ public:
     };
     
     void OnStartRun();
-    void DoPreRun(bool showQuestion);
     void OnFeedbackBegin();
     TargetHitType DoFeedback(const GenericSignal&);
     void OnFeedbackEnd();
@@ -30,6 +29,13 @@ public:
     
     void SetQuestion(std::string);
     void SetAnswer(std::string);
+    void ShowQuestion();
+    void HideQuestion();
+    
+    /*
+     * Returns the closer of the two targets, relative to the cursor
+     */
+    TargetHitType GetClosestTarget();
     
 private:
     /**
