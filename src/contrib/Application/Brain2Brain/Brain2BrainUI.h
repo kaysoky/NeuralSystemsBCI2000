@@ -32,6 +32,11 @@ public:
     void ShowQuestion();
     void HideQuestion();
     
+    /*
+     * Returns the closer of the two targets, relative to the cursor
+     */
+    TargetHitType GetClosestTarget();
+    
 private:
     /**
      * Provides access to the UI window

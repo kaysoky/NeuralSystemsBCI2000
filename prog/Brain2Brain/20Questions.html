@@ -90,9 +90,12 @@
                 } else {
                     POST_TrialStop(function() {}, function() {});
                     
-                    $('#WaitingScreen').hide();
-                    $('#ConfirmationPrompt').dialog('open');
-                    $('#ConfirmationPrompt').dialog('option', 'title', $('#QuestionsList > li.ui-selected').text());
+                    // End the trial first, but give the TMS some extra time to catch up
+                    setTimeout(function() {
+                        $('#WaitingScreen').hide();
+                        $('#ConfirmationPrompt').dialog('open');
+                        $('#ConfirmationPrompt').dialog('option', 'title', $('#QuestionsList > li.ui-selected').text());
+                    }, 2000);
                 }
             }
             

@@ -132,6 +132,7 @@ void Brain2Brain::OnTrialBegin() {
     // Reset trial-specific state
     state_lock->Acquire();
     targetHit = false;
+    targetCollisionDetected = false;
     state_lock->Release();
     State("TargetHitCode") = 0;
 
@@ -165,6 +166,7 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
         // Pass this information onto the Countdown client
         state_lock->Acquire();
         targetHit = true;
+        targetCollisionDetected = true;
         targetHitType = hitType;
         state_lock->Release();
     }
@@ -174,6 +176,18 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
 }
 
 void Brain2Brain::OnFeedbackEnd() {
+    if (!targetCollisionDetected) {
+        // We always want to trigger the TMS
+        // In this case, the target wasn't hit before the end of the trial
+        //   so we artificially "hit" the closer target
+        state_lock->Acquire();
+        Brain2BrainUI::TargetHitType hitType = B2BGUI->GetClosestTarget();
+        State("TargetHitCode") = static_cast<long>(targetHitType);
+        targetHit = true;
+        targetHitType = hitType;
+        state_lock->Release();
+    }
+    
     B2BGUI->OnFeedbackEnd();
 
     // Clear the question box between trials
@@ -220,11 +234,8 @@ bool Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
 void Brain2Brain::HandleTrialStartRequest(std::string data, int &trialDuration) {
     B2BGUI->SetQuestion(data);
     
-    // To the default trial duration, add the pre-trial period
-    //   and the post-trial TMS signal delay (i.e. if the TMS is fired at the very end of the trial)
-    trialDuration += 2000 // Must match the hard-coded delay in the TMS server method "tms_fire"
-        + questionPreviewTimeMs
-        + trialStartDelayMs;
+    // To the default trial duration, add the pre-trial delay period
+    trialDuration += questionPreviewTimeMs + trialStartDelayMs;
 }
 
 void Brain2Brain::HandleAnswerUpdate(std::string data) {

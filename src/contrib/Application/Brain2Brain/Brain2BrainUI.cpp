@@ -211,3 +211,15 @@ void Brain2BrainUI::ShowQuestion() {
 void Brain2BrainUI::HideQuestion() {
     questionBox->Hide();
 }
+
+Brain2BrainUI::TargetHitType Brain2BrainUI::GetClosestTarget() {
+    GUI::Rect cursorRect = cursor->ObjectRect();
+    GUI::Rect yesRect = yesTarget->ObjectRect();
+    GUI::Rect noRect = noTarget->ObjectRect();
+    
+    float comparison = std::abs(cursorRect.left + cursorRect.right - yesRect.left - yesRect.right)
+        - std::abs(cursorRect.left + cursorRect.right - noRect.left - noRect.right);
+        
+    // Distance to the Yes target (is | is not) less than the distance to the No target
+    return comparison < 0 ? YES_TARGET : NO_TARGET;
+}

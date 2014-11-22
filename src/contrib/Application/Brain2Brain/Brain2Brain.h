@@ -58,11 +58,11 @@ private:
     virtual void HandleAnswerUpdate(std::string);
 
     /*
-     * Holds whether the YES target has been hit
+     * Holds whether either target has been hit
      * The game is expected to poll for this value regularly
      * When it is sent to the game, the value is reset to false.
      */
-    bool targetHit;
+    bool targetHit, targetCollisionDetected;
     Brain2BrainUI::TargetHitType targetHitType;
     
     /*
