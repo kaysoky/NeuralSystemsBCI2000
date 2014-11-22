@@ -26,9 +26,9 @@ Brain2Brain::Brain2Brain()
         " // Height of each of the targets as a percent of screen height",
     "Application:UI float DwellTime= 0.25s 0.25s 0 % "
         " // Time that the cursor must dwell over a target to be considered a hit",
-    "Application:UI float QuestionPreviewTime= 2.0s 2.0s 0 % "
+    "Application:Sequencing float QuestionPreviewTime= 2.0s 2.0s 0 % "
         " // Time that a trial's question is displayed before the trial begins",
-    "Application:UI float TrialStartDelay= 1.0s 1.0s 0 % "
+    "Application:Sequencing float TrialStartDelay= 1.0s 1.0s 0 % "
         " // Time after displaying a trial's question but before the start of the trial",
     "Application:UI int CursorVisible= 1 1 0 1"
         " // Do you want to see the vertical cursor? 0: No; 1: Yes",
@@ -75,6 +75,10 @@ void Brain2Brain::OnInitialize(const SignalProperties& Input) {
     delete B2BGUI;
     B2BGUI = new Brain2BrainUI(window);
     B2BGUI->Initialize();
+    
+    // These parameters are used in the asynchronous web handlers, so they need to be copied
+    questionPreviewTimeMs = static_cast<int>(Parameter("QuestionPreviewTime").InMilliseconds());
+    trialStartDelayMs = static_cast<int>(Parameter("TrialStartDelay").InMilliseconds());
 }
 
 void Brain2Brain::OnStartRun() {
@@ -219,8 +223,8 @@ void Brain2Brain::HandleTrialStartRequest(std::string data, int &trialDuration) 
     // To the default trial duration, add the pre-trial period
     //   and the post-trial TMS signal delay (i.e. if the TMS is fired at the very end of the trial)
     trialDuration += 2000 // Must match the hard-coded delay in the TMS server method "tms_fire"
-        + static_cast<int>(Parameter("QuestionPreviewTime").InMilliseconds())
-        + static_cast<int>(Parameter("TrialStartDelay").InMilliseconds());
+        + questionPreviewTimeMs
+        + trialStartDelayMs;
 }
 
 void Brain2Brain::HandleAnswerUpdate(std::string data) {

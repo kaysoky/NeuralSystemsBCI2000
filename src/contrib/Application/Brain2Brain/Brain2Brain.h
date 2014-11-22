@@ -64,6 +64,12 @@ private:
      */
     bool targetHit;
     Brain2BrainUI::TargetHitType targetHitType;
+    
+    /*
+     * Copy of some parameters used for communication with the client
+     * These values are set during initialization
+     */
+    int questionPreviewTimeMs, trialStartDelayMs;
 };
 
 #endif // BRAIN2BRAIN_H

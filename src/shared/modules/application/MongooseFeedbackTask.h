@@ -158,6 +158,12 @@ private:
      * How many different trial types are there?
      */
     int numTrialTypes;
+    
+    /*
+     * Copy of the "FeedbackDuration" parameter used for communication with the client
+     * This value is set during initialization
+     */
+    int feedbackDurationCopy;
 };
 
 #endif // MONGOOSETASK_H
