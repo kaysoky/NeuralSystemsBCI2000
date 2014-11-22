@@ -48,7 +48,7 @@ void Brain2BrainUI::Initialize() {
     float targetHeight = Parameter("TargetHeight") / 100.0f;
     RGBColor targetBorderColor = RGBColor::Gray;
     RGBColor targetTextColor = RGBColor::Black;
-    float targetTextHeight = 0.1f;
+    float targetTextHeight = 0.5f;
     
     // Initialize the YES target
     GUI::Rect yesTargetRect = {0, 0, targetHeight, 1.0f}; 
@@ -58,6 +58,7 @@ void Brain2BrainUI::Initialize() {
               .Hide();
     
     yesTargetText = new TextField(window);
+    yesTargetRect.top = 0.8f;
     yesTargetText->SetText("Yes")
                   .SetTextColor(targetTextColor)
                   .SetTextHeight(targetTextHeight)
@@ -73,6 +74,7 @@ void Brain2BrainUI::Initialize() {
              .Hide();
     
     noTargetText = new TextField(window);
+    noTargetRect.top = 0.8f;
     noTargetText->SetText("No")
                  .SetTextColor(targetTextColor)
                  .SetTextHeight(targetTextHeight)
