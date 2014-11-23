@@ -11,8 +11,10 @@ RegisterFilter( Brain2Brain, 3 );
 Brain2Brain::Brain2Brain()
     : B2BGUI(NULL),
       window(Window()),
-      runCount(0), 
-      targetHit(false), 
+      runCount(0),
+      timeCount(0),
+      trialDelayActive(false), 
+      targetHit(false),
       targetHitType(Brain2BrainUI::NOTHING_HIT) {
 
     // Note: See MongooseTask.cpp for more parameters and states
@@ -24,8 +26,12 @@ Brain2Brain::Brain2Brain()
         " // Height of each of the targets as a percent of screen height",
     "Application:UI float DwellTime= 0.25s 0.25s 0 % "
         " // Time that the cursor must dwell over a target to be considered a hit",
-    "Application:Sequencing float QuestionDelay= 2.0s 2.0s 0 % "
-        " // Time that the question is displayed before data collected and feedback",         
+    "Application:Sequencing float QuestionPreviewTime= 2.0s 2.0s 0 % "
+        " // Time that a trial's question is displayed before the trial begins",
+    "Application:Sequencing float TrialStartDelay= 1.0s 1.0s 0 % "
+        " // Time after displaying a trial's question but before the start of the trial",
+    "Application:UI int CursorVisible= 1 1 0 1"
+        " // Do you want to see the vertical cursor? 0: No; 1: Yes",
     END_PARAMETER_DEFINITIONS
 
     BEGIN_STATE_DEFINITIONS
@@ -41,16 +47,22 @@ void Brain2Brain::OnPreflight(const SignalProperties& Input) const {
     // The values of these parameters are bounded by definition
     Parameter("CursorWidth");
     Parameter("TargetHeight");
-    
-    int feedbackDuration = static_cast<int>(Parameter( "FeedbackDuration" ).InSampleBlocks());
+    Parameter("CursorVisible");
+
+    int feedbackDuration = static_cast<int>(Parameter("FeedbackDuration").InSampleBlocks());
     int dwellTime = static_cast<int>(Parameter("DwellTime").InSampleBlocks());
     if (dwellTime > feedbackDuration / 2) {
         bcierr << "Dwell time must be less than half of the feedback duration" << std::endl;
     }
-    
-    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
-    if (questionDelay >= feedbackDuration / 2) {
-        bcierr << "Question Delay must be less than half of the feedback duration" << std::endl;
+
+    int questionPreviewTime = static_cast<int>(Parameter("QuestionPreviewTime").InSampleBlocks());
+    if (questionPreviewTime > feedbackDuration / 2) {
+        bcierr << "QuestionPreviewTime must be less than half of the feedback duration" << std::endl;
+    }
+
+    int trialStartDelay = static_cast<int>(Parameter("TrialStartDelay").InSampleBlocks());
+    if (trialStartDelay > questionPreviewTime / 2) {
+        bcierr << "TrialStartDelay must be less than half of QuestionPreviewTime" << std::endl;
     }
 
     CheckServerParameters(Input);
@@ -63,6 +75,10 @@ void Brain2Brain::OnInitialize(const SignalProperties& Input) {
     delete B2BGUI;
     B2BGUI = new Brain2BrainUI(window);
     B2BGUI->Initialize();
+    
+    // These parameters are used in the asynchronous web handlers, so they need to be copied
+    questionPreviewTimeMs = static_cast<int>(Parameter("QuestionPreviewTime").InMilliseconds());
+    trialStartDelayMs = static_cast<int>(Parameter("TrialStartDelay").InMilliseconds());
 }
 
 void Brain2Brain::OnStartRun() {
@@ -72,6 +88,8 @@ void Brain2Brain::OnStartRun() {
     runCount++;
     trialCount = 0;
     timeCount = 0;
+    trialDelayActive = false;
+
     AppLog << "Run #" << runCount << " started" << std::endl;
     B2BGUI->OnStartRun();
 }
@@ -79,20 +97,42 @@ void Brain2Brain::OnStartRun() {
 void Brain2Brain::DoPreRun(const GenericSignal&, bool& doProgress) {
     // Wait for the start signal
     doProgress = false;
-    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
-    state_lock->Acquire();
-    if (lastClientPost == START_TRIAL && timeCount >= questionDelay) {
-        doProgress = true;
-        lastClientPost = CONTINUE;
+    
+    if (trialDelayActive) {
+        int questionPreviewTime = static_cast<int>(Parameter("QuestionPreviewTime").InSampleBlocks());
+        int trialStartDelay = static_cast<int>(Parameter("TrialStartDelay").InSampleBlocks());
+        
+        // This is between the question preview and the trial start delay
+        if (timeCount == questionPreviewTime) {
+            B2BGUI->HideQuestion();
+        }
+        
+        if (timeCount >= questionPreviewTime + trialStartDelay) {
+            doProgress = true;
+            trialDelayActive = false;
+        }
+        
+        timeCount++;
+    } else {
+        state_lock->Acquire();
+
+        // Acknowledge the start signal and start the delay phase (above)
+        if (lastClientPost == START_TRIAL) {
+            lastClientPost = CONTINUE;
+            timeCount = 0;
+            trialDelayActive = true;
+            B2BGUI->ShowQuestion();
+        }
+        
+        state_lock->Release();
     }
-    state_lock->Release();
-    timeCount++;
 }
 
 void Brain2Brain::OnTrialBegin() {
     // Reset trial-specific state
     state_lock->Acquire();
     targetHit = false;
+    targetCollisionDetected = false;
     state_lock->Release();
     State("TargetHitCode") = 0;
 
@@ -100,17 +140,15 @@ void Brain2Brain::OnTrialBegin() {
     trialCount++;
 
     AppLog << "Trial #" << trialCount << std::endl;
-    B2BGUI->OnTrialBegin();
 }
 
 void Brain2Brain::OnFeedbackBegin() {
-    timeCount = 0;
     B2BGUI->OnFeedbackBegin();
 }
 
 void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgress) {
     doProgress = false;
-    
+
     Brain2BrainUI::TargetHitType hitType = B2BGUI->DoFeedback(ControlSignal);
     State("TargetHitCode") = static_cast<long>(targetHitType);
 
@@ -122,40 +160,46 @@ void Brain2Brain::DoFeedback(const GenericSignal& ControlSignal, bool& doProgres
             lastClientPost = CONTINUE;
         }
         state_lock->Release();
-        
+
         return;
     } else {
         // Pass this information onto the Countdown client
         state_lock->Acquire();
         targetHit = true;
+        targetCollisionDetected = true;
         targetHitType = hitType;
         state_lock->Release();
     }
-    
+
     // Either the YES or NO target was hit
     doProgress = true;
 }
 
 void Brain2Brain::OnFeedbackEnd() {
-    timeCount = 0;
+    if (!targetCollisionDetected) {
+        // We always want to trigger the TMS
+        // In this case, the target wasn't hit before the end of the trial
+        //   so we artificially "hit" the closer target
+        state_lock->Acquire();
+        Brain2BrainUI::TargetHitType hitType = B2BGUI->GetClosestTarget();
+        State("TargetHitCode") = static_cast<long>(targetHitType);
+        targetHit = true;
+        targetHitType = hitType;
+        state_lock->Release();
+    }
+    
     B2BGUI->OnFeedbackEnd();
 
     // Clear the question box between trials
     B2BGUI->SetQuestion("");
 }
 
-void Brain2Brain::DoITI(const GenericSignal&, bool& doProgress) {
-    doProgress = false;
-    // Wait for the start signal
-    int questionDelay = static_cast<int>(Parameter("QuestionDelay").InSampleBlocks());
-    state_lock->Acquire();
-    if (lastClientPost == START_TRIAL && timeCount >= questionDelay ) {
-        doProgress = true;
-        lastClientPost = CONTINUE;
-    }
-    state_lock->Release();
-    timeCount++;
+void Brain2Brain::DoITI(const GenericSignal& signal, bool& doProgress) {
+    // There's no distinction between the ITI and the PreRun
+    // Both phases are considered to be "Pre-trial" setup
+    DoPreRun(signal, doProgress);
 }
+
 
 void Brain2Brain::OnStopRun() {
     AppLog << "Run " << runCount << " finished: "
@@ -182,13 +226,16 @@ bool Brain2Brain::HandleTrialStatusRequest(struct mg_connection *conn) {
         }
         targetHit = false;
         return true;
-    } 
-    
+    }
+
     return false;
 }
 
-void Brain2Brain::HandleTrialStartRequest(std::string data) {
+void Brain2Brain::HandleTrialStartRequest(std::string data, int &trialDuration) {
     B2BGUI->SetQuestion(data);
+    
+    // To the default trial duration, add the pre-trial delay period
+    trialDuration += questionPreviewTimeMs + trialStartDelayMs;
 }
 
 void Brain2Brain::HandleAnswerUpdate(std::string data) {

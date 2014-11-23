@@ -27,12 +27,18 @@ Brain2BrainUI::~Brain2BrainUI() {
 void Brain2BrainUI::Initialize() {
     // Initialize the cursor to be a circle
     float cursorWidth = Parameter("CursorWidth") / 100.0f;
-	GUI::Rect cursorRect = {0, 0, cursorWidth, cursorWidth * window.Width() / window.Height()};
+  GUI::Rect cursorRect = {0, 0, cursorWidth, cursorWidth * window.Width() / window.Height()};
     cursor = new EllipticShape(window, 1);
-    cursor->SetColor(RGBColor::White)
-           .SetFillColor(RGBColor::White)
-           .SetObjectRect(cursorRect)
-           .Hide();
+    
+    // Hide the cursor visually when cursor is not needed
+    if (static_cast<int>(Parameter("CursorVisible"))) {
+        cursor->SetColor(RGBColor::White)
+            .SetFillColor(RGBColor::White);
+    } else {
+        cursor->SetColor(RGBColor::NullColor)
+            .SetFillColor(RGBColor::NullColor);
+    }
+    cursor->SetObjectRect(cursorRect).Hide();
 
     // On average, we need to cross half the workspace during a trial
     float feedbackDuration = Parameter("FeedbackDuration").InSampleBlocks();
@@ -44,41 +50,43 @@ void Brain2BrainUI::Initialize() {
     RGBColor targetTextColor = RGBColor::Black;
     float targetTextHeight = 0.5f;
     
-        // Initialize the YES target
-        GUI::Rect yesTargetRect = {0, 0, 1.0f, targetHeight};
-        yesTarget = new RectangularShape(window);
-        yesTarget->SetColor(targetBorderColor)
+    // Initialize the YES target
+    GUI::Rect yesTargetRect = {0, 0, targetHeight, 1.0f}; 
+    yesTarget = new RectangularShape(window);
+    yesTarget->SetColor(targetBorderColor)
+              .SetObjectRect(yesTargetRect)
+              .Hide();
+    
+    yesTargetText = new TextField(window);
+    yesTargetRect.top = 0.8f;
+    yesTargetText->SetText("Yes")
+                  .SetTextColor(targetTextColor)
+                  .SetTextHeight(targetTextHeight)
+                  .SetColor(RGBColor::NullColor)
                   .SetObjectRect(yesTargetRect)
                   .Hide();
-        
-        yesTargetText = new TextField(window);
-        yesTargetText->SetText("Yes")
-			          .SetTextColor(targetTextColor)
-                      .SetTextHeight(targetTextHeight)
-                      .SetColor(RGBColor::NullColor)
-                      .SetObjectRect(yesTargetRect)
-                      .Hide();
-        
-        // Initialize the NO target
-        GUI::Rect noTargetRect = {0, 1.0f - targetHeight, 1.0f, 1.0f};
-        noTarget = new RectangularShape(window);
-        noTarget->SetColor(targetBorderColor)
+    
+    // Initialize the NO target
+    GUI::Rect noTargetRect = {1.0f-targetHeight, 0, 1.0f, 1.0f};
+    noTarget = new RectangularShape(window);
+    noTarget->SetColor(targetBorderColor)
+             .SetObjectRect(noTargetRect)
+             .Hide();
+    
+    noTargetText = new TextField(window);
+    noTargetRect.top = 0.8f;
+    noTargetText->SetText("No")
+                 .SetTextColor(targetTextColor)
+                 .SetTextHeight(targetTextHeight)
+                 .SetColor(RGBColor::NullColor)
                  .SetObjectRect(noTargetRect)
                  .Hide();
-        
-        noTargetText = new TextField(window);
-        noTargetText->SetText("No")
-					 .SetTextColor(targetTextColor)
-                     .SetTextHeight(targetTextHeight)
-                     .SetColor(RGBColor::NullColor)
-                     .SetObjectRect(noTargetRect)
-                     .Hide();
 
     // Initialize the title box message
     GUI::Rect titleBoxRect = {0.1f, 0.25f, 0.9f, 0.45f};
     titleBox = new TextField(window);
     titleBox->SetText("Timeout")
-		     .SetTextColor(RGBColor::Lime)
+         .SetTextColor(RGBColor::Lime)
              .SetTextHeight(0.8f)
              .SetColor(RGBColor::Gray)
              .SetObjectRect(titleBoxRect);
@@ -106,20 +114,6 @@ void Brain2BrainUI::OnStartRun() {
     titleBox->SetText(">> Get Ready! <<");
 }
 
-void Brain2BrainUI::OnTrialBegin() {
-    titleBox->Hide();
-
-    yesTarget->SetFillColor(TARGET_FILL_COLOR)
-		      .Show();
-    yesTargetText->Show();
-    noTarget->SetFillColor(TARGET_FILL_COLOR)
-		     .Show();
-    noTargetText->Show();
-    
-    questionBox->Show();
-    answerBox->Show();
-}
-
 void Brain2BrainUI::OnFeedbackBegin() {
     GUI::Point center = {0.5f, 0.5f};
     cursor->SetCenter(center)
@@ -132,16 +126,16 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
 
     // Use the control signal to move up and down
     if (ControlSignal.Channels() > 0) {
-        cursorPosition.y += cursorSpeed * ControlSignal(0, 0);
+        cursorPosition.x += cursorSpeed * ControlSignal(0, 0);
     }
 
     // Restrict cursor movement to the screen itself
-    cursorPosition.y = std::max(cursorRect.bottom - cursorRect.top, 
-                           std::min(1.0f - cursorRect.bottom + cursorRect.top, cursorPosition.y));
+    cursorPosition.x = std::max(cursorRect.right - cursorRect.left, 
+                           std::min(1.0f - cursorRect.right + cursorRect.left, cursorPosition.x));
 
     // Update cursor position
     cursor->SetCenter(cursorPosition);
-    State("CursorCenter") = static_cast<int>(window.Height() * cursorPosition.y);
+    State("CursorCenter") = static_cast<int>(window.Width() * cursorPosition.x);
     
     // Determine if either of the targets were hit
     RGBColor hitColor = RGBColor::Red;
@@ -200,5 +194,34 @@ void Brain2BrainUI::SetQuestion(std::string data) {
 }
 
 void Brain2BrainUI::SetAnswer(std::string data) {
-    answerBox->SetText(data);
+    answerBox->SetText(data)
+           .Show();
+    titleBox->Hide();
+
+    yesTarget->SetFillColor(TARGET_FILL_COLOR)
+          .Show();
+    yesTargetText->Show();
+    noTarget->SetFillColor(TARGET_FILL_COLOR)
+         .Show();
+    noTargetText->Show();
+}
+
+void Brain2BrainUI::ShowQuestion() {
+    questionBox->Show();
+}
+
+void Brain2BrainUI::HideQuestion() {
+    questionBox->Hide();
+}
+
+Brain2BrainUI::TargetHitType Brain2BrainUI::GetClosestTarget() {
+    GUI::Rect cursorRect = cursor->ObjectRect();
+    GUI::Rect yesRect = yesTarget->ObjectRect();
+    GUI::Rect noRect = noTarget->ObjectRect();
+    
+    float comparison = std::abs(cursorRect.left + cursorRect.right - yesRect.left - yesRect.right)
+        - std::abs(cursorRect.left + cursorRect.right - noRect.left - noRect.right);
+        
+    // Distance to the Yes target (is | is not) less than the distance to the No target
+    return comparison < 0 ? YES_TARGET : NO_TARGET;
 }
