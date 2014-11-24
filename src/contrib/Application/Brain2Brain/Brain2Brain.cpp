@@ -135,7 +135,6 @@ void Brain2Brain::OnTrialBegin() {
     targetCollisionDetected = false;
     state_lock->Release();
     State("TargetHitCode") = 0;
-    
     // Increment the trial count
     trialCount++;
 
