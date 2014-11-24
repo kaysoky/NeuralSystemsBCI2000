@@ -170,11 +170,7 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
     return NOTHING_HIT;
 }
 
-void Brain2BrainUI::OnFeedbackEnd() {
-    // Reset the target colors
- //   yesTarget->SetFillColor(TARGET_FILL_COLOR);
-   // noTarget->SetFillColor(TARGET_FILL_COLOR); 
-    
+void Brain2BrainUI::OnFeedbackEnd() {  
     cursor->Hide();
 }
 
