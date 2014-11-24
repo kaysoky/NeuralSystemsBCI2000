@@ -135,7 +135,6 @@ void Brain2Brain::OnTrialBegin() {
     targetCollisionDetected = false;
     state_lock->Release();
     State("TargetHitCode") = 0;
-
     // Increment the trial count
     trialCount++;
 
@@ -191,7 +190,7 @@ void Brain2Brain::OnFeedbackEnd() {
     B2BGUI->OnFeedbackEnd();
 
     // Clear the question box between trials
-    B2BGUI->SetQuestion("");
+    B2BGUI->HideQuestion();
 }
 
 void Brain2Brain::DoITI(const GenericSignal& signal, bool& doProgress) {
