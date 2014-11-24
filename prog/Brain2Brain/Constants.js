@@ -1,9 +1,12 @@
 /**
+<<<<<<< HEAD
  * How long each trial should take; needs to match feedbackduration in BCI2000
  */
 var TRIAL_TIME = 9000.0; // Milliseconds
 
 /**
+=======
+>>>>>>> origin/merging_develop
  * How frequently should the game poll the server for a status update?
  */
 var POLL_INTERVAL = 250; // Milliseconds

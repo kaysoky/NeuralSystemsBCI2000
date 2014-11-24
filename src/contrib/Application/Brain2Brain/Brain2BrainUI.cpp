@@ -27,7 +27,7 @@ Brain2BrainUI::~Brain2BrainUI() {
 void Brain2BrainUI::Initialize() {
     // Initialize the cursor to be a circle
     float cursorWidth = Parameter("CursorWidth") / 100.0f;
-  GUI::Rect cursorRect = {0, 0, cursorWidth, cursorWidth * window.Width() / window.Height()};
+ 	GUI::Rect cursorRect = {0, 0, cursorWidth, cursorWidth * window.Width() / window.Height()};
     cursor = new EllipticShape(window, 1);
     
     // Hide the cursor visually when cursor is not needed
@@ -86,7 +86,7 @@ void Brain2BrainUI::Initialize() {
     GUI::Rect titleBoxRect = {0.1f, 0.25f, 0.9f, 0.45f};
     titleBox = new TextField(window);
     titleBox->SetText("Timeout")
-         .SetTextColor(RGBColor::Lime)
+		     .SetTextColor(RGBColor::Lime)
              .SetTextHeight(0.8f)
              .SetColor(RGBColor::Gray)
              .SetObjectRect(titleBoxRect);
@@ -172,8 +172,8 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
 
 void Brain2BrainUI::OnFeedbackEnd() {
     // Reset the target colors
-    yesTarget->SetFillColor(TARGET_FILL_COLOR);
-    noTarget->SetFillColor(TARGET_FILL_COLOR);
+ //   yesTarget->SetFillColor(TARGET_FILL_COLOR);
+   // noTarget->SetFillColor(TARGET_FILL_COLOR); 
     
     cursor->Hide();
 }
@@ -190,6 +190,10 @@ void Brain2BrainUI::OnStopRun() {
 }
 
 void Brain2BrainUI::SetQuestion(std::string data) {
+    yesTarget->SetFillColor(TARGET_FILL_COLOR);
+    noTarget->SetFillColor(TARGET_FILL_COLOR);
+    
+    questionBox->Show();
     questionBox->SetText(data);
 }
 
@@ -199,10 +203,10 @@ void Brain2BrainUI::SetAnswer(std::string data) {
     titleBox->Hide();
 
     yesTarget->SetFillColor(TARGET_FILL_COLOR)
-          .Show();
+		      .Show();
     yesTargetText->Show();
     noTarget->SetFillColor(TARGET_FILL_COLOR)
-         .Show();
+		     .Show();
     noTargetText->Show();
 }
 
@@ -221,7 +225,15 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::GetClosestTarget() {
     
     float comparison = std::abs(cursorRect.left + cursorRect.right - yesRect.left - yesRect.right)
         - std::abs(cursorRect.left + cursorRect.right - noRect.left - noRect.right);
-        
+    
+    TargetHitType targetHitYes = comparison < 0 ? YES_TARGET : NO_TARGET;
+    RGBColor hitColor = RGBColor::Yellow;
+    if (targetHitYes == YES_TARGET) {
+        yesTarget->SetFillColor(hitColor);
+    } else {
+        noTarget->SetFillColor(hitColor);
+    }
+   
     // Distance to the Yes target (is | is not) less than the distance to the No target
-    return comparison < 0 ? YES_TARGET : NO_TARGET;
+    return targetHitYes;
 }

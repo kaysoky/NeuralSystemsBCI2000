@@ -66,8 +66,10 @@ protected:
     /*
      * Tells the application to start a trial
      * Child classes can extend this
+     * Second parameter allows the child to modify a trial time (milliseconds) 
+     *   to be sent to the client
      */
-    virtual void HandleTrialStartRequest(std::string) {}
+    virtual void HandleTrialStartRequest(std::string, int &) {}
     
     /*
      * Tells the application to stop a trial
@@ -156,6 +158,12 @@ private:
      * How many different trial types are there?
      */
     int numTrialTypes;
+    
+    /*
+     * Copy of the "FeedbackDuration" parameter used for communication with the client
+     * This value is set during initialization
+     */
+    int feedbackDurationCopy;
 };
 
 #endif // MONGOOSETASK_H

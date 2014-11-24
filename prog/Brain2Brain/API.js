@@ -1,4 +1,10 @@
 /**
+ * How long each trial should take
+ * This value is overwritten each time a trial is started
+ */
+var TRIAL_TIME = 0; // Milliseconds
+
+/**
  * Tells the BCI to start a trial
  * If the application is not ready, onFailure is called
  */
@@ -8,7 +14,17 @@ POST_TrialStart = function(text, callback, onFailure) {
         url: '/trial/start',
         async: false,
         data: text, 
-        success: callback, 
+        success: function (data) {
+            // The data is 2 numbers:
+            //   <a trial number>
+            //   <a trial time> // <- This one is removed and put into TRIAL_TIME
+            //   <anything else>
+            data = data.split('\n');
+            TRIAL_TIME = parseInt(data.splice(1, 1)[0]);
+            data = data.join('\n');
+            
+            callback(data);
+        }, 
         error: function(jqXHR) {
             // Application not ready
             if (jqXHR.status == 418) {

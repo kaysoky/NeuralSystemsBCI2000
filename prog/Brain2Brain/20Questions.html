@@ -84,14 +84,11 @@
             /**
              * Auto-recursive waiting function for after the "Submit" button is pressed
              */
-            var secondsRemaining = TRIAL_TIME / 1000;
-            function WaitForTrialEnd() {
+            function WaitForTrialEnd(secondsRemaining) {
                 if (secondsRemaining > 0) {
-                    secondsRemaining--;
-                    setTimeout(WaitForTrialEnd, 1000);
+                    setTimeout(function() { WaitForTrialEnd(--secondsRemaining); }, 1000);
                 } else {
                     POST_TrialStop(function() {}, function() {});
-                    secondsRemaining = TRIAL_TIME / 1000;
                     
                     // End the trial first, but give the TMS some extra time to catch up
                     setTimeout(function() {
@@ -122,7 +119,7 @@
                         $('#WaitingScreen').show();
                         
                         // Prevent the Yes/No prompt from being used until the trial is over
-                        WaitForTrialEnd();
+                        WaitForTrialEnd(TRIAL_TIME / 1000);
                     },
                     function() {
                         alert('Application suspended, please try again in a moment');
