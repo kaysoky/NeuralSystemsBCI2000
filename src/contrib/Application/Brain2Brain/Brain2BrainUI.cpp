@@ -171,10 +171,6 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
 }
 
 void Brain2BrainUI::OnFeedbackEnd() {
-    // Reset the target colors
-    yesTarget->SetFillColor(TARGET_FILL_COLOR);
-    noTarget->SetFillColor(TARGET_FILL_COLOR);
-    
     cursor->Hide();
 }
 
@@ -190,6 +186,10 @@ void Brain2BrainUI::OnStopRun() {
 }
 
 void Brain2BrainUI::SetQuestion(std::string data) {
+    yesTarget->SetFillColor(TARGET_FILL_COLOR);
+    noTarget->SetFillColor(TARGET_FILL_COLOR);
+    
+    questionBox->Show();
     questionBox->SetText(data);
 }
 
@@ -221,7 +221,15 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::GetClosestTarget() {
     
     float comparison = std::abs(cursorRect.left + cursorRect.right - yesRect.left - yesRect.right)
         - std::abs(cursorRect.left + cursorRect.right - noRect.left - noRect.right);
-        
+    
+    TargetHitType targetHitYes = comparison < 0 ? YES_TARGET : NO_TARGET;
+    RGBColor hitColor = RGBColor::Yellow;
+    if (targetHitYes == YES_TARGET) {
+        yesTarget->SetFillColor(hitColor);
+    } else {
+        noTarget->SetFillColor(hitColor);
+    }
+   
     // Distance to the Yes target (is | is not) less than the distance to the No target
-    return comparison < 0 ? YES_TARGET : NO_TARGET;
+    return targetHitYes;
 }
