@@ -94,7 +94,6 @@
                     setTimeout(function() {
                         $('#WaitingScreen').hide();
                         $('#ConfirmationPrompt').dialog('open');
-                        $('#ConfirmationPrompt').dialog('option', 'title', $('#QuestionsList > li.ui-selected').text());
                     }, 2000);
                 }
             }
@@ -131,13 +130,24 @@
         <div id="WaitingScreen"><div id="Crosshair">+</div></div>
         <div id="FileSelectionPrompt" title="Choose a question file:">
             <select id="FileSelector">
-                <option value="Questions-Animal-01.csv">Animal #1</option>
-                <option value="Questions-Animal-02.csv">Animal #2</option>
+                <option value="Questions-Animal-01.csv">Animals #1</option>
+                <option value="Questions-Animal-02.csv">Animals #2</option>
+                <option value="Questions-Animal-03.csv">Animals #3</option>
+                <option value="Questions-City-01.csv">Cities</option>
+                <option value="Questions-Dwelling-01.csv">Dwellings</option>
+                <option value="Questions-Family-01.csv">Family</option>
+                <option value="Questions-Flavor-01.csv">Flavors</option>
                 <option value="Questions-Food-01.csv">Food</option>
-                <option value="Questions-Person-01.csv">People #1</option>
-                <option value="Questions-Person-02.csv">People #2</option>
-                <option value="Questions-Object-01.csv">Object #1</option>
-                <option value="Questions-Object-02.csv">Object #2</option>
+                <option value="Questions-Fruit-01.csv">Fruits</option>
+                <option value="Questions-Furniture-01.csv">Furniture</option>
+                <option value="Questions-Kitchen-01.csv">Kitchen Items</option>
+                <option value="Questions-Object-01.csv">Objects #1</option>
+                <option value="Questions-Object-02.csv">Objects #2</option>
+                <option value="Questions-Occupation-01.csv">Jobs</option>
+                <option value="Questions-Sporting-01.csv">Sports</option>
+                <option value="Questions-Toy-01.csv">Toys</option>
+                <option value="Questions-Vegetable-01.csv">Vegetables</option>
+                <option value="Questions-Vehicle-01.csv">Vehicles</option>
             </select>
         </div>
         <div id="ConfirmationPrompt" title="Did you see a flash of light?"></div>
