@@ -1,0 +1,9 @@
+Dwelling,Kitchen?,Onsite Laundry?,Spacious?
+Tent,No,No,No
+Cave,No,No,Yes
+Dorm,No,Yes,No
+Hotel,No,Yes,Yes
+Cabin,Yes,No,No
+Apartment,Yes,No,Yes
+RV,Yes,Yes,No
+House,Yes,Yes,Yes

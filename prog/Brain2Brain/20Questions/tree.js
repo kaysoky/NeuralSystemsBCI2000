@@ -63,8 +63,6 @@ AnswerQuestion = function(questionAsked, isYes) {
             alert('Application not ready to begin');
             location.reload();
         });
-        
-        alert('You ' + alertText + '\nClose this alert to refresh the page');
         location.reload();
     } else if (remainingAnswers.length <= 0) {
         alert('No possibilities remain.  Game over.\nClose this alert to refresh the page');

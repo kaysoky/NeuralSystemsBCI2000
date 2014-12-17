@@ -1,0 +1,9 @@
+Vehicle,4 Wheels?,Engine?,Accomodates More than 1 Person?
+Unicycle,No,No,No
+Canoe,No,No,Yes
+Dirt Bike,No,Yes,No
+Motorcycle,No,Yes,Yes
+Baby Stroller,Yes,No,No
+Handcar,Yes,No,Yes
+Go Cart,Yes,Yes,No
+Car,Yes,Yes,Yes

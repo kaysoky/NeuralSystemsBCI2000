@@ -9,6 +9,7 @@
 
 // Color of targets when idle
 #define TARGET_FILL_COLOR RGBColor::Blue
+#define TARGET_FORCED_HIT_COLOR RGBColor::YELLOW
 
 Brain2BrainUI::Brain2BrainUI(GUI::DisplayWindow& display) 
     : window(display), dwellTime(0) {}
@@ -48,7 +49,7 @@ void Brain2BrainUI::Initialize() {
     float targetHeight = Parameter("TargetHeight") / 100.0f;
     RGBColor targetBorderColor = RGBColor::Gray;
     RGBColor targetTextColor = RGBColor::Black;
-    float targetTextHeight = 0.1f;
+    float targetTextHeight = 0.5f;
     
     // Initialize the YES target
     GUI::Rect yesTargetRect = {0, 0, targetHeight, 1.0f}; 
@@ -58,6 +59,7 @@ void Brain2BrainUI::Initialize() {
               .Hide();
     
     yesTargetText = new TextField(window);
+    yesTargetRect.top = 0.8f;
     yesTargetText->SetText("Yes")
                   .SetTextColor(targetTextColor)
                   .SetTextHeight(targetTextHeight)
@@ -73,6 +75,7 @@ void Brain2BrainUI::Initialize() {
              .Hide();
     
     noTargetText = new TextField(window);
+    noTargetRect.top = 0.8f;
     noTargetText->SetText("No")
                  .SetTextColor(targetTextColor)
                  .SetTextHeight(targetTextHeight)
@@ -169,10 +172,6 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::DoFeedback(const GenericSignal& Cont
 }
 
 void Brain2BrainUI::OnFeedbackEnd() {
-    // Reset the target colors
-    yesTarget->SetFillColor(TARGET_FILL_COLOR);
-    noTarget->SetFillColor(TARGET_FILL_COLOR);
-    
     cursor->Hide();
 }
 
@@ -188,6 +187,10 @@ void Brain2BrainUI::OnStopRun() {
 }
 
 void Brain2BrainUI::SetQuestion(std::string data) {
+    yesTarget->SetFillColor(TARGET_FILL_COLOR);
+    noTarget->SetFillColor(TARGET_FILL_COLOR);
+    
+    questionBox->Show();
     questionBox->SetText(data);
 }
 
@@ -216,10 +219,19 @@ Brain2BrainUI::TargetHitType Brain2BrainUI::GetClosestTarget() {
     GUI::Rect cursorRect = cursor->ObjectRect();
     GUI::Rect yesRect = yesTarget->ObjectRect();
     GUI::Rect noRect = noTarget->ObjectRect();
-    
+
     float comparison = std::abs(cursorRect.left + cursorRect.right - yesRect.left - yesRect.right)
         - std::abs(cursorRect.left + cursorRect.right - noRect.left - noRect.right);
-        
-    // Distance to the Yes target (is | is not) less than the distance to the No target
-    return comparison < 0 ? YES_TARGET : NO_TARGET;
+    
+    // Distance to the Yes target (is | is not) less than the distance to the No target at the
+    // end of the trial
+    TargetHitType targetHit = comparison < 0 ? YES_TARGET : NO_TARGET;
+
+    // Changing the color of the target that the cursor was closest to at the end of the trial
+    if (targetHit == YES_TARGET) {
+        yesTarget->SetFillColor(TARGET_FORCED_HIT_COLOR);
+    } else {
+        noTarget->SetFillColor(TARGET_FORCED_HIT_COLOR);
+    }
+    return targetHit;
 }

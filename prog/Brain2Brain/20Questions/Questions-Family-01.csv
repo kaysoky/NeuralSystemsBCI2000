@@ -1,0 +1,9 @@
+Relatives,Immediate family?,Likely Older than you?,Female?
+Nephew,No,No,No
+Niece,No,No,Yes
+Uncle,No,Yes,No
+Aunt,No,Yes,Yes
+Son,Yes,No,No
+Daughter,Yes,No,Yes
+Father,Yes,Yes,No
+Mother,Yes,Yes,Yes
