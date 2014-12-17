@@ -1,4 +1,4 @@
-A four-footed animal,Carnivorous,Domesticated,Larger than a child
+A four-footed animal,Carnivorous?,Domesticated?,Larger than a child?
 Koala,No,No,No
 Deer,No,No,Yes
 Guinea Pig,No,Yes,No
@@ -6,4 +6,4 @@ Horse,No,Yes,Yes
 Raccoon,Yes,No,No
 Bear,Yes,No,Yes
 Cat,Yes,Yes,No
-St Bernard Dog,Yes,Yes,Yes
+St. Bernard Dog,Yes,Yes,Yes
