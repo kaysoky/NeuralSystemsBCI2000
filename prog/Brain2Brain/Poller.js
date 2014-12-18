@@ -16,7 +16,9 @@ PollServer = function() {
                             type: 'POST',
                             url: 'http://localhost:' + TMS_PORT + '/TMS/fire/high',
                             async: false,
-                            success: function() {},
+                            success: function(data) {
+                                LogInfo("TMS intensity = " + data);
+                            },
                             error: function(jqXHR) {
                                 alert("POST /TMS/fire/high -> " + JSON.stringify(jqXHR));
                             }
@@ -28,7 +30,9 @@ PollServer = function() {
                             type: 'POST',
                             url: 'http://localhost:' + TMS_PORT + '/TMS/fire/low',
                             async: false,
-                            success: function() {},
+                            success: function(data) {
+                                LogInfo("TMS intensity = " + data);
+                            },
                             error: function(jqXHR) {
                                 alert("POST /TMS/fire/low -> " + JSON.stringify(jqXHR));
                             }
