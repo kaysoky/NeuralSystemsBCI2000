@@ -9,7 +9,7 @@
 
 // Color of targets when idle
 #define TARGET_FILL_COLOR RGBColor::Blue
-#define TARGET_FORCED_HIT_COLOR RGBColor::YELLOW
+#define TARGET_FORCED_HIT_COLOR RGBColor::Yellow
 
 Brain2BrainUI::Brain2BrainUI(GUI::DisplayWindow& display) 
     : window(display), dwellTime(0) {}
